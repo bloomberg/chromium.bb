@@ -6,10 +6,12 @@
 
 #include <memory>
 #include "base/metrics/histogram_functions.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
-#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -23,19 +25,45 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 static const char defaultFont[] = "10px sans-serif";
 static const char defaultFilter[] = "none";
+static const char defaultSpacing[] = "0px";
 
 namespace blink {
+
+// Convert CSS Length String to a number with unit, ex: "2em" to
+// |number_spacing| = 2 and |unit| = CSSPrimitiveValue::UnitType::kEm. It
+// returns true if the conversion succeeded; false otherwise.
+bool StringToNumWithUnit(String spacing,
+                         float* number_spacing,
+                         CSSPrimitiveValue::UnitType* unit) {
+  CSSTokenizer tokenizer(spacing);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange range(tokens);
+  // If we failed to parse token, return immediately.
+  if (range.AtEnd())
+    return false;
+
+  const CSSParserToken* result = range.begin();
+  range.Consume();
+  // If there is more than 1 dimension token or |spacing| is not a valid
+  // dimension token, return immediately.
+  if (!range.AtEnd() || result->GetType() != kDimensionToken)
+    return false;
+  *number_spacing = result->NumericValue();
+  *unit = result->GetUnitType();
+  return true;
+}
 
 CanvasRenderingContext2DState::CanvasRenderingContext2DState()
     : stroke_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
@@ -47,6 +75,8 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
       unparsed_font_(defaultFont),
       unparsed_css_filter_(defaultFilter),
       text_align_(kStartTextAlign),
+      unparsed_letter_spacing_(defaultSpacing),
+      unparsed_word_spacing_(defaultSpacing),
       realized_font_(false),
       is_transform_invertible_(true),
       has_clip_(false),
@@ -54,7 +84,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
       fill_style_dirty_(true),
       stroke_style_dirty_(true),
       line_dash_dirty_(false),
-      image_smoothing_quality_(kLow_SkFilterQuality) {
+      image_smoothing_quality_(cc::PaintFlags::FilterQuality::kLow) {
   fill_flags_.setStyle(PaintFlags::kFill_Style);
   fill_flags_.setAntiAlias(true);
   image_flags_.setStyle(PaintFlags::kFill_Style);
@@ -70,7 +100,8 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
 
 CanvasRenderingContext2DState::CanvasRenderingContext2DState(
     const CanvasRenderingContext2DState& other,
-    ClipListCopyMode mode)
+    ClipListCopyMode mode,
+    SaveType save_type)
     : unparsed_stroke_color_(other.unparsed_stroke_color_),
       unparsed_fill_color_(other.unparsed_fill_color_),
       stroke_style_(other.stroke_style_),
@@ -104,7 +135,9 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
       text_baseline_(other.text_baseline_),
       direction_(other.direction_),
       letter_spacing_(other.letter_spacing_),
+      letter_spacing_unit_(other.letter_spacing_unit_),
       word_spacing_(other.word_spacing_),
+      word_spacing_unit_(other.word_spacing_unit_),
       text_rendering_mode_(other.text_rendering_mode_),
       font_kerning_(other.font_kerning_),
       font_stretch_(other.font_stretch_),
@@ -117,7 +150,8 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
       stroke_style_dirty_(other.stroke_style_dirty_),
       line_dash_dirty_(other.line_dash_dirty_),
       image_smoothing_enabled_(other.image_smoothing_enabled_),
-      image_smoothing_quality_(other.image_smoothing_quality_) {
+      image_smoothing_quality_(other.image_smoothing_quality_),
+      save_type_(save_type) {
   if (mode == kCopyClipList) {
     clip_list_ = other.clip_list_;
   }
@@ -150,7 +184,7 @@ void CanvasRenderingContext2DState::Trace(Visitor* visitor) const {
 }
 
 void CanvasRenderingContext2DState::SetLineDashOffset(double offset) {
-  line_dash_offset_ = clampTo<float>(offset);
+  line_dash_offset_ = ClampTo<float>(offset);
   line_dash_dirty_ = true;
 }
 
@@ -162,7 +196,7 @@ void CanvasRenderingContext2DState::SetLineDash(const Vector<double>& dash) {
     line_dash_.AppendVector(dash);
   // clamp the double values to float
   std::transform(line_dash_.begin(), line_dash_.end(), line_dash_.begin(),
-                 [](double d) { return clampTo<float>(d); });
+                 [](double d) { return ClampTo<float>(d); });
 
   line_dash_dirty_ = true;
 }
@@ -269,6 +303,24 @@ void CanvasRenderingContext2DState::SetFont(
     FontSelector* selector) {
   FontDescription font_description = passed_font_description;
   font_description.SetSubpixelAscentDescent(true);
+
+  CSSToLengthConversionData conversion_data = CSSToLengthConversionData();
+  Font font = Font();
+  auto const font_size = CSSToLengthConversionData::FontSizes(
+      font_description.ComputedSize(), font_description.ComputedSize(), &font,
+      1.0f /*Deliberately ignore zoom on the canvas element*/);
+  conversion_data.SetFontSizes(font_size);
+
+  // Convert word spacing to pixel length and set it in font_description.
+  float word_spacing_in_pixel =
+      conversion_data.ZoomedComputedPixels(word_spacing_, word_spacing_unit_);
+  font_description.SetWordSpacing(word_spacing_in_pixel);
+
+  // Convert letter spacing to pixel length and set it in font_description.
+  float letter_spacing_in_pixel = conversion_data.ZoomedComputedPixels(
+      letter_spacing_, letter_spacing_unit_);
+  font_description.SetLetterSpacing(letter_spacing_in_pixel);
+
   font_ = Font(font_description, selector);
   realized_font_ = true;
   if (selector)
@@ -358,7 +410,7 @@ void CanvasRenderingContext2DState::ValidateFilterState() const {
 }
 
 sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
-    IntSize canvas_size,
+    gfx::Size canvas_size,
     BaseRenderingContext2D* context) {
   ValidateFilterState();
   if (filter_state_ != FilterState::kUnresolved)
@@ -382,7 +434,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
   stroke_flags_for_filter.setColor(stroke_style_->PaintColor());
 
   FilterEffectBuilder filter_effect_builder(
-      FloatRect((FloatPoint()), FloatSize(canvas_size)),
+      gfx::RectF(gfx::SizeF(canvas_size)),
       1.0f,  // Deliberately ignore zoom on the canvas element.
       &fill_flags_for_filter, &stroke_flags_for_filter);
 
@@ -402,7 +454,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
 
 sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     Element* style_resolution_host,
-    IntSize canvas_size,
+    gfx::Size canvas_size,
     CanvasRenderingContext2D* context) {
   // TODO(1189879): Investigate refactoring all filter logic into the
   // CanvasFilterOperationResolver class
@@ -415,45 +467,33 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
   if (canvas_filter_) {
     operations = canvas_filter_->Operations();
   } else {
-    // StyleResolverState cannot be used in frame-less documents.
-    if (!style_resolution_host->GetDocument().GetFrame())
+    Document& document = style_resolution_host->GetDocument();
+
+    // StyleResolver cannot be used in frame-less documents.
+    if (!document.GetFrame())
       return nullptr;
     // Update the filter value to the proper base URL if needed.
     if (css_filter_value_->MayContainUrl()) {
-      style_resolution_host->GetDocument().UpdateStyleAndLayout(
-          DocumentUpdateReason::kCanvas);
-      css_filter_value_->ReResolveUrl(style_resolution_host->GetDocument());
+      document.UpdateStyleAndLayout(DocumentUpdateReason::kCanvas);
+      css_filter_value_->ReResolveUrl(document);
     }
 
-    scoped_refptr<ComputedStyle> filter_style =
-        style_resolution_host->GetDocument()
-            .GetStyleResolver()
-            .CreateComputedStyle();
+    const Font* font = &font_for_filter_;
+
     // Must set font in case the filter uses any font-relative units (em, ex)
     // If font_for_filter_ was never set (ie frame-less documents) use base font
-    if (LIKELY(font_for_filter_.GetFontSelector())) {
-      filter_style->SetFont(font_for_filter_);
-    } else {
-      const ComputedStyle* computed_style =
-          style_resolution_host->GetDocument().GetComputedStyle();
-      if (computed_style) {
-        filter_style->SetFont(computed_style->GetFont());
+    if (UNLIKELY(!font_for_filter_.GetFontSelector())) {
+      if (const ComputedStyle* computed_style = document.GetComputedStyle()) {
+        font = &computed_style->GetFont();
       } else {
         return nullptr;
       }
     }
-    StyleResolverState resolver_state(style_resolution_host->GetDocument(),
-                                      *style_resolution_host,
-                                      StyleRequest(filter_style.get()));
-    resolver_state.SetStyle(filter_style);
 
-    StyleBuilder::ApplyProperty(
-        GetCSSPropertyFilter(), resolver_state,
-        ScopedCSSValue(*css_filter_value_,
-                       &style_resolution_host->GetDocument()));
-    resolver_state.LoadPendingResources();
+    DCHECK(font);
 
-    operations = filter_style->Filter();
+    operations = document.GetStyleResolver().ComputeFilterOperations(
+        style_resolution_host, *font, *css_filter_value_);
   }
 
   // We can't reuse m_fillFlags and m_strokeFlags for the filter, since these
@@ -466,7 +506,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
   stroke_flags_for_filter.setColor(stroke_style_->PaintColor());
 
   FilterEffectBuilder filter_effect_builder(
-      FloatRect((FloatPoint()), FloatSize(canvas_size)),
+      gfx::RectF(gfx::SizeF(canvas_size)),
       1.0f,  // Deliberately ignore zoom on the canvas element.
       &fill_flags_for_filter, &stroke_flags_for_filter);
 
@@ -488,23 +528,6 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
   return resolved_filter_;
 }
 
-bool CanvasRenderingContext2DState::HasFilterForOffscreenCanvas(
-    IntSize canvas_size,
-    BaseRenderingContext2D* context) {
-  // Checking for a non-null m_filterValue isn't sufficient, since this value
-  // might refer to a non-existent filter.
-  return !!GetFilterForOffscreenCanvas(canvas_size, context);
-}
-
-bool CanvasRenderingContext2DState::HasFilter(
-    Element* style_resolution_host,
-    IntSize canvas_size,
-    CanvasRenderingContext2D* context) {
-  // Checking for a non-null m_filterValue isn't sufficient, since this value
-  // might refer to a non-existent filter.
-  return !!GetFilter(style_resolution_host, canvas_size, context);
-}
-
 void CanvasRenderingContext2DState::ClearResolvedFilter() {
   resolved_filter_.reset();
   filter_state_ = (canvas_filter_ || css_filter_value_)
@@ -524,7 +547,7 @@ sk_sp<SkDrawLooper>& CanvasRenderingContext2DState::ShadowOnlyDrawLooper()
     const {
   if (!shadow_only_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
-    draw_looper_builder.AddShadow(shadow_offset_, clampTo<float>(shadow_blur_),
+    draw_looper_builder.AddShadow(shadow_offset_, ClampTo<float>(shadow_blur_),
                                   shadow_color_,
                                   DrawLooperBuilder::kShadowIgnoresTransforms,
                                   DrawLooperBuilder::kShadowRespectsAlpha);
@@ -537,7 +560,7 @@ sk_sp<SkDrawLooper>&
 CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper() const {
   if (!shadow_and_foreground_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
-    draw_looper_builder.AddShadow(shadow_offset_, clampTo<float>(shadow_blur_),
+    draw_looper_builder.AddShadow(shadow_offset_, ClampTo<float>(shadow_blur_),
                                   shadow_color_,
                                   DrawLooperBuilder::kShadowIgnoresTransforms,
                                   DrawLooperBuilder::kShadowRespectsAlpha);
@@ -553,8 +576,8 @@ sk_sp<PaintFilter>& CanvasRenderingContext2DState::ShadowOnlyImageFilter()
   if (!shadow_only_image_filter_) {
     const auto sigma = BlurRadiusToStdDev(shadow_blur_);
     shadow_only_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
-        shadow_offset_.Width(), shadow_offset_.Height(), sigma, sigma,
-        shadow_color_, ShadowMode::kDrawShadowOnly, nullptr);
+        shadow_offset_.x(), shadow_offset_.y(), sigma, sigma, shadow_color_,
+        ShadowMode::kDrawShadowOnly, nullptr);
   }
   return shadow_only_image_filter_;
 }
@@ -565,8 +588,8 @@ CanvasRenderingContext2DState::ShadowAndForegroundImageFilter() const {
   if (!shadow_and_foreground_image_filter_) {
     const auto sigma = BlurRadiusToStdDev(shadow_blur_);
     shadow_and_foreground_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
-        shadow_offset_.Width(), shadow_offset_.Height(), sigma, sigma,
-        shadow_color_, ShadowMode::kDrawShadowAndForeground, nullptr);
+        shadow_offset_.x(), shadow_offset_.y(), sigma, sigma, shadow_color_,
+        ShadowMode::kDrawShadowAndForeground, nullptr);
   }
   return shadow_and_foreground_image_filter_;
 }
@@ -579,17 +602,17 @@ void CanvasRenderingContext2DState::ShadowParameterChanged() {
 }
 
 void CanvasRenderingContext2DState::SetShadowOffsetX(double x) {
-  shadow_offset_.SetWidth(clampTo<float>(x));
+  shadow_offset_.set_x(ClampTo<float>(x));
   ShadowParameterChanged();
 }
 
 void CanvasRenderingContext2DState::SetShadowOffsetY(double y) {
-  shadow_offset_.SetHeight(clampTo<float>(y));
+  shadow_offset_.set_y(ClampTo<float>(y));
   ShadowParameterChanged();
 }
 
 void CanvasRenderingContext2DState::SetShadowBlur(double shadow_blur) {
-  shadow_blur_ = clampTo<float>(shadow_blur);
+  shadow_blur_ = ClampTo<float>(shadow_blur);
   ShadowParameterChanged();
 }
 
@@ -633,11 +656,11 @@ bool CanvasRenderingContext2DState::ImageSmoothingEnabled() const {
 void CanvasRenderingContext2DState::SetImageSmoothingQuality(
     const String& quality_string) {
   if (quality_string == "low") {
-    image_smoothing_quality_ = kLow_SkFilterQuality;
+    image_smoothing_quality_ = cc::PaintFlags::FilterQuality::kLow;
   } else if (quality_string == "medium") {
-    image_smoothing_quality_ = kMedium_SkFilterQuality;
+    image_smoothing_quality_ = cc::PaintFlags::FilterQuality::kMedium;
   } else if (quality_string == "high") {
-    image_smoothing_quality_ = kHigh_SkFilterQuality;
+    image_smoothing_quality_ = cc::PaintFlags::FilterQuality::kHigh;
   } else {
     return;
   }
@@ -646,11 +669,11 @@ void CanvasRenderingContext2DState::SetImageSmoothingQuality(
 
 String CanvasRenderingContext2DState::ImageSmoothingQuality() const {
   switch (image_smoothing_quality_) {
-    case kLow_SkFilterQuality:
+    case cc::PaintFlags::FilterQuality::kLow:
       return "low";
-    case kMedium_SkFilterQuality:
+    case cc::PaintFlags::FilterQuality::kMedium:
       return "medium";
-    case kHigh_SkFilterQuality:
+    case cc::PaintFlags::FilterQuality::kHigh:
       return "high";
     default:
       NOTREACHED();
@@ -660,22 +683,17 @@ String CanvasRenderingContext2DState::ImageSmoothingQuality() const {
 
 void CanvasRenderingContext2DState::UpdateFilterQuality() const {
   if (!image_smoothing_enabled_) {
-    UpdateFilterQualityWithSkFilterQuality(kNone_SkFilterQuality);
+    UpdateFilterQuality(cc::PaintFlags::FilterQuality::kNone);
   } else {
-    UpdateFilterQualityWithSkFilterQuality(image_smoothing_quality_);
+    UpdateFilterQuality(image_smoothing_quality_);
   }
 }
 
-void CanvasRenderingContext2DState::UpdateFilterQualityWithSkFilterQuality(
-    const SkFilterQuality& filter_quality) const {
+void CanvasRenderingContext2DState::UpdateFilterQuality(
+    cc::PaintFlags::FilterQuality filter_quality) const {
   stroke_flags_.setFilterQuality(filter_quality);
   fill_flags_.setFilterQuality(filter_quality);
   image_flags_.setFilterQuality(filter_quality);
-}
-
-bool CanvasRenderingContext2DState::ShouldDrawShadows() const {
-  return AlphaChannel(shadow_color_) &&
-         (shadow_blur_ || !shadow_offset_.IsZero());
 }
 
 const PaintFlags* CanvasRenderingContext2DState::GetFlags(
@@ -750,23 +768,41 @@ bool CanvasRenderingContext2DState::PatternIsAccelerated(
   return Style(paint_type)->GetCanvasPattern()->GetPattern()->IsTextureBacked();
 }
 
-void CanvasRenderingContext2DState::SetTextLetterSpacing(
-    float letter_spacing,
-    FontSelector* selector) {
+void CanvasRenderingContext2DState::SetLetterSpacing(
+    const String& letter_spacing) {
   DCHECK(realized_font_);
-  FontDescription font_description(GetFontDescription());
-  font_description.SetLetterSpacing(letter_spacing);
-  letter_spacing_ = letter_spacing;
-  SetFont(font_description, selector);
+  if (unparsed_letter_spacing_ == letter_spacing)
+    return;
+  float num_spacing;
+  CSSPrimitiveValue::UnitType unit;
+  if (!StringToNumWithUnit(letter_spacing, &num_spacing, &unit))
+    return;
+
+  if (unit == letter_spacing_unit_ && num_spacing == letter_spacing_)
+    return;
+
+  letter_spacing_unit_ = unit;
+  letter_spacing_ = num_spacing;
+  unparsed_letter_spacing_ = letter_spacing;
+  SetFont(GetFontDescription(), font_.GetFontSelector());
 }
 
-void CanvasRenderingContext2DState::SetTextWordSpacing(float word_spacing,
-                                                       FontSelector* selector) {
+void CanvasRenderingContext2DState::SetWordSpacing(const String& word_spacing) {
   DCHECK(realized_font_);
-  FontDescription font_description(GetFontDescription());
-  font_description.SetWordSpacing(word_spacing);
-  word_spacing_ = word_spacing;
-  SetFont(font_description, selector);
+  if (unparsed_word_spacing_ == word_spacing)
+    return;
+  float num_spacing;
+  CSSPrimitiveValue::UnitType unit;
+  if (!StringToNumWithUnit(word_spacing, &num_spacing, &unit))
+    return;
+
+  if (unit == word_spacing_unit_ && num_spacing == word_spacing_)
+    return;
+
+  word_spacing_unit_ = unit;
+  word_spacing_ = num_spacing;
+  unparsed_word_spacing_ = word_spacing;
+  SetFont(GetFontDescription(), font_.GetFontSelector());
 }
 
 void CanvasRenderingContext2DState::SetTextRendering(

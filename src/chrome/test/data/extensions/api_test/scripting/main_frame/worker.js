@@ -4,7 +4,6 @@
 
 const NEW_TITLE_FROM_FUNCTION = 'Hello, world!';
 const NEW_TITLE_FROM_FILE = 'Goodnight';
-const EXACTLY_ONE_FILE_ERROR = 'Error: Exactly one file must be specified.';
 
 function injectedFunction() {
   // NOTE(devlin): We currently need to (re)hard-code this title, since the
@@ -22,6 +21,18 @@ function injectedFunctionWithArgument(newTitle) {
 function echoArguments() {
   const args = Array.from(arguments);
   return args;
+}
+
+// A helper function to return "flags" set by scripts in the isolated and main
+// worlds. Note that the main world script flag is set by a script in the html
+// file.
+function getExecutionWorldFlags() {
+  // Note: We use '<none>' here because undefined and null values aren't
+  // preserved in return results from executeScript() calls.
+  return {
+    isolatedWorld: window.isolatedWorldFlag || '<none>',
+    mainWorld: window.mainWorldFlag || '<none>',
+  };
 }
 
 async function getSingleTab(query) {
@@ -167,6 +178,85 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
 
+  async function scriptsInjectIntoSameIsolatedWorld() {
+    const query = {url: 'http://example.com/*'};
+    let tab = await getSingleTab(query);
+    const target = {tabId: tab.id};
+    // When `world` is unspecified, it defaults to an isolated world.
+    await chrome.scripting.executeScript({
+      target: target,
+      func: () => { window.isolatedWorldFlag = 'from isolated world' },
+    });
+    let results = await chrome.scripting.executeScript({
+      target: target,
+      func: getExecutionWorldFlags,
+    });
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq(
+        {isolatedWorld: 'from isolated world', mainWorld: '<none>'},
+        results[0].result);
+
+    // Subsequent scripts should execute in the same isolated world.
+    results = await chrome.scripting.executeScript({
+      target: target,
+      func: getExecutionWorldFlags,
+      world: chrome.scripting.ExecutionWorld.ISOLATED,
+    });
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq(
+        {isolatedWorld: 'from isolated world', mainWorld: '<none>'},
+        results[0].result);
+
+    chrome.test.succeed();
+  },
+
+  async function scriptsCanRunInMainWorld() {
+    const query = {url: 'http://example.com/*'};
+    let tab = await getSingleTab(query);
+    const target = {tabId: tab.id};
+    // Set a flag in the isolated world.
+    await chrome.scripting.executeScript({
+      target: target,
+      func: () => { window.isolatedWorldFlag = 'from isolated world' },
+    });
+
+    // The script executing in the main world should not see the flag from the
+    // isolated world, but should see the one the page set in the main world.
+    const results = await chrome.scripting.executeScript({
+      target: target,
+      func: getExecutionWorldFlags,
+      world: chrome.scripting.ExecutionWorld.MAIN,
+    });
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq(
+        {isolatedWorld: '<none>', mainWorld: 'from main world'},
+        results[0].result);
+
+    chrome.test.succeed();
+  },
+
+  async function promisesAreResolved() {
+    const query = {url: 'http://example.com/*'};
+    let tab = await getSingleTab(query);
+    const target = {tabId: tab.id};
+
+    const promiseFunc = async () => {
+      // Return a promise that resolves asynchronously.
+      let result = await new Promise((r) => {
+        setTimeout(r, 50, 'Hello, World!');
+      });
+      return result;
+    };
+    const results = await chrome.scripting.executeScript({
+      target: target,
+      func: promiseFunc,
+    });
+
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq('Hello, World!', results[0].result);
+    chrome.test.succeed();
+  },
+
   async function injectedFunctionHasError() {
     const query = {url: 'http://example.com/*'};
     let tab = await getSingleTab(query);
@@ -210,6 +300,28 @@ chrome.test.runTests([
     chrome.test.assertEq(newTitle, results[0].result);
     tab = await getSingleTab(query);
     chrome.test.assertEq(newTitle, tab.title);
+    chrome.test.succeed();
+  },
+
+  async function multipleFilesSpecified() {
+    const query = {url: 'http://example.com/*'};
+    let tab = await getSingleTab(query);
+    // Double-check that the title is not the one from the script file to be
+    // injected.
+    chrome.test.assertFalse(tab.title == NEW_TITLE_FROM_FILE);
+    const results = await chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id,
+      },
+      files: ['script_file.js', 'script_file2.js'],
+    });
+    // The call injected two scripts; the first changes the title, and the
+    // second reports it plus a suffix. This checks that both scripts inject
+    // and that the order was preserved (since the first sets the title used
+    // in the second).
+    chrome.test.assertEq(1, results.length);
+    chrome.test.assertEq(NEW_TITLE_FROM_FILE + ' From Second Script',
+                         results[0].result);
     chrome.test.succeed();
   },
 
@@ -267,11 +379,11 @@ chrome.test.runTests([
           },
           files: [],
         }),
-        EXACTLY_ONE_FILE_ERROR);
+        'Error: At least one file must be specified.');
     chrome.test.succeed();
   },
 
-  async function multipleFilesSpecified() {
+  async function duplicateFilesSpecified() {
     const query = {url: 'http://example.com/*'};
     let tab = await getSingleTab(query);
     await chrome.test.assertPromiseRejects(
@@ -279,9 +391,19 @@ chrome.test.runTests([
           target: {
             tabId: tab.id,
           },
-          files: ['script_file.js', 'script_file2.js'],
+          files: ['script_file.js', 'script_file.js'],
         }),
-        EXACTLY_ONE_FILE_ERROR);
+        `Error: Duplicate file specified: 'script_file.js'.`);
+
+    // Try again with a preceding slash.
+    await chrome.test.assertPromiseRejects(
+        chrome.scripting.executeScript({
+          target: {
+            tabId: tab.id,
+          },
+          files: ['script_file.js', '/script_file.js'],
+        }),
+        `Error: Duplicate file specified: '/script_file.js'.`);
     chrome.test.succeed();
   },
 

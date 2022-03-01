@@ -10,7 +10,6 @@
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -25,7 +24,7 @@
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
+#import "ios/web_view/internal/sync/web_view_sync_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
@@ -51,7 +50,7 @@ std::unique_ptr<WebViewAutofillClientIOS> WebViewAutofillClientIOS::Create(
           browser_state->GetRecordingBrowserState()),
       ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
           browser_state->GetRecordingBrowserState()),
-      ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
+      ios_web_view::WebViewSyncServiceFactory::GetForBrowserState(
           browser_state),
       // TODO(crbug.com/928595): Replace the closure with a callback to the
       // renderer that indicates if log messages should be sent from the

@@ -32,7 +32,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
@@ -57,6 +56,7 @@
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/core/script_type_names.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
@@ -64,7 +64,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -107,6 +107,10 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
  public:
   explicit GetRegistrationCallback(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
+
+  GetRegistrationCallback(const GetRegistrationCallback&) = delete;
+  GetRegistrationCallback& operator=(const GetRegistrationCallback&) = delete;
+
   ~GetRegistrationCallback() override = default;
 
   void OnSuccess(WebServiceWorkerRegistrationObjectInfo info) override {
@@ -132,7 +136,6 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
 
  private:
   Persistent<ScriptPromiseResolver> resolver_;
-  DISALLOW_COPY_AND_ASSIGN(GetRegistrationCallback);
 };
 
 }  // namespace
@@ -221,7 +224,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   // TODO(crbug.com/824647): Remove this check after module loading for
   // ServiceWorker is enabled by default.
-  if (options->type() == "module" &&
+  if (options->type() == script_type_names::kModule &&
       !RuntimeEnabledFeatures::ModuleServiceWorkerEnabled()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
@@ -572,16 +575,17 @@ ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
   if (info.registration_id == mojom::blink::kInvalidServiceWorkerRegistrationId)
     return nullptr;
 
-  ServiceWorkerRegistration* registration =
-      service_worker_registration_objects_.at(info.registration_id);
-  if (registration) {
+  auto it = service_worker_registration_objects_.find(info.registration_id);
+  if (it != service_worker_registration_objects_.end()) {
+    ServiceWorkerRegistration* registration = it->value;
     registration->Attach(std::move(info));
     return registration;
   }
 
   const int64_t registration_id = info.registration_id;
-  registration = MakeGarbageCollected<ServiceWorkerRegistration>(
-      GetSupplementable()->GetExecutionContext(), std::move(info));
+  ServiceWorkerRegistration* registration =
+      MakeGarbageCollected<ServiceWorkerRegistration>(
+          GetSupplementable()->GetExecutionContext(), std::move(info));
   service_worker_registration_objects_.Set(registration_id, registration);
   return registration;
 }
@@ -590,13 +594,15 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
     WebServiceWorkerObjectInfo info) {
   if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
     return nullptr;
-  ServiceWorker* worker = service_worker_objects_.at(info.version_id);
-  if (!worker) {
-    const int64_t version_id = info.version_id;
-    worker = ServiceWorker::Create(GetSupplementable()->GetExecutionContext(),
-                                   std::move(info));
-    service_worker_objects_.Set(version_id, worker);
-  }
+
+  auto it = service_worker_objects_.find(info.version_id);
+  if (it != service_worker_objects_.end())
+    return it->value;
+
+  const int64_t version_id = info.version_id;
+  ServiceWorker* worker = ServiceWorker::Create(
+      GetSupplementable()->GetExecutionContext(), std::move(info));
+  service_worker_objects_.Set(version_id, worker);
   return worker;
 }
 

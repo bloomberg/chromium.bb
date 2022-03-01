@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "content/test/content_test_suite.h"
+#include "base/memory/raw_ptr.h"
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
@@ -35,6 +35,10 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
  public:
   TestInitializationListener() : test_content_client_initializer_(nullptr) {}
 
+  TestInitializationListener(const TestInitializationListener&) = delete;
+  TestInitializationListener& operator=(const TestInitializationListener&) =
+      delete;
+
   void OnTestStart(const testing::TestInfo& test_info) override {
     test_content_client_initializer_ =
         new content::TestContentClientInitializer();
@@ -45,9 +49,8 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
   }
 
  private:
-  content::TestContentClientInitializer* test_content_client_initializer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInitializationListener);
+  raw_ptr<content::TestContentClientInitializer>
+      test_content_client_initializer_;
 };
 
 }  // namespace

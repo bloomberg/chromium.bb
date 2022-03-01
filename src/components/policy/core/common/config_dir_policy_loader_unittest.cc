@@ -11,10 +11,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/configuration_policy_provider_test.h"
@@ -33,6 +32,8 @@ const base::FilePath::CharType kMandatoryPath[] = FILE_PATH_LITERAL("managed");
 class TestHarness : public PolicyProviderTestHarness {
  public:
   TestHarness();
+  TestHarness(const TestHarness&) = delete;
+  TestHarness& operator=(const TestHarness&) = delete;
   ~TestHarness() override;
 
   void SetUp() override;
@@ -50,9 +51,8 @@ class TestHarness : public PolicyProviderTestHarness {
                             bool policy_value) override;
   void InstallStringListPolicy(const std::string& policy_name,
                                const base::ListValue* policy_value) override;
-  void InstallDictionaryPolicy(
-      const std::string& policy_name,
-      const base::DictionaryValue* policy_value) override;
+  void InstallDictionaryPolicy(const std::string& policy_name,
+                               const base::Value* policy_value) override;
   void Install3rdPartyPolicy(const base::DictionaryValue* policies) override;
 
   const base::FilePath& test_dir() { return test_dir_.GetPath(); }
@@ -70,8 +70,6 @@ class TestHarness : public PolicyProviderTestHarness {
  private:
   base::ScopedTempDir test_dir_;
   int next_policy_file_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
 
 TestHarness::TestHarness()
@@ -123,15 +121,14 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   base::DictionaryValue dict;
-  dict.Set(policy_name, std::make_unique<base::Value>(policy_value->Clone()));
+  dict.SetKey(policy_name, policy_value->Clone());
   WriteConfigFile(dict, NextConfigFileName());
 }
 
-void TestHarness::InstallDictionaryPolicy(
-    const std::string& policy_name,
-    const base::DictionaryValue* policy_value) {
+void TestHarness::InstallDictionaryPolicy(const std::string& policy_name,
+                                          const base::Value* policy_value) {
   base::DictionaryValue dict;
-  dict.Set(policy_name, std::make_unique<base::Value>(policy_value->Clone()));
+  dict.SetKey(policy_name, policy_value->Clone());
   WriteConfigFile(dict, NextConfigFileName());
 }
 

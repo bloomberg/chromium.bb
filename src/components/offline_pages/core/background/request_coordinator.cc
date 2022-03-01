@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/background/offliner.h"
@@ -35,8 +34,8 @@ namespace offline_pages {
 namespace {
 const bool kUserRequest = true;
 const bool kStartOfProcessing = true;
-constexpr base::TimeDelta kMinDuration = base::TimeDelta::FromSeconds(1);
-constexpr base::TimeDelta kMaxDuration = base::TimeDelta::FromDays(7);
+constexpr base::TimeDelta kMinDuration = base::Seconds(1);
+constexpr base::TimeDelta kMaxDuration = base::Days(7);
 const int kDurationBuckets = 50;
 const int kDisabledTaskRecheckSeconds = 5;
 
@@ -104,7 +103,7 @@ void RecordStartTimeUMA(const SavePageRequest& request) {
   base::TimeDelta duration = OfflineTimeNow() - request.creation_time();
   base::UmaHistogramCustomTimes(
       AddHistogramSuffix(request.client_id(), histogram_name.c_str()), duration,
-      base::TimeDelta::FromMilliseconds(100), base::TimeDelta::FromDays(7), 50);
+      base::Milliseconds(100), base::Days(7), 50);
 }
 
 void RecordCancelTimeUMA(const SavePageRequest& canceled_request) {
@@ -773,11 +772,11 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
 
   base::TimeDelta processing_time_budget;
   if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
-    processing_time_budget = base::TimeDelta::FromSeconds(
+    processing_time_budget = base::Seconds(
         policy_->GetProcessingTimeBudgetWhenBackgroundScheduledInSeconds());
   } else {
     DCHECK(processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW);
-    processing_time_budget = base::TimeDelta::FromSeconds(
+    processing_time_budget = base::Seconds(
         policy_->GetProcessingTimeBudgetForImmediateLoadInSeconds());
   }
 
@@ -972,10 +971,10 @@ void RequestCoordinator::StartOffliner(int64_t request_id,
 
   base::TimeDelta timeout;
   if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
-    timeout = base::TimeDelta::FromSeconds(
+    timeout = base::Seconds(
         policy_->GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds());
   } else {
-    timeout = base::TimeDelta::FromSeconds(
+    timeout = base::Seconds(
         policy_->GetSinglePageTimeLimitForImmediateLoadInSeconds());
   }
   // Start the load and save process in the offliner (Async).

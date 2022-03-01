@@ -27,7 +27,14 @@ _NAMED_TYPE_INFO = {
     'invalid': [
       'PowerPreference::kNumPowerPreferences',
     ],
-  }
+  },
+  'MailboxFlags': {
+    'type': 'MailboxFlags',
+    'valid': [
+      'WEBGPU_MAILBOX_NONE',
+      'WEBGPU_MAILBOX_DISCARD',
+    ],
+  },
 }
 
 # A function info object specifies the type and other special data for the
@@ -63,10 +70,15 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
   },
+  'DissociateMailboxForPresent': {
+    'impl_func': False,
+    'client_test': False,
+  },
   'RequestAdapter': {
     'impl_func': False,
     'internal': True,
-    'cmd_args': 'uint64_t request_adapter_serial, uint32_t power_preference'
+    'cmd_args': 'uint64_t request_adapter_serial, uint32_t power_preference, '
+                'bool force_fallback_adapter',
   },
   'RequestDevice': {
     'impl_func': False,
@@ -83,6 +95,10 @@ _FUNCTION_INFO = {
       'request_device_properties':
         'request_device_properties_size * sizeof(char)',
     },
+  },
+  'DestroyServer': {
+    'impl_func': False,
+    'internal': True,
   },
 }
 

@@ -9,12 +9,13 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/token.h"
+#include "media/capture/mojom/video_capture_types.mojom-shared.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -43,6 +44,9 @@ class WebString;
 class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
  public:
   WebVideoCaptureImplManager();
+  WebVideoCaptureImplManager(const WebVideoCaptureImplManager&) = delete;
+  WebVideoCaptureImplManager& operator=(const WebVideoCaptureImplManager&) =
+      delete;
   virtual ~WebVideoCaptureImplManager();
 
   // Open a device associated with the session ID.
@@ -148,8 +152,6 @@ class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
   // Bound to the render thread.
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebVideoCaptureImplManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebVideoCaptureImplManager);
 };
 
 }  // namespace blink

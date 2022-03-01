@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/gestures/layout_switcher_provider.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_animatee.h"
+#import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_animation_layout_providing.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
@@ -18,6 +19,8 @@
 @protocol GridCommands;
 @protocol GridDragDropHandler;
 @protocol GridImageDataSource;
+@protocol PriceCardDataSource;
+@protocol GridShareableItemsProvider;
 class GURL;
 @protocol IncognitoReauthCommands;
 @protocol IncognitoReauthConsumer;
@@ -67,18 +70,24 @@ enum class TabGridPageConfiguration {
 // Opens a link when the user clicks on the in-text link.
 - (void)openLinkWithURL:(const GURL&)URL;
 
+// YES to go fullscreen by hiding the thumbstrip bottom fake tab. NO to bring it
+// back.
+- (void)showFullscreen:(BOOL)fullscreen;
+
 @end
 
 // View controller representing a tab switcher. The tab switcher has an
 // incognito tab grid, regular tab grid, and remote tabs.
 @interface TabGridViewController
     : UIViewController <GridTransitionAnimationLayoutProviding,
+                        IncognitoReauthObserver,
                         LayoutSwitcherProvider,
                         TabGridPaging,
                         ThumbStripSupporting>
 
 @property(nonatomic, weak) id<ApplicationCommands> handler;
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
+@property(nonatomic, weak) IncognitoReauthSceneAgent* reauthAgent;
 // Handlers for popup menu commands for the regular and incognito states.
 @property(nonatomic, weak) id<PopupMenuCommands> regularPopupMenuHandler;
 @property(nonatomic, weak) id<PopupMenuCommands> incognitoPopupMenuHandler;
@@ -109,6 +118,14 @@ enum class TabGridPageConfiguration {
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
 
+// Data source for acquiring data which power the PriceCardView
+@property(nonatomic, weak) id<PriceCardDataSource> priceCardDataSource;
+
+@property(nonatomic, weak) id<GridShareableItemsProvider>
+    regularTabsShareableItemsProvider;
+@property(nonatomic, weak) id<GridShareableItemsProvider>
+    incognitoTabsShareableItemsProvider;
+
 // An optional object to be notified whenever the trait collection of this view
 // controller changes.
 @property(nonatomic, weak) id<ViewControllerTraitCollectionObserver>
@@ -128,9 +145,9 @@ enum class TabGridPageConfiguration {
 
 // Provides the context menu for the tabs on the grid.
 @property(nonatomic, weak) id<GridContextMenuProvider>
-    regularTabsContextMenuProvider API_AVAILABLE(ios(13.0));
+    regularTabsContextMenuProvider;
 @property(nonatomic, weak) id<GridContextMenuProvider>
-    incognitoTabsContextMenuProvider API_AVAILABLE(ios(13.0));
+    incognitoTabsContextMenuProvider;
 
 // Init with tab grid view configuration, which decides which sub view
 // controller should be added.
@@ -152,10 +169,6 @@ enum class TabGridPageConfiguration {
 - (void)contentWillAppearAnimated:(BOOL)animated;
 - (void)contentDidAppear;
 - (void)contentWillDisappearAnimated:(BOOL)animated;
-
-// Notifies the ViewController that the Close All Tabs confirmation action sheet
-// has been closed.
-- (void)closeAllTabsConfirmationClosed;
 
 // Dismisses any modal UI which may be presented.
 - (void)dismissModals;

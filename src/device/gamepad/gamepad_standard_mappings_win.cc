@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <iterator>
 
-#include "base/macros.h"
-#include "base/stl_util.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 
@@ -515,15 +513,15 @@ constexpr struct MappingData {
     // Stadia Controller
     {GamepadId::kGoogleProduct9400, MapperStadiaController},
     // Moga Pro Controller (HID mode)
-    {GamepadId::kVendor20d6Product6271, MapperMogaPro},
+    {GamepadId::kBdaProduct6271, MapperMogaPro},
     // OnLive Controller (Bluetooth)
-    {GamepadId::kVendor2378Product1008, MapperOnLiveWireless},
+    {GamepadId::kOnLiveProduct1008, MapperOnLiveWireless},
     // OnLive Controller (Wired)
-    {GamepadId::kVendor2378Product100a, MapperOnLiveWireless},
+    {GamepadId::kOnLiveProduct100a, MapperOnLiveWireless},
     // OUYA Controller
-    {GamepadId::kVendor2836Product0001, MapperOUYA},
+    {GamepadId::kOuyaProduct0001, MapperOUYA},
     // SCUF Vantage, SCUF Vantage 2
-    {GamepadId::kVendor2e95Product7725, MapperDualshock4},
+    {GamepadId::kScufProduct7725, MapperDualshock4},
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype

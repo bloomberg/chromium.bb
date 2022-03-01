@@ -31,10 +31,12 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -166,7 +168,7 @@ void ParseJsonDelayed(const std::string& json,
       FROM_HERE,
       base::BindOnce(&ParseJson, json, std::move(success_callback),
                      std::move(error_callback)),
-      base::TimeDelta::FromMilliseconds(kTestJsonParsingLatencyMs));
+      base::Milliseconds(kTestJsonParsingLatencyMs));
 }
 
 }  // namespace
@@ -185,6 +187,10 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
         utils_.pref_service(), base::DefaultClock::GetInstance());
     ResetFetcher();
   }
+  RemoteSuggestionsFetcherImplTest(const RemoteSuggestionsFetcherImplTest&) =
+      delete;
+  RemoteSuggestionsFetcherImplTest& operator=(
+      const RemoteSuggestionsFetcherImplTest&) = delete;
 
   ~RemoteSuggestionsFetcherImplTest() override {}
 
@@ -204,7 +210,10 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
     fetcher_->SetClockForTesting(task_environment_.GetMockClock());
   }
 
-  void SignIn() { identity_test_env_.MakePrimaryAccountAvailable(kTestEmail); }
+  void SignIn() {
+    identity_test_env_.MakePrimaryAccountAvailable(kTestEmail,
+                                                   signin::ConsentLevel::kSync);
+  }
 
   RemoteSuggestionsFetcher::SnippetsAvailableCallback
   ToSnippetsAvailableCallback(MockSnippetsAvailableCallback* callback) {
@@ -262,13 +271,13 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
  private:
   test::RemoteSuggestionsTestUtils utils_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::unique_ptr<RemoteSuggestionsFetcherImpl> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;
   GURL test_url_;
   base::HistogramTester histogram_tester_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherImplTest);
 };
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldNotFetchOnCreation) {

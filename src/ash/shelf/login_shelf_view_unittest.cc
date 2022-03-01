@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
@@ -61,6 +62,10 @@ void ExpectNotFocused(views::View* view) {
 class LoginShelfViewTest : public LoginTestBase {
  public:
   LoginShelfViewTest() = default;
+
+  LoginShelfViewTest(const LoginShelfViewTest&) = delete;
+  LoginShelfViewTest& operator=(const LoginShelfViewTest&) = delete;
+
   ~LoginShelfViewTest() override = default;
 
   void SetUp() override {
@@ -111,12 +116,6 @@ class LoginShelfViewTest : public LoginTestBase {
     event_generator->ClickLeftButton();
 
     base::RunLoop().RunUntilIdle();
-  }
-
-  void SendKey(ui::KeyboardCode key_code, int flags) {
-    auto* generator = GetEventGenerator();
-    generator->PressKey(key_code, flags);
-    generator->ReleaseKey(key_code, flags);
   }
 
   // Checks if the shelf is only showing the buttons in the list. The IDs in
@@ -170,8 +169,6 @@ class LoginShelfViewTest : public LoginTestBase {
   // |CreateActionBackgroundController|.
   TestLockScreenActionBackgroundController* action_background_controller_ =
       nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginShelfViewTest);
 };
 
 // Checks the login shelf updates UI after session state changes.
@@ -594,19 +591,19 @@ TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
       login_shelf_view_->GetViewByID(LoginShelfView::kShutdown)->HasFocus());
 
   // Focus from the first button to the second button.
-  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB);
   ExpectFocused(shelf);
   ExpectNotFocused(status_area);
   EXPECT_TRUE(
       login_shelf_view_->GetViewByID(LoginShelfView::kSignOut)->HasFocus());
 
   // Focus from the second button to the status area.
-  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB);
   ExpectNotFocused(shelf);
   ExpectFocused(status_area);
 
   // A single shift+tab brings focus back to the second shelf button.
-  SendKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ExpectFocused(shelf);
   ExpectNotFocused(status_area);
   EXPECT_TRUE(
@@ -688,8 +685,8 @@ TEST_F(LoginShelfViewTest, ShelfWidgetStackedAtBottomInActiveSession) {
 
   // Move focus away from the shelf, to verify the shelf widget stacking is
   // updated even if the widget is not active when the session state changes.
-  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
-  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB);
 
   ExpectNotFocused(shelf_widget->GetContentsView());
 
@@ -745,7 +742,7 @@ TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 }
 
-TEST_F(LoginShelfViewTest, EnterpriseEnrollmentButtonVisbility) {
+TEST_F(LoginShelfViewTest, EnterpriseEnrollmentButtonVisibility) {
   // Enterprise enrollment button should only be available when user creation
   // screen is shown in OOBE.
   login_shelf_view_->SetLoginDialogState(OobeDialogState::USER_CREATION);
@@ -770,6 +767,23 @@ TEST_F(LoginShelfViewTest, EnterpriseEnrollmentButtonVisbility) {
   NotifySessionStateChanged(SessionState::LOGIN_SECONDARY);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kCancel}));
+}
+
+TEST_F(LoginShelfViewTest, OsInstallButtonHidden) {
+  // OS Install Button should be hidden if the kAllowOsInstall switch is
+  // not set.
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+
+  login_shelf_view_->SetIsFirstSigninStep(/*is_first=*/true);
+  SetUserCount(0);
+  // When no user pods are visible, the Gaia dialog would normally pop up. We
+  // need to simulate that behavior in this test.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
+  EXPECT_TRUE(ShowsShelfButtons(
+      {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest}));
 }
 
 TEST_F(LoginShelfViewTest, TapShutdownWithSwipeDetectionEnabledOnLogin) {
@@ -810,11 +824,11 @@ TEST_F(LoginShelfViewTest, MouseWheelOnLoginShelf) {
 
     event_generator->MoveMouseWheel(/*delta_x=*/0, 100);
     EXPECT_EQ(shelf_bounds, shelf_widget->GetWindowBoundsInScreen());
-    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(absl::nullopt));
+    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
 
     event_generator->MoveMouseWheel(/*delta_x=*/0, -100);
     EXPECT_EQ(shelf_bounds, shelf_widget->GetWindowBoundsInScreen());
-    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(absl::nullopt));
+    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
   };
 
   for (const auto& location : kLocations) {
@@ -885,6 +899,74 @@ TEST_F(LoginShelfViewTest, DisplayOff) {
   // This should go through.
   Click(LoginShelfView::kShutdown);
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
+}
+
+class OsInstallButtonTest : public LoginShelfViewTest {
+ public:
+  OsInstallButtonTest() = default;
+  ~OsInstallButtonTest() override = default;
+  OsInstallButtonTest(const OsInstallButtonTest&) = delete;
+  void operator=(const OsInstallButtonTest&) = delete;
+
+  void SetUp() override {
+    LoginShelfViewTest::SetUp();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAllowOsInstall);
+  }
+};
+
+TEST_F(OsInstallButtonTest, ClickOsInstallButton) {
+  auto client = std::make_unique<MockLoginScreenClient>();
+  EXPECT_CALL(*client, ShowOsInstallScreen);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+
+  Click(LoginShelfView::kOsInstall);
+}
+
+TEST_F(OsInstallButtonTest, OsInstallButtonVisibility) {
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons(
+      {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest,
+       LoginShelfView::kAddUser, LoginShelfView::kOsInstall}));
+
+  NotifySessionStateChanged(SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+
+  NotifySessionStateChanged(SessionState::ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+
+  NotifySessionStateChanged(SessionState::LOCKED);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+
+  NotifySessionStateChanged(SessionState::LOGIN_SECONDARY);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kCancel}));
+
+  // OS Install button should be shown if the user_creation dialog was
+  // shown during OOBE.
+  SetUserCount(0);
+  login_shelf_view_->SetIsFirstSigninStep(/*is_first=*/true);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::USER_CREATION);
+  NotifySessionStateChanged(SessionState::OOBE);
+  EXPECT_TRUE(ShowsShelfButtons(
+      {LoginShelfView::kShutdown, LoginShelfView::kEnterpriseEnrollment,
+       LoginShelfView::kBrowseAsGuest, LoginShelfView::kOsInstall}));
+
+  // When no user pods are visible, the Gaia dialog would normally pop up. We
+  // need to simulate that behavior in this test.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kOsInstall}));
+
+  // OS Install button should be hidden if the user_creation dialog was
+  // opened from the primary login screen.
+  SetUserCount(1);
+  login_shelf_view_->SetIsFirstSigninStep(/*is_first=*/false);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::USER_CREATION);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
 }  // namespace

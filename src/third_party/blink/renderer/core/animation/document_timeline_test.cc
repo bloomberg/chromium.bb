@@ -45,7 +45,8 @@
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 // NaN has the special property that NaN != NaN.
@@ -53,7 +54,7 @@
 
 namespace {
 base::TimeTicks TimeTicksFromMillisecondsD(double seconds) {
-  return base::TimeTicks() + base::TimeDelta::FromMillisecondsD(seconds);
+  return base::TimeTicks() + base::Milliseconds(seconds);
 }
 
 #define EXPECT_TIME_NEAR(expected, value)                              \
@@ -98,7 +99,7 @@ class TestDocumentTimeline : public DocumentTimeline {
 class AnimationDocumentTimelineTest : public PageTestBase {
  protected:
   void SetUp() override {
-    PageTestBase::SetUp(IntSize());
+    PageTestBase::SetUp(gfx::Size());
     document = &GetDocument();
     GetAnimationClock().ResetTimeForTesting();
     GetAnimationClock().SetAllowedToDynamicallyUpdateTime(false);
@@ -144,7 +145,7 @@ class AnimationDocumentTimelineTest : public PageTestBase {
 class AnimationDocumentTimelineRealTimeTest : public PageTestBase {
  protected:
   void SetUp() override {
-    PageTestBase::SetUp(IntSize());
+    PageTestBase::SetUp(gfx::Size());
     document = &GetDocument();
     timeline = document->Timeline();
     GetAnimationClock().SetAllowedToDynamicallyUpdateTime(false);
@@ -229,7 +230,7 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormalWithOriginTime) {
-  base::TimeDelta origin_time = base::TimeDelta::FromMilliseconds(-1000);
+  base::TimeDelta origin_time = base::Milliseconds(-1000);
   DocumentTimeline* timeline = MakeGarbageCollected<DocumentTimeline>(
       document.Get(), origin_time, platform_timing);
   timeline->ResetForTesting();
@@ -266,7 +267,7 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRatePause) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRatePauseWithOriginTime) {
-  base::TimeDelta origin_time = base::TimeDelta::FromMilliseconds(-1000);
+  base::TimeDelta origin_time = base::Milliseconds(-1000);
   DocumentTimeline* timeline = MakeGarbageCollected<DocumentTimeline>(
       document.Get(), origin_time, platform_timing);
   timeline->ResetForTesting();
@@ -331,7 +332,7 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFast) {
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
   DocumentTimeline* timeline = MakeGarbageCollected<DocumentTimeline>(
-      document.Get(), base::TimeDelta::FromSeconds(-1000), platform_timing);
+      document.Get(), base::Seconds(-1000), platform_timing);
   timeline->ResetForTesting();
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(100000));
@@ -361,7 +362,7 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
-  AnimationTimeDelta seek_time = AnimationTimeDelta::FromSecondsD(1);
+  AnimationTimeDelta seek_time = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
   timing.fill_mode = Timing::FillMode::FORWARDS;
   auto* anim1 = MakeGarbageCollected<KeyframeEffect>(
       element.Get(), CreateEmptyEffectModel(), timing);
@@ -371,27 +372,17 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8CSSNumberish* current_time = animation1->currentTime();
   EXPECT_NEAR(seek_time.InMillisecondsF(), current_time->GetAsDouble(),
               Animation::kTimeToleranceMs);
   current_time = animation2->currentTime();
   EXPECT_NEAR(seek_time.InMillisecondsF(), current_time->GetAsDouble(),
               Animation::kTimeToleranceMs);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  CSSNumberish current_time;
-  animation1->currentTime(current_time);
-  EXPECT_NEAR(seek_time.InMillisecondsF(), current_time.GetAsDouble(),
-              Animation::kTimeToleranceMs);
-  animation2->currentTime(current_time);
-  EXPECT_NEAR(seek_time.InMillisecondsF(), current_time.GetAsDouble(),
-              Animation::kTimeToleranceMs);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
-  timing.start_delay = AnimationTimeDelta::FromSecondsD(5);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(2);
+  timing.start_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(5);
 
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
       element.Get(), CreateEmptyEffectModel(), timing);
@@ -401,13 +392,13 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
   // TODO: Put the animation startTime in the future when we add the capability
   // to change animation startTime
   EXPECT_CALL(*platform_timing,
-              WakeAfter(base::TimeDelta::FromSecondsD(
-                  timing.start_delay.InSecondsF() - MinimumDelay())));
+              WakeAfter(base::Seconds(timing.start_delay.InSecondsF() -
+                                      MinimumDelay())));
   UpdateClockAndService(0);
 
   EXPECT_CALL(*platform_timing,
-              WakeAfter(base::TimeDelta::FromSecondsD(
-                  timing.start_delay.InSecondsF() - MinimumDelay() - 1.5)));
+              WakeAfter(base::Seconds(timing.start_delay.InSecondsF() -
+                                      MinimumDelay() - 1.5)));
   UpdateClockAndService(1500);
 
   timeline->ScheduleServiceOnNextFrame();
@@ -421,17 +412,13 @@ TEST_F(AnimationDocumentTimelineTest, UseAnimationAfterTimelineDeref) {
   Animation* animation = timeline->Play(nullptr);
   timeline.Clear();
   // Test passes if this does not crash.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
-  timing.start_delay = AnimationTimeDelta::FromSecondsD(5);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(2);
+  timing.start_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(5);
 
   DocumentTimeline* timeline = &document->Timeline();
   document = nullptr;
@@ -455,11 +442,11 @@ TEST_F(AnimationDocumentTimelineTest,
   // As long as we are inside the rendering loop, we shouldn't update even
   // across tasks.
   base::TimeTicks before_time = GetAnimationClock().CurrentTime();
-  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  test_clock.Advance(base::Seconds(1));
   EXPECT_EQ(GetAnimationClock().CurrentTime(), before_time);
 
   AnimationClock::NotifyTaskStart();
-  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  test_clock.Advance(base::Seconds(1));
   EXPECT_EQ(GetAnimationClock().CurrentTime(), before_time);
 
   // Once we leave the rendering loop, however, it is valid for the time to
@@ -469,7 +456,7 @@ TEST_F(AnimationDocumentTimelineTest,
 
   // The clock shouldn't tick again until we change task, however.
   base::TimeTicks current_time = GetAnimationClock().CurrentTime();
-  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  test_clock.Advance(base::Seconds(1));
   EXPECT_EQ(GetAnimationClock().CurrentTime(), current_time);
   AnimationClock::NotifyTaskStart();
   EXPECT_GT(GetAnimationClock().CurrentTime(), current_time);
@@ -484,7 +471,7 @@ TEST_F(AnimationDocumentTimelineRealTimeTest,
   EXPECT_FALSE(
       document->Loader()->GetTiming().ReferenceMonotonicTime().is_null());
 
-  base::TimeDelta origin_time = base::TimeDelta::FromSeconds(1000);
+  base::TimeDelta origin_time = base::Seconds(1000);
   DocumentTimeline* timeline =
       MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time);
   timeline->SetPlaybackRate(0.5);

@@ -7,13 +7,19 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_management_transition.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/account_manager_facade_factory.h"
-#include "chrome/browser/ash/account_manager/account_manager_migrator.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/arc/arc_optin_uma.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -34,15 +40,9 @@
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/account_manager_core/account_manager_facade.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_supervision_transition.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -143,55 +143,17 @@ bool IsPrimaryOrDeviceLocalAccount(
   if (user->IsDeviceLocalAccount())
     return true;
 
-  const absl::optional<AccountInfo> account_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name);
-  if (!account_info)
+  const AccountInfo account_info =
+      identity_manager->FindExtendedAccountInfoByEmailAddress(account_name);
+  if (account_info.IsEmpty())
     return false;
 
-  const std::string& gaia_id = account_info->gaia;
-  DCHECK(!gaia_id.empty());
-  return IsPrimaryGaiaAccount(gaia_id);
+  DCHECK(!account_info.gaia.empty());
+  return IsPrimaryGaiaAccount(account_info.gaia);
 }
 
-void TriggerAccountManagerMigrationsIfRequired(Profile* profile) {
-  if (!ash::IsAccountManagerAvailable(profile))
-    return;
-
-  ash::AccountManagerMigrator* const migrator =
-      ash::AccountManagerMigratorFactory::GetForBrowserContext(profile);
-  if (!migrator) {
-    // Migrator can be null for ephemeral and kiosk sessions. Ignore those cases
-    // since there are no accounts to be migrated in that case.
-    return;
-  }
-  const absl::optional<ash::AccountMigrationRunner::MigrationResult>
-      last_migration_run_result = migrator->GetLastMigrationRunResult();
-
-  if (!last_migration_run_result)
-    return;
-
-  if (last_migration_run_result->final_status !=
-      ash::AccountMigrationRunner::Status::kFailure) {
-    return;
-  }
-
-  if (last_migration_run_result->failed_step_id !=
-      ash::AccountManagerMigrator::kArcAccountsMigrationId) {
-    // Migrations failed but not because of ARC. ARC should not try to re-run
-    // migrations in this case.
-    return;
-  }
-
-  // Migrations are idempotent and safe to run multiple times. It may have
-  // happened that ARC migrations timed out at the start of the session. Give
-  // it a chance to run again.
-  migrator->Start();
-}
-
-// See //components/arc/mojom/auth.mojom RequestPrimaryAccount() for the spec.
-// See also go/arc-primary-account.
+// See //ash/components/arc/mojom/auth.mojom RequestPrimaryAccount() for the
+// spec. See also go/arc-primary-account.
 std::string GetAccountName(Profile* profile) {
   switch (GetAccountType(profile)) {
     case mojom::ChromeAccountType::USER_ACCOUNT:
@@ -278,16 +240,14 @@ void ArcAuthService::RequestPrimaryAccount(
 }
 
 void ArcAuthService::OnConnectionReady() {
-  // |TriggerAccountsPushToArc()| will not be triggered for the first session,
+  // `TriggerAccountsPushToArc()` will not be triggered for the first session,
   // when ARC has not been provisioned yet. For the first session, an account
-  // push will be triggered by |OnArcInitialStart()|, after a successful device
+  // push will be triggered by `OnArcInitialStart()`, after a successful device
   // provisioning.
-  // For the second and subsequent sessions,
-  // |ArcSessionManager::Get()->IsArcProvisioned()| will be |true|.
-  if (arc::IsArcProvisioned(profile_)) {
-    TriggerAccountManagerMigrationsIfRequired(profile_);
+  // For the second and subsequent sessions, `arc::IsArcProvisioned()` will be
+  // `true`.
+  if (arc::IsArcProvisioned(profile_))
     TriggerAccountsPushToArc(false /* filter_primary_account */);
-  }
 
   if (pending_get_arc_accounts_callback_)
     DispatchAccountsInArc(std::move(pending_get_arc_accounts_callback_));
@@ -348,22 +308,22 @@ void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,
   switch (metrics_type) {
     case mojom::MetricsType::NETWORK_WAITING_TIME_MILLISECONDS:
       UpdateAuthTiming("Arc.Auth.NetworkWait.TimeDelta",
-                       base::TimeDelta::FromMilliseconds(value), profile_);
+                       base::Milliseconds(value), profile_);
       break;
     case mojom::MetricsType::CHECKIN_ATTEMPTS:
       UpdateAuthCheckinAttempts(value, profile_);
       break;
     case mojom::MetricsType::CHECKIN_TIME_MILLISECONDS:
-      UpdateAuthTiming("Arc.Auth.Checkin.TimeDelta",
-                       base::TimeDelta::FromMilliseconds(value), profile_);
+      UpdateAuthTiming("Arc.Auth.Checkin.TimeDelta", base::Milliseconds(value),
+                       profile_);
       break;
     case mojom::MetricsType::SIGNIN_TIME_MILLISECONDS:
-      UpdateAuthTiming("Arc.Auth.SignIn.TimeDelta",
-                       base::TimeDelta::FromMilliseconds(value), profile_);
+      UpdateAuthTiming("Arc.Auth.SignIn.TimeDelta", base::Milliseconds(value),
+                       profile_);
       break;
     case mojom::MetricsType::ACCOUNT_CHECK_MILLISECONDS:
       UpdateAuthTiming("Arc.Auth.AccountCheck.TimeDelta",
-                       base::TimeDelta::FromMilliseconds(value), profile_);
+                       base::Milliseconds(value), profile_);
       break;
   }
 }
@@ -371,6 +331,14 @@ void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,
 void ArcAuthService::ReportAccountCheckStatus(
     mojom::AccountCheckStatus status) {
   UpdateAuthAccountCheckStatus(status, profile_);
+}
+
+void ArcAuthService::ReportAccountReauthReason(mojom::ReauthReason reason) {
+  UpdateAccountReauthReason(reason, profile_);
+}
+
+void ArcAuthService::ReportAndroidIdSource(mojom::AndroidIdSource source) {
+  UpdateAndroidIdSource(source, profile_);
 }
 
 void ArcAuthService::ReportManagementChangeStatus(
@@ -382,8 +350,8 @@ void ArcAuthService::ReportManagementChangeStatus(
     case mojom::ManagementChangeStatus::CLOUD_DPC_ENABLED:
     case mojom::ManagementChangeStatus::CLOUD_DPC_ALREADY_ENABLED:
       profile_->GetPrefs()->SetInteger(
-          prefs::kArcSupervisionTransition,
-          static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+          prefs::kArcManagementTransition,
+          static_cast<int>(ArcManagementTransition::NO_TRANSITION));
       // TODO(brunokim): notify potential observers.
       break;
     case mojom::ManagementChangeStatus::CLOUD_DPC_DISABLING_FAILED:
@@ -654,6 +622,16 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
                           std::string() /* auth_name */,
                           mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
                           true /* is_managed */));
+  } else if (arc::data_snapshotd::ArcDataSnapshotdManager::Get()->state() ==
+             arc::data_snapshotd::ArcDataSnapshotdManager::State::kRunning) {
+    // If MGS is running with a snapshotted data/, it could be offline.
+    const std::string& full_account_id = GetAccountName(profile_);
+    std::move(callback).Run(
+        mojom::ArcAuthCodeStatus::SUCCESS,
+        CreateAccountInfo(false /* is_enforced */,
+                          std::string() /* auth_info */, full_account_id,
+                          GetAccountType(profile_),
+                          policy_util::IsAccountManaged(profile_)));
   } else {
     // Send error to ARC.
     std::move(callback).Run(
@@ -665,11 +643,9 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     const std::string& account_name,
     RequestAccountInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  absl::optional<AccountInfo> account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name);
-  if (!account_info.has_value()) {
+  AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByEmailAddress(account_name);
+  if (account_info.IsEmpty()) {
     // Account is in ARC, but not in Chrome OS Account Manager.
     std::move(callback).Run(mojom::ArcAuthCodeStatus::CHROME_ACCOUNT_NOT_FOUND,
                             nullptr /* account_info */,
@@ -677,7 +653,7 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     return;
   }
 
-  const CoreAccountId& account_id = account_info->account_id;
+  const CoreAccountId& account_id = account_info.account_id;
   DCHECK(!account_id.empty());
 
   if (identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -722,16 +698,14 @@ void ArcAuthService::OnSecondaryAccountAuthCodeFetched(
     return;
   }
 
-  absl::optional<AccountInfo> account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name);
+  AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByEmailAddress(account_name);
   // Take care of the case when the user removes an account immediately after
   // adding/re-authenticating it.
-  if (account_info.has_value()) {
+  if (!account_info.IsEmpty()) {
     const bool is_persistent_error =
         identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
-            account_info->account_id);
+            account_info.account_id);
     std::move(callback).Run(
         mojom::ArcAuthCodeStatus::CHROME_SERVER_COMMUNICATION_ERROR,
         nullptr /* account_info */, is_persistent_error);
@@ -779,14 +753,12 @@ std::unique_ptr<ArcBackgroundAuthCodeFetcher>
 ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
     const CoreAccountId& account_id,
     bool initial_signin) {
-  absl::optional<AccountInfo> account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id);
-  DCHECK(account_info.has_value());
+  const AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
+  DCHECK(!account_info.IsEmpty());
   auto fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
       url_loader_factory_, profile_, account_id, initial_signin,
-      IsPrimaryGaiaAccount(account_info.value().gaia));
+      IsPrimaryGaiaAccount(account_info.gaia));
 
   return fetcher;
 }

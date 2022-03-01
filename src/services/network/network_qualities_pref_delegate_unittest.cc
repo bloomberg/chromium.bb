@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
@@ -28,12 +27,15 @@ class NetworkQualitiesPrefDelegateTest : public testing::Test {
   NetworkQualitiesPrefDelegateTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
+  NetworkQualitiesPrefDelegateTest(const NetworkQualitiesPrefDelegateTest&) =
+      delete;
+  NetworkQualitiesPrefDelegateTest& operator=(
+      const NetworkQualitiesPrefDelegateTest&) = delete;
+
   ~NetworkQualitiesPrefDelegateTest() override = default;
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkQualitiesPrefDelegateTest);
 };
 
 // Verify that prefs are writen and read correctly.

@@ -13,7 +13,6 @@
 
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -42,13 +41,13 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
-// TODO(https://crbug.com/1164001): forward declare MountOptions,
-// ProvidedFileSystemInfo when moved ash
+class ProvidedFileSystemInfo;
 class ProvidedFileSystemInterface;
 class RegistryInterface;
+struct MountOptions;
 
 // Registers preferences to remember registered file systems between reboots.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -67,6 +66,10 @@ class Service : public KeyedService,
   enum UnmountReason { UNMOUNT_REASON_USER, UNMOUNT_REASON_SHUTDOWN };
 
   Service(Profile* profile, extensions::ExtensionRegistry* extension_registry);
+
+  Service(const Service&) = delete;
+  Service& operator=(const Service&) = delete;
+
   ~Service() override;
 
   // Gets the singleton instance for the |context|.
@@ -209,17 +212,16 @@ class Service : public KeyedService,
   ProviderMap provider_map_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace file_system_provider {
-using ::chromeos::file_system_provider::Service;
-}  // namespace file_system_provider
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
+namespace chromeos {
+namespace file_system_provider {
+using ::ash::file_system_provider::Service;
+}  // namespace file_system_provider
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_SERVICE_H_

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -38,6 +39,20 @@ struct QueryFields {
   std::unique_ptr<std::u16string> word_phrase_query;
   std::unique_ptr<std::u16string> url;
   std::unique_ptr<std::u16string> title;
+};
+
+class VectorIterator {
+ public:
+  explicit VectorIterator(std::vector<const BookmarkNode*>* nodes);
+  VectorIterator(const VectorIterator& other) = delete;
+  VectorIterator& operator=(const VectorIterator& other) = delete;
+  ~VectorIterator();
+  bool has_next();
+  const BookmarkNode* Next();
+
+ private:
+  raw_ptr<std::vector<const BookmarkNode*>> nodes_;
+  std::vector<const BookmarkNode*>::iterator current_;
 };
 
 // Clones bookmark node, adding newly created nodes to |parent| starting at

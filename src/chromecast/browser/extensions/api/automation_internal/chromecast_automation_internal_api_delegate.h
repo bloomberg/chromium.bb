@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_CHROMECAST_AUTOMATION_INTERNAL_API_DELEGATE_H_
 #define CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_CHROMECAST_AUTOMATION_INTERNAL_API_DELEGATE_H_
 
-#include "base/macros.h"
 #include "extensions/browser/api/automation_internal/automation_internal_api_delegate.h"
 
 namespace extensions {
@@ -15,6 +14,12 @@ class ChromecastAutomationInternalApiDelegate
     : public AutomationInternalApiDelegate {
  public:
   ChromecastAutomationInternalApiDelegate();
+
+  ChromecastAutomationInternalApiDelegate(
+      const ChromecastAutomationInternalApiDelegate&) = delete;
+  ChromecastAutomationInternalApiDelegate& operator=(
+      const ChromecastAutomationInternalApiDelegate&) = delete;
+
   ~ChromecastAutomationInternalApiDelegate() override;
 
   bool CanRequestAutomation(const Extension* extension,
@@ -34,8 +39,6 @@ class ChromecastAutomationInternalApiDelegate
   void SetAutomationEventRouterInterface(
       AutomationEventRouterInterface* router) override;
   content::BrowserContext* GetActiveUserContext() override;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromecastAutomationInternalApiDelegate);
 };
 
 }  // namespace extensions

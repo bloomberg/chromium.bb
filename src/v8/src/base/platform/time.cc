@@ -19,6 +19,13 @@
 #include <ostream>
 
 #if V8_OS_WIN
+#include <windows.h>
+
+// This has to come after windows.h.
+#include <mmsystem.h>  // For timeGetTime().
+
+#include <atomic>
+
 #include "src/base/lazy-instance.h"
 #include "src/base/win32-headers.h"
 #endif
@@ -69,19 +76,22 @@ int64_t ComputeThreadTicks() {
 V8_INLINE int64_t ClockNow(clockid_t clk_id) {
 #if (defined(_POSIX_MONOTONIC_CLOCK) && _POSIX_MONOTONIC_CLOCK >= 0) || \
   defined(V8_OS_BSD) || defined(V8_OS_ANDROID)
-// On AIX clock_gettime for CLOCK_THREAD_CPUTIME_ID outputs time with
-// resolution of 10ms. thread_cputime API provides the time in ns
 #if defined(V8_OS_AIX)
-  thread_cputime_t tc;
+  // On AIX clock_gettime for CLOCK_THREAD_CPUTIME_ID outputs time with
+  // resolution of 10ms. thread_cputime API provides the time in ns.
   if (clk_id == CLOCK_THREAD_CPUTIME_ID) {
 #if defined(__PASE__)  // CLOCK_THREAD_CPUTIME_ID clock not supported on IBMi
     return 0;
-#endif
+#else
+    thread_cputime_t tc;
     if (thread_cputime(-1, &tc) != 0) {
       UNREACHABLE();
     }
+    return (tc.stime / v8::base::Time::kNanosecondsPerMicrosecond)
+           + (tc.utime / v8::base::Time::kNanosecondsPerMicrosecond);
+#endif  // defined(__PASE__)
   }
-#endif
+#endif  // defined(V8_OS_AIX)
   struct timespec ts;
   if (clock_gettime(clk_id, &ts) != 0) {
     UNREACHABLE();
@@ -94,15 +104,7 @@ V8_INLINE int64_t ClockNow(clockid_t clk_id) {
       1;
   CHECK_GT(kSecondsLimit, ts.tv_sec);
   int64_t result = int64_t{ts.tv_sec} * v8::base::Time::kMicrosecondsPerSecond;
-#if defined(V8_OS_AIX)
-  if (clk_id == CLOCK_THREAD_CPUTIME_ID) {
-    result += (tc.stime / v8::base::Time::kNanosecondsPerMicrosecond);
-  } else {
-    result += (ts.tv_nsec / v8::base::Time::kNanosecondsPerMicrosecond);
-  }
-#else
   result += (ts.tv_nsec / v8::base::Time::kNanosecondsPerMicrosecond);
-#endif
   return result;
 #else  // Monotonic clock not supported.
   return 0;
@@ -619,15 +621,10 @@ using TimeTicksNowFunction = decltype(&TimeTicks::Now);
 TimeTicksNowFunction g_time_ticks_now_function = &InitialTimeTicksNowFunction;
 int64_t g_qpc_ticks_per_second = 0;
 
-// As of January 2015, use of <atomic> is forbidden in Chromium code. This is
-// what std::atomic_thread_fence does on Windows on all Intel architectures when
-// the memory_order argument is anything but std::memory_order_seq_cst:
-#define ATOMIC_THREAD_FENCE(memory_order) _ReadWriteBarrier();
-
 TimeDelta QPCValueToTimeDelta(LONGLONG qpc_value) {
   // Ensure that the assignment to |g_qpc_ticks_per_second|, made in
   // InitializeNowFunctionPointer(), has happened by this point.
-  ATOMIC_THREAD_FENCE(memory_order_acquire);
+  std::atomic_thread_fence(std::memory_order_acquire);
 
   DCHECK_GT(g_qpc_ticks_per_second, 0);
 
@@ -682,7 +679,7 @@ void InitializeTimeTicksNowFunctionPointer() {
   // assignment to |g_qpc_ticks_per_second| happens before the function pointers
   // are changed.
   g_qpc_ticks_per_second = ticks_per_sec.QuadPart;
-  ATOMIC_THREAD_FENCE(memory_order_release);
+  std::atomic_thread_fence(std::memory_order_release);
   g_time_ticks_now_function = now_function;
 }
 
@@ -690,8 +687,6 @@ TimeTicks InitialTimeTicksNowFunction() {
   InitializeTimeTicksNowFunctionPointer();
   return g_time_ticks_now_function();
 }
-
-#undef ATOMIC_THREAD_FENCE
 
 }  // namespace
 

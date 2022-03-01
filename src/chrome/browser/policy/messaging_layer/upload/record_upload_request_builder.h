@@ -7,7 +7,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
@@ -23,11 +23,6 @@ namespace reporting {
 //         "encryptionKey": "EncryptedMessage",
 //         "publicKeyId": 1
 //       },
-//       "sequencingInformation": {
-//         "sequencingId": 1,
-//         "generationId": 123456789,
-//         "priority": 1
-//       }
 //       "sequenceInformation": {
 //         "sequencingId": 1,
 //         "generationId": 123456789,
@@ -40,11 +35,6 @@ namespace reporting {
 //         "encryptionKey": "EncryptedMessage",
 //         "publicKeyId": 2
 //       },
-//       "sequencingInformation": {
-//         "sequencingId": 2,
-//         "generationId": 123456789,
-//         "priority": 1
-//       }
 //       "sequenceInformation": {
 //         "sequencingId": 2,
 //         "generationId": 123456789,
@@ -55,12 +45,6 @@ namespace reporting {
 //   "attachEncryptionSettings": true  // optional field
 // }
 // TODO(b/159361496): Periodically add memory and disk space usage.
-//
-// Note that there are two identical sub-records - sequencingInformation and
-// sequenceInformation (sequencingId and generationId in the former are
-// Unsigned, in the later - Signed). This is done temporarily for backwards
-// compatibility with the server.
-// TODO(b/177677467): Remove this duplication once server is fully transitioned.
 //
 // This payload is added to the common payload of all reporting jobs, which
 // includes "device" and "browser" sub-fields:
@@ -80,10 +64,7 @@ class UploadEncryptedReportingRequestBuilder {
       bool attach_encryption_settings = false);
   ~UploadEncryptedReportingRequestBuilder();
 
-  // TODO(chromium:1165908) Have AddRecord take ownership of the record that is
-  // passed in.
-  UploadEncryptedReportingRequestBuilder& AddRecord(
-      const EncryptedRecord& record);
+  UploadEncryptedReportingRequestBuilder& AddRecord(EncryptedRecord record);
 
   absl::optional<base::Value> Build();
 
@@ -99,27 +80,27 @@ class UploadEncryptedReportingRequestBuilder {
 // proto.
 class EncryptedRecordDictionaryBuilder {
  public:
-  explicit EncryptedRecordDictionaryBuilder(const EncryptedRecord& record);
+  explicit EncryptedRecordDictionaryBuilder(EncryptedRecord record);
   ~EncryptedRecordDictionaryBuilder();
 
   absl::optional<base::Value> Build();
 
   static base::StringPiece GetEncryptedWrappedRecordPath();
-  static base::StringPiece GetUnsignedSequencingInformationKeyPath();
-  static base::StringPiece GetSequencingInformationKeyPath();
+  static base::StringPiece GetSequenceInformationKeyPath();
   static base::StringPiece GetEncryptionInfoPath();
+  static base::StringPiece GetCompressionInformationPath();
 
  private:
   absl::optional<base::Value> result_;
 };
 
-// Builds a |base::Value| dictionary from a |SequencingInformation|
+// Builds a |base::Value| dictionary from a |SequenceInformation|
 // proto.
-class SequencingInformationDictionaryBuilder {
+class SequenceInformationDictionaryBuilder {
  public:
-  explicit SequencingInformationDictionaryBuilder(
-      const SequencingInformation& sequencing_information);
-  ~SequencingInformationDictionaryBuilder();
+  explicit SequenceInformationDictionaryBuilder(
+      const SequenceInformation& sequence_information);
+  ~SequenceInformationDictionaryBuilder();
 
   absl::optional<base::Value> Build();
 
@@ -142,6 +123,21 @@ class EncryptionInfoDictionaryBuilder {
 
   static base::StringPiece GetEncryptionKeyPath();
   static base::StringPiece GetPublicKeyIdPath();
+
+ private:
+  absl::optional<base::Value> result_;
+};
+
+// Builds a |base::Value| dictionary from a |CompressionInfo| proto.
+class CompressionInformationDictionaryBuilder {
+ public:
+  explicit CompressionInformationDictionaryBuilder(
+      const CompressionInformation& compression_info);
+  ~CompressionInformationDictionaryBuilder();
+
+  absl::optional<base::Value> Build();
+
+  static base::StringPiece GetCompressionAlgorithmPath();
 
  private:
   absl::optional<base::Value> result_;

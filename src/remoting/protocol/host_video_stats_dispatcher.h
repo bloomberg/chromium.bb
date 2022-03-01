@@ -5,8 +5,7 @@
 #ifndef REMOTING_PROTOCOL_HOST_VIDEO_STATS_DISPATCHER_H_
 #define REMOTING_PROTOCOL_HOST_VIDEO_STATS_DISPATCHER_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/video_stats_stub.h"
 
@@ -17,7 +16,13 @@ class HostVideoStatsDispatcher : public ChannelDispatcherBase,
                                  public VideoStatsStub {
  public:
   explicit HostVideoStatsDispatcher(const std::string& stream_name);
+
+  HostVideoStatsDispatcher(const HostVideoStatsDispatcher&) = delete;
+  HostVideoStatsDispatcher& operator=(const HostVideoStatsDispatcher&) = delete;
+
   ~HostVideoStatsDispatcher() override;
+
+  base::WeakPtr<HostVideoStatsDispatcher> GetWeakPtr();
 
   // VideoStatsStub interface.
   void OnVideoFrameStats(uint32_t frame_id,
@@ -26,7 +31,7 @@ class HostVideoStatsDispatcher : public ChannelDispatcherBase,
  private:
   void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;
 
-  DISALLOW_COPY_AND_ASSIGN(HostVideoStatsDispatcher);
+  base::WeakPtrFactory<HostVideoStatsDispatcher> weak_factory_{this};
 };
 
 }  // namespace protocol

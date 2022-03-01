@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -67,9 +68,11 @@ bool FakeFormFetcher::IsMovingBlocked(const autofill::GaiaIdHash& destination,
       // entries anyway).
       if (form->IsUsingAccountStore())
         continue;
-      // Ignore PSL matches for blocking moving.
-      if (form->is_public_suffix_match)
+      // Ignore non-exact matches for blocking moving.
+      if (password_manager_util::GetMatchType(*form) !=
+          password_manager_util::GetLoginMatchType::kExact) {
         continue;
+      }
       if (form->username_value != username)
         continue;
       if (base::Contains(form->moving_blocked_for_list, destination))

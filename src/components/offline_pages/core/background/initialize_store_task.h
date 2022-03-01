@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/task/task.h"
@@ -26,6 +27,10 @@ class InitializeStoreTask : public Task {
  public:
   InitializeStoreTask(RequestQueueStore* store,
                       RequestQueueStore::InitializeCallback callback);
+
+  InitializeStoreTask(const InitializeStoreTask&) = delete;
+  InitializeStoreTask& operator=(const InitializeStoreTask&) = delete;
+
   ~InitializeStoreTask() override;
 
  private:
@@ -42,14 +47,13 @@ class InitializeStoreTask : public Task {
   void OnStoreResetDone(bool success);
 
   // Store that this task initializes.
-  RequestQueueStore* store_;
+  raw_ptr<RequestQueueStore> store_;
   // Number of attempts left to reset and reinitialize the store.
   int reset_attempts_left_;
   // Callback to complete the task.
   RequestQueueStore::InitializeCallback callback_;
 
   base::WeakPtrFactory<InitializeStoreTask> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(InitializeStoreTask);
 };
 
 }  // namespace offline_pages

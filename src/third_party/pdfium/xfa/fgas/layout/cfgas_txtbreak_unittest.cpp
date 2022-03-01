@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "core/fxcrt/fx_codepage.h"
 #include "core/fxge/cfx_font.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
@@ -16,7 +17,8 @@
 class CFGAS_TxtBreakTest : public testing::Test {
  public:
   void SetUp() override {
-    font_ = CFGAS_GEFont::LoadFont(L"Arial Black", 0, 0);
+    const wchar_t kFontFamily[] = L"Arimo Bold";
+    font_ = CFGAS_GEFont::LoadFont(kFontFamily, 0, FX_CodePage::kDefANSI);
     ASSERT_TRUE(font_);
   }
 

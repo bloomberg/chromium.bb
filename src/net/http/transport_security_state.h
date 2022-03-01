@@ -8,12 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -366,6 +367,9 @@ class NET_EXPORT TransportSecurityState {
   explicit TransportSecurityState(
       std::vector<std::string> hsts_host_bypass_list);
 
+  TransportSecurityState(const TransportSecurityState&) = delete;
+  TransportSecurityState& operator=(const TransportSecurityState&) = delete;
+
   ~TransportSecurityState();
 
   // These functions search for static and dynamic STS and PKP states, and
@@ -432,6 +436,15 @@ class NET_EXPORT TransportSecurityState {
   // the lifetime of this object or until called with nullptr, whichever
   // occurs first.
   void SetRequireCTDelegate(RequireCTDelegate* delegate);
+
+  // If |emergency_disable| is set to true, will stop requiring CT
+  // compliance on any further requests regardless of host or certificate
+  // status.
+  void SetCTEmergencyDisabled(bool emergency_disable) {
+    ct_emergency_disable_ = emergency_disable;
+  }
+
+  void SetCTLogListUpdateTime(base::Time update_time);
 
   // Clears all dynamic data (e.g. HSTS and HPKP data).
   //
@@ -574,7 +587,7 @@ class NET_EXPORT TransportSecurityState {
   bool has_dynamic_pkp_state() const { return !enabled_pkp_hosts_.empty(); }
 
   // The number of cached ExpectCTState entries.
-  size_t num_expect_ct_entries() const;
+  size_t num_expect_ct_entries_for_testing() const;
 
   // The number of cached STSState entries.
   size_t num_sts_entries() const;
@@ -684,6 +697,9 @@ class NET_EXPORT TransportSecurityState {
   static bool ExpectCTPruningSorter(const ExpectCTStateMap::iterator& it1,
                                     const ExpectCTStateMap::iterator& it2);
 
+  // Returns true if the CT log list has been updated in the last 10 weeks.
+  bool IsCTLogListTimely() const;
+
   // The sets of hosts that have enabled TransportSecurity. |domain| will always
   // be empty for a STSState, PKPState, or ExpectCTState in these maps; the
   // domain comes from the map keys instead. In addition, |upgrade_mode| in the
@@ -693,9 +709,9 @@ class NET_EXPORT TransportSecurityState {
   PKPStateMap enabled_pkp_hosts_;
   ExpectCTStateMap enabled_expect_ct_hosts_;
 
-  Delegate* delegate_ = nullptr;
+  raw_ptr<Delegate> delegate_ = nullptr;
 
-  ReportSenderInterface* report_sender_ = nullptr;
+  raw_ptr<ReportSenderInterface> report_sender_ = nullptr;
 
   // True if static pins should be used.
   bool enable_static_pins_;
@@ -706,9 +722,9 @@ class NET_EXPORT TransportSecurityState {
   // True if public key pinning bypass is enabled for local trust anchors.
   bool enable_pkp_bypass_for_local_trust_anchors_;
 
-  ExpectCTReporter* expect_ct_reporter_ = nullptr;
+  raw_ptr<ExpectCTReporter> expect_ct_reporter_ = nullptr;
 
-  RequireCTDelegate* require_ct_delegate_ = nullptr;
+  raw_ptr<RequireCTDelegate> require_ct_delegate_ = nullptr;
 
   // Keeps track of reports that have been sent recently for
   // rate-limiting.
@@ -727,9 +743,11 @@ class NET_EXPORT TransportSecurityState {
 
   std::set<std::string> hsts_host_bypass_list_;
 
-  THREAD_CHECKER(thread_checker_);
+  bool ct_emergency_disable_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TransportSecurityState);
+  base::Time ct_log_list_last_update_time_;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace net

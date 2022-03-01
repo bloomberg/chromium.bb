@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "net/base/net_export.h"
@@ -83,6 +82,11 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
   };
 
   WebSocketHandshakeStreamBase() = default;
+
+  WebSocketHandshakeStreamBase(const WebSocketHandshakeStreamBase&) = delete;
+  WebSocketHandshakeStreamBase& operator=(const WebSocketHandshakeStreamBase&) =
+      delete;
+
   ~WebSocketHandshakeStreamBase() override = default;
 
   // An object that stores data needed for the creation of a
@@ -148,9 +152,6 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
                                  WebSocketExtensionParams* params);
 
   void RecordHandshakeResult(HandshakeResult result);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamBase);
 };
 
 }  // namespace net

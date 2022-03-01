@@ -10,7 +10,7 @@
 #include "src/debug/debug.h"
 #include "src/execution/isolate.h"
 #include "src/execution/protectors-inl.h"
-#include "src/handles/global-handles.h"
+#include "src/handles/global-handles-inl.h"
 #include "src/logging/counters.h"
 #include "src/objects/contexts.h"
 #include "src/objects/elements-inl.h"
@@ -342,7 +342,7 @@ V8_WARN_UNUSED_RESULT Object GenericArrayPush(Isolate* isolate,
           isolate, Object::SetElement(isolate, receiver, length, element,
                                       ShouldThrow::kThrowOnError));
     } else {
-      LookupIterator::Key key(isolate, length);
+      PropertyKey key(isolate, length);
       LookupIterator it(isolate, receiver, key);
       MAYBE_RETURN(Object::SetProperty(&it, element, StoreOrigin::kMaybeKeyed,
                                        Just(ShouldThrow::kThrowOnError)),
@@ -902,6 +902,7 @@ uint32_t EstimateElementCount(Isolate* isolate, Handle<JSArray> array) {
     case SLOW_SLOPPY_ARGUMENTS_ELEMENTS:
     case FAST_STRING_WRAPPER_ELEMENTS:
     case SLOW_STRING_WRAPPER_ELEMENTS:
+    case WASM_ARRAY_ELEMENTS:
       UNREACHABLE();
   }
   // As an estimate, we assume that the prototype doesn't contain any
@@ -1025,6 +1026,9 @@ void CollectElementIndices(Isolate* isolate, Handle<JSObject> object,
       }
       break;
     }
+    case WASM_ARRAY_ELEMENTS:
+      // TODO(ishell): implement
+      UNIMPLEMENTED();
     case NO_ELEMENTS:
       break;
   }
@@ -1211,6 +1215,9 @@ bool IterateElements(Isolate* isolate, Handle<JSReceiver> receiver,
           });
       break;
     }
+    case WASM_ARRAY_ELEMENTS:
+      // TODO(ishell): implement
+      UNIMPLEMENTED();
     case NO_ELEMENTS:
       break;
 #define TYPED_ARRAY_CASE(Type, type, TYPE, ctype) case TYPE##_ELEMENTS:
@@ -1331,8 +1338,8 @@ Object Slow_ArrayConcat(BuiltinArguments* args, Handle<Object> species,
               if (length == 0) break;
               FixedDoubleArray elements =
                   FixedDoubleArray::cast(array.elements());
-              for (uint32_t i = 0; i < length; i++) {
-                if (elements.is_the_hole(i)) {
+              for (uint32_t k = 0; k < length; k++) {
+                if (elements.is_the_hole(k)) {
                   // TODO(jkummerow/verwaest): We could be a bit more clever
                   // here: Check if there are no elements/getters on the
                   // prototype chain, and if so, allow creation of a holey
@@ -1341,7 +1348,7 @@ Object Slow_ArrayConcat(BuiltinArguments* args, Handle<Object> species,
                   failure = true;
                   break;
                 }
-                double double_value = elements.get_scalar(i);
+                double double_value = elements.get_scalar(k);
                 double_storage->set(j, double_value);
                 j++;
               }
@@ -1351,8 +1358,8 @@ Object Slow_ArrayConcat(BuiltinArguments* args, Handle<Object> species,
             case PACKED_SMI_ELEMENTS: {
               Object the_hole = ReadOnlyRoots(isolate).the_hole_value();
               FixedArray elements(FixedArray::cast(array.elements()));
-              for (uint32_t i = 0; i < length; i++) {
-                Object element = elements.get(i);
+              for (uint32_t k = 0; k < length; k++) {
+                Object element = elements.get(k);
                 if (element == the_hole) {
                   failure = true;
                   break;

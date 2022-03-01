@@ -7,7 +7,6 @@
 
 #include "src/objects/code-kind.h"
 #include "src/objects/js-objects.h"
-#include "torque-generated/field-offsets.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -24,6 +23,9 @@ class JSFunctionOrBoundFunction
     : public TorqueGeneratedJSFunctionOrBoundFunction<JSFunctionOrBoundFunction,
                                                       JSObject> {
  public:
+  static const int kLengthDescriptorIndex = 0;
+  static const int kNameDescriptorIndex = 1;
+
   STATIC_ASSERT(kHeaderSize == JSObject::kHeaderSize);
   TQ_OBJECT_CONSTRUCTORS(JSFunctionOrBoundFunction)
 };
@@ -37,8 +39,6 @@ class JSBoundFunction
                                      Handle<JSBoundFunction> function);
   static Maybe<int> GetLength(Isolate* isolate,
                               Handle<JSBoundFunction> function);
-  static MaybeHandle<NativeContext> GetFunctionRealm(
-      Handle<JSBoundFunction> function);
 
   // Dispatched behavior.
   DECL_PRINTER(JSBoundFunction)
@@ -52,32 +52,29 @@ class JSBoundFunction
 };
 
 // JSFunction describes JavaScript functions.
-class JSFunction : public JSFunctionOrBoundFunction {
+class JSFunction
+    : public TorqueGeneratedJSFunction<JSFunction, JSFunctionOrBoundFunction> {
  public:
   // [prototype_or_initial_map]:
   DECL_RELEASE_ACQUIRE_ACCESSORS(prototype_or_initial_map, HeapObject)
 
-  // [shared]: The information about the function that
-  // can be shared by instances.
+  // [shared]: The information about the function that can be shared by
+  // instances.
   DECL_ACCESSORS(shared, SharedFunctionInfo)
-
-  static const int kLengthDescriptorIndex = 0;
-  static const int kNameDescriptorIndex = 1;
+  DECL_RELAXED_GETTER(shared, SharedFunctionInfo)
 
   // Fast binding requires length and name accessors.
   static const int kMinDescriptorsForFastBind = 2;
 
   // [context]: The context for this function.
   inline Context context();
+  DECL_RELAXED_GETTER(context, Context)
   inline bool has_context() const;
-  inline void set_context(HeapObject context,
-                          WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
   inline JSGlobalProxy global_proxy();
   inline NativeContext native_context();
   inline int length();
 
   static Handle<Object> GetName(Isolate* isolate, Handle<JSFunction> function);
-  static Handle<NativeContext> GetFunctionRealm(Handle<JSFunction> function);
 
   // [code]: The generated code object for this function.  Executed
   // when the function is invoked, e.g. foo() or new foo(). See
@@ -87,9 +84,19 @@ class JSFunction : public JSFunctionOrBoundFunction {
   // optimized code object, or when reading from the background thread.
   // Storing a builtin doesn't require release semantics because these objects
   // are fully initialized.
-  inline Code code() const;
-  inline void set_code(Code code);
+  DECL_ACCESSORS(code, Code)
   DECL_RELEASE_ACQUIRE_ACCESSORS(code, Code)
+#ifdef V8_EXTERNAL_CODE_SPACE
+  // Convenient overloads to avoid unnecessary Code <-> CodeT conversions.
+  // TODO(v8:11880): remove once |code| accessors are migrated to CodeT.
+  inline void set_code(CodeT code,
+                       WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+  inline void set_code(CodeT code, ReleaseStoreTag,
+                       WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+#endif
+
+  // Returns the address of the function code's instruction start.
+  inline Address code_entry_point() const;
 
   // Get the abstract code associated with the function, which will either be
   // a Code object or a BytecodeArray.
@@ -105,7 +112,8 @@ class JSFunction : public JSFunctionOrBoundFunction {
   //   indirect means such as the feedback vector's optimized code cache.
   // - Active: the single code kind that would be executed if this function
   //   were called in its current state. Note that there may not be an active
-  //   code kind if the function is not compiled.
+  //   code kind if the function is not compiled. Also, asm/wasm functions are
+  //   currently not supported.
   //
   // Note: code objects that are marked_for_deoptimization are not part of the
   // attached/available/active sets. This is because the JSFunction might have
@@ -119,11 +127,10 @@ class JSFunction : public JSFunctionOrBoundFunction {
   bool HasAttachedCodeKind(CodeKind kind) const;
   bool HasAvailableCodeKind(CodeKind kind) const;
 
-  CodeKind GetActiveTier() const;
+  base::Optional<CodeKind> GetActiveTier() const;
   V8_EXPORT_PRIVATE bool ActiveTierIsIgnition() const;
   bool ActiveTierIsTurbofan() const;
   bool ActiveTierIsBaseline() const;
-  bool ActiveTierIsIgnitionOrBaseline() const;
   bool ActiveTierIsMidtierTurboprop() const;
   bool ActiveTierIsToptierTurboprop() const;
 
@@ -211,10 +218,19 @@ class JSFunction : public JSFunctionOrBoundFunction {
 
   // Resets function to clear compiled data after bytecode has been flushed.
   inline bool NeedsResetDueToFlushedBytecode();
-  inline void ResetIfBytecodeFlushed(
+  inline void ResetIfCodeFlushed(
       base::Optional<std::function<void(HeapObject object, ObjectSlot slot,
                                         HeapObject target)>>
           gc_notify_updated_slot = base::nullopt);
+
+  // Returns if the closure's code field has to be updated because it has
+  // stale baseline code.
+  inline bool NeedsResetDueToFlushedBaselineCode();
+
+  // Returns if baseline code is a candidate for flushing. This method is called
+  // from concurrent marking so we should be careful when accessing data fields.
+  inline bool ShouldFlushBaselineCode(
+      base::EnumSet<CodeFlushMode> code_flush_mode);
 
   DECL_GETTER(has_prototype_slot, bool)
 
@@ -233,7 +249,7 @@ class JSFunction : public JSFunctionOrBoundFunction {
   // Creates a map that matches the constructor's initial map, but with
   // [[prototype]] being new.target.prototype. Because new.target can be a
   // JSProxy, this can call back into JavaScript.
-  static V8_WARN_UNUSED_RESULT MaybeHandle<Map> GetDerivedMap(
+  V8_EXPORT_PRIVATE static V8_WARN_UNUSED_RESULT MaybeHandle<Map> GetDerivedMap(
       Isolate* isolate, Handle<JSFunction> constructor,
       Handle<JSReceiver> new_target);
 
@@ -264,8 +280,6 @@ class JSFunction : public JSFunctionOrBoundFunction {
 
   // Prints the name of the function using PrintF.
   void PrintName(FILE* out = stdout);
-
-  DECL_CAST(JSFunction)
 
   // Calculate the instance size and in-object properties count.
   // {CalculateExpectedNofProperties} can trigger compilation.
@@ -300,22 +314,21 @@ class JSFunction : public JSFunctionOrBoundFunction {
   // ES6 section 19.2.3.5 Function.prototype.toString ( ).
   static Handle<String> ToString(Handle<JSFunction> function);
 
-  struct FieldOffsets {
-    DEFINE_FIELD_OFFSET_CONSTANTS(JSFunctionOrBoundFunction::kHeaderSize,
-                                  TORQUE_GENERATED_JS_FUNCTION_FIELDS)
-  };
-  static constexpr int kSharedFunctionInfoOffset =
-      FieldOffsets::kSharedFunctionInfoOffset;
-  static constexpr int kContextOffset = FieldOffsets::kContextOffset;
-  static constexpr int kFeedbackCellOffset = FieldOffsets::kFeedbackCellOffset;
-  static constexpr int kCodeOffset = FieldOffsets::kCodeOffset;
-  static constexpr int kPrototypeOrInitialMapOffset =
-      FieldOffsets::kPrototypeOrInitialMapOffset;
+  class BodyDescriptor;
 
  private:
+  DECL_ACCESSORS(raw_code, CodeT)
+  DECL_RELEASE_ACQUIRE_ACCESSORS(raw_code, CodeT)
+
   // JSFunction doesn't have a fixed header size:
-  // Hide JSFunctionOrBoundFunction::kHeaderSize to avoid confusion.
+  // Hide TorqueGeneratedClass::kHeaderSize to avoid confusion.
   static const int kHeaderSize;
+
+  // Hide generated accessors; custom accessors are called "shared".
+  DECL_ACCESSORS(shared_function_info, SharedFunctionInfo)
+
+  // Hide generated accessors; custom accessors are called "raw_feedback_cell".
+  DECL_ACCESSORS(feedback_cell, FeedbackCell)
 
   // Returns the set of code kinds of compilation artifacts (bytecode,
   // generated code) attached to this JSFunction.
@@ -333,9 +346,9 @@ class JSFunction : public JSFunctionOrBoundFunction {
 
  public:
   static constexpr int kSizeWithoutPrototype = kPrototypeOrInitialMapOffset;
-  static constexpr int kSizeWithPrototype = FieldOffsets::kHeaderSize;
+  static constexpr int kSizeWithPrototype = TorqueGeneratedClass::kHeaderSize;
 
-  OBJECT_CONSTRUCTORS(JSFunction, JSFunctionOrBoundFunction);
+  TQ_OBJECT_CONSTRUCTORS(JSFunction)
 };
 
 }  // namespace internal

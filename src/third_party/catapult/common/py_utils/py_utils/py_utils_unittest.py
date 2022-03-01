@@ -1,6 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import os
 import sys
 import unittest
@@ -53,4 +54,3 @@ class WaitForTest(unittest.TestCase):
   def testWaitForFalseLambda(self):
     with self.assertRaises(py_utils.TimeoutException):
       py_utils.WaitFor(lambda: False, .1)
-

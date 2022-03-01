@@ -7,12 +7,12 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_OBJECT_H_
 #define CORE_FPDFAPI_PARSER_CPDF_OBJECT_H_
 
-#include <memory>
+#include <stdint.h>
+
 #include <set>
 #include <type_traits>
 
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 
 class CPDF_Array;
@@ -21,7 +21,6 @@ class CPDF_Dictionary;
 class CPDF_Encryptor;
 class CPDF_IndirectObjectHolder;
 class CPDF_Name;
-class CPDF_Null;
 class CPDF_Number;
 class CPDF_Reference;
 class CPDF_Stream;
@@ -49,6 +48,7 @@ class CPDF_Object : public Retainable {
   uint32_t GetGenNum() const { return m_GenNum; }
   void SetGenNum(uint32_t gennum) { m_GenNum = gennum; }
   bool IsInline() const { return m_ObjNum == 0; }
+  uint64_t KeyForCache() const;
 
   // Create a deep copy of the object.
   virtual RetainPtr<CPDF_Object> Clone() const = 0;

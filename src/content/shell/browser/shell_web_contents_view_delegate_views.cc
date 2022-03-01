@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "content/shell/browser/shell_web_contents_view_delegate.h"
 
 #include <memory>
@@ -30,6 +31,10 @@ class ContextMenuModel : public ui::SimpleMenuModel,
         params_(params) {
     AddItem(COMMAND_OPEN_DEVTOOLS, u"Inspect Element");
   }
+
+  ContextMenuModel(const ContextMenuModel&) = delete;
+  ContextMenuModel& operator=(const ContextMenuModel&) = delete;
+
   ~ContextMenuModel() override {}
 
   // ui::SimpleMenuModel::Delegate:
@@ -49,10 +54,8 @@ class ContextMenuModel : public ui::SimpleMenuModel,
  private:
   enum CommandID { COMMAND_OPEN_DEVTOOLS };
 
-  WebContents* web_contents_;
+  raw_ptr<WebContents> web_contents_;
   ContextMenuParams params_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuModel);
 };
 
 }  // namespace
@@ -69,7 +72,7 @@ ShellWebContentsViewDelegate::ShellWebContentsViewDelegate(
 ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {}
 
 void ShellWebContentsViewDelegate::ShowContextMenu(
-    RenderFrameHost* render_frame_host,
+    RenderFrameHost& render_frame_host,
     const ContextMenuParams& params) {
   if (switches::IsRunWebTestsSwitchPresent())
     return;

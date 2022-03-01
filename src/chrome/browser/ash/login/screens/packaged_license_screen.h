@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
@@ -25,7 +24,11 @@ class PackagedLicenseScreen : public BaseScreen {
     // Show enterprise enrollment screen
     ENROLL,
     // No information about license in the `enrollment_config_`
-    NOT_APPLICABLE
+    NOT_APPLICABLE,
+    // Enterprise license should start from GAIA enrollment screen. This result
+    // is different from Enroll since in this case the screen is skipped and
+    // should not be recorded in metrics.
+    NOT_APPLICABLE_SKIP_TO_ENROLL
   };
 
   static std::string GetResultString(Result result);

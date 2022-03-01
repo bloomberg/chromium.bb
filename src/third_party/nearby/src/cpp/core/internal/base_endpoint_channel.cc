@@ -16,6 +16,8 @@
 
 #include <cassert>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "core/internal/offline_frames.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/exception.h"
@@ -23,8 +25,6 @@
 #include "platform/public/mutex.h"
 #include "platform/public/mutex_lock.h"
 #include "proto/connections_enums.pb.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_cat.h"
 
 namespace location {
 namespace nearby {
@@ -219,6 +219,10 @@ Exception BaseEndpointChannel::Write(const ByteArray& data) {
     }
   }
 
+  {
+    MutexLock lock(&last_write_mutex_);
+    last_write_timestamp_ = SystemClock::ElapsedRealtime();
+  }
   return {Exception::kSuccess};
 }
 
@@ -256,33 +260,35 @@ void BaseEndpointChannel::CloseIo() {
   }
 }
 
+void BaseEndpointChannel::SetAnalyticsRecorder(
+    analytics::AnalyticsRecorder* analytics_recorder,
+    const std::string& endpoint_id) {
+  analytics_recorder_ = analytics_recorder;
+  endpoint_id_ = endpoint_id;
+}
+
 void BaseEndpointChannel::Close(
     proto::connections::DisconnectionReason reason) {
   NEARBY_LOGS(INFO) << __func__
                     << ": Closing endpoint channel, reason: " << reason;
   Close();
+
+  if (analytics_recorder_ != nullptr && !endpoint_id_.empty()) {
+    analytics_recorder_->OnConnectionClosed(endpoint_id_, GetMedium(), reason);
+  }
 }
 
 std::string BaseEndpointChannel::GetType() const {
   MutexLock crypto_lock(&crypto_mutex_);
   std::string subtype = IsEncryptionEnabledLocked() ? "ENCRYPTED_" : "";
+  std::string medium = proto::connections::Medium_Name(
+      proto::connections::Medium::UNKNOWN_MEDIUM);
 
-  switch (GetMedium()) {
-    case proto::connections::Medium::BLUETOOTH:
-      return absl::StrCat(subtype, "BLUETOOTH");
-    case proto::connections::Medium::BLE:
-      return absl::StrCat(subtype, "BLE");
-    case proto::connections::Medium::MDNS:
-      return absl::StrCat(subtype, "MDNS");
-    case proto::connections::Medium::WIFI_HOTSPOT:
-      return absl::StrCat(subtype, "WIFI_HOTSPOT");
-    case proto::connections::Medium::WIFI_LAN:
-      return absl::StrCat(subtype, "WIFI_LAN");
-    case proto::connections::Medium::WEB_RTC:
-      return absl::StrCat(subtype, "WEB_RTC");
-    default:
-      return "UNKNOWN";
+  if (GetMedium() != proto::connections::Medium::UNKNOWN_MEDIUM) {
+    medium =
+        absl::StrCat(subtype, proto::connections::Medium_Name(GetMedium()));
   }
+  return medium;
 }
 
 std::string BaseEndpointChannel::GetName() const { return channel_name_; }
@@ -322,6 +328,11 @@ void BaseEndpointChannel::Resume() {
 absl::Time BaseEndpointChannel::GetLastReadTimestamp() const {
   MutexLock lock(&last_read_mutex_);
   return last_read_timestamp_;
+}
+
+absl::Time BaseEndpointChannel::GetLastWriteTimestamp() const {
+  MutexLock lock(&last_write_mutex_);
+  return last_write_timestamp_;
 }
 
 bool BaseEndpointChannel::IsEncryptionEnabledLocked() const {

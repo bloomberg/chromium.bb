@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -45,6 +44,8 @@ const char kObsoletePluginsDefaultPref[] =
     "profile.default_content_setting_values.plugins";
 const char kObsoletePluginsDataDefaultPref[] =
     "profile.default_content_setting_values.flash_data";
+const char kObsoleteFileHandlingDefaultPref[] =
+    "profile.default_content_setting_values.file_handling";
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
@@ -79,6 +80,9 @@ class DefaultRuleIterator : public RuleIterator {
       is_done_ = true;
   }
 
+  DefaultRuleIterator(const DefaultRuleIterator&) = delete;
+  DefaultRuleIterator& operator=(const DefaultRuleIterator&) = delete;
+
   bool HasNext() const override { return !is_done_; }
 
   Rule Next() override {
@@ -92,8 +96,6 @@ class DefaultRuleIterator : public RuleIterator {
  private:
   bool is_done_ = false;
   base::Value value_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultRuleIterator);
 };
 
 }  // namespace
@@ -124,6 +126,7 @@ void DefaultProvider::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(kObsoletePluginsDataDefaultPref, 0);
   registry->RegisterIntegerPref(kObsoletePluginsDefaultPref, 0);
+  registry->RegisterIntegerPref(kObsoleteFileHandlingDefaultPref, 0);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
@@ -211,6 +214,19 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool off_the_record)
                                 ContentSettingsType::IDLE_DETECTION))),
                             CONTENT_SETTING_NUM_SETTINGS);
 #endif
+
+#if defined(OS_ANDROID)
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.DefaultAutoDarkWebContentSetting",
+                            IntToContentSetting(prefs_->GetInteger(GetPrefName(
+                                ContentSettingsType::AUTO_DARK_WEB_CONTENT))),
+                            CONTENT_SETTING_NUM_SETTINGS);
+
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.DefaultRequestDesktopSiteSetting",
+                            IntToContentSetting(prefs_->GetInteger(GetPrefName(
+                                ContentSettingsType::REQUEST_DESKTOP_SITE))),
+                            CONTENT_SETTING_NUM_SETTINGS);
+#endif
+
   pref_change_registrar_.Init(prefs_);
   PrefChangeRegistrar::NamedChangeCallback callback = base::BindRepeating(
       &DefaultProvider::OnPreferenceChanged, base::Unretained(this));
@@ -260,8 +276,8 @@ bool DefaultProvider::SetWebsiteSetting(
     WriteToPref(content_type, value.get());
   }
 
-  NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
-                  content_type);
+  NotifyObservers(ContentSettingsPattern::Wildcard(),
+                  ContentSettingsPattern::Wildcard(), content_type);
 
   return true;
 }
@@ -369,8 +385,8 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
     }
   }
 
-  NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
-                  content_type);
+  NotifyObservers(ContentSettingsPattern::Wildcard(),
+                  ContentSettingsPattern::Wildcard(), content_type);
 }
 
 std::unique_ptr<base::Value> DefaultProvider::ReadFromPref(
@@ -390,6 +406,7 @@ void DefaultProvider::DiscardOrMigrateObsoletePreferences() {
   prefs_->ClearPref(kObsoleteMouseLockDefaultPref);
   prefs_->ClearPref(kObsoletePluginsDefaultPref);
   prefs_->ClearPref(kObsoletePluginsDataDefaultPref);
+  prefs_->ClearPref(kObsoleteFileHandlingDefaultPref);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 

@@ -18,7 +18,6 @@
 
 class CFX_Matrix;
 class CPDF_Dictionary;
-class CPDF_RenderOptions;
 class CPDFSDK_PageView;
 
 class CPDFSDK_BAAnnot : public CPDFSDK_Annot {
@@ -26,10 +25,9 @@ class CPDFSDK_BAAnnot : public CPDFSDK_Annot {
   CPDFSDK_BAAnnot(CPDF_Annot* pAnnot, CPDFSDK_PageView* pPageView);
   ~CPDFSDK_BAAnnot() override;
 
-  // CPDFSDK_Annot
+  // CPDFSDK_Annot:
   CPDFSDK_BAAnnot* AsBAAnnot() override;
   CPDF_Annot::Subtype GetAnnotSubtype() const override;
-  void SetRect(const CFX_FloatRect& rect) override;
   CFX_FloatRect GetRect() const override;
   CPDF_Annot* GetPDFAnnot() const override;
   int GetLayoutOrder() const override;
@@ -38,8 +36,7 @@ class CPDFSDK_BAAnnot : public CPDFSDK_Annot {
   virtual bool IsAppearanceValid();
   virtual void DrawAppearance(CFX_RenderDevice* pDevice,
                               const CFX_Matrix& mtUser2Device,
-                              CPDF_Annot::AppearanceMode mode,
-                              const CPDF_RenderOptions* pOptions);
+                              CPDF_Annot::AppearanceMode mode);
 
   CPDF_Dictionary* GetAnnotDict() const;
   CPDF_Annot* GetPDFPopupAnnot() const;

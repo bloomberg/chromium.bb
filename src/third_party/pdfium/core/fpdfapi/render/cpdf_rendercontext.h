@@ -51,10 +51,6 @@ class CPDF_RenderContext {
                    const CFX_Matrix& mtObject2Device);
 
   void Render(CFX_RenderDevice* pDevice,
-              const CPDF_RenderOptions* pOptions,
-              const CFX_Matrix* pLastMatrix);
-
-  void Render(CFX_RenderDevice* pDevice,
               const CPDF_PageObject* pStopObj,
               const CPDF_RenderOptions* pOptions,
               const CFX_Matrix* pLastMatrix);

@@ -188,7 +188,7 @@ static void basic_test(GrDirectContext* dContext,
 
     // Mega-purging it should remove it from both the hash and the cache
     proxy = nullptr;
-    cache->purgeAllUnlocked();
+    cache->purgeUnlockedResources();
     if (!expectResourceToOutliveProxy) {
         expectedCacheCount -= cacheEntriesPerProxy;
     }
@@ -276,7 +276,7 @@ static void invalidation_test(GrDirectContext* dContext,
     }
 #endif
 
-    dContext->priv().testingOnly_purgeAllUnlockedResources();
+    dContext->priv().getResourceCache()->purgeUnlockedResources();
 
     REPORTER_ASSERT(reporter, 0 == proxyProvider->numUniqueKeyProxies_TestOnly());
     REPORTER_ASSERT(reporter, 0 == cache->getResourceCount());
@@ -319,7 +319,7 @@ static void invalidation_and_instantiation_test(GrDirectContext* dContext,
     REPORTER_ASSERT(reporter, cacheEntriesPerProxy == cache->getResourceCount());
 
     proxy = nullptr;
-    dContext->priv().testingOnly_purgeAllUnlockedResources();
+    dContext->priv().getResourceCache()->purgeUnlockedResources();
 
     REPORTER_ASSERT(reporter, 0 == proxyProvider->numUniqueKeyProxies_TestOnly());
     REPORTER_ASSERT(reporter, 0 == cache->getResourceCount());
@@ -337,8 +337,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextureProxyTest, reporter, ctxInfo) {
     // proxy instansiations may add multiple things to the cache. There would be an entry for the
     // GrTexture/GrRenderTarget and entries for one or more attachments.
     int cacheEntriesPerProxy = 1;
-    // We currently only have attachments on the vulkan backend
-    if (direct->backend() == GrBackend::kVulkan) {
+    // We currently only have attachments on the vulkan and metal backends
+    if (direct->backend() == GrBackend::kVulkan || direct->backend() == GrBackend::kMetal) {
         cacheEntriesPerProxy++;
         // If we ever have a test with multisamples this would have an additional attachment as
         // well.
@@ -352,7 +352,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextureProxyTest, reporter, ctxInfo) {
         }
 
         REPORTER_ASSERT(reporter, 0 == cache->getResourceCount());
-        cache->purgeAllUnlocked();
+        cache->purgeUnlockedResources();
     }
 
     basic_test(direct, reporter, create_wrapped_backend(direct), cacheEntriesPerProxy);

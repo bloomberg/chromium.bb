@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_
 #define IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -26,6 +25,11 @@ class WebViewPasswordManagerLogRouterFactory
 
   static WebViewPasswordManagerLogRouterFactory* GetInstance();
 
+  WebViewPasswordManagerLogRouterFactory(
+      const WebViewPasswordManagerLogRouterFactory&) = delete;
+  WebViewPasswordManagerLogRouterFactory& operator=(
+      const WebViewPasswordManagerLogRouterFactory&) = delete;
+
  private:
   friend class base::NoDestructor<WebViewPasswordManagerLogRouterFactory>;
 
@@ -35,8 +39,6 @@ class WebViewPasswordManagerLogRouterFactory
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewPasswordManagerLogRouterFactory);
 };
 
 }  // namespace ios_web_view

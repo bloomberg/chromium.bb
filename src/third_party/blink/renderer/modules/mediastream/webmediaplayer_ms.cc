@@ -59,12 +59,6 @@ struct CrossThreadCopier<viz::SurfaceId>
   STATIC_ONLY(CrossThreadCopier);
 };
 
-template <>
-struct CrossThreadCopier<media::VideoTransformation>
-    : public CrossThreadCopierPassThrough<media::VideoTransformation> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
 }  // namespace WTF
 
 namespace blink {
@@ -128,8 +122,7 @@ const char* NetworkStateToString(WebMediaPlayer::NetworkState state) {
   }
 }
 
-constexpr base::TimeDelta kForceBeginFramesTimeout =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kForceBeginFramesTimeout = base::Seconds(1);
 }  // namespace
 
 #if defined(OS_WIN)
@@ -159,24 +152,20 @@ class WebMediaPlayerMS::FrameDeliverer {
       : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(std::move(enqueue_frame_cb)),
-        media_task_runner_(media_task_runner) {
+        media_task_runner_(media_task_runner),
+        worker_task_runner_(worker_task_runner),
+        gpu_factories_(gpu_factories) {
     DETACH_FROM_THREAD(io_thread_checker_);
 
-    if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
-                             true /* for_media_stream */)) {
-      gpu_memory_buffer_pool_ =
-          std::make_unique<media::GpuMemoryBufferVideoFramePool>(
-              media_task_runner, worker_task_runner, gpu_factories);
-    }
+    CreateGpuMemoryBufferPoolIfNecessary();
   }
+
+  FrameDeliverer(const FrameDeliverer&) = delete;
+  FrameDeliverer& operator=(const FrameDeliverer&) = delete;
 
   ~FrameDeliverer() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-    if (gpu_memory_buffer_pool_) {
-      DropCurrentPoolTasks();
-      media_task_runner_->DeleteSoon(FROM_HERE,
-                                     gpu_memory_buffer_pool_.release());
-    }
+    FreeGpuMemoryBufferPool();
   }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame) {
@@ -239,6 +228,12 @@ class WebMediaPlayerMS::FrameDeliverer {
   void SetRenderFrameSuspended(bool render_frame_suspended) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     render_frame_suspended_ = render_frame_suspended;
+    if (render_frame_suspended_) {
+      // Drop GpuMemoryBuffer pool to free memory.
+      FreeGpuMemoryBufferPool();
+    } else {
+      CreateGpuMemoryBufferPoolIfNecessary();
+    }
   }
 
   WTF::CrossThreadRepeatingFunction<
@@ -250,6 +245,26 @@ class WebMediaPlayerMS::FrameDeliverer {
 
  private:
   friend class WebMediaPlayerMS;
+
+  void CreateGpuMemoryBufferPoolIfNecessary() {
+    if (!gpu_memory_buffer_pool_ && gpu_factories_ &&
+        gpu_factories_->ShouldUseGpuMemoryBuffersForVideoFrames(
+            true /* for_media_stream */)) {
+      gpu_memory_buffer_pool_ =
+          std::make_unique<media::GpuMemoryBufferVideoFramePool>(
+              media_task_runner_, worker_task_runner_, gpu_factories_);
+    }
+  }
+
+  void FreeGpuMemoryBufferPool() {
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+
+    if (gpu_memory_buffer_pool_) {
+      DropCurrentPoolTasks();
+      media_task_runner_->DeleteSoon(FROM_HERE,
+                                     gpu_memory_buffer_pool_.release());
+    }
+  }
 
   void EnqueueFrame(int original_frame_id,
                     scoped_refptr<media::VideoFrame> frame) {
@@ -299,14 +314,15 @@ class WebMediaPlayerMS::FrameDeliverer {
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   std::unique_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  const scoped_refptr<base::TaskRunner> worker_task_runner_;
+
+  media::GpuVideoAcceleratorFactories* const gpu_factories_;
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   THREAD_CHECKER(io_thread_checker_);
 
   base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_{this};
   base::WeakPtrFactory<FrameDeliverer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
 
 WebMediaPlayerMS::WebMediaPlayerMS(
@@ -1017,7 +1033,7 @@ bool WebMediaPlayerMS::WouldTaintOrigin() const {
 }
 
 double WebMediaPlayerMS::MediaTimeForTimeValue(double timeValue) const {
-  return base::TimeDelta::FromSecondsD(timeValue).InSecondsF();
+  return base::Seconds(timeValue).InSecondsF();
 }
 
 unsigned WebMediaPlayerMS::DecodedFrameCount() const {
@@ -1165,13 +1181,14 @@ void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
   }
 }
 
-void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
-                                            bool is_opaque) {
+void WebMediaPlayerMS::OnFirstFrameReceived(
+    media::VideoTransformation video_transform,
+    bool is_opaque) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   has_first_frame_ = true;
-  OnRotationChanged(video_rotation);
+  OnTransformChanged(video_transform);
   OnOpacityChanged(is_opaque);
 
   if (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kAlways)
@@ -1199,16 +1216,17 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
   }
 }
 
-void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation) {
+void WebMediaPlayerMS::OnTransformChanged(
+    media::VideoTransformation video_transform) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  video_transformation_ = {video_rotation, 0};
+  video_transformation_ = video_transform;
 
   if (!bridge_) {
     // Keep the old |video_layer_| alive until SetCcLayer() is called with a new
     // pointer, as it may use the pointer from the last call.
     auto new_video_layer =
-        cc::VideoLayer::Create(compositor_.get(), video_rotation);
+        cc::VideoLayer::Create(compositor_.get(), video_transformation_);
     get_client()->SetCcLayer(new_video_layer.get());
     video_layer_ = std::move(new_video_layer);
   }
@@ -1437,7 +1455,7 @@ void WebMediaPlayerMS::UpdateWatchTimeReporterSecondaryProperties() {
   // TODO(https://crbug.com/1147813) Report codec information once accessible.
   watch_time_reporter_->UpdateSecondaryProperties(
       media::mojom::SecondaryPlaybackProperties::New(
-          media::kUnknownAudioCodec, media::kUnknownVideoCodec,
+          media::AudioCodec::kUnknown, media::VideoCodec::kUnknown,
           media::AudioCodecProfile::kUnknown,
           media::VideoCodecProfile::VIDEO_CODEC_PROFILE_UNKNOWN,
           media::AudioDecoderType::kUnknown, media::VideoDecoderType::kUnknown,
@@ -1519,6 +1537,16 @@ WebMediaPlayerMS::GetMediaStreamType() {
   }
 
   return absl::nullopt;
+}
+
+void WebMediaPlayerMS::RegisterFrameSinkHierarchy() {
+  if (bridge_)
+    bridge_->RegisterFrameSinkHierarchy();
+}
+
+void WebMediaPlayerMS::UnregisterFrameSinkHierarchy() {
+  if (bridge_)
+    bridge_->UnregisterFrameSinkHierarchy();
 }
 
 }  // namespace blink

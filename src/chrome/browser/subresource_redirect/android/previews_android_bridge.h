@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {
@@ -25,6 +24,10 @@ class PreviewsAndroidBridge {
 
   PreviewsAndroidBridge(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
+
+  PreviewsAndroidBridge(const PreviewsAndroidBridge&) = delete;
+  PreviewsAndroidBridge& operator=(const PreviewsAndroidBridge&) = delete;
+
   virtual ~PreviewsAndroidBridge();
 
   jboolean IsHttpsImageCompressionApplied(
@@ -34,8 +37,6 @@ class PreviewsAndroidBridge {
 
  private:
   base::WeakPtrFactory<PreviewsAndroidBridge> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PreviewsAndroidBridge);
 };
 
 #endif  // CHROME_BROWSER_SUBRESOURCE_REDIRECT_ANDROID_PREVIEWS_ANDROID_BRIDGE_H_

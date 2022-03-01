@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
@@ -81,9 +82,13 @@ class SyncSessionsRouterTabHelperBrowserTest : public InProcessBrowserTest {
             base::Unretained(this))) {}
   ~SyncSessionsRouterTabHelperBrowserTest() override = default;
 
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-    prerender_helper_.SetUpOnMainThread(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -118,7 +123,7 @@ class SyncSessionsRouterTabHelperBrowserTest : public InProcessBrowserTest {
 
  protected:
  private:
-  content::WebContents* web_contents_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
   content::test::PrerenderTestHelper prerender_helper_;
   TestLocalSessionEventHandler handler;
   TestTranslateDriverObserver observer_;
@@ -128,14 +133,14 @@ class SyncSessionsRouterTabHelperBrowserTest : public InProcessBrowserTest {
 // SyncSessionsWebContentsRouter while a page without a title is prerendered.
 IN_PROC_BROWSER_TEST_F(SyncSessionsRouterTabHelperBrowserTest,
                        SyncSessionRouterWithoutTitleInPrerender) {
-  GURL url = embedded_test_server()->GetURL("/prerender/add_prerender.html");
+  GURL url = embedded_test_server()->GetURL("/empty.html");
   // Set LanguageDetectionObserver to make sure that it starts prerendering
   // after OnLanguageDetermined() on the current loading which could trigger a
   // session sync.
   AddLanguageDetectionObserver(url);
 
   // Navigate to |url|.
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   sync_sessions::SyncSessionsWebContentsRouterFactory::GetInstance()
       ->GetForProfile(browser()->profile())

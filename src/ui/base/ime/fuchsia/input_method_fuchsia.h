@@ -10,7 +10,7 @@
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/fuchsia/virtual_keyboard_controller_fuchsia.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -24,7 +24,8 @@ namespace ui {
 class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
     : public InputMethodBase {
  public:
-  InputMethodFuchsia(internal::InputMethodDelegate* delegate,
+  InputMethodFuchsia(bool enable_virtual_keyboard,
+                     internal::InputMethodDelegate* delegate,
                      fuchsia::ui::views::ViewRef view_ref);
   ~InputMethodFuchsia() override;
 
@@ -40,7 +41,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
   bool IsCandidatePopupOpen() const final;
 
  private:
-  VirtualKeyboardControllerFuchsia virtual_keyboard_controller_;
+  absl::optional<VirtualKeyboardControllerFuchsia> virtual_keyboard_controller_;
 };
 
 }  // namespace ui

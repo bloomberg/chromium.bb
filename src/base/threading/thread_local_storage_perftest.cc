@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
 #include "base/threading/simple_thread.h"
@@ -79,6 +80,9 @@ class TLSThread : public SimpleThread {
     Start();
   }
 
+  TLSThread(const TLSThread&) = delete;
+  TLSThread& operator=(const TLSThread&) = delete;
+
   void Run() override {
     start_event_->Wait();
     std::move(action_).Run();
@@ -86,14 +90,17 @@ class TLSThread : public SimpleThread {
   }
 
  private:
-  WaitableEvent* const start_event_;
+  const raw_ptr<WaitableEvent> start_event_;
   base::OnceClosure action_;
   base::OnceClosure completion_;
-
-  DISALLOW_COPY_AND_ASSIGN(TLSThread);
 };
 
 class ThreadLocalStoragePerfTest : public testing::Test {
+ public:
+  ThreadLocalStoragePerfTest(const ThreadLocalStoragePerfTest&) = delete;
+  ThreadLocalStoragePerfTest& operator=(const ThreadLocalStoragePerfTest&) =
+      delete;
+
  protected:
   ThreadLocalStoragePerfTest() = default;
   ~ThreadLocalStoragePerfTest() override = default;
@@ -163,9 +170,6 @@ class ThreadLocalStoragePerfTest : public testing::Test {
     reporter.AddResult(metric_base + kMetricSuffixOperationTime,
                        nanos_per_operation);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadLocalStoragePerfTest);
 };
 
 }  // namespace

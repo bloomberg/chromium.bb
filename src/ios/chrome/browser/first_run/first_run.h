@@ -8,7 +8,6 @@
 #define IOS_CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 
 #include "base/files/file.h"
-#include "base/macros.h"
 
 namespace base {
 class FilePath;
@@ -38,6 +37,10 @@ class FirstRun {
     SENTINEL_RESULT_FILE_ERROR,
     SENTINEL_RESULT_MAX,
   };
+
+  FirstRun() = delete;
+  FirstRun(const FirstRun&) = delete;
+  FirstRun& operator=(const FirstRun&) = delete;
 
   // Returns true if this is the first time chrome is run for this user.
   static bool IsChromeFirstRun();
@@ -70,8 +73,6 @@ class FirstRun {
 
   // This variable should only be accessed through IsChromeFirstRun().
   static FirstRunState first_run_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };
 
 #endif  // IOS_CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
+#include <utility>
+
 #include "base/threading/thread_checker.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
@@ -11,7 +13,9 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
@@ -32,12 +36,13 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -160,9 +165,9 @@ class OutsideSettingsCSPDelegate final
     // nothing for workers/worklets.
   }
 
-  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) override {
+  void AddInspectorIssue(AuditsIssue issue) override {
     DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-    global_scope_for_logging_->AddInspectorIssue(std::move(info));
+    global_scope_for_logging_->AddInspectorIssue(std::move(issue));
   }
 
  private:
@@ -247,6 +252,10 @@ void WorkerOrWorkletGlobalScope::CountUse(WebFeature feature) {
   ReportingProxy().CountFeature(feature);
 }
 
+void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
+  Deprecation::CountDeprecation(this, feature);
+}
+
 ResourceLoadScheduler::ThrottleOptionOverride
 WorkerOrWorkletGlobalScope::GetThrottleOptionOverride() const {
   return ResourceLoadScheduler::ThrottleOptionOverride::kNone;
@@ -277,11 +286,12 @@ void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
   }
 }
 
-ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
+ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() {
   DCHECK(IsContextThread());
   // Worklets don't support subresource fetch.
   DCHECK(IsWorkerGlobalScope());
 
+  // Check if the fetcher has already been initialized, otherwise initialize it.
   if (inside_settings_resource_fetcher_)
     return inside_settings_resource_fetcher_;
 
@@ -319,7 +329,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
         GetTaskRunner(TaskType::kNetworkingUnfreezable),
         MakeGarbageCollected<LoaderFactoryForWorker>(*this,
                                                      web_worker_fetch_context_),
-        this, nullptr /* back_forward_cache_loader_helper */);
+        this, MakeGarbageCollected<BackForwardCacheLoaderHelperImpl>(*this));
     init.use_counter = MakeGarbageCollected<DetachableUseCounter>(this);
     init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
 
@@ -355,17 +365,9 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
                             nullptr /* back_forward_cache_loader_helper */));
   }
   if (IsContextPaused())
-    fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+    fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   resource_fetchers_.insert(fetcher);
   return fetcher;
-}
-
-ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
-  DCHECK(IsContextThread());
-  // Worklets don't support subresource fetch.
-  DCHECK(IsWorkerGlobalScope());
-  DCHECK(inside_settings_resource_fetcher_);
-  return inside_settings_resource_fetcher_;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
@@ -448,6 +450,16 @@ void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->SetSupportsWasmEval(SchemeRegistry::SchemeSupportsWasmEvalCSP(
         GetSecurityOrigin()->Protocol()));
+
+    // Check if the embedder wants to add any default policies, and add them.
+    WebVector<WebContentSecurityPolicyHeader> embedder_default_csp;
+    Platform::Current()->AppendContentSecurityPolicy(WebURL(Url()),
+                                                     &embedder_default_csp);
+    for (const auto& header : embedder_default_csp) {
+      csp->AddPolicies(ParseContentSecurityPolicies(
+          header.header_value, header.type, header.source, Url()));
+    }
+
     SetContentSecurityPolicy(csp);
   }
   GetContentSecurityPolicy()->AddPolicies(std::move(policies));
@@ -509,9 +521,9 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 }
 
 void WorkerOrWorkletGlobalScope::SetDefersLoadingForResourceFetchers(
-    WebURLLoader::DeferType defers) {
+    LoaderFreezeMode mode) {
   for (ResourceFetcher* resource_fetcher : resource_fetchers_)
-    resource_fetcher->SetDefersLoading(defers);
+    resource_fetcher->SetDefersLoading(mode);
 }
 
 int WorkerOrWorkletGlobalScope::GetOutstandingThrottledLimit() const {

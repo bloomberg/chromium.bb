@@ -110,13 +110,13 @@ gfx::Point AccessibilityHitTestingBrowserTest::CSSToFramePoint(
   else
     page_point = css_point;
 
-  gfx::Point frame_point = page_point - scroll_offset_;
+  gfx::Point frame_point = page_point - scroll_offset_.OffsetFromOrigin();
   return frame_point;
 }
 
 gfx::Point AccessibilityHitTestingBrowserTest::FrameToCSSPoint(
     gfx::Point frame_point) {
-  gfx::Point page_point = frame_point + scroll_offset_;
+  gfx::Point page_point = frame_point + scroll_offset_.OffsetFromOrigin();
 
   gfx::Point css_point;
   if (IsUseZoomForDSFEnabled())
@@ -272,11 +272,12 @@ void AccessibilityHitTestingBrowserTest::SimulatePinchZoom(
   const cc::RenderFrameMetadata& render_frame_metadata =
       observer.LastRenderFrameMetadata();
   DCHECK(render_frame_metadata.page_scale_factor == desired_page_scale);
-  if (render_frame_metadata.root_scroll_offset)
-    scroll_offset_ = gfx::ToRoundedVector2d(
-        render_frame_metadata.root_scroll_offset.value());
-  else
-    scroll_offset_ = gfx::Vector2d();
+  if (render_frame_metadata.root_scroll_offset) {
+    scroll_offset_ =
+        gfx::ToRoundedPoint(render_frame_metadata.root_scroll_offset.value());
+  } else {
+    scroll_offset_ = gfx::Point();
+  }
 
   // Ensure we get an accessibility update reflecting the new scale factor.
   accessibility_waiter.WaitForNotification();
@@ -344,8 +345,14 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Values(1, 2), ::testing::Bool()),
     AccessibilityHitTestingBrowserTest::TestPassToString());
 
+#if defined(THREAD_SANITIZER)
+// TODO(https://crbug.com/1224979): Times out flakily on TSAN builds.
+#define MAYBE_CachingAsyncHitTest DISABLED_CachingAsyncHitTest
+#else
+#define MAYBE_CachingAsyncHitTest CachingAsyncHitTest
+#endif
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       CachingAsyncHitTest) {
+                       MAYBE_CachingAsyncHitTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -380,7 +387,13 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, HitTest) {
+#if defined(THREAD_SANITIZER)
+// TODO(https://crbug.com/1224938): Times out flakily on TSAN builds.
+#define MAYBE_HitTest DISABLED_HitTest
+#else
+#define MAYBE_HitTest HitTest
+#endif
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, MAYBE_HitTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -480,7 +493,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
                                                 "rectA");
 
   auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   ASSERT_EQ(1U, root->child_count());
 
   FrameTreeNode* child = root->child_at(0);
@@ -635,8 +648,14 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   }
 }
 
+#if defined(THREAD_SANITIZER)
+// TODO(https://crbug.com/1224978): Times out flakily on TSAN builds.
+#define MAYBE_HitTest_WithPinchZoom DISABLED_HitTest_WithPinchZoom
+#else
+#define MAYBE_HitTest_WithPinchZoom HitTest_WithPinchZoom
+#endif
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       HitTest_WithPinchZoom) {
+                       MAYBE_HitTest_WithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -752,9 +771,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 
 // GetAXPlatformNode is currently only supported on windows and linux (excluding
 // Chrome OS or Chromecast)
-#if defined(OS_WIN) ||                                       \
-    ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-     !BUILDFLAG(IS_CHROMECAST))
+#if defined(OS_WIN) || (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST))
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
                        NearestLeafInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());

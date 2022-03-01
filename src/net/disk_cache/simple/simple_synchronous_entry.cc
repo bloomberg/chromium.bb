@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/elapsed_timer.h"
@@ -40,24 +41,23 @@ namespace {
 
 void RecordSyncOpenResult(net::CacheType cache_type, OpenEntryResult result) {
   DCHECK_LT(result, OPEN_ENTRY_MAX);
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "SyncOpenResult", cache_type, result, OPEN_ENTRY_MAX);
+  SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncOpenResult", cache_type, result,
+                     OPEN_ENTRY_MAX);
 }
 
 void RecordWriteResult(net::CacheType cache_type, SyncWriteResult result) {
-  SIMPLE_CACHE_UMA(ENUMERATION, "SyncWriteResult", cache_type, result,
-                   SYNC_WRITE_RESULT_MAX);
+  SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncWriteResult", cache_type, result,
+                     SYNC_WRITE_RESULT_MAX);
 }
 
 void RecordCheckEOFResult(net::CacheType cache_type, CheckEOFResult result) {
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "SyncCheckEOFResult", cache_type,
-                   result, CHECK_EOF_RESULT_MAX);
+  SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncCheckEOFResult", cache_type, result,
+                     CHECK_EOF_RESULT_MAX);
 }
 
 void RecordCloseResult(net::CacheType cache_type, CloseResult result) {
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "SyncCloseResult", cache_type, result, CLOSE_RESULT_MAX);
+  SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncCloseResult", cache_type, result,
+                     CLOSE_RESULT_MAX);
 }
 
 void RecordOpenPrefetchMode(net::CacheType cache_type, OpenPrefetchMode mode) {
@@ -66,7 +66,7 @@ void RecordOpenPrefetchMode(net::CacheType cache_type, OpenPrefetchMode mode) {
 }
 
 void RecordDiskCreateLatency(net::CacheType cache_type, base::TimeDelta delay) {
-  SIMPLE_CACHE_UMA(TIMES, "DiskCreateLatency", cache_type, delay);
+  SIMPLE_CACHE_LOCAL(TIMES, "DiskCreateLatency", cache_type, delay);
 }
 
 bool CanOmitEmptyFile(int file_index) {
@@ -78,7 +78,7 @@ bool CanOmitEmptyFile(int file_index) {
 bool TruncatePath(const FilePath& filename_to_truncate) {
   base::File file_to_truncate;
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_WRITE | base::File::FLAG_SHARE_DELETE;
+              base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE;
   file_to_truncate.Initialize(filename_to_truncate, flags);
   if (!file_to_truncate.IsValid())
     return false;
@@ -540,16 +540,12 @@ void SimpleSynchronousEntry::ReadData(const ReadRequest& in_entry_op,
       if (in_entry_op.request_verify_crc &&
           in_entry_op.offset + bytes_read ==
               entry_stat->data_size(in_entry_op.index)) {
-        out_result->crc_performed_verify = true;
         int checksum_result =
             CheckEOFRecord(file.get(), in_entry_op.index, *entry_stat,
                            out_result->updated_crc32);
         if (checksum_result < 0) {
-          out_result->crc_verify_ok = false;
           out_result->result = checksum_result;
           return;
-        } else {
-          out_result->crc_verify_ok = true;
         }
       }
     }
@@ -875,8 +871,7 @@ void SimpleSynchronousEntry::WriteSparseData(const SparseRequest& in_entry_op,
 }
 
 void SimpleSynchronousEntry::GetAvailableRange(const SparseRequest& in_entry_op,
-                                               int64_t* out_start,
-                                               int* out_result) {
+                                               RangeResult* out_result) {
   DCHECK(initialized_);
   int64_t offset = in_entry_op.sparse_offset;
   int len = in_entry_op.buf_len;
@@ -907,8 +902,8 @@ void SimpleSynchronousEntry::GetAvailableRange(const SparseRequest& in_entry_op,
   }
 
   int64_t len_from_start = len - (start - offset);
-  *out_start = start;
-  *out_result = static_cast<int>(std::min(avail_so_far, len_from_start));
+  *out_result = RangeResult(
+      start, static_cast<int>(std::min(avail_so_far, len_from_start)));
 }
 
 int SimpleSynchronousEntry::CheckEOFRecord(base::File* file,
@@ -1102,7 +1097,7 @@ bool SimpleSynchronousEntry::MaybeOpenFile(int file_index,
 
   FilePath filename = GetFilenameFromFileIndex(file_index);
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_WRITE | base::File::FLAG_SHARE_DELETE;
+              base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE;
   std::unique_ptr<base::File> file =
       std::make_unique<base::File>(filename, flags);
   *out_error = file->error_details();
@@ -1133,7 +1128,7 @@ bool SimpleSynchronousEntry::MaybeCreateFile(int file_index,
 
   FilePath filename = GetFilenameFromFileIndex(file_index);
   int flags = base::File::FLAG_CREATE | base::File::FLAG_READ |
-              base::File::FLAG_WRITE | base::File::FLAG_SHARE_DELETE;
+              base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE;
   std::unique_ptr<base::File> file =
       std::make_unique<base::File>(filename, flags);
 
@@ -1166,9 +1161,8 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
 
     if (!MaybeOpenFile(i, &error)) {
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR);
-      SIMPLE_CACHE_UMA(ENUMERATION,
-                       "SyncOpenPlatformFileError", cache_type_,
-                       -error, -base::File::FILE_ERROR_MAX);
+      SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncOpenPlatformFileError", cache_type_,
+                         -error, -base::File::FILE_ERROR_MAX);
       while (--i >= 0)
         CloseFile(i);
       return false;
@@ -1221,9 +1215,8 @@ bool SimpleSynchronousEntry::CreateFiles(SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     base::File::Error error;
     if (!MaybeCreateFile(i, FILE_NOT_REQUIRED, &error)) {
-      SIMPLE_CACHE_UMA(ENUMERATION,
-                       "SyncCreatePlatformFileError", cache_type_,
-                       -error, -base::File::FILE_ERROR_MAX);
+      SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncCreatePlatformFileError",
+                         cache_type_, -error, -base::File::FILE_ERROR_MAX);
       while (--i >= 0)
         CloseFile(i);
       return false;
@@ -1296,9 +1289,9 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
     int bytes_to_read = expected_header_size - old_size;
     // This resize will invalidate iterators, since it is enlarging header_data.
     header_data.resize(expected_header_size);
-    int bytes_read =
+    int read_result =
         file->Read(old_size, header_data.data() + old_size, bytes_to_read);
-    if (bytes_read != bytes_to_read) {
+    if (read_result != bytes_to_read) {
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_KEY);
       return false;
     }
@@ -1366,9 +1359,10 @@ int SimpleSynchronousEntry::InitializeForOpen(
           2,
           GetDataSizeFromFileSize(key_.size(), out_entry_stat->data_size(2)));
       const int32_t data_size_2 = out_entry_stat->data_size(2);
+      int ret_value_stream_2 = net::OK;
       if (data_size_2 < 0) {
         DLOG(WARNING) << "Stream 2 file is too small.";
-        return net::ERR_FAILED;
+        ret_value_stream_2 = net::ERR_FAILED;
       } else if (data_size_2 > 0) {
         // Validate non empty stream 2.
         SimpleFileEOF eof_record;
@@ -1376,10 +1370,17 @@ int SimpleSynchronousEntry::InitializeForOpen(
             file_tracker_->Acquire(this, SubFileForFileIndex(i));
         int file_offset =
             out_entry_stat->GetEOFOffsetInFile(key_.size(), 2 /*stream index*/);
-        int ret_value_stream_2 =
+        ret_value_stream_2 =
             GetEOFRecordData(file.get(), nullptr, i, file_offset, &eof_record);
-        if (ret_value_stream_2 != net::OK)
-          return ret_value_stream_2;
+      }
+
+      if (ret_value_stream_2 != net::OK) {
+        DCHECK_EQ(i, GetFileIndexFromStreamIndex(2));
+        DCHECK(CanOmitEmptyFile(GetFileIndexFromStreamIndex(2)));
+        // Stream 2 is broken, set its size to zero to have it automatically
+        // deleted further down in this function. For V8 this preserves the
+        // cached source when only the code cache was corrupted.
+        out_entry_stat->set_data_size(2, 0);
       }
     }
   }
@@ -1496,8 +1497,6 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
     size_t offset = file_size - length;
     if (!prefetch_data.PrefetchFromFile(&file, offset, length))
       return net::ERR_FAILED;
-    SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerPrefetchSize", cache_type_,
-                     trailer_prefetch_size);
   } else {
     // Do no prefetching.
     RecordOpenPrefetchMode(cache_type_, prefetch_mode);
@@ -1546,13 +1545,6 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
   // know exactly how much to read next time.
   computed_trailer_prefetch_size_ =
       prefetch_data.GetDesiredTrailerPrefetchSize();
-
-  // If we performed a trailer prefetch, record how accurate the prefetch was
-  // compared to the ideal value.
-  if (prefetch_mode == OPEN_PREFETCH_TRAILER) {
-    SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerPrefetchDelta", cache_type_,
-                     (trailer_prefetch_size - computed_trailer_prefetch_size_));
-  }
 
   // If prefetch buffer is available, and we have sha256(key) (so we don't need
   // to look at the header), extract out stream 1 info as well.
@@ -1719,7 +1711,7 @@ bool SimpleSynchronousEntry::OpenSparseFileIfExists(
   FilePath filename =
       path_.AppendASCII(GetSparseFilenameFromEntryFileKey(entry_file_key_));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_WRITE | base::File::FLAG_SHARE_DELETE;
+              base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE;
   std::unique_ptr<base::File> sparse_file =
       std::make_unique<base::File>(filename, flags);
   if (!sparse_file->IsValid())
@@ -1741,7 +1733,7 @@ bool SimpleSynchronousEntry::CreateSparseFile() {
   FilePath filename =
       path_.AppendASCII(GetSparseFilenameFromEntryFileKey(entry_file_key_));
   int flags = base::File::FLAG_CREATE | base::File::FLAG_READ |
-              base::File::FLAG_WRITE | base::File::FLAG_SHARE_DELETE;
+              base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE;
   std::unique_ptr<base::File> sparse_file =
       std::make_unique<base::File>(filename, flags);
   if (!sparse_file->IsValid())

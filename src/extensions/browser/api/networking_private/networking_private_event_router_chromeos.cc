@@ -5,7 +5,6 @@
 #include "extensions/browser/api/networking_private/networking_private_event_router.h"
 
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -59,6 +58,12 @@ class NetworkingPrivateEventRouterImpl
       public chromeos::NetworkCertificateHandler::Observer {
  public:
   explicit NetworkingPrivateEventRouterImpl(content::BrowserContext* context);
+
+  NetworkingPrivateEventRouterImpl(const NetworkingPrivateEventRouterImpl&) =
+      delete;
+  NetworkingPrivateEventRouterImpl& operator=(
+      const NetworkingPrivateEventRouterImpl&) = delete;
+
   ~NetworkingPrivateEventRouterImpl() override;
 
  protected:
@@ -90,8 +95,6 @@ class NetworkingPrivateEventRouterImpl
 
   content::BrowserContext* context_;
   bool listening_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterImpl);
 };
 
 NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(

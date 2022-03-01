@@ -9,11 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/token.h"
+#include "build/build_config.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/video_capture_types.mojom-shared.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/media/video_capture.h"
@@ -25,6 +28,8 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/webrtc_overrides/metronome_provider.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -60,7 +65,13 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // RestartCallback is used for both the StopForRestart and Restart operations.
   using RestartCallback = base::OnceCallback<void(RestartResult)>;
 
-  MediaStreamVideoSource();
+  explicit MediaStreamVideoSource(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+  MediaStreamVideoSource(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<MetronomeProvider> metronome_provider);
+  MediaStreamVideoSource(const MediaStreamVideoSource&) = delete;
+  MediaStreamVideoSource& operator=(const MediaStreamVideoSource&) = delete;
   ~MediaStreamVideoSource() override;
 
   // Returns the MediaStreamVideoSource object owned by |source|.
@@ -166,6 +177,16 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // Returns true if encoded output can be enabled in the source.
   virtual bool SupportsEncodedOutput() const;
 
+#if !defined(OS_ANDROID)
+  // Start/stop cropping a video track.
+  // Non-empty |crop_id| sets (or changes) the crop-target.
+  // Empty |crop_id| reverts the capture to its original, uncropped state.
+  // The callback reports success/failure.
+  virtual void Crop(
+      const base::Token& crop_id,
+      base::OnceCallback<void(media::mojom::CropRequestResult)> callback);
+#endif
+
   // Notifies the source about that the number of encoded sinks have been
   // updated. Note: Can only be called if the number of encoded sinks have
   // actually changed!
@@ -181,7 +202,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   virtual VideoCaptureFeedbackCB GetFeedbackCallback() const;
 
   size_t NumTracks() const {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(GetTaskRunner()->BelongsToCurrentThread());
     return tracks_.size();
   }
 
@@ -298,7 +319,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // in the context of the callback. If gUM fails, the implementation will
   // simply drop the references to the blink source and track which will lead
   // to this object being deleted.
-  void FinalizeAddPendingTracks();
+  void FinalizeAddPendingTracks(mojom::MediaStreamRequestResult result);
 
   // Actually adds |track| to this source, provided the source has started.
   void FinalizeAddTrack(MediaStreamVideoTrack* track,
@@ -337,22 +358,23 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings;
     ConstraintsOnceCallback callback;
   };
-  std::vector<PendingTrackInfo> pending_tracks_;
+  Vector<PendingTrackInfo> pending_tracks_;
 
   // |restart_callback_| is used for notifying both StopForRestart and Restart,
   // since it is impossible to have a situation where there can be callbacks
   // for both at the same time.
   RestartCallback restart_callback_;
 
+  const scoped_refptr<MetronomeProvider> metronome_provider_;
   // |track_adapter_| delivers video frames to the tracks on the IO-thread.
   scoped_refptr<VideoTrackAdapter> track_adapter_;
 
   // Tracks that currently are connected to this source.
-  std::vector<MediaStreamVideoTrack*> tracks_;
+  Vector<MediaStreamVideoTrack*> tracks_;
 
   // Tracks that have no paths to a consuming endpoint, and so do not need
   // frames delivered from the source. This is a subset of |tracks_|.
-  std::vector<MediaStreamVideoTrack*> suspended_tracks_;
+  Vector<MediaStreamVideoTrack*> suspended_tracks_;
 
   // This is used for tracking if all connected video sinks are secure.
   SecureDisplayLinkTracker<MediaStreamVideoTrack> secure_tracker_;
@@ -365,8 +387,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // died before this callback is resolved, we still need to trigger the
   // callback to notify the caller that the request is canceled.
   base::OnceClosure remove_last_track_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoSource);
 };
 
 }  // namespace blink

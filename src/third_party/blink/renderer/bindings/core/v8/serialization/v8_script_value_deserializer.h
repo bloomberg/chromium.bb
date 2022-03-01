@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_V8_SCRIPT_VALUE_DESERIALIZER_H_
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialization_tag.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_color_params.h"
@@ -43,6 +42,10 @@ class CORE_EXPORT V8ScriptValueDeserializer
   V8ScriptValueDeserializer(ScriptState*,
                             scoped_refptr<SerializedScriptValue>,
                             const Options& = Options());
+
+  V8ScriptValueDeserializer(const V8ScriptValueDeserializer&) = delete;
+  V8ScriptValueDeserializer& operator=(const V8ScriptValueDeserializer&) =
+      delete;
 
   v8::Local<v8::Value> Deserialize();
 
@@ -110,8 +113,6 @@ class CORE_EXPORT V8ScriptValueDeserializer
       v8::Isolate*,
       uint32_t) override;
 
-  bool TransferableStreamsEnabled() const;
-
   ScriptState* script_state_;
   UnpackedSerializedScriptValue* unpacked_value_;
   scoped_refptr<SerializedScriptValue> serialized_script_value_;
@@ -131,8 +132,6 @@ class CORE_EXPORT V8ScriptValueDeserializer
 #if DCHECK_IS_ON()
   bool deserialize_invoked_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(V8ScriptValueDeserializer);
 };
 
 }  // namespace blink

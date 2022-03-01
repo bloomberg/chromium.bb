@@ -11,12 +11,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.support.test.filters.SmallTest;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 
+import androidx.test.filters.SmallTest;
+
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -43,6 +45,7 @@ import java.lang.ref.WeakReference;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Ignore("https://crbug.com/1216298")
 public class DisplayCutoutControllerTest {
     @Mock
     private TabImpl mTab;

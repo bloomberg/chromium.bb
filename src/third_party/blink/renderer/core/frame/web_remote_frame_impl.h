@@ -39,14 +39,14 @@ class CORE_EXPORT WebRemoteFrameImpl final
       const RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       WebFrame* opener);
-  static WebRemoteFrameImpl* CreateForPortal(
+  static WebRemoteFrameImpl* CreateForPortalOrFencedFrame(
       mojom::blink::TreeScopeType,
       WebRemoteFrameClient*,
       InterfaceRegistry*,
       AssociatedInterfaceProvider*,
       const RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
-      const WebElement& portal_element);
+      const WebElement& frame_owner);
 
   WebRemoteFrameImpl(mojom::blink::TreeScopeType,
                      WebRemoteFrameClient*,
@@ -93,18 +93,13 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetReplicatedInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy) override;
   void SetReplicatedInsecureNavigationsSet(const WebVector<unsigned>&) override;
-  void SetReplicatedAdFrameType(
-      mojom::blink::AdFrameType ad_frame_type) override;
+  void SetReplicatedIsAdSubframe(bool is_ad_subframe) override;
   void DidStartLoading() override;
-  bool IsIgnoredForHitTest() const override;
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType update_type,
       mojom::blink::UserActivationNotificationType notification_type) override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
-  void SynchronizeVisualProperties() override;
-  void ResendVisualProperties() override;
-  float GetCompositingScaleFactor() override;
   WebString UniqueName() const override;
   const FrameVisualProperties& GetPendingVisualPropertiesForTesting()
       const override;
@@ -154,7 +149,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is
   // cleared upon close().
-  SelfKeepAlive<WebRemoteFrameImpl> self_keep_alive_;
+  SelfKeepAlive<WebRemoteFrameImpl> self_keep_alive_{this};
 };
 
 template <>

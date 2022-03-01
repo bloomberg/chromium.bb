@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/file_metrics_provider.h"
@@ -45,6 +44,10 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
                                       public ukm::UkmConsentStateObserver,
                                       public web::GlobalWebStateObserver {
  public:
+  IOSChromeMetricsServiceClient(const IOSChromeMetricsServiceClient&) = delete;
+  IOSChromeMetricsServiceClient& operator=(
+      const IOSChromeMetricsServiceClient&) = delete;
+
   ~IOSChromeMetricsServiceClient() override;
 
   // Factory function.
@@ -60,6 +63,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   void SetMetricsClientId(const std::string& client_id) override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;
+  const network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   bool GetBrand(std::string* brand_code) override;
   metrics::SystemProfileProto::Channel GetChannel() override;
   bool IsExtendedStableChannel() override;
@@ -73,7 +77,6 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
       override;
   base::TimeDelta GetStandardUploadInterval() override;
-  void OnRendererProcessCrash() override;
   bool IsUkmAllowedForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetUploadSigningKey() override;
@@ -163,8 +166,6 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   base::CallbackListSubscription omnibox_url_opened_subscription_;
 
   base::WeakPtrFactory<IOSChromeMetricsServiceClient> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeMetricsServiceClient);
 };
 
 #endif  // IOS_CHROME_BROWSER_METRICS_IOS_CHROME_METRICS_SERVICE_CLIENT_H_

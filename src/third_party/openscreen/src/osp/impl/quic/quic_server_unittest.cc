@@ -5,6 +5,8 @@
 #include "osp/impl/quic/quic_server.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -104,10 +106,10 @@ class QuicServerTest : public Test {
                     0, _, msgs::Type::kPresentationConnectionMessage, _, _, _))
         .WillOnce(Invoke([&decode_result, &received_message](
                              uint64_t endpoint_id, uint64_t connection_id,
-                             msgs::Type message_type, const uint8_t* buffer,
+                             msgs::Type message_type, const uint8_t* buf,
                              size_t buffer_size, Clock::time_point now) {
           decode_result = msgs::DecodePresentationConnectionMessage(
-              buffer, buffer_size, &received_message);
+              buf, buffer_size, &received_message);
           if (decode_result < 0)
             return ErrorOr<size_t>(Error::Code::kCborParsing);
           return ErrorOr<size_t>(decode_result);

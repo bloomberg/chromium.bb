@@ -36,6 +36,10 @@ const char kBadPassword[] = "bad_password";
 const char kCustomApnList[] = "custom_apn_list";
 const char kHasFixedHiddenNetworks[] =
     "metadata_store.has_fixed_hidden_networks";
+const char kEnableTrafficCountersAutoReset[] =
+    "enable_traffic_counters_auto_reset";
+const char kDayOfTrafficCountersAutoReset[] =
+    "day_of_traffic_counters_auto_reset";
 
 std::string GetPath(const std::string& guid, const std::string& subkey) {
   return base::StringPrintf("%s.%s", guid.c_str(), subkey.c_str());
@@ -180,7 +184,7 @@ void NetworkMetadataStore::FixSyncedHiddenNetworks() {
     dict.SetBoolKey(shill::kWifiHiddenSsid, false);
     network_configuration_handler_->SetShillProperties(
         network->path(), base::Value::AsDictionaryValue(dict),
-        base::DoNothing::Once(),
+        base::DoNothing(),
         base::BindOnce(&NetworkMetadataStore::OnDisableHiddenError,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -310,14 +314,14 @@ void NetworkMetadataStore::UpdateExternalModifications(
 void NetworkMetadataStore::OnConfigurationModified(
     const std::string& service_path,
     const std::string& guid,
-    base::DictionaryValue* set_properties) {
+    const base::Value* set_properties) {
   if (!set_properties) {
     return;
   }
 
   SetPref(guid, kIsFromSync, base::Value(false));
 
-  if (set_properties->HasKey(shill::kProxyConfigProperty)) {
+  if (set_properties->FindKey(shill::kProxyConfigProperty)) {
     UpdateExternalModifications(guid, shill::kProxyConfigProperty);
   }
   if (set_properties->FindPath(
@@ -326,7 +330,7 @@ void NetworkMetadataStore::OnConfigurationModified(
     UpdateExternalModifications(guid, shill::kNameServersProperty);
   }
 
-  if (set_properties->HasKey(shill::kPassphraseProperty)) {
+  if (set_properties->FindKey(shill::kPassphraseProperty)) {
     // Only clear last connected if the passphrase changes.  Other settings
     // (autoconnect, dns, etc.) won't affect the ability to connect to a
     // network.
@@ -356,7 +360,7 @@ void NetworkMetadataStore::RemoveNetworkFromPref(
 
   const base::DictionaryValue* dict =
       pref_service->GetDictionary(kNetworkMetadataPref);
-  if (!dict || !dict->HasKey(network_guid)) {
+  if (!dict || !dict->FindKey(network_guid)) {
     return;
   }
 
@@ -382,7 +386,7 @@ base::TimeDelta NetworkMetadataStore::GetLastConnectedTimestamp(
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMillisecondsD(timestamp->GetDouble());
+  return base::Milliseconds(timestamp->GetDouble());
 }
 
 void NetworkMetadataStore::SetLastConnectedTimestamp(
@@ -448,6 +452,28 @@ void NetworkMetadataStore::SetCustomAPNList(const std::string& network_guid,
 const base::Value* NetworkMetadataStore::GetCustomAPNList(
     const std::string& network_guid) {
   return GetPref(network_guid, kCustomApnList);
+}
+
+void NetworkMetadataStore::SetEnableTrafficCountersAutoReset(
+    const std::string& network_guid,
+    bool enable) {
+  SetPref(network_guid, kEnableTrafficCountersAutoReset, base::Value(enable));
+}
+
+void NetworkMetadataStore::SetDayOfTrafficCountersAutoReset(
+    const std::string& network_guid,
+    int day) {
+  SetPref(network_guid, kDayOfTrafficCountersAutoReset, base::Value(day));
+}
+
+const base::Value* NetworkMetadataStore::GetEnableTrafficCountersAutoReset(
+    const std::string& network_guid) {
+  return GetPref(network_guid, kEnableTrafficCountersAutoReset);
+}
+
+const base::Value* NetworkMetadataStore::GetDayOfTrafficCountersAutoReset(
+    const std::string& network_guid) {
+  return GetPref(network_guid, kDayOfTrafficCountersAutoReset);
 }
 
 void NetworkMetadataStore::SetPref(const std::string& network_guid,

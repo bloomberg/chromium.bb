@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/hash/hash.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace media_router {
@@ -22,10 +23,6 @@ constexpr char kRemotePlaybackPresentationUrlScheme[] = "remote-playback";
 // URL prefix used by legacy Cast presentations.
 constexpr char kLegacyCastPresentationUrlPrefix[] =
     "https://google.com/cast#__castAppId__=";
-
-// A Cast SDK enabled website (e.g. Google Slides) may use the mirroring app ID
-// rather than the tab mirroring URN.
-constexpr char kMirroringAppUri[] = "cast:0F5096E8";
 
 // Strings used in presentation IDs by the Cast SDK implementation.
 // TODO(takumif): Move them out of this file, since they are not directly

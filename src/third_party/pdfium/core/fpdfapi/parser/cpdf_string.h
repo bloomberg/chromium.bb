@@ -9,7 +9,6 @@
 
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_pool_template.h"
 #include "core/fxcrt/weak_ptr.h"
@@ -31,6 +30,7 @@ class CPDF_String final : public CPDF_Object {
                const CPDF_Encryptor* encryptor) const override;
 
   bool IsHex() const { return m_bHex; }
+  ByteString EncodeString() const;
 
  private:
   CPDF_String();

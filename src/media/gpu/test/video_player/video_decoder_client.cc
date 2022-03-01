@@ -22,8 +22,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-#include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
 #include "media/gpu/chromeos/platform_video_frame_pool.h"
+#include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include "media/gpu/chromeos/video_frame_converter.h"
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
@@ -185,16 +185,11 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
   switch (decoder_client_config_.implementation) {
     case DecoderImplementation::kVD:
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
-        decoder_ = ChromeosVideoDecoderFactory::Create(
-            base::ThreadTaskRunnerHandle::Get(),
-            std::make_unique<PlatformVideoFramePool>(
-                gpu_memory_buffer_factory_),
-            std::make_unique<VideoFrameConverter>(),
-            std::make_unique<NullMediaLog>());
-      } else {
-        LOG(ERROR) << "VD-based video decoders only support import mode";
-      }
+      decoder_ = VideoDecoderPipeline::Create(
+          base::ThreadTaskRunnerHandle::Get(),
+          std::make_unique<PlatformVideoFramePool>(gpu_memory_buffer_factory_),
+          std::make_unique<VideoFrameConverter>(),
+          std::make_unique<NullMediaLog>());
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       break;
     case DecoderImplementation::kVDA:
@@ -203,10 +198,14 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
       // can use the TestVDAVideoDecoder wrapper here to test VDA-based video
       // decoders.
       decoder_ = std::make_unique<TestVDAVideoDecoder>(
-          decoder_client_config_.allocation_mode,
           decoder_client_config_.implementation ==
               DecoderImplementation::kVDVDA,
-          gfx::ColorSpace(), frame_renderer_.get(), gpu_memory_buffer_factory_);
+          // base::Unretained(this) is safe because |decoder_| is owned by
+          // |*this|. The lifetime of |decoder_| must be shorter than |*this|.
+          base::BindRepeating(&VideoDecoderClient::ResolutionChangeTask,
+                              base::Unretained(this)),
+          gfx::ColorSpace(), frame_renderer_.get(), gpu_memory_buffer_factory_,
+          decoder_client_config_.linear_output);
       break;
   }
 
@@ -224,7 +223,7 @@ void VideoDecoderClient::InitializeDecoderTask(const Video* video,
 
   video_ = video;
   encoded_data_helper_ =
-      std::make_unique<EncodedDataHelper>(video_->Data(), video_->Profile());
+      std::make_unique<EncodedDataHelper>(video_->Data(), video_->Codec());
 
   // (Re-)initialize the decoder.
   VideoDecoderConfig config(
@@ -310,9 +309,14 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
     return;
   }
   bitstream_buffer->set_timestamp(base::TimeTicks::Now().since_origin());
-  bool has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
-      bitstream_buffer->data(), bitstream_buffer->data_size(),
-      video_->Profile());
+
+  bool has_config_info = false;
+  if (video_->Codec() == media::VideoCodec::kH264 ||
+      video_->Codec() == media::VideoCodec::kHEVC) {
+    has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
+        bitstream_buffer->data(), bitstream_buffer->data_size(),
+        video_->Profile());
+  }
 
   VideoDecoder::DecodeCB decode_cb = base::BindOnce(
       CallbackThunk<decltype(&VideoDecoderClient::DecodeDoneTask),
@@ -428,7 +432,13 @@ void VideoDecoderClient::ResetDoneTask() {
   FireEvent(VideoPlayerEvent::kResetDone);
 }
 
-void VideoDecoderClient::FireEvent(VideoPlayerEvent event) {
+bool VideoDecoderClient::ResolutionChangeTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+
+  return FireEvent(VideoPlayerEvent::kNewBuffersRequested);
+}
+
+bool VideoDecoderClient::FireEvent(VideoPlayerEvent event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
 
   bool continue_decoding = event_cb_.Run(event);
@@ -436,6 +446,7 @@ void VideoDecoderClient::FireEvent(VideoPlayerEvent event) {
     // Changing the state to idle will abort any pending decodes.
     decoder_client_state_ = VideoDecoderClientState::kIdle;
   }
+  return continue_decoding;
 }
 
 }  // namespace test

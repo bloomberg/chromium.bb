@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -37,6 +36,10 @@ class AlarmManager {
   // Construct and start the alarm manager. The clock poller will run on the
   // caller's thread.
   AlarmManager();
+
+  AlarmManager(const AlarmManager&) = delete;
+  AlarmManager& operator=(const AlarmManager&) = delete;
+
   ~AlarmManager();
 
   // For testing only. Allows setting a fake clock and using a custom task
@@ -67,6 +70,10 @@ class AlarmManager {
     AlarmInfo(base::OnceClosure task,
               base::Time time,
               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+    AlarmInfo(const AlarmInfo&) = delete;
+    AlarmInfo& operator=(const AlarmInfo&) = delete;
+
     ~AlarmInfo();
 
     void PostTask();
@@ -77,7 +84,6 @@ class AlarmManager {
     base::OnceClosure task_;
     const base::Time time_;
     const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-    DISALLOW_COPY_AND_ASSIGN(AlarmInfo);
   };
 
   // Check if an alarm should fire.
@@ -110,8 +116,6 @@ class AlarmManager {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<AlarmManager> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlarmManager);
 };
 
 }  // namespace chromecast

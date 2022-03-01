@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -158,6 +157,9 @@ class KerberosAddAccountRunner {
     AddAccount();
   }
 
+  KerberosAddAccountRunner(const KerberosAddAccountRunner&) = delete;
+  KerberosAddAccountRunner& operator=(const KerberosAddAccountRunner&) = delete;
+
  private:
   // Adds the |normalized_principal_| account to the Kerberos daemon.
   void AddAccount() {
@@ -284,7 +286,6 @@ class KerberosAddAccountRunner {
   bool is_new_account_ = false;
 
   base::WeakPtrFactory<KerberosAddAccountRunner> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(KerberosAddAccountRunner);
 };
 
 KerberosCredentialsManager::Observer::Observer() = default;
@@ -648,27 +649,6 @@ void KerberosCredentialsManager::OnValidateConfig(
   std::move(callback).Run(std::move(response));
 }
 
-void KerberosCredentialsManager::AcquireKerberosTgt(std::string principal_name,
-                                                    const std::string& password,
-                                                    ResultCallback callback) {
-  if (!NormalizePrincipalOrPostCallback(&principal_name, &callback))
-    return;
-
-  kerberos::AcquireKerberosTgtRequest request;
-  request.set_principal_name(principal_name);
-  KerberosClient::Get()->AcquireKerberosTgt(
-      request, data_pipe_utils::GetDataReadPipe(password).get(),
-      base::BindOnce(&KerberosCredentialsManager::OnAcquireKerberosTgt,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void KerberosCredentialsManager::OnAcquireKerberosTgt(
-    ResultCallback callback,
-    const kerberos::AcquireKerberosTgtResponse& response) {
-  LogError("AcquireKerberosTgt", response.error());
-  std::move(callback).Run(response.error());
-}
-
 void KerberosCredentialsManager::GetKerberosFiles() {
   if (GetActivePrincipalName().empty())
     return;
@@ -931,18 +911,12 @@ void KerberosCredentialsManager::NotifyRequiresLoginPassword(
 
 void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
     const std::string& principal_name) {
-  // The correct URL path for Kerberos accounts subpage, according to the
-  // Kerberos settings section flag.
-  const std::string kSubpagePath =
-      chromeos::features::IsKerberosSettingsSectionEnabled()
-          ? chromeos::settings::mojom::kKerberosAccountsV2SubpagePath
-          : chromeos::settings::mojom::kKerberosAccountsSubpagePath;
-
   // TODO(https://crbug.com/952245): Right now, the reauth dialog is tied to the
   // settings. Consider creating a standalone reauth dialog.
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       primary_profile_,
-      kSubpagePath + "?kerberos_reauth=" +
+      chromeos::settings::mojom::kKerberosAccountsV2SubpagePath +
+          std::string("?kerberos_reauth=") +
           net::EscapeQueryParamValue(principal_name, false /* use_plus */));
 
   // Close last! |principal_name| is owned by the notification.

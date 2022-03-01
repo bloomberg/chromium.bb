@@ -70,6 +70,11 @@ cr.define('settings', function() {
     r.BLUETOOTH_DEVICES = createSubpage(
         r.BLUETOOTH, mojom.BLUETOOTH_DEVICES_SUBPAGE_PATH,
         Subpage.kBluetoothDevices);
+    if (loadTimeData.getBoolean('enableBluetoothRevamp')) {
+      r.BLUETOOTH_DEVICE_DETAIL = createSubpage(
+          r.BLUETOOTH, mojom.BLUETOOTH_DEVICE_DETAIL_SUBPAGE_PATH,
+          Subpage.kBluetoothDeviceDetail);
+    }
 
     // MultiDevice section.
     if (!loadTimeData.getBoolean('isGuest')) {
@@ -94,42 +99,23 @@ cr.define('settings', function() {
           createSection(r.BASIC, mojom.PEOPLE_SECTION_PATH, Section.kPeople);
       r.ACCOUNT_MANAGER = createSubpage(
           r.OS_PEOPLE, mojom.MY_ACCOUNTS_SUBPAGE_PATH, Subpage.kMyAccounts);
-      if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
         r.OS_SYNC =
             createSubpage(r.OS_PEOPLE, mojom.SYNC_SUBPAGE_PATH, Subpage.kSync);
       }
       r.SYNC = createSubpage(
           r.OS_PEOPLE, mojom.SYNC_DEPRECATED_SUBPAGE_PATH,
           Subpage.kSyncDeprecated);
-      if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      if (!loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
         r.SYNC_ADVANCED = createSubpage(
             r.SYNC, mojom.SYNC_DEPRECATED_ADVANCED_SUBPAGE_PATH,
             Subpage.kSyncDeprecatedAdvanced);
       }
-      if (!loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled')) {
-        r.LOCK_SCREEN = createSubpage(
-            r.OS_PEOPLE, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH,
-            Subpage.kSecurityAndSignIn);
-        r.FINGERPRINT = createSubpage(
-            r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH,
-            Subpage.kFingerprint);
-        r.ACCOUNTS = createSubpage(
-            r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
-            Subpage.kManageOtherPeople);
-      }
-      r.KERBEROS_ACCOUNTS = createSubpage(
-          r.OS_PEOPLE, mojom.KERBEROS_ACCOUNTS_SUBPAGE_PATH,
-          Subpage.kKerberosAccounts);
     }
 
-    const isKerberosEnabled = loadTimeData.valueExists('isKerberosEnabled') &&
-        loadTimeData.getBoolean('isKerberosEnabled');
-    const isKerberosSettingsSectionEnabled =
-        loadTimeData.valueExists('isKerberosSettingsSectionEnabled') &&
-        loadTimeData.getBoolean('isKerberosSettingsSectionEnabled');
-
     // Kerberos section.
-    if (isKerberosEnabled && isKerberosSettingsSectionEnabled) {
+    if (loadTimeData.valueExists('isKerberosEnabled') &&
+        loadTimeData.getBoolean('isKerberosEnabled')) {
       r.KERBEROS = createSection(
           r.BASIC, mojom.KERBEROS_SECTION_PATH, Section.kKerberos);
       r.KERBEROS_ACCOUNTS_V2 = createSubpage(
@@ -172,6 +158,8 @@ cr.define('settings', function() {
       r.AMBIENT_MODE_PHOTOS = createSubpage(
           r.AMBIENT_MODE, 'ambientMode/photos',
           Subpage.kAmbientModeGooglePhotosAlbum);
+      r.DARK_MODE = createSubpage(
+          r.PERSONALIZATION, mojom.DARK_MODE_SUBPAGE_PATH, Subpage.kDarkMode);
     }
 
     // Search and Assistant section.
@@ -185,6 +173,9 @@ cr.define('settings', function() {
 
     // Apps section.
     r.APPS = createSection(r.BASIC, mojom.APPS_SECTION_PATH, Section.kApps);
+    r.APP_NOTIFICATIONS = createSubpage(
+        r.APPS, mojom.APP_NOTIFICATIONS_SUBPAGE_PATH,
+        Subpage.kAppNotifications);
     r.APP_MANAGEMENT = createSubpage(
         r.APPS, mojom.APP_MANAGEMENT_SUBPAGE_PATH, Subpage.kAppManagement);
     r.APP_MANAGEMENT_DETAIL = createSubpage(
@@ -194,6 +185,12 @@ cr.define('settings', function() {
       r.ANDROID_APPS_DETAILS = createSubpage(
           r.APPS, mojom.GOOGLE_PLAY_STORE_SUBPAGE_PATH,
           Subpage.kGooglePlayStore);
+      if (loadTimeData.valueExists('showArcvmManageUsb') &&
+          loadTimeData.getBoolean('showArcvmManageUsb')) {
+        r.ANDROID_APPS_DETAILS_ARC_VM_SHARED_USB_DEVICES = createSubpage(
+            r.ANDROID_APPS_DETAILS, mojom.ARC_VM_USB_PREFERENCES_SUBPAGE_PATH,
+            Subpage.kArcVmUsbPreferences);
+      }
     }
     if (loadTimeData.valueExists('showPluginVm') &&
         loadTimeData.getBoolean('showPluginVm')) {
@@ -203,11 +200,6 @@ cr.define('settings', function() {
       r.APP_MANAGEMENT_PLUGIN_VM_SHARED_USB_DEVICES = createSubpage(
           r.APP_MANAGEMENT, mojom.PLUGIN_VM_USB_PREFERENCES_SUBPAGE_PATH,
           Subpage.kPluginVmUsbPreferences);
-    }
-    if (loadTimeData.valueExists('showStartup') &&
-        loadTimeData.getBoolean('showStartup')) {
-      r.ON_STARTUP = createSubpage(
-          r.APPS, mojom.ON_STARTUP_SUBPAGE_PATH, Subpage.kOnStartup);
     }
 
     // Crostini section.
@@ -230,6 +222,13 @@ cr.define('settings', function() {
             r.CROSTINI_DETAILS, mojom.CROSTINI_BACKUP_AND_RESTORE_SUBPAGE_PATH,
             Subpage.kCrostiniBackupAndRestore);
       }
+      if (loadTimeData.valueExists('showCrostiniExtraContainers') &&
+          loadTimeData.getBoolean('showCrostiniExtraContainers')) {
+        r.CROSTINI_EXTRA_CONTAINERS = createSubpage(
+            r.CROSTINI_DETAILS, mojom.CROSTINI_EXTRA_CONTAINERS_SUBPAGE_PATH,
+            Subpage.kCrostiniExtraContainers);
+      }
+
       r.CROSTINI_ANDROID_ADB = createSubpage(
           r.CROSTINI_DETAILS, mojom.CROSTINI_DEVELOP_ANDROID_APPS_SUBPAGE_PATH,
           Subpage.kCrostiniDevelopAndroidApps);
@@ -245,25 +244,20 @@ cr.define('settings', function() {
         r.DATETIME, mojom.TIME_ZONE_SUBPAGE_PATH, Subpage.kTimeZone);
 
     // Privacy and Security section.
-
-    if (loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled')) {
-      r.OS_PRIVACY = createSection(
-          r.BASIC, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
-          Section.kPrivacyAndSecurity);
-      r.LOCK_SCREEN = createSubpage(
-          r.OS_PRIVACY, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH_V2,
-          Subpage.kSecurityAndSignInV2);
-      r.FINGERPRINT = createSubpage(
-          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH_V2,
-          Subpage.kFingerprintV2);
-      r.ACCOUNTS = createSubpage(
-          r.OS_PRIVACY, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH_V2,
-          Subpage.kManageOtherPeopleV2);
-    } else {
-      r.OS_PRIVACY = createSection(
-          r.ADVANCED, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
-          Section.kPrivacyAndSecurity);
-    }
+    r.OS_PRIVACY = createSection(
+        r.BASIC, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
+        Section.kPrivacyAndSecurity);
+    r.LOCK_SCREEN = createSubpage(
+        r.OS_PRIVACY, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH_V2,
+        Subpage.kSecurityAndSignInV2);
+    r.FINGERPRINT = createSubpage(
+        r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH_V2,
+        Subpage.kFingerprintV2);
+    r.ACCOUNTS = createSubpage(
+        r.OS_PRIVACY, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH_V2,
+        Subpage.kManageOtherPeopleV2);
+    r.SMART_PRIVACY = createSubpage(
+        r.OS_PRIVACY, mojom.SMART_PRIVACY_SUBPAGE_PATH, Subpage.kSmartPrivacy);
 
     // Languages and Input section.
     r.OS_LANGUAGES = createSection(

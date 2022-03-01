@@ -16,21 +16,16 @@
 """Helper library for handling infeed between hosts and TPUs.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import itertools
 
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorflow.compiler.xla.experimental.xla_sharding import xla_sharding
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import array_ops
-from tensorflow.python.tpu import tpu
+from tensorflow.python.tpu import tpu_name_util
 from tensorflow.python.tpu import tpu_sharding
 from tensorflow.python.tpu.ops import tpu_ops
 
@@ -135,6 +130,7 @@ class InfeedQueue(object):
                tuple_types=None,
                tuple_shapes=None,
                shard_dimensions=None,
+               number_of_partitions=None,
                name=None):
     """Creates a new InfeedQueue with the given configuration.
 
@@ -150,6 +146,13 @@ class InfeedQueue(object):
       shard_dimensions: if not None, a list of dimensions on which the
         elements of the queue should be sharded during automatic
         parallelization.
+      number_of_partitions: if > 1, the infeed dequeue shape will contain
+        the full shape that includes all partitions and add corresponding XLA
+        annotation on the infeed dequeue op. In this case, the infeed is still
+        data parallel that feeds per-core batch size to each core while the XLA
+        computation may be partitioned. As XLA requires infeed dequeue shape to
+        be per-replica shape, thus we need number_of_partitions here to
+        calculate the per-replica unpartitioned shape.
       name: the name of the queue.
 
     Raises:
@@ -166,6 +169,10 @@ class InfeedQueue(object):
     self._generated_enqueue_ops = False
     self._generated_dequeue_op = False
     self._name = "InfeedQueue" if name is None else name
+    if number_of_partitions is None:
+      self._number_of_partitions = 1
+    else:
+      self._number_of_partitions = number_of_partitions
     if number_of_tuple_elements is None:
       if tuple_types is not None:
         number_of_tuple_elements = len(tuple_types)
@@ -182,8 +189,7 @@ class InfeedQueue(object):
                        number_of_tuple_elements)
     # Make an empty sharding policy for each tuple element.
     self._sharding_policies = [
-        tpu_sharding.ShardingPolicy()
-        for _ in xrange(number_of_tuple_elements)
+        tpu_sharding.ShardingPolicy() for _ in range(number_of_tuple_elements)
     ]
     if tuple_types is not None:
       self.set_tuple_types(tuple_types)
@@ -359,6 +365,7 @@ class InfeedQueue(object):
     """
     for policy in self._sharding_policies:
       policy.set_number_of_shards(number_of_shards)
+      policy.set_number_of_partitions(self._number_of_partitions)
     self._validate()
 
   def set_configuration_from_input_tensors(self, input_tensors):
@@ -415,15 +422,16 @@ class InfeedQueue(object):
                 str(input_tensors), self.number_of_tuple_elements))
     # Transpose the inputs to make a list of shard shapes for each tuple
     # element.
-    sharded_shapes = [[t[i].shape for t in input_tensors]
-                      for i in xrange(self.number_of_tuple_elements)]
+    sharded_shapes = [[t[i].shape
+                       for t in input_tensors]
+                      for i in range(self.number_of_tuple_elements)]
     # For each tuple, get the unsharded shape using that tuple's policy.
     unsharded_shapes = [
         policy.get_unsharded_shape(s)
         for (policy, s) in zip(self._sharding_policies, sharded_shapes)
     ]
     self.set_tuple_shapes(unsharded_shapes)
-    for i in xrange(1, self.number_of_shards):
+    for i in range(1, self.number_of_shards):
       for (t1, t2) in zip(input_tensors[0], input_tensors[i]):
         if t1.dtype != t2.dtype:
           raise TypeError(
@@ -485,16 +493,23 @@ class InfeedQueue(object):
     self._generated_dequeue_op = True
     full_name = "%s/dequeue" % self._name
     sharded_shapes = [
-        policy.get_sharded_shape(shape)
+        policy.get_unpartitioned_shape(policy.get_sharded_shape(shape))
         for (shape, policy) in zip(self._tuple_shapes, self._sharding_policies)
     ]
     if tpu_device is not None:
-      with ops.device(tpu.core(tpu_device)):
-        return tpu_ops.infeed_dequeue_tuple(
+      with ops.device(tpu_name_util.core(tpu_device)):
+        dequeue_op = tpu_ops.infeed_dequeue_tuple(
             dtypes=self._tuple_types, shapes=sharded_shapes, name=full_name)
     else:
-      return tpu_ops.infeed_dequeue_tuple(
+      dequeue_op = tpu_ops.infeed_dequeue_tuple(
           dtypes=self._tuple_types, shapes=sharded_shapes, name=full_name)
+    if self._number_of_partitions <= 1:
+      return dequeue_op
+    partitions = [
+        policy.get_unpartitioned_shape([1] * shape.ndims).as_list()
+        for (shape, policy) in zip(self._tuple_shapes, self._sharding_policies)
+    ]
+    return tag_sharding_attribute_for_dequeued_tensors(dequeue_op, partitions)
 
   def _generate_enqueue_op(self,
                            inputs,
@@ -530,7 +545,7 @@ class InfeedQueue(object):
     shapes = [t.shape for t in inputs]
     if device is None:
       devices = [t.device for t in inputs]
-      for i in xrange(1, self.number_of_tuple_elements):
+      for i in range(1, self.number_of_tuple_elements):
         if devices[0] != devices[i]:
           raise ValueError(
               "input devices for shard %d are %s, but should all be the same" %
@@ -608,7 +623,7 @@ class InfeedQueue(object):
             index,
             tpu_ordinal=tpu_ordinal_function(index),
             device=placement_function(index) if placement_function else None)
-        for (shard, index) in zip(sharded_inputs, xrange(self.number_of_shards))
+        for (shard, index) in zip(sharded_inputs, range(self.number_of_shards))
     ]
 
   # TODO(misard) Generalize this to the case of systems that don't
@@ -714,10 +729,11 @@ class InfeedQueue(object):
               axis=policy.shard_dimension,
               name="%s/%d" % (split_name_prefix, index))
           for (inp, policy, index) in zip(inputs, self._sharding_policies,
-                                          xrange(self.number_of_tuple_elements))
+                                          range(self.number_of_tuple_elements))
       ]
-    sharded_inputs = [[shard[i] for shard in transposed_sharded_inputs]
-                      for i in xrange(self.number_of_shards)]
+    sharded_inputs = [[shard[i]
+                       for shard in transposed_sharded_inputs]
+                      for i in range(self.number_of_shards)]
     name_prefix = "%s/enqueue" % self._name
     return [
         self._generate_enqueue_op(
@@ -726,7 +742,7 @@ class InfeedQueue(object):
             index,
             device=placement_function(index),
             tpu_ordinal=tpu_ordinal_function(index))
-        for (shard, index) in zip(sharded_inputs, xrange(self.number_of_shards))
+        for (shard, index) in zip(sharded_inputs, range(self.number_of_shards))
     ]
 
 
@@ -788,7 +804,7 @@ class _PartitionedInfeedQueue(InfeedQueue):
         policy.get_sharded_shape(shape)
         for (shape, policy) in zip(self._tuple_shapes, self._sharding_policies)
     ]
-    with ops.device(tpu.core(tpu_device)):
+    with ops.device(tpu_name_util.core(tpu_device)):
       values = tpu_ops.infeed_dequeue_tuple(
           dtypes=self._tuple_types, shapes=sharded_shapes, name=full_name)
     return tag_sharding_attribute_for_dequeued_tensors(
@@ -855,7 +871,7 @@ class _PartitionedInfeedQueue(InfeedQueue):
       # input_fn).
       replica_id = self._device_assignment.lookup_replicas(
           task_id=self._host_id, logical_core=0)[replica_index]
-      for logical_core in xrange(self._device_assignment.num_cores_per_replica):
+      for logical_core in range(self._device_assignment.num_cores_per_replica):
         # Places different partitions to different logic cores.
         # Since there can be multiple hosts per replica, we need to find
         # the actual host (device) of this logical core.

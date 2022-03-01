@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
+import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
+
+import inspectedPagePlaceholderStyles from './inspectedPagePlaceholder.css.legacy.js';
 
 let inspectedPagePlaceholderInstance: InspectedPagePlaceholder;
 
-export class InspectedPagePlaceholder extends UI.Widget.Widget {
-  _updateId?: number;
+export class InspectedPagePlaceholder extends Common.ObjectWrapper.eventMixin<EventTypes, typeof UI.Widget.Widget>(
+    UI.Widget.Widget) {
+  private updateId?: number;
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/emulation/inspectedPagePlaceholder.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS(inspectedPagePlaceholderStyles);
     UI.ZoomManager.ZoomManager.instance().addEventListener(UI.ZoomManager.Events.ZoomChanged, this.onResize, this);
     this.restoreMinimumSize();
   }
@@ -29,10 +31,10 @@ export class InspectedPagePlaceholder extends UI.Widget.Widget {
   }
 
   onResize(): void {
-    if (this._updateId) {
-      this.element.window().cancelAnimationFrame(this._updateId);
+    if (this.updateId) {
+      this.element.window().cancelAnimationFrame(this.updateId);
     }
-    this._updateId = this.element.window().requestAnimationFrame(this.update.bind(this, false));
+    this.updateId = this.element.window().requestAnimationFrame(this.update.bind(this, false));
   }
 
   restoreMinimumSize(): void {
@@ -43,7 +45,7 @@ export class InspectedPagePlaceholder extends UI.Widget.Widget {
     this.setMinimumSize(1, 1);
   }
 
-  _dipPageRect(): {
+  private dipPageRect(): {
     x: number,
     y: number,
     width: number,
@@ -62,8 +64,8 @@ export class InspectedPagePlaceholder extends UI.Widget.Widget {
   }
 
   update(force?: boolean): void {
-    delete this._updateId;
-    const rect = this._dipPageRect();
+    delete this.updateId;
+    const rect = this.dipPageRect();
     const bounds = {
       x: Math.round(rect.x),
       y: Math.round(rect.y),
@@ -83,3 +85,14 @@ export class InspectedPagePlaceholder extends UI.Widget.Widget {
 export const enum Events {
   Update = 'Update',
 }
+
+export interface Bounds {
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+}
+
+export type EventTypes = {
+  [Events.Update]: Bounds,
+};

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
@@ -28,6 +27,10 @@ class UrlLanguageHistogramFactory : public BrowserStateKeyedServiceFactory {
   static language::UrlLanguageHistogram* GetForBrowserState(
       ChromeBrowserState* browser_state);
 
+  UrlLanguageHistogramFactory(const UrlLanguageHistogramFactory&) = delete;
+  UrlLanguageHistogramFactory& operator=(const UrlLanguageHistogramFactory&) =
+      delete;
+
  private:
   friend class base::NoDestructor<UrlLanguageHistogramFactory>;
 
@@ -39,8 +42,6 @@ class UrlLanguageHistogramFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-
-  DISALLOW_COPY_AND_ASSIGN(UrlLanguageHistogramFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_LANGUAGE_URL_LANGUAGE_HISTOGRAM_FACTORY_H_

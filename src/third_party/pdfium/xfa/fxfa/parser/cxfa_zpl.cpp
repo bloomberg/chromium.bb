@@ -12,10 +12,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kZplPropertyData[] = {
-    {XFA_Element::FontInfo, 1, 0},
-    {XFA_Element::Xdc, 1, 0},
-    {XFA_Element::BatchOutput, 1, 0},
-    {XFA_Element::FlipLabel, 1, 0},
+    {XFA_Element::FontInfo, 1, {}},
+    {XFA_Element::Xdc, 1, {}},
+    {XFA_Element::BatchOutput, 1, {}},
+    {XFA_Element::FlipLabel, 1, {}},
 };
 
 const CXFA_Node::AttributeData kZplAttributeData[] = {
@@ -29,7 +29,7 @@ const CXFA_Node::AttributeData kZplAttributeData[] = {
 CXFA_Zpl::CXFA_Zpl(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Zpl,
                 kZplPropertyData,

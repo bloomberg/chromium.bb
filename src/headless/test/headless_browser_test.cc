@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
@@ -19,7 +19,9 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "gin/v8_initializer.h"
 #include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "headless/public/devtools/domains/emulation.h"
@@ -31,6 +33,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
+
+#if defined(OS_MAC)
+#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#endif
 
 namespace headless {
 namespace {
@@ -57,7 +63,7 @@ class SynchronousLoadObserver {
   }
 
  private:
-  HeadlessWebContents* web_contents_;  // Not owned.
+  raw_ptr<HeadlessWebContents> web_contents_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   std::unique_ptr<LoadObserver> load_observer_;
 };
@@ -76,6 +82,9 @@ class EvaluateHelper {
                                        base::Unretained(this)));
   }
 
+  EvaluateHelper(const EvaluateHelper&) = delete;
+  EvaluateHelper& operator=(const EvaluateHelper&) = delete;
+
   ~EvaluateHelper() {
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
   }
@@ -90,13 +99,11 @@ class EvaluateHelper {
   }
 
  private:
-  HeadlessBrowserTest* browser_test_;  // Not owned.
-  HeadlessWebContents* web_contents_;  // Not owned.
+  raw_ptr<HeadlessBrowserTest> browser_test_;  // Not owned.
+  raw_ptr<HeadlessWebContents> web_contents_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 
   std::unique_ptr<runtime::EvaluateResult> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(EvaluateHelper);
 };
 
 }  // namespace
@@ -160,6 +167,17 @@ void HeadlessBrowserTest::SetUpWithoutGPU() {
 HeadlessBrowserTest::~HeadlessBrowserTest() = default;
 
 void HeadlessBrowserTest::PreRunTestOnMainThread() {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+  constexpr gin::V8SnapshotFileType kSnapshotType =
+      gin::V8SnapshotFileType::kWithAdditionalContext;
+#else
+  constexpr gin::V8SnapshotFileType kSnapshotType =
+      gin::V8SnapshotFileType::kDefault;
+#endif  // USE_V8_CONTEXT_SNAPSHOT
+  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
+#endif
+
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Pump startup related events.
   base::RunLoop().RunUntilIdle();
@@ -175,6 +193,18 @@ void HeadlessBrowserTest::PostRunTestOnMainThread() {
   // Pump tasks produced during shutdown.
   base::RunLoop().RunUntilIdle();
 }
+
+#if defined(OS_MAC)
+void HeadlessBrowserTest::CreatedBrowserMainParts(
+    content::BrowserMainParts* parts) {
+  auto fake_geolocation_manager =
+      std::make_unique<device::FakeGeolocationManager>();
+  fake_geolocation_manager->SetSystemPermission(
+      device::LocationSystemPermissionStatus::kAllowed);
+  static_cast<HeadlessBrowserMainParts*>(parts)
+      ->SetGeolocationManagerForTesting(std::move(fake_geolocation_manager));
+}
+#endif
 
 HeadlessBrowser* HeadlessBrowserTest::browser() const {
   return HeadlessContentMainDelegate::GetInstance()->browser();

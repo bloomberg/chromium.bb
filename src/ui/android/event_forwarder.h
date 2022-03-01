@@ -6,6 +6,7 @@
 #define UI_ANDROID_EVENT_FORWARDER_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 
 namespace ui {
 
@@ -13,6 +14,9 @@ class ViewAndroid;
 
 class EventForwarder {
  public:
+  EventForwarder(const EventForwarder&) = delete;
+  EventForwarder& operator=(const EventForwarder&) = delete;
+
   ~EventForwarder();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaWindowAndroid(
@@ -134,10 +138,8 @@ class EventForwarder {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  ViewAndroid* const view_;
+  const raw_ptr<ViewAndroid> view_;
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventForwarder);
 };
 
 }  // namespace ui
