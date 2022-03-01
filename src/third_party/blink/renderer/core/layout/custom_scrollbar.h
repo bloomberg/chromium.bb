@@ -93,7 +93,7 @@ class CORE_EXPORT CustomScrollbar final : public Scrollbar {
 
   void DestroyScrollbarParts();
   void UpdateScrollbarParts();
-  scoped_refptr<ComputedStyle> GetScrollbarPseudoElementStyle(
+  scoped_refptr<const ComputedStyle> GetScrollbarPseudoElementStyle(
       ScrollbarPart,
       PseudoId);
   void UpdateScrollbarPart(ScrollbarPart);
