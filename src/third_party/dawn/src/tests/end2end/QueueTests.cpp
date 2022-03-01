@@ -12,16 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file contains test for deprecated parts of Dawn's API while following WebGPU's evolution.
-// It contains test for the "old" behavior that will be deleted once users are migrated, tests that
-// a deprecation warning is emitted when the "old" behavior is used, and tests that an error is
-// emitted when both the old and the new behavior are used (when applicable).
-
 #include "tests/DawnTest.h"
 
 #include "common/Math.h"
 #include "utils/TestUtils.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 class QueueTests : public DawnTest {};
@@ -112,14 +107,13 @@ TEST_P(QueueWriteBufferTests, ManyWriteBuffer) {
     // fails the test. Since GPUs may or may not complete by then, this test must be disabled OR
     // modified to be well-below the timeout limit.
 
-    // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=228): Re-enable
-    // once the issue with Metal on 10.14.6 is fixed.
-    DAWN_SKIP_TEST_IF(IsMacOS() && IsIntel() && IsMetal());
+    // TODO(crbug.com/dawn/228): Re-enable once the issue with Metal on 10.14.6 is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsIntel() && IsMetal());
 
     // The Vulkan Validation Layers' memory barrier validation keeps track of every range written
     // to independently which causes validation of each WriteBuffer to take increasing time, and
     // this test to take forever. Skip it when VVLs are enabled.
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
 
     constexpr uint64_t kSize = 4000 * 1000;
     constexpr uint32_t kElements = 250 * 250;
@@ -542,23 +536,9 @@ TEST_P(QueueWriteTextureTests, BytesPerRowWithOneRowCopy) {
         constexpr wgpu::Extent3D copyExtent = {5, 1, 1};
         DataSpec dataSpec = MinimumDataSpec(copyExtent);
 
-        // bytesPerRow = 0
-        // TODO(crbug.com/dawn/520): This behavior is deprecated; remove this case.
-        dataSpec.bytesPerRow = 0;
-        EXPECT_DEPRECATION_WARNING(DoTest(textureSpec, dataSpec, copyExtent));
-
         // bytesPerRow undefined
         dataSpec.bytesPerRow = wgpu::kCopyStrideUndefined;
         DoTest(textureSpec, dataSpec, copyExtent);
-    }
-
-    // bytesPerRow < bytesInACompleteRow
-    // TODO(crbug.com/dawn/520): This behavior is deprecated; remove this case.
-    {
-        constexpr wgpu::Extent3D copyExtent = {259, 1, 1};
-        DataSpec dataSpec = MinimumDataSpec(copyExtent);
-        dataSpec.bytesPerRow = 256;
-        EXPECT_DEPRECATION_WARNING(DoTest(textureSpec, dataSpec, copyExtent));
     }
 }
 
@@ -650,6 +630,77 @@ TEST_P(QueueWriteTextureTests, WriteTo64x1TextureFromUnalignedDynamicUploader) {
     // pitch, the texture copy offset could be calculated incorrectly inside the internal D3D12
     // TextureCopySplitter.
     DoSimpleWriteTextureTest(64, 1);
+}
+
+// This tests for a bug in the allocation of internal staging buffer, which incorrectly copied depth
+// stencil data to the internal offset that is not a multiple of 4.
+TEST_P(QueueWriteTextureTests, WriteStencilAspectWithSourceOffsetUnalignedTo4) {
+    // Copies to a single aspect are unsupported on OpenGL.
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
+    textureDescriptor.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
+    textureDescriptor.size = {1, 1, 1};
+    wgpu::Texture dstTexture1 = device.CreateTexture(&textureDescriptor);
+    wgpu::Texture dstTexture2 = device.CreateTexture(&textureDescriptor);
+
+    wgpu::BufferDescriptor bufferDescriptor;
+    bufferDescriptor.size = 8u;
+    bufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+    wgpu::Buffer outputBuffer = device.CreateBuffer(&bufferDescriptor);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+
+    constexpr wgpu::Extent3D kWriteSize = {1, 1, 1};
+    constexpr uint8_t kData[] = {1, 2};
+    constexpr uint32_t kBytesPerRowForWriteTexture = 1u;
+
+    std::vector<uint8_t> expectedData(8, 0);
+
+    // In the first call of queue.writeTexture(), Dawn will allocate a new staging buffer in its
+    // internal ring buffer and write the user data into it at the offset 0.
+    {
+        constexpr uint32_t kDataOffset1 = 0u;
+        wgpu::TextureDataLayout textureDataLayout =
+            utils::CreateTextureDataLayout(kDataOffset1, kBytesPerRowForWriteTexture);
+        wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
+            dstTexture1, 0, {0, 0, 0}, wgpu::TextureAspect::StencilOnly);
+        queue.WriteTexture(&imageCopyTexture, kData, sizeof(kData), &textureDataLayout,
+                           &kWriteSize);
+
+        constexpr uint32_t kOutputBufferOffset1 = 0u;
+        wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
+            outputBuffer, kOutputBufferOffset1, kTextureBytesPerRowAlignment);
+        encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &kWriteSize);
+
+        expectedData[kOutputBufferOffset1] = kData[kDataOffset1];
+    }
+
+    // In the second call of queue.writeTexture(), Dawn will still use the same staging buffer
+    // allocated in the first call, whose first 2 bytes have been used in the first call of
+    // queue.writeTexture(). Dawn should write the user data at the offset 4 bytes since the
+    // destination texture aspect is stencil.
+    {
+        constexpr uint32_t kDataOffset2 = 1u;
+        wgpu::TextureDataLayout textureDataLayout =
+            utils::CreateTextureDataLayout(kDataOffset2, kBytesPerRowForWriteTexture);
+        wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
+            dstTexture2, 0, {0, 0, 0}, wgpu::TextureAspect::StencilOnly);
+        queue.WriteTexture(&imageCopyTexture, kData, sizeof(kData), &textureDataLayout,
+                           &kWriteSize);
+
+        constexpr uint32_t kOutputBufferOffset2 = 4u;
+        wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
+            outputBuffer, kOutputBufferOffset2, kTextureBytesPerRowAlignment);
+        encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &kWriteSize);
+
+        expectedData[kOutputBufferOffset2] = kData[kDataOffset2];
+    }
+
+    wgpu::CommandBuffer commandBuffer = encoder.Finish();
+    queue.Submit(1, &commandBuffer);
+
+    EXPECT_BUFFER_U8_RANGE_EQ(expectedData.data(), outputBuffer, 0, 8);
 }
 
 DAWN_INSTANTIATE_TEST(QueueWriteTextureTests,

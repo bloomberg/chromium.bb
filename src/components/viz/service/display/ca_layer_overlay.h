@@ -13,12 +13,11 @@
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/rrect_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 
@@ -46,7 +45,8 @@ class VIZ_SERVICE_EXPORT CALayerOverlaySharedState
   // The opacity property for the CAayer.
   float opacity = 1;
   // The transform to apply to the CALayer.
-  SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
+  skia::Matrix44 transform =
+      skia::Matrix44(skia::Matrix44::kIdentity_Constructor);
 
  private:
   friend class base::RefCountedThreadSafe<CALayerOverlaySharedState>;
@@ -95,12 +95,16 @@ typedef std::vector<CALayerOverlay> CALayerOverlayList;
 // CALayerOverlay into OverlayCandidate.
 class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
  public:
-  CALayerOverlayProcessor() = default;
+  explicit CALayerOverlayProcessor(bool enable_ca_overlay);
+
+  CALayerOverlayProcessor(const CALayerOverlayProcessor&) = delete;
+  CALayerOverlayProcessor& operator=(const CALayerOverlayProcessor&) = delete;
+
   virtual ~CALayerOverlayProcessor() = default;
 
   bool AreClipSettingsValid(const CALayerOverlay& ca_layer_overlay,
                             CALayerOverlayList* ca_layer_overlay_list) const;
-  void PutForcedOverlayContentIntoOverlays(
+  void PutForcedOverlayContentIntoUnderlays(
       DisplayResourceProvider* resource_provider,
       AggregatedRenderPass* render_pass,
       const gfx::RectF& display_rect,
@@ -114,14 +118,16 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
   // Returns true if all quads in the root render pass have been replaced by
   // CALayerOverlays. Virtual for testing.
   virtual bool ProcessForCALayerOverlays(
+      AggregatedRenderPass* render_passes,
       DisplayResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
-      const QuadList& quad_list,
       const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_filters,
       const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_backdrop_filters,
-      CALayerOverlayList* ca_layer_overlays) const;
+      CALayerOverlayList* ca_layer_overlays);
+
+  int ca_layer_result() { return ca_layer_result_; }
 
  private:
   // Returns whether future candidate quads should be considered
@@ -138,7 +144,11 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
       gfx::ProtectedVideoType protected_video_type,
       CALayerOverlayList* ca_layer_overlays) const;
 
-  DISALLOW_COPY_AND_ASSIGN(CALayerOverlayProcessor);
+  void SaveCALayerResult(int result);
+
+  const bool enable_ca_overlay_;
+  size_t max_quad_list_size_ = 0;
+  int ca_layer_result_ = 0;
 };
 
 }  // namespace viz

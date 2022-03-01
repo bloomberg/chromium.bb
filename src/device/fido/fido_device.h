@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/fido_constants.h"
@@ -59,6 +58,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   };
 
   FidoDevice();
+
+  FidoDevice(const FidoDevice&) = delete;
+  FidoDevice& operator=(const FidoDevice&) = delete;
+
   virtual ~FidoDevice();
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction. The function must not immediately
@@ -96,6 +99,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // for a FIDO Bluetooth device.
   virtual bool RequiresBlePairingPin() const;
 
+  // NoSilentRequests returns true if this device does not support up=false
+  // requests.
+  bool NoSilentRequests() const;
+
   virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
 
   // Sends a speculative AuthenticatorGetInfo request to determine whether the
@@ -119,6 +126,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
     return state_ == State::kMsgError || state_ == State::kDeviceError;
   }
 
+  // IsStatusForUnrecognisedCredentialID returns true iff the given |status|, in
+  // response to a CTAP2 GetAssertion command, indicates that none of the
+  // credential IDs was recognised by the authenticator.
+  static bool IsStatusForUnrecognisedCredentialID(
+      CtapDeviceResponseCode status);
+
   State state_for_testing() const { return state_; }
   void SetStateForTesting(State state) { state_ = state; }
 
@@ -137,8 +150,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // device. It starts at one so that zero can be used as an invalid value where
   // needed.
   CancelToken next_cancel_token_ = kInvalidCancelToken + 1;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoDevice);
 };
 
 }  // namespace device

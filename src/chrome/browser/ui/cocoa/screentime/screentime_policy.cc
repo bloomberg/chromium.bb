@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/cocoa/screentime/screentime_policy.h"
 
+#include "url/origin.h"
+
 namespace screentime {
 
 GURL URLForReporting(const GURL& url) {
   // Strip the username, password, path, and query components:
   // https://crbug.com/1188351.
-  return url.GetOrigin();
+  return url::Origin::Create(url).GetURL();
 }
 
 }  // namespace screentime

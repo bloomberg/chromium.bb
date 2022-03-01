@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -86,6 +86,10 @@ base::Time g_cached_sentinel_creation_time;
 class ImportEndedObserver : public importer::ImporterProgressObserver {
  public:
   ImportEndedObserver() : ended_(false) {}
+
+  ImportEndedObserver(const ImportEndedObserver&) = delete;
+  ImportEndedObserver& operator=(const ImportEndedObserver&) = delete;
+
   ~ImportEndedObserver() override {}
 
   // importer::ImporterProgressObserver:
@@ -111,8 +115,6 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   bool ended_;
 
   base::OnceClosure callback_for_import_end_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImportEndedObserver);
 };
 
 // Launches the import, via |importer_host|, from |source_profile| into
@@ -278,7 +280,8 @@ void SetupInitialPrefsFromInstallPrefs(
 
 // -- Platform-specific functions --
 
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_BSD)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_BSD) && \
+    !defined(OS_FUCHSIA)
 bool IsOrganicFirstRun() {
   std::string brand;
   google_brand::GetBrand(&brand);
@@ -416,8 +419,7 @@ ProcessInitialPreferencesResult ProcessInitialPreferences(
     // The distribution dictionary (and any prefs below it) are never registered
     // for use in Chrome's PrefService. Strip them from the initial dictionary
     // before mapping it to prefs.
-    initial_dictionary->RemoveWithoutPathExpansion(
-        installer::initial_preferences::kDistroDict, nullptr);
+    initial_dictionary->RemoveKey(installer::initial_preferences::kDistroDict);
 
     if (!chrome_prefs::InitializePrefsFromMasterPrefs(
             profiles::GetDefaultProfileDir(user_data_dir),

@@ -11,9 +11,10 @@
 #include <wrl.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "base/win/windows_types.h"
@@ -31,6 +32,8 @@
 
 namespace media {
 
+class MediaLog;
+
 // MediaFoundationRenderer bridges the Renderer and Windows MFMediaEngine
 // interfaces.
 class MEDIA_EXPORT MediaFoundationRenderer
@@ -40,14 +43,12 @@ class MEDIA_EXPORT MediaFoundationRenderer
   // Whether MediaFoundationRenderer() is supported on the current device.
   static bool IsSupported();
 
-  MediaFoundationRenderer(bool muted,
-                          scoped_refptr<base::SequencedTaskRunner> task_runner,
+  MediaFoundationRenderer(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                          std::unique_ptr<MediaLog> media_log,
                           bool force_dcomp_mode_for_testing = false);
-
+  MediaFoundationRenderer(const MediaFoundationRenderer&) = delete;
+  MediaFoundationRenderer& operator=(const MediaFoundationRenderer&) = delete;
   ~MediaFoundationRenderer() override;
-
-  // TODO(frankli): naming: Change DComp into DirectComposition for interface
-  // method names in a separate CL.
 
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
@@ -62,10 +63,10 @@ class MEDIA_EXPORT MediaFoundationRenderer
   base::TimeDelta GetMediaTime() override;
 
   // MediaFoundationRendererExtension implementation.
-  void SetDCompMode(bool enabled, SetDCompModeCB callback) override;
   void GetDCompSurface(GetDCompSurfaceCB callback) override;
   void SetVideoStreamEnabled(bool enabled) override;
-  void SetOutputParams(const gfx::Rect& output_rect) override;
+  void SetOutputRect(const gfx::Rect& output_rect,
+                     SetOutputRectCB callback) override;
 
  private:
   HRESULT CreateMediaEngine(MediaResource* media_resource);
@@ -78,33 +79,35 @@ class MEDIA_EXPORT MediaFoundationRenderer
   void StartSendingStatistics();
   void StopSendingStatistics();
 
-  // Callbacks for |mf_media_engine_notify_|.
-  void OnPlaybackError(PipelineStatus status);
+  // Callbacks for `mf_media_engine_notify_`.
+  void OnPlaybackError(PipelineStatus status, HRESULT hr);
   void OnPlaybackEnded();
   void OnBufferingStateChange(BufferingState state,
                               BufferingStateChangeReason reason);
   void OnVideoNaturalSizeChange();
   void OnTimeUpdate();
 
+  // Callback for `content_protection_manager_`.
+  void OnWaiting(WaitingReason reason);
+
   void OnCdmProxyReceived(scoped_refptr<MediaFoundationCdmProxy> cdm_proxy);
 
-  HRESULT SetDCompModeInternal(bool enabled);
+  HRESULT SetDCompModeInternal();
   HRESULT GetDCompSurfaceInternal(HANDLE* surface_handle);
   HRESULT SetSourceOnMediaEngine();
-  HRESULT SetOutputParamsInternal(const gfx::Rect& output_rect);
-
-  // TODO(crbug.com/1017943): Support Audio Indicator when using
-  // media::MojoRenderer. For now, keep |muted_| as const.
-  const bool muted_;
+  HRESULT UpdateVideoStream(const gfx::Rect& rect);
 
   // Renderer methods are running in the same sequence.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Once set, will force |mf_media_engine_| to use DirectComposition mode.
+  // Used to report media logs. Can be called on any thread.
+  std::unique_ptr<MediaLog> media_log_;
+
+  // Once set, will force `mf_media_engine_` to use DirectComposition mode.
   // This is used for testing.
   const bool force_dcomp_mode_for_testing_;
 
-  RendererClient* renderer_client_;
+  raw_ptr<RendererClient> renderer_client_;
 
   Microsoft::WRL::ComPtr<IMFMediaEngine> mf_media_engine_;
   Microsoft::WRL::ComPtr<MediaEngineNotifyImpl> mf_media_engine_notify_;
@@ -130,21 +133,22 @@ class MEDIA_EXPORT MediaFoundationRenderer
   PipelineStatistics statistics_ = {};
   base::RepeatingTimer statistics_timer_;
 
+  // Tracks the number of MEDIA_LOGs emitted for failure to populate statistics.
+  // Useful to prevent log spam.
+  int populate_statistics_failure_count_ = 0;
+
   // A fake window handle passed to MF-based rendering pipeline for OPM.
   HWND virtual_video_window_ = nullptr;
 
-  base::UnguessableToken surface_request_token_;
-  base::win::ScopedHandle dcomp_surface_handle_;
-
   bool waiting_for_mf_cdm_ = false;
-  CdmContext* cdm_context_ = nullptr;
+  raw_ptr<CdmContext> cdm_context_ = nullptr;
+  scoped_refptr<MediaFoundationCdmProxy> cdm_proxy_;
+
   Microsoft::WRL::ComPtr<MediaFoundationProtectionManager>
       content_protection_manager_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaFoundationRenderer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaFoundationRenderer);
 };
 
 }  // namespace media

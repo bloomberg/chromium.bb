@@ -19,6 +19,7 @@
 #include "src/base/overflowing-math.h"
 #include "src/base/platform/platform.h"
 #include "src/base/platform/wrappers.h"
+#include "src/base/vector.h"
 #include "src/codegen/arm/constants-arm.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/macro-assembler.h"
@@ -29,7 +30,6 @@
 #include "src/runtime/runtime-utils.h"
 #include "src/utils/ostreams.h"
 #include "src/utils/utils.h"
-#include "src/utils/vector.h"
 
 // Only build the simulator if not compiling for real ARM hardware.
 namespace v8 {
@@ -114,14 +114,10 @@ bool ArmDebugger::GetValue(const char* desc, int32_t* value) {
   if (regnum != kNoRegister) {
     *value = GetRegisterValue(regnum);
     return true;
-  } else {
-    if (strncmp(desc, "0x", 2) == 0) {
-      return SScanF(desc + 2, "%x", reinterpret_cast<uint32_t*>(value)) == 1;
-    } else {
-      return SScanF(desc, "%u", reinterpret_cast<uint32_t*>(value)) == 1;
-    }
   }
-  return false;
+  if (strncmp(desc, "0x", 2) == 0)
+    return SScanF(desc + 2, "%x", reinterpret_cast<uint32_t*>(value)) == 1;
+  return SScanF(desc, "%u", reinterpret_cast<uint32_t*>(value)) == 1;
 }
 
 bool ArmDebugger::GetVFPSingleValue(const char* desc, float* value) {
@@ -201,7 +197,7 @@ void ArmDebugger::Debug() {
       disasm::NameConverter converter;
       disasm::Disassembler dasm(converter);
       // use a reasonably large buffer
-      v8::internal::EmbeddedVector<char, 256> buffer;
+      v8::base::EmbeddedVector<char, 256> buffer;
       dasm.InstructionDecode(buffer, reinterpret_cast<byte*>(sim_->get_pc()));
       PrintF("  0x%08x  %s\n", sim_->get_pc(), buffer.begin());
       last_pc = sim_->get_pc();
@@ -374,7 +370,7 @@ bool ArmDebugger::ExecDebugCommand(ArrayUniquePtr<char> line_ptr) {
     disasm::NameConverter converter;
     disasm::Disassembler dasm(converter);
     // use a reasonably large buffer
-    v8::internal::EmbeddedVector<char, 256> buffer;
+    v8::base::EmbeddedVector<char, 256> buffer;
 
     byte* prev = nullptr;
     byte* cur = nullptr;
@@ -673,7 +669,7 @@ void Simulator::CheckICache(base::CustomMatcherHashMap* i_cache,
                        cache_page->CachedData(offset), kInstrSize));
   } else {
     // Cache miss.  Load memory into the cache.
-    base::Memcpy(cached_line, line, CachePage::kLineLength);
+    memcpy(cached_line, line, CachePage::kLineLength);
     *cache_valid_byte = CachePage::LINE_VALID;
   }
 }
@@ -778,14 +774,14 @@ double Simulator::get_double_from_register_pair(int reg) {
   // Read the bits from the unsigned integer register_[] array
   // into the double precision floating point value and return it.
   char buffer[2 * sizeof(vfp_registers_[0])];
-  base::Memcpy(buffer, &registers_[reg], 2 * sizeof(registers_[0]));
-  base::Memcpy(&dm_val, buffer, 2 * sizeof(registers_[0]));
+  memcpy(buffer, &registers_[reg], 2 * sizeof(registers_[0]));
+  memcpy(&dm_val, buffer, 2 * sizeof(registers_[0]));
   return (dm_val);
 }
 
 void Simulator::set_register_pair_from_double(int reg, double* value) {
   DCHECK((reg >= 0) && (reg < num_registers) && ((reg % 2) == 0));
-  base::Memcpy(registers_ + reg, value, sizeof(*value));
+  memcpy(registers_ + reg, value, sizeof(*value));
 }
 
 void Simulator::set_dw_register(int dreg, const int* dbl) {
@@ -796,22 +792,22 @@ void Simulator::set_dw_register(int dreg, const int* dbl) {
 
 void Simulator::get_d_register(int dreg, uint64_t* value) {
   DCHECK((dreg >= 0) && (dreg < DwVfpRegister::SupportedRegisterCount()));
-  base::Memcpy(value, vfp_registers_ + dreg * 2, sizeof(*value));
+  memcpy(value, vfp_registers_ + dreg * 2, sizeof(*value));
 }
 
 void Simulator::set_d_register(int dreg, const uint64_t* value) {
   DCHECK((dreg >= 0) && (dreg < DwVfpRegister::SupportedRegisterCount()));
-  base::Memcpy(vfp_registers_ + dreg * 2, value, sizeof(*value));
+  memcpy(vfp_registers_ + dreg * 2, value, sizeof(*value));
 }
 
 void Simulator::get_d_register(int dreg, uint32_t* value) {
   DCHECK((dreg >= 0) && (dreg < DwVfpRegister::SupportedRegisterCount()));
-  base::Memcpy(value, vfp_registers_ + dreg * 2, sizeof(*value) * 2);
+  memcpy(value, vfp_registers_ + dreg * 2, sizeof(*value) * 2);
 }
 
 void Simulator::set_d_register(int dreg, const uint32_t* value) {
   DCHECK((dreg >= 0) && (dreg < DwVfpRegister::SupportedRegisterCount()));
-  base::Memcpy(vfp_registers_ + dreg * 2, value, sizeof(*value) * 2);
+  memcpy(vfp_registers_ + dreg * 2, value, sizeof(*value) * 2);
 }
 
 template <typename T, int SIZE>
@@ -819,7 +815,7 @@ void Simulator::get_neon_register(int reg, T (&value)[SIZE / sizeof(T)]) {
   DCHECK(SIZE == kSimd128Size || SIZE == kDoubleSize);
   DCHECK_LE(0, reg);
   DCHECK_GT(SIZE == kSimd128Size ? num_q_registers : num_d_registers, reg);
-  base::Memcpy(value, vfp_registers_ + reg * (SIZE / 4), SIZE);
+  memcpy(value, vfp_registers_ + reg * (SIZE / 4), SIZE);
 }
 
 template <typename T, int SIZE>
@@ -827,7 +823,7 @@ void Simulator::set_neon_register(int reg, const T (&value)[SIZE / sizeof(T)]) {
   DCHECK(SIZE == kSimd128Size || SIZE == kDoubleSize);
   DCHECK_LE(0, reg);
   DCHECK_GT(SIZE == kSimd128Size ? num_q_registers : num_d_registers, reg);
-  base::Memcpy(vfp_registers_ + reg * (SIZE / 4), value, SIZE);
+  memcpy(vfp_registers_ + reg * (SIZE / 4), value, SIZE);
 }
 
 // Raw access to the PC register.
@@ -863,7 +859,7 @@ void Simulator::SetVFPRegister(int reg_index, const InputType& value) {
   if (register_size == 2)
     DCHECK(reg_index < DwVfpRegister::SupportedRegisterCount());
 
-  base::Memcpy(&vfp_registers_[reg_index * register_size], &value, bytes);
+  memcpy(&vfp_registers_[reg_index * register_size], &value, bytes);
 }
 
 template <class ReturnType, int register_size>
@@ -876,7 +872,7 @@ ReturnType Simulator::GetFromVFPRegister(int reg_index) {
     DCHECK(reg_index < DwVfpRegister::SupportedRegisterCount());
 
   ReturnType value;
-  base::Memcpy(&value, &vfp_registers_[register_size * reg_index], bytes);
+  memcpy(&value, &vfp_registers_[register_size * reg_index], bytes);
   return value;
 }
 
@@ -930,14 +926,14 @@ void Simulator::GetFpArgs(double* x, double* y, int32_t* z) {
 void Simulator::SetFpResult(const double& result) {
   if (use_eabi_hardfloat()) {
     char buffer[2 * sizeof(vfp_registers_[0])];
-    base::Memcpy(buffer, &result, sizeof(buffer));
+    memcpy(buffer, &result, sizeof(buffer));
     // Copy result to d0.
-    base::Memcpy(vfp_registers_, buffer, sizeof(buffer));
+    memcpy(vfp_registers_, buffer, sizeof(buffer));
   } else {
     char buffer[2 * sizeof(registers_[0])];
-    base::Memcpy(buffer, &result, sizeof(buffer));
+    memcpy(buffer, &result, sizeof(buffer));
     // Copy result to r0 and r1.
-    base::Memcpy(registers_, buffer, sizeof(buffer));
+    memcpy(registers_, buffer, sizeof(buffer));
   }
 }
 
@@ -1192,7 +1188,6 @@ bool Simulator::ConditionallyExecute(Instruction* instr) {
     default:
       UNREACHABLE();
   }
-  return false;
 }
 
 // Calculate and set the Negative and Zero flags.
@@ -1314,7 +1309,6 @@ int32_t Simulator::GetShiftRm(Instruction* instr, bool* carry_out) {
     // by immediate
     if ((shift == ROR) && (shift_amount == 0)) {
       UNIMPLEMENTED();
-      return result;
     } else if (((shift == LSR) || (shift == ASR)) && (shift_amount == 0)) {
       shift_amount = 32;
     }
@@ -1373,7 +1367,6 @@ int32_t Simulator::GetShiftRm(Instruction* instr, bool* carry_out) {
 
       default: {
         UNREACHABLE();
-        break;
       }
     }
   } else {
@@ -1451,7 +1444,6 @@ int32_t Simulator::GetShiftRm(Instruction* instr, bool* carry_out) {
 
       default: {
         UNREACHABLE();
-        break;
       }
     }
   }
@@ -1486,7 +1478,6 @@ int32_t Simulator::ProcessPU(Instruction* instr, int num_regs, int reg_size,
   switch (instr->PUField()) {
     case da_x: {
       UNIMPLEMENTED();
-      break;
     }
     case ia_x: {
       *start_address = rn_val;
@@ -1604,11 +1595,11 @@ void Simulator::HandleVList(Instruction* instr) {
 // 64-bit value. With the code below we assume that all runtime calls return
 // 64 bits of result. If they don't, the r1 result register contains a bogus
 // value, which is fine because it is caller-saved.
-using SimulatorRuntimeCall = int64_t (*)(int32_t arg0, int32_t arg1,
-                                         int32_t arg2, int32_t arg3,
-                                         int32_t arg4, int32_t arg5,
-                                         int32_t arg6, int32_t arg7,
-                                         int32_t arg8, int32_t arg9);
+using SimulatorRuntimeCall = int64_t (*)(
+    int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4,
+    int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, int32_t arg9,
+    int32_t arg10, int32_t arg11, int32_t arg12, int32_t arg13, int32_t arg14,
+    int32_t arg15, int32_t arg16, int32_t arg17, int32_t arg18, int32_t arg19);
 
 // These prototypes handle the four types of FP calls.
 using SimulatorRuntimeCompareCall = int64_t (*)(double darg0, double darg1);
@@ -1633,10 +1624,15 @@ using SimulatorRuntimeProfilingGetterCall = void (*)(int32_t arg0, int32_t arg1,
 int64_t UnsafeGenericFunctionCall(intptr_t function, int32_t arg0, int32_t arg1,
                                   int32_t arg2, int32_t arg3, int32_t arg4,
                                   int32_t arg5, int32_t arg6, int32_t arg7,
-                                  int32_t arg8, int32_t arg9) {
+                                  int32_t arg8, int32_t arg9, int32_t arg10,
+                                  int32_t arg11, int32_t arg12, int32_t arg13,
+                                  int32_t arg14, int32_t arg15, int32_t arg16,
+                                  int32_t arg17, int32_t arg18, int32_t arg19) {
   SimulatorRuntimeCall target =
       reinterpret_cast<SimulatorRuntimeCall>(function);
-  return target(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  return target(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9,
+                arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18,
+                arg19);
 }
 void UnsafeDirectApiCall(intptr_t function, int32_t arg0) {
   SimulatorRuntimeDirectApiCall target =
@@ -1677,7 +1673,17 @@ void Simulator::SoftwareInterrupt(Instruction* instr) {
       int32_t arg7 = stack_pointer[3];
       int32_t arg8 = stack_pointer[4];
       int32_t arg9 = stack_pointer[5];
-      STATIC_ASSERT(kMaxCParameters == 10);
+      int32_t arg10 = stack_pointer[6];
+      int32_t arg11 = stack_pointer[7];
+      int32_t arg12 = stack_pointer[8];
+      int32_t arg13 = stack_pointer[9];
+      int32_t arg14 = stack_pointer[10];
+      int32_t arg15 = stack_pointer[11];
+      int32_t arg16 = stack_pointer[12];
+      int32_t arg17 = stack_pointer[13];
+      int32_t arg18 = stack_pointer[14];
+      int32_t arg19 = stack_pointer[15];
+      STATIC_ASSERT(kMaxCParameters == 20);
 
       bool fp_call =
           (redirection->type() == ExternalReference::BUILTIN_FP_FP_CALL) ||
@@ -1717,7 +1723,6 @@ void Simulator::SoftwareInterrupt(Instruction* instr) {
               break;
             default:
               UNREACHABLE();
-              break;
           }
           if (!stack_aligned) {
             PrintF(" with unaligned stack %08x\n", get_register(sp));
@@ -1769,7 +1774,6 @@ void Simulator::SoftwareInterrupt(Instruction* instr) {
           }
           default:
             UNREACHABLE();
-            break;
         }
         if (::v8::internal::FLAG_trace_sim || !stack_aligned) {
           switch (redirection->type()) {
@@ -1783,7 +1787,6 @@ void Simulator::SoftwareInterrupt(Instruction* instr) {
               break;
             default:
               UNREACHABLE();
-              break;
           }
         }
       } else if (redirection->type() == ExternalReference::DIRECT_API_CALL) {
@@ -1847,23 +1850,38 @@ void Simulator::SoftwareInterrupt(Instruction* instr) {
 #endif
       } else {
         // builtin call.
+        // FAST_C_CALL is temporarily handled here as well, because we lack
+        // proper support for direct C calls with FP params in the simulator.
+        // The generic BUILTIN_CALL path assumes all parameters are passed in
+        // the GP registers, thus supporting calling the slow callback without
+        // crashing. The reason for that is that in the mjsunit tests we check
+        // the `fast_c_api.supports_fp_params` (which is false on non-simulator
+        // builds for arm/arm64), thus we expect that the slow path will be
+        // called. And since the slow path passes the arguments as a `const
+        // FunctionCallbackInfo<Value>&` (which is a GP argument), the call is
+        // made correctly.
         DCHECK(redirection->type() == ExternalReference::BUILTIN_CALL ||
-               redirection->type() == ExternalReference::BUILTIN_CALL_PAIR);
+               redirection->type() == ExternalReference::BUILTIN_CALL_PAIR ||
+               redirection->type() == ExternalReference::FAST_C_CALL);
         if (::v8::internal::FLAG_trace_sim || !stack_aligned) {
           PrintF(
               "Call to host function at %p "
-              "args %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x",
+              "args %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, "
+              "%08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, %08x, "
+              "%08x",
               reinterpret_cast<void*>(external), arg0, arg1, arg2, arg3, arg4,
-              arg5, arg6, arg7, arg8, arg9);
+              arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14,
+              arg15, arg16, arg17, arg18, arg19);
           if (!stack_aligned) {
             PrintF(" with unaligned stack %08x\n", get_register(sp));
           }
           PrintF("\n");
         }
         CHECK(stack_aligned);
-        int64_t result =
-            UnsafeGenericFunctionCall(external, arg0, arg1, arg2, arg3, arg4,
-                                      arg5, arg6, arg7, arg8, arg9);
+        int64_t result = UnsafeGenericFunctionCall(
+            external, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
+            arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18,
+            arg19);
 #ifdef DEBUG
         TrashCallerSaveRegisters();
 #endif
@@ -2121,7 +2139,6 @@ void Simulator::DecodeType01(Instruction* instr) {
               }
               default:
                 UNREACHABLE();
-                break;
             }
           } else {
             // The instruction is documented as strex rd, rt, [rn], but the
@@ -2165,7 +2182,6 @@ void Simulator::DecodeType01(Instruction* instr) {
               }
               default:
                 UNREACHABLE();
-                break;
             }
           }
         } else {
@@ -2219,7 +2235,6 @@ void Simulator::DecodeType01(Instruction* instr) {
           default: {
             // The PU field is a 2-bit field.
             UNREACHABLE();
-            break;
           }
         }
       } else {
@@ -2262,7 +2277,6 @@ void Simulator::DecodeType01(Instruction* instr) {
           default: {
             // The PU field is a 2-bit field.
             UNREACHABLE();
-            break;
           }
         }
       }
@@ -2600,7 +2614,6 @@ void Simulator::DecodeType01(Instruction* instr) {
 
       default: {
         UNREACHABLE();
-        break;
       }
     }
   }
@@ -2680,7 +2693,6 @@ void Simulator::DecodeType3(Instruction* instr) {
       DCHECK(!instr->HasW());
       Format(instr, "'memop'cond'b 'rd, ['rn], -'shift_rm");
       UNIMPLEMENTED();
-      break;
     }
     case ia_x: {
       if (instr->Bit(4) == 0) {
@@ -2714,10 +2726,8 @@ void Simulator::DecodeType3(Instruction* instr) {
               break;
             case 1:
               UNIMPLEMENTED();
-              break;
             case 2:
               UNIMPLEMENTED();
-              break;
             case 3: {
               // Usat.
               int32_t sat_pos = instr->Bits(20, 16);
@@ -2746,7 +2756,6 @@ void Simulator::DecodeType3(Instruction* instr) {
           switch (instr->Bits(22, 21)) {
             case 0:
               UNIMPLEMENTED();
-              break;
             case 1:
               if (instr->Bits(9, 6) == 1) {
                 if (instr->Bit(20) == 0) {
@@ -3442,7 +3451,6 @@ void Simulator::DecodeTypeVFP(Instruction* instr) {
           }
           default:
             UNREACHABLE();
-            break;
         }
         set_neon_register(vd, q_data);
       }
@@ -3457,7 +3465,7 @@ void Simulator::DecodeTypeVFP(Instruction* instr) {
         // NeonS32 / NeonU32
         DCHECK_EQ(0, instr->Bit(23));
         int32_t int_data[2];
-        base::Memcpy(int_data, &data, sizeof(int_data));
+        memcpy(int_data, &data, sizeof(int_data));
         set_register(rt, int_data[instr->Bit(21)]);
       } else {
         uint64_t data;
@@ -4098,7 +4106,7 @@ void VmovImmediate(Simulator* simulator, Instruction* instr) {
       // Set all bytes of register.
       std::fill_n(imms, kSimd128Size, imm);
       uint64_t imm64;
-      base::Memcpy(&imm64, imms, 8);
+      memcpy(&imm64, imms, 8);
       for (int r = 0; r < regs; r++) {
         simulator->set_d_register(vd + r, &imm64);
       }
@@ -4303,6 +4311,21 @@ void PairwiseAddLong(Simulator* simulator, int Vd, int Vm) {
   simulator->set_neon_register<WideType, SIZE>(Vd, dst);
 }
 
+template <typename NarrowType, typename WideType, int SIZE = kSimd128Size>
+void PairwiseAddAccumulateLong(Simulator* simulator, int Vd, int Vm) {
+  DCHECK_EQ(sizeof(WideType), 2 * sizeof(NarrowType));
+  static constexpr int kSElems = SIZE / sizeof(NarrowType);
+  static constexpr int kTElems = SIZE / sizeof(WideType);
+  NarrowType src[kSElems];
+  WideType dst[kTElems];
+  simulator->get_neon_register<NarrowType, SIZE>(Vm, src);
+  simulator->get_neon_register<WideType, SIZE>(Vd, dst);
+  for (int i = 0; i < kTElems; i++) {
+    dst[i] += WideType{src[i * 2]} + WideType{src[i * 2 + 1]};
+  }
+  simulator->set_neon_register<WideType, SIZE>(Vd, dst);
+}
+
 template <typename NarrowType, typename WideType>
 void MultiplyLong(Simulator* simulator, int Vd, int Vn, int Vm) {
   DCHECK_EQ(sizeof(WideType), 2 * sizeof(NarrowType));
@@ -4314,9 +4337,9 @@ void MultiplyLong(Simulator* simulator, int Vd, int Vn, int Vm) {
   // underlying datatype easily.
   uint64_t tmp;
   simulator->get_d_register(Vn, &tmp);
-  base::Memcpy(src1, &tmp, sizeof(tmp));
+  memcpy(src1, &tmp, sizeof(tmp));
   simulator->get_d_register(Vm, &tmp);
-  base::Memcpy(src2, &tmp, sizeof(tmp));
+  memcpy(src2, &tmp, sizeof(tmp));
 
   for (int i = 0; i < kElems; i++) {
     dst[i] = WideType{src1[i]} * WideType{src2[i]};
@@ -4418,7 +4441,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
             }
             default:
               UNREACHABLE();
-              break;
           }
           break;
         }
@@ -4454,13 +4476,11 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
             }
             default:
               UNREACHABLE();
-              break;
           }
           break;
         }
         default:
           UNREACHABLE();
-          break;
       }
     } else if (opc1 == 0 && (opc2 == 0b0100 || opc2 == 0b0101)) {
       DCHECK_EQ(1, instr->Bit(6));  // Only support Q regs.
@@ -4480,6 +4500,31 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
         case Neon32:
           is_signed ? PairwiseAddLong<int32_t, int64_t>(this, Vd, Vm)
                     : PairwiseAddLong<uint32_t, uint64_t>(this, Vd, Vm);
+          break;
+        case Neon64:
+          UNREACHABLE();
+      }
+    } else if (opc1 == 0 && (opc2 == 0b1100 || opc2 == 0b1101)) {
+      DCHECK_EQ(1, instr->Bit(6));  // Only support Q regs.
+      int Vd = instr->VFPDRegValue(kSimd128Precision);
+      int Vm = instr->VFPMRegValue(kSimd128Precision);
+      int is_signed = instr->Bit(7) == 0;
+      // vpadal Qd, Qm
+      switch (size) {
+        case Neon8:
+          is_signed
+              ? PairwiseAddAccumulateLong<int8_t, int16_t>(this, Vd, Vm)
+              : PairwiseAddAccumulateLong<uint8_t, uint16_t>(this, Vd, Vm);
+          break;
+        case Neon16:
+          is_signed
+              ? PairwiseAddAccumulateLong<int16_t, int32_t>(this, Vd, Vm)
+              : PairwiseAddAccumulateLong<uint16_t, uint32_t>(this, Vd, Vm);
+          break;
+        case Neon32:
+          is_signed
+              ? PairwiseAddAccumulateLong<int32_t, int64_t>(this, Vd, Vm)
+              : PairwiseAddAccumulateLong<uint32_t, uint64_t>(this, Vd, Vm);
           break;
         case Neon64:
           UNREACHABLE();
@@ -4585,7 +4630,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
             break;
           default:
             UNIMPLEMENTED();
-            break;
         }
       }
     } else if (opc1 == 0b01 && (opc2 & 0b0111) == 0b111) {
@@ -4614,7 +4658,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
             break;
           default:
             UNIMPLEMENTED();
-            break;
         }
       }
     } else if (opc1 == 0b10 && opc2 == 0b0001) {
@@ -4634,7 +4677,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
             break;
           default:
             UNREACHABLE();
-            break;
         }
       } else {
         int Vd = instr->VFPDRegValue(kDoublePrecision);
@@ -4652,7 +4694,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
             break;
           default:
             UNREACHABLE();
-            break;
         }
       }
     } else if (opc1 == 0b10 && (opc2 & 0b1110) == 0b0010) {
@@ -4674,7 +4715,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
               break;
             default:
               UNREACHABLE();
-              break;
           }
         } else {
           // vuzp.<size> Qd, Qm.
@@ -4690,7 +4730,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
               break;
             default:
               UNREACHABLE();
-              break;
           }
         }
       } else {
@@ -4707,10 +4746,8 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
               break;
             case Neon32:
               UNIMPLEMENTED();
-              break;
             default:
               UNREACHABLE();
-              break;
           }
         } else {
           // vuzp.<size> Dd, Dm.
@@ -4723,10 +4760,8 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
               break;
             case Neon32:
               UNIMPLEMENTED();
-              break;
             default:
               UNREACHABLE();
-              break;
           }
         }
       }
@@ -4771,7 +4806,6 @@ void Simulator::DecodeAdvancedSIMDTwoOrThreeRegisters(Instruction* instr) {
         }
         case Neon64:
           UNREACHABLE();
-          break;
       }
     } else if (opc1 == 0b10 && instr->Bit(10) == 1) {
       // vrint<q>.<dt> <Dd>, <Dm>
@@ -5038,7 +5072,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 1 && sz == 2 && q && op1) {
       // vmov Qd, Qm.
@@ -5094,7 +5127,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 3) {
       // vcge/vcgt.s<size> Qd, Qm, Qn.
@@ -5112,7 +5144,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 4 && !op1) {
       // vshl s<size> Qd, Qm, Qn.
@@ -5132,7 +5163,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 6) {
       // vmin/vmax.s<size> Qd, Qm, Qn.
@@ -5150,7 +5180,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 8 && op1) {
       // vtst.i<size> Qd, Qm, Qn.
@@ -5167,7 +5196,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 8 && !op1) {
       // vadd.i<size> Qd, Qm, Qn.
@@ -5201,7 +5229,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 0xA) {
       // vpmin/vpmax.s<size> Dd, Dm, Dn.
@@ -5219,7 +5246,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 0xB) {
       // vpadd.i<size> Dd, Dm, Dn.
@@ -5236,7 +5262,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (!u && opc == 0xD && !op1) {
       float src1[4], src2[4];
@@ -5307,7 +5332,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 1 && sz == 1 && op1) {
       // vbsl.size Qd, Qm, Qn.
@@ -5348,7 +5372,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 2 && op1) {
       // vqsub.u<size> Qd, Qm, Qn.
@@ -5365,7 +5388,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 3) {
       // vcge/vcgt.u<size> Qd, Qm, Qn.
@@ -5383,7 +5405,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 4 && !op1) {
       // vshl u<size> Qd, Qm, Qn.
@@ -5403,7 +5424,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 6) {
       // vmin/vmax.u<size> Qd, Qm, Qn.
@@ -5421,7 +5441,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 8 && !op1) {
       // vsub.size Qd, Qm, Qn.
@@ -5455,7 +5474,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 0xA) {
       // vpmin/vpmax.u<size> Dd, Dm, Dn.
@@ -5473,7 +5491,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
           break;
         default:
           UNREACHABLE();
-          break;
       }
     } else if (u && opc == 0xD && sz == 0 && q && op1) {
       // vmul.f32 Qd, Qn, Qm
@@ -5618,7 +5635,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
               break;
             default:
               UNIMPLEMENTED();
-              break;
           }
         } else {
           // vmovl signed
@@ -5637,7 +5653,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
               break;
             default:
               UNIMPLEMENTED();
-              break;
           }
         }
       } else if (!u && imm3H_L != 0 && opc == 0b0101) {
@@ -5681,7 +5696,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
             break;
           default:
             UNREACHABLE();
-            break;
         }
       } else if (u && imm3H_L != 0 && opc == 0b0101) {
         // vsli.<size> Dd, Dm, shift
@@ -5703,7 +5717,6 @@ void Simulator::DecodeAdvancedSIMDDataProcessing(Instruction* instr) {
             break;
           default:
             UNREACHABLE();
-            break;
         }
       }
     }
@@ -5767,7 +5780,6 @@ void Simulator::DecodeAdvancedSIMDLoadStoreMultipleStructures(
       break;
     default:
       UNIMPLEMENTED();
-      break;
   }
   if (instr->Bit(21)) {
     // vld1
@@ -5953,7 +5965,6 @@ void Simulator::DecodeFloatingPointDataProcessing(Instruction* instr) {
               break;
             default:
               UNREACHABLE();  // Case analysis is exhaustive.
-              break;
           }
           dd_value = canonicalizeNaN(dd_value);
           set_d_register_from_double(vd, dd_value);
@@ -5979,7 +5990,6 @@ void Simulator::DecodeFloatingPointDataProcessing(Instruction* instr) {
               break;
             default:
               UNREACHABLE();  // Case analysis is exhaustive.
-              break;
           }
           sd_value = canonicalizeNaN(sd_value);
           set_s_register_from_float(d, sd_value);
@@ -6071,7 +6081,6 @@ void Simulator::DecodeFloatingPointDataProcessing(Instruction* instr) {
             break;
           default:
             UNREACHABLE();  // Case analysis is exhaustive.
-            break;
         }
         if (instr->SzValue() == 0x1) {
           int n = instr->VFPNRegValue(kDoublePrecision);
@@ -6092,7 +6101,6 @@ void Simulator::DecodeFloatingPointDataProcessing(Instruction* instr) {
       break;
     default:
       UNIMPLEMENTED();
-      break;
   }
 }
 
@@ -6121,7 +6129,7 @@ void Simulator::InstructionDecode(Instruction* instr) {
     disasm::NameConverter converter;
     disasm::Disassembler dasm(converter);
     // use a reasonably large buffer
-    v8::internal::EmbeddedVector<char, 256> buffer;
+    v8::base::EmbeddedVector<char, 256> buffer;
     dasm.InstructionDecode(buffer, reinterpret_cast<byte*>(instr));
     PrintF("  0x%08" V8PRIxPTR "  %s\n", reinterpret_cast<intptr_t>(instr),
            buffer.begin());
@@ -6161,7 +6169,6 @@ void Simulator::InstructionDecode(Instruction* instr) {
       }
       default: {
         UNIMPLEMENTED();
-        break;
       }
     }
   }
@@ -6279,9 +6286,8 @@ intptr_t Simulator::CallImpl(Address entry, int argument_count,
     entry_stack &= -base::OS::ActivationFrameAlignment();
   }
   // Store remaining arguments on stack, from low to high memory.
-  base::Memcpy(reinterpret_cast<intptr_t*>(entry_stack),
-               arguments + reg_arg_count,
-               (argument_count - reg_arg_count) * sizeof(*arguments));
+  memcpy(reinterpret_cast<intptr_t*>(entry_stack), arguments + reg_arg_count,
+         (argument_count - reg_arg_count) * sizeof(*arguments));
   set_register(sp, entry_stack);
 
   CallInternal(entry);

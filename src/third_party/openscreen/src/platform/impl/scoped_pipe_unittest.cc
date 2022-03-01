@@ -82,7 +82,6 @@ TEST_F(ScopedPipeTest, Close) {
 }
 
 TEST_F(ScopedPipeTest, Comparisons) {
-  std::vector<int> g_freed_values;
   ScopedPipe<IntTraits> x;
   ScopedPipe<IntTraits> y;
   EXPECT_FALSE(x);

@@ -51,7 +51,7 @@ bool ignore_user_gesture_for_tests = false;
 
 ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
   std::unique_ptr<api::permissions::Contains::Params> params(
-      api::permissions::Contains::Params::Create(*args_));
+      api::permissions::Contains::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
@@ -110,7 +110,7 @@ ExtensionFunction::ResponseAction PermissionsGetAllFunction::Run() {
 
 ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   std::unique_ptr<api::permissions::Remove::Params> params(
-      api::permissions::Remove::Params::Create(*args_));
+      api::permissions::Remove::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
@@ -202,7 +202,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
     return RespondNow(Error("Could not find an active window."));
 
   std::unique_ptr<api::permissions::Request::Params> params(
-      api::permissions::Request::Params::Create(*args_));
+      api::permissions::Request::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
@@ -301,7 +301,8 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
           .empty();
   if (has_no_warnings ||
       extension_->location() == mojom::ManifestLocation::kComponent) {
-    OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
+    OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+        ExtensionInstallPrompt::Result::ACCEPTED));
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
@@ -310,9 +311,11 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   if (auto_confirm_for_tests != DO_NOT_SKIP) {
     prompted_permissions_for_testing_ = total_new_permissions->Clone();
     if (auto_confirm_for_tests == PROCEED)
-      OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
+      OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::ACCEPTED));
     else if (auto_confirm_for_tests == ABORT)
-      OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
+      OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::USER_CANCELED));
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
@@ -332,8 +335,8 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
 }
 
 void PermissionsRequestFunction::OnInstallPromptDone(
-    ExtensionInstallPrompt::Result result) {
-  if (result != ExtensionInstallPrompt::Result::ACCEPTED) {
+    ExtensionInstallPrompt::DoneCallbackPayload payload) {
+  if (payload.result != ExtensionInstallPrompt::Result::ACCEPTED) {
     Respond(ArgumentList(api::permissions::Request::Results::Create(false)));
     return;
   }

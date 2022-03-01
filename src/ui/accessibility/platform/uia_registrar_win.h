@@ -7,8 +7,7 @@
 
 #include <objbase.h>
 #include <uiautomation.h>
-#include "base/macros.h"
-#include "base/no_destructor.h"
+
 #include "ui/accessibility/ax_export.h"
 
 namespace ui {

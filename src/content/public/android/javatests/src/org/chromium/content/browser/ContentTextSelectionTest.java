@@ -31,6 +31,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.input.ImeTestUtils;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
+import org.chromium.content_public.browser.SelectAroundCaretResult;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -77,7 +78,7 @@ public class ContentTextSelectionTest {
         public void onSelectionEvent(int eventType, float posXPix, float poxYPix) {}
 
         @Override
-        public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}
+        public void selectAroundCaretAck(SelectAroundCaretResult result) {}
 
         @Override
         public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
@@ -119,6 +120,7 @@ public class ContentTextSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
+    @DisabledTest(message = "https://crbug.com/1237513")
     public void testSelectionClearedAfterLossOfFocus() throws Throwable {
         requestFocusOnUiThread(true);
 
@@ -137,6 +139,7 @@ public class ContentTextSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
+    @DisabledTest(message = "https://crbug.com/1237513")
     public void testSelectionPreservedAfterLossOfFocusIfRequested() throws Throwable {
         requestFocusOnUiThread(true);
 
@@ -677,6 +680,7 @@ public class ContentTextSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection", "TextInput"})
+    @DisabledTest(message = "https://crbug.com/1217277")
     public void testCursorPositionAfterHidingActionMode() throws Exception {
         DOMUtils.longPressNode(mWebContents, "textarea");
         waitForSelectActionBarVisible(true);

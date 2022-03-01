@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/controller/memory_usage_monitor.h"
 
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/process_heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -12,7 +13,7 @@
 namespace blink {
 
 namespace {
-constexpr base::TimeDelta kPingInterval = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kPingInterval = base::Seconds(1);
 }
 
 MemoryUsageMonitor::MemoryUsageMonitor() {

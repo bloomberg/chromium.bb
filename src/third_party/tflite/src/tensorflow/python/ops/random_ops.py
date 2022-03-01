@@ -14,10 +14,6 @@
 # ==============================================================================
 """Operations for generating random numbers."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.python.eager import context
@@ -29,6 +25,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import gen_random_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import stateless_random_ops
 
 # go/tf-wildcard-import
 # pylint: disable=wildcard-import
@@ -75,7 +72,8 @@ def random_normal(shape,
       The mean of the normal distribution.
     stddev: A Tensor or Python value of type `dtype`, broadcastable with `mean`.
       The standard deviation of the normal distribution.
-    dtype: The type of the output.
+    dtype: The float type of the output: `float16`, `bfloat16`, `float32`,
+      `float64`. Defaults to `float32`.
     seed: A Python integer. Used to create a random seed for the distribution.
       See
       `tf.random.set_seed`
@@ -167,9 +165,17 @@ def truncated_normal(shape,
                      name=None):
   """Outputs random values from a truncated normal distribution.
 
-  The generated values follow a normal distribution with specified mean and
-  standard deviation, except that values whose magnitude is more than 2 standard
-  deviations from the mean are dropped and re-picked.
+  The values are drawn from a normal distribution with specified mean and
+  standard deviation, discarding and re-drawing any samples that are more than
+  two standard deviations from the mean.
+
+  Examples:
+
+  >>> tf.random.truncated_normal(shape=[2])
+  <tf.Tensor: shape=(2,), dtype=float32, numpy=array([..., ...], dtype=float32)>
+
+  >>> tf.random.truncated_normal(shape=[2], mean=3, stddev=1, dtype=tf.float32)
+  <tf.Tensor: shape=(2,), dtype=float32, numpy=array([..., ...], dtype=float32)>
 
   Args:
     shape: A 1-D integer Tensor or Python array. The shape of the output tensor.
@@ -177,11 +183,10 @@ def truncated_normal(shape,
       truncated normal distribution.
     stddev: A 0-D Tensor or Python value of type `dtype`. The standard deviation
       of the normal distribution, before truncation.
-    dtype: The type of the output.
+    dtype: The type of the output. Restricted to floating-point types:
+      `tf.half`, `tf.float`, `tf.double`, etc.
     seed: A Python integer. Used to create a random seed for the distribution.
-      See
-      `tf.random.set_seed`
-      for behavior.
+      See `tf.random.set_seed` for more information.
     name: A name for the operation (optional).
 
   Returns:
@@ -264,8 +269,8 @@ def random_uniform(shape,
       `shape` (for integer types, broadcasting is not supported, so it needs to
       be a scalar). The upper bound on the range of random values to generate
       (exclusive). Defaults to 1 if `dtype` is floating point.
-    dtype: The type of the output: `float16`, `float32`, `float64`, `int32`,
-      or `int64`.
+    dtype: The type of the output: `float16`, `bfloat16`, `float32`, `float64`,
+      `int32`, or `int64`. Defaults to `float32`.
     seed: A Python integer. Used in combination with `tf.random.set_seed` to
       create a reproducible sequence of tensors across multiple calls.
     name: A name for the operation (optional).
@@ -277,9 +282,12 @@ def random_uniform(shape,
     ValueError: If `dtype` is integral and `maxval` is not specified.
   """
   dtype = dtypes.as_dtype(dtype)
-  if dtype not in (dtypes.float16, dtypes.bfloat16, dtypes.float32,
-                   dtypes.float64, dtypes.int32, dtypes.int64):
-    raise ValueError("Invalid dtype %r" % dtype)
+  accepted_dtypes = (dtypes.float16, dtypes.bfloat16, dtypes.float32,
+                     dtypes.float64, dtypes.int32, dtypes.int64)
+  if dtype not in accepted_dtypes:
+    raise ValueError(
+        f"Argument `dtype` got invalid value {dtype}. Accepted dtypes are "
+        f"{accepted_dtypes}.")
   if maxval is None:
     if dtype.is_integer:
       raise ValueError("Must specify maxval for integer dtype %r" % dtype)
@@ -362,6 +370,19 @@ def random_crop(value, size, seed=None, name=None):
   For example, RGB images can be cropped with
   `size = [crop_height, crop_width, 3]`.
 
+  Example usage:
+
+  >>> image = [[1, 2, 3], [4, 5, 6]]
+  >>> result = tf.image.random_crop(value=image, size=(1, 3))
+  >>> result.shape.as_list()
+  [1, 3]
+
+  For producing deterministic results given a `seed` value, use
+  `tf.image.stateless_random_crop`. Unlike using the `seed` param with
+  `tf.image.random_*` ops, `tf.image.stateless_random_*` ops guarantee the same
+  results given the same seed independent of how many times the function is
+  called, and independent of global seed settings (e.g. tf.random.set_seed).
+
   Args:
     value: Input tensor to crop.
     size: 1-D tensor with size the rank of `value`.
@@ -373,9 +394,6 @@ def random_crop(value, size, seed=None, name=None):
   Returns:
     A cropped tensor of the same rank as `value` and shape `size`.
   """
-  # TODO(shlens): Implement edge case to guarantee output size dimensions.
-  # If size > value.shape, zero pad the result so that it always has shape
-  # exactly size.
   with ops.name_scope(name, "random_crop", [value, size]) as name:
     value = ops.convert_to_tensor(value, name="value")
     size = ops.convert_to_tensor(size, dtype=dtypes.int32, name="size")
@@ -387,6 +405,59 @@ def random_crop(value, size, seed=None, name=None):
     shape = control_flow_ops.with_dependencies([check], shape)
     limit = shape - size + 1
     offset = random_uniform(
+        array_ops.shape(shape),
+        dtype=size.dtype,
+        maxval=size.dtype.max,
+        seed=seed) % limit
+    return array_ops.slice(value, offset, size, name=name)
+
+
+@tf_export("image.stateless_random_crop", v1=[])
+@dispatch.add_dispatch_support
+def stateless_random_crop(value, size, seed, name=None):
+  """Randomly crops a tensor to a given size in a deterministic manner.
+
+  Slices a shape `size` portion out of `value` at a uniformly chosen offset.
+  Requires `value.shape >= size`.
+
+  If a dimension should not be cropped, pass the full size of that dimension.
+  For example, RGB images can be cropped with
+  `size = [crop_height, crop_width, 3]`.
+
+  Guarantees the same results given the same `seed` independent of how many
+  times the function is called, and independent of global seed settings (e.g.
+  `tf.random.set_seed`).
+
+  Usage Example:
+
+  >>> image = [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]
+  >>> seed = (1, 2)
+  >>> tf.image.stateless_random_crop(value=image, size=(1, 2, 3), seed=seed)
+  <tf.Tensor: shape=(1, 2, 3), dtype=int32, numpy=
+  array([[[1, 2, 3],
+          [4, 5, 6]]], dtype=int32)>
+
+  Args:
+    value: Input tensor to crop.
+    size: 1-D tensor with size the rank of `value`.
+    seed: A shape [2] Tensor, the seed to the random number generator. Must have
+      dtype `int32` or `int64`. (When using XLA, only `int32` is allowed.)
+    name: A name for this operation (optional).
+
+  Returns:
+    A cropped tensor of the same rank as `value` and shape `size`.
+  """
+  with ops.name_scope(name, "random_crop", [value, size]) as name:
+    value = ops.convert_to_tensor(value, name="value")
+    size = ops.convert_to_tensor(size, dtype=dtypes.int32, name="size")
+    shape = array_ops.shape(value)
+    check = control_flow_ops.Assert(
+        math_ops.reduce_all(shape >= size),
+        ["Need value.shape >= size, got ", shape, size],
+        summarize=1000)
+    shape = control_flow_ops.with_dependencies([check], shape)
+    limit = shape - size + 1
+    offset = stateless_random_ops.stateless_random_uniform(
         array_ops.shape(shape),
         dtype=size.dtype,
         maxval=size.dtype.max,
@@ -416,7 +487,8 @@ def multinomial(logits, num_samples, seed=None, name=None, output_dtype=None):
     seed: A Python integer. Used to create a random seed for the distribution.
       See `tf.random.set_seed` for behavior.
     name: Optional name for the operation.
-    output_dtype: integer type to use for the output. Defaults to int64.
+    output_dtype: The integer type of the output: `int32` or `int64`. Defaults
+      to `int64`.
 
   Returns:
     The drawn samples of shape `[batch_size, num_samples]`.
@@ -426,6 +498,7 @@ def multinomial(logits, num_samples, seed=None, name=None, output_dtype=None):
 
 
 @tf_export("random.categorical")
+@dispatch.add_dispatch_support
 def categorical(logits, num_samples, dtype=None, seed=None, name=None):
   """Draws samples from a categorical distribution.
 
@@ -441,7 +514,8 @@ def categorical(logits, num_samples, dtype=None, seed=None, name=None):
     logits: 2-D Tensor with shape `[batch_size, num_classes]`.  Each slice
       `[i, :]` represents the unnormalized log-probabilities for all classes.
     num_samples: 0-D.  Number of independent samples to draw for each row slice.
-    dtype: integer type to use for the output. Defaults to int64.
+    dtype: The integer type of the output: `int32` or `int64`. Defaults to
+      `int64`.
     seed: A Python integer. Used to create a random seed for the distribution.
       See `tf.random.set_seed` for behavior.
     name: Optional name for the operation.
@@ -456,6 +530,12 @@ def categorical(logits, num_samples, dtype=None, seed=None, name=None):
 def multinomial_categorical_impl(logits, num_samples, dtype, seed):
   """Implementation for random.categorical (v1) and random.categorical (v2)."""
   logits = ops.convert_to_tensor(logits, name="logits")
+  dtype = dtypes.as_dtype(dtype) if dtype else dtypes.int64
+  accepted_dtypes = (dtypes.int32, dtypes.int64)
+  if dtype not in accepted_dtypes:
+    raise ValueError(
+        f"Argument `dtype` got invalid value {dtype}. Accepted dtypes are "
+        f"{accepted_dtypes}.")
   seed1, seed2 = random_seed.get_seed(seed)
   return gen_random_ops.multinomial(
       logits, num_samples, seed=seed1, seed2=seed2, output_dtype=dtype)

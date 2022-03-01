@@ -9,9 +9,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="../os_route.html">
-<link rel="import" href="../../global_scroll_target_behavior.html">
+<link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
-<link rel="import" href="../../languages_page/languages_browser_proxy.html">
+<link rel="import" href="languages_browser_proxy.html">
 
 <dom-module id="os-settings-edit-dictionary-page">
   <template>
@@ -58,7 +58,8 @@
       <cr-input id="newWord" value="{{newWordValue_}}"
           invalid="[[isNewWordInvalid_(newWordState_)]]"
           error-message="[[getErrorMessage_(newWordState_)]]"
-          spellcheck="false">
+          spellcheck="false"
+          aria-label="$i18n{editDictionaryDescription}">
         <cr-button on-click="onAddWordTap_" id="addWord" slot="suffix"
             disabled="[[disableAddButton_]]">
           $i18n{addDictionaryWordButtonLabel}

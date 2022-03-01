@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for cudnn recurrent layers."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 import tempfile
 
@@ -40,7 +36,7 @@ from tensorflow.python.training import gradient_descent
 class CuDNNTest(keras_parameterized.TestCase):
 
   @parameterized.named_parameters(
-      *test_util.generate_combinations_with_testcase_name(
+      *testing_utils.generate_combinations_with_testcase_name(
           layer_class=[keras.layers.CuDNNGRU, keras.layers.CuDNNLSTM],
           return_sequences=[True, False]))
   @test_util.run_gpu_only
@@ -56,7 +52,7 @@ class CuDNNTest(keras_parameterized.TestCase):
         input_shape=(num_samples, timesteps, input_size))
 
   @parameterized.named_parameters(
-      *test_util.generate_combinations_with_testcase_name(
+      *testing_utils.generate_combinations_with_testcase_name(
           layer_class=[keras.layers.CuDNNGRU, keras.layers.CuDNNLSTM],
           go_backwards=[True, False]))
   @test_util.run_gpu_only
@@ -205,7 +201,7 @@ class CuDNNGraphOnlyTest(keras_parameterized.TestCase):
     units = 2
     num_samples = 32
 
-    with self.cached_session(use_gpu=True):
+    with self.cached_session():
       model = keras.models.Sequential()
       model.add(
           keras.layers.Embedding(
@@ -267,17 +263,16 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
       self.assertEqual(len(layer.trainable_weights), 3)
       self.assertEqual(len(layer.non_trainable_weights), 0)
 
-  # TODO(b/156439419): Reenable after the bug is fixed.
   @parameterized.named_parameters(
-      *test_util.generate_combinations_with_testcase_name(
+      *testing_utils.generate_combinations_with_testcase_name(
           rnn_type=['LSTM', 'GRU'], to_cudnn=[True, False],
-          bidirectional=[True, False], implementation=[1, 2],
+          bidirectional=[False], implementation=[1, 2],
           model_nest_level=[1, 2], model_type=['seq', 'func']))
   @test_util.run_v1_only('b/120911602, b/112083752')
   @test_util.run_gpu_only
-  def DISALBED_test_load_weights_between_noncudnn_rnn(
-      self, rnn_type, to_cudnn, bidirectional, implementation,
-      model_nest_level, model_type):
+  def test_load_weights_between_noncudnn_rnn(self, rnn_type, to_cudnn,
+                                             bidirectional, implementation,
+                                             model_nest_level, model_type):
     input_size = 10
     timesteps = 6
     input_shape = (timesteps, input_size)
@@ -300,12 +295,7 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
       rnn_layer_kwargs['reset_after'] = True
 
     layer = rnn_layer_class(units, **rnn_layer_kwargs)
-    if bidirectional:
-      layer = keras.layers.Bidirectional(layer)
-
     cudnn_layer = cudnn_rnn_layer_class(units)
-    if bidirectional:
-      cudnn_layer = keras.layers.Bidirectional(cudnn_layer)
 
     model = self._make_nested_model(input_shape, layer, model_nest_level,
                                     model_type)
@@ -350,108 +340,6 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
     source_model.save_weights(fname)
     target_model.load_weights(fname)
     os.remove(fname)
-
-  @parameterized.named_parameters(
-      *test_util.generate_combinations_with_testcase_name(
-          rnn_type=['LSTM', 'GRU'], to_cudnn=[True, False]))
-  @test_util.run_v1_only('b/120911602')
-  @test_util.run_gpu_only
-  def test_load_weights_between_noncudnn_rnn_time_distributed(self, rnn_type,
-                                                              to_cudnn):
-    # Similar test as test_load_weights_between_noncudnn_rnn() but has different
-    # rank of input due to usage of TimeDistributed. Issue: #10356.
-    input_size = 10
-    steps = 6
-    timesteps = 6
-    input_shape = (timesteps, steps, input_size)
-    units = 2
-    num_samples = 32
-    inputs = np.random.random((num_samples, timesteps, steps, input_size))
-
-    rnn_layer_kwargs = {
-        'recurrent_activation': 'sigmoid',
-        # ensure biases are non-zero and properly converted
-        'bias_initializer': 'random_uniform',
-    }
-    if rnn_type == 'LSTM':
-      rnn_layer_class = keras.layers.LSTM
-      cudnn_rnn_layer_class = keras.layers.CuDNNLSTM
-    else:
-      rnn_layer_class = keras.layers.GRU
-      cudnn_rnn_layer_class = keras.layers.CuDNNGRU
-      rnn_layer_kwargs['reset_after'] = True
-
-    layer = rnn_layer_class(units, **rnn_layer_kwargs)
-    layer = keras.layers.TimeDistributed(layer)
-
-    cudnn_layer = cudnn_rnn_layer_class(units)
-    cudnn_layer = keras.layers.TimeDistributed(cudnn_layer)
-
-    model = self._make_nested_model(input_shape, layer)
-    cudnn_model = self._make_nested_model(input_shape, cudnn_layer)
-
-    if to_cudnn:
-      self._convert_model_weights(model, cudnn_model)
-    else:
-      self._convert_model_weights(cudnn_model, model)
-
-    self.assertAllClose(model.predict(inputs), cudnn_model.predict(inputs),
-                        atol=1e-4)
-
-  @test_util.run_gpu_only
-  def test_cudnnrnn_bidirectional(self):
-    rnn = keras.layers.CuDNNGRU
-    samples = 2
-    dim = 2
-    timesteps = 2
-    output_dim = 2
-    mode = 'concat'
-
-    x = np.random.random((samples, timesteps, dim))
-    target_dim = 2 * output_dim if mode == 'concat' else output_dim
-    y = np.random.random((samples, target_dim))
-
-    # test with Sequential model
-    model = keras.Sequential()
-    model.add(
-        keras.layers.Bidirectional(
-            rnn(output_dim), merge_mode=mode, input_shape=(None, dim)))
-    model.compile(loss='mse', optimizer='rmsprop')
-    model.fit(x, y, epochs=1, batch_size=1)
-
-    # test config
-    model.get_config()
-    model = keras.models.model_from_json(model.to_json())
-    model.summary()
-
-    # test stacked bidirectional layers
-    model = keras.Sequential()
-    model.add(
-        keras.layers.Bidirectional(
-            rnn(output_dim, return_sequences=True),
-            merge_mode=mode,
-            input_shape=(None, dim)))
-    model.add(keras.layers.Bidirectional(rnn(output_dim), merge_mode=mode))
-    model.compile(loss='mse', optimizer=R'rmsprop')
-    model.fit(x, y, epochs=1, batch_size=1)
-
-    # test with functional API
-    inputs = keras.Input((timesteps, dim))
-    outputs = keras.layers.Bidirectional(
-        rnn(output_dim), merge_mode=mode)(
-            inputs)
-    model = keras.Model(inputs, outputs)
-    model.compile(loss='mse', optimizer=R'rmsprop')
-    model.fit(x, y, epochs=1, batch_size=1)
-
-    # Bidirectional and stateful
-    inputs = keras.Input(batch_shape=(1, timesteps, dim))
-    outputs = keras.layers.Bidirectional(
-        rnn(output_dim, stateful=True), merge_mode=mode)(
-            inputs)
-    model = keras.Model(inputs, outputs)
-    model.compile(loss='mse', optimizer='rmsprop')
-    model.fit(x, y, epochs=1, batch_size=1)
 
   @test_util.run_gpu_only
   def test_preprocess_weights_for_loading_gru_incompatible(self):

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_HEADER_DELEGATE_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 
 namespace autofill_assistant {
 class UiControllerAndroid;
@@ -19,10 +20,13 @@ class AssistantHeaderDelegate {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
 
+  void OnTtsButtonClicked(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& jcaller);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() const;
 
  private:
-  UiControllerAndroid* ui_controller_;
+  raw_ptr<UiControllerAndroid> ui_controller_;
 
   // Java-side AssistantHeaderDelegate object.
   base::android::ScopedJavaGlobalRef<jobject> java_assistant_header_delegate_;

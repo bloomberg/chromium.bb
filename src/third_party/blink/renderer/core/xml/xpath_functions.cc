@@ -27,7 +27,7 @@
 
 #include "third_party/blink/renderer/core/xml/xpath_functions.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
@@ -537,7 +537,7 @@ Value FunSubstringAfter::Evaluate(EvaluationContext& context) const {
 
 // Returns |value| clamped to the range [lo, hi].
 // TODO(dominicc): Replace with std::clamp when C++17 is allowed
-// per <https://chromium-cpp.appspot.com/>
+// per //styleguide/c++/c++11.md
 static double Clamp(const double value, const double lo, const double hi) {
   return std::min(hi, std::max(lo, value));
 }

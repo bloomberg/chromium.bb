@@ -14,9 +14,9 @@
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
@@ -55,7 +55,7 @@ class ServiceContext;
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
 // |AssistantManagerService| again.
-constexpr auto kUpdateAssistantManagerDelay = base::TimeDelta::FromSeconds(1);
+constexpr auto kUpdateAssistantManagerDelay = base::Seconds(1);
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public AssistantService,
@@ -68,6 +68,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
               pending_url_loader_factory,
           signin::IdentityManager* identity_manager);
+
+  Service(const Service&) = delete;
+  Service& operator=(const Service&) = delete;
+
   ~Service() override;
 
   // Allows tests to override the S3 server URI used by the service.
@@ -159,9 +163,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
-  ScopedObserver<chromeos::PowerManagerClient,
-                 chromeos::PowerManagerClient::Observer>
-      power_manager_observer_{this};
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_observation_{this};
 
   // Flag to guard the one-time mojom initialization.
   bool is_assistant_manager_service_finalized_ = false;
@@ -193,8 +197,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<Service> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
 }  // namespace assistant

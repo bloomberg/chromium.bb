@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -90,6 +90,10 @@ class BASE_EXPORT ProcessMemoryDump {
 
   explicit ProcessMemoryDump(const MemoryDumpArgs& dump_args);
   ProcessMemoryDump(ProcessMemoryDump&&);
+
+  ProcessMemoryDump(const ProcessMemoryDump&) = delete;
+  ProcessMemoryDump& operator=(const ProcessMemoryDump&) = delete;
+
   ~ProcessMemoryDump();
 
   ProcessMemoryDump& operator=(ProcessMemoryDump&&);
@@ -268,7 +272,7 @@ class BASE_EXPORT ProcessMemoryDump {
       int importance,
       bool is_weak);
 
-  MemoryAllocatorDump* GetBlackHoleMad();
+  MemoryAllocatorDump* GetBlackHoleMad(const std::string& absolute_name);
 
   UnguessableToken process_token_;
   AllocatorDumpsMap allocator_dumps_;
@@ -287,8 +291,6 @@ class BASE_EXPORT ProcessMemoryDump {
   // When set to true, the DCHECK(s) for invalid dump creations on the
   // background mode are disabled for testing.
   static bool is_black_hole_non_fatal_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDump);
 };
 
 }  // namespace trace_event

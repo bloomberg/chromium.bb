@@ -17,6 +17,7 @@
 #include "components/site_isolation/pref_names.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -145,6 +146,10 @@ void RemoveSiteSettingsData(const base::Time& delete_begin,
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::BLUETOOTH_CHOOSER_DATA, delete_begin, delete_end,
       HostContentSettingsMap::PatternSourcePredicate());
+
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, delete_begin,
+      delete_end, HostContentSettingsMap::PatternSourcePredicate());
 
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::FEDERATED_IDENTITY_REQUEST, delete_begin, delete_end,

@@ -99,7 +99,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
 
 std::unique_ptr<WebCodeCacheLoader>
 LoaderFactoryForWorker::CreateCodeCacheLoader() {
-  return web_context_->CreateCodeCacheLoader();
+  return web_context_->CreateCodeCacheLoader(global_scope_->GetCodeCacheHost());
 }
 
 // TODO(altimin): This is used when creating a URLLoader, and

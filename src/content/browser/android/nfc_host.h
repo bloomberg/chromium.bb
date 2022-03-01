@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_NFC_HOST_H_
 
 #include "base/android/jni_android.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -23,6 +24,10 @@ class PermissionControllerImpl;
 class NFCHost : public WebContentsObserver {
  public:
   explicit NFCHost(WebContents* web_contents);
+
+  NFCHost(const NFCHost&) = delete;
+  NFCHost& operator=(const NFCHost&) = delete;
+
   ~NFCHost() override;
 
   void GetNFC(RenderFrameHost* render_frame_host,
@@ -39,14 +44,12 @@ class NFCHost : public WebContentsObserver {
   void Close();
 
   // The permission controller for this browser context.
-  PermissionControllerImpl* permission_controller_;
+  raw_ptr<PermissionControllerImpl> permission_controller_;
 
   mojo::Remote<device::mojom::NFCProvider> nfc_provider_;
 
   // Permission change subscription ID provided by |permission_controller_|.
   PermissionController::SubscriptionId subscription_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(NFCHost);
 };
 
 }  // namespace content

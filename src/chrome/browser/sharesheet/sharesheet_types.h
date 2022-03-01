@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/widget/widget.h"
 
 namespace sharesheet {
 
@@ -17,9 +18,10 @@ namespace sharesheet {
 constexpr int kIconSize = 40;
 
 enum class SharesheetResult {
-  kSuccess,           // Successfully passed data to selected target.
-  kCancel,            // Share was cancelled before a target was selected.
-  kErrorAlreadyOpen,  // Share failed because the sharesheet is already open.
+  kSuccess,            // Successfully passed data to selected target.
+  kCancel,             // Share was cancelled before completion.
+  kErrorAlreadyOpen,   // Share failed because the sharesheet is already open.
+  kErrorWindowClosed,  // Parent window closed before sharesheet could be shown.
 };
 
 // The type of a target.
@@ -43,9 +45,9 @@ struct TargetInfo {
   TargetInfo(TargetInfo&& other);
   TargetInfo& operator=(TargetInfo&& other);
 
-  // Disallow copy and assign.
-  TargetInfo(const TargetInfo&) = delete;
-  TargetInfo& operator=(const TargetInfo&) = delete;
+  // Allow copy.
+  TargetInfo(const TargetInfo&);
+  TargetInfo& operator=(const TargetInfo&);
 
   // The type of target that this object represents.
   TargetType type;
@@ -74,6 +76,9 @@ struct TargetInfo {
 };
 
 using DeliveredCallback = base::OnceCallback<void(SharesheetResult success)>;
+using CloseCallback =
+    base::OnceCallback<void(views::Widget::ClosedReason reason)>;
+using ActionCleanupCallback = base::OnceCallback<void()>;
 
 }  // namespace sharesheet
 

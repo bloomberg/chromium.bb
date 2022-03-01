@@ -259,10 +259,10 @@ You need to trace every `Member<T>` and `WeakMember<T>` in your class. See [Trac
 
 `UntracedMember<T>` represents a reference to a garbage collected object which is ignored by Oilpan.
 
-Unlike 'Member<T>', 'UntracedMember<T>' will not keep an object alive. However, unlike 'WeakMember<T>', the reference will not be cleared (i.e. set to 'nullptr') if the referenced object dies.
-Furthermore, class fields of type 'UntracedMember<T>' should not be traced by the class' tracing method.
+Unlike `Member<T>`, `UntracedMember<T>` will not keep an object alive. However, unlike `WeakMember<T>`, the reference will not be cleared (i.e. set to `nullptr`) if the referenced object dies.
+Furthermore, class fields of type `UntracedMember<T>` should not be traced by the class' tracing method.
 
-Users should  use 'UntracedMember<T>' when implementing [custom weakness semantics](#Custom-weak-callbacks).
+Users should  use `UntracedMember<T>` when implementing [custom weakness semantics](#Custom-weak-callbacks).
 
 ### Persistent, WeakPersistent, CrossThreadPersistent, CrossThreadWeakPersistent
 
@@ -386,11 +386,11 @@ Collections compared to other libraries used in Blink:
 | std::unordered_map | WTF::HashMap        | blink::HeapHashMap        |
 | std::unordered_set | WTF::HashSet        | blink::HeapHashSet        |
 | -                  | WTF::LinkedHashSet  | blink::HeapLinkedHashSet  |
-| -                  | WTF::ListHashSet    | blink::HeapListHashSet    |
 | -                  | WTF::HashCountedSet | blink::HeapHashCountedSet |
 
 These heap collections work mostly the same way as their stdlib or WTF collection counterparts but there are some things to keep in mind.
-Heap collections do not inherit from `GarbageCollected` but are nonetheless allocated on-heap and thus must be properly traced from a `Trace` method.
+Heap collections are regular heap objects and thus must be properly traced from a `Trace` method.
+They can also be inlined into other objects for performance reasons and are allowed to be directly used on stack.
 
 ```c++
 class A final : public GarbageCollected<A> {

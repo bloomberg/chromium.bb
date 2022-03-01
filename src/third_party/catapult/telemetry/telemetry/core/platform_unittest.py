@@ -18,6 +18,10 @@ from telemetry.testing import tab_test_case
 
 class PlatformScreenshotTest(tab_test_case.TabTestCase):
 
+  @classmethod
+  def CustomizeBrowserOptions(cls, options):
+    options.AppendExtraBrowserArgs('--force-color-profile=srgb')
+
   def testScreenshotSupported(self):
     if self._platform.GetOSName() == 'android':
       self.assertTrue(self._platform.CanTakeScreenshot())
@@ -37,22 +41,29 @@ class PlatformScreenshotTest(tab_test_case.TabTestCase):
       self.skipTest('OS X version %s too old' % self._platform.GetOSName())
     tf = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
     tf.close()
-    try:
-      self.Navigate('screenshot_test.html')
+
+    def is_pixel_on_screenshot():
       self._platform.TakeScreenshot(tf.name)
       # Assert that screenshot image contains the color of the triangle defined
       # in screenshot_test.html.
       img = image_util.FromPngFile(tf.name)
       screenshot_pixels = image_util.Pixels(img)
       special_colored_pixel = bytearray([217, 115, 43])
-      self.assertTrue(special_colored_pixel in screenshot_pixels)
+      return special_colored_pixel in screenshot_pixels
+
+    try:
+      # Try to check if pixel exists in screenshot for several times,
+      # because sometimes on android devices screenshot is taken
+      # before web page is fully rendered, which causes test failure.
+      self.Navigate('screenshot_test.html')
+      self.assertTrue(py_utils.WaitFor(is_pixel_on_screenshot, 10))
     finally:
       os.remove(tf.name)
 
 
 class TestHostPlatformInfo(unittest.TestCase):
   def testConsistentHostPlatformInfo(self):
-    self.assertEquals(platform.GetHostPlatform().GetOSName(),
-                      py_utils.GetHostOsName())
-    self.assertEquals(platform.GetHostPlatform().GetArchName(),
-                      py_utils.GetHostArchName())
+    self.assertEqual(platform.GetHostPlatform().GetOSName(),
+                     py_utils.GetHostOsName())
+    self.assertEqual(platform.GetHostPlatform().GetArchName(),
+                     py_utils.GetHostArchName())

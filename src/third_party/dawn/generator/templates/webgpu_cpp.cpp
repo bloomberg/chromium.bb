@@ -11,7 +11,16 @@
 //* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //* See the License for the specific language governing permissions and
 //* limitations under the License.
-#include "dawn/webgpu_cpp.h"
+{% if 'dawn' in enabled_tags %}
+    #include "dawn/webgpu_cpp.h"
+{% else %}
+    #include "webgpu/webgpu_cpp.h"
+{% endif %}
+
+#ifdef __GNUC__
+// error: 'offsetof' within non-standard-layout type 'wgpu::XXX' is conditionally-supported
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
 
 namespace wgpu {
     {% for type in by_category["enum"] %}
@@ -103,7 +112,7 @@ namespace wgpu {
                             {{as_varName(arg.name)}}.Get()
                         {%- elif arg.type.category == "enum" or arg.type.category == "bitmask" -%}
                             static_cast<{{as_cType(arg.type.name)}}>({{as_varName(arg.name)}})
-                        {%- elif arg.type.category in ["callback", "native"] -%}
+                        {%- elif arg.type.category in ["function pointer", "native"] -%}
                             {{as_varName(arg.name)}}
                         {%- else -%}
                             UNHANDLED

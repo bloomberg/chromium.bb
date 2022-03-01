@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/sequence_checker.h"
@@ -31,6 +31,10 @@ class Clock;
 class LookalikeUrlService : public KeyedService {
  public:
   explicit LookalikeUrlService(Profile* profile);
+
+  LookalikeUrlService(const LookalikeUrlService&) = delete;
+  LookalikeUrlService& operator=(const LookalikeUrlService&) = delete;
+
   ~LookalikeUrlService() override;
 
   using EngagedSitesCallback =
@@ -58,8 +62,8 @@ class LookalikeUrlService : public KeyedService {
  private:
   void OnUpdateEngagedSitesCompleted(std::vector<DomainInfo> new_engaged_sites);
 
-  Profile* profile_;
-  base::Clock* clock_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<base::Clock> clock_;
   base::Time last_engagement_fetch_time_;
   std::vector<DomainInfo> engaged_sites_ GUARDED_BY_CONTEXT(sequence_checker_);
 
@@ -71,7 +75,6 @@ class LookalikeUrlService : public KeyedService {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<LookalikeUrlService> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(LookalikeUrlService);
 };
 
 #endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_

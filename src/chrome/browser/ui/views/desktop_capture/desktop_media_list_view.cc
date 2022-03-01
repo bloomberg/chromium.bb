@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/window_icon_util.h"
@@ -81,8 +81,9 @@ void DesktopMediaListView::OnSelectionChanged() {
 }
 
 gfx::Size DesktopMediaListView::CalculatePreferredSize() const {
-  int total_rows = (int{children().size()} + active_style_->columns - 1) /
-                   active_style_->columns;
+  int total_rows =
+      (static_cast<int>(children().size()) + active_style_->columns - 1) /
+      active_style_->columns;
   return gfx::Size(active_style_->columns * active_style_->item_size.width(),
                    total_rows * active_style_->item_size.height());
 }
@@ -131,10 +132,10 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (selected) {
     int index = GetIndexOf(selected);
-    int new_index = base::ClampToRange(index + position_increment, 0,
-                                       int{children().size()} - 1);
+    int new_index = base::clamp(index + position_increment, 0,
+                                static_cast<int>(children().size()) - 1);
     if (index != new_index)
-      new_selected = children()[size_t{new_index}];
+      new_selected = children()[static_cast<size_t>(new_index)];
   } else if (!children().empty()) {
     new_selected = children().front();
   }
@@ -227,6 +228,8 @@ void DesktopMediaListView::OnSourceThumbnailChanged(size_t index) {
       AsDesktopMediaSourceView(children()[index]);
   source_view->SetThumbnail(source.thumbnail);
 }
+
+void DesktopMediaListView::OnSourcePreviewChanged(size_t index) {}
 
 void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
   active_style_ = style;

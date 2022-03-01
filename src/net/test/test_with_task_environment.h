@@ -6,7 +6,6 @@
 #define NET_TEST_TEST_WITH_TASK_ENVIRONMENT_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +21,10 @@ namespace net {
 // time is not desirable or possible (for example, when inheriting from
 // PlatformTest at the same time).
 class WithTaskEnvironment {
+ public:
+  WithTaskEnvironment(const WithTaskEnvironment&) = delete;
+  WithTaskEnvironment& operator=(const WithTaskEnvironment&) = delete;
+
  protected:
   // Always uses MainThreadType::IO, |time_source| may optionally be provided
   // to mock time.
@@ -64,18 +67,18 @@ class WithTaskEnvironment {
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(WithTaskEnvironment);
 };
 
 // Inherit from this class instead of ::testing::Test directly if a
 // TaskEnvironment is needed in a test.
 class TestWithTaskEnvironment : public ::testing::Test,
                                 public WithTaskEnvironment {
+ public:
+  TestWithTaskEnvironment(const TestWithTaskEnvironment&) = delete;
+  TestWithTaskEnvironment& operator=(const TestWithTaskEnvironment&) = delete;
+
  protected:
   using WithTaskEnvironment::WithTaskEnvironment;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWithTaskEnvironment);
 };
 
 }  // namespace net

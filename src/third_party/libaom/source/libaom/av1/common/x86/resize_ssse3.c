@@ -11,14 +11,14 @@
  */
 
 #include <tmmintrin.h>  // SSSE3
+#include "config/av1_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
 #include "aom_dsp/x86/convolve_sse2.h"
 #include "aom_dsp/x86/convolve_ssse3.h"
 #include "aom_dsp/x86/mem_sse2.h"
 #include "aom_dsp/x86/transpose_sse2.h"
 #include "av1/common/resize.h"
-#include "config/av1_rtcd.h"
-#include "config/aom_scale_rtcd.h"
 
 static INLINE __m128i scale_plane_2_to_1_phase_0_kernel(
     const uint8_t *const src, const __m128i *const mask) {

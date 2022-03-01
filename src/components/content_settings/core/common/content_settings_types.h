@@ -71,14 +71,10 @@ enum class ContentSettingsType : int32_t {
   // sound. This will not block playback but instead the user will not hear it.
   SOUND,
 
-  // Website setting which stores the list of client hints (and the preference
-  // expiration time for each of the client hints) that the origin requested
-  // the browser to remember. Spec:
-  // http://httpwg.org/http-extensions/client-hints.html#accept-ch-lifetime.
-  // The setting is stored as a dictionary that includes the mapping from
-  // different client hints to their respective expiration times (seconds since
-  // epoch). The browser is expected to send all the unexpired client hints in
-  // the HTTP request headers for every resource requested from that origin.
+  // Website setting which stores the list of client hints that the origin
+  // requested the browser to remember. The browser is expected to send all
+  // client hints in the HTTP request headers for every resource requested
+  // from that origin.
   CLIENT_HINTS,
 
   // Generic Sensor API covering ambient-light-sensor, accelerometer, gyroscope
@@ -146,11 +142,11 @@ enum class ContentSettingsType : int32_t {
   WAKE_LOCK_SCREEN,
   WAKE_LOCK_SYSTEM,
 
-  // Legacy SameSite cookie behavior. This disables SameSiteByDefaultCookies,
-  // CookiesWithoutSameSiteMustBeSecure, and SchemefulSameSite, forcing the
-  // legacy behavior wherein cookies that don't specify SameSite are treated as
-  // SameSite=None, SameSite=None cookies are not required to be Secure, and
-  // schemeful same-site is not active.
+  // Legacy SameSite cookie behavior. This disables SameSite=Lax-by-default,
+  // SameSite=None requires Secure, and Schemeful Same-Site, forcing the
+  // legacy behavior wherein 1) cookies that don't specify SameSite are treated
+  // as SameSite=None, 2) SameSite=None cookies are not required to be Secure,
+  // and 3) schemeful same-site is not active.
   //
   // This will also be used to revert to legacy behavior when future changes
   // in cookie handling are introduced.
@@ -230,18 +226,13 @@ enum class ContentSettingsType : int32_t {
   // by the File System Access API.
   FILE_SYSTEM_LAST_PICKED_DIRECTORY,
 
-  // Capture the current tab using getCurrentBrowsingContextMedia().
-  // TODO(crbug.com/1150788): Apply this to getDisplayMedia() as well.
+  // Controls access to the getDisplayMedia API when {preferCurrentTab: true}
+  // is specified.
+  // TODO(crbug.com/1150788): Also apply this when getDisplayMedia() is called
+  // without specifying {preferCurrentTab: true}.
   // No values are stored for this type, this is solely needed to be able to
   // register the PermissionContext.
   DISPLAY_CAPTURE,
-
-  // Register file-type associations with the operating system and obtain
-  // read-only access to files that the user chooses to open with this
-  // installed web application from the system file manager. This setting has
-  // no effect on the File System API, <input type="file">, or the ability to
-  // access files through drag & drop or clipboard paste operations.
-  FILE_HANDLING,
 
   // Website setting to store permissions metadata granted to paths on the local
   // file system via the File System Access API. |FILE_SYSTEM_WRITE_GUARD| is
@@ -260,6 +251,35 @@ enum class ContentSettingsType : int32_t {
   // anti-tracking measures that would otherwise prevent it. This setting is
   // associated with the relying party's origin.
   FEDERATED_IDENTITY_REQUEST,
+
+  // Whether to use the v8 optimized JIT for running JavaScript on the page.
+  JAVASCRIPT_JIT,
+
+  // Content setting which stores user decisions to allow loading a site over
+  // HTTP. Entries are added by hostname when a user bypasses the HTTPS-First
+  // Mode interstitial warning when a site does not support HTTPS. Allowed hosts
+  // are exact hostname matches -- subdomains of a host on the allowlist must be
+  // separately allowlisted.
+  HTTP_ALLOWED,
+
+  // Stores metadata related to form fill, such as e.g. whether user data was
+  // autofilled on a specific website.
+  FORMFILL_METADATA,
+
+  // Setting to indicate that there is an active federated sign-in session
+  // between a specified relying party and a specified identity provider for
+  // a specified account. When this is present it allows access to session
+  // management capabilities between the sites. This setting is associated
+  // with the relying party's origin.
+  FEDERATED_IDENTITY_ACTIVE_SESSION,
+
+  // Setting to indicate whether Chrome should automatically apply darkening to
+  // web content.
+  AUTO_DARK_WEB_CONTENT,
+
+  // Setting to indicate whether Chrome should request the desktop view of a
+  // site instead of the mobile one.
+  REQUEST_DESKTOP_SITE,
 
   NUM_TYPES,
 };

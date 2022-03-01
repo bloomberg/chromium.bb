@@ -29,8 +29,30 @@ void CFX_GraphState::SetLineDash(std::vector<float> dashes,
   pData->m_DashArray = std::move(dashes);
 }
 
+void CFX_GraphState::SetLineDashPhase(float phase) {
+  CFX_GraphStateData* pData = m_Ref.GetPrivateCopy();
+  pData->m_DashPhase = phase;
+}
+
+std::vector<float> CFX_GraphState::GetLineDashArray() const {
+  std::vector<float> ret;
+
+  if (m_Ref.GetObject())
+    ret = m_Ref.GetObject()->m_DashArray;
+
+  return ret;
+}
+
+size_t CFX_GraphState::GetLineDashSize() const {
+  return m_Ref.GetObject() ? m_Ref.GetObject()->m_DashArray.size() : 0;
+}
+
+float CFX_GraphState::GetLineDashPhase() const {
+  return m_Ref.GetObject() ? m_Ref.GetObject()->m_DashPhase : 1.0f;
+}
+
 float CFX_GraphState::GetLineWidth() const {
-  return m_Ref.GetObject() ? m_Ref.GetObject()->m_LineWidth : 1.f;
+  return m_Ref.GetObject() ? m_Ref.GetObject()->m_LineWidth : 1.0f;
 }
 
 void CFX_GraphState::SetLineWidth(float width) {
@@ -39,7 +61,7 @@ void CFX_GraphState::SetLineWidth(float width) {
 
 CFX_GraphStateData::LineCap CFX_GraphState::GetLineCap() const {
   return m_Ref.GetObject() ? m_Ref.GetObject()->m_LineCap
-                           : CFX_GraphStateData::LineCapButt;
+                           : CFX_GraphStateData::LineCap::kButt;
 }
 void CFX_GraphState::SetLineCap(CFX_GraphStateData::LineCap cap) {
   m_Ref.GetPrivateCopy()->m_LineCap = cap;
@@ -47,7 +69,7 @@ void CFX_GraphState::SetLineCap(CFX_GraphStateData::LineCap cap) {
 
 CFX_GraphStateData::LineJoin CFX_GraphState::GetLineJoin() const {
   return m_Ref.GetObject() ? m_Ref.GetObject()->m_LineJoin
-                           : CFX_GraphStateData::LineJoinMiter;
+                           : CFX_GraphStateData::LineJoin::kMiter;
 }
 
 void CFX_GraphState::SetLineJoin(CFX_GraphStateData::LineJoin join) {

@@ -8,13 +8,12 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "chromeos/login/auth/key.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
-namespace chromeos {
+namespace ash {
 namespace quick_unlock {
 
 class PinStoragePrefs {
@@ -27,6 +26,10 @@ class PinStoragePrefs {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   explicit PinStoragePrefs(PrefService* pref_service);
+
+  PinStoragePrefs(const PinStoragePrefs&) = delete;
+  PinStoragePrefs& operator=(const PinStoragePrefs&) = delete;
+
   ~PinStoragePrefs();
 
   // Add a PIN unlock attempt count.
@@ -57,11 +60,9 @@ class PinStoragePrefs {
  private:
   PrefService* pref_service_;
   int unlock_attempt_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(PinStoragePrefs);
 };
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_PIN_STORAGE_PREFS_H_

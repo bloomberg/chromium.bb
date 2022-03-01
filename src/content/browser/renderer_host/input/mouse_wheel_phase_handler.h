@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOUSE_WHEEL_PHASE_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOUSE_WHEEL_PHASE_HANDLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
@@ -17,7 +17,7 @@ class RenderWidgetHostViewBase;
 // The duration after which a synthetic wheel with zero deltas and
 // phase = |kPhaseEnded| will be sent after the last wheel event.
 constexpr base::TimeDelta kDefaultMouseWheelLatchingTransaction =
-    base::TimeDelta::FromMilliseconds(500);
+    base::Milliseconds(500);
 
 // Maximum allowed difference between coordinates of two mouse wheel events in
 // the same scroll sequence.
@@ -50,9 +50,13 @@ enum class FirstScrollUpdateAckState {
 // The MouseWheelPhaseHandler is responsible for adding the proper phase to
 // wheel events. Phase information is necessary for wheel scrolling since it
 // shows the start and end of a scrolling sequence.
-class CONTENT_EXPORT MouseWheelPhaseHandler {
+class MouseWheelPhaseHandler {
  public:
   MouseWheelPhaseHandler(RenderWidgetHostViewBase* const host_view);
+
+  MouseWheelPhaseHandler(const MouseWheelPhaseHandler&) = delete;
+  MouseWheelPhaseHandler& operator=(const MouseWheelPhaseHandler&) = delete;
+
   ~MouseWheelPhaseHandler() {}
 
   void AddPhaseIfNeededAndScheduleEndEvent(
@@ -104,7 +108,7 @@ class CONTENT_EXPORT MouseWheelPhaseHandler {
   bool ShouldBreakLatchingDueToDirectionChange(
       const blink::WebMouseWheelEvent& wheel_event) const;
 
-  RenderWidgetHostViewBase* const host_view_;
+  const raw_ptr<RenderWidgetHostViewBase> host_view_;
   base::OneShotTimer mouse_wheel_end_dispatch_timer_;
   base::TimeDelta mouse_wheel_end_dispatch_timeout_;
   blink::WebMouseWheelEvent last_mouse_wheel_event_;
@@ -127,9 +131,7 @@ class CONTENT_EXPORT MouseWheelPhaseHandler {
   // momentum_phase = kPhaseBegan before sending its previous wheel event with
   // phase = kPhaseEnded.
   base::TimeDelta max_time_between_phase_ended_and_momentum_phase_began_ =
-      base::TimeDelta::FromMilliseconds(100);
-
-  DISALLOW_COPY_AND_ASSIGN(MouseWheelPhaseHandler);
+      base::Milliseconds(100);
 };
 
 }  // namespace content

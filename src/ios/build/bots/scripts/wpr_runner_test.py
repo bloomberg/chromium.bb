@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -23,8 +24,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
 
     self.mock(test_runner, 'get_current_xcode_info', lambda: {
         'version': 'test version', 'build': 'test build', 'path': 'test/path'})
-    self.mock(test_runner.subprocess, 'check_output',
-              lambda _: 'fake-bundle-id')
+    self.mock(test_runner.subprocess,
+              'check_output', lambda _: b'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
     self.mock(os.path, 'exists', lambda _: True)
     self.mock(test_runner.TestRunner, 'set_sigterm_handler',
@@ -112,14 +113,14 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
       def __init__(self):
         self.line_index = 0
         self.lines = [
-            'Test Case \'-[a 1]\' started.',
-            'Test Case \'-[a 1]\' has uninteresting logs.',
-            'Test Case \'-[a 1]\' passed (0.1 seconds)',
-            'Test Case \'-[b 2]\' started.',
-            'Test Case \'-[b 2]\' passed (0.1 seconds)',
-            'Test Case \'-[c 3]\' started.',
-            'Test Case \'-[c 3]\' has interesting failure info.',
-            'Test Case \'-[c 3]\' failed (0.1 seconds)',
+            b'Test Case \'-[a 1]\' started.',
+            b'Test Case \'-[a 1]\' has uninteresting logs.',
+            b'Test Case \'-[a 1]\' passed (0.1 seconds)',
+            b'Test Case \'-[b 2]\' started.',
+            b'Test Case \'-[b 2]\' passed (0.1 seconds)',
+            b'Test Case \'-[c 3]\' started.',
+            b'Test Case \'-[c 3]\' has interesting failure info.',
+            b'Test Case \'-[c 3]\' failed (0.1 seconds)',
         ]
 
       def readline(self):
@@ -173,32 +174,32 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
   def test_run_no_filter(self):
     """Ensures the _run method can handle passed and failed tests."""
     result = self.run_wpr_test()
-    self.assertIn('file1.a/1', result.passed_tests)
-    self.assertIn('file1.b/2', result.passed_tests)
-    self.assertIn('file1.c/3', result.failed_tests)
-    self.assertIn('file2.a/1', result.passed_tests)
-    self.assertIn('file2.b/2', result.passed_tests)
-    self.assertIn('file2.c/3', result.failed_tests)
+    self.assertIn('file1.a/1', result.passed_tests())
+    self.assertIn('file1.b/2', result.passed_tests())
+    self.assertIn('file1.c/3', result.failed_tests())
+    self.assertIn('file2.a/1', result.passed_tests())
+    self.assertIn('file2.b/2', result.passed_tests())
+    self.assertIn('file2.c/3', result.failed_tests())
 
   def test_run_with_filter(self):
     """Ensures the _run method works with a filter."""
     result = self.run_wpr_test(test_filter=["file1"], invert=False)
-    self.assertIn('file1.a/1', result.passed_tests)
-    self.assertIn('file1.b/2', result.passed_tests)
-    self.assertIn('file1.c/3', result.failed_tests)
-    self.assertNotIn('file2.a/1', result.passed_tests)
-    self.assertNotIn('file2.b/2', result.passed_tests)
-    self.assertNotIn('file2.c/3', result.failed_tests)
+    self.assertIn('file1.a/1', result.passed_tests())
+    self.assertIn('file1.b/2', result.passed_tests())
+    self.assertIn('file1.c/3', result.failed_tests())
+    self.assertNotIn('file2.a/1', result.passed_tests())
+    self.assertNotIn('file2.b/2', result.passed_tests())
+    self.assertNotIn('file2.c/3', result.failed_tests())
 
   def test_run_with_inverted_filter(self):
     """Ensures the _run method works with an inverted filter."""
     result = self.run_wpr_test(test_filter=["file1"], invert=True)
-    self.assertNotIn('file1.a/1', result.passed_tests)
-    self.assertNotIn('file1.b/2', result.passed_tests)
-    self.assertNotIn('file1.c/3', result.failed_tests)
-    self.assertIn('file2.a/1', result.passed_tests)
-    self.assertIn('file2.b/2', result.passed_tests)
-    self.assertIn('file2.c/3', result.failed_tests)
+    self.assertNotIn('file1.a/1', result.passed_tests())
+    self.assertNotIn('file1.b/2', result.passed_tests())
+    self.assertNotIn('file1.c/3', result.failed_tests())
+    self.assertIn('file2.a/1', result.passed_tests())
+    self.assertIn('file2.b/2', result.passed_tests())
+    self.assertIn('file2.c/3', result.failed_tests())
 
 
 if __name__ == '__main__':

@@ -39,6 +39,9 @@ class ProfilingServiceImpl
       : heap_profiler_receiver_(this, std::move(profiler_receiver)),
         helper_(std::move(helper)) {}
 
+  ProfilingServiceImpl(const ProfilingServiceImpl&) = delete;
+  ProfilingServiceImpl& operator=(const ProfilingServiceImpl&) = delete;
+
   ~ProfilingServiceImpl() override = default;
 
   // mojom::ProfilingService implementation:
@@ -59,12 +62,14 @@ class ProfilingServiceImpl
   // memory_instrumentation::mojom::HeapProfiler implementation:
   void DumpProcessesForTracing(
       bool strip_path_from_mapped_files,
+      bool write_proto,
       DumpProcessesForTracingCallback callback) override {
     std::vector<base::ProcessId> pids =
         connection_manager_.GetConnectionPidsThatNeedVmRegions();
     if (pids.empty()) {
       connection_manager_.DumpProcessesForTracing(
-          strip_path_from_mapped_files, std::move(callback), VmRegions());
+          strip_path_from_mapped_files, write_proto, std::move(callback),
+          VmRegions());
       return;
     }
 
@@ -75,17 +80,18 @@ class ProfilingServiceImpl
         base::BindOnce(&ProfilingServiceImpl::
                            OnGetVmRegionsCompleteForDumpProcessesForTracing,
                        weak_factory_.GetWeakPtr(), strip_path_from_mapped_files,
-                       std::move(callback)));
+                       write_proto, std::move(callback)));
   }
 
  private:
   void OnGetVmRegionsCompleteForDumpProcessesForTracing(
       bool strip_path_from_mapped_files,
+      bool write_proto,
       DumpProcessesForTracingCallback callback,
       VmRegions vm_regions) {
-    connection_manager_.DumpProcessesForTracing(strip_path_from_mapped_files,
-                                                std::move(callback),
-                                                std::move(vm_regions));
+    connection_manager_.DumpProcessesForTracing(
+        strip_path_from_mapped_files, write_proto, std::move(callback),
+        std::move(vm_regions));
   }
 
   mojo::Receiver<memory_instrumentation::mojom::HeapProfiler>
@@ -94,8 +100,6 @@ class ProfilingServiceImpl
   ConnectionManager connection_manager_;
 
   base::WeakPtrFactory<ProfilingServiceImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProfilingServiceImpl);
 };
 
 void RunHeapProfilingService(

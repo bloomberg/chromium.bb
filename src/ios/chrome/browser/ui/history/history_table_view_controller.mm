@@ -43,14 +43,11 @@
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -88,7 +85,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 @interface HistoryTableViewController () <HistoryEntriesStatusItemDelegate,
                                           HistoryEntryInserterDelegate,
                                           TableViewLinkHeaderFooterItemDelegate,
-                                          TableViewTextLinkCellDelegate,
                                           TableViewURLDragDataSource,
                                           UISearchControllerDelegate,
                                           UISearchResultsUpdating,
@@ -139,9 +135,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - ViewController Lifecycle.
 
 - (instancetype)init {
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? ChromeTableViewStyle()
-                               : UITableViewStylePlain;
+  UITableViewStyle style = ChromeTableViewStyle();
   return [super initWithStyle:style];
 }
 
@@ -186,16 +180,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // Add a tableFooterView in order to hide the separator lines where there's no
   // history content.
   self.tableView.tableFooterView = [[UIView alloc] init];
-
-  if (!IsNativeContextMenuEnabled()) {
-    // Long-press gesture recognizer.
-    UILongPressGestureRecognizer* longPressRecognizer =
-        [[UILongPressGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector
-                    (displayContextMenuInvokedByGestureRecognizer:)];
-    [self.tableView addGestureRecognizer:longPressRecognizer];
-  }
 
   self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
   self.dragDropHandler.origin = WindowActivityHistoryOrigin;
@@ -290,7 +274,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
-  if (syncSetupService->IsSyncEnabled() &&
+  if (syncSetupService->CanSyncFeatureStart() &&
       syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
     [self showHistoryMatchingQuery:_currentQuery];
@@ -328,7 +312,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                          accessibilityDelegate:self];
     item.text = [history::FormattedTitle(entry.title, entry.url) copy];
     item.detailText =
-        [base::SysUTF8ToNSString(entry.url.GetOrigin().spec()) copy];
+        [base::SysUTF8ToNSString(entry.url.DeprecatedGetOriginAsURL().spec())
+            copy];
     item.timeText =
         [base::SysUTF16ToNSString(base::TimeFormatTimeOfDay(entry.time)) copy];
     item.URL = entry.url;
@@ -458,18 +443,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   }
 }
 
-#pragma mark TableViewTextLinkCellDelegate
-
-- (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
-            didRequestOpenURL:(const GURL&)URL {
-  DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
-  [self openURLInNewTab:URL];
-}
-
 #pragma mark TableViewLinkHeaderFooterItemDelegate
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
-  DCHECK(base::FeatureList::IsEnabled(kSettingsRefresh));
   [self openURLInNewTab:URL];
 }
 
@@ -578,23 +554,21 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView*)tableView
-    heightForHeaderInSection:(NSInteger)section {
-  if (section ==
-          [self.tableViewModel
-              sectionForSectionIdentifier:kEntriesStatusSectionIdentifier] &&
-      (!base::FeatureList::IsEnabled(kSettingsRefresh) ||
-       ![self.tableViewModel
-           headerForSectionWithIdentifier:kEntriesStatusSectionIdentifier]))
-    return 0;
-  return UITableViewAutomaticDimension;
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
   if ([self.tableViewModel sectionIdentifierForSection:section] ==
       kEntriesStatusSectionIdentifier)
     return 0;
   return kSeparationSpaceBetweenSections;
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  // Hide the status header if the currentStatusMessage is nil.
+  if ([self.tableViewModel sectionIdentifierForSection:section] ==
+          kEntriesStatusSectionIdentifier &&
+      [self.currentStatusMessage length] == 0)
+    return 0;
+  return UITableViewAutomaticDimension;
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -639,14 +613,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
     contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
-                                        point:(CGPoint)point
-    API_AVAILABLE(ios(13.0)) {
-  if (!IsNativeContextMenuEnabled()) {
-    // Returning nil will allow the gesture to be captured and show the old
-    // context menus.
-    return nil;
-  }
-
+                                        point:(CGPoint)point {
   if (self.isEditing) {
     // Don't show the context menu when currently in editing mode.
     return nil;
@@ -706,12 +673,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                [URLCell.faviconView configureWithAttributes:attributes];
              }
            }];
-  }
-  if (item.type == ItemTypeEntriesStatusWithLink) {
-    DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
-    TableViewTextLinkCell* tableViewTextLinkCell =
-        base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
-    [tableViewTextLinkCell setDelegate:self];
   }
   return cellToReturn;
 }
@@ -844,118 +805,36 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       newStatusMessage == self.currentStatusMessage)
     return;
 
-  // Get the previous status item and its information, if any.
-  NSArray* previousStatusItems = [self.tableViewModel
-      itemsInSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-  DCHECK([previousStatusItems count] <= 1);
-  TableViewItem* previousStatusItem = nil;
-  NSIndexPath* previousStatusItemIndexPath = nil;
-  if ([previousStatusItems count]) {
-    previousStatusItem = [previousStatusItems lastObject];
-    previousStatusItemIndexPath = [self.tableViewModel
-        indexPathForItemType:previousStatusItem.type
-           sectionIdentifier:kEntriesStatusSectionIdentifier];
+  self.currentStatusMessage = newStatusMessage;
+
+  TableViewHeaderFooterItem* item = nil;
+  if (messageWillContainLink) {
+    TableViewLinkHeaderFooterItem* header =
+        [[TableViewLinkHeaderFooterItem alloc]
+            initWithType:ItemTypeEntriesStatusWithLink];
+    header.text = newStatusMessage;
+    header.urls = std::vector<GURL>{GURL(kHistoryMyActivityURL)};
+    item = header;
+  } else {
+    TableViewTextHeaderFooterItem* header =
+        [[TableViewTextHeaderFooterItem alloc]
+            initWithType:ItemTypeEntriesStatus];
+    header.text = newStatusMessage;
+    item = header;
   }
 
   // Block to hold any tableView and model updates that will be performed.
-  void (^tableUpdates)(void) = nil;
-
-  // If no new status message remove the previous status item if it exists.
-  if (newStatusMessage == nil) {
-    if (previousStatusItem) {
-      tableUpdates = ^{
-        [self.tableViewModel
-                   removeItemWithType:previousStatusItem.type
-            fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableView
-            deleteRowsAtIndexPaths:@[ previousStatusItemIndexPath ]
+  // Change the header then reload the section to have it taken into
+  // account.
+  void (^tableUpdates)(void) = ^{
+    [self.tableViewModel setHeader:item
+          forSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+    NSInteger sectionIndex = [self.tableViewModel
+        sectionForSectionIdentifier:kEntriesStatusSectionIdentifier];
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
                   withRowAnimation:UITableViewRowAnimationAutomatic];
-      };
-    }
-  } else {
-    // Since there's a new status message, create the new status item.
-    if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
-      TableViewHeaderFooterItem* item = nil;
-      if (messageWillContainLink) {
-        TableViewLinkHeaderFooterItem* header =
-            [[TableViewLinkHeaderFooterItem alloc]
-                initWithType:ItemTypeEntriesStatusWithLink];
-        header.text = newStatusMessage;
-        header.urls = std::vector<GURL>{GURL(kHistoryMyActivityURL)};
-        item = header;
-      } else {
-        TableViewTextHeaderFooterItem* header =
-            [[TableViewTextHeaderFooterItem alloc]
-                initWithType:ItemTypeEntriesStatus];
-        header.text = newStatusMessage;
-        item = header;
-      }
-      // Change the header then reload the section to have it taken into
-      // account.
-      tableUpdates = ^{
-        NSInteger sectionIndex = [self.tableViewModel
-            sectionForSectionIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableViewModel setHeader:item
-              forSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableView
-              reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-            withRowAnimation:UITableViewRowAnimationAutomatic];
-      };
-    } else {
-      TableViewItem* updatedMessageItem =
-          [self statusItemWithMessage:newStatusMessage
-               messageWillContainLink:messageWillContainLink];
-
-      // If there was a previous status item delete it, insert the new status
-      // item and reload. If not simply insert the new status item.
-      tableUpdates = ^{
-        if (previousStatusItem) {
-          [self.tableViewModel
-                     removeItemWithType:previousStatusItem.type
-              fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-          [self.tableViewModel addItem:updatedMessageItem
-               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-          [self.tableView
-              reloadRowsAtIndexPaths:@[ [self.tableViewModel
-                                         indexPathForItem:updatedMessageItem] ]
-                    withRowAnimation:UITableViewRowAnimationAutomatic];
-        } else {
-          [self.tableViewModel addItem:updatedMessageItem
-               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-          [self.tableView
-              insertRowsAtIndexPaths:@[ [self.tableViewModel
-                                         indexPathForItem:updatedMessageItem] ]
-                    withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-      };
-    }
-  }
-
-  // If there's any tableUpdates, run them.
-  if (tableUpdates) {
-    [self.tableView performBatchUpdates:tableUpdates completion:nil];
-  }
-  self.currentStatusMessage = newStatusMessage;
-}
-
-// Helper function that creates a new item for the Status message.
-- (TableViewItem*)statusItemWithMessage:(NSString*)statusMessage
-                 messageWillContainLink:(BOOL)messageWillContainLink {
-  TableViewItem* statusMessageItem = nil;
-  if (messageWillContainLink) {
-    TableViewTextLinkItem* entriesStatusItem = [[TableViewTextLinkItem alloc]
-        initWithType:ItemTypeEntriesStatusWithLink];
-    entriesStatusItem.text = statusMessage;
-    entriesStatusItem.linkURL = GURL(kHistoryMyActivityURL);
-    statusMessageItem = entriesStatusItem;
-  } else {
-    TableViewTextItem* entriesStatusItem =
-        [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
-    entriesStatusItem.text = statusMessage;
-    entriesStatusItem.textColor = UIColor.cr_labelColor;
-    statusMessageItem = entriesStatusItem;
-  }
-  return statusMessageItem;
+  };
+  [self.tableView performBatchUpdates:tableUpdates completion:nil];
 }
 
 // Deletes all items in the tableView which indexes are included in indexArray,

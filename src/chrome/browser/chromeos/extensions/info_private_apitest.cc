@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
-#include "base/system/sys_info.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
-#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
@@ -23,6 +22,8 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
+
+using base::test::ScopedChromeOSVersionInfo;
 
 namespace {
 
@@ -42,15 +43,10 @@ class ChromeOSInfoPrivateTest : public extensions::ExtensionApiTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kAppId,
                                                               kTestAppId);
   }
-
-  void SetDeviceType(const std::string& device_type) {
-    const std::string lsb_release = std::string("DEVICETYPE=") + device_type;
-    base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release,
-                                                 base::Time::Now());
-  }
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, TestGetAndSet) {
+// Flaky crashes. https://crbug.com/1226266
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, DISABLED_TestGetAndSet) {
   // Set the initial timezone different from what JS function
   // timezoneSetTest() will attempt to set.
   profile()->GetPrefs()->SetString(prefs::kUserTimezone, "America/Los_Angeles");
@@ -132,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, ArcNotAvailable) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebase) {
-  SetDeviceType("CHROMEBASE");
+  ScopedChromeOSVersionInfo version("DEVICETYPE=CHROMEBASE", base::Time::Now());
   ASSERT_TRUE(RunExtensionTest(
       "chromeos_info_private/extended",
       {.custom_arg = "chromebase", .launch_as_platform_app = true}))
@@ -140,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebase) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebit) {
-  SetDeviceType("CHROMEBIT");
+  ScopedChromeOSVersionInfo version("DEVICETYPE=CHROMEBIT", base::Time::Now());
   ASSERT_TRUE(RunExtensionTest(
       "chromeos_info_private/extended",
       {.custom_arg = "chromebit", .launch_as_platform_app = true}))
@@ -148,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebit) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebook) {
-  SetDeviceType("CHROMEBOOK");
+  ScopedChromeOSVersionInfo version("DEVICETYPE=CHROMEBOOK", base::Time::Now());
   ASSERT_TRUE(RunExtensionTest(
       "chromeos_info_private/extended",
       {.custom_arg = "chromebook", .launch_as_platform_app = true}))
@@ -156,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebook) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebox) {
-  SetDeviceType("CHROMEBOX");
+  ScopedChromeOSVersionInfo version("DEVICETYPE=CHROMEBOX", base::Time::Now());
   ASSERT_TRUE(RunExtensionTest(
       "chromeos_info_private/extended",
       {.custom_arg = "chromebox", .launch_as_platform_app = true}))
@@ -164,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebox) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, UnknownDeviceType) {
-  SetDeviceType("UNKNOWN");
+  ScopedChromeOSVersionInfo version("DEVICETYPE=UNKNOWN", base::Time::Now());
   ASSERT_TRUE(RunExtensionTest(
       "chromeos_info_private/extended",
       {.custom_arg = "unknown device type", .launch_as_platform_app = true}))
@@ -225,15 +221,18 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
 class ChromeOSInfoPrivateInternalStylusTest : public ChromeOSInfoPrivateTest {
  public:
   ChromeOSInfoPrivateInternalStylusTest() = default;
+
+  ChromeOSInfoPrivateInternalStylusTest(
+      const ChromeOSInfoPrivateInternalStylusTest&) = delete;
+  ChromeOSInfoPrivateInternalStylusTest& operator=(
+      const ChromeOSInfoPrivateInternalStylusTest&) = delete;
+
   ~ChromeOSInfoPrivateInternalStylusTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeOSInfoPrivateTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(ash::switches::kHasInternalStylus);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSInfoPrivateInternalStylusTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateInternalStylusTest,
@@ -248,6 +247,11 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateInternalStylusTest,
 class ChromeOSArcInfoPrivateTest : public ChromeOSInfoPrivateTest {
  public:
   ChromeOSArcInfoPrivateTest() = default;
+
+  ChromeOSArcInfoPrivateTest(const ChromeOSArcInfoPrivateTest&) = delete;
+  ChromeOSArcInfoPrivateTest& operator=(const ChromeOSArcInfoPrivateTest&) =
+      delete;
+
   ~ChromeOSArcInfoPrivateTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -255,9 +259,6 @@ class ChromeOSArcInfoPrivateTest : public ChromeOSInfoPrivateTest {
     // Make ARC enabled for ArcAvailable/ArcEnabled tests.
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSArcInfoPrivateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeOSArcInfoPrivateTest, ArcEnabled) {
@@ -283,14 +284,18 @@ IN_PROC_BROWSER_TEST_F(ChromeOSArcInfoPrivateTest, ArcAvailable) {
 class ChromeOSManagedDeviceInfoPrivateTest : public ChromeOSInfoPrivateTest {
  public:
   ChromeOSManagedDeviceInfoPrivateTest() = default;
+
+  ChromeOSManagedDeviceInfoPrivateTest(
+      const ChromeOSManagedDeviceInfoPrivateTest&) = delete;
+  ChromeOSManagedDeviceInfoPrivateTest& operator=(
+      const ChromeOSManagedDeviceInfoPrivateTest&) = delete;
+
   ~ChromeOSManagedDeviceInfoPrivateTest() override = default;
 
  private:
   chromeos::ScopedStubInstallAttributes test_install_attributes_{
       chromeos::StubInstallAttributes::CreateCloudManaged("fake-domain",
                                                           "fake-id")};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSManagedDeviceInfoPrivateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeOSManagedDeviceInfoPrivateTest, Managed) {

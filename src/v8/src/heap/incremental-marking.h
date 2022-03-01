@@ -33,7 +33,7 @@ class V8_EXPORT_PRIVATE IncrementalMarking final {
 
   enum CompletionAction { GC_VIA_STACK_GUARD, NO_GC_VIA_STACK_GUARD };
 
-  enum GCRequestType { NONE, COMPLETE_MARKING, FINALIZATION };
+  enum class GCRequestType { NONE, COMPLETE_MARKING, FINALIZATION };
 
   using MarkingState = MarkCompactCollector::MarkingState;
   using AtomicMarkingState = MarkCompactCollector::AtomicMarkingState;
@@ -75,17 +75,13 @@ class V8_EXPORT_PRIVATE IncrementalMarking final {
 
 #ifndef DEBUG
   static constexpr size_t kV8ActivationThreshold = 8 * MB;
-  static constexpr size_t kGlobalActivationThreshold = 16 * MB;
+  static constexpr size_t kEmbedderActivationThreshold = 8 * MB;
 #else
   static constexpr size_t kV8ActivationThreshold = 0;
-  static constexpr size_t kGlobalActivationThreshold = 0;
+  static constexpr size_t kEmbedderActivationThreshold = 0;
 #endif
 
-#ifdef V8_ATOMIC_MARKING_STATE
   static const AccessMode kAtomicity = AccessMode::ATOMIC;
-#else
-  static const AccessMode kAtomicity = AccessMode::NON_ATOMIC;
-#endif
 
   IncrementalMarking(Heap* heap, WeakObjects* weak_objects);
 
@@ -123,17 +119,18 @@ class V8_EXPORT_PRIVATE IncrementalMarking final {
   inline bool IsComplete() const { return state() == COMPLETE; }
 
   inline bool IsReadyToOverApproximateWeakClosure() const {
-    return request_type_ == FINALIZATION && !finalize_marking_completed_;
+    return request_type_ == GCRequestType::FINALIZATION &&
+           !finalize_marking_completed_;
   }
 
   inline bool NeedsFinalization() {
-    return IsMarking() &&
-           (request_type_ == FINALIZATION || request_type_ == COMPLETE_MARKING);
+    return IsMarking() && (request_type_ == GCRequestType::FINALIZATION ||
+                           request_type_ == GCRequestType::COMPLETE_MARKING);
   }
 
   GCRequestType request_type() const { return request_type_; }
 
-  void reset_request_type() { request_type_ = NONE; }
+  void reset_request_type() { request_type_ = GCRequestType::NONE; }
 
   bool CanBeActivated();
 
@@ -180,6 +177,9 @@ class V8_EXPORT_PRIVATE IncrementalMarking final {
   // Returns true if the function succeeds in transitioning the object
   // from white to grey.
   V8_INLINE bool WhiteToGreyAndPush(HeapObject obj);
+
+  // Marks object referenced from roots.
+  V8_INLINE void MarkRootObject(Root root, HeapObject obj);
 
   // This function is used to color the object black before it undergoes an
   // unsafe layout change. This is a part of synchronization protocol with
@@ -310,7 +310,7 @@ class V8_EXPORT_PRIVATE IncrementalMarking final {
   bool finalize_marking_completed_ = false;
   IncrementalMarkingJob incremental_marking_job_;
 
-  std::atomic<GCRequestType> request_type_{NONE};
+  std::atomic<GCRequestType> request_type_{GCRequestType::NONE};
 
   Observer new_generation_observer_;
   Observer old_generation_observer_;

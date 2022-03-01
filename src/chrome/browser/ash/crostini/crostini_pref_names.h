@@ -18,13 +18,14 @@ enum class CrostiniArcAdbSideloadingUserAllowanceMode {
 namespace prefs {
 
 extern const char kCrostiniEnabled[];
-extern const char kCrostiniMimeTypes[];
 extern const char kCrostiniSharedUsbDevices[];
 extern const char kCrostiniContainers[];
 extern const char kCrostiniTerminalSettings[];
 extern const char kVmKey[];
 extern const char kContainerKey[];
 extern const char kContainerOsVersionKey[];
+extern const char kContainerOsPrettyNameKey[];
+extern const char kContainerColorKey[];
 extern const char kCrostiniMicAllowed[];
 
 extern const char kUserCrostiniAllowedByPolicy[];

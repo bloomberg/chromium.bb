@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
@@ -22,6 +23,10 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "media/gpu/gles2_decoder_helper.h"
 #include "ui/gl/gl_context.h"
+
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
+#endif
 
 namespace media {
 
@@ -49,9 +54,13 @@ class CommandBufferHelperImpl
 #else
         gpu::SchedulingPriority::kNormal
 #endif  // defined(OS_MAC)
-    );
+        ,
+        stub_->channel()->task_runner());
     decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
   }
+
+  CommandBufferHelperImpl(const CommandBufferHelperImpl&) = delete;
+  CommandBufferHelperImpl& operator=(const CommandBufferHelperImpl&) = delete;
 
   gl::GLContext* GetGLContext() override {
     DVLOG(2) << __func__;
@@ -73,6 +82,18 @@ class CommandBufferHelperImpl
       return nullptr;
     return stub_->channel()->shared_image_stub();
   }
+
+#if defined(OS_WIN)
+  gpu::DXGISharedHandleManager* GetDXGISharedHandleManager() override {
+    if (!stub_)
+      return nullptr;
+    return stub_->channel()
+        ->gpu_channel_manager()
+        ->shared_image_manager()
+        ->dxgi_shared_handle_manager()
+        .get();
+  }
+#endif
 
   bool HasStub() override {
     DVLOG(4) << __func__;
@@ -254,7 +275,7 @@ class CommandBufferHelperImpl
     }
 
    private:
-    CommandBufferHelperImpl* const helper_;
+    const raw_ptr<CommandBufferHelperImpl> helper_;
     int client_id_ = 0;
     uint64_t client_tracing_id_ = 0;
     uint64_t context_group_tracing_id_ = 0;
@@ -298,7 +319,7 @@ class CommandBufferHelperImpl
     stub->channel()->scheduler()->DestroySequence(wait_sequence_id_);
   }
 
-  gpu::CommandBufferStub* stub_;
+  raw_ptr<gpu::CommandBufferStub> stub_;
   // Wait tasks are scheduled on our own sequence so that we can't inadvertently
   // block the command buffer.
   gpu::SequenceId wait_sequence_id_;
@@ -312,7 +333,6 @@ class CommandBufferHelperImpl
   gpu::MemoryTypeTracker memory_type_tracker_;
 
   THREAD_CHECKER(thread_checker_);
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferHelperImpl);
 };
 
 }  // namespace

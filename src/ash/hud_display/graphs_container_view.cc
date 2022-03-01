@@ -22,8 +22,7 @@ namespace hud_display {
 namespace {
 
 // UI refresh interval.
-constexpr base::TimeDelta kGraphsDataRefreshInterval =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kGraphsDataRefreshInterval = base::Milliseconds(500);
 
 void GetDataSnapshotOnThreadPool(DataSource* data_source,
                                  DataSource::Snapshot* out_snapshot) {
@@ -54,11 +53,11 @@ GraphsContainerView::GraphsContainerView()
   // Adds another graphs page.
   AddChildView(
       std::make_unique<MemoryGraphPageView>(kGraphsDataRefreshInterval))
-      ->SetID(static_cast<int>(DisplayMode::MEMORY_DISPLAY));
+      ->SetID(static_cast<int>(HUDDisplayMode::MEMORY));
   AddChildView(std::make_unique<CpuGraphPageView>(kGraphsDataRefreshInterval))
-      ->SetID(static_cast<int>(DisplayMode::CPU_DISPLAY));
+      ->SetID(static_cast<int>(HUDDisplayMode::CPU));
   AddChildView(std::make_unique<FPSGraphPageView>(kGraphsDataRefreshInterval))
-      ->SetID(static_cast<int>(DisplayMode::FPS_DISPLAY));
+      ->SetID(static_cast<int>(HUDDisplayMode::FPS));
 
   RequestDataUpdate();
 }
@@ -113,7 +112,7 @@ void GraphsContainerView::UpdateData(
   }
 }
 
-void GraphsContainerView::SetMode(DisplayMode mode) {
+void GraphsContainerView::SetMode(HUDDisplayMode mode) {
   auto* selected = GetViewByID(static_cast<int>(mode));
   if (!selected) {
     DCHECK(selected);

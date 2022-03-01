@@ -16,10 +16,6 @@
 
 # pylint: disable=g-direct-tensorflow-import
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as onp
 
 from tensorflow.python.framework import random_seed
@@ -46,7 +42,8 @@ def seed(s):
     s = int(s)
   except TypeError:
     # TODO(wangpeng): support this?
-    raise ValueError('np.seed currently only support integer arguments.')
+    raise ValueError(
+        f'Argument `s` got an invalid value {s}. Only integers are supported.')
   random_seed.set_seed(s)
 
 
@@ -62,11 +59,18 @@ def randn(*args):
   Returns:
     An ndarray with shape `args` and dtype `float64`.
   """
+  return standard_normal(size=args)
+
+
+@np_utils.np_doc('random.standard_normal')
+def standard_normal(size=None):
   # TODO(wangpeng): Use new stateful RNG
-  if np_utils.isscalar(args):
-    args = (args,)
+  if size is None:
+    size = ()
+  elif np_utils.isscalar(size):
+    size = (size,)
   dtype = np_dtypes.default_float_type()
-  return np_utils.tensor_to_ndarray(random_ops.random_normal(args, dtype=dtype))
+  return random_ops.random_normal(size, dtype=dtype)
 
 
 @np_utils.np_doc('random.uniform')
@@ -76,9 +80,17 @@ def uniform(low=0.0, high=1.0, size=None):
   high = np_array_ops.asarray(high, dtype=dtype)
   if size is None:
     size = array_ops.broadcast_dynamic_shape(low.shape, high.shape)
-  return np_utils.tensor_to_ndarray(
-      random_ops.random_uniform(
-          shape=size, minval=low, maxval=high, dtype=dtype))
+  return random_ops.random_uniform(
+      shape=size, minval=low, maxval=high, dtype=dtype)
+
+
+@np_utils.np_doc('random.poisson')
+def poisson(lam=1.0, size=None):
+  if size is None:
+    size = ()
+  elif np_utils.isscalar(size):
+    size = (size,)
+  return random_ops.random_poisson(shape=size, lam=lam, dtype=np_dtypes.int_)
 
 
 @np_utils.np_doc('random.random')
@@ -92,7 +104,7 @@ def rand(*size):
 
 
 @np_utils.np_doc('random.randint')
-def randint(low, high=None, size=None, dtype=onp.int):  # pylint: disable=missing-function-docstring
+def randint(low, high=None, size=None, dtype=onp.int64):  # pylint: disable=missing-function-docstring
   low = int(low)
   if high is None:
     high = low
@@ -101,9 +113,12 @@ def randint(low, high=None, size=None, dtype=onp.int):  # pylint: disable=missin
     size = ()
   elif isinstance(size, int):
     size = (size,)
+  dtype_orig = dtype
   dtype = np_utils.result_type(dtype)
-  if dtype not in (onp.int32, onp.int64):
-    raise ValueError('Only np.int32 or np.int64 types are supported')
-  return np_utils.tensor_to_ndarray(
-      random_ops.random_uniform(
-          shape=size, minval=low, maxval=high, dtype=dtype))
+  accepted_dtypes = (onp.int32, onp.int64)
+  if dtype not in accepted_dtypes:
+    raise ValueError(
+        f'Argument `dtype` got an invalid value {dtype_orig}. Only those '
+        f'convertible to {accepted_dtypes} are supported.')
+  return random_ops.random_uniform(
+      shape=size, minval=low, maxval=high, dtype=dtype)

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
@@ -107,6 +108,9 @@ class RenderFrameAudioInputStreamFactory::Core final
        MediaStreamManager* media_stream_manager,
        RenderFrameHost* render_frame_host);
 
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
+
   ~Core() final;
 
   void Init(mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
@@ -143,7 +147,7 @@ class RenderFrameAudioInputStreamFactory::Core final
       const base::UnguessableToken& input_stream_id,
       const std::string& raw_output_device_id);
 
-  MediaStreamManager* const media_stream_manager_;
+  const raw_ptr<MediaStreamManager> media_stream_manager_;
   const int process_id_;
   const int frame_id_;
   const url::Origin origin_;
@@ -153,8 +157,6 @@ class RenderFrameAudioInputStreamFactory::Core final
   base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
   base::WeakPtrFactory<Core> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "components/js_injection/common/interfaces.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -33,6 +34,10 @@ class WebMessageHostFactory;
 class JsCommunicationHost : public content::WebContentsObserver {
  public:
   explicit JsCommunicationHost(content::WebContents* web_contents);
+
+  JsCommunicationHost(const JsCommunicationHost&) = delete;
+  JsCommunicationHost& operator=(const JsCommunicationHost&) = delete;
+
   ~JsCommunicationHost() override;
 
   // Captures the result of adding script. There are two possibilities when
@@ -72,7 +77,7 @@ class JsCommunicationHost : public content::WebContentsObserver {
   struct RegisteredFactory {
     std::u16string js_name;
     OriginMatcher allowed_origin_rules;
-    WebMessageHostFactory* factory = nullptr;
+    raw_ptr<WebMessageHostFactory> factory = nullptr;
   };
 
   // Returns the registered factories.
@@ -104,8 +109,6 @@ class JsCommunicationHost : public content::WebContentsObserver {
   std::map<content::RenderFrameHost*,
            std::vector<std::unique_ptr<JsToBrowserMessaging>>>
       js_to_browser_messagings_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsCommunicationHost);
 };
 
 }  // namespace js_injection

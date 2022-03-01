@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -20,6 +21,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_server_properties.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -53,7 +55,8 @@ class RequestContext : public URLRequestContext {
  public:
   RequestContext() : storage_(this) {
     ProxyConfig no_proxy;
-    storage_.set_host_resolver(std::make_unique<MockHostResolver>());
+    storage_.set_host_resolver(std::make_unique<MockHostResolver>(
+        MockHostResolverBase::RuleResolver::GetLocalhostResult()));
     storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
     storage_.set_transport_security_state(
         std::make_unique<TransportSecurityState>());
@@ -68,7 +71,7 @@ class RequestContext : public URLRequestContext {
         std::make_unique<HttpServerProperties>());
     storage_.set_quic_context(std::make_unique<QuicContext>());
 
-    HttpNetworkSession::Context session_context;
+    HttpNetworkSessionContext session_context;
     session_context.host_resolver = host_resolver();
     session_context.cert_verifier = cert_verifier();
     session_context.transport_security_state = transport_security_state();
@@ -78,7 +81,7 @@ class RequestContext : public URLRequestContext {
     session_context.http_server_properties = http_server_properties();
     session_context.quic_context = quic_context();
     storage_.set_http_network_session(std::make_unique<HttpNetworkSession>(
-        HttpNetworkSession::Params(), session_context));
+        HttpNetworkSessionParams(), session_context));
     storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
         storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
         false /* is_main_cache */));
@@ -265,7 +268,7 @@ class SecureDnsInterceptor : public net::URLRequestInterceptor {
     return nullptr;
   }
 
-  bool* invoked_interceptor_;
+  raw_ptr<bool> invoked_interceptor_;
 };
 
 class CertNetFetcherURLRequestTestWithSecureDnsInterceptor

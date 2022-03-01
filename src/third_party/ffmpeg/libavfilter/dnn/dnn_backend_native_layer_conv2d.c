@@ -38,6 +38,9 @@ typedef struct ThreadCommonParam{
 typedef struct ThreadParam{
     ThreadCommonParam *thread_common_param;
     int thread_start, thread_end;
+#if HAVE_PTHREAD_CANCEL
+    pthread_t thread;
+#endif
 } ThreadParam;
 
 int ff_dnn_load_layer_conv2d(Layer *layer, AVIOContext *model_file_context, int file_size, int operands_num)
@@ -177,26 +180,28 @@ static void * dnn_execute_layer_conv2d_thread(void *threadarg)
             output += conv_params->output_num;
         }
     }
-    return (void *)DNN_SUCCESS;
+    return NULL;
 }
 
 
 int ff_dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_operand_indexes,
                                 int32_t output_operand_index, const void *parameters, NativeContext *ctx)
 {
+#if HAVE_PTHREAD_CANCEL
     int thread_num = (ctx->options.conv2d_threads <= 0 || ctx->options.conv2d_threads > av_cpu_count())
         ? (av_cpu_count() + 1) : (ctx->options.conv2d_threads);
-#if HAVE_PTHREAD_CANCEL
-    pthread_t *thread_id = av_malloc_array(thread_num, sizeof(*thread_id));
-    int thread_stride;
+    int ret = DNN_SUCCESS, thread_stride;
+    ThreadParam *thread_param;
+#else
+    ThreadParam thread_param = { 0 };
 #endif
-    ThreadParam **thread_param = av_malloc_array(thread_num, sizeof(*thread_param));
     ThreadCommonParam thread_common_param;
     const ConvolutionalParams *conv_params = parameters;
     int height = operands[input_operand_indexes[0]].dims[1];
     int width = operands[input_operand_indexes[0]].dims[2];
     int pad_size = (conv_params->padding_method == VALID) ? (conv_params->kernel_size - 1) / 2 * conv_params->dilation : 0;
     DnnOperand *output_operand = &operands[output_operand_index];
+    void *tmp;
 
     output_operand->dims[0] = operands[input_operand_indexes[0]].dims[0];
     output_operand->dims[1] = height - pad_size * 2;
@@ -208,11 +213,12 @@ int ff_dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_opera
         av_log(ctx, AV_LOG_ERROR, "The output data length overflow\n");
         return DNN_ERROR;
     }
-    output_operand->data = av_realloc(output_operand->data, output_operand->length);
-    if (!output_operand->data) {
+    tmp = av_realloc(output_operand->data, output_operand->length);
+    if (!tmp) {
         av_log(ctx, AV_LOG_ERROR, "Failed to reallocate memory for output\n");
         return DNN_ERROR;
     }
+    output_operand->data = tmp;
     thread_common_param.output_data = output_operand->data;
     thread_common_param.operands = operands;
     thread_common_param.input_operand_indexes = input_operand_indexes;
@@ -221,36 +227,37 @@ int ff_dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_opera
     thread_common_param.ctx = ctx;
 
 #if HAVE_PTHREAD_CANCEL
+    thread_param = av_malloc_array(thread_num, sizeof(*thread_param));
+    if (!thread_param)
+        return DNN_ERROR;
     thread_stride = (height - pad_size * 2) / thread_num;
     //create threads
     for (int i = 0; i < thread_num; i++){
-        thread_param[i] = av_malloc(sizeof(*thread_param[0]));
-        thread_param[i]->thread_common_param = &thread_common_param;
-        thread_param[i]->thread_start = thread_stride * i + pad_size;
-        thread_param[i]->thread_end = (i == thread_num - 1) ? (height - pad_size) : (thread_param[i]->thread_start + thread_stride);
-        pthread_create(&thread_id[i], NULL, dnn_execute_layer_conv2d_thread, (void *)thread_param[i]);
+        thread_param[i].thread_common_param = &thread_common_param;
+        thread_param[i].thread_start = thread_stride * i + pad_size;
+        thread_param[i].thread_end = (i == thread_num - 1) ? (height - pad_size) : (thread_param[i].thread_start + thread_stride);
+        if (pthread_create(&thread_param[i].thread, NULL,
+                           dnn_execute_layer_conv2d_thread, &thread_param[i])) {
+            thread_num = i;
+            ret = DNN_ERROR;
+            break;
+        }
     }
 
-    //join threads, res gets function return
     for (int i = 0; i < thread_num; i++){
-        pthread_join(thread_id[i], NULL);
+        pthread_join(thread_param[i].thread, NULL);
     }
 
     //release memory
-    av_freep(&thread_id);
-
-    for (int i = 0; i < thread_num; i++){
-        av_freep(&thread_param[i]);
-    }
-#else
-    thread_param[0] = av_malloc(sizeof(*thread_param[0]));
-    thread_param[0]->thread_common_param = &thread_common_param;
-    thread_param[0]->thread_start = pad_size;
-    thread_param[0]->thread_end = height - pad_size;
-    dnn_execute_layer_conv2d_thread((void *)thread_param[0]);
-    av_freep(&thread_param[0]);
-#endif
-
     av_freep(&thread_param);
+
+    return ret;
+#else
+    thread_param.thread_common_param = &thread_common_param;
+    thread_param.thread_start = pad_size;
+    thread_param.thread_end = height - pad_size;
+    dnn_execute_layer_conv2d_thread(&thread_param);
+
     return DNN_SUCCESS;
+#endif
 }

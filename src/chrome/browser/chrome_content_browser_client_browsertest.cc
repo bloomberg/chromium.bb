@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,6 +33,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -77,12 +77,14 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
  public:
   ChromeContentBrowserClientBrowserTest() {}
 
+  ChromeContentBrowserClientBrowserTest(
+      const ChromeContentBrowserClientBrowserTest&) = delete;
+  ChromeContentBrowserClientBrowserTest& operator=(
+      const ChromeContentBrowserClientBrowserTest&) = delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     content::IsolateAllSitesForTesting(command_line);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientBrowserTest);
 };
 
 // Test that a basic navigation works in --site-per-process mode.  This prevents
@@ -93,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/title1.html"));
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::NavigationEntry* entry = browser()
                                         ->tab_strip_model()
                                         ->GetWebContentsAt(0)
@@ -111,6 +113,10 @@ class IsolatedOriginNTPBrowserTest : public InProcessBrowserTest,
  public:
   IsolatedOriginNTPBrowserTest() {}
 
+  IsolatedOriginNTPBrowserTest(const IsolatedOriginNTPBrowserTest&) = delete;
+  IsolatedOriginNTPBrowserTest& operator=(const IsolatedOriginNTPBrowserTest&) =
+      delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(https_test_server().InitializeAndListen());
 
@@ -127,9 +133,6 @@ class IsolatedOriginNTPBrowserTest : public InProcessBrowserTest,
     host_resolver()->AddRule("*", "127.0.0.1");
     https_test_server().StartAcceptingConnections();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginNTPBrowserTest);
 };
 
 // Verifies that when the remote NTP URL has an origin which is also marked as
@@ -164,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNTPBrowserTest,
 
   // Navigate to the NTP URL and verify that the resulting process is marked as
   // an Instant process.
-  ui_test_utils::NavigateToURL(browser(), ntp_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), ntp_url));
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   InstantService* instant_service =
@@ -176,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNTPBrowserTest,
 
   // Navigating to a non-NTP URL on ntp.com should not result in an Instant
   // process.
-  ui_test_utils::NavigateToURL(browser(), isolated_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), isolated_url));
   EXPECT_FALSE(instant_service->IsInstantProcess(
       contents->GetMainFrame()->GetProcess()->GetID()));
   EXPECT_EQ(contents->GetMainFrame()->GetSiteInstance()->GetSiteURL(),
@@ -189,6 +192,10 @@ class OpenWindowFromNTPBrowserTest : public InProcessBrowserTest,
  public:
   OpenWindowFromNTPBrowserTest() {}
 
+  OpenWindowFromNTPBrowserTest(const OpenWindowFromNTPBrowserTest&) = delete;
+  OpenWindowFromNTPBrowserTest& operator=(const OpenWindowFromNTPBrowserTest&) =
+      delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
@@ -199,9 +206,6 @@ class OpenWindowFromNTPBrowserTest : public InProcessBrowserTest,
     ASSERT_TRUE(https_test_server().InitializeAndListen());
     https_test_server().StartAcceptingConnections();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OpenWindowFromNTPBrowserTest);
 };
 
 // Test checks that navigations from NTP tab to URLs with same host as NTP but
@@ -217,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
 
   // Navigate to the NTP URL and verify that the resulting process is marked as
   // an Instant process.
-  ui_test_utils::NavigateToURL(browser(), ntp_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), ntp_url));
   content::WebContents* ntp_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   InstantService* instant_service =
@@ -264,12 +268,6 @@ class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
     return GetParam() ? "dark" : "light";
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "MediaQueryPrefersColorScheme");
-  }
-
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     original_client_ = SetBrowserClientForTesting(&theme_client_);
@@ -279,7 +277,7 @@ class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
   ui::TestNativeTheme test_theme_;
 
  private:
-  content::ContentBrowserClient* original_client_ = nullptr;
+  raw_ptr<content::ContentBrowserClient> original_client_ = nullptr;
 
   class ChromeContentBrowserClientWithWebTheme
       : public ChromeContentBrowserClient {
@@ -292,7 +290,7 @@ class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
     const ui::NativeTheme* GetWebTheme() const override { return theme_; }
 
    private:
-    const ui::NativeTheme* const theme_;
+    const raw_ptr<const ui::NativeTheme> theme_;
   };
 
   base::test::ScopedFeatureList feature_list_;
@@ -305,11 +303,11 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->OnWebPreferencesChanged();
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       ui_test_utils::GetTestUrl(
           base::FilePath(base::FilePath::kCurrentDirectory),
-          base::FilePath(FILE_PATH_LITERAL("prefers-color-scheme.html"))));
+          base::FilePath(FILE_PATH_LITERAL("prefers-color-scheme.html")))));
   std::u16string tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(base::ASCIIToUTF16(ExpectedColorScheme()), tab_title);
@@ -322,7 +320,8 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesChromeSchemes) {
       ->GetActiveWebContents()
       ->OnWebPreferencesChanged();
 
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(chrome::kChromeUIDownloadsURL)));
 
   bool matches;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
@@ -346,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesPdfUI) {
   pdf_extension_url.append(url::kStandardSchemeSeparator);
   pdf_extension_url.append(extension_misc::kPdfExtensionId);
   GURL pdf_index = GURL(pdf_extension_url).Resolve("/index.html");
-  ui_test_utils::NavigateToURL(browser(), pdf_index);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), pdf_index));
 
   bool matches;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
@@ -379,11 +378,12 @@ class PrefersContrastTest
         return "more";
       case ui::NativeTheme::PreferredContrast::kLess:
         return "less";
+      case ui::NativeTheme::PreferredContrast::kCustom:
+        return "custom";
     }
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "PrefersContrast");
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -399,7 +399,7 @@ class PrefersContrastTest
   ui::TestNativeTheme test_theme_;
 
  private:
-  content::ContentBrowserClient* original_client_ = nullptr;
+  raw_ptr<content::ContentBrowserClient> original_client_ = nullptr;
 
   class ChromeContentBrowserClientWithWebTheme
       : public ChromeContentBrowserClient {
@@ -412,7 +412,7 @@ class PrefersContrastTest
     const ui::NativeTheme* GetWebTheme() const override { return theme_; }
 
    private:
-    const ui::NativeTheme* const theme_;
+    const raw_ptr<const ui::NativeTheme> theme_;
   };
 
   ChromeContentBrowserClientWithWebTheme theme_client_;
@@ -424,11 +424,11 @@ IN_PROC_BROWSER_TEST_P(PrefersContrastTest, PrefersContrast) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->OnWebPreferencesChanged();
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       ui_test_utils::GetTestUrl(
           base::FilePath(base::FilePath::kCurrentDirectory),
-          base::FilePath(FILE_PATH_LITERAL("prefers-contrast.html"))));
+          base::FilePath(FILE_PATH_LITERAL("prefers-contrast.html")))));
   std::u16string tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(base::ASCIIToUTF16(ExpectedPrefersContrast()), tab_title);
@@ -439,11 +439,15 @@ INSTANTIATE_TEST_SUITE_P(
     PrefersContrastTest,
     testing::Values(ui::NativeTheme::PreferredContrast::kNoPreference,
                     ui::NativeTheme::PreferredContrast::kMore,
-                    ui::NativeTheme::PreferredContrast::kLess));
+                    ui::NativeTheme::PreferredContrast::kLess,
+                    ui::NativeTheme::PreferredContrast::kCustom));
 
 class ProtocolHandlerTest : public InProcessBrowserTest {
  public:
   ProtocolHandlerTest() = default;
+
+  ProtocolHandlerTest(const ProtocolHandlerTest&) = delete;
+  ProtocolHandlerTest& operator=(const ProtocolHandlerTest&) = delete;
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -459,13 +463,10 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
                                                GURL(redirect_template)));
   }
 
-  ProtocolHandlerRegistry* protocol_handler_registry() {
+  custom_handlers::ProtocolHandlerRegistry* protocol_handler_registry() {
     return ProtocolHandlerRegistryFactory::GetInstance()->GetForBrowserContext(
         browser()->profile());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
@@ -474,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
 #endif
   AddProtocolHandler("news", "https://abc.xyz/?url=%s");
 
-  ui_test_utils::NavigateToURL(browser(), GURL("news:something"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("news:something")));
 
   std::u16string expected_title = u"abc.xyz";
   content::TitleWatcher title_watcher(
@@ -487,7 +488,8 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, HandlersIgnoredWhenDisabled) {
   AddProtocolHandler("bitcoin", "https://abc.xyz/?url=%s");
   protocol_handler_registry()->Disable();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("bitcoin:something"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("bitcoin:something")));
 
   std::u16string tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
@@ -499,7 +501,8 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, HandlersIgnoredWhenDisabled) {
 // program (another Chrome tab in this case) is not launched to handle the
 // navigation. This is a regression test for crbug.com/963133.
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, ExternalProgramNotLaunched) {
-  ui_test_utils::NavigateToURL(browser(), GURL("mailto:bob@example.com"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("mailto:bob@example.com")));
 
   // If an external program (Chrome) was launched, it will result in a second
   // tab being opened.
@@ -527,7 +530,7 @@ class KeepaliveDurationOnShutdownTest : public InProcessBrowserTest,
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  ChromeContentBrowserClient* client_ = nullptr;
+  raw_ptr<ChromeContentBrowserClient> client_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DefaultValue) {
@@ -541,8 +544,7 @@ IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, PolicySettings) {
       g_browser_process->profile_manager()->GetPrimaryUserProfile();
   profile->GetPrefs()->SetInteger(prefs::kFetchKeepaliveDurationOnShutdown, 2);
 
-  EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile),
-            base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::Seconds(2));
 }
 
 IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DynamicUpdate) {
@@ -550,13 +552,11 @@ IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DynamicUpdate) {
       g_browser_process->profile_manager()->GetPrimaryUserProfile();
   profile->GetPrefs()->SetInteger(prefs::kFetchKeepaliveDurationOnShutdown, 2);
 
-  EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile),
-            base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::Seconds(2));
 
   profile->GetPrefs()->SetInteger(prefs::kFetchKeepaliveDurationOnShutdown, 3);
 
-  EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile),
-            base::TimeDelta::FromSeconds(3));
+  EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::Seconds(3));
 }
 
 #endif  // !defined(OS_ANDROID)

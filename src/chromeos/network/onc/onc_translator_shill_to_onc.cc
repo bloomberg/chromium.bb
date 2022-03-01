@@ -7,18 +7,18 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/onc/onc_translator.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
@@ -109,6 +109,9 @@ class ShillToONCTranslator {
         field_translation_table_(field_translation_table),
         network_state_(network_state) {}
 
+  ShillToONCTranslator(const ShillToONCTranslator&) = delete;
+  ShillToONCTranslator& operator=(const ShillToONCTranslator&) = delete;
+
   // Translates the associated Shill dictionary and creates an ONC object of the
   // given signature.
   std::unique_ptr<base::DictionaryValue> CreateTranslatedONCObject();
@@ -192,8 +195,6 @@ class ShillToONCTranslator {
   const FieldTranslationEntry* field_translation_table_;
   std::unique_ptr<base::Value> onc_object_;
   const NetworkState* network_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShillToONCTranslator);
 };
 
 std::unique_ptr<base::DictionaryValue>
@@ -291,12 +292,11 @@ void ShillToONCTranslator::TranslateOpenVPN() {
       continue;
     }
 
-    std::string shill_str;
-    if (shill_value->GetAsString(&shill_str)) {
+    if (shill_value->is_string()) {
       // Shill wants all Provider/VPN fields to be strings. Translates these
       // strings back to the correct ONC type.
       base::Value translated = ConvertVpnStringToValue(
-          shill_str, field_signature->value_signature->onc_type);
+          shill_value->GetString(), field_signature->value_signature->onc_type);
 
       if (translated.is_none()) {
         NET_LOG(ERROR) << "Shill property '" << shill_property_name
@@ -472,25 +472,23 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         nested_translator.CreateTranslatedONCObject();
     onc_object_->MergeDictionary(nested_object.get());
 
-    // The Scanning property is retrieved from the Device dictionary, but only
-    // if this is the active SIM, meaning that the service ICCID matches the
-    // device ICCID.
+    // Both the Scanning property and the ProviderRequiresRoaming property are
+    // retrieved from the Device dictionary, but only if this is the active SIM,
+    // meaning that the service ICCID matches the device ICCID.
     const std::string* service_iccid =
         onc_object_->FindStringKey(::onc::cellular::kICCID);
     if (service_iccid) {
       const std::string* device_iccid =
           device_dictionary->FindStringKey(shill::kIccidProperty);
       if (device_iccid && *service_iccid == *device_iccid) {
+        requires_roaming =
+            device_dictionary
+                ->FindBoolKey(shill::kProviderRequiresRoamingProperty)
+                .value_or(false);
         scanning = device_dictionary->FindBoolKey(shill::kScanningProperty)
                        .value_or(false);
       }
     }
-
-    // Get requires_roaming from the Device dictionary, even if this is not the
-    // active SIM.
-    requires_roaming =
-        device_dictionary->FindBoolKey(shill::kProviderRequiresRoamingProperty)
-            .value_or(false);
   }
   if (requires_roaming) {
     onc_object_->SetKey(::onc::cellular::kRoamingState,
@@ -663,6 +661,13 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
       }
     }
   }
+
+  absl::optional<double> traffic_counter_reset_time =
+      shill_dictionary_->FindDoubleKey(shill::kTrafficCounterResetTimeProperty);
+  if (traffic_counter_reset_time.has_value()) {
+    onc_object_->SetKey(::onc::network_config::kTrafficCounterResetTime,
+                        base::Value(traffic_counter_reset_time.value()));
+  }
 }
 
 void ShillToONCTranslator::TranslateIPConfig() {
@@ -738,6 +743,30 @@ void ShillToONCTranslator::TranslateEap() {
     onc_object_->SetKey(
         ::onc::eap::kPassword,
         base::Value(::onc::substitutes::kPasswordPlaceholderVerbatim));
+  }
+
+  // Set shill::kEapSubjectAlternativeNameMatchProperty to the serialized form
+  // of the subject alternative name match list of dictionaries.
+  const base::Value* subject_alternative_name_match =
+      shill_dictionary_->FindListKey(
+          shill::kEapSubjectAlternativeNameMatchProperty);
+
+  if (subject_alternative_name_match) {
+    base::Value deserialized_dicts(base::Value::Type::LIST);
+    std::string error_msg;
+    for (const base::Value& san : subject_alternative_name_match->GetList()) {
+      JSONStringValueDeserializer deserializer(san.GetString());
+      auto deserialized_dict =
+          deserializer.Deserialize(/*error_code=*/nullptr, &error_msg);
+      if (!deserialized_dict) {
+        LOG(ERROR) << "failed to deserialize " << san << " with error "
+                   << error_msg;
+        continue;
+      }
+      deserialized_dicts.Append(std::move(*deserialized_dict));
+    }
+    onc_object_->SetKey(::onc::eap::kSubjectAlternativeNameMatch,
+                        std::move(deserialized_dicts));
   }
 }
 

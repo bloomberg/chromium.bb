@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/core/permissions_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/permissions_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/permissions_policy/permissions_policy_parser.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -208,19 +208,37 @@ void HTMLIFrameElement::ParseAttribute(
       UpdateContainerPolicy();
     }
   } else if (name == html_names::kCspAttr) {
+    static const size_t kMaxLengthCSPAttribute = 4096;
     if (value && (value.Contains('\n') || value.Contains('\r') ||
                   !MatchesTheSerializedCSPGrammar(value.GetString()))) {
+      // TODO(antoniosartori): It would be safer to block loading iframes with
+      // invalid 'csp' attribute.
       required_csp_ = g_null_atom;
       GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::blink::ConsoleMessageSource::kOther,
           mojom::blink::ConsoleMessageLevel::kError,
           "'csp' attribute is invalid: " + value));
-      return;
-    }
-    if (required_csp_ != value) {
+    } else if (value && value.length() > kMaxLengthCSPAttribute) {
+      // TODO(antoniosartori): It would be safer to block loading iframes with
+      // invalid 'csp' attribute.
+      required_csp_ = g_null_atom;
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kOther,
+          mojom::blink::ConsoleMessageLevel::kError,
+          String::Format("'csp' attribute too long. The max length for the "
+                         "'csp' attribute is %zu bytes.",
+                         kMaxLengthCSPAttribute)));
+    } else if (required_csp_ != value) {
       required_csp_ = value;
-      CSPAttributeChanged();
+      DidChangeAttributes();
       UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
+    }
+  } else if (name == html_names::kAnonymousAttr &&
+             RuntimeEnabledFeatures::AnonymousIframeEnabled()) {
+    bool new_value = !value.IsNull();
+    if (anonymous_ != new_value) {
+      anonymous_ = new_value;
+      DidChangeAttributes();
     }
   } else if (name == html_names::kAllowAttr) {
     if (allow_ != value) {
@@ -231,12 +249,6 @@ void HTMLIFrameElement::ParseAttribute(
                           WebFeature::kFeaturePolicyAllowAttribute);
       }
     }
-  } else if (name == html_names::kDisallowdocumentaccessAttr &&
-             RuntimeEnabledFeatures::DisallowDocumentAccessEnabled()) {
-    UseCounter::Count(GetDocument(), WebFeature::kDisallowDocumentAccess);
-    SetDisallowDocumentAccesss(!value.IsNull());
-    // We don't need to call tell the client frame properties
-    // changed since this attribute only stays inside the renderer.
   } else if (name == html_names::kPolicyAttr) {
     if (required_policy_ != value) {
       required_policy_ = value;
@@ -373,7 +385,7 @@ bool HTMLIFrameElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
 
 LayoutObject* HTMLIFrameElement::CreateLayoutObject(const ComputedStyle&,
                                                     LegacyLayout) {
-  return new LayoutIFrame(this);
+  return MakeGarbageCollected<LayoutIFrame>(this);
 }
 
 Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
@@ -467,7 +479,7 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
   return parsed_params;
 }
 
-void HTMLIFrameElement::CSPAttributeChanged() {
+void HTMLIFrameElement::DidChangeAttributes() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet; or if we are in the middle of
   // swapping one frame for another, in which case the final state
@@ -488,9 +500,9 @@ void HTMLIFrameElement::CSPAttributeChanged() {
           network::mojom::blink::ContentSecurityPolicySource::kHTTP, KURL());
   DCHECK_LE(csp.size(), 1u);
 
-  GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeCSPAttribute(
+  GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeIframeAttributes(
       ContentFrame()->GetFrameToken(),
-      csp.IsEmpty() ? nullptr : std::move(csp[0]));
+      csp.IsEmpty() ? nullptr : std::move(csp[0]), anonymous_);
 }
 
 }  // namespace blink

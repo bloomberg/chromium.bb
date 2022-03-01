@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "include/v8-function.h"
 #include "src/api/api-inl.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/objects/stack-frame-info-inl.h"
@@ -157,11 +158,11 @@ WASM_COMPILED_EXEC_TEST(CollectDetailedWasmStack_ExplicitThrowFromJs) {
   CHECK(returnObjMaybe.is_null());
 
   ExceptionInfo expected_exceptions[] = {
-      {"a", 3, 8},           // -
-      {"js", 4, 2},          // -
-      {"main", 1, 8},        // -
-      {"call_main", 1, 21},  // -
-      {"callFn", 1, 24}      // -
+      {"a", 3, 8},            // -
+      {"js", 4, 2},           // -
+      {"$main", 1, 8},        // -
+      {"$call_main", 1, 21},  // -
+      {"callFn", 1, 24}       // -
   };
   CheckExceptionInfos(isolate, maybe_exc.ToHandleChecked(),
                       expected_exceptions);
@@ -172,8 +173,8 @@ WASM_COMPILED_EXEC_TEST(CollectDetailedWasmStack_WasmUrl) {
   // Create a WasmRunner with stack checks and traps enabled.
   WasmRunner<int> r(execution_tier, nullptr, "main", kRuntimeExceptionSupport);
 
-  std::vector<byte> code(1, kExprUnreachable);
-  r.Build(code.data(), code.data() + code.size());
+  std::vector<byte> trap_code(1, kExprUnreachable);
+  r.Build(trap_code.data(), trap_code.data() + trap_code.size());
 
   WasmFunctionCompiler& f = r.NewFunction<int>("call_main");
   BUILD(f, WASM_CALL_FUNCTION0(0));
@@ -234,9 +235,9 @@ WASM_COMPILED_EXEC_TEST(CollectDetailedWasmStack_WasmError) {
     WasmRunner<int> r(execution_tier, nullptr, "main",
                       kRuntimeExceptionSupport);
 
-    std::vector<byte> code(unreachable_pos + 1, kExprNop);
-    code[unreachable_pos] = kExprUnreachable;
-    r.Build(code.data(), code.data() + code.size());
+    std::vector<byte> trap_code(unreachable_pos + 1, kExprNop);
+    trap_code[unreachable_pos] = kExprUnreachable;
+    r.Build(trap_code.data(), trap_code.data() + trap_code.size());
 
     uint32_t wasm_index_1 = r.function()->func_index;
 
@@ -274,9 +275,9 @@ WASM_COMPILED_EXEC_TEST(CollectDetailedWasmStack_WasmError) {
         unreachable_pos + main_offset + kMainLocalsLength + 1;
     const int expected_call_main_pos = call_main_offset + kMainLocalsLength + 1;
     ExceptionInfo expected_exceptions[] = {
-        {"main", 1, expected_main_pos},            // -
-        {"call_main", 1, expected_call_main_pos},  // -
-        {"callFn", 1, 24}                          //-
+        {"$main", 1, expected_main_pos},            // -
+        {"$call_main", 1, expected_call_main_pos},  // -
+        {"callFn", 1, 24}                           //-
     };
     CheckExceptionInfos(isolate, exception, expected_exceptions);
   }

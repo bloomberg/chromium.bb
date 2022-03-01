@@ -31,7 +31,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -172,6 +172,37 @@ TEST(StringBuilderTest, ToString) {
   builder.Resize(10);
   builder.Append("###");
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);
+}
+
+TEST(StringBuilderTest, ReleaseString) {
+  StringBuilder builder;
+  builder.Append("0123456789");
+  String string = builder.ReleaseString();
+  EXPECT_EQ(String("0123456789"), string);
+
+  ExpectEmpty(builder);
+
+  // The builder can be reused after release.
+  builder.Append("ABCDEFGH");
+  String string2 = builder.ToString();
+  EXPECT_EQ(String("ABCDEFGH"), string2);
+
+  // Each call to ToString adds 1 to the ref count.
+#if DCHECK_IS_ON()
+  EXPECT_EQ(string2.Impl()->RefCountChangeCountForTesting(), 1u);
+  String string3 = builder.ToString();
+  EXPECT_EQ(string3.Impl()->RefCountChangeCountForTesting(), 2u);
+  unsigned refcount = string2.Impl()->RefCountChangeCountForTesting();
+#endif
+
+  // StringImpl of the copied and released string should match
+  String released = builder.ReleaseString();
+  EXPECT_EQ(string2.Impl(), released.Impl());
+
+  // Calling release doesn't increase the ref count.
+#if DCHECK_IS_ON()
+  EXPECT_EQ(refcount, released.Impl()->RefCountChangeCountForTesting());
+#endif
 }
 
 TEST(StringBuilderTest, Clear) {

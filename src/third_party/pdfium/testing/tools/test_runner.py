@@ -15,7 +15,6 @@ import shutil
 import subprocess
 import sys
 
-# pylint: disable=relative-import
 import common
 import pngdiffer
 import suppressor
@@ -49,6 +48,9 @@ def TestOneFileParallel(this, test_case):
     result = this.GenerateAndTest(input_filename, source_dir)
     return (result, input_filename, source_dir)
   except KeyboardInterrupt:
+    # TODO(https://crbug.com/pdfium/1674): Re-enable this check after try bots
+    # can run with Python3.
+    # pylint: disable=raise-missing-from
     raise KeyboardInterruptError()
 
 
@@ -64,6 +66,9 @@ def RunSkiaWrapper(this, input_chunk):
       results.append((test_name, skia_success, input_filename))
     return results
   except KeyboardInterrupt:
+    # TODO(https://crbug.com/pdfium/1674): Re-enable this check after try bots
+    # can run with Python3.
+    # pylint: disable=raise-missing-from
     raise KeyboardInterruptError()
 
 
@@ -85,7 +90,6 @@ class TestRunner:
     self.test_type = dirname
     self.delete_output_on_success = False
     self.enforce_expected_images = False
-    self.oneshot_renderer = False
     self.skia_tester = None
 
   def GetSkiaGoldTester(self, process_name=None):
@@ -228,7 +232,7 @@ class TestRunner:
     try:
       with open(txt_path, "r") as txt_file:
         txt_data = txt_file.readlines()
-      if not len(txt_data):
+      if not txt_data:
         return None
       sys.stdout.write('Unexpected output:\n')
       for line in txt_data:
@@ -245,9 +249,6 @@ class TestRunner:
         '--time=' + TEST_SEED_TIME
     ]
 
-    if self.oneshot_renderer:
-      cmd_to_run.append('--render-oneshot')
-
     if use_ahem:
       cmd_to_run.append('--font-dir=%s' % self.font_dir)
 
@@ -256,6 +257,9 @@ class TestRunner:
 
     if self.options.disable_xfa:
       cmd_to_run.append('--disable-xfa')
+
+    if self.options.render_oneshot:
+      cmd_to_run.append('--render-oneshot')
 
     if self.options.reverse_byte_order:
       cmd_to_run.append('--reverse-byte-order')
@@ -303,6 +307,12 @@ class TestRunner:
         action="store_true",
         dest="disable_xfa",
         help='Prevents processing XFA forms.')
+
+    parser.add_argument(
+        '--render-oneshot',
+        action="store_true",
+        dest="render_oneshot",
+        help='Sets whether to use the oneshot renderer.')
 
     parser.add_argument(
         '--run-skia-gold',
@@ -577,7 +587,3 @@ class TestRunner:
   def SetEnforceExpectedImages(self, new_value):
     """Set whether to enforce that each test case provide an expected image."""
     self.enforce_expected_images = new_value
-
-  def SetOneShotRenderer(self, new_value):
-    """Set whether to use the oneshot renderer. """
-    self.oneshot_renderer = new_value

@@ -59,6 +59,11 @@ class DisplayChangeObserverTest : public testing::Test,
                                   public testing::WithParamInterface<bool> {
  public:
   DisplayChangeObserverTest() = default;
+
+  DisplayChangeObserverTest(const DisplayChangeObserverTest&) = delete;
+  DisplayChangeObserverTest& operator=(const DisplayChangeObserverTest&) =
+      delete;
+
   ~DisplayChangeObserverTest() override = default;
 
   // testing::Test:
@@ -82,8 +87,6 @@ class DisplayChangeObserverTest : public testing::Test,
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserverTest);
 };
 
 TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
@@ -193,11 +196,13 @@ TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 
 TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
-      123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN,
+      /*display_id=*/123, /*port_display_id=*/123, /*edid_display_id=*/456,
+      /*connector_index=*/0x0001, gfx::Point(), gfx::Size(),
+      DISPLAY_CONNECTION_TYPE_UNKNOWN,
       /*base_connector_id=*/1u, /*path_topology=*/{}, false, false,
       PrivacyScreenState::kNotSupported, false, false, std::string(), {},
       nullptr, nullptr, 0, gfx::Size(), gfx::ColorSpace(),
-      /*bits_per_channel=*/8u);
+      /*bits_per_channel=*/8u, /*hdr_static_metadata=*/{});
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
@@ -447,6 +452,7 @@ TEST_P(DisplayChangeObserverTest, HDRDisplayColorSpaces) {
           .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))
           .SetColorSpace(display_color_space)
           .SetBitsPerChannel(10u)
+          .SetHDRStaticMetadata({600.0, 500.0, 0.01})
           .Build();
 
   ui::DeviceDataManager::CreateInstance();

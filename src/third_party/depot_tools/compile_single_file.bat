@@ -8,4 +8,4 @@ setlocal
 :: standalone, but allow other PATH manipulations to take priority.
 set PATH=%PATH%;%~dp0
 
-python -u "%~dp0compile_single_file.py" %*
+python3 -u "%~dp0compile_single_file.py" %*

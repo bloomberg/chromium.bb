@@ -20,6 +20,11 @@
 #include <string>
 #include <vector>
 
+#include "securegcm/d2d_connection_context_v1.h"
+#include "securegcm/ukey2_handshake.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/time/time.h"
 #include "core/internal/bwu_manager.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/encryption_runner.h"
@@ -42,11 +47,6 @@
 #include "platform/public/scheduled_executor.h"
 #include "platform/public/single_thread_executor.h"
 #include "platform/public/system_clock.h"
-#include "securegcm/d2d_connection_context_v1.h"
-#include "securegcm/ukey2_handshake.h"
-#include "absl/container/btree_map.h"
-#include "absl/container/flat_hash_map.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {
@@ -199,19 +199,19 @@ class BasePcpHandler : public PcpHandler,
   };
 
   struct WifiLanEndpoint : public DiscoveredEndpoint {
-    WifiLanEndpoint(DiscoveredEndpoint endpoint, WifiLanService service)
-        : DiscoveredEndpoint(std::move(endpoint)),
-          wifi_lan_service(std::move(service)) {}
+    WifiLanEndpoint(DiscoveredEndpoint endpoint,
+                    const NsdServiceInfo& service_info)
+        : DiscoveredEndpoint(std::move(endpoint)), service_info(service_info) {}
 
-    WifiLanService wifi_lan_service;
+    NsdServiceInfo service_info;
   };
 
   struct WebRtcEndpoint : public DiscoveredEndpoint {
-    WebRtcEndpoint(DiscoveredEndpoint endpoint, mediums::PeerId peer_id)
+    WebRtcEndpoint(DiscoveredEndpoint endpoint, mediums::WebrtcPeerId peer_id)
         : DiscoveredEndpoint(std::move(endpoint)),
           peer_id(std::move(peer_id)) {}
 
-    mediums::PeerId peer_id;
+    mediums::WebrtcPeerId peer_id;
   };
 
   struct ConnectImplResult {
@@ -288,9 +288,9 @@ class BasePcpHandler : public PcpHandler,
   std::vector<BasePcpHandler::DiscoveredEndpoint*> GetDiscoveredEndpoints(
       const proto::connections::Medium medium);
 
-  mediums::PeerId CreatePeerIdFromAdvertisement(const string& service_id,
-                                                const string& endpoint_id,
-                                                const ByteArray& endpoint_info);
+  mediums::WebrtcPeerId CreatePeerIdFromAdvertisement(
+      const string& service_id, const string& endpoint_id,
+      const ByteArray& endpoint_info);
 
   SingleThreadExecutor* GetPcpHandlerThread()
       ABSL_LOCK_RETURNED(serial_executor_) {
@@ -348,6 +348,9 @@ class BasePcpHandler : public PcpHandler,
     // accepted. Crypto context is passed over to channel_manager_ before
     // switching to connected state, where Payload may be exchanged.
     std::unique_ptr<securegcm::UKey2Handshake> ukey2;
+
+    // Used in AnalyticsRecorder for devices connection tracking.
+    std::string connection_token;
   };
 
   // @EncryptionRunnerThread
@@ -382,6 +385,7 @@ class BasePcpHandler : public PcpHandler,
       absl::Seconds(2);
   static constexpr absl::Duration kRejectedConnectionCloseDelay =
       absl::Seconds(2);
+  static constexpr int kConnectionTokenLength = 8;
 
   void OnConnectionResponse(ClientProxy* client, const std::string& endpoint_id,
                             const OfflineFrame& frame);
@@ -423,10 +427,10 @@ class BasePcpHandler : public PcpHandler,
   bool AppendWebRTCEndpoint(const std::string& endpoint_id,
                             const ConnectionOptions& local_discovery_options);
 
-  void ProcessPreConnectionInitiationFailure(const std::string& endpoint_id,
-                                             EndpointChannel* channel,
-                                             Status status,
-                                             Future<Status>* result);
+  void ProcessPreConnectionInitiationFailure(
+      ClientProxy* client, Medium medium, const std::string& endpoint_id,
+      EndpointChannel* channel, bool is_incoming, absl::Time start_time,
+      Status status, Future<Status>* result);
   void ProcessPreConnectionResultFailure(ClientProxy* client,
                                          const std::string& endpoint_id);
 
@@ -445,6 +449,18 @@ class BasePcpHandler : public PcpHandler,
 
   ExceptionOr<OfflineFrame> ReadConnectionRequestFrame(
       EndpointChannel* channel);
+
+  // Returns an 8 characters length hashed string generated via a token byte
+  // array.
+  std::string GetHashedConnectionToken(const ByteArray& token_bytes);
+
+  static void LogConnectionAttempt(ClientProxy* client, Medium medium,
+                                   const std::string& endpoint_id,
+                                   bool is_incoming, absl::Time start_time);
+
+  // Returns true if the client cancels the operation in progress through the
+  // endpoint id. This is done by CancellationFlag.
+  static bool Cancelled(ClientProxy* client, const std::string& endpoint_id);
 
   void WaitForLatch(const std::string& method_name, CountDownLatch* latch);
   Status WaitForResult(const std::string& method_name, std::int64_t client_id,

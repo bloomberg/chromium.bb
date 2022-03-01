@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -33,6 +33,8 @@ class GURL;
 // handle signin accordingly.
 namespace signin {
 
+enum class Tribool;
+
 // Key for ManageAccountsHeaderReceivedUserData. Exposed for testing.
 extern const void* const kManageAccountsHeaderReceivedUserDataKey;
 
@@ -45,6 +47,10 @@ class ChromeRequestAdapter : public RequestAdapter {
                        const net::HttpRequestHeaders& original_headers,
                        net::HttpRequestHeaders* modified_headers,
                        std::vector<std::string>* headers_to_remove);
+
+  ChromeRequestAdapter(const ChromeRequestAdapter&) = delete;
+  ChromeRequestAdapter& operator=(const ChromeRequestAdapter&) = delete;
+
   ~ChromeRequestAdapter() override;
 
   virtual content::WebContents::Getter GetWebContentsGetter() const = 0;
@@ -59,14 +65,15 @@ class ChromeRequestAdapter : public RequestAdapter {
   // request is complete (including any redirects). If a callback was already
   // registered this function does nothing.
   virtual void SetDestructionCallback(base::OnceClosure closure) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeRequestAdapter);
 };
 
 class ResponseAdapter {
  public:
   ResponseAdapter();
+
+  ResponseAdapter(const ResponseAdapter&) = delete;
+  ResponseAdapter& operator=(const ResponseAdapter&) = delete;
+
   virtual ~ResponseAdapter();
 
   virtual content::WebContents::Getter GetWebContentsGetter() const = 0;
@@ -79,9 +86,6 @@ class ResponseAdapter {
   virtual void SetUserData(
       const void* key,
       std::unique_ptr<base::SupportsUserData::Data> data) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResponseAdapter);
 };
 
 // When Dice is enabled, the AccountReconcilor is blocked for a short delay
@@ -97,14 +101,14 @@ void FixAccountConsistencyRequestHeader(
     bool is_off_the_record,
     int incognito_availibility,
     AccountConsistencyMethod account_consistency,
-    std::string gaia_id,
-    const absl::optional<bool>& is_child_account,
+    const std::string& gaia_id,
+    signin::Tribool is_child_account,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     bool is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     bool is_sync_enabled,
-    std::string signin_scoped_device_id,
+    const std::string& signin_scoped_device_id,
 #endif
     content_settings::CookieSettings* cookie_settings);
 

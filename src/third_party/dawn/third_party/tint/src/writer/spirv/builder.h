@@ -27,6 +27,7 @@
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/interpolate_decoration.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/switch_statement.h"
@@ -34,6 +35,7 @@
 #include "src/ast/variable_decl_statement.h"
 #include "src/program_builder.h"
 #include "src/scope_stack.h"
+#include "src/sem/intrinsic.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/writer/spirv/function.h"
 #include "src/writer/spirv/scalar_constant.h"
@@ -44,10 +46,26 @@ namespace tint {
 namespace sem {
 class Call;
 class Reference;
+class TypeConstructor;
+class TypeConversion;
 }  // namespace sem
 
 namespace writer {
 namespace spirv {
+
+/// The result of sanitizing a program for generation.
+struct SanitizedResult {
+  /// The sanitized program.
+  Program program;
+};
+
+/// Sanitize a program in preparation for generating SPIR-V.
+/// @param emit_vertex_point_size `true` to emit a vertex point size builtin
+/// @param disable_workgroup_init `true` to disable workgroup memory zero
+/// @returns the sanitized program and any supplementary information
+SanitizedResult Sanitize(const Program* program,
+                         bool emit_vertex_point_size = false,
+                         bool disable_workgroup_init = false);
 
 /// Builder class to create SPIR-V instructions from a module.
 class Builder {
@@ -192,7 +210,7 @@ class Builder {
   /// @param operands the variable operands
   void push_function_var(const OperandList& operands) {
     if (functions_.empty()) {
-      TINT_ICE(builder_.Diagnostics())
+      TINT_ICE(Writer, builder_.Diagnostics())
           << "push_function_var() called without a function";
     }
     functions_.back().push_var(operands);
@@ -208,6 +226,15 @@ class Builder {
   /// @returns the SPIR-V builtin or SpvBuiltInMax on error.
   SpvBuiltIn ConvertBuiltin(ast::Builtin builtin, ast::StorageClass storage);
 
+  /// Converts an interpolate attribute to SPIR-V decorations and pushes a
+  /// capability if needed.
+  /// @param id the id to decorate
+  /// @param type the interpolation type
+  /// @param sampling the interpolation sampling
+  void AddInterpolationDecorations(uint32_t id,
+                                   ast::InterpolationType type,
+                                   ast::InterpolationSampling sampling);
+
   /// Generates a label for the given id. Emits an error and returns false if
   /// we're currently outside a function.
   /// @param id the id to use for the label
@@ -216,7 +243,7 @@ class Builder {
   /// Generates an assignment statement
   /// @param assign the statement to generate
   /// @returns true if the statement was successfully generated
-  bool GenerateAssignStatement(ast::AssignmentStatement* assign);
+  bool GenerateAssignStatement(const ast::AssignmentStatement* assign);
   /// Generates a block statement, wrapped in a push/pop scope
   /// @param stmt the statement to generate
   /// @returns true if the statement was successfully generated
@@ -228,33 +255,33 @@ class Builder {
   /// Generates a break statement
   /// @param stmt the statement to generate
   /// @returns true if the statement was successfully generated
-  bool GenerateBreakStatement(ast::BreakStatement* stmt);
+  bool GenerateBreakStatement(const ast::BreakStatement* stmt);
   /// Generates a continue statement
   /// @param stmt the statement to generate
   /// @returns true if the statement was successfully generated
-  bool GenerateContinueStatement(ast::ContinueStatement* stmt);
+  bool GenerateContinueStatement(const ast::ContinueStatement* stmt);
   /// Generates a discard statement
   /// @param stmt the statement to generate
   /// @returns true if the statement was successfully generated
-  bool GenerateDiscardStatement(ast::DiscardStatement* stmt);
+  bool GenerateDiscardStatement(const ast::DiscardStatement* stmt);
   /// Generates an entry point instruction
   /// @param func the function
   /// @param id the id of the function
   /// @returns true if the instruction was generated, false otherwise
-  bool GenerateEntryPoint(ast::Function* func, uint32_t id);
+  bool GenerateEntryPoint(const ast::Function* func, uint32_t id);
   /// Generates execution modes for an entry point
   /// @param func the function
   /// @param id the id of the function
   /// @returns false on failure
-  bool GenerateExecutionModes(ast::Function* func, uint32_t id);
+  bool GenerateExecutionModes(const ast::Function* func, uint32_t id);
   /// Generates an expression
   /// @param expr the expression to generate
   /// @returns the resulting ID of the expression or 0 on error
-  uint32_t GenerateExpression(ast::Expression* expr);
+  uint32_t GenerateExpression(const ast::Expression* expr);
   /// Generates the instructions for a function
   /// @param func the function to generate
   /// @returns true if the instructions were generated
-  bool GenerateFunction(ast::Function* func);
+  bool GenerateFunction(const ast::Function* func);
   /// Generates a function type if not already created
   /// @param func the function to generate for
   /// @returns the ID to use for the function type. Returns 0 on failure.
@@ -263,93 +290,100 @@ class Builder {
   /// @param type the type to generate for
   /// @param struct_id the struct id
   /// @param member_idx the member index
-  void GenerateMemberAccessControlIfNeeded(const sem::Type* type,
-                                           uint32_t struct_id,
-                                           uint32_t member_idx);
+  void GenerateMemberAccessIfNeeded(const sem::Type* type,
+                                    uint32_t struct_id,
+                                    uint32_t member_idx);
   /// Generates a function variable
   /// @param var the variable
   /// @returns true if the variable was generated
-  bool GenerateFunctionVariable(ast::Variable* var);
+  bool GenerateFunctionVariable(const ast::Variable* var);
   /// Generates a global variable
   /// @param var the variable to generate
   /// @returns true if the variable is emited.
-  bool GenerateGlobalVariable(ast::Variable* var);
-  /// Generates an array accessor expression.
+  bool GenerateGlobalVariable(const ast::Variable* var);
+  /// Generates an index accessor expression.
   ///
   /// For more information on accessors see the "Pointer evaluation" section of
   /// the WGSL specification.
   ///
   /// @param expr the expresssion to generate
   /// @returns the id of the expression or 0 on failure
-  uint32_t GenerateAccessorExpression(ast::Expression* expr);
-  /// Generates an array accessor
+  uint32_t GenerateAccessorExpression(const ast::Expression* expr);
+  /// Generates an index accessor
   /// @param expr the accessor to generate
   /// @param info the current accessor information
   /// @returns true if the accessor was generated successfully
-  bool GenerateArrayAccessor(ast::ArrayAccessorExpression* expr,
+  bool GenerateIndexAccessor(const ast::IndexAccessorExpression* expr,
                              AccessorInfo* info);
   /// Generates a member accessor
   /// @param expr the accessor to generate
   /// @param info the current accessor information
   /// @returns true if the accessor was generated successfully
-  bool GenerateMemberAccessor(ast::MemberAccessorExpression* expr,
+  bool GenerateMemberAccessor(const ast::MemberAccessorExpression* expr,
                               AccessorInfo* info);
   /// Generates an identifier expression
   /// @param expr the expresssion to generate
   /// @returns the id of the expression or 0 on failure
-  uint32_t GenerateIdentifierExpression(ast::IdentifierExpression* expr);
+  uint32_t GenerateIdentifierExpression(const ast::IdentifierExpression* expr);
   /// Generates a unary op expression
   /// @param expr the expression to generate
   /// @returns the id of the expression or 0 on failure
-  uint32_t GenerateUnaryOpExpression(ast::UnaryOpExpression* expr);
+  uint32_t GenerateUnaryOpExpression(const ast::UnaryOpExpression* expr);
   /// Generates an if statement
   /// @param stmt the statement to generate
   /// @returns true on success
-  bool GenerateIfStatement(ast::IfStatement* stmt);
-  /// Generates an import instruction
-  void GenerateGLSLstd450Import();
+  bool GenerateIfStatement(const ast::IfStatement* stmt);
+  /// Generates an import instruction for the "GLSL.std.450" extended
+  /// instruction set, if one doesn't exist yet, and returns the import ID.
+  /// @returns the import ID, or 0 on error.
+  uint32_t GetGLSLstd450Import();
   /// Generates a constructor expression
   /// @param var the variable generated for, nullptr if no variable associated.
   /// @param expr the expression to generate
-  /// @param is_global_init set true if this is a global variable constructor
   /// @returns the ID of the expression or 0 on failure.
-  uint32_t GenerateConstructorExpression(ast::Variable* var,
-                                         ast::ConstructorExpression* expr,
-                                         bool is_global_init);
-  /// Generates a type constructor expression
-  /// @param init the expression to generate
-  /// @param is_global_init set true if this is a global variable constructor
-  /// @returns the ID of the expression or 0 on failure.
-  uint32_t GenerateTypeConstructorExpression(
-      ast::TypeConstructorExpression* init,
-      bool is_global_init);
+  uint32_t GenerateConstructorExpression(const ast::Variable* var,
+                                         const ast::Expression* expr);
   /// Generates a literal constant if needed
   /// @param var the variable generated for, nullptr if no variable associated.
   /// @param lit the literal to generate
   /// @returns the ID on success or 0 on failure
-  uint32_t GenerateLiteralIfNeeded(ast::Variable* var, ast::Literal* lit);
+  uint32_t GenerateLiteralIfNeeded(const ast::Variable* var,
+                                   const ast::LiteralExpression* lit);
   /// Generates a binary expression
   /// @param expr the expression to generate
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateBinaryExpression(ast::BinaryExpression* expr);
+  uint32_t GenerateBinaryExpression(const ast::BinaryExpression* expr);
   /// Generates a bitcast expression
   /// @param expr the expression to generate
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateBitcastExpression(ast::BitcastExpression* expr);
+  uint32_t GenerateBitcastExpression(const ast::BitcastExpression* expr);
   /// Generates a short circuting binary expression
   /// @param expr the expression to generate
   /// @returns teh expression ID on success or 0 otherwise
-  uint32_t GenerateShortCircuitBinaryExpression(ast::BinaryExpression* expr);
+  uint32_t GenerateShortCircuitBinaryExpression(
+      const ast::BinaryExpression* expr);
   /// Generates a call expression
   /// @param expr the expression to generate
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateCallExpression(ast::CallExpression* expr);
-  /// Generates an intrinsic call
+  uint32_t GenerateCallExpression(const ast::CallExpression* expr);
+  /// Handles generating a function call expression
   /// @param call the call expression
-  /// @param intrinsic the semantic information for the intrinsic
+  /// @param function the function being called
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateIntrinsic(ast::CallExpression* call,
-                             const sem::Intrinsic* intrinsic);
+  uint32_t GenerateFunctionCall(const sem::Call* call,
+                                const sem::Function* function);
+  /// Handles generating an intrinsic call expression
+  /// @param call the call expression
+  /// @param intrinsic the intrinsic being called
+  /// @returns the expression ID on success or 0 otherwise
+  uint32_t GenerateIntrinsicCall(const sem::Call* call,
+                                 const sem::Intrinsic* intrinsic);
+  /// Handles generating a type constructor or type conversion expression
+  /// @param call the call expression
+  /// @param var the variable that is being initialized. May be null.
+  /// @returns the expression ID on success or 0 otherwise
+  uint32_t GenerateTypeConstructorOrConversion(const sem::Call* call,
+                                               const ast::Variable* var);
   /// Generates a texture intrinsic call. Emits an error and returns false if
   /// we're currently outside a function.
   /// @param call the call expression
@@ -358,15 +392,24 @@ class Builder {
   /// @param result_id result identifier operand of the texture instruction
   /// parameters
   /// @returns true on success
-  bool GenerateTextureIntrinsic(ast::CallExpression* call,
+  bool GenerateTextureIntrinsic(const sem::Call* call,
                                 const sem::Intrinsic* intrinsic,
                                 spirv::Operand result_type,
                                 spirv::Operand result_id);
   /// Generates a control barrier statement.
-  /// @param intrinsic the semantic information for the barrier intrinsic
-  /// parameters
+  /// @param intrinsic the semantic information for the barrier intrinsic call
   /// @returns true on success
   bool GenerateControlBarrierIntrinsic(const sem::Intrinsic* intrinsic);
+  /// Generates an atomic intrinsic call.
+  /// @param call the call expression
+  /// @param intrinsic the semantic information for the atomic intrinsic call
+  /// @param result_type result type operand of the texture instruction
+  /// @param result_id result identifier operand of the texture instruction
+  /// @returns true on success
+  bool GenerateAtomicIntrinsic(const sem::Call* call,
+                               const sem::Intrinsic* intrinsic,
+                               Operand result_type,
+                               Operand result_id);
   /// Generates a sampled image
   /// @param texture_type the texture type
   /// @param texture_operand the texture operand
@@ -380,35 +423,37 @@ class Builder {
   /// of the right type.
   /// @param to_type the type we're casting too
   /// @param from_expr the expression to cast
+  /// @param is_global_init if this is a global initializer
   /// @returns the expression ID on success or 0 otherwise
   uint32_t GenerateCastOrCopyOrPassthrough(const sem::Type* to_type,
-                                           ast::Expression* from_expr);
+                                           const ast::Expression* from_expr,
+                                           bool is_global_init);
   /// Generates a loop statement
   /// @param stmt the statement to generate
   /// @returns true on successful generation
-  bool GenerateLoopStatement(ast::LoopStatement* stmt);
+  bool GenerateLoopStatement(const ast::LoopStatement* stmt);
   /// Generates a return statement
   /// @param stmt the statement to generate
   /// @returns true on success, false otherwise
-  bool GenerateReturnStatement(ast::ReturnStatement* stmt);
+  bool GenerateReturnStatement(const ast::ReturnStatement* stmt);
   /// Generates a switch statement
   /// @param stmt the statement to generate
   /// @returns ture on success, false otherwise
-  bool GenerateSwitchStatement(ast::SwitchStatement* stmt);
+  bool GenerateSwitchStatement(const ast::SwitchStatement* stmt);
   /// Generates a conditional section merge block
   /// @param cond the condition
   /// @param true_body the statements making up the true block
   /// @param cur_else_idx the index of the current else statement to process
   /// @param else_stmts the list of all else statements
   /// @returns true on success, false on failure
-  bool GenerateConditionalBlock(ast::Expression* cond,
+  bool GenerateConditionalBlock(const ast::Expression* cond,
                                 const ast::BlockStatement* true_body,
                                 size_t cur_else_idx,
                                 const ast::ElseStatementList& else_stmts);
   /// Generates a statement
   /// @param stmt the statement to generate
   /// @returns true if the statement was generated
-  bool GenerateStatement(ast::Statement* stmt);
+  bool GenerateStatement(const ast::Statement* stmt);
   /// Geneates an OpLoad
   /// @param type the type to load
   /// @param id the variable id to load
@@ -462,16 +507,34 @@ class Builder {
   /// @returns the id of the struct member or 0 on error.
   uint32_t GenerateStructMember(uint32_t struct_id,
                                 uint32_t idx,
-                                ast::StructMember* member);
+                                const sem::StructMember* member);
   /// Generates a variable declaration statement
   /// @param stmt the statement to generate
   /// @returns true on successfull generation
-  bool GenerateVariableDeclStatement(ast::VariableDeclStatement* stmt);
+  bool GenerateVariableDeclStatement(const ast::VariableDeclStatement* stmt);
   /// Generates a vector type declaration
   /// @param vec the vector to generate
   /// @param result the result operand
   /// @returns true if the vector was successfully generated
   bool GenerateVectorType(const sem::Vector* vec, const Operand& result);
+
+  /// Generates instructions to splat `scalar_id` into a vector of type
+  /// `vec_type`
+  /// @param scalar_id scalar to splat
+  /// @param vec_type type of vector
+  /// @returns id of the new vector
+  uint32_t GenerateSplat(uint32_t scalar_id, const sem::Type* vec_type);
+
+  /// Generates instructions to add or subtract two matrices
+  /// @param lhs_id id of multiplicand
+  /// @param rhs_id id of multiplier
+  /// @param type type of both matrices and of result
+  /// @param op one of `spv::Op::OpFAdd` or `spv::Op::OpFSub`
+  /// @returns id of the result matrix
+  uint32_t GenerateMatrixAddOrSub(uint32_t lhs_id,
+                                  uint32_t rhs_id,
+                                  const sem::Matrix* type,
+                                  spv::Op op);
 
   /// Converts AST image format to SPIR-V and pushes an appropriate capability.
   /// @param format AST image format type
@@ -480,9 +543,8 @@ class Builder {
 
   /// Determines if the given type constructor is created from constant values
   /// @param expr the expression to check
-  /// @param is_global_init if this is a global initializer
   /// @returns true if the constructor is constant
-  bool is_constructor_const(ast::Expression* expr, bool is_global_init);
+  bool IsConstructorConst(const ast::Expression* expr);
 
  private:
   /// @returns an Operand with a new result ID in it. Increments the next_id_
@@ -491,11 +553,11 @@ class Builder {
 
   /// @returns the resolved type of the ast::Expression `expr`
   /// @param expr the expression
-  const sem::Type* TypeOf(ast::Expression* expr) const {
+  const sem::Type* TypeOf(const ast::Expression* expr) const {
     return builder_.TypeOf(expr);
   }
 
-  /// Generates a constant if needed
+  /// Generates a scalar constant if needed
   /// @param constant the constant to generate.
   /// @returns the ID on success or 0 on failure
   uint32_t GenerateConstantIfNeeded(const ScalarConstant& constant);
@@ -504,6 +566,13 @@ class Builder {
   /// @param type the type of the constant null to generate.
   /// @returns the ID on success or 0 on failure
   uint32_t GenerateConstantNullIfNeeded(const sem::Type* type);
+
+  /// Generates a vector constant splat if needed
+  /// @param type the type of the vector to generate
+  /// @param value_id the ID of the scalar value to splat
+  /// @returns the ID on success or 0 on failure
+  uint32_t GenerateConstantVectorSplatIfNeeded(const sem::Vector* type,
+                                               uint32_t value_id);
 
   ProgramBuilder builder_;
   std::string error_;
@@ -522,18 +591,47 @@ class Builder {
 
   std::unordered_map<std::string, uint32_t> import_name_to_id_;
   std::unordered_map<Symbol, uint32_t> func_symbol_to_id_;
+  std::unordered_map<sem::CallTargetSignature, uint32_t> func_sig_to_id_;
   std::unordered_map<std::string, uint32_t> type_name_to_id_;
   std::unordered_map<ScalarConstant, uint32_t> const_to_id_;
   std::unordered_map<std::string, uint32_t> type_constructor_to_id_;
   std::unordered_map<std::string, uint32_t> const_null_to_id_;
+  std::unordered_map<uint64_t, uint32_t> const_splat_to_id_;
   std::unordered_map<std::string, uint32_t>
       texture_type_name_to_sampled_image_type_id_;
   ScopeStack<uint32_t> scope_stack_;
-  std::unordered_map<uint32_t, ast::Variable*> spirv_id_to_variable_;
+  std::unordered_map<uint32_t, const ast::Variable*> spirv_id_to_variable_;
   std::vector<uint32_t> merge_stack_;
   std::vector<uint32_t> continue_stack_;
   std::unordered_set<uint32_t> capability_set_;
   bool has_overridable_workgroup_size_ = false;
+
+  struct ContinuingInfo {
+    ContinuingInfo(const ast::Statement* last_statement,
+                   uint32_t loop_header_id,
+                   uint32_t break_target_id);
+    // The last statement in the continiung block.
+    const ast::Statement* const last_statement = nullptr;
+    // The ID of the loop header
+    const uint32_t loop_header_id = 0u;
+    // The ID of the merge block for the loop.
+    const uint32_t break_target_id = 0u;
+  };
+  // Stack of nodes, where each is the last statement in a surrounding
+  // continuing block.
+  std::vector<ContinuingInfo> continuing_stack_;
+
+  // The instruction to emit as the backedge of a loop.
+  struct Backedge {
+    Backedge(spv::Op, OperandList);
+    Backedge(const Backedge&);
+    Backedge& operator=(const Backedge&);
+    ~Backedge();
+
+    spv::Op opcode;
+    OperandList operands;
+  };
+  std::vector<Backedge> backedge_stack_;
 };
 
 }  // namespace spirv

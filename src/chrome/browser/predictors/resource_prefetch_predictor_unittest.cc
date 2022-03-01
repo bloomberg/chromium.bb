@@ -9,9 +9,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -142,7 +143,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> db_task_runner_;
 
   std::unique_ptr<LoadingPredictor> loading_predictor_;
-  ResourcePrefetchPredictor* predictor_;
+  raw_ptr<ResourcePrefetchPredictor> predictor_;
   scoped_refptr<StrictMock<MockResourcePrefetchPredictorTables>> mock_tables_;
 
   RedirectDataMap test_host_redirect_data_;
@@ -152,8 +153,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 };
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
-    : profile_(std::make_unique<TestingProfile>()),
-      db_task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
+    : db_task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
       mock_tables_(
           base::MakeRefCounted<StrictMock<MockResourcePrefetchPredictorTables>>(
               db_task_runner_)) {}
@@ -163,7 +163,11 @@ ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() = default;
 void ResourcePrefetchPredictorTest::SetUp() {
   InitializeSampleData();
 
-  CHECK(profile_->CreateHistoryService());
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
+                                    HistoryServiceFactory::GetDefaultFactory());
+  profile_ = profile_builder.Build();
+
   profile_->BlockUntilHistoryProcessesPendingRequests();
   CHECK(HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS));
@@ -529,8 +533,8 @@ TEST_F(ResourcePrefetchPredictorTest,
        i <= static_cast<int>(predictor_->config_.max_origins_per_entry) - 1;
        ++i) {
     InitializeOriginStat(origin_data.add_origins(),
-                         GURL(gen(i)).GetOrigin().spec(), 1, 0, 0, i + 1, false,
-                         true);
+                         GURL(gen(i)).DeprecatedGetOriginAsURL().spec(), 1, 0,
+                         0, i + 1, false, true);
   }
   EXPECT_EQ(mock_tables_->origin_table_.data_,
             OriginDataMap({{origin_data.host(), origin_data}}));

@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom-forward.h"
@@ -25,6 +25,12 @@ class DataSaverSiteBreakdownMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   DataSaverSiteBreakdownMetricsObserver();
+
+  DataSaverSiteBreakdownMetricsObserver(
+      const DataSaverSiteBreakdownMetricsObserver&) = delete;
+  DataSaverSiteBreakdownMetricsObserver& operator=(
+      const DataSaverSiteBreakdownMetricsObserver&) = delete;
+
   ~DataSaverSiteBreakdownMetricsObserver() override;
 
  private:
@@ -45,11 +51,9 @@ class DataSaverSiteBreakdownMetricsObserver
   std::string committed_origin_;
 
   // The browser context this navigation is operating in.
-  content::BrowserContext* browser_context_ = nullptr;
+  raw_ptr<content::BrowserContext> browser_context_ = nullptr;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(DataSaverSiteBreakdownMetricsObserver);
 };
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_SAVER_SITE_BREAKDOWN_METRICS_OBSERVER_H_
