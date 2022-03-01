@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <atomic>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -25,6 +25,9 @@ struct TestData {
 class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
  public:
   BasicSeqLockTestThread() = default;
+
+  BasicSeqLockTestThread(const BasicSeqLockTestThread&) = delete;
+  BasicSeqLockTestThread& operator=(const BasicSeqLockTestThread&) = delete;
 
   void Init(OneWriterSeqLock* seqlock,
             TestData* data,
@@ -54,16 +57,18 @@ class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
   }
 
  private:
-  OneWriterSeqLock* seqlock_;
-  TestData* data_;
-  std::atomic<int>* ready_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasicSeqLockTestThread);
+  raw_ptr<OneWriterSeqLock> seqlock_;
+  raw_ptr<TestData> data_;
+  raw_ptr<std::atomic<int>> ready_;
 };
 
 class MaxRetriesSeqLockTestThread : public base::PlatformThread::Delegate {
  public:
   MaxRetriesSeqLockTestThread() = default;
+
+  MaxRetriesSeqLockTestThread(const MaxRetriesSeqLockTestThread&) = delete;
+  MaxRetriesSeqLockTestThread& operator=(const MaxRetriesSeqLockTestThread&) =
+      delete;
 
   void Init(OneWriterSeqLock* seqlock, std::atomic<int>* ready) {
     seqlock_ = seqlock;
@@ -85,10 +90,8 @@ class MaxRetriesSeqLockTestThread : public base::PlatformThread::Delegate {
   }
 
  private:
-  OneWriterSeqLock* seqlock_;
-  std::atomic<int>* ready_;
-
-  DISALLOW_COPY_AND_ASSIGN(MaxRetriesSeqLockTestThread);
+  raw_ptr<OneWriterSeqLock> seqlock_;
+  raw_ptr<std::atomic<int>> ready_;
 };
 
 #if defined(OS_ANDROID)

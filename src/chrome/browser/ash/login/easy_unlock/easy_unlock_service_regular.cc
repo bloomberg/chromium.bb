@@ -10,6 +10,11 @@
 #include <utility>
 
 #include "apps/app_lifetime_monitor_factory.h"
+#include "ash/components/proximity_auth/proximity_auth_pref_names.h"
+#include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
+#include "ash/components/proximity_auth/proximity_auth_system.h"
+#include "ash/components/proximity_auth/screenlock_bridge.h"
+#include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -36,11 +41,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
-#include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
-#include "chromeos/components/proximity_auth/proximity_auth_system.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -240,7 +240,7 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
       base::Base64UrlEncode(
           multidevice::ToCryptAuthSeed(beacon_seed).SerializeAsString(),
           base::Base64UrlEncodePolicy::INCLUDE_PADDING, &b64_beacon_seed);
-      beacon_seed_list->AppendString(b64_beacon_seed);
+      beacon_seed_list->Append(b64_beacon_seed);
     }
 
     std::string serialized_beacon_seeds;
@@ -263,10 +263,10 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     device_list->Append(std::move(dict));
   }
 
-  if (device_list->GetSize() != 2u) {
+  if (device_list->GetList().size() != 2u) {
     PA_LOG(ERROR) << "There should only be 2 devices persisted, the host and "
                      "the client, but there are: "
-                  << device_list->GetSize();
+                  << device_list->GetList().size();
     NOTREACHED();
   }
 
@@ -281,7 +281,7 @@ void EasyUnlockServiceRegular::SetStoredRemoteDevices(
 
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
-  if (devices.empty())
+  if (devices.GetList().empty())
     pairing_update->RemoveKey(kKeyDevices);
   else
     pairing_update->SetKey(kKeyDevices, devices.Clone());
@@ -357,6 +357,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
   OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
   multidevice_setup_client_->AddObserver(this);
+  StartFeatureUsageMetrics();
 
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
 
@@ -374,6 +375,8 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   device_sync_client_->RemoveObserver(this);
 
   multidevice_setup_client_->RemoveObserver(this);
+
+  StopFeatureUsageMetrics();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
@@ -399,6 +402,10 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   }
 
   return true;
+}
+
+bool EasyUnlockServiceRegular::IsEligible() const {
+  return pref_manager_ && pref_manager_->IsSmartLockEligible();
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {

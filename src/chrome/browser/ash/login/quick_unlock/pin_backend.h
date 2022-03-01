@@ -15,10 +15,8 @@ class AccountId;
 class Profile;
 class ScopedKeepAlive;
 
-namespace chromeos {
-
+namespace ash {
 namespace quick_unlock {
-
 class PinStorageCryptohome;
 
 // Provides high-level access to the user's PIN. The underlying storage can be
@@ -40,6 +38,10 @@ class PinBackend {
 
   // Use GetInstance().
   PinBackend();
+
+  PinBackend(const PinBackend&) = delete;
+  PinBackend& operator=(const PinBackend&) = delete;
+
   ~PinBackend();
 
   // Check to see if the PinBackend supports login. This is true when the
@@ -172,19 +174,17 @@ class PinBackend {
 
   // Blocks chrome from restarting while migrating from prefs to cryptohome PIN.
   std::unique_ptr<ScopedKeepAlive> scoped_keep_alive_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinBackend);
 };
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
+namespace chromeos {
 namespace quick_unlock {
-using ::chromeos::quick_unlock::PinBackend;
+using ::ash::quick_unlock::PinBackend;
 }
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_PIN_BACKEND_H_

@@ -55,12 +55,18 @@ bool FormatSupportChecker::Initialize() {
   if (!SUCCEEDED(enumerator_->CheckVideoProcessorFormat(example, &unneeded)))
     return false;
 
+  D3D11_VIDEO_PROCESSOR_CAPS caps = {0};
+  if (SUCCEEDED(enumerator_->GetVideoProcessorCaps(&caps))) {
+    supports_tone_mapping_ =
+        caps.FeatureCaps & D3D11_VIDEO_PROCESSOR_FEATURE_CAPS_METADATA_HDR10;
+  }
+
   initialized_ = true;
   return true;
 }
 
 bool FormatSupportChecker::CheckOutputFormatSupport(DXGI_FORMAT format) const {
-  if (!device_)
+  if (!device_ || !enumerator_)
     return false;
 
   DCHECK(initialized_);

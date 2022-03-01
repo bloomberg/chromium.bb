@@ -224,8 +224,6 @@ sw::SIMD::UInt halfToFloatBits(sw::SIMD::UInt halfBits);
 sw::SIMD::UInt floatToHalfBits(sw::SIMD::UInt floatBits, bool storeInUpperBits);
 Float4 r11g11b10Unpack(UInt r11g11b10bits);
 UInt r11g11b10Pack(const Float4 &value);
-Vector4s a2b10g10r10Unpack(const Int4 &value);
-Vector4s a2r10g10b10Unpack(const Int4 &value);
 
 rr::RValue<rr::Bool> AnyTrue(rr::RValue<sw::SIMD::Int> const &ints);
 
@@ -329,6 +327,7 @@ inline T SIMD::Pointer::Load(OutOfBoundsBehavior robustness, Int mask, bool atom
 			// Offsets are sequential. Perform regular load.
 			return rr::Load(rr::Pointer<T>(base + staticOffsets[0]), alignment, atomic, order);
 		}
+
 		if(hasStaticEqualOffsets())
 		{
 			// Load one, replicate.
@@ -381,10 +380,7 @@ inline T SIMD::Pointer::Load(OutOfBoundsBehavior robustness, Int mask, bool atom
 			break;
 		}
 
-		if(hasStaticSequentialOffsets(sizeof(float)))
-		{
-			return rr::MaskedLoad(rr::Pointer<T>(base + staticOffsets[0]), mask, alignment, zeroMaskedLanes);
-		}
+		// TODO(b/195446858): Optimize static sequential offsets case by using masked load.
 
 		return rr::Gather(rr::Pointer<EL>(base), offs, mask, alignment, zeroMaskedLanes);
 	}
@@ -458,20 +454,15 @@ inline void SIMD::Pointer::Store(T val, OutOfBoundsBehavior robustness, Int mask
 				*rr::Pointer<EL>(base + staticOffsets[0], alignment) = As<EL>(scalarVal);
 			}
 		}
-		else if(hasStaticSequentialOffsets(sizeof(float)))
+		else if(hasStaticSequentialOffsets(sizeof(float)) &&
+		        isStaticallyInBounds(sizeof(float), robustness))
 		{
-			if(isStaticallyInBounds(sizeof(float), robustness))
-			{
-				// Pointer has no elements OOB, and the store is not atomic.
-				// Perform a RMW.
-				auto p = rr::Pointer<SIMD::Int>(base + staticOffsets[0], alignment);
-				auto prev = *p;
-				*p = (prev & ~mask) | (As<SIMD::Int>(val) & mask);
-			}
-			else
-			{
-				rr::MaskedStore(rr::Pointer<T>(base + staticOffsets[0]), val, mask, alignment);
-			}
+			// TODO(b/195446858): Optimize using masked store.
+			// Pointer has no elements OOB, and the store is not atomic.
+			// Perform a read-modify-write.
+			auto p = rr::Pointer<SIMD::Int>(base + staticOffsets[0], alignment);
+			auto prev = *p;
+			*p = (prev & ~mask) | (As<SIMD::Int>(val) & mask);
 		}
 		else
 		{

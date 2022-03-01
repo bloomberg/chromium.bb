@@ -29,13 +29,12 @@ namespace dawn_native {
         if (mCache == nullptr) {
             return blob;
         }
-        blob.bufferSize = mCache->LoadData(reinterpret_cast<WGPUDevice>(mDevice), key.data(),
-                                           key.size(), nullptr, 0);
+        std::lock_guard<std::mutex> lock(mMutex);
+        blob.bufferSize = mCache->LoadData(ToAPI(mDevice), key.data(), key.size(), nullptr, 0);
         if (blob.bufferSize > 0) {
             blob.buffer.reset(new uint8_t[blob.bufferSize]);
-            const size_t bufferSize =
-                mCache->LoadData(reinterpret_cast<WGPUDevice>(mDevice), key.data(), key.size(),
-                                 blob.buffer.get(), blob.bufferSize);
+            const size_t bufferSize = mCache->LoadData(ToAPI(mDevice), key.data(), key.size(),
+                                                       blob.buffer.get(), blob.bufferSize);
             ASSERT(bufferSize == blob.bufferSize);
             return blob;
         }
@@ -48,8 +47,8 @@ namespace dawn_native {
         }
         ASSERT(value != nullptr);
         ASSERT(size > 0);
-        mCache->StoreData(reinterpret_cast<WGPUDevice>(mDevice), key.data(), key.size(), value,
-                          size);
+        std::lock_guard<std::mutex> lock(mMutex);
+        mCache->StoreData(ToAPI(mDevice), key.data(), key.size(), value, size);
     }
 
     dawn_platform::CachingInterface* PersistentCache::GetPlatformCache() {

@@ -46,6 +46,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -233,14 +234,17 @@ void SearchProvider::Start(const AutocompleteInput& input,
   matches_.clear();
   set_field_trial_triggered(false);
 
-  // Unless warming up the suggest server on focus, SearchProvider doesn't do
-  // do anything useful for on-focus inputs or empty inputs.  Exit early.
-  if (!base::FeatureList::IsEnabled(omnibox::kSearchProviderWarmUpOnFocus) &&
-      (input.focus_type() != OmniboxFocusType::DEFAULT ||
-       input.type() == metrics::OmniboxInputType::EMPTY)) {
-    Stop(true, false);
-    return;
-  }
+  // At this point, we could exit early if the input is on-focus or empty,
+  // because offering suggestions in those scenarios is handled by
+  // ZeroSuggestProvider. But we continue here anyway in order to send a request
+  // to warm up the suggest server. It's possible this warmup request could be
+  // combined or deduped with the request from ZeroSuggestProvider but that
+  // provider doesn't always run, based on a variety of factors (sign in state,
+  // experiments, input type (on-focus vs. on-clobber)). Ensuring that we always
+  // send a request here allows the suggest server to, for example, load
+  // per-user models into memory.  Having a per-user model in memory allows the
+  // suggest server to respond more quickly with personalized suggestions as the
+  // user types.
 
   keyword_input_ = input;
   const TemplateURL* keyword_provider =
@@ -623,8 +627,7 @@ void SearchProvider::Run(bool query_is_private) {
     }
     default_loader_ = CreateSuggestLoader(
         providers_.GetDefaultProviderURL(), input_,
-        timeout_ms > 0 ? base::TimeDelta::FromMilliseconds(timeout_ms)
-                       : base::TimeDelta());
+        timeout_ms > 0 ? base::Milliseconds(timeout_ms) : base::TimeDelta());
   }
   keyword_loader_ = CreateSuggestLoader(providers_.GetKeywordProviderURL(),
                                         keyword_input_, base::TimeDelta());
@@ -693,7 +696,7 @@ base::TimeDelta SearchProvider::GetSuggestQueryDelay() const {
   OmniboxFieldTrial::GetSuggestPollingStrategy(&from_last_keystroke,
                                                &polling_delay_ms);
 
-  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(polling_delay_ms));
+  base::TimeDelta delay(base::Milliseconds(polling_delay_ms));
   if (from_last_keystroke)
     return delay;
 
@@ -980,7 +983,7 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
-  if (timeout > base::TimeDelta())
+  if (timeout.is_positive())
     loader->SetTimeoutDuration(timeout);
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       client()->GetURLLoaderFactory().get(),

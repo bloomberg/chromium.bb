@@ -6,11 +6,10 @@
 #define V8_API_API_ARGUMENTS_INL_H_
 
 #include "src/api/api-arguments.h"
-
 #include "src/api/api-inl.h"
 #include "src/debug/debug.h"
 #include "src/execution/vm-state-inl.h"
-#include "src/logging/counters.h"
+#include "src/logging/runtime-call-stats-scope.h"
 #include "src/objects/api-callbacks.h"
 #include "src/objects/slots-inl.h"
 #include "src/tracing/trace-event.h"
@@ -77,7 +76,6 @@ inline JSReceiver FunctionCallbackArguments::holder() {
           CALLBACK_INFO, RECEIVER, Debug::k##ACCESSOR_KIND)) {           \
     return RETURN_VALUE();                                               \
   }                                                                      \
-  VMState<EXTERNAL> state(ISOLATE);                                      \
   ExternalCallbackScope call_scope(ISOLATE, FUNCTION_ADDR(F));           \
   PropertyCallbackInfo<API_RETURN_TYPE> callback_info(values_);
 
@@ -86,7 +84,6 @@ inline JSReceiver FunctionCallbackArguments::holder() {
   if (ISOLATE->debug_execution_mode() == DebugInfo::kSideEffects) {            \
     return RETURN_VALUE();                                                     \
   }                                                                            \
-  VMState<EXTERNAL> state(ISOLATE);                                            \
   ExternalCallbackScope call_scope(ISOLATE, FUNCTION_ADDR(F));                 \
   PropertyCallbackInfo<API_RETURN_TYPE> callback_info(values_);
 
@@ -150,7 +147,6 @@ Handle<Object> FunctionCallbackArguments::Call(CallHandlerInfo handler) {
           Debug::kNotAccessor)) {
     return Handle<Object>();
   }
-  VMState<EXTERNAL> state(isolate);
   ExternalCallbackScope call_scope(isolate, FUNCTION_ADDR(f));
   FunctionCallbackInfo<v8::Value> info(values_, argv_, argc_);
   f(info);

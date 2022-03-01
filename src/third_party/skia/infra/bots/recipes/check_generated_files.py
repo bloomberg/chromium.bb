@@ -5,6 +5,8 @@
 
 # Recipe for the Skia PerCommit Housekeeper.
 
+PYTHON_VERSION_COMPATIBILITY = "PY3"
+
 DEPS = [
   'build',
   'infra',
@@ -37,26 +39,11 @@ def RunSteps(api):
         api.step,
         'git diff #1',
         cmd=['git', 'diff', '--no-ext-diff'],
-        stdout=api.m.raw_io.output()).stdout
+        stdout=api.m.raw_io.output()).stdout.decode('utf-8')
 
     with api.context(env=api.infra.go_env):
       api.step('generate gl interfaces',
                cmd=['make', '-C', 'tools/gpu/gl/interface', 'generate'])
-
-    # Touch all .fp files so that the generated files are rebuilt.
-    api.run(
-        api.python.inline,
-        'touch fp files',
-        program="""import os
-import subprocess
-
-for r, d, files in os.walk(os.path.join('%s', 'src')):
-  for f in files:
-    if f.endswith('.fp'):
-      path = os.path.join(r, f)
-      print 'touch %%s' %% path
-      subprocess.check_call(['touch', path])
-""" % cwd)
 
     # Run GN, regenerate the SKSL files, and make sure rewritten #includes work.
     api.build(checkout_root=checkout_root,
@@ -68,7 +55,7 @@ for r, d, files in os.walk(os.path.join('%s', 'src')):
         api.step,
         'git diff #2',
         cmd=['git', 'diff', '--no-ext-diff'],
-        stdout=api.m.raw_io.output()).stdout
+        stdout=api.m.raw_io.output()).stdout.decode('utf-8')
 
     api.run(
         api.python.inline,
@@ -79,7 +66,7 @@ diff1 = '''%s'''
 diff2 = '''%s'''
 
 if diff1 != diff2:
-  print 'Generated files have been edited!'
+  print('Generated files have been edited!')
   exit(1)
 """ % (diff1, diff2))
 

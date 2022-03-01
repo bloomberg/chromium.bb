@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -41,6 +40,9 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   static std::unique_ptr<media::VideoCaptureDevice> Create(
       const DesktopMediaID& source);
 
+  DesktopCaptureDevice(const DesktopCaptureDevice&) = delete;
+  DesktopCaptureDevice& operator=(const DesktopCaptureDevice&) = delete;
+
   ~DesktopCaptureDevice() override;
 
   // VideoCaptureDevice interface.
@@ -66,10 +68,15 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const base::TickClock* tick_clock);
 
-  base::Thread thread_;
   std::unique_ptr<Core> core_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDevice);
+  // Ensure that the thread is the first object destroyed, as that will ensure
+  // it is stopped. This helps to guarantee that the thread is stopped before
+  // any of our objects (which it may be depending on), are destroyed. While the
+  // thread *should* be stopped by consumers with StopAndDeAllocate, some edge
+  // cases may mean that there is either not a chance for it to be called, or it
+  // may have been called but not yet scheduled to run.
+  base::Thread thread_;
 };
 
 }  // namespace content

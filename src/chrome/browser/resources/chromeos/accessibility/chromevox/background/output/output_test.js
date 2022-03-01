@@ -242,7 +242,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Headings', function() {
 TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', function() {
   this.runWithLoadedTree(
       '<audio src="foo.mp3" controls></audio>', function(root) {
-        let el = root.find({role: 'button'});
+        let el = root.find({role: RoleType.BUTTON});
         let range = cursors.Range.fromNode(el);
         let o = new Output().withoutHints().withSpeechAndBraille(
             range, null, 'navigate');
@@ -264,7 +264,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', function() {
             ],
             o);
 
-        // TODO(dmazzoni/dtseng): Replace with a query.
+        // TODO(dtseng): Replace with a query.
         el = el.nextSibling.nextSibling.nextSibling;
         const prevRange = range;
         range = cursors.Range.fromNode(el);
@@ -627,8 +627,8 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     'graphicsSymbol',
     'suggestion',
   ]);
-  for (const key in Output.ROLE_INFO_) {
-    const value = Output.ROLE_INFO_[key];
+  for (const key in OutputRoleInfo) {
+    const value = OutputRoleInfo[key];
     if (value.msgId) {
       Msgs.getMsg(value.msgId);
       if (!kNoBrailleMessageRequired.has(key)) {
@@ -711,8 +711,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'LessVerboseAncestry', function() {
 
         // Different role; do read the exited ancestry here.
         assertEquals(
-            'inside|Exited Banner.|Navigation',
-            oWithPrevExit.speechOutputForTest.string_);
+            'inside|Navigation', oWithPrevExit.speechOutputForTest.string_);
       });
 });
 
@@ -818,7 +817,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'ComplexDiv', function() {
       <div><button>ok</button></div>
     `,
       function(root) {
-        const div = root.find({role: 'genericContainer'});
+        const div = root.find({role: RoleType.GENERIC_CONTAINER});
         const o = new Output().withSpeech(cursors.Range.fromNode(div));
         assertEquals('ok', o.speechOutputForTest.string_);
       });
@@ -872,23 +871,35 @@ TEST_F('ChromeVoxOutputE2ETest', 'BrailleAncestry', function() {
     <ul><li><a href="#">test</a></li></ul>
   `,
       function(root) {
-        const link = root.find({role: 'link'});
+        const link = root.find({role: RoleType.LINK});
         // The 'inlineTextBox' found from root would return the inlineTextBox of
         // the list marker. Here we want the link's inlineTextBox.
-        const text = link.find({role: 'inlineTextBox'});
-        const listItem = root.find({role: 'listItem'});
-        const list = root.find({role: 'list'});
-        const range = cursors.Range.fromNode(text);
-        const o = new Output().withBraille(range, null, 'navigate');
+        const text = link.find({role: RoleType.INLINE_TEXT_BOX});
+        const listItem = root.find({role: RoleType.LIST_ITEM});
+        const list = root.find({role: RoleType.LIST});
+        let range = cursors.Range.fromNode(text);
+        let o = new Output().withBraille(range, null, 'navigate');
         checkBrailleOutput(
-            'test lnk lstitm lst +1',
+            'test lnk lstitm lst end',
             [
               {value: new OutputNodeSpan(text), start: 0, end: 4},
               {value: new OutputNodeSpan(link), start: 5, end: 8},
               {value: new OutputNodeSpan(listItem), start: 9, end: 15},
-              {value: new OutputNodeSpan(list), start: 16, end: 22}
+              {value: new OutputNodeSpan(list), start: 16, end: 23}
             ],
+            o);
 
+        // Now, test the "bullet" which comes before the above.
+        const bullet = root.find({role: RoleType.LIST_MARKER});
+        range = cursors.Range.fromNode(bullet);
+        o = new Output().withBraille(range, null, 'navigate');
+        checkBrailleOutput(
+            '\u2022 lstitm lst +1',
+            [
+              {value: new OutputNodeSpan(bullet), start: 0, end: 2},
+              {value: new OutputNodeSpan(listItem), start: 2, end: 8},
+              {value: new OutputNodeSpan(list), start: 9, end: 15}
+            ],
             o);
       });
 });
@@ -1176,7 +1187,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
   `,
 
       function(root) {
-        const lists = root.findAll({role: 'tree'});
+        const lists = root.findAll({role: RoleType.TREE});
         const outerList = lists[0];
         const innerList = lists[1];
 
@@ -1192,7 +1203,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
             startRange, cursors.Range.fromNode(outerList.children[0]),
             'navigate');
         assertEquals(
-            'wake up|Tree item| 1 of 3 | level 1 ',
+            'wake up|Tree item|Not selected| 1 of 3 | level 1 ',
             o.speechOutputForTest.string_);
 
         el = outerList.children[2];
@@ -1201,7 +1212,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
             startRange, cursors.Range.fromNode(outerList.children[0]),
             'navigate');
         assertEquals(
-            'drink coffee|Tree item| 2 of 3 | level 1 ',
+            'drink coffee|Tree item|Not selected| 2 of 3 | level 1 ',
             o.speechOutputForTest.string_);
 
         el = outerList.children[3];
@@ -1210,7 +1221,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
             startRange, cursors.Range.fromNode(outerList.children[0]),
             'navigate');
         assertEquals(
-            'cook dinner|Tree item| 3 of 3 | level 1 ',
+            'cook dinner|Tree item|Not selected| 3 of 3 | level 1 ',
             o.speechOutputForTest.string_);
 
         el = innerList.children[0];
@@ -1226,7 +1237,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
             startRange, cursors.Range.fromNode(innerList.children[0]),
             'navigate');
         assertEquals(
-            'meeting|Tree item| 1 of 2 | level 2 ',
+            'meeting|Tree item|Not selected| 1 of 2 | level 2 ',
             o.speechOutputForTest.string_);
 
         el = innerList.children[2];
@@ -1235,7 +1246,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
             startRange, cursors.Range.fromNode(innerList.children[0]),
             'navigate');
         assertEquals(
-            'lunch|Tree item| 2 of 2 | level 2 ',
+            'lunch|Tree item|Not selected| 2 of 2 | level 2 ',
             o.speechOutputForTest.string_);
       });
 });
@@ -1481,5 +1492,27 @@ TEST_F('ChromeVoxOutputE2ETest', 'ARCCustomAction', function() {
           {value: {delay: true}, start: 5, end: 51}
         ],
         o);
+  });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'ContextOrder', function() {
+  this.resetContextualOutput();
+  this.runWithLoadedTree('<p>test</p><div role="menu">a</div>', function(root) {
+    let o = new Output().withSpeech(cursors.Range.fromNode(root));
+    assertEquals('last', o.contextOrder_);
+
+    const p = root.find({role: RoleType.PARAGRAPH});
+    const menu = root.find({role: RoleType.MENU});
+    o = new Output().withSpeech(
+        cursors.Range.fromNode(p), cursors.Range.fromNode(menu));
+    assertEquals('last', o.contextOrder_);
+
+    o = new Output().withSpeech(
+        cursors.Range.fromNode(menu), cursors.Range.fromNode(p));
+    assertEquals('first', o.contextOrder_);
+
+    o = new Output().withSpeech(
+        cursors.Range.fromNode(menu.firstChild), cursors.Range.fromNode(p));
+    assertEquals('first', o.contextOrder_);
   });
 });

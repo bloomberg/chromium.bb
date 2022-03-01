@@ -17,7 +17,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/blockd.h"
@@ -33,7 +32,7 @@ namespace {
 
 class AV1SubtractBlockTest : public ::testing::TestWithParam<SubtractFunc> {
  public:
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 };
 
 using libaom_test::ACMRandom;

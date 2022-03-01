@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kTemplatePropertyData[] = {
-    {XFA_Element::Uri, 1, 0},       {XFA_Element::Xsl, 1, 0},
-    {XFA_Element::StartPage, 1, 0}, {XFA_Element::Relevant, 1, 0},
-    {XFA_Element::Base, 1, 0},      {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Uri, 1, {}},       {XFA_Element::Xsl, 1, {}},
+    {XFA_Element::StartPage, 1, {}}, {XFA_Element::Relevant, 1, {}},
+    {XFA_Element::Base, 1, {}},      {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kTemplateAttributeData[] = {
@@ -27,16 +27,16 @@ const CXFA_Node::AttributeData kTemplateAttributeData[] = {
 }  // namespace
 
 CXFA_Template::CXFA_Template(CXFA_Document* doc, XFA_PacketType packet)
-    : CXFA_Node(
-          doc,
-          packet,
-          (XFA_XDPPACKET_Config | XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
-          XFA_ObjectType::ModelNode,
-          XFA_Element::Template,
-          kTemplatePropertyData,
-          kTemplateAttributeData,
-          cppgc::MakeGarbageCollected<CJX_Template>(
-              doc->GetHeap()->GetAllocationHandle(),
-              this)) {}
+    : CXFA_Node(doc,
+                packet,
+                {XFA_XDPPACKET::kConfig, XFA_XDPPACKET::kTemplate,
+                 XFA_XDPPACKET::kForm},
+                XFA_ObjectType::ModelNode,
+                XFA_Element::Template,
+                kTemplatePropertyData,
+                kTemplateAttributeData,
+                cppgc::MakeGarbageCollected<CJX_Template>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Template::~CXFA_Template() = default;

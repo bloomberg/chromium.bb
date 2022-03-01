@@ -7,14 +7,48 @@
 #include <pointer-gestures-unstable-v1-client-protocol.h>
 #include <wayland-util.h>
 
+#include "base/logging.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
+
+namespace {
+constexpr uint32_t kMinVersion = 1;
+}
+
+// static
+constexpr char WaylandZwpPointerGestures::kInterfaceName[];
+
+// static
+void WaylandZwpPointerGestures::Instantiate(WaylandConnection* connection,
+                                            wl_registry* registry,
+                                            uint32_t name,
+                                            const std::string& interface,
+                                            uint32_t version) {
+  DCHECK_EQ(interface, kInterfaceName);
+
+  if (connection->wayland_zwp_pointer_gestures_ ||
+      !wl::CanBind(interface, version, kMinVersion, kMinVersion)) {
+    return;
+  }
+
+  auto zwp_pointer_gestures_v1 =
+      wl::Bind<struct zwp_pointer_gestures_v1>(registry, name, kMinVersion);
+  if (!zwp_pointer_gestures_v1) {
+    LOG(ERROR) << "Failed to bind wp_pointer_gestures_v1";
+    return;
+  }
+  connection->wayland_zwp_pointer_gestures_ =
+      std::make_unique<WaylandZwpPointerGestures>(
+          zwp_pointer_gestures_v1.release(), connection,
+          connection->event_source());
+}
 
 WaylandZwpPointerGestures::WaylandZwpPointerGestures(
     zwp_pointer_gestures_v1* pointer_gestures,
@@ -34,7 +68,7 @@ void WaylandZwpPointerGestures::Init() {
   pinch_.reset(zwp_pointer_gestures_v1_get_pinch_gesture(
       obj_.get(), connection_->pointer()->wl_object()));
 
-  static const zwp_pointer_gesture_pinch_v1_listener
+  static constexpr zwp_pointer_gesture_pinch_v1_listener
       zwp_pointer_gesture_pinch_v1_listener = {
           &WaylandZwpPointerGestures::OnPinchBegin,
           &WaylandZwpPointerGestures::OnPinchUpdate,
@@ -54,8 +88,7 @@ void WaylandZwpPointerGestures::OnPinchBegin(
     uint32_t fingers) {
   auto* thiz = static_cast<WaylandZwpPointerGestures*>(data);
 
-  base::TimeTicks timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
+  base::TimeTicks timestamp = base::TimeTicks() + base::Milliseconds(time);
 
   thiz->delegate_->OnPinchEvent(ET_GESTURE_PINCH_BEGIN,
                                 gfx::Vector2dF() /*delta*/, timestamp,
@@ -73,10 +106,10 @@ void WaylandZwpPointerGestures::OnPinchUpdate(
     wl_fixed_t rotation) {
   auto* thiz = static_cast<WaylandZwpPointerGestures*>(data);
 
-  base::TimeTicks timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
+  base::TimeTicks timestamp = base::TimeTicks() + base::Milliseconds(time);
 
-  gfx::Vector2dF delta = {wl_fixed_to_double(dx), wl_fixed_to_double(dy)};
+  gfx::Vector2dF delta = {static_cast<float>(wl_fixed_to_double(dx)),
+                          static_cast<float>(wl_fixed_to_double(dy))};
   thiz->delegate_->OnPinchEvent(ET_GESTURE_PINCH_UPDATE, delta, timestamp,
                                 thiz->obj_.id(), wl_fixed_to_double(scale));
 }
@@ -89,8 +122,7 @@ void WaylandZwpPointerGestures::OnPinchEnd(
     int32_t cancelled) {
   auto* thiz = static_cast<WaylandZwpPointerGestures*>(data);
 
-  base::TimeTicks timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
+  base::TimeTicks timestamp = base::TimeTicks() + base::Milliseconds(time);
 
   thiz->delegate_->OnPinchEvent(ET_GESTURE_PINCH_END,
                                 gfx::Vector2dF() /*delta*/, timestamp,

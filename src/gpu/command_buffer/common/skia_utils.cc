@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -30,6 +31,9 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
         share_group_tracing_guid_(share_group_tracing_guid),
         tracing_process_id_(base::trace_event::MemoryDumpManager::GetInstance()
                                 ->GetTracingProcessId()) {}
+
+  SkiaGpuTraceMemoryDump(const SkiaGpuTraceMemoryDump&) = delete;
+  SkiaGpuTraceMemoryDump& operator=(const SkiaGpuTraceMemoryDump&) = delete;
 
   ~SkiaGpuTraceMemoryDump() override = default;
 
@@ -126,11 +130,9 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     return dump;
   }
 
-  base::trace_event::ProcessMemoryDump* pmd_;
+  raw_ptr<base::trace_event::ProcessMemoryDump> pmd_;
   absl::optional<uint64_t> share_group_tracing_guid_;
   uint64_t tracing_process_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaGpuTraceMemoryDump);
 };
 
 }  // namespace

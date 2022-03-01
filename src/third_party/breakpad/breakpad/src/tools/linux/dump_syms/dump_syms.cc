@@ -50,6 +50,7 @@ int usage(const char* self) {
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "  -i:         Output module header information only.\n");
   fprintf(stderr, "  -c          Do not generate CFI section\n");
+  fprintf(stderr, "  -d          Generate INLINE/INLINE_ORIGIN records\n");
   fprintf(stderr, "  -r          Do not handle inter-compilation "
                                  "unit references\n");
   fprintf(stderr, "  -v          Print all warnings to stderr\n");
@@ -64,6 +65,7 @@ int main(int argc, char** argv) {
     return usage(argv[0]);
   bool header_only = false;
   bool cfi = true;
+  bool handle_inlines = false;
   bool handle_inter_cu_refs = true;
   bool log_to_stderr = false;
   std::string obj_name;
@@ -75,6 +77,8 @@ int main(int argc, char** argv) {
       header_only = true;
     } else if (strcmp("-c", argv[arg_index]) == 0) {
       cfi = false;
+    } else if (strcmp("-d", argv[arg_index]) == 0) {
+      handle_inlines = true;
     } else if (strcmp("-r", argv[arg_index]) == 0) {
       handle_inter_cu_refs = false;
     } else if (strcmp("-v", argv[arg_index]) == 0) {
@@ -127,7 +131,8 @@ int main(int argc, char** argv) {
       return 1;
     }
   } else {
-    SymbolData symbol_data = cfi ? ALL_SYMBOL_DATA : NO_CFI;
+    SymbolData symbol_data = (handle_inlines ? INLINES : NO_DATA) |
+                             (cfi ? CFI : NO_DATA) | SYMBOLS_AND_FILES;
     google_breakpad::DumpOptions options(symbol_data, handle_inter_cu_refs);
     if (!WriteSymbolFile(binary, obj_name, obj_os, debug_dirs, options,
                          std::cout)) {

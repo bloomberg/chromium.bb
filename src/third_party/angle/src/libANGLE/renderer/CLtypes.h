@@ -10,14 +10,20 @@
 
 #include "libANGLE/CLtypes.h"
 
-#include "common/angleutils.h"
-
 namespace rx
 {
 
+class CLCommandQueueImpl;
 class CLContextImpl;
 class CLDeviceImpl;
+class CLEventImpl;
+class CLKernelImpl;
+class CLMemoryImpl;
 class CLPlatformImpl;
+class CLProgramImpl;
+class CLSamplerImpl;
+
+struct CLExtensions;
 
 using NameVersionVector = std::vector<cl_name_version>;
 

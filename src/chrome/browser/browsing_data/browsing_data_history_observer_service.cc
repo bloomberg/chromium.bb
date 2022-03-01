@@ -16,6 +16,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 #if defined(OS_ANDROID)
@@ -54,7 +55,7 @@ base::flat_set<GURL> GetDeletedOrigins(
 
 bool Contains(const base::flat_set<GURL>& deleted_origins,
               const GURL& template_gurl) {
-  return deleted_origins.contains(template_gurl.GetOrigin());
+  return deleted_origins.contains(template_gurl.DeprecatedGetOriginAsURL());
 }
 
 void DeleteTemplateUrlsForTimeRange(TemplateURLService* keywords_model,
@@ -197,7 +198,7 @@ void BrowsingDataHistoryObserverService::OnURLsDeleted(
       TemplateURLServiceFactory::GetForProfile(profile_);
 
   content::StoragePartition* storage_partition =
-      storage_partition_for_testing_ ? storage_partition_for_testing_
+      storage_partition_for_testing_ ? storage_partition_for_testing_.get()
                                      : profile_->GetDefaultStoragePartition();
 
   if (deletion_info.time_range().IsValid()) {

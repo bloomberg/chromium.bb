@@ -74,7 +74,7 @@
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
@@ -222,7 +222,7 @@ AudioDestinationNode* BaseAudioContext::destination() const {
 void BaseAudioContext::WarnIfContextClosed(const AudioHandler* handler) const {
   DCHECK(handler);
 
-  if (IsContextClosed() && GetDocument()) {
+  if (IsContextCleared() && GetDocument()) {
     GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
@@ -232,7 +232,7 @@ void BaseAudioContext::WarnIfContextClosed(const AudioHandler* handler) const {
 }
 
 void BaseAudioContext::WarnForConnectionIfContextClosed() const {
-  if (IsContextClosed() && GetDocument()) {
+  if (IsContextCleared() && GetDocument()) {
     GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
@@ -272,7 +272,7 @@ AudioBuffer* BaseAudioContext::createBuffer(uint32_t number_of_channels,
     // the histogram, we multiply the ratio by 100 and round to the nearest
     // integer.  If the context is closed, don't record this because we
     // don't have a sample rate for closed context.
-    if (!IsContextClosed()) {
+    if (!IsContextCleared()) {
       // The limits are choosen from 100*(3000/384000) = 0.78125 and
       // 100*(384000/3000) = 12800, where 3000 and 384000 are the current
       // min and max sample rates possible for an AudioBuffer.  The number
@@ -860,7 +860,10 @@ void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
   DCHECK(!IsMainThread());
 
   if (TryLock()) {
-    if (audio_worklet_thread_) {
+    // Even when |audio_worklet_thread_| is successfully assigned, the current
+    // render thread could still be a thread of AudioOutputDevice.  Updates the
+    // the global scope only when the thread affinity is correct.
+    if (audio_worklet_thread_ && audio_worklet_thread_->IsCurrentThread()) {
       AudioWorkletGlobalScope* global_scope =
           To<AudioWorkletGlobalScope>(audio_worklet_thread_->GlobalScope());
       DCHECK(global_scope);

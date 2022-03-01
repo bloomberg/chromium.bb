@@ -6,6 +6,10 @@
 
 #include <string>
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/metrics/stability_metrics_manager.h"
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/mojom/auth.mojom.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -14,14 +18,17 @@
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/metrics/stability_metrics_manager.h"
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/mojom/auth.mojom.h"
 
 namespace arc {
 
 namespace {
+
+// Logs UMA enum values to facilitate finding feedback reports in Xamine.
+template <typename T>
+void LogStabilityUmaEnum(const std::string& name, T sample) {
+  base::UmaHistogramEnumeration(name, sample);
+  VLOG(1) << name << ": " << static_cast<std::underlying_type_t<T>>(sample);
+}
 
 ArcEnabledState ComputeEnabledState(bool enabled, const Profile* profile) {
   if (!IsArcAllowedForProfile(profile)) {
@@ -71,39 +78,43 @@ void UpdateOptInCancelUMA(OptInCancelReason reason) {
 }
 
 void UpdateOptInFlowResultUMA(OptInFlowResult result) {
-  base::UmaHistogramEnumeration("Arc.OptInResult", result);
+  LogStabilityUmaEnum("Arc.OptInResult", result);
+}
+
+void UpdateOptInNetworkErrorActionUMA(OptInNetworkErrorActionType type) {
+  base::UmaHistogramEnumeration("Arc.OptInNetworkErrorAction", type);
 }
 
 void UpdateProvisioningStatusUMA(ProvisioningStatus status,
                                  const Profile* profile) {
   DCHECK_NE(status, ProvisioningStatus::CHROME_SERVER_COMMUNICATION_ERROR);
-  base::UmaHistogramEnumeration(
+  LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Provisioning.Status", profile), status);
 }
 
 void UpdateCloudProvisionFlowErrorUMA(mojom::CloudProvisionFlowError error,
                                       const Profile* profile) {
-  base::UmaHistogramEnumeration(
+  LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Provisioning.CloudFlowError", profile),
       error);
 }
 
 void UpdateGMSSignInErrorUMA(mojom::GMSSignInError error,
                              const Profile* profile) {
-  base::UmaHistogramEnumeration(
+  LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Provisioning.SignInError", profile),
       error);
 }
 
 void UpdateGMSCheckInErrorUMA(mojom::GMSCheckInError error,
                               const Profile* profile) {
-  base::UmaHistogramEnumeration(
+  LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Provisioning.CheckInError", profile),
       error);
 }
 
 void UpdateSecondarySigninResultUMA(ProvisioningStatus status) {
-  base::UmaHistogramEnumeration("Arc.Secondary.Signin.Result", status);
+  LogStabilityUmaEnum("Arc.Secondary.Signin.Result", status);
 }
 
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
@@ -116,12 +127,12 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
   // here.
   base::UmaHistogramCustomTimes(
       GetHistogramNameByUserType(histogram_name, profile), elapsed_time,
-      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(6), 50);
+      base::Seconds(1), base::Minutes(6), 50);
 }
 
 void UpdateReauthorizationResultUMA(ProvisioningStatus status,
                                     const Profile* profile) {
-  base::UmaHistogramEnumeration(
+  LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Reauthorization.Result", profile),
       status);
 }
@@ -138,8 +149,7 @@ void UpdatePlayAutoInstallRequestTime(const base::TimeDelta& elapsed_time,
   base::UmaHistogramCustomTimes(
       GetHistogramNameByUserType("Arc.PlayAutoInstallRequest.TimeDelta",
                                  profile),
-      elapsed_time, base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromMinutes(10), 50);
+      elapsed_time, base::Seconds(1), base::Minutes(10), 50);
 }
 
 void UpdateArcUiAvailableTime(const base::TimeDelta& elapsed_time,
@@ -148,22 +158,19 @@ void UpdateArcUiAvailableTime(const base::TimeDelta& elapsed_time,
   base::UmaHistogramCustomTimes(
       GetHistogramNameByUserType("Arc.UiAvailable." + mode + ".TimeDelta",
                                  profile),
-      elapsed_time, base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromMinutes(5), 50);
+      elapsed_time, base::Seconds(1), base::Minutes(5), 50);
 }
 
 void UpdatePlayStoreLaunchTime(const base::TimeDelta& elapsed_time) {
   base::UmaHistogramCustomTimes("Arc.PlayStoreLaunch.TimeDelta", elapsed_time,
-                                base::TimeDelta::FromMilliseconds(10),
-                                base::TimeDelta::FromSeconds(20), 50);
+                                base::Milliseconds(10), base::Seconds(20), 50);
 }
 
 void UpdatePlayStoreShownTimeDeprecated(const base::TimeDelta& elapsed_time,
                                         const Profile* profile) {
   base::UmaHistogramCustomTimes(
       GetHistogramNameByUserType("Arc.PlayStoreShown.TimeDelta", profile),
-      elapsed_time, base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromMinutes(10), 50);
+      elapsed_time, base::Seconds(1), base::Minutes(10), 50);
 }
 
 void UpdateAuthTiming(const char* histogram_name,
@@ -171,8 +178,8 @@ void UpdateAuthTiming(const char* histogram_name,
                       const Profile* profile) {
   base::UmaHistogramCustomTimes(
       GetHistogramNameByUserType(histogram_name, profile), elapsed_time,
-      base::TimeDelta::FromSeconds(1) /* minimum */,
-      base::TimeDelta::FromMinutes(3) /* maximum */, 50 /* bucket_count */);
+      base::Seconds(1) /* minimum */, base::Minutes(3) /* maximum */,
+      50 /* bucket_count */);
 }
 
 void UpdateAuthCheckinAttempts(int32_t num_attempts, const Profile* profile) {
@@ -184,39 +191,55 @@ void UpdateAuthCheckinAttempts(int32_t num_attempts, const Profile* profile) {
 void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status,
                                   const Profile* profile) {
   DCHECK_LE(status, mojom::AccountCheckStatus::CHECK_FAILED);
-  base::UmaHistogramEnumeration(
+  LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Auth.AccountCheck.Status", profile),
       status);
+}
+
+void UpdateAndroidIdSource(mojom::AndroidIdSource source,
+                           const Profile* profile) {
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType("Arc.Auth.AndroidIdSource", profile), source);
+}
+
+void UpdateAuthCodeFetcherProxyBypassUMA(bool proxy_bypassed,
+                                         const Profile* profile) {
+  base::UmaHistogramBoolean(
+      GetHistogramNameByUserType("Arc.Auth.CodeFetcher.ProxyBypass", profile),
+      proxy_bypassed);
+}
+
+void UpdateAccountReauthReason(mojom::ReauthReason reason,
+                               const Profile* profile) {
+  LogStabilityUmaEnum(
+      GetHistogramNameByUserType("Arc.Auth.Reauth.Reason", profile), reason);
 }
 
 void UpdateMainAccountResolutionStatus(
     const Profile* profile,
     mojom::MainAccountResolutionStatus status) {
   DCHECK(mojom::IsKnownEnumValue(status));
-  base::UmaHistogramEnumeration(
-      GetHistogramNameByUserType("Arc.Auth.MainAccountResolution.Status",
-                                 profile),
-      status);
+  LogStabilityUmaEnum(GetHistogramNameByUserType(
+                          "Arc.Auth.MainAccountResolution.Status", profile),
+                      status);
 }
 
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
-  base::UmaHistogramEnumeration("Arc.OptInSilentAuthCode", state);
+  LogStabilityUmaEnum("Arc.OptInSilentAuthCode", state);
 }
 
 // TODO(tantoshchuk): rename UMA histogram to "Arc.Management.Transition.Result"
 void UpdateSupervisionTransitionResultUMA(
     mojom::ManagementChangeStatus result) {
-  base::UmaHistogramEnumeration("Arc.Supervision.Transition.Result", result);
+  LogStabilityUmaEnum("Arc.Supervision.Transition.Result", result);
 }
 
 void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state) {
-  base::UmaHistogramEnumeration("Arc.OptInSilentAuthCode.Reauthorization",
-                                state);
+  LogStabilityUmaEnum("Arc.OptInSilentAuthCode.Reauthorization", state);
 }
 
 void UpdateSecondaryAccountSilentAuthCodeUMA(OptInSilentAuthCode state) {
-  base::UmaHistogramEnumeration("Arc.OptInSilentAuthCode.SecondaryAccount",
-                                state);
+  LogStabilityUmaEnum("Arc.OptInSilentAuthCode.SecondaryAccount", state);
 }
 
 ProvisioningStatus GetProvisioningStatus(

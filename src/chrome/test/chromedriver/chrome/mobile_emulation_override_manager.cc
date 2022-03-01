@@ -30,8 +30,7 @@ Status MobileEmulationOverrideManager::OnEvent(
     const std::string& method,
     const base::DictionaryValue& params) {
   if (method == "Page.frameNavigated") {
-    const base::Value* unused_value;
-    if (!params.Get("frame.parentId", &unused_value))
+    if (!params.FindPath("frame.parentId"))
       return ApplyOverrideIfNeeded();
   }
   return Status(kOk);
@@ -60,14 +59,14 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
   base::DictionaryValue params;
   params.SetInteger("width", overridden_device_metrics_->width);
   params.SetInteger("height", overridden_device_metrics_->height);
-  params.SetDouble("deviceScaleFactor",
-                   overridden_device_metrics_->device_scale_factor);
+  params.SetDoubleKey("deviceScaleFactor",
+                      overridden_device_metrics_->device_scale_factor);
   params.SetBoolean("mobile", overridden_device_metrics_->mobile);
   params.SetBoolean("fitWindow", overridden_device_metrics_->fit_window);
   params.SetBoolean("textAutosizing",
                     overridden_device_metrics_->text_autosizing);
-  params.SetDouble("fontScaleFactor",
-                   overridden_device_metrics_->font_scale_factor);
+  params.SetDoubleKey("fontScaleFactor",
+                      overridden_device_metrics_->font_scale_factor);
   Status status = client_->SendCommand("Page.setDeviceMetricsOverride", params);
   if (status.IsError())
     return status;

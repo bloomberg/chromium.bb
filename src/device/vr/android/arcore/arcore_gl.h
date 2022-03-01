@@ -11,10 +11,9 @@
 #include <vector>
 
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "device/vr/android/arcore/ar_compositor_frame_sink.h"
 #include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
@@ -94,6 +93,10 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                  public mojom::XRSessionController {
  public:
   explicit ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport);
+
+  ArCoreGl(const ArCoreGl&) = delete;
+  ArCoreGl& operator=(const ArCoreGl&) = delete;
+
   ~ArCoreGl() override;
 
   void Initialize(
@@ -416,7 +419,6 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   // Must be last.
   base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ArCoreGl);
 };
 
 }  // namespace device

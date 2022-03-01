@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/history/core/browser/browsing_history_driver.h"
 #include "components/history/core/browser/browsing_history_service.h"
@@ -26,6 +25,10 @@ class IOSBrowsingHistoryDriver : public history::BrowsingHistoryDriver {
  public:
   IOSBrowsingHistoryDriver(ChromeBrowserState* browser_state,
                            id<HistoryConsumer> consumer);
+
+  IOSBrowsingHistoryDriver(const IOSBrowsingHistoryDriver&) = delete;
+  IOSBrowsingHistoryDriver& operator=(const IOSBrowsingHistoryDriver&) = delete;
+
   ~IOSBrowsingHistoryDriver() override;
 
  private:
@@ -55,8 +58,6 @@ class IOSBrowsingHistoryDriver : public history::BrowsingHistoryDriver {
 
   // Consumer for IOSBrowsingHistoryDriver. Serves as client for HistoryService.
   __weak id<HistoryConsumer> consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSBrowsingHistoryDriver);
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_IOS_BROWSING_HISTORY_DRIVER_H_

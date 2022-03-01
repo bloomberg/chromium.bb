@@ -230,7 +230,8 @@ void UpdateOutLiveness(Bytecode bytecode, BytecodeLivenessState* out_liveness,
     int target_offset = iterator.GetJumpTargetOffset();
     out_liveness->Union(*liveness_map.GetInLiveness(target_offset));
   } else if (Bytecodes::IsSwitch(bytecode)) {
-    for (const auto& entry : iterator.GetJumpTableTargetOffsets()) {
+    for (interpreter::JumpTableTargetOffset entry :
+         iterator.GetJumpTableTargetOffsets()) {
       out_liveness->Union(*liveness_map.GetInLiveness(entry.target_offset));
     }
   }
@@ -530,7 +531,8 @@ void BytecodeAnalysis::Analyze() {
         liveness_map().GetLiveness(current_offset);
 
     bool any_changed = false;
-    for (const auto& entry : iterator.GetJumpTableTargetOffsets()) {
+    for (interpreter::JumpTableTargetOffset entry :
+         iterator.GetJumpTableTargetOffsets()) {
       if (switch_liveness.out->UnionIsChanged(
               *liveness_map().GetInLiveness(entry.target_offset))) {
         any_changed = true;
@@ -546,9 +548,8 @@ void BytecodeAnalysis::Analyze() {
       next_bytecode_in_liveness = switch_liveness.in;
       for (--iterator; iterator.IsValid(); --iterator) {
         Bytecode bytecode = iterator.current_bytecode();
-        int current_offset = iterator.current_offset();
         BytecodeLiveness const& liveness =
-            liveness_map().GetLiveness(current_offset);
+            liveness_map().GetLiveness(iterator.current_offset());
 
         // There shouldn't be any more loops.
         DCHECK_NE(bytecode, Bytecode::kJumpLoop);
@@ -713,7 +714,7 @@ bool BytecodeAnalysis::ResumeJumpTargetsAreValid() {
 
   // First collect all required suspend ids.
   std::map<int, int> unresolved_suspend_ids;
-  for (const interpreter::JumpTableTargetOffset& offset :
+  for (interpreter::JumpTableTargetOffset offset :
        iterator.GetJumpTableTargetOffsets()) {
     int suspend_id = offset.case_value;
     int resume_offset = offset.target_offset;

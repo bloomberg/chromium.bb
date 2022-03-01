@@ -21,7 +21,6 @@
 
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 
 #include "libswscale/swscale.h"
@@ -68,8 +67,8 @@ static void check_yuv2yuvX(void)
 #define FILTER_SIZES 4
     static const int filter_sizes[FILTER_SIZES] = {1, 4, 8, 16};
 #define LARGEST_INPUT_SIZE 512
-#define INPUT_SIZES 4
-    static const int input_sizes[INPUT_SIZES] = {128, 144, 256, 512};
+#define INPUT_SIZES 6
+    static const int input_sizes[INPUT_SIZES] = {8, 24, 128, 144, 256, 512};
 
     declare_func_emms(AV_CPU_FLAG_MMX, void, const int16_t *filter,
                       int filterSize, const int16_t **src, uint8_t *dest,
@@ -93,7 +92,7 @@ static void check_yuv2yuvX(void)
     if (sws_init_context(ctx, NULL, NULL) < 0)
         fail();
 
-    ff_getSwsFunc(ctx);
+    ff_sws_init_scale(ctx);
     for(isi = 0; isi < INPUT_SIZES; ++isi){
         dstW = input_sizes[isi];
         for(osi = 0; osi < 64; osi += 16){
@@ -107,7 +106,7 @@ static void check_yuv2yuvX(void)
                     for(j = 0; j < 4; ++j)
                         vFilterData[i].coeff[j + 4] = filter_coeff[i];
                 }
-                if (check_func(ctx->yuv2planeX, "yuv2yuvX_%d_%d", filter_sizes[fsi], osi)){
+                if (check_func(ctx->yuv2planeX, "yuv2yuvX_%d_%d_%d", filter_sizes[fsi], osi, dstW)){
                     memset(dst0, 0, LARGEST_INPUT_SIZE * sizeof(dst0[0]));
                     memset(dst1, 0, LARGEST_INPUT_SIZE * sizeof(dst1[0]));
 
@@ -210,7 +209,7 @@ static void check_hscale(void)
 
                 filter[SRC_PIXELS * width + i] = rnd();
             }
-            ff_getSwsFunc(ctx);
+            ff_sws_init_scale(ctx);
 
             if (check_func(ctx->hcScale, "hscale_%d_to_%d_width%d", ctx->srcBpc, ctx->dstBpc + 1, width)) {
                 memset(dst0, 0, SRC_PIXELS * sizeof(dst0[0]));

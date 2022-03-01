@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace blink {
 
@@ -81,8 +82,8 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  IntPoint local = RoundedIntPoint(box->AbsoluteToLocalFloatPoint(
-      FloatPoint(mouse_event->AbsoluteLocation())));
+  gfx::Point local = gfx::ToRoundedPoint(
+      box->AbsoluteToLocalPoint(gfx::PointF(mouse_event->AbsoluteLocation())));
   if (mouse_event->type() == event_type_names::kMousedown &&
       mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
@@ -115,7 +116,7 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
     ReleaseCapture();
   } else if (event.type() == event_type_names::kMousemove) {
       UpDownState old_up_down_state = up_down_state_;
-      up_down_state_ = (local.Y() < box->Size().Height() / 2) ? kUp : kDown;
+      up_down_state_ = (local.y() < box->Size().Height() / 2) ? kUp : kDown;
       if (up_down_state_ != old_up_down_state) {
         GetLayoutObject()->SetShouldDoFullPaintInvalidation();
       }
@@ -146,7 +147,7 @@ void SpinButtonElement::ForwardEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-bool SpinButtonElement::WillRespondToMouseMoveEvents() {
+bool SpinButtonElement::WillRespondToMouseMoveEvents() const {
   if (GetLayoutBox() && ShouldRespondToMouseEvents())
     return true;
 
@@ -216,7 +217,7 @@ void SpinButtonElement::RepeatingTimerFired(TimerBase*) {
     Step(up_down_state_ == kUp ? 1 : -1);
 }
 
-bool SpinButtonElement::ShouldRespondToMouseEvents() {
+bool SpinButtonElement::ShouldRespondToMouseEvents() const {
   return !spin_button_owner_ ||
          spin_button_owner_->ShouldSpinButtonRespondToMouseEvents();
 }

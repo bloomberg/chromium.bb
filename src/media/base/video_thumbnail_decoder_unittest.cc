@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
@@ -39,9 +40,10 @@ class VideoThumbnailDecoderTest : public testing::Test {
     auto mock_video_decoder = std::make_unique<MockVideoDecoder>();
     mock_video_decoder_ = mock_video_decoder.get();
     VideoDecoderConfig valid_config(
-        kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
-        VideoColorSpace(), kNoTransformation, gfx::Size(1, 1), gfx::Rect(1, 1),
-        gfx::Size(1, 1), EmptyExtraData(), EncryptionScheme::kUnencrypted);
+        VideoCodec::kVP8, VP8PROFILE_ANY,
+        VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace(),
+        kNoTransformation, gfx::Size(1, 1), gfx::Rect(1, 1), gfx::Size(1, 1),
+        EmptyExtraData(), EncryptionScheme::kUnencrypted);
 
     thumbnail_decoder_ = std::make_unique<VideoThumbnailDecoder>(
         std::move(mock_video_decoder), valid_config, std::vector<uint8_t>{0u});
@@ -74,7 +76,7 @@ class VideoThumbnailDecoderTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
 
-  MockVideoDecoder* mock_video_decoder_;
+  raw_ptr<MockVideoDecoder> mock_video_decoder_;
   std::unique_ptr<VideoThumbnailDecoder> thumbnail_decoder_;
 
   // The video frame returned from the thumbnail decoder.

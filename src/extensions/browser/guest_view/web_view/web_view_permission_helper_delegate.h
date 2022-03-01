@@ -5,9 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_DELEGATE_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_DELEGATE_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
@@ -15,11 +14,17 @@ namespace extensions {
 
 // A delegate class of WebViewPermissionHelper to request permissions that are
 // not a part of extensions.
-class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
+class WebViewPermissionHelperDelegate {
  public:
   explicit WebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper);
-  ~WebViewPermissionHelperDelegate() override;
+
+  WebViewPermissionHelperDelegate(const WebViewPermissionHelperDelegate&) =
+      delete;
+  WebViewPermissionHelperDelegate& operator=(
+      const WebViewPermissionHelperDelegate&) = delete;
+
+  virtual ~WebViewPermissionHelperDelegate();
 
   virtual void CanDownload(const GURL& url,
                            const std::string& request_method,
@@ -63,9 +68,7 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
   }
 
  private:
-  WebViewPermissionHelper* const web_view_permission_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewPermissionHelperDelegate);
+  const raw_ptr<WebViewPermissionHelper> web_view_permission_helper_;
 };
 
 }  // namespace extensions

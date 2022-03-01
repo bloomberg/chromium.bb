@@ -5,21 +5,30 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOCUMENT_TRANSITION_DOCUMENT_TRANSITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOCUMENT_TRANSITION_DOCUMENT_TRANSITION_H_
 
-#include "cc/document_transition/document_transition_request.h"
+#include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_container_element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
+
+namespace cc {
+class DocumentTransitionRequest;
+}
 
 namespace blink {
 
+class AbortSignal;
 class Document;
 class DocumentTransitionPrepareOptions;
 class DocumentTransitionStartOptions;
+class Element;
+class ExceptionState;
+class ScriptPromise;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class CORE_EXPORT DocumentTransition
@@ -56,14 +65,23 @@ class CORE_EXPORT DocumentTransition
   // Returns true if the given element is active in this transition.
   bool IsActiveElement(const Element*) const;
 
-  // Returns an identifier for the given shared element. Note that the element
-  // must be active (i.e. `IsActive(element)` must be true).
-  DocumentTransitionSharedElementId GetSharedElementId(const Element*) const;
+  // Populates |shared_element_id| and |resource_id| with identifiers for the
+  // shared element. Note that the element must be active (i.e.
+  // `IsActive(element)` must be true).
+  void PopulateSharedElementAndResourceId(
+      const Element*,
+      DocumentTransitionSharedElementId* shared_element_id,
+      viz::SharedElementResourceId* resource_id) const;
 
   // We require shared elements to be contained. This check verifies that and
   // removes it from the shared list if it isn't. See
   // https://github.com/vmpstr/shared-element-transitions/issues/17
   void VerifySharedElements();
+
+  // Updates the transform on |transition_elements_| to be consistent with the
+  // post layout transform on shared elements. This must be called with a clean
+  // layout.
+  void UpdateTransforms();
 
  private:
   friend class DocumentTransitionTest;
@@ -80,12 +98,24 @@ class CORE_EXPORT DocumentTransition
   void SetActiveSharedElements(HeapVector<Member<Element>> elements);
   void InvalidateActiveElements();
 
+  // Used to defer visual updates between transition prepare finishing and
+  // transition start to allow the page to set up the final scene
+  // asynchronously.
+  void StartDeferringCommits();
+  void StopDeferringCommits();
+
+  // Allow canceling a transition until it reaches start().
+  void CancelPendingTransition(const char* abort_message);
+
+  void Abort(AbortSignal* signal);
+
   Member<Document> document_;
 
   State state_ = State::kIdle;
 
   Member<ScriptPromiseResolver> prepare_promise_resolver_;
   Member<ScriptPromiseResolver> start_promise_resolver_;
+  Member<AbortSignal> signal_;
 
   // `active_shared_elements_` represents elements that are identified as shared
   // during the current step of the transition. Specifically, it represents
@@ -97,6 +127,10 @@ class CORE_EXPORT DocumentTransition
   // calls is the same.
   HeapVector<Member<Element>> active_shared_elements_;
   wtf_size_t prepare_shared_element_count_ = 0u;
+
+  // Created conditionally if renderer based SharedElementTransitions is
+  // enabled.
+  HeapVector<Member<DocumentTransitionContainerElement>> transition_elements_;
 
   std::unique_ptr<Request> pending_request_;
 
@@ -111,6 +145,8 @@ class CORE_EXPORT DocumentTransition
   // The document tag identifies the document to which this transition belongs.
   // It's unique among other local documents.
   uint32_t document_tag_ = 0u;
+
+  bool deferring_commits_ = false;
 };
 
 }  // namespace blink

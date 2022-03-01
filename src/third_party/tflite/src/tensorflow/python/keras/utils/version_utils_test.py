@@ -14,14 +14,9 @@
 # ==============================================================================
 """Tests for Keras utilities to split v1 and v2 classes."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
 
 import numpy as np
-import six
 
 from tensorflow.python import keras
 from tensorflow.python.framework import ops
@@ -133,8 +128,7 @@ class SplitUtilsTest(keras_parameterized.TestCase):
 
   def test_user_provided_metaclass(self):
 
-    @six.add_metaclass(abc.ABCMeta)
-    class AbstractModel(keras.Model):
+    class AbstractModel(keras.Model, metaclass=abc.ABCMeta):
 
       @abc.abstractmethod
       def call(self, inputs):
@@ -145,8 +139,8 @@ class SplitUtilsTest(keras_parameterized.TestCase):
       def call(self, inputs):
         return 2 * inputs
 
-    with self.assertRaisesRegexp(TypeError, 'instantiate abstract class'):
-      AbstractModel()
+    with self.assertRaisesRegex(TypeError, 'instantiate abstract class'):
+      AbstractModel()  # pylint: disable=abstract-class-instantiated
 
     model = MyModel()
     model_class = model.__class__.__bases__[0].__bases__[0]
@@ -181,7 +175,7 @@ class SplitUtilsTest(keras_parameterized.TestCase):
     model.compile('sgd', 'mse')
     x, y = np.ones((10, 10)), np.ones((10, 1))
     with ops.get_default_graph().as_default():
-      with self.assertRaisesRegexp(
+      with self.assertRaisesRegex(
           ValueError, 'instance was constructed with eager mode enabled'):
         model.fit(x, y, batch_size=2)
 

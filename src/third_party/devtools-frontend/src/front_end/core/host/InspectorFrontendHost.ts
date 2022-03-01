@@ -29,7 +29,6 @@
  */
 
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-/* eslint-disable rulesdir/no_underscored_properties */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import * as Common from '../common/common.js';
@@ -37,8 +36,8 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
-import type {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, ExtensionDescriptor, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult} from './InspectorFrontendHostAPI.js';
-import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';  // eslint-disable-line no-unused-vars
+import type {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventTypes, ExtensionDescriptor, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult, SyncInformation} from './InspectorFrontendHostAPI.js';
+import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
 
 const UIStrings = {
@@ -50,10 +49,15 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('core/host/InspectorFrontendHost.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+
+const MAX_RECORDED_HISTOGRAMS_SIZE = 100;
+
 export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
-  _urlsBeingSaved: Map<string, string[]>;
-  events!: Common.EventTarget.EventTarget;
-  _windowVisible?: boolean;
+  readonly #urlsBeingSaved: Map<string, string[]>;
+  events!: Common.EventTarget.EventTarget<EventTypes>;
+
+  recordedEnumeratedHistograms: {actionName: EnumeratedHistogram, actionCode: number}[] = [];
+  recordedPerformanceHistograms: {histogramName: string, duration: number}[] = [];
 
   constructor() {
     function stopEventPropagation(this: InspectorFrontendHostAPI, event: KeyboardEvent): void {
@@ -66,7 +70,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     document.addEventListener('keydown', event => {
       stopEventPropagation.call(this, (event as KeyboardEvent));
     }, true);
-    this._urlsBeingSaved = new Map();
+    this.#urlsBeingSaved = new Map();
   }
 
   platform(): string {
@@ -84,11 +88,9 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   bringToFront(): void {
-    this._windowVisible = true;
   }
 
   closeWindow(): void {
-    this._windowVisible = false;
   }
 
   setIsDocked(isDocked: boolean, callback: () => void): void {
@@ -141,17 +143,17 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   save(url: string, content: string, forceSaveAs: boolean): void {
-    let buffer = this._urlsBeingSaved.get(url);
+    let buffer = this.#urlsBeingSaved.get(url);
     if (!buffer) {
       buffer = [];
-      this._urlsBeingSaved.set(url, buffer);
+      this.#urlsBeingSaved.set(url, buffer);
     }
     buffer.push(content);
     this.events.dispatchEventToListeners(Events.SavedURL, {url, fileSystemPath: url});
   }
 
   append(url: string, content: string): void {
-    const buffer = this._urlsBeingSaved.get(url);
+    const buffer = this.#urlsBeingSaved.get(url);
     if (buffer) {
       buffer.push(content);
       this.events.dispatchEventToListeners(Events.AppendedToURL, url);
@@ -159,8 +161,8 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   close(url: string): void {
-    const buffer = this._urlsBeingSaved.get(url) || [];
-    this._urlsBeingSaved.delete(url);
+    const buffer = this.#urlsBeingSaved.get(url) || [];
+    this.#urlsBeingSaved.delete(url);
     let fileName = '';
 
     if (url) {
@@ -186,9 +188,17 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   recordEnumeratedHistogram(actionName: EnumeratedHistogram, actionCode: number, bucketSize: number): void {
+    if (this.recordedEnumeratedHistograms.length >= MAX_RECORDED_HISTOGRAMS_SIZE) {
+      this.recordedEnumeratedHistograms.shift();
+    }
+    this.recordedEnumeratedHistograms.push({actionName, actionCode});
   }
 
   recordPerformanceHistogram(histogramName: string, duration: number): void {
+    if (this.recordedPerformanceHistograms.length >= MAX_RECORDED_HISTOGRAMS_SIZE) {
+      this.recordedPerformanceHistograms.shift();
+    }
+    this.recordedPerformanceHistograms.push({histogramName, duration});
   }
 
   recordUserMetricsAction(umaName: string): void {
@@ -234,6 +244,9 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
         });
   }
 
+  registerPreference(name: string, options: {synced?: boolean}): void {
+  }
+
   getPreferences(callback: (arg0: {
                    [x: string]: string,
                  }) => void): void {
@@ -256,6 +269,13 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
 
   clearPreferences(): void {
     window.localStorage.clear();
+  }
+
+  getSyncInformation(callback: (arg0: SyncInformation) => void): void {
+    callback({
+      isSyncActive: false,
+      arePreferencesSynced: false,
+    });
   }
 
   upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void {
@@ -330,6 +350,10 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   setAddExtensionCallback(callback: (arg0: ExtensionDescriptor) => void): void {
     // Extensions are not supported in hosted mode.
   }
+
+  async initialTargetId(): Promise<string|null> {
+    return null;
+  }
 }
 
 // @ts-ignore Global injected by devtools-compatibility.js
@@ -337,47 +361,35 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
 export let InspectorFrontendHostInstance: InspectorFrontendHostStub = window.InspectorFrontendHost;
 
 class InspectorFrontendAPIImpl {
-  _debugFrontend: boolean;
-
   constructor() {
-    this._debugFrontend = (Boolean(Root.Runtime.Runtime.queryParam('debugFrontend'))) ||
-        // @ts-ignore Compatibility hacks
-        (window['InspectorTest'] && window['InspectorTest']['debugTest']);
-
     for (const descriptor of EventDescriptors) {
       // @ts-ignore Dispatcher magic
-      this[descriptor[1]] = this._dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
+      this[descriptor[1]] = this.dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
     }
   }
 
-  _dispatch(name: symbol, signature: string[], runOnceLoaded: boolean, ...params: string[]): void {
-    if (this._debugFrontend) {
-      setTimeout(() => innerDispatch(), 0);
-    } else {
-      innerDispatch();
-    }
-
-    function innerDispatch(): void {
-      // Single argument methods get dispatched with the param.
-      if (signature.length < 2) {
-        try {
-          InspectorFrontendHostInstance.events.dispatchEventToListeners(name, params[0]);
-        } catch (error) {
-          console.error(error + ' ' + error.stack);
-        }
-        return;
-      }
-      const data: {
-        [x: string]: string,
-      } = {};
-      for (let i = 0; i < signature.length; ++i) {
-        data[signature[i]] = params[i];
-      }
+  private dispatch(name: symbol, signature: string[], runOnceLoaded: boolean, ...params: string[]): void {
+    // Single argument methods get dispatched with the param.
+    if (signature.length < 2) {
       try {
-        InspectorFrontendHostInstance.events.dispatchEventToListeners(name, data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, params[0]);
       } catch (error) {
         console.error(error + ' ' + error.stack);
       }
+      return;
+    }
+    const data: {
+      [x: string]: string,
+    } = {};
+    for (let i = 0; i < signature.length; ++i) {
+      data[signature[i]] = params[i];
+    }
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, data);
+    } catch (error) {
+      console.error(error + ' ' + error.stack);
     }
   }
 

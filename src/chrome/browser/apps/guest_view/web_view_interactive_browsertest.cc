@@ -9,10 +9,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -318,12 +319,12 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
     guest_observer.Wait();
     content::Source<content::NavigationController> source =
         guest_observer.source();
-    EXPECT_TRUE(source->GetWebContents()
+    EXPECT_TRUE(source->DeprecatedGetWebContents()
                     ->GetMainFrame()
                     ->GetProcess()
                     ->IsForGuestsOnly());
 
-    guest_web_contents_ = source->GetWebContents();
+    guest_web_contents_ = source->DeprecatedGetWebContents();
     embedder_web_contents_ =
         GuestViewBase::FromWebContents(guest_web_contents_)->
             embedder_web_contents();
@@ -409,7 +410,7 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
           FROM_HERE,
           base::BindOnce(&PopupCreatedObserver::Wait, base::Unretained(this),
                          wait_retry_left),
-          base::TimeDelta::FromMilliseconds(200));
+          base::Milliseconds(200));
     }
 
     size_t CountWidgets() {
@@ -487,8 +488,8 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
 
  protected:
   TestGuestViewManagerFactory factory_;
-  content::WebContents* guest_web_contents_;
-  content::WebContents* embedder_web_contents_;
+  raw_ptr<content::WebContents> guest_web_contents_;
+  raw_ptr<content::WebContents> embedder_web_contents_;
   gfx::Point corner_;
   bool mouse_click_result_;
   bool first_click_;
@@ -1221,8 +1222,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, message_loop_runner->QuitClosure(),
-      base::TimeDelta::FromMilliseconds(200));
+      FROM_HERE, message_loop_runner->QuitClosure(), base::Milliseconds(200));
   message_loop_runner->Run();
 
   gfx::Rect guest_rect = guest_web_contents()->GetContainerBounds();
@@ -1242,8 +1242,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
   // Give enough time for the quick menu to fire.
   message_loop_runner = new content::MessageLoopRunner;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, message_loop_runner->QuitClosure(),
-      base::TimeDelta::FromMilliseconds(200));
+      FROM_HERE, message_loop_runner->QuitClosure(), base::Milliseconds(200));
   message_loop_runner->Run();
 
 // TODO: Fix quick menu opening on Windows.

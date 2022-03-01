@@ -155,7 +155,8 @@ inline uint64_t ReadUInt64(const uint8_t *data, uint8_t byte_width) {
   // constant, which here it isn't. Test if memcpy is still faster than
   // the conditionals in ReadSizedScalar. Can also use inline asm.
   // clang-format off
-  #if defined(_MSC_VER) && (defined(_M_X64) || defined _M_IX86)
+  #if defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
+  // This is 64-bit Windows only, __movsb does not work on 32-bit Windows.
     uint64_t u = 0;
     __movsb(reinterpret_cast<uint8_t *>(&u),
             reinterpret_cast<const uint8_t *>(data), byte_width);
@@ -850,6 +851,7 @@ inline Reference Map::operator[](const char *key) const {
     case 2: comp = KeyCompare<uint16_t>; break;
     case 4: comp = KeyCompare<uint32_t>; break;
     case 8: comp = KeyCompare<uint64_t>; break;
+    default: FLATBUFFERS_ASSERT(false); return Reference();
   }
   auto res = std::bsearch(key, keys.data_, keys.size(), keys.byte_width_, comp);
   if (!res) return Reference(nullptr, 1, NullPackedType());
@@ -872,7 +874,7 @@ inline Reference GetRoot(const uint8_t *buffer, size_t size) {
 }
 
 inline Reference GetRoot(const std::vector<uint8_t> &buffer) {
-  return GetRoot(flatbuffers::vector_data(buffer), buffer.size());
+  return GetRoot(buffer.data(), buffer.size());
 }
 
 // Flags that configure how the Builder behaves.
@@ -900,12 +902,18 @@ class Builder FLATBUFFERS_FINAL_CLASS {
           BuilderFlag flags = BUILDER_FLAG_SHARE_KEYS)
       : buf_(initial_size),
         finished_(false),
+        has_duplicate_keys_(false),
         flags_(flags),
         force_min_bit_width_(BIT_WIDTH_8),
         key_pool(KeyOffsetCompare(buf_)),
         string_pool(StringOffsetCompare(buf_)) {
     buf_.clear();
   }
+
+#ifdef FLATBUFFERS_DEFAULT_DECLARATION
+  Builder(Builder &&) = default;
+  Builder &operator=(Builder &&) = default;
+#endif
 
   /// @brief Get the serialized buffer (after you call `Finish()`).
   /// @return Returns a vector owned by this class.
@@ -1062,7 +1070,16 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     return CreateBlob(data, len, 0, FBT_BLOB);
   }
   size_t Blob(const std::vector<uint8_t> &v) {
-    return CreateBlob(flatbuffers::vector_data(v), v.size(), 0, FBT_BLOB);
+    return CreateBlob(v.data(), v.size(), 0, FBT_BLOB);
+  }
+
+  void Blob(const char *key, const void *data, size_t len) {
+    Key(key);
+    Blob(data, len);
+  }
+  void Blob(const char *key, const std::vector<uint8_t> &v) {
+    Key(key);
+    Blob(v);
   }
 
   // TODO(wvo): support all the FlexBuffer types (like flexbuffers::String),
@@ -1080,7 +1097,7 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     return stack_.size();
   }
 
-  // TODO(wvo): allow this to specify an aligment greater than the natural
+  // TODO(wvo): allow this to specify an alignment greater than the natural
   // alignment.
   size_t EndVector(size_t start, bool typed, bool fixed) {
     auto vec = CreateVector(start, stack_.size() - start, 1, typed, fixed);
@@ -1115,23 +1132,24 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     // step automatically when appliccable, and encourage people to write in
     // sorted fashion.
     // std::sort is typically already a lot faster on sorted data though.
-    auto dict =
-        reinterpret_cast<TwoValue *>(flatbuffers::vector_data(stack_) + start);
-    std::sort(dict, dict + len,
-              [&](const TwoValue &a, const TwoValue &b) -> bool {
-                auto as = reinterpret_cast<const char *>(
-                    flatbuffers::vector_data(buf_) + a.key.u_);
-                auto bs = reinterpret_cast<const char *>(
-                    flatbuffers::vector_data(buf_) + b.key.u_);
-                auto comp = strcmp(as, bs);
-                // If this assertion hits, you've added two keys with the same
-                // value to this map.
-                // TODO: Have to check for pointer equality, as some sort
-                // implementation apparently call this function with the same
-                // element?? Why?
-                FLATBUFFERS_ASSERT(comp || &a == &b);
-                return comp < 0;
-              });
+    auto dict = reinterpret_cast<TwoValue *>(stack_.data() + start);
+    std::sort(
+        dict, dict + len, [&](const TwoValue &a, const TwoValue &b) -> bool {
+          auto as = reinterpret_cast<const char *>(buf_.data() + a.key.u_);
+          auto bs = reinterpret_cast<const char *>(buf_.data() + b.key.u_);
+          auto comp = strcmp(as, bs);
+          // We want to disallow duplicate keys, since this results in a
+          // map where values cannot be found.
+          // But we can't assert here (since we don't want to fail on
+          // random JSON input) or have an error mechanism.
+          // Instead, we set has_duplicate_keys_ in the builder to
+          // signal this.
+          // TODO: Have to check for pointer equality, as some sort
+          // implementation apparently call this function with the same
+          // element?? Why?
+          if (!comp && &a != &b) has_duplicate_keys_ = true;
+          return comp < 0;
+        });
     // First create a vector out of all keys.
     // TODO(wvo): if kBuilderFlagShareKeyVectors is true, see if we can share
     // the first vector.
@@ -1142,6 +1160,10 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     stack_.push_back(vec);
     return static_cast<size_t>(vec.u_);
   }
+
+  // Call this after EndMap to see if the map had any duplicate keys.
+  // Any map with such keys won't be able to retrieve all values.
+  bool HasDuplicateKeys() const { return has_duplicate_keys_; }
 
   template<typename F> size_t Vector(F f) {
     auto start = StartVector();
@@ -1181,7 +1203,7 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     Vector(elems, len);
   }
   template<typename T> void Vector(const std::vector<T> &vec) {
-    Vector(flatbuffers::vector_data(vec), vec.size());
+    Vector(vec.data(), vec.size());
   }
 
   template<typename F> size_t TypedVector(F f) {
@@ -1256,7 +1278,7 @@ class Builder FLATBUFFERS_FINAL_CLASS {
   // auto id = builder.LastValue();  // Remember where we stored it.
   // .. more code goes here ..
   // builder.ReuseValue(id);  // Refers to same double by offset.
-  // LastValue works regardless of wether the value has a key or not.
+  // LastValue works regardless of whether the value has a key or not.
   // Works on any data type.
   struct Value;
   Value LastValue() { return stack_.back(); }
@@ -1383,12 +1405,10 @@ class Builder FLATBUFFERS_FINAL_CLASS {
 
   template<typename T> static Type GetScalarType() {
     static_assert(flatbuffers::is_scalar<T>::value, "Unrelated types");
-    return flatbuffers::is_floating_point<T>::value
-               ? FBT_FLOAT
-               : flatbuffers::is_same<T, bool>::value
-                     ? FBT_BOOL
-                     : (flatbuffers::is_unsigned<T>::value ? FBT_UINT
-                                                           : FBT_INT);
+    return flatbuffers::is_floating_point<T>::value ? FBT_FLOAT
+           : flatbuffers::is_same<T, bool>::value
+               ? FBT_BOOL
+               : (flatbuffers::is_unsigned<T>::value ? FBT_UINT : FBT_INT);
   }
 
  public:
@@ -1417,7 +1437,10 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     Value(uint64_t u, Type t, BitWidth bw)
         : u_(u), type_(t), min_bit_width_(bw) {}
 
-    Value(float f) : f_(f), type_(FBT_FLOAT), min_bit_width_(BIT_WIDTH_32) {}
+    Value(float f)
+        : f_(static_cast<double>(f)),
+          type_(FBT_FLOAT),
+          min_bit_width_(BIT_WIDTH_32) {}
     Value(double f) : f_(f), type_(FBT_FLOAT), min_bit_width_(WidthF(f)) {}
 
     uint8_t StoredPackedType(BitWidth parent_bit_width_ = BIT_WIDTH_8) const {
@@ -1522,7 +1545,8 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     Type vector_type = FBT_KEY;
     // Check bit widths and types for all elements.
     for (size_t i = start; i < stack_.size(); i += step) {
-      auto elem_width = stack_[i].ElemWidth(buf_.size(), i + prefix_elems);
+      auto elem_width =
+          stack_[i].ElemWidth(buf_.size(), i - start + prefix_elems);
       bit_width = (std::max)(bit_width, elem_width);
       if (typed) {
         if (i == start) {
@@ -1570,6 +1594,7 @@ class Builder FLATBUFFERS_FINAL_CLASS {
   std::vector<Value> stack_;
 
   bool finished_;
+  bool has_duplicate_keys_;
 
   BuilderFlag flags_;
 
@@ -1578,10 +1603,8 @@ class Builder FLATBUFFERS_FINAL_CLASS {
   struct KeyOffsetCompare {
     explicit KeyOffsetCompare(const std::vector<uint8_t> &buf) : buf_(&buf) {}
     bool operator()(size_t a, size_t b) const {
-      auto stra =
-          reinterpret_cast<const char *>(flatbuffers::vector_data(*buf_) + a);
-      auto strb =
-          reinterpret_cast<const char *>(flatbuffers::vector_data(*buf_) + b);
+      auto stra = reinterpret_cast<const char *>(buf_->data() + a);
+      auto strb = reinterpret_cast<const char *>(buf_->data() + b);
       return strcmp(stra, strb) < 0;
     }
     const std::vector<uint8_t> *buf_;
@@ -1592,10 +1615,8 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     explicit StringOffsetCompare(const std::vector<uint8_t> &buf)
         : buf_(&buf) {}
     bool operator()(const StringOffset &a, const StringOffset &b) const {
-      auto stra = reinterpret_cast<const char *>(
-          flatbuffers::vector_data(*buf_) + a.first);
-      auto strb = reinterpret_cast<const char *>(
-          flatbuffers::vector_data(*buf_) + b.first);
+      auto stra = reinterpret_cast<const char *>(buf_->data() + a.first);
+      auto strb = reinterpret_cast<const char *>(buf_->data() + b.first);
       return strncmp(stra, strb, (std::min)(a.second, b.second) + 1) < 0;
     }
     const std::vector<uint8_t> *buf_;

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,6 +39,12 @@ constexpr char kExtensionId[] = "extensionid";
 class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
  public:
   SoundContentSettingObserverTest() = default;
+
+  SoundContentSettingObserverTest(const SoundContentSettingObserverTest&) =
+      delete;
+  SoundContentSettingObserverTest& operator=(
+      const SoundContentSettingObserverTest&) = delete;
+
   ~SoundContentSettingObserverTest() override = default;
 
   void SetUp() override {
@@ -97,10 +104,8 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
 #endif
 
  private:
-  HostContentSettingsMap* host_content_settings_map_;
+  raw_ptr<HostContentSettingsMap> host_content_settings_map_;
   std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(SoundContentSettingObserverTest);
 };
 
 TEST_F(SoundContentSettingObserverTest, AudioMutingUpdatesWithContentSetting) {

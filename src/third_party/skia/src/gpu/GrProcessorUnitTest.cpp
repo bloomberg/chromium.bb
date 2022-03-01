@@ -12,6 +12,7 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrSurfaceProxyView.h"
 
 #if GR_TEST_UTILS
 
@@ -146,7 +147,7 @@ SkTArray<GrXPFactoryTestFactory*, true>* GrXPFactoryTestFactory::GetFactories() 
  * we verify the count is as expected.  If a new factory is added, then these numbers must be
  * manually adjusted.
  */
-static constexpr int kFPFactoryCount = 34;
+static constexpr int kFPFactoryCount = 16;
 static constexpr int kGPFactoryCount = 14;
 static constexpr int kXPFactoryCount = 4;
 

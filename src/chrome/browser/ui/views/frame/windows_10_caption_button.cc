@@ -15,6 +15,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 
 Windows10CaptionButton::Windows10CaptionButton(
@@ -29,6 +30,7 @@ Windows10CaptionButton::Windows10CaptionButton(
   // Not focusable by default, only for accessibility.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetAccessibleName(accessible_name);
+  SetID(button_type);
 }
 
 gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
@@ -52,17 +54,14 @@ gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
 SkColor Windows10CaptionButton::GetBaseColor() const {
   // Get the theme's calculated custom control button background color
   // (as it takes into account images, etc).  If none is specified (likely when
-  // there is no theme active), fall back to the titlebar color.
+  // there is no theme active), the ThemeProvider will fall back to the titlebar
+  // color.
   const int control_button_bg_color_id =
       (frame_view_->ShouldPaintAsActive()
            ? ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE
            : ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE);
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  const bool has_custom_color =
-      theme_provider->HasCustomColor(control_button_bg_color_id);
-  const SkColor bg_color =
-      (has_custom_color ? theme_provider->GetColor(control_button_bg_color_id)
-                        : frame_view_->GetTitlebarColor());
+  const SkColor bg_color = theme_provider->GetColor(control_button_bg_color_id);
 
   return GlassBrowserFrameView::GetReadableFeatureColor(bg_color);
 }
@@ -144,16 +143,22 @@ int Windows10CaptionButton::GetBetweenButtonSpacing() const {
 
 int Windows10CaptionButton::GetButtonDisplayOrderIndex() const {
   int button_display_order = 0;
+  const bool tab_search_enabled =
+      WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(
+          frame_view_->browser_view()->browser());
   switch (button_type_) {
-    case VIEW_ID_MINIMIZE_BUTTON:
+    case VIEW_ID_TAB_SEARCH_BUTTON:
       button_display_order = 0;
+      break;
+    case VIEW_ID_MINIMIZE_BUTTON:
+      button_display_order = 0 + (tab_search_enabled ? 1 : 0);
       break;
     case VIEW_ID_MAXIMIZE_BUTTON:
     case VIEW_ID_RESTORE_BUTTON:
-      button_display_order = 1;
+      button_display_order = 1 + (tab_search_enabled ? 1 : 0);
       break;
     case VIEW_ID_CLOSE_BUTTON:
-      button_display_order = 2;
+      button_display_order = 2 + (tab_search_enabled ? 1 : 0);
       break;
     default:
       NOTREACHED();
@@ -161,8 +166,10 @@ int Windows10CaptionButton::GetButtonDisplayOrderIndex() const {
   }
 
   // Reverse the ordering if we're in RTL mode
-  if (base::i18n::IsRTL())
-    button_display_order = 2 - button_display_order;
+  if (base::i18n::IsRTL()) {
+    const int max_index = tab_search_enabled ? 3 : 2;
+    button_display_order = max_index - button_display_order;
+  }
 
   return button_display_order;
 }
@@ -259,6 +266,20 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
       path.lineTo(symbol_rect.right(), symbol_rect.bottom());
       path.moveTo(symbol_rect.right(), symbol_rect.y());
       path.lineTo(symbol_rect.x(), symbol_rect.bottom());
+      canvas->DrawPath(path, flags);
+      return;
+    }
+
+    case VIEW_ID_TAB_SEARCH_BUTTON: {
+      flags.setAntiAlias(true);
+      canvas->ClipRect(symbol_rect);
+      // The chevron should occupy the space between the upper and lower quarter
+      // of the `symbol_rect` bounds.
+      symbol_rect.Inset(0, symbol_rect.height() / 4);
+      SkPath path;
+      path.moveTo(gfx::PointToSkPoint(symbol_rect.origin()));
+      path.lineTo(gfx::PointToSkPoint(symbol_rect.bottom_center()));
+      path.lineTo(gfx::PointToSkPoint(symbol_rect.top_right()));
       canvas->DrawPath(path, flags);
       return;
     }

@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
@@ -48,6 +47,10 @@ class FakeCrosHealthdService final
   };
 
   FakeCrosHealthdService();
+
+  FakeCrosHealthdService(const FakeCrosHealthdService&) = delete;
+  FakeCrosHealthdService& operator=(const FakeCrosHealthdService&) = delete;
+
   ~FakeCrosHealthdService() override;
 
   // CrosHealthdServiceFactory overrides:
@@ -134,6 +137,10 @@ class FakeCrosHealthdService final
   void RunVideoConferencingRoutine(
       const absl::optional<std::string>& stun_server_hostname,
       RunVideoConferencingRoutineCallback callback) override;
+  void RunArcHttpRoutine(RunArcHttpRoutineCallback callback) override;
+  void RunArcPingRoutine(RunArcPingRoutineCallback callback) override;
+  void RunArcDnsResolutionRoutine(
+      RunArcDnsResolutionRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
   void AddBluetoothObserver(
@@ -147,6 +154,13 @@ class FakeCrosHealthdService final
       mojo::PendingRemote<
           chromeos::network_health::mojom::NetworkEventsObserver> observer)
       override;
+  void AddAudioObserver(
+      mojo::PendingRemote<mojom::CrosHealthdAudioObserver> observer) override;
+  void AddThunderboltObserver(
+      mojo::PendingRemote<mojom::CrosHealthdThunderboltObserver> observer)
+      override;
+  void AddUsbObserver(
+      mojo::PendingRemote<mojom::CrosHealthdUsbObserver> observer) override;
 
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(
@@ -226,6 +240,18 @@ class FakeCrosHealthdService final
   // Calls the lid event OnLidOpened for all registered lid observers.
   void EmitLidOpenedEventForTesting();
 
+  // Calls the audio event OnUnderrun for all registered audio observers.
+  void EmitAudioUnderrunEventForTesting();
+
+  // Calls the audio event OnSevereUnderrun for all registered audio observers.
+  void EmitAudioSevereUnderrunEventForTesting();
+
+  // Calls the Thunderbolt event OnAdd on all registered Thunderbolt observers.
+  void EmitThunderboltAddEventForTesting();
+
+  // Calls the USB event OnAdd on all registered USB observers.
+  void EmitUsbAddEventForTesting();
+
   // Calls the network event OnConnectionStateChangedEvent on all registered
   // network observers.
   void EmitConnectionStateChangedEventForTesting(
@@ -246,7 +272,10 @@ class FakeCrosHealthdService final
   // Calls the LanConnectivity routine on |network_diagnostics_routines_|.
   void RunLanConnectivityRoutineForTesting(
       chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
-          LanConnectivityCallback callback);
+          RunLanConnectivityCallback callback);
+
+  // Returns the last created routine by any Run*Routine method.
+  absl::optional<mojom::DiagnosticRoutineEnum> GetLastRunRoutine() const;
 
   // Returns the parameters passed for the most recent call to
   // `GetRoutineUpdate`.
@@ -255,6 +284,8 @@ class FakeCrosHealthdService final
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
+  // Used to store last created routine by any Run*Routine method.
+  absl::optional<mojom::DiagnosticRoutineEnum> last_run_routine_;
   // Used as the response to any RunSomeRoutine IPCs received.
   mojom::RunRoutineResponsePtr run_routine_response_{
       mojom::RunRoutineResponse::New()};
@@ -287,6 +318,12 @@ class FakeCrosHealthdService final
   // Collection of registered network observers.
   mojo::RemoteSet<chromeos::network_health::mojom::NetworkEventsObserver>
       network_observers_;
+  // Collection of registered audio observers.
+  mojo::RemoteSet<mojom::CrosHealthdAudioObserver> audio_observers_;
+  // Collection of registered Thunderbolt observers.
+  mojo::RemoteSet<mojom::CrosHealthdThunderboltObserver> thunderbolt_observers_;
+  // Collection of registered USB observers.
+  mojo::RemoteSet<mojom::CrosHealthdUsbObserver> usb_observers_;
 
   // Contains the most recent params passed to `GetRoutineUpdate`, if it has
   // been called.
@@ -298,11 +335,16 @@ class FakeCrosHealthdService final
       network_diagnostics_routines_;
 
   base::TimeDelta callback_delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdService);
 };
 
 }  // namespace cros_healthd
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+namespace cros_healthd {
+using ::chromeos::cros_healthd::FakeCrosHealthdService;
+}  // namespace cros_healthd
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_CROS_HEALTHD_FAKE_CROS_HEALTHD_SERVICE_H_

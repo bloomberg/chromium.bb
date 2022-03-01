@@ -9,22 +9,22 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
-#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/dcheck_is_on.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/ash/arc/accessibility/auto_complete_handler.h"
 #include "chrome/browser/ash/arc/accessibility/drawer_layout_handler.h"
-#include "components/exo/input_method_surface.h"
-#include "components/exo/wm_helper.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_tree_source_checker.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace arc {
 
+using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventData = mojom::AccessibilityEventData;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntProperty = mojom::AccessibilityIntProperty;
@@ -34,10 +34,13 @@ using AXWindowBooleanProperty = mojom::AccessibilityWindowBooleanProperty;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 
-AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
-    : current_tree_serializer_(new AXTreeArcSerializer(this)),
+// TODO(hirokisato): Enable AXTreeArcSerializer's |crash_on_error| once
+// Android becomes able to send reliable trees.
+AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate, aura::Window* window)
+    : current_tree_serializer_(new AXTreeArcSerializer(this, DCHECK_IS_ON())),
       is_notification_(false),
       is_input_method_window_(false),
+      window_(window),
       delegate_(delegate) {}
 
 AXTreeSourceArc::~AXTreeSourceArc() {
@@ -141,35 +144,6 @@ void AXTreeSourceArc::SerializeNode(AccessibilityInfoDataWrapper* info_data,
     itr->second->PostSerializeNode(out_data);
 }
 
-aura::Window* AXTreeSourceArc::GetWindow() const {
-  if (is_notification_) {
-    if (!notification_key_.has_value())
-      return nullptr;
-
-    auto* surface_manager = ash::ArcNotificationSurfaceManager::Get();
-    if (!surface_manager)
-      return nullptr;
-
-    ash::ArcNotificationSurface* surface =
-        surface_manager->GetArcSurface(notification_key_.value());
-    if (!surface)
-      return nullptr;
-
-    return surface->GetWindow();
-  } else if (is_input_method_window_) {
-    exo::InputMethodSurface* input_method_surface =
-        exo::InputMethodSurface::GetInputMethodSurface();
-    if (!input_method_surface)
-      return nullptr;
-
-    return input_method_surface->host_window();
-  } else if (exo::WMHelper::HasInstance()) {
-    // TODO(b/173658482): Support non-active windows.
-    return FindArcWindow(exo::WMHelper::GetInstance()->GetFocusedWindow());
-  }
-  return nullptr;
-}
-
 void AXTreeSourceArc::NotifyAccessibilityEventInternal(
     const AXEventData& event_data) {
   if (window_id_ != event_data.window_id) {
@@ -252,16 +226,18 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
       GetFromId(event_data.source_id), focused_node);
   event.id = event_data.source_id;
 
-  if (HasProperty(event_data.int_properties,
-                  arc::mojom::AccessibilityEventIntProperty::ACTION)) {
+  int event_from_action;
+  if (GetProperty(event_data.int_properties,
+                  arc::mojom::AccessibilityEventIntProperty::ACTION,
+                  &event_from_action)) {
     event.event_from = ax::mojom::EventFrom::kAction;
+
+    event.event_from_action = ConvertToChromeAction(
+        static_cast<mojom::AccessibilityActionType>(event_from_action));
   }
 
   events.push_back(std::move(event));
 
-  HandleLiveRegions(&events);
-
-  // Force the tree, to update, so unignored fields get updated.
   // On event type of WINDOW_STATE_CHANGED, update the entire tree so that
   // window location is correctly calculated.
   int32_t node_id_to_clear =
@@ -271,14 +247,39 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
 
   update_ids.push_back(node_id_to_clear);
 
-  std::vector<ui::AXTreeUpdate> updates;
-  for (const int32_t update_root : update_ids) {
-    ui::AXTreeUpdate update;
-    update.node_id_to_clear = update_root;
-    current_tree_serializer_->InvalidateSubtree(GetFromId(update_root));
-    current_tree_serializer_->SerializeChanges(GetFromId(update_root), &update);
+  {
+    // TODO(crbug/1211039): This block is added temporary to debug
+    // http://crbug/1211039. Once the issue is resolved, this block should be
+    // removed.
+    std::string error_string;
+    ui::AXTreeSourceChecker<AccessibilityInfoDataWrapper*> checker(this);
+    if (!checker.CheckAndGetErrorString(&error_string)) {
+      LOG(ERROR) << "Failed to validate the tree source\n"
+                 << "Event: " << events[0].ToString() << "\n"
+                 << "window size: " << event_data.window_data->size() << ", "
+                 << "node size: " << event_data.node_data.size() << "\n"
+                 << "Error: " << error_string;
+    }
+  }
 
-    updates.push_back(std::move(update));
+  for (const int32_t update_id : update_ids)
+    current_tree_serializer_->InvalidateSubtree(GetFromId(update_id));
+
+  std::vector<ui::AXTreeUpdate> updates;
+  for (const int32_t update_id : update_ids) {
+    ui::AXTreeUpdate update;
+    if (!current_tree_serializer_->SerializeChanges(GetFromId(update_id),
+                                                    &update)) {
+      std::string error_string;
+      ui::AXTreeSourceChecker<AccessibilityInfoDataWrapper*> checker(this);
+      checker.CheckAndGetErrorString(&error_string);
+
+      LOG(ERROR) << "Unable to serialize accessibility event\n"
+                 << "Error: " << error_string << "\n"
+                 << "Update: " << update.ToString();
+    } else {
+      updates.push_back(std::move(update));
+    }
   }
 
   GetAutomationEventRouter()->DispatchAccessibilityEvents(
@@ -287,6 +288,9 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
 
 extensions::AutomationEventRouterInterface*
 AXTreeSourceArc::GetAutomationEventRouter() const {
+  if (automation_event_router_for_test_)
+    return automation_event_router_for_test_;
+
   return extensions::AutomationEventRouter::GetInstance();
 }
 
@@ -364,7 +368,9 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
 
   // TODO(hirokisato): Handle CLEAR_ACCESSIBILITY_FOCUS event.
   if (event_data.event_type == AXEventType::VIEW_FOCUSED) {
-    if (source_node && source_node->IsVisibleToUser()) {
+    if (source_node && source_node->IsVisibleToUser() &&
+        GetBooleanProperty(source_node->GetNode(),
+                           AXBooleanProperty::FOCUSED)) {
       // Sometimes Android sets focus on unfocusable node, e.g. ListView.
       AccessibilityInfoDataWrapper* adjusted_node =
           UseFullFocusMode()
@@ -408,14 +414,15 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
     // We do it for WINDOW_STATE_CHANGED event from a window or a root node.
     bool from_root_or_window = (source_node && !source_node->IsNode()) ||
                                IsRootOfNodeTree(event_data.source_id);
-    auto itr = window_id_to_last_focus_node_id_.find(event_data.window_id);
-    if (from_root_or_window && itr != window_id_to_last_focus_node_id_.end())
-      new_focus = GetFromId(itr->second);
-
-    // Otherwise, try focus on the first focusable node.
-    if (!IsValid(new_focus) && UseFullFocusMode())
+    if (from_root_or_window) {
+      auto itr = window_id_to_last_focus_node_id_.find(event_data.window_id);
+      if (itr != window_id_to_last_focus_node_id_.end())
+        new_focus = GetFromId(itr->second);
+    } else if (UseFullFocusMode()) {
+      // Otherwise, try focus on the first focusable node.
       new_focus = FindFirstFocusableNodeInFullFocusMode(
           GetFromId(event_data.source_id));
+    }
 
     if (IsValid(new_focus))
       android_focused_id_ = new_focus->GetId();
@@ -478,64 +485,6 @@ std::vector<int32_t> AXTreeSourceArc::ProcessHooksOnEvent(
   }
 
   return serialization_needed_ids;
-}
-
-void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {
-  std::map<int32_t, std::string> new_live_region_map;
-
-  // Cache current live region's name.
-  for (auto const& it : tree_map_) {
-    if (!it.second->IsNode())
-      continue;
-
-    AccessibilityInfoDataWrapper* node_info = it.second.get();
-    int32_t live_region_type_int = 0;
-    if (!GetProperty(node_info->GetNode()->int_properties,
-                     AXIntProperty::LIVE_REGION, &live_region_type_int))
-      continue;
-
-    mojom::AccessibilityLiveRegionType live_region_type =
-        static_cast<mojom::AccessibilityLiveRegionType>(live_region_type_int);
-    if (live_region_type == mojom::AccessibilityLiveRegionType::NONE)
-      continue;
-
-    // |node_info| has a live region property.
-    std::stack<AccessibilityInfoDataWrapper*> stack;
-    stack.push(node_info);
-    while (!stack.empty()) {
-      AccessibilityInfoDataWrapper* node = stack.top();
-      stack.pop();
-      DCHECK(node);
-      DCHECK(node->IsNode());
-      static_cast<AccessibilityNodeInfoDataWrapper*>(node)
-          ->set_container_live_status(live_region_type);
-
-      new_live_region_map[node->GetId()] = node->ComputeAXName(true);
-
-      std::vector<int32_t> children;
-      if (GetProperty(node->GetNode()->int_list_properties,
-                      AXIntListProperty::CHILD_NODE_IDS, &children)) {
-        for (const int32_t child : children)
-          stack.push(GetFromId(child));
-      }
-    }
-  }
-
-  // Compare to the previous one, and add an event if needed.
-  for (const auto& it : new_live_region_map) {
-    auto prev_it = previous_live_region_name_.find(it.first);
-    if (prev_it == previous_live_region_name_.end())
-      continue;
-
-    if (prev_it->second != it.second) {
-      events->emplace_back();
-      ui::AXEvent& event = events->back();
-      event.event_type = ax::mojom::Event::kLiveRegionChanged;
-      event.id = it.first;
-    }
-  }
-
-  std::swap(previous_live_region_name_, new_live_region_map);
 }
 
 void AXTreeSourceArc::Reset() {

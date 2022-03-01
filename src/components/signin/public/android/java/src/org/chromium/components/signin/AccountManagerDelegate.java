@@ -11,17 +11,34 @@ import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.AnyThread;
+import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.chromium.base.Callback;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Abstraction of account management implementation.
  * Provides methods for getting accounts and managing auth tokens.
  */
 public interface AccountManagerDelegate {
+    /**
+     * Response code of the {@link AccountManagerDelegate#hasCapability} result.
+     */
+    @IntDef({CapabilityResponse.EXCEPTION, CapabilityResponse.YES, CapabilityResponse.NO})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface CapabilityResponse {
+        /**
+         * This value is returned when no valid response YES or NO is fetched from the server.
+         */
+        int EXCEPTION = 0;
+        int YES = 1;
+        int NO = 2;
+    }
     /**
      * Attaches the {@link AccountsChangeObserver} to the delegate and registers the
      * accounts change receivers to listen to the accounts change broadcast from the
@@ -71,6 +88,14 @@ public interface AccountManagerDelegate {
     boolean hasFeature(Account account, String feature);
 
     /**
+     * Returns a {@link CapabilityResponse} which indicates whether the account has the requested
+     * capability or has exception.
+     */
+    @WorkerThread
+    @CapabilityResponse
+    int hasCapability(Account account, String capability);
+
+    /**
      * Creates an intent that will ask the user to add a new account to the device. See
      * {@link AccountManager#addAccount} for details.
      * @param callback The callback to get the created intent. Will be invoked on the main thread.
@@ -92,16 +117,6 @@ public interface AccountManagerDelegate {
             Account account, Activity activity, @Nullable Callback<Boolean> callback);
 
     /**
-     * Gets profile data source.
-     * @return {@link ProfileDataSource} if this delegate provides it, null otherwise.
-     */
-    @MainThread
-    @Nullable
-    default ProfileDataSource getProfileDataSource() {
-        return null;
-    }
-
-    /**
      * Returns the Gaia id for the account associated with the given email address.
      * If an account with the given email address is not installed on the device
      * then null is returned.
@@ -113,9 +128,4 @@ public interface AccountManagerDelegate {
     @WorkerThread
     @Nullable
     String getAccountGaiaId(String accountEmail);
-
-    /**
-     * Checks whether Google Play services is available.
-     */
-    boolean isGooglePlayServicesAvailable();
 }

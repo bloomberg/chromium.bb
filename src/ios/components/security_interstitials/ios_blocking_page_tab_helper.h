@@ -23,6 +23,9 @@ namespace security_interstitials {
 class IOSBlockingPageTabHelper
     : public web::WebStateUserData<IOSBlockingPageTabHelper> {
  public:
+  IOSBlockingPageTabHelper(const IOSBlockingPageTabHelper&) = delete;
+  IOSBlockingPageTabHelper& operator=(const IOSBlockingPageTabHelper&) = delete;
+
   ~IOSBlockingPageTabHelper() override;
 
   // Associates |blocking_page| with |navigation_id|.  When the last committed
@@ -41,12 +44,11 @@ class IOSBlockingPageTabHelper
  private:
   WEB_STATE_USER_DATA_KEY_DECL();
   explicit IOSBlockingPageTabHelper(web::WebState* web_state);
-  DISALLOW_COPY_AND_ASSIGN(IOSBlockingPageTabHelper);
   friend class web::WebStateUserData<IOSBlockingPageTabHelper>;
 
   // Handler for "blockingPage.*" JavaScript command. Dispatch to more specific
   // handler.
-  void OnBlockingPageCommand(const base::DictionaryValue& message,
+  void OnBlockingPageCommand(const base::Value& message,
                              const GURL& url,
                              bool user_is_interacting,
                              web::WebFrame* sender_frame);

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/compositor/test/multi_layer_animator_test_controller.h"
 #include "ui/compositor/test/multi_layer_animator_test_controller_delegate.h"
 
@@ -28,6 +28,10 @@ class InkDropRippleTestApi
       public ui::test::MultiLayerAnimatorTestControllerDelegate {
  public:
   explicit InkDropRippleTestApi(InkDropRipple* ink_drop_ripple);
+
+  InkDropRippleTestApi(const InkDropRippleTestApi&) = delete;
+  InkDropRippleTestApi& operator=(const InkDropRippleTestApi&) = delete;
+
   ~InkDropRippleTestApi() override;
 
   // Gets the opacity of the ink drop.
@@ -45,9 +49,7 @@ class InkDropRippleTestApi
 
  private:
   // The InkDropedRipple to provide internal access to.
-  InkDropRipple* ink_drop_ripple_;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropRippleTestApi);
+  raw_ptr<InkDropRipple> ink_drop_ripple_;
 };
 
 }  // namespace test

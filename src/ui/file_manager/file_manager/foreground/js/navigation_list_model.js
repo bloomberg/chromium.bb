@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {AndroidAppListModel} from './android_app_list_model.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {FilesAppEntry, FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {TrashRootEntry} from '../../common/js/trash.m.js';
-// #import {util, str} from '../../common/js/util.m.js';
-// #import {FakeEntryImpl, VolumeEntry, EntryList} from '../../common/js/files_app_entry_types.m.js';
-// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// clang-format on
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+import {EntryList, FakeEntryImpl, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import {TrashRootEntry} from '../../common/js/trash.js';
+import {str, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {AndroidAppListModel} from './android_app_list_model.js';
+import {DirectoryModel} from './directory_model.js';
+import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
 
 /**
  * @enum {string}
  */
-/* #export */ const NavigationModelItemType = {
+export const NavigationModelItemType = {
   SHORTCUT: 'shortcut',
   VOLUME: 'volume',
   RECENT: 'recent',
@@ -44,7 +44,7 @@
  *      - ANDROID_APPS: ANDROID picker apps.
  * @enum {string}
  */
-/* #export */ const NavigationSection = {
+export const NavigationSection = {
   TOP: 'top',
   MY_FILES: 'my_files',
   REMOVABLE: 'removable',
@@ -55,7 +55,7 @@
 /**
  * Base item of NavigationListModel. Should not be created directly.
  */
-/* #export */ class NavigationModelItem {
+export class NavigationModelItem {
   /**
    * @param {string} label
    * @param {NavigationModelItemType} type
@@ -104,7 +104,7 @@
 /**
  * Item of NavigationListModel for shortcuts.
  */
-/* #export */ class NavigationModelShortcutItem extends NavigationModelItem {
+export class NavigationModelShortcutItem extends NavigationModelItem {
   /**
    * @param {string} label Label.
    * @param {!DirectoryEntry} entry Entry. Cannot be null.
@@ -122,7 +122,7 @@
 /**
  * Item of NavigationListModel for Android apps.
  */
-/* #export */ class NavigationModelAndroidAppItem extends NavigationModelItem {
+export class NavigationModelAndroidAppItem extends NavigationModelItem {
   /**
    * @param {!chrome.fileManagerPrivate.AndroidApp} androidApp Android app.
    *     Cannot be null.
@@ -143,7 +143,7 @@
 /**
  * Item of NavigationListModel for volumes.
  */
-/* #export */ class NavigationModelVolumeItem extends NavigationModelItem {
+export class NavigationModelVolumeItem extends NavigationModelItem {
   /**
    * @param {string} label Label.
    * @param {!VolumeInfo} volumeInfo Volume info for the volume. Cannot be null.
@@ -164,7 +164,7 @@
 /**
  * Item of NavigationListModel for a fake item such as Recent or Linux files.
  */
-/* #export */ class NavigationModelFakeItem extends NavigationModelItem {
+export class NavigationModelFakeItem extends NavigationModelItem {
   /**
    * @param {string} label Label on the menu button.
    * @param {NavigationModelItemType} type
@@ -183,7 +183,7 @@
 /**
  * A navigation list model. This model combines multiple models.
  */
-/* #export */ class NavigationListModel extends cr.EventTarget {
+export class NavigationListModel extends EventTarget {
   /**
    * @param {!VolumeManager} volumeManager VolumeManager instance.
    * @param {!FolderShortcutsDataModel} shortcutListModel The list of folder
@@ -465,7 +465,7 @@
    *    4.3. Linux files (crostini volume or fake item) (if enabled).
    *  5. Drive volumes.
    *  6. Other FSP (File System Provider) (when mounted).
-   *  7. Other volumes (MTP, ARCHIVE, REMOVABLE, Zip volumes).
+   *  7. Other volumes (MTP, ARCHIVE, REMOVABLE).
    *  8. Add new services if (it exists).
    * @private
    */
@@ -488,20 +488,6 @@
           volumeIndexes[volumeType] = i;
           break;
         case VolumeManagerCommon.VolumeType.PROVIDED:
-          // ZipArchiver mounts zip files as PROVIDED volume type, however we
-          // want to display mounted zip files the same way as archive, so
-          // splitting them apart from PROVIDED.
-          volumeId = volumeList[i].volumeInfo.volumeId;
-          providedType = VolumeManagerCommon.VolumeType.PROVIDED;
-          if (volumeId.includes(NavigationListModel.ZIP_EXTENSION_ID)) {
-            providedType = NavigationListModel.ZIP_VOLUME_TYPE;
-          }
-          if (!volumeIndexes[providedType]) {
-            volumeIndexes[providedType] = [i];
-          } else {
-            volumeIndexes[providedType].push(i);
-          }
-          break;
         case VolumeManagerCommon.VolumeType.REMOVABLE:
         case VolumeManagerCommon.VolumeType.ARCHIVE:
         case VolumeManagerCommon.VolumeType.MTP:
@@ -776,12 +762,10 @@
     this.removableModels_ = removableModels;
 
     // Join MTP, ARCHIVE. These types belong to same section.
-    const zipIndexes = volumeIndexes[NavigationListModel.ZIP_VOLUME_TYPE] || [];
     const otherVolumes =
         [].concat(
               getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
-              getVolumes(VolumeManagerCommon.VolumeType.MTP),
-              zipIndexes.map(idx => volumeList[idx]))
+              getVolumes(VolumeManagerCommon.VolumeType.MTP))
             .sort((volume1, volume2) => {
               return volume1.originalOrder - volume2.originalOrder;
             });
@@ -858,17 +842,3 @@
     return -1;
   }
 }
-
-/**
- * ZipArchiver mounts zip files as PROVIDED volume type.
- * This is a special case for zip volumes to be able to split them apart from
- * PROVIDED.
- * @const
- */
-NavigationListModel.ZIP_VOLUME_TYPE = '_ZIP_VOLUME_';
-
-/**
- * Id of the Zip Archiver extension, that can mount zip files.
- * @const
- */
-NavigationListModel.ZIP_EXTENSION_ID = 'dmboannefpncccogfdikhmhpmdnddgoe';

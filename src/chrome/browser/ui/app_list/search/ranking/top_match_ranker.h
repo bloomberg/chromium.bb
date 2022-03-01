@@ -27,7 +27,7 @@ class TopMatchRanker : public Ranker {
   TopMatchRanker& operator=(const TopMatchRanker&) = delete;
 
   // Ranker:
-  void Rank(ResultsMap& results, ProviderType provider) override;
+  void UpdateResultRanks(ResultsMap& results, ProviderType provider) override;
 };
 
 }  // namespace app_list

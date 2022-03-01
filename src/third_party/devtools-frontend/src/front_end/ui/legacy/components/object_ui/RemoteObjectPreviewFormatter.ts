@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
@@ -33,7 +31,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/object_ui/RemoteObjectPreviewFormatter.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RemoteObjectPreviewFormatter {
-  static _objectPropertyComparator(a: Protocol.Runtime.PropertyPreview, b: Protocol.Runtime.PropertyPreview): number {
+  private static objectPropertyComparator(a: Protocol.Runtime.PropertyPreview, b: Protocol.Runtime.PropertyPreview):
+      number {
     return sortValue(a) - sortValue(b);
 
     function sortValue(property: Protocol.Runtime.PropertyPreview): number {
@@ -69,14 +68,11 @@ export class RemoteObjectPreviewFormatter {
     ]);
     if (preview.type !== Protocol.Runtime.ObjectPreviewType.Object ||
         (preview.subtype && subTypesWithoutValuePreview.has(preview.subtype)) || isEntry) {
-      parentElement.appendChild(
-          // @ts-ignore https://bugs.chromium.org/p/v8/issues/detail?id=11143
-          this.renderPropertyPreview(preview.type, preview.subtype, preview.className, description));
+      parentElement.appendChild(this.renderPropertyPreview(preview.type, preview.subtype, undefined, description));
       return;
     }
-    const isArrayOrTypedArray = preview.subtype === Protocol.Runtime.ObjectPreviewSubtype.Array
-        // @ts-ignore https://bugs.chromium.org/p/v8/issues/detail?id=11143
-        || preview.subtype === 'typedarray';
+    const isArrayOrTypedArray = preview.subtype === Protocol.Runtime.ObjectPreviewSubtype.Array ||
+        preview.subtype === Protocol.Runtime.ObjectPreviewSubtype.Typedarray;
     if (description) {
       let text;
       if (isArrayOrTypedArray) {
@@ -96,11 +92,11 @@ export class RemoteObjectPreviewFormatter {
     const propertiesElement = parentElement.createChild('span', 'object-properties-preview');
     UI.UIUtils.createTextChild(propertiesElement, isArrayOrTypedArray ? '[' : '{');
     if (preview.entries) {
-      this._appendEntriesPreview(propertiesElement, preview);
+      this.appendEntriesPreview(propertiesElement, preview);
     } else if (isArrayOrTypedArray) {
-      this._appendArrayPropertiesPreview(propertiesElement, preview);
+      this.appendArrayPropertiesPreview(propertiesElement, preview);
     } else {
-      this._appendObjectPropertiesPreview(propertiesElement, preview);
+      this.appendObjectPropertiesPreview(propertiesElement, preview);
     }
     if (preview.overflow) {
       const ellipsisText = propertiesElement.textContent && propertiesElement.textContent.length > 1 ? ',\xA0…' : '…';
@@ -109,7 +105,7 @@ export class RemoteObjectPreviewFormatter {
     UI.UIUtils.createTextChild(propertiesElement, isArrayOrTypedArray ? ']' : '}');
   }
 
-  _abbreviateFullQualifiedClassName(description: string): string {
+  private abbreviateFullQualifiedClassName(description: string): string {
     const abbreviatedDescription = description.split('.');
     for (let i = 0; i < abbreviatedDescription.length - 1; ++i) {
       abbreviatedDescription[i] = Platform.StringUtilities.trimMiddle(abbreviatedDescription[i], 3);
@@ -117,9 +113,9 @@ export class RemoteObjectPreviewFormatter {
     return abbreviatedDescription.join('.');
   }
 
-  _appendObjectPropertiesPreview(parentElement: Element, preview: Protocol.Runtime.ObjectPreview): void {
+  private appendObjectPropertiesPreview(parentElement: Element, preview: Protocol.Runtime.ObjectPreview): void {
     const properties = preview.properties.filter(p => p.type !== 'accessor')
-                           .sort(RemoteObjectPreviewFormatter._objectPropertyComparator);
+                           .sort(RemoteObjectPreviewFormatter.objectPropertyComparator);
     for (let i = 0; i < properties.length; ++i) {
       if (i > 0) {
         UI.UIUtils.createTextChild(parentElement, ', ');
@@ -128,34 +124,33 @@ export class RemoteObjectPreviewFormatter {
       const property = properties[i];
       const name = property.name;
       // Internal properties are given special formatting, e.g. Promises `<rejected>: 123`.
-      // @ts-ignore https://bugs.chromium.org/p/v8/issues/detail?id=11143
-      if (preview.subtype === 'promise' && name === InternalName.PromiseState) {
-        parentElement.appendChild(this._renderDisplayName('<' + property.value + '>'));
+      if (preview.subtype === Protocol.Runtime.ObjectPreviewSubtype.Promise && name === InternalName.PromiseState) {
+        parentElement.appendChild(this.renderDisplayName('<' + property.value + '>'));
         const nextProperty = i + 1 < properties.length ? properties[i + 1] : null;
         if (nextProperty && nextProperty.name === InternalName.PromiseResult) {
           if (property.value !== 'pending') {
             UI.UIUtils.createTextChild(parentElement, ': ');
-            parentElement.appendChild(this._renderPropertyPreviewOrAccessor([nextProperty]));
+            parentElement.appendChild(this.renderPropertyPreviewOrAccessor([nextProperty]));
           }
           i++;
         }
       } else if (preview.subtype === 'generator' && name === InternalName.GeneratorState) {
-        parentElement.appendChild(this._renderDisplayName('<' + property.value + '>'));
+        parentElement.appendChild(this.renderDisplayName('<' + property.value + '>'));
       } else if (name === InternalName.PrimitiveValue) {
-        parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
+        parentElement.appendChild(this.renderPropertyPreviewOrAccessor([property]));
       } else {
-        parentElement.appendChild(this._renderDisplayName(name));
+        parentElement.appendChild(this.renderDisplayName(name));
         UI.UIUtils.createTextChild(parentElement, ': ');
-        parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
+        parentElement.appendChild(this.renderPropertyPreviewOrAccessor([property]));
       }
     }
   }
 
-  _appendArrayPropertiesPreview(parentElement: Element, preview: Protocol.Runtime.ObjectPreview): void {
+  private appendArrayPropertiesPreview(parentElement: Element, preview: Protocol.Runtime.ObjectPreview): void {
     const arrayLength = SDK.RemoteObject.RemoteObject.arrayLength(preview);
     const indexProperties = preview.properties.filter(p => toArrayIndex(p.name) !== -1).sort(arrayEntryComparator);
     const otherProperties = preview.properties.filter(p => toArrayIndex(p.name) === -1)
-                                .sort(RemoteObjectPreviewFormatter._objectPropertyComparator);
+                                .sort(RemoteObjectPreviewFormatter.objectPropertyComparator);
 
     function arrayEntryComparator(a: Protocol.Runtime.PropertyPreview, b: Protocol.Runtime.PropertyPreview): number {
       return toArrayIndex(a.name) - toArrayIndex(b.name);
@@ -190,10 +185,10 @@ export class RemoteObjectPreviewFormatter {
         UI.UIUtils.createTextChild(parentElement, ', ');
       }
       if (!canShowGaps && i !== index) {
-        parentElement.appendChild(this._renderDisplayName(property.name));
+        parentElement.appendChild(this.renderDisplayName(property.name));
         UI.UIUtils.createTextChild(parentElement, ': ');
       }
-      parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
+      parentElement.appendChild(this.renderPropertyPreviewOrAccessor([property]));
       lastNonEmptyArrayIndex = index;
       elementsAdded = true;
     }
@@ -211,9 +206,9 @@ export class RemoteObjectPreviewFormatter {
       }
 
       const property = otherProperties[i];
-      parentElement.appendChild(this._renderDisplayName(property.name));
+      parentElement.appendChild(this.renderDisplayName(property.name));
       UI.UIUtils.createTextChild(parentElement, ': ');
-      parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
+      parentElement.appendChild(this.renderPropertyPreviewOrAccessor([property]));
       elementsAdded = true;
     }
 
@@ -226,7 +221,7 @@ export class RemoteObjectPreviewFormatter {
     }
   }
 
-  _appendEntriesPreview(parentElement: Element, preview: Protocol.Runtime.ObjectPreview): void {
+  private appendEntriesPreview(parentElement: Element, preview: Protocol.Runtime.ObjectPreview): void {
     if (!preview.entries) {
       return;
     }
@@ -244,7 +239,7 @@ export class RemoteObjectPreviewFormatter {
     }
   }
 
-  _renderDisplayName(name: string): Element {
+  private renderDisplayName(name: string): Element {
     const result = document.createElement('span');
     result.classList.add('name');
     const needsQuotes = /^\s|\s$|^$|\n/.test(name);
@@ -252,7 +247,7 @@ export class RemoteObjectPreviewFormatter {
     return result;
   }
 
-  _renderPropertyPreviewOrAccessor(propertyPath: Protocol.Runtime.PropertyPreview[]): Element {
+  private renderPropertyPreviewOrAccessor(propertyPath: Protocol.Runtime.PropertyPreview[]): Element {
     const property = propertyPath[propertyPath.length - 1];
     if (!property) {
       throw new Error('Could not find property');
@@ -261,7 +256,7 @@ export class RemoteObjectPreviewFormatter {
   }
 
   renderPropertyPreview(type: string, subtype?: string, className?: string|null, description?: string): HTMLElement {
-    const span = (document.createElement('span') as HTMLElement);
+    const span = document.createElement('span');
     span.classList.add('object-value-' + (subtype || type));
     description = description || '';
 
@@ -287,12 +282,12 @@ export class RemoteObjectPreviewFormatter {
     }
 
     if (type === 'string') {
-      UI.UIUtils.createTextChildren(span, JSON.stringify(description));
+      UI.UIUtils.createTextChildren(span, Platform.StringUtilities.formatAsJSLiteral(description));
       return span;
     }
 
     if (type === 'object' && !subtype) {
-      let preview = this._abbreviateFullQualifiedClassName(description);
+      let preview = this.abbreviateFullQualifiedClassName(description);
       if (preview === 'Object') {
         preview = '{…}';
       }

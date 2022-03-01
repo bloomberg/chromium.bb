@@ -5,9 +5,7 @@
 #include "third_party/blink/renderer/modules/breakout_box/pushable_media_stream_video_source.h"
 
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track_signal_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -15,7 +13,7 @@ namespace blink {
 PushableMediaStreamVideoSource::Broker::Broker(
     PushableMediaStreamVideoSource* source)
     : source_(source),
-      main_task_runner_(Thread::MainThread()->GetTaskRunner()),
+      main_task_runner_(source->GetTaskRunner()),
       io_task_runner_(source->io_task_runner()) {
   DCHECK(main_task_runner_);
   DCHECK(io_task_runner_);
@@ -105,12 +103,10 @@ void PushableMediaStreamVideoSource::Broker::StopSourceOnMain() {
   source_->StopSource();
 }
 
-PushableMediaStreamVideoSource::PushableMediaStreamVideoSource()
-    : broker_(AdoptRef(new Broker(this))) {}
-
 PushableMediaStreamVideoSource::PushableMediaStreamVideoSource(
-    const base::WeakPtr<MediaStreamVideoSource>& upstream_source)
-    : upstream_source_(upstream_source), broker_(AdoptRef(new Broker(this))) {}
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+    : MediaStreamVideoSource(std::move(main_task_runner)),
+      broker_(AdoptRef(new Broker(this))) {}
 
 PushableMediaStreamVideoSource::~PushableMediaStreamVideoSource() {
   broker_->OnSourceDestroyedOrStopped();
@@ -122,72 +118,23 @@ void PushableMediaStreamVideoSource::PushFrame(
   broker_->PushFrame(std::move(video_frame), estimated_capture_time);
 }
 
-void PushableMediaStreamVideoSource::RequestRefreshFrame() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (upstream_source_)
-    upstream_source_->RequestRefreshFrame();
-  if (signal_observer_)
-    signal_observer_->RequestFrame();
-}
-
-void PushableMediaStreamVideoSource::OnFrameDropped(
-    media::VideoCaptureFrameDropReason reason) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (upstream_source_)
-    upstream_source_->OnFrameDropped(reason);
-}
-
-VideoCaptureFeedbackCB PushableMediaStreamVideoSource::GetFeedbackCallback()
-    const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (upstream_source_) {
-    return WTF::BindRepeating(
-        [](const base::WeakPtr<MediaStreamVideoSource>& source,
-           const media::VideoCaptureFeedback& feedback) {
-          if (!source)
-            return;
-
-          PushableMediaStreamVideoSource* pushable_source =
-              static_cast<PushableMediaStreamVideoSource*>(source.get());
-          pushable_source->GetInternalFeedbackCallback().Run(feedback);
-        },
-        GetWeakPtr());
-  }
-  return VideoCaptureFeedbackCB();
-}
-
 void PushableMediaStreamVideoSource::StartSourceImpl(
     VideoCaptureDeliverFrameCB frame_callback,
     EncodedVideoFrameCB encoded_frame_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(frame_callback);
   broker_->OnSourceStarted(std::move(frame_callback));
   OnStartDone(mojom::blink::MediaStreamRequestResult::OK);
 }
 
 void PushableMediaStreamVideoSource::StopSourceImpl() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   broker_->OnSourceDestroyedOrStopped();
 }
 
 base::WeakPtr<MediaStreamVideoSource>
 PushableMediaStreamVideoSource::GetWeakPtr() const {
   return weak_factory_.GetWeakPtr();
-}
-
-VideoCaptureFeedbackCB
-PushableMediaStreamVideoSource::GetInternalFeedbackCallback() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!upstream_source_)
-    return VideoCaptureFeedbackCB();
-
-  return upstream_source_->GetFeedbackCallback();
-}
-
-void PushableMediaStreamVideoSource::SetSignalObserver(
-    MediaStreamVideoTrackSignalObserver* observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  signal_observer_ = observer;
 }
 
 }  // namespace blink

@@ -26,8 +26,8 @@ DevtoolsClient::DevtoolsClient(
       input_domain_(this),
       dom_domain_(this),
       runtime_domain_(this),
-      network_domain_(this),
       target_domain_(this),
+      page_domain_(this),
       next_message_id_(0),
       frame_tracker_(this) {
   browser_main_thread_ = content::GetUIThreadTaskRunner({});
@@ -52,12 +52,12 @@ runtime::Domain* DevtoolsClient::GetRuntime() {
   return &runtime_domain_;
 }
 
-network::Domain* DevtoolsClient::GetNetwork() {
-  return &network_domain_;
-}
-
 target::ExperimentalDomain* DevtoolsClient::GetTarget() {
   return &target_domain_;
+}
+
+page::ExperimentalDomain* DevtoolsClient::GetPage() {
+  return &page_domain_;
 }
 
 void DevtoolsClient::SendMessage(

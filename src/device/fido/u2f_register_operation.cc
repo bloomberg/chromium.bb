@@ -55,7 +55,7 @@ void U2fRegisterOperation::TrySign() {
   absl::optional<std::vector<uint8_t>> sign_command;
   if (probing_alternative_rp_id_) {
     CtapMakeCredentialRequest sign_request(request());
-    sign_request.rp.id = *request().app_id;
+    sign_request.rp.id = *request().app_id_exclude;
     sign_command = ConvertToU2fSignCommandWithBogusChallenge(
         sign_request, excluded_key_handle());
   } else {
@@ -115,7 +115,7 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       // list to check for already registered keys.
       current_key_handle_index_++;
       if (current_key_handle_index_ == request().exclude_list.size() &&
-          !probing_alternative_rp_id_ && request().app_id) {
+          !probing_alternative_rp_id_ && request().app_id_exclude) {
         // All elements of |request().exclude_list| have been tested, but
         // there's a second AppID so they need to be tested again.
         probing_alternative_rp_id_ = true;
@@ -204,7 +204,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 
 const std::vector<uint8_t>& U2fRegisterOperation::excluded_key_handle() const {
   DCHECK_LT(current_key_handle_index_, request().exclude_list.size());
-  return request().exclude_list[current_key_handle_index_].id();
+  return request().exclude_list[current_key_handle_index_].id;
 }
 
 }  // namespace device

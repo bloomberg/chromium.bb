@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -35,6 +34,9 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   };
 
   typedef base::OnceCallback<void(Result)> CompletionCallback;
+
+  HostStarter(const HostStarter&) = delete;
+  HostStarter& operator=(const HostStarter&) = delete;
 
   ~HostStarter() override;
 
@@ -122,8 +124,6 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
 
   base::WeakPtr<HostStarter> weak_ptr_;
   base::WeakPtrFactory<HostStarter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HostStarter);
 };
 
 }  // namespace remoting

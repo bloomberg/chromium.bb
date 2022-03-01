@@ -24,11 +24,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using message_center::Notification;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::message_center::Notification;
 
 inline std::u16string utf16(const char* ascii) {
   return base::ASCIIToUTF16(ascii);
@@ -53,7 +52,7 @@ class PasswordExpiryNotificationTest : public testing::Test {
 }  // namespace
 
 TEST_F(PasswordExpiryNotificationTest, ShowWillSoonExpire) {
-  PasswordExpiryNotification::Show(&profile_, base::TimeDelta::FromDays(14));
+  PasswordExpiryNotification::Show(&profile_, base::Days(14));
   ASSERT_TRUE(Notification().has_value());
 
   EXPECT_EQ(utf16("Password expires in 14 days"), Notification()->title());
@@ -64,7 +63,7 @@ TEST_F(PasswordExpiryNotificationTest, ShowWillSoonExpire) {
 }
 
 TEST_F(PasswordExpiryNotificationTest, ShowAlreadyExpired) {
-  PasswordExpiryNotification::Show(&profile_, base::TimeDelta::FromDays(0));
+  PasswordExpiryNotification::Show(&profile_, base::Days(0));
   ASSERT_TRUE(Notification().has_value());
 
   EXPECT_EQ(utf16("Password change overdue"), Notification()->title());
@@ -75,28 +74,22 @@ TEST_F(PasswordExpiryNotificationTest, ShowAlreadyExpired) {
 }
 
 TEST_F(PasswordExpiryNotificationTest, GetTitleText) {
-  EXPECT_EQ(utf16("Password expires in 2 days"),
-            GetTitleText(base::TimeDelta::FromDays(2)));
-  EXPECT_EQ(utf16("Password expires in 1 day"),
-            GetTitleText(base::TimeDelta::FromDays(1)));
+  EXPECT_EQ(utf16("Password expires in 2 days"), GetTitleText(base::Days(2)));
+  EXPECT_EQ(utf16("Password expires in 1 day"), GetTitleText(base::Days(1)));
   EXPECT_EQ(utf16("Password expires in 12 hours"),
-            GetTitleText(base::TimeDelta::FromHours(12)));
-  EXPECT_EQ(utf16("Password expires in 1 hour"),
-            GetTitleText(base::TimeDelta::FromHours(1)));
+            GetTitleText(base::Hours(12)));
+  EXPECT_EQ(utf16("Password expires in 1 hour"), GetTitleText(base::Hours(1)));
   EXPECT_EQ(utf16("Password expires in 30 minutes"),
-            GetTitleText(base::TimeDelta::FromMinutes(30)));
+            GetTitleText(base::Minutes(30)));
   EXPECT_EQ(utf16("Password expires in 1 minute"),
-            GetTitleText(base::TimeDelta::FromMinutes(1)));
+            GetTitleText(base::Minutes(1)));
 
-  EXPECT_EQ(utf16("Password change overdue"),
-            GetTitleText(base::TimeDelta::FromSeconds(30)));
-  EXPECT_EQ(utf16("Password change overdue"),
-            GetTitleText(base::TimeDelta::FromSeconds(0)));
-  EXPECT_EQ(utf16("Password change overdue"),
-            GetTitleText(base::TimeDelta::FromSeconds(-10)));
+  EXPECT_EQ(utf16("Password change overdue"), GetTitleText(base::Seconds(30)));
+  EXPECT_EQ(utf16("Password change overdue"), GetTitleText(base::Seconds(0)));
+  EXPECT_EQ(utf16("Password change overdue"), GetTitleText(base::Seconds(-10)));
 
   PasswordExpiryNotification::Dismiss(&profile_);
   EXPECT_FALSE(Notification().has_value());
 }
 
-}  // namespace chromeos
+}  // namespace ash

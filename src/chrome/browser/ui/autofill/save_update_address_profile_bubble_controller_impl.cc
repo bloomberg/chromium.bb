@@ -20,7 +20,9 @@ namespace autofill {
 SaveUpdateAddressProfileBubbleControllerImpl::
     SaveUpdateAddressProfileBubbleControllerImpl(
         content::WebContents* web_contents)
-    : AutofillBubbleControllerBase(web_contents) {
+    : AutofillBubbleControllerBase(web_contents),
+      content::WebContentsUserData<
+          SaveUpdateAddressProfileBubbleControllerImpl>(*web_contents) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillAddressProfileSavePrompt));
 }
@@ -164,6 +166,6 @@ void SaveUpdateAddressProfileBubbleControllerImpl::DoShowBubble() {
   DCHECK(bubble_view());
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SaveUpdateAddressProfileBubbleControllerImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SaveUpdateAddressProfileBubbleControllerImpl);
 
 }  // namespace autofill

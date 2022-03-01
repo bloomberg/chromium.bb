@@ -27,12 +27,11 @@
 #include <unicode/brkiter.h>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
 
 namespace blink {
 
@@ -356,6 +355,10 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
  public:
   explicit NonSharedCharacterBreakIterator(const StringView&);
   NonSharedCharacterBreakIterator(const UChar*, unsigned length);
+  NonSharedCharacterBreakIterator(const NonSharedCharacterBreakIterator&) =
+      delete;
+  NonSharedCharacterBreakIterator& operator=(
+      const NonSharedCharacterBreakIterator&) = delete;
   ~NonSharedCharacterBreakIterator();
 
   int Next();
@@ -397,8 +400,6 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
 
   // For 16 bit strings, we use a TextBreakIterator.
   TextBreakIterator* iterator_;
-
-  DISALLOW_COPY_AND_ASSIGN(NonSharedCharacterBreakIterator);
 };
 
 // Counts the number of grapheme clusters. A surrogate pair or a sequence

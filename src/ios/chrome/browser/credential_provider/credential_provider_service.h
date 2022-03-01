@@ -7,14 +7,18 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service_observer.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 
-@class ArchivableCredential;
-@class ArchivableCredentialStore;
+@protocol MutableCredentialStore;
+
+namespace password_manager {
+class AffiliationService;
+}
 
 namespace syncer {
 class SyncService;
@@ -25,17 +29,24 @@ class SyncService;
 class CredentialProviderService
     : public KeyedService,
       public password_manager::PasswordStoreConsumer,
-      public password_manager::PasswordStore::Observer,
+      public password_manager::PasswordStoreInterface::Observer,
       public signin::IdentityManager::Observer,
       public syncer::SyncServiceObserver {
  public:
   // Initializes the service.
   CredentialProviderService(
-      scoped_refptr<password_manager::PasswordStore> password_store,
+      PrefService* prefs,
+      scoped_refptr<password_manager::PasswordStoreInterface> password_store,
       AuthenticationService* authentication_service,
-      ArchivableCredentialStore* credential_store,
+      id<MutableCredentialStore> credential_store,
       signin::IdentityManager* identity_manager,
-      syncer::SyncService* sync_service);
+      syncer::SyncService* sync_service,
+      password_manager::AffiliationService* affiliation_service);
+
+  CredentialProviderService(const CredentialProviderService&) = delete;
+  CredentialProviderService& operator=(const CredentialProviderService&) =
+      delete;
+
   ~CredentialProviderService() override;
 
   // KeyedService:
@@ -70,17 +81,25 @@ class CredentialProviderService
   void RemoveCredentials(
       std::vector<std::unique_ptr<password_manager::PasswordForm>> forms);
 
-  // Syncs account_validation_id_.
-  void UpdateAccountValidationId();
+  // Syncs account_id_.
+  void UpdateAccountId();
+
+  // Syncs the current logged in user's email to the extension if they are
+  // syncing passwords.
+  void UpdateUserEmail();
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
       override;
 
-  // PasswordStore::Observer:
+  // PasswordStoreInterface::Observer:
   void OnLoginsChanged(
+      password_manager::PasswordStoreInterface* store,
       const password_manager::PasswordStoreChangeList& changes) override;
+  void OnLoginsRetained(password_manager::PasswordStoreInterface* store,
+                        const std::vector<password_manager::PasswordForm>&
+                            retained_passwords) override;
 
   // Completion called after the affiliations are injected in the added forms.
   // If no affiliation matcher is available, it is called right away.
@@ -89,9 +108,13 @@ class CredentialProviderService
 
   // syncer::SyncServiceObserver:
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
+  void OnStateChanged(syncer::SyncService* sync) override;
+
+  // Observer for when |saving_passwords_enabled_| changes.
+  void OnSavingPasswordsEnabledChanged();
 
   // The interface for getting and manipulating a user's saved passwords.
-  scoped_refptr<password_manager::PasswordStore> password_store_;
+  scoped_refptr<password_manager::PasswordStoreInterface> password_store_;
 
   // The interface for getting the primary account identifier.
   AuthenticationService* authentication_service_ = nullptr;
@@ -102,16 +125,21 @@ class CredentialProviderService
   // Sync Service to observe.
   syncer::SyncService* sync_service_ = nullptr;
 
+  // Affiliation service to provide affiliations.
+  password_manager::AffiliationService* affiliation_service_ = nullptr;
+
   // The interface for saving and updating credentials.
-  ArchivableCredentialStore* archivable_credential_store_ = nil;
+  id<MutableCredentialStore> credential_store_ = nil;
 
   // The current validation ID or nil.
-  NSString* account_validation_id_ = nil;
+  NSString* account_id_ = nil;
+
+  // The preference associated with
+  // password_manager::prefs::kCredentialsEnableService.
+  BooleanPrefMember saving_passwords_enabled_;
 
   // Weak pointer factory.
-  base::WeakPtrFactory<CredentialProviderService> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CredentialProviderService);
+  base::WeakPtrFactory<CredentialProviderService> weak_ptr_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_CREDENTIAL_PROVIDER_CREDENTIAL_PROVIDER_SERVICE_H_

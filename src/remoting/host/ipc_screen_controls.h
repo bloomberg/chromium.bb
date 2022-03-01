@@ -5,9 +5,8 @@
 #ifndef REMOTING_HOST_IPC_SCREEN_CONTROLS_H_
 #define REMOTING_HOST_IPC_SCREEN_CONTROLS_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "remoting/host/screen_controls.h"
+#include "remoting/host/base/screen_controls.h"
 
 namespace remoting {
 
@@ -18,6 +17,10 @@ class IpcScreenControls : public ScreenControls {
  public:
   explicit IpcScreenControls(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
+
+  IpcScreenControls(const IpcScreenControls&) = delete;
+  IpcScreenControls& operator=(const IpcScreenControls&) = delete;
+
   ~IpcScreenControls() override;
 
   // SessionController interface.
@@ -26,8 +29,6 @@ class IpcScreenControls : public ScreenControls {
  private:
   // Wraps the IPC channel to the desktop session agent.
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(IpcScreenControls);
 };
 
 }  // namespace remoting

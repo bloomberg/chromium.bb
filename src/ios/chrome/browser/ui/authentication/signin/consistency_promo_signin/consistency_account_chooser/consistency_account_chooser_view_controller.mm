@@ -6,6 +6,7 @@
 
 #import "base/check.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_account_chooser/consistency_account_chooser_table_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_layout_delegate.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -14,6 +15,15 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Margins used for bottom margin in "Add account" button.
+// This takes into consideration the existing footer and header
+// margins in ConsistencyAccountChooserTableViewController.
+constexpr CGFloat kContentMargin = 16.;
+
+}  // namespace
 
 @interface ConsistencyAccountChooserViewController ()
 
@@ -39,6 +49,13 @@
     [subView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
   ]];
   [self didMoveToParentViewController:self.tableViewController];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  CGFloat width = self.tableViewController.tableView.contentSize.width;
+  self.preferredContentSize =
+      CGSizeMake(width, [self layoutFittingHeightForWidth:width]);
 }
 
 #pragma mark - Properties
@@ -70,27 +87,35 @@
 
 - (ConsistencyAccountChooserTableViewController*)tableViewController {
   if (!_tableViewController) {
-    UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                                 ? ChromeTableViewStyle()
-                                 : UITableViewStylePlain;
     _tableViewController = [[ConsistencyAccountChooserTableViewController alloc]
-        initWithStyle:style];
+        initWithStyle:UITableViewStyleInsetGrouped];
   }
   return _tableViewController;
 }
 
-#pragma mark - ChildBottomSheetViewController
+#pragma mark - ChildConsistencySheetViewController
 
 - (CGFloat)layoutFittingHeightForWidth:(CGFloat)width {
-  NSArray* childViewControllers =
-      self.navigationController.childViewControllers;
-  DCHECK(childViewControllers.count > 0);
-  // Get the height of the first navigation view.
-  CGFloat firstViewHeight = [childViewControllers[0] view].bounds.size.height;
-  // Get the screen height.
   CGFloat screenHeight =
       self.navigationController.view.window.bounds.size.height;
-  return MAX(screenHeight / 2., firstViewHeight);
+  CGFloat rowHeight = self.tableViewController.tableView.contentSize.height;
+  // If |screenHeight| is undefined during a transition, use |rowHeight|.
+  CGFloat height =
+      screenHeight == 0 ? rowHeight : MIN(screenHeight / 2, rowHeight);
+  CGFloat safeAreaInsetsHeight = 0;
+  switch (self.layoutDelegate.displayStyle) {
+    case ConsistencySheetDisplayStyleBottom:
+      safeAreaInsetsHeight +=
+          self.navigationController.view.window.safeAreaInsets.bottom;
+      break;
+    case ConsistencySheetDisplayStyleCentered:
+      break;
+  }
+
+  // Note that there is an additional unaccounted margin height from the footer
+  // and header margins that are not accounted for here.
+  return self.navigationController.navigationBar.frame.size.height + height +
+         kContentMargin + safeAreaInsetsHeight;
 }
 
 @end

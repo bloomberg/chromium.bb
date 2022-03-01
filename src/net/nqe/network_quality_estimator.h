@@ -9,12 +9,11 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -47,7 +46,6 @@ class TickClock;
 
 namespace net {
 
-class ConnectivityMonitor;
 class NetLog;
 
 namespace nqe {
@@ -72,6 +70,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Observes measurements of round trip time.
   class NET_EXPORT_PRIVATE RTTObserver {
    public:
+    RTTObserver(const RTTObserver&) = delete;
+    RTTObserver& operator=(const RTTObserver&) = delete;
+
     // Will be called when a new RTT observation is available. The round trip
     // time is specified in milliseconds. The time when the observation was
     // taken and the source of the observation are provided.
@@ -82,14 +83,14 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
    protected:
     RTTObserver() {}
     virtual ~RTTObserver() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(RTTObserver);
   };
 
   // Observes measurements of throughput.
   class NET_EXPORT_PRIVATE ThroughputObserver {
    public:
+    ThroughputObserver(const ThroughputObserver&) = delete;
+    ThroughputObserver& operator=(const ThroughputObserver&) = delete;
+
     // Will be called when a new throughput observation is available.
     // Throughput is specified in kilobits per second.
     virtual void OnThroughputObservation(
@@ -100,9 +101,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
    protected:
     ThroughputObserver() {}
     virtual ~ThroughputObserver() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ThroughputObserver);
   };
 
   // Creates a new NetworkQualityEstimator.
@@ -112,6 +110,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   NetworkQualityEstimator(
       std::unique_ptr<NetworkQualityEstimatorParams> params,
       NetLog* net_log);
+
+  NetworkQualityEstimator(const NetworkQualityEstimator&) = delete;
+  NetworkQualityEstimator& operator=(const NetworkQualityEstimator&) = delete;
 
   ~NetworkQualityEstimator() override;
 
@@ -384,16 +385,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |observed_http_rtt| with the expected HTTP and transport RTT.
   bool IsHangingRequest(base::TimeDelta observed_http_rtt) const;
 
-  // Returns the current network signal strength by querying the platform APIs.
-  // Set to INT32_MIN when the value is unavailable. Otherwise, must be between
-  // 0 and 4 (both inclusive). This may take into account many different radio
-  // technology inputs. 0 represents very poor signal strength while 4
-  // represents a very strong signal strength. The range is capped between 0 and
-  // 4 to ensure that a change in the value indicates a non-negligible change in
-  // the signal quality. To reduce the number of Android API calls, it returns
-  // a null value if the signal strength was recently obtained.
-  virtual absl::optional<int32_t> GetCurrentSignalStrengthWithThrottling();
-
   // Forces computation of effective connection type, and notifies observers
   // if there is a change in its value.
   void ComputeEffectiveConnectionType();
@@ -497,11 +488,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // main frame request is observed.
   void RecordAccuracyAfterMainFrame(base::TimeDelta measuring_duration) const;
 
-  // Obtains the current cellular signal strength value and updates
-  // |min_signal_strength_since_connection_change_| and
-  // |max_signal_strength_since_connection_change_|.
-  void UpdateSignalStrength();
-
   // Updates the provided |http_rtt| based on all provided RTT values.
   void UpdateHttpRttUsingAllRttValues(
       base::TimeDelta* http_rtt,
@@ -536,11 +522,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // observations.
   bool ShouldSocketWatcherNotifyRTT(base::TimeTicks now);
 
-  // Caps and returns the current value of effective connection type based on
-  // the current signal strength. If the signal strength is reported as low, a
-  // value lower than |effective_connection_type_| may be returned.
-  EffectiveConnectionType GetCappedECTBasedOnSignalStrength() const;
-
   // When RTT counts are low, it may be impossible to predict accurate ECT. In
   // that case, we just give the highest value.
   void AdjustHttpRttBasedOnRTTCounts(base::TimeDelta* http_rtt) const;
@@ -564,7 +545,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   bool disable_offline_check_;
 
   // Tick clock used by the network quality estimator.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;
@@ -637,11 +618,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |effective_connection_type_recomputation_interval_| ago).
   EffectiveConnectionType effective_connection_type_;
 
-  // Minimum and maximum signal strength level observed since last connection
-  // change. Updated on connection change and main frame requests.
-  absl::optional<int32_t> min_signal_strength_since_connection_change_;
-  absl::optional<int32_t> max_signal_strength_since_connection_change_;
-
   // Stores the qualities of different networks.
   std::unique_ptr<nqe::internal::NetworkQualityStore> network_quality_store_;
 
@@ -666,14 +642,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   bool get_network_id_asynchronously_ = false;
 #endif
 
-  // Watches network activity and attempts to infer when the current network is
-  // effectively disconnected due to either substantial degradation or actual
-  // disconnection.
-  std::unique_ptr<ConnectivityMonitor> connectivity_monitor_;
-
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkQualityEstimator);
 };
 
 }  // namespace net

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/tick_clock.h"
 #include "net/base/net_export.h"
 #include "net/nqe/network_quality_estimator_util.h"
@@ -49,6 +50,8 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
   //  As such, this constructor should only be called before adding any
   //  observations to |other|.
   ObservationBuffer(const ObservationBuffer& other);
+
+  ObservationBuffer& operator=(const ObservationBuffer&) = delete;
 
   ~ObservationBuffer();
 
@@ -104,7 +107,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
       std::vector<WeightedObservation>* weighted_observations,
       double* total_weight) const;
 
-  const NetworkQualityEstimatorParams* params_;
+  raw_ptr<const NetworkQualityEstimatorParams> params_;
 
   // Holds observations sorted by time, with the oldest observation at the
   // front of the queue.
@@ -125,9 +128,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
   // |weight_multiplier_per_signal_level_| ^ 3.
   const double weight_multiplier_per_signal_level_;
 
-  const base::TickClock* tick_clock_;
-
-  DISALLOW_ASSIGN(ObservationBuffer);
+  raw_ptr<const base::TickClock> tick_clock_;
 };
 
 }  // namespace internal

@@ -16,6 +16,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -133,8 +134,7 @@ void ImageDataFetcher::FetchImageData(const GURL& image_url,
   // body will get thrown out anyway, though.
   loader->SetAllowHttpErrorResults(true);
 
-  loader->SetTimeoutDuration(
-      base::TimeDelta::FromSeconds(kDownloadTimeoutSeconds));
+  loader->SetTimeoutDuration(base::Seconds(kDownloadTimeoutSeconds));
 
   if (max_download_bytes_.has_value()) {
     loader->DownloadToString(

@@ -21,6 +21,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permission_util.h"
+#include "components/permissions/permissions_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/webrtc/media_stream_devices_controller.h"
@@ -109,10 +111,23 @@ void UpdatePageSpecificContentSettings(
              : content_settings::PageSpecificContentSettings::CAMERA_BLOCKED);
   }
 
+  // TODO(crbug.com/698985): Use `GetLastCommittedURL` if web_contents represent
+  // NTP.
+  GURL embedding_origin;
+  if (permissions::PermissionsClient::Get()->DoOriginsMatchNewTabPage(
+          request.security_origin,
+          web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL())) {
+    embedding_origin =
+        web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL();
+  } else {
+    embedding_origin =
+        permissions::PermissionUtil::GetLastCommittedOriginAsURL(web_contents);
+  }
+
   content_settings->OnMediaStreamPermissionSet(
       PermissionManagerFactory::GetForProfile(profile)->GetCanonicalOrigin(
           ContentSettingsType::MEDIASTREAM_CAMERA, request.security_origin,
-          web_contents->GetLastCommittedURL()),
+          embedding_origin),
       microphone_camera_state, selected_audio_device, selected_video_device,
       requested_audio_device, requested_video_device);
 }
@@ -157,17 +172,14 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
     const GURL& security_origin,
     blink::mojom::MediaStreamType type,
     const extensions::Extension* extension) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
   ContentSettingsType content_settings_type =
       type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
           ? ContentSettingsType::MEDIASTREAM_MIC
           : ContentSettingsType::MEDIASTREAM_CAMERA;
 
   DCHECK(!security_origin.is_empty());
-  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
   permissions::PermissionManager* permission_manager =
       PermissionManagerFactory::GetForProfile(profile);
   return permission_manager

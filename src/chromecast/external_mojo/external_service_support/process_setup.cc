@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/chromecast_buildflags.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -21,7 +22,7 @@
 namespace chromecast {
 namespace external_service_support {
 
-void CommonProcessInitialization(int argc, char** argv) {
+void CommonProcessInitialization(int argc, const char* const* argv) {
 #if !defined(OS_ANDROID)
   // Set C library locale to make sure CommandLine can parse argument values
   // in the correct encoding.
@@ -44,9 +45,11 @@ void CommonProcessInitialization(int argc, char** argv) {
 #endif  // BUILDFLAG(IS_CAST_DESKTOP_BUILD)
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FeatureList::InitializeInstance(
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+  if (!command_line->HasSwitch(switches::kDeferFeatureList)) {
+    base::FeatureList::InitializeInstance(
+        command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+        command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+  }
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   CrashReporterClient::Init();

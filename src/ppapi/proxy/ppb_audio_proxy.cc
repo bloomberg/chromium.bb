@@ -5,7 +5,6 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
@@ -40,6 +39,10 @@ class Audio : public Resource, public PPB_Audio_Shared {
         PP_Resource config_id,
         const AudioCallbackCombined& callback,
         void* user_data);
+
+  Audio(const Audio&) = delete;
+  Audio& operator=(const Audio&) = delete;
+
   ~Audio() override;
 
   // Resource overrides.
@@ -58,8 +61,6 @@ class Audio : public Resource, public PPB_Audio_Shared {
   // Owning reference to the current config object. This isn't actually used,
   // we just dish it out as requested by the plugin.
   PP_Resource config_;
-
-  DISALLOW_COPY_AND_ASSIGN(Audio);
 };
 
 Audio::Audio(const HostResource& audio_id,

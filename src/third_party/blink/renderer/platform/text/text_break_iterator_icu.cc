@@ -29,7 +29,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
@@ -53,6 +52,8 @@ class LineBreakIteratorPool final {
   }
 
   LineBreakIteratorPool() = default;
+  LineBreakIteratorPool(const LineBreakIteratorPool&) = delete;
+  LineBreakIteratorPool& operator=(const LineBreakIteratorPool&) = delete;
 
   icu::BreakIterator* Take(const AtomicString& locale) {
     icu::BreakIterator* iterator = nullptr;
@@ -112,8 +113,6 @@ class LineBreakIteratorPool final {
 
   friend WTF::ThreadSpecific<LineBreakIteratorPool>::
   operator LineBreakIteratorPool*();
-
-  DISALLOW_COPY_AND_ASSIGN(LineBreakIteratorPool);
 };
 
 enum TextContext { kNoContext, kPriorContext, kPrimaryContext };
@@ -428,7 +427,8 @@ static UText* TextOpenLatin1(UTextWithBuffer* ut_with_buffer,
     DCHECK(!text);
     return nullptr;
   }
-  TextInit(text, &kTextLatin1Funcs, string.data(), string.size(), prior_context,
+  TextInit(text, &kTextLatin1Funcs, string.data(),
+           base::checked_cast<unsigned>(string.size()), prior_context,
            prior_context_length);
   return text;
 }
@@ -575,7 +575,8 @@ static UText* TextOpenUTF16(UText* text,
     DCHECK(!text);
     return nullptr;
   }
-  TextInit(text, &kTextUTF16Funcs, string.data(), string.size(), prior_context,
+  TextInit(text, &kTextUTF16Funcs, string.data(),
+           base::checked_cast<unsigned>(string.size()), prior_context,
            prior_context_length);
   return text;
 }
@@ -733,7 +734,7 @@ static TextBreakIterator* GetNonSharedCharacterBreakIterator() {
     ICUError error_code;
     iterator = base::WrapUnique(icu::BreakIterator::createCharacterInstance(
         icu::Locale(CurrentTextBreakLocaleID()), error_code));
-    CHECK(U_SUCCESS(error_code) && iterator)
+    DCHECK(U_SUCCESS(error_code) && iterator)
         << "ICU could not open a break iterator: " << u_errorName(error_code)
         << " (" << error_code << ")";
   }

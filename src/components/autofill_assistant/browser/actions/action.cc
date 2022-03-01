@@ -22,6 +22,7 @@ bool Action::ShouldInterruptOnPause() const {
 
 void Action::ProcessAction(ProcessActionCallback callback) {
   action_stopwatch_.StartActiveTime();
+  delegate_->GetLogInfo().Clear();
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   InternalProcessAction(base::BindOnce(&Action::RecordActionTimes,
                                        weak_ptr_factory_.GetWeakPtr(),
@@ -52,6 +53,9 @@ void Action::UpdateProcessedAction(const ClientStatus& status) {
   // Safety check in case process action is run twice.
   *processed_action_proto_->mutable_action() = proto_;
   status.FillProto(processed_action_proto_.get());
+
+  auto& log_info = delegate_->GetLogInfo();
+  processed_action_proto_->mutable_status_details()->MergeFrom(log_info);
 }
 
 void Action::OnWaitForElementTimed(
@@ -84,12 +88,6 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 #else
   switch (action_case) {
-    case ActionProto::ActionInfoCase::kClick:
-      out << "Click";
-      break;
-    case ActionProto::ActionInfoCase::kSetFormValue:
-      out << "KeyboardInput";
-      break;
     case ActionProto::ActionInfoCase::kSelectOption:
       out << "SelectOption";
       break;
@@ -101,6 +99,9 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kTell:
       out << "Tell";
+      break;
+    case ActionProto::ActionInfoCase::kUpdateClientSettings:
+      out << "UpdateClientSettings";
       break;
     case ActionProto::ActionInfoCase::kShowCast:
       out << "ShowCast";
@@ -119,9 +120,6 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kShowProgressBar:
       out << "ShowProgressBar";
-      break;
-    case ActionProto::ActionInfoCase::kHighlightElement:
-      out << "HighlightElement";
       break;
     case ActionProto::ActionInfoCase::kShowDetails:
       out << "ShowDetails";
@@ -236,6 +234,33 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kClearPersistentUi:
       out << "ClearPersistentUi";
+      break;
+    case ActionProto::ActionInfoCase::kScrollIntoViewIfNeeded:
+      out << "ScrollIntoViewIfNeeded";
+      break;
+    case ActionProto::ActionInfoCase::kScrollWindow:
+      out << "ScrollWindow";
+      break;
+    case ActionProto::ActionInfoCase::kScrollContainer:
+      out << "ScrollContainer";
+      break;
+    case ActionProto::ActionInfoCase::kSetTouchableArea:
+      out << "SetTouchableArea";
+      break;
+    case ActionProto::ActionInfoCase::kDeletePassword:
+      out << "DeletePassword";
+      break;
+    case ActionProto::ActionInfoCase::kEditPassword:
+      out << "EditPassword";
+      break;
+    case ActionProto::ActionInfoCase::kBlurField:
+      out << "BlurField";
+      break;
+    case ActionProto::ActionInfoCase::kResetPendingCredentials:
+      out << "ResetPendingCredentials";
+      break;
+    case ActionProto::ActionInfoCase::kSaveSubmittedPassword:
+      out << "SaveSubmittedPassword";
       break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";

@@ -16,7 +16,7 @@ limitations under the License.
 // See docs in ../ops/array_ops.cc.
 
 // clang-format off
-#include "tensorflow/core/lib/bfloat16/bfloat16.h"
+#include "tensorflow/core/platform/bfloat16.h"
 
 #include <math.h>  // NOLINT
 #include <algorithm>  // NOLINT
@@ -93,7 +93,7 @@ class CheckNumericsOp<CPUDevice, T> : public OpKernel {
 
     auto in = context->input(0).flat<T>();
     const T* data = in.data();
-    const int64 size = in.size();
+    const int64_t size = in.size();
     // Check to see if any element of the tensor is NaN or Inf.
     int fp_props = std::accumulate(
         data, data + size, 0,

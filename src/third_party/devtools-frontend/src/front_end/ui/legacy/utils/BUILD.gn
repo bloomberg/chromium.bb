@@ -18,13 +18,17 @@ devtools_module("ui_utils") {
   deps = [
     "../../../core/root:bundle",
     "../../../ui/legacy/theme_support:bundle",
+    "../../components/helpers:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
   entrypoint = "utils.ts"
 
-  deps = [ ":ui_utils" ]
+  deps = [
+    ":ui_utils",
+    "../:legacy_css_files",
+  ]
 
   visibility = [ "../*" ]
 }

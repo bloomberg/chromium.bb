@@ -10,11 +10,12 @@ const DEVICE_TOOLBAR_SELECTOR = '.device-mode-toolbar';
 const DEVICE_TOOLBAR_OPTIONS_SELECTOR = '.device-mode-toolbar .device-mode-toolbar-options';
 const MEDIA_QUERY_INSPECTOR_SELECTOR = '.media-inspector-view';
 const DEVICE_LIST_DROPDOWN_SELECTOR = '.toolbar-button';
+const ZOOM_LIST_DROPDOWN_SELECTOR = '[aria-label*="Zoom"]';
 const SURFACE_DUO_MENU_ITEM_SELECTOR = '[aria-label*="Surface Duo"]';
 const EDIT_MENU_ITEM_SELECTOR = '[aria-label*="Edit"]';
-const TEST_DEVICE_MENU_ITEM_SELECTOR = '[aria-label*="Test device"]';
+const TEST_DEVICE_MENU_ITEM_SELECTOR = '[aria-label*="Test device, unchecked"]';
 const DUAL_SCREEN_BUTTON_SELECTOR = '[aria-label="Toggle dual-screen mode"]';
-const SCREEN_DIM_INPUT_SELECTOR = '.device-mode-size-input';
+const SCREEN_DIM_INPUT_SELECTOR = '[title="Width"]';
 
 export const reloadDockableFrontEnd = async () => {
   await reloadDevTools({canDock: true});
@@ -56,9 +57,15 @@ export const getButtonDisabled = async (spanButton: puppeteer.ElementHandle<HTML
   });
 };
 
-const clickDevicesDropDown = async () => {
+export const clickDevicesDropDown = async () => {
   const toolbar = await waitFor(DEVICE_TOOLBAR_SELECTOR);
   const button = await waitFor(DEVICE_LIST_DROPDOWN_SELECTOR, toolbar);
+  await click(button);
+};
+
+export const clickZoomDropDown = async () => {
+  const toolbar = await waitFor(DEVICE_TOOLBAR_SELECTOR);
+  const button = await waitFor(ZOOM_LIST_DROPDOWN_SELECTOR, toolbar);
   await click(button);
 };
 
@@ -71,6 +78,12 @@ export const selectToggleButton = async () => {
 export const selectEdit = async () => {
   await clickDevicesDropDown();
   const edit = await waitFor(EDIT_MENU_ITEM_SELECTOR);
+  await click(edit);
+};
+
+export const selectDevice = async (name: string) => {
+  await clickDevicesDropDown();
+  const edit = await waitFor(`[aria-label*="${name}, unchecked"]`);
   await click(edit);
 };
 
