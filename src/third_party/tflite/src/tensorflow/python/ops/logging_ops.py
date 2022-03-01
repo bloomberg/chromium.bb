@@ -14,10 +14,7 @@
 # ==============================================================================
 """Logging and Summary Operations."""
 # pylint: disable=protected-access
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
+import collections as py_collections
 import os
 import pprint
 import random
@@ -43,10 +40,14 @@ from tensorflow.python.util import nest
 from tensorflow.python.util.deprecation import deprecated
 from tensorflow.python.util.tf_export import tf_export
 
+
+def enable_interactive_logging():
+  pywrap_tfe.TFE_Py_EnableInteractivePythonLogging()
+
 # Register printing to the cell output if we are in a Colab or Jupyter Notebook.
 try:
   get_ipython()  # Exists in an ipython env like Jupyter or Colab
-  pywrap_tfe.TFE_Py_EnableInteractivePythonLogging()
+  enable_interactive_logging()
 except NameError:
   pass
 
@@ -54,11 +55,9 @@ except NameError:
 # call relies on certain conditionals for its dependencies.  Use
 # control_flow_ops.Assert.
 
-# Assert and Print are special symbols in python, so we must
-# have an upper-case version of them.
-#
-# For users with Python 3 or Python 2.7
-# with `from __future__ import print_function`, we could also allow lowercase.
+# Assert and Print are special symbols in Python 2, so we must
+# have an upper-case version of them. When support for it is dropped,
+# we can allow lowercase.
 # See https://github.com/tensorflow/tensorflow/issues/18053
 
 
@@ -83,10 +82,16 @@ def Print(input_, data, message=None, first_n=None, summarize=None, name=None):
     with jupyter notebook (printing to the notebook *server's* output, not into
     the notebook).
 
-  Additionally, to use tf.print in python 2.7, users must make sure to import
-  the following:
+  @compatibility(TF2)
+  This API is deprecated. Use `tf.print` instead. `tf.print` does not need the
+  `input_` argument.
 
-  `from __future__ import print_function`
+  `tf.print` works in TF2 when executing eagerly and inside a `tf.function`.
+
+  In TF1-styled sessions, an explicit control dependency declaration is needed
+  to execute the `tf.print` operation. Refer to the documentation of
+  `tf.print` for more details.
+  @end_compatibility
 
   Args:
     input_: A tensor passed through this op.
@@ -148,11 +153,6 @@ def print_v2(*inputs, **kwargs):
   Python objects. Printed tensors will recursively show the first and last
   elements of each dimension to summarize.
 
-  @compatibility(python2)
-  In python 2.7, make sure to import the following:
-  `from __future__ import print_function`
-  @end_compatibility
-
   Example:
     Single-input usage:
 
@@ -196,26 +196,27 @@ def print_v2(*inputs, **kwargs):
 
     (This prints "[0 1 2 ... 7 8 9]" to sys.stderr)
 
-  @compatibility(TF 1.x Graphs and Sessions)
-  In graphs manually created outside of `tf.function`, this method returns
-  the created TF operator that prints the data. To make sure the
-  operator runs, users need to pass the produced op to
-  `tf.compat.v1.Session`'s run method, or to use the op as a control
-  dependency for executed ops by specifying
-  `with tf.compat.v1.control_dependencies([print_op])`.
-  @end_compatibility
+  *Compatibility usage in TF 1.x graphs*:
 
-    Compatibility usage in TF 1.x graphs:
+    In graphs manually created outside of `tf.function`, this method returns
+    the created TF operator that prints the data. To make sure the
+    operator runs, users need to pass the produced op to
+    `tf.compat.v1.Session`'s run method, or to use the op as a control
+    dependency for executed ops by specifying
+    `with tf.compat.v1.control_dependencies([print_op])`.
 
     ```python
+    tf.compat.v1.disable_v2_behavior()  # for TF1 compatibility only
+
     sess = tf.compat.v1.Session()
     with sess.as_default():
-        tensor = tf.range(10)
-        print_op = tf.print("tensors:", tensor, {2: tensor * 2},
-                            output_stream=sys.stdout)
-        with tf.control_dependencies([print_op]):
-          tripled_tensor = tensor * 3
-        sess.run(tripled_tensor)
+      tensor = tf.range(10)
+      print_op = tf.print("tensors:", tensor, {2: tensor * 2},
+                          output_stream=sys.stdout)
+      with tf.control_dependencies([print_op]):
+        tripled_tensor = tensor * 3
+
+      sess.run(tripled_tensor)
     ```
 
     (This prints "tensors: [0 1 2 ... 7 8 9] {2: [0 2 4 ... 14 16 18]}" to
@@ -241,8 +242,8 @@ def print_v2(*inputs, **kwargs):
       elements of each dimension are printed for each tensor. If set to -1, it
       will print all elements of every tensor.
     sep: The string to use to separate the inputs. Defaults to " ".
-    end: End character that is appended at the end the printed string.
-      Defaults to the newline character.
+    end: End character that is appended at the end the printed string. Defaults
+      to the newline character.
     name: A name for the operation (optional).
 
   Returns:
@@ -305,7 +306,7 @@ def print_v2(*inputs, **kwargs):
                        "File needs to be in the form of 'file://<filepath>'.")
 
   # If we are only printing a single string scalar, there is no need to format
-  if (len(inputs) == 1 and tensor_util.is_tensor(inputs[0]) and
+  if (len(inputs) == 1 and tensor_util.is_tf_type(inputs[0]) and
       (not isinstance(inputs[0], sparse_tensor.SparseTensor)) and
       (inputs[0].shape.ndims == 0) and (inputs[0].dtype == dtypes.string)):
     formatted_string = inputs[0]
@@ -317,8 +318,21 @@ def print_v2(*inputs, **kwargs):
     # printed input.
     templates = []
     tensors = []
+    # If an input to the print function is of type `OrderedDict`, sort its
+    # elements by the keys for consistency with the ordering of `nest.flatten`.
+    # This is not needed for `dict` types because `pprint.pformat()` takes care
+    # of printing the template in a sorted fashion.
+    inputs_ordered_dicts_sorted = []
+    for input_ in inputs:
+      if isinstance(input_, py_collections.OrderedDict):
+        inputs_ordered_dicts_sorted.append(
+            py_collections.OrderedDict(sorted(input_.items())))
+      else:
+        inputs_ordered_dicts_sorted.append(input_)
     tensor_free_structure = nest.map_structure(
-        lambda x: "" if tensor_util.is_tensor(x) else x, inputs)
+        lambda x: "" if tensor_util.is_tf_type(x) else x,
+        inputs_ordered_dicts_sorted)
+
     tensor_free_template = " ".join(
         pprint.pformat(x) for x in tensor_free_structure)
     placeholder = _generate_placeholder_string(tensor_free_template)
@@ -336,7 +350,7 @@ def print_v2(*inputs, **kwargs):
           placeholders.append(
               "SparseTensor(indices={}, values={}, shape={})".format(
                   placeholder, placeholder, placeholder))
-        elif tensor_util.is_tensor(x):
+        elif tensor_util.is_tf_type(x):
           tensors.append(x)
           placeholders.append(placeholder)
         else:
@@ -377,6 +391,7 @@ def print_v2(*inputs, **kwargs):
 
   return gen_logging_ops.print_v2(
       formatted_string, output_stream=output_stream_string, name=name, end=end)
+
 
 # pylint: enable=g-doc-args
 

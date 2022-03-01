@@ -7,6 +7,8 @@
 #include "src/ast/ast-source-ranges.h"
 #include "src/ast/ast.h"
 #include "src/base/hashmap.h"
+#include "src/common/assert-scope.h"
+#include "src/common/globals.h"
 #include "src/debug/debug.h"
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/execution/frames-inl.h"
@@ -516,7 +518,7 @@ void CollectAndMaybeResetCounts(Isolate* isolate,
         SharedFunctionInfo shared = vector.shared_function_info();
         DCHECK(shared.IsSubjectToDebugging());
         uint32_t count = static_cast<uint32_t>(vector.invocation_count());
-        if (reset_count) vector.clear_invocation_count();
+        if (reset_count) vector.clear_invocation_count(kRelaxedStore);
         counter_map->Add(shared, count);
       }
       break;
@@ -526,6 +528,7 @@ void CollectAndMaybeResetCounts(Isolate* isolate,
                   ->feedback_vectors_for_profiling_tools()
                   ->IsArrayList());
       DCHECK_EQ(v8::debug::CoverageMode::kBestEffort, coverage_mode);
+      AllowGarbageCollection allow_gc;
       HeapObjectIterator heap_iterator(isolate->heap());
       for (HeapObject current_obj = heap_iterator.Next();
            !current_obj.is_null(); current_obj = heap_iterator.Next()) {
@@ -793,7 +796,7 @@ void Coverage::SelectMode(Isolate* isolate, debug::CoverageMode mode) {
             shared.set_has_reported_binary_coverage(false);
           } else if (o.IsFeedbackVector()) {
             // In any case, clear any collected invocation counts.
-            FeedbackVector::cast(o).clear_invocation_count();
+            FeedbackVector::cast(o).clear_invocation_count(kRelaxedStore);
           }
         }
       }

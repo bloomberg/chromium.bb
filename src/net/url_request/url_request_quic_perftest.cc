@@ -9,11 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -26,6 +25,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_status_code.h"
 #include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/quic_context.h"
@@ -118,10 +118,9 @@ class URLRequestQuicPerfTest : public ::testing::Test {
                                               kOriginHost, tcp_server_->port());
     EXPECT_TRUE(host_resolver_->AddRuleFromString(map_rule));
 
-    net::HttpNetworkSession::Context network_session_context;
+    net::HttpNetworkSessionContext network_session_context;
     network_session_context.cert_verifier = &cert_verifier_;
-    std::unique_ptr<HttpNetworkSession::Params> params(
-        new HttpNetworkSession::Params);
+    auto params = std::make_unique<HttpNetworkSessionParams>();
     params->enable_quic = true;
     params->enable_user_alternate_protocol_ports = true;
     quic_context_.params()->allow_remote_alt_svc = true;

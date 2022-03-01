@@ -1,3 +1,7 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
  *
@@ -11,7 +15,7 @@
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
- *     * Neither the name of Google Inc. nor the names of its
+ *     * Neither the #name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -28,13 +32,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
-import type * as Protocol from '../../generated/protocol.js';
+import * as Protocol from '../../generated/protocol.js';
 
-import type {DebuggerModel, FunctionDetails} from './DebuggerModel.js'; // eslint-disable-line no-unused-vars
-import type {RuntimeModel} from './RuntimeModel.js';                    // eslint-disable-line no-unused-vars
+import type {DebuggerModel, FunctionDetails} from './DebuggerModel.js';
+import type {RuntimeModel} from './RuntimeModel.js';
 
 export class RemoteObject {
   /**
@@ -58,6 +60,20 @@ export class RemoteObject {
     }
 
     return remoteObject.type;
+  }
+
+  static isNullOrUndefined(remoteObject: RemoteObject|null|undefined): boolean {
+    if (remoteObject === null || remoteObject === undefined) {
+      return true;
+    }
+    switch (remoteObject.type) {
+      case Protocol.Runtime.RemoteObjectType.Object:
+        return remoteObject.subtype === Protocol.Runtime.RemoteObjectSubtype.Null;
+      case Protocol.Runtime.RemoteObjectType.Undefined:
+        return true;
+      default:
+        return false;
+    }
   }
 
   static arrayNameFromDescription(description: string): string {
@@ -153,10 +169,12 @@ export class RemoteObject {
     return {value: objectAsProtocolRemoteObject.value};
   }
 
-  static async loadFromObjectPerProto(object: RemoteObject, generatePreview: boolean): Promise<GetPropertiesResult> {
+  static async loadFromObjectPerProto(
+      object: RemoteObject, generatePreview: boolean,
+      nonIndexedPropertiesOnly: boolean = false): Promise<GetPropertiesResult> {
     const result = await Promise.all([
-      object.getAllProperties(true /* accessorPropertiesOnly */, generatePreview),
-      object.getOwnProperties(generatePreview),
+      object.getAllProperties(true /* accessorPropertiesOnly */, generatePreview, nonIndexedPropertiesOnly),
+      object.getOwnProperties(generatePreview, nonIndexedPropertiesOnly),
     ]);
     const accessorProperties = result[0].properties;
     const ownProperties = result[1].properties;
@@ -170,7 +188,9 @@ export class RemoteObject {
       const property = accessorProperties[i];
       if (property.symbol) {
         propertySymbols.push(property);
-      } else {
+      } else if (property.isOwn || property.name !== '__proto__') {
+        // TODO(crbug/1076820): Eventually we should move away from
+        // showing accessor #properties directly on the receiver.
         propertiesMap.set(property.name, property);
       }
     }
@@ -196,7 +216,8 @@ export class RemoteObject {
   }
 
   get objectId(): Protocol.Runtime.RemoteObjectId|undefined {
-    return 'Not implemented';
+    // TODO(crbug.com/1226471): Return undefined here.
+    return 'Not implemented' as Protocol.Runtime.RemoteObjectId;
   }
 
   get type(): string {
@@ -245,11 +266,12 @@ export class RemoteObject {
     throw 'Not implemented';
   }
 
-  getOwnProperties(_generatePreview: boolean): Promise<GetPropertiesResult> {
+  getOwnProperties(_generatePreview: boolean, _nonIndexedPropertiesOnly?: boolean): Promise<GetPropertiesResult> {
     throw 'Not implemented';
   }
 
-  getAllProperties(_accessorPropertiesOnly: boolean, _generatePreview: boolean): Promise<GetPropertiesResult> {
+  getAllProperties(_accessorPropertiesOnly: boolean, _generatePreview: boolean, _nonIndexedPropertiesOnly?: boolean):
+      Promise<GetPropertiesResult> {
     throw 'Not implemented';
   }
 
@@ -290,51 +312,51 @@ export class RemoteObject {
 }
 
 export class RemoteObjectImpl extends RemoteObject {
-  _runtimeModel: RuntimeModel;
-  _runtimeAgent: ProtocolProxyApi.RuntimeApi;
-  _type: string;
-  _subtype: string|undefined;
-  _objectId: string|undefined;
-  _description: string|undefined;
-  _hasChildren: boolean;
-  _preview: Protocol.Runtime.ObjectPreview|undefined;
-  _unserializableValue: string|undefined;
+  runtimeModelInternal: RuntimeModel;
+  readonly #runtimeAgent: ProtocolProxyApi.RuntimeApi;
+  readonly #typeInternal: string;
+  readonly #subtypeInternal: string|undefined;
+  #objectIdInternal: Protocol.Runtime.RemoteObjectId|undefined;
+  #descriptionInternal: string|undefined;
+  hasChildrenInternal: boolean;
+  readonly #previewInternal: Protocol.Runtime.ObjectPreview|undefined;
+  readonly #unserializableValueInternal: string|undefined;
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _value: any;
-  _customPreview: Protocol.Runtime.CustomPreview|null;
-  _className: string|null;
+  readonly #valueInternal: any;
+  readonly #customPreviewInternal: Protocol.Runtime.CustomPreview|null;
+  readonly #classNameInternal: string|null;
 
   constructor(
+      runtimeModel: RuntimeModel, objectId: Protocol.Runtime.RemoteObjectId|undefined, type: string,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      runtimeModel: RuntimeModel, objectId: string|undefined, type: string, subtype: string|undefined, value: any,
-      unserializableValue?: string, description?: string, preview?: Protocol.Runtime.ObjectPreview,
-      customPreview?: Protocol.Runtime.CustomPreview, className?: string) {
+      subtype: string|undefined, value: any, unserializableValue?: string, description?: string,
+      preview?: Protocol.Runtime.ObjectPreview, customPreview?: Protocol.Runtime.CustomPreview, className?: string) {
     super();
 
-    this._runtimeModel = runtimeModel;
-    this._runtimeAgent = runtimeModel.target().runtimeAgent();
+    this.runtimeModelInternal = runtimeModel;
+    this.#runtimeAgent = runtimeModel.target().runtimeAgent();
 
-    this._type = type;
-    this._subtype = subtype;
+    this.#typeInternal = type;
+    this.#subtypeInternal = subtype;
     if (objectId) {
       // handle
-      this._objectId = objectId;
-      this._description = description;
-      this._hasChildren = (type !== 'symbol');
-      this._preview = preview;
+      this.#objectIdInternal = objectId;
+      this.#descriptionInternal = description;
+      this.hasChildrenInternal = (type !== 'symbol');
+      this.#previewInternal = preview;
     } else {
-      this._description = description;
+      this.#descriptionInternal = description;
       if (!this.description && unserializableValue) {
-        this._description = unserializableValue;
+        this.#descriptionInternal = unserializableValue;
       }
-      if (!this._description && (typeof value !== 'object' || value === null)) {
-        this._description = String(value);
+      if (!this.#descriptionInternal && (typeof value !== 'object' || value === null)) {
+        this.#descriptionInternal = String(value);
       }
-      this._hasChildren = false;
+      this.hasChildrenInternal = false;
       if (typeof unserializableValue === 'string') {
-        this._unserializableValue = unserializableValue;
+        this.#unserializableValueInternal = unserializableValue;
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
         // @ts-expect-error
         if (unserializableValue === UnserializableNumber.Infinity ||
@@ -347,115 +369,124 @@ export class RemoteObjectImpl extends RemoteObject {
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
             // @ts-expect-error
             unserializableValue === UnserializableNumber.NaN) {
-          this._value = Number(unserializableValue);
+          this.#valueInternal = Number(unserializableValue);
         } else if (type === 'bigint' && unserializableValue.endsWith('n')) {
-          this._value = BigInt(unserializableValue.substring(0, unserializableValue.length - 1));
+          this.#valueInternal = BigInt(unserializableValue.substring(0, unserializableValue.length - 1));
         } else {
-          this._value = unserializableValue;
+          this.#valueInternal = unserializableValue;
         }
 
       } else {
-        this._value = value;
+        this.#valueInternal = value;
       }
     }
-    this._customPreview = customPreview || null;
-    this._className = typeof className === 'string' ? className : null;
+    this.#customPreviewInternal = customPreview || null;
+    this.#classNameInternal = typeof className === 'string' ? className : null;
   }
 
   customPreview(): Protocol.Runtime.CustomPreview|null {
-    return this._customPreview;
+    return this.#customPreviewInternal;
   }
 
   get objectId(): Protocol.Runtime.RemoteObjectId|undefined {
-    return this._objectId;
+    return this.#objectIdInternal;
   }
 
   get type(): string {
-    return this._type;
+    return this.#typeInternal;
   }
 
   get subtype(): string|undefined {
-    return this._subtype;
+    return this.#subtypeInternal;
   }
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get value(): any {
-    return this._value;
+    return this.#valueInternal;
   }
 
   unserializableValue(): string|undefined {
-    return this._unserializableValue;
+    return this.#unserializableValueInternal;
   }
 
   get description(): string|undefined {
-    return this._description;
+    return this.#descriptionInternal;
   }
 
   set description(description: string|undefined) {
-    this._description = description;
+    this.#descriptionInternal = description;
   }
 
   get hasChildren(): boolean {
-    return this._hasChildren;
+    return this.hasChildrenInternal;
   }
 
   get preview(): Protocol.Runtime.ObjectPreview|undefined {
-    return this._preview;
+    return this.#previewInternal;
   }
 
   get className(): string|null {
-    return this._className;
+    return this.#classNameInternal;
   }
 
-  getOwnProperties(generatePreview: boolean): Promise<GetPropertiesResult> {
-    return this.doGetProperties(true, false, generatePreview);
+  getOwnProperties(generatePreview: boolean, nonIndexedPropertiesOnly: boolean = false): Promise<GetPropertiesResult> {
+    return this.doGetProperties(true, false, nonIndexedPropertiesOnly, generatePreview);
   }
 
-  getAllProperties(accessorPropertiesOnly: boolean, generatePreview: boolean): Promise<GetPropertiesResult> {
-    return this.doGetProperties(false, accessorPropertiesOnly, generatePreview);
+  getAllProperties(
+      accessorPropertiesOnly: boolean, generatePreview: boolean,
+      nonIndexedPropertiesOnly: boolean = false): Promise<GetPropertiesResult> {
+    return this.doGetProperties(false, accessorPropertiesOnly, nonIndexedPropertiesOnly, generatePreview);
   }
 
-  async _createRemoteObject(object: Protocol.Runtime.RemoteObject): Promise<RemoteObject> {
-    return this._runtimeModel.createRemoteObject(object);
+  async createRemoteObject(object: Protocol.Runtime.RemoteObject): Promise<RemoteObject> {
+    return this.runtimeModelInternal.createRemoteObject(object);
   }
 
-  async doGetProperties(ownProperties: boolean, accessorPropertiesOnly: boolean, generatePreview: boolean):
-      Promise<GetPropertiesResult> {
-    if (!this._objectId) {
+  async doGetProperties(
+      ownProperties: boolean, accessorPropertiesOnly: boolean, nonIndexedPropertiesOnly: boolean,
+      generatePreview: boolean): Promise<GetPropertiesResult> {
+    if (!this.#objectIdInternal) {
       return {properties: null, internalProperties: null} as GetPropertiesResult;
     }
 
-    const response = await this._runtimeAgent.invoke_getProperties(
-        {objectId: this._objectId, ownProperties, accessorPropertiesOnly, generatePreview});
+    const response = await this.#runtimeAgent.invoke_getProperties({
+      objectId: this.#objectIdInternal,
+      ownProperties,
+      accessorPropertiesOnly,
+      nonIndexedPropertiesOnly,
+      generatePreview,
+    });
     if (response.getError()) {
       return {properties: null, internalProperties: null} as GetPropertiesResult;
     }
     if (response.exceptionDetails) {
-      this._runtimeModel.exceptionThrown(Date.now(), response.exceptionDetails);
+      this.runtimeModelInternal.exceptionThrown(Date.now(), response.exceptionDetails);
       return {properties: null, internalProperties: null} as GetPropertiesResult;
     }
     const {result: properties = [], internalProperties = [], privateProperties = []} = response;
     const result = [];
     for (const property of properties) {
-      const propertyValue = property.value ? await this._createRemoteObject(property.value) : null;
-      const propertySymbol = property.symbol ? this._runtimeModel.createRemoteObject(property.symbol) : null;
+      const propertyValue = property.value ? await this.createRemoteObject(property.value) : null;
+      const propertySymbol = property.symbol ? this.runtimeModelInternal.createRemoteObject(property.symbol) : null;
       const remoteProperty = new RemoteObjectProperty(
           property.name, propertyValue, Boolean(property.enumerable), Boolean(property.writable),
           Boolean(property.isOwn), Boolean(property.wasThrown), propertySymbol);
 
       if (typeof property.value === 'undefined') {
         if (property.get && property.get.type !== 'undefined') {
-          remoteProperty.getter = this._runtimeModel.createRemoteObject(property.get);
+          remoteProperty.getter = this.runtimeModelInternal.createRemoteObject(property.get);
         }
         if (property.set && property.set.type !== 'undefined') {
-          remoteProperty.setter = this._runtimeModel.createRemoteObject(property.set);
+          remoteProperty.setter = this.runtimeModelInternal.createRemoteObject(property.set);
         }
       }
       result.push(remoteProperty);
     }
     for (const property of privateProperties) {
-      const propertyValue = this._runtimeModel.createRemoteObject((property.value as Protocol.Runtime.RemoteObject));
+      const propertyValue =
+          this.runtimeModelInternal.createRemoteObject((property.value as Protocol.Runtime.RemoteObject));
       const remoteProperty = new RemoteObjectProperty(
           property.name, propertyValue, true, true, true, false, undefined, false, undefined, true);
       result.push(remoteProperty);
@@ -469,7 +500,7 @@ export class RemoteObjectImpl extends RemoteObject {
       if (property.name === '[[StableObjectId]]') {
         continue;
       }
-      const propertyValue = this._runtimeModel.createRemoteObject(property.value);
+      const propertyValue = this.runtimeModelInternal.createRemoteObject(property.value);
       internalPropertiesResult.push(
           new RemoteObjectProperty(property.name, propertyValue, true, false, undefined, undefined, undefined, true));
     }
@@ -477,11 +508,11 @@ export class RemoteObjectImpl extends RemoteObject {
   }
 
   async setPropertyValue(name: string|Protocol.Runtime.CallArgument, value: string): Promise<string|undefined> {
-    if (!this._objectId) {
+    if (!this.#objectIdInternal) {
       return 'Can’t set a property of non-object.';
     }
 
-    const response = await this._runtimeAgent.invoke_evaluate({expression: value, silent: true});
+    const response = await this.#runtimeAgent.invoke_evaluate({expression: value, silent: true});
     if (response.getError() || response.exceptionDetails) {
       return response.getError() ||
           (response.result.type !== 'string' ? response.result.description : response.result.value as string);
@@ -494,7 +525,7 @@ export class RemoteObjectImpl extends RemoteObject {
     const resultPromise = this.doSetObjectPropertyValue(response.result, name);
 
     if (response.result.objectId) {
-      this._runtimeAgent.invoke_releaseObject({objectId: response.result.objectId});
+      this.#runtimeAgent.invoke_releaseObject({objectId: response.result.objectId});
     }
 
     return resultPromise;
@@ -509,20 +540,28 @@ export class RemoteObjectImpl extends RemoteObject {
     const setPropertyValueFunction = 'function(a, b) { this[a] = b; }';
 
     const argv = [name, RemoteObject.toCallArgument(result)];
-    const response = await this._runtimeAgent.invoke_callFunctionOn(
-        {objectId: this._objectId, functionDeclaration: setPropertyValueFunction, arguments: argv, silent: true});
+    const response = await this.#runtimeAgent.invoke_callFunctionOn({
+      objectId: this.#objectIdInternal,
+      functionDeclaration: setPropertyValueFunction,
+      arguments: argv,
+      silent: true,
+    });
     const error = response.getError();
     return error || response.exceptionDetails ? error || response.result.description : undefined;
   }
 
   async deleteProperty(name: Protocol.Runtime.CallArgument): Promise<string|undefined> {
-    if (!this._objectId) {
+    if (!this.#objectIdInternal) {
       return 'Can’t delete a property of non-object.';
     }
 
     const deletePropertyFunction = 'function(a) { delete this[a]; return !(a in this); }';
-    const response = await this._runtimeAgent.invoke_callFunctionOn(
-        {objectId: this._objectId, functionDeclaration: deletePropertyFunction, arguments: [name], silent: true});
+    const response = await this.#runtimeAgent.invoke_callFunctionOn({
+      objectId: this.#objectIdInternal,
+      functionDeclaration: deletePropertyFunction,
+      arguments: [name],
+      silent: true,
+    });
 
     if (response.getError() || response.exceptionDetails) {
       return response.getError() || response.result.description;
@@ -538,14 +577,18 @@ export class RemoteObjectImpl extends RemoteObject {
   async callFunction<T>(
       functionDeclaration: (this: Object, ...arg1: unknown[]) => T,
       args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult> {
-    const response = await this._runtimeAgent.invoke_callFunctionOn(
-        {objectId: this._objectId, functionDeclaration: functionDeclaration.toString(), arguments: args, silent: true});
+    const response = await this.#runtimeAgent.invoke_callFunctionOn({
+      objectId: this.#objectIdInternal,
+      functionDeclaration: functionDeclaration.toString(),
+      arguments: args,
+      silent: true,
+    });
     if (response.getError()) {
       return {object: null, wasThrown: false};
     }
     // TODO: release exceptionDetails object
     return {
-      object: this._runtimeModel.createRemoteObject(response.result),
+      object: this.runtimeModelInternal.createRemoteObject(response.result),
       wasThrown: Boolean(response.exceptionDetails),
     };
   }
@@ -553,25 +596,22 @@ export class RemoteObjectImpl extends RemoteObject {
   async callFunctionJSON<T>(
       functionDeclaration: (this: Object, ...arg1: unknown[]) => T,
       args: Protocol.Runtime.CallArgument[]|undefined): Promise<T> {
-    const response = await this._runtimeAgent.invoke_callFunctionOn({
-      objectId: this._objectId,
+    const response = await this.#runtimeAgent.invoke_callFunctionOn({
+      objectId: this.#objectIdInternal,
       functionDeclaration: functionDeclaration.toString(),
       arguments: args,
       silent: true,
       returnByValue: true,
     });
 
-    if (!this._objectId) {
-      return this.value;
-    }
     return response.getError() || response.exceptionDetails ? null : response.result.value;
   }
 
   release(): void {
-    if (!this._objectId) {
+    if (!this.#objectIdInternal) {
       return;
     }
-    this._runtimeAgent.invoke_releaseObject({objectId: this._objectId});
+    this.#runtimeAgent.invoke_releaseObject({objectId: this.#objectIdInternal});
   }
 
   arrayLength(): number {
@@ -583,31 +623,31 @@ export class RemoteObjectImpl extends RemoteObject {
   }
 
   debuggerModel(): DebuggerModel {
-    return this._runtimeModel.debuggerModel();
+    return this.runtimeModelInternal.debuggerModel();
   }
 
   runtimeModel(): RuntimeModel {
-    return this._runtimeModel;
+    return this.runtimeModelInternal;
   }
 
   isNode(): boolean {
-    return Boolean(this._objectId) && this.type === 'object' && this.subtype === 'node';
+    return Boolean(this.#objectIdInternal) && this.type === 'object' && this.subtype === 'node';
   }
 }
 
 export class ScopeRemoteObject extends RemoteObjectImpl {
-  _scopeRef: ScopeRef;
-  _savedScopeProperties: RemoteObjectProperty[]|undefined;
+  #scopeRef: ScopeRef;
+  #savedScopeProperties: RemoteObjectProperty[]|undefined;
 
   constructor(
-      runtimeModel: RuntimeModel, objectId: string|undefined, scopeRef: ScopeRef, type: string,
+      runtimeModel: RuntimeModel, objectId: Protocol.Runtime.RemoteObjectId|undefined, scopeRef: ScopeRef, type: string,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       subtype: string|undefined, value: any, unserializableValue?: string, description?: string,
       preview?: Protocol.Runtime.ObjectPreview) {
     super(runtimeModel, objectId, type, subtype, value, unserializableValue, description, preview);
-    this._scopeRef = scopeRef;
-    this._savedScopeProperties = undefined;
+    this.#scopeRef = scopeRef;
+    this.#savedScopeProperties = undefined;
   }
 
   async doGetProperties(ownProperties: boolean, accessorPropertiesOnly: boolean, _generatePreview: boolean):
@@ -616,19 +656,19 @@ export class ScopeRemoteObject extends RemoteObjectImpl {
       return {properties: [], internalProperties: []} as GetPropertiesResult;
     }
 
-    if (this._savedScopeProperties) {
+    if (this.#savedScopeProperties) {
       // No need to reload scope variables, as the remote object never
-      // changes its properties. If variable is updated, the properties
+      // changes its #properties. If variable is updated, the #properties
       // array is patched locally.
-      return {properties: this._savedScopeProperties.slice(), internalProperties: null};
+      return {properties: this.#savedScopeProperties.slice(), internalProperties: null};
     }
 
-    const allProperties =
-        await super.doGetProperties(ownProperties, accessorPropertiesOnly, true /* generatePreview */);
-    if (this._scopeRef && Array.isArray(allProperties.properties)) {
-      this._savedScopeProperties = allProperties.properties.slice();
-      if (!this._scopeRef.callFrameId) {
-        for (const property of this._savedScopeProperties) {
+    const allProperties = await super.doGetProperties(
+        ownProperties, accessorPropertiesOnly, false /* nonIndexedPropertiesOnly */, true /* generatePreview */);
+    if (this.#scopeRef && Array.isArray(allProperties.properties)) {
+      this.#savedScopeProperties = allProperties.properties.slice();
+      if (!this.#scopeRef.callFrameId) {
+        for (const property of this.#savedScopeProperties) {
           property.writable = false;
         }
       }
@@ -640,14 +680,15 @@ export class ScopeRemoteObject extends RemoteObjectImpl {
       Promise<string|undefined> {
     const name = (argumentName.value as string);
     const error = await this.debuggerModel().setVariableValue(
-        this._scopeRef.number, name, RemoteObject.toCallArgument(result), (this._scopeRef.callFrameId as string));
+        this.#scopeRef.number, name, RemoteObject.toCallArgument(result),
+        (this.#scopeRef.callFrameId as Protocol.Debugger.CallFrameId));
     if (error) {
       return error;
     }
-    if (this._savedScopeProperties) {
-      for (const property of this._savedScopeProperties) {
+    if (this.#savedScopeProperties) {
+      for (const property of this.#savedScopeProperties) {
         if (property.name === name) {
-          property.value = this._runtimeModel.createRemoteObject(result);
+          property.value = this.runtimeModel().createRemoteObject(result);
         }
       }
     }
@@ -657,8 +698,8 @@ export class ScopeRemoteObject extends RemoteObjectImpl {
 
 export class ScopeRef {
   number: number;
-  callFrameId: string|undefined;
-  constructor(number: number, callFrameId?: string) {
+  callFrameId: Protocol.Debugger.CallFrameId|undefined;
+  constructor(number: number, callFrameId?: Protocol.Debugger.CallFrameId) {
     this.number = number;
     this.callFrameId = callFrameId;
   }
@@ -721,21 +762,21 @@ export class RemoteObjectProperty {
 // Below is a wrapper around a local object that implements the RemoteObject interface,
 // which can be used by the UI code (primarily ObjectPropertiesSection).
 // Note that only JSON-compliant objects are currently supported, as there's no provision
-// for traversing prototypes, extracting class names via constructor, handling properties
+// for traversing prototypes, extracting class names via constructor, handling #properties
 // or functions.
 
 export class LocalJSONObject extends RemoteObject {
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _value: any;
-  _cachedDescription!: string;
-  _cachedChildren!: RemoteObjectProperty[];
+  valueInternal: any;
+  #cachedDescription!: string;
+  #cachedChildren!: RemoteObjectProperty[];
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(value: any) {
     super();
-    this._value = value;
+    this.valueInternal = value;
   }
 
   get objectId(): Protocol.Runtime.RemoteObjectId|undefined {
@@ -745,21 +786,21 @@ export class LocalJSONObject extends RemoteObject {
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get value(): any {
-    return this._value;
+    return this.valueInternal;
   }
 
   unserializableValue(): string|undefined {
-    const unserializableDescription = RemoteObject.unserializableDescription(this._value);
+    const unserializableDescription = RemoteObject.unserializableDescription(this.valueInternal);
     return unserializableDescription || undefined;
   }
 
   get description(): string {
-    if (this._cachedDescription) {
-      return this._cachedDescription;
+    if (this.#cachedDescription) {
+      return this.#cachedDescription;
     }
 
     function formatArrayItem(this: LocalJSONObject, property: RemoteObjectProperty): string {
-      return this._formatValue(property.value || null);
+      return this.formatValue(property.value || null);
     }
 
     function formatObjectItem(this: LocalJSONObject, property: RemoteObjectProperty): string {
@@ -767,31 +808,31 @@ export class LocalJSONObject extends RemoteObject {
       if (/^\s|\s$|^$|\n/.test(name)) {
         name = '"' + name.replace(/\n/g, '\u21B5') + '"';
       }
-      return name + ': ' + this._formatValue(property.value || null);
+      return name + ': ' + this.formatValue(property.value || null);
     }
 
     if (this.type === 'object') {
       switch (this.subtype) {
         case 'array':
-          this._cachedDescription = this._concatenate('[', ']', formatArrayItem.bind(this));
+          this.#cachedDescription = this.concatenate('[', ']', formatArrayItem.bind(this));
           break;
         case 'date':
-          this._cachedDescription = String(this._value);
+          this.#cachedDescription = String(this.valueInternal);
           break;
         case 'null':
-          this._cachedDescription = 'null';
+          this.#cachedDescription = 'null';
           break;
         default:
-          this._cachedDescription = this._concatenate('{', '}', formatObjectItem.bind(this));
+          this.#cachedDescription = this.concatenate('{', '}', formatObjectItem.bind(this));
       }
     } else {
-      this._cachedDescription = String(this._value);
+      this.#cachedDescription = String(this.valueInternal);
     }
 
-    return this._cachedDescription;
+    return this.#cachedDescription;
   }
 
-  _formatValue(value: RemoteObject|null): string {
+  private formatValue(value: RemoteObject|null): string {
     if (!value) {
       return 'undefined';
     }
@@ -802,11 +843,11 @@ export class LocalJSONObject extends RemoteObject {
     return description;
   }
 
-  _concatenate(prefix: string, suffix: string, formatProperty: (arg0: RemoteObjectProperty) => string): string {
+  private concatenate(prefix: string, suffix: string, formatProperty: (arg0: RemoteObjectProperty) => string): string {
     const previewChars = 100;
 
     let buffer = prefix;
-    const children = this._children();
+    const children = this.children();
     for (let i = 0; i < children.length; ++i) {
       const itemDescription = formatProperty(children[i]);
       if (buffer.length + itemDescription.length > previewChars) {
@@ -823,19 +864,19 @@ export class LocalJSONObject extends RemoteObject {
   }
 
   get type(): string {
-    return typeof this._value;
+    return typeof this.valueInternal;
   }
 
   get subtype(): string|undefined {
-    if (this._value === null) {
+    if (this.valueInternal === null) {
       return 'null';
     }
 
-    if (Array.isArray(this._value)) {
+    if (Array.isArray(this.valueInternal)) {
       return 'array';
     }
 
-    if (this._value instanceof Date) {
+    if (this.valueInternal instanceof Date) {
       return 'date';
     }
 
@@ -843,30 +884,42 @@ export class LocalJSONObject extends RemoteObject {
   }
 
   get hasChildren(): boolean {
-    if ((typeof this._value !== 'object') || (this._value === null)) {
+    if ((typeof this.valueInternal !== 'object') || (this.valueInternal === null)) {
       return false;
     }
-    return Boolean(Object.keys((this._value as Object)).length);
+    return Boolean(Object.keys((this.valueInternal as Object)).length);
   }
 
-  async getOwnProperties(_generatePreview: boolean): Promise<GetPropertiesResult> {
-    return {properties: this._children(), internalProperties: null} as GetPropertiesResult;
-  }
-
-  async getAllProperties(accessorPropertiesOnly: boolean, _generatePreview: boolean): Promise<GetPropertiesResult> {
-    if (accessorPropertiesOnly) {
-      return {properties: [], internalProperties: null} as GetPropertiesResult;
+  async getOwnProperties(_generatePreview: boolean, nonIndexedPropertiesOnly: boolean = false):
+      Promise<GetPropertiesResult> {
+    function isArrayIndex(name: string): boolean {
+      const index = Number(name) >>> 0;
+      return String(index) === name;
     }
-    return {properties: this._children(), internalProperties: null} as GetPropertiesResult;
+
+    let properties = this.children();
+    if (nonIndexedPropertiesOnly) {
+      properties = properties.filter(property => !isArrayIndex(property.name));
+    }
+    return {properties, internalProperties: null};
   }
 
-  _children(): RemoteObjectProperty[] {
+  async getAllProperties(
+      accessorPropertiesOnly: boolean, generatePreview: boolean,
+      nonIndexedPropertiesOnly: boolean = false): Promise<GetPropertiesResult> {
+    if (accessorPropertiesOnly) {
+      return {properties: [], internalProperties: null};
+    }
+    return await this.getOwnProperties(generatePreview, nonIndexedPropertiesOnly);
+  }
+
+  private children(): RemoteObjectProperty[] {
     if (!this.hasChildren) {
       return [];
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const value = (this._value as any);
+    const value = (this.valueInternal as any);
 
     function buildProperty(propName: string): RemoteObjectProperty {
       let propValue = value[propName];
@@ -875,20 +928,20 @@ export class LocalJSONObject extends RemoteObject {
       }
       return new RemoteObjectProperty(propName, propValue);
     }
-    if (!this._cachedChildren) {
-      this._cachedChildren = Object.keys((value as Object)).map(buildProperty);
+    if (!this.#cachedChildren) {
+      this.#cachedChildren = Object.keys((value as Object)).map(buildProperty);
     }
-    return this._cachedChildren;
+    return this.#cachedChildren;
   }
 
   arrayLength(): number {
-    return Array.isArray(this._value) ? this._value.length : 0;
+    return Array.isArray(this.valueInternal) ? this.valueInternal.length : 0;
   }
 
   async callFunction<T>(
       functionDeclaration: (this: Object, ...arg1: unknown[]) => T,
       args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult> {
-    const target = (this._value as Object);
+    const target = (this.valueInternal as Object);
     const rawArgs = args ? args.map(arg => arg.value) : [];
 
     let result;
@@ -907,7 +960,7 @@ export class LocalJSONObject extends RemoteObject {
   async callFunctionJSON<T>(
       functionDeclaration: (this: Object, ...arg1: unknown[]) => T,
       args: Protocol.Runtime.CallArgument[]|undefined): Promise<T> {
-    const target = (this._value as Object);
+    const target = (this.valueInternal as Object);
     const rawArgs = args ? args.map(arg => arg.value) : [];
 
     let result;
@@ -922,16 +975,16 @@ export class LocalJSONObject extends RemoteObject {
 }
 
 export class RemoteArrayBuffer {
-  _object: RemoteObject;
+  readonly #objectInternal: RemoteObject;
   constructor(object: RemoteObject) {
     if (object.type !== 'object' || object.subtype !== 'arraybuffer') {
       throw new Error('Object is not an arraybuffer');
     }
-    this._object = object;
+    this.#objectInternal = object;
   }
 
   byteLength(): number {
-    return this._object.arrayBufferByteLength();
+    return this.#objectInternal.arrayBufferByteLength();
   }
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -945,7 +998,7 @@ export class RemoteArrayBuffer {
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // @ts-expect-error
-    return await this._object.callFunctionJSON(bytes, [{value: start}, {value: end - start}]);
+    return await this.#objectInternal.callFunctionJSON(bytes, [{value: start}, {value: end - start}]);
 
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -955,14 +1008,14 @@ export class RemoteArrayBuffer {
   }
 
   object(): RemoteObject {
-    return this._object;
+    return this.#objectInternal;
   }
 }
 
 export class RemoteArray {
-  _object: RemoteObject;
+  readonly #objectInternal: RemoteObject;
   constructor(object: RemoteObject) {
-    this._object = object;
+    this.#objectInternal = object;
   }
 
   static objectAsArray(object: RemoteObject|null): RemoteArray {
@@ -1000,12 +1053,12 @@ export class RemoteArray {
   }
 
   at(index: number): Promise<RemoteObject> {
-    if (index < 0 || index > this._object.arrayLength()) {
+    if (index < 0 || index > this.#objectInternal.arrayLength()) {
       throw new Error('Out of range');
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // @ts-expect-error
-    return this._object.callFunction(at, [RemoteObject.toCallArgument(index)]).then(assertCallFunctionResult);
+    return this.#objectInternal.callFunction(at, [RemoteObject.toCallArgument(index)]).then(assertCallFunctionResult);
 
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1022,7 +1075,7 @@ export class RemoteArray {
   }
 
   length(): number {
-    return this._object.arrayLength();
+    return this.#objectInternal.arrayLength();
   }
 
   map<T>(func: (arg0: RemoteObject) => Promise<T>): Promise<T[]> {
@@ -1034,15 +1087,15 @@ export class RemoteArray {
   }
 
   object(): RemoteObject {
-    return this._object;
+    return this.#objectInternal;
   }
 }
 
 export class RemoteFunction {
-  _object: RemoteObject;
+  readonly #objectInternal: RemoteObject;
 
   constructor(object: RemoteObject) {
-    this._object = object;
+    this.#objectInternal = object;
   }
 
   static objectAsFunction(object: RemoteObject|null): RemoteFunction {
@@ -1053,11 +1106,11 @@ export class RemoteFunction {
   }
 
   targetFunction(): Promise<RemoteObject> {
-    return this._object.getOwnProperties(false /* generatePreview */).then(targetFunction.bind(this));
+    return this.#objectInternal.getOwnProperties(false /* generatePreview */).then(targetFunction.bind(this));
 
     function targetFunction(this: RemoteFunction, ownProperties: GetPropertiesResult): RemoteObject {
       if (!ownProperties.internalProperties) {
-        return this._object;
+        return this.#objectInternal;
       }
       const internalProperties = ownProperties.internalProperties;
       for (const property of internalProperties) {
@@ -1065,7 +1118,7 @@ export class RemoteFunction {
           return property.value as RemoteObject;
         }
       }
-      return this._object;
+      return this.#objectInternal;
     }
   }
 
@@ -1074,7 +1127,7 @@ export class RemoteFunction {
 
     function functionDetails(this: RemoteFunction, targetFunction: RemoteObject): Promise<FunctionDetails|null> {
       const boundReleaseFunctionDetails =
-          releaseTargetFunction.bind(null, this._object !== targetFunction ? targetFunction : null);
+          releaseTargetFunction.bind(null, this.#objectInternal !== targetFunction ? targetFunction : null);
       return targetFunction.debuggerModel().functionDetailsPromise(targetFunction).then(boundReleaseFunctionDetails);
     }
 
@@ -1088,7 +1141,7 @@ export class RemoteFunction {
   }
 
   object(): RemoteObject {
-    return this._object;
+    return this.#objectInternal;
   }
 }
 

@@ -10,7 +10,7 @@
 
 package org.webrtc;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -67,6 +67,11 @@ public class VideoCodecInfo {
   public int hashCode() {
     Object[] values = {name.toUpperCase(Locale.ROOT), params};
     return Arrays.hashCode(values);
+  }
+
+  @Override
+  public String toString() {
+    return "VideoCodec{" + name + " " + params + "}";
   }
 
   @CalledByNative

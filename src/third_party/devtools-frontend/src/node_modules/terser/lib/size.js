@@ -10,6 +10,7 @@ import {
     AST_Call,
     AST_Case,
     AST_Class,
+    AST_ClassPrivateProperty,
     AST_ClassProperty,
     AST_ConciseMethod,
     AST_Conditional,
@@ -22,6 +23,7 @@ import {
     AST_Directive,
     AST_Do,
     AST_Dot,
+    AST_DotHash,
     AST_EmptyStatement,
     AST_Expansion,
     AST_Export,
@@ -47,6 +49,9 @@ import {
     AST_ObjectKeyVal,
     AST_ObjectGetter,
     AST_ObjectSetter,
+    AST_PrivateGetter,
+    AST_PrivateMethod,
+    AST_PrivateSetter,
     AST_RegExp,
     AST_Return,
     AST_Sequence,
@@ -87,6 +92,12 @@ AST_Node.prototype.size = function (compressor, stack) {
     let size = 0;
     walk_parent(this, (node, info) => {
         size += node._size(info);
+
+        // Braceless arrow functions have fake "return" statements
+        if (node instanceof AST_Arrow && node.is_braceless()) {
+            size += node.body[0].value._size(info);
+            return true;
+        }
     }, stack || (compressor && compressor.stack));
 
     // just to save a bit of memory
@@ -131,7 +142,6 @@ AST_With.prototype._size = () => 6;
 
 AST_Expansion.prototype._size = () => 3;
 
-/*#__INLINE__*/
 const lambda_modifiers = func =>
     (func.is_generator ? 1 : 0) + (func.async ? 6 : 0);
 
@@ -160,7 +170,9 @@ AST_Arrow.prototype._size = function () {
         args_and_arrow += 2;
     }
 
-    return lambda_modifiers(this) + args_and_arrow + (Array.isArray(this.body) ? list_overhead(this.body) : this.body._size());
+    const body_overhead = this.is_braceless() ? 0 : list_overhead(this.body) + 2;
+
+    return lambda_modifiers(this) + args_and_arrow + body_overhead;
 };
 
 AST_Destructuring.prototype._size = () => 2;
@@ -302,6 +314,13 @@ AST_Dot.prototype._size = function () {
     return this.property.length + 1;
 };
 
+AST_DotHash.prototype._size = function () {
+    if (this.optional) {
+        return this.property.length + 3;
+    }
+    return this.property.length + 2;
+};
+
 AST_Sub.prototype._size = function () {
     return this.optional ? 4 : 2;
 };
@@ -369,6 +388,14 @@ AST_ConciseMethod.prototype._size = function () {
     return static_size(this.static) + key_size(this.key) + lambda_modifiers(this);
 };
 
+AST_PrivateMethod.prototype._size = function () {
+    return AST_ConciseMethod.prototype._size.call(this) + 1;
+};
+
+AST_PrivateGetter.prototype._size = AST_PrivateSetter.prototype._size = function () {
+    return AST_ConciseMethod.prototype._size.call(this) + 4;
+};
+
 AST_Class.prototype._size = function () {
     return (
         (this.name ? 8 : 7)
@@ -382,6 +409,10 @@ AST_ClassProperty.prototype._size = function () {
         + (typeof this.key === "string" ? this.key.length + 2 : 0)
         + (this.value ? 1 : 0)
     );
+};
+
+AST_ClassPrivateProperty.prototype._size = function () {
+    return AST_ClassProperty.prototype._size.call(this) + 1;
 };
 
 AST_Symbol.prototype._size = function () {

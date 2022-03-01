@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
+
+import audioContextSelectorStyles from './audioContextSelector.css.js';
+
 import type * as Protocol from '../../generated/protocol.js';
 
 const UIStrings = {
@@ -23,70 +25,68 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/web_audio/AudioContextSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper implements
+export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
     UI.SoftDropDown.Delegate<Protocol.WebAudio.BaseAudioContext> {
-  _placeholderText: Platform.UIString.LocalizedString;
-  _items: UI.ListModel.ListModel<Protocol.WebAudio.BaseAudioContext>;
-  _dropDown: UI.SoftDropDown.SoftDropDown<Protocol.WebAudio.BaseAudioContext>;
-  _toolbarItem: UI.Toolbar.ToolbarItem;
-  _selectedContext: Protocol.WebAudio.BaseAudioContext|null;
+  private readonly placeholderText: Platform.UIString.LocalizedString;
+  private readonly items: UI.ListModel.ListModel<Protocol.WebAudio.BaseAudioContext>;
+  private readonly dropDown: UI.SoftDropDown.SoftDropDown<Protocol.WebAudio.BaseAudioContext>;
+  private readonly toolbarItemInternal: UI.Toolbar.ToolbarItem;
+  private selectedContextInternal: Protocol.WebAudio.BaseAudioContext|null;
   constructor() {
     super();
 
-    this._placeholderText = i18nString(UIStrings.noRecordings);
+    this.placeholderText = i18nString(UIStrings.noRecordings);
 
-    this._items = new UI.ListModel.ListModel();
+    this.items = new UI.ListModel.ListModel();
 
-    this._dropDown = new UI.SoftDropDown.SoftDropDown(this._items, this);
-    this._dropDown.setPlaceholderText(this._placeholderText);
+    this.dropDown = new UI.SoftDropDown.SoftDropDown(this.items, this);
+    this.dropDown.setPlaceholderText(this.placeholderText);
 
-    this._toolbarItem = new UI.Toolbar.ToolbarItem(this._dropDown.element);
-    this._toolbarItem.setEnabled(false);
-    this._toolbarItem.setTitle(i18nString(UIStrings.audioContextS, {PH1: this._placeholderText}));
-    this._items.addEventListener(UI.ListModel.Events.ItemsReplaced, this._onListItemReplaced, this);
-    this._toolbarItem.element.classList.add('toolbar-has-dropdown');
+    this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
+    this.toolbarItemInternal.setEnabled(false);
+    this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, {PH1: this.placeholderText}));
+    this.items.addEventListener(UI.ListModel.Events.ItemsReplaced, this.onListItemReplaced, this);
+    this.toolbarItemInternal.element.classList.add('toolbar-has-dropdown');
 
-    this._selectedContext = null;
+    this.selectedContextInternal = null;
   }
 
-  _onListItemReplaced(): void {
-    const hasItems = Boolean(this._items.length);
-    this._toolbarItem.setEnabled(hasItems);
+  private onListItemReplaced(): void {
+    const hasItems = Boolean(this.items.length);
+    this.toolbarItemInternal.setEnabled(hasItems);
     if (!hasItems) {
-      this._toolbarItem.setTitle(i18nString(UIStrings.audioContextS, {PH1: this._placeholderText}));
+      this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, {PH1: this.placeholderText}));
     }
   }
 
-  contextCreated(event: Common.EventTarget.EventTargetEvent): void {
-    const context = (event.data as Protocol.WebAudio.BaseAudioContext);
-    this._items.insert(this._items.length, context);
+  contextCreated({data: context}: Common.EventTarget.EventTargetEvent<Protocol.WebAudio.BaseAudioContext>): void {
+    this.items.insert(this.items.length, context);
 
     // Select if this is the first item.
-    if (this._items.length === 1) {
-      this._dropDown.selectItem(context);
+    if (this.items.length === 1) {
+      this.dropDown.selectItem(context);
     }
   }
 
-  contextDestroyed(event: Common.EventTarget.EventTargetEvent): void {
-    const contextId = (event.data as string);
-    const contextIndex = this._items.findIndex(
-        (context: Protocol.WebAudio.BaseAudioContext): boolean => context.contextId === contextId);
+  contextDestroyed({data: contextId}: Common.EventTarget.EventTargetEvent<string>): void {
+    const contextIndex =
+        this.items.findIndex((context: Protocol.WebAudio.BaseAudioContext): boolean => context.contextId === contextId);
     if (contextIndex > -1) {
-      this._items.remove(contextIndex);
+      this.items.remove(contextIndex);
     }
   }
 
-  contextChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const changedContext = (event.data as Protocol.WebAudio.BaseAudioContext);
-    const contextIndex = this._items.findIndex(
+  contextChanged({data: changedContext}: Common.EventTarget.EventTargetEvent<Protocol.WebAudio.BaseAudioContext>):
+      void {
+    const contextIndex = this.items.findIndex(
         (context: Protocol.WebAudio.BaseAudioContext): boolean => context.contextId === changedContext.contextId);
     if (contextIndex > -1) {
-      this._items.replace(contextIndex, changedContext);
+      this.items.replace(contextIndex, changedContext);
 
       // If the changed context is currently selected by user. Re-select it
       // because the actual element is replaced with a new one.
-      if (this._selectedContext && this._selectedContext.contextId === changedContext.contextId) {
-        this._dropDown.selectItem(changedContext);
+      if (this.selectedContextInternal && this.selectedContextInternal.contextId === changedContext.contextId) {
+        this.dropDown.selectItem(changedContext);
       }
     }
   }
@@ -94,19 +94,18 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper imp
   createElementForItem(item: Protocol.WebAudio.BaseAudioContext): Element {
     const element = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        element,
-        {cssFile: 'panels/web_audio/audioContextSelector.css', enableLegacyPatching: false, delegatesFocus: undefined});
+        element, {cssFile: [audioContextSelectorStyles], delegatesFocus: undefined});
     const title = shadowRoot.createChild('div', 'title');
     UI.UIUtils.createTextChild(title, Platform.StringUtilities.trimEndWithMaxLength(this.titleFor(item), 100));
     return element;
   }
 
   selectedContext(): Protocol.WebAudio.BaseAudioContext|null {
-    if (!this._selectedContext) {
+    if (!this.selectedContextInternal) {
       return null;
     }
 
-    return this._selectedContext;
+    return this.selectedContextInternal;
   }
 
   highlightedItemChanged(
@@ -130,16 +129,16 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper imp
     }
 
     // It's possible that no context is selected yet.
-    if (!this._selectedContext || this._selectedContext.contextId !== item.contextId) {
-      this._selectedContext = item;
-      this._toolbarItem.setTitle(i18nString(UIStrings.audioContextS, {PH1: this.titleFor(item)}));
+    if (!this.selectedContextInternal || this.selectedContextInternal.contextId !== item.contextId) {
+      this.selectedContextInternal = item;
+      this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, {PH1: this.titleFor(item)}));
     }
 
     this.dispatchEventToListeners(Events.ContextSelected, item);
   }
 
   reset(): void {
-    this._items.replaceAll([]);
+    this.items.replaceAll([]);
   }
 
   titleFor(context: Protocol.WebAudio.BaseAudioContext): string {
@@ -147,10 +146,14 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper imp
   }
 
   toolbarItem(): UI.Toolbar.ToolbarItem {
-    return this._toolbarItem;
+    return this.toolbarItemInternal;
   }
 }
 
 export const enum Events {
   ContextSelected = 'ContextSelected',
 }
+
+export type EventTypes = {
+  [Events.ContextSelected]: Protocol.WebAudio.BaseAudioContext|null,
+};

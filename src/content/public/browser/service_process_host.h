@@ -10,30 +10,38 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/command_line.h"
-#include "base/macros.h"
-#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
+#include "build/chromecast_buildflags.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_process_info.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_CHROMECAST)
+#include "base/callback.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#endif
 
 namespace content {
 
 // Sandbox type for ServiceProcessHost::Launch<remote>() is found by
-// template matching on |remote|. This provides a safe default. For
-// services that use other sandbox types, consult
-// security-dev@chromium.org and add to an appropriate |service_sandbox_type.h|.
+// template matching on |remote|. Consult security-dev@chromium.org and
+// add a [ServiceSandbox=type] mojom attribute.
 template <typename Interface>
-inline sandbox::policy::SandboxType GetServiceSandboxType() {
-  return sandbox::policy::SandboxType::kUtility;
+inline sandbox::mojom::Sandbox GetServiceSandboxType() {
+  using ProvidedSandboxType = decltype(Interface::kServiceSandbox);
+  static_assert(
+      std::is_same<ProvidedSandboxType, const sandbox::mojom::Sandbox>::value,
+      "This interface does not declare a proper ServiceSandbox attribute. See "
+      "//docs/mojo_and_services.md (Specifying a sandbox).");
+
+  return Interface::kServiceSandbox;
 }
 
 // ServiceProcessHost is used to launch new service processes given basic
@@ -42,7 +50,7 @@ inline sandbox::policy::SandboxType GetServiceSandboxType() {
 //
 // Typical usage might look something like:
 //
-//   constexpr auto kFooServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
+//   constexpr auto kFooServiceIdleTimeout = base::Seconds(5);
 //   auto foo_service = ServiceProcessHost::Launch<foo::mojom::FooService>(
 //       ServiceProcessHost::Options()
 //           .WithDisplayName(IDS_FOO_SERVICE_DISPLAY_NAME)
@@ -80,8 +88,6 @@ class CONTENT_EXPORT ServiceProcessHost {
     // to |Launch()|.
     Options Pass();
 
-    sandbox::policy::SandboxType sandbox_type =
-        sandbox::policy::SandboxType::kUtility;
     std::u16string display_name;
     absl::optional<int> child_flags;
     std::vector<std::string> extra_switches;
@@ -123,9 +129,8 @@ class CONTENT_EXPORT ServiceProcessHost {
   template <typename Interface>
   static void Launch(mojo::PendingReceiver<Interface> receiver,
                      Options options = {}) {
-    options.sandbox_type = content::GetServiceSandboxType<Interface>();
     Launch(mojo::GenericPendingReceiver(std::move(receiver)),
-           std::move(options));
+           std::move(options), content::GetServiceSandboxType<Interface>());
   }
 
   // Same as above but creates a new |Interface| pipe on the caller's behalf and
@@ -134,9 +139,9 @@ class CONTENT_EXPORT ServiceProcessHost {
   // May be called from any thread.
   template <typename Interface>
   static mojo::Remote<Interface> Launch(Options options = {}) {
-    options.sandbox_type = content::GetServiceSandboxType<Interface>();
     mojo::Remote<Interface> remote;
-    Launch(remote.BindNewPipeAndPassReceiver(), std::move(options));
+    Launch(remote.BindNewPipeAndPassReceiver(), std::move(options),
+           content::GetServiceSandboxType<Interface>());
     return remote;
   }
 
@@ -156,18 +161,22 @@ class CONTENT_EXPORT ServiceProcessHost {
   // Launches a new service process and asks it to bind a receiver for the
   // service interface endpoint carried by |receiver|, which should be connected
   // to a Remote of the same interface type.
-  static void Launch(mojo::GenericPendingReceiver receiver, Options options);
+  static void Launch(mojo::GenericPendingReceiver receiver,
+                     Options options,
+                     sandbox::mojom::Sandbox sandbox);
 };
 
+#if BUILDFLAG(IS_CHROMECAST)
 // DEPRECATED. DO NOT USE THIS. This is a helper for any remaining service
 // launching code which uses an older code path to launch services in a utility
 // process. All new code must use ServiceProcessHost instead of this API.
 void CONTENT_EXPORT LaunchUtilityProcessServiceDeprecated(
     const std::string& service_name,
     const std::u16string& display_name,
-    sandbox::policy::SandboxType sandbox_type,
+    sandbox::mojom::Sandbox sandbox_type,
     mojo::ScopedMessagePipeHandle service_pipe,
     base::OnceCallback<void(base::ProcessId)> callback);
+#endif
 
 }  // namespace content
 

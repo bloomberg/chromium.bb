@@ -5,7 +5,8 @@
 #ifndef BASE_PROFILER_NATIVE_UNWINDER_WIN_H_
 #define BASE_PROFILER_NATIVE_UNWINDER_WIN_H_
 
-#include "base/macros.h"
+#include <vector>
+
 #include "base/profiler/unwinder.h"
 
 namespace base {

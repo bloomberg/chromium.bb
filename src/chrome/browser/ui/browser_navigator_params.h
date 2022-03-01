@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/public/browser/global_request_id.h"
@@ -17,12 +18,12 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -79,7 +80,12 @@ struct NavigateParams {
   NavigateParams(Profile* profile,
                  const GURL& a_url,
                  ui::PageTransition a_transition);
+
+  NavigateParams(const NavigateParams&) = delete;
+  NavigateParams& operator=(const NavigateParams&) = delete;
+
   NavigateParams(NavigateParams&& params);
+
   ~NavigateParams();
 
   // Copies fields from |params| struct to |nav_params| struct.
@@ -133,7 +139,7 @@ struct NavigateParams {
 
   // Input parameter.
   // Only used by Singleton tabs. Causes a tab-switch in addition to navigation.
-  content::WebContents* switch_to_singleton_tab = nullptr;
+  raw_ptr<content::WebContents> switch_to_singleton_tab = nullptr;
 
   // Output parameter.
   // The WebContents in which the navigation occurred or that was inserted.
@@ -152,7 +158,7 @@ struct NavigateParams {
   //       Navigate(). However, if the originating page is from a different
   //       profile (e.g. an OFF_THE_RECORD page originating from a non-OTR
   //       window), then |source_contents| is reset to NULL.
-  content::WebContents* source_contents = nullptr;
+  raw_ptr<content::WebContents> source_contents = nullptr;
 
   // The disposition requested by the navigation source. Default is
   // CURRENT_TAB. What follows is a set of coercions that happen to this value
@@ -173,7 +179,7 @@ struct NavigateParams {
 
   // Allows setting the opener for the case when new WebContents are created
   // (i.e. when |disposition| asks for a new tab or window).
-  content::RenderFrameHost* opener = nullptr;
+  raw_ptr<content::RenderFrameHost> opener = nullptr;
 
   // Sets browser->is_trusted_source.
   bool trusted_source = false;
@@ -190,7 +196,7 @@ struct NavigateParams {
   int tabstrip_index = -1;
 
   // If non-empty, the new tab is an app tab.
-  std::string extension_app_id;
+  std::string app_id;
 
   // If non-empty, specifies the desired initial position and size of the
   // window if |disposition| == NEW_POPUP.
@@ -243,7 +249,7 @@ struct NavigateParams {
   //       Navigate(), the caller is responsible for showing it so that its
   //       window can assume responsibility for the Browser's lifetime (Browser
   //       objects are deleted when the user closes a visible browser window).
-  Browser* browser = nullptr;
+  raw_ptr<Browser> browser = nullptr;
 
   // The group the caller would like the tab to be added to.
   absl::optional<tab_groups::TabGroupId> group;
@@ -256,15 +262,16 @@ struct NavigateParams {
 
   // The profile that is initiating the navigation. If there is a non-NULL
   // browser passed in via |browser|, it's profile will be used instead.
-  Profile* initiating_profile = nullptr;
+  raw_ptr<Profile> initiating_profile = nullptr;
 
   // Indicates whether this navigation  should replace the current
   // navigation entry.
   bool should_replace_current_entry = false;
 
-  // Indicates whether |contents_to_insert| is being created with a
-  // window.opener.
-  bool created_with_opener = false;
+  // Indicates whether |contents_to_insert| is being created by another window,
+  // and thus can be closed via window.close(). This may be true even when
+  // "noopener" was used.
+  bool opened_by_another_window = false;
 
   // Whether or not the related navigation was started in the context menu.
   bool started_from_context_menu = false;
@@ -293,8 +300,8 @@ struct NavigateParams {
   // outside of the page and pass it to the page as if it happened on a prior
   // page. For example, if the assistant opens a page we should treat the
   // user's interaction with the assistant as a previous user activation.
-  content::mojom::WasActivatedOption was_activated =
-      content::mojom::WasActivatedOption::kUnknown;
+  blink::mojom::WasActivatedOption was_activated =
+      blink::mojom::WasActivatedOption::kUnknown;
 
   // If this navigation was initiated from a link that specified the
   // hrefTranslate attribute, this contains the attribute's value (a BCP47
@@ -318,7 +325,6 @@ struct NavigateParams {
 
  private:
   NavigateParams();
-  DISALLOW_COPY_AND_ASSIGN(NavigateParams);
 };
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_PARAMS_H_

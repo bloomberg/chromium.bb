@@ -5,4 +5,4 @@
 
 base_dir=$(dirname "$0")
 
-PYTHONDONTWRITEBYTECODE=1 exec python -u "$base_dir/compile_single_file.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec python3 -u "$base_dir/compile_single_file.py" "$@"

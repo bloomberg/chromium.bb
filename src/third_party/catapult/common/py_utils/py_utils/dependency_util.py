@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import os
 import platform
 import sys
@@ -39,7 +40,7 @@ def GetChromeApkOsVersion(version_name):
       'First character of versions name %s was not an uppercase letter.')
   if version < 'L':
     return 'k'
-  elif version > 'M':
+  if version > 'M':
     return 'n'
   return 'l'
 

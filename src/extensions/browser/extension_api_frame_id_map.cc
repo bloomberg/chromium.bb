@@ -69,7 +69,7 @@ ExtensionApiFrameIdMap* ExtensionApiFrameIdMap::Get() {
 int ExtensionApiFrameIdMap::GetFrameId(content::RenderFrameHost* rfh) {
   if (!rfh)
     return kInvalidFrameId;
-  if (rfh->GetParent())
+  if (rfh->GetParentOrOuterDocument())
     return rfh->GetFrameTreeNodeId();
   return kTopFrameId;
 }
@@ -77,20 +77,20 @@ int ExtensionApiFrameIdMap::GetFrameId(content::RenderFrameHost* rfh) {
 // static
 int ExtensionApiFrameIdMap::GetFrameId(
     content::NavigationHandle* navigation_handle) {
-  return navigation_handle->IsInMainFrame()
+  return !navigation_handle->GetParentFrameOrOuterDocument()
              ? kTopFrameId
              : navigation_handle->GetFrameTreeNodeId();
 }
 
 // static
 int ExtensionApiFrameIdMap::GetParentFrameId(content::RenderFrameHost* rfh) {
-  return rfh ? GetFrameId(rfh->GetParent()) : kInvalidFrameId;
+  return rfh ? GetFrameId(rfh->GetParentOrOuterDocument()) : kInvalidFrameId;
 }
 
 // static
 int ExtensionApiFrameIdMap::GetParentFrameId(
     content::NavigationHandle* navigation_handle) {
-  return GetFrameId(navigation_handle->GetParentFrame());
+  return GetFrameId(navigation_handle->GetParentFrameOrOuterDocument());
 }
 
 // static
@@ -115,11 +115,19 @@ content::RenderFrameHost* ExtensionApiFrameIdMap::GetRenderFrameHostById(
   // given frame ID, so we must use an unsafe API here that could return a
   // different RenderFrameHost than the caller may have expected (e.g., one that
   // changed after a cross-process navigation).
-  return web_contents->UnsafeFindFrameByFrameTreeNodeId(frame_id);
+  content::RenderFrameHost* rfh =
+      web_contents->UnsafeFindFrameByFrameTreeNodeId(frame_id);
+
+  // Fail if the frame is not active (e.g. in prerendering or in the
+  // back/forward cache).
+  if (!rfh || !rfh->IsActive())
+    return nullptr;
+
+  return rfh;
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
-    content::GlobalFrameRoutingId key,
+    content::GlobalRenderFrameHostId key,
     bool require_live_frame) const {
   return KeyToValue(content::RenderFrameHost::FromID(key), require_live_frame);
 }
@@ -141,7 +149,7 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
-    content::GlobalFrameRoutingId rfh_id) {
+    content::GlobalRenderFrameHostId rfh_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto frame_id_iter = deleted_frame_data_map_.find(rfh_id);
   if (frame_id_iter != deleted_frame_data_map_.end())
@@ -155,7 +163,7 @@ void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(rfh);
 
-  const content::GlobalFrameRoutingId key(rfh->GetGlobalFrameRoutingId());
+  const content::GlobalRenderFrameHostId key(rfh->GetGlobalId());
   // TODO(http://crbug.com/522129): This is necessary right now because beacon
   // requests made in window.onunload may start after this has been called.
   // Delay the RemoveFrameData() call, so we will still have the frame data
@@ -163,12 +171,12 @@ void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
   deleted_frame_data_map_.insert(
       {key, KeyToValue(rfh, false /* require_live_frame */)});
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](ExtensionApiFrameIdMap* self, content::GlobalFrameRoutingId key) {
-            self->deleted_frame_data_map_.erase(key);
-          },
-          base::Unretained(this), key));
+      FROM_HERE, base::BindOnce(
+                     [](ExtensionApiFrameIdMap* self,
+                        content::GlobalRenderFrameHostId key) {
+                       self->deleted_frame_data_map_.erase(key);
+                     },
+                     base::Unretained(this), key));
 }
 
 }  // namespace extensions

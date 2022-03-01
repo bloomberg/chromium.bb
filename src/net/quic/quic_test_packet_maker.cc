@@ -171,6 +171,46 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeRetireConnectionIdPacket(uint64_t num,
+                                                  bool include_version,
+                                                  uint64_t sequence_number) {
+  InitializeHeader(num, include_version);
+  AddQuicRetireConnectionIdFrame(sequence_number);
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeNewConnectionIdPacket(
+    uint64_t num,
+    bool include_version,
+    const quic::QuicConnectionId& cid,
+    uint64_t sequence_number,
+    uint64_t retire_prior_to) {
+  InitializeHeader(num, include_version);
+  AddQuicNewConnectionIdFrame(
+      cid, sequence_number, retire_prior_to,
+      quic::QuicUtils::GenerateStatelessResetToken(cid));
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeAckAndNewConnectionIdPacket(
+    uint64_t num,
+    bool include_version,
+    uint64_t largest_received,
+    uint64_t smallest_received,
+    const quic::QuicConnectionId& cid,
+    uint64_t sequence_number,
+    uint64_t retire_prior_to) {
+  InitializeHeader(num, include_version);
+  AddQuicAckFrame(largest_received, smallest_received);
+  AddQuicNewConnectionIdFrame(
+      cid, sequence_number, retire_prior_to,
+      quic::QuicUtils::GenerateStatelessResetToken(cid));
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
   SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
   InitializeHeader(packet_num, /*include_version=*/true);
@@ -203,6 +243,35 @@ QuicTestPacketMaker::MakeAckAndPingPacket(uint64_t num,
   InitializeHeader(num, include_version);
   AddQuicAckFrame(largest_received, smallest_received);
   AddQuicPingFrame();
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeAckAndRetireConnectionIdPacket(
+    uint64_t num,
+    bool include_version,
+    uint64_t largest_received,
+    uint64_t smallest_received,
+    uint64_t sequence_number) {
+  InitializeHeader(num, include_version);
+  AddQuicAckFrame(largest_received, smallest_received);
+  AddQuicRetireConnectionIdFrame(sequence_number);
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeRetransmissionAndRetireConnectionIdPacket(
+    uint64_t num,
+    bool include_version,
+    const std::vector<uint64_t>& original_packet_numbers,
+    uint64_t sequence_number) {
+  InitializeHeader(num, include_version);
+  for (auto it : original_packet_numbers) {
+    for (auto frame : saved_frames_[quic::QuicPacketNumber(it)]) {
+      frames_.push_back(frame);
+    }
+  }
+  AddQuicRetireConnectionIdFrame(sequence_number);
   return BuildPacket();
 }
 
@@ -561,7 +630,7 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
     const std::string& quic_error_details) {
   InitializeHeader(num, include_version);
 
-    AddQuicAckFrame(largest_received, smallest_received);
+  AddQuicAckFrame(largest_received, smallest_received);
 
   AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
   if (version_.HasIetfQuicFrames()) {
@@ -569,7 +638,6 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
   }
   AddQuicRstStreamFrame(rst_stream_id, error_code);
 
-  AddQuicAckFrame(largest_received, smallest_received);
   AddQuicConnectionCloseFrame(quic_error, quic_error_details);
 
   return BuildPacket();
@@ -589,8 +657,6 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
     const std::string& quic_error_details,
     uint64_t frame_type) {
   InitializeHeader(num, include_version);
-
-  AddQuicAckFrame(largest_received, smallest_received);
 
   AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
   if (version_.HasIetfQuicFrames()) {
@@ -692,6 +758,29 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
   InitializeHeader(packet_number, include_version);
 
   AddQuicAckFrame(largest_received, smallest_received);
+  AddQuicStreamFrame(stream_id, fin, data);
+
+  return BuildPacket();
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeAckRetransmissionAndDataPacket(
+    uint64_t packet_number,
+    bool include_version,
+    const std::vector<uint64_t>& original_packet_numbers,
+    quic::QuicStreamId stream_id,
+    uint64_t largest_received,
+    uint64_t smallest_received,
+    bool fin,
+    absl::string_view data) {
+  InitializeHeader(packet_number, include_version);
+
+  AddQuicAckFrame(largest_received, smallest_received);
+  for (auto it : original_packet_numbers) {
+    for (auto frame : saved_frames_[quic::QuicPacketNumber(it)]) {
+      frames_.push_back(frame);
+    }
+  }
   AddQuicStreamFrame(stream_id, fin, data);
 
   return BuildPacket();
@@ -1119,7 +1208,7 @@ QuicTestPacketMaker::MakeStatelessResetPacket() {
 void QuicTestPacketMaker::RemoveSavedStreamFrames(
     quic::QuicStreamId stream_id) {
   for (auto& kv : saved_frames_) {
-    auto it = kv.second.begin();
+    auto* it = kv.second.begin();
     while (it != kv.second.end()) {
       if (it->type == quic::STREAM_FRAME &&
           it->stream_frame.stream_id == stream_id) {
@@ -1260,6 +1349,28 @@ void QuicTestPacketMaker::AddQuicPaddingFrame() {
 void QuicTestPacketMaker::AddQuicPingFrame() {
   quic::QuicPingFrame ping_frame;
   frames_.push_back(quic::QuicFrame(ping_frame));
+  DVLOG(1) << "Adding frame: " << frames_.back();
+}
+
+void QuicTestPacketMaker::AddQuicRetireConnectionIdFrame(
+    uint64_t sequence_number) {
+  auto* retire_cid_frame = new quic::QuicRetireConnectionIdFrame();
+  retire_cid_frame->sequence_number = sequence_number;
+  frames_.push_back(quic::QuicFrame(retire_cid_frame));
+  DVLOG(1) << "Adding frame: " << frames_.back();
+}
+
+void QuicTestPacketMaker::AddQuicNewConnectionIdFrame(
+    const quic::QuicConnectionId& cid,
+    uint64_t sequence_number,
+    uint64_t retire_prior_to,
+    quic::StatelessResetToken reset_token) {
+  auto* new_cid_frame = new quic::QuicNewConnectionIdFrame();
+  new_cid_frame->connection_id = cid;
+  new_cid_frame->sequence_number = sequence_number;
+  new_cid_frame->retire_prior_to = retire_prior_to;
+  new_cid_frame->stateless_reset_token = reset_token;
+  frames_.push_back(quic::QuicFrame(new_cid_frame));
   DVLOG(1) << "Adding frame: " << frames_.back();
 }
 

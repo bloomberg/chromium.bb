@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
 
+#include "base/gtest_prod_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/bindings/modules/v8/document_timeline_or_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -18,10 +18,10 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
+#include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 
 namespace blink {
 
-class AnimationEffectOrAnimationEffectSequence;
 class ScriptValue;
 class SerializedScriptValue;
 class V8UnionAnimationEffectOrAnimationEffectSequence;
@@ -46,7 +46,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   USING_PRE_FINALIZER(WorkletAnimation, Dispose);
 
  public:
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static WorkletAnimation* Create(
       ScriptState* script_state,
       const String& animator_name,
@@ -65,26 +64,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
       const V8UnionDocumentTimelineOrScrollTimeline* timeline,
       const ScriptValue& options,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  static WorkletAnimation* Create(
-      ScriptState*,
-      String animator_name,
-      const AnimationEffectOrAnimationEffectSequence&,
-      ExceptionState&);
-  static WorkletAnimation* Create(
-      ScriptState*,
-      String animator_name,
-      const AnimationEffectOrAnimationEffectSequence&,
-      DocumentTimelineOrScrollTimeline,
-      ExceptionState&);
-  static WorkletAnimation* Create(
-      ScriptState*,
-      String animator_name,
-      const AnimationEffectOrAnimationEffectSequence&,
-      DocumentTimelineOrScrollTimeline,
-      const ScriptValue& options,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   WorkletAnimation(WorkletAnimationId id,
                    const String& animator_name,
@@ -138,9 +117,12 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   }
 
   // CompositorAnimationDelegate implementation.
-  void NotifyAnimationStarted(double monotonic_time, int group) override {}
-  void NotifyAnimationFinished(double monotonic_time, int group) override {}
-  void NotifyAnimationAborted(double monotonic_time, int group) override {}
+  void NotifyAnimationStarted(base::TimeDelta monotonic_time,
+                              int group) override {}
+  void NotifyAnimationFinished(base::TimeDelta monotonic_time,
+                               int group) override {}
+  void NotifyAnimationAborted(base::TimeDelta monotonic_time,
+                              int group) override {}
   void NotifyLocalTimeUpdated(
       absl::optional<base::TimeDelta> local_time) override;
 

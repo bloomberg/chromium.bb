@@ -21,19 +21,12 @@ config("swiftshader_llvm_reactor_private_config") {
       "/wd4141",  # 'inline' used more than once. (LLVM 7.0)
       "/wd4146",  # unary minus operator applied to unsigned type. (LLVM 7.0)
       "/wd4201",  # nameless struct/union
+      "/wd4244",  # conversion' conversion from 'type1' to 'type2'
       "/wd4245",  # conversion from int to unsigned int (llvm)
       "/wd4624",  # destructor was implicitly defined as deleted (LLVM 7.0)
     ]
   } else {
     cflags = [ "-Wno-unused-local-typedef" ]
-    defines = [
-      "__STDC_CONSTANT_MACROS",
-      "__STDC_LIMIT_MACROS",
-    ]
-
-    if (current_cpu == "x86" || current_cpu == "x64") {
-      cflags += [ "-msse2" ]
-    }
   }
 }
 
@@ -45,10 +38,12 @@ config("swiftshader_reactor_base_private_config") {
 
 swiftshader_source_set("swiftshader_reactor_base") {
   sources = [
+    "Assert.cpp",
     "Debug.cpp",
     "EmulatedIntrinsics.cpp",
     "ExecutableMemory.cpp",
     "OptimalIntrinsics.cpp",
+    "Pragma.cpp",
     "Reactor.cpp",
   ]
 
@@ -70,10 +65,6 @@ if (supports_subzero) {
       "ALLOW_WASM=0",
       "ICE_THREAD_LOCAL_HACK=0",
     ]
-
-    if (is_win) {
-      defines += [ "SUBZERO_USE_MICROSOFT_ABI" ]
-    }
 
     if (current_cpu == "x64") {
       defines += [
@@ -159,10 +150,6 @@ if (supports_subzero) {
         "-Wno-unused-function",
       ]
     }
-
-    if (is_fuchsia) {
-      cflags += [ "-Wno-error" ]
-    }
   }
 
   config("swiftshader_reactor_with_subzero_private_config") {
@@ -195,10 +182,6 @@ if (supports_subzero) {
     if (is_clang) {
       cflags += [ "-Wno-header-hygiene" ]
     }
-
-    if (is_fuchsia) {
-      cflags += [ "-Wno-error" ]
-    }
   }
 
   swiftshader_source_set("swiftshader_subzero") {
@@ -228,7 +211,6 @@ if (supports_subzero) {
       "$subzero_dir/src/IceRevision.cpp",
       "$subzero_dir/src/IceSwitchLowering.cpp",
       "$subzero_dir/src/IceTargetLowering.cpp",
-      "$subzero_dir/src/IceTargetLoweringX86.cpp",
       "$subzero_dir/src/IceThreading.cpp",
       "$subzero_dir/src/IceTimerTree.cpp",
       "$subzero_dir/src/IceTypes.cpp",
@@ -242,7 +224,6 @@ if (supports_subzero) {
       "$subzero_llvm_dir/lib/Support/Debug.cpp",
       "$subzero_llvm_dir/lib/Support/Errno.cpp",
       "$subzero_llvm_dir/lib/Support/ErrorHandling.cpp",
-      "$subzero_llvm_dir/lib/Support/FoldingSet.cpp",
       "$subzero_llvm_dir/lib/Support/Hashing.cpp",
       "$subzero_llvm_dir/lib/Support/ManagedStatic.cpp",
       "$subzero_llvm_dir/lib/Support/MemoryBuffer.cpp",
@@ -274,11 +255,13 @@ if (supports_subzero) {
 
     if (current_cpu == "x64") {
       sources += [
+        "$subzero_dir/src/IceAssemblerX8664.cpp",
         "$subzero_dir/src/IceInstX8664.cpp",
         "$subzero_dir/src/IceTargetLoweringX8664.cpp",
       ]
     } else if (current_cpu == "x86") {
       sources += [
+        "$subzero_dir/src/IceAssemblerX8632.cpp",
         "$subzero_dir/src/IceInstX8632.cpp",
         "$subzero_dir/src/IceTargetLoweringX8632.cpp",
       ]

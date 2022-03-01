@@ -196,8 +196,6 @@ rtc_library("rtp_test_utils") {
     "rtp_file_reader.h",
     "rtp_file_writer.cc",
     "rtp_file_writer.h",
-    "rtp_header_parser.cc",
-    "rtp_header_parser.h",
   ]
 
   deps = [
@@ -222,7 +220,10 @@ rtc_library("field_trial") {
     "field_trial.h",
   ]
 
-  deps = [ "../system_wrappers:field_trial" ]
+  deps = [
+    "../rtc_base:checks",
+    "../system_wrappers:field_trial",
+  ]
 }
 
 rtc_library("explicit_key_value_config") {
@@ -283,6 +284,7 @@ if (is_ios) {
     sources = [
       "ios/coverage_util_ios.h",
       "ios/coverage_util_ios.mm",
+      "ios/google_test_runner_delegate.h",
       "ios/test_support.h",
       "ios/test_support.mm",
     ]
@@ -519,6 +521,7 @@ if (rtc_include_tests && !build_with_chromium) {
       ":test_support_test_artifacts",
       ":video_test_common",
       ":video_test_support",
+      "../api:array_view",
       "../api:create_frame_generator",
       "../api:create_simulcast_test_fixture_api",
       "../api:frame_generator_api",
@@ -532,7 +535,6 @@ if (rtc_include_tests && !build_with_chromium) {
       "../call:video_stream_api",
       "../common_video",
       "../media:rtc_media_base",
-      "../modules/rtp_rtcp",
       "../modules/rtp_rtcp:rtp_rtcp_format",
       "../modules/video_coding:simulcast_test_fixture_impl",
       "../modules/video_coding:video_codec_interface",
@@ -735,7 +737,6 @@ rtc_library("direct_transport") {
     "direct_transport.h",
   ]
   deps = [
-    ":rtp_test_utils",
     "../api:sequence_checker",
     "../api:simulated_network_api",
     "../api:transport_api",
@@ -743,6 +744,7 @@ rtc_library("direct_transport") {
     "../api/units:time_delta",
     "../call:call_interfaces",
     "../call:simulated_packet_receiver",
+    "../modules/rtp_rtcp:rtp_rtcp_format",
     "../rtc_base:macromagic",
     "../rtc_base:timeutils",
     "../rtc_base/synchronization:mutex",
@@ -847,9 +849,9 @@ rtc_library("test_common") {
     ":fake_video_codecs",
     ":fileutils",
     ":mock_transport",
-    ":rtp_test_utils",
     ":test_support",
     ":video_test_common",
+    "../api:array_view",
     "../api:create_frame_generator",
     "../api:frame_generator_api",
     "../api:rtp_headers",

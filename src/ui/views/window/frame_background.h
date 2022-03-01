@@ -5,13 +5,17 @@
 #ifndef UI_VIEWS_WINDOW_FRAME_BACKGROUND_H_
 #define UI_VIEWS_WINDOW_FRAME_BACKGROUND_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
 class Canvas;
+}
+
+namespace ui {
+class NativeTheme;
 }
 
 namespace views {
@@ -24,6 +28,10 @@ class View;
 class VIEWS_EXPORT FrameBackground {
  public:
   FrameBackground();
+
+  FrameBackground(const FrameBackground&) = delete;
+  FrameBackground& operator=(const FrameBackground&) = delete;
+
   ~FrameBackground();
 
   // Sets the color to draw under the frame images.
@@ -80,10 +88,20 @@ class VIEWS_EXPORT FrameBackground {
   // window edges.
   void PaintMaximized(gfx::Canvas* canvas, const View* view) const;
 
- private:
-  // Fills the frame side and bottom borders with the frame color.
-  void FillFrameBorders(gfx::Canvas* canvas, const View* view) const;
+  void PaintMaximized(gfx::Canvas* canvas,
+                      const ui::NativeTheme* native_theme,
+                      int x,
+                      int y,
+                      int width) const;
 
+  // Fills the frame side and bottom borders with the frame color.
+  void FillFrameBorders(gfx::Canvas* canvas,
+                        const View* view,
+                        int left_edge_width,
+                        int right_edge_width,
+                        int bottom_edge_height) const;
+
+ private:
   SkColor frame_color_ = 0;
   bool use_custom_frame_ = true;
   bool is_active_ = true;
@@ -93,21 +111,19 @@ class VIEWS_EXPORT FrameBackground {
   int top_area_height_ = 0;
 
   // Images for the sides of the frame.
-  const gfx::ImageSkia* left_edge_ = nullptr;
-  const gfx::ImageSkia* top_edge_ = nullptr;
-  const gfx::ImageSkia* right_edge_ = nullptr;
-  const gfx::ImageSkia* bottom_edge_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> left_edge_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> top_edge_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> right_edge_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> bottom_edge_ = nullptr;
 
   // Images for the corners of the frame.
-  const gfx::ImageSkia* top_left_corner_ = nullptr;
-  const gfx::ImageSkia* top_right_corner_ = nullptr;
-  const gfx::ImageSkia* bottom_left_corner_ = nullptr;
-  const gfx::ImageSkia* bottom_right_corner_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> top_left_corner_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> top_right_corner_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> bottom_left_corner_ = nullptr;
+  raw_ptr<const gfx::ImageSkia> bottom_right_corner_ = nullptr;
 
   // Vertical inset for theme image when drawing maximized.
   int maximized_top_inset_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameBackground);
 };
 
 }  // namespace views

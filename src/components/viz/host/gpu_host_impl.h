@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
-#include "components/ui_devtools/buildflags.h"
 #include "components/viz/common/buildflags.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -147,6 +146,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
   GpuHostImpl(Delegate* delegate,
               mojo::PendingRemote<mojom::VizMain> viz_main,
               InitParams params);
+
+  GpuHostImpl(const GpuHostImpl&) = delete;
+  GpuHostImpl& operator=(const GpuHostImpl&) = delete;
+
   ~GpuHostImpl() override;
 
   static void InitFontRenderParams(const gfx::FontRenderParams& params);
@@ -166,11 +169,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
       mojo::PendingRemote<mojom::FrameSinkManagerClient> client,
       const DebugRendererSettings& debug_renderer_settings);
 
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-  // Connects to Viz DevTools running in the Viz service.
-  void ConnectVizDevTools(mojom::VizDevToolsParamsPtr params);
-#endif
-
   // Tells the GPU service to create a new channel for communication with a
   // client. Once the GPU service responds asynchronously with the channel
   // handle and GPUInfo, we call the callback. If |sync| is true then the
@@ -181,6 +179,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
                            bool is_gpu_host,
                            bool sync,
                            EstablishChannelCallback callback);
+  void SetChannelClientPid(int client_id, base::ProcessId client_pid);
   void CloseChannel(int client_id);
 
 #if BUILDFLAG(USE_VIZ_DEBUGGER)
@@ -271,12 +270,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
   void LogFrame(base::Value frame_data) override;
 #endif
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
   mojo::Remote<mojom::VizMain> viz_main_;
   const InitParams params_;
-
-  // Task runner corresponding to the thread |this| is created on.
-  scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner_;
 
   mojo::Remote<mojom::GpuService> gpu_service_remote_;
 #if defined(OS_WIN)
@@ -320,8 +316,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<GpuHostImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GpuHostImpl);
 };
 
 }  // namespace viz

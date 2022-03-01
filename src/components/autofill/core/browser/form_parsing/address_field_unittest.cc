@@ -5,9 +5,7 @@
 #include "components/autofill/core/browser/form_parsing/address_field.h"
 
 #include <memory>
-#include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/form_parsing/parsing_test_utils.h"
@@ -146,6 +144,12 @@ TEST_F(AddressFieldTest, ParseState) {
 TEST_F(AddressFieldTest, ParseZip) {
   AddTextFormFieldData("zip", "Zip", ADDRESS_HOME_ZIP);
   ClassifyAndVerify();
+}
+
+TEST_F(AddressFieldTest, ParseZipFileExtension) {
+  AddTextFormFieldData("filename", "Supported formats: .zip, .rar",
+                       UNKNOWN_TYPE);
+  ClassifyAndVerify(ParseResult::NOT_PARSED);
 }
 
 TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {

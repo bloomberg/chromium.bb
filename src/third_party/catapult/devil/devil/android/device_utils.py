@@ -60,6 +60,11 @@ logger = logging.getLogger(__name__)
 
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 3
+# TODO(agrieve): Would be better to make this timeout based off of data size.
+# Needs to be large for remote devices & speed depends on internet connection.
+# Debug Chrome builds can be 200mb+.
+_FILE_TRANSFER_TIMEOUT = 7 * 60
+
 
 # A sentinel object for default values
 # TODO(jbudorick): revisit how default values are handled by
@@ -185,6 +190,7 @@ _CURRENT_FOCUS_CRASH_RE = re.compile(
 _GETPROP_RE = re.compile(r'\[(.*?)\]: \[(.*?)\]')
 _VERSION_CODE_SDK_RE = re.compile(
     r'\s*versionCode=(\d+).*minSdk=(\d+).*targetSdk=(.*)\s*')
+_USER_ID_RE = re.compile(r'.*userId=')
 
 # Regex to parse the long (-l) output of 'ls' command, c.f.
 # https://github.com/landley/toybox/blob/master/toys/posix/ls.c#L446
@@ -289,7 +295,9 @@ _WEBVIEW_SYSUPDATE_MIN_VERSION_CODE = re.compile(
 
 _GOOGLE_FEATURES_RE = re.compile(r'^\s*com\.google\.')
 
-_EMULATOR_RE = re.compile(r'^generic_.*$')
+# On Android < 12, "ro.product.device" starts with "generic_"
+# On Android >= 12, "ro.product.device" starts with "emulator64_"
+_EMULATOR_RE = re.compile(r'^(generic_|emulator64_).*$')
 
 # Regular expressions for determining if a package is installed using the
 # output of `dumpsys package`.
@@ -300,6 +308,11 @@ _DUMPSYS_PACKAGE_RE_STR =\
 
 PS_COLUMNS = ('name', 'pid', 'ppid')
 ProcessInfo = collections.namedtuple('ProcessInfo', PS_COLUMNS)
+
+# The list of Rock960 device family.
+ROCK960_DEVICE_LIST = [
+    'rk3399', 'rk3399-all', 'rk3399-box'
+]
 
 
 @decorators.WithExplicitTimeoutAndRetries(_DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
@@ -429,7 +442,8 @@ class DeviceUtils(object):
 
   _MAX_ADB_COMMAND_LENGTH = 512
   _MAX_ADB_OUTPUT_LENGTH = 32768
-  _LAUNCHER_FOCUSED_RE = re.compile(r'\s*mCurrentFocus.*(Launcher|launcher).*')
+  _RESUMED_LAUNCHER_ACTIVITY_RE = re.compile(
+      r'\s*mResumedActivity.*(Launcher|launcher).*')
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
 
   LOCAL_PROPERTIES_PATH = posixpath.join('/', 'data', 'local.prop')
@@ -522,7 +536,7 @@ class DeviceUtils(object):
     try:
       return self.adb.GetState() == 'device'
     except base_error.BaseError as exc:
-      logger.info('Failed to get state: %s', exc)
+      logger.info('Failed to get state: %s', exc, exc_info=True)
       return False
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -1021,23 +1035,61 @@ class DeviceUtils(object):
       DeviceUnreachableError if the device becomes unresponsive.
     """
 
+    def is_device_connection_ready():
+      # Rock960 devices re-connect during boot process, presumably
+      # due to change in USB protocol configuration, which causes restart of adb
+      # daemon running on device and "re-connection" seen from adb client side.
+      # Since device is unreachable after disconnecting and before re-connecting
+      # for the second time, we must wait for re-connection and give control
+      # back to devil code only when sys.usb.config property, which allows us to
+      # differentiate between these states, switches to the right value. This
+      # way we avoid "device unreachable" errors occuring when re-connections
+      # happens.
+      try:
+        if self.GetProp('ro.product.model') not in ROCK960_DEVICE_LIST:
+          return True
+      except device_errors.CommandFailedError as e:
+        logging.warn('Failed to get product_model: %s', e)
+        return False
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to get product_model: device unreachable')
+        return False
+
+      try:
+        return self.GetProp('sys.usb.config') == 'adb'
+      except device_errors.CommandFailedError as e:
+        logging.warn('Failed to get prop "sys.usb.config": %s', e)
+        return False
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to get prop "sys.usb.config": device unreachable')
+        return False
+
     def sd_card_ready():
       try:
         self.RunShellCommand(
             ['test', '-d', self.GetExternalStoragePath()], check_return=True)
         return True
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to check sd_card_ready: device unreachable')
+        return False
       except device_errors.AdbCommandFailedError:
         return False
 
     def pm_ready():
       try:
         return self._GetApplicationPathsInternal('android', skip_cache=True)
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to check pm_ready: device unreachable')
+        return False
       except device_errors.CommandFailedError:
         return False
 
     def boot_completed():
       try:
         return self.GetProp('sys.boot_completed', cache=False) == '1'
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to check boot_completed: device unreachable')
+        return False
       except device_errors.CommandFailedError:
         return False
 
@@ -1060,6 +1112,8 @@ class DeviceUtils(object):
         return False
 
     self.adb.WaitForDevice()
+    # Rock960 devices connected twice. Wait for device ready.
+    timeout_retry.WaitFor(is_device_connection_ready)
     timeout_retry.WaitFor(sd_card_ready)
     timeout_retry.WaitFor(pm_ready)
     timeout_retry.WaitFor(boot_completed)
@@ -1113,8 +1167,10 @@ class DeviceUtils(object):
       if should_restore_root:
         self.EnableRoot()
 
-  INSTALL_DEFAULT_TIMEOUT = 8 * _DEFAULT_TIMEOUT
-  MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
+  INSTALL_DEFAULT_TIMEOUT = _FILE_TRANSFER_TIMEOUT
+  MODULES_TMP_DIRECTORY_PATH = '/data/local/tmp/modules'
+  MODULES_LOCAL_TESTING_PATH_TEMPLATE = (
+      '/sdcard/Android/data/{}/files/local_testing')
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -1147,7 +1203,7 @@ class DeviceUtils(object):
       modules: An iterable containing specific bundle modules to install.
           Error if set and |apk| points to an APK instead of a bundle.
       fake_modules: An iterable containing specific bundle modules that should
-          have their apks copied to |MODULES_SRC_DIRECTORY_PATH| subdirectory
+          have their apks copied to |MODULES_LOCAL_TESTING_PATH_TEMPLATE|
           rather than installed. Thus the app can emulate SplitCompat while
           running. This should not have any overlap with |modules|.
       additional_locales: An iterable with additional locales to install for a
@@ -1194,11 +1250,11 @@ class DeviceUtils(object):
 
   def _FakeInstall(self, fake_apk_paths, fake_modules, package_name):
     with tempfile_ext.NamedTemporaryDirectory() as modules_dir:
-      device_dir = posixpath.join(self.MODULES_SRC_DIRECTORY_PATH, package_name)
+      tmp_dir = posixpath.join(self.MODULES_TMP_DIRECTORY_PATH, package_name)
+      dest_dir = self.MODULES_LOCAL_TESTING_PATH_TEMPLATE.format(package_name)
+      # Always clear MODULES_LOCAL_TESTING_PATH_TEMPLATE of stale files.
+      self.RunShellCommand(['rm', '-rf', dest_dir], as_root=True)
       if not fake_modules:
-        # Push empty module dir to clear device dir and update the cache.
-        self.PushChangedFiles([(modules_dir, device_dir)],
-                              delete_device_stale=True)
         return
 
       still_need_master = set(fake_modules)
@@ -1219,8 +1275,18 @@ class DeviceUtils(object):
 
       assert not still_need_master, (
           'Missing master apk file for %s' % still_need_master)
-      self.PushChangedFiles([(modules_dir, device_dir)],
-                            delete_device_stale=True)
+      self.PushChangedFiles([(modules_dir, tmp_dir)], delete_device_stale=True)
+      # Make sure the destination dir exists since we want to copy the contents
+      # of the temporary location to this dir. This indirection is necessary on
+      # Android 11 emulator as there is a permission issue for the files under
+      # /sdcard/Android/data.
+      self.RunShellCommand(['mkdir', '-p', dest_dir], as_root=True)
+      # Use cp instead of mv in case destinations are on different disks. Use
+      # shell=True to use the * wild card so that the contents of tmp_dir not
+      # the dir itself is copied into dest_dir.
+      self.RunShellCommand('cp -a {}/* {}/'.format(tmp_dir, dest_dir),
+                           shell=True,
+                           as_root=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -1406,7 +1472,8 @@ class DeviceUtils(object):
                       large_output=False,
                       raw_output=False,
                       timeout=None,
-                      retries=None):
+                      retries=None,
+                      encoding='utf8'):
     """Run an ADB shell command.
 
     The command to run |cmd| should be a sequence of program arguments
@@ -1451,6 +1518,8 @@ class DeviceUtils(object):
           (no splitting into lines).
       timeout: timeout in seconds
       retries: number of retries
+      encoding: the expected encoding when reading the large_output. No encoding
+          when the value is None.
 
     Returns:
       If single_line is False, the output of the command as a list of lines,
@@ -1502,9 +1571,13 @@ class DeviceUtils(object):
                        'device and read results from file.')
           try:
             handle_large_command(large_output_cmd)
-            return self.ReadFile(large_output_file.name, force_pull=True)
+            return self.ReadFile(large_output_file.name,
+                                 force_pull=True,
+                                 encoding=encoding)
           except device_errors.AdbShellCommandFailedError as exc:
-            output = self.ReadFile(large_output_file.name, force_pull=True)
+            output = self.ReadFile(large_output_file.name,
+                                   force_pull=True,
+                                   encoding=encoding)
             raise device_errors.AdbShellCommandFailedError(
                 cmd, output, exc.status, exc.device_serial)
       else:
@@ -1772,10 +1845,10 @@ class DeviceUtils(object):
     """
 
     def is_launcher_focused():
-      output = self.RunShellCommand(['dumpsys', 'window', 'windows'],
+      output = self.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                     check_return=True,
                                     large_output=True)
-      return any(self._LAUNCHER_FOCUSED_RE.match(l) for l in output)
+      return any(self._RESUMED_LAUNCHER_ACTIVITY_RE.match(l) for l in output)
 
     def dismiss_popups():
       # There is a dialog present; attempt to get rid of it.
@@ -1857,10 +1930,8 @@ class DeviceUtils(object):
     self.RunShellCommand(
         ['input', 'keyevent', format(keycode, 'd')], check_return=True)
 
-  PUSH_CHANGED_FILES_DEFAULT_TIMEOUT = 10 * _DEFAULT_TIMEOUT
-
   @decorators.WithTimeoutAndRetriesFromInstance(
-      min_default_timeout=PUSH_CHANGED_FILES_DEFAULT_TIMEOUT)
+      min_default_timeout=_FILE_TRANSFER_TIMEOUT)
   def PushChangedFiles(self,
                        host_device_tuples,
                        delete_device_stale=False,
@@ -2377,13 +2448,15 @@ class DeviceUtils(object):
     else:
       self.adb.Pull(device_path, host_path)
 
-  def _ReadFileWithPull(self, device_path):
+  def _ReadFileWithPull(self, device_path, encoding='utf8', errors='replace'):
     try:
       d = tempfile.mkdtemp()
       host_temp_path = os.path.join(d, 'tmp_ReadFileWithPull')
       self.adb.Pull(device_path, host_temp_path)
-      with open(host_temp_path, 'r') as host_temp:
-        return host_temp.read()
+      with open(host_temp_path, 'rb') as host_temp:
+        file_content = host_temp.read()
+        return (file_content if encoding is None
+                else six.ensure_str(file_content, encoding, errors))
     finally:
       if os.path.exists(d):
         shutil.rmtree(d)
@@ -2394,8 +2467,17 @@ class DeviceUtils(object):
                as_root=False,
                force_pull=False,
                timeout=None,
-               retries=None):
+               retries=None,
+               encoding='utf8',
+               errors='replace'):
     """Reads the contents of a file from the device.
+
+    Parameters |encoding| and |errors| are used in Python3 for decoding
+    bytes to |str|. UTF8 encoding and errors handling scheme 'replace' are
+    using by default. Return type is |str| by default.
+
+    For read file as bytes instead of text |encoding=None| can be used
+    in Python3. In Python2 this method return bytes always.
 
     Args:
       device_path: A string containing the absolute path of the file to read
@@ -2407,6 +2489,8 @@ class DeviceUtils(object):
           contents are short, to retrieve the contents using cat instead.
       timeout: timeout in seconds
       retries: number of retries
+      encoding: file encoding
+      errors: encoding errors handling
 
     Returns:
       The contents of |device_path| as a string. Contents are intepreted using
@@ -2433,12 +2517,13 @@ class DeviceUtils(object):
                                  check_return=True))
       else:
         with self._CopyToReadableLocation(device_path) as readable_temp_file:
-          return self._ReadFileWithPull(readable_temp_file.name)
+          return self._ReadFileWithPull(readable_temp_file.name,
+                                        encoding, errors)
     else:
-      return self._ReadFileWithPull(device_path)
+      return self._ReadFileWithPull(device_path, encoding, errors)
 
   def _WriteFileWithPush(self, device_path, contents):
-    with tempfile.NamedTemporaryFile() as host_temp:
+    with tempfile.NamedTemporaryFile(mode='w+') as host_temp:
       host_temp.write(contents)
       host_temp.flush()
       self.adb.Push(host_temp.name, device_path)
@@ -3031,6 +3116,27 @@ class DeviceUtils(object):
     return self.GetProp('ro.product.cpu.abi', cache=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetSupportedABIs(self, timeout=None, retries=None):
+    """Gets all ABIs supported by the device.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      The device's supported ABIs list. For supported ABIs, the returned list
+      will consist of the values defined in devil.android.ndk.abis.
+
+    Raises:
+      CommandTimeoutError on timeout.
+    """
+    supported_abis = self.GetProp('ro.product.cpu.abilist', cache=True)
+    return [
+        supported_abi for supported_abi in supported_abis.split(',')
+        if supported_abi
+    ]
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetFeatures(self, timeout=None, retries=None):
     """Returns the features supported on the device."""
     lines = self.RunShellCommand(['pm', 'list', 'features'], check_return=True)
@@ -3119,6 +3225,31 @@ class DeviceUtils(object):
         return []
       else:
         raise
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetUidForPackage(self, package_name, timeout=None, retries=None):
+    """Get user id for package name on device
+
+    Args:
+      package_name: Package name installed on device
+
+    Returns:
+      A string containing the package UID, and if the package
+      is not installed then None
+
+    Raises:
+      CommandFailedError if dumpsys does not return any output
+    """
+    dumpsys_output = self._GetDumpsysOutput(
+        ['package', package_name], 'userId=')
+
+    if not dumpsys_output:
+      raise device_errors.CommandFailedError(
+          'No output was received from dumpsys')
+
+    user_id = _USER_ID_RE.sub('', dumpsys_output[0])
+    if user_id:
+      return user_id
 
   # TODO(#4103): Remove after migrating clients to ListProcesses.
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -3452,6 +3583,9 @@ class DeviceUtils(object):
 
     def _FindFocusedWindow():
       match = None
+      # Note: This will fail to find system dialogs on Android Q+. System
+      # dialogs should not be shown on Android Q+ because we set
+      # hide_error_dialogs=1. http://crbug.com/1107896#c26
       # TODO(jbudorick): Try to grep the output on the device instead of using
       # large_output if/when DeviceUtils exposes a public interface for piped
       # shell command handling.
@@ -3468,9 +3602,18 @@ class DeviceUtils(object):
       return None
     package = match.group(2)
     logger.warning('Trying to dismiss %s dialog for %s', *match.groups())
-    self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
-    self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
-    self.SendKeyEvent(keyevent.KEYCODE_ENTER)
+
+    if self.build_version_sdk >= version_codes.NOUGAT:
+      # Broadcast does not work pre-N. Send broadcast because Android N+
+      # sometimes displays system dialog where only option is "Open app Again"
+      # when app crashes.
+      self.BroadcastIntent(
+          intent.Intent(action='android.intent.action.CLOSE_SYSTEM_DIALOGS'))
+    else:
+      self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
+      self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
+      self.SendKeyEvent(keyevent.KEYCODE_ENTER)
+
     match = _FindFocusedWindow()
     if match:
       logger.error('Still showing a %s dialog for %s', *match.groups())
@@ -3672,7 +3815,6 @@ class DeviceUtils(object):
 
     def supports_abi(abi, serial):
       if abis and abi not in abis:
-        logger.warning("Device %s doesn't support required ABIs.", serial)
         return False
       return True
 
@@ -3685,8 +3827,18 @@ class DeviceUtils(object):
           serial = adb.GetDeviceSerial()
           if not denylisted(serial):
             device = cls(_CreateAdbWrapper(adb), **kwargs)
-            if supports_abi(device.GetABI(), serial):
-              devices.append(device)
+            supported_abis = device.GetSupportedABIs()
+            if not supported_abis:
+              supported_abis = [device.GetABI()]
+            for supported_abi in supported_abis:
+              if supports_abi(supported_abi, serial):
+                devices.append(device)
+                break
+            else:
+              logger.warning(
+                  "Device %s doesn't support required ABIs "
+                  "(supported: %s, required: %s)", serial,
+                  ','.join(supported_abis), ','.join(abis))
 
       if len(devices) == 0 and not allow_no_devices:
         raise device_errors.NoDevicesError()

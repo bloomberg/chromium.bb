@@ -4,6 +4,7 @@
 
 #include "components/cronet/stale_host_resolver.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
@@ -20,9 +20,13 @@
 #include "net/base/network_isolation_key.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/host_resolver_source.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_results.h"
+#include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_with_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/scheme_host_port.h"
 
 namespace cronet {
 
@@ -43,6 +47,8 @@ class StaleHostResolver::RequestImpl
   // net::HostResolver::ResolveHostRequest implementation:
   int Start(net::CompletionOnceCallback result_callback) override;
   const absl::optional<net::AddressList>& GetAddressResults() const override;
+  absl::optional<std::vector<net::HostResolverEndpointResult>>
+  GetEndpointResults() const override;
   const absl::optional<std::vector<std::string>>& GetTextResults()
       const override;
   const absl::optional<std::vector<net::HostPortPair>>& GetHostnameResults()
@@ -187,6 +193,15 @@ StaleHostResolver::RequestImpl::GetAddressResults() const {
   return cache_request_->GetAddressResults();
 }
 
+absl::optional<std::vector<net::HostResolverEndpointResult>>
+StaleHostResolver::RequestImpl::GetEndpointResults() const {
+  if (network_request_)
+    return network_request_->GetEndpointResults();
+
+  DCHECK(cache_request_);
+  return cache_request_->GetEndpointResults();
+}
+
 const absl::optional<std::vector<std::string>>&
 StaleHostResolver::RequestImpl::GetTextResults() const {
   if (network_request_)
@@ -325,6 +340,17 @@ StaleHostResolver::~StaleHostResolver() {}
 
 void StaleHostResolver::OnShutdown() {
   inner_resolver_->OnShutdown();
+}
+
+std::unique_ptr<net::HostResolver::ResolveHostRequest>
+StaleHostResolver::CreateRequest(
+    url::SchemeHostPort host,
+    net::NetworkIsolationKey network_isolation_key,
+    net::NetLogWithSource net_log,
+    absl::optional<ResolveHostParameters> optional_parameters) {
+  // TODO(crbug.com/1206799): Propagate scheme.
+  return CreateRequest(net::HostPortPair::FromSchemeHostPort(host),
+                       network_isolation_key, net_log, optional_parameters);
 }
 
 std::unique_ptr<net::HostResolver::ResolveHostRequest>

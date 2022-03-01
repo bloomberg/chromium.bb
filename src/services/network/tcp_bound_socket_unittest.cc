@@ -30,6 +30,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/mojo_socket_test_util.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "services/network/socket_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +42,10 @@ class TCPBoundSocketTest : public testing::Test {
   TCPBoundSocketTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         factory_(nullptr /* net_log */, &url_request_context_) {}
+
+  TCPBoundSocketTest(const TCPBoundSocketTest&) = delete;
+  TCPBoundSocketTest& operator=(const TCPBoundSocketTest&) = delete;
+
   ~TCPBoundSocketTest() override {}
 
   SocketFactory* factory() { return &factory_; }
@@ -195,8 +200,6 @@ class TCPBoundSocketTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   net::TestURLRequestContext url_request_context_;
   SocketFactory factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TCPBoundSocketTest);
 };
 
 // Try to bind a socket to an address already being listened on, which should

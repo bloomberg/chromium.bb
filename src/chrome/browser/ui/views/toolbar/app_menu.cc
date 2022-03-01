@@ -12,7 +12,9 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -55,16 +57,19 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -107,13 +112,14 @@ const int kZoomLabelHorizontalPadding = 2;
 
 // Returns true if |command_id| identifies a bookmark menu item.
 bool IsBookmarkCommand(int command_id) {
-  return command_id >= IDC_FIRST_BOOKMARK_MENU;
+  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+         (command_id % AppMenuModel::kNumUnboundedMenuTypes == 0);
 }
 
 // Returns true if |command_id| identifies a recent tabs menu item.
 bool IsRecentTabsCommand(int command_id) {
-  return command_id >= AppMenuModel::kMinRecentTabsCommandId &&
-         command_id <= AppMenuModel::kMaxRecentTabsCommandId;
+  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+         (command_id % AppMenuModel::kNumUnboundedMenuTypes == 1);
 }
 
 // Combination border/background for the buttons contained in the menu. The
@@ -238,25 +244,18 @@ class InMenuButton : public LabelButton {
   // views::LabelButton
   void OnThemeChanged() override {
     LabelButton::OnThemeChanged();
-    ui::NativeTheme* theme = GetNativeTheme();
-    if (theme) {
-      SetTextColor(
-          views::Button::STATE_DISABLED,
-          theme->GetSystemColor(
-              ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor));
-      SetTextColor(
-          views::Button::STATE_HOVERED,
-          theme->GetSystemColor(
-              ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
-      SetTextColor(
-          views::Button::STATE_PRESSED,
-          theme->GetSystemColor(
-              ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
-      SetTextColor(
-          views::Button::STATE_NORMAL,
-          theme->GetSystemColor(
-              ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
-    }
+    const ui::ColorProvider* color_provider = GetColorProvider();
+    SetTextColor(
+        views::Button::STATE_DISABLED,
+        color_provider->GetColor(ui::kColorMenuItemForegroundDisabled));
+    SetTextColor(
+        views::Button::STATE_HOVERED,
+        color_provider->GetColor(ui::kColorMenuItemForegroundSelected));
+    SetTextColor(
+        views::Button::STATE_PRESSED,
+        color_provider->GetColor(ui::kColorMenuItemForegroundSelected));
+    SetTextColor(views::Button::STATE_NORMAL,
+                 color_provider->GetColor(ui::kColorMenuItemForeground));
   }
 };
 
@@ -329,7 +328,7 @@ class AppMenuView : public views::View {
   base::WeakPtr<AppMenu> menu_;
 
   // The menu model containing the increment/decrement/reset items.
-  ButtonMenuItemModel* menu_model_;
+  raw_ptr<ButtonMenuItemModel> menu_model_;
 };
 
 BEGIN_METADATA(AppMenuView, views::View)
@@ -372,10 +371,8 @@ class FullscreenButton : public ImageButton {
   // Overridden from ImageButton.
   gfx::Size CalculatePreferredSize() const override {
     gfx::Size pref = ImageButton::CalculatePreferredSize();
-    if (border()) {
-      gfx::Insets insets = border()->GetInsets();
-      pref.Enlarge(insets.width(), insets.height());
-    }
+    const gfx::Insets insets = GetInsets();
+    pref.Enlarge(insets.width(), insets.height());
     return pref;
   }
 
@@ -426,7 +423,9 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
   gfx::Size CalculatePreferredSize() const override {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
-    return {GetMaxChildViewPreferredWidth() * int{children().size()}, 0};
+    return {
+        GetMaxChildViewPreferredWidth() * static_cast<int>(children().size()),
+        0};
   }
 
   void Layout() override {
@@ -504,7 +503,7 @@ class AppMenu::ZoomView : public AppMenuView {
     // level can be picked up by screen readers.
     zoom_label_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
 
-    AddChildView(zoom_label_);
+    AddChildView(zoom_label_.get());
 
     increment_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, increment_index),
@@ -523,7 +522,7 @@ class AppMenu::ZoomView : public AppMenuView {
     // all buttons on menu should must be a custom button in order for
     // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
-    AddChildView(fullscreen_button_);
+    AddChildView(fullscreen_button_.get());
 
     // The max width for `zoom_label_` should not be valid until the calls into
     // UpdateZoomControls().
@@ -577,20 +576,18 @@ class AppMenu::ZoomView : public AppMenuView {
   void OnThemeChanged() override {
     AppMenuView::OnThemeChanged();
 
-    ui::NativeTheme* theme = GetNativeTheme();
-    zoom_label_->SetEnabledColor(theme->GetSystemColor(
-        ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
+    const ui::ColorProvider* color_provider = GetColorProvider();
+    zoom_label_->SetEnabledColor(
+        color_provider->GetColor(ui::kColorMenuItemForeground));
 
     fullscreen_button_->SetImage(
         ImageButton::STATE_NORMAL,
         gfx::CreateVectorIcon(
             kFullscreenIcon,
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor)));
+            color_provider->GetColor(ui::kColorMenuItemForeground)));
     gfx::ImageSkia hovered_fullscreen_image = gfx::CreateVectorIcon(
         kFullscreenIcon,
-        theme->GetSystemColor(
-            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+        color_provider->GetColor(ui::kColorMenuItemForegroundSelected));
     fullscreen_button_->SetImage(ImageButton::STATE_HOVERED,
                                  hovered_fullscreen_image);
     fullscreen_button_->SetImage(ImageButton::STATE_PRESSED,
@@ -633,9 +630,7 @@ class AppMenu::ZoomView : public AppMenuView {
   int GetZoomLabelMaxWidth() const {
     if (!zoom_label_max_width_valid_) {
       const gfx::FontList& font_list = zoom_label_->font_list();
-      int border_width = zoom_label_->border()
-                             ? zoom_label_->border()->GetInsets().width()
-                             : 0;
+      const int border_width = zoom_label_->GetInsets().width();
 
       int max_w = 0;
 
@@ -666,15 +661,15 @@ class AppMenu::ZoomView : public AppMenuView {
   base::CallbackListSubscription browser_zoom_subscription_;
 
   // Button for incrementing the zoom.
-  LabelButton* increment_button_;
+  raw_ptr<LabelButton> increment_button_;
 
   // Label showing zoom as a percent.
-  Label* zoom_label_;
+  raw_ptr<Label> zoom_label_;
 
   // Button for decrementing the zoom.
-  LabelButton* decrement_button_;
+  raw_ptr<LabelButton> decrement_button_;
 
-  ImageButton* fullscreen_button_;
+  raw_ptr<ImageButton> fullscreen_button_;
 
   // Cached width of how wide the zoom label string can be. This is the width at
   // 100%. This should not be accessed directly, use GetZoomLabelMaxWidth()
@@ -710,17 +705,23 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     model_->SetMenuModelDelegate(nullptr);
   }
 
-  const gfx::FontList* GetLabelFontListAt(int index) const {
-    return model_->GetLabelFontListAt(index);
+  const gfx::FontList* GetLabelFontListForCommandId(int command_id) const {
+    ui::MenuModel* model = model_;
+    int index = -1;
+    AppMenuModel::GetModelAndIndexForCommandId(command_id, &model, &index);
+    DCHECK_GT(index, -1);
+    return model->GetLabelFontListAt(index);
   }
 
   // ui::MenuModelDelegate implementation:
 
-  void OnIconChanged(int index) override {
-    int command_id = model_->GetCommandIdAt(index);
+  void OnIconChanged(int command_id) override {
+    ui::MenuModel* model = model_;
+    int index;
+    model_->GetModelAndIndexForCommandId(command_id, &model, &index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
-    item->SetIcon(model_->GetIconAt(index));
+    item->SetIcon(model->GetIconAt(index));
   }
 
   void OnMenuStructureChanged() override {
@@ -729,20 +730,22 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
       menu_item_->RemoveAllMenuItems();
 
       // Remove all elements in |AppMenu::command_id_to_entry_| that map to
-      // |model_|.
+      // |model_| or any sub menu models.
+      base::flat_set<int> descendant_command_ids;
+      GetDescendantCommandIds(model_, &descendant_command_ids);
       auto iter = app_menu_->command_id_to_entry_.begin();
       while (iter != app_menu_->command_id_to_entry_.end()) {
-        if (iter->second.first == model_)
+        if (descendant_command_ids.find(iter->first) !=
+            descendant_command_ids.end()) {
           app_menu_->command_id_to_entry_.erase(iter++);
-        else
+        } else {
           ++iter;
+        }
       }
     }
 
     // Add all menu items from |model| to submenu.
-    for (int i = 0; i < model_->GetItemCount(); ++i) {
-      app_menu_->AddMenuItem(menu_item_, i, model_, i, model_->GetTypeAt(i));
-    }
+    BuildMenu(menu_item_, model_);
 
     // In case recent tabs submenu was open when items were changing, force a
     // ChildrenChanged().
@@ -750,9 +753,41 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   }
 
  private:
-  AppMenu* app_menu_;
-  ui::MenuModel* model_;
-  views::MenuItemView* menu_item_;
+  const raw_ptr<AppMenu> app_menu_;
+  const raw_ptr<ui::MenuModel> model_;
+  const raw_ptr<views::MenuItemView> menu_item_;
+
+  // Recursive helper function for OnMenuStructureChanged() which builds the
+  // |menu| and all descendant submenus.
+  void BuildMenu(MenuItemView* menu, ui::MenuModel* model) {
+    DCHECK(menu);
+    DCHECK(model);
+    const int item_count = model->GetItemCount();
+    for (int i = 0; i < item_count; ++i) {
+      MenuItemView* const item =
+          app_menu_->AddMenuItem(menu, i, model, i, model->GetTypeAt(i));
+      if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
+          model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
+        DCHECK(item);
+        DCHECK(item->GetType() == MenuItemView::Type::kSubMenu ||
+               item->GetType() == MenuItemView::Type::kActionableSubMenu);
+        BuildMenu(item, model->GetSubmenuModelAt(i));
+      }
+    }
+  }
+
+  // Populates out_set with all command ids referenced by the model, including
+  // those referenced by sub menu models.
+  void GetDescendantCommandIds(MenuModel* model, base::flat_set<int>* out_set) {
+    const int item_count = model->GetItemCount();
+    for (int i = 0; i < item_count; i++) {
+      out_set->insert(model->GetCommandIdAt(i));
+      if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
+          model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
+        GetDescendantCommandIds(model->GetSubmenuModelAt(i), out_set);
+      }
+    }
+  }
 };
 
 // AppMenu ------------------------------------------------------------------
@@ -812,20 +847,26 @@ bool AppMenu::IsShowing() const {
   return menu_runner_.get() && menu_runner_->IsRunning();
 }
 
-void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
-  if (IsRecentTabsCommand(command_id)) {
-    const gfx::FontList* font_list =
-        recent_tabs_menu_model_delegate_->GetLabelFontListAt(
-            ModelIndexFromCommandId(command_id));
-    // Only fill in |*color| if there's a font list - otherwise this method will
-    // override the color for every recent tab item, not just the header.
-    if (font_list) {
-      // TODO(ellyjones): Use CONTEXT_MENU instead of CONTEXT_LABEL.
-      style->foreground = views::style::GetColor(
-          *root_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
-      style->font_list = *font_list;
-    }
-  }
+const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
+  return IsRecentTabsCommand(command_id)
+             ? recent_tabs_menu_model_delegate_->GetLabelFontListForCommandId(
+                   command_id)
+             : nullptr;
+}
+
+absl::optional<SkColor> AppMenu::GetLabelColor(int command_id) const {
+  // Only return a color if there's a font list - otherwise this method will
+  // return a color for every recent tab item, not just the header.
+  // Ensure that we call GetColor() using the `root_`'s SubmenuView as this is
+  // the content view for the menu's widget. The root MenuItemView itself is not
+  // a member of a Widget hierarchy and thus does not have the necessary context
+  // to correctly determine the label color as this requires querying the View's
+  // hosting widget (crbug.com/1233392).
+  return GetLabelFontList(command_id)
+             ? absl::optional<SkColor>(views::style::GetColor(
+                   *root_->GetSubmenu(), views::style::CONTEXT_MENU,
+                   views::style::STYLE_PRIMARY))
+             : absl::nullopt;
 }
 
 std::u16string AppMenu::GetTooltipText(int command_id,
@@ -875,10 +916,20 @@ ui::mojom::DragOperation AppMenu::OnPerformDrop(
     MenuItemView* menu,
     DropPosition position,
     const ui::DropTargetEvent& event) {
-  if (!IsBookmarkCommand(menu->GetCommand()))
-    return ui::mojom::DragOperation::kNone;
+  auto drop_cb = GetDropCallback(menu, position, event);
+  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+  std::move(drop_cb).Run(event, output_drag_op);
+  return output_drag_op;
+}
 
-  return bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
+views::View::DropCallback AppMenu::GetDropCallback(
+    views::MenuItemView* menu,
+    DropPosition position,
+    const ui::DropTargetEvent& event) {
+  if (!IsBookmarkCommand(menu->GetCommand()))
+    return base::DoNothing();
+
+  return bookmark_menu_delegate_->GetDropCallback(menu, position, event);
 }
 
 bool AppMenu::ShowContextMenu(MenuItemView* source,
@@ -934,11 +985,8 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
   if (command_id == IDC_MORE_TOOLS_MENU)
     return true;
 
-  if (command_id == IDC_SHARING_HUB_MENU) {
-    DCHECK(
-        base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu));
+  if (command_id == IDC_SHARING_HUB_MENU)
     return true;
-  }
 
   // The items representing the cut menu (cut/copy/paste), zoom menu
   // (increment/decrement/reset) and extension toolbar view are always enabled.
@@ -1060,7 +1108,9 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     // Add the menu item at the end.
     int menu_index =
-        parent->HasSubmenu() ? int{parent->GetSubmenu()->children().size()} : 0;
+        parent->HasSubmenu()
+            ? static_cast<int>(parent->GetSubmenu()->children().size())
+            : 0;
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
@@ -1143,7 +1193,6 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
   DCHECK(command_id > -1 ||
          (command_id == -1 &&
           model->GetTypeAt(model_index) == MenuModel::TYPE_SEPARATOR));
-  DCHECK_LT(command_id, IDC_FIRST_BOOKMARK_MENU);
 
   if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
     // All command ID's should be unique except for IDC_SHOW_HISTORY which is

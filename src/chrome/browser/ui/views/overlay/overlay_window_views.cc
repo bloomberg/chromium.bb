@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
+#include "base/memory/raw_ptr.h"
 
 #include <memory>
 #include <string>
@@ -14,7 +15,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/views/overlay/toggle_microphone_button.h"
 #include "chrome/browser/ui/views/overlay/track_image_button.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -39,6 +38,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -51,7 +51,9 @@
 #include "ui/views/window/non_client_view.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/rounded_corner_utils.h"
 #include "ash/public/cpp/window_properties.h"  // nogncheck
 #include "ui/aura/window.h"
 #endif
@@ -63,6 +65,12 @@
 #include "ui/base/win/shell.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "ui/aura/window_tree_host.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+#endif
+
 namespace {
 
 // Lower bound size of the window is a fixed value to allow for minimal sizes
@@ -72,7 +80,7 @@ constexpr gfx::Size kMinWindowSize(260, 146);
 constexpr int kOverlayBorderThickness = 10;
 
 // The opacity of the controls scrim.
-constexpr double kControlsScrimOpacity = 0.6;
+constexpr double kControlsScrimOpacity = 0.76;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // The opacity of the resize handle control.
@@ -129,6 +137,10 @@ T* AddChildView(std::vector<std::unique_ptr<views::View>>* views,
 class OverlayWindowFrameView : public views::NonClientFrameView {
  public:
   explicit OverlayWindowFrameView(views::Widget* widget) : widget_(widget) {}
+
+  OverlayWindowFrameView(const OverlayWindowFrameView&) = delete;
+  OverlayWindowFrameView& operator=(const OverlayWindowFrameView&) = delete;
+
   ~OverlayWindowFrameView() override = default;
 
   // views::NonClientFrameView:
@@ -144,9 +156,8 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
 
     constexpr int kResizeAreaCornerSize = 16;
     int window_component = GetHTComponentForFrame(
-        point, kOverlayBorderThickness, kOverlayBorderThickness,
-        kResizeAreaCornerSize, kResizeAreaCornerSize,
-        GetWidget()->widget_delegate()->CanResize());
+        point, gfx::Insets(kOverlayBorderThickness), kResizeAreaCornerSize,
+        kResizeAreaCornerSize, GetWidget()->widget_delegate()->CanResize());
 
     // The media controls should take and handle user interaction.
     OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
@@ -188,9 +199,7 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
   }
 
  private:
-  views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverlayWindowFrameView);
+  raw_ptr<views::Widget> widget_;
 };
 
 // OverlayWindow implementation of WidgetDelegate.
@@ -205,6 +214,11 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
     SetTitle(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
     SetOwnedByWidget(true);
   }
+
+  OverlayWindowWidgetDelegate(const OverlayWindowWidgetDelegate&) = delete;
+  OverlayWindowWidgetDelegate& operator=(const OverlayWindowWidgetDelegate&) =
+      delete;
+
   ~OverlayWindowWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
@@ -212,9 +226,6 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
       views::Widget* widget) override {
     return std::make_unique<OverlayWindowFrameView>(widget);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverlayWindowWidgetDelegate);
 };
 
 // static
@@ -276,7 +287,7 @@ OverlayWindowViews::OverlayWindowViews(
       min_size_(kMinWindowSize),
       hide_controls_timer_(
           FROM_HERE,
-          base::TimeDelta::FromMilliseconds(2500),
+          base::Milliseconds(2500),
           base::BindRepeating(&OverlayWindowViews::UpdateControlsVisibility,
                               base::Unretained(this),
                               false /* is_visible */)) {
@@ -291,23 +302,24 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 
   UpdateMaxSize(work_area);
 
-  gfx::Size window_size = window_bounds_.size();
-  if (!has_been_shown_) {
-    window_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
-    window_size.set_width(std::min(
-        max_size_.width(), std::max(min_size_.width(), window_size.width())));
-    window_size.set_height(
-        std::min(max_size_.height(),
-                 std::max(min_size_.height(), window_size.height())));
-  }
+  const gfx::Rect bounds = native_widget() ? GetBounds() : gfx::Rect();
 
-  // Determine the window size by fitting |natural_size_| within
-  // |window_size|, keeping to |natural_size_|'s aspect ratio.
-  if (!window_size.IsEmpty() && !natural_size_.IsEmpty()) {
+  gfx::Size window_size = bounds.size();
+  if (!has_been_shown_)
+    window_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
+
+  // Even though we define the minimum and maximum sizes for our views::Widget,
+  // it's possible for the current size to be outside of those bounds
+  // transiently on some platforms, so we need to cap it.
+  window_size.SetToMin(max_size_);
+  window_size.SetToMax(min_size_);
+
+  // Determine the window size by fitting |natural_size_| within |window_size|,
+  // keeping to |natural_size_|'s aspect ratio.
+  if (!natural_size_.IsEmpty()) {
     float aspect_ratio = (float)natural_size_.width() / natural_size_.height();
 
-    WindowQuadrant quadrant =
-        GetCurrentWindowQuadrant(GetBounds(), controller_);
+    WindowQuadrant quadrant = GetCurrentWindowQuadrant(bounds, controller_);
     gfx::ResizeEdge resize_edge;
     switch (quadrant) {
       case OverlayWindowViews::WindowQuadrant::kBottomRight:
@@ -325,18 +337,16 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
     }
 
     // Update the window size to adhere to the aspect ratio.
-    gfx::Size min_size = min_size_;
-    gfx::Size max_size = max_size_;
-    gfx::Rect window_rect(GetBounds().origin(), window_size);
-    gfx::SizeRectToAspectRatio(resize_edge, aspect_ratio, min_size, max_size,
+    gfx::Rect window_rect(bounds.origin(), window_size);
+    gfx::SizeRectToAspectRatio(resize_edge, aspect_ratio, min_size_, max_size_,
                                &window_rect);
-    window_size.SetSize(window_rect.width(), window_rect.height());
+    window_size = window_rect.size();
 
     UpdateLayerBoundsWithLetterboxing(window_size);
   }
 
   // Use the previous window origin location, if exists.
-  gfx::Point origin = window_bounds_.origin();
+  gfx::Point origin = bounds.origin();
 
   int window_diff_width = work_area.right() - window_size.width();
   int window_diff_height = work_area.bottom() - window_size.height();
@@ -355,8 +365,7 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
     origin = default_origin;
   }
 
-  window_bounds_ = gfx::Rect(origin, window_size);
-  return window_bounds_;
+  return gfx::Rect(origin, window_size);
 }
 
 void OverlayWindowViews::SetUpViews() {
@@ -370,7 +379,9 @@ void OverlayWindowViews::SetUpViews() {
   auto close_controls_view =
       std::make_unique<views::CloseImageButton>(base::BindRepeating(
           [](OverlayWindowViews* overlay) {
-            overlay->controller_->Close(/*should_pause_video=*/true);
+            // Only pause the video if play/pause is available.
+            const bool should_pause_video = overlay->show_play_pause_button_;
+            overlay->controller_->Close(should_pause_video);
             overlay->RecordButtonPressed(OverlayWindowControl::kClose);
           },
           base::Unretained(this)));
@@ -594,7 +605,7 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
     gfx::Size window_size) {
   // This is the case when the window is initially created or the video surface
   // id has not been embedded.
-  if (window_bounds_.size().IsEmpty() || natural_size_.IsEmpty())
+  if (!native_widget() || GetBounds().IsEmpty() || natural_size_.IsEmpty())
     return;
 
   gfx::Rect letterbox_region = media::ComputeLetterboxRegion(
@@ -620,13 +631,10 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
       letterbox_region.set_height(window_size.height());
   }
 
-  gfx::Size letterbox_size = letterbox_region.size();
-  gfx::Point origin =
-      gfx::Point((window_size.width() - letterbox_size.width()) / 2,
-                 (window_size.height() - letterbox_size.height()) / 2);
-
-  video_bounds_.set_origin(origin);
-  video_bounds_.set_size(letterbox_region.size());
+  const gfx::Rect video_bounds(
+      gfx::Point((window_size.width() - letterbox_region.size().width()) / 2,
+                 (window_size.height() - letterbox_region.size().height()) / 2),
+      letterbox_region.size());
 
   // Update the layout of the controls.
   UpdateControlsBounds();
@@ -634,9 +642,9 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
   // Update the surface layer bounds to scale with window size changes.
   window_background_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
-  video_view_->SetBoundsRect(video_bounds_);
+  video_view_->SetBoundsRect(video_bounds);
   if (video_view_->layer()->has_external_content())
-    video_view_->layer()->SetSurfaceSize(video_bounds_.size());
+    video_view_->layer()->SetSurfaceSize(video_bounds.size());
 
   // Notify the controller that the bounds have changed.
   controller_->UpdateLayerBounds();
@@ -658,7 +666,7 @@ void OverlayWindowViews::UpdateControlsBounds() {
 
   update_controls_bounds_timer_ = std::make_unique<base::OneShotTimer>();
   update_controls_bounds_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(1),
+      FROM_HERE, base::Seconds(1),
       base::BindOnce(&OverlayWindowViews::OnUpdateControlsBounds,
                      base::Unretained(this)));
 }
@@ -679,7 +687,7 @@ void OverlayWindowViews::OnUpdateControlsBounds() {
     back_to_tab_label_button_->SetWindowSize(GetBounds().size());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
+  UpdateResizeHandleBounds(quadrant);
 #endif
 
   skip_ad_controls_view_->SetPosition(GetBounds().size());
@@ -824,6 +832,15 @@ gfx::Rect OverlayWindowViews::CalculateControlsBounds(int x,
       gfx::Point(x, (GetBounds().size().height() - size.height()) / 2), size);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void OverlayWindowViews::UpdateResizeHandleBounds(WindowQuadrant quadrant) {
+  resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
+  GetNativeWindow()->SetProperty(
+      ash::kWindowPipResizeHandleBoundsKey,
+      new gfx::Rect(GetResizeHandleControlsBounds()));
+}
+#endif
+
 bool OverlayWindowViews::IsActive() {
   return views::Widget::IsActive();
 }
@@ -835,29 +852,34 @@ bool OverlayWindowViews::IsActive() const {
 void OverlayWindowViews::Close() {
   views::Widget::Close();
 
-  if (auto* frame_sink_id = GetCurrentFrameSinkId())
-    GetCompositor()->RemoveChildFrameSink(*frame_sink_id);
+  if (has_registered_frame_sink_hierarchy_) {
+    DCHECK(GetCurrentFrameSinkId());
+    GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
+    has_registered_frame_sink_hierarchy_ = false;
+  }
 }
 
 void OverlayWindowViews::ShowInactive() {
-  if (back_to_tab_label_button_) {
-    back_to_tab_label_button_->SetText(url_formatter::FormatUrl(
-        controller_->GetWebContents()->GetLastCommittedURL(),
-        url_formatter::kFormatUrlOmitDefaults |
-            url_formatter::kFormatUrlOmitHTTPS |
-            url_formatter::kFormatUrlOmitTrivialSubdomains |
-            url_formatter::kFormatUrlTrimAfterHost,
-        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
-  }
-
   views::Widget::ShowInactive();
   views::Widget::SetVisibleOnAllWorkspaces(true);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros is based on Ozone/Wayland, which uses ui::PlatformWindow and
+  // views::DesktopWindowTreeHostLinux.
+  auto* desktop_window_tree_host =
+      views::DesktopWindowTreeHostLinux::From(GetNativeWindow()->GetHost());
+
+  // At this point, the aura surface will be created so we can set it to pip and
+  // its aspect ratio. Let Exo handle adding a rounded corner decorartor.
+  desktop_window_tree_host->GetWaylandExtension()->SetPip();
+  desktop_window_tree_host->SetAspectRatio(gfx::SizeF(natural_size_));
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // For rounded corners.
   if (ash::features::IsPipRoundedCornersEnabled()) {
-    decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
-        GetNativeWindow(), GetNativeWindow(), GetRootView()->layer(),
-        ash::kPipRoundedCornerRadius);
+    ash::SetCornerRadius(GetNativeWindow(), GetRootView()->layer(),
+                         ash::kPipRoundedCornerRadius);
   }
 #endif
 
@@ -867,6 +889,12 @@ void OverlayWindowViews::ShowInactive() {
 
 void OverlayWindowViews::Hide() {
   views::Widget::Hide();
+
+  if (has_registered_frame_sink_hierarchy_) {
+    DCHECK(GetCurrentFrameSinkId());
+    GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
+    has_registered_frame_sink_hierarchy_ = false;
+  }
 }
 
 bool OverlayWindowViews::IsVisible() {
@@ -965,19 +993,26 @@ void OverlayWindowViews::SetHangUpButtonVisibility(bool is_visible) {
 }
 
 void OverlayWindowViews::SetSurfaceId(const viz::SurfaceId& surface_id) {
-  // TODO(https://crbug.com/925346): We also want to unregister the page that
-  // used to embed the video as its parent.
-  if (!GetCurrentFrameSinkId()) {
-    GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
-  } else if (*GetCurrentFrameSinkId() != surface_id.frame_sink_id()) {
+  // The PiP window may have a previous surface set. If the window stays open
+  // since then, we need to unregister the previous frame sink; otherwise the
+  // surface frame sink should already be removed when the window closed.
+  if (has_registered_frame_sink_hierarchy_) {
+    DCHECK(GetCurrentFrameSinkId());
     GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
-    GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
   }
 
+  // Add the new frame sink to the PiP window and set the surface.
+  GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
+  has_registered_frame_sink_hierarchy_ = true;
   video_view_->layer()->SetShowSurface(
       surface_id, GetBounds().size(), SK_ColorBLACK,
       cc::DeadlinePolicy::UseDefaultDeadline(),
       true /* stretch_content_to_fill_bounds */);
+}
+
+void OverlayWindowViews::OnNativeFocus() {
+  UpdateControlsVisibility(true);
+  views::Widget::OnNativeFocus();
 }
 
 void OverlayWindowViews::OnNativeBlur() {
@@ -989,8 +1024,19 @@ void OverlayWindowViews::OnNativeBlur() {
   views::Widget::OnNativeBlur();
 }
 
+void OverlayWindowViews::OnNativeWidgetDestroying() {
+  views::Widget::OnNativeWidgetDestroying();
+  if (has_registered_frame_sink_hierarchy_) {
+    DCHECK(GetCurrentFrameSinkId());
+    GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
+    has_registered_frame_sink_hierarchy_ = false;
+  }
+}
+
 void OverlayWindowViews::OnNativeWidgetDestroyed() {
-  controller_->OnWindowDestroyed(/*should_pause_video=*/true);
+  views::Widget::OnNativeWidgetDestroyed();
+  controller_->OnWindowDestroyed(
+      /*should_pause_video=*/show_play_pause_button_);
 }
 
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
@@ -1006,11 +1052,6 @@ void OverlayWindowViews::OnNativeWidgetMove() {
   // when the user interacts with the window again.
   UpdateControlsVisibility(false);
 
-  // Update the existing |window_bounds_| when the window moves. This allows
-  // the window to reappear with the same origin point when a new video is
-  // shown.
-  window_bounds_ = GetBounds();
-
   // Update the maximum size of the widget in case we have moved to another
   // window.
   UpdateMaxSize(GetWorkAreaForWindow());
@@ -1019,7 +1060,7 @@ void OverlayWindowViews::OnNativeWidgetMove() {
   // Update the positioning of some icons when the window is moved.
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
   close_controls_view_->SetPosition(GetBounds().size(), quadrant);
-  resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
+  UpdateResizeHandleBounds(quadrant);
 #endif
 }
 
@@ -1040,6 +1081,26 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
+// When the PiP window is moved to different displays on Chrome OS, we need to
+// re-parent the frame sink since the compositor will change. After
+// OnNativeWidgetRemovingFromCompositor() is called, the window layer containing
+// the compositor will be removed in Window::RemoveChildImpl(), and
+// OnNativeWidgetAddedToCompositor() is called once another compositor is added.
+void OverlayWindowViews::OnNativeWidgetAddedToCompositor() {
+  if (!has_registered_frame_sink_hierarchy_ && GetCurrentFrameSinkId()) {
+    GetCompositor()->AddChildFrameSink(*GetCurrentFrameSinkId());
+    has_registered_frame_sink_hierarchy_ = true;
+  }
+}
+
+void OverlayWindowViews::OnNativeWidgetRemovingFromCompositor() {
+  if (has_registered_frame_sink_hierarchy_) {
+    DCHECK(GetCurrentFrameSinkId());
+    GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
+    has_registered_frame_sink_hierarchy_ = false;
+  }
+}
+
 void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
   // Every time a user uses a keyboard to interact on the window, restart the
   // timer to automatically hide the controls.
@@ -1053,11 +1114,11 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     UpdateControlsVisibility(true);
   }
 
-  // If there is no focus affordance on the buttons, only handle space key to
-  // for TogglePlayPause().
+  // If there is no focus affordance on the buttons and play/pause button is
+  // visible, only handle space key for TogglePlayPause().
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   if (!focused_view && event->type() == ui::ET_KEY_PRESSED &&
-      event->key_code() == ui::VKEY_SPACE) {
+      event->key_code() == ui::VKEY_SPACE && show_play_pause_button_) {
     TogglePlayPause();
     event->SetHandled();
   }
@@ -1084,13 +1145,23 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
       UpdateControlsVisibility(true);
       break;
 
-    case ui::ET_MOUSE_EXITED:
+    case ui::ET_MOUSE_EXITED: {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // On Lacros, the |event| will always occur within
+      // |window_background_view_| despite the mouse exiting the respective
+      // surface so always hide the controls.
+      const bool should_update_control_visibility = true;
+#else
       // On Windows, ui::ET_MOUSE_EXITED is triggered when hovering over the
       // media controls because of the HitTest. This check ensures the controls
       // are visible if the mouse is still over the window.
-      if (!video_bounds_.Contains(event->location()))
+      const bool should_update_control_visibility =
+          !window_background_view_->bounds().Contains(event->location());
+#endif
+      if (should_update_control_visibility)
         UpdateControlsVisibility(false);
       break;
+    }
 
     default:
       break;
@@ -1251,7 +1322,16 @@ void OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
   if (work_area.IsEmpty())
     return;
 
-  max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  const auto new_max_size =
+      gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  // Make sure we only run the logic to update the current size if the maximum
+  // size actually changes. Running it unconditionally means also running it
+  // when DPI <-> pixel computations introduce off-by-1 errors, which leads to
+  // incorrect window sizing/positioning.
+  if (new_max_size == max_size_)
+    return;
+
+  max_size_ = new_max_size;
 
   if (!native_widget())
     return;
@@ -1259,12 +1339,14 @@ void OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
   // native_widget() is required for OnSizeConstraintsChanged.
   OnSizeConstraintsChanged();
 
-  if (window_bounds_.width() <= max_size_.width() &&
-      window_bounds_.height() <= max_size_.height()) {
+  if (GetBounds().width() <= max_size_.width() &&
+      GetBounds().height() <= max_size_.height()) {
     return;
   }
 
-  SetSize(max_size_);
+  gfx::Size clamped_size = GetBounds().size();
+  clamped_size.SetToMin(max_size_);
+  SetSize(clamped_size);
 }
 
 void OverlayWindowViews::TogglePlayPause() {
@@ -1312,6 +1394,10 @@ HangUpButton* OverlayWindowViews::hang_up_button_for_testing() const {
 BackToTabLabelButton* OverlayWindowViews::back_to_tab_label_button_for_testing()
     const {
   return back_to_tab_label_button_;
+}
+
+views::CloseImageButton* OverlayWindowViews::close_button_for_testing() const {
+  return close_controls_view_;
 }
 
 gfx::Point OverlayWindowViews::close_image_position_for_testing() const {

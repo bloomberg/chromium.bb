@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "chrome/browser/background/background_contents_service.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
@@ -62,8 +61,6 @@ BackgroundContents::BackgroundContents(
                           extensions::mojom::ViewType::kBackgroundContents);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents_.get());
 
   // Add the TaskManager-specific tag for the BackgroundContents.
   task_manager::WebContentsTags::CreateForBackgroundContents(
@@ -98,7 +95,8 @@ bool BackgroundContents::ShouldSuppressDialogs(WebContents* source) {
   return true;
 }
 
-void BackgroundContents::DidNavigateMainFramePostCommit(WebContents* tab) {
+void BackgroundContents::DidNavigatePrimaryMainFramePostCommit(
+    WebContents* tab) {
   // Note: because BackgroundContents are only available to extension apps,
   // navigation is limited to urls within the app's extent. This is enforced in
   // RenderView::decidePolicyForNavigation. If BackgroundContents become
@@ -128,7 +126,8 @@ bool BackgroundContents::IsNeverComposited(content::WebContents* web_contents) {
   return true;
 }
 
-void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
+void BackgroundContents::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   delegate_->OnBackgroundContentsTerminated(this);
   // |this| is deleted.
 }

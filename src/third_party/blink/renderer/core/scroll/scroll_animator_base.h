@@ -77,11 +77,13 @@ class CORE_EXPORT ScrollAnimatorBase
   // area.
   virtual ScrollOffset ComputeDeltaToConsume(const ScrollOffset& delta) const;
 
+  virtual void AdjustAnimation(const gfx::Vector2d& adjustment) {}
+
   // ScrollAnimatorCompositorCoordinator implementation.
   ScrollableArea* GetScrollableArea() const override {
     return scrollable_area_;
   }
-  void TickAnimation(double monotonic_time) override {}
+  void TickAnimation(base::TimeTicks monotonic_time) override {}
   void CancelAnimation() override {}
   void TakeOverCompositorAnimation() override {}
   void UpdateCompositorAnimations() override {}
@@ -92,8 +94,6 @@ class CORE_EXPORT ScrollAnimatorBase
   void Trace(Visitor*) const override;
 
  protected:
-  virtual void NotifyOffsetChanged();
-
   Member<ScrollableArea> scrollable_area_;
 
   ScrollOffset current_offset_;

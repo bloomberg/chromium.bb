@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -80,6 +81,8 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
     UPDATE_NON_PROFILE_SHORTCUTS,
   };
 
+  static void DisableUnpinningForUnitTests();
+
   explicit ProfileShortcutManagerWin(ProfileManager* manager);
   ProfileShortcutManagerWin(const ProfileShortcutManagerWin&) = delete;
   ProfileShortcutManagerWin& operator=(const ProfileShortcutManagerWin&) =
@@ -106,6 +109,8 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const std::u16string& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override;
 
   // ProfileManagerObserver:
   void OnProfileAdded(Profile* profile) override;
@@ -124,7 +129,10 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
       NonProfileShortcutAction action,
       bool incognito);
 
-  ProfileManager* profile_manager_;
+  raw_ptr<ProfileManager> profile_manager_;
+  // The profile icon of these profiles needs to be updated when an avatar image
+  // is loaded.
+  std::set<base::FilePath> profiles_with_pending_avatar_load_;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_WIN_H_

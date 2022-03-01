@@ -39,8 +39,9 @@ class BasicInteractionsTest : public testing::Test {
   ~BasicInteractionsTest() override {}
 
   FakeScriptExecutorDelegate delegate_;
+  ClientSettings settings_;
   UserModel user_model_;
-  BasicInteractions basic_interactions_{&delegate_};
+  BasicInteractions basic_interactions_{&delegate_, &settings_};
 };
 
 TEST_F(BasicInteractionsTest, SetValue) {
@@ -776,6 +777,15 @@ TEST_F(BasicInteractionsTest, RunConditionalCallback) {
   user_model_.SetValue("condition", SimpleValue(true));
   EXPECT_TRUE(
       basic_interactions_.RunConditionalCallback("condition", callback.Get()));
+}
+
+TEST_F(BasicInteractionsTest, GetClientSettings) {
+  settings_.display_strings_locale = "hi-IN";
+  EXPECT_EQ(basic_interactions_.GetClientSettings().display_strings_locale,
+            "hi-IN");
+  settings_.display_strings_locale = "";
+  EXPECT_TRUE(
+      basic_interactions_.GetClientSettings().display_strings_locale.empty());
 }
 
 }  // namespace autofill_assistant

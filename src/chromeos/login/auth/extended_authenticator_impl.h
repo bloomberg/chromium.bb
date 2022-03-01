@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,6 +27,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
  public:
   static scoped_refptr<ExtendedAuthenticatorImpl> Create(
       AuthStatusConsumer* consumer);
+
+  ExtendedAuthenticatorImpl(const ExtendedAuthenticatorImpl&) = delete;
+  ExtendedAuthenticatorImpl& operator=(const ExtendedAuthenticatorImpl&) =
+      delete;
 
   // ExtendedAuthenticator:
   void SetConsumer(AuthStatusConsumer* consumer) override;
@@ -71,7 +74,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
 
   // Inner operation callbacks.
   template <typename ReplyType>
-  void OnOperationComplete(const std::string& time_marker,
+  void OnOperationComplete(const char* time_marker,
                            const UserContext& context,
                            base::OnceClosure success_callback,
                            absl::optional<ReplyType> reply);
@@ -88,8 +91,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
   std::vector<base::OnceClosure> system_salt_callbacks_;
 
   AuthStatusConsumer* consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtendedAuthenticatorImpl);
 };
 
 }  // namespace chromeos

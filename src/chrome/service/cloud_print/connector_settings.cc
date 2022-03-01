@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/pref_names.h"
@@ -51,8 +50,9 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
     print_system_settings_.reset(print_system_settings->DeepCopy());
     // TODO(vitalybuka) : Consider to rename and move out option from
     // print_system_settings.
-    print_system_settings_->GetBoolean(kDeleteOnEnumFail,
-                                       &delete_on_enum_fail_);
+    delete_on_enum_fail_ =
+        print_system_settings_->FindBoolPath(kDeleteOnEnumFail)
+            .value_or(delete_on_enum_fail_);
   }
 
   // Check if there is an override for the cloud print server URL.
@@ -70,26 +70,17 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
 
   const base::ListValue* printers = prefs->GetList(prefs::kCloudPrintPrinters);
   if (printers) {
-    for (size_t i = 0; i < printers->GetSize(); ++i) {
-      const base::DictionaryValue* dictionary = NULL;
-      if (printers->GetDictionary(i, &dictionary) && dictionary) {
-        std::string name;
-        dictionary->GetString(kName, &name);
-        if (!name.empty()) {
-          bool connect = connect_new_printers_;
-          dictionary->GetBoolean(kConnect, &connect);
+    for (const auto& printer : printers->GetList()) {
+      if (printer.is_dict()) {
+        const std::string* name = printer.FindStringKey(kName);
+        if (name && !name->empty()) {
+          bool connect =
+              printer.FindBoolKey(kConnect).value_or(connect_new_printers_);
           if (connect != connect_new_printers_)
-            printers_.insert(name);
+            printers_.insert(*name);
         }
       }
     }
-  }
-  if (connect_new_printers_) {
-    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.PrinterBlacklistSize",
-                               printers_.size());
-  } else {
-    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.PrinterWhitelistSize",
-                               printers_.size());
   }
 }
 

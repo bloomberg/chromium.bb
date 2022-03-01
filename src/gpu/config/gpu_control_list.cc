@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/json/values_util.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
@@ -14,10 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_util.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -99,14 +98,6 @@ int CompareLexicalNumberStrings(
   return 0;
 }
 
-bool IsOldIntelDriver(const std::vector<std::string>& version) {
-  DCHECK_EQ(4u, version.size());
-  unsigned value = 0;
-  bool valid = base::StringToUint(version[2], &value);
-  DCHECK(valid);
-  return value < 100;
-}
-
 // A mismatch is identified only if both |input| and |pattern| are not empty.
 bool StringMismatch(const std::string& input, const std::string& pattern) {
   if (input.empty() || pattern.empty())
@@ -143,24 +134,32 @@ bool GpuControlList::Version::Contains(const std::string& version_string,
     // Intel graphics driver version schema should only be specified on Windows.
     // https://www.intel.com/content/www/us/en/support/articles/000005654/graphics-drivers.html
     // If either of the two versions doesn't match the Intel driver version
-    // schema, or they belong to different generation of version schema, they
-    // should not be compared.
+    // schema, they should not be compared.
     if (version.size() != 4 || ref_version1.size() != 4)
       return false;
-    bool is_old_intel_driver = IsOldIntelDriver(version);
-    if (is_old_intel_driver != IsOldIntelDriver(ref_version1))
-      return false;
-    if (op == kBetween &&
-        (ref_version2.size() != 4 ||
-         is_old_intel_driver != IsOldIntelDriver(ref_version2))) {
+    if (op == kBetween && ref_version2.size() != 4) {
       return false;
     }
-    size_t ignored_segments = is_old_intel_driver ? 3 : 2;
-    for (size_t ii = 0; ii < ignored_segments; ++ii) {
+    for (size_t ii = 0; ii < 2; ++ii) {
       version.erase(version.begin());
       ref_version1.erase(ref_version1.begin());
       if (op == kBetween)
         ref_version2.erase(ref_version2.begin());
+    }
+
+    // No comparison should be run if two being-compared versions do not match
+    // Intel driver version schema.
+    if (Version::Compare({version[0]}, {"100"}, style) >= 0) {
+      if ((Version::Compare({ref_version1[0]}, {"100"}, style) < 0) ||
+          (op == kBetween
+               ? Version::Compare({ref_version2[0]}, {"100"}, style) < 0
+               : false))
+        return false;
+    } else if ((Version::Compare({ref_version1[0]}, {"100"}, style) >= 0) ||
+               (op == kBetween
+                    ? Version::Compare({ref_version2[0]}, {"100"}, style) >= 0
+                    : false)) {
+      return false;
     }
   } else if (schema == kVersionSchemaNvidiaDriver) {
     // The driver version we get from the os is "XX.XX.XXXA.BBCC", while the
@@ -275,10 +274,9 @@ bool GpuControlList::More::GLVersionInfoMismatch(
 
 // static
 GpuControlList::GLType GpuControlList::More::GetDefaultGLType() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   return kGLTypeGL;
-#elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_OPENBSD)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kGLTypeGL;
 #elif defined(OS_MAC)
   return kGLTypeGL;
@@ -751,7 +749,7 @@ void GpuControlList::GetReasons(base::Value& problem_list,
     auto cr_bugs = base::Value(base::Value::Type::LIST);
     for (size_t jj = 0; jj < entry.cr_bug_size; ++jj)
       cr_bugs.Append(
-          util::Int64ToValue(static_cast<int64_t>(entry.cr_bugs[jj])));
+          base::Int64ToValue(static_cast<int64_t>(entry.cr_bugs[jj])));
     problem.SetKey("crBugs", std::move(cr_bugs));
 
     auto features = base::Value(base::Value::Type::LIST);
@@ -775,7 +773,7 @@ uint32_t GpuControlList::max_entry_id() const {
 
 // static
 GpuControlList::OsType GpuControlList::GetOsType() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   return kOsChromeOS;
 #elif defined(OS_WIN)
   return kOsWin;
@@ -783,8 +781,7 @@ GpuControlList::OsType GpuControlList::GetOsType() {
   return kOsAndroid;
 #elif defined(OS_FUCHSIA)
   return kOsFuchsia;
-#elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_OPENBSD)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
 #elif defined(OS_MAC)
   return kOsMacosx;

@@ -10,11 +10,10 @@
 
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_export.h"
-#include "net/cert/x509_cert_types.h"
 
 namespace net {
 
@@ -78,6 +77,9 @@ class NET_EXPORT CertVerifyProc
   static scoped_refptr<CertVerifyProc> CreateBuiltinVerifyProc(
       scoped_refptr<CertNetFetcher> cert_net_fetcher);
 #endif
+
+  CertVerifyProc(const CertVerifyProc&) = delete;
+  CertVerifyProc& operator=(const CertVerifyProc&) = delete;
 
   // Verifies the certificate against the given hostname as an SSL server
   // certificate. Returns OK if successful or an error code upon failure.
@@ -200,8 +202,6 @@ class NET_EXPORT CertVerifyProc
   // Feature flag affecting the Legacy Symantec PKI deprecation, documented
   // at https://g.co/chrome/symantecpkicerts
   static const base::Feature kLegacySymantecPKIEnforcement;
-
-  DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };
 
 }  // namespace net

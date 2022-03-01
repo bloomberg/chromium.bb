@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
@@ -26,8 +27,7 @@ IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsent(
   cache_value.value_ = resolution_data;
   cache_value.expiration_time_ =
       base::Time::Now() +
-      base::TimeDelta::FromSeconds(
-          identity_constants::kCachedRemoteConsentTTLSeconds);
+      base::Seconds(identity_constants::kCachedRemoteConsentTTLSeconds);
   return cache_value;
 }
 
@@ -38,8 +38,7 @@ IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsentApproved(
   cache_value.value_ = consent_result;
   cache_value.expiration_time_ =
       base::Time::Now() +
-      base::TimeDelta::FromSeconds(
-          identity_constants::kCachedRemoteConsentTTLSeconds);
+      base::Seconds(identity_constants::kCachedRemoteConsentTTLSeconds);
   return cache_value;
 }
 
@@ -55,7 +54,7 @@ IdentityTokenCacheValue IdentityTokenCacheValue::CreateToken(
 
   // Remove 20 minutes from the ttl so cached tokens will have some time
   // to live any time they are returned.
-  time_to_live -= base::TimeDelta::FromMinutes(20);
+  time_to_live -= base::Minutes(20);
 
   base::TimeDelta zero_delta;
   if (time_to_live < zero_delta)

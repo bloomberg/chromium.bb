@@ -5,10 +5,7 @@
 #ifndef UI_NATIVE_THEME_NATIVE_THEME_BASE_H_
 #define UI_NATIVE_THEME_NATIVE_THEME_BASE_H_
 
-
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -22,6 +19,9 @@ namespace ui {
 // Theme support for non-Windows toolkits.
 class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
  public:
+  NativeThemeBase(const NativeThemeBase&) = delete;
+  NativeThemeBase& operator=(const NativeThemeBase&) = delete;
+
   // NativeTheme implementation:
   gfx::Size GetPartSize(Part part,
                         State state,
@@ -88,7 +88,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
 
   using NativeTheme::NativeTheme;
   NativeThemeBase();
-  explicit NativeThemeBase(bool should_only_use_dark_colors);
+  explicit NativeThemeBase(bool should_only_use_dark_colors,
+                           bool is_custom_system_theme = false);
   ~NativeThemeBase() override;
 
   // Draw the arrow. Used by scrollbar and inner spin button.
@@ -219,9 +220,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   // crbug.com/530746 is resolved.
   virtual void AdjustCheckboxRadioRectForPadding(SkRect* rect) const;
 
-  virtual float AdjustBorderWidthByZoom(float border_width,
-                                        float zoom_level) const;
-
   void set_scrollbar_button_length(int length) {
     scrollbar_button_length_ = length;
   }
@@ -302,8 +300,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
 
   // The length of the arrow buttons, 0 means no buttons are drawn.
   int scrollbar_button_length_ = 14;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeThemeBase);
 };
 
 }  // namespace ui

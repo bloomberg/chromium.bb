@@ -35,7 +35,12 @@ namespace tensorflow {
 // is not expected to be needed.
 class LocalRendezvous {
  public:
-  LocalRendezvous() = default;
+  // If the class wrapping LocalRendezvous is refcounted (i.e., extending
+  // Rendezvous), pass in its pointer in constructor so the LocalRendezvous
+  // can make sure it outlives the async recv requests.
+  // Pass in nullptr if the wrapping class is not refcounted.
+  explicit LocalRendezvous(Rendezvous* owner)
+      : rc_owner_(owner), pending_callback_counter_(0) {}
   ~LocalRendezvous();
 
   Status Send(const Rendezvous::ParsedKey& key,
@@ -45,6 +50,7 @@ class LocalRendezvous {
                  const Rendezvous::Args& recv_args,
                  Rendezvous::DoneCallback done);
   void StartAbort(const Status& status);
+  Status status();
 
  private:
   struct Item;
@@ -62,10 +68,16 @@ class LocalRendezvous {
 
   typedef gtl::FlatMap<uint64, ItemQueue> Table;
 
+  // Pointer to the owner class of this LocalRendezvous if it is refcounted.
+  const Rendezvous* rc_owner_;
+
   // TODO(zhifengc): shard table_.
   mutex mu_;
   Table table_ TF_GUARDED_BY(mu_);
   Status status_ TF_GUARDED_BY(mu_);
+  // Track the number of pening callbacks using a counter.
+  int pending_callback_counter_ TF_GUARDED_BY(mu_);
+  condition_variable pending_callback_cond_var_ TF_GUARDED_BY(mu_);
 
   TF_DISALLOW_COPY_AND_ASSIGN(LocalRendezvous);
 };

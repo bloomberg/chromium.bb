@@ -1,10 +1,9 @@
 # Build Instructions
 
-Instructions for building this repository on Linux, Windows, Android, and
-MacOS.
-
 ## Index
 
+1. [Requirements](#requirements)
+1. [Building](#building)
 1. [Contributing](#contributing-to-the-repository)
 1. [Repository Content](#repository-content)
 1. [Repository Set-Up](#repository-set-up)
@@ -12,6 +11,43 @@ MacOS.
 1. [Linux Build](#building-on-linux)
 1. [Android Build](#building-on-android)
 1. [MacOS build](#building-on-macos)
+
+## Requirements
+
+1. Python >= 3.7 (3.6 may work, 3.5 and earlier is not supported)
+1. CMake >= 3.10.2
+1. C++ >= c++11 compiler. See platform-specific sections below for supported compiler versions.
+
+## Building
+
+**NOTE**: See [this](#google-test) first if you are also building the tests.
+
+```bash
+# One-time generation
+mkdir build # Arbitrary build directory
+cd build
+
+# Run './scripts/update_deps.py --help' for more information
+# NOTE: You can alternatively set -DUPDATE_DEPS=ON during cmake generation
+#       to have a cmake target automatically run this as needed.
+python3 ../scripts/update_deps.py --dir ../external --arch x64 --config debug
+
+# NOTE: If using -DUPDATE_DEPS=ON, CMAKE_BUILD_TYPE is used to determine the build type
+#       of external dependencies. For generators such as Visual Studio that usually ignore
+#       CMAKE_BUILD_TYPE, it's a good idea to still set CMAKE_BUILD_TYPE in this case to control
+#       the build type of dependencies. If you want a "mix" (e.g., Release dependencies, Debug VVL),
+#       you will want to use `update_deps.py` manually.
+cmake -C ../external/helper.cmake -DCMAKE_BUILD_TYPE=Debug ..
+
+# Building
+cmake --build . --config Debug
+```
+
+Note the `-C ../external/helper.cmake` argument passed to cmake. This is necessary when
+calling the `update_deps.py` script manually. See below for more details.
+
+These are general instructions that should "just work" on Windows and Linux. For platform-specific
+build instructions, see the appropriate `<Platform> Build` section below.
 
 ## Contributing to the Repository
 
@@ -80,28 +116,27 @@ the validation layers. You must also take note of the headers' install
 directory and pass it on the CMake command line for building this repository,
 as described below.
 
-#### glslang
-
-This repository has a required dependency on the
-[glslang repository](https://github.com/KhronosGroup/glslang).
-The glslang repository is required because it contains components that are
-required to build the validation layers. You must clone the glslang repository
-and build its `install` target. Follow the build instructions in the glslang
-[README.md](https://github.com/KhronosGroup/glslang/blob/master/README.md)
-file. Ensure that the `update_glslang_sources.py` script has been run as part
-of building glslang. You must also take note of the glslang install directory
-and pass it on the CMake command line for building this repository, as
-described below.
-
 #### SPIRV-Headers
 
 This repository has a required dependency on the
-[SPIRV-headers repository](https://github.com/KhronosGroup/SPIRV-Headers).
-The SPIRV-headers repository is required because it supports components that are
-required to build the validation layers. You must clone the SPIRV-headers repository
-and build its `install` target. Follow the build instructions in the SPIRV-headers
+[SPIRV-Headers repository](https://github.com/KhronosGroup/SPIRV-Headers).
+The SPIRV-Headers repository is required because it supports components that are
+required to build the validation layers. You must clone the SPIRV-Headers repository
+and build its `install` target. Follow the build instructions in the SPIRV-Headers
 [README.md](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/README.md)
 file. You must also take note of the SPIRV-headers install directory
+and pass it on the CMake command line for building this repository, as
+described below.
+
+#### SPIRV-Tools
+
+This repository has a required dependency on the
+[SPIRV-Tools repository](https://github.com/KhronosGroup/SPIRV-Tools).
+The SPIRV-Tools repository is required because it contains components that are
+required to build the validation layers. You must clone the SPIRV-Tools repository
+and build its `install` target. Follow the build instructions in the SPIRV-Tools
+[README.md](https://github.com/KhronosGroup/SPIRV-Tools/blob/master/README.md)
+file. You must also take note of the SPIRV-Tools install directory
 and pass it on the CMake command line for building this repository, as
 described below.
 
@@ -113,24 +148,26 @@ which provides substantial performance improvements on all platforms.
 Since there is nothing to build, the install directory for this repository is the
 directory where the the repository is cloned.
 
+#### glslang
+
+The validation layer tests depend on the
+[glslang repository](https://github.com/KhronosGroup/glslang).
+You must clone the glslang repository
+and build its `install` target. Follow the build instructions in the glslang
+[README.md](https://github.com/KhronosGroup/glslang/blob/master/README.md)
+file. You must also take note of the glslang install directory
+and pass it on the CMake command line for building this repository, as
+described below.
+
 #### Google Test
 
 The validation layer tests depend on the
-[Google Test](https://github.com/google/googletest)
-framework and do not build unless this framework is downloaded into the
-repository's `external` directory.
-
-To obtain the framework, change your current directory to the top of your
-Vulkan-ValidationLayers repository and run:
-
-    git clone https://github.com/google/googletest.git external/googletest
-    cd external/googletest
-    git checkout tags/release-1.8.1
-
-before configuring your build with CMake.
-
-If you do not need the tests, there is no need to download this
-framework.
+[Google Test](https://github.com/google/googletest). To build the tests, pass the `-DBUILD_TESTS=ON` option when
+generating the project:
+```bash
+cmake ... -DUPDATE_DEPS=ON -DBUILD_TESTS=ON ...
+```
+This will ensure googletest is downloaded and the appropriate version is used.
 
 #### Vulkan-Loader
 
@@ -237,7 +274,10 @@ directory which is not intended to be modified directly. Instead, changes should
 made to the corresponding generator in the `scripts` directory. The source files can
 then be regenerated using `scripts/generate_source.py`:
 
-    python3 scripts/generate_source.py PATH_TO_VULKAN_HEADERS_REGISTRY_DIR
+    python3 scripts/generate_source.py PATH_TO_VULKAN_HEADERS_REGISTRY_DIR PATH_TO_SPIRV_HEADERS_GRAMMAR_DIR
+
+    // Example
+    python3 scripts/generate_source.py external/Vulkan-Headers/registry/ external/SPIRV-Headers/include/spirv/unified1/
 
 A helper CMake target `VulkanVL_generated_source` is also provided to simplify
 the invocation of `scripts/generate_source.py` from the build directory:
@@ -415,6 +455,7 @@ location of the loader's install directory:
     cmake -A x64 -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
                  -DVULKAN_LOADER_INSTALL_DIR=absolute_path_to_install_dir \
                  -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
                  -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
                  -DROBIN_HOOD_HASHING_INSTALL_DIR=absolute_path_to_install_dir \
                  ..
@@ -660,6 +701,8 @@ following.
 
 Note that the minimum supported Android SDK API Level is 26, revision
 level 3.
+
+NDK r20 or greater required
 
 - Install [Android Studio 2.3](https://developer.android.com/studio/index.html)
   or later.

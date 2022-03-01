@@ -57,10 +57,9 @@ class BrowserSwitcherPrefsTest : public testing::Test {
     BrowserSwitcherPrefs::RegisterProfilePrefs(prefs_backend_.registry());
     policy_provider_ = std::make_unique<
         testing::NiceMock<policy::MockConfigurationPolicyProvider>>();
-    ON_CALL(*policy_provider_, IsInitializationComplete(_))
-        .WillByDefault(Return(true));
-    ON_CALL(*policy_provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    policy_provider_->SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     std::vector<policy::ConfigurationPolicyProvider*> providers = {
         policy_provider_.get()};
     policy_service_ = std::make_unique<policy::PolicyServiceImpl>(providers);
@@ -125,10 +124,10 @@ TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
 #endif
 
   EXPECT_EQ(1u, prefs()->GetRules().sitelist.size());
-  EXPECT_EQ("example.com", prefs()->GetRules().sitelist[0]);
+  EXPECT_EQ("example.com", prefs()->GetRules().sitelist[0]->ToString());
 
   EXPECT_EQ(1u, prefs()->GetRules().greylist.size());
-  EXPECT_EQ("foo.example.com", prefs()->GetRules().greylist[0]);
+  EXPECT_EQ("foo.example.com", prefs()->GetRules().greylist[0]->ToString());
 }
 
 TEST_F(BrowserSwitcherPrefsTest, TriggersObserversOnPolicyChange) {

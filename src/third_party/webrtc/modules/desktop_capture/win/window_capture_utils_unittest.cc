@@ -11,6 +11,7 @@
 #include "modules/desktop_capture/win/window_capture_utils.h"
 
 #include <winuser.h>
+
 #include <algorithm>
 #include <memory>
 #include <mutex>
@@ -128,6 +129,20 @@ TEST(WindowCaptureUtilsTest, IgnoreUntitledWindows) {
   WindowInfo info = CreateTestWindow(L"");
   DesktopCapturer::SourceList window_list;
   ASSERT_TRUE(GetWindowList(GetWindowListFlags::kIgnoreUntitled, &window_list));
+  EXPECT_EQ(std::find_if(window_list.begin(), window_list.end(),
+                         [&info](DesktopCapturer::Source window) {
+                           return reinterpret_cast<HWND>(window.id) ==
+                                  info.hwnd;
+                         }),
+            window_list.end());
+  DestroyTestWindow(info);
+}
+
+TEST(WindowCaptureUtilsTest, IgnoreCurrentProcessWindows) {
+  WindowInfo info = CreateTestWindow(kWindowTitle);
+  DesktopCapturer::SourceList window_list;
+  ASSERT_TRUE(GetWindowList(GetWindowListFlags::kIgnoreCurrentProcessWindows,
+                            &window_list));
   EXPECT_EQ(std::find_if(window_list.begin(), window_list.end(),
                          [&info](DesktopCapturer::Source window) {
                            return reinterpret_cast<HWND>(window.id) ==

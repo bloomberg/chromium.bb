@@ -21,6 +21,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace app_list {
 
@@ -38,7 +39,7 @@ constexpr int kResponseErrorNotFirstTimeChromebookUser = 6;
 // further parsing.
 constexpr base::StringPiece kJsonXssPreventionPrefix = ")]}'";
 
-constexpr base::TimeDelta kDownloadTimeOut = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kDownloadTimeOut = base::Minutes(1);
 
 constexpr const int64_t kMaxDownloadBytes = 1024 * 1024;  // 1Mb
 
@@ -99,7 +100,6 @@ void RecommendAppsFetcherImpl::StartDownload() {
         }
         policy {
           cookies_allowed: YES
-          cookie_store: "user"
           setting:
             "NA"
           chrome_policy {
@@ -153,12 +153,10 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   // TODO(thanhdng): Add a UMA histogram here recording the time difference.
 
   std::unique_ptr<network::SimpleURLLoader> loader(std::move(app_list_loader_));
-  int response_code = 0;
   if (!loader->ResponseInfo() || !loader->ResponseInfo()->headers) {
     delegate_->OnLoadError();
     return;
   }
-  response_code = loader->ResponseInfo()->headers->response_code();
   // TODO(thanhndng): Add a UMA histogram here recording the response code.
 
   // If the recommended app list could not be downloaded, show an error message

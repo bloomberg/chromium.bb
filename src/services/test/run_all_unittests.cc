@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/i18n/icu_util.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -16,7 +15,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_ANDROID)
@@ -28,6 +27,10 @@ namespace {
 class ServiceTestSuite : public base::TestSuite {
  public:
   ServiceTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+  ServiceTestSuite(const ServiceTestSuite&) = delete;
+  ServiceTestSuite& operator=(const ServiceTestSuite&) = delete;
+
   ~ServiceTestSuite() override = default;
 
  protected:
@@ -50,7 +53,7 @@ class ServiceTestSuite : public base::TestSuite {
     base::FilePath bluetooth_test_strings =
         path.Append(FILE_PATH_LITERAL("bluetooth_test_strings.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        bluetooth_test_strings, ui::SCALE_FACTOR_NONE);
+        bluetooth_test_strings, ui::kScaleFactorNone);
 #endif  // !defined(OS_IOS)
 
     // base::TestSuite and ViewsInit both try to load icu. That's ok for tests.
@@ -64,9 +67,6 @@ class ServiceTestSuite : public base::TestSuite {
 
     base::TestSuite::Shutdown();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceTestSuite);
 };
 
 }  // namespace

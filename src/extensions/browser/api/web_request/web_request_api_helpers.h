@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "extensions/common/api/web_request.h"
@@ -27,8 +26,8 @@
 #include "url/gurl.h"
 
 namespace base {
-class ListValue;
 class DictionaryValue;
+class Value;
 }  // namespace base
 
 namespace content {
@@ -173,13 +172,12 @@ enum class ResponseHeaderType {
 struct IgnoredAction {
   IgnoredAction(extensions::ExtensionId extension_id,
                 extensions::api::web_request::IgnoredActionType action_type);
+  IgnoredAction(const IgnoredAction&) = delete;
   IgnoredAction(IgnoredAction&& rhs);
+  IgnoredAction& operator=(const IgnoredAction&) = delete;
 
   extensions::ExtensionId extension_id;
   extensions::api::web_request::IgnoredActionType action_type;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IgnoredAction);
 };
 
 using IgnoredActions = std::vector<IgnoredAction>;
@@ -198,7 +196,7 @@ struct ExtraInfoSpec {
   };
 
   static bool InitFromValue(content::BrowserContext* browser_context,
-                            const base::ListValue& value,
+                            const base::Value& value,
                             int* extra_info_spec);
 };
 
@@ -206,7 +204,9 @@ struct ExtraInfoSpec {
 // API definition.
 struct RequestCookie {
   RequestCookie();
+  RequestCookie(const RequestCookie&) = delete;
   RequestCookie(RequestCookie&& other);
+  RequestCookie& operator=(const RequestCookie&) = delete;
   RequestCookie& operator=(RequestCookie&& other);
   ~RequestCookie();
 
@@ -216,15 +216,15 @@ struct RequestCookie {
 
   absl::optional<std::string> name;
   absl::optional<std::string> value;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestCookie);
 };
 
 // Data container for ResponseCookies as defined in the declarative WebRequest
 // API definition.
 struct ResponseCookie {
   ResponseCookie();
+  ResponseCookie(const ResponseCookie&) = delete;
   ResponseCookie(ResponseCookie&& other);
+  ResponseCookie& operator=(const ResponseCookie&) = delete;
   ResponseCookie& operator=(ResponseCookie&& other);
   ~ResponseCookie();
 
@@ -240,15 +240,15 @@ struct ResponseCookie {
   absl::optional<std::string> path;
   absl::optional<bool> secure;
   absl::optional<bool> http_only;
-
-  DISALLOW_COPY_AND_ASSIGN(ResponseCookie);
 };
 
 // Data container for FilterResponseCookies as defined in the declarative
 // WebRequest API definition.
 struct FilterResponseCookie : ResponseCookie {
   FilterResponseCookie();
+  FilterResponseCookie(const FilterResponseCookie&) = delete;
   FilterResponseCookie(FilterResponseCookie&& other);
+  FilterResponseCookie& operator=(const FilterResponseCookie&) = delete;
   FilterResponseCookie& operator=(FilterResponseCookie&& other);
   ~FilterResponseCookie();
 
@@ -259,8 +259,6 @@ struct FilterResponseCookie : ResponseCookie {
   absl::optional<int> age_lower_bound;
   absl::optional<int> age_upper_bound;
   absl::optional<bool> session_cookie;
-
-  DISALLOW_COPY_AND_ASSIGN(FilterResponseCookie);
 };
 
 enum CookieModificationType {
@@ -271,7 +269,10 @@ enum CookieModificationType {
 
 struct RequestCookieModification {
   RequestCookieModification();
+  RequestCookieModification(const RequestCookieModification&) = delete;
   RequestCookieModification(RequestCookieModification&& other);
+  RequestCookieModification& operator=(const RequestCookieModification&) =
+      delete;
   RequestCookieModification& operator=(RequestCookieModification&& other);
   ~RequestCookieModification();
 
@@ -284,13 +285,14 @@ struct RequestCookieModification {
   absl::optional<RequestCookie> filter;
   // Used for ADD and EDIT, nullopt otherwise.
   absl::optional<RequestCookie> modification;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestCookieModification);
 };
 
 struct ResponseCookieModification {
   ResponseCookieModification();
+  ResponseCookieModification(const ResponseCookieModification&) = delete;
   ResponseCookieModification(ResponseCookieModification&& other);
+  ResponseCookieModification& operator=(const ResponseCookieModification&) =
+      delete;
   ResponseCookieModification& operator=(ResponseCookieModification&& other);
   ~ResponseCookieModification();
 
@@ -303,8 +305,6 @@ struct ResponseCookieModification {
   absl::optional<FilterResponseCookie> filter;
   // Used for ADD and EDIT, nullopt otherwise.
   absl::optional<ResponseCookie> modification;
-
-  DISALLOW_COPY_AND_ASSIGN(ResponseCookieModification);
 };
 
 using RequestCookieModifications = std::vector<RequestCookieModification>;
@@ -314,7 +314,9 @@ using ResponseCookieModifications = std::vector<ResponseCookieModification>;
 struct EventResponseDelta {
   EventResponseDelta(const std::string& extension_id,
                      const base::Time& extension_install_time);
+  EventResponseDelta(const EventResponseDelta&) = delete;
   EventResponseDelta(EventResponseDelta&& other);
+  EventResponseDelta& operator=(const EventResponseDelta&) = delete;
   EventResponseDelta& operator=(EventResponseDelta&& other);
   ~EventResponseDelta();
 
@@ -355,8 +357,6 @@ struct EventResponseDelta {
   // Messages that shall be sent to the background/event/... pages of the
   // extension.
   std::set<std::string> messages_to_extension;
-
-  DISALLOW_COPY_AND_ASSIGN(EventResponseDelta);
 };
 
 using EventResponseDeltas = std::list<EventResponseDelta>;

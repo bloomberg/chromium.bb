@@ -7,12 +7,29 @@
 
 class PrefRegistrySimple;
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace prefs {
 
+// The status of the user's consent. The enum values cannot be changed because
+// they are persisted on disk.
+enum ConsentStatus {
+  // The status is unknown.
+  kUnknown = 0,
+
+  // The user has accepted the Quick Answers consent impression.
+  kAccepted = 1,
+
+  // The user has rejected the Quick Answers consent impression.
+  kRejected = 2,
+};
+
 extern const char kQuickAnswersNoticed[];
 extern const char kQuickAnswersEnabled[];
+extern const char kQuickAnswersConsentStatus[];
+extern const char kQuickAnswersDefinitionEnabled[];
+extern const char kQuickAnswersTranslationEnabled[];
+extern const char kQuickAnswersUnitConverstionEnabled[];
 extern const char kQuickAnswersNoticeImpressionCount[];
 extern const char kQuickAnswersNoticeImpressionDuration[];
 
@@ -21,6 +38,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_PUBLIC_CPP_QUICK_ANSWERS_PREFS_H_

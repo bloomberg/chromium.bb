@@ -9,11 +9,12 @@
 
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/base/account_consistency_method.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
 namespace signin {
+
+enum class Tribool;
 
 // Name of the cookie used by Chrome sign-in to inform GAIA that an
 // authenticating user is already signed in to Chrome. Because it is not
@@ -47,7 +48,7 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
   std::string BuildRequestHeader(bool is_header_request,
                                  const GURL& url,
                                  const std::string& gaia_id,
-                                 const absl::optional<bool>& is_child_account,
+                                 Tribool is_child_account,
                                  int profile_mode_mask,
                                  const std::string& source,
                                  bool force_account_consistency);

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_AOM_ACCESSIBLE_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_AOM_ACCESSIBLE_NODE_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
@@ -121,6 +122,9 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
 
   // Gets the associated document.
   Document* GetDocument() const;
+
+  // Returns the parent of this node.
+  AccessibleNode* GetParent() { return parent_; }
 
   // Children. These are only virtual AccessibleNodes that were added
   // explicitly, never AccessibleNodes from DOM Elements.
@@ -345,6 +349,10 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
 
   void appendChild(AccessibleNode*, ExceptionState&);
   void removeChild(AccessibleNode*, ExceptionState&);
+
+  // Called when an accessible node is removed from document.
+  void DetachedFromDocument();
+  Document* GetAncestorDocument();
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
