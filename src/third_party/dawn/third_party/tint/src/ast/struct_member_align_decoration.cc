@@ -14,6 +14,8 @@
 
 #include "src/ast/struct_member_align_decoration.h"
 
+#include <string>
+
 #include "src/clone_context.h"
 #include "src/program_builder.h"
 
@@ -22,25 +24,22 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::StructMemberAlignDecoration);
 namespace tint {
 namespace ast {
 
-StructMemberAlignDecoration::StructMemberAlignDecoration(ProgramID program_id,
-                                                         const Source& source,
-                                                         uint32_t align)
-    : Base(program_id, source), align_(align) {}
+StructMemberAlignDecoration::StructMemberAlignDecoration(ProgramID pid,
+                                                         const Source& src,
+                                                         uint32_t a)
+    : Base(pid, src), align(a) {}
 
 StructMemberAlignDecoration::~StructMemberAlignDecoration() = default;
 
-void StructMemberAlignDecoration::to_str(const sem::Info&,
-                                         std::ostream& out,
-                                         size_t indent) const {
-  make_indent(out, indent);
-  out << "align " << std::to_string(align_);
+std::string StructMemberAlignDecoration::Name() const {
+  return "align";
 }
 
-StructMemberAlignDecoration* StructMemberAlignDecoration::Clone(
+const StructMemberAlignDecoration* StructMemberAlignDecoration::Clone(
     CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<StructMemberAlignDecoration>(src, align_);
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<StructMemberAlignDecoration>(src, align);
 }
 
 }  // namespace ast

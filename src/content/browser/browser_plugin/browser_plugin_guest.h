@@ -20,7 +20,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
@@ -50,9 +50,11 @@ class WebContentsImpl;
 // dropped on the floor since we don't have a BrowserPlugin.
 // TODO(wjmaclean): Get rid of "BrowserPlugin" in the name of this class.
 // Perhaps "InnerWebContentsGuestConnector"?
-class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
-                                          public WebContentsObserver {
+class BrowserPluginGuest : public GuestHost, public WebContentsObserver {
  public:
+  BrowserPluginGuest(const BrowserPluginGuest&) = delete;
+  BrowserPluginGuest& operator=(const BrowserPluginGuest&) = delete;
+
   ~BrowserPluginGuest() override;
 
   // The WebContents passed into the factory method here has not been
@@ -89,7 +91,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
 #if defined(OS_MAC)
   // On MacOS X popups are painted by the browser process. We handle them here
   // so that they are positioned correctly.
@@ -128,7 +131,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void SendTextInputTypeChangedToView(RenderWidgetHostViewBase* guest_rwhv);
 
-  WebContentsImpl* owner_web_contents_;
+  raw_ptr<WebContentsImpl> owner_web_contents_;
 
   // BrowserPluginGuest::Init can only be called once. This flag allows it to
   // exit early if it's already been called.
@@ -138,9 +141,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Using scoped_ptr to avoid including the header file: view_messages.h.
   ui::mojom::TextInputStatePtr last_text_input_state_;
 
-  BrowserPluginGuestDelegate* const delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
+  const raw_ptr<BrowserPluginGuestDelegate> delegate_;
 };
 
 }  // namespace content

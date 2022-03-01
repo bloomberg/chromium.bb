@@ -56,7 +56,7 @@ RetainPtr<CFX_DIBitmap> DrawPatternBitmap(
 
   CPDF_RenderContext context(pDoc, nullptr, pCache);
   context.AppendLayer(pPatternForm, mtPattern2Bitmap);
-  context.Render(&bitmap_device, &options, nullptr);
+  context.Render(&bitmap_device, nullptr, &options, nullptr);
 #if defined(_SKIA_SUPPORT_PATHS_)
   bitmap_device.Flush(true);
   pBitmap->UnPreMultiply();
@@ -225,7 +225,7 @@ RetainPtr<CFX_DIBitmap> CPDF_RenderTiling::Draw(
           continue;
         }
         uint32_t* dest_buf = reinterpret_cast<uint32_t*>(
-            pScreen->GetBuffer() + pScreen->GetPitch() * start_y + start_x * 4);
+            pScreen->GetWritableScanline(start_y).subspan(start_x * 4).data());
         if (pPattern->colored()) {
           const auto* src_buf32 = reinterpret_cast<const uint32_t*>(src_buf);
           *dest_buf = *src_buf32;

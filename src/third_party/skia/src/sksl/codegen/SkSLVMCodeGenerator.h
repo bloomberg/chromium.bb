@@ -19,18 +19,25 @@ namespace SkSL {
 
 class FunctionDefinition;
 struct Program;
+class SkVMDebugTrace;
 
-using SampleChildFn = std::function<skvm::Color(int, skvm::Coord, skvm::Color)>;
+using SampleShaderFn = std::function<skvm::Color(int, skvm::Coord)>;
+using SampleColorFilterFn = std::function<skvm::Color(int, skvm::Color)>;
+using SampleBlenderFn = std::function<skvm::Color(int, skvm::Color, skvm::Color)>;
 
-// Convert 'function' to skvm instructions in 'builder', for use by shaders and color filters
+// Convert 'function' to skvm instructions in 'builder', for use by blends, shaders, & color filters
 skvm::Color ProgramToSkVM(const Program& program,
                           const FunctionDefinition& function,
                           skvm::Builder* builder,
+                          SkVMDebugTrace* debugTrace,
                           SkSpan<skvm::Val> uniforms,
                           skvm::Coord device,
                           skvm::Coord local,
                           skvm::Color inputColor,
-                          SampleChildFn sampleChild);
+                          skvm::Color destColor,
+                          SampleShaderFn sampleShader,
+                          SampleColorFilterFn sampleColorFilter,
+                          SampleBlenderFn sampleBlender);
 
 struct SkVMSignature {
     size_t fParameterSlots = 0;
@@ -54,6 +61,7 @@ struct SkVMSignature {
 bool ProgramToSkVM(const Program& program,
                    const FunctionDefinition& function,
                    skvm::Builder* b,
+                   SkVMDebugTrace* debugTrace,
                    SkSpan<skvm::Val> uniforms,
                    SkVMSignature* outSignature = nullptr);
 
@@ -73,7 +81,9 @@ struct UniformInfo {
 
 std::unique_ptr<UniformInfo> Program_GetUniformInfo(const Program& program);
 
-bool testingOnly_ProgramToSkVMShader(const Program& program, skvm::Builder* builder);
+bool testingOnly_ProgramToSkVMShader(const Program& program,
+                                     skvm::Builder* builder,
+                                     SkVMDebugTrace* debugTrace);
 
 }  // namespace SkSL
 

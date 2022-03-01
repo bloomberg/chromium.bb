@@ -8,12 +8,12 @@
 
 #include <utility>
 
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/pwl/cpwl_special_button.h"
 
-CFFL_PushButton::CFFL_PushButton(CPDFSDK_FormFillEnvironment* pApp,
+CFFL_PushButton::CFFL_PushButton(CFFL_InteractiveFormFiller* pFormFiller,
                                  CPDFSDK_Widget* pWidget)
-    : CFFL_Button(pApp, pWidget) {}
+    : CFFL_Button(pFormFiller, pWidget) {}
 
 CFFL_PushButton::~CFFL_PushButton() = default;
 

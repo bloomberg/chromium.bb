@@ -10,8 +10,6 @@
 #ifndef EIGEN_EMULATE_ARRAY_H
 #define EIGEN_EMULATE_ARRAY_H
 
-
-
 // The array class is only available starting with cxx11. Emulate our own here
 // if needed. Beware, msvc still doesn't advertise itself as a c++11 compiler!
 // Moreover, CUDA doesn't support the STL containers, so we use our own instead.
@@ -226,6 +224,7 @@ template<class T, std::size_t N> struct array_size<const array<T,N>& > {
 
 // The compiler supports c++11, and we're not targeting cuda: use std::array as Eigen::array
 #include <array>
+
 namespace Eigen {
 
 template <typename T, std::size_t N> using array = std::array<T, N>;

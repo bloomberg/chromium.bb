@@ -46,7 +46,8 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
 
   PhysicalOffset layout_snapped_paint_offset =
       fragment_data.PaintOffset() - paint_layer->SubpixelAccumulation();
-  IntPoint snapped_paint_offset = RoundedIntPoint(layout_snapped_paint_offset);
+  gfx::Vector2d snapped_paint_offset =
+      ToRoundedPoint(layout_snapped_paint_offset).OffsetFromOrigin();
 
 #if DCHECK_IS_ON()
   // A layer without visible contents can be composited due to animation.
@@ -59,7 +60,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
       layout_snapped_paint_offset != PhysicalOffset(snapped_paint_offset)) {
     // TODO(crbug.com/925377): Fix the root cause.
     DLOG(ERROR) << "Paint offset pixel snapping error for " << object
-                << " expected: " << snapped_paint_offset
+                << " expected: " << snapped_paint_offset.ToString()
                 << " actual: " << layout_snapped_paint_offset;
   }
 #endif
@@ -138,7 +139,8 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     // See comments for ScrollTranslation in object_paint_properties.h for the
     // reason of adding ScrollOrigin().
     auto contents_paint_offset =
-        snapped_paint_offset + To<LayoutBox>(object).ScrollOrigin();
+        snapped_paint_offset +
+        To<LayoutBox>(object).ScrollOrigin().OffsetFromOrigin();
     auto SetScrollingContentsLayerState = [&fragment_data,
                                            &contents_paint_offset](
                                               GraphicsLayer* graphics_layer) {
@@ -156,12 +158,12 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
 
   auto* main_graphics_layer = mapping->MainGraphicsLayer();
   if (main_graphics_layer->ContentsLayer()) {
-    IntPoint offset;
+    gfx::Vector2d offset;
     // The offset should be zero when the layer has ReplacedContentTransform,
     // because the offset has been baked into ReplacedContentTransform.
     if (!fragment_data.PaintProperties() ||
         !fragment_data.PaintProperties()->ReplacedContentTransform()) {
-      offset = main_graphics_layer->ContentsRect().Location() +
+      offset = main_graphics_layer->ContentsRect().OffsetFromOrigin() +
                main_graphics_layer->GetOffsetFromTransformNode();
     }
     main_graphics_layer->SetContentsLayerState(
@@ -198,12 +200,10 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
         state, snapped_paint_offset + mask_layer->OffsetFromLayoutObject());
   }
 
-  if (RuntimeEnabledFeatures::CompositeSVGEnabled()) {
-    if (object.IsSVGRoot()) {
-      main_graphics_layer->SetShouldCreateLayersAfterPaint(
-          To<LayoutSVGRoot>(object).HasDescendantCompositingReasons() &&
-          main_graphics_layer->PaintsContentOrHitTest());
-    }
+  if (object.IsSVGRoot()) {
+    main_graphics_layer->SetShouldCreateLayersAfterPaint(
+        To<LayoutSVGRoot>(object).HasDescendantCompositingReasons() &&
+        main_graphics_layer->PaintsContentOrHitTest());
   }
 }
 

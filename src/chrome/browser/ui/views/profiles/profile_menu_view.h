@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace views {
@@ -48,6 +48,8 @@ class ProfileMenuView : public ProfileMenuViewBase {
  private:
   friend class ProfileMenuViewExtensionsTest;
   friend class ProfileMenuViewSignoutTest;
+  friend class ProfileMenuViewSyncErrorButtonTest;
+  friend class ProfileMenuInteractiveUiTest;
 
   // views::BubbleDialogDelegateView:
   std::u16string GetAccessibleWindowTitle() const override;
@@ -60,11 +62,13 @@ class ProfileMenuView : public ProfileMenuViewBase {
   void OnGuestProfileButtonClicked();
   void OnExitProfileButtonClicked();
   void OnSyncSettingsButtonClicked();
-  void OnSyncErrorButtonClicked(sync_ui_util::AvatarSyncErrorType error);
+  void OnSyncErrorButtonClicked(AvatarSyncErrorType error);
   void OnSigninAccountButtonClicked(AccountInfo account);
   void OnCookiesClearedOnExitLinkClicked();
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void OnSignoutButtonClicked();
+#endif
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void OnSigninButtonClicked();
   void OnOtherProfileSelected(const base::FilePath& profile_path);
   void OnAddNewProfileButtonClicked();
@@ -85,7 +89,6 @@ class ProfileMenuView : public ProfileMenuViewBase {
   void BuildFeatureButtons();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   void BuildSelectableProfiles();
-  void BuildProfileManagementHeading();
   void BuildProfileManagementFeatureButtons();
 #endif
 

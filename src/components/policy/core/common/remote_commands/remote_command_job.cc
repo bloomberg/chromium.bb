@@ -13,10 +13,8 @@ namespace policy {
 
 namespace {
 
-constexpr base::TimeDelta kDefaultCommandTimeout =
-    base::TimeDelta::FromMinutes(10);
-constexpr base::TimeDelta kDefaultCommandExpirationTime =
-    base::TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kDefaultCommandTimeout = base::Minutes(10);
+constexpr base::TimeDelta kDefaultCommandExpirationTime = base::Minutes(10);
 
 }  // namespace
 
@@ -29,7 +27,7 @@ RemoteCommandJob::~RemoteCommandJob() {
 bool RemoteCommandJob::Init(
     base::TimeTicks now,
     const enterprise_management::RemoteCommand& command,
-    const enterprise_management::SignedData* signed_command) {
+    const enterprise_management::SignedData& signed_command) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(NOT_INITIALIZED, status_);
 
@@ -40,8 +38,7 @@ bool RemoteCommandJob::Init(
   DCHECK_EQ(command.type(), GetType());
 
   unique_id_ = command.command_id();
-  if (signed_command)
-    signed_command_ = *signed_command;
+  signed_command_ = signed_command;
 
   if (command.has_age_of_command()) {
     // Use age of command provided by server to estimate the command issued time
@@ -50,8 +47,7 @@ bool RemoteCommandJob::Init(
     // time we got it from server.
     // It's just an estimation since we lost the time the response was
     // transmitted over the network.
-    issued_time_ =
-        now - base::TimeDelta::FromMilliseconds(command.age_of_command());
+    issued_time_ = now - base::Milliseconds(command.age_of_command());
   } else {
     SYSLOG(WARNING) << "No age_of_command provided by server for command "
                     << unique_id_ << ".";
@@ -153,8 +149,7 @@ bool RemoteCommandJob::IsExpired(base::TimeTicks now) {
   return now > issued_time() + kDefaultCommandExpirationTime;
 }
 
-void RemoteCommandJob::TerminateImpl() {
-}
+void RemoteCommandJob::TerminateImpl() {}
 
 void RemoteCommandJob::OnCommandExecutionFinishedWithResult(
     bool succeeded,

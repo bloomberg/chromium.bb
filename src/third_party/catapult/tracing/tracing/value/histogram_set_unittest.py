@@ -4,6 +4,7 @@
 
 import math
 import unittest
+import six
 
 from tracing.proto import histogram_proto
 from tracing.value import histogram
@@ -11,6 +12,7 @@ from tracing.value import histogram_set
 from tracing.value.diagnostics import date_range
 from tracing.value.diagnostics import diagnostic_ref
 from tracing.value.diagnostics import generic_set
+from six.moves import zip
 
 
 def _AddHist(hist_set, name=None, unit=None):
@@ -145,7 +147,7 @@ class HistogramSetUnittest(unittest.TestCase):
     hists2 = histogram_set.HistogramSet()
     hists2.ImportDicts(ds)
     self.assertEqual(len(hists2), 1)
-    hist2 = [h for h in hists2][0]
+    hist2 = list(hists2)[0]
 
     self.assertIsInstance(
         hist2.diagnostics.get('generic'), generic_set.GenericSet)
@@ -280,10 +282,10 @@ class HistogramSetUnittest(unittest.TestCase):
 
     # The order of the histograms isn't guaranteed.
     self.assertEqual(len(hists), 2)
-    self.assertItemsEqual(
-        [hists[0].name, hists[1].name], ['metric1', 'metric2'])
-    self.assertItemsEqual(
-        [hists[0].unit, hists[1].unit], ['tsMs', 'sigma_biggerIsBetter'])
+    six.assertCountEqual(
+        self, [hists[0].name, hists[1].name], ['metric1', 'metric2'])
+    six.assertCountEqual(
+        self, [hists[0].unit, hists[1].unit], ['tsMs', 'sigma_biggerIsBetter'])
 
   def testSimpleFieldsFromProto(self):
     hist_set = histogram_proto.Pb2().HistogramSet()
@@ -428,11 +430,19 @@ class HistogramSetUnittest(unittest.TestCase):
 
     # See the histogram spec in docs/histogram-set-json-format.md.
     # Serializing to proto leads to funny rounding errors.
-    self.assertEqual(
-        parsed_hist.statistics_names,
-        set(['pct_099_0000009537', 'pct_089_9999976158', 'pct_094_9999988079',
-             'nans', 'avg', 'geometricMean']),
-        msg=str(parsed_hist.statistics_names))
+    # The rounding works different from Python 2 and Python 3.
+    actual_statistics_names = sorted(parsed_hist.statistics_names)
+    expected_statistics_names = sorted(
+        ['pct_099_0000009537', 'pct_089_9999976158', 'pct_094_9999988079',
+         'nans', 'avg', 'geometricMean']
+    )
+    self.assertTrue(
+        all(actual[:17] == expected[:17]
+            for (actual, expected)
+            in zip(actual_statistics_names, expected_statistics_names)),
+        msg='Statistics names are different. Expected: %s. Actual: %s ' % (
+            expected_statistics_names, actual_statistics_names)
+    )
 
   def testImportSharedDiagnosticsFromProto(self):
     guid1 = 'f7f17394-fa4a-481e-86bd-a82cd55935a7'

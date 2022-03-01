@@ -6,10 +6,13 @@
 
 #include "xfa/fwl/theme/cfwl_checkboxtp.h"
 
-#include "core/fxge/cfx_pathdata.h"
-#include "third_party/base/stl_util.h"
+#include <math.h>
+
+#include "core/fxge/cfx_path.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_checkbox.h"
 #include "xfa/fwl/cfwl_themebackground.h"
@@ -22,8 +25,8 @@ constexpr int kSignPath = 100;
 
 CFX_PointF ScaleBezierPoint(const CFX_PointF& point) {
   CFX_PointF scaled_point(point);
-  scaled_point.x *= FX_BEZIER;
-  scaled_point.y *= FX_BEZIER;
+  scaled_point.x *= FXSYS_BEZIER;
+  scaled_point.y *= FXSYS_BEZIER;
   return scaled_point;
 }
 
@@ -35,7 +38,7 @@ CFWL_CheckBoxTP::~CFWL_CheckBoxTP() = default;
 
 void CFWL_CheckBoxTP::DrawText(const CFWL_ThemeText& pParams) {
   EnsureTTOInitialized();
-  m_pTextOut->SetTextColor(pParams.m_dwStates & CFWL_PartState_Disabled
+  m_pTextOut->SetTextColor(pParams.m_dwStates & CFWL_PartState::kDisabled
                                ? FWLTHEME_CAPACITY_TextDisColor
                                : FWLTHEME_CAPACITY_TextColor);
   CFWL_WidgetTP::DrawText(pParams);
@@ -126,16 +129,16 @@ void CFWL_CheckBoxTP::DrawSignStar(CFGAS_GEGraphics* pGraphics,
                                    const CFX_Matrix& matrix) {
   CFGAS_GEPath path;
   float fBottom = rtSign.bottom();
-  float fRadius = (rtSign.top - fBottom) / (1 + cosf(FX_PI / 5.0f));
+  float fRadius = (rtSign.top - fBottom) / (1 + cosf(FXSYS_PI / 5.0f));
   CFX_PointF ptCenter((rtSign.left + rtSign.right()) / 2.0f,
                       (rtSign.top + fBottom) / 2.0f);
 
   CFX_PointF points[5];
-  float fAngle = FX_PI / 10.0f;
+  float fAngle = FXSYS_PI / 10.0f;
   for (auto& point : points) {
     point =
         ptCenter + CFX_PointF(fRadius * cosf(fAngle), fRadius * sinf(fAngle));
-    fAngle += FX_PI * 2 / 5.0f;
+    fAngle += FXSYS_PI * 2 / 5.0f;
   }
 
   path.MoveTo(points[0]);
@@ -205,11 +208,11 @@ void CFWL_CheckBoxTP::EnsureCheckPathInitialized(float fCheckLen) {
 }
 
 void CFWL_CheckBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
-  if (pParams.m_iPart != CFWL_Part::CheckBox)
+  if (pParams.m_iPart != CFWL_ThemePart::Part::kCheckBox)
     return;
 
-  if ((pParams.m_dwStates & CFWL_PartState_Checked) ||
-      (pParams.m_dwStates & CFWL_PartState_Neutral)) {
+  if ((pParams.m_dwStates & CFWL_PartState::kChecked) ||
+      (pParams.m_dwStates & CFWL_PartState::kNeutral)) {
     DrawCheckSign(pParams.GetWidget(), pParams.GetGraphics(),
                   pParams.m_PartRect, pParams.m_dwStates, pParams.m_matrix);
   }
@@ -218,12 +221,12 @@ void CFWL_CheckBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
 void CFWL_CheckBoxTP::DrawCheckSign(CFWL_Widget* pWidget,
                                     CFGAS_GEGraphics* pGraphics,
                                     const CFX_RectF& pRtBox,
-                                    int32_t iState,
+                                    Mask<CFWL_PartState> iState,
                                     const CFX_Matrix& matrix) {
   CFX_RectF rtSign(pRtBox);
-  uint32_t dwColor = iState & CFWL_PartState_Neutral ? 0xFFA9A9A9 : 0xFF000000;
-
-  uint32_t dwStyle = pWidget->GetStylesEx();
+  uint32_t dwColor =
+      iState & CFWL_PartState::kNeutral ? 0xFFA9A9A9 : 0xFF000000;
+  uint32_t dwStyle = pWidget->GetStyleExts();
   rtSign.Deflate(rtSign.width / 4, rtSign.height / 4);
   switch (dwStyle & FWL_STYLEEXT_CKB_SignShapeMask) {
     case FWL_STYLEEXT_CKB_SignShapeCheck:

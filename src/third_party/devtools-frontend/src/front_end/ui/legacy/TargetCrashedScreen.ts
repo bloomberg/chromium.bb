@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../../core/i18n/i18n.js';
 
+import targetCrashedScreenStyles from './targetCrashedScreen.css.legacy.js';
 import {VBox} from './Widget.js';
 
 const UIStrings = {
@@ -21,18 +20,18 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/TargetCrashedScreen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TargetCrashedScreen extends VBox {
-  _hideCallback: () => void;
+  private readonly hideCallback: () => void;
   constructor(hideCallback: () => void) {
     super(true);
-    this.registerRequiredCSS('ui/legacy/targetCrashedScreen.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS(targetCrashedScreenStyles);
     this.contentElement.createChild('div', 'message').textContent =
         i18nString(UIStrings.devtoolsWasDisconnectedFromThe);
     this.contentElement.createChild('div', 'message').textContent =
         i18nString(UIStrings.oncePageIsReloadedDevtoolsWill);
-    this._hideCallback = hideCallback;
+    this.hideCallback = hideCallback;
   }
 
   willHide(): void {
-    this._hideCallback.call(null);
+    this.hideCallback.call(null);
   }
 }

@@ -16,6 +16,8 @@
 // * Eigen/SVD
 // * Eigen/Array
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN

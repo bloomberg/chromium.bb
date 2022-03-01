@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
@@ -48,6 +48,9 @@ class DeviceOperation : public GenericDeviceOperation {
         request_(std::move(request)),
         callback_(std::move(callback)) {}
 
+  DeviceOperation(const DeviceOperation&) = delete;
+  DeviceOperation& operator=(const DeviceOperation&) = delete;
+
   ~DeviceOperation() override = default;
 
  protected:
@@ -68,11 +71,9 @@ class DeviceOperation : public GenericDeviceOperation {
   absl::optional<FidoDevice::CancelToken> token_;
 
  private:
-  FidoDevice* const device_ = nullptr;
+  const raw_ptr<FidoDevice> device_ = nullptr;
   Request request_;
   DeviceResponseCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceOperation);
 };
 
 }  // namespace device

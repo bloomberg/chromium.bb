@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
@@ -34,9 +35,6 @@ enum {
 
 // Default minimum protocol version.
 NET_EXPORT extern const uint16_t kDefaultSSLVersionMin;
-
-// Default minimum protocol version to warn about.
-NET_EXPORT extern const uint16_t kDefaultSSLVersionMinWarn;
 
 // Default maximum protocol version.
 NET_EXPORT extern const uint16_t kDefaultSSLVersionMax;
@@ -83,8 +81,7 @@ struct NET_EXPORT SSLConfig {
   // If true, causes only ECDHE cipher suites to be enabled.
   bool require_ecdhe = false;
 
-  // If true, causes 3DES cipher suites and SHA-1 signature algorithms in
-  // TLS 1.2 to be disabled.
+  // If true, causes SHA-1 signature algorithms in TLS 1.2 to be disabled.
   bool disable_legacy_crypto = false;
 
   // TODO(wtc): move the following members to a new SSLParams structure.  They
@@ -136,6 +133,12 @@ struct NET_EXPORT SSLConfig {
   // If the PartitionSSLSessionsByNetworkIsolationKey feature is enabled, the
   // session cache is partitioned by this value.
   NetworkIsolationKey network_isolation_key;
+
+  // If non-empty, a serialized ECHConfigList to use to encrypt the ClientHello.
+  // If this field is non-empty, callers should handle |ERR_ECH_NOT_NEGOTIATED|
+  // errors from Connect() by calling GetECHRetryConfigs() to determine how to
+  // retry the connection.
+  std::vector<uint8_t> ech_config_list;
 
   // An additional boolean to partition the session cache by.
   //

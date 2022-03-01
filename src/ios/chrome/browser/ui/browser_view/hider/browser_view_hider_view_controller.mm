@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -32,16 +31,8 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  if (@available(iOS 13, *)) {
-    // TODO(crbug.com/981889): When iOS 12 is dropped, only the next line is
-    // needed for styling. Every other check for |incognitoStyle| can be
-    // removed, as well as the incognito specific assets.
-    self.view.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-  }
-  UIColor* backgroundColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kSecondaryBackgroundColor], true,
-      [UIColor colorNamed:kSecondaryBackgroundDarkColor]);
-  self.view.backgroundColor = backgroundColor;
+  self.view.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+  self.view.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   self.view.accessibilityIdentifier = @"BrowserViewHiderView";
   self.view.layer.cornerRadius = kTopCornerRadius;
   self.view.hidden = YES;
@@ -54,7 +45,7 @@
   self.steadyView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.steadyView];
   self.steadyView.colorScheme =
-      [LocationBarSteadyViewColorScheme incognitoScheme];
+      [LocationBarSteadyViewColorScheme standardScheme];
   self.steadyView.locationButton.enabled = NO;
 }
 
@@ -118,7 +109,11 @@
 
 - (void)willAnimateViewRevealFromState:(ViewRevealState)currentViewRevealState
                                toState:(ViewRevealState)nextViewRevealState {
-  self.view.alpha = currentViewRevealState == ViewRevealState::Revealed ? 1 : 0;
+  self.view.alpha =
+      currentViewRevealState == ViewRevealState::Revealed ||
+              currentViewRevealState == ViewRevealState::Fullscreen
+          ? 1
+          : 0;
   self.view.hidden = NO;
 }
 
@@ -131,13 +126,15 @@
       self.view.alpha = 0;
       break;
     case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
       self.view.alpha = 1;
       break;
   }
 }
 
 - (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
-  self.view.hidden = viewRevealState != ViewRevealState::Revealed;
+  self.view.hidden = viewRevealState != ViewRevealState::Revealed &&
+                     viewRevealState != ViewRevealState::Fullscreen;
 }
 
 @end

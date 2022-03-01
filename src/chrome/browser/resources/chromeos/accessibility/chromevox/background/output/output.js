@@ -16,12 +16,14 @@ goog.require('LocaleOutputHelper');
 goog.require('LogStore');
 goog.require('NavBraille');
 goog.require('OutputAction');
+goog.require('OutputAncestryInfo');
 goog.require('OutputContextOrder');
 goog.require('OutputEarconAction');
 goog.require('OutputEventType');
 goog.require('OutputFormatParser');
 goog.require('OutputFormatTree');
 goog.require('OutputNodeSpan');
+goog.require('OutputRoleInfo');
 goog.require('OutputRulesStr');
 goog.require('OutputSelectionSpan');
 goog.require('OutputSpeechProperties');
@@ -128,6 +130,13 @@ Output = class {
 
     /** @private {boolean} */
     this.drawFocusRing_ = true;
+
+    /**
+     * Tracks all ancestors which have received primary formatting in
+     * |ancestryHelper_|.
+     * @private {!WeakSet<!AutomationNode>}
+     */
+    this.formattedAncestors_ = new WeakSet();
   }
 
   /**
@@ -226,6 +235,7 @@ Output = class {
    */
   withSpeech(range, prevRange, type) {
     this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
+    this.formattedAncestors_ = new WeakSet();
     this.render_(
         range, prevRange, type, this.speechBuffer_, this.speechRulesStr_);
     return this;
@@ -240,6 +250,7 @@ Output = class {
    */
   withRichSpeech(range, prevRange, type) {
     this.formatOptions_ = {speech: true, braille: false, auralStyle: true};
+    this.formattedAncestors_ = new WeakSet();
     this.render_(
         range, prevRange, type, this.speechBuffer_, this.speechRulesStr_);
     return this;
@@ -254,6 +265,7 @@ Output = class {
    */
   withBraille(range, prevRange, type) {
     this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
+    this.formattedAncestors_ = new WeakSet();
 
     // Braille sometimes shows contextual information depending on role.
     if (range.start.equals(range.end) && range.start.node &&
@@ -285,6 +297,7 @@ Output = class {
    */
   withLocation(range, prevRange, type) {
     this.formatOptions_ = {speech: false, braille: false, auralStyle: false};
+    this.formattedAncestors_ = new WeakSet();
     this.render_(
         range, prevRange, type, [] /*unused output*/,
         new OutputRulesStr('') /*unused log*/);
@@ -422,6 +435,7 @@ Output = class {
     const node = opt_node || null;
 
     this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
+    this.formattedAncestors_ = new WeakSet();
     this.format_({
       node,
       outputFormat: formatStr,
@@ -444,6 +458,7 @@ Output = class {
     const node = opt_node || null;
 
     this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
+    this.formattedAncestors_ = new WeakSet();
     this.format_({
       node,
       outputFormat: formatStr,
@@ -613,40 +628,44 @@ Output = class {
    * @param {EventType|OutputEventType} type
    * @param {!Array<Spannable>} buff Buffer to receive rendered output.
    * @param {!OutputRulesStr} ruleStr
+   * @param {{suppressStartEndAncestry: (boolean|undefined)}} optionalArgs
    * @private
    */
-  render_(range, prevRange, type, buff, ruleStr) {
+  render_(range, prevRange, type, buff, ruleStr, optionalArgs = {}) {
     if (prevRange && !prevRange.isValid()) {
       prevRange = null;
     }
 
-    // Scan unique ancestors to get the value of |contextOrder|.
+    // Scan all ancestors to get the value of |contextOrder|.
     let parent = range.start.node;
     const prevParent = prevRange ? prevRange.start.node : parent;
     if (!parent || !prevParent) {
       return;
     }
-    const uniqueAncestors =
-        AutomationUtil.getUniqueAncestors(prevParent, parent);
-    for (let i = 0; parent = uniqueAncestors[i]; i++) {
+
+    while (parent) {
       if (parent.role === RoleType.WINDOW) {
         break;
       }
-      if (Output.ROLE_INFO_[parent.role] &&
-          Output.ROLE_INFO_[parent.role].contextOrder) {
+      if (OutputRoleInfo[parent.role] &&
+          OutputRoleInfo[parent.role].contextOrder) {
         this.contextOrder_ =
-            Output.ROLE_INFO_[parent.role].contextOrder || this.contextOrder_;
+            OutputRoleInfo[parent.role].contextOrder || this.contextOrder_;
         break;
       }
+
+      parent = parent.parent;
     }
 
     if (range.isSubNode()) {
       this.subNode_(range, prevRange, type, buff, ruleStr);
     } else {
-      this.range_(range, prevRange, type, buff, ruleStr);
+      this.range_(range, prevRange, type, buff, ruleStr, optionalArgs);
     }
 
-    this.hint_(range, uniqueAncestors, type, buff, ruleStr);
+    this.hint_(
+        range, AutomationUtil.getUniqueAncestors(prevParent, range.start.node),
+        type, buff, ruleStr);
   }
 
   /**
@@ -755,6 +774,10 @@ Output = class {
               owner.formatAsStateValue_(node, token, buff, options, ruleStr);
             } else if (token === 'phoneticReading') {
               owner.formatPhoneticReading_(node, buff);
+            } else if (token === 'listNestedLevel') {
+              owner.formatListNestedLevel_(node, buff);
+            } else if (token === 'precedingBullet') {
+              owner.formatPrecedingBullet_(node, buff);
             } else if (tree.firstChild) {
               owner.formatCustomFunction_(
                   node, token, tree, buff, options, ruleStr);
@@ -1145,7 +1168,9 @@ Output = class {
       prev = cursors.Range.fromNode(node);
     }
     ruleStr.writeToken(token);
-    this.render_(subrange, prev, OutputEventType.NAVIGATE, buff, ruleStr);
+    this.render_(
+        subrange, prev, OutputEventType.NAVIGATE, buff, ruleStr,
+        {suppressStartEndAncestry: true});
   }
 
   /**
@@ -1179,7 +1204,7 @@ Output = class {
   formatRole_(node, token, buff, options, ruleStr) {
     options.annotation.push(token);
     let msg = node.role;
-    const info = Output.ROLE_INFO_[node.role];
+    const info = OutputRoleInfo[node.role];
     if (node.roleDescription) {
       msg = node.roleDescription;
     } else if (info) {
@@ -1358,7 +1383,7 @@ Output = class {
     const outputStrings = [];
     while (walker.next().node) {
       if (walker.node.name) {
-        outputStrings.push(walker.node.name);
+        outputStrings.push(walker.node.name.trim());
       }
     }
     const finalOutput = outputStrings.join(' ');
@@ -1419,6 +1444,40 @@ Output = class {
     const text =
         PhoneticData.forText(node.name || '', chrome.i18n.getUILanguage());
     this.append_(buff, text);
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @param {!Array<Spannable>} buff
+   */
+  formatListNestedLevel_(node, buff) {
+    let level = 0;
+    let current = node;
+    while (current) {
+      if (current.role === RoleType.LIST) {
+        level += 1;
+      }
+      current = current.parent;
+    }
+    this.append_(buff, level.toString());
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @param {!Array<Spannable>} buff
+   */
+  formatPrecedingBullet_(node, buff) {
+    let current = node;
+    if (current.role === RoleType.INLINE_TEXT_BOX) {
+      current = current.parent;
+    }
+    if (!current || current.role !== RoleType.STATIC_TEXT) {
+      return;
+    }
+    current = current.previousSibling;
+    if (current && current.role === RoleType.LIST_MARKER) {
+      this.append_(buff, current.name || '');
+    }
   }
 
   /**
@@ -1600,9 +1659,10 @@ Output = class {
    * @param {EventType|OutputEventType} type
    * @param {!Array<Spannable>} rangeBuff
    * @param {!OutputRulesStr} ruleStr
+   * @param {{suppressStartEndAncestry: (boolean|undefined)}} optionalArgs
    * @private
    */
-  range_(range, prevRange, type, rangeBuff, ruleStr) {
+  range_(range, prevRange, type, rangeBuff, ruleStr, optionalArgs = {}) {
     if (!range.start.node || !range.end.node) {
       return;
     }
@@ -1612,12 +1672,15 @@ Output = class {
     } else if (!prevRange) {
       return;
     }
-
     const isForward = prevRange.compare(range) === Dir.FORWARD;
     const addContextBefore = this.contextOrder_ === OutputContextOrder.FIRST ||
+        this.contextOrder_ === OutputContextOrder.FIRST_AND_LAST ||
         (this.contextOrder_ === OutputContextOrder.DIRECTED && isForward);
     const addContextAfter = this.contextOrder_ === OutputContextOrder.LAST ||
+        this.contextOrder_ === OutputContextOrder.FIRST_AND_LAST ||
         (this.contextOrder_ === OutputContextOrder.DIRECTED && !isForward);
+    const preferStartOrEndAncestry =
+        this.contextOrder_ === OutputContextOrder.FIRST_AND_LAST;
     let cursor = cursors.Cursor.fromNode(range.start.node);
     let prevNode = prevRange.start.node;
 
@@ -1625,11 +1688,15 @@ Output = class {
       const buff = [];
 
       if (addContextBefore) {
-        this.ancestry_(node, prevNode, type, buff, ruleStr);
+        this.ancestry_(
+            node, prevNode, type, buff, ruleStr,
+            {preferStart: preferStartOrEndAncestry});
       }
       this.node_(node, prevNode, type, buff, ruleStr);
       if (addContextAfter) {
-        this.ancestry_(node, prevNode, type, buff, ruleStr);
+        this.ancestry_(
+            node, prevNode, type, buff, ruleStr,
+            {preferEnd: preferStartOrEndAncestry});
       }
       if (node.location) {
         this.locations_.push(node.location);
@@ -1682,39 +1749,94 @@ Output = class {
    * @param {EventType|OutputEventType} type
    * @param {!Array<Spannable>} buff
    * @param {!OutputRulesStr} ruleStr
+   * @param {{suppressStartEndAncestry: (boolean|undefined),
+   *         preferStart: (boolean|undefined),
+   *         preferEnd: (boolean|undefined)
+   *        }} optionalArgs
    * @private
    */
-  ancestry_(node, prevNode, type, buff, ruleStr) {
-    if (Output.ROLE_INFO_[node.role] &&
-        Output.ROLE_INFO_[node.role].ignoreAncestry) {
+  ancestry_(node, prevNode, type, buff, ruleStr, optionalArgs = {}) {
+    if (localStorage['useVerboseMode'] === 'false') {
       return;
     }
 
-    // Expects |ancestors| to be ordered from root down to leaf. Outputs in
-    // reverse; place context first nodes at the end.
-    function byContextFirst(ancestors) {
-      let contextFirst = [];
-      let rest = [];
-      for (let i = 0; i < ancestors.length - 1; i++) {
-        const node = ancestors[i];
-        // Discard ancestors of deepest window.
-        if (node.role === RoleType.WINDOW) {
-          contextFirst = [];
-          rest = [];
-        }
-        if ((Output.ROLE_INFO_[node.role] || {}).contextOrder ===
-            OutputContextOrder.FIRST) {
-          contextFirst.push(node);
-        } else {
-          rest.push(node);
-        }
-      }
-      return rest.concat(contextFirst.reverse());
+    if (OutputRoleInfo[node.role] && OutputRoleInfo[node.role].ignoreAncestry) {
+      return;
     }
-    const prevUniqueAncestors =
-        byContextFirst(AutomationUtil.getUniqueAncestors(node, prevNode));
-    const uniqueAncestors =
-        byContextFirst(AutomationUtil.getUniqueAncestors(prevNode, node));
+
+    const info = new OutputAncestryInfo(
+        node, prevNode, !!optionalArgs.suppressStartEndAncestry);
+
+    // Enter, leave ancestry.
+    this.ancestryHelper_({
+      node,
+      prevNode,
+      buff,
+      ruleStr,
+      type,
+      ancestors: info.leaveAncestors,
+      formatName: 'leave',
+      exclude: [...info.enterAncestors, node]
+    });
+    this.ancestryHelper_({
+      node,
+      prevNode,
+      buff,
+      ruleStr,
+      type,
+      ancestors: info.enterAncestors,
+      formatName: 'enter',
+      excludePreviousAncestors: true
+    });
+
+    if (optionalArgs.suppressStartEndAncestry) {
+      return;
+    }
+
+    // Start of, end of ancestry.
+    if (!optionalArgs.preferEnd) {
+      this.ancestryHelper_({
+        node,
+        prevNode,
+        buff,
+        ruleStr,
+        type,
+        ancestors: info.startAncestors,
+        formatName: 'startOf',
+        excludePreviousAncestors: true
+      });
+    }
+
+    if (!optionalArgs.preferStart) {
+      this.ancestryHelper_({
+        node,
+        prevNode,
+        buff,
+        ruleStr,
+        type,
+        ancestors: info.endAncestors,
+        formatName: 'endOf',
+        exclude: [...info.startAncestors].concat(node)
+      });
+    }
+  }
+
+  /**
+   * @param {{
+   * node: !AutomationNode,
+   * prevNode: !AutomationNode,
+   * type: (EventType|OutputEventType),
+   * buff: !Array<Spannable>,
+   * ruleStr: !OutputRulesStr,
+   * ancestors: !Array<!AutomationNode>,
+   * formatName: string,
+   * exclude: (!Array<!AutomationNode>|undefined),
+   * excludePreviousAncestors: (boolean|undefined)
+   * }} args
+   * @private
+   */
+  ancestryHelper_(args) {
+    let {node, prevNode, buff, ruleStr, type, ancestors, formatName} = args;
 
     /** Following types are contained: {event, role, navigation, output} */
     const rule = {};
@@ -1723,72 +1845,49 @@ Output = class {
     rule.event = Output.RULES[type] ? type : 'navigate';
     const eventBlock = Output.RULES[rule.event];
 
-    // Hash the roles we've entered.
-    const enteredRoleSet = {};
-    for (let j = uniqueAncestors.length - 1, hashNode;
-         (hashNode = uniqueAncestors[j]); j--) {
-      enteredRoleSet[hashNode.role] = true;
-    }
-
-    for (let i = 0, formatPrevNode; (formatPrevNode = prevUniqueAncestors[i]);
-         i++) {
-      // This prevents very repetitive announcements.
-      if (enteredRoleSet[formatPrevNode.role] ||
-          node.role === formatPrevNode.role ||
-          localStorage['useVerboseMode'] === 'false') {
-        continue;
-      }
-
-      const parentRole =
-          (Output.ROLE_INFO_[formatPrevNode.role] || {}).inherits;
-      rule.role = (eventBlock[formatPrevNode.role] || {}).leave !== undefined ?
-          formatPrevNode.role :
-          (eventBlock[parentRole] || {}).leave !== undefined ? parentRole :
-                                                               'default';
-      if (eventBlock[rule.role].leave &&
-          localStorage['useVerboseMode'] === 'true') {
-        rule.navigation = 'leave';
-        ruleStr.writeRule(rule);
-        this.format_({
-          node: formatPrevNode,
-          outputFormat: eventBlock[rule.role].leave,
-          outputBuffer: buff,
-          outputRuleString: ruleStr,
-          opt_prevNode: prevNode
-        });
-      }
-    }
+    const excludeRoles =
+        args.exclude ? new Set(args.exclude.map(node => node.role)) : new Set();
 
     // Customize for braille node annotations.
     const originalBuff = buff;
-    const enterRole = {};
-    for (let j = uniqueAncestors.length - 1, formatNode;
-         (formatNode = uniqueAncestors[j]); j--) {
-      const parentRole = (Output.ROLE_INFO_[formatNode.role] || {}).inherits;
-      rule.role = (eventBlock[formatNode.role] || {}).enter !== undefined ?
-          formatNode.role :
-          (eventBlock[parentRole] || {}).enter !== undefined ? parentRole :
-                                                               'default';
-      if (eventBlock[rule.role].enter) {
-        rule.navigation = 'enter';
-        if (enterRole[formatNode.role]) {
-          continue;
-        }
+    for (let j = ancestors.length - 1, formatNode; (formatNode = ancestors[j]);
+         j--) {
+      const roleInfo = OutputRoleInfo[formatNode.role] || {};
+      if (!roleInfo.verboseAncestry &&
+          (excludeRoles.has(formatNode.role) ||
+           (args.excludePreviousAncestors &&
+            this.formattedAncestors_.has(formatNode)))) {
+        continue;
+      }
 
-        rule.output = eventBlock[rule.role].enter.speak ? 'speak' : undefined;
+      const parentRole = roleInfo.inherits;
+      if (eventBlock[formatNode.role] &&
+          eventBlock[formatNode.role][formatName]) {
+        rule.role = formatNode.role;
+      } else if (eventBlock[parentRole] && eventBlock[parentRole][formatName]) {
+        rule.role = parentRole;
+      } else {
+        rule.role = 'default';
+      }
+
+      if (eventBlock[rule.role][formatName]) {
+        rule.navigation = formatName;
+        rule.output =
+            eventBlock[rule.role][formatName].speak ? 'speak' : undefined;
         if (this.formatOptions_.braille) {
           buff = [];
           ruleStr.bufferClear();
-          if (eventBlock[rule.role].enter.braille) {
+          if (eventBlock[rule.role][formatName].braille) {
             rule.output = 'braille';
           }
         }
 
-        enterRole[formatNode.role] = true;
-        ruleStr.writeRule(rule);
+        excludeRoles.add(formatNode.role);
+        ruleStr.writeRule /** @type {OutputRulesStr.Rule} */ ((rule));
         const enterFormat = rule.output ?
-            eventBlock[rule.role]['enter'][rule.output] :
-            eventBlock[rule.role]['enter'];
+            eventBlock[rule.role][formatName][rule.output] :
+            eventBlock[rule.role][formatName];
+        this.formattedAncestors_.add(formatNode);
         this.format_({
           node: formatNode,
           outputFormat: enterFormat,
@@ -1827,7 +1926,7 @@ Output = class {
     // Navigate is the default event.
     rule.event = Output.RULES[type] ? type : 'navigate';
     const eventBlock = Output.RULES[rule.event];
-    const parentRole = (Output.ROLE_INFO_[node.role] || {}).inherits || '';
+    const parentRole = (OutputRoleInfo[node.role] || {}).inherits || '';
     /**
      * Use Output.RULES for node.role if exists.
      * If not, use Output.RULES for parentRole if exists.
@@ -1920,8 +2019,10 @@ Output = class {
     }
 
     // Intentionally skip subnode output for OutputContextOrder.DIRECTED.
-    if (this.contextOrder_ === OutputContextOrder.FIRST) {
-      this.ancestry_(node, prevNode, type, buff, ruleStr);
+    if (this.contextOrder_ === OutputContextOrder.FIRST ||
+        (this.contextOrder_ === OutputContextOrder.FIRST_AND_LAST &&
+         range.start.index === 0)) {
+      this.ancestry_(node, prevNode, type, buff, ruleStr, {preferStart: true});
     }
     const earcon = this.findEarcon_(node, prevNode);
     if (earcon) {
@@ -1945,8 +2046,10 @@ Output = class {
     }
     ruleStr.write('subNode_: ' + text + '\n');
 
-    if (this.contextOrder_ === OutputContextOrder.LAST) {
-      this.ancestry_(node, prevNode, type, buff, ruleStr);
+    if (this.contextOrder_ === OutputContextOrder.LAST ||
+        (this.contextOrder_ === OutputContextOrder.FIRST_AND_LAST &&
+         range.end.index === range.end.getText().length)) {
+      this.ancestry_(node, prevNode, type, buff, ruleStr, {preferEnd: true});
     }
 
     range.start.node.boundsForRange(rangeStart, rangeEnd, (loc) => {
@@ -2119,6 +2222,20 @@ Output = class {
       ret.push({text: node.placeholder});
     }
 
+    // Invalid Grammar text.
+    if (uniqueAncestors.find(
+            /** @type {function(?) : boolean} */
+            (AutomationPredicate.hasInvalidGrammarMarker))) {
+      ret.push({msgId: 'hint_invalid_grammar'});
+    }
+
+    // Invalid Spelling text.
+    if (uniqueAncestors.find(
+            /** @type {function(?) : boolean} */
+            (AutomationPredicate.hasInvalidSpellingMarker))) {
+      ret.push({msgId: 'hint_invalid_spelling'});
+    }
+
     // Only include tooltip as a hint as a last alternative. It may have been
     // included as the name or description previously. As a rule of thumb,
     // only include it if there's no name and no description.
@@ -2153,7 +2270,10 @@ Output = class {
             /** @type {function(?) : boolean} */ (AutomationPredicate.table))) {
       ret.push({msgId: 'hint_table'});
     }
-    if ((foundAncestor = uniqueAncestors.find(
+
+    // This hint is not based on the role (it uses state), so we need to care
+    // about ordering; prefer deepest ancestor first.
+    if ((foundAncestor = uniqueAncestors.reverse().find(
              /** @type {function(?) : boolean} */ (AutomationPredicate.roles(
                  [RoleType.MENU, RoleType.MENU_BAR]))))) {
       ret.push({
@@ -2312,7 +2432,7 @@ Output = class {
       }
 
       while (earconFinder = ancestors.pop()) {
-        const info = Output.ROLE_INFO_[earconFinder.role];
+        const info = OutputRoleInfo[earconFinder.role];
         if (info && info.earconId) {
           return new OutputEarconAction(
               info.earconId, node.location || undefined);
@@ -2387,210 +2507,6 @@ Output = class {
  * @type {string}
  */
 Output.SPACE = ' ';
-
-/**
- * Metadata about supported automation roles.
- * @const {Object<{msgId: string,
- *                 earconId: (string|undefined),
- *                 inherits: (string|undefined),
- *                 contextOrder: (OutputContextOrder|undefined),
- *                 ignoreAncestry: (boolean|undefined)}>}
- * msgId: the message id of the role. Each role used requires a speech entry in
- *        chromevox_strings.grd + an optional Braille entry (with _BRL suffix).
- * earconId: an optional earcon to play when encountering the role.
- * inherits: inherits rules from this role.
- * contextOrder: where to place the context output.
- * ignoreAncestry: ignores ancestry (context) output for this role.
- * @private
- */
-Output.ROLE_INFO_ = {
-  alert: {msgId: 'role_alert'},
-  alertDialog:
-      {msgId: 'role_alertdialog', contextOrder: OutputContextOrder.FIRST},
-  article: {msgId: 'role_article', inherits: 'abstractItem'},
-  application: {msgId: 'role_application', inherits: 'abstractContainer'},
-  audio: {msgId: 'tag_audio', inherits: 'abstractContainer'},
-  banner: {msgId: 'role_banner', inherits: 'abstractContainer'},
-  button: {msgId: 'role_button', earconId: 'BUTTON'},
-  buttonDropDown: {msgId: 'role_button', earconId: 'BUTTON'},
-  checkBox: {msgId: 'role_checkbox'},
-  columnHeader: {msgId: 'role_columnheader', inherits: 'cell'},
-  comboBoxMenuButton: {msgId: 'role_combobox', earconId: 'LISTBOX'},
-  complementary: {msgId: 'role_complementary', inherits: 'abstractContainer'},
-  comment: {msgId: 'role_comment', inherits: 'abstractContainer'},
-  contentDeletion: {
-    msgId: 'role_content_deletion',
-    inherits: 'abstractContainer',
-    contextOrder: OutputContextOrder.FIRST
-  },
-  contentInsertion: {
-    msgId: 'role_content_insertion',
-    inherits: 'abstractContainer',
-    contextOrder: OutputContextOrder.FIRST
-  },
-  contentInfo: {msgId: 'role_contentinfo', inherits: 'abstractContainer'},
-  date: {msgId: 'input_type_date', inherits: 'abstractContainer'},
-  definition: {msgId: 'role_definition', inherits: 'abstractContainer'},
-  descriptionList: {msgId: 'role_description_list', inherits: 'abstractList'},
-  descriptionListDetail:
-      {msgId: 'role_description_list_detail', inherits: 'abstractItem'},
-  dialog: {
-    msgId: 'role_dialog',
-    contextOrder: OutputContextOrder.DIRECTED,
-    ignoreAncestry: true
-  },
-  directory: {msgId: 'role_directory', inherits: 'abstractContainer'},
-  docAbstract: {msgId: 'role_doc_abstract', inherits: 'abstractContainer'},
-  docAcknowledgments:
-      {msgId: 'role_doc_acknowledgments', inherits: 'abstractContainer'},
-  docAfterword: {msgId: 'role_doc_afterword', inherits: 'abstractContainer'},
-  docAppendix: {msgId: 'role_doc_appendix', inherits: 'abstractContainer'},
-  docBackLink:
-      {msgId: 'role_doc_back_link', earconId: 'LINK', inherits: 'link'},
-  docBiblioEntry: {
-    msgId: 'role_doc_biblio_entry',
-    earconId: 'LIST_ITEM',
-    inherits: 'abstractItem'
-  },
-  docBibliography:
-      {msgId: 'role_doc_bibliography', inherits: 'abstractContainer'},
-  docBiblioRef:
-      {msgId: 'role_doc_biblio_ref', earconId: 'LINK', inherits: 'link'},
-  docChapter: {msgId: 'role_doc_chapter', inherits: 'abstractContainer'},
-  docColophon: {msgId: 'role_doc_colophon', inherits: 'abstractContainer'},
-  docConclusion: {msgId: 'role_doc_conclusion', inherits: 'abstractContainer'},
-  docCover: {msgId: 'role_doc_cover', inherits: 'image'},
-  docCredit: {msgId: 'role_doc_credit', inherits: 'abstractContainer'},
-  docCredits: {msgId: 'role_doc_credits', inherits: 'abstractContainer'},
-  docDedication: {msgId: 'role_doc_dedication', inherits: 'abstractContainer'},
-  docEndnote: {
-    msgId: 'role_doc_endnote',
-    earconId: 'LIST_ITEM',
-    inherits: 'abstractItem'
-  },
-  docEndnotes:
-      {msgId: 'role_doc_endnotes', earconId: 'LISTBOX', inherits: 'list'},
-  docEpigraph: {msgId: 'role_doc_epigraph', inherits: 'abstractContainer'},
-  docEpilogue: {msgId: 'role_doc_epilogue', inherits: 'abstractContainer'},
-  docErrata: {msgId: 'role_doc_errata', inherits: 'abstractContainer'},
-  docExample: {msgId: 'role_doc_example', inherits: 'abstractContainer'},
-  docFootnote: {
-    msgId: 'role_doc_footnote',
-    earconId: 'LIST_ITEM',
-    inherits: 'abstractItem'
-  },
-  docForeword: {msgId: 'role_doc_foreword', inherits: 'abstractContainer'},
-  docGlossary: {msgId: 'role_doc_glossary', inherits: 'abstractContainer'},
-  docGlossRef:
-      {msgId: 'role_doc_gloss_ref', earconId: 'LINK', inherits: 'link'},
-  docIndex: {msgId: 'role_doc_index', inherits: 'abstractContainer'},
-  docIntroduction:
-      {msgId: 'role_doc_introduction', inherits: 'abstractContainer'},
-  docNoteRef: {msgId: 'role_doc_note_ref', earconId: 'LINK', inherits: 'link'},
-  docNotice: {msgId: 'role_doc_notice', inherits: 'abstractContainer'},
-  docPageBreak: {msgId: 'role_doc_page_break', inherits: 'abstractContainer'},
-  docPageFooter: {msgId: 'role_doc_page_footer', inherits: 'abstractContainer'},
-  docPageHeader: {msgId: 'role_doc_page_header', inherits: 'abstractContainer'},
-  docPageList: {msgId: 'role_doc_page_list', inherits: 'abstractContainer'},
-  docPart: {msgId: 'role_doc_part', inherits: 'abstractContainer'},
-  docPreface: {msgId: 'role_doc_preface', inherits: 'abstractContainer'},
-  docPrologue: {msgId: 'role_doc_prologue', inherits: 'abstractContainer'},
-  docPullquote: {msgId: 'role_doc_pullquote', inherits: 'abstractContainer'},
-  docQna: {msgId: 'role_doc_qna', inherits: 'abstractContainer'},
-  docSubtitle: {msgId: 'role_doc_subtitle', inherits: 'heading'},
-  docTip: {msgId: 'role_doc_tip', inherits: 'abstractContainer'},
-  docToc: {msgId: 'role_doc_toc', inherits: 'abstractContainer'},
-  document: {msgId: 'role_document', inherits: 'abstractContainer'},
-  form: {msgId: 'role_form', inherits: 'abstractContainer'},
-  graphicsDocument:
-      {msgId: 'role_graphics_document', inherits: 'abstractContainer'},
-  graphicsObject:
-      {msgId: 'role_graphics_object', inherits: 'abstractContainer'},
-  graphicsSymbol: {msgId: 'role_graphics_symbol', inherits: 'image'},
-  grid: {msgId: 'role_grid', inherits: 'table'},
-  group: {msgId: 'role_group', inherits: 'abstractContainer'},
-  heading: {
-    msgId: 'role_heading',
-  },
-  image: {
-    msgId: 'role_img',
-  },
-  imeCandidate: {msgId: 'ime_candidate', ignoreAncestry: true},
-  inputTime: {msgId: 'input_type_time', inherits: 'abstractContainer'},
-  link: {msgId: 'role_link', earconId: 'LINK'},
-  list: {msgId: 'role_list', inherits: 'abstractList'},
-  listBox:
-      {msgId: 'role_listbox', earconId: 'LISTBOX', inherits: 'abstractList'},
-  listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
-  listGrid: {msgId: 'role_list_grid', inherits: 'table'},
-  listItem:
-      {msgId: 'role_listitem', earconId: 'LIST_ITEM', inherits: 'abstractItem'},
-  log: {msgId: 'role_log', inherits: 'abstractNameFromContents'},
-  main: {msgId: 'role_main', inherits: 'abstractContainer'},
-  mark: {msgId: 'role_mark', inherits: 'abstractContainer'},
-  marquee: {msgId: 'role_marquee', inherits: 'abstractNameFromContents'},
-  math: {msgId: 'role_math', inherits: 'abstractContainer'},
-  menu: {
-    msgId: 'role_menu',
-    contextOrder: OutputContextOrder.FIRST,
-    ignoreAncestry: true
-  },
-  menuBar: {
-    msgId: 'role_menubar',
-  },
-  menuItem: {msgId: 'role_menuitem'},
-  menuItemCheckBox: {msgId: 'role_menuitemcheckbox'},
-  menuItemRadio: {msgId: 'role_menuitemradio'},
-  menuListOption: {msgId: 'role_menuitem'},
-  menuListPopup: {msgId: 'role_menu'},
-  meter: {msgId: 'role_meter', inherits: 'abstractRange'},
-  navigation: {msgId: 'role_navigation', inherits: 'abstractContainer'},
-  note: {msgId: 'role_note', inherits: 'abstractContainer'},
-  progressIndicator:
-      {msgId: 'role_progress_indicator', inherits: 'abstractRange'},
-  popUpButton: {
-    msgId: 'role_button',
-    earconId: 'POP_UP_BUTTON',
-    inherits: 'comboBoxMenuButton'
-  },
-  radioButton: {msgId: 'role_radio'},
-  radioGroup: {msgId: 'role_radiogroup', inherits: 'abstractContainer'},
-  region: {msgId: 'role_region', inherits: 'abstractContainer'},
-  rootWebArea: {contextOrder: OutputContextOrder.FIRST},
-  row: {msgId: 'role_row', inherits: 'abstractContainer'},
-  rowHeader: {msgId: 'role_rowheader', inherits: 'cell'},
-  scrollBar: {msgId: 'role_scrollbar', inherits: 'abstractRange'},
-  section: {msgId: 'role_region', inherits: 'abstractContainer'},
-  search: {msgId: 'role_search', inherits: 'abstractContainer'},
-  separator: {msgId: 'role_separator', inherits: 'abstractContainer'},
-  slider: {msgId: 'role_slider', inherits: 'abstractRange', earconId: 'SLIDER'},
-  spinButton: {
-    msgId: 'role_spinbutton',
-    inherits: 'abstractRange',
-    earconId: 'LISTBOX'
-  },
-  splitter: {msgId: 'role_separator'},
-  status: {msgId: 'role_status', inherits: 'abstractNameFromContents'},
-  suggestion: {
-    msgId: 'role_suggestion',
-    inherits: 'abstractContainer',
-    contextOrder: OutputContextOrder.FIRST
-  },
-  tab: {msgId: 'role_tab'},
-  tabList: {msgId: 'role_tablist', inherits: 'abstractContainer'},
-  tabPanel: {msgId: 'role_tabpanel'},
-  searchBox: {msgId: 'role_search', earconId: 'EDITABLE_TEXT'},
-  textField: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
-  textFieldWithComboBox: {msgId: 'role_combobox', earconId: 'EDITABLE_TEXT'},
-  time: {msgId: 'tag_time', inherits: 'abstractContainer'},
-  timer: {msgId: 'role_timer', inherits: 'abstractNameFromContents'},
-  toolbar: {msgId: 'role_toolbar', ignoreAncestry: true},
-  toggleButton: {msgId: 'role_toggle_button', inherits: 'checkBox'},
-  tree: {msgId: 'role_tree'},
-  treeItem: {msgId: 'role_treeitem'},
-  video: {msgId: 'tag_video', inherits: 'abstractContainer'},
-  window: {ignoreAncestry: true}
-};
 
 /**
  * Metadata about supported automation states.
@@ -2680,6 +2596,9 @@ Output.PRESSED_STATE_MAP = {
  * enter: The rule for when ChromeVox range enters the node's subtree.
  *    Can contain speak and braille properties.
  * leave: The rule for when ChromeVox range exits the node's subtree.
+ * startOf: The rule applied for each ancestor diff of a range and its previous
+ * leaf range. endOf: The rule applied for each ancestor diff of a range and its
+ * next leaf range.
  */
 Output.RULES = {
   navigate: {
@@ -2689,6 +2608,10 @@ Output.RULES = {
       braille: ``
     },
     abstractContainer: {
+      startOf: `$nameFromNode $role $state $description`,
+      endOf: `@end_of_container($role)`
+    },
+    abstractFormFieldContainer: {
       enter: `$nameFromNode $role $state $description`,
       leave: `@exited_container($role)`
     },
@@ -2703,8 +2626,9 @@ Output.RULES = {
           $description $restriction`
     },
     abstractList: {
-      enter: `$nameFromNode $role @@list_with_items($setSize)
-          $restriction $description`
+      startOf: `$nameFromNode $role @@list_with_items($setSize)
+          $restriction $description`,
+      endOf: `@end_of_container($role) @@list_nested_level($listNestedLevel)`
     },
     abstractNameFromContents: {
       speak: `$nameOrDescendants $node(activeDescendant) $value $state
@@ -2716,6 +2640,10 @@ Output.RULES = {
           $state $restriction
           $if($minValueForRange, @aria_value_min($minValueForRange))
           $if($maxValueForRange, @aria_value_max($maxValueForRange))`
+    },
+    abstractSpan: {
+      startOf: `$nameFromNode $role $state $description`,
+      endOf: `@end_of_container($role)`
     },
     alert: {
       enter: `$name $role $state`,
@@ -2739,8 +2667,8 @@ Output.RULES = {
         braille: `$state $cellIndexText $node(tableCellColumnHeaders)
             $nameFromNode $roleDescription`,
       },
-      speak: `$name $cellIndexText $node(tableCellColumnHeaders)
-          $roleDescription $state $description`,
+      speak: `$nameFromNode $descendants $cellIndexText
+          $node(tableCellColumnHeaders) $roleDescription $state $description`,
       braille: `$state
           $name $cellIndexText $node(tableCellColumnHeaders) $roleDescription
           $description
@@ -2753,7 +2681,7 @@ Output.RULES = {
     },
     client: {speak: `$name`},
     comboBoxMenuButton: {
-      speak: `$name $if($collapsed, $value) $role @aria_has_popup
+      speak: `$name $value $role @aria_has_popup
           $if($setSize, @@list_with_items($setSize))
           $state $restriction $description`,
     },
@@ -2791,7 +2719,7 @@ Output.RULES = {
     },
     imeCandidate:
         {speak: '$name $phoneticReading @describe_index($posInSet, $setSize)'},
-    inlineTextBox: {speak: `$name=`},
+    inlineTextBox: {speak: `$precedingBullet $name=`},
     inputTime: {enter: `$nameFromNode $role $state $restriction $description`},
     labelText: {
       speak: `$name $value $state $restriction $roleDescription $description`,
@@ -2805,6 +2733,10 @@ Output.RULES = {
     list: {
       speak: `$nameFromNode $descendants $role
           @@list_with_items($setSize) $description $state`
+    },
+    listBox: {
+      enter: `$nameFromNode $role @@list_with_items($setSize)
+          $restriction $description`
     },
     listBoxOption: {
       speak: `$state $name $role @describe_index($posInSet, $setSize)
@@ -2855,11 +2787,11 @@ Output.RULES = {
     rootWebArea: {enter: `$name`, speak: `$if($name, $name, @web_content)`},
     region: {speak: `$state $nameOrTextContent $description $roleDescription`},
     row: {
-      enter: `$node(tableRowHeader) $roleDescription`,
+      startOf: `$node(tableRowHeader) $roleDescription`,
       speak: `$name $node(activeDescendant) $value $state $restriction $role
           $if($selected, @aria_selected_true) $description`
     },
-    staticText: {speak: `$name= $description`},
+    staticText: {speak: `$precedingBullet $name= $description`},
     switch: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $if($checked, @describe_switch_on($name),
@@ -2910,8 +2842,8 @@ Output.RULES = {
     },
     unknown: {speak: ``},
     window: {
-      enter: `@describe_window($name)`,
-      speak: `@describe_window($name) $earcon(OBJECT_OPEN)`
+      enter: `@describe_window($name) $description`,
+      speak: `@describe_window($name) $description $earcon(OBJECT_OPEN)`
     }
   },
   menuStart:

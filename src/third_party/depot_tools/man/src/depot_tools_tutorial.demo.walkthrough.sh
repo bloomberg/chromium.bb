@@ -118,7 +118,7 @@ comment "We haven't updated the code in a while, so let's do that now."
 pcommand git rebase-update
 echo Fetching origin
 git fetch origin 2>&1 | grep -v 'stage' | sed 's+From.*+From https://upstream+'
-silent git update-ref refs/remotes/origin/master stage_2
+silent git update-ref refs/remotes/origin/main stage_2
 silent git tag -d $(git tag -l 'stage_*')
 git rebase-update --no-fetch
 

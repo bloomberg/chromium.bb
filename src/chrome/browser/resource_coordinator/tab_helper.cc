@@ -9,7 +9,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -31,7 +30,9 @@ namespace resource_coordinator {
 
 ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ResourceCoordinatorTabHelper>(
+          *web_contents) {
   TabLoadTracker::Get()->StartTracking(web_contents);
   if (memory_instrumentation::MemoryInstrumentation::GetInstance()) {
     auto* rc_parts = g_browser_process->resource_coordinator_parts();
@@ -52,15 +53,18 @@ bool ResourceCoordinatorTabHelper::IsLoaded(content::WebContents* contents) {
   return true;
 }
 
-void ResourceCoordinatorTabHelper::DidReceiveResponse() {
-  TabLoadTracker::Get()->DidReceiveResponse(web_contents());
+void ResourceCoordinatorTabHelper::PrimaryPageChanged(content::Page& page) {
+  ukm_source_id_ =
+      ukm::ConvertToSourceId(page.GetMainDocument().GetPageUkmSourceId(),
+                             ukm::SourceIdType::NAVIGATION_ID);
+  TabLoadTracker::Get()->PrimaryPageChanged(web_contents());
 }
 
 void ResourceCoordinatorTabHelper::DidStopLoading() {
   TabLoadTracker::Get()->DidStopLoading(web_contents());
 }
 
-void ResourceCoordinatorTabHelper::RenderProcessGone(
+void ResourceCoordinatorTabHelper::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus status) {
   // TODO(siggi): Looks like this can be acquired in a more timely manner from
   //    the RenderProcessHostObserver.
@@ -71,19 +75,6 @@ void ResourceCoordinatorTabHelper::WebContentsDestroyed() {
   TabLoadTracker::Get()->StopTracking(web_contents());
 }
 
-void ResourceCoordinatorTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  if (navigation_handle->IsInMainFrame()) {
-    ukm_source_id_ = ukm::ConvertToSourceId(
-        navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  }
-}
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ResourceCoordinatorTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ResourceCoordinatorTabHelper);
 
 }  // namespace resource_coordinator

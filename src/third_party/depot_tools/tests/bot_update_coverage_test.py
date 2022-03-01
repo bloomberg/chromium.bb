@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import codecs
 import copy
-import json
 import os
 import sys
 import unittest
@@ -87,21 +86,11 @@ class MockedCall(object):
 
 
 class MockedGclientSync():
-  """A class producing a callable instance of gclient sync.
-
-  Because for bot_update, gclient sync also emits an output json file, we need
-  a callable object that can understand where the output json file is going, and
-  emit a (albite) fake file for bot_update to consume.
-  """
+  """A class producing a callable instance of gclient sync."""
   def __init__(self, fake_filesystem):
-    self.output = {}
-    self.fake_filesystem = fake_filesystem
     self.records = []
 
   def __call__(self, *args, **_):
-    output_json_index = args.index('--output-json') + 1
-    with self.fake_filesystem.open(args[output_json_index], 'w') as f:
-      json.dump(self.output, f)
     self.records.append(args)
 
 
@@ -156,8 +145,8 @@ class BotUpdateUnittests(unittest.TestCase):
       'git_cache_dir': '',
       'cleanup_dir': None,
       'gerrit_reset': None,
-      'disable_syntax_validation': False,
       'enforce_fetch': False,
+      'experiments': [],
   }
 
   def setUp(self):
@@ -213,7 +202,7 @@ class BotUpdateUnittests(unittest.TestCase):
     idx_third_revision = args.index('--revision', idx_second_revision+1)
     self.assertEqual(args[idx_first_revision+1], 'somename@unmanaged')
     self.assertEqual(
-        args[idx_second_revision+1], 'src@refs/remotes/origin/master')
+        args[idx_second_revision+1], 'src@refs/remotes/origin/main')
     self.assertEqual(args[idx_third_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
@@ -262,20 +251,10 @@ class BotUpdateUnittests(unittest.TestCase):
     bot_update.ensure_checkout(**self.params)
     args = self.gclient.records[0]
     patch_refs = set(
-        args[i+1] for i in xrange(len(args))
+        args[i+1] for i in range(len(args))
         if args[i] == '--patch-ref' and i+1 < len(args))
     self.assertIn(self.params['patch_refs'][0], patch_refs)
     self.assertIn(self.params['patch_refs'][1], patch_refs)
-
-  def testBreakLocks(self):
-    self.overrideSetupForWindows()
-    bot_update.ensure_checkout(**self.params)
-    gclient_sync_cmd = None
-    for record in self.call.records:
-      args = record[0]
-      if args[:4] == (sys.executable, '-u', bot_update.GCLIENT_PATH, 'sync'):
-        gclient_sync_cmd = args
-    self.assertTrue('--break_repo_locks' in gclient_sync_cmd)
 
   def testGitCheckoutBreaksLocks(self):
     self.overrideSetupForWindows()
@@ -290,43 +269,6 @@ class BotUpdateUnittests(unittest.TestCase):
     setattr(os, 'walk', old_os_walk)
     setattr(os, 'remove', old_os_remove)
     self.assertTrue(os.path.join(path, lockfile) in removed)
-
-  def testGenerateManifestsBasic(self):
-    gclient_output = {
-        'solutions': {
-            'breakpad/': {
-                'revision': None,
-                'scm': None,
-                'url': ('https://chromium.googlesource.com/breakpad.git' +
-                        '@5f638d532312685548d5033618c8a36f73302d0a')
-            },
-            "src/": {
-                'revision': 'f671d3baeb64d9dba628ad582e867cf1aebc0207',
-                'scm': None,
-                'url': 'https://chromium.googlesource.com/a/chromium/src.git'
-            },
-            'src/overriden': {
-                'revision': None,
-                'scm': 'git',
-                'url': None,
-            },
-        }
-    }
-    out = bot_update.create_manifest(gclient_output, None)
-    self.assertEqual(len(out['directories']), 2)
-    self.assertEqual(
-        out['directories']['src']['git_checkout']['revision'],
-        'f671d3baeb64d9dba628ad582e867cf1aebc0207')
-    self.assertEqual(
-        out['directories']['src']['git_checkout']['repo_url'],
-        'https://chromium.googlesource.com/chromium/src')
-    self.assertEqual(
-        out['directories']['breakpad']['git_checkout']['revision'],
-        '5f638d532312685548d5033618c8a36f73302d0a')
-    self.assertEqual(
-        out['directories']['breakpad']['git_checkout']['repo_url'],
-        'https://chromium.googlesource.com/breakpad')
-    self.assertNotIn('src/overridden', out['directories'])
 
   def testParsesRevisions(self):
     revisions = [
@@ -344,6 +286,10 @@ class BotUpdateUnittests(unittest.TestCase):
     actual_results = bot_update.parse_revisions(revisions, 'root')
     self.assertEqual(expected_results, actual_results)
 
+class CallUnitTest(unittest.TestCase):
+  def testCall(self):
+    ret = bot_update.call(sys.executable, '-c', 'print(1)')
+    self.assertEqual(u'1\n', ret)
 
 if __name__ == '__main__':
   unittest.main()

@@ -7,8 +7,6 @@
 
 #include <objc/runtime.h>
 
-#include "base/macros.h"
-
 // Helper class that replaces a method implementation with a given block.
 // ScopedBlockSwizzler automatically swizzles when it is constructed and
 // reinstalls the original method implementation when it goes out of scope.
@@ -28,6 +26,9 @@ class ScopedBlockSwizzler {
   // contains both method types with the same selector.
   ScopedBlockSwizzler(Class target, SEL selector, id block, BOOL class_method);
 
+  ScopedBlockSwizzler(const ScopedBlockSwizzler&) = delete;
+  ScopedBlockSwizzler& operator=(const ScopedBlockSwizzler&) = delete;
+
   // Destroys the ScopedBlockSwizzler object, removing the swizzled method and
   // reinstalling the original method implementation.
   virtual ~ScopedBlockSwizzler();
@@ -40,8 +41,6 @@ class ScopedBlockSwizzler {
   // The original implementation of the swizzled method, saved so that it can be
   // reinstalled when this object goes out of scope.
   IMP original_imp_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedBlockSwizzler);
 };
 
 #endif  // IOS_TESTING_SCOPED_BLOCK_SWIZZLER_H_

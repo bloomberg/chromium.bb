@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
+#include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/remoting/receiver_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -85,7 +86,7 @@ class MockReceiverController : public ReceiverController {
   MockReceiverController();
   ~MockReceiverController() override;
 
-  void OnSendRpc(std::unique_ptr<std::vector<uint8_t>> message);
+  void OnSendRpc(std::vector<uint8_t> message);
 
   std::unique_ptr<MockRemotee> mock_remotee_;
 };

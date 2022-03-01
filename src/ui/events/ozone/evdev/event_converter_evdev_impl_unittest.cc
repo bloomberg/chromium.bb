@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/scoped_file.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -42,14 +42,16 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 dispatcher) {
     SetEnabled(true);
   }
+
+  MockEventConverterEvdevImpl(const MockEventConverterEvdevImpl&) = delete;
+  MockEventConverterEvdevImpl& operator=(const MockEventConverterEvdevImpl&) =
+      delete;
+
   ~MockEventConverterEvdevImpl() override { SetEnabled(false); }
 
   // EventConverterEvdevImpl:
   bool HasKeyboard() const override { return true; }
   bool HasTouchpad() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockEventConverterEvdevImpl);
 };
 
 }  // namespace ui
@@ -58,6 +60,10 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
 class EventConverterEvdevImplTest : public testing::Test {
  public:
   EventConverterEvdevImplTest() {}
+
+  EventConverterEvdevImplTest(const EventConverterEvdevImplTest&) = delete;
+  EventConverterEvdevImplTest& operator=(const EventConverterEvdevImplTest&) =
+      delete;
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -141,8 +147,6 @@ class EventConverterEvdevImplTest : public testing::Test {
   std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
   base::ScopedFD events_out_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImplTest);
 };
 
 TEST_F(EventConverterEvdevImplTest, KeyPress) {

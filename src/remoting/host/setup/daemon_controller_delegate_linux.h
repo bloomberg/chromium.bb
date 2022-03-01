@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "remoting/host/setup/daemon_controller.h"
 
 namespace remoting {
@@ -15,6 +14,11 @@ namespace remoting {
 class DaemonControllerDelegateLinux : public DaemonController::Delegate {
  public:
   DaemonControllerDelegateLinux();
+
+  DaemonControllerDelegateLinux(const DaemonControllerDelegateLinux&) = delete;
+  DaemonControllerDelegateLinux& operator=(
+      const DaemonControllerDelegateLinux&) = delete;
+
   ~DaemonControllerDelegateLinux() override;
 
   // DaemonController::Delegate interface.
@@ -35,9 +39,6 @@ class DaemonControllerDelegateLinux : public DaemonController::Delegate {
   // SetConfigAndStart only sets the config, and it is up to the caller to
   // start the host if needed.
   static void set_start_host_after_setup(bool start_host);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateLinux);
 };
 
 }  // namespace remoting

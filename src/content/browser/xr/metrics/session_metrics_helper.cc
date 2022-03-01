@@ -5,6 +5,7 @@
 #include "content/browser/xr/metrics/session_metrics_helper.h"
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/xr/metrics/session_timer.h"
 #include "content/browser/xr/metrics/webxr_session_tracker.h"
@@ -21,31 +22,30 @@ const void* const kSessionMetricsHelperDataKey = &kSessionMetricsHelperDataKey;
 
 // minimum duration: 7 seconds for video, no minimum for headset/vr modes
 // maximum gap: 7 seconds between videos.  no gap for headset/vr-modes
-constexpr base::TimeDelta kMinimumVideoSessionDuration(
-    base::TimeDelta::FromSecondsD(7));
-constexpr base::TimeDelta kMaximumVideoSessionGap(
-    base::TimeDelta::FromSecondsD(7));
+constexpr base::TimeDelta kMinimumVideoSessionDuration(base::Seconds(7));
+constexpr base::TimeDelta kMaximumVideoSessionGap(base::Seconds(7));
 
-constexpr base::TimeDelta kMinimumHeadsetSessionDuration(
-    base::TimeDelta::FromSecondsD(0));
-constexpr base::TimeDelta kMaximumHeadsetSessionGap(
-    base::TimeDelta::FromSecondsD(0));
+constexpr base::TimeDelta kMinimumHeadsetSessionDuration(base::Seconds(0));
+constexpr base::TimeDelta kMaximumHeadsetSessionGap(base::Seconds(0));
 
 // Handles the lifetime of the helper which is attached to a WebContents.
 class SessionMetricsHelperData : public base::SupportsUserData::Data {
  public:
+  SessionMetricsHelperData() = delete;
+
   explicit SessionMetricsHelperData(
       SessionMetricsHelper* session_metrics_helper)
       : session_metrics_helper_(session_metrics_helper) {}
+
+  SessionMetricsHelperData(const SessionMetricsHelperData&) = delete;
+  SessionMetricsHelperData& operator=(const SessionMetricsHelperData&) = delete;
 
   ~SessionMetricsHelperData() override { delete session_metrics_helper_; }
 
   SessionMetricsHelper* get() const { return session_metrics_helper_; }
 
  private:
-  SessionMetricsHelper* session_metrics_helper_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SessionMetricsHelperData);
+  raw_ptr<SessionMetricsHelper> session_metrics_helper_;
 };
 
 // Helper method to log out both the mode and the initially requested features
@@ -255,7 +255,10 @@ void SessionMetricsHelper::DidStartNavigation(
     content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (handle && handle->IsInMainFrame() && !handle->IsSameDocument()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (handle && handle->IsInPrimaryMainFrame() && !handle->IsSameDocument()) {
     // All sessions are terminated on navigations, so to ensure that we log
     // everything that we have, cleanup any outstanding session trackers now.
     if (webxr_immersive_session_tracker_) {

@@ -9,13 +9,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_map.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -49,6 +47,13 @@ bool NativeTheme::SystemDarkModeSupported() {
   return false;
 }
 #endif
+
+ColorProviderManager::Key NativeTheme::GetColorProviderKey(
+    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme)
+    const {
+  return GetColorProviderKeyForColorScheme(std::move(custom_theme),
+                                           GetDefaultSystemColorScheme());
+}
 
 SkColor NativeTheme::GetSystemColor(ColorId color_id,
                                     ColorScheme color_scheme) const {
@@ -91,6 +96,9 @@ void NativeTheme::NotifyOnNativeThemeUpdated() {
   // sequence, because it is often invoked from a platform-specific event
   // listener, and those events may be delivered on unexpected sequences.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Reset the ColorProviderManager's cache so that ColorProviders requested
+  // from this point onwards incorporate the changes to the system theme.
+  ui::ColorProviderManager::Get().ResetColorProviderCache();
   for (NativeThemeObserver& observer : native_theme_observers_)
     observer.OnNativeThemeUpdated(this);
 }
@@ -104,8 +112,26 @@ void NativeTheme::NotifyOnCaptionStyleUpdated() {
     observer.OnCaptionStyleUpdated();
 }
 
-NativeTheme::NativeTheme(bool should_use_dark_colors)
+float NativeTheme::AdjustBorderWidthByZoom(float border_width,
+                                           float zoom_level) const {
+  float zoomed = floorf(border_width * zoom_level);
+  return std::max(1.0f, zoomed);
+}
+
+float NativeTheme::AdjustBorderRadiusByZoom(Part part,
+                                            float border_radius,
+                                            float zoom) const {
+  if (part == kCheckbox || part == kTextField || part == kPushButton) {
+    float zoomed = floorf(border_radius * zoom);
+    return std::max(1.0f, zoomed);
+  }
+  return border_radius;
+}
+
+NativeTheme::NativeTheme(bool should_use_dark_colors,
+                         bool is_custom_system_theme)
     : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
+      is_custom_system_theme_(is_custom_system_theme),
       forced_colors_(IsForcedHighContrast()),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
       preferred_contrast_(CalculatePreferredContrast()) {}
@@ -114,19 +140,11 @@ NativeTheme::~NativeTheme() = default;
 
 absl::optional<SkColor> NativeTheme::GetColorProviderColor(
     ColorId color_id,
-    ColorScheme color_scheme,
-    std::string theme_name) const {
-  if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
-      AllowColorPipelineRedirection(color_scheme)) {
+    ColorScheme color_scheme) const {
+  if (AllowColorPipelineRedirection(color_scheme)) {
     if (auto provider_color_id = NativeThemeColorIdToColorId(color_id)) {
       auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
-          {(color_scheme == NativeTheme::ColorScheme::kDark)
-               ? ColorProviderManager::ColorMode::kDark
-               : ColorProviderManager::ColorMode::kLight,
-           (color_scheme == NativeTheme::ColorScheme::kPlatformHighContrast)
-               ? ColorProviderManager::ContrastMode::kHigh
-               : ColorProviderManager::ContrastMode::kNormal,
-           std::move(theme_name)});
+          GetColorProviderKeyForColorScheme(nullptr, color_scheme));
       ReportHistogramBooleanUsesColorProvider(true);
       return color_provider->GetColor(provider_color_id.value());
     }
@@ -140,8 +158,7 @@ bool NativeTheme::ShouldUseDarkColors() const {
 
 bool NativeTheme::UserHasContrastPreference() const {
   return GetPreferredContrast() !=
-             NativeTheme::PreferredContrast::kNoPreference ||
-         InForcedColorsMode();
+         NativeTheme::PreferredContrast::kNoPreference;
 }
 
 bool NativeTheme::InForcedColorsMode() const {
@@ -155,10 +172,6 @@ NativeTheme::GetPlatformHighContrastColorScheme() const {
   return (GetPreferredColorScheme() == PreferredColorScheme::kDark)
              ? PlatformHighContrastColorScheme::kDark
              : PlatformHighContrastColorScheme::kLight;
-}
-
-std::string NativeTheme::GetNativeThemeName() const {
-  return std::string();
 }
 
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
@@ -299,12 +312,30 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     notify_observers = true;
   }
 
-  if (notify_observers)
+  if (notify_observers) {
+    DCHECK(theme_to_update_->UserHasContrastPreference() ||
+           !theme_to_update_->InForcedColorsMode());
     theme_to_update_->NotifyOnNativeThemeUpdated();
+  }
 }
 
 NativeTheme::ColorScheme NativeTheme::GetDefaultSystemColorScheme() const {
   return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
+}
+
+ColorProviderManager::Key NativeTheme::GetColorProviderKeyForColorScheme(
+    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme,
+    ColorScheme color_scheme) const {
+  return ColorProviderManager::Key(
+      (color_scheme == ColorScheme::kDark)
+          ? ColorProviderManager::ColorMode::kDark
+          : ColorProviderManager::ColorMode::kLight,
+      (color_scheme == ColorScheme::kPlatformHighContrast)
+          ? ColorProviderManager::ContrastMode::kHigh
+          : ColorProviderManager::ContrastMode::kNormal,
+      is_custom_system_theme_ ? ColorProviderManager::SystemTheme::kCustom
+                              : ColorProviderManager::SystemTheme::kDefault,
+      std::move(custom_theme));
 }
 
 SkColor NativeTheme::GetSystemColorCommon(ColorId color_id,
@@ -314,10 +345,8 @@ SkColor NativeTheme::GetSystemColorCommon(ColorId color_id,
   if (color_scheme == NativeTheme::ColorScheme::kDefault)
     color_scheme = GetDefaultSystemColorScheme();
 
-  if (auto color =
-          GetColorProviderColor(color_id, color_scheme, GetNativeThemeName())) {
+  if (auto color = GetColorProviderColor(color_id, color_scheme))
     return color.value();
-  }
 
   ReportHistogramBooleanUsesColorProvider(false);
   return GetSystemColorDeprecated(color_id, color_scheme, apply_processing);

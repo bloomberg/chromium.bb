@@ -13,13 +13,13 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/http/http_version.h"
 #include "net/log/net_log_capture_mode.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
 namespace base {
 class Pickle;
@@ -87,6 +87,9 @@ class NET_EXPORT HttpResponseHeaders
   // not be called on |headers| before calling this method.
   static scoped_refptr<HttpResponseHeaders> TryToCreate(
       base::StringPiece headers);
+
+  HttpResponseHeaders(const HttpResponseHeaders&) = delete;
+  HttpResponseHeaders& operator=(const HttpResponseHeaders&) = delete;
 
   // Appends a representation of this object to the given pickle.
   // The options argument can be a combination of PersistOptions.
@@ -333,6 +336,9 @@ class NET_EXPORT HttpResponseHeaders
   // with |PERSIST_SANS_COOKIES|.
   static bool IsCookieResponseHeader(base::StringPiece name);
 
+  // Write a representation of this object into tracing proto.
+  void WriteIntoTrace(perfetto::TracedValue context) const;
+
  private:
   friend class base::RefCountedThreadSafe<HttpResponseHeaders>;
 
@@ -433,8 +439,6 @@ class NET_EXPORT HttpResponseHeaders
 
   // The normalized http version (consistent with what GetStatusLine() returns).
   HttpVersion http_version_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpResponseHeaders);
 };
 
 using ResponseHeadersCallback =

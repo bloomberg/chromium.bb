@@ -147,9 +147,23 @@ uint32_t av1_variance(uint8_t *input, int bw, int bh, int stride) {
   return sse - (uint32_t)(((int64_t)sum * sum) / (bw * bh));
 }
 
-int av1_haar_ac_sad_8x8_uint8_input(const uint8_t *input, int stride, int hbd) {
+static int haar_ac_sad_8x8_uint8_input(const uint8_t *input, int stride,
+                                       int hbd) {
   tran_low_t output[64];
 
   av1_fdwt8x8_uint8_input_c(input, output, stride, hbd);
   return av1_haar_ac_sad(output, 8, 8, 8);
+}
+
+int64_t av1_haar_ac_sad_mxn_uint8_input(const uint8_t *input, int stride,
+                                        int hbd, int num_8x8_rows,
+                                        int num_8x8_cols) {
+  int64_t wavelet_energy = 0;
+  for (int r8 = 0; r8 < num_8x8_rows; ++r8) {
+    for (int c8 = 0; c8 < num_8x8_cols; ++c8) {
+      wavelet_energy += haar_ac_sad_8x8_uint8_input(
+          input + c8 * 8 + r8 * 8 * stride, stride, hbd);
+    }
+  }
+  return wavelet_energy;
 }

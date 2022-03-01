@@ -8,8 +8,8 @@
 
 #include "base/check_op.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -35,6 +35,9 @@ class TestMockTimeTaskRunner::NonOwningProxyTaskRunner
       : target_(target) {
     DCHECK(target_);
   }
+
+  NonOwningProxyTaskRunner(const NonOwningProxyTaskRunner&) = delete;
+  NonOwningProxyTaskRunner& operator=(const NonOwningProxyTaskRunner&) = delete;
 
   // Detaches this NonOwningProxyTaskRunner instance from its |target_|. It is
   // invalid to post tasks after this point but RunsTasksInCurrentSequence()
@@ -81,12 +84,10 @@ class TestMockTimeTaskRunner::NonOwningProxyTaskRunner
   ~NonOwningProxyTaskRunner() override = default;
 
   mutable Lock lock_;
-  SingleThreadTaskRunner* target_;  // guarded by lock_
+  raw_ptr<SingleThreadTaskRunner> target_;  // guarded by lock_
 
   // Used to implement RunsTasksInCurrentSequence, without relying on |target_|.
   ThreadCheckerImpl thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(NonOwningProxyTaskRunner);
 };
 
 // TestMockTimeTaskRunner::TestOrderedPendingTask -----------------------------
@@ -103,15 +104,17 @@ struct TestMockTimeTaskRunner::TestOrderedPendingTask
                          TimeDelta delay,
                          size_t ordinal,
                          TestNestability nestability);
+
+  TestOrderedPendingTask(const TestOrderedPendingTask&) = delete;
+  TestOrderedPendingTask& operator=(const TestOrderedPendingTask&) = delete;
+
   TestOrderedPendingTask(TestOrderedPendingTask&&);
+
   ~TestOrderedPendingTask();
 
   TestOrderedPendingTask& operator=(TestOrderedPendingTask&&);
 
   size_t ordinal;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestOrderedPendingTask);
 };
 
 TestMockTimeTaskRunner::TestOrderedPendingTask::TestOrderedPendingTask()

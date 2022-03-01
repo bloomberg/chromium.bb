@@ -12,8 +12,6 @@ UI = UI || {};
 /** @constructor */
 UI.DockController = UIModule.DockController.DockController;
 
-UI.DockController.State = UIModule.DockController.State;
-
 /** @enum {symbol} */
 UI.DockController.Events = UIModule.DockController.Events;
 
@@ -22,7 +20,6 @@ UI.DockController.ToggleDockActionDelegate = UIModule.DockController.ToggleDockA
 
 /** @constructor */
 UI.DockController.CloseButtonProvider = UIModule.DockController.CloseButtonProvider;
-
 
 /** @constructor */
 UI.Context = UIModule.Context.Context;
@@ -149,7 +146,6 @@ UI.SettingUI = UIModule.SettingsUI.SettingUI;
 /** @constructor */
 UI.ShortcutRegistry = UIModule.ShortcutRegistry.ShortcutRegistry;
 
-
 UI.ShortcutRegistry.ForwardedShortcut = UIModule.ShortcutRegistry.ForwardedShortcut;
 
 /** @constructor */
@@ -169,12 +165,6 @@ UI.TabbedPane = UIModule.TabbedPane.TabbedPane;
 
 /** @enum {symbol} */
 UI.TabbedPane.Events = UIModule.TabbedPane.Events;
-
-/** @interface */
-UI.TextEditor = UIModule.TextEditor.TextEditor;
-
-/** @interface */
-UI.TextEditorFactory = UIModule.TextEditor.TextEditorFactory;
 
 /** @constructor */
 UI.TextPrompt = UIModule.TextPrompt.TextPrompt;
@@ -246,7 +236,6 @@ UI.XLink.ContextMenuProvider = UIModule.XLink.ContextMenuProvider;
 
 /** @type {!UIModule.Context.Context} */
 self.UI.context = UIModule.Context.Context.instance();
-
 
 /**
  * @type {!UI.DockController}

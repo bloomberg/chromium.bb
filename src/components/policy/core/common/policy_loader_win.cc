@@ -4,20 +4,24 @@
 
 #include "components/policy/core/common/policy_loader_win.h"
 
+// Must be included before lm.h
+#include <windows.h>
+
 #include <lm.h>       // For NetGetJoinInformation
 // <security.h> needs this.
 #define SECURITY_WIN32 1
 #include <security.h>  // For GetUserNameEx()
 #include <stddef.h>
+#include <userenv.h>
 
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/enterprise_util.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -29,15 +33,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/values.h"
 #include "base/win/shlwapi.h"  // For PathIsUNC()
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "components/policy/core/common/management/platform_management_service.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
 #include "components/policy/core/common/policy_loader_common.h"
@@ -68,13 +70,6 @@ enum DomainCheckErrors {
   DOMAIN_CHECK_ERROR_DS_BIND = 1,
   DOMAIN_CHECK_ERROR_SIZE,  // Not a DomainCheckError.  Must be last.
 };
-
-// Encapsulates logic to determine if enterprise policies should be honored.
-bool ShouldHonorPolicies() {
-  auto& platform_management_service = PlatformManagementService::GetInstance();
-  return platform_management_service.GetManagementAuthorityTrustworthiness() >=
-         ManagementAuthorityTrustworthiness::TRUSTED;
-}
 
 // Parses |gpo_dict| according to |schema| and writes the resulting policy
 // settings to |policy| for the given |scope| and |level|.
@@ -222,8 +217,11 @@ void CollectEnterpriseUMAs() {
 
 PolicyLoaderWin::PolicyLoaderWin(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
+    ManagementService* management_service,
     const std::wstring& chrome_policy_key)
-    : AsyncPolicyLoader(task_runner, /*periodic_updates=*/true),
+    : AsyncPolicyLoader(task_runner,
+                        management_service,
+                        /*periodic_updates=*/true),
       is_initialized_(false),
       chrome_policy_key_(chrome_policy_key),
       user_policy_changed_event_(
@@ -245,6 +243,13 @@ PolicyLoaderWin::PolicyLoaderWin(
 }
 
 PolicyLoaderWin::~PolicyLoaderWin() {
+  // Mitigate the issues caused by loading DLLs or lazily resolving symbols on a
+  // background thread (http://crbug/973868) which can hold the process wide
+  // LoaderLock and cause contention on Foreground threads. This issue is solved
+  // on Windows version after Win7. This code can be removed when Win7 is no
+  // longer supported.
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   if (!user_policy_watcher_failed_) {
     ::UnregisterGPNotification(user_policy_changed_event_.handle());
     user_policy_watcher_.StopWatching();
@@ -258,8 +263,10 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 // static
 std::unique_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
+    ManagementService* management_service,
     const std::wstring& chrome_policy_key) {
-  return std::make_unique<PolicyLoaderWin>(task_runner, chrome_policy_key);
+  return std::make_unique<PolicyLoaderWin>(task_runner, management_service,
+                                           chrome_policy_key);
 }
 
 void PolicyLoaderWin::InitOnBackgroundThread() {
@@ -321,7 +328,7 @@ void PolicyLoaderWin::LoadChromePolicy(const RegistryDict* gpo_dict,
   const Schema* chrome_schema =
       schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
   ParsePolicy(gpo_dict, level, scope, *chrome_schema, &policy);
-  if (!ShouldHonorPolicies())
+  if (ShouldFilterSensitivePolicies())
     FilterSensitivePolicies(&policy);
   chrome_policy_map->MergeFrom(policy);
 }

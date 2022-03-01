@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
@@ -60,7 +60,7 @@ absl::optional<int> GetPerMonitorDPI(HMONITOR monitor) {
     return absl::nullopt;
 
   DCHECK_EQ(dpi_x, dpi_y);
-  return int{dpi_x};
+  return static_cast<int>(dpi_x);
 }
 
 float GetScaleFactorForDPI(int dpi, bool include_accessibility) {
@@ -187,7 +187,7 @@ DisplaySettings GetDisplaySettingsForDevice(const wchar_t* device_name) {
   if (!::EnumDisplaySettings(device_name, ENUM_CURRENT_SETTINGS, &mode))
     return {Display::ROTATE_0, 0};
   return {OrientationToRotation(mode.dmDisplayOrientation),
-          mode.dmDisplayFrequency};
+          static_cast<int>(mode.dmDisplayFrequency)};
 }
 
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
@@ -328,6 +328,9 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     const std::vector<DisplayInfo>& display_infos,
     ColorProfileReader* color_profile_reader,
     bool hdr_enabled) {
+  if (display_infos.empty()) {
+    return {};
+  }
   // Find and extract the primary display.
   std::vector<DisplayInfo> display_infos_remaining = display_infos;
   auto primary_display_iter = std::find_if(
@@ -454,7 +457,8 @@ std::vector<DisplayInfo> GetDisplayInfosFromSystem() {
   std::vector<DisplayInfo> display_infos;
   EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForDisplayInfoCallback,
                       reinterpret_cast<LPARAM>(&display_infos));
-  DCHECK_EQ(::GetSystemMetrics(SM_CMONITORS), int{display_infos.size()});
+  DCHECK_EQ(::GetSystemMetrics(SM_CMONITORS),
+            static_cast<int>(display_infos.size()));
   return display_infos;
 }
 
@@ -537,6 +541,9 @@ gfx::Rect ScreenWin::ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
 
 // static
 gfx::Rect ScreenWin::DIPToScreenRect(HWND hwnd, const gfx::Rect& dip_bounds) {
+  // The HWND parameter is needed for cases where Chrome windows span monitors
+  // that have different DPI settings. This is known to matter when using the OS
+  // IME support. See https::/crbug.com/1224715 for more details.
   const ScreenWinDisplay screen_win_display = hwnd
       ? GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestHWND, hwnd)
       : GetScreenWinDisplayVia(
@@ -706,7 +713,7 @@ gfx::NativeWindow ScreenWin::GetLocalProcessWindowAtPoint(
 }
 
 int ScreenWin::GetNumDisplays() const {
-  return int{screen_win_displays_.size()};
+  return static_cast<int>(screen_win_displays_.size());
 }
 
 const std::vector<Display>& ScreenWin::GetAllDisplays() const {
@@ -939,8 +946,8 @@ void ScreenWin::RecordDisplayScaleFactors() const {
         screen_win_display.display().device_scale_factor();
     // Multiply the reported value by 100 to display it as a percentage. Clamp
     // it so that if it's wildly out-of-band we won't send it to the backend.
-    const int reported_scale = base::ClampToRange(
-        base::checked_cast<int>(scale_factor * 100), 0, 1000);
+    const int reported_scale =
+        base::clamp(base::checked_cast<int>(scale_factor * 100), 0, 1000);
     if (!base::Contains(unique_scale_factors, reported_scale)) {
       unique_scale_factors.push_back(reported_scale);
       base::UmaHistogramSparse("UI.DeviceScale", reported_scale);

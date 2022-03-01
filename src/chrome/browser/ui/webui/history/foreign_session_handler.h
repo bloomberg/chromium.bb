@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -51,8 +50,13 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   ForeignSessionHandler();
+
+  ForeignSessionHandler(const ForeignSessionHandler&) = delete;
+  ForeignSessionHandler& operator=(const ForeignSessionHandler&) = delete;
+
   ~ForeignSessionHandler() override;
 
   void InitializeForeignSessions();
@@ -72,6 +76,8 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
   // Returns a pointer to the current session model associator or nullptr.
   static sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(
       content::WebUI* web_ui);
+
+  void SetWebUIForTesting(content::WebUI* web_ui) { set_web_ui(web_ui); }
 
  private:
   void OnForeignSessionUpdated();
@@ -102,8 +108,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
   base::Value initial_session_list_;
 
   base::CallbackListSubscription foreign_session_updated_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(ForeignSessionHandler);
 };
 
 }  // namespace browser_sync

@@ -189,6 +189,7 @@ public class RenderCoordinatesImpl implements RenderCoordinates {
     /**
      * @return Minimum page scale factor to be used with the content.
      */
+    @Override
     public float getMinPageScaleFactor() {
         return mMinPageScaleFactor;
     }
@@ -244,5 +245,13 @@ public class RenderCoordinatesImpl implements RenderCoordinates {
     // Maximum possible vertical scroll in physical pixels.
     private float getMaxVerticalScrollPix() {
         return getContentHeightPix() - getLastFrameViewportHeightPix();
+    }
+
+    /**
+     * @return whether the first frame info was passed in and cached. Rendered content
+     *     area dimension, page scale factor, etc. is available if true.
+     */
+    public boolean frameInfoUpdatedForTesting() {
+        return mContentWidthCss != 0.f || mContentHeightCss != 0.f;
     }
 }

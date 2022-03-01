@@ -33,6 +33,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -45,7 +46,8 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/code_cache_host.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -74,6 +76,10 @@ class CORE_EXPORT WorkerGlobalScope
   ~WorkerGlobalScope() override;
 
   // Returns null if caching is not supported.
+  // TODO(crbug/964467): Currently workers do fetch cached code but they don't
+  // use it because we don't create a CachedMetadtaHandler. Only service workers
+  // override this method and provide a valid handler. We need to implement it
+  // for Dedicated / Shared workers too so we can benefit from code caches.
   virtual SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data) {
@@ -86,6 +92,7 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerThread* GetThread() const final { return thread_; }
   const base::UnguessableToken& GetDevToolsToken() const override;
   bool IsInitialized() const final { return !url_.IsNull(); }
+  CodeCacheHost* GetCodeCacheHost() override;
 
   void ExceptionUnhandled(int exception_id);
 
@@ -149,8 +156,7 @@ class CORE_EXPORT WorkerGlobalScope
       network::mojom::ReferrerPolicy response_referrer_policy,
       network::mojom::IPAddressSpace response_address_space,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
-      const Vector<String>* response_origin_trial_tokens,
-      int64_t appcache_id) = 0;
+      const Vector<String>* response_origin_trial_tokens) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context
@@ -324,6 +330,10 @@ class CORE_EXPORT WorkerGlobalScope
   // shared workers.
   std::unique_ptr<WorkerMainScriptLoadParameters>
       worker_main_script_load_params_for_modules_;
+
+  // This is the interface that handles generated code cache
+  // requests both to fetch code cache when loading resources.
+  std::unique_ptr<CodeCacheHost> code_cache_host_;
 
   const ukm::SourceId ukm_source_id_;
 };

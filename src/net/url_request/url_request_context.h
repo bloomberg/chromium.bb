@@ -8,31 +8,24 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_CONTEXT_H_
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_H_
 
+#include <stdint.h>
 #include <memory>
 #include <set>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties.h"
-#include "net/http/transport_security_state.h"
+#include "net/log/net_log_source.h"
 #include "net/net_buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
-
-namespace base {
-namespace trace_event {
-class ProcessMemoryDump;
-}
-}
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class CertVerifier;
@@ -40,6 +33,9 @@ class CookieStore;
 class CTPolicyEnforcer;
 class HostResolver;
 class HttpAuthHandlerFactory;
+struct HttpNetworkSessionContext;
+struct HttpNetworkSessionParams;
+class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
@@ -50,13 +46,10 @@ class ProxyResolutionService;
 class QuicContext;
 class SCTAuditingDelegate;
 class SSLConfigService;
+class TransportSecurityState;
 class URLRequest;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
-
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-class FtpAuthCache;
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(ENABLE_REPORTING)
 class NetworkErrorLoggingService;
@@ -69,19 +62,22 @@ class ReportingService;
 // automatic lifetime management. Most callers should use an existing
 // URLRequestContext rather than creating a new one, as guaranteeing that the
 // URLRequestContext is destroyed before its members can be difficult.
-class NET_EXPORT URLRequestContext
-    : public base::trace_event::MemoryDumpProvider {
+class NET_EXPORT URLRequestContext {
  public:
   URLRequestContext();
-  ~URLRequestContext() override;
+
+  URLRequestContext(const URLRequestContext&) = delete;
+  URLRequestContext& operator=(const URLRequestContext&) = delete;
+
+  virtual ~URLRequestContext();
 
   // May return nullptr if this context doesn't have an associated network
   // session.
-  const HttpNetworkSession::Params* GetNetworkSessionParams() const;
+  const HttpNetworkSessionParams* GetNetworkSessionParams() const;
 
   // May return nullptr if this context doesn't have an associated network
   // session.
-  const HttpNetworkSession::Context* GetNetworkSessionContext() const;
+  const HttpNetworkSessionContext* GetNetworkSessionContext() const;
 
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
@@ -98,19 +94,30 @@ class NET_EXPORT URLRequestContext
       URLRequest::Delegate* delegate) const;
 #endif
 
-  // |traffic_annotation| is metadata about the network traffic send via this
+  // `traffic_annotation` is metadata about the network traffic send via this
   // URLRequest, see net::DefineNetworkTrafficAnnotation. Note that:
   // - net provides the API for tagging requests with an opaque identifier.
-  // - tools/traffic_annotation/traffic_annotation.proto contains the Chrome
+  // - chrome/browser/privacy/traffic_annotation.proto contains the Chrome
   // specific .proto describing the verbose annotation format that Chrome's
   // callsites are expected to follow.
   // - tools/traffic_annotation/ contains sample and template for annotation and
   // tools will be added for verification following crbug.com/690323.
+  //
+  // `is_for_websockets` should be true iff this was created for use by a
+  // websocket. HTTP/HTTPS requests fail if it's true, and WS/WSS requests fail
+  // if it's false. This is to protect against broken consumers.
+  //
+  // `net_log_source_id` is used to construct NetLogWithSource using the
+  // specified Source ID. This method is expected to be used when URLRequest
+  // wants to take over existing NetLogSource.
   std::unique_ptr<URLRequest> CreateRequest(
       const GURL& url,
       RequestPriority priority,
       URLRequest::Delegate* delegate,
-      NetworkTrafficAnnotationTag traffic_annotation) const;
+      NetworkTrafficAnnotationTag traffic_annotation,
+      bool is_for_websockets = false,
+      const absl::optional<net::NetLogSource> net_log_source =
+          absl::nullopt) const;
 
   NetLog* net_log() const { return net_log_; }
 
@@ -294,25 +301,6 @@ class NET_EXPORT URLRequestContext
     return require_network_isolation_key_;
   }
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  void set_ftp_auth_cache(FtpAuthCache* auth_cache) {
-    ftp_auth_cache_ = auth_cache;
-  }
-  FtpAuthCache* ftp_auth_cache() { return ftp_auth_cache_; }
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
-
-  // Sets a name for this URLRequestContext. Currently the name is used in
-  // MemoryDumpProvier to annotate memory usage. The name does not need to be
-  // unique.
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string& name() const { return name_; }
-
-  // MemoryDumpProvider implementation:
-  // This is reported as
-  // "memory:chrome:all_processes:reported_by_chrome:net:effective_size_avg."
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
   void AssertCalledOnValidThread() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
@@ -320,32 +308,29 @@ class NET_EXPORT URLRequestContext
  private:
   // Ownership for these members are not defined here. Clients should either
   // provide storage elsewhere or have a subclass take ownership.
-  NetLog* net_log_;
-  HostResolver* host_resolver_;
-  CertVerifier* cert_verifier_;
-  HttpAuthHandlerFactory* http_auth_handler_factory_;
-  ProxyResolutionService* proxy_resolution_service_;
-  ProxyDelegate* proxy_delegate_;
-  SSLConfigService* ssl_config_service_;
-  NetworkDelegate* network_delegate_;
-  HttpServerProperties* http_server_properties_;
-  const HttpUserAgentSettings* http_user_agent_settings_;
-  CookieStore* cookie_store_;
-  TransportSecurityState* transport_security_state_;
-  CTPolicyEnforcer* ct_policy_enforcer_;
-  SCTAuditingDelegate* sct_auditing_delegate_;
-  HttpTransactionFactory* http_transaction_factory_;
-  const URLRequestJobFactory* job_factory_;
-  URLRequestThrottlerManager* throttler_manager_;
-  QuicContext* quic_context_;
-  NetworkQualityEstimator* network_quality_estimator_;
+  raw_ptr<NetLog> net_log_;
+  raw_ptr<HostResolver> host_resolver_;
+  raw_ptr<CertVerifier> cert_verifier_;
+  raw_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
+  raw_ptr<ProxyResolutionService> proxy_resolution_service_;
+  raw_ptr<ProxyDelegate> proxy_delegate_;
+  raw_ptr<SSLConfigService> ssl_config_service_;
+  raw_ptr<NetworkDelegate> network_delegate_;
+  raw_ptr<HttpServerProperties> http_server_properties_;
+  raw_ptr<const HttpUserAgentSettings> http_user_agent_settings_;
+  raw_ptr<CookieStore> cookie_store_;
+  raw_ptr<TransportSecurityState> transport_security_state_;
+  raw_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
+  raw_ptr<SCTAuditingDelegate> sct_auditing_delegate_;
+  raw_ptr<HttpTransactionFactory> http_transaction_factory_;
+  raw_ptr<const URLRequestJobFactory> job_factory_;
+  raw_ptr<URLRequestThrottlerManager> throttler_manager_;
+  raw_ptr<QuicContext> quic_context_;
+  raw_ptr<NetworkQualityEstimator> network_quality_estimator_;
 #if BUILDFLAG(ENABLE_REPORTING)
-  ReportingService* reporting_service_;
-  NetworkErrorLoggingService* network_error_logging_service_;
+  raw_ptr<ReportingService> reporting_service_;
+  raw_ptr<NetworkErrorLoggingService> network_error_logging_service_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  FtpAuthCache* ftp_auth_cache_;
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   std::unique_ptr<std::set<const URLRequest*>> url_requests_;
 
@@ -359,14 +344,7 @@ class NET_EXPORT URLRequestContext
   // a request when true.
   bool require_network_isolation_key_;
 
-  // An optional name which can be set to describe this URLRequestContext.
-  // Used in MemoryDumpProvier to annotate memory usage. The name does not need
-  // to be unique.
-  std::string name_;
-
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };
 
 }  // namespace net

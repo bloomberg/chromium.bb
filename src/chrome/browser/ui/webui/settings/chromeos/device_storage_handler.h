@@ -7,12 +7,12 @@
 
 #include <string>
 
+#include "ash/components/disks/disk_mount_manager.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/disks/disk_mount_manager.h"
 #include "third_party/re2/src/re2/re2.h"
 
 class Profile;
@@ -44,10 +44,14 @@ const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
 
 class StorageHandler : public ::settings::SettingsPageUIHandler,
                        public arc::ArcSessionManagerObserver,
-                       public chromeos::disks::DiskMountManager::Observer,
+                       public ash::disks::DiskMountManager::Observer,
                        public calculator::SizeCalculator::Observer {
  public:
   StorageHandler(Profile* profile, content::WebUIDataSource* html_source);
+
+  StorageHandler(const StorageHandler&) = delete;
+  StorageHandler& operator=(const StorageHandler&) = delete;
+
   ~StorageHandler() override;
 
   // ::settings::SettingsPageUIHandler:
@@ -58,19 +62,18 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
-  // chromeos::disks::DiskMountManager::Observer:
-  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
-                    chromeos::MountError error_code,
-                    const chromeos::disks::DiskMountManager::MountPointInfo&
-                        mount_info) override;
+  // ash::disks::DiskMountManager::Observer:
+  void OnMountEvent(
+      ash::disks::DiskMountManager::MountEvent event,
+      chromeos::MountError error_code,
+      const ash::disks::DiskMountManager::MountPointInfo& mount_info) override;
 
   // chromeos::settings::calculator::SizeCalculator::Observer:
   void OnSizeCalculated(
       const calculator::SizeCalculator::CalculationType& calculation_type,
-      int64_t total_bytes,
-      const absl::optional<int64_t>& available_bytes = absl::nullopt) override;
+      int64_t total_bytes) override;
 
-  // Remove the handler from the list of observers of every observed instances.
+  // Removes the handler from the list of observers of every observed instances.
   void StopObservingEvents();
 
  protected:
@@ -86,20 +89,16 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   void HandleOpenArcStorage(const base::ListValue* unused_args);
   void HandleUpdateExternalStorages(const base::ListValue* unused_args);
 
-  // Update storage sizes on the UI.
+  // Updates storage row on the UI.
   void UpdateStorageItem(
-      const calculator::SizeCalculator::CalculationType& calculation_type,
-      int64_t total_bytes);
-  void UpdateSizeStat(
-      const calculator::SizeCalculator::CalculationType& calculation_type,
-      int64_t total_bytes,
-      int64_t available_bytes);
+      const calculator::SizeCalculator::CalculationType& calculation_type);
 
-  // Marks the size of |item| as calculated. When all storage items have been
-  // calculated, then "System" size can be calculated.
-  void UpdateSystemSize(
-      const calculator::SizeCalculator::CalculationType& calculation_type,
-      int64_t total_bytes);
+  // Updates global storage statistics: total, in use and available space.
+  void UpdateOverallStatistics();
+
+  // Checks whether all storage items have been calculated. If so, calculates
+  // and updates the "System" size.
+  void UpdateSystemSizeItem();
 
   // Updates list of external storages.
   void UpdateExternalStorages();
@@ -109,7 +108,8 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   bool IsEligibleForAndroidStorage(std::string source_path);
 
   // Instances calculating the size of each storage items.
-  calculator::SizeStatCalculator size_stat_calculator_;
+  calculator::TotalDiskSpaceCalculator total_disk_space_calculator_;
+  calculator::FreeDiskSpaceCalculator free_disk_space_calculator_;
   calculator::MyFilesSizeCalculator my_files_size_calculator_;
   calculator::BrowsingDataSizeCalculator browsing_data_size_calculator_;
   calculator::AppsSizeCalculator apps_size_calculator_;
@@ -132,8 +132,6 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   const re2::RE2 special_volume_path_pattern_;
 
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(StorageHandler);
 };
 
 }  // namespace settings

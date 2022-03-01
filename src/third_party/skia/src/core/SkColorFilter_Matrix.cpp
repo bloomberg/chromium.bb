@@ -79,7 +79,7 @@ bool SkColorFilter_Matrix::onAppendStages(const SkStageRec& rec, bool shaderIsOp
 
 
 skvm::Color SkColorFilter_Matrix::onProgram(skvm::Builder* p, skvm::Color c,
-                                            SkColorSpace* /*dstCS*/,
+                                            const SkColorInfo& /*dst*/,
                                             skvm::Uniforms* uniforms, SkArenaAlloc*) const {
     auto apply_matrix = [&](auto xyzw) {
         auto dot = [&](int j) {
@@ -120,27 +120,100 @@ skvm::Color SkColorFilter_Matrix::onProgram(skvm::Builder* p, skvm::Color c,
 }
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/effects/generated/GrColorMatrixFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrHSLToRGBFilterEffect.h"
-#include "src/gpu/effects/generated/GrRGBToHSLFilterEffect.h"
+#include "src/gpu/effects/GrSkSLFP.h"
+
+// Convert RGBA -> HSLA (including unpremul).
+//
+// Based on work by Sam Hocevar, Emil Persson, and Ian Taylor [1][2][3].  High-level ideas:
+//
+//   - minimize the number of branches by sorting and computing the hue phase in parallel (vec4s)
+//
+//   - trade the third sorting branch for a potentially faster std::min and leaving 2nd/3rd
+//     channels unsorted (based on the observation that swapping both the channels and the bias sign
+//     has no effect under abs)
+//
+//   - use epsilon offsets for denominators, to avoid explicit zero-checks
+//
+// An additional trick we employ is deferring premul->unpremul conversion until the very end: the
+// alpha factor gets naturally simplified for H and S, and only L requires a dedicated unpremul
+// division (so we trade three divs for one).
+//
+// [1] http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
+// [2] http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+// [3] http://www.chilliant.com/rgb2hsv.html
+static std::unique_ptr<GrFragmentProcessor> rgb_to_hsl(std::unique_ptr<GrFragmentProcessor> child) {
+    static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForColorFilter, R"(
+        half4 main(half4 c) {
+            half4 p = (c.g < c.b) ? half4(c.bg, -1,  2/3.0)
+                                  : half4(c.gb,  0, -1/3.0);
+            half4 q = (c.r < p.x) ? half4(p.x, c.r, p.yw)
+                                  : half4(c.r, p.x, p.yz);
+
+            // q.x  -> max channel value
+            // q.yz -> 2nd/3rd channel values (unsorted)
+            // q.w  -> bias value dependent on max channel selection
+
+            half eps = 0.0001;
+            half pmV = q.x;
+            half pmC = pmV - min(q.y, q.z);
+            half pmL = pmV - pmC * 0.5;
+            half   H = abs(q.w + (q.y - q.z) / (pmC * 6 + eps));
+            half   S = pmC / (c.a + eps - abs(pmL * 2 - c.a));
+            half   L = pmL / (c.a + eps);
+
+            return half4(H, S, L, c.a);
+        }
+    )");
+    SkASSERT(SkRuntimeEffectPriv::SupportsConstantOutputForConstantInput(effect));
+    return GrSkSLFP::Make(
+            effect, "RgbToHsl", std::move(child), GrSkSLFP::OptFlags::kPreservesOpaqueInput);
+}
+
+// Convert HSLA -> RGBA (including clamp and premul).
+//
+// Based on work by Sam Hocevar, Emil Persson, and Ian Taylor [1][2][3].
+//
+// [1] http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
+// [2] http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+// [3] http://www.chilliant.com/rgb2hsv.html
+static std::unique_ptr<GrFragmentProcessor> hsl_to_rgb(std::unique_ptr<GrFragmentProcessor> child) {
+    static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForColorFilter, R"(
+        half4 main(half4 color) {
+            half3   hsl = color.rgb;
+
+            half      C = (1 - abs(2 * hsl.z - 1)) * hsl.y;
+            half3     p = hsl.xxx + half3(0, 2/3.0, 1/3.0);
+            half3     q = saturate(abs(fract(p) * 6 - 3) - 1);
+            half3   rgb = (q - 0.5) * C + hsl.z;
+
+            color = saturate(half4(rgb, color.a));
+            color.rgb *= color.a;
+            return color;
+        }
+    )");
+    SkASSERT(SkRuntimeEffectPriv::SupportsConstantOutputForConstantInput(effect));
+    return GrSkSLFP::Make(
+            effect, "HslToRgb", std::move(child), GrSkSLFP::OptFlags::kPreservesOpaqueInput);
+}
+
 GrFPResult SkColorFilter_Matrix::asFragmentProcessor(std::unique_ptr<GrFragmentProcessor> fp,
                                                      GrRecordingContext*,
                                                      const GrColorInfo&) const {
     switch (fDomain) {
         case Domain::kRGBA:
-            fp = GrColorMatrixFragmentProcessor::Make(std::move(fp), fMatrix,
-                                                      /* unpremulInput = */  true,
-                                                      /* clampRGBOutput = */ true,
-                                                      /* premulOutput = */   true);
+            fp = GrFragmentProcessor::ColorMatrix(std::move(fp), fMatrix,
+                                                  /* unpremulInput = */  true,
+                                                  /* clampRGBOutput = */ true,
+                                                  /* premulOutput = */   true);
             break;
 
         case Domain::kHSLA:
-            fp = GrRGBToHSLFilterEffect::Make(std::move(fp));
-            fp = GrColorMatrixFragmentProcessor::Make(std::move(fp), fMatrix,
-                                                      /* unpremulInput = */  false,
-                                                      /* clampRGBOutput = */ false,
-                                                      /* premulOutput = */   false);
-            fp = GrHSLToRGBFilterEffect::Make(std::move(fp));
+            fp = rgb_to_hsl(std::move(fp));
+            fp = GrFragmentProcessor::ColorMatrix(std::move(fp), fMatrix,
+                                                  /* unpremulInput = */  false,
+                                                  /* clampRGBOutput = */ false,
+                                                  /* premulOutput = */   false);
+            fp = hsl_to_rgb(std::move(fp));
             break;
     }
 
@@ -156,65 +229,7 @@ static sk_sp<SkColorFilter> MakeMatrix(const float array[20],
     if (!sk_floats_are_finite(array, 20)) {
         return nullptr;
     }
-#if defined(SK_SUPPORT_LEGACY_RUNTIME_EFFECTS)
     return sk_make_sp<SkColorFilter_Matrix>(array, domain);
-#else
-    const bool alphaUnchanged = SkScalarNearlyEqual(array[15], 0)
-                             && SkScalarNearlyEqual(array[16], 0)
-                             && SkScalarNearlyEqual(array[17], 0)
-                             && SkScalarNearlyEqual(array[18], 1)
-                             && SkScalarNearlyEqual(array[19], 0);
-
-    struct { SkM44 m; SkV4 b; } uniforms;
-    SkString code {
-        "uniform half4x4 m;"
-        "uniform half4   b;"
-    };
-    if (domain == SkColorFilter_Matrix::Domain::kHSLA) {
-        code += kRGB_to_HSL_sksl;
-        code += kHSL_to_RGB_sksl;
-    }
-
-    code += "half4 main(half4 inColor) {";
-    if (true) {
-        code += "half4 c = inColor;";  // unpremul
-    }
-    if (alphaUnchanged) {
-        code += "half a = c.a;";
-    }
-    if (domain == SkColorFilter_Matrix::Domain::kHSLA) {
-        code += "c.rgb = rgb_to_hsl(c.rgb);";
-    }
-    if (true) {
-        uniforms.m = SkM44{array[ 0], array[ 1], array[ 2], array[ 3],
-                           array[ 5], array[ 6], array[ 7], array[ 8],
-                           array[10], array[11], array[12], array[13],
-                           array[15], array[16], array[17], array[18]};
-        uniforms.b = SkV4{array[4], array[9], array[14], array[19]};
-        code += "c = m*c + b;";
-    }
-    if (domain == SkColorFilter_Matrix::Domain::kHSLA) {
-        code += "c.rgb = hsl_to_rgb(c.rgb);";
-    }
-    if (alphaUnchanged) {
-        code += "return half4(saturate(c.rgb), a);";
-    } else {
-        code += "return saturate(c);";
-    }
-    code += "}";
-
-    sk_sp<SkRuntimeEffect> effect = SkMakeCachedRuntimeEffect(SkRuntimeEffect::MakeForColorFilter,
-                                                              std::move(code));
-    SkASSERT(effect);
-
-    SkAlphaType       unpremul = kUnpremul_SkAlphaType;
-    return SkColorFilters::WithWorkingFormat(
-            effect->makeColorFilter(SkData::MakeWithCopy(&uniforms,sizeof(uniforms))),
-            nullptr/*keep dst TF encoding*/,
-            nullptr/*stay in dst gamut*/,
-            &unpremul);
-
-#endif
 }
 
 sk_sp<SkColorFilter> SkColorFilters::Matrix(const float array[20]) {
@@ -235,18 +250,4 @@ sk_sp<SkColorFilter> SkColorFilters::HSLAMatrix(const SkColorMatrix& cm) {
 
 void SkColorFilter_Matrix::RegisterFlattenables() {
     SK_REGISTER_FLATTENABLE(SkColorFilter_Matrix);
-
-    // This subclass was removed 4/2019
-    SkFlattenable::Register("SkColorMatrixFilterRowMajor255",
-                            [](SkReadBuffer& buffer) -> sk_sp<SkFlattenable> {
-        float matrix[20];
-        if (buffer.readScalarArray(matrix, 20)) {
-            matrix[ 4] *= (1.0f/255);
-            matrix[ 9] *= (1.0f/255);
-            matrix[14] *= (1.0f/255);
-            matrix[19] *= (1.0f/255);
-            return SkColorFilters::Matrix(matrix);
-        }
-        return nullptr;
-    });
 }

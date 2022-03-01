@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_CONTEXTUAL_MENU_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_CONTEXTUAL_MENU_H_
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -30,6 +31,11 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   MediaRouterContextualMenu(Browser* browser,
                             bool shown_by_policy,
                             Observer* observer);
+
+  MediaRouterContextualMenu(const MediaRouterContextualMenu&) = delete;
+  MediaRouterContextualMenu& operator=(const MediaRouterContextualMenu&) =
+      delete;
+
   ~MediaRouterContextualMenu() override;
 
   // Creates a menu model with |this| as its delegate.
@@ -69,14 +75,12 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   void ReportIssue();
 #endif
 
-  Browser* const browser_;
-  Observer* const observer_;
+  const raw_ptr<Browser> browser_;
+  const raw_ptr<Observer> observer_;
 
   // Whether the Cast toolbar icon this context menu is shown for is shown by
   // the administrator policy.
   const bool shown_by_policy_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenu);
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_CONTEXTUAL_MENU_H_

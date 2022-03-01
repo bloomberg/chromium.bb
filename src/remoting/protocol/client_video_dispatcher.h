@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
@@ -23,6 +23,10 @@ class VideoStub;
 class ClientVideoDispatcher : public ChannelDispatcherBase {
  public:
   ClientVideoDispatcher(VideoStub* video_stub, ClientStub* client_stub);
+
+  ClientVideoDispatcher(const ClientVideoDispatcher&) = delete;
+  ClientVideoDispatcher& operator=(const ClientVideoDispatcher&) = delete;
+
   ~ClientVideoDispatcher() override;
 
  private:
@@ -36,16 +40,14 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
 
   PendingFramesList pending_frames_;
 
-  VideoStub* video_stub_;
-  ClientStub* client_stub_;
+  raw_ptr<VideoStub> video_stub_;
+  raw_ptr<ClientStub> client_stub_;
 
   webrtc::DesktopSize screen_size_;
   webrtc::DesktopVector screen_dpi_ =
       webrtc::DesktopVector(kDefaultDpi, kDefaultDpi);
 
   base::WeakPtrFactory<ClientVideoDispatcher> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClientVideoDispatcher);
 };
 
 }  // namespace protocol

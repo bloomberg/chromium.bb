@@ -140,13 +140,10 @@ TEST_F(BytecodeArrayBuilderTest, AllBytecodesGenerated) {
 
   // Emit load / store property operations.
   builder.LoadNamedProperty(reg, name, load_slot.ToInt())
-      .LoadNamedPropertyNoFeedback(reg, name)
       .LoadNamedPropertyFromSuper(reg, name, load_slot.ToInt())
       .LoadKeyedProperty(reg, keyed_load_slot.ToInt())
       .StoreNamedProperty(reg, name, sloppy_store_slot.ToInt(),
                           LanguageMode::kSloppy)
-      .StoreNamedPropertyNoFeedback(reg, name, LanguageMode::kStrict)
-      .StoreNamedPropertyNoFeedback(reg, name, LanguageMode::kSloppy)
       .StoreKeyedProperty(reg, reg, sloppy_keyed_store_slot.ToInt(),
                           LanguageMode::kSloppy)
       .StoreNamedProperty(reg, name, strict_store_slot.ToInt(),
@@ -154,6 +151,7 @@ TEST_F(BytecodeArrayBuilderTest, AllBytecodesGenerated) {
       .StoreKeyedProperty(reg, reg, strict_keyed_store_slot.ToInt(),
                           LanguageMode::kStrict)
       .StoreNamedOwnProperty(reg, name, store_own_slot.ToInt())
+      .DefineKeyedProperty(reg, reg, store_own_slot.ToInt())
       .StoreInArrayLiteral(reg, reg, store_array_element_slot.ToInt());
 
   // Emit Iterator-protocol operations
@@ -206,9 +204,8 @@ TEST_F(BytecodeArrayBuilderTest, AllBytecodesGenerated) {
       .CallUndefinedReceiver(reg, pair, 1)
       .CallRuntime(Runtime::kIsArray, reg)
       .CallRuntimeForPair(Runtime::kLoadLookupSlotForCall, reg_list, pair)
-      .CallJSRuntime(Context::OBJECT_CREATE, reg_list)
-      .CallWithSpread(reg, reg_list, 1)
-      .CallNoFeedback(reg, reg_list);
+      .CallJSRuntime(Context::PROMISE_THEN_INDEX, reg_list)
+      .CallWithSpread(reg, reg_list, 1);
 
   // Emit binary operator invocations.
   builder.BinaryOperation(Token::Value::ADD, reg, 1)
@@ -422,7 +419,7 @@ TEST_F(BytecodeArrayBuilderTest, AllBytecodesGenerated) {
   builder.SwitchOnGeneratorState(reg, gen_jump_table).Bind(gen_jump_table, 0);
 
   // Intrinsics handled by the interpreter.
-  builder.CallRuntime(Runtime::kInlineIsArray, reg_list);
+  builder.CallRuntime(Runtime::kInlineAsyncFunctionReject, reg_list);
 
   // Emit debugger bytecode.
   builder.Debugger();
@@ -717,11 +714,11 @@ TEST_F(BytecodeArrayBuilderTest, BackwardJumps) {
       .JumpLoop(&loop_header, 0, 0)
       .Bind(&after_loop);
   for (int i = 0; i < 42; i++) {
-    BytecodeLabel after_loop;
+    BytecodeLabel also_after_loop;
     // Conditional jump to force the code after the JumpLoop to be live.
-    builder.JumpIfNull(&after_loop)
+    builder.JumpIfNull(&also_after_loop)
         .JumpLoop(&loop_header, 0, 0)
-        .Bind(&after_loop);
+        .Bind(&also_after_loop);
   }
 
   // Add padding to force wide backwards jumps.
@@ -795,7 +792,7 @@ TEST_F(BytecodeArrayBuilderTest, SmallSwitch) {
     int switch_end =
         iterator.current_offset() + iterator.current_bytecode_size();
 
-    for (const auto& entry : iterator.GetJumpTableTargetOffsets()) {
+    for (JumpTableTargetOffset entry : iterator.GetJumpTableTargetOffsets()) {
       CHECK_EQ(entry.case_value, small_jump_table_base + i);
       CHECK_EQ(entry.target_offset, switch_end + i);
 
@@ -843,7 +840,7 @@ TEST_F(BytecodeArrayBuilderTest, WideSwitch) {
     int switch_end =
         iterator.current_offset() + iterator.current_bytecode_size();
 
-    for (const auto& entry : iterator.GetJumpTableTargetOffsets()) {
+    for (JumpTableTargetOffset entry : iterator.GetJumpTableTargetOffsets()) {
       CHECK_EQ(entry.case_value, large_jump_table_base + i);
       CHECK_EQ(entry.target_offset, switch_end + i);
 

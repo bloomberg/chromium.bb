@@ -5,27 +5,17 @@
 #ifndef QUICHE_QUIC_PLATFORM_API_QUIC_CONTAINERS_H_
 #define QUICHE_QUIC_PLATFORM_API_QUIC_CONTAINERS_H_
 
-#include "net/quic/platform/impl/quic_containers_impl.h"
-
-#include "absl/hash/hash.h"
+#include "quiche_platform_impl/quiche_containers_impl.h"
 
 namespace quic {
 
-// A map which offers insertion-ordered iteration.
-template <typename Key, typename Value, typename Hash = absl::Hash<Key>>
-using QuicLinkedHashMap = QuicLinkedHashMapImpl<Key, Value, Hash>;
-
-// A vector optimized for small sizes. Provides the same APIs as a std::vector.
-template <typename T, size_t N, typename A = std::allocator<T>>
-using QuicInlinedVector = QuicInlinedVectorImpl<T, N, A>;
-
-// An ordered set of values.
+// An ordered container optimized for small sets.
+// An implementation with O(n) mutations might be chosen
+// in case it has better memory usage and/or faster access.
 //
 // DOES NOT GUARANTEE POINTER OR ITERATOR STABILITY!
-template <typename Key,
-          typename Compare = std::less<Key>,
-          typename Rep = std::vector<Key>>
-using QuicOrderedSet = QuicOrderedSetImpl<Key, Compare, Rep>;
+template <typename Key, typename Compare = std::less<Key>>
+using QuicSmallOrderedSet = ::quiche::QuicheSmallOrderedSetImpl<Key, Compare>;
 
 }  // namespace quic
 

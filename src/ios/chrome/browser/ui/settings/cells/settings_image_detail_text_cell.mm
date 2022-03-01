@@ -7,7 +7,7 @@
 #include "base/check.h"
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,15 +57,19 @@
 
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
-  _imageView.contentMode = UIViewContentModeCenter;
-  _imageView.tintColor = UIColor.cr_labelColor;
+  _imageView.tintColor = [UIColor colorNamed:kTextPrimaryColor];
+  [_imageView setContentHuggingPriority:UILayoutPriorityRequired
+                                forAxis:UILayoutConstraintAxisHorizontal];
+  [_imageView
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisHorizontal];
   [contentView addSubview:_imageView];
 
   _textLabel = [[UILabel alloc] init];
   _textLabel.numberOfLines = 0;
   _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   _textLabel.adjustsFontForContentSizeCategory = YES;
-  _textLabel.textColor = UIColor.cr_labelColor;
+  _textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
 
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.numberOfLines = 0;
@@ -96,19 +100,18 @@
       constraintEqualToAnchor:contentView.centerYAnchor];
 
   _alignImageWithContentViewFirstBaselineAnchorConstraint =
-      [_imageView.centerYAnchor
+      [_imageView.firstBaselineAnchor
           constraintEqualToAnchor:contentView.firstBaselineAnchor];
 
   [NSLayoutConstraint activateConstraints:@[
-    [_imageView.widthAnchor constraintEqualToConstant:kTableViewIconImageSize],
-    [_imageView.heightAnchor constraintEqualToAnchor:_imageView.widthAnchor],
     [_imageView.leadingAnchor
         constraintEqualToAnchor:contentView.leadingAnchor
                        constant:kTableViewHorizontalSpacing],
     _alignImageWithContentViewCenterYConstraint,
     [_imageView.topAnchor
         constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
-                                    constant:kTableViewVerticalSpacing],
+                                    constant:
+                                        kTableViewTwoLabelsCellVerticalSpacing],
     [contentView.trailingAnchor
         constraintEqualToAnchor:textStackView.trailingAnchor
                        constant:kTableViewHorizontalSpacing],
@@ -161,16 +164,11 @@
       alignImageWithFirstBaseline;
 }
 
-- (void)setImageViewContentMode:(UIViewContentMode)contentMode {
-  self.imageView.contentMode = contentMode;
-}
-
 #pragma mark - UITableViewCell
 
 - (void)prepareForReuse {
   [super prepareForReuse];
   [self alignImageWithFirstLineOfText:NO];
-  self.imageView.contentMode = UIViewContentModeCenter;
 }
 
 #pragma mark - UIAccessibility

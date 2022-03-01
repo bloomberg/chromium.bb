@@ -188,7 +188,7 @@ AbstractTts = class {
    * @protected
    */
   preprocess(text, properties) {
-    if (text.length === 1 && text >= 'A' && text <= 'Z') {
+    if (text.length === 1 && text.toLowerCase() !== text) {
       // Describe capital letters according to user's setting.
       if (localStorage['capitalStrategy'] === 'increasePitch') {
         for (const prop in AbstractTts.PERSONALITY_CAPITAL) {
@@ -204,6 +204,17 @@ AbstractTts = class {
     if (localStorage['usePitchChanges'] === 'false') {
       delete properties.relativePitch;
     }
+
+    // Since dollar and sterling pound signs will be replaced with text, move
+    // them to after the number if they stay between a negative sign and a
+    // number.
+    text = text.replace(AbstractTts.negativeCurrencyAmountRegexp_, (match) => {
+      const minus = match[0];
+      const number = match.substring(2);
+      const currency = match[1];
+
+      return minus + number + currency;
+    });
 
     // Substitute all symbols in the substitution dictionary. This is pretty
     // efficient because we use a single regexp that matches all symbols
@@ -318,7 +329,7 @@ AbstractTts.PUNCTUATION_ECHOES = [
   {
     name: 'some',
     msg: 'some_punctuation',
-    regexp: /[$#"*<>\\\/\{\}+=~`%\u2022]/g,
+    regexp: /[$#"*<>\\\/\{\}+=~`%\u2022\u25e6\u25a0]/g,
     clear: false
   },
 
@@ -326,7 +337,7 @@ AbstractTts.PUNCTUATION_ECHOES = [
   {
     name: 'all',
     msg: 'all_punctuation',
-    regexp: /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%\u2022]/g,
+    regexp: /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%\u2022\u25e6\u25a0]/g,
     clear: false
   }
 ];
@@ -478,7 +489,9 @@ AbstractTts.CHARACTER_DICTIONARY = {
   '\r': 'return',
   '\n': 'new_line',
   '\\': 'backslash',
-  '\u2022': 'bullet'
+  '\u2022': 'bullet',
+  '\u25e6': 'white_bullet',
+  '\u25a0': 'square_bullet'
 };
 
 
@@ -557,7 +570,15 @@ AbstractTts.substitutionDictionaryRegexp_;
  * @private
  */
 AbstractTts.repetitionRegexp_ =
-    /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022])\1{2,}/g;
+    /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022\u25e6\u25a0])\1{2,}/g;
 
 /** TTS phonetic-characters property. @type {string} */
 AbstractTts.PHONETIC_CHARACTERS = 'phoneticCharacters';
+
+/**
+ * Regexp filter for negative dollar and pound amounts.
+ * @type {RegExp}
+ * @private
+ */
+AbstractTts.negativeCurrencyAmountRegexp_ =
+    /-[£\$](\d{1,3})(\d+|(,\d{3})*)(\.\d{1,})?/g;

@@ -12,7 +12,7 @@
 #include "include/private/SkSLSymbol.h"
 #include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "src/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLErrorReporter.h"
 
 #include <forward_list>
 #include <memory>
@@ -20,6 +20,7 @@
 
 namespace SkSL {
 
+class Context;
 class FunctionDeclaration;
 
 /**
@@ -28,14 +29,30 @@ class FunctionDeclaration;
  */
 class SymbolTable {
 public:
-    SymbolTable(ErrorReporter* errorReporter, bool builtin)
+    SymbolTable(const Context& context, bool builtin)
     : fBuiltin(builtin)
-    , fErrorReporter(*errorReporter) {}
+    , fContext(context) {}
 
     SymbolTable(std::shared_ptr<SymbolTable> parent, bool builtin)
     : fParent(parent)
     , fBuiltin(builtin)
-    , fErrorReporter(parent->fErrorReporter) {}
+    , fContext(parent->fContext) {}
+
+    /** Replaces the passed-in SymbolTable with a newly-created child symbol table. */
+    static void Push(std::shared_ptr<SymbolTable>* table) {
+        Push(table, (*table)->isBuiltin());
+    }
+    static void Push(std::shared_ptr<SymbolTable>* table, bool isBuiltin) {
+        *table = std::make_shared<SymbolTable>(*table, isBuiltin);
+    }
+
+    /**
+     * Replaces the passed-in SymbolTable with its parent. If the child symbol table is otherwise
+     * unreferenced, it will be deleted.
+     */
+    static void Pop(std::shared_ptr<SymbolTable>* table) {
+        *table = (*table)->fParent;
+    }
 
     /**
      * If the input is a built-in symbol table, returns a new empty symbol table as a child of the
@@ -57,12 +74,12 @@ public:
      * UnresolvedFunction symbol (pointing to all of the candidates) will be added to the symbol
      * table and returned.
      */
-    const Symbol* operator[](StringFragment name);
+    const Symbol* operator[](skstd::string_view name);
 
     /**
      * Creates a new name for a symbol which already exists; does not take ownership of Symbol*.
      */
-    void addAlias(StringFragment name, const Symbol* symbol);
+    void addAlias(skstd::string_view name, const Symbol* symbol);
 
     void addWithoutOwnership(const Symbol* symbol);
 
@@ -90,8 +107,8 @@ public:
 
     /**
      * Given type = `float` and arraySize = 5, creates the array type `float[5]` in the symbol
-     * table. The created array type is returned. `kUnsizedArray` can be passed as a `[]` dimension.
-     * If zero is passed, the base type is returned unchanged.
+     * table. The created array type is returned. If zero is passed, the base type is returned
+     * unchanged.
      */
     const Type* addArrayDimension(const Type* type, int arraySize);
 
@@ -111,6 +128,14 @@ public:
         return fBuiltin;
     }
 
+    /**
+     * Returns the built-in symbol table that this SymbolTable rests upon.
+     * If this symbol table is already a built-in, it will be returned as-is.
+     */
+    SkSL::SymbolTable* builtinParent() {
+        return this->isBuiltin() ? this : fParent->builtinParent();
+    }
+
     const String* takeOwnershipOfString(String n);
 
     std::shared_ptr<SymbolTable> fParent;
@@ -119,7 +144,7 @@ public:
 
 private:
     struct SymbolKey {
-        StringFragment fName;
+        skstd::string_view fName;
         uint32_t       fHash;
 
         bool operator==(const SymbolKey& that) const { return fName == that.fName; }
@@ -129,7 +154,7 @@ private:
         };
     };
 
-    static SymbolKey MakeSymbolKey(StringFragment name) {
+    static SymbolKey MakeSymbolKey(skstd::string_view name) {
         return SymbolKey{name, SkOpts::hash_fn(name.data(), name.size(), 0)};
     }
 
@@ -141,9 +166,29 @@ private:
     std::vector<std::unique_ptr<IRNode>> fOwnedNodes;
     std::forward_list<String> fOwnedStrings;
     SkTHashMap<SymbolKey, const Symbol*, SymbolKey::Hash> fSymbols;
-    ErrorReporter& fErrorReporter;
+    const Context& fContext;
 
     friend class Dehydrator;
+};
+
+/**
+ * While in scope, the passed-in symbol table is replaced with a child symbol table.
+ */
+class AutoSymbolTable {
+public:
+    AutoSymbolTable(std::shared_ptr<SymbolTable>* s)
+        : fSymbolTable(s) {
+        SkDEBUGCODE(fPrevious = fSymbolTable->get();)
+        SymbolTable::Push(fSymbolTable);
+    }
+
+    ~AutoSymbolTable() {
+        SymbolTable::Pop(fSymbolTable);
+        SkASSERT(fPrevious == fSymbolTable->get());
+    }
+
+    std::shared_ptr<SymbolTable>* fSymbolTable;
+    SkDEBUGCODE(SymbolTable* fPrevious;)
 };
 
 }  // namespace SkSL

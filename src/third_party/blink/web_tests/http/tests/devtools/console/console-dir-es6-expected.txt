@@ -11,7 +11,7 @@ console-dir-es6.js:23 Symbol()
 console-dir-es6.js:27 Map(1)
     [[Entries]]
         0: {Object => Object}
-    size: (...)
+    size: 1
     [[Prototype]]: Map
 console-dir-es6.js:27 WeakMap
     [[Entries]]
@@ -20,7 +20,7 @@ console-dir-es6.js:27 WeakMap
 console-dir-es6.js:31 Set(1)
     [[Entries]]
         0: Object
-    size: (...)
+    size: 1
     [[Prototype]]: Set
 console-dir-es6.js:31 WeakSet
     [[Entries]]
@@ -29,7 +29,7 @@ console-dir-es6.js:31 WeakSet
 console-dir-es6.js:39 Set(1)
     [[Entries]]
         0: Set(1)
-    size: (...)
+    size: 1
     [[Prototype]]: Set
 console-dir-es6.js:42 WeakMap
     [[Entries]]

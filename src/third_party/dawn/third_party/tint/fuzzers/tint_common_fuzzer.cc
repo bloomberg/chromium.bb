@@ -14,141 +14,100 @@
 
 #include "fuzzers/tint_common_fuzzer.h"
 
+#include <cassert>
+#include <cstring>
+#include <fstream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#if TINT_BUILD_SPV_READER
+#include "spirv-tools/libspirv.hpp"
+#endif  // TINT_BUILD_SPV_READER
+
 #include "src/ast/module.h"
+#include "src/diagnostic/formatter.h"
 #include "src/program.h"
-#include "src/program_builder.h"
+#include "src/utils/hash.h"
 
 namespace tint {
 namespace fuzzers {
 
 namespace {
 
+// A macro is used to avoid FATAL_ERROR creating its own stack frame. This leads
+// to better de-duplication of bug reports, because ClusterFuzz only uses the
+// top few stack frames for de-duplication, and a FATAL_ERROR stack frame
+// provides no useful information.
+#define FATAL_ERROR(diags, msg_string)                        \
+  do {                                                        \
+    std::string msg = msg_string;                             \
+    auto printer = tint::diag::Printer::create(stderr, true); \
+    if (!msg.empty()) {                                       \
+      printer->write(msg + "\n", {diag::Color::kRed, true});  \
+    }                                                         \
+    tint::diag::Formatter().format(diags, printer.get());     \
+    __builtin_trap();                                         \
+  } while (false)
+
 [[noreturn]] void TintInternalCompilerErrorReporter(
     const tint::diag::List& diagnostics) {
-  auto printer = tint::diag::Printer::create(stderr, true);
-  tint::diag::Formatter{}.format(diagnostics, printer.get());
-  __builtin_trap();
+  FATAL_ERROR(diagnostics, "");
 }
 
-[[noreturn]] void ValidityErrorReporter() {
-  auto printer = tint::diag::Printer::create(stderr, true);
-  printer->write(
-      "Fuzzing detected valid input program being transformed into an invalid "
-      "output progam\n",
-      {diag::Color::kRed, true});
-  __builtin_trap();
-}
+// Wrapping this in a macro so it can be a one-liner in the code, but not
+// introducing another level in the stack trace. This will help with de-duping
+// ClusterFuzz issues.
+#define CHECK_INSPECTOR(inspector)                           \
+  do {                                                       \
+    if (inspector.has_error()) {                             \
+      FATAL_ERROR(program->Diagnostics(),                    \
+                  "Inspector failed: " + inspector.error()); \
+    }                                                        \
+  } while (false)
 
-transform::VertexAttributeDescriptor ExtractVertexAttributeDescriptor(
-    Reader* r) {
-  transform::VertexAttributeDescriptor desc;
-  desc.format = r->enum_class<transform::VertexFormat>(
-      static_cast<uint8_t>(transform::VertexFormat::kLastEntry) + 1);
-  desc.offset = r->read<uint64_t>();
-  desc.shader_location = r->read<uint32_t>();
-  return desc;
-}
+bool SPIRVToolsValidationCheck(const tint::Program& program,
+                               const std::vector<uint32_t>& spirv) {
+  spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_1);
+  const tint::diag::List& diags = program.Diagnostics();
+  tools.SetMessageConsumer([diags](spv_message_level_t, const char*,
+                                   const spv_position_t& pos, const char* msg) {
+    std::stringstream out;
+    out << "Unexpected spirv-val error:\n"
+        << (pos.line + 1) << ":" << (pos.column + 1) << ": " << msg
+        << std::endl;
 
-transform::VertexBufferLayoutDescriptor ExtractVertexBufferLayoutDescriptor(
-    Reader* r) {
-  transform::VertexBufferLayoutDescriptor desc;
-  desc.array_stride = r->read<uint64_t>();
-  desc.step_mode = r->enum_class<transform::InputStepMode>(
-      static_cast<uint8_t>(transform::InputStepMode::kLastEntry) + 1);
-  desc.attributes = r->vector(ExtractVertexAttributeDescriptor);
-  return desc;
+    auto printer = tint::diag::Printer::create(stderr, true);
+    printer->write(out.str(), {diag::Color::kYellow, false});
+    tint::diag::Formatter().format(diags, printer.get());
+  });
+
+  return tools.Validate(spirv.data(), spirv.size(),
+                        spvtools::ValidatorOptions());
 }
 
 }  // namespace
 
-Reader::Reader(const uint8_t* data, size_t size) : data_(data), size_(size) {}
-
-std::string Reader::string() {
-  auto count = read<uint8_t>();
-  if (failed_ || size_ < count) {
-    mark_failed();
-    return "";
-  }
-  std::string out(data_, data_ + count);
-  data_ += count;
-  size_ -= count;
-  return out;
+void GenerateSpirvOptions(DataBuilder* b, writer::spirv::Options* options) {
+  *options = b->build<writer::spirv::Options>();
 }
 
-void Reader::mark_failed() {
-  size_ = 0;
-  failed_ = true;
+void GenerateWgslOptions(DataBuilder* b, writer::wgsl::Options* options) {
+  *options = b->build<writer::wgsl::Options>();
 }
 
-void Reader::read(void* out, size_t n) {
-  if (n > size_) {
-    mark_failed();
-    return;
-  }
-  memcpy(&out, data_, n);
-  data_ += n;
-  size_ -= n;
+void GenerateHlslOptions(DataBuilder* b, writer::hlsl::Options* options) {
+  *options = b->build<writer::hlsl::Options>();
 }
 
-void ExtractBindingRemapperInputs(Reader* r, tint::transform::DataMap* inputs) {
-  struct Config {
-    uint8_t old_group;
-    uint8_t old_binding;
-    uint8_t new_group;
-    uint8_t new_binding;
-    ast::AccessControl::Access new_ac;
-  };
-
-  std::vector<Config> configs = r->vector<Config>();
-  transform::BindingRemapper::BindingPoints binding_points;
-  transform::BindingRemapper::AccessControls access_controls;
-  for (const auto& config : configs) {
-    binding_points[{config.old_binding, config.old_group}] = {
-        config.new_binding, config.new_group};
-    access_controls[{config.old_binding, config.old_group}] = config.new_ac;
-  }
-
-  inputs->Add<transform::BindingRemapper::Remappings>(binding_points,
-                                                      access_controls);
-}
-
-void ExtractFirstIndexOffsetInputs(Reader* r,
-                                   tint::transform::DataMap* inputs) {
-  struct Config {
-    uint32_t group;
-    uint32_t binding;
-  };
-
-  Config config = r->read<Config>();
-  inputs->Add<tint::transform::FirstIndexOffset::BindingPoint>(config.binding,
-                                                               config.group);
-}
-
-void ExtractSingleEntryPointInputs(Reader* r,
-                                   tint::transform::DataMap* inputs) {
-  std::string input = r->string();
-  transform::SingleEntryPoint::Config cfg(input);
-  inputs->Add<transform::SingleEntryPoint::Config>(cfg);
-}
-
-void ExtractVertexPullingInputs(Reader* r, tint::transform::DataMap* inputs) {
-  transform::VertexPulling::Config cfg;
-  cfg.entry_point_name = r->string();
-  cfg.vertex_state = r->vector(ExtractVertexBufferLayoutDescriptor);
-  cfg.pulling_group = r->read<uint32_t>();
-  inputs->Add<transform::VertexPulling::Config>(cfg);
+void GenerateMslOptions(DataBuilder* b, writer::msl::Options* options) {
+  *options = b->build<writer::msl::Options>();
 }
 
 CommonFuzzer::CommonFuzzer(InputFormat input, OutputFormat output)
-    : input_(input),
-      output_(output),
-      transform_manager_(nullptr),
-      inspector_enabled_(false) {}
+    : input_(input), output_(output) {}
 
 CommonFuzzer::~CommonFuzzer() = default;
 
@@ -157,146 +116,209 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
 
   Program program;
 
-#if TINT_BUILD_WGSL_READER
-  std::unique_ptr<Source::File> file;
-#endif  // TINT_BUILD_WGSL_READER
+#if TINT_BUILD_SPV_READER
+  std::vector<uint32_t> spirv_input(size / sizeof(uint32_t));
+
+#endif  // TINT_BUILD_SPV_READER
+
+#if TINT_BUILD_WGSL_READER || TINT_BUILD_SPV_READER
+  auto dump_input_data = [&](auto& content, const char* extension) {
+    size_t hash = utils::Hash(content);
+    auto filename = "fuzzer_input_" + std::to_string(hash) + extension;  //
+    std::ofstream fout(filename, std::ios::binary);
+    fout.write(reinterpret_cast<const char*>(data),
+               static_cast<std::streamsize>(size));
+    std::cout << "Dumped input data to " << filename << std::endl;
+  };
+#endif
 
   switch (input_) {
 #if TINT_BUILD_WGSL_READER
     case InputFormat::kWGSL: {
+      // Clear any existing diagnostics, as these will hold pointers to file_,
+      // which we are about to release.
+      diagnostics_ = {};
       std::string str(reinterpret_cast<const char*>(data), size);
-      file = std::make_unique<Source::File>("test.wgsl", str);
-      program = reader::wgsl::Parse(file.get());
+      file_ = std::make_unique<Source::File>("test.wgsl", str);
+      if (dump_input_) {
+        dump_input_data(str, ".wgsl");
+      }
+      program = reader::wgsl::Parse(file_.get());
       break;
     }
 #endif  // TINT_BUILD_WGSL_READER
 #if TINT_BUILD_SPV_READER
     case InputFormat::kSpv: {
-      size_t sizeInU32 = size / sizeof(uint32_t);
-      const uint32_t* u32Data = reinterpret_cast<const uint32_t*>(data);
-      std::vector<uint32_t> input(u32Data, u32Data + sizeInU32);
-
-      if (input.size() != 0) {
-        program = reader::spirv::Parse(input);
+      // `spirv_input` has been initialized with the capacity to store `size /
+      // sizeof(uint32_t)` uint32_t values. If `size` is not a multiple of
+      // sizeof(uint32_t) then not all of `data` can be copied into
+      // `spirv_input`, and any trailing bytes are discarded.
+      std::memcpy(spirv_input.data(), data,
+                  spirv_input.size() * sizeof(uint32_t));
+      if (spirv_input.empty()) {
+        return 0;
       }
+      if (dump_input_) {
+        dump_input_data(spirv_input, ".spv");
+      }
+      program = reader::spirv::Parse(spirv_input);
       break;
     }
-#endif  // TINT_BUILD_WGSL_READER
-    default:
-      return 0;
-  }
-
-  if (output_ == OutputFormat::kNone) {
-    return 0;
+#endif  // TINT_BUILD_SPV_READER
   }
 
   if (!program.IsValid()) {
+    diagnostics_ = program.Diagnostics();
     return 0;
   }
 
-  if (inspector_enabled_) {
-    inspector::Inspector inspector(&program);
-
-    auto entry_points = inspector.GetEntryPoints();
-    if (inspector.has_error()) {
-      return 0;
-    }
-
-    for (auto& ep : entry_points) {
-      auto remapped_name = inspector.GetRemappedNameForEntryPoint(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto constant_ids = inspector.GetConstantIDs();
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto uniform_bindings =
-          inspector.GetUniformBufferResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto storage_bindings =
-          inspector.GetStorageBufferResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto readonly_bindings =
-          inspector.GetReadOnlyStorageBufferResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto sampler_bindings = inspector.GetSamplerResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto comparison_sampler_bindings =
-          inspector.GetComparisonSamplerResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto sampled_texture_bindings =
-          inspector.GetSampledTextureResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-
-      auto multisampled_texture_bindings =
-          inspector.GetMultisampledTextureResourceBindings(ep.name);
-      if (inspector.has_error()) {
-        return 0;
-      }
-    }
+#if TINT_BUILD_SPV_READER
+  if (input_ == InputFormat::kSpv &&
+      !SPIRVToolsValidationCheck(program, spirv_input)) {
+    FATAL_ERROR(
+        program.Diagnostics(),
+        "Fuzzing detected invalid input spirv not being caught by Tint");
   }
+#endif  // TINT_BUILD_SPV_READER
+
+  RunInspector(&program);
 
   if (transform_manager_) {
-    auto out = transform_manager_->Run(&program, transform_inputs_);
+    auto out = transform_manager_->Run(&program, *transform_inputs_);
     if (!out.program.IsValid()) {
-      ValidityErrorReporter();
+      // Transforms can produce error messages for bad input.
+      // Catch ICEs and errors from non transform systems.
+      for (const auto& diag : out.program.Diagnostics()) {
+        if (diag.severity > diag::Severity::Error ||
+            diag.system != diag::System::Transform) {
+          FATAL_ERROR(out.program.Diagnostics(),
+                      "Fuzzing detected valid input program being transformed "
+                      "into an invalid output program");
+        }
+      }
     }
 
     program = std::move(out.program);
+    RunInspector(&program);
   }
-
-  std::unique_ptr<writer::Writer> writer;
 
   switch (output_) {
-    case OutputFormat::kWGSL:
+    case OutputFormat::kWGSL: {
 #if TINT_BUILD_WGSL_WRITER
-      writer = std::make_unique<writer::wgsl::Generator>(&program);
+      auto result = writer::wgsl::Generate(&program, options_wgsl_);
+      generated_wgsl_ = std::move(result.wgsl);
+      if (!result.success) {
+        FATAL_ERROR(program.Diagnostics(),
+                    "WGSL writer errored on validated input:\n" + result.error);
+      }
 #endif  // TINT_BUILD_WGSL_WRITER
       break;
-    case OutputFormat::kSpv:
+    }
+    case OutputFormat::kSpv: {
 #if TINT_BUILD_SPV_WRITER
-      writer = std::make_unique<writer::spirv::Generator>(&program);
+      auto result = writer::spirv::Generate(&program, options_spirv_);
+      generated_spirv_ = std::move(result.spirv);
+      if (!result.success) {
+        FATAL_ERROR(
+            program.Diagnostics(),
+            "SPIR-V writer errored on validated input:\n" + result.error);
+      }
+      if (!SPIRVToolsValidationCheck(program, generated_spirv_)) {
+        FATAL_ERROR(program.Diagnostics(),
+                    "Fuzzing detected invalid spirv being emitted by Tint");
+      }
+
 #endif  // TINT_BUILD_SPV_WRITER
       break;
-    case OutputFormat::kHLSL:
+    }
+    case OutputFormat::kHLSL: {
 #if TINT_BUILD_HLSL_WRITER
-      writer = std::make_unique<writer::hlsl::Generator>(&program);
+      auto result = writer::hlsl::Generate(&program, options_hlsl_);
+      generated_hlsl_ = std::move(result.hlsl);
+      if (!result.success) {
+        FATAL_ERROR(program.Diagnostics(),
+                    "HLSL writer errored on validated input:\n" + result.error);
+      }
 #endif  // TINT_BUILD_HLSL_WRITER
       break;
-    case OutputFormat::kMSL:
+    }
+    case OutputFormat::kMSL: {
 #if TINT_BUILD_MSL_WRITER
-      writer = std::make_unique<writer::msl::Generator>(&program);
+      auto result = writer::msl::Generate(&program, options_msl_);
+      generated_msl_ = std::move(result.msl);
+      if (!result.success) {
+        FATAL_ERROR(program.Diagnostics(),
+                    "MSL writer errored on validated input:\n" + result.error);
+      }
 #endif  // TINT_BUILD_MSL_WRITER
       break;
-    case OutputFormat::kNone:
-      break;
-  }
-
-  if (writer) {
-    writer->Generate();
+    }
   }
 
   return 0;
+}
+
+void CommonFuzzer::RunInspector(Program* program) {
+  inspector::Inspector inspector(program);
+
+  auto entry_points = inspector.GetEntryPoints();
+  CHECK_INSPECTOR(inspector);
+
+  auto constant_ids = inspector.GetConstantIDs();
+  CHECK_INSPECTOR(inspector);
+
+  auto constant_name_to_id = inspector.GetConstantNameToIdMap();
+  CHECK_INSPECTOR(inspector);
+
+  for (auto& ep : entry_points) {
+    inspector.GetRemappedNameForEntryPoint(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetStorageSize(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetUniformBufferResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetStorageBufferResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetReadOnlyStorageBufferResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetSamplerResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetComparisonSamplerResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetSampledTextureResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetMultisampledTextureResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetWriteOnlyStorageTextureResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetDepthTextureResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetDepthMultisampledTextureResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetExternalTextureResourceBindings(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetSamplerTextureUses(ep.name);
+    CHECK_INSPECTOR(inspector);
+
+    inspector.GetWorkgroupStorageSize(ep.name);
+    CHECK_INSPECTOR(inspector);
+  }
 }
 
 }  // namespace fuzzers

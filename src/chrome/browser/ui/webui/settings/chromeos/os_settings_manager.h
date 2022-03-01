@@ -7,7 +7,13 @@
 
 #include <memory>
 
+#include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "base/gtest_prod_util.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "ash/components/phonehub/phone_hub_manager.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/android_sms/android_sms_service.h"
 // TODO(https://crbug.com/1164001): forward declare when moved ash
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -15,10 +21,6 @@
 class ArcAppListPrefs;
 class Profile;
 class SupervisedUserService;
-
-namespace apps {
-class AppServiceProxyChromeOs;
-}  // namespace apps
 
 namespace content {
 class WebUI;
@@ -37,10 +39,6 @@ namespace chromeos {
 
 class CupsPrintersManager;
 
-namespace android_sms {
-class AndroidSmsService;
-}  // namespace android_sms
-
 namespace local_search_service {
 class LocalSearchServiceProxy;
 }  // namespace local_search_service
@@ -49,10 +47,6 @@ namespace multidevice_setup {
 class MultiDeviceSetupClient;
 }  // namespace multidevice_setup
 
-namespace phonehub {
-class PhoneHubManager;
-}  // namespace phonehub
-
 namespace settings {
 
 class Hierarchy;
@@ -60,6 +54,7 @@ class OsSettingsSections;
 class SearchHandler;
 class SearchTagRegistry;
 class SettingsUserActionTracker;
+class AppNotificationHandler;
 
 // Manager for the Chrome OS settings page. This class is implemented as a
 // KeyedService, so one instance of the class is intended to be active for the
@@ -101,7 +96,8 @@ class OsSettingsManager : public KeyedService {
       signin::IdentityManager* identity_manager,
       android_sms::AndroidSmsService* android_sms_service,
       CupsPrintersManager* printers_manager,
-      apps::AppServiceProxyChromeOs* app_service_proxy);
+      apps::AppServiceProxy* app_service_proxy,
+      ash::eche_app::EcheAppManager* eche_app_manager);
   OsSettingsManager(const OsSettingsManager& other) = delete;
   OsSettingsManager& operator=(const OsSettingsManager& other) = delete;
   ~OsSettingsManager() override;
@@ -114,6 +110,10 @@ class OsSettingsManager : public KeyedService {
 
   // Adds SettingsPageUIHandlers to an OS settings instance.
   void AddHandlers(content::WebUI* web_ui);
+
+  AppNotificationHandler* app_notification_handler() {
+    return app_notification_handler_.get();
+  }
 
   SearchHandler* search_handler() { return search_handler_.get(); }
 
@@ -134,6 +134,7 @@ class OsSettingsManager : public KeyedService {
   std::unique_ptr<Hierarchy> hierarchy_;
   std::unique_ptr<SettingsUserActionTracker> settings_user_action_tracker_;
   std::unique_ptr<SearchHandler> search_handler_;
+  std::unique_ptr<AppNotificationHandler> app_notification_handler_;
 };
 
 }  // namespace settings
