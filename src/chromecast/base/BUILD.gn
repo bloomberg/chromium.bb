@@ -16,12 +16,7 @@ declare_args() {
   if (is_android_arc) {
     cast_product_type = 7  # CAST_PRODUCT_TYPE_CHROME_OS
   } else if (is_android) {
-    if (is_android_appliance) {
-      # Android Things and Appliances under the Android Things product type.
-      cast_product_type = 6  # CAST_PRODUCT_TYPE_ANDROID_THINGS
-    } else {
-      cast_product_type = 4  # CAST_PRODUCT_TYPE_ANDROID_TV
-    }
+    cast_product_type = 4  # CAST_PRODUCT_TYPE_ANDROID_TV
   } else if (is_fuchsia) {
     cast_product_type = 8  # CAST_PRODUCT_TYPE_FUCHSIA_OS
   } else {
@@ -59,15 +54,17 @@ cast_source_set("base") {
     "device_capabilities_impl.h",
     "error_codes.cc",
     "error_codes.h",
+    "hash_util.cc",
+    "hash_util.h",
+    "legacy_app_id_mapper.h",
     "observer.h",
     "path_utils.cc",
     "path_utils.h",
     "pref_names.cc",
     "pref_names.h",
+    "process_types.h",
     "process_utils.cc",
     "process_utils.h",
-    "serializers.cc",
-    "serializers.h",
     "statistics/weighted_mean.cc",
     "statistics/weighted_mean.h",
     "statistics/weighted_moving_average.cc",
@@ -83,26 +80,29 @@ cast_source_set("base") {
   public_deps = [
     ":chromecast_switches",
     ":init_shlib",
+    "//base",
     "//chromecast/base/metrics",
     "//chromecast/public",
   ]
 
   deps = [
-    "//base",
+    ":cast_version",
     "//chromecast:chromecast_buildflags",
     "//third_party/widevine/cdm:buildflags",
   ]
 
   if (chromecast_branding == "public") {
-    sources += [ "cast_features_internal.cc" ]
+    sources += [
+      "cast_features_internal.cc",
+      "legacy_app_id_mapper_dummy.cc",
+    ]
   } else {
+    sources += [ "//chromecast/internal/base/legacy_app_id_mapper_impl.cc" ]
     deps += [ "//chromecast/internal/base:cast_internal_features" ]
   }
 
   if (is_android) {
     sources += [
-      "android/cast_settings_manager.cc",
-      "android/cast_settings_manager.h",
       "android/dumpstate_writer.cc",
       "android/dumpstate_writer.h",
       "android/system_time_change_notifier_android.cc",
@@ -167,11 +167,11 @@ test("cast_base_unittests") {
     "cast_features_unittest.cc",
     "device_capabilities_impl_unittest.cc",
     "error_codes_unittest.cc",
+    "hash_util_test.cc",
     "metrics/cast_metrics_helper_unittest.cc",
     "observer_unittest.cc",
     "path_utils_unittest.cc",
     "process_utils_unittest.cc",
-    "serializers_unittest.cc",
     "statistics/weighted_moving_average_unittest.cc",
     "statistics/weighted_moving_linear_regression_unittest.cc",
     "system_time_change_notifier_unittest.cc",
@@ -218,8 +218,8 @@ if (is_android) {
   cast_source_set("android_create_sys_info") {
     deps = [
       ":cast_version",
+      ":jni_headers",
       "//base",
-      "//chromecast:chromecast_buildflags",
       "//chromecast/browser:jni_headers",
       "//chromecast/public",
     ]
@@ -265,6 +265,9 @@ group("default_create_sys_info") {
   if (is_android) {
     public_deps = [ ":android_create_sys_info" ]
   } else if (chromecast_branding == "public") {
+    public_deps = [ ":dummy_create_sys_info" ]
+  } else if (enable_cast_media_runtime) {
+    # TODO(b/200723084): Replace the dummy implementation with real one.
     public_deps = [ ":dummy_create_sys_info" ]
   } else {
     public_deps = [ ":shlib_create_sys_info" ]
@@ -314,7 +317,7 @@ process_version("cast_version") {
 if (is_android) {
   generate_jni("jni_headers") {
     sources = [
-      "java/src/org/chromium/chromecast/base/CastSettingsManager.java",
+      "java/src/org/chromium/chromecast/base/CastSysInfoAndroid.java",
       "java/src/org/chromium/chromecast/base/DumpstateWriter.java",
       "java/src/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
@@ -340,8 +343,10 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
 
       # TODO(sanfin): Move these files to another target.
+      "$java_src_dir/org/chromium/chromecast/base/CastSerialGenerator.java",
       "$java_src_dir/org/chromium/chromecast/base/CastSettingsManager.java",
       "$java_src_dir/org/chromium/chromecast/base/CastSwitches.java",
+      "$java_src_dir/org/chromium/chromecast/base/CastSysInfoAndroid.java",
       "$java_src_dir/org/chromium/chromecast/base/DumpstateWriter.java",
       "$java_src_dir/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
@@ -349,6 +354,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_core_core_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }

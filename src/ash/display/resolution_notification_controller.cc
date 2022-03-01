@@ -8,20 +8,19 @@
 
 #include "ash/display/display_change_dialog.h"
 #include "ash/display/display_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_layout_observer.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/display/screen.h"
 
 namespace ash {
 
@@ -30,6 +29,10 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
                        const display::ManagedDisplayMode& old_resolution,
                        const display::ManagedDisplayMode& new_resolution,
                        base::OnceClosure accept_callback);
+
+  ResolutionChangeInfo(const ResolutionChangeInfo&) = delete;
+  ResolutionChangeInfo& operator=(const ResolutionChangeInfo&) = delete;
+
   ~ResolutionChangeInfo();
 
   // The id of the display where the resolution change happens.
@@ -47,9 +50,6 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
 
   // The callback when accept is chosen.
   base::OnceClosure accept_callback;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResolutionChangeInfo);
 };
 
 ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
@@ -67,12 +67,10 @@ ResolutionNotificationController::ResolutionChangeInfo::
 
 ResolutionNotificationController::ResolutionNotificationController() {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ResolutionNotificationController::~ResolutionNotificationController() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 bool ResolutionNotificationController::PrepareNotificationAndSetDisplayMode(
@@ -124,11 +122,16 @@ bool ResolutionNotificationController::PrepareNotificationAndSetDisplayMode(
   return true;
 }
 
+bool ResolutionNotificationController::ShouldShowDisplayChangeDialog() const {
+  return change_info_ && Shell::Get()->session_controller()->login_status() !=
+                             LoginStatus::KIOSK_APP;
+}
+
 void ResolutionNotificationController::CreateOrReplaceModalDialog() {
   if (confirmation_dialog_)
     confirmation_dialog_->GetWidget()->CloseNow();
 
-  if (!change_info_)
+  if (!ShouldShowDisplayChangeDialog())
     return;
 
   const std::u16string display_name =

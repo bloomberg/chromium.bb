@@ -14,7 +14,6 @@
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
@@ -110,6 +109,8 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
     // Note that peripherals and peripheral chargers may be separate
     // (such as stylus vs. internal stylus charger), and have two distinct
     // charge levels.
+    // |serial_number| Text representation of peripheral S/N, if available
+    // and retrievable, empty string otherwise.
     // |active_update| true if peripheral event triggered update, false
     // if due to periodic poll or restart, and value may be stale.
     virtual void PeripheralBatteryStatusReceived(
@@ -117,6 +118,7 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
         const std::string& name,
         int level,
         power_manager::PeripheralBatteryStatus_ChargeStatus status,
+        const std::string& serial_number,
         bool active_update) {}
 
     // Called when updated information about the power supply is available.
@@ -356,7 +358,21 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // TODO(b/166543531): Remove after migrating to BlueZ Battery Provider API.
   virtual void RefreshBluetoothBattery(const std::string& address) = 0;
 
+  // On devices that support external displays with ambient light sensors, this
+  // enables/disables the ALS-based brightness adjustment on those displays.
+  virtual void SetExternalDisplayALSBrightness(bool enabled) = 0;
+
+  // On devices that support external displays with ambient light sensors, this
+  // returns true when the ALS-based brightness feature is enabled on those
+  // displays.
+  virtual void GetExternalDisplayALSBrightness(
+      DBusMethodCallback<bool> callback) = 0;
+
   PowerManagerClient();
+
+  PowerManagerClient(const PowerManagerClient&) = delete;
+  PowerManagerClient& operator=(const PowerManagerClient&) = delete;
+
   virtual ~PowerManagerClient();
 
   // Creates and initializes the global instance. |bus| must not be null.
@@ -370,9 +386,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
 
   // Returns the global instance if initialized. May return null.
   static PowerManagerClient* Get();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PowerManagerClient);
 };
 
 }  // namespace chromeos

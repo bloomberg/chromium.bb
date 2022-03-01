@@ -44,7 +44,9 @@ enum class ContextMenuCopyImage {
   kAlertPopUp = 4,
   // Copy Image is canceled by user from the alert.
   kCanceled = 5,
-  kMaxValue = kCanceled,
+  // The URL of the image is copied.
+  kURLCopied = 6,
+  kMaxValue = kURLCopied,
 };
 // Time Period between "Copy Image" is clicked and "Copying..." alert is
 // launched.
@@ -55,45 +57,36 @@ const int kNoActiveCopy = 0;
 }
 
 @interface ImageCopier ()
-// Base view controller for the alerts.
-@property(nonatomic, weak) UIViewController* baseViewController;
 // The browser.
 @property(nonatomic, assign) Browser* browser;
 // Alert coordinator to give feedback to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 // A counter which generates one ID for each call on
 // CopyImageAtURL:referrer:webState.
-@property(nonatomic) int idGenerator;
+@property(nonatomic, assign) int idGenerator;
 // ID of current active copy. A copy is active after
 // CopyImageAtURL:referrer:webState is called, and before user cancels the
 // copy or the copy finishes.
-@property(nonatomic) int activeID;
+@property(nonatomic, assign) int activeID;
 
 @end
 
 @implementation ImageCopier
 
-@synthesize alertCoordinator = _alertCoordinator;
-@synthesize baseViewController = _baseViewController;
-@synthesize idGenerator = _idGenerator;
-@synthesize activeID = _activeID;
-@synthesize browser = _browser;
-
-- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
-                                   browser:(Browser*)browser {
+- (instancetype)initWithBrowser:(Browser*)browser {
   self = [super init];
   if (self) {
-    self.idGenerator = 1;
-    self.activeID = kNoActiveCopy;
-    self.baseViewController = baseViewController;
-    self.browser = browser;
+    _idGenerator = 1;
+    _activeID = kNoActiveCopy;
+    _browser = browser;
   }
   return self;
 }
 
 - (void)copyImageAtURL:(const GURL&)url
               referrer:(const web::Referrer&)referrer
-              webState:(web::WebState*)webState {
+              webState:(web::WebState*)webState
+    baseViewController:(UIViewController*)baseViewController {
   __weak ImageCopier* weakSelf = self;
 
   // |idGenerator| is initiated to 1 and incremented by 2, so it will always be
@@ -116,16 +109,18 @@ const int kNoActiveCopy = 0;
       [weakSelf.alertCoordinator stop];
       weakSelf.activeID = kNoActiveCopy;
 
-      // Copy image url and data to pasteboard.
+      // Copy image data to pasteboard. Don't copy the URL otherwise some apps
+      // will paste the text and not the image. See crbug.com/1270239.
       NSMutableDictionary* item =
-          [NSMutableDictionary dictionaryWithCapacity:3];
-      [item setValue:urlStr forKey:(__bridge NSString*)kUTTypeText];
-      [item setValue:[NSURL URLWithString:urlStr]
-              forKey:(__bridge NSString*)kUTTypeURL];
+          [NSMutableDictionary dictionaryWithCapacity:1];
       NSString* uti = GetImageUTIFromData(data);
       if (uti) {
         [item setValue:data forKey:uti];
         [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kImageCopied];
+      } else {
+        [item setValue:[NSURL URLWithString:urlStr]
+                forKey:(__bridge NSString*)kUTTypeURL];
+        [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kURLCopied];
       }
       UIPasteboard.generalPasteboard.items =
           [NSMutableArray arrayWithObject:item];
@@ -137,7 +132,7 @@ const int kNoActiveCopy = 0;
   // Dismiss current alert.
   [self.alertCoordinator stop];
   self.alertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
+      initWithBaseViewController:baseViewController
                          browser:self.browser
                            title:l10n_util::GetNSStringWithFixup(
                                      IDS_IOS_CONTENT_COPYIMAGE_ALERT_COPYING)
@@ -161,7 +156,7 @@ const int kNoActiveCopy = 0;
           [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kAlertPopUp];
         }
       }),
-      base::TimeDelta::FromMilliseconds(kAlertDelayInMs));
+      base::Milliseconds(kAlertDelayInMs));
 
   [self recordCopyImageUMA:ContextMenuCopyImage::kInvoked];
 }

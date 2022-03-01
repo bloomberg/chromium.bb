@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "cc/paint/paint_op_buffer.h"
 
 #include "third_party/skia/src/core/SkRemoteGlyphCache.h"
@@ -56,22 +57,24 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   void Serialize(const PaintOpBuffer* buffer,
                  const std::vector<size_t>* offsets,
                  const Preamble& preamble);
+  // Sereialize the buffer as |Serialize| with a preamble. This function also
+  // destroys the PaintOps in |buffer| after serialization.
+  void SerializeAndDestroy(PaintOpBuffer* buffer,
+                           const std::vector<size_t>* offsets,
+                           const Preamble& preamble);
   // Serialize the buffer without a preamble. This function serializes the whole
   // buffer without any extra ops added.  No clearing is done.  This should
   // generally be used for internal PaintOpBuffers that want to be sent as-is.
   void Serialize(const PaintOpBuffer* buffer);
   // Serialize the buffer with a scale and a playback rect.  This should
-  // generally be used for internal PaintOpBuffers in PaintShaders that have
-  // a scale and a tiling, but don't want the clearing or other complicated
-  // logic of the top level Serialize.
-  // post_matrix_for_analysis adds a scale that is not added to the serialized
-  // buffer, but used in analysis. This is required for cases that don't modify
-  // the record during serialization, but need to send resources based on the
-  // raster scale (mainly PaintRecord backed PaintFilters).
+  // generally be used for internal PaintOpBuffers in PaintShaders and
+  // PaintFilters that need to guarantee the nested buffer is rasterized at the
+  // specific scale to a separate image. This ensures that scale-dependent
+  // analysis made during serialization is consistent with analysis done during
+  // rasterization.
   void Serialize(const PaintOpBuffer* buffer,
                  const gfx::Rect& playback_rect,
-                 const gfx::SizeF& post_scale,
-                 const SkMatrix& post_matrix_for_analysis);
+                 const gfx::SizeF& post_scale);
 
   bool valid() const { return valid_; }
 
@@ -82,6 +85,15 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   void SerializeBuffer(SkCanvas* canvas,
                        const PaintOpBuffer* buffer,
                        const std::vector<size_t>* offsets);
+  void SerializeBufferAndDestroy(SkCanvas* canvas,
+                                 PaintOpBuffer* buffer,
+                                 const std::vector<size_t>* offsets);
+  // Returns whether searilization of |op| succeeded and we need to serialize
+  // the next PaintOp in the PaintOpBuffer.
+  bool WillSerializeNextOp(const PaintOp* op,
+                           SkCanvas* canvas,
+                           PlaybackParams params,
+                           uint8_t alpha);
   bool SerializeOpWithFlags(SkCanvas* canvas,
                             const PaintOpWithFlags* flags_op,
                             const PlaybackParams& params,
@@ -125,7 +137,7 @@ class CC_PAINT_EXPORT SimpleBufferSerializer : public PaintOpBufferSerializer {
                            const SkM44& current_ctm,
                            const SkM44& original_ctm);
 
-  void* memory_;
+  raw_ptr<void> memory_;
   const size_t total_;
   size_t written_ = 0u;
 };

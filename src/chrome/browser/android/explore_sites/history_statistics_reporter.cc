@@ -49,7 +49,7 @@ void HistoryStatisticsReporter::ScheduleReportStatistics() {
 
   // If we've already reported metrics during last week, bail out.
   base::Time last_report_time = prefs_->GetTime(kWeeklyStatsReportingTimestamp);
-  if (last_report_time > base::Time::Now() - base::TimeDelta::FromDays(7))
+  if (last_report_time > base::Time::Now() - base::Days(7))
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -77,8 +77,9 @@ void HistoryStatisticsReporter::MaybeReportStatistics() {
   } else {
     // Register for HistoryServiceLoading in case HistoryService is not yet
     // ready.
-    DCHECK(!history_service_observation_.IsObservingSource(history_service_));
-    history_service_observation_.Observe(history_service_);
+    DCHECK(!history_service_observation_.IsObservingSource(
+        history_service_.get()));
+    history_service_observation_.Observe(history_service_.get());
   }
 }
 

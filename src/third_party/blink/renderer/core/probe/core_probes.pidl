@@ -126,7 +126,7 @@ interface CoreProbes {
   void FrameRequestedNavigation(LocalFrame*, Frame* target_frame, const KURL& url, ClientNavigationReason reason, NavigationPolicy policy);
   void FrameScheduledNavigation([Keep] LocalFrame*, const KURL& url, base::TimeDelta delay, ClientNavigationReason reason);
   void FrameClearedScheduledNavigation([Keep] LocalFrame*);
-  void DidCreateWebSocket([Keep] ExecutionContext*, uint64_t identifier, const KURL& request_url, const String& protocol);
+  void WillCreateWebSocket([Keep] ExecutionContext*, uint64_t identifier, const KURL& request_url, const String& protocol, absl::optional<base::UnguessableToken>* devtools_token);
   void WillSendWebSocketHandshakeRequest([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
   void DidReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request, network::mojom::blink::WebSocketHandshakeResponse* response);
   void DidCloseWebSocket([Keep] ExecutionContext*, uint64_t identifier);
@@ -136,8 +136,6 @@ interface CoreProbes {
   void WebTransportCreated([Keep] ExecutionContext*, uint64_t transport_id, const KURL& request_url);
   void WebTransportConnectionEstablished(ExecutionContext*, uint64_t transport_id);
   void WebTransportClosed(ExecutionContext*, uint64_t transport_id);
-  void NetworkStateChanged([Keep] LocalFrame*, bool online);
-  void UpdateApplicationCacheStatus([Keep] LocalFrame*);
   /* This is for pre-BlinkGenPropertyTrees. TODO(wangxianzhu): Remove this function for BlinkGenPropertyTrees. */
   void LayerTreeDidChange(LocalFrame*);
   /* For BlinkGenPropertyTrees/CompositeAfterPaint. */
@@ -174,8 +172,8 @@ interface CoreProbes {
   void DidCloseAudioContext(Document*);
   void DidResumeAudioContext(Document*);
   void DidSuspendAudioContext(Document*);
-  void DidProduceCompilationCache(CoreProbeSink*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
-  void ApplyCompilationModeOverride(ExecutionContext*, const ScriptSourceCode& source, v8::ScriptCompiler::CachedData** cached_data, v8::ScriptCompiler::CompileOptions*);
+  void DidProduceCompilationCache(CoreProbeSink*, const ClassicScript&, v8::Local<v8::Script> script);
+  void ApplyCompilationModeOverride(ExecutionContext*, const ClassicScript&, v8::ScriptCompiler::CachedData** cached_data, v8::ScriptCompiler::CompileOptions*);
   void NodeCreated([Keep] Node* node);
   void PortalRemoteFrameCreated(Document*, HTMLPortalElement* portal_element);
   void FileChooserOpened([Keep] LocalFrame* frame, HTMLInputElement* element, bool* intercepted);
@@ -189,7 +187,7 @@ interface CoreProbes {
   void LocalFontsEnabled(ExecutionContext*, bool* result);
   void DidUpdateComputedStyle([Keep] Element*, const ComputedStyle* old_style, const ComputedStyle* new_style);
   void GetDisabledImageTypes(ExecutionContext*, HashSet<String>* result);
-  void OnContentSecurityPolicyViolation(ExecutionContext* context, const blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType violationType);
+  void OnContentSecurityPolicyViolation(ExecutionContext* context, const blink::ContentSecurityPolicyViolationType violationType);
   void IsCacheDisabled(ExecutionContext*, bool* is_cache_disabled);
   void PerformanceEntryAdded([Keep] ExecutionContext*, PerformanceEntry*);
 }

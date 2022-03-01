@@ -31,14 +31,17 @@
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
-#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
+
+namespace gfx {
+class Point;
+class Rect;
+}
 
 namespace blink {
 
 class LayoutObject;
 class Node;
-class IntPoint;
-class IntRect;
 class LocalFrame;
 
 // |WordSide| is used as a parameter of |StartOfWordPosition()| and
@@ -50,6 +53,7 @@ enum WordSide {
 };
 
 enum class PlatformWordBehavior { kWordSkipSpaces, kWordDontSkipSpaces };
+enum class SentenceTrailingSpaceBehavior { kIncludeSpace, kOmitSpace };
 
 // offset functions on Node
 CORE_EXPORT int CaretMinOffset(const Node*);
@@ -101,6 +105,9 @@ CORE_EXPORT UChar32 CharacterBefore(const VisiblePosition&);
 CORE_EXPORT UChar32 CharacterBefore(const VisiblePositionInFlatTree&);
 
 CORE_EXPORT VisiblePosition
+NextPositionOf(const Position&,
+               EditingBoundaryCrossingRule = kCanCrossEditingBoundary);
+CORE_EXPORT VisiblePosition
 NextPositionOf(const VisiblePosition&,
                EditingBoundaryCrossingRule = kCanCrossEditingBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
@@ -132,17 +139,28 @@ CORE_EXPORT PositionWithAffinity NextWordPosition(
 CORE_EXPORT PositionInFlatTreeWithAffinity NextWordPosition(
     const PositionInFlatTree&,
     PlatformWordBehavior = PlatformWordBehavior::kWordDontSkipSpaces);
+bool IsWordBreak(UChar);
 
 // sentences
 CORE_EXPORT Position StartOfSentencePosition(const Position&);
 CORE_EXPORT PositionInFlatTree
 StartOfSentencePosition(const PositionInFlatTree&);
-CORE_EXPORT PositionWithAffinity EndOfSentence(const Position&);
+CORE_EXPORT PositionWithAffinity
+EndOfSentence(const Position&,
+              SentenceTrailingSpaceBehavior =
+                  SentenceTrailingSpaceBehavior::kIncludeSpace);
 CORE_EXPORT PositionInFlatTreeWithAffinity
-EndOfSentence(const PositionInFlatTree&);
-CORE_EXPORT VisiblePosition EndOfSentence(const VisiblePosition&);
+EndOfSentence(const PositionInFlatTree&,
+              SentenceTrailingSpaceBehavior =
+                  SentenceTrailingSpaceBehavior::kIncludeSpace);
+CORE_EXPORT VisiblePosition
+EndOfSentence(const VisiblePosition&,
+              SentenceTrailingSpaceBehavior =
+                  SentenceTrailingSpaceBehavior::kIncludeSpace);
 CORE_EXPORT VisiblePositionInFlatTree
-EndOfSentence(const VisiblePositionInFlatTree&);
+EndOfSentence(const VisiblePositionInFlatTree&,
+              SentenceTrailingSpaceBehavior =
+                  SentenceTrailingSpaceBehavior::kIncludeSpace);
 PositionInFlatTree PreviousSentencePosition(const PositionInFlatTree&);
 PositionInFlatTree NextSentencePosition(const PositionInFlatTree&);
 EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange&);
@@ -238,19 +256,20 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(const LayoutObject*);
 // Returns a hit-tested PositionWithAffinity for the given point in
 // contents-space coordinates.
 CORE_EXPORT PositionWithAffinity
-PositionForContentsPointRespectingEditingBoundary(const IntPoint&, LocalFrame*);
+PositionForContentsPointRespectingEditingBoundary(const gfx::Point&,
+                                                  LocalFrame*);
 
 CORE_EXPORT bool RendersInDifferentPosition(const Position&, const Position&);
 
 CORE_EXPORT Position SkipWhitespace(const Position&);
 CORE_EXPORT PositionInFlatTree SkipWhitespace(const PositionInFlatTree&);
 
-CORE_EXPORT IntRect ComputeTextRect(const EphemeralRange&);
-IntRect ComputeTextRect(const EphemeralRangeInFlatTree&);
+CORE_EXPORT gfx::Rect ComputeTextRect(const EphemeralRange&);
+gfx::Rect ComputeTextRect(const EphemeralRangeInFlatTree&);
 FloatRect ComputeTextFloatRect(const EphemeralRange&);
 
 // |FirstRectForRange| requires up-to-date layout.
-IntRect FirstRectForRange(const EphemeralRange&);
+gfx::Rect FirstRectForRange(const EphemeralRange&);
 
 CORE_EXPORT PositionWithAffinity
 AdjustForwardPositionToAvoidCrossingEditingBoundaries(

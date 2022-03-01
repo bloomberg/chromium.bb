@@ -12,13 +12,13 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_latency.h"
 #include "services/audio/output_controller.h"
 
 #if defined(OS_POSIX)
@@ -39,6 +39,9 @@ class SyncReader : public OutputController::SyncReader {
   SyncReader(base::RepeatingCallback<void(const std::string&)> log_callback,
              const media::AudioParameters& params,
              base::CancelableSyncSocket* foreign_socket);
+
+  SyncReader(const SyncReader&) = delete;
+  SyncReader& operator=(const SyncReader&) = delete;
 
   ~SyncReader() override;
 
@@ -71,6 +74,8 @@ class SyncReader : public OutputController::SyncReader {
   base::UnsafeSharedMemoryRegion shared_memory_region_;
   base::WritableSharedMemoryMapping shared_memory_mapping_;
 
+  const media::AudioLatency::LatencyType latency_tag_;
+
   // Mutes all incoming samples. This is used to prevent audible sound
   // during automated testing.
   const bool mute_audio_for_testing_;
@@ -100,8 +105,6 @@ class SyncReader : public OutputController::SyncReader {
   // The index of the audio buffer we're expecting to be sent from the renderer;
   // used to block with timeout for audio data.
   uint32_t buffer_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncReader);
 };
 
 }  // namespace audio

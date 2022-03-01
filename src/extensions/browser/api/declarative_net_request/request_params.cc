@@ -57,16 +57,24 @@ flat_rule::ElementType GetElementType(WebRequestResourceType web_request_type) {
       return flat_rule::ElementType_MEDIA;
     case WebRequestResourceType::FONT:
       return flat_rule::ElementType_FONT;
+    case WebRequestResourceType::WEBBUNDLE:
+      return flat_rule::ElementType_WEBBUNDLE;
     case WebRequestResourceType::WEB_SOCKET:
       return flat_rule::ElementType_WEBSOCKET;
+    case WebRequestResourceType::WEB_TRANSPORT:
+      return flat_rule::ElementType_WEBTRANSPORT;
   }
   NOTREACHED();
   return flat_rule::ElementType_OTHER;
 }
 
 // Maps an HTTP request method string to flat_rule::RequestMethod.
-// TODO(kzar): Return `flat_rule::RequestMethod_NONE` for non-HTTP requests.
-flat_rule::RequestMethod GetRequestMethod(const std::string& method) {
+// Returns `flat::RequestMethod_NON_HTTP` for non-HTTP(s) requests.
+flat_rule::RequestMethod GetRequestMethod(bool http_or_https,
+                                          const std::string& method) {
+  if (!http_or_https)
+    return flat_rule::RequestMethod_NON_HTTP;
+
   using net::HttpRequestHeaders;
   static const base::NoDestructor<
       base::flat_map<base::StringPiece, flat_rule::RequestMethod>>
@@ -78,7 +86,9 @@ flat_rule::RequestMethod GetRequestMethod(const std::string& method) {
             flat_rule::RequestMethod_OPTIONS},
            {HttpRequestHeaders::kPatchMethod, flat_rule::RequestMethod_PATCH},
            {HttpRequestHeaders::kPostMethod, flat_rule::RequestMethod_POST},
-           {HttpRequestHeaders::kPutMethod, flat_rule::RequestMethod_PUT}});
+           {HttpRequestHeaders::kPutMethod, flat_rule::RequestMethod_PUT},
+           {HttpRequestHeaders::kConnectMethod,
+            flat_rule::RequestMethod_CONNECT}});
 
   DCHECK(std::all_of(kRequestMethods->begin(), kRequestMethods->end(),
                      [](const auto& key_value) {
@@ -117,12 +127,12 @@ bool IsThirdPartyRequest(const url::Origin& origin,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
-content::GlobalFrameRoutingId GetFrameRoutingId(
+content::GlobalRenderFrameHostId GetFrameRoutingId(
     content::RenderFrameHost* host) {
   if (!host)
-    return content::GlobalFrameRoutingId();
+    return content::GlobalRenderFrameHostId();
 
-  return host->GetGlobalFrameRoutingId();
+  return host->GetGlobalId();
 }
 
 bool DoEmbedderConditionsMatch(
@@ -173,7 +183,7 @@ RequestParams::RequestParams(const WebRequestInfo& info)
     : url(&info.url),
       first_party_origin(info.initiator.value_or(url::Origin())),
       element_type(GetElementType(info.web_request_type)),
-      method(GetRequestMethod(info.method)),
+      method(GetRequestMethod(info.url.SchemeIsHTTPOrHTTPS(), info.method)),
       parent_routing_id(info.parent_routing_id),
       embedder_conditions_matcher(base::BindRepeating(DoEmbedderConditionsMatch,
                                                       info.frame_data.tab_id)) {
@@ -185,13 +195,14 @@ RequestParams::RequestParams(content::RenderFrameHost* host,
     : url(&host->GetLastCommittedURL()),
       method(is_post_navigation ? flat_rule::RequestMethod_POST
                                 : flat_rule::RequestMethod_GET),
-      parent_routing_id(GetFrameRoutingId(host->GetParent())) {
-  if (host->GetParent()) {
+      parent_routing_id(GetFrameRoutingId(host->GetParentOrOuterDocument())) {
+  if (host->GetParentOrOuterDocument()) {
     // Note the discrepancy with the WebRequestInfo constructor. For a
     // navigation request, we'd use the request initiator as the
     // |first_party_origin|. But here we use the origin of the parent frame.
     // This is the same as crbug.com/996998.
-    first_party_origin = host->GetParent()->GetLastCommittedOrigin();
+    first_party_origin =
+        host->GetParentOrOuterDocument()->GetLastCommittedOrigin();
     element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   } else {
     first_party_origin = url::Origin();

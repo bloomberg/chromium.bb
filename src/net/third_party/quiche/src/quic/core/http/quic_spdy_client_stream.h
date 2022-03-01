@@ -25,8 +25,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientStream : public QuicSpdyStream {
                        QuicSpdyClientSession* session,
                        StreamType type);
   QuicSpdyClientStream(PendingStream* pending,
-                       QuicSpdyClientSession* spdy_session,
-                       StreamType type);
+                       QuicSpdyClientSession* spdy_session);
   QuicSpdyClientStream(const QuicSpdyClientStream&) = delete;
   QuicSpdyClientStream& operator=(const QuicSpdyClientStream&) = delete;
   ~QuicSpdyClientStream() override;
@@ -74,6 +73,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientStream : public QuicSpdyStream {
   // While the server's SetPriority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
   using QuicSpdyStream::SetPriority;
+
+ protected:
+  bool AreHeadersValid(const QuicHeaderList& header_list) const override;
 
  private:
   // The parsed headers received from the server.

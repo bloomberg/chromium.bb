@@ -5,9 +5,7 @@
 import("//build_overrides/build.gni")
 
 use_chromium_quic = true
-use_mdns_responder = true
 
 if (build_with_chromium) {
   use_chromium_quic = false
-  use_mdns_responder = false
 }

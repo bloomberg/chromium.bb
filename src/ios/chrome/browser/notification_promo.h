@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/values.h"
 
 class PrefRegistrySimple;
@@ -27,6 +26,10 @@ extern const char kNTPPromoFinchExperiment[];
 class NotificationPromo {
  public:
   explicit NotificationPromo(PrefService* local_state);
+
+  NotificationPromo(const NotificationPromo&) = delete;
+  NotificationPromo& operator=(const NotificationPromo&) = delete;
+
   ~NotificationPromo();
 
   // Initialize from finch parameters.
@@ -104,8 +107,6 @@ class NotificationPromo {
 
   int views_;
   bool closed_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationPromo);
 };
 
 }  // namespace ios

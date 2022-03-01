@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_stream.h"
@@ -36,6 +36,11 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
       const std::vector<std::string>& requested_subprotocols,
       WebSocketStreamRequestAPI* request);
 
+  WebSocketHandshakeStreamCreateHelper(
+      const WebSocketHandshakeStreamCreateHelper&) = delete;
+  WebSocketHandshakeStreamCreateHelper& operator=(
+      const WebSocketHandshakeStreamCreateHelper&) = delete;
+
   ~WebSocketHandshakeStreamCreateHelper() override;
 
   // WebSocketHandshakeStreamBase::CreateHelper methods
@@ -52,11 +57,9 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
       std::vector<std::string> dns_aliases) override;
 
  private:
-  WebSocketStream::ConnectDelegate* const connect_delegate_;
+  const raw_ptr<WebSocketStream::ConnectDelegate> connect_delegate_;
   const std::vector<std::string> requested_subprotocols_;
-  WebSocketStreamRequestAPI* const request_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamCreateHelper);
+  const raw_ptr<WebSocketStreamRequestAPI> request_;
 };
 
 }  // namespace net

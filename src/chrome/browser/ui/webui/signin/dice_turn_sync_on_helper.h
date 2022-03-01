@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
@@ -21,13 +21,16 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 
-#if !BUILDFLAG(ENABLE_DICE_SUPPORT)
-#error "This file should only be included if DICE support is enabled"
+#if !BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(ENABLE_MIRROR)
+#error "This file should only be included if DICE support / mirror is enabled"
 #endif
 
 class Browser;
-class DiceSignedInProfileCreator;
 class SigninUIError;
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+class DiceSignedInProfileCreator;
+#endif
 
 namespace signin {
 class IdentityManager;
@@ -40,6 +43,8 @@ class SyncSetupInProgressHandle;
 
 // Handles details of setting the primary account with IdentityManager and
 // turning on sync for an account for which there is already a refresh token.
+// TODO(crbug.com/1248047): Rename this to TurnSyncOnHelper to reflect this can
+// also be used with mirror.
 class DiceTurnSyncOnHelper
     : public SyncStartupTracker::Observer,
       public policy::PolicyService::ProviderUpdateObserver {
@@ -94,7 +99,7 @@ class DiceTurnSyncOnHelper
     // sync being disabled even before fetching enterprise policies (e.g. sync
     // engine gets a 'disabled-by-enterprise' error from the server).
     virtual void ShowEnterpriseAccountConfirmation(
-        const std::string& email,
+        const AccountInfo& account_info,
         SigninChoiceCallback callback) = 0;
 
     // Shows a sync confirmation screen offering to open the Sync settings.
@@ -153,6 +158,7 @@ class DiceTurnSyncOnHelper
                        std::unique_ptr<Delegate> delegate,
                        base::OnceClosure callback);
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Convenience constructor using the default delegate and empty callback.
   DiceTurnSyncOnHelper(Profile* profile,
                        Browser* browser,
@@ -161,10 +167,18 @@ class DiceTurnSyncOnHelper
                        signin_metrics::Reason signin_reason,
                        const CoreAccountId& account_id,
                        SigninAbortedMode signin_aborted_mode);
+#endif
+
+  DiceTurnSyncOnHelper(const DiceTurnSyncOnHelper&) = delete;
+  DiceTurnSyncOnHelper& operator=(const DiceTurnSyncOnHelper&) = delete;
 
   // SyncStartupTracker::Observer:
   void SyncStartupCompleted() override;
   void SyncStartupFailed() override;
+
+  // Fakes that sync enabled for testing, but does not create a sync service.
+  static void SetShowSyncEnabledUiForTesting(
+      bool show_sync_enabled_ui_for_testing);
 
  private:
   friend class base::DeleteHelper<DiceTurnSyncOnHelper>;
@@ -248,8 +262,8 @@ class DiceTurnSyncOnHelper
   void AbortAndDelete();
 
   std::unique_ptr<Delegate> delegate_;
-  Profile* profile_;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
   const signin_metrics::AccessPoint signin_access_point_;
   const signin_metrics::PromoAction signin_promo_action_;
   const signin_metrics::Reason signin_reason_;
@@ -272,11 +286,13 @@ class DiceTurnSyncOnHelper
   base::ScopedClosureRunner scoped_callback_runner_;
 
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   std::unique_ptr<DiceSignedInProfileCreator> dice_signed_in_profile_creator_;
+#endif
   base::CallbackListSubscription shutdown_subscription_;
+  bool enterprise_account_confirmed_ = false;
 
   base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_DICE_TURN_SYNC_ON_HELPER_H_

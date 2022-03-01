@@ -14,8 +14,8 @@
 
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/string_util_win.h"
 #include "base/threading/thread_restrictions.h"
@@ -50,6 +50,10 @@ const REGSAM kWow64AccessMask = KEY_WOW64_32KEY | KEY_WOW64_64KEY;
 class RegKey::Watcher : public ObjectWatcher::Delegate {
  public:
   Watcher() = default;
+
+  Watcher(const Watcher&) = delete;
+  Watcher& operator=(const Watcher&) = delete;
+
   ~Watcher() override = default;
 
   bool StartWatching(HKEY key, ChangeCallback callback);
@@ -65,7 +69,6 @@ class RegKey::Watcher : public ObjectWatcher::Delegate {
   ScopedHandle watch_event_;
   ObjectWatcher object_watcher_;
   ChangeCallback callback_;
-  DISALLOW_COPY_AND_ASSIGN(Watcher);
 };
 
 bool RegKey::Watcher::StartWatching(HKEY key, ChangeCallback callback) {

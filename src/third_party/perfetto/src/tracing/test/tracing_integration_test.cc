@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "perfetto/ext/base/temp_file.h"
 #include "perfetto/ext/tracing/core/consumer.h"
@@ -112,6 +112,11 @@ void CheckTraceStats(const protos::gen::TracePacket& packet) {
   EXPECT_EQ(0u, buf_stats.readaheads_failed());
   EXPECT_EQ(0u, buf_stats.abi_violations());
 }
+
+static_assert(TracingServiceImpl::kMaxTracePacketSliceSize <=
+                  ipc::kIPCBufferSize - 512,
+              "Tracing service max packet slice should be smaller than IPC "
+              "buffer size (with some headroom)");
 
 }  // namespace
 

@@ -9,25 +9,24 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/drivefs/drivefs_util.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/snapshot_manager.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/filesystem_api_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/snapshot_manager.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/components/drivefs/drivefs_util.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_errors.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -351,6 +350,9 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
   properties_->can_share =
       std::make_unique<bool>(metadata->capabilities->can_share);
 
+  properties_->can_pin = std::make_unique<bool>(
+      metadata->can_pin == drivefs::mojom::FileMetadata::CanPinStatus::kOk);
+
   if (drivefs::IsAFile(metadata->type)) {
     properties_->thumbnail_url = std::make_unique<std::string>(
         base::StrCat({"drivefs:", file_system_url_.ToGURL().spec()}));
@@ -381,9 +383,9 @@ void SingleEntryPropertiesGetterForDriveFs::CompleteGetEntryProperties(
 }
 
 void FillIconSet(file_manager_private::IconSet* output,
-                 const chromeos::file_system_provider::IconSet& input) {
+                 const ash::file_system_provider::IconSet& input) {
   DCHECK(output);
-  using chromeos::file_system_provider::IconSet;
+  using ash::file_system_provider::IconSet;
   if (input.HasIcon(IconSet::IconSize::SIZE_16x16)) {
     output->icon16x16_url = std::make_unique<std::string>(
         input.GetIcon(IconSet::IconSize::SIZE_16x16).spec());
@@ -498,6 +500,10 @@ void VolumeToVolumeMetadata(
     case VOLUME_TYPE_SMB:
       volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_SMB;
       break;
+    case VOLUME_TYPE_SYSTEM_INTERNAL:
+      volume_metadata->volume_type =
+          file_manager_private::VOLUME_TYPE_SYSTEM_INTERNAL;
+      break;
     case NUM_VOLUME_TYPE:
       NOTREACHED();
       break;
@@ -536,17 +542,18 @@ void VolumeToVolumeMetadata(
 
   volume_metadata->is_read_only = volume.is_read_only();
   volume_metadata->has_media = volume.has_media();
+  volume_metadata->hidden = volume.hidden();
 
   switch (volume.mount_condition()) {
-    case chromeos::disks::MOUNT_CONDITION_NONE:
+    case ash::disks::MOUNT_CONDITION_NONE:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_NONE;
       break;
-    case chromeos::disks::MOUNT_CONDITION_UNKNOWN_FILESYSTEM:
+    case ash::disks::MOUNT_CONDITION_UNKNOWN_FILESYSTEM:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_UNKNOWN;
       break;
-    case chromeos::disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM:
+    case ash::disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_UNSUPPORTED;
       break;
@@ -575,7 +582,7 @@ base::FilePath GetLocalPathFromURL(content::RenderFrameHost* render_frame_host,
       util::GetFileSystemContextForRenderFrameHost(profile, render_frame_host);
 
   const storage::FileSystemURL filesystem_url(
-      file_system_context->CrackURL(url));
+      file_system_context->CrackURLInFirstPartyContext(url));
   base::FilePath path;
   if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))
     return base::FilePath();
@@ -611,6 +618,8 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
 }
 
 drive::EventLogger* GetLogger(Profile* profile) {
+  if (!profile)
+    return nullptr;
   drive::DriveIntegrationService* service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
   return service ? service->event_logger() : nullptr;

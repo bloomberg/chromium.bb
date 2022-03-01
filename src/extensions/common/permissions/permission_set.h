@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/common/mojom/api_permission_id.mojom-shared.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -40,6 +39,9 @@ class PermissionSet {
                 ManifestPermissionSet manifest_permissions,
                 URLPatternSet explicit_hosts,
                 URLPatternSet scriptable_hosts);
+
+  PermissionSet& operator=(const PermissionSet&) = delete;
+
   ~PermissionSet();
 
   PermissionSet(PermissionSet&& other);
@@ -69,7 +71,7 @@ class PermissionSet {
   bool operator!=(const PermissionSet& rhs) const;
 
   // Returns a copy of this PermissionSet.
-  std::unique_ptr<const PermissionSet> Clone() const;
+  std::unique_ptr<PermissionSet> Clone() const;
 
   // Returns true if every API or host permission available to |set| is also
   // available to this. In other words, if the API permissions of |set| are a
@@ -177,8 +179,6 @@ class PermissionSet {
       UNINITIALIZED;
   mutable ShouldWarnAllHostsType api_permissions_should_warn_all_hosts_ =
       UNINITIALIZED;
-
-  DISALLOW_ASSIGN(PermissionSet);
 };
 
 }  // namespace extensions

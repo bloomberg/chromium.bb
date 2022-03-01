@@ -8,11 +8,11 @@
 
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -385,7 +385,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
 
   base::ListValue* scripts =
       value->SetList("background.scripts", std::make_unique<base::ListValue>());
-  scripts->AppendString("foo.js");
+  scripts->Append("foo.js");
 
   std::string error;
   std::vector<InstallWarning> warnings;
@@ -400,8 +400,8 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
             error);
   EXPECT_EQ(0U, warnings.size());
 
-  scripts->Clear();
-  scripts->AppendString("http://google.com/foo.js");
+  scripts->ClearList();
+  scripts->Append("http://google.com/foo.js");
 
   extension = LoadExtensionManifest(*value, temp.GetPath(),
                                     ManifestLocation::kUnpacked, 0, &error);

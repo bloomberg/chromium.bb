@@ -84,15 +84,6 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
       std::unique_ptr<webrtc::VideoEncoderFactory> hardware_encoder_factory)
       : hardware_encoder_factory_(std::move(hardware_encoder_factory)) {}
 
-  webrtc::VideoEncoderFactory::CodecInfo QueryVideoEncoder(
-      const webrtc::SdpVideoFormat& format) const override {
-    const webrtc::VideoEncoderFactory* factory =
-        IsFormatSupported(hardware_encoder_factory_.get(), format)
-            ? hardware_encoder_factory_.get()
-            : &software_encoder_factory_;
-    return factory->QueryVideoEncoder(format);
-  }
-
   std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
       const webrtc::SdpVideoFormat& format) override {
     const bool supported_in_software =
@@ -138,6 +129,21 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
                : software_formats;
   }
 
+  webrtc::VideoEncoderFactory::CodecSupport QueryCodecSupport(
+      const webrtc::SdpVideoFormat& format,
+      absl::optional<std::string> scalability_mode) const override {
+    webrtc::VideoEncoderFactory::CodecSupport codec_support =
+        hardware_encoder_factory_
+            ? hardware_encoder_factory_->QueryCodecSupport(format,
+                                                           scalability_mode)
+            : webrtc::VideoEncoderFactory::CodecSupport();
+    if (!codec_support.is_supported) {
+      codec_support =
+          software_encoder_factory_.QueryCodecSupport(format, scalability_mode);
+    }
+    return codec_support;
+  }
+
  private:
   webrtc::InternalEncoderFactory software_encoder_factory_;
   const std::unique_ptr<webrtc::VideoEncoderFactory> hardware_encoder_factory_;
@@ -171,6 +177,21 @@ class DecoderAdapter : public webrtc::VideoDecoderFactory {
                : software_formats;
   }
 
+  webrtc::VideoDecoderFactory::CodecSupport QueryCodecSupport(
+      const webrtc::SdpVideoFormat& format,
+      bool reference_scaling) const override {
+    webrtc::VideoDecoderFactory::CodecSupport codec_support =
+        hardware_decoder_factory_
+            ? hardware_decoder_factory_->QueryCodecSupport(format,
+                                                           reference_scaling)
+            : webrtc::VideoDecoderFactory::CodecSupport();
+    if (!codec_support.is_supported) {
+      codec_support = software_decoder_factory_.QueryCodecSupport(
+          format, reference_scaling);
+    }
+    return codec_support;
+  }
+
  private:
   webrtc::InternalDecoderFactory software_decoder_factory_;
   const std::unique_ptr<webrtc::VideoDecoderFactory> hardware_decoder_factory_;
@@ -182,7 +203,7 @@ std::unique_ptr<webrtc::VideoEncoderFactory> CreateHWVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   std::unique_ptr<webrtc::VideoEncoderFactory> encoder_factory;
 
-  if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled() &&
+  if (gpu_factories && gpu_factories->IsGpuVideoEncodeAcceleratorEnabled() &&
       Platform::Current()->IsWebRtcHWEncodingEnabled()) {
     encoder_factory = std::make_unique<RTCVideoEncoderFactory>(gpu_factories);
   }
@@ -201,9 +222,10 @@ std::unique_ptr<webrtc::VideoDecoderFactory> CreateWebrtcVideoDecoderFactory(
     media::DecoderFactory* media_decoder_factory,
     scoped_refptr<base::SequencedTaskRunner> media_task_runner,
     const gfx::ColorSpace& render_color_space) {
-  const bool use_hw_decoding = gpu_factories != nullptr &&
-                               gpu_factories->IsGpuVideoAcceleratorEnabled() &&
-                               Platform::Current()->IsWebRtcHWDecodingEnabled();
+  const bool use_hw_decoding =
+      gpu_factories != nullptr &&
+      gpu_factories->IsGpuVideoDecodeAcceleratorEnabled() &&
+      Platform::Current()->IsWebRtcHWDecodingEnabled();
 
   // If RTCVideoDecoderStreamAdapter is used then RTCVideoDecoderFactory can
   // support both SW and HW decoding, and should therefore always be

@@ -7,12 +7,14 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 
@@ -34,6 +36,10 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
       const FrameSinkId& frame_sink_id,
       uint32_t initial_region_size = 100,
       uint32_t max_region_size = 100 * 100);
+
+  HitTestAggregator(const HitTestAggregator&) = delete;
+  HitTestAggregator& operator=(const HitTestAggregator&) = delete;
+
   ~HitTestAggregator();
 
   // Called after surfaces have been aggregated into the DisplayFrame.
@@ -75,11 +81,12 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   // Inserts debug quads based on hit-test data.
   void InsertHitTestDebugQuads(AggregatedRenderPassList* render_passes);
 
-  const HitTestManager* const hit_test_manager_;
+  const raw_ptr<const HitTestManager> hit_test_manager_;
 
-  HitTestAggregatorDelegate* const delegate_;
+  const raw_ptr<HitTestAggregatorDelegate> delegate_;
 
-  LatestLocalSurfaceIdLookupDelegate* const local_surface_id_lookup_delegate_;
+  const raw_ptr<LatestLocalSurfaceIdLookupDelegate>
+      local_surface_id_lookup_delegate_;
 
   // This is the FrameSinkId for the corresponding root CompositorFrameSink.
   const FrameSinkId root_frame_sink_id_;
@@ -110,8 +117,6 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.
   base::WeakPtrFactory<HitTestAggregator> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HitTestAggregator);
 };
 
 }  // namespace viz

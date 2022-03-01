@@ -7,9 +7,12 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "chrome/browser/ui/android/safe_browsing/password_reuse_dialog_view_android.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace safe_browsing {
@@ -25,44 +28,98 @@ PasswordReuseControllerAndroid::PasswordReuseControllerAndroid(
       window_android_(web_contents->GetTopLevelNativeWindow()),
       done_callback_(std::move(done_callback)) {
   modal_construction_start_time_ = base::TimeTicks::Now();
-  service_->AddObserver(this);
+
+  // |service| can be nullptr in tests
+  if (service)
+    service_->AddObserver(this);
 }
 
 PasswordReuseControllerAndroid::~PasswordReuseControllerAndroid() {
-  service_->RemoveObserver(this);
+  if (service_)
+    service_->RemoveObserver(this);
+
   dialog_view_.reset();
   LogModalWarningDialogLifetime(modal_construction_start_time_);
 }
 
 void PasswordReuseControllerAndroid::ShowDialog() {
   dialog_view_ = std::make_unique<PasswordReuseDialogViewAndroid>(this);
+
   DCHECK(window_android_);
   dialog_view_->Show(window_android_);
+}
+
+void PasswordReuseControllerAndroid::ShowCheckPasswords() {
+  if (done_callback_)
+    std::move(done_callback_).Run(WarningAction::CHANGE_PASSWORD);
+
+  delete this;
+}
+
+void PasswordReuseControllerAndroid::IgnoreDialog() {
+  if (done_callback_)
+    std::move(done_callback_).Run(WarningAction::IGNORE_WARNING);
+
+  delete this;
 }
 
 void PasswordReuseControllerAndroid::CloseDialog() {
   if (done_callback_)
     std::move(done_callback_).Run(WarningAction::CLOSE);
+
   delete this;
 }
 
-std::u16string PasswordReuseControllerAndroid::GetButtonText() const {
+std::u16string PasswordReuseControllerAndroid::GetPrimaryButtonText() const {
+  if (password_type_.account_type() == ReusedPasswordAccountType::GMAIL &&
+      password_type_.is_account_syncing() &&
+      base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionForSignedInUsers)) {
+    return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
+  } else if (
+      password_type_.account_type() ==
+          ReusedPasswordAccountType::SAVED_PASSWORD &&
+      base::FeatureList::IsEnabled(
+          safe_browsing::
+              kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid)) {
+    return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON);
+  }
+
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-std::u16string PasswordReuseControllerAndroid::GetWarningDetailText(
-    std::vector<size_t>* placeholder_offsets) const {
-  return service_->GetWarningDetailText(password_type_, placeholder_offsets);
+std::u16string PasswordReuseControllerAndroid::GetSecondaryButtonText() const {
+  if ((password_type_.account_type() == ReusedPasswordAccountType::GMAIL &&
+       password_type_.is_account_syncing() &&
+       base::FeatureList::IsEnabled(
+           safe_browsing::kPasswordProtectionForSignedInUsers)) ||
+      (password_type_.account_type() ==
+           ReusedPasswordAccountType::SAVED_PASSWORD &&
+       base::FeatureList::IsEnabled(
+           safe_browsing::
+               kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid))) {
+    return l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON);
+  }
+
+  return std::u16string();
+}
+
+std::u16string PasswordReuseControllerAndroid::GetWarningDetailText() const {
+  return service_->GetWarningDetailText(password_type_);
 }
 
 std::u16string PasswordReuseControllerAndroid::GetTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
-}
+  if (password_type_.account_type() ==
+          ReusedPasswordAccountType::SAVED_PASSWORD &&
+      base::FeatureList::IsEnabled(
+          safe_browsing::
+              kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid)) {
+    return l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_CHANGE_PASSWORD_SAVED_PASSWORD_SUMMARY);
+  }
 
-const std::vector<std::u16string>
-PasswordReuseControllerAndroid::GetPlaceholdersForSavedPasswordWarningText()
-    const {
-  return service_->GetPlaceholdersForSavedPasswordWarningText();
+  return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
 }
 
 void PasswordReuseControllerAndroid::OnGaiaPasswordChanged() {
@@ -91,6 +148,11 @@ WarningUIType PasswordReuseControllerAndroid::GetObserverType() {
 
 void PasswordReuseControllerAndroid::WebContentsDestroyed() {
   delete this;
+}
+
+void PasswordReuseControllerAndroid::SetReusedPasswordAccountTypeForTesting(
+    ReusedPasswordAccountType password_type) {
+  password_type_ = password_type;
 }
 
 }  // namespace safe_browsing

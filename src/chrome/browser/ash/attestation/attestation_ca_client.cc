@@ -18,10 +18,12 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -253,8 +255,8 @@ void AttestationCAClient::CheckIfAnyProxyPresent(
         g_browser_process->system_network_context_manager()->GetContext();
   }
 
-  CAProxyLookupClient::LookUpProxyForURL(network_context, url.GetOrigin(),
-                                         std::move(callback));
+  CAProxyLookupClient::LookUpProxyForURL(
+      network_context, url.DeprecatedGetOriginAsURL(), std::move(callback));
 }
 
 }  // namespace attestation

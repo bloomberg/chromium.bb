@@ -5,8 +5,6 @@
 #ifndef UI_VIEWS_LAYOUT_FILL_LAYOUT_H_
 #define UI_VIEWS_LAYOUT_FILL_LAYOUT_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ui/views/layout/layout_manager_base.h"
 #include "ui/views/view.h"
 
@@ -23,6 +21,10 @@ namespace views {
 class VIEWS_EXPORT FillLayout : public LayoutManagerBase {
  public:
   FillLayout();
+
+  FillLayout(const FillLayout&) = delete;
+  FillLayout& operator=(const FillLayout&) = delete;
+
   ~FillLayout() override;
 
   bool include_hidden_views() const { return include_hidden_views_; }
@@ -54,8 +56,6 @@ class VIEWS_EXPORT FillLayout : public LayoutManagerBase {
   //
   // Off by default for backwards-compatibility with legacy uses of FillLayout.
   bool minimum_size_enabled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
 
 }  // namespace views

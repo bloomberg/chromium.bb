@@ -80,7 +80,8 @@ def _GenerateProjectFile(android_manifest,
                          resource_sources=None,
                          custom_lint_jars=None,
                          custom_annotation_zips=None,
-                         android_sdk_version=None):
+                         android_sdk_version=None,
+                         baseline_path=None):
   project = ElementTree.Element('project')
   root = ElementTree.SubElement(project, 'root')
   # Run lint from output directory: crbug.com/1115594
@@ -88,6 +89,9 @@ def _GenerateProjectFile(android_manifest,
   sdk = ElementTree.SubElement(project, 'sdk')
   # Lint requires that the sdk path be an absolute path.
   sdk.set('dir', os.path.abspath(android_sdk_root))
+  if baseline_path is not None:
+    baseline = ElementTree.SubElement(project, 'baseline')
+    baseline.set('file', baseline_path)
   cache = ElementTree.SubElement(project, 'cache')
   cache.set('dir', cache_dir)
   main_module = ElementTree.SubElement(project, 'module')
@@ -191,7 +195,8 @@ def _WriteXmlFile(root, path):
             root, encoding='utf-8')).toprettyxml(indent='  ').encode('utf-8'))
 
 
-def _RunLint(lint_binary_path,
+def _RunLint(create_cache,
+             lint_binary_path,
              backported_methods_path,
              config_path,
              manifest_path,
@@ -212,21 +217,25 @@ def _RunLint(lint_binary_path,
              warnings_as_errors=False):
   logging.info('Lint starting')
 
+  if create_cache:
+    # Occasionally lint may crash due to re-using intermediate files from older
+    # lint runs. See https://crbug.com/1258178 for context.
+    logging.info('Clearing cache dir %s before creating cache.', cache_dir)
+    shutil.rmtree(cache_dir, ignore_errors=True)
+    os.makedirs(cache_dir)
+
   cmd = [
       lint_binary_path,
+      # Uncomment to update baseline files during lint upgrades.
+      #'--update-baseline',
+      # Uncomment to easily remove fixed lint errors. This is not turned on by
+      # default due to: https://crbug.com/1256477#c5
+      #'--remove-fixed',
       '--quiet',  # Silences lint's "." progress updates.
       '--disable',
       ','.join(_DISABLED_ALWAYS),
   ]
 
-  # Crashes lint itself, see b/187524311
-  # Only disable if we depend on androidx.fragment (otherwise lint fails due to
-  # non-existent check).
-  if any('androidx_fragment_fragment' in aar for aar in aars):
-    cmd.extend(['--disable', 'DialogFragmentCallbacksDetector'])
-
-  if baseline:
-    cmd.extend(['--baseline', baseline])
   if testonly_target:
     cmd.extend(['--disable', ','.join(_DISABLED_FOR_TESTS)])
 
@@ -302,7 +311,7 @@ def _RunLint(lint_binary_path,
                                            classpath, srcjar_sources,
                                            resource_sources, custom_lint_jars,
                                            custom_annotation_zips,
-                                           android_sdk_version)
+                                           android_sdk_version, baseline)
 
   project_xml_path = os.path.join(lint_gen_dir, 'project.xml')
   _WriteXmlFile(project_file_root, project_xml_path)
@@ -466,7 +475,8 @@ def main():
                            ])
   depfile_deps = [p for p in possible_depfile_deps if p]
 
-  _RunLint(args.lint_binary_path,
+  _RunLint(args.create_cache,
+           args.lint_binary_path,
            args.backported_methods,
            args.config_path,
            args.manifest_path,

@@ -4,11 +4,11 @@
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
-#include "components/safe_browsing/core/db/util.h"
+#include "components/safe_browsing/core/browser/db/util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_test_harness.h"
@@ -70,6 +70,11 @@ class SubresourceFilterAbusiveTest
         .push_back(subresource_filter::kFilterAdsOnAbusiveSites);
     scoped_features_.InitWithFeatures(enabled_features, disabled_features);
   }
+
+  SubresourceFilterAbusiveTest(const SubresourceFilterAbusiveTest&) = delete;
+  SubresourceFilterAbusiveTest& operator=(const SubresourceFilterAbusiveTest&) =
+      delete;
+
   ~SubresourceFilterAbusiveTest() override {}
 
   // SubresourceFilterTestHarness:
@@ -112,11 +117,11 @@ class SubresourceFilterAbusiveTest
   MetadataLevel bas_level_ = METADATA_NONE;
   bool enable_adblock_on_abusive_sites_ = false;
 
-  blocked_content::SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
+  raw_ptr<blocked_content::SafeBrowsingTriggeredPopupBlocker> popup_blocker_ =
+      nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_features_;
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAbusiveTest);
 };
 
 TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
@@ -129,7 +134,8 @@ TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
   SimulateNavigateAndCommit(url, main_rfh());
 
   bool disallow_requests = !CreateAndNavigateDisallowedSubframe(main_rfh());
-  bool disallow_popups = popup_blocker_->ShouldApplyAbusivePopupBlocker();
+  bool disallow_popups =
+      popup_blocker_->ShouldApplyAbusivePopupBlocker(main_rfh()->GetPage());
 
   bool any_activation_enforce =
       bas_level_ == METADATA_ENFORCE ||

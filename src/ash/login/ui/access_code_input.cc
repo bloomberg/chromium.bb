@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/public/cpp/login_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/strings/strcat.h"
@@ -17,6 +16,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -185,6 +185,14 @@ void AccessibleInputField::OnGestureEvent(ui::GestureEvent* event) {
   views::Textfield::OnGestureEvent(event);
 }
 
+void AccessibleInputField::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // Focusable nodes generally must have a name, but the focus of an accessible
+  // input field is propagated to its ancestor.
+  node_data->SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+
+  views::Textfield::GetAccessibleNodeData(node_data);
+}
+
 FixedLengthCodeInput::FixedLengthCodeInput(int length,
                                            OnInputChange on_input_change,
                                            OnEnter on_enter,
@@ -227,7 +235,7 @@ FixedLengthCodeInput::FixedLengthCodeInput(int length,
 
     // Ignores the a11y focus of |field| because the a11y needs to focus to the
     // FixedLengthCodeInput object.
-    field->GetViewAccessibility().OverrideIsIgnored(true);
+    field->GetViewAccessibility().set_propagate_focus_to_ancestor(true);
     input_fields_.push_back(field);
     AddChildView(field);
     layout->SetFlexForView(field, 1);

@@ -9,8 +9,6 @@
 #include <algorithm>
 
 #include "base/check.h"
-#include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -189,7 +187,7 @@ bool ParseFileSystemSchemeURL(const GURL& url,
     return false;
 
   if (origin_url)
-    *origin_url = url.GetOrigin();
+    *origin_url = url.DeprecatedGetOriginAsURL();
   if (type)
     *type = file_system_type;
   if (virtual_path)
@@ -236,39 +234,6 @@ std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
   return origin_identifier + ":" + type_string;
 }
 
-FileSystemType QuotaStorageTypeToFileSystemType(
-    blink::mojom::StorageType storage_type) {
-  switch (storage_type) {
-    case blink::mojom::StorageType::kTemporary:
-      return kFileSystemTypeTemporary;
-    case blink::mojom::StorageType::kPersistent:
-      return kFileSystemTypePersistent;
-    case blink::mojom::StorageType::kSyncable:
-      return kFileSystemTypeSyncable;
-    case blink::mojom::StorageType::kQuotaNotManaged:
-    case blink::mojom::StorageType::kUnknown:
-      return kFileSystemTypeUnknown;
-  }
-  return kFileSystemTypeUnknown;
-}
-
-blink::mojom::StorageType FileSystemTypeToQuotaStorageType(
-    FileSystemType type) {
-  switch (type) {
-    case kFileSystemTypeTemporary:
-      return blink::mojom::StorageType::kTemporary;
-    case kFileSystemTypePersistent:
-      return blink::mojom::StorageType::kPersistent;
-    case kFileSystemTypeSyncable:
-    case kFileSystemTypeSyncableForInternalSync:
-      return blink::mojom::StorageType::kSyncable;
-    case kFileSystemTypePluginPrivate:
-      return blink::mojom::StorageType::kQuotaNotManaged;
-    default:
-      return blink::mojom::StorageType::kUnknown;
-  }
-}
-
 std::string GetFileSystemTypeString(FileSystemType type) {
   switch (type) {
     case kFileSystemTypeTemporary:
@@ -300,8 +265,6 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "TransientFile";
     case kFileSystemTypePluginPrivate:
       return "PluginPrivate";
-    case kFileSystemTypeCloudDevice:
-      return "CloudDevice";
     case kFileSystemTypeProvided:
       return "Provided";
     case kFileSystemTypeDeviceMediaAsFileStorage:

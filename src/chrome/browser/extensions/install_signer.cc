@@ -16,7 +16,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -130,7 +129,7 @@ void SetExtensionIdSet(base::DictionaryValue* dictionary,
                        const ExtensionIdSet& ids) {
   auto id_list = std::make_unique<base::ListValue>();
   for (auto i = ids.begin(); i != ids.end(); ++i)
-    id_list->AppendString(*i);
+    id_list->Append(*i);
   dictionary->Set(key, std::move(id_list));
 }
 
@@ -145,11 +144,10 @@ bool GetExtensionIdSet(const base::DictionaryValue& dictionary,
   if (!dictionary.GetList(key, &id_list))
     return false;
   for (const auto& entry : id_list->GetList()) {
-    std::string id;
-    if (!entry.GetAsString(&id)) {
+    if (!entry.is_string()) {
       return false;
     }
-    ids->insert(id);
+    ids->insert(entry.GetString());
   }
   return true;
 }
@@ -188,9 +186,9 @@ std::unique_ptr<InstallSignature> InstallSignature::FromValue(
 
   // For now we don't want to support any backwards compability, but in the
   // future if we do, we would want to put the migration code here.
-  int format_version = 0;
-  if (!value.GetInteger(kSignatureFormatVersionKey, &format_version) ||
-      format_version != kSignatureFormatVersion) {
+  absl::optional<int> format_version =
+      value.FindIntKey(kSignatureFormatVersionKey);
+  if (format_version != kSignatureFormatVersion) {
     result.reset();
     return result;
   }
@@ -349,7 +347,7 @@ void InstallSigner::GetSignature(SignatureCallback callback) {
   dictionary.SetString(kHashKey, hash_base64);
   std::unique_ptr<base::ListValue> id_list(new base::ListValue);
   for (auto i = ids_.begin(); i != ids_.end(); ++i) {
-    id_list->AppendString(*i);
+    id_list->Append(*i);
   }
   dictionary.Set(kIdsKey, std::move(id_list));
   std::string json;
@@ -410,12 +408,12 @@ void InstallSigner::ParseFetchResponse(
     return;
   }
 
-  int protocol_version = 0;
+  int protocol_version =
+      dictionary->FindIntKey(kProtocolVersionKey).value_or(0);
   std::string signature_base64;
   std::string signature;
   std::string expire_date;
 
-  dictionary->GetInteger(kProtocolVersionKey, &protocol_version);
   dictionary->GetString(kSignatureKey, &signature_base64);
   dictionary->GetString(kExpiryKey, &expire_date);
 
@@ -429,15 +427,15 @@ void InstallSigner::ParseFetchResponse(
   }
 
   ExtensionIdSet invalid_ids;
-  const base::ListValue* invalid_ids_list = NULL;
-  if (dictionary->GetList(kInvalidIdsKey, &invalid_ids_list)) {
-    for (size_t i = 0; i < invalid_ids_list->GetSize(); i++) {
-      std::string id;
-      if (!invalid_ids_list->GetString(i, &id)) {
+  const base::Value* invalid_ids_list = dictionary->FindListKey(kInvalidIdsKey);
+  if (invalid_ids_list) {
+    for (const base::Value& invalid_id : invalid_ids_list->GetList()) {
+      const std::string* id = invalid_id.GetIfString();
+      if (!id) {
         ReportErrorViaCallback();
         return;
       }
-      invalid_ids.insert(id);
+      invalid_ids.insert(*id);
     }
   }
 

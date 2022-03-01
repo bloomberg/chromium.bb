@@ -6,7 +6,7 @@
 #define HEADLESS_LIB_BROWSER_HEADLESS_PERMISSION_MANAGER_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/permission_controller_delegate.h"
 
 namespace content {
@@ -18,6 +18,11 @@ namespace headless {
 class HeadlessPermissionManager : public content::PermissionControllerDelegate {
  public:
   explicit HeadlessPermissionManager(content::BrowserContext* browser_context);
+
+  HeadlessPermissionManager(const HeadlessPermissionManager&) = delete;
+  HeadlessPermissionManager& operator=(const HeadlessPermissionManager&) =
+      delete;
+
   ~HeadlessPermissionManager() override;
 
   // PermissionManager implementation.
@@ -57,9 +62,7 @@ class HeadlessPermissionManager : public content::PermissionControllerDelegate {
       SubscriptionId subscription_id) override;
 
  private:
-  content::BrowserContext* browser_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessPermissionManager);
+  raw_ptr<content::BrowserContext> browser_context_;
 };
 
 }  // namespace content

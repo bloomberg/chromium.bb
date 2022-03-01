@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/callback.h"
@@ -62,6 +61,11 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
 
   AudioDebugRecordingManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  AudioDebugRecordingManager(const AudioDebugRecordingManager&) = delete;
+  AudioDebugRecordingManager& operator=(const AudioDebugRecordingManager&) =
+      delete;
+
   virtual ~AudioDebugRecordingManager();
 
   // Enables and disables debug recording.
@@ -75,7 +79,7 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
       const AudioParameters& params);
 
  protected:
-  // Creates a AudioDebugRecordingHelper. Overridden by test.
+  // Creates an AudioDebugRecordingHelper. Overridden by test.
   virtual std::unique_ptr<AudioDebugRecordingHelper>
   CreateAudioDebugRecordingHelper(
       const AudioParameters& params,
@@ -112,7 +116,6 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
   CreateWavFileCallback create_file_callback_;
 
   base::WeakPtrFactory<AudioDebugRecordingManager> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingManager);
 };
 
 }  // namespace media

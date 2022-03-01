@@ -168,18 +168,10 @@ GpuLaunchConfig GetGpuLaunchConfig(int work_element_count,
       block_size_limit);
   CHECK_EQ(err, cudaSuccess);
 #elif TENSORFLOW_USE_ROCM
-  // Earlier versions of this HIP routine incorrectly returned void.
-  // TODO re-enable hipError_t error checking when HIP is fixed.
-  // ROCm interface uses unsigned int, convert after checking
-  uint32_t block_count_uint = 0;
-  uint32_t thread_per_block_uint = 0;
-  CHECK_GE(block_size_limit, 0);
-  uint32_t block_size_limit_uint = static_cast<uint32_t>(block_size_limit);
-  hipOccupancyMaxPotentialBlockSize(&block_count_uint, &thread_per_block_uint,
-                                    func, dynamic_shared_memory_size,
-                                    block_size_limit_uint);
-  block_count = static_cast<int>(block_count_uint);
-  thread_per_block = static_cast<int>(thread_per_block_uint);
+  hipError_t err = hipOccupancyMaxPotentialBlockSize(
+      &block_count, &thread_per_block, func, dynamic_shared_memory_size,
+      block_size_limit);
+  CHECK_EQ(err, hipSuccess);
 #endif
 
   block_count =
@@ -208,27 +200,13 @@ GpuLaunchConfig GetGpuLaunchConfigFixedBlockSize(
   cudaError_t err = cudaOccupancyMaxActiveBlocksPerMultiprocessor(
       &block_count, func, fixed_block_size, dynamic_shared_memory_size);
   CHECK_EQ(err, cudaSuccess);
+#elif TENSORFLOW_USE_ROCM
+  hipError_t err = hipOccupancyMaxActiveBlocksPerMultiprocessor(
+      &block_count, func, fixed_block_size, dynamic_shared_memory_size);
+  CHECK_EQ(err, hipSuccess);
+#endif
   block_count = std::min(block_count * d.getNumGpuMultiProcessors(),
                          DivUp(work_element_count, fixed_block_size));
-#elif TENSORFLOW_USE_ROCM
-  // ROCM TODO re-enable this after hipOccupancyMaxActiveBlocksPerMultiprocessor
-  // is implemented
-  // hipError_t err = hipOccupancyMaxActiveBlocksPerMultiprocessor(
-  //    &block_count, &thread_per_block, func, dynamic_shared_memory_size,
-  //    block_size_limit);
-  // CHECK_EQ(err, hipSuccess);
-
-  // Apply the heuristic in GetGpuLaunchConfig(int, const Eigen::GpuDevice&)
-  // that the kernel is quite simple and will largely be memory-limited.
-  const int physical_thread_count = std::min(
-      d.getNumGpuMultiProcessors() * d.maxGpuThreadsPerMultiProcessor(),
-      work_element_count);
-  // Assume the kernel be simple enough that it is okay to use 1024 threads
-  // per workgroup.
-  int thread_per_block = std::min(1024, d.maxGpuThreadsPerBlock());
-  block_count = std::min(DivUp(physical_thread_count, thread_per_block),
-                         d.getNumGpuMultiProcessors());
-#endif
 
   config.virtual_thread_count = work_element_count;
   config.thread_per_block = fixed_block_size;
@@ -298,21 +276,25 @@ Gpu3DLaunchConfig GetGpu3DLaunchConfig(int xdim, int ydim, int zdim,
   }
 
   int dev;
+  int xthreadlimit = 0, ythreadlimit = 0, zthreadlimit = 0;
+  int xgridlimit = 0, ygridlimit = 0, zgridlimit = 0;
 #if GOOGLE_CUDA
   cudaGetDevice(&dev);
-  cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties(&deviceProp, dev);
+  cudaDeviceGetAttribute(&xthreadlimit, cudaDevAttrMaxBlockDimX, dev);
+  cudaDeviceGetAttribute(&ythreadlimit, cudaDevAttrMaxBlockDimY, dev);
+  cudaDeviceGetAttribute(&zthreadlimit, cudaDevAttrMaxBlockDimZ, dev);
+  cudaDeviceGetAttribute(&xgridlimit, cudaDevAttrMaxGridDimX, dev);
+  cudaDeviceGetAttribute(&ygridlimit, cudaDevAttrMaxGridDimY, dev);
+  cudaDeviceGetAttribute(&zgridlimit, cudaDevAttrMaxGridDimZ, dev);
 #elif TENSORFLOW_USE_ROCM
   hipGetDevice(&dev);
-  hipDeviceProp_t deviceProp;
-  hipGetDeviceProperties(&deviceProp, dev);
+  hipDeviceGetAttribute(&xthreadlimit, hipDeviceAttributeMaxBlockDimX, dev);
+  hipDeviceGetAttribute(&ythreadlimit, hipDeviceAttributeMaxBlockDimY, dev);
+  hipDeviceGetAttribute(&zthreadlimit, hipDeviceAttributeMaxBlockDimZ, dev);
+  hipDeviceGetAttribute(&xgridlimit, hipDeviceAttributeMaxGridDimX, dev);
+  hipDeviceGetAttribute(&ygridlimit, hipDeviceAttributeMaxGridDimY, dev);
+  hipDeviceGetAttribute(&zgridlimit, hipDeviceAttributeMaxGridDimZ, dev);
 #endif
-  int xthreadlimit = deviceProp.maxThreadsDim[0];
-  int ythreadlimit = deviceProp.maxThreadsDim[1];
-  int zthreadlimit = deviceProp.maxThreadsDim[2];
-  int xgridlimit = deviceProp.maxGridSize[0];
-  int ygridlimit = deviceProp.maxGridSize[1];
-  int zgridlimit = deviceProp.maxGridSize[2];
 
   int block_count = 0;
   int thread_per_block = 0;

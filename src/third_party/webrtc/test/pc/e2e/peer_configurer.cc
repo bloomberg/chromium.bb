@@ -90,11 +90,12 @@ void SetDefaultValuesForMissingParams(
           *p->name + "_auto_audio_stream_label_");
       audio_stream_names_provider.MaybeSetName(&p->audio_config->stream_label);
     }
-  }
 
-  if (run_params->video_codecs.empty()) {
-    run_params->video_codecs.push_back(
-        VideoCodecConfig(cricket::kVp8CodecName));
+    if (p->video_codecs.empty()) {
+      p->video_codecs.push_back(
+          PeerConnectionE2EQualityTestFixture::VideoCodecConfig(
+              cricket::kVp8CodecName));
+    }
   }
 }
 
@@ -102,7 +103,6 @@ void ValidateParams(
     const RunParams& run_params,
     const std::vector<std::unique_ptr<PeerConfigurerImpl>>& peers) {
   RTC_CHECK_GT(run_params.video_encoder_bitrate_multiplier, 0.0);
-  RTC_CHECK_GE(run_params.video_codecs.size(), 1);
 
   std::set<std::string> peer_names;
   std::set<std::string> video_labels;
@@ -113,6 +113,8 @@ void ValidateParams(
 
   for (size_t i = 0; i < peers.size(); ++i) {
     Params* p = peers[i]->params();
+    // Each peer should at least support 1 video codec.
+    RTC_CHECK_GE(p->video_codecs.size(), 1);
 
     {
       RTC_CHECK(p->name);
@@ -160,14 +162,11 @@ void ValidateParams(
           RTC_CHECK_LT(*video_config.simulcast_config->target_spatial_index,
                        video_config.simulcast_config->simulcast_streams_count);
         }
-        RTC_CHECK_EQ(run_params.video_codecs.size(), 1)
-            << "Only 1 video codec is supported when simulcast is enabled in "
-            << "at least 1 video config";
         RTC_CHECK(!video_config.max_encode_bitrate_bps)
             << "Setting max encode bitrate is not implemented for simulcast.";
         RTC_CHECK(!video_config.min_encode_bitrate_bps)
             << "Setting min encode bitrate is not implemented for simulcast.";
-        if (run_params.video_codecs[0].name == cricket::kVp8CodecName &&
+        if (p->video_codecs[0].name == cricket::kVp8CodecName &&
             !video_config.simulcast_config->encoding_params.empty()) {
           RTC_CHECK_EQ(video_config.simulcast_config->simulcast_streams_count,
                        video_config.simulcast_config->encoding_params.size())

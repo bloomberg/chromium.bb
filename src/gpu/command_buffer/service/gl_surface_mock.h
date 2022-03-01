@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_SURFACE_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_SURFACE_MOCK_H_
 
-#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
@@ -15,6 +14,9 @@ namespace gpu {
 class GLSurfaceMock : public gl::GLSurface {
  public:
   GLSurfaceMock();
+
+  GLSurfaceMock(const GLSurfaceMock&) = delete;
+  GLSurfaceMock& operator=(const GLSurfaceMock&) = delete;
 
   MOCK_METHOD1(Initialize, bool(gl::GLSurfaceFormat format));
   MOCK_METHOD0(Destroy, void());
@@ -45,9 +47,6 @@ class GLSurfaceMock : public gl::GLSurface {
 
  protected:
   ~GLSurfaceMock() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLSurfaceMock);
 };
 
 }  // namespace gpu

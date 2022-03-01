@@ -86,7 +86,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -1051,10 +1051,6 @@ bool Page::LocalMainFrameNetworkIsAlmostIdle() const {
   return frame->GetIdlenessDetector()->NetworkIsAlmostIdle();
 }
 
-bool Page::IsFocused() const {
-  return GetFocusController().IsFocused();
-}
-
 void Page::AddAutoplayFlags(int32_t value) {
   autoplay_flags_ |= value;
 }
@@ -1068,11 +1064,27 @@ int32_t Page::AutoplayFlags() const {
 }
 
 void Page::SetInsidePortal(bool inside_portal) {
+  if (inside_portal_ == inside_portal)
+    return;
+
   inside_portal_ = inside_portal;
+
+  if (MainFrame() && MainFrame()->IsLocalFrame() &&
+      DeprecatedLocalMainFrame()->GetDocument()) {
+    DeprecatedLocalMainFrame()->GetDocument()->ClearAXObjectCache();
+  }
 }
 
 bool Page::InsidePortal() const {
   return inside_portal_;
+}
+
+void Page::SetIsMainFrameFencedFrameRoot() {
+  is_fenced_frame_tree_ = true;
+}
+
+bool Page::IsMainFrameFencedFrameRoot() const {
+  return is_fenced_frame_tree_;
 }
 
 void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
@@ -1083,7 +1095,8 @@ void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
     media_feature_overrides_ = std::make_unique<MediaFeatureOverrides>();
   }
   media_feature_overrides_->SetOverride(media_feature, value);
-  if (media_feature == "prefers-color-scheme")
+  if (media_feature == "prefers-color-scheme" ||
+      media_feature == "forced-colors")
     SettingsChanged(ChangeType::kColorScheme);
   else
     SettingsChanged(ChangeType::kMediaQuery);

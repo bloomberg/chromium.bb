@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 
@@ -24,6 +23,10 @@ class BluetoothPairingBlueZ {
   BluetoothPairingBlueZ(
       BluetoothDeviceBlueZ* device,
       device::BluetoothDevice::PairingDelegate* pairing_delegate);
+
+  BluetoothPairingBlueZ(const BluetoothPairingBlueZ&) = delete;
+  BluetoothPairingBlueZ& operator=(const BluetoothPairingBlueZ&) = delete;
+
   ~BluetoothPairingBlueZ();
 
   // Indicates whether the device is currently pairing and expecting a
@@ -142,8 +145,6 @@ class BluetoothPairingBlueZ {
       passkey_callback_;
   bluez::BluetoothAgentServiceProvider::Delegate::ConfirmationCallback
       confirmation_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothPairingBlueZ);
 };
 
 }  // namespace bluez

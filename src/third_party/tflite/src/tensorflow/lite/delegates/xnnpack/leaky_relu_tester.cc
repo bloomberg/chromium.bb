@@ -27,6 +27,7 @@ limitations under the License.
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
+#include "tensorflow/lite/schema/schema_conversion_utils.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
 
@@ -44,12 +45,16 @@ void LeakyReluTester::Test(TfLiteDelegate* delegate) const {
 
   std::unique_ptr<Interpreter> delegate_interpreter;
   ASSERT_EQ(
-      InterpreterBuilder(model, ::tflite::ops::builtin::BuiltinOpResolver())(
+      InterpreterBuilder(
+          model,
+          ::tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates())(
           &delegate_interpreter),
       kTfLiteOk);
   std::unique_ptr<Interpreter> default_interpreter;
   ASSERT_EQ(
-      InterpreterBuilder(model, ::tflite::ops::builtin::BuiltinOpResolver())(
+      InterpreterBuilder(
+          model,
+          ::tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates())(
           &default_interpreter),
       kTfLiteOk);
 
@@ -67,23 +72,22 @@ void LeakyReluTester::Test(TfLiteDelegate* delegate) const {
 
   ASSERT_EQ(delegate_interpreter->ModifyGraphWithDelegate(delegate), kTfLiteOk);
 
-  float* default_input_data = default_interpreter->typed_tensor<float>(
-      default_interpreter->inputs()[0]);
+  float* default_input_data = default_interpreter->typed_input_tensor<float>(0);
   std::generate(default_input_data, default_input_data + Size(),
                 std::ref(input_rng));
 
-  float* delegate_input_data = delegate_interpreter->typed_tensor<float>(
-      delegate_interpreter->inputs()[0]);
+  float* delegate_input_data =
+      delegate_interpreter->typed_input_tensor<float>(0);
   std::copy(default_input_data, default_input_data + Size(),
             delegate_input_data);
 
   ASSERT_EQ(default_interpreter->Invoke(), kTfLiteOk);
   ASSERT_EQ(delegate_interpreter->Invoke(), kTfLiteOk);
 
-  float* default_output_data = default_interpreter->typed_tensor<float>(
-      default_interpreter->outputs()[0]);
-  float* delegate_output_data = delegate_interpreter->typed_tensor<float>(
-      delegate_interpreter->outputs()[0]);
+  float* default_output_data =
+      default_interpreter->typed_output_tensor<float>(0);
+  float* delegate_output_data =
+      delegate_interpreter->typed_output_tensor<float>(0);
 
   for (size_t i = 0; i < Size(); i++) {
     ASSERT_EQ(default_output_data[i], delegate_output_data[i]);

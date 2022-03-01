@@ -10,13 +10,15 @@
 
 namespace policy {
 
-CloudPolicyStore::Observer::~Observer() {}
+CloudPolicyStore::Observer::~Observer() = default;
+void CloudPolicyStore::Observer::OnStoreDestruction(CloudPolicyStore* store) {}
 
 CloudPolicyStore::CloudPolicyStore() = default;
 
 CloudPolicyStore::~CloudPolicyStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!external_data_manager_);
+  NotifyStoreDestruction();
 }
 
 bool CloudPolicyStore::is_managed() const {
@@ -65,12 +67,32 @@ void CloudPolicyStore::UpdateFirstPoliciesLoaded() {
   first_policies_loaded_ |= has_policy();
 }
 
+void CloudPolicyStore::SetPolicy(
+    std::unique_ptr<enterprise_management::PolicyFetchResponse>
+        policy_fetch_response,
+    std::unique_ptr<enterprise_management::PolicyData> policy_data) {
+  DCHECK(policy_fetch_response);
+  DCHECK(policy_data);
+  policy_fetch_response_ = std::move(policy_fetch_response);
+  policy_ = std::move(policy_data);
+}
+
+void CloudPolicyStore::ResetPolicy() {
+  policy_.reset();
+  policy_fetch_response_.reset();
+}
+
 void CloudPolicyStore::NotifyStoreError() {
   is_initialized_ = true;
   UpdateFirstPoliciesLoaded();
 
   for (auto& observer : observers_)
     observer.OnStoreError(this);
+}
+
+void CloudPolicyStore::NotifyStoreDestruction() {
+  for (auto& observer : observers_)
+    observer.OnStoreDestruction(this);
 }
 
 void CloudPolicyStore::SetExternalDataManager(
@@ -83,13 +105,6 @@ void CloudPolicyStore::SetExternalDataManager(
     external_data_manager_->OnPolicyStoreLoaded();
 }
 
-void CloudPolicyStore::SetPolicyMapForTesting(const PolicyMap& policy_map) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  policy_map_ = policy_map.Clone();
-  NotifyStoreLoaded();
-}
-
 void CloudPolicyStore::SetFirstPoliciesLoaded(bool loaded) {
   first_policies_loaded_ = loaded;
 }
@@ -97,6 +112,13 @@ void CloudPolicyStore::SetFirstPoliciesLoaded(bool loaded) {
 void CloudPolicyStore::set_policy_data_for_testing(
     std::unique_ptr<enterprise_management::PolicyData> policy) {
   policy_ = std::move(policy);
+  if (policy_) {
+    policy_fetch_response_ =
+        std::make_unique<enterprise_management::PolicyFetchResponse>();
+    policy_fetch_response_->set_policy_data(policy_->SerializeAsString());
+  } else {
+    policy_fetch_response_.reset();
+  }
 }
 
 }  // namespace policy

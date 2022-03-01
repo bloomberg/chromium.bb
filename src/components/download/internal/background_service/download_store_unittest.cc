@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "components/download/internal/background_service/entry.h"
 #include "components/download/internal/background_service/proto/entry.pb.h"
 #include "components/download/internal/background_service/proto_conversions.h"
@@ -26,6 +27,9 @@ namespace download {
 class DownloadStoreTest : public testing::Test {
  public:
   DownloadStoreTest() : db_(nullptr) {}
+
+  DownloadStoreTest(const DownloadStoreTest&) = delete;
+  DownloadStoreTest& operator=(const DownloadStoreTest&) = delete;
 
   ~DownloadStoreTest() override = default;
 
@@ -63,11 +67,9 @@ class DownloadStoreTest : public testing::Test {
 
  protected:
   std::map<std::string, protodb::Entry> db_entries_;
-  leveldb_proto::test::FakeDB<protodb::Entry>* db_;
+  raw_ptr<leveldb_proto::test::FakeDB<protodb::Entry>> db_;
   std::unique_ptr<DownloadStore> store_;
   absl::optional<bool> hard_recover_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadStoreTest);
 };
 
 TEST_F(DownloadStoreTest, Initialize) {

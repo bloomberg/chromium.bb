@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/tick_clock.h"
 #include "media/audio/android/muteable_audio_output_stream.h"
 #include "media/base/audio_parameters.h"
@@ -22,6 +23,10 @@ class MEDIA_EXPORT AudioTrackOutputStream : public MuteableAudioOutputStream {
  public:
   AudioTrackOutputStream(AudioManagerBase* manager,
                          const AudioParameters& params);
+
+  AudioTrackOutputStream(const AudioTrackOutputStream&) = delete;
+  AudioTrackOutputStream& operator=(const AudioTrackOutputStream&) = delete;
+
   ~AudioTrackOutputStream() override;
 
   // AudioOutputStream implementation.
@@ -47,20 +52,18 @@ class MEDIA_EXPORT AudioTrackOutputStream : public MuteableAudioOutputStream {
  private:
   const AudioParameters params_;
 
-  AudioManagerBase* audio_manager_;
-  AudioSourceCallback* callback_ = nullptr;
+  raw_ptr<AudioManagerBase> audio_manager_;
+  raw_ptr<AudioSourceCallback> callback_ = nullptr;
   bool muted_ = false;
   double volume_ = 1.0;
 
   // Extra buffer for PCM format.
   std::unique_ptr<AudioBus> audio_bus_;
 
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // Java AudioTrackOutputStream instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_output_stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioTrackOutputStream);
 };
 
 }  // namespace media

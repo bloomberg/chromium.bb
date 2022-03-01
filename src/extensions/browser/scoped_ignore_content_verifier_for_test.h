@@ -5,8 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_SCOPED_IGNORE_CONTENT_VERIFIER_FOR_TEST_H_
 #define EXTENSIONS_BROWSER_SCOPED_IGNORE_CONTENT_VERIFIER_FOR_TEST_H_
 
-#include "base/macros.h"
-
 namespace extensions {
 
 // A class for use in tests to make content verification failures be ignored
@@ -15,10 +13,13 @@ namespace extensions {
 class ScopedIgnoreContentVerifierForTest {
  public:
   ScopedIgnoreContentVerifierForTest();
-  ~ScopedIgnoreContentVerifierForTest();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedIgnoreContentVerifierForTest);
+  ScopedIgnoreContentVerifierForTest(
+      const ScopedIgnoreContentVerifierForTest&) = delete;
+  ScopedIgnoreContentVerifierForTest& operator=(
+      const ScopedIgnoreContentVerifierForTest&) = delete;
+
+  ~ScopedIgnoreContentVerifierForTest();
 };
 
 }  // namespace extensions

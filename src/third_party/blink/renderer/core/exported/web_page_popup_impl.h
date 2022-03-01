@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-blink-forward.h"
@@ -71,6 +70,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   USING_FAST_MALLOC(WebPagePopupImpl);
 
  public:
+  WebPagePopupImpl(const WebPagePopupImpl&) = delete;
+  WebPagePopupImpl& operator=(const WebPagePopupImpl&) = delete;
   ~WebPagePopupImpl() override;
 
   void Initialize(WebViewImpl*, PagePopupClient*);
@@ -124,7 +125,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   WebInputEventResult DispatchBufferedTouchEvents() override;
-  bool WillHandleGestureEvent(const WebGestureEvent& event) override;
+  void WillHandleGestureEvent(const WebGestureEvent& event,
+                              bool* suppress) override;
   void WillHandleMouseEvent(const WebMouseEvent& event) override;
   void ObserveGestureEventAndResult(
       const WebGestureEvent& gesture_event,
@@ -160,15 +162,15 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override { return {}; }
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-      const ScreenInfos& screen_infos,
+      const display::ScreenInfos& screen_infos,
       const cc::LayerTreeSettings* settings) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
   void SetCursor(const ui::Cursor& cursor) override;
   bool HandlingInputEvent() override;
   void SetHandlingInputEvent(bool handling) override;
-  void ProcessInputEventSynchronouslyForTesting(const WebCoalescedInputEvent&,
-                                                HandledEventCallback) override;
+  void ProcessInputEventSynchronouslyForTesting(
+      const WebCoalescedInputEvent&) override;
   void UpdateTextInputState() override;
   void UpdateSelectionBounds() override;
   void ShowVirtualKeyboard() override;
@@ -176,10 +178,10 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void CancelCompositionForPepper() override;
   void ApplyVisualProperties(
       const VisualProperties& visual_properties) override;
-  const ScreenInfo& GetScreenInfo() override;
-  const ScreenInfos& GetScreenInfos() override;
-  const ScreenInfo& GetOriginalScreenInfo() override;
-  const ScreenInfos& GetOriginalScreenInfos() override;
+  const display::ScreenInfo& GetScreenInfo() override;
+  const display::ScreenInfos& GetScreenInfos() override;
+  const display::ScreenInfo& GetOriginalScreenInfo() override;
+  const display::ScreenInfos& GetOriginalScreenInfos() override;
   gfx::Rect WindowRect() override;
   gfx::Rect ViewRect() override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
@@ -203,11 +205,13 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool ShouldCheckPopupPositionForTelemetry() const;
   void CheckScreenPointInOwnerWindowAndCount(const gfx::PointF& point_in_screen,
                                              WebFeature feature) const;
-  IntRect OwnerWindowRectInScreen() const;
+  gfx::Rect OwnerWindowRectInScreen() const;
+  // Returns anchor rect in screen coordinates for this popup.
+  gfx::Rect GetAnchorRectInScreen() const;
 
   // PagePopup function
   AXObject* RootAXObject() override;
-  void SetWindowRect(const IntRect&) override;
+  void SetWindowRect(const gfx::Rect&) override;
 
   WebPagePopupImpl(
       CrossVariantMojoAssociatedRemote<
@@ -278,8 +282,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;
-
-  DISALLOW_COPY_AND_ASSIGN(WebPagePopupImpl);
 };
 
 // WebPagePopupImpl is the only implementation of WebPagePopup and PagePopup, so

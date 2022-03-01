@@ -104,20 +104,18 @@ const CGFloat kButtonFontSize = 17;
         [self buttonWithTitle:openInChromeTitle
                      selector:@selector(openInChromePressed:)];
 
-    if (@available(iOS 13.4, *)) {
-      for (UIButton* button in
-           @[ self.readingListButton, bookmarksButton, openButton ]) {
-        button.pointerInteractionEnabled = YES;
-        button.pointerStyleProvider = ^UIPointerStyle*(
-            UIButton* button, __unused UIPointerEffect* proposedEffect,
-            __unused UIPointerShape* proposedShape) {
-          UITargetedPreview* preview =
-              [[UITargetedPreview alloc] initWithView:button];
-          UIPointerHoverEffect* effect =
-              [UIPointerHoverEffect effectWithPreview:preview];
-          return [UIPointerStyle styleWithEffect:effect shape:nil];
-        };
-      }
+    for (UIButton* button in
+         @[ self.readingListButton, bookmarksButton, openButton ]) {
+      button.pointerInteractionEnabled = YES;
+      button.pointerStyleProvider = ^UIPointerStyle*(
+          UIButton* theButton, __unused UIPointerEffect* proposedEffect,
+          __unused UIPointerShape* proposedShape) {
+        UITargetedPreview* preview =
+            [[UITargetedPreview alloc] initWithView:theButton];
+        UIPointerHoverEffect* effect =
+            [UIPointerHoverEffect effectWithPreview:preview];
+        return [UIPointerStyle styleWithEffect:effect shape:nil];
+      };
     }
 
     UIStackView* contentStack = [[UIStackView alloc] initWithArrangedSubviews:@[
@@ -211,7 +209,6 @@ const CGFloat kButtonFontSize = 17;
         constraintEqualToAnchor:_itemView.centerYAnchor],
     [_itemView.heightAnchor
         constraintGreaterThanOrEqualToAnchor:_titleURLContainer.heightAnchor
-                                  multiplier:1
                                     constant:2 * kShareExtensionPadding],
     [_titleURLContainer.leadingAnchor
         constraintEqualToAnchor:_itemView.leadingAnchor
@@ -221,7 +218,6 @@ const CGFloat kButtonFontSize = 17;
                        constant:-kShareExtensionPadding],
     [_itemView.heightAnchor
         constraintGreaterThanOrEqualToAnchor:_screenshotView.heightAnchor
-                                  multiplier:1
                                     constant:2 * kShareExtensionPadding],
     [_screenshotView.centerYAnchor
         constraintEqualToAnchor:_itemView.centerYAnchor],

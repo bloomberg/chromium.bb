@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -116,12 +116,12 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
                        event_factory_evdev_, devices, has_mouse,
                        has_pointing_stick));
   }
-  void DispatchTouchpadDevicesUpdated(
-      const std::vector<InputDevice>& devices) override {
+  void DispatchTouchpadDevicesUpdated(const std::vector<InputDevice>& devices,
+                                      bool has_haptic_touchpad) override {
     ui_thread_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&EventFactoryEvdev::DispatchTouchpadDevicesUpdated,
-                       event_factory_evdev_, devices));
+                       event_factory_evdev_, devices, has_haptic_touchpad));
   }
   void DispatchDeviceListsComplete() override {
     ui_thread_runner_->PostTask(
@@ -421,11 +421,13 @@ void EventFactoryEvdev::DispatchMouseDevicesUpdated(
 }
 
 void EventFactoryEvdev::DispatchTouchpadDevicesUpdated(
-    const std::vector<InputDevice>& devices) {
+    const std::vector<InputDevice>& devices,
+    bool has_haptic_touchpad) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchTouchpadDevicesUpdated");
 
   // There's no list of touchpads in DeviceDataManager.
   input_controller_.set_has_touchpad(devices.size() != 0);
+  input_controller_.set_has_haptic_touchpad(has_haptic_touchpad);
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   observer->OnTouchpadDevicesUpdated(devices);
 }

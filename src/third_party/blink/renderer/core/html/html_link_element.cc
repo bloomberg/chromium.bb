@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -55,13 +55,17 @@ namespace blink {
 
 namespace {
 
-void ParseUrlsListValue(const AtomicString& value, HashSet<KURL>& url_hash) {
+void ParseUrlsListValue(const AtomicString& value,
+                        HashSet<KURL>& url_hash,
+                        const Document& document) {
   // Parse the attribute value as a space-separated list of urls
   SpaceSplitString urls(value);
   url_hash.clear();
   url_hash.ReserveCapacityForSize(SafeCast<wtf_size_t>(urls.size()));
   for (wtf_size_t i = 0; i < urls.size(); ++i) {
-    KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
+    KURL url = LinkWebBundle::ParseResourceUrl(
+        urls[i], base::BindRepeating(&Document::CompleteURL,
+                                     base::Unretained(&document)));
     if (url.IsValid()) {
       url_hash.insert(std::move(url));
     }
@@ -143,12 +147,12 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == html_names::kResourcesAttr &&
              LinkWebBundle::IsFeatureEnabled(GetExecutionContext())) {
     resources_->DidUpdateAttributeValue(params.old_value, value);
-    ParseUrlsListValue(value, valid_resource_urls_);
+    ParseUrlsListValue(value, valid_resource_urls_, GetDocument());
     Process();
   } else if (name == html_names::kScopesAttr &&
              LinkWebBundle::IsFeatureEnabled(GetExecutionContext())) {
     scopes_->DidUpdateAttributeValue(params.old_value, value);
-    ParseUrlsListValue(value, valid_scope_urls_);
+    ParseUrlsListValue(value, valid_scope_urls_, GetDocument());
     Process();
   } else if (name == html_names::kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);

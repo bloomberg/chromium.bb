@@ -26,9 +26,9 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
 
     if (auto* svg_graphics_element = DynamicTo<SVGGraphicsElement>(target)) {
       LayoutSize bounding_box_size =
-          LayoutSize(svg_graphics_element->GetBBox().Size());
+          LayoutSize(svg_graphics_element->GetBBox().size());
       content_rect_ = DOMRectReadOnly::FromFloatRect(
-          FloatRect(FloatPoint(), FloatSize(bounding_box_size)));
+          FloatRect(gfx::PointF(), FloatSize(bounding_box_size)));
       ResizeObserverSize* size = ResizeObserverSize::Create(
           bounding_box_size.Width(), bounding_box_size.Height());
       content_box_size_.push_back(size);
@@ -38,8 +38,8 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
           ResizeObserverUtilities::ComputeSnappedDevicePixelContentBox(
               bounding_box_size, layout_object, style);
       ResizeObserverSize* device_pixel_content_box_size =
-          ResizeObserverSize::Create(snapped_device_pixel_content_box.Width(),
-                                     snapped_device_pixel_content_box.Height());
+          ResizeObserverSize::Create(snapped_device_pixel_content_box.width(),
+                                     snapped_device_pixel_content_box.height());
       device_pixel_content_box_size_.push_back(device_pixel_content_box_size);
     } else if (layout_object->IsBox()) {
       LayoutBox* layout_box = target->GetLayoutBox();
@@ -50,21 +50,21 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
           ResizeObserverUtilities::ZoomAdjustedLayoutRect(content_rect, style);
 
       FloatSize content_box = ResizeObserverUtilities::ComputeZoomAdjustedBox(
-          ResizeObserverBoxOptions::ContentBox, layout_object, style);
+          ResizeObserverBoxOptions::kContentBox, layout_object, style);
       FloatSize border_box = ResizeObserverUtilities::ComputeZoomAdjustedBox(
-          ResizeObserverBoxOptions::BorderBox, layout_object, style);
+          ResizeObserverBoxOptions::kBorderBox, layout_object, style);
       FloatSize device_pixel_content_box =
           ResizeObserverUtilities::ComputeZoomAdjustedBox(
-              ResizeObserverBoxOptions::DevicePixelContentBox, layout_object,
+              ResizeObserverBoxOptions::kDevicePixelContentBox, layout_object,
               style);
 
       ResizeObserverSize* device_pixel_content_box_size =
-          ResizeObserverSize::Create(device_pixel_content_box.Width(),
-                                     device_pixel_content_box.Height());
+          ResizeObserverSize::Create(device_pixel_content_box.width(),
+                                     device_pixel_content_box.height());
       ResizeObserverSize* content_box_size =
-          ResizeObserverSize::Create(content_box.Width(), content_box.Height());
+          ResizeObserverSize::Create(content_box.width(), content_box.height());
       ResizeObserverSize* border_box_size =
-          ResizeObserverSize::Create(border_box.Width(), border_box.Height());
+          ResizeObserverSize::Create(border_box.width(), border_box.height());
 
       content_box_size_.push_back(content_box_size);
       border_box_size_.push_back(border_box_size);
@@ -72,15 +72,13 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
     }
   }
   if (!content_rect_)
-    content_rect_ = DOMRectReadOnly::FromFloatRect(
-        FloatRect(FloatPoint(LayoutPoint()), FloatSize(LayoutSize())));
+    content_rect_ = DOMRectReadOnly::FromFloatRect(FloatRect());
   if (content_box_size_.size() == 0)
     content_box_size_.push_back(ResizeObserverSize::Create(0, 0));
   if (border_box_size_.size() == 0)
     border_box_size_.push_back(ResizeObserverSize::Create(0, 0));
-  if (device_pixel_content_box_size_.size() == 0) {
+  if (device_pixel_content_box_size_.size() == 0)
     device_pixel_content_box_size_.push_back(ResizeObserverSize::Create(0, 0));
-  }
 }
 
 void ResizeObserverEntry::Trace(Visitor* visitor) const {

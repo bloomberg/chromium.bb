@@ -14,9 +14,9 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/ownership/owner_key_util.h"
@@ -138,6 +138,13 @@ bool OwnerSettingsService::SetDouble(const std::string& setting, double value) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::Value in_value(value);
   return Set(setting, in_value);
+}
+
+void OwnerSettingsService::RunPendingIsOwnerCallbacksForTesting(bool is_owner) {
+  std::vector<IsOwnerCallback> is_owner_callbacks;
+  is_owner_callbacks.swap(pending_is_owner_callbacks_);
+  for (auto& callback : is_owner_callbacks)
+    std::move(callback).Run(is_owner);
 }
 
 bool OwnerSettingsService::SetString(const std::string& setting,

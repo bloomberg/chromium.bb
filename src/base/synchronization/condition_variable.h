@@ -62,16 +62,16 @@
 #ifndef BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 #define BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <pthread.h>
 #endif
 
 #include "base/base_export.h"
 #include "base/check_op.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_types.h"
@@ -85,6 +85,9 @@ class BASE_EXPORT ConditionVariable {
  public:
   // Construct a cv for use with ONLY one user lock.
   explicit ConditionVariable(Lock* user_lock);
+
+  ConditionVariable(const ConditionVariable&) = delete;
+  ConditionVariable& operator=(const ConditionVariable&) = delete;
 
   ~ConditionVariable();
 
@@ -110,25 +113,23 @@ class BASE_EXPORT ConditionVariable {
   void declare_only_used_while_idle() { waiting_is_blocking_ = false; }
 
  private:
-
 #if defined(OS_WIN)
   CHROME_CONDITION_VARIABLE cv_;
-  CHROME_SRWLOCK* const srwlock_;
+  const raw_ptr<CHROME_SRWLOCK> srwlock_;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   pthread_cond_t condition_;
-  pthread_mutex_t* user_mutex_;
+  raw_ptr<pthread_mutex_t> user_mutex_;
 #endif
 
 #if DCHECK_IS_ON()
-  base::Lock* const user_lock_;  // Needed to adjust shadow lock state on wait.
+  const raw_ptr<base::Lock>
+      user_lock_;  // Needed to adjust shadow lock state on wait.
 #endif
 
   // Whether a thread invoking Wait() on this ConditionalVariable should be
   // considered blocked as opposed to idle (and potentially replaced if part of
   // a pool).
   bool waiting_is_blocking_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };
 
 }  // namespace base

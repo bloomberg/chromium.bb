@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,7 +9,7 @@ The lexer uses the PLY library to build a tokenizer which understands
 Web IDL tokens.
 
 Web IDL, and Web IDL regular expressions can be found at:
-   http://heycam.github.io/webidl/
+   http://webidl.spec.whatwg.org/
 PLY can be found at:
    http://www.dabeaz.com/ply/
 """

@@ -142,36 +142,6 @@ void aom_comp_avg_pred_c(uint8_t* comp_pred,
                          int ref_stride);
 #define aom_comp_avg_pred aom_comp_avg_pred_c
 
-void aom_comp_avg_upsampled_pred_c(MACROBLOCKD* xd,
-                                   const struct AV1Common* const cm,
-                                   int mi_row,
-                                   int mi_col,
-                                   const MV* const mv,
-                                   uint8_t* comp_pred,
-                                   const uint8_t* pred,
-                                   int width,
-                                   int height,
-                                   int subpel_x_q3,
-                                   int subpel_y_q3,
-                                   const uint8_t* ref,
-                                   int ref_stride,
-                                   int subpel_search);
-void aom_comp_avg_upsampled_pred_sse2(MACROBLOCKD* xd,
-                                      const struct AV1Common* const cm,
-                                      int mi_row,
-                                      int mi_col,
-                                      const MV* const mv,
-                                      uint8_t* comp_pred,
-                                      const uint8_t* pred,
-                                      int width,
-                                      int height,
-                                      int subpel_x_q3,
-                                      int subpel_y_q3,
-                                      const uint8_t* ref,
-                                      int ref_stride,
-                                      int subpel_search);
-#define aom_comp_avg_upsampled_pred aom_comp_avg_upsampled_pred_sse2
-
 void aom_comp_mask_pred_c(uint8_t* comp_pred,
                           const uint8_t* pred,
                           int width,
@@ -208,42 +178,6 @@ RTCD_EXTERN void (*aom_comp_mask_pred)(uint8_t* comp_pred,
                                        const uint8_t* mask,
                                        int mask_stride,
                                        int invert_mask);
-
-void aom_comp_mask_upsampled_pred_c(MACROBLOCKD* xd,
-                                    const struct AV1Common* const cm,
-                                    int mi_row,
-                                    int mi_col,
-                                    const MV* const mv,
-                                    uint8_t* comp_pred,
-                                    const uint8_t* pred,
-                                    int width,
-                                    int height,
-                                    int subpel_x_q3,
-                                    int subpel_y_q3,
-                                    const uint8_t* ref,
-                                    int ref_stride,
-                                    const uint8_t* mask,
-                                    int mask_stride,
-                                    int invert_mask,
-                                    int subpel_search);
-void aom_comp_mask_upsampled_pred_sse2(MACROBLOCKD* xd,
-                                       const struct AV1Common* const cm,
-                                       int mi_row,
-                                       int mi_col,
-                                       const MV* const mv,
-                                       uint8_t* comp_pred,
-                                       const uint8_t* pred,
-                                       int width,
-                                       int height,
-                                       int subpel_x_q3,
-                                       int subpel_y_q3,
-                                       const uint8_t* ref,
-                                       int ref_stride,
-                                       const uint8_t* mask,
-                                       int mask_stride,
-                                       int invert_mask,
-                                       int subpel_search);
-#define aom_comp_mask_upsampled_pred aom_comp_mask_upsampled_pred_sse2
 
 void aom_convolve8_c(const uint8_t* src,
                      ptrdiff_t src_stride,
@@ -1091,55 +1025,6 @@ RTCD_EXTERN void (*aom_dist_wtd_comp_avg_pred)(
     const uint8_t* ref,
     int ref_stride,
     const DIST_WTD_COMP_PARAMS* jcp_param);
-
-void aom_dist_wtd_comp_avg_upsampled_pred_c(
-    MACROBLOCKD* xd,
-    const struct AV1Common* const cm,
-    int mi_row,
-    int mi_col,
-    const MV* const mv,
-    uint8_t* comp_pred,
-    const uint8_t* pred,
-    int width,
-    int height,
-    int subpel_x_q3,
-    int subpel_y_q3,
-    const uint8_t* ref,
-    int ref_stride,
-    const DIST_WTD_COMP_PARAMS* jcp_param,
-    int subpel_search);
-void aom_dist_wtd_comp_avg_upsampled_pred_ssse3(
-    MACROBLOCKD* xd,
-    const struct AV1Common* const cm,
-    int mi_row,
-    int mi_col,
-    const MV* const mv,
-    uint8_t* comp_pred,
-    const uint8_t* pred,
-    int width,
-    int height,
-    int subpel_x_q3,
-    int subpel_y_q3,
-    const uint8_t* ref,
-    int ref_stride,
-    const DIST_WTD_COMP_PARAMS* jcp_param,
-    int subpel_search);
-RTCD_EXTERN void (*aom_dist_wtd_comp_avg_upsampled_pred)(
-    MACROBLOCKD* xd,
-    const struct AV1Common* const cm,
-    int mi_row,
-    int mi_col,
-    const MV* const mv,
-    uint8_t* comp_pred,
-    const uint8_t* pred,
-    int width,
-    int height,
-    int subpel_x_q3,
-    int subpel_y_q3,
-    const uint8_t* ref,
-    int ref_stride,
-    const DIST_WTD_COMP_PARAMS* jcp_param,
-    int subpel_search);
 
 unsigned int aom_dist_wtd_sad128x128_avg_c(
     const uint8_t* src_ptr,
@@ -2258,6 +2143,9 @@ void aom_hadamard_8x8_sse2(const int16_t* src_diff,
 void aom_hadamard_lp_16x16_c(const int16_t* src_diff,
                              ptrdiff_t src_stride,
                              int16_t* coeff);
+void aom_hadamard_lp_16x16_sse2(const int16_t* src_diff,
+                                ptrdiff_t src_stride,
+                                int16_t* coeff);
 void aom_hadamard_lp_16x16_avx2(const int16_t* src_diff,
                                 ptrdiff_t src_stride,
                                 int16_t* coeff);
@@ -6196,10 +6084,12 @@ void aom_sad_skip_8x8x4d_sse2(const uint8_t* src_ptr,
 #define aom_sad_skip_8x8x4d aom_sad_skip_8x8x4d_sse2
 
 int aom_satd_c(const tran_low_t* coeff, int length);
+int aom_satd_sse2(const tran_low_t* coeff, int length);
 int aom_satd_avx2(const tran_low_t* coeff, int length);
 RTCD_EXTERN int (*aom_satd)(const tran_low_t* coeff, int length);
 
 int aom_satd_lp_c(const int16_t* coeff, int length);
+int aom_satd_lp_sse2(const int16_t* coeff, int length);
 int aom_satd_lp_avx2(const int16_t* coeff, int length);
 RTCD_EXTERN int (*aom_satd_lp)(const int16_t* coeff, int length);
 
@@ -6786,6 +6676,17 @@ RTCD_EXTERN int64_t (*aom_sse)(const uint8_t* a,
                                int b_stride,
                                int width,
                                int height);
+
+void aom_ssim_parms_8x8_c(const uint8_t* s,
+                          int sp,
+                          const uint8_t* r,
+                          int rp,
+                          uint32_t* sum_s,
+                          uint32_t* sum_r,
+                          uint32_t* sum_sq_s,
+                          uint32_t* sum_sq_r,
+                          uint32_t* sum_sxr);
+#define aom_ssim_parms_8x8 aom_ssim_parms_8x8_c
 
 uint32_t aom_sub_pixel_avg_variance128x128_c(const uint8_t* src_ptr,
                                              int source_stride,
@@ -8011,34 +7912,6 @@ RTCD_EXTERN uint64_t (*aom_sum_sse_2d_i16)(const int16_t* src,
                                            int height,
                                            int* sum);
 
-void aom_upsampled_pred_c(MACROBLOCKD* xd,
-                          const struct AV1Common* const cm,
-                          int mi_row,
-                          int mi_col,
-                          const MV* const mv,
-                          uint8_t* comp_pred,
-                          int width,
-                          int height,
-                          int subpel_x_q3,
-                          int subpel_y_q3,
-                          const uint8_t* ref,
-                          int ref_stride,
-                          int subpel_search);
-void aom_upsampled_pred_sse2(MACROBLOCKD* xd,
-                             const struct AV1Common* const cm,
-                             int mi_row,
-                             int mi_col,
-                             const MV* const mv,
-                             uint8_t* comp_pred,
-                             int width,
-                             int height,
-                             int subpel_x_q3,
-                             int subpel_y_q3,
-                             const uint8_t* ref,
-                             int ref_stride,
-                             int subpel_search);
-#define aom_upsampled_pred aom_upsampled_pred_sse2
-
 void aom_v_predictor_16x16_c(uint8_t* dst,
                              ptrdiff_t y_stride,
                              const uint8_t* above,
@@ -8654,10 +8527,6 @@ static void setup_rtcd_internal(void) {
   aom_dist_wtd_comp_avg_pred = aom_dist_wtd_comp_avg_pred_c;
   if (flags & HAS_SSSE3)
     aom_dist_wtd_comp_avg_pred = aom_dist_wtd_comp_avg_pred_ssse3;
-  aom_dist_wtd_comp_avg_upsampled_pred = aom_dist_wtd_comp_avg_upsampled_pred_c;
-  if (flags & HAS_SSSE3)
-    aom_dist_wtd_comp_avg_upsampled_pred =
-        aom_dist_wtd_comp_avg_upsampled_pred_ssse3;
   aom_dist_wtd_sad128x128_avg = aom_dist_wtd_sad128x128_avg_c;
   if (flags & HAS_SSSE3)
     aom_dist_wtd_sad128x128_avg = aom_dist_wtd_sad128x128_avg_ssse3;
@@ -8807,7 +8676,7 @@ static void setup_rtcd_internal(void) {
   aom_hadamard_32x32 = aom_hadamard_32x32_sse2;
   if (flags & HAS_AVX2)
     aom_hadamard_32x32 = aom_hadamard_32x32_avx2;
-  aom_hadamard_lp_16x16 = aom_hadamard_lp_16x16_c;
+  aom_hadamard_lp_16x16 = aom_hadamard_lp_16x16_sse2;
   if (flags & HAS_AVX2)
     aom_hadamard_lp_16x16 = aom_hadamard_lp_16x16_avx2;
   aom_ifft16x16_float = aom_ifft16x16_float_sse2;
@@ -9203,10 +9072,10 @@ static void setup_rtcd_internal(void) {
   aom_sad_skip_64x64x4d = aom_sad_skip_64x64x4d_sse2;
   if (flags & HAS_AVX2)
     aom_sad_skip_64x64x4d = aom_sad_skip_64x64x4d_avx2;
-  aom_satd = aom_satd_c;
+  aom_satd = aom_satd_sse2;
   if (flags & HAS_AVX2)
     aom_satd = aom_satd_avx2;
-  aom_satd_lp = aom_satd_lp_c;
+  aom_satd_lp = aom_satd_lp_sse2;
   if (flags & HAS_AVX2)
     aom_satd_lp = aom_satd_lp_avx2;
   aom_scaled_2d = aom_scaled_2d_c;

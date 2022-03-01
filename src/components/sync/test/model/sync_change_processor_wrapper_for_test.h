@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_TEST_MODEL_SYNC_CHANGE_PROCESSOR_WRAPPER_FOR_TEST_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "components/sync/model/sync_change_processor.h"
 
 namespace syncer {
@@ -24,21 +23,24 @@ class SyncChangeProcessorWrapperForTest : public SyncChangeProcessor {
   explicit SyncChangeProcessorWrapperForTest(SyncChangeProcessor* wrapped);
   // Overload for SyncableService.
   explicit SyncChangeProcessorWrapperForTest(SyncableService* wrapped);
+
+  SyncChangeProcessorWrapperForTest(const SyncChangeProcessorWrapperForTest&) =
+      delete;
+  SyncChangeProcessorWrapperForTest& operator=(
+      const SyncChangeProcessorWrapperForTest&) = delete;
+
   ~SyncChangeProcessorWrapperForTest() override;
 
   // SyncChangeProcessor implementation.
   absl::optional<ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const SyncChangeList& change_list) override;
-  SyncDataList GetAllSyncData(ModelType type) const override;
 
  private:
   const base::RepeatingCallback<absl::optional<ModelError>(
       const base::Location& from_here,
       const SyncChangeList& change_list)>
       process_sync_changes_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorWrapperForTest);
 };
 
 }  // namespace syncer

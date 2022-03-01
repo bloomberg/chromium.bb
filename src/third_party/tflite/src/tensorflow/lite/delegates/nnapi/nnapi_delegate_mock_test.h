@@ -42,6 +42,7 @@ class NnApiMock : public ::tflite::nnapi::NnApiHandler {
       : ::tflite::nnapi::NnApiHandler(nnapi) {
     nnapi_->nnapi_exists = true;
     nnapi_->android_sdk_version = android_sdk_version;
+    nnapi_->nnapi_runtime_feature_level = android_sdk_version;
 
     nnapi_->ANeuralNetworksCompilation_free =
         [](ANeuralNetworksCompilation* compilation) {};
@@ -71,6 +72,8 @@ class NnApiMock : public ::tflite::nnapi::NnApiHandler {
     ExecutionComputeReturns<ANEURALNETWORKS_NO_ERROR>();
     ExecutionStartComputeReturns<ANEURALNETWORKS_NO_ERROR>();
     EventWaitReturns<ANEURALNETWORKS_NO_ERROR>();
+    SetPriorityReturns<ANEURALNETWORKS_NO_ERROR>();
+    SetOperandSymmPerChannelQuantParamsReturns<ANEURALNETWORKS_NO_ERROR>();
     SetNnapiSupportedDevice("test-device", android_sdk_version);
   }
 

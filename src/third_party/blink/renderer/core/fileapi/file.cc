@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -126,13 +126,7 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
 
 // static
 File* File::Create(ExecutionContext* context,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                    const HeapVector<Member<V8BlobPart>>& file_bits,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                   const HeapVector<
-                       ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&
-                       file_bits,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                    const String& file_name,
                    const FilePropertyBag* options) {
   DCHECK(options->hasType());
@@ -142,8 +136,8 @@ File* File::Create(ExecutionContext* context,
     // We don't use base::Time::FromJsTime(double) here because
     // options->lastModified() is a 64-bit integer, and casting it to
     // double is lossy.
-    last_modified = base::Time::UnixEpoch() +
-                    base::TimeDelta::FromMilliseconds(options->lastModified());
+    last_modified =
+        base::Time::UnixEpoch() + base::Milliseconds(options->lastModified());
   } else {
     last_modified = base::Time::Now();
   }

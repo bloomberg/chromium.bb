@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -18,10 +22,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -42,6 +42,9 @@ constexpr char kTestProfileName[] = "user@gmail.com";
 class ArcUsbHostPermissionTest : public InProcessBrowserTest {
  public:
   ArcUsbHostPermissionTest() = default;
+
+  ArcUsbHostPermissionTest(const ArcUsbHostPermissionTest&) = delete;
+  ArcUsbHostPermissionTest& operator=(const ArcUsbHostPermissionTest&) = delete;
 
   ~ArcUsbHostPermissionTest() override = default;
 
@@ -166,13 +169,15 @@ class ArcUsbHostPermissionTest : public InProcessBrowserTest {
   ArcUsbHostPermissionManager* arc_usb_permission_manager_;
   std::unique_ptr<FakeAppInstance> app_instance_;
   Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcUsbHostPermissionTest);
 };
 
 class ArcUsbHostKioskPermissionTest : public ArcUsbHostPermissionTest {
  public:
   ArcUsbHostKioskPermissionTest() = default;
+
+  ArcUsbHostKioskPermissionTest(const ArcUsbHostKioskPermissionTest&) = delete;
+  ArcUsbHostKioskPermissionTest& operator=(
+      const ArcUsbHostKioskPermissionTest&) = delete;
 
   ~ArcUsbHostKioskPermissionTest() override = default;
 
@@ -208,8 +213,6 @@ class ArcUsbHostKioskPermissionTest : public ArcUsbHostPermissionTest {
   int accepted_response_count_ = 0;
 
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcUsbHostKioskPermissionTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbTemporayPermissionTest) {

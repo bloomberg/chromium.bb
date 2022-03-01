@@ -6,9 +6,6 @@
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 
-const base::FilePath::CharType kFtpDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 class CrossOriginXHR : public extensions::ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
@@ -19,21 +16,18 @@ class CrossOriginXHR : public extensions::ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, BackgroundPage) {
-  ASSERT_TRUE(StartFTPServer(base::FilePath(kFtpDocRoot)));
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/background_page")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, ContentScript) {
-  ASSERT_TRUE(StartFTPServer(base::FilePath(kFtpDocRoot)));
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/content_script")) << message_;
 }
 
 // Tests that an extension frame can xhr a file url if it has file access and
 // "<all_urls>" host permissions.
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccessAllURLs) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "cross_origin_xhr/file_access_all_urls"},
-                       {.allow_file_access = true}))
+  ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access_all_urls", {},
+                               {.allow_file_access = true}))
       << message_;
 }
 
@@ -47,18 +41,16 @@ IN_PROC_BROWSER_TEST_F(CrossOriginXHR, NoFileAccessAllURLs) {
 // Ensures that an extension tab having no corresponding background page can xhr
 // a file URL. Regression test for crbug.com/1179732.
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccessNoBackgroundPage) {
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "cross_origin_xhr/file_access_no_background_page",
-       .page_url = "test.html"},
-      {.allow_file_access = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("cross_origin_xhr/file_access_no_background_page",
+                       {.page_url = "test.html"}, {.allow_file_access = true}))
       << message_;
 }
 
 // Tests that an extension frame can't xhr a file url if it does not have host
 // permissions to the file scheme even though it has file access.
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccessNoHosts) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "cross_origin_xhr/file_access_no_hosts"},
-                       {.allow_file_access = true}))
+  ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access_no_hosts", {},
+                               {.allow_file_access = true}))
       << message_;
 }

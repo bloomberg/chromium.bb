@@ -7,12 +7,16 @@
 
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
+#include <queue>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/containers/queue.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -46,6 +50,9 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   VTVideoDecodeAccelerator(const GpuVideoDecodeGLClient& gl_client_,
                            const gpu::GpuDriverBugWorkarounds& workarounds,
                            MediaLog* media_log);
+
+  VTVideoDecodeAccelerator(const VTVideoDecodeAccelerator&) = delete;
+  VTVideoDecodeAccelerator& operator=(const VTVideoDecodeAccelerator&) = delete;
 
   ~VTVideoDecodeAccelerator() override;
 
@@ -142,14 +149,18 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
     // images.
     PictureInfo();
     PictureInfo(uint32_t client_texture_id, uint32_t service_texture_id);
+
+    PictureInfo(const PictureInfo&) = delete;
+    PictureInfo& operator=(const PictureInfo&) = delete;
+
     ~PictureInfo();
 
-    // If true, then |scoped_shared_image| is used and |client_texture_id| and
+    // If true, then |scoped_shared_images| is used and |client_texture_id| and
     // |service_texture_id| are not used.
     const bool uses_shared_images;
 
     // Information about the currently bound image, for OnMemoryDump().
-    scoped_refptr<gl::GLImageIOSurface> gl_image;
+    std::vector<scoped_refptr<gl::GLImageIOSurface>> gl_images;
     int32_t bitstream_id = 0;
 
     // Texture IDs for the image buffer.
@@ -157,10 +168,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
     const uint32_t service_texture_id = 0;
 
     // The shared image holder that will be passed to the client.
-    scoped_refptr<Picture::ScopedSharedImage> scoped_shared_image;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(PictureInfo);
+    std::vector<scoped_refptr<Picture::ScopedSharedImage>> scoped_shared_images;
   };
 
   struct FrameOrder {
@@ -246,6 +254,9 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // Size of assigned picture buffers.
   gfx::Size picture_size_;
 
+  // Format of the assigned picture buffers.
+  VideoPixelFormat picture_format_ = PIXEL_FORMAT_UNKNOWN;
+
   // Frames that have not yet been decoded, keyed by bitstream ID; maintains
   // ownership of Frame objects while they flow through VideoToolbox.
   std::map<int32_t, std::unique_ptr<Frame>> pending_frames_;
@@ -317,8 +328,6 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // other destructors run.
   base::WeakPtrFactory<VTVideoDecodeAccelerator> decoder_weak_this_factory_;
   base::WeakPtrFactory<VTVideoDecodeAccelerator> weak_this_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(VTVideoDecodeAccelerator);
 };
 
 }  // namespace media
