@@ -24,6 +24,8 @@
 #ifndef BBWindowHooks_h
 #define BBWindowHooks_h
 
+#include "base/callback.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
