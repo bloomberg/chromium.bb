@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_LINKS_DELEGATE_IMPL_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_LINKS_DELEGATE_IMPL_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
 
 class Browser;
@@ -15,6 +14,12 @@ class OneClickSigninLinksDelegateImpl : public OneClickSigninLinksDelegate {
  public:
   // |browser| must outlive the delegate.
   explicit OneClickSigninLinksDelegateImpl(Browser* browser);
+
+  OneClickSigninLinksDelegateImpl(const OneClickSigninLinksDelegateImpl&) =
+      delete;
+  OneClickSigninLinksDelegateImpl& operator=(
+      const OneClickSigninLinksDelegateImpl&) = delete;
+
   ~OneClickSigninLinksDelegateImpl() override;
 
  private:
@@ -22,9 +27,7 @@ class OneClickSigninLinksDelegateImpl : public OneClickSigninLinksDelegate {
   void OnLearnMoreLinkClicked(bool is_dialog) override;
 
   // Browser in which the links should be opened.
-  Browser* const browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneClickSigninLinksDelegateImpl);
+  const raw_ptr<Browser> browser_;
 };
 
 #endif  // CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_LINKS_DELEGATE_IMPL_H_

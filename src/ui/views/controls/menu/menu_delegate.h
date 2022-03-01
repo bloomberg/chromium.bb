@@ -8,13 +8,13 @@
 #include <set>
 #include <string>
 
-#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/font_list.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
+#include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
 using ui::OSExchangeData;
@@ -59,12 +59,6 @@ class VIEWS_EXPORT MenuDelegate {
     kOn
   };
 
-  // Used when indicating the style for a given label.
-  struct LabelStyle {
-    gfx::FontList font_list;
-    SkColor foreground;
-  };
-
   virtual ~MenuDelegate();
 
   // Whether or not an item should be shown as checked. This is invoked for
@@ -75,9 +69,9 @@ class VIEWS_EXPORT MenuDelegate {
   // added with an empty label.
   virtual std::u16string GetLabel(int id) const;
 
-  // The style for the label with the given |id|. Implementations may update any
-  // parts of |style| or leave it unmodified.
-  virtual void GetLabelStyle(int id, LabelStyle* style) const;
+  // The font and color for the menu item label.
+  virtual const gfx::FontList* GetLabelFontList(int id) const;
+  virtual absl::optional<SkColor> GetLabelColor(int id) const;
 
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.
@@ -171,6 +165,16 @@ class VIEWS_EXPORT MenuDelegate {
   //
   // |menu| is the menu the drop occurred on.
   virtual ui::mojom::DragOperation OnPerformDrop(
+      MenuItemView* menu,
+      DropPosition position,
+      const ui::DropTargetEvent& event);
+
+  // Invoked to get a callback to perform the drop operation later. This is ONLY
+  // invoked if CanDrop() returned true for the parent menu item, and
+  // GetDropOperation() returned an operation other than DragOperation::kNone.
+  //
+  // |menu| is the menu the drop occurred on.
+  virtual views::View::DropCallback GetDropCallback(
       MenuItemView* menu,
       DropPosition position,
       const ui::DropTargetEvent& event);

@@ -1878,7 +1878,7 @@ soconnect(struct socket *so, struct sockaddr *nam)
 	 * Otherwise, if connected, try to disconnect first.  This allows
 	 * user to disconnect by connecting to, e.g., a null address.
 	 */
-	if (so->so_state & (SS_ISCONNECTED|SS_ISCONNECTING) && (error = sodisconnect(so))) {
+	if (so->so_state & (SS_ISCONNECTED|SS_ISCONNECTING) && (sodisconnect(so) != 0)) {
 		error = EISCONN;
 	} else {
 		/*
@@ -2210,7 +2210,7 @@ usrsctp_getsockopt(struct socket *so, int level, int option_name,
 				int *buf_size;
 
 				buf_size = (int *)option_value;
-				*buf_size = so->so_rcv.sb_hiwat;;
+				*buf_size = so->so_rcv.sb_hiwat;
 				*option_len = (socklen_t)sizeof(int);
 				return (0);
 			}
@@ -2857,7 +2857,6 @@ sctp_userspace_ip_output(int *result, struct mbuf *o_pak,
 	struct mbuf *m_orig;
 	int iovcnt;
 	int len;
-	int send_count;
 	struct ip *ip;
 	struct udphdr *udp;
 	struct sockaddr_in dst;
@@ -2930,16 +2929,13 @@ sctp_userspace_ip_output(int *result, struct mbuf *o_pak,
 		m_adj(m, sizeof(struct ip) + sizeof(struct udphdr));
 	}
 
-	send_count = 0;
 	for (iovcnt = 0; m != NULL && iovcnt < MAXLEN_MBUF_CHAIN; m = m->m_next, iovcnt++) {
 #if !defined(_WIN32)
 		send_iovec[iovcnt].iov_base = (caddr_t)m->m_data;
 		send_iovec[iovcnt].iov_len = SCTP_BUF_LEN(m);
-		send_count += send_iovec[iovcnt].iov_len;
 #else
 		send_iovec[iovcnt].buf = (caddr_t)m->m_data;
 		send_iovec[iovcnt].len = SCTP_BUF_LEN(m);
-		send_count += send_iovec[iovcnt].len;
 #endif
 	}
 
@@ -3002,7 +2998,6 @@ void sctp_userspace_ip6_output(int *result, struct mbuf *o_pak,
 	struct mbuf *m_orig;
 	int iovcnt;
 	int len;
-	int send_count;
 	struct ip6_hdr *ip6;
 	struct udphdr *udp;
 	struct sockaddr_in6 dst;
@@ -3073,19 +3068,16 @@ void sctp_userspace_ip6_output(int *result, struct mbuf *o_pak,
 	if (use_udp_tunneling) {
 		m_adj(m, sizeof(struct ip6_hdr) + sizeof(struct udphdr));
 	} else {
-	  m_adj(m, sizeof(struct ip6_hdr));
+		m_adj(m, sizeof(struct ip6_hdr));
 	}
 
-	send_count = 0;
 	for (iovcnt = 0; m != NULL && iovcnt < MAXLEN_MBUF_CHAIN; m = m->m_next, iovcnt++) {
 #if !defined(_WIN32)
 		send_iovec[iovcnt].iov_base = (caddr_t)m->m_data;
 		send_iovec[iovcnt].iov_len = SCTP_BUF_LEN(m);
-		send_count += send_iovec[iovcnt].iov_len;
 #else
 		send_iovec[iovcnt].buf = (caddr_t)m->m_data;
 		send_iovec[iovcnt].len = SCTP_BUF_LEN(m);
-		send_count += send_iovec[iovcnt].len;
 #endif
 	}
 	if (m != NULL) {

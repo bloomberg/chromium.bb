@@ -32,8 +32,8 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -63,7 +63,7 @@ class DrawingBufferTest : public Test {
   void SetUp() override { Init(kDisableMultisampling); }
 
   void Init(UseMultisampling use_multisampling) {
-    IntSize initial_size(kInitialWidth, kInitialHeight);
+    gfx::Size initial_size(kInitialWidth, kInitialHeight);
     auto gl = std::make_unique<GLES2InterfaceForTests>();
     auto provider =
         std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
@@ -156,15 +156,15 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
   viz::TransferableResource resource;
   viz::ReleaseCallback release_callback;
 
-  IntSize initial_size(kInitialWidth, kInitialHeight);
-  IntSize alternate_size(kInitialWidth, kAlternateHeight);
+  gfx::Size initial_size(kInitialWidth, kInitialHeight);
+  gfx::Size alternate_size(kInitialWidth, kAlternateHeight);
 
   // Produce one resource at size 100x100.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   VerifyStateWasRestored();
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), sii->MostRecentSize());
+  EXPECT_EQ(initial_size, sii->MostRecentSize());
 
   // Resize to 100x50.
   drawing_buffer_->Resize(alternate_size);
@@ -176,7 +176,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
-  EXPECT_EQ(static_cast<gfx::Size>(alternate_size), sii->MostRecentSize());
+  EXPECT_EQ(alternate_size, sii->MostRecentSize());
   VerifyStateWasRestored();
 
   // Reset to initial size.
@@ -190,7 +190,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), sii->MostRecentSize());
+  EXPECT_EQ(initial_size, sii->MostRecentSize());
   VerifyStateWasRestored();
 
   // Prepare one final resource and verify that it's the correct size.
@@ -199,7 +199,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   VerifyStateWasRestored();
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), sii->MostRecentSize());
+  EXPECT_EQ(initial_size, sii->MostRecentSize());
   std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
   drawing_buffer_->BeginDestruction();
 }
@@ -356,7 +356,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest,
     platform_ = std::make_unique<
         ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform>>();
 
-    IntSize initial_size(kInitialWidth, kInitialHeight);
+    gfx::Size initial_size(kInitialWidth, kInitialHeight);
     auto gl = std::make_unique<GLES2InterfaceForTests>();
     auto provider =
         std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
@@ -390,8 +390,8 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   viz::TransferableResource resource;
   viz::ReleaseCallback release_callback;
 
-  IntSize initial_size(kInitialWidth, kInitialHeight);
-  IntSize alternate_size(kInitialWidth, kAlternateHeight);
+  gfx::Size initial_size(kInitialWidth, kInitialHeight);
+  gfx::Size alternate_size(kInitialWidth, kAlternateHeight);
 
   // There should be currently one back buffer and therefore one SharedImage.
   gpu::Mailbox mailbox1;
@@ -405,9 +405,9 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), sii->MostRecentSize());
+  EXPECT_EQ(initial_size, sii->MostRecentSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), resource.size);
+  EXPECT_EQ(initial_size, resource.size);
   testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
   gpu::Mailbox mailbox2;
@@ -443,9 +443,9 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
-  EXPECT_EQ(static_cast<gfx::Size>(alternate_size), sii->MostRecentSize());
+  EXPECT_EQ(alternate_size, sii->MostRecentSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(static_cast<gfx::Size>(alternate_size), resource.size);
+  EXPECT_EQ(alternate_size, resource.size);
   gpu::Mailbox mailbox4;
   mailbox4.SetName(gl_->last_imported_shared_image()->name);
   EXPECT_EQ(2u, sii->shared_image_count());
@@ -481,9 +481,9 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), sii->MostRecentSize());
+  EXPECT_EQ(initial_size, sii->MostRecentSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), resource.size);
+  EXPECT_EQ(initial_size, resource.size);
   testing::Mock::VerifyAndClearExpectations(gl_);
   gpu::Mailbox mailbox6;
   mailbox6.SetName(gl_->last_imported_shared_image()->name);
@@ -498,9 +498,9 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), sii->MostRecentSize());
+  EXPECT_EQ(initial_size, sii->MostRecentSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(static_cast<gfx::Size>(initial_size), resource.size);
+  EXPECT_EQ(initial_size, resource.size);
   std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
   EXPECT_EQ(2u, sii->shared_image_count());
   EXPECT_TRUE(sii->CheckSharedImageExists(mailbox5));
@@ -684,10 +684,10 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
     bool using_swap_chain = false;
     scoped_refptr<DrawingBuffer> drawing_buffer = DrawingBuffer::Create(
         std::move(provider), graphics_info, using_swap_chain, nullptr,
-        IntSize(10, 10), premultiplied_alpha, want_alpha_channel,
+        gfx::Size(10, 10), premultiplied_alpha, want_alpha_channel,
         want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
         DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
-        kLow_SkFilterQuality, CanvasColorParams(),
+        cc::PaintFlags::FilterQuality::kLow, CanvasColorParams(),
         gl::GpuPreference::kHighPerformance);
 
     // When we request a depth or a stencil buffer, we will get both.
@@ -707,7 +707,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
       EXPECT_EQ(0u, tracking_gl->StencilAttachment());
     }
 
-    drawing_buffer->Resize(IntSize(10, 20));
+    drawing_buffer->Resize(gfx::Size(10, 20));
     EXPECT_EQ(cases[i].request_depth || cases[i].request_stencil,
               drawing_buffer->HasDepthBuffer());
     EXPECT_EQ(cases[i].request_depth || cases[i].request_stencil,
@@ -752,14 +752,14 @@ TEST_F(DrawingBufferTest, VerifySetIsHiddenProperlyAffectsMailboxes) {
 
 TEST_F(DrawingBufferTest,
        VerifyTooBigDrawingBufferExceedingV8MaxSizeFailsToCreate) {
-  IntSize too_big_size(1, (v8::TypedArray::kMaxLength / 4) + 1);
+  gfx::Size too_big_size(1, (v8::TypedArray::kMaxLength / 4) + 1);
   Platform::GraphicsInfo graphics_info;
   graphics_info.using_gpu_compositing = true;
   scoped_refptr<DrawingBuffer> too_big_drawing_buffer = DrawingBuffer::Create(
       nullptr, graphics_info, false /* using_swap_chain */, nullptr,
       too_big_size, false, false, false, false, false, DrawingBuffer::kDiscard,
       DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
-      kLow_SkFilterQuality, CanvasColorParams(),
+      cc::PaintFlags::FilterQuality::kLow, CanvasColorParams(),
       gl::GpuPreference::kHighPerformance);
   EXPECT_EQ(too_big_drawing_buffer, nullptr);
   drawing_buffer_->BeginDestruction();

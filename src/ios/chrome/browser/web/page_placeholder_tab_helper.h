@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/macros.h"
 #import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -21,6 +20,9 @@ class PagePlaceholderTabHelper
     : public web::WebStateUserData<PagePlaceholderTabHelper>,
       public web::WebStateObserver {
  public:
+  PagePlaceholderTabHelper(const PagePlaceholderTabHelper&) = delete;
+  PagePlaceholderTabHelper& operator=(const PagePlaceholderTabHelper&) = delete;
+
   ~PagePlaceholderTabHelper() override;
 
   // Displays placeholder between DidStartNavigation and PageLoaded
@@ -80,8 +82,6 @@ class PagePlaceholderTabHelper
   base::WeakPtrFactory<PagePlaceholderTabHelper> weak_factory_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PagePlaceholderTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_PAGE_PLACEHOLDER_TAB_HELPER_H_

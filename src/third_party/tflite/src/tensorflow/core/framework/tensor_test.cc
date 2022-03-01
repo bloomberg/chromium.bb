@@ -93,7 +93,7 @@ TEST(TensorTest, DataType_Traits) {
   EXPECT_TRUE(std::is_trivial<uint16>::value);
   EXPECT_TRUE(std::is_trivial<int16>::value);
   EXPECT_TRUE(std::is_trivial<int8>::value);
-  EXPECT_TRUE(std::is_trivial<int64>::value);
+  EXPECT_TRUE(std::is_trivial<int64_t>::value);
   EXPECT_TRUE(std::is_trivial<bool>::value);
   EXPECT_FALSE(std::is_trivial<tstring>::value);
   EXPECT_FALSE(std::is_trivial<string>::value);
@@ -116,24 +116,38 @@ TEST(TensorTest, DataType_Traits) {
 }
 
 template <typename T>
+void ExpectEqual(const Tensor& x, const Tensor& y) {
+  test::ExpectEqual(x, y);
+}
+// test::ExpectEqual does not support ResourceHandle or Variant.
+template <>
+void ExpectEqual<ResourceHandle>(const Tensor& x, const Tensor& y) {
+  EXPECT_EQ(x, y);
+}
+template <>
+void ExpectEqual<Variant>(const Tensor& x, const Tensor& y) {
+  EXPECT_EQ(x, y);
+}
+
+template <typename T>
 void TestCopies(const Tensor& t) {
   {
     LOG(INFO) << "CopyFrom()";
     Tensor t2(t.dtype());
     EXPECT_TRUE(t2.CopyFrom(t, t.shape()));
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
   }
   {
     LOG(INFO) << "operator=()";
     Tensor t2(t.dtype());
     t2 = t;
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
   }
   {
     LOG(INFO) << "deep copy";
     Tensor t2(t.dtype(), t.shape());
     t2.flat<T>() = t.flat<T>();
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
   }
   {
     LOG(INFO) << "AsProtoField()";
@@ -141,7 +155,7 @@ void TestCopies(const Tensor& t) {
     t.AsProtoField(&proto);
     Tensor t2(t.dtype());
     EXPECT_TRUE(t2.FromProto(proto));
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
   }
   {
     LOG(INFO) << "AsProtoTensorContent()";
@@ -149,44 +163,51 @@ void TestCopies(const Tensor& t) {
     t.AsProtoTensorContent(&proto);
     Tensor t2(t.dtype());
     EXPECT_TRUE(t2.FromProto(proto));
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
     // Make another copy via tensor_content field.
     *proto.mutable_tensor_content() = proto.tensor_content();
     Tensor t3(t.dtype());
     EXPECT_TRUE(t3.FromProto(proto));
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
   }
   {
     LOG(INFO) << "AsTensor";
     gtl::ArraySlice<T> values(t.flat<T>().data(), t.NumElements());
     Tensor t2 = test::AsTensor(values, t.shape());
-    test::ExpectTensorEqual<T>(t, t2);
+    ExpectEqual<T>(t, t2);
   }
   {
     LOG(INFO) << "Move constructor";
     Tensor t2 = t;
-    Tensor t3(std::move(t2));
-    test::ExpectTensorEqual<T>(t, t3);
+    Tensor t3 = std::move(t2);
+    ExpectEqual<T>(t, t3);
     EXPECT_TRUE(t3.IsInitialized());
-    EXPECT_FALSE(t2.IsInitialized());
+    EXPECT_FALSE(t2.IsInitialized());  // NOLINT(bugprone-use-after-move)
   }
   {
     LOG(INFO) << "Move assignment";
     Tensor t2 = t;
-    Tensor t3 = std::move(t2);
-    Tensor* t4 = &t3;
-    *t4 = std::move(t3);
-    test::ExpectTensorEqual<T>(t, t3);
+    Tensor t3;
+    t3 = std::move(t2);
+    ExpectEqual<T>(t, t3);
     EXPECT_TRUE(t3.IsInitialized());
-    EXPECT_FALSE(t2.IsInitialized());
+    EXPECT_FALSE(t2.IsInitialized());  // NOLINT(bugprone-use-after-move)
+  }
+  {
+    LOG(INFO) << "Move self-assignment";
+    Tensor t2 = t;
+    Tensor* t3 = &t2;
+    *t3 = std::move(t2);
+    ExpectEqual<Variant>(t, *t3);
+    EXPECT_TRUE(t3->IsInitialized());
   }
 }
 
 TEST(Tensor_Half, Simple) {
   Tensor t(DT_HALF, TensorShape({5, 7}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({5, 7})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<Eigen::half>()(a, b) = static_cast<Eigen::half>(a * b);
     }
   }
@@ -196,8 +217,8 @@ TEST(Tensor_Half, Simple) {
 TEST(Tensor_Bfloat16, Simple) {
   Tensor t(DT_BFLOAT16, TensorShape({5, 7}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({5, 7})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<bfloat16>()(a, b) = static_cast<bfloat16>(a * b);
     }
   }
@@ -207,8 +228,8 @@ TEST(Tensor_Bfloat16, Simple) {
 TEST(Tensor_Float, Simple) {
   Tensor t(DT_FLOAT, TensorShape({10, 20}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({10, 20})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<float>()(a, b) = static_cast<float>(a * b);
     }
   }
@@ -236,43 +257,50 @@ TEST(Tensor_Variant, Simple) {
     LOG(INFO) << "CopyFrom()";
     Tensor t2(t.dtype());
     EXPECT_TRUE(t2.CopyFrom(t, t.shape()));
-    test::ExpectTensorEqual<Variant>(t, t2);
+    ExpectEqual<Variant>(t, t2);
   }
   {
     LOG(INFO) << "operator=()";
     Tensor t2(t.dtype());
     t2 = t;
-    test::ExpectTensorEqual<Variant>(t, t2);
+    ExpectEqual<Variant>(t, t2);
   }
   {
     LOG(INFO) << "deep copy";
     Tensor t2(t.dtype(), t.shape());
     t2.flat<Variant>() = t.flat<Variant>();
-    test::ExpectTensorEqual<Variant>(t, t2);
+    ExpectEqual<Variant>(t, t2);
   }
   {
     LOG(INFO) << "AsTensor";
     gtl::ArraySlice<Variant> values(t.flat<Variant>().data(), t.NumElements());
     Tensor t2 = test::AsTensor(values, t.shape());
-    test::ExpectTensorEqual<Variant>(t, t2);
+    ExpectEqual<Variant>(t, t2);
   }
   {
     LOG(INFO) << "Move constructor";
     Tensor t2 = t;
-    Tensor t3(std::move(t2));
-    test::ExpectTensorEqual<Variant>(t, t3);
+    Tensor t3 = std::move(t2);
+    ExpectEqual<Variant>(t, t3);
     EXPECT_TRUE(t3.IsInitialized());
-    EXPECT_FALSE(t2.IsInitialized());
+    EXPECT_FALSE(t2.IsInitialized());  // NOLINT(bugprone-use-after-move)
   }
   {
     LOG(INFO) << "Move assignment";
     Tensor t2 = t;
-    Tensor t3 = std::move(t2);
-    Tensor* t4 = &t3;
-    *t4 = std::move(t3);
-    test::ExpectTensorEqual<Variant>(t, t3);
+    Tensor t3;
+    t3 = std::move(t2);
+    ExpectEqual<Variant>(t, t3);
     EXPECT_TRUE(t3.IsInitialized());
-    EXPECT_FALSE(t2.IsInitialized());
+    EXPECT_FALSE(t2.IsInitialized());  // NOLINT(bugprone-use-after-move)
+  }
+  {
+    LOG(INFO) << "Move self-assignment";
+    Tensor t2 = t;
+    Tensor* t3 = &t2;
+    *t3 = std::move(t2);
+    ExpectEqual<Variant>(t, *t3);
+    EXPECT_TRUE(t3->IsInitialized());
   }
 }
 
@@ -299,8 +327,8 @@ TEST(Tensor_Variant, Marshal) {
 TEST(Tensor_UInt16, Simple) {
   Tensor t(DT_UINT16, TensorShape({2, 2}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({2, 2})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<uint16>()(a, b) = uint16(a * b);
     }
   }
@@ -310,8 +338,8 @@ TEST(Tensor_UInt16, Simple) {
 TEST(Tensor_QInt8, Simple) {
   Tensor t(DT_QINT8, TensorShape({2, 2}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({2, 2})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<qint8>()(a, b) = qint8(a * b);
     }
   }
@@ -321,8 +349,8 @@ TEST(Tensor_QInt8, Simple) {
 TEST(Tensor_QUInt8, Simple) {
   Tensor t(DT_QUINT8, TensorShape({2, 2}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({2, 2})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<Eigen::QUInt8>()(a, b) = Eigen::QUInt8(a * b);
     }
   }
@@ -332,8 +360,8 @@ TEST(Tensor_QUInt8, Simple) {
 TEST(Tensor_QInt32, Simple) {
   Tensor t(DT_QINT32, TensorShape({2, 2}));
   EXPECT_TRUE(t.shape().IsSameSize(TensorShape({2, 2})));
-  for (int64 a = 0; a < t.shape().dim_size(0); a++) {
-    for (int64 b = 0; b < t.shape().dim_size(1); b++) {
+  for (int64_t a = 0; a < t.shape().dim_size(0); a++) {
+    for (int64_t b = 0; b < t.shape().dim_size(1); b++) {
       t.matrix<qint32>()(a, b) = qint32(static_cast<int32>(a * b));
     }
   }
@@ -365,24 +393,24 @@ class TensorReshapeTest : public ::testing::Test {
   }
 
   template <typename T>
-  using ReshapeFunc = T (Tensor::*)(gtl::ArraySlice<int64>);
+  using ReshapeFunc = T (Tensor::*)(gtl::ArraySlice<int64_t>);
   template <typename T>
-  using ConstReshapeFunc = T (Tensor::*)(gtl::ArraySlice<int64>) const;
+  using ConstReshapeFunc = T (Tensor::*)(gtl::ArraySlice<int64_t>) const;
 
   template <typename T, ReshapeFunc<T> Func>
-  void TestReshape(std::initializer_list<int64> sizes) {
+  void TestReshape(std::initializer_list<int64_t> sizes) {
     T shaped = (t.*Func)(sizes);
     TestReshapeImpl(shaped, sizes);
   }
 
   template <typename T, ConstReshapeFunc<T> Func>
-  void TestReshape(std::initializer_list<int64> sizes) {
+  void TestReshape(std::initializer_list<int64_t> sizes) {
     T shaped = (static_cast<const Tensor&>(t).*Func)(sizes);
     TestReshapeImpl(shaped, sizes);
   }
 
   template <typename T>
-  void TestReshapeImpl(T shaped, std::initializer_list<int64> sizes) {
+  void TestReshapeImpl(T shaped, std::initializer_list<int64_t> sizes) {
     auto iter = sizes.begin();
     for (int i = 0; i < shaped.rank(); ++i, ++iter) {
       EXPECT_EQ(*iter, shaped.dimension(i));
@@ -729,7 +757,7 @@ TEST(ReinterpretLastDimension, Reinterpret_NCHW_VECT_C_as_NCHW) {
     auto nchw_vect_c = t_nchw_vect_c.tensor<qint8, 5>();
     Tensor t_expected_nchw(DT_INT32, TensorShape({2, 3, 5, 7}));
     auto expected_nchw = t_expected_nchw.tensor<int32, 4>();
-    int8 val = 0;
+    int8_t val = 0;
     for (int n = 0; n < t_nchw_vect_c.shape().dim_size(0); ++n) {
       for (int c = 0; c < t_nchw_vect_c.shape().dim_size(1); ++c) {
         for (int h = 0; h < t_nchw_vect_c.shape().dim_size(2); ++h, ++val) {
@@ -933,7 +961,7 @@ TEST(Tensor_Float, SimpleWithHelper) {
   Tensor t2(t1.dtype(), t1.shape());
   t2.flat<float>() = t1.flat<float>() * 2.0f;
   Tensor t3 = test::AsTensor<float>({0, 2, 4, 6, 8, 10}, t1.shape());
-  test::ExpectTensorEqual<float>(t2, t3);
+  ExpectEqual<float>(t2, t3);
 }
 
 TEST(Tensor_Int32, SimpleWithHelper) {
@@ -941,7 +969,7 @@ TEST(Tensor_Int32, SimpleWithHelper) {
   Tensor t2(t1.dtype(), t1.shape());
   t2.flat<int32>() = t1.flat<int32>() * 2;
   Tensor t3 = test::AsTensor<int32>({0, 2, 4, 6, 8, 10}, t1.shape());
-  test::ExpectTensorEqual<int32>(t2, t3);
+  ExpectEqual<int32>(t2, t3);
 }
 
 TEST(Tensor_UInt16, SimpleWithHelper) {
@@ -949,7 +977,7 @@ TEST(Tensor_UInt16, SimpleWithHelper) {
   Tensor t2(t1.dtype(), t1.shape());
   t2.flat<uint16>() = t1.flat<uint16>() * uint16(2);
   Tensor t3 = test::AsTensor<uint16>({0, 2, 4, 6, 8, 10}, t1.shape());
-  test::ExpectTensorEqual<uint16>(t2, t3);
+  ExpectEqual<uint16>(t2, t3);
 }
 
 TEST(Tensor_QInt8, SimpleWithHelper) {
@@ -957,7 +985,7 @@ TEST(Tensor_QInt8, SimpleWithHelper) {
   Tensor t2(t1.dtype(), t1.shape());
   t2.flat<qint8>() = t1.flat<qint8>() + qint8(-2);
   Tensor t3 = test::AsTensor<qint8>({-2, -1, 0, 1, 2, 3}, {2, 3});
-  test::ExpectTensorEqual<qint8>(t2, t3);
+  ExpectEqual<qint8>(t2, t3);
 }
 
 TEST(Tensor_QUInt8, SimpleWithHelper) {
@@ -965,19 +993,19 @@ TEST(Tensor_QUInt8, SimpleWithHelper) {
   Tensor t2(t1.dtype(), t1.shape());
   t2.flat<quint8>() = t1.flat<quint8>() + quint8(2);
   Tensor t3 = test::AsTensor<quint8>({2, 3, 4, 5, 6, 7}, {2, 3});
-  test::ExpectTensorEqual<quint8>(t2, t3);
+  ExpectEqual<quint8>(t2, t3);
 }
 
 TEST(Tensor_Int64, SimpleWithHelper) {
-  Tensor t1 = test::AsTensor<int64>(
+  Tensor t1 = test::AsTensor<int64_t>(
       {0LL << 48, 1LL << 48, 2LL << 48, 3LL << 48, 4LL << 48, 5LL << 48},
       {2, 3});
   Tensor t2(t1.dtype(), t1.shape());
-  t2.flat<int64>() = t1.flat<int64>() * static_cast<int64>(2);
-  Tensor t3 = test::AsTensor<int64>(
+  t2.flat<int64_t>() = t1.flat<int64_t>() * static_cast<int64_t>(2);
+  Tensor t3 = test::AsTensor<int64_t>(
       {0LL << 48, 2LL << 48, 4LL << 48, 6LL << 48, 8LL << 48, 10LL << 48},
       {2, 3});
-  test::ExpectTensorEqual<int64>(t2, t3);
+  ExpectEqual<int64_t>(t2, t3);
 }
 
 TEST(Tensor_String, SimpleWithHelper) {
@@ -990,7 +1018,7 @@ TEST(Tensor_String, SimpleWithHelper) {
   }
 
   // Test with helper.
-  test::ExpectTensorEqual<tstring>(t1, t2);
+  ExpectEqual<tstring>(t1, t2);
 }
 
 TEST(Tensor_Bool, SimpleWithHelper) {
@@ -1005,7 +1033,7 @@ TEST(Tensor_Bool, SimpleWithHelper) {
   }
 
   // Test with helper.
-  test::ExpectTensorEqual<bool>(t1, t2);
+  ExpectEqual<bool>(t1, t2);
 }
 
 TEST(Tensor_Complex, Simple64) {
@@ -1035,7 +1063,7 @@ TEST(Tensor_Complex, SimpleWithHelper64) {
         {0, {-2, 2}, {0, 4}, {-6, 6}, {-8, 0}, {-10, 4}},
         // shape
         {2, 3});
-    test::ExpectTensorEqual<complex64>(t2, t3);
+    ExpectEqual<complex64>(t2, t3);
   }
 
   // Does some numeric operations for complex64 numbers.
@@ -1084,7 +1112,7 @@ TEST(Tensor_Complex, SimpleWithHelper128) {
         {0, {-2, 2}, {0, 4}, {-6, 6}, {-8, 0}, {-10, 4}},
         // shape
         {2, 3});
-    test::ExpectTensorEqual<complex128>(t2, t3);
+    ExpectEqual<complex128>(t2, t3);
   }
 
   // Does some numeric operations for complex128 numbers.
@@ -1223,7 +1251,7 @@ TEST(Tensor, Slice_Basic) {
     // A simple slice equivalent to identity.
     TestCopies<float>(y);
     y = x.Slice(0, 10);
-    test::ExpectTensorEqual<float>(x, y);
+    ExpectEqual<float>(x, y);
     EXPECT_EQ(x.flat<float>().data(), y.flat<float>().data());
 
     // A slice of a slice.
@@ -1266,7 +1294,7 @@ TEST(Tensor, Slice_Basic) {
     EXPECT_FALSE(y.IsAligned());
 #endif
     y.unaligned_flat<float>().setConstant(1.0);
-    for (int64 i = 0; i < y.NumElements(); ++i) {
+    for (int64_t i = 0; i < y.NumElements(); ++i) {
       EXPECT_EQ(1.0, y.unaligned_flat<float>()(i));
     }
   }
@@ -1305,7 +1333,7 @@ TEST(Tensor, SubSlice_Basic) {
     EXPECT_FALSE(y.IsAligned());
 #endif
     y.unaligned_flat<float>().setConstant(1.0);
-    for (int64 i = 0; i < y.NumElements(); ++i) {
+    for (int64_t i = 0; i < y.NumElements(); ++i) {
       EXPECT_EQ(1.0, y.unaligned_flat<float>()(i));
     }
   }
@@ -1440,19 +1468,19 @@ TEST(SummarizeValue, STRING_PRINT_V2) {
             x.SummarizeValue(16, true));
 }
 
-void BM_CreateAndDestroy(int iters) {
+void BM_CreateAndDestroy(::testing::benchmark::State& state) {
   TensorShape shape({10, 20});
-  while (--iters) {
+  for (auto s : state) {
     Tensor t(DT_FLOAT, shape);
   }
 }
 BENCHMARK(BM_CreateAndDestroy);
 
-void BM_Assign(int iters) {
+void BM_Assign(::testing::benchmark::State& state) {
   Tensor a(DT_FLOAT, TensorShape({10, 20}));
   Tensor b(DT_FLOAT, TensorShape({10, 20}));
   bool a_to_b = true;
-  while (--iters) {
+  for (auto s : state) {
     if (a_to_b) {
       b = a;
     } else {
@@ -1470,20 +1498,20 @@ TEST(Tensor, EmptyTensorData) {
 }
 
 // Benchmark create and destroy a tensor, with an allocated buffer.
-void BM_CreateAndDestroyWithBuf(int iters) {
+void BM_CreateAndDestroyWithBuf(::testing::benchmark::State& state) {
   TensorShape shape({10, 20});
   Allocator* allocator = cpu_allocator();
-  while (--iters) {
+  for (auto s : state) {
     Tensor a(allocator, DT_FLOAT, shape);
   }
 }
 BENCHMARK(BM_CreateAndDestroyWithBuf);
 
 // Benchmark create+copy a tensor, with an allocated buffer.
-void BM_CreateAndCopyCtrWithBuf(int iters) {
+void BM_CreateAndCopyCtrWithBuf(::testing::benchmark::State& state) {
   TensorShape shape({10, 20});
   Allocator* allocator = cpu_allocator();
-  while (--iters) {
+  for (auto s : state) {
     Tensor a(allocator, DT_FLOAT, shape);
     Tensor b(a);
   }
@@ -1491,10 +1519,10 @@ void BM_CreateAndCopyCtrWithBuf(int iters) {
 BENCHMARK(BM_CreateAndCopyCtrWithBuf);
 
 // Benchmark create+move a tensor, with an allocated buffer.
-void BM_CreateAndMoveCtrWithBuf(int iters) {
+void BM_CreateAndMoveCtrWithBuf(::testing::benchmark::State& state) {
   TensorShape shape({10, 20});
   Allocator* allocator = cpu_allocator();
-  while (--iters) {
+  for (auto s : state) {
     Tensor a(allocator, DT_FLOAT, shape);
     Tensor b(std::move(a));
   }
@@ -1503,10 +1531,11 @@ BENCHMARK(BM_CreateAndMoveCtrWithBuf);
 
 // Benchmark creating and destroy a host-scalar tensor, using the allocator
 // interface.
-void BM_CreateAndDestroyHostScalarNonOptimized(int iters) {
+void BM_CreateAndDestroyHostScalarNonOptimized(
+    ::testing::benchmark::State& state) {
   TensorShape shape({});
   Allocator* allocator = cpu_allocator();
-  while (--iters) {
+  for (auto s : state) {
     Tensor a(allocator, DT_FLOAT, shape);
     a.scalar<float>()() = 37.0;
   }
@@ -1515,32 +1544,33 @@ BENCHMARK(BM_CreateAndDestroyHostScalarNonOptimized);
 
 // Benchmark creating and destroy a host-scalar tensor, using the specialized
 // constructor.
-void BM_CreateAndDestroyHostScalarOptimized(int iters) {
-  while (--iters) {
+void BM_CreateAndDestroyHostScalarOptimized(
+    ::testing::benchmark::State& state) {
+  for (auto s : state) {
     Tensor a(37.0);
   }
 }
 BENCHMARK(BM_CreateAndDestroyHostScalarOptimized);
 
-static void BM_FromProto(int iters, int size) {
-  testing::StopTiming();
+void BM_FromProto(::testing::benchmark::State& state) {
+  const int size = state.range(0);
+
   TensorShape shape({size});
   Allocator* allocator = cpu_allocator();
   Tensor a(allocator, DT_FLOAT, shape);
   std::fill_n(a.flat<float>().data(), size, 42.0);
   TensorProto p;
   a.AsProtoField(&p);
-  testing::StartTiming();
-  while (--iters) {
+  for (auto s : state) {
     Tensor b;
     ASSERT_TRUE(b.FromProto(p));
   }
-  testing::StopTiming();
 }
 BENCHMARK(BM_FromProto)->Range(1, 1 << 20);
 
-static void BM_FromProtoCompressed(int iters, int size) {
-  testing::StopTiming();
+void BM_FromProtoCompressed(::testing::benchmark::State& state) {
+  const int size = state.range(0);
+
   TensorShape shape({size});
   Allocator* allocator = cpu_allocator();
   Tensor a(allocator, DT_FLOAT, shape);
@@ -1548,17 +1578,16 @@ static void BM_FromProtoCompressed(int iters, int size) {
   TensorProto p;
   a.AsProtoField(&p);
   tensor::CompressTensorProtoInPlace(&p);
-  testing::StartTiming();
-  while (--iters) {
+  for (auto s : state) {
     Tensor b;
     ASSERT_TRUE(b.FromProto(p));
   }
-  testing::StopTiming();
 }
 BENCHMARK(BM_FromProtoCompressed)->Range(1, 1 << 20);
 
-static void BM_FromProtoCompressedZero(int iters, int size) {
-  testing::StopTiming();
+void BM_FromProtoCompressedZero(::testing::benchmark::State& state) {
+  const int size = state.range(0);
+
   TensorShape shape({size});
   Allocator* allocator = cpu_allocator();
   Tensor a(allocator, DT_FLOAT, shape);
@@ -1567,12 +1596,10 @@ static void BM_FromProtoCompressedZero(int iters, int size) {
   TensorProto p;
   a.AsProtoField(&p);
   tensor::CompressTensorProtoInPlace(&p);
-  testing::StartTiming();
-  while (--iters) {
+  for (auto s : state) {
     Tensor b;
     ASSERT_TRUE(b.FromProto(p));
   }
-  testing::StopTiming();
 }
 BENCHMARK(BM_FromProtoCompressedZero)->Range(1, 1 << 20);
 

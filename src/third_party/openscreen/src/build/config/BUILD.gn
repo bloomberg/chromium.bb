@@ -111,12 +111,6 @@ config("openscreen_code") {
 
   if (is_gcc) {
     cflags += [ "-Wno-maybe-uninitialized" ]
-    cflags_cc += [
-      # GCC 7.2 reports noexcept errors that are not found in GCC 8.
-      # TODO(crbug.com/openscreen/40): Remove this when bots are upgraded to
-      # >= GCC 8.3.
-      "-Wno-noexcept-type",
-    ]
   }
 
   if (is_clang) {
@@ -144,10 +138,65 @@ config("openscreen_code") {
       "-Wunused-result",
     ]
 
-    # Generate warning if code generates exit-time destructors, since such
-    # things are in violation of Chromium C++ Don'ts.
-    cflags_cc += [ "-Wexit-time-destructors" ]
-    cflags_objcc += [ "-Wexit-time-destructors" ]
+    # TODO(issuetracker.google.com/202964797): Support all build flags on Mac
+    # once it migrates to a newer clang.
+    if (is_linux) {
+      cflags += [
+        # Warn on shadowed declarations.  We do allow shadowed fields in
+        # constructors to make structs more readable.
+        "-Wshadow-all",
+        "-Wno-shadow-field-in-constructor",
+
+        # Warn on dodgy numeric conversions.
+        #      "-Wshorten-64-to-32",
+        "-Wimplicit-int-float-conversion",
+
+        # Warn on C99-isms.
+        "-Wc99-extensions",
+
+        # Warn on dodgy looping.
+        "-Wrange-loop-bind-reference",
+        "-Wloop-analysis",
+
+        # Warn on unreachable code.
+        "-Wunreachable-code-aggressive",
+
+        # Warn on undefined variable usage.
+        "-Wundefined-var-template",
+
+        # Warn on fallthroughs.
+        "-Wimplicit-fallthrough",
+
+        # Warn on unused declarations.
+        "-Wunneeded-internal-declaration",
+
+        # Warn on anonymous typedefs.
+        "-Wnon-c-typedef-for-linkage",
+
+        # Warn on enumeration type mismatches.
+        "-Wenum-compare-conditional",
+      ]
+    }
+
+    cflags_cc += [
+      # Generate warning if code generates exit-time destructors, since such
+      # things are in violation of Chromium C++ Don'ts.
+      "-Wexit-time-destructors",
+    ]
+
+    # TODO(issuetracker.google.com/202964797): Support all build flags on Mac
+    # once it migrates to a newer clang.
+    if (is_linux) {
+      cflags_cc += [
+        # Warn on suspect narrowing conversions.
+        "-Wc++11-narrowing",
+
+        # Allow designated initializers.
+        "-Wno-c++20-designator",
+      ]
+    }
+
+    cflags_objcc += cflags_cc
 
     ldflags += [ "-fcolor-diagnostics" ]
   }

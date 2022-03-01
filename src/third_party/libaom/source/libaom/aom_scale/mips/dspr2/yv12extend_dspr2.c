@@ -90,6 +90,7 @@ static void extend_plane(uint8_t *const src, int src_stride, int width,
   top_dst = src + src_stride * (-extend_top) - extend_left;
   bot_dst = src + src_stride * (height)-extend_left;
   linesize = extend_left + extend_right + width;
+  assert(linesize <= src_stride);
 
   for (i = 0; i < extend_top; i++) {
     memcpy(top_dst, top_src, linesize);
@@ -105,8 +106,8 @@ static void extend_plane(uint8_t *const src, int src_stride, int width,
 static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
   const int c_w = ybf->uv_crop_width;
   const int c_h = ybf->uv_crop_height;
-  const int ss_x = ybf->uv_width < ybf->y_width;
-  const int ss_y = ybf->uv_height < ybf->y_height;
+  const int ss_x = ybf->subsampling_x;
+  const int ss_y = ybf->subsampling_y;
   const int c_et = ext_size >> ss_y;
   const int c_el = ext_size >> ss_x;
   const int c_eb = c_et + ybf->uv_height - ybf->uv_crop_height;

@@ -26,7 +26,9 @@ x11::Glx::FbConfig GetConfigForWindow(x11::Connection* conn,
   }
 
   if (auto configs =
-          conn->glx().GetFBConfigs({conn->DefaultScreenId()}).Sync()) {
+          conn->glx()
+              .GetFBConfigs({static_cast<uint32_t>(conn->DefaultScreenId())})
+              .Sync()) {
     // The returned property_list is a table consisting of
     // 2 * num_FB_configs * num_properties uint32_t's.  Each entry in the table
     // is a key-value pair.  For example, if we have 2 FB configs and 3
@@ -78,8 +80,8 @@ GLXFBConfig GetGlxFbConfigForXProtoFbConfig(x11::Connection* connection,
   GLXFBConfig* glx_configs =
       glXChooseFBConfig(connection->GetXlibDisplay(),
                         connection->DefaultScreenId(), attrib_list, &nitems);
-  DCHECK_EQ(nitems, 1);
-  DCHECK(glx_configs);
+  if (!glx_configs)
+    return nullptr;
   GLXFBConfig glx_config = glx_configs[0];
   x11::XlibFree(glx_configs);
   return glx_config;

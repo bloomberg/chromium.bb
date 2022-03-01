@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
@@ -31,6 +31,10 @@ class ChromeBrowserCloudManagementRegisterWatcher
 
   explicit ChromeBrowserCloudManagementRegisterWatcher(
       ChromeBrowserCloudManagementController* controller);
+  ChromeBrowserCloudManagementRegisterWatcher(
+      const ChromeBrowserCloudManagementRegisterWatcher&) = delete;
+  ChromeBrowserCloudManagementRegisterWatcher& operator=(
+      const ChromeBrowserCloudManagementRegisterWatcher&) = delete;
   ~ChromeBrowserCloudManagementRegisterWatcher() override;
 
   // Blocks until the  chrome browser cloud management enrollment process
@@ -106,7 +110,7 @@ class ChromeBrowserCloudManagementRegisterWatcher
 
   void DisplayErrorMessage();
 
-  ChromeBrowserCloudManagementController* controller_;
+  raw_ptr<ChromeBrowserCloudManagementController> controller_;
 
   base::RunLoop run_loop_;
   std::unique_ptr<EnterpriseStartupDialog> dialog_;
@@ -117,8 +121,6 @@ class ChromeBrowserCloudManagementRegisterWatcher
   DialogCreationCallback dialog_creation_callback_;
 
   base::Time visible_start_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementRegisterWatcher);
 };
 
 }  // namespace policy

@@ -29,11 +29,11 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.JUnitTestGURLs;
 
 /**
  * Tests for {@link ScreenshotShareSheetMediator}.
@@ -41,7 +41,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 // clang-format off
-@Features.EnableFeatures(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)
 public class ScreenshotShareSheetMediatorUnitTest {
     // clang-format on
     @Rule
@@ -75,7 +74,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
                 ChromeOptionShareCallback chromeOptionShareCallback,
                 Callback<Runnable> installCallback) {
             super(context, propertyModel, deleteRunnable, saveRunnable, tab,
-                    chromeOptionShareCallback, installCallback);
+                    JUnitTestGURLs.EXAMPLE_URL, chromeOptionShareCallback, installCallback);
         }
         @Override
         protected void generateTemporaryUriFromBitmap(

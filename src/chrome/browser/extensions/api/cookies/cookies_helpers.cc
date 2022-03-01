@@ -138,7 +138,8 @@ CookieStore CreateCookieStore(Profile* profile,
   DCHECK(tab_ids);
   base::DictionaryValue dict;
   dict.SetString(cookies_api_constants::kIdKey, GetStoreIdFromProfile(profile));
-  dict.Set(cookies_api_constants::kTabIdsKey, std::move(tab_ids));
+  dict.SetKey(cookies_api_constants::kTabIdsKey,
+              base::Value::FromUniquePtrValue(std::move(tab_ids)));
 
   CookieStore cookie_store;
   bool rv = CookieStore::Populate(dict, &cookie_store);
@@ -151,6 +152,7 @@ void GetCookieListFromManager(
     const GURL& url,
     network::mojom::CookieManager::GetCookieListCallback callback) {
   manager->GetCookieList(url, net::CookieOptions::MakeAllInclusive(),
+                         net::CookiePartitionKeyCollection::Todo(),
                          std::move(callback));
 }
 
@@ -200,8 +202,7 @@ void AppendToTabIdList(Browser* browser, base::ListValue* tab_ids) {
   DCHECK(tab_ids);
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_ids->AppendInteger(
-        ExtensionTabUtil::GetTabId(tab_strip->GetWebContentsAt(i)));
+    tab_ids->Append(ExtensionTabUtil::GetTabId(tab_strip->GetWebContentsAt(i)));
   }
 }
 

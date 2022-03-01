@@ -14,12 +14,21 @@ limitations under the License.
 ==============================================================================*/
 #include "tensorflow/core/kernels/data/flat_map_dataset_op.h"
 
+#include <string>
+#include <utility>
+
 #include "tensorflow/core/common_runtime/function.h"
+#include "tensorflow/core/common_runtime/graph_constructor.h"
+#include "tensorflow/core/common_runtime/graph_runner.h"
 #include "tensorflow/core/common_runtime/input_colocation_exemption_registry.h"
+#include "tensorflow/core/data/captured_function.h"
+#include "tensorflow/core/data/dataset_utils.h"
+#include "tensorflow/core/data/name_utils.h"
+#include "tensorflow/core/data/serialization_utils.h"
+#include "tensorflow/core/framework/dataset.h"
+#include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/framework/partial_tensor_shape.h"
 #include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/kernels/data/dataset_utils.h"
-#include "tensorflow/core/kernels/data/name_utils.h"
 #include "tensorflow/core/lib/random/random.h"
 
 namespace tensorflow {
@@ -37,8 +46,8 @@ namespace data {
 /* static */ constexpr const char* const FlatMapDatasetOp::kOutputShapes;
 
 constexpr char kElementIndex[] = "element_index";
-constexpr char kCapturedFuncInputsSize[] = "captured_func_inputs_size";
-constexpr char kCapturedFuncInputs[] = "captured_func_inputs";
+constexpr char kInputsSize[] = "inputs_size";
+constexpr char kInputs[] = "inputs";
 constexpr char kCurrentElementIteratorUninitialized[] =
     "current_element_iterator_uninitialized";
 constexpr char kExhausted[] = "exhausted";
@@ -73,6 +82,11 @@ class FlatMapDatasetOp::Dataset : public DatasetBase {
 
   string DebugString() const override {
     return name_utils::DatasetDebugString(kDatasetType);
+  }
+
+  Status InputDatasets(std::vector<const DatasetBase*>* inputs) const override {
+    inputs->push_back(input_);
+    return Status::OK();
   }
 
   Status CheckExternalState() const override {
@@ -131,7 +145,7 @@ class FlatMapDatasetOp::Dataset : public DatasetBase {
           // next subelement.
           bool end_of_element;
           TF_RETURN_IF_ERROR(current_element_iterator_->GetNext(
-              ctx, out_tensors, &end_of_element));
+              MakeNestedIteratorContext(ctx), out_tensors, &end_of_element));
           if (!end_of_element) {
             // Produce the subelement as output.
             *end_of_sequence = false;
@@ -144,16 +158,55 @@ class FlatMapDatasetOp::Dataset : public DatasetBase {
         }
 
         // Get the next element from the input dataset.
-        captured_func_inputs_.clear();
+        inputs_.clear();
         TF_RETURN_IF_ERROR(
-            input_impl_->GetNext(ctx, &captured_func_inputs_, end_of_sequence));
+            input_impl_->GetNext(ctx, &inputs_, end_of_sequence));
         if (*end_of_sequence) {
           input_impl_.reset();
           return Status::OK();
         }
 
-        TF_RETURN_IF_ERROR(BuildCurrentElementIteratorLocked(ctx));
+        TF_RETURN_IF_ERROR(
+            BuildCurrentElementIteratorLocked(ctx, /*is_get_next=*/true));
       } while (true);
+    }
+
+    Status SkipInternal(IteratorContext* ctx, int num_to_skip,
+                        bool* end_of_sequence, int* num_skipped) override {
+      mutex_lock l(mu_);
+      *num_skipped = 0;
+      while (*num_skipped < num_to_skip) {
+        if (!input_impl_) {
+          *end_of_sequence = true;
+          return Status::OK();
+        }
+        if (!current_element_iterator_) {
+          // Get the next element from the input dataset.
+          inputs_.clear();
+          TF_RETURN_IF_ERROR(
+              input_impl_->GetNext(ctx, &inputs_, end_of_sequence));
+          if (*end_of_sequence) {
+            input_impl_.reset();
+            *end_of_sequence = true;
+            return Status::OK();
+          }
+          TF_RETURN_IF_ERROR(
+              BuildCurrentElementIteratorLocked(ctx, /*is_get_next=*/false));
+        }
+        bool end_of_element;
+        int last_num_skipped;
+        TF_RETURN_IF_ERROR(current_element_iterator_->Skip(
+            MakeNestedIteratorContext(ctx), num_to_skip - *num_skipped,
+            &end_of_element, &last_num_skipped));
+        *num_skipped += last_num_skipped;
+        if (end_of_element) {
+          // We have reached the end of the current element, so maybe move on
+          // to the next element.
+          current_element_iterator_.reset();
+        }
+      }
+      *end_of_sequence = false;
+      return Status::OK();
     }
 
    protected:
@@ -173,12 +226,10 @@ class FlatMapDatasetOp::Dataset : public DatasetBase {
             writer->WriteScalar(full_name(kElementIndex), element_index_));
         if (current_element_iterator_) {
           TF_RETURN_IF_ERROR(
-              writer->WriteScalar(full_name(kCapturedFuncInputsSize),
-                                  captured_func_inputs_.size()));
-          for (int i = 0; i < captured_func_inputs_.size(); i++) {
+              writer->WriteScalar(full_name(kInputsSize), inputs_.size()));
+          for (int i = 0; i < inputs_.size(); i++) {
             TF_RETURN_IF_ERROR(writer->WriteTensor(
-                full_name(strings::StrCat(kCapturedFuncInputs, "[", i, "]")),
-                captured_func_inputs_[i]));
+                full_name(strings::StrCat(kInputs, "[", i, "]")), inputs_[i]));
           }
           TF_RETURN_IF_ERROR(SaveInput(ctx, writer, current_element_iterator_));
         } else {
@@ -197,35 +248,37 @@ class FlatMapDatasetOp::Dataset : public DatasetBase {
       input_impl_.reset();
       element_index_ = 0;
       current_element_iterator_.reset();
-      captured_func_inputs_.clear();
+      inputs_.clear();
       if (!reader->Contains(full_name(kExhausted))) {
         TF_RETURN_IF_ERROR(
             dataset()->input_->MakeIterator(ctx, this, prefix(), &input_impl_));
         TF_RETURN_IF_ERROR(RestoreInput(ctx, reader, input_impl_));
         {
-          int64 temp;
+          int64_t temp;
           TF_RETURN_IF_ERROR(
               reader->ReadScalar(full_name(kElementIndex), &temp));
           element_index_ = temp;
         }
         if (!reader->Contains(
                 full_name(kCurrentElementIteratorUninitialized))) {
-          size_t captured_func_inputs_size;
+          size_t inputs_size;
           {
-            int64 temp;
+            int64_t temp;
             TF_RETURN_IF_ERROR(
-                reader->ReadScalar(full_name(kCapturedFuncInputsSize), &temp));
-            captured_func_inputs_size = static_cast<size_t>(temp);
+                reader->ReadScalar(full_name(kInputsSize), &temp));
+            inputs_size = static_cast<size_t>(temp);
           }
-          captured_func_inputs_.reserve(captured_func_inputs_size);
-          for (int i = 0; i < captured_func_inputs_size; i++) {
-            captured_func_inputs_.emplace_back();
+          inputs_.reserve(inputs_size);
+          for (int i = 0; i < inputs_size; i++) {
+            inputs_.emplace_back();
             TF_RETURN_IF_ERROR(reader->ReadTensor(
-                full_name(strings::StrCat(kCapturedFuncInputs, "[", i, "]")),
-                &captured_func_inputs_.back()));
+                ctx->flr(), full_name(strings::StrCat(kInputs, "[", i, "]")),
+                &inputs_.back()));
           }
+
           element_index_--;
-          TF_RETURN_IF_ERROR(BuildCurrentElementIteratorLocked(ctx));
+          TF_RETURN_IF_ERROR(
+              BuildCurrentElementIteratorLocked(ctx, /*is_get_next=*/false));
           TF_RETURN_IF_ERROR(
               RestoreInput(ctx, reader, current_element_iterator_));
         }
@@ -234,18 +287,27 @@ class FlatMapDatasetOp::Dataset : public DatasetBase {
     }
 
    private:
-    Status BuildCurrentElementIteratorLocked(IteratorContext* ctx)
+    Status BuildCurrentElementIteratorLocked(IteratorContext* ctx,
+                                             bool is_get_next)
         TF_EXCLUSIVE_LOCKS_REQUIRED(mu_) {
-      return MakeIteratorFromInputElement(
-          ctx, this, captured_func_inputs_, element_index_++,
-          *instantiated_captured_func_, prefix(), &current_element_iterator_);
+      if (is_get_next) {
+        return MakeIteratorFromInputElement(
+            ctx, this, inputs_, element_index_++, *instantiated_captured_func_,
+            prefix(), &current_element_iterator_, model_node());
+      } else {
+        // NOTE: We intentionally ignore resource modeling outside GetNext().
+        return MakeIteratorFromInputElement(
+            ctx, this, inputs_, element_index_++, *instantiated_captured_func_,
+            prefix(), &current_element_iterator_,
+            /*node=*/nullptr);
+      }
     }
 
     mutex mu_;
     size_t element_index_ TF_GUARDED_BY(mu_) = 0;
     std::unique_ptr<IteratorBase> input_impl_ TF_GUARDED_BY(mu_);
     std::unique_ptr<IteratorBase> current_element_iterator_ TF_GUARDED_BY(mu_);
-    std::vector<Tensor> captured_func_inputs_ TF_GUARDED_BY(mu_);
+    std::vector<Tensor> inputs_ TF_GUARDED_BY(mu_);
     std::unique_ptr<InstantiatedCapturedFunction> instantiated_captured_func_;
   };
 

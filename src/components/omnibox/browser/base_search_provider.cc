@@ -11,9 +11,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -28,6 +28,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -225,7 +226,8 @@ bool BaseSearchProvider::IsNTPPage(
          (classification == OEP::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) ||
          (classification == OEP::NTP_REALBOX) ||
          (classification == OEP::START_SURFACE_HOMEPAGE) ||
-         (classification == OEP::START_SURFACE_NEW_TAB);
+         (classification == OEP::START_SURFACE_NEW_TAB) ||
+         (classification == OEP::ANDROID_SHORTCUTS_WIDGET);
 }
 
 // static
@@ -474,7 +476,7 @@ void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
   GURL url =
       template_url_service->GetDefaultSearchProvider()->GenerateSearchURL(
           template_url_service->search_terms_data());
-  url = url.GetOrigin().Resolve(deletion_url);
+  url = url.DeprecatedGetOriginAsURL().Resolve(deletion_url);
   if (url.is_valid()) {
     match->RecordAdditionalInfo(BaseSearchProvider::kDeletionUrlKey,
                                 url.spec());

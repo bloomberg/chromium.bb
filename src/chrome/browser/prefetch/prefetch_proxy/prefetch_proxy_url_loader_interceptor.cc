@@ -68,7 +68,7 @@ void ReportProbeResult(int frame_tree_node_id,
 void RecordCookieWaitTime(base::TimeDelta wait_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "PrefetchProxy.AfterClick.Mainframe.CookieWaitTime", wait_time,
-      base::TimeDelta(), base::TimeDelta::FromSeconds(5), 50);
+      base::TimeDelta(), base::Seconds(5), 50);
 }
 
 void NotifySubresourceManagerOfBadProbe(int frame_tree_node_id,
@@ -110,7 +110,7 @@ bool PrefetchProxyURLLoaderInterceptor::MaybeInterceptNoStatePrefetchNavigation(
   if (!no_state_prefetch_manager)
     return false;
 
-  if (!no_state_prefetch_manager->IsWebContentsPrerendering(web_contents))
+  if (!no_state_prefetch_manager->IsWebContentsPrefetching(web_contents))
     return false;
 
   PrefetchProxyService* service =
@@ -166,6 +166,15 @@ void PrefetchProxyURLLoaderInterceptor::MaybeCreateLoader(
     return;
   }
 
+  // If the cookies associated with |url_| have changed since the initial
+  // eligibility check, then we shouldn't use the prefetched resources.
+  PrefetchProxyTabHelper* tab_helper = PrefetchProxyTabHelper::FromWebContents(
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_));
+  if (tab_helper && tab_helper->HaveCookiesChanged(url_)) {
+    DoNotInterceptNavigation();
+    return;
+  }
+
   if (service->origin_prober()->ShouldProbeOrigins()) {
     probe_start_time_ = base::TimeTicks::Now();
     base::OnceClosure on_success_callback =
@@ -175,7 +184,7 @@ void PrefetchProxyURLLoaderInterceptor::MaybeCreateLoader(
                        std::move(prefetch));
 
     service->origin_prober()->Probe(
-        url_.GetOrigin(),
+        url_.DeprecatedGetOriginAsURL(),
         base::BindOnce(&PrefetchProxyURLLoaderInterceptor::OnProbeComplete,
                        weak_factory_.GetWeakPtr(),
                        std::move(on_success_callback)));

@@ -31,36 +31,23 @@ class AssignmentStatement : public Castable<AssignmentStatement, Statement> {
   /// @param rhs the right side of the expression
   AssignmentStatement(ProgramID program_id,
                       const Source& source,
-                      Expression* lhs,
-                      Expression* rhs);
+                      const Expression* lhs,
+                      const Expression* rhs);
   /// Move constructor
   AssignmentStatement(AssignmentStatement&&);
   ~AssignmentStatement() override;
-
-  /// @returns the left side expression
-  Expression* lhs() const { return lhs_; }
-  /// @returns the right side expression
-  Expression* rhs() const { return rhs_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  AssignmentStatement* Clone(CloneContext* ctx) const override;
+  const AssignmentStatement* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// left side expression
+  const Expression* const lhs;
 
- private:
-  AssignmentStatement(const AssignmentStatement&) = delete;
-
-  Expression* const lhs_;
-  Expression* const rhs_;
+  /// right side expression
+  const Expression* const rhs;
 };
 
 }  // namespace ast

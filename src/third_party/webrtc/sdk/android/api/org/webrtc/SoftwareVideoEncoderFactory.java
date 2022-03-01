@@ -10,7 +10,7 @@
 
 package org.webrtc;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,14 +18,18 @@ import java.util.List;
 public class SoftwareVideoEncoderFactory implements VideoEncoderFactory {
   @Nullable
   @Override
-  public VideoEncoder createEncoder(VideoCodecInfo info) {
-    if (info.name.equalsIgnoreCase("VP8")) {
+  public VideoEncoder createEncoder(VideoCodecInfo codecInfo) {
+    String codecName = codecInfo.getName();
+
+    if (codecName.equalsIgnoreCase(VideoCodecMimeType.VP8.name())) {
       return new LibvpxVp8Encoder();
     }
-    if (info.name.equalsIgnoreCase("VP9") && LibvpxVp9Encoder.nativeIsSupported()) {
+    if (codecName.equalsIgnoreCase(VideoCodecMimeType.VP9.name())
+        && LibvpxVp9Encoder.nativeIsSupported()) {
       return new LibvpxVp9Encoder();
     }
-    if (info.name.equalsIgnoreCase("AV1") && LibaomAv1Encoder.nativeIsSupported()) {
+    if (codecName.equalsIgnoreCase(VideoCodecMimeType.AV1.name())
+        && LibaomAv1Encoder.nativeIsSupported()) {
       return new LibaomAv1Encoder();
     }
 
@@ -40,12 +44,12 @@ public class SoftwareVideoEncoderFactory implements VideoEncoderFactory {
   static VideoCodecInfo[] supportedCodecs() {
     List<VideoCodecInfo> codecs = new ArrayList<VideoCodecInfo>();
 
-    codecs.add(new VideoCodecInfo("VP8", new HashMap<>()));
+    codecs.add(new VideoCodecInfo(VideoCodecMimeType.VP8.name(), new HashMap<>()));
     if (LibvpxVp9Encoder.nativeIsSupported()) {
-      codecs.add(new VideoCodecInfo("VP9", new HashMap<>()));
+      codecs.add(new VideoCodecInfo(VideoCodecMimeType.VP9.name(), new HashMap<>()));
     }
     if (LibaomAv1Encoder.nativeIsSupported()) {
-      codecs.add(new VideoCodecInfo("AV1", new HashMap<>()));
+      codecs.add(new VideoCodecInfo(VideoCodecMimeType.AV1.name(), new HashMap<>()));
     }
 
     return codecs.toArray(new VideoCodecInfo[codecs.size()]);

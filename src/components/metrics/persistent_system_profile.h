@@ -23,6 +23,10 @@ namespace metrics {
 class PersistentSystemProfile {
  public:
   PersistentSystemProfile();
+
+  PersistentSystemProfile(const PersistentSystemProfile&) = delete;
+  PersistentSystemProfile& operator=(const PersistentSystemProfile&) = delete;
+
   ~PersistentSystemProfile();
 
   // This object can store records in multiple memory allocators.
@@ -34,8 +38,10 @@ class PersistentSystemProfile {
   // Stores a complete system profile. Use the version taking the serialized
   // version if available to avoid multiple serialization actions. The
   // |complete| flag indicates that this profile contains all known information
-  // and can replace whatever exists. If the flag is false, the profile will be
-  // stored only if there is nothing else already present.
+  // and can replace whatever exists. If the flag is false, the existing profile
+  // will only be replaced if it is also incomplete. This method should not be
+  // called too many times with incomplete profiles before setting a complete
+  // profile to prevent impact on startup.
   void SetSystemProfile(const std::string& serialized_profile, bool complete);
   void SetSystemProfile(const SystemProfileProto& profile, bool complete);
 
@@ -137,8 +143,6 @@ class PersistentSystemProfile {
   bool all_have_complete_profile_ = false;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PersistentSystemProfile);
 };
 
 // A singleton instance of the above.
@@ -146,13 +150,15 @@ class GlobalPersistentSystemProfile : public PersistentSystemProfile {
  public:
   static GlobalPersistentSystemProfile* GetInstance();
 
+  GlobalPersistentSystemProfile(const GlobalPersistentSystemProfile&) = delete;
+  GlobalPersistentSystemProfile& operator=(
+      const GlobalPersistentSystemProfile&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<GlobalPersistentSystemProfile>;
 
   GlobalPersistentSystemProfile() {}
   ~GlobalPersistentSystemProfile() {}
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalPersistentSystemProfile);
 };
 
 }  // namespace metrics

@@ -13,10 +13,10 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/data_decoder/public/mojom/ble_scan_parser.mojom-forward.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace device {
 
@@ -35,10 +35,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   using AdapterCallback =
       base::OnceCallback<void(scoped_refptr<BluetoothAdapter> adapter)>;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   using BleScanParserCallback = base::RepeatingCallback<
       mojo::PendingRemote<data_decoder::mojom::BleScanParser>()>;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   BluetoothAdapterFactory();
   ~BluetoothAdapterFactory();
@@ -86,19 +86,23 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // adapter. Exposed for testing.
   static bool HasSharedInstanceForTesting();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Sets the mojo::Remote<BleScanParser> callback used in Get*() below.
   static void SetBleScanParserCallback(BleScanParserCallback callback);
   // Returns a reference to a parser for BLE advertisement packets.
   // This will be an empty callback until something calls Set*() above.
   static BleScanParserCallback GetBleScanParserCallback();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // ValuestForTesting holds the return values for BluetoothAdapterFactory's
   // functions that have been set for testing.
   class DEVICE_BLUETOOTH_EXPORT GlobalValuesForTesting {
    public:
     GlobalValuesForTesting();
+
+    GlobalValuesForTesting(const GlobalValuesForTesting&) = delete;
+    GlobalValuesForTesting& operator=(const GlobalValuesForTesting&) = delete;
+
     ~GlobalValuesForTesting();
 
     void SetLESupported(bool supported) { le_supported_ = supported; }
@@ -111,7 +115,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
     bool le_supported_ = false;
 
     base::WeakPtrFactory<GlobalValuesForTesting> weak_ptr_factory_{this};
-    DISALLOW_COPY_AND_ASSIGN(GlobalValuesForTesting);
   };
 
   // Returns an object that clients can use to control the return values
@@ -129,6 +132,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   std::unique_ptr<GlobalValuesForTesting> InitGlobalValuesForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      SerialPortManagerImplTest,
+      BluetoothSerialDeviceEnumerator_DeleteBeforeAdapterInit);
+
   void AdapterInitialized();
 #if defined(OS_WIN)
   void ClassicAdapterInitialized();
@@ -152,9 +159,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   base::WeakPtr<BluetoothAdapter> classic_adapter_;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   BleScanParserCallback ble_scan_parser_;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 
 }  // namespace device

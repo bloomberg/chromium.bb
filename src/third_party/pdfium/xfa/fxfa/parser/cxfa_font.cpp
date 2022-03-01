@@ -14,8 +14,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kFontPropertyData[] = {
-    {XFA_Element::Fill, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Fill, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kFontAttributeData[] = {
@@ -53,17 +53,17 @@ const CXFA_Node::AttributeData kFontAttributeData[] = {
 }  // namespace
 
 CXFA_Font::CXFA_Font(CXFA_Document* doc, XFA_PacketType packet)
-    : CXFA_Node(
-          doc,
-          packet,
-          (XFA_XDPPACKET_Template | XFA_XDPPACKET_Config | XFA_XDPPACKET_Form),
-          XFA_ObjectType::Node,
-          XFA_Element::Font,
-          kFontPropertyData,
-          kFontAttributeData,
-          cppgc::MakeGarbageCollected<CJX_Node>(
-              doc->GetHeap()->GetAllocationHandle(),
-              this)) {}
+    : CXFA_Node(doc,
+                packet,
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kConfig,
+                 XFA_XDPPACKET::kForm},
+                XFA_ObjectType::Node,
+                XFA_Element::Font,
+                kFontPropertyData,
+                kFontAttributeData,
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Font::~CXFA_Font() = default;
 
@@ -132,7 +132,7 @@ void CXFA_Font::SetColor(FX_ARGB color) {
   node->SetColor(color);
 }
 
-FX_ARGB CXFA_Font::GetColor() {
-  CXFA_Fill* fill = GetChild<CXFA_Fill>(0, XFA_Element::Fill, false);
-  return fill ? fill->GetColor(true) : 0xFF000000;
+FX_ARGB CXFA_Font::GetColor() const {
+  const auto* fill = GetChild<CXFA_Fill>(0, XFA_Element::Fill, false);
+  return fill ? fill->GetTextColor() : 0xFF000000;
 }

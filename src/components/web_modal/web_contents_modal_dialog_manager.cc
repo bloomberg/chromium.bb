@@ -87,10 +87,10 @@ void WebContentsModalDialogManager::WillClose(gfx::NativeWindow dialog) {
 WebContentsModalDialogManager::WebContentsModalDialogManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      delegate_(nullptr),
+      content::WebContentsUserData<WebContentsModalDialogManager>(
+          *web_contents),
       web_contents_is_hidden_(web_contents->GetVisibility() ==
-                              content::Visibility::HIDDEN),
-      closing_all_dialogs_(false) {}
+                              content::Visibility::HIDDEN) {}
 
 WebContentsModalDialogManager::DialogState::DialogState(
     gfx::NativeWindow dialog,
@@ -186,6 +186,6 @@ void WebContentsModalDialogManager::WebContentsDestroyed() {
   CloseAllDialogs();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsModalDialogManager)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsModalDialogManager);
 
 }  // namespace web_modal

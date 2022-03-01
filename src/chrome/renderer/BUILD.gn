@@ -41,8 +41,9 @@ grit("resources") {
   ]
   if (is_chromeos_ash) {
     deps += [
+      "//ash/components/enhanced_network_tts/mojom:mojom_js",
+      "//ash/services/ime/public/mojom:mojom_js",
       "//chromeos/components/remote_apps/mojom:mojom_js",
-      "//chromeos/services/ime/public/mojom:mojom_js",
       "//chromeos/services/tts/public/mojom:mojom_js",
     ]
   }
@@ -64,12 +65,6 @@ static_library("renderer") {
     "chrome_render_thread_observer.h",
     "custom_menu_commands.h",
     "instant_restricted_id_cache.h",
-    "lite_video/lite_video_hint_agent.cc",
-    "lite_video/lite_video_hint_agent.h",
-    "lite_video/lite_video_url_loader_throttle.cc",
-    "lite_video/lite_video_url_loader_throttle.h",
-    "lite_video/lite_video_util.cc",
-    "lite_video/lite_video_util.h",
     "loadtimes_extension_bindings.cc",
     "loadtimes_extension_bindings.h",
     "media/chrome_key_systems.cc",
@@ -96,8 +91,6 @@ static_library("renderer") {
     "plugins/pdf_plugin_placeholder.h",
     "plugins/plugin_uma.cc",
     "plugins/plugin_uma.h",
-    "previews/resource_loading_hints_agent.cc",
-    "previews/resource_loading_hints_agent.h",
     "subresource_redirect/login_robots_compression_metrics.cc",
     "subresource_redirect/login_robots_compression_metrics.h",
     "subresource_redirect/login_robots_decider_agent.cc",
@@ -156,6 +149,7 @@ static_library("renderer") {
     "//chrome/common/performance_manager/mojom",
     "//chrome/common/search:mojo_bindings",
     "//components/autofill/content/renderer",
+    "//components/autofill_assistant/content/renderer",
     "//components/base32",
     "//components/cdm/renderer",
     "//components/content_capture/common",
@@ -163,11 +157,13 @@ static_library("renderer") {
     "//components/content_settings/common:mojom",
     "//components/content_settings/renderer",
     "//components/contextual_search/content:renderer",
+    "//components/continuous_search/renderer",
     "//components/data_reduction_proxy/core/common",
     "//components/dom_distiller/content/renderer",
     "//components/feed:buildflags",
     "//components/feed:feature_list",
     "//components/feed/content/renderer:feed_renderer",
+    "//components/history_clusters/core",
     "//components/network_hints/renderer",
     "//components/no_state_prefetch/common",
     "//components/no_state_prefetch/renderer",
@@ -183,7 +179,7 @@ static_library("renderer") {
     "//components/safe_browsing/content/common:interfaces",
     "//components/safe_browsing/content/renderer",
     "//components/safe_browsing/content/renderer:throttles",
-    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:interfaces",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core:",
@@ -276,11 +272,27 @@ static_library("renderer") {
   }
 
   if (enable_pdf) {
-    deps += [ "//components/pdf/renderer" ]
+    sources += [
+      "pdf/chrome_pdf_internal_plugin_delegate.cc",
+      "pdf/chrome_pdf_internal_plugin_delegate.h",
+    ]
+
+    deps += [
+      "//components/pdf/common",
+      "//components/pdf/renderer",
+      "//pdf:features",
+    ]
+
+    if (is_linux || is_chromeos) {
+      deps += [ "//pdf:font_table_linux" ]
+    }
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//ash/constants" ]
+    deps += [
+      "//ash/constants",
+      "//ash/webui/file_manager:constants",
+    ]
   }
 
   if (enable_widevine_cdm_component) {
@@ -344,6 +356,7 @@ static_library("renderer") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/renderer",
+      "//pdf:features",
       "//printing",
     ]
     sources += [
@@ -368,6 +381,8 @@ static_library("renderer") {
 
   if (is_chromeos_ash || is_chromeos_lacros) {
     sources += [
+      "extensions/file_browser_handler_custom_bindings.cc",
+      "extensions/file_browser_handler_custom_bindings.h",
       "extensions/platform_keys_natives.cc",
       "extensions/platform_keys_natives.h",
     ]
@@ -375,13 +390,10 @@ static_library("renderer") {
 
   if (is_chromeos_ash) {
     sources += [
-      "extensions/file_browser_handler_custom_bindings.cc",
-      "extensions/file_browser_handler_custom_bindings.h",
       "extensions/file_manager_private_custom_bindings.cc",
       "extensions/file_manager_private_custom_bindings.h",
     ]
     if (use_cups) {
-      configs += [ "//printing:cups" ]
       sources += [
         "extensions/printing_hooks_delegate.cc",
         "extensions/printing_hooks_delegate.h",
@@ -393,6 +405,8 @@ static_library("renderer") {
     sources += [
       "cart/commerce_hint_agent.cc",
       "cart/commerce_hint_agent.h",
+      "cart/commerce_renderer_feature_list.cc",
+      "cart/commerce_renderer_feature_list.h",
       "media/chrome_speech_recognition_client.cc",
       "media/chrome_speech_recognition_client.h",
       "searchbox/searchbox.cc",
@@ -403,8 +417,6 @@ static_library("renderer") {
 
     deps += [
       "//chrome/common/cart:mojo_bindings",
-      "//chrome/common/search:generate_chrome_colors_info",
-      "//chrome/common/search:generate_colors_info",
       "//components/crx_file",
       "//components/search:search",
     ]
@@ -418,10 +430,6 @@ static_library("renderer") {
       "net/page_auto_fetcher_helper_android.h",
       "sandbox_status_extension_android.cc",
       "sandbox_status_extension_android.h",
-    ]
-    deps += [
-      "//components/continuous_search/renderer",
-      "//components/embedder_support/android/common:url_constants",
     ]
   }
 
@@ -441,6 +449,18 @@ static_library("renderer") {
     ]
 
     deps += [ "//chrome/common/performance_manager/mojom" ]
+
+    if (target_cpu == "x64") {
+      sources += [
+        "performance_manager/mechanisms/userspace_swap_impl_chromeos.cc",
+        "performance_manager/mechanisms/userspace_swap_impl_chromeos.h",
+      ]
+
+      deps += [
+        "//chromeos/memory/userspace_swap",
+        "//chromeos/memory/userspace_swap:mojom",
+      ]
+    }
   }
 }
 

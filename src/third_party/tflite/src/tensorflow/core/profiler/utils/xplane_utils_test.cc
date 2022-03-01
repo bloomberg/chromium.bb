@@ -20,10 +20,10 @@ limitations under the License.
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tensorflow/core/platform/env_time.h"
 #include "tensorflow/core/platform/test.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
+#include "tensorflow/core/profiler/utils/time_utils.h"
 #include "tensorflow/core/profiler/utils/xplane_builder.h"
 #include "tensorflow/core/profiler/utils/xplane_visitor.h"
 
@@ -31,43 +31,35 @@ namespace tensorflow {
 namespace profiler {
 namespace {
 
-XEvent CreateEvent(int64 offset_ps, int64 duration_ps) {
+XEvent CreateEvent(int64_t offset_ps, int64_t duration_ps) {
   XEvent event;
   event.set_offset_ps(offset_ps);
   event.set_duration_ps(duration_ps);
   return event;
 }
 
-// Tests IsNested.
-TEST(XPlaneUtilsTest, IsNestedTest) {
-  XEvent event = CreateEvent(100, 100);
-  XEvent parent = CreateEvent(50, 200);
-  EXPECT_TRUE(IsNested(event, parent));
-  // Returns false if there is no overlap.
-  XEvent not_parent = CreateEvent(30, 50);
-  EXPECT_FALSE(IsNested(event, not_parent));
-  // Returns false if they overlap only partially.
-  not_parent = CreateEvent(50, 100);
-  EXPECT_FALSE(IsNested(event, not_parent));
-}
-
-TEST(XPlaneUtilsTest, RemovePlaneWithName) {
+TEST(XPlaneUtilsTest, AddAndRemovePlanes) {
   XSpace space;
-  RemovePlaneWithName(&space, "non-exist");
-  EXPECT_EQ(space.planes_size(), 0);
 
-  space.add_planes()->set_name("p1");
-  space.add_planes()->set_name("p2");
-  space.add_planes()->set_name("p3");
-  RemovePlaneWithName(&space, "non-exist");
-  EXPECT_EQ(space.planes_size(), 3);
-  RemovePlaneWithName(&space, "p2");
+  auto* p1 = FindOrAddMutablePlaneWithName(&space, "p1");
+  EXPECT_EQ(p1, FindPlaneWithName(space, "p1"));
+  auto* p2 = FindOrAddMutablePlaneWithName(&space, "p2");
+  EXPECT_EQ(p2, FindPlaneWithName(space, "p2"));
+  auto* p3 = FindOrAddMutablePlaneWithName(&space, "p3");
+  EXPECT_EQ(p3, FindPlaneWithName(space, "p3"));
+
+  // Removing a plane does not invalidate pointers to other planes.
+
+  RemovePlane(&space, p2);
   EXPECT_EQ(space.planes_size(), 2);
-  RemovePlaneWithName(&space, "p1");
+  EXPECT_EQ(p1, FindPlaneWithName(space, "p1"));
+  EXPECT_EQ(p3, FindPlaneWithName(space, "p3"));
+
+  RemovePlane(&space, p1);
   EXPECT_EQ(space.planes_size(), 1);
-  RemovePlaneWithName(&space, "p1");
-  EXPECT_EQ(space.planes_size(), 1);
-  RemovePlaneWithName(&space, "p3");
+  EXPECT_EQ(p3, FindPlaneWithName(space, "p3"));
+
+  RemovePlane(&space, p3);
   EXPECT_EQ(space.planes_size(), 0);
 }
 
@@ -123,6 +115,29 @@ TEST(XPlaneUtilsTest, RemoveEmptyLines) {
   EXPECT_EQ(plane.lines(1).name(), "l3");
 }
 
+TEST(XPlaneUtilsTest, RemoveLine) {
+  XPlane plane;
+  const XLine* line1 = plane.add_lines();
+  const XLine* line2 = plane.add_lines();
+  const XLine* line3 = plane.add_lines();
+  RemoveLine(&plane, line2);
+  ASSERT_EQ(plane.lines_size(), 2);
+  EXPECT_EQ(&plane.lines(0), line1);
+  EXPECT_EQ(&plane.lines(1), line3);
+}
+
+TEST(XPlaneUtilsTest, RemoveEvents) {
+  XLine line;
+  const XEvent* event1 = line.add_events();
+  const XEvent* event2 = line.add_events();
+  const XEvent* event3 = line.add_events();
+  const XEvent* event4 = line.add_events();
+  RemoveEvents(&line, {event1, event3});
+  ASSERT_EQ(line.events_size(), 2);
+  EXPECT_EQ(&line.events(0), event2);
+  EXPECT_EQ(&line.events(1), event4);
+}
+
 TEST(XPlaneUtilsTest, SortXPlaneTest) {
   XPlane plane;
   XLine* line = plane.add_lines();
@@ -146,8 +161,8 @@ TEST(XPlaneUtilsTest, SortXPlaneTest) {
 namespace {
 
 XLineBuilder CreateXLine(XPlaneBuilder* plane, absl::string_view name,
-                         absl::string_view display, int64 id,
-                         int64 timestamp_ns) {
+                         absl::string_view display, int64_t id,
+                         int64_t timestamp_ns) {
   XLineBuilder line = plane->GetOrCreateLine(id);
   line.SetName(name);
   line.SetTimestampNs(timestamp_ns);
@@ -158,7 +173,7 @@ XLineBuilder CreateXLine(XPlaneBuilder* plane, absl::string_view name,
 XEventBuilder CreateXEvent(XPlaneBuilder* plane, XLineBuilder line,
                            absl::string_view event_name,
                            absl::optional<absl::string_view> display,
-                           int64 offset_ns, int64 duration_ns) {
+                           int64_t offset_ns, int64_t duration_ns) {
   XEventMetadata* event_metadata = plane->GetOrCreateEventMetadata(event_name);
   if (display) event_metadata->set_display_name(std::string(*display));
   XEventBuilder event = line.AddEvent(*event_metadata);
@@ -175,8 +190,8 @@ void CreateXStats(XPlaneBuilder* plane, T* stats_owner,
 }
 
 void CheckXLine(const XLine& line, absl::string_view name,
-                absl::string_view display, int64 start_time_ns,
-                int64 events_size) {
+                absl::string_view display, int64_t start_time_ns,
+                int64_t events_size) {
   EXPECT_EQ(line.name(), name);
   EXPECT_EQ(line.display_name(), display);
   EXPECT_EQ(line.timestamp_ns(), start_time_ns);
@@ -185,23 +200,23 @@ void CheckXLine(const XLine& line, absl::string_view name,
 
 void CheckXEvent(const XEvent& event, const XPlane& plane,
                  absl::string_view name, absl::string_view display,
-                 int64 offset_ns, int64 duration_ns, int64 stats_size) {
+                 int64_t offset_ns, int64_t duration_ns, int64_t stats_size) {
   const XEventMetadata& event_metadata =
       plane.event_metadata().at(event.metadata_id());
   EXPECT_EQ(event_metadata.name(), name);
   EXPECT_EQ(event_metadata.display_name(), display);
-  EXPECT_EQ(event.offset_ps(), offset_ns * EnvTime::kNanosToPicos);
-  EXPECT_EQ(event.duration_ps(), duration_ns * EnvTime::kNanosToPicos);
+  EXPECT_EQ(event.offset_ps(), NanosToPicos(offset_ns));
+  EXPECT_EQ(event.duration_ps(), NanosToPicos(duration_ns));
   EXPECT_EQ(event.stats_size(), stats_size);
 }
 }  // namespace
 
 TEST(XPlaneUtilsTest, MergeXPlaneTest) {
   XPlane src_plane, dst_plane;
-  constexpr int64 kLineIdOnlyInSrcPlane = 1LL;
-  constexpr int64 kLineIdOnlyInDstPlane = 2LL;
-  constexpr int64 kLineIdInBothPlanes = 3LL;   // src start ts < dst start ts
-  constexpr int64 kLineIdInBothPlanes2 = 4LL;  // src start ts > dst start ts
+  constexpr int64_t kLineIdOnlyInSrcPlane = 1LL;
+  constexpr int64_t kLineIdOnlyInDstPlane = 2LL;
+  constexpr int64_t kLineIdInBothPlanes = 3LL;   // src start ts < dst start ts
+  constexpr int64_t kLineIdInBothPlanes2 = 4LL;  // src start ts > dst start ts
 
   {  // Populate the source plane.
     XPlaneBuilder src(&src_plane);

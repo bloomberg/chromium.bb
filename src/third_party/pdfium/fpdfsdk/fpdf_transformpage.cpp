@@ -21,11 +21,11 @@
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -64,11 +64,11 @@ CPDF_Object* GetPageContent(CPDF_Dictionary* pPageDict) {
 }
 
 void OutputPath(std::ostringstream& buf, CPDF_Path path) {
-  const CFX_PathData* pPathData = path.GetObject();
-  if (!pPathData)
+  const CFX_Path* pPath = path.GetObject();
+  if (!pPath)
     return;
 
-  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  pdfium::span<const CFX_Path::Point> points = pPath->GetPoints();
   if (path.IsRect()) {
     CFX_PointF diff = points[2].m_Point - points[0].m_Point;
     buf << points[0].m_Point.x << " " << points[0].m_Point.y << " " << diff.x
@@ -78,10 +78,10 @@ void OutputPath(std::ostringstream& buf, CPDF_Path path) {
 
   for (size_t i = 0; i < points.size(); ++i) {
     buf << points[i].m_Point.x << " " << points[i].m_Point.y;
-    FXPT_TYPE point_type = points[i].m_Type;
-    if (point_type == FXPT_TYPE::MoveTo) {
+    CFX_Path::Point::Type point_type = points[i].m_Type;
+    if (point_type == CFX_Path::Point::Type::kMove) {
       buf << " m\n";
-    } else if (point_type == FXPT_TYPE::BezierTo) {
+    } else if (point_type == CFX_Path::Point::Type::kBezier) {
       buf << " " << points[i + 1].m_Point.x << " " << points[i + 1].m_Point.y
           << " " << points[i + 2].m_Point.x << " " << points[i + 2].m_Point.y;
       buf << " c";
@@ -90,7 +90,7 @@ void OutputPath(std::ostringstream& buf, CPDF_Path path) {
       buf << "\n";
 
       i += 2;
-    } else if (point_type == FXPT_TYPE::LineTo) {
+    } else if (point_type == CFX_Path::Point::Type::kLine) {
       buf << " l";
       if (points[i].m_CloseFigure)
         buf << " h";
@@ -334,8 +334,7 @@ FPDFClipPath_CountPathSegments(FPDF_CLIPPATH clip_path, int path_index) {
     return -1;
   }
 
-  return pdfium::CollectionSize<int>(
-      pClipPath->GetPath(path_index).GetPoints());
+  return fxcrt::CollectionSize<int>(pClipPath->GetPath(path_index).GetPoints());
 }
 
 FPDF_EXPORT FPDF_PATHSEGMENT FPDF_CALLCONV
@@ -351,9 +350,9 @@ FPDFClipPath_GetPathSegment(FPDF_CLIPPATH clip_path,
     return nullptr;
   }
 
-  pdfium::span<const FX_PATHPOINT> points =
+  pdfium::span<const CFX_Path::Point> points =
       pClipPath->GetPath(path_index).GetPoints();
-  if (!pdfium::IndexInBounds(points, segment_index))
+  if (!fxcrt::IndexInBounds(points, segment_index))
     return nullptr;
 
   return FPDFPathSegmentFromFXPathPoint(&points[segment_index]);
@@ -367,8 +366,7 @@ FPDF_EXPORT FPDF_CLIPPATH FPDF_CALLCONV FPDF_CreateClipPath(float left,
   Path.AppendRect(left, bottom, right, top);
 
   auto pNewClipPath = std::make_unique<CPDF_ClipPath>();
-  pNewClipPath->AppendPath(Path, CFX_FillRenderOptions::FillType::kEvenOdd,
-                           false);
+  pNewClipPath->AppendPath(Path, CFX_FillRenderOptions::FillType::kEvenOdd);
 
   // Caller takes ownership.
   return FPDFClipPathFromCPDFClipPath(pNewClipPath.release());

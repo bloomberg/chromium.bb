@@ -51,19 +51,24 @@ class SourceWindowAnimationObserver : public ui::ImplicitAnimationObserver,
     dragged_window_->AddObserver(this);
   }
 
+  SourceWindowAnimationObserver(const SourceWindowAnimationObserver&) = delete;
+  SourceWindowAnimationObserver& operator=(
+      const SourceWindowAnimationObserver&) = delete;
+
   ~SourceWindowAnimationObserver() override { StopObserving(); }
 
   // ui::ImplicitAnimationObserver:
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
     DCHECK(dragged_window_ && source_window_);
-    dragged_window_->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
+    dragged_window_->SetProperty(chromeos::kCanAttachToAnotherWindowKey, false);
   }
 
   void OnImplicitAnimationsCompleted() override {
     DCHECK(dragged_window_ && source_window_);
     // When arriving here, we know the source window bounds change animation
-    // just ended. Only clear the property ash::kCanAttachToAnotherWindowKey if
-    // the source window bounds restores to its maximized window size.
+    // just ended. Only clear the property
+    // chromeos::kCanAttachToAnotherWindowKey if the source window bounds
+    // restores to its maximized window size.
     gfx::Rect work_area_bounds = display::Screen::GetScreen()
                                      ->GetDisplayNearestWindow(source_window_)
                                      .work_area();
@@ -88,15 +93,13 @@ class SourceWindowAnimationObserver : public ui::ImplicitAnimationObserver,
 
     if (dragged_window_) {
       dragged_window_->RemoveObserver(this);
-      dragged_window_->ClearProperty(ash::kCanAttachToAnotherWindowKey);
+      dragged_window_->ClearProperty(chromeos::kCanAttachToAnotherWindowKey);
       dragged_window_ = nullptr;
     }
   }
 
   aura::Window* source_window_;
   aura::Window* dragged_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(SourceWindowAnimationObserver);
 };
 
 }  // namespace
@@ -264,7 +267,8 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
 
   // Arriving here we know the dragged window should merge back into its source
   // window.
-  source_window->SetProperty(kIsDeferredTabDraggingTargetWindowKey, true);
+  source_window->SetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey,
+                             true);
 }
 
 }  // namespace ash

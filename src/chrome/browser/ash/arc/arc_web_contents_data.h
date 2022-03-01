@@ -7,8 +7,6 @@
 
 #include "content/public/browser/web_contents_user_data.h"
 
-#include "base/macros.h"
-
 namespace arc {
 
 // Having an object of this kind attached to a WebContents mean that the tab was
@@ -18,14 +16,16 @@ class ArcWebContentsData
  public:
   static const char kArcTransitionFlag[];
 
-  ArcWebContentsData() = default;
+  explicit ArcWebContentsData(content::WebContents* web_contents);
+
+  ArcWebContentsData(const ArcWebContentsData&) = delete;
+  ArcWebContentsData& operator=(const ArcWebContentsData&) = delete;
+
   ~ArcWebContentsData() override = default;
 
  private:
   friend class content::WebContentsUserData<ArcWebContentsData>;
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(ArcWebContentsData);
 };
 
 }  // namespace arc

@@ -6,6 +6,7 @@ import {Earcons} from './earcons.js';
 import {FindHandler} from './find_handler.js';
 import {LiveRegions} from './live_regions.js';
 import {MediaAutomationHandler} from './media_automation_handler.js';
+import {PageLoadSoundHandler} from './page_load_sound_handler.js';
 import {RangeAutomationHandler} from './range_automation_handler.js';
 
 /**
@@ -41,9 +42,7 @@ export class Background extends ChromeVoxState {
 
     // Read-only earcons.
     Object.defineProperty(ChromeVox, 'earcons', {
-      get: (function() {
-             return this.earcons_;
-           }).bind(this)
+      get: () => this.earcons_,
     });
 
     Object.defineProperty(ChromeVox, 'typingEcho', {
@@ -76,9 +75,12 @@ export class Background extends ChromeVoxState {
     /** @private {string|undefined} */
     this.lastClipboardEvent_;
 
-    chrome.clipboard.onClipboardDataChanged.addListener(
-        this.onClipboardDataChanged_.bind(this));
-    document.addEventListener('copy', this.onClipboardCopyEvent_.bind(this));
+    chrome.clipboard.onClipboardDataChanged.addListener(() => {
+      this.onClipboardDataChanged_();
+    });
+    document.addEventListener('copy', (event) => {
+      this.onClipboardCopyEvent_(event);
+    });
 
     /** @private {cursors.Range} */
     this.pageSel_;
@@ -94,10 +96,13 @@ export class Background extends ChromeVoxState {
     this.focusAutomationHandler_ = new FocusAutomationHandler();
     /** @private {!MediaAutomationHandler} */
     this.mediaAutomationHandler_ = new MediaAutomationHandler();
+    /** @private {!PageLoadSoundHandler} */
+    this.pageLoadSoundHandler_ = new PageLoadSoundHandler();
 
     CommandHandler.init();
     FindHandler.init();
     DownloadHandler.init();
+    JaPhoneticData.init(JaPhoneticMap.MAP);
 
     chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
         (announceText) => {
@@ -114,20 +119,6 @@ export class Background extends ChromeVoxState {
     // Set the darkScreen state to false, since the display will be on whenever
     // ChromeVox starts.
     sessionStorage.setItem('darkScreen', 'false');
-
-    chrome.loginState.getSessionState((sessionState) => {
-      if (sessionState === chrome.loginState.SessionState.IN_OOBE_SCREEN) {
-        chrome.chromeosInfoPrivate.get(['deviceType'], (result) => {
-          if (result['deviceType'] ===
-              chrome.chromeosInfoPrivate.DeviceType.CHROMEBOOK) {
-            // Start the tutorial if the following are true:
-            // 1. We are in the OOBE.
-            // 2. The device is a Chromebook.
-            (new PanelCommand(PanelCommandType.TUTORIAL)).send();
-          }
-        });
-      }
-    });
   }
 
   /**
@@ -280,7 +271,6 @@ export class Background extends ChromeVoxState {
 
     o.withRichSpeechAndBraille(
          selectedRange || range, prevRange, OutputEventType.NAVIGATE)
-        .withQueueMode(QueueMode.FLUSH)
         .withInitialSpeechProperties(opt_speechProps);
 
     if (msg) {
@@ -387,13 +377,13 @@ export class Background extends ChromeVoxState {
 
   /** @private */
   setCurrentRangeToFocus_() {
-    chrome.automation.getFocus(function(focus) {
+    chrome.automation.getFocus((focus) => {
       if (focus) {
         this.setCurrentRange(cursors.Range.fromNode(focus));
       } else {
         this.setCurrentRange(null);
       }
-    }.bind(this));
+    });
   }
 
   /**

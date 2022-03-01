@@ -38,7 +38,6 @@ class Decoder {
   // Interface for receiving decoded frames and/or errors.
   class Client {
    public:
-    virtual ~Client();
 
     virtual void OnFrameDecoded(FrameId frame_id, const AVFrame& frame) = 0;
     virtual void OnDecodeError(FrameId frame_id, std::string message) = 0;
@@ -46,6 +45,7 @@ class Decoder {
 
    protected:
     Client();
+    virtual ~Client();
   };
 
   // |codec_name| should be the codec_name field from an OFFER message.

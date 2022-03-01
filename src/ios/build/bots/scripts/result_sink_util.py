@@ -9,15 +9,21 @@ import json
 import logging
 import os
 import requests
+import sys
 
 LOGGER = logging.getLogger(__name__)
 # VALID_STATUSES is a list of valid status values for test_result['status'].
 # The full list can be obtained at
-# https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto;drc=ca12b9f52b27f064b0fa47c39baa3b011ffa5790;l=151-174
+# https://source.chromium.org/chromium/infra/infra/+/main:go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto;drc=ca12b9f52b27f064b0fa47c39baa3b011ffa5790;l=151-174
 VALID_STATUSES = {"PASS", "FAIL", "CRASH", "ABORT", "SKIP"}
 
 
-def _compose_test_result(test_id, status, expected, test_log=None, tags=None):
+def _compose_test_result(test_id,
+                         status,
+                         expected,
+                         test_log=None,
+                         tags=None,
+                         file_artifacts=None):
   """Composes the test_result dict item to be posted to result sink.
 
   Args:
@@ -27,16 +33,21 @@ def _compose_test_result(test_id, status, expected, test_log=None, tags=None):
     test_log: (str) Log of the test. Optional.
     tags: (list) List of tags. Each item in list should be a length 2 tuple of
         string as ("key", "value"). Optional.
+    file_artifacts: (dict) IDs to abs paths mapping of existing files to
+        report as artifact.
 
   Returns:
     A dict of test results with input information, confirming to
-      https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/sink/proto/v1/test_result.proto
+      https://source.chromium.org/chromium/infra/infra/+/main:go/src/go.chromium.org/luci/resultdb/sink/proto/v1/test_result.proto
   """
+  tags = tags or []
+  file_artifacts = file_artifacts or {}
+
   assert status in VALID_STATUSES, (
       '%s is not a valid status (one in %s) for ResultSink.' %
       (status, VALID_STATUSES))
 
-  for tag in tags or []:
+  for tag in tags:
     assert len(tag) == 2, 'Items in tags should be length 2 tuples of strings'
     assert isinstance(tag[0], str) and isinstance(
         tag[1], str), ('Items in'
@@ -49,16 +60,33 @@ def _compose_test_result(test_id, status, expected, test_log=None, tags=None):
       'tags': [{
           'key': key,
           'value': value
-      } for (key, value) in (tags or [])]
+      } for (key, value) in tags],
+      'testMetadata': {
+          'name': test_id,
+      }
   }
 
+  test_result['artifacts'] = {
+      name: {
+          'filePath': file_artifacts[name]
+      } for name in file_artifacts
+  }
   if test_log:
+    message = ''
+    if sys.version_info.major < 3:
+      message = base64.b64encode(test_log)
+    else:
+      # Python3 b64encode takes and returns bytes. The result must be
+      # serializable in order for the eventual json.dumps to succeed
+      message = base64.b64encode(test_log.encode('utf-8')).decode('utf-8')
     test_result['summaryHtml'] = '<text-artifact artifact-id="Test Log" />'
-    test_result['artifacts'] = {
+    test_result['artifacts'].update({
         'Test Log': {
-            'contents': base64.b64encode(test_log)
+            'contents': message
         },
-    }
+    })
+  if not test_result['artifacts']:
+    test_result.pop('artifacts')
 
   return test_result
 
@@ -116,6 +144,8 @@ class ResultSinkClient(object):
         test_log: (str) Log of the test. Optional.
         tags: (list) List of tags. Each item in list should be a length 2 tuple
           of string as ("key", "value"). Optional.
+        file_artifacts: (dict) IDs to abs paths mapping of existing files to
+          report as artifact.
     """
     if not self.sink:
       return
@@ -129,7 +159,7 @@ class ResultSinkClient(object):
 
     Args:
         test_result: (dict) Confirming to protocol defined in
-          https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/sink/proto/v1/test_result.proto
+          https://source.chromium.org/chromium/infra/infra/+/main:go/src/go.chromium.org/luci/resultdb/sink/proto/v1/test_result.proto
     """
     res = self._session.post(
         url=self.url,

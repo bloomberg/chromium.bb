@@ -4,12 +4,11 @@
 
 import * as i18n from '../../core/i18n/i18n.js';
 import type * as Platform from '../../core/platform/platform.js';
-import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as Host from '../../core/host/host.js';
 
-import {AffectedResourcesView} from './AffectedResourcesView.js';
-
-import type {IssueView} from './IssueView.js';
+import {AffectedResourcesView, AffectedItem} from './AffectedResourcesView.js';
 
 const UIStrings = {
   /**
@@ -33,13 +32,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/issues/AffectedBlockedByRespons
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 export class AffectedBlockedByResponseView extends AffectedResourcesView {
-  private issue: IssuesManager.Issue.Issue;
-
-  constructor(parent: IssueView, issue: IssuesManager.Issue.Issue) {
-    super(parent);
-    this.issue = issue;
-  }
-
   private appendDetails(details: Iterable<Protocol.Audits.BlockedByResponseIssueDetails>): void {
     const header = document.createElement('tr');
     this.appendColumnTitle(header, i18nString(UIStrings.requestC));
@@ -64,18 +56,23 @@ export class AffectedBlockedByResponseView extends AffectedResourcesView {
     const element = document.createElement('tr');
     element.classList.add('affected-resource-row');
 
-    const requestCell = this.createRequestCell(details.request);
+    const requestCell = this.createRequestCell(details.request, {
+      additionalOnClickAction() {
+        Host.userMetrics.issuesPanelResourceOpened(
+            IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy, AffectedItem.Request);
+      },
+    });
     element.appendChild(requestCell);
 
     if (details.parentFrame) {
-      const frameUrl = this.createFrameCell(details.parentFrame.frameId, this.issue);
+      const frameUrl = this.createFrameCell(details.parentFrame.frameId, this.issue.getCategory());
       element.appendChild(frameUrl);
     } else {
       element.appendChild(document.createElement('td'));
     }
 
     if (details.blockedFrame) {
-      const frameUrl = this.createFrameCell(details.blockedFrame.frameId, this.issue);
+      const frameUrl = this.createFrameCell(details.blockedFrame.frameId, this.issue.getCategory());
       element.appendChild(frameUrl);
     } else {
       element.appendChild(document.createElement('td'));

@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-
 namespace extensions {
 
 // Implemented by event handlers so they are notified when a change event
@@ -17,6 +15,9 @@ namespace extensions {
 // NetworkingPrivateLinux. Not used on Chrome OS.
 class NetworkingPrivateDelegateObserver {
  public:
+  NetworkingPrivateDelegateObserver& operator=(
+      const NetworkingPrivateDelegateObserver&) = delete;
+
   // Notifes observers when properties may have changed for the networks listed
   // in |network_guids|.
   virtual void OnNetworksChangedEvent(
@@ -29,9 +30,6 @@ class NetworkingPrivateDelegateObserver {
 
  protected:
   virtual ~NetworkingPrivateDelegateObserver() {}
-
- private:
-  DISALLOW_ASSIGN(NetworkingPrivateDelegateObserver);
 };
 
 }  // namespace extensions

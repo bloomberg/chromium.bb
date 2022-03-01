@@ -7,10 +7,8 @@
 
 #include "base/containers/span.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/system_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 
@@ -22,6 +20,10 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataSource final
   static MojoResult ConvertFileErrorToMojoResult(base::File::Error error);
 
   FileDataSource(base::File file);
+
+  FileDataSource(const FileDataSource&) = delete;
+  FileDataSource& operator=(const FileDataSource&) = delete;
+
   ~FileDataSource() override;
 
   // |end| should be greater than or equal to |start|. Otherwise subsequent
@@ -37,8 +39,6 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataSource final
   MojoResult error_;
   uint64_t start_offset_;
   uint64_t end_offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileDataSource);
 };
 
 }  // namespace mojo

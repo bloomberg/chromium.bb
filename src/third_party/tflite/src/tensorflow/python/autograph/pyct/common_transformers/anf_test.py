@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for anf module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import textwrap
 
 import gast
@@ -477,12 +473,14 @@ class AnfConfiguredTest(AnfTestBase):
   def test_anf_some_function_calls(self):
     # Another example specific configuration that differs from the default:
     # Moving all arguments out of some function calls but leaving others be.
-    whitelist = ['foo']
+    allowlist = ['foo']
+
     def transform(parent, field, child):
       del field
       del child
       func_name = parent.func.id
-      return str(func_name) in whitelist
+      return str(func_name) in allowlist
+
     config = [(anf.ASTEdgePattern(gast.Call, anf.ANY, anf.ANY), transform)]
 
     def test_function(x, foo, bar):

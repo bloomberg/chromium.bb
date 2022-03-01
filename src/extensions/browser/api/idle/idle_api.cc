@@ -34,9 +34,10 @@ int ClampThreshold(int threshold) {
 IdleQueryStateFunction::~IdleQueryStateFunction() = default;
 
 ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
-  int threshold = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
-  threshold = ClampThreshold(threshold);
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  const auto& threshold_value = args()[0];
+  EXTENSION_FUNCTION_VALIDATE(threshold_value.is_int());
+  int threshold = ClampThreshold(threshold_value.GetInt());
 
   ui::IdleState state =
       IdleManagerFactory::GetForBrowserContext(browser_context())
@@ -52,9 +53,10 @@ void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
 IdleSetDetectionIntervalFunction::~IdleSetDetectionIntervalFunction() = default;
 
 ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {
-  int threshold = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
-  threshold = ClampThreshold(threshold);
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  const auto& threshold_value = args()[0];
+  EXTENSION_FUNCTION_VALIDATE(threshold_value.is_int());
+  int threshold = ClampThreshold(threshold_value.GetInt());
 
   IdleManagerFactory::GetForBrowserContext(browser_context())
       ->SetThreshold(extension_id(), threshold);

@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/class_property.h"
@@ -22,6 +22,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -73,7 +74,7 @@ class VIEWS_EXPORT StyledLabel : public View {
 
     // A custom view shown instead of the underlying text. Ownership of custom
     // views must be passed to StyledLabel via AddCustomView().
-    View* custom_view = nullptr;
+    raw_ptr<View> custom_view = nullptr;
   };
 
   // Sizing information for laying out the label based on a particular width.
@@ -99,6 +100,10 @@ class VIEWS_EXPORT StyledLabel : public View {
   };
 
   StyledLabel();
+
+  StyledLabel(const StyledLabel&) = delete;
+  StyledLabel& operator=(const StyledLabel&) = delete;
+
   ~StyledLabel() override;
 
   // Sets the text to be displayed, and clears any previous styling.  Trailing
@@ -248,10 +253,23 @@ class VIEWS_EXPORT StyledLabel : public View {
   // The horizontal alignment. This value is flipped for RTL. The default
   // behavior is to align left in LTR UI and right in RTL UI.
   gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
-
-  DISALLOW_COPY_AND_ASSIGN(StyledLabel);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, StyledLabel, View)
+VIEW_BUILDER_PROPERTY(const std::u16string&, Text)
+VIEW_BUILDER_PROPERTY(int, TextContext)
+VIEW_BUILDER_PROPERTY(int, DefaultTextStyle)
+VIEW_BUILDER_PROPERTY(int, LineHeight)
+VIEW_BUILDER_PROPERTY(const absl::optional<SkColor>&,
+                      DisplayedOnBackgroundColor)
+VIEW_BUILDER_PROPERTY(bool, AutoColorReadabilityEnabled)
+VIEW_BUILDER_PROPERTY(gfx::HorizontalAlignment, HorizontalAlignment)
+VIEW_BUILDER_METHOD(SizeToFit, int)
+VIEW_BUILDER_METHOD(AddStyleRange, gfx::Range, StyledLabel::RangeStyleInfo)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, views::StyledLabel)
 
 #endif  // UI_VIEWS_CONTROLS_STYLED_LABEL_H_

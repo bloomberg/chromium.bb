@@ -13,22 +13,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-// TODO(https://crbug.com/1164001): move KioskAppId to forward declaration
-// when moved to chrome/browser/ash/.
-#include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/customization/customization_document.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/user_manager/user_type.h"
 
 #include "ui/gfx/native_widget_types.h"
 
 class AccountId;
-
-namespace ash {
-enum class OobeDialogState;
-}
 
 namespace content {
 class WebContents;
@@ -38,13 +35,12 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
-namespace chromeos {
-
+namespace ash {
+class KioskAppId;
 class KioskLaunchController;
-class ExistingUserController;
-class OobeUI;
 class WebUILoginView;
 class WizardController;
+enum class OobeDialogState;
 
 // An interface that defines an out-of-box-experience (OOBE) or login screen
 // host. It contains code specific to the login UI implementation.
@@ -72,6 +68,9 @@ class LoginDisplayHost {
     // `bounds` is the WebDialogView's bounds in screen coordinate system.
     virtual void WebDialogViewBoundsChanged(const gfx::Rect& bounds) = 0;
   };
+
+  LoginDisplayHost(const LoginDisplayHost&) = delete;
+  LoginDisplayHost& operator=(const LoginDisplayHost&) = delete;
 
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
@@ -118,6 +117,8 @@ class LoginDisplayHost {
   // Result should not be stored.
   virtual WizardController* GetWizardController() = 0;
 
+  virtual WizardContext* GetWizardContext() = 0;
+
   // Returns current KioskLaunchController, if it exists.
   // Result should not be stored.
   virtual KioskLaunchController* GetKioskLaunchController() = 0;
@@ -148,6 +149,12 @@ class LoginDisplayHost {
   // dialog.
   virtual void ShowGaiaDialog(const AccountId& prefilled_account) = 0;
 
+  // Show the os install dialog.
+  virtual void ShowOsInstallScreen() = 0;
+
+  // Show the guest terms of service screen.
+  virtual void ShowGuestTosScreen() = 0;
+
   // Hide any visible oobe dialog.
   virtual void HideOobeDialog() = 0;
 
@@ -155,7 +162,7 @@ class LoginDisplayHost {
   virtual void SetShelfButtonsEnabled(bool enabled) = 0;
 
   // Update the state of the oobe dialog.
-  virtual void UpdateOobeDialogState(ash::OobeDialogState state) = 0;
+  virtual void UpdateOobeDialogState(OobeDialogState state) = 0;
 
   // Confirms sign in by provided credentials in `user_context`.
   // Used for new user login via GAIA extension.
@@ -199,7 +206,7 @@ class LoginDisplayHost {
 
   // Handles an accelerator action.
   // Returns `true` if the accelerator was handled.
-  virtual bool HandleAccelerator(ash::LoginAcceleratorAction action) = 0;
+  virtual bool HandleAccelerator(LoginAcceleratorAction action) = 0;
 
   // Handles a request to show the captive portal web dialog. For webui, the
   // dialog is displayed immediately. For views, the dialog is displayed as soon
@@ -221,27 +228,50 @@ class LoginDisplayHost {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Return sign-in UI instance, guaranteed to be non-null
-  // during OOBE/Login process. Returns nullptr on the secondary login screen.
+  // Return sign-in UI instance during OOBE/Login process.
   // Result should not be stored.
   virtual SigninUI* GetSigninUI() = 0;
+
+  // Gets the keyboard remapped pref value for `pref_name` key. Returns true if
+  // successful, otherwise returns false.
+  // TODO (crbug.com/1168114): Double check if this method belongs here.
+  virtual bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                            int* value) const = 0;
+  // Allows tests to wait for WebUI to start.
+  // RepeatingClosure type matches base::RunLoop::QuitClosure result type.
+  virtual void AddWizardCreatedObserverForTests(
+      base::RepeatingClosure on_created) = 0;
+
+  // Returns true if WizardController was created.
+  virtual bool IsWizardControllerCreated() const = 0;
+
+  // Returns pointer to the WizardContext for tests.
+  virtual WizardContext* GetWizardContextForTesting() = 0;
+
+  // Returns true if WebUI was created, which allows observers to wait for
+  // Browser initialization finish.
+  virtual bool IsWebUIStarted() const = 0;
 
  protected:
   LoginDisplayHost();
   virtual ~LoginDisplayHost();
 
+  // Triggers |on_wizard_controller_created_for_tests_| callback.
+  void NotifyWizardCreated();
+
  private:
   // Global LoginDisplayHost instance.
   static LoginDisplayHost* default_host_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHost);
+  // Callback to be executed when WebUI is started.
+  base::RepeatingClosure on_wizard_controller_created_for_tests_;
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::LoginDisplayHost;
+namespace chromeos {
+using ::ash::LoginDisplayHost;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_H_

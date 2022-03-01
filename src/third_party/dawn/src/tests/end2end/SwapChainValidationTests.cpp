@@ -26,13 +26,13 @@ class SwapChainValidationTests : public DawnTest {
   public:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
-        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
 
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
         });
-        DAWN_SKIP_TEST_IF(!glfwInit());
+        DAWN_TEST_UNSUPPORTED_IF(!glfwInit());
 
         // The SwapChainValidationTests don't create devices so we don't need to call
         // SetupGLFWWindowHintsForBackend. Set GLFW_NO_API anyway to avoid GLFW bringing up a GL
@@ -115,6 +115,7 @@ TEST_P(SwapChainValidationTests, CreationSuccess) {
 
 // Checks that the creation size must be a valid 2D texture size.
 TEST_P(SwapChainValidationTests, InvalidCreationSize) {
+    wgpu::Limits supportedLimits = GetSupportedLimits().limits;
     // A width of 0 is invalid.
     {
         wgpu::SwapChainDescriptor desc = goodDescriptor;
@@ -128,23 +129,23 @@ TEST_P(SwapChainValidationTests, InvalidCreationSize) {
         ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
     }
 
-    // A width of kMaxTextureDimension2D is valid but kMaxTextureDimension2D + 1 isn't.
+    // A width of maxTextureDimension2D is valid but maxTextureDimension2D + 1 isn't.
     {
         wgpu::SwapChainDescriptor desc = goodDescriptor;
-        desc.width = kMaxTextureDimension2D;
+        desc.width = supportedLimits.maxTextureDimension2D;
         device.CreateSwapChain(surface, &desc);
 
-        desc.width = kMaxTextureDimension2D + 1;
+        desc.width = supportedLimits.maxTextureDimension2D + 1;
         ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
     }
 
-    // A height of kMaxTextureDimension2D is valid but kMaxTextureDimension2D + 1 isn't.
+    // A height of maxTextureDimension2D is valid but maxTextureDimension2D + 1 isn't.
     {
         wgpu::SwapChainDescriptor desc = goodDescriptor;
-        desc.height = kMaxTextureDimension2D;
+        desc.height = supportedLimits.maxTextureDimension2D;
         device.CreateSwapChain(surface, &desc);
 
-        desc.height = kMaxTextureDimension2D + 1;
+        desc.height = supportedLimits.maxTextureDimension2D + 1;
         ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
     }
 }
@@ -152,7 +153,7 @@ TEST_P(SwapChainValidationTests, InvalidCreationSize) {
 // Checks that the creation usage must be RenderAttachment
 TEST_P(SwapChainValidationTests, InvalidCreationUsage) {
     wgpu::SwapChainDescriptor desc = goodDescriptor;
-    desc.usage = wgpu::TextureUsage::Sampled;
+    desc.usage = wgpu::TextureUsage::TextureBinding;
     ASSERT_DEVICE_ERROR(device.CreateSwapChain(surface, &desc));
 }
 
@@ -220,14 +221,21 @@ TEST_P(SwapChainValidationTests, ViewDestroyedAfterPresent) {
 
 // Check that returned view is of the current format / usage / dimension / size / sample count
 TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
-    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
         [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
             return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         })");
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
-        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
-            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        struct FragmentOut {
+            [[location(0)]] target0 : vec4<f32>;
+            [[location(1)]] target1 : f32;
+        };
+        [[stage(fragment)]] fn main() -> FragmentOut {
+            var out : FragmentOut;
+            out.target0 = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            out.target1 = 0.5;
+            return out;
         })");
     // Validation will check that the sample count of the view matches this format.
     pipelineDesc.multisample.count = 1;
@@ -235,7 +243,7 @@ TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     // Validation will check that the format of the view matches this format.
     pipelineDesc.cTargets[0].format = wgpu::TextureFormat::BGRA8Unorm;
     pipelineDesc.cTargets[1].format = wgpu::TextureFormat::R8Unorm;
-    device.CreateRenderPipeline2(&pipelineDesc);
+    device.CreateRenderPipeline(&pipelineDesc);
 
     // Create a second texture to be used as render pass attachment. Validation will check that the
     // size of the view matches the size of this texture.
@@ -312,7 +320,9 @@ TEST_P(SwapChainValidationTests, SwapChainIsInvalidAfterSurfaceDestruction_After
 }
 
 // Test that after Device is Lost, all swap chain operations fail
-static void ToMockDeviceLostCallback(const char* message, void* userdata) {
+static void ToMockDeviceLostCallback(WGPUDeviceLostReason reason,
+                                     const char* message,
+                                     void* userdata) {
     DawnTest* self = static_cast<DawnTest*>(userdata);
     self->StartExpectDeviceError();
 }

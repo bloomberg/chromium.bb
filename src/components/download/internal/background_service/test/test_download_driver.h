@@ -8,7 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/download/internal/background_service/download_driver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -19,6 +19,10 @@ namespace test {
 class TestDownloadDriver : public DownloadDriver {
  public:
   TestDownloadDriver();
+
+  TestDownloadDriver(const TestDownloadDriver&) = delete;
+  TestDownloadDriver& operator=(const TestDownloadDriver&) = delete;
+
   ~TestDownloadDriver() override;
 
   // Marks download driver as ready, used to test logic that depends on
@@ -53,12 +57,10 @@ class TestDownloadDriver : public DownloadDriver {
 
  private:
   bool is_ready_;
-  DownloadDriver::Client* client_;
+  raw_ptr<DownloadDriver::Client> client_;
 
   // Map of guid --> DriverEntry.
   std::map<std::string, DriverEntry> entries_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadDriver);
 };
 
 }  // namespace test

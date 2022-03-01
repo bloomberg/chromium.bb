@@ -27,16 +27,15 @@ class StoryFoo(story.Story):
 
 class StorySetFoo(story.StorySet):
   """ StorySetFoo is a story set created for testing purpose. """
-  pass
 
 
 class StorySetTest(unittest.TestCase):
 
   def testStorySetTestName(self):
-    self.assertEquals('story_set_unittest', StorySetFoo.Name())
+    self.assertEqual('story_set_unittest', StorySetFoo.Name())
 
   def testStorySetTestDescription(self):
-    self.assertEquals(
+    self.assertEqual(
         ' StorySetFoo is a story set created for testing purpose. ',
         StorySetFoo.Description())
 

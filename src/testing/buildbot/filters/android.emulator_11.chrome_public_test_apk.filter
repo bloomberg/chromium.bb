@@ -46,21 +46,49 @@
 -org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTest.testExportMenuDisabled
 
 # crbug.com/1036556
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testEagerSuspension
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testMediaSuspension
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testMultiWindow
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testNavigationFromSuspendedTabToInterstitial
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testRendererCrashOnSuspendedTab
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabAddedFromCustomTab
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabUnsuspendedInBackground
 
 # crbug.com/1195097
 -org.chromium.chrome.browser.permissions.RuntimePermissionTest.testDenyRuntimeDownload
-
-# crbug.com/1195124
--org.chromium.chrome.browser.omnibox.OmniboxTest.testSecurityIconOnHTTPSFocusAndBack
 
 # crbug.com/1195129
 -org.chromium.chrome.browser.omnibox.suggestions.SwitchToTabTest.testSwitchToTabInSearchActivity
 -org.chromium.chrome.browser.omnibox.suggestions.SwitchToTabTest.testSwitchToTabSuggestionWhenIncognitoTabOnTop
 -org.chromium.chrome.browser.omnibox.suggestions.SwitchToTabTest.testSwitchToTabSuggestion
+
+# crbug.com/1274918
+-org.chromium.chrome.browser.omnibox.UrlBarIntegrationTest.testLongPress_with___disable_features=SpannableInlineAutocomplete
+
+# crbug.com/1225709
+-org.chromium.chrome.browser.contextmenu.ContextMenuTest.testSaveDataUrl
+-org.chromium.chrome.browser.contextmenu.ContextMenuTest.testSaveImage
+-org.chromium.chrome.browser.contextmenu.ContextMenuTest.testSaveVideo
+-org.chromium.components.browser_ui.share.ShareImageFileUtilsTest.testSaveBitmapAndMediaStore
+
+# crbug.com/1225746
+-org.chromium.chrome.browser.incognito.IncognitoDownloadLeakageTest.*
+
+# crbug.com/1225754
+-org.chromium.chrome.browser.offlinepages.OfflinePageBridgeTest.testGetLoadUrlParamsForOpeningMhtmlFileUrl
+
+# crbug.com/1231219
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testMoveDownMenuItem
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testReadingListDeletion
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testSearchReadingList_Deletion
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testShowInFolder_*
+
+# crbug.com/1231227
+-org.chromium.chrome.browser.webapps.WebappDisplayModeTest.*
+
+# crbug.com/1231259
+-org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessoryIntegrationTest.testFillsSuggestionOnClick
+-org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessoryIntegrationTest.testFillsSuggestionOnClick
+
+# crbug.com/1231646
+-org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsMediatorTest.testShowAreaSelectionDone
+
+# crbug.com/1231652
+-org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
+
+# crbug.com/1231656
+-org.chromium.chrome.browser.language.settings.LanguageSettingsTest.testToggleOfferToTranslate

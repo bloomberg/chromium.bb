@@ -186,32 +186,53 @@ endfunc
         add             x0,  x0,  #GRAIN_WIDTH-32
 .endm
 
-.macro get_grain_2 dst
+function get_grain_2_neon
         increment_seed  2
         read_rand       x14, 11,  1
         read_rand       x15, 11,  0
         add             x14, x3,  x14, lsl #1
         add             x15, x3,  x15, lsl #1
-        ld1             {\dst\().h}[0], [x14]
-        ld1             {\dst\().h}[1], [x15]
-        srshl           v0.4h,      \dst\().4h,  v31.4h
-        xtn             \dst\().8b,  v0.8h
+        ld1             {v0.h}[0], [x14]
+        ld1             {v0.h}[1], [x15]
+        srshl           v0.4h,   v0.4h,   v31.4h
+        xtn             v0.8b,   v0.8h
+        ret
+endfunc
+
+.macro get_grain_2 dst
+        bl              get_grain_2_neon
+.ifnc \dst, v0
+        mov             \dst\().8b, v0.8b
+.endif
 .endm
 
 // w15 holds the number of entries to produce
-// w14 holds the previous output entry
+// w14, w16 and w17 hold the previous output entries
 // v0 holds the vector of produced entries
 // v1 holds the input vector of sums from above
-function output_lag1_neon
+.macro output_lag n
+function output_lag\n\()_neon
 1:
         read_shift_rand x13, 11
         mov             w11, v1.s[0]
         ldrsh           w12, [x3, x13, lsl #1]
         ext             v0.16b,  v0.16b,  v0.16b,  #1
-        madd            w14, w14, w4,  w11        // sum (above) + *coeff * prev output
-        add             w14, w14, w8              // 1 << (ar_coeff_shift - 1)
+.if \n == 1
+        madd            w11, w14, w4,  w11        // sum (above) + *coeff * prev output
+.elseif \n == 2
+        madd            w11, w16, w4,  w11        // sum (above) + *coeff * prev output 1
+        madd            w11, w14, w17, w11        // += *coeff * prev output 2
+        mov             w16, w14
+.else
+        madd            w11, w17, w4,  w11        // sum (above) + *coeff * prev output 1
+        madd            w11, w16, w20, w11        // sum (above) + *coeff * prev output 2
+        madd            w11, w14, w21, w11        // += *coeff * prev output 3
+        mov             w17, w16
+        mov             w16, w14
+.endif
+        add             w14, w11, w8              // 1 << (ar_coeff_shift - 1)
+        add             w12, w12, w10             // 1 << (4 + grain_scale_shift - 1)
         asr             w14, w14, w7              // >> ar_coeff_shift
-        add             w12, w12, w10
         asr             w12, w12, w9              // >> (4 + grain_scale_shift)
         add             w14, w14, w12
         cmp             w14, w5
@@ -224,6 +245,12 @@ function output_lag1_neon
         b.gt            1b
         ret
 endfunc
+.endm
+
+output_lag 1
+output_lag 2
+output_lag 3
+
 
 function sum_lag1_above_neon
         smull           v2.8h,   v3.8b,   v28.8b
@@ -232,19 +259,19 @@ function sum_lag1_above_neon
         smull2          v5.8h,   v0.16b,  v27.16b
         smull           v6.8h,   v1.8b,   v29.8b
         smull2          v7.8h,   v1.16b,  v29.16b
-        add             v2.8h,   v2.8h,   v4.8h
-        add             v3.8h,   v3.8h,   v5.8h
-        saddl           v4.4s,   v2.4h,   v6.4h
-        saddl2          v5.4s,   v2.8h,   v6.8h
-        saddl           v6.4s,   v3.4h,   v7.4h
-        saddl2          v7.4s,   v3.8h,   v7.8h
+        saddl           v0.4s,   v2.4h,   v4.4h
+        saddl2          v1.4s,   v2.8h,   v4.8h
+        saddl           v2.4s,   v3.4h,   v5.4h
+        saddl2          v3.4s,   v3.8h,   v5.8h
+        saddw           v4.4s,   v0.4s,   v6.4h
+        saddw2          v5.4s,   v1.4s,   v6.8h
+        saddw           v6.4s,   v2.4s,   v7.4h
+        saddw2          v7.4s,   v3.4s,   v7.8h
         ret
 endfunc
 
-.macro sum_lag1_func type, uv_layout, edge, elems=16
-function sum_\type\()_lag1_\edge\()_neon
-        str             x30, [sp, #-16]!
-        bl              sum_lag1_above_neon
+.macro sum_lag_n_body lag, type, uv_layout, edge, elems, store, uv_coeff
+        bl              sum_\lag\()_above_neon
 .ifc \type, uv_420
         add             x12, x19, #GRAIN_WIDTH
         ld1             {v22.16b, v23.16b}, [x19], #32
@@ -255,35 +282,41 @@ function sum_\type\()_lag1_\edge\()_neon
         saddlp          v25.8h,  v25.16b
         add             v22.8h,  v22.8h,  v24.8h
         add             v23.8h,  v23.8h,  v25.8h
-        rshrn           v0.8b,   v22.8h, #2
-        rshrn2          v0.16b,  v23.8h, #2
+        rshrn           v0.8b,   v22.8h,  #2
+        rshrn2          v0.16b,  v23.8h,  #2
 .endif
 .ifc \type, uv_422
         ld1             {v22.16b, v23.16b}, [x19], #32
         saddlp          v22.8h,  v22.16b
         saddlp          v23.8h,  v23.16b
-        rshrn           v0.8b,   v22.8h, #1
-        rshrn2          v0.16b,  v23.8h, #1
+        rshrn           v0.8b,   v22.8h,  #1
+        rshrn2          v0.16b,  v23.8h,  #1
 .endif
 .ifc \type, uv_444
         ld1             {v0.16b}, [x19], #16
 .endif
 .if \uv_layout
+.ifnb \uv_coeff
+        dup             v1.16b,  \uv_coeff
+        smull           v2.8h,   v0.8b,   v1.8b
+        smull2          v3.8h,   v0.16b,  v1.16b
+.else
         smull           v2.8h,   v0.8b,   v30.8b
         smull2          v3.8h,   v0.16b,  v30.16b
+.endif
         saddw           v4.4s,   v4.4s,   v2.4h
         saddw2          v5.4s,   v5.4s,   v2.8h
         saddw           v6.4s,   v6.4s,   v3.4h
         saddw2          v7.4s,   v7.4s,   v3.8h
 .endif
 .if \uv_layout && \elems == 16
-        b               sum_lag1_y_\edge\()_start
+        b               sum_\lag\()_y_\edge\()_start
 .elseif \uv_layout == 444 && \elems == 15
-        b               sum_lag1_y_\edge\()_start
+        b               sum_\lag\()_y_\edge\()_start
 .elseif \uv_layout == 422 && \elems == 9
-        b               sum_lag1_uv_420_\edge\()_start
+        b               sum_\lag\()_uv_420_\edge\()_start
 .else
-sum_lag1_\type\()_\edge\()_start:
+sum_\lag\()_\type\()_\edge\()_start:
 .ifc \edge, left
         increment_seed  4
         read_rand       x12, 11,  3
@@ -299,28 +332,34 @@ sum_lag1_\type\()_\edge\()_start:
         srshl           v0.8h,   v0.8h,   v31.8h
         xtn2            v0.16b,  v0.8h
         ext             v4.16b,  v4.16b,  v4.16b,  #12
+.ifc \lag, lag3
+        smov            w17, v0.b[13]
+.endif
+.ifnc \lag, lag1
+        smov            w16, v0.b[14]
+.endif
         smov            w14, v0.b[15]
 
         mov             v1.16b,  v4.16b
         mov             w15, #1
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
 .else
         increment_seed  4, shift=0
         mov             v1.16b,  v4.16b
         mov             w15, #4
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
 .endif
 
         increment_seed  4, shift=0
         mov             v1.16b,  v5.16b
         mov             w15, #4
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
 
         increment_seed  4, shift=0
         mov             v1.16b,  v6.16b
 .if \elems == 9
         mov             w15, #1
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
         lsr             w2,  w2,  #3
 
         read_rand       x12, 11,  2
@@ -337,14 +376,14 @@ sum_lag1_\type\()_\edge\()_start:
         ext             v0.16b,  v0.16b,  v1.16b,  #7
 .else
         mov             w15, #4
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
 
         increment_seed  4, shift=0
         mov             v1.16b,  v7.16b
 
 .ifc \edge, right
         mov             w15, #3
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
         read_shift_rand x15, 11
         add             x15, x3,  x15, lsl #1
         ld1             {v1.h}[0], [x15]
@@ -352,12 +391,21 @@ sum_lag1_\type\()_\edge\()_start:
         ext             v0.16b,  v0.16b,  v1.16b,  #1
 .else
         mov             w15, #4
-        bl              output_lag1_neon
+        bl              output_\lag\()_neon
 .endif
+.endif
+.if \store
+        st1             {v0.16b}, [x0], #16
 .endif
         ldr             x30, [sp], #16
         ret
 .endif
+.endm
+
+.macro sum_lag1_func type, uv_layout, edge, elems=16
+function sum_\type\()_lag1_\edge\()_neon
+        str             x30, [sp, #-16]!
+        sum_lag_n_body  lag1, \type, \uv_layout, \edge, \elems, store=0
 endfunc
 .endm
 
@@ -398,34 +446,6 @@ sum_lag1_func uv_420, 420, right, 9
         sum_lag1        uv_420, \dst, \left, \mid, \right, \edge
 .endm
 
-// w15 holds the number of entries to produce
-// w14 and w16 hold the previous output entries
-// v0 holds the vector of produced entries
-// v1 holds the input vector of sums from above
-function output_lag2_neon
-1:
-        read_shift_rand x13, 11
-        mov             w11, v1.s[0]
-        ldrsh           w12, [x3, x13, lsl #1]
-        ext             v0.16b,  v0.16b,  v0.16b,  #1
-        madd            w11, w16, w4,  w11        // sum (above) + *coeff * prev output 1
-        madd            w11, w14, w17, w11        // += *coeff * prev output 2
-        mov             w16, w14
-        add             w14, w11, w8              // 1 << (ar_coeff_shift - 1)
-        asr             w14, w14, w7              // >> ar_coeff_shift
-        add             w12, w12, w10
-        asr             w12, w12, w9              // >> (4 + grain_scale_shift)
-        add             w14, w14, w12
-        cmp             w14, w5
-        csel            w14, w14, w5,  le
-        cmp             w14, w6
-        csel            w14, w14, w6,  ge
-        subs            w15, w15, #1
-        ext             v1.16b,  v1.16b,  v1.16b,  #4
-        ins             v0.b[15], w14
-        b.gt            1b
-        ret
-endfunc
 
 function sum_lag2_above_neon
         sub             x12, x0,  #2*GRAIN_WIDTH - 16
@@ -450,14 +470,18 @@ function sum_lag2_above_neon
         smull2          v7.8h,   v0.16b,  v28.16b
         smull           v0.8h,   v1.8b,   v29.8b
         smull2          v1.8h,   v1.16b,  v29.16b
-        add             v2.8h,   v2.8h,   v4.8h
-        add             v3.8h,   v3.8h,   v5.8h
-        add             v0.8h,   v0.8h,   v6.8h
-        add             v1.8h,   v1.8h,   v7.8h
-        saddl           v4.4s,   v2.4h,   v0.4h
-        saddl2          v5.4s,   v2.8h,   v0.8h
-        saddl           v6.4s,   v3.4h,   v1.4h
-        saddl2          v7.4s,   v3.8h,   v1.8h
+        saddl           v22.4s,  v2.4h,   v4.4h
+        saddl2          v23.4s,  v2.8h,   v4.8h
+        saddl           v26.4s,  v3.4h,   v5.4h
+        saddl2          v27.4s,  v3.8h,   v5.8h
+        saddl           v2.4s,   v0.4h,   v6.4h
+        saddl2          v3.4s,   v0.8h,   v6.8h
+        saddl           v6.4s,   v1.4h,   v7.4h
+        saddl2          v7.4s,   v1.8h,   v7.8h
+        add             v4.4s,   v22.4s,  v2.4s
+        add             v5.4s,   v23.4s,  v3.4s
+        add             v6.4s,   v26.4s,  v6.4s
+        add             v7.4s,   v27.4s,  v7.4s
 
         ext             v22.16b, v19.16b, v20.16b, #14 // top left, top mid
         dup             v26.16b, v30.b[5]
@@ -476,14 +500,18 @@ function sum_lag2_above_neon
         smull2          v27.8h,  v0.16b,  v28.16b
         smull           v28.8h,  v1.8b,   v29.8b
         smull2          v29.8h,  v1.16b,  v29.16b
-        add             v2.8h,   v2.8h,   v22.8h
-        add             v3.8h,   v3.8h,   v23.8h
-        add             v26.8h,  v26.8h,  v28.8h
-        add             v27.8h,  v27.8h,  v29.8h
-        saddl           v0.4s,   v2.4h,   v26.4h
-        saddl2          v1.4s,   v2.8h,   v26.8h
-        saddl           v2.4s,   v3.4h,   v27.4h
-        saddl2          v3.4s,   v3.8h,   v27.8h
+        saddl           v0.4s,   v2.4h,   v22.4h
+        saddl2          v1.4s,   v2.8h,   v22.8h
+        saddl           v2.4s,   v3.4h,   v23.4h
+        saddl2          v3.4s,   v3.8h,   v23.8h
+        saddl           v22.4s,  v26.4h,  v28.4h
+        saddl2          v23.4s,  v26.8h,  v28.8h
+        saddl           v26.4s,  v27.4h,  v29.4h
+        saddl2          v27.4s,  v27.8h,  v29.8h
+        add             v0.4s,   v0.4s,   v22.4s
+        add             v1.4s,   v1.4s,   v23.4s
+        add             v2.4s,   v2.4s,   v26.4s
+        add             v3.4s,   v3.4s,   v27.4s
         dup             v26.16b, v30.b[2]
         dup             v27.16b, v30.b[7]
         smull           v22.8h,  v17.8b,  v26.8b
@@ -498,14 +526,16 @@ function sum_lag2_above_neon
         mov             v16.16b, v17.16b
         mov             v17.16b, v18.16b
 
-        add             v22.8h,  v22.8h,  v24.8h
-        add             v23.8h,  v23.8h,  v25.8h
+        saddl           v0.4s,   v22.4h,  v24.4h
+        saddl2          v1.4s,   v22.8h,  v24.8h
+        saddl           v2.4s,   v23.4h,  v25.4h
+        saddl2          v3.4s,   v23.8h,  v25.8h
         mov             v19.16b, v20.16b
         mov             v20.16b, v21.16b
-        saddw           v4.4s,   v4.4s,   v22.4h
-        saddw2          v5.4s,   v5.4s,   v22.8h
-        saddw           v6.4s,   v6.4s,   v23.4h
-        saddw2          v7.4s,   v7.4s,   v23.8h
+        add             v4.4s,   v4.4s,   v0.4s
+        add             v5.4s,   v5.4s,   v1.4s
+        add             v6.4s,   v6.4s,   v2.4s
+        add             v7.4s,   v7.4s,   v3.4s
         ret
 endfunc
 
@@ -518,123 +548,7 @@ function sum_\type\()_lag2_\edge\()_neon
         ld1             {v17.16b}, [x12] // load the previous block right above
         ld1             {v20.16b}, [x13]
 .endif
-        bl              sum_lag2_above_neon
-.ifc \type, uv_420
-        add             x12, x19, #GRAIN_WIDTH
-        ld1             {v22.16b, v23.16b}, [x19], #32
-        ld1             {v24.16b, v25.16b}, [x12]
-        saddlp          v22.8h,  v22.16b
-        saddlp          v23.8h,  v23.16b
-        saddlp          v24.8h,  v24.16b
-        saddlp          v25.8h,  v25.16b
-        add             v22.8h,  v22.8h,  v24.8h
-        add             v23.8h,  v23.8h,  v25.8h
-        rshrn           v0.8b,   v22.8h, #2
-        rshrn2          v0.16b,  v23.8h, #2
-.endif
-.ifc \type, uv_422
-        ld1             {v22.16b, v23.16b}, [x19], #32
-        saddlp          v22.8h,  v22.16b
-        saddlp          v23.8h,  v23.16b
-        rshrn           v0.8b,   v22.8h, #1
-        rshrn2          v0.16b,  v23.8h, #1
-.endif
-.ifc \type, uv_444
-        ld1             {v0.16b}, [x19], #16
-.endif
-.if \uv_layout
-        dup             v1.16b,  v30.b[12]
-        smull           v2.8h,   v0.8b,   v1.8b
-        smull2          v3.8h,   v0.16b,  v1.16b
-        saddw           v4.4s,   v4.4s,   v2.4h
-        saddw2          v5.4s,   v5.4s,   v2.8h
-        saddw           v6.4s,   v6.4s,   v3.4h
-        saddw2          v7.4s,   v7.4s,   v3.8h
-.endif
-.if \uv_layout && \elems == 16
-        b               sum_lag2_y_\edge\()_start
-.elseif \uv_layout == 444 && \elems == 15
-        b               sum_lag2_y_\edge\()_start
-.elseif \uv_layout == 422 && \elems == 9
-        b               sum_lag2_uv_420_\edge\()_start
-.else
-sum_lag2_\type\()_\edge\()_start:
-.ifc \edge, left
-        increment_seed  4
-        read_rand       x12, 11,  3
-        read_rand       x13, 11,  2
-        read_rand       x14, 11,  1
-        add             x12, x3,  x12, lsl #1
-        add             x13, x3,  x13, lsl #1
-        add             x14, x3,  x14, lsl #1
-        ld1             {v0.h}[5], [x12]
-        ld1             {v0.h}[6], [x13]
-        ld1             {v0.h}[7], [x14]
-        lsl             x2,  x2,  #1             // shift back the state as if we'd done increment_seed with shift=0
-        srshl           v0.8h,   v0.8h,   v31.8h
-        xtn2            v0.16b,  v0.8h
-        ext             v4.16b,  v4.16b,  v4.16b,  #12
-        smov            w16, v0.b[14]
-        smov            w14, v0.b[15]
-
-        mov             v1.16b,  v4.16b
-        mov             w15, #1
-        bl              output_lag2_neon
-.else
-        increment_seed  4, shift=0
-        mov             v1.16b,  v4.16b
-        mov             w15, #4
-        bl              output_lag2_neon
-.endif
-
-        increment_seed  4, shift=0
-        mov             v1.16b,  v5.16b
-        mov             w15, #4
-        bl              output_lag2_neon
-
-        increment_seed  4, shift=0
-        mov             v1.16b,  v6.16b
-.if \elems == 9
-        mov             w15, #1
-        bl              output_lag2_neon
-        lsr             w2,  w2,  #3
-
-        read_rand       x12, 11,  2
-        read_rand       x13, 11,  1
-        read_rand       x14, 11,  0
-        add             x12, x3,  x12, lsl #1
-        add             x13, x3,  x13, lsl #1
-        add             x14, x3,  x14, lsl #1
-        ld1             {v1.h}[0], [x12]
-        ld1             {v1.h}[1], [x13]
-        ld1             {v1.h}[2], [x14]
-        srshl           v1.4h,   v1.4h,   v31.4h
-        xtn             v1.8b,   v1.8h
-        ext             v0.16b,  v0.16b,  v1.16b,  #7
-.else
-        mov             w15, #4
-        bl              output_lag2_neon
-
-        increment_seed  4, shift=0
-        mov             v1.16b,  v7.16b
-
-.ifc \edge, right
-        mov             w15, #3
-        bl              output_lag2_neon
-        read_shift_rand x15, 11
-        add             x15, x3,  x15, lsl #1
-        ld1             {v1.h}[0], [x15]
-        srshl           v1.4h,   v1.4h,   v31.4h
-        ext             v0.16b,  v0.16b,  v1.16b,  #1
-.else
-        mov             w15, #4
-        bl              output_lag2_neon
-.endif
-.endif
-        st1             {v0.16b}, [x0], #16
-        ldr             x30,      [sp], #16
-        ret
-.endif
+        sum_lag_n_body  lag2, \type, \uv_layout, \edge, \elems, store=1, uv_coeff=v30.b[12]
 endfunc
 .endm
 
@@ -651,37 +565,6 @@ sum_lag2_func uv_420, 420, left
 sum_lag2_func uv_420, 420, mid
 sum_lag2_func uv_420, 420, right, 9
 
-
-// w15 holds the number of entries to produce
-// w14, w16 and w17 hold the previous output entries
-// v0 holds the vector of produced entries
-// v1 holds the input vector of sums from above
-function output_lag3_neon
-1:
-        read_shift_rand x13, 11
-        mov             w11, v1.s[0]
-        ldrsh           w12, [x3, x13, lsl #1]
-        ext             v0.16b,  v0.16b,  v0.16b,  #1
-        madd            w11, w17, w4,  w11        // sum (above) + *coeff * prev output 1
-        madd            w11, w16, w20, w11        // sum (above) + *coeff * prev output 2
-        madd            w11, w14, w21, w11        // += *coeff * prev output 3
-        mov             w17, w16
-        mov             w16, w14
-        add             w14, w11, w8              // 1 << (ar_coeff_shift - 1)
-        asr             w14, w14, w7              // >> ar_coeff_shift
-        add             w12, w12, w10
-        asr             w12, w12, w9              // >> (4 + grain_scale_shift)
-        add             w14, w14, w12
-        cmp             w14, w5
-        csel            w14, w14, w5,  le
-        cmp             w14, w6
-        csel            w14, w14, w6,  ge
-        subs            w15, w15, #1
-        ext             v1.16b,  v1.16b,  v1.16b,  #4
-        ins             v0.b[15], w14
-        b.gt            1b
-        ret
-endfunc
 
 function sum_lag3_above_neon
         sub             x11, x0,  #3*GRAIN_WIDTH - 16
@@ -711,32 +594,38 @@ function sum_lag3_above_neon
         smull2          v3.8h,   v9.16b,  v23.16b
         smull           v8.8h,   v10.8b,  v24.8b
         smull2          v9.8h,   v10.16b, v24.16b
-        add             v0.8h,   v0.8h,   v2.8h
-        add             v1.8h,   v1.8h,   v3.8h
         smull           v10.8h,  v11.8b,  v26.8b
         smull2          v11.8h,  v11.16b, v26.16b
-        smull           v2.8h,   v12.8b,  v27.8b
-        smull2          v3.8h,   v12.16b, v27.16b
-        add             v8.8h,   v8.8h,   v10.8h
-        add             v9.8h,   v9.8h,   v11.8h
+        saddl           v22.4s,  v0.4h,   v2.4h
+        saddl2          v23.4s,  v0.8h,   v2.8h
+        saddl           v24.4s,  v1.4h,   v3.4h
+        saddl2          v26.4s,  v1.8h,   v3.8h
+        saddl           v0.4s,   v8.4h,   v10.4h
+        saddl2          v1.4s,   v8.8h,   v10.8h
+        saddl           v2.4s,   v9.4h,   v11.4h
+        saddl2          v3.4s,   v9.8h,   v11.8h
+        smull           v8.8h,   v12.8b,  v27.8b
+        smull2          v9.8h,   v12.16b, v27.16b
         smull           v10.8h,  v13.8b,  v28.8b
         smull2          v11.8h,  v13.16b, v28.16b
-        saddl           v4.4s,   v0.4h,   v8.4h
-        saddl2          v5.4s,   v0.8h,   v8.8h
-        saddl           v6.4s,   v1.4h,   v9.4h
-        saddl2          v7.4s,   v1.8h,   v9.8h
-        smull           v8.8h,   v14.8b,  v25.8b
-        smull2          v9.8h,   v14.16b, v25.16b
-        add             v2.8h,   v2.8h,   v10.8h
-        add             v3.8h,   v3.8h,   v11.8h
-        saddl           v0.4s,   v2.4h,   v8.4h
-        saddl2          v1.4s,   v2.8h,   v8.8h
-        saddl           v2.4s,   v3.4h,   v9.4h
-        saddl2          v3.4s,   v3.8h,   v9.8h
+        smull           v12.8h,  v14.8b,  v25.8b
+        smull2          v13.8h,  v14.16b, v25.16b
+        add             v4.4s,   v22.4s,  v0.4s
+        add             v5.4s,   v23.4s,  v1.4s
+        add             v6.4s,   v24.4s,  v2.4s
+        add             v7.4s,   v26.4s,  v3.4s
+        saddl           v0.4s,   v8.4h,   v10.4h
+        saddl2          v1.4s,   v8.8h,   v10.8h
+        saddl           v2.4s,   v9.4h,   v11.4h
+        saddl2          v3.4s,   v9.8h,   v11.8h
         add             v4.4s,   v4.4s,   v0.4s
         add             v5.4s,   v5.4s,   v1.4s
         add             v6.4s,   v6.4s,   v2.4s
         add             v7.4s,   v7.4s,   v3.4s
+        saddw           v4.4s,   v4.4s,   v12.4h
+        saddw2          v5.4s,   v5.4s,   v12.8h
+        saddw           v6.4s,   v6.4s,   v13.4h
+        saddw2          v7.4s,   v7.4s,   v13.8h
 
         ext             v8.16b,  v16.16b, v17.16b, #13 // top left, top mid
         dup             v22.16b, v29.b[7]
@@ -758,36 +647,42 @@ function sum_lag3_above_neon
         smull2          v3.8h,   v9.16b,  v23.16b
         smull           v8.8h,   v10.8b,  v24.8b
         smull2          v9.8h,   v10.16b, v24.16b
-        add             v0.8h,   v0.8h,   v2.8h
-        add             v1.8h,   v1.8h,   v3.8h
         smull           v10.8h,  v11.8b,  v26.8b
         smull2          v11.8h,  v11.16b, v26.16b
-        smull           v2.8h,   v12.8b,  v27.8b
-        smull2          v3.8h,   v12.16b, v27.16b
-        add             v8.8h,   v8.8h,   v10.8h
-        add             v9.8h,   v9.8h,   v11.8h
+        saddl           v22.4s,  v0.4h,   v2.4h
+        saddl2          v23.4s,  v0.8h,   v2.8h
+        saddl           v24.4s,  v1.4h,   v3.4h
+        saddl2          v26.4s,  v1.8h,   v3.8h
+        saddl           v0.4s,   v8.4h,   v10.4h
+        saddl2          v1.4s,   v8.8h,   v10.8h
+        saddl           v2.4s,   v9.4h,   v11.4h
+        saddl2          v3.4s,   v9.8h,   v11.8h
+        smull           v8.8h,   v12.8b,  v27.8b
+        smull2          v9.8h,   v12.16b, v27.16b
         smull           v10.8h,  v13.8b,  v28.8b
         smull2          v11.8h,  v13.16b, v28.16b
-        saddl           v12.4s,  v0.4h,   v8.4h
-        saddl2          v13.4s,  v0.8h,   v8.8h
-        saddl           v0.4s,   v1.4h,   v9.4h
-        saddl2          v1.4s,   v1.8h,   v9.8h
-        smull           v8.8h,   v17.8b,  v25.8b
-        smull2          v9.8h,   v17.16b, v25.16b
-        add             v2.8h,   v2.8h,   v10.8h
-        add             v3.8h,   v3.8h,   v11.8h
-        add             v4.4s,   v4.4s,   v12.4s
-        add             v5.4s,   v5.4s,   v13.4s
-        add             v6.4s,   v6.4s,   v0.4s
-        add             v7.4s,   v7.4s,   v1.4s
-        saddl           v0.4s,   v2.4h,   v8.4h
-        saddl2          v1.4s,   v2.8h,   v8.8h
-        saddl           v2.4s,   v3.4h,   v9.4h
-        saddl2          v3.4s,   v3.8h,   v9.8h
+        smull           v12.8h,  v17.8b,  v25.8b
+        smull2          v13.8h,  v17.16b, v25.16b
+        add             v22.4s,  v22.4s,  v0.4s
+        add             v23.4s,  v23.4s,  v1.4s
+        add             v24.4s,  v24.4s,  v2.4s
+        add             v26.4s,  v26.4s,  v3.4s
+        saddl           v0.4s,   v8.4h,   v10.4h
+        saddl2          v1.4s,   v8.8h,   v10.8h
+        saddl           v2.4s,   v9.4h,   v11.4h
+        saddl2          v3.4s,   v9.8h,   v11.8h
+        add             v4.4s,   v4.4s,   v22.4s
+        add             v5.4s,   v5.4s,   v23.4s
+        add             v6.4s,   v6.4s,   v24.4s
+        add             v7.4s,   v7.4s,   v26.4s
         add             v4.4s,   v4.4s,   v0.4s
         add             v5.4s,   v5.4s,   v1.4s
         add             v6.4s,   v6.4s,   v2.4s
         add             v7.4s,   v7.4s,   v3.4s
+        saddw           v4.4s,   v4.4s,   v12.4h
+        saddw2          v5.4s,   v5.4s,   v12.8h
+        saddw           v6.4s,   v6.4s,   v13.4h
+        saddw2          v7.4s,   v7.4s,   v13.8h
 
         ext             v8.16b,  v19.16b, v20.16b, #13 // top left, top mid
         dup             v22.16b, v29.b[14]
@@ -809,42 +704,46 @@ function sum_lag3_above_neon
         smull2          v3.8h,   v9.16b,  v23.16b
         smull           v8.8h,   v10.8b,  v24.8b
         smull2          v9.8h,   v10.16b, v24.16b
-        add             v0.8h,   v0.8h,   v2.8h
-        add             v1.8h,   v1.8h,   v3.8h
         smull           v10.8h,  v11.8b,  v26.8b
         smull2          v11.8h,  v11.16b, v26.16b
-        smull           v2.8h,   v12.8b,  v27.8b
-        smull2          v3.8h,   v12.16b, v27.16b
-        add             v8.8h,   v8.8h,   v10.8h
-        add             v9.8h,   v9.8h,   v11.8h
+        saddl           v22.4s,  v0.4h,   v2.4h
+        saddl2          v23.4s,  v0.8h,   v2.8h
+        saddl           v24.4s,  v1.4h,   v3.4h
+        saddl2          v26.4s,  v1.8h,   v3.8h
+        saddl           v0.4s,   v8.4h,   v10.4h
+        saddl2          v1.4s,   v8.8h,   v10.8h
+        saddl           v2.4s,   v9.4h,   v11.4h
+        saddl2          v3.4s,   v9.8h,   v11.8h
+        smull           v8.8h,   v12.8b,  v27.8b
+        smull2          v9.8h,   v12.16b, v27.16b
         smull           v10.8h,  v13.8b,  v28.8b
         smull2          v11.8h,  v13.16b, v28.16b
-        saddl           v12.4s,  v0.4h,   v8.4h
-        saddl2          v13.4s,  v0.8h,   v8.8h
-        saddl           v0.4s,   v1.4h,   v9.4h
-        saddl2          v1.4s,   v1.8h,   v9.8h
-        smull           v8.8h,   v20.8b,  v25.8b
-        smull2          v9.8h,   v20.16b, v25.16b
-        add             v2.8h,   v2.8h,   v10.8h
-        add             v3.8h,   v3.8h,   v11.8h
-        add             v4.4s,   v4.4s,   v12.4s
-        add             v5.4s,   v5.4s,   v13.4s
-        add             v6.4s,   v6.4s,   v0.4s
-        add             v7.4s,   v7.4s,   v1.4s
-        saddl           v0.4s,   v2.4h,   v8.4h
-        saddl2          v1.4s,   v2.8h,   v8.8h
-        saddl           v2.4s,   v3.4h,   v9.4h
-        saddl2          v3.4s,   v3.8h,   v9.8h
+        smull           v12.8h,  v20.8b,  v25.8b
+        smull2          v19.8h,  v20.16b, v25.16b
+        add             v22.4s,  v22.4s,  v0.4s
+        add             v23.4s,  v23.4s,  v1.4s
+        add             v24.4s,  v24.4s,  v2.4s
+        add             v26.4s,  v26.4s,  v3.4s
+        saddl           v0.4s,   v8.4h,   v10.4h
+        saddl2          v1.4s,   v8.8h,   v10.8h
+        saddl           v2.4s,   v9.4h,   v11.4h
+        saddl2          v3.4s,   v9.8h,   v11.8h
+        add             v4.4s,   v4.4s,   v22.4s
+        add             v5.4s,   v5.4s,   v23.4s
+        add             v6.4s,   v6.4s,   v24.4s
+        add             v7.4s,   v7.4s,   v26.4s
+        mov             v13.16b, v14.16b
+        mov             v14.16b, v15.16b
         add             v4.4s,   v4.4s,   v0.4s
         add             v5.4s,   v5.4s,   v1.4s
         add             v6.4s,   v6.4s,   v2.4s
         add             v7.4s,   v7.4s,   v3.4s
-
-        mov             v13.16b, v14.16b
-        mov             v14.16b, v15.16b
-
         mov             v16.16b, v17.16b
         mov             v17.16b, v18.16b
+        saddw           v4.4s,   v4.4s,   v12.4h
+        saddw2          v5.4s,   v5.4s,   v12.8h
+        saddw           v6.4s,   v6.4s,   v19.4h
+        saddw2          v7.4s,   v7.4s,   v19.8h
 
         mov             v19.16b, v20.16b
         mov             v20.16b, v21.16b
@@ -862,124 +761,7 @@ function sum_\type\()_lag3_\edge\()_neon
         ld1             {v17.16b}, [x12]
         ld1             {v20.16b}, [x13]
 .endif
-        bl              sum_lag3_above_neon
-.ifc \type, uv_420
-        add             x12, x19, #GRAIN_WIDTH
-        ld1             {v22.16b, v23.16b}, [x19], #32
-        ld1             {v24.16b, v25.16b}, [x12]
-        saddlp          v22.8h,  v22.16b
-        saddlp          v23.8h,  v23.16b
-        saddlp          v24.8h,  v24.16b
-        saddlp          v25.8h,  v25.16b
-        add             v22.8h,  v22.8h,  v24.8h
-        add             v23.8h,  v23.8h,  v25.8h
-        rshrn           v0.8b,   v22.8h, #2
-        rshrn2          v0.16b,  v23.8h, #2
-.endif
-.ifc \type, uv_422
-        ld1             {v22.16b, v23.16b}, [x19], #32
-        saddlp          v22.8h,  v22.16b
-        saddlp          v23.8h,  v23.16b
-        rshrn           v0.8b,   v22.8h, #1
-        rshrn2          v0.16b,  v23.8h, #1
-.endif
-.ifc \type, uv_444
-        ld1             {v0.16b}, [x19], #16
-.endif
-.if \uv_layout
-        dup             v1.16b,  v30.b[8]
-        smull           v2.8h,   v0.8b,   v1.8b
-        smull2          v3.8h,   v0.16b,  v1.16b
-        saddw           v4.4s,   v4.4s,   v2.4h
-        saddw2          v5.4s,   v5.4s,   v2.8h
-        saddw           v6.4s,   v6.4s,   v3.4h
-        saddw2          v7.4s,   v7.4s,   v3.8h
-.endif
-.if \uv_layout && \elems == 16
-        b               sum_lag3_y_\edge\()_start
-.elseif \uv_layout == 444 && \elems == 15
-        b               sum_lag3_y_\edge\()_start
-.elseif \uv_layout == 422 && \elems == 9
-        b               sum_lag3_uv_420_\edge\()_start
-.else
-sum_lag3_\type\()_\edge\()_start:
-.ifc \edge, left
-        increment_seed  4
-        read_rand       x12, 11,  3
-        read_rand       x13, 11,  2
-        read_rand       x14, 11,  1
-        add             x12, x3,  x12, lsl #1
-        add             x13, x3,  x13, lsl #1
-        add             x14, x3,  x14, lsl #1
-        ld1             {v0.h}[5], [x12]
-        ld1             {v0.h}[6], [x13]
-        ld1             {v0.h}[7], [x14]
-        lsl             x2,  x2,  #1             // shift back the state as if we'd done increment_seed with shift=0
-        srshl           v0.8h,   v0.8h,   v31.8h
-        xtn2            v0.16b,  v0.8h
-        ext             v4.16b,  v4.16b,  v4.16b,  #12
-        smov            w17, v0.b[13]
-        smov            w16, v0.b[14]
-        smov            w14, v0.b[15]
-
-        mov             v1.16b,  v4.16b
-        mov             w15, #1
-        bl              output_lag3_neon
-.else
-        increment_seed  4, shift=0
-        mov             v1.16b,  v4.16b
-        mov             w15, #4
-        bl              output_lag3_neon
-.endif
-
-        increment_seed  4, shift=0
-        mov             v1.16b,  v5.16b
-        mov             w15, #4
-        bl              output_lag3_neon
-
-        increment_seed  4, shift=0
-        mov             v1.16b,  v6.16b
-.if \elems == 9
-        mov             w15, #1
-        bl              output_lag3_neon
-        lsr             w2,  w2,  #3
-
-        read_rand       x12, 11,  2
-        read_rand       x13, 11,  1
-        read_rand       x14, 11,  0
-        add             x12, x3,  x12, lsl #1
-        add             x13, x3,  x13, lsl #1
-        add             x14, x3,  x14, lsl #1
-        ld1             {v1.h}[0], [x12]
-        ld1             {v1.h}[1], [x13]
-        ld1             {v1.h}[2], [x14]
-        srshl           v1.4h,   v1.4h,   v31.4h
-        xtn             v1.8b,   v1.8h
-        ext             v0.16b,  v0.16b,  v1.16b,  #7
-.else
-        mov             w15, #4
-        bl              output_lag3_neon
-
-        increment_seed  4, shift=0
-        mov             v1.16b,  v7.16b
-
-.ifc \edge, right
-        mov             w15, #3
-        bl              output_lag3_neon
-        read_shift_rand x15, 11
-        add             x15, x3,  x15, lsl #1
-        ld1             {v1.h}[0], [x15]
-        srshl           v1.4h,   v1.4h,   v31.4h
-        ext             v0.16b,  v0.16b,  v1.16b,  #1
-.else
-        mov             w15, #4
-        bl              output_lag3_neon
-.endif
-.endif
-        st1             {v0.16b}, [x0], #16
-        ldr             x30,      [sp], #16
-        ret
-.endif
+        sum_lag_n_body  lag3, \type, \uv_layout, \edge, \elems, store=1, uv_coeff=v30.b[8]
 endfunc
 .endm
 
@@ -1033,7 +815,6 @@ function get_grain_row_44_neon
 endfunc
 
 function add_uv_444_coeff_lag0_neon
-        str             x30, [sp, #-16]!
 add_coeff_lag0_start:
         smull           v2.8h,   v0.8b,   v27.8b
         smull2          v3.8h,   v0.16b,  v27.16b
@@ -1043,20 +824,18 @@ add_coeff_lag0_start:
         saddw2          v3.8h,   v3.8h,   v1.16b
         sqxtn           v2.8b,   v2.8h
         sqxtn2          v2.16b,  v3.8h
-        ldr             x30, [sp], #16
         ret
 endfunc
 
 function add_uv_420_coeff_lag0_neon
-        str             x30, [sp, #-16]!
         ld1             {v4.16b, v5.16b}, [x19], #32
         ld1             {v6.16b, v7.16b}, [x12], #32
         saddlp          v4.8h,   v4.16b
         saddlp          v5.8h,   v5.16b
         saddlp          v6.8h,   v6.16b
         saddlp          v7.8h,   v7.16b
-        add             v4.8h,   v4.8h,  v6.8h
-        add             v5.8h,   v5.8h,  v7.8h
+        add             v4.8h,   v4.8h,   v6.8h
+        add             v5.8h,   v5.8h,   v7.8h
         rshrn           v4.8b,   v4.8h,   #2
         rshrn2          v4.16b,  v5.8h,   #2
         and             v0.16b,  v4.16b,  v0.16b
@@ -1064,7 +843,6 @@ function add_uv_420_coeff_lag0_neon
 endfunc
 
 function add_uv_422_coeff_lag0_neon
-        str             x30, [sp, #-16]!
         ld1             {v4.16b, v5.16b}, [x19], #32
         saddlp          v4.8h,   v4.16b
         saddlp          v5.8h,   v5.16b
@@ -1125,9 +903,8 @@ function generate_grain_\type\()_8bpc_neon, export=1
 
         br              x16
 
-        ret
-
 L(generate_grain_\type\()_lag0):
+        AARCH64_VALID_JUMP_TARGET
 .ifc \type, y
         mov             w1,  #GRAIN_HEIGHT
         bl              generate_grain_rows_neon
@@ -1176,19 +953,20 @@ L(generate_grain_\type\()_lag0):
         ret
 
 L(generate_grain_\type\()_lag1):
+        AARCH64_VALID_JUMP_TARGET
         ld1r            {v27.16b}, [x4], #1 // ar_coeffs_y[0]
         ld1r            {v28.16b}, [x4], #1 // ar_coeffs_y[1]
         ld1r            {v29.16b}, [x4]     // ar_coeffs_y[2]
 .ifc \type, y
-        ldrsb           w4,  [x4, #1]       // ar_coeffs_y[4]
+        ldrsb           w4,  [x4, #1]       // ar_coeffs_y[3]
 .else
         add             x4,  x4,  #2
 .endif
 
         mov             w1,  #3
 .ifc \type, uv_444
-        ld1r            {v30.16b}, [x4]     // ar_coeffs_uv[5]
-        ldursb          w4,  [x4, #-1]      // ar_coeffs_uv[4]
+        ld1r            {v30.16b}, [x4]     // ar_coeffs_uv[4]
+        ldursb          w4,  [x4, #-1]      // ar_coeffs_uv[3]
 .endif
         bl              generate_grain_rows_neon
 
@@ -1215,6 +993,7 @@ L(generate_grain_\type\()_lag1):
         ret
 
 L(generate_grain_\type\()_lag2):
+        AARCH64_VALID_JUMP_TARGET
         ld1             {v30.16b}, [x4]     // ar_coeffs_y[0-11], ar_coeffs_uv[0-12]
 
         smov            w4,  v30.b[10]
@@ -1242,8 +1021,8 @@ L(generate_grain_\type\()_lag2):
         ret
 
 L(generate_grain_\type\()_lag3):
-        ldr             q29,      [x4]      // ar_coeffs_y[0-15]
-        ldr             q30,      [x4, #16] // ar_coeffs_y[16-23], ar_coeffs_uv[16-24]
+        AARCH64_VALID_JUMP_TARGET
+        ld1             {v29.16b, v30.16b}, [x4] // ar_coeffs_y[0-23], ar_coeffs_uv[0-24]
         stp             d8,  d9,  [sp, #16]
         stp             d10, d11, [sp, #32]
         stp             d12, d13, [sp, #48]
@@ -1349,9 +1128,8 @@ function generate_grain_\type\()_8bpc_neon, export=1
 
         br              x16
 
-        ret
-
 L(generate_grain_\type\()_lag0):
+        AARCH64_VALID_JUMP_TARGET
         dup             v28.8h,  w7
         ld1r            {v27.16b}, [x4]     // ar_coeffs_uv[0]
         movi            v0.16b,  #0
@@ -1389,14 +1167,15 @@ L(generate_grain_\type\()_lag0):
         ret
 
 L(generate_grain_\type\()_lag1):
+        AARCH64_VALID_JUMP_TARGET
         ld1r            {v27.16b}, [x4], #1 // ar_coeffs_uv[0]
         ld1r            {v28.16b}, [x4], #1 // ar_coeffs_uv[1]
         ld1r            {v29.16b}, [x4]     // ar_coeffs_uv[2]
         add             x4,  x4,  #2
 
         mov             w1,  #3
-        ld1r            {v30.16b}, [x4]     // ar_coeffs_uv[5]
-        ldursb          w4,  [x4, #-1]      // ar_coeffs_uv[4]
+        ld1r            {v30.16b}, [x4]     // ar_coeffs_u4[4]
+        ldursb          w4,  [x4, #-1]      // ar_coeffs_uv[3]
         bl              generate_grain_rows_44_neon
 
         set_height      w1,  \type
@@ -1415,6 +1194,7 @@ L(generate_grain_\type\()_lag1):
         ret
 
 L(generate_grain_\type\()_lag2):
+        AARCH64_VALID_JUMP_TARGET
         ld1             {v30.16b}, [x4]     // ar_coeffs_uv[0-12]
 
         smov            w4,  v30.b[10]
@@ -1437,6 +1217,7 @@ L(generate_grain_\type\()_lag2):
         ret
 
 L(generate_grain_\type\()_lag3):
+        AARCH64_VALID_JUMP_TARGET
         ldr             q29,      [x4]      // ar_coeffs_uv[0-15]
         ldr             q30,      [x4, #16] // ar_coeffs_uv[16-24]
         stp             d8,  d9,  [sp, #16]
@@ -1483,40 +1264,47 @@ gen_grain_44 uv_422
 
 .macro gather_interleaved dst1, dst2, src1, src2, off
         umov            w14, \src1[0+\off]
-        umov            w15, \src2[1+\off]
+        umov            w15, \src2[8+\off]
         umov            w16, \src1[2+\off]
         add             x14, x14, x3
-        umov            w17, \src2[3+\off]
+        umov            w17, \src2[10+\off]
         add             x15, x15, x3
-        ld1             {\dst1}[0+\off], [x14]
+        ld1             {\dst1}[0+\off],  [x14]
         umov            w14, \src1[4+\off]
         add             x16, x16, x3
-        ld1             {\dst2}[1+\off], [x15]
-        umov            w15, \src2[5+\off]
+        ld1             {\dst2}[8+\off],  [x15]
+        umov            w15, \src2[12+\off]
         add             x17, x17, x3
-        ld1             {\dst1}[2+\off], [x16]
+        ld1             {\dst1}[2+\off],  [x16]
         umov            w16, \src1[6+\off]
         add             x14, x14, x3
-        ld1             {\dst2}[3+\off], [x17]
-        umov            w17, \src2[7+\off]
+        ld1             {\dst2}[10+\off], [x17]
+        umov            w17, \src2[14+\off]
         add             x15, x15, x3
-        ld1             {\dst1}[4+\off], [x14]
+        ld1             {\dst1}[4+\off],  [x14]
         add             x16, x16, x3
-        ld1             {\dst2}[5+\off], [x15]
+        ld1             {\dst2}[12+\off], [x15]
         add             x17, x17, x3
-        ld1             {\dst1}[6+\off], [x16]
-        ld1             {\dst2}[7+\off], [x17]
+        ld1             {\dst1}[6+\off],  [x16]
+        ld1             {\dst2}[14+\off], [x17]
 .endm
 
 .macro gather dst1, dst2, src1, src2
         gather_interleaved \dst1, \dst2, \src1, \src2, 0
         gather_interleaved \dst2, \dst1, \src2, \src1, 0
-        gather_interleaved \dst1, \dst2, \src1, \src2, 8
-        gather_interleaved \dst2, \dst1, \src2, \src1, 8
+        gather_interleaved \dst1, \dst2, \src1, \src2, 1
+        gather_interleaved \dst2, \dst1, \src2, \src1, 1
 .endm
 
-function gather_neon
+function gather32_neon
         gather          v4.b, v5.b, v0.b, v1.b
+        ret
+endfunc
+
+function gather16_neon
+        gather_interleaved v4.b, v5.b, v0.b, v0.b, 0
+        gather_interleaved v4.b, v5.b, v0.b, v0.b, 1
+        ins             v4.d[1], v5.d[1]
         ret
 endfunc
 
@@ -1564,7 +1352,7 @@ function fgy_32x32_8bpc_neon, export=1
         mov             x9,  #GRAIN_WIDTH      // grain_lut stride
 
         neg             w4,  w4
-        dup             v29.8h, w4             // -scaling_shift
+        dup             v29.8h,  w4            // -scaling_shift
 
         movrel          x16, overlap_coeffs_0
 
@@ -1622,6 +1410,7 @@ endfunc
 function fgy_loop_neon
 .macro fgy ox, oy
 L(loop_\ox\oy):
+        AARCH64_VALID_JUMP_TARGET
 1:
         ld1             {v0.16b,  v1.16b},  [x1],  x2 // src
 .if \ox
@@ -1635,7 +1424,7 @@ L(loop_\ox\oy):
 .endif
         ld1             {v18.16b, v19.16b}, [x5],  x9 // grain_lut
 
-        bl              gather_neon
+        bl              gather32_neon
 
 .if \ox
         smull           v20.8h,  v20.8b,  v27.8b
@@ -1765,7 +1554,7 @@ endfunc
 .macro fguv layout, sx, sy
 function fguv_32x32_\layout\()_8bpc_neon, export=1
         str             x30,      [sp, #-32]!
-        stp             d8,  d9,  [sp, #16]
+        str             d8,       [sp, #16]
         ldp             x8,  x9,  [sp, #32]    // offsets, h
         ldp             x10, x11, [sp, #48]    // uv, is_id
 
@@ -1778,11 +1567,11 @@ function fguv_32x32_\layout\()_8bpc_neon, export=1
         add             x14, x10, #FGD_UV_LUMA_MULT
         add             x15, x10, #FGD_UV_MULT
         add             x10, x10, #FGD_UV_OFFSET
-        ld1             {v8.h}[0], [x14] // uv_luma_mult
-        ld1r            {v24.8h},  [x10] // uv_offset
-        ld1             {v8.h}[1], [x15] // uv_mult
+        ld1             {v8.h}[0], [x14]       // uv_luma_mult
+        ld1r            {v24.8h},  [x10]       // uv_offset
+        ld1             {v8.h}[1], [x15]       // uv_mult
 
-        dup             v29.8h, w13            // -scaling_shift
+        dup             v29.8h,  w13           // -scaling_shift
 
         cbz             w12, 1f
         // clip
@@ -1869,6 +1658,7 @@ fguv 444, 0, 0
 function fguv_loop_sx0_neon
 .macro fguv_loop_sx0 csfl, ox, oy
 L(fguv_loop_sx0_csfl\csfl\()_\ox\oy):
+        AARCH64_VALID_JUMP_TARGET
 1:
         ld1             {v0.16b,  v1.16b},  [x6],  x7  // luma
         ld1             {v6.16b,  v7.16b},  [x1],  x2  // src
@@ -1918,7 +1708,7 @@ L(fguv_loop_sx0_csfl\csfl\()_\ox\oy):
         sqxtun2         v1.16b,  v5.8h
 .endif
 
-        bl              gather_neon
+        bl              gather32_neon
 
 .if \ox
         smull           v20.8h,  v20.8b,  v27.8b
@@ -2029,7 +1819,7 @@ L(fguv_loop_sx0_csfl\csfl\()_\ox\oy):
         fguv_loop_sx0   1, 1, 1
 
 9:
-        ldp             d8,  d9,  [sp, #16]
+        ldr             d8,       [sp, #16]
         ldr             x30,      [sp], #32
         ret
 
@@ -2047,6 +1837,7 @@ endfunc
 function fguv_loop_sx1_neon
 .macro fguv_loop_sx1 csfl, ox, oy
 L(fguv_loop_sx1_csfl\csfl\()_\ox\oy):
+        AARCH64_VALID_JUMP_TARGET
 1:
         ld1             {v0.16b, v1.16b},  [x6],  x7  // luma
         ld1             {v6.16b},          [x1],  x2  // src
@@ -2085,7 +1876,7 @@ L(fguv_loop_sx1_csfl\csfl\()_\ox\oy):
         sqxtun2         v0.16b,  v3.8h
 .endif
 
-        bl              gather_neon
+        bl              gather16_neon
 
 .if \ox
         smull           v20.8h,  v20.8b,  v27.8b
@@ -2176,7 +1967,7 @@ L(fguv_loop_sx1_csfl\csfl\()_\ox\oy):
         fguv_loop_sx1   1, 1, 1
 
 9:
-        ldp             d8,  d9,  [sp, #16]
+        ldr             d8,       [sp, #16]
         ldr             x30,      [sp], #32
         ret
 

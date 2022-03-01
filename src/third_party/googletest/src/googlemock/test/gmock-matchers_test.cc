@@ -114,31 +114,32 @@ std::vector<std::unique_ptr<int>> MakeUniquePtrs(const std::vector<int>& ints) {
 }
 
 // For testing ExplainMatchResultTo().
-class GreaterThanMatcher : public MatcherInterface<int> {
+template <typename T = int>
+class GreaterThanMatcher : public MatcherInterface<T> {
  public:
-  explicit GreaterThanMatcher(int rhs) : rhs_(rhs) {}
+  explicit GreaterThanMatcher(T rhs) : rhs_(rhs) {}
 
   void DescribeTo(ostream* os) const override { *os << "is > " << rhs_; }
 
-  bool MatchAndExplain(int lhs, MatchResultListener* listener) const override {
-    const int diff = lhs - rhs_;
-    if (diff > 0) {
-      *listener << "which is " << diff << " more than " << rhs_;
-    } else if (diff == 0) {
+  bool MatchAndExplain(T lhs, MatchResultListener* listener) const override {
+    if (lhs > rhs_) {
+      *listener << "which is " << (lhs - rhs_) << " more than " << rhs_;
+    } else if (lhs == rhs_) {
       *listener << "which is the same as " << rhs_;
     } else {
-      *listener << "which is " << -diff << " less than " << rhs_;
+      *listener << "which is " << (rhs_ - lhs) << " less than " << rhs_;
     }
 
     return lhs > rhs_;
   }
 
  private:
-  int rhs_;
+  const T rhs_;
 };
 
-Matcher<int> GreaterThan(int n) {
-  return MakeMatcher(new GreaterThanMatcher(n));
+template <typename T>
+Matcher<T> GreaterThan(T n) {
+  return MakeMatcher(new GreaterThanMatcher<T>(n));
 }
 
 std::string OfType(const std::string& type_name) {
@@ -1865,6 +1866,33 @@ TEST(EndsWithTest, CanDescribeSelf) {
   EXPECT_EQ("ends with \"Hi\"", Describe(m));
 }
 
+// Tests WhenBase64Unescaped.
+
+TEST(WhenBase64UnescapedTest, MatchesUnescapedBase64Strings) {
+  const Matcher<const char*> m1 = WhenBase64Unescaped(EndsWith("!"));
+  EXPECT_FALSE(m1.Matches("invalid base64"));
+  EXPECT_FALSE(m1.Matches("aGVsbG8gd29ybGQ="));  // hello world
+  EXPECT_TRUE(m1.Matches("aGVsbG8gd29ybGQh"));   // hello world!
+
+  const Matcher<const std::string&> m2 = WhenBase64Unescaped(EndsWith("!"));
+  EXPECT_FALSE(m2.Matches("invalid base64"));
+  EXPECT_FALSE(m2.Matches("aGVsbG8gd29ybGQ="));  // hello world
+  EXPECT_TRUE(m2.Matches("aGVsbG8gd29ybGQh"));   // hello world!
+
+#if GTEST_INTERNAL_HAS_STRING_VIEW
+  const Matcher<const internal::StringView&> m3 =
+      WhenBase64Unescaped(EndsWith("!"));
+  EXPECT_FALSE(m3.Matches("invalid base64"));
+  EXPECT_FALSE(m3.Matches("aGVsbG8gd29ybGQ="));  // hello world
+  EXPECT_TRUE(m3.Matches("aGVsbG8gd29ybGQh"));   // hello world!
+#endif  // GTEST_INTERNAL_HAS_STRING_VIEW
+}
+
+TEST(WhenBase64UnescapedTest, CanDescribeSelf) {
+  const Matcher<const char*> m = WhenBase64Unescaped(EndsWith("!"));
+  EXPECT_EQ("matches after Base64Unescape ends with \"!\"", Describe(m));
+}
+
 // Tests MatchesRegex().
 
 TEST(MatchesRegexTest, MatchesStringMatchingGivenRegex) {
@@ -2769,6 +2797,34 @@ TEST(AnyOfTest, VariadicMatchesWhenAnyMatches) {
                 "23", "24", "25", "26", "27", "28", "29", "30", "31", "32",
                 "33", "34", "35", "36", "37", "38", "39", "40", "41", "42",
                 "43", "44", "45", "46", "47", "48", "49", "50"));
+}
+
+TEST(ConditionalTest, MatchesFirstIfCondition) {
+  Matcher<std::string> eq_red = Eq("red");
+  Matcher<std::string> ne_red = Ne("red");
+  Matcher<std::string> m = Conditional(true, eq_red, ne_red);
+  EXPECT_TRUE(m.Matches("red"));
+  EXPECT_FALSE(m.Matches("green"));
+
+  StringMatchResultListener listener;
+  StringMatchResultListener expected;
+  EXPECT_FALSE(m.MatchAndExplain("green", &listener));
+  EXPECT_FALSE(eq_red.MatchAndExplain("green", &expected));
+  EXPECT_THAT(listener.str(), Eq(expected.str()));
+}
+
+TEST(ConditionalTest, MatchesSecondIfCondition) {
+  Matcher<std::string> eq_red = Eq("red");
+  Matcher<std::string> ne_red = Ne("red");
+  Matcher<std::string> m = Conditional(false, eq_red, ne_red);
+  EXPECT_FALSE(m.Matches("red"));
+  EXPECT_TRUE(m.Matches("green"));
+
+  StringMatchResultListener listener;
+  StringMatchResultListener expected;
+  EXPECT_FALSE(m.MatchAndExplain("red", &listener));
+  EXPECT_FALSE(ne_red.MatchAndExplain("red", &expected));
+  EXPECT_THAT(listener.str(), Eq(expected.str()));
 }
 
 // Tests the variadic version of the ElementsAreMatcher
@@ -5368,12 +5424,14 @@ class Streamlike {
   }
 
  private:
-  class ConstIter : public std::iterator<std::input_iterator_tag,
-                                         value_type,
-                                         ptrdiff_t,
-                                         const value_type*,
-                                         const value_type&> {
+  class ConstIter {
    public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = T;
+    using difference_type = ptrdiff_t;
+    using pointer = const value_type*;
+    using reference = const value_type&;
+
     ConstIter(const Streamlike* s,
               typename std::list<value_type>::iterator pos)
         : s_(s), pos_(pos) {}
@@ -6327,7 +6385,7 @@ TEST_P(BipartiteRandomTest, LargerNets) {
   int iters = GetParam().second;
   MatchMatrix graph(static_cast<size_t>(nodes), static_cast<size_t>(nodes));
 
-  auto seed = static_cast<uint32_t>(GTEST_FLAG(random_seed));
+  auto seed = static_cast<uint32_t>(GTEST_FLAG_GET(random_seed));
   if (seed == 0) {
     seed = static_cast<uint32_t>(time(nullptr));
   }
@@ -7231,7 +7289,7 @@ TEST(ElementsAreTest, CanDescribeNegationOfExpectingNoElement) {
   EXPECT_EQ("isn't empty", DescribeNegation(m));
 }
 
-TEST(ElementsAreTest, CanDescribeNegationOfExpectingOneElment) {
+TEST(ElementsAreTest, CanDescribeNegationOfExpectingOneElement) {
   Matcher<const list<int>&> m = ElementsAre(Gt(5));
   EXPECT_EQ(
       "doesn't have 1 element, or\n"
@@ -8023,6 +8081,7 @@ TEST(ContainsTest, ListMatchesWhenElementIsInContainer) {
   some_list.push_back(3);
   some_list.push_back(1);
   some_list.push_back(2);
+  some_list.push_back(3);
   EXPECT_THAT(some_list, Contains(1));
   EXPECT_THAT(some_list, Contains(Gt(2.5)));
   EXPECT_THAT(some_list, Contains(Eq(2.0f)));
@@ -8146,6 +8205,79 @@ TEST(ContainsTest, WorksForTwoDimensionalNativeArray) {
   EXPECT_THAT(a, Not(Contains(ElementsAre(3, 4, 5))));
   EXPECT_THAT(a, Contains(Not(Contains(5))));
 }
+
+// Tests Contains().Times().
+
+TEST(ContainsTimes, ListMatchesWhenElementQuantityMatches) {
+  list<int> some_list;
+  some_list.push_back(3);
+  some_list.push_back(1);
+  some_list.push_back(2);
+  some_list.push_back(3);
+  EXPECT_THAT(some_list, Contains(3).Times(2));
+  EXPECT_THAT(some_list, Contains(2).Times(1));
+  EXPECT_THAT(some_list, Contains(Ge(2)).Times(3));
+  EXPECT_THAT(some_list, Contains(Ge(2)).Times(Gt(2)));
+  EXPECT_THAT(some_list, Contains(4).Times(0));
+  EXPECT_THAT(some_list, Contains(_).Times(4));
+  EXPECT_THAT(some_list, Not(Contains(5).Times(1)));
+  EXPECT_THAT(some_list, Contains(5).Times(_));  // Times(_) always matches
+  EXPECT_THAT(some_list, Not(Contains(3).Times(1)));
+  EXPECT_THAT(some_list, Contains(3).Times(Not(1)));
+  EXPECT_THAT(list<int>{}, Not(Contains(_)));
+}
+
+TEST(ContainsTimes, ExplainsMatchResultCorrectly) {
+  const int a[2] = {1, 2};
+  Matcher<const int(&)[2]> m = Contains(2).Times(3);
+  EXPECT_EQ(
+      "whose element #1 matches but whose match quantity of 1 does not match",
+      Explain(m, a));
+
+  m = Contains(3).Times(0);
+  EXPECT_EQ("has no element that matches and whose match quantity of 0 matches",
+            Explain(m, a));
+
+  m = Contains(3).Times(4);
+  EXPECT_EQ(
+      "has no element that matches and whose match quantity of 0 does not "
+      "match",
+      Explain(m, a));
+
+  m = Contains(2).Times(4);
+  EXPECT_EQ(
+      "whose element #1 matches but whose match quantity of 1 does not "
+      "match",
+      Explain(m, a));
+
+  m = Contains(GreaterThan(0)).Times(2);
+  EXPECT_EQ("whose elements (0, 1) match and whose match quantity of 2 matches",
+            Explain(m, a));
+
+  m = Contains(GreaterThan(10)).Times(Gt(1));
+  EXPECT_EQ(
+      "has no element that matches and whose match quantity of 0 does not "
+      "match",
+      Explain(m, a));
+
+  m = Contains(GreaterThan(0)).Times(GreaterThan<size_t>(5));
+  EXPECT_EQ(
+      "whose elements (0, 1) match but whose match quantity of 2 does not "
+      "match, which is 3 less than 5",
+      Explain(m, a));
+}
+
+TEST(ContainsTimes, DescribesItselfCorrectly) {
+  Matcher<vector<int>> m = Contains(1).Times(2);
+  EXPECT_EQ("quantity of elements that match is equal to 1 is equal to 2",
+            Describe(m));
+
+  Matcher<vector<int>> m2 = Not(m);
+  EXPECT_EQ("quantity of elements that match is equal to 1 isn't equal to 2",
+            Describe(m2));
+}
+
+// Tests AllOfArray()
 
 TEST(AllOfArrayTest, BasicForms) {
   // Iterator
@@ -8275,7 +8407,7 @@ TEST(AnyOfArrayTest, ExplainsMatchResultCorrectly) {
   // Explain with matchers
   const Matcher<int> g1 = AnyOfArray({GreaterThan(1)});
   const Matcher<int> g2 = AnyOfArray({GreaterThan(1), GreaterThan(2)});
-  // Explains the first positiv match and all prior negative matches...
+  // Explains the first positive match and all prior negative matches...
   EXPECT_EQ("which is 1 less than 1", Explain(g1, 0));
   EXPECT_EQ("which is the same as 1", Explain(g1, 1));
   EXPECT_EQ("which is 1 more than 1", Explain(g1, 2));
@@ -8383,6 +8515,12 @@ TEST(ThrowsTest, Examples) {
   EXPECT_THAT(
       std::function<void()>([]() { throw std::runtime_error("message"); }),
       ThrowsMessage<std::runtime_error>(HasSubstr("message")));
+}
+
+TEST(ThrowsTest, PrintsExceptionWhat) {
+  EXPECT_THAT(
+      std::function<void()>([]() { throw std::runtime_error("ABC123XYZ"); }),
+      ThrowsMessage<std::runtime_error>(HasSubstr("ABC123XYZ")));
 }
 
 TEST(ThrowsTest, DoesNotGenerateDuplicateCatchClauseWarning) {
@@ -8498,15 +8636,6 @@ TEST_P(ThrowsPredicateTest, FailWrongTypeNonStd) {
   EXPECT_FALSE(matcher.MatchAndExplain([]() { throw 10; }, &listener));
   EXPECT_THAT(listener.str(),
               HasSubstr("throws an exception of an unknown type"));
-}
-
-TEST_P(ThrowsPredicateTest, FailWrongMessage) {
-  Matcher<std::function<void()>> matcher = GetParam();
-  StringMatchResultListener listener;
-  EXPECT_FALSE(matcher.MatchAndExplain(
-      []() { throw std::runtime_error("wrong message"); }, &listener));
-  EXPECT_THAT(listener.str(), HasSubstr("std::runtime_error"));
-  EXPECT_THAT(listener.str(), Not(HasSubstr("wrong message")));
 }
 
 TEST_P(ThrowsPredicateTest, FailNoThrow) {

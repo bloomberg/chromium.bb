@@ -13,17 +13,66 @@
 #define AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_
 
 #include "aom_ports/aom_timer.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define WRITE_FEATURE_TO_FILE 0
+
+#define FEATURE_SIZE_SMS_SPLIT_FAST 6
+#define FEATURE_SIZE_SMS_SPLIT 17
+#define FEATURE_SIZE_SMS_PRUNE_PART 25
+#define FEATURE_SIZE_SMS_TERM_NONE 28
+#define FEATURE_SIZE_FP_SMS_TERM_NONE 20
+#define FEATURE_SIZE_MAX_MIN_PART_PRED 13
+#define MAX_NUM_CLASSES_MAX_MIN_PART_PRED 4
+
+#define FEATURE_SMS_NONE_FLAG 1
+#define FEATURE_SMS_SPLIT_FLAG (1 << 1)
+#define FEATURE_SMS_RECT_FLAG (1 << 2)
+
+#define FEATURE_SMS_PRUNE_PART_FLAG \
+  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG | FEATURE_SMS_RECT_FLAG)
+#define FEATURE_SMS_SPLIT_MODEL_FLAG \
+  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG)
+
+// Number of sub-partitions in rectangular partition types.
+#define SUB_PARTITIONS_RECT 2
+
+// Number of sub-partitions in split partition type.
+#define SUB_PARTITIONS_SPLIT 4
+
+// Number of sub-partitions in AB partition types.
+#define SUB_PARTITIONS_AB 3
+
+// Number of sub-partitions in 4-way partition types.
+#define SUB_PARTITIONS_PART4 4
+
+// 4part partition types.
+enum { HORZ4 = 0, VERT4, NUM_PART4_TYPES } UENUM1BYTE(PART4_TYPES);
+
+// AB partition types.
+enum {
+  HORZ_A = 0,
+  HORZ_B,
+  VERT_A,
+  VERT_B,
+  NUM_AB_PARTS
+} UENUM1BYTE(AB_PART_TYPE);
+
+// Rectangular partition types.
+enum { HORZ = 0, VERT, NUM_RECT_PARTS } UENUM1BYTE(RECT_PART_TYPE);
+
+// Structure to keep win flags for HORZ and VERT partition evaluations.
+typedef struct {
+  int rect_part_win[NUM_RECT_PARTS];
+} RD_RECT_PART_WIN_INFO;
 
 enum { PICK_MODE_RD = 0, PICK_MODE_NONRD };
 
@@ -156,12 +205,27 @@ typedef struct {
   int is_split_ctx_is_ready[2];
   int is_rect_ctx_is_ready[NUM_RECT_PARTS];
 
-  // Flags to prune/skip particular partition size evaluation.
+  // If true, skips the rest of partition evaluation at the current bsize level.
   int terminate_partition_search;
+
+  // If false, skips rdopt on PARTITION_NONE.
   int partition_none_allowed;
+
+  // If partition_rect_allowed[HORZ] is false, skips searching PARTITION_HORZ,
+  // PARTITION_HORZ_A, PARTITIO_HORZ_B, PARTITION_HORZ_4. Same holds for VERT.
   int partition_rect_allowed[NUM_RECT_PARTS];
+
+  // If false, skips searching rectangular partition unless some logic related
+  // to edge detection holds.
   int do_rectangular_split;
+
+  // If false, skips searching PARTITION_SPLIT.
   int do_square_split;
+
+  // If true, prunes the corresponding PARTITION_HORZ/PARTITION_VERT. Note that
+  // this does not directly affect the extended partitions, so this can be used
+  // to prune out PARTITION_HORZ/PARTITION_VERT while still allowing rdopt of
+  // PARTITION_HORZ_AB4, etc.
   int prune_rect_part[NUM_RECT_PARTS];
 
   // Chroma subsampling in x and y directions.
@@ -178,6 +242,48 @@ typedef struct {
   PartitionTimingStats part_timing_stats;
 #endif  // CONFIG_COLLECT_PARTITION_STATS
 } PartitionSearchState;
+
+static AOM_INLINE void av1_disable_square_split_partition(
+    PartitionSearchState *part_state) {
+  part_state->do_square_split = 0;
+}
+
+// Disables all possible rectangular splits. This includes PARTITION_AB4 as they
+// depend on the corresponding partition_rect_allowed.
+static AOM_INLINE void av1_disable_rect_partitions(
+    PartitionSearchState *part_state) {
+  part_state->do_rectangular_split = 0;
+  part_state->partition_rect_allowed[HORZ] = 0;
+  part_state->partition_rect_allowed[VERT] = 0;
+}
+
+// Disables all possible splits so that only PARTITION_NONE *might* be allowed.
+static AOM_INLINE void av1_disable_all_splits(
+    PartitionSearchState *part_state) {
+  av1_disable_square_split_partition(part_state);
+  av1_disable_rect_partitions(part_state);
+}
+
+static AOM_INLINE void av1_set_square_split_only(
+    PartitionSearchState *part_state) {
+  part_state->partition_none_allowed = 0;
+  part_state->do_square_split = 1;
+  av1_disable_rect_partitions(part_state);
+}
+
+static AOM_INLINE bool av1_blk_has_rows_and_cols(
+    const PartitionBlkParams *blk_params) {
+  return blk_params->has_rows && blk_params->has_cols;
+}
+
+static AOM_INLINE bool av1_is_whole_blk_in_frame(
+    const PartitionBlkParams *blk_params,
+    const CommonModeInfoParams *mi_params) {
+  const int mi_row = blk_params->mi_row, mi_col = blk_params->mi_col;
+  const BLOCK_SIZE bsize = blk_params->bsize;
+  return mi_row + mi_size_high[bsize] <= mi_params->mi_rows &&
+         mi_col + mi_size_wide[bsize] <= mi_params->mi_cols;
+}
 
 static AOM_INLINE void update_filter_type_cdf(const MACROBLOCKD *xd,
                                               const MB_MODE_INFO *mbmi,
@@ -196,14 +302,13 @@ static AOM_INLINE int set_segment_rdmult(const AV1_COMP *const cpi,
                                          int8_t segment_id) {
   const AV1_COMMON *const cm = &cpi->common;
   av1_init_plane_quantizers(cpi, x, segment_id);
-  aom_clear_system_state();
   const int segment_qindex =
       av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
   return av1_compute_rd_mult(cpi,
                              segment_qindex + cm->quant_params.y_dc_delta_q);
 }
 
-static AOM_INLINE int do_slipt_check(BLOCK_SIZE bsize) {
+static AOM_INLINE int do_split_check(BLOCK_SIZE bsize) {
   return (bsize == BLOCK_16X16 || bsize == BLOCK_32X32);
 }
 
@@ -219,47 +324,6 @@ static AOM_INLINE const FIRSTPASS_STATS *read_one_frame_stats(const TWO_PASS *p,
   return &p->stats_buf_ctx->stats_in_start[frm];
 }
 
-static BLOCK_SIZE dim_to_size(int dim) {
-  switch (dim) {
-    case 4: return BLOCK_4X4;
-    case 8: return BLOCK_8X8;
-    case 16: return BLOCK_16X16;
-    case 32: return BLOCK_32X32;
-    case 64: return BLOCK_64X64;
-    case 128: return BLOCK_128X128;
-    default: assert(0); return 0;
-  }
-}
-
-static AOM_INLINE void set_max_min_partition_size(SuperBlockEnc *sb_enc,
-                                                  AV1_COMP *cpi, MACROBLOCK *x,
-                                                  const SPEED_FEATURES *sf,
-                                                  BLOCK_SIZE sb_size,
-                                                  int mi_row, int mi_col) {
-  const AV1_COMMON *cm = &cpi->common;
-
-  sb_enc->max_partition_size =
-      AOMMIN(sf->part_sf.default_max_partition_size,
-             dim_to_size(cpi->oxcf.part_cfg.max_partition_size));
-  sb_enc->min_partition_size =
-      AOMMAX(sf->part_sf.default_min_partition_size,
-             dim_to_size(cpi->oxcf.part_cfg.min_partition_size));
-  sb_enc->max_partition_size =
-      AOMMIN(sb_enc->max_partition_size, cm->seq_params->sb_size);
-  sb_enc->min_partition_size =
-      AOMMIN(sb_enc->min_partition_size, cm->seq_params->sb_size);
-
-  if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
-    float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
-
-    av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
-    sb_enc->max_partition_size =
-        AOMMAX(AOMMIN(av1_predict_max_partition(cpi, x, features),
-                      sb_enc->max_partition_size),
-               sb_enc->min_partition_size);
-  }
-}
-
 int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                          int mi_col, int orig_rdmult);
 
@@ -272,15 +336,18 @@ void av1_get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
 int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                    int mi_row, int mi_col);
+
+int av1_get_q_for_hdr(AV1_COMP *const cpi, MACROBLOCK *const x,
+                      BLOCK_SIZE bsize, int mi_row, int mi_col);
+
+int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                            const BLOCK_SIZE bsize, const int mi_row,
+                            const int mi_col, int orig_rdmult);
 #endif  // !CONFIG_REALTIME_ONLY
 
 void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
                          const BLOCK_SIZE bsize, const int mi_row,
                          const int mi_col, int *const rdmult);
-
-int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            const BLOCK_SIZE bsize, const int mi_row,
-                            const int mi_col, int orig_rdmult);
 
 void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,
                       const PICK_MODE_CONTEXT *const ctx, int mi_row,
@@ -338,33 +405,39 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
 
 static AOM_INLINE void av1_dealloc_mb_data(struct AV1Common *cm,
                                            struct macroblock *mb) {
-  if (mb->txfm_search_info.txb_rd_records) {
-    aom_free(mb->txfm_search_info.txb_rd_records);
-    mb->txfm_search_info.txb_rd_records = NULL;
-  }
+  aom_free(mb->txfm_search_info.mb_rd_record);
+  mb->txfm_search_info.mb_rd_record = NULL;
+
+  aom_free(mb->inter_modes_info);
+  mb->inter_modes_info = NULL;
+
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; plane++) {
-    if (mb->plane[plane].src_diff) {
-      aom_free(mb->plane[plane].src_diff);
-      mb->plane[plane].src_diff = NULL;
-    }
+    aom_free(mb->plane[plane].src_diff);
+    mb->plane[plane].src_diff = NULL;
   }
-  if (mb->e_mbd.seg_mask) {
-    aom_free(mb->e_mbd.seg_mask);
-    mb->e_mbd.seg_mask = NULL;
-  }
-  if (mb->winner_mode_stats) {
-    aom_free(mb->winner_mode_stats);
-    mb->winner_mode_stats = NULL;
-  }
+
+  aom_free(mb->e_mbd.seg_mask);
+  mb->e_mbd.seg_mask = NULL;
+
+  aom_free(mb->winner_mode_stats);
+  mb->winner_mode_stats = NULL;
 }
 
 static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
                                          struct macroblock *mb,
-                                         int use_nonrd_pick_mode) {
+                                         int use_nonrd_pick_mode,
+                                         int use_mb_rd_hash) {
   if (!use_nonrd_pick_mode) {
-    mb->txfm_search_info.txb_rd_records =
-        (TxbRdRecords *)aom_malloc(sizeof(TxbRdRecords));
+    // Memory for mb_rd_record is allocated only when use_mb_rd_hash sf is
+    // enabled.
+    if (use_mb_rd_hash)
+      mb->txfm_search_info.mb_rd_record =
+          (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD));
+    if (!frame_is_intra_only(cm))
+      CHECK_MEM_ERROR(
+          cm, mb->inter_modes_info,
+          (InterModesInfo *)aom_malloc(sizeof(*mb->inter_modes_info)));
   }
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; plane++) {
@@ -412,9 +485,7 @@ static AOM_INLINE unsigned int get_num_refs_to_disable(
       else if (is_stat_consumption_stage_twopass(cpi)) {
         const FIRSTPASS_STATS *const this_frame_stats =
             read_one_frame_stats(&cpi->ppi->twopass, cur_frame_display_index);
-        aom_clear_system_state();
-        const double coded_error_per_mb =
-            this_frame_stats->coded_error / cpi->frame_info.num_mbs;
+        const double coded_error_per_mb = this_frame_stats->coded_error;
         // Disable LAST2_FRAME if the coded error of the current frame based on
         // first pass stats is very low.
         if (coded_error_per_mb < 100.0) num_refs_to_disable++;

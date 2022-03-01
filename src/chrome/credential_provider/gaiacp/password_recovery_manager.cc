@@ -15,9 +15,9 @@
 
 #include "base/base64.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -42,11 +42,11 @@ namespace credential_provider {
 
 const base::TimeDelta
     PasswordRecoveryManager::kDefaultEscrowServiceEncryptionKeyRequestTimeout =
-        base::TimeDelta::FromMilliseconds(12000);
+        base::Milliseconds(12000);
 
 const base::TimeDelta
     PasswordRecoveryManager::kDefaultEscrowServiceDecryptionKeyRequestTimeout =
-        base::TimeDelta::FromMilliseconds(3000);
+        base::Milliseconds(3000);
 
 namespace {
 
@@ -473,7 +473,7 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
 
   if (!policy) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "ScopedLsaPolicy::Create hr=" << putHR(hr);
     return hr;
   }

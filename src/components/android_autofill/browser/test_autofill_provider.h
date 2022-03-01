@@ -13,11 +13,6 @@ namespace autofill {
 
 class TestAutofillProvider : public AutofillProvider {
  public:
-#ifdef UNIT_TEST
-  // For unit testing only.
-  TestAutofillProvider() = default;
-#endif  // UNIT_TEST
-
   // Create a instance owned by |web_contents|.
   explicit TestAutofillProvider(content::WebContents* web_contents)
       : AutofillProvider(web_contents) {}
@@ -25,12 +20,12 @@ class TestAutofillProvider : public AutofillProvider {
   ~TestAutofillProvider() override = default;
 
   // AutofillProvider:
-  void OnQueryFormFieldAutofill(AndroidAutofillManager* manager,
-                                int32_t id,
-                                const FormData& form,
-                                const FormFieldData& field,
-                                const gfx::RectF& bounding_box,
-                                bool autoselect_first_suggestion) override {}
+  void OnAskForValuesToFill(AndroidAutofillManager* manager,
+                            int32_t id,
+                            const FormData& form,
+                            const FormFieldData& field,
+                            const gfx::RectF& bounding_box,
+                            bool autoselect_first_suggestion) override {}
   void OnTextFieldDidChange(AndroidAutofillManager* manager,
                             const FormData& form,
                             const FormFieldData& field,

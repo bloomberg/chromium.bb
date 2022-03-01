@@ -21,9 +21,11 @@ perfetto_proto_library("@TYPE@") {
   ]
   sources = [
     "batt_metric.proto",
+    "camera_metric.proto",
     "cpu_metric.proto",
     "display_metrics.proto",
     "dma_heap_metric.proto",
+    "dvfs_metric.proto",
     "fastrpc_metric.proto",
     "g2d_metric.proto",
     "gpu_metric.proto",
@@ -37,14 +39,19 @@ perfetto_proto_library("@TYPE@") {
     "lmk_reason_metric.proto",
     "mem_metric.proto",
     "mem_unagg_metric.proto",
+    "multiuser_metric.proto",
+    "network_metric.proto",
     "package_list.proto",
     "powrails_metric.proto",
     "process_metadata.proto",
+    "profiler_smaps.proto",
+    "simpleperf.proto",
     "startup_metric.proto",
     "surfaceflinger.proto",
     "sysui_cuj_metrics.proto",
     "task_names.proto",
     "thread_time_in_state_metric.proto",
+    "trace_quality.proto",
     "unsymbolized_frames.proto",
   ]
 }

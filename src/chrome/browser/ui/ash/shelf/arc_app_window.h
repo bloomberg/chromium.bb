@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
-#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/ui/app_icon_loader.h"
@@ -33,11 +32,13 @@ class Profile;
 class ArcAppWindow : public AppWindowBase,
                      public AppIconLoaderDelegate {
  public:
-  ArcAppWindow(int task_id,
-               const arc::ArcAppShelfId& app_shelf_id,
+  ArcAppWindow(const arc::ArcAppShelfId& app_shelf_id,
                views::Widget* widget,
                ArcAppWindowDelegate* owner,
                Profile* profile);
+
+  ArcAppWindow(const ArcAppWindow&) = delete;
+  ArcAppWindow& operator=(const ArcAppWindow&) = delete;
 
   ~ArcAppWindow() override;
 
@@ -48,8 +49,6 @@ class ArcAppWindow : public AppWindowBase,
                       const gfx::ImageSkia& icon) override;
 
   FullScreenMode fullscreen_mode() const { return fullscreen_mode_; }
-
-  int task_id() const { return task_id_; }
 
   const arc::ArcAppShelfId& app_shelf_id() const { return app_shelf_id_; }
 
@@ -68,8 +67,6 @@ class ArcAppWindow : public AppWindowBase,
   // Sets the icon for the window.
   void SetIcon(const gfx::ImageSkia& icon);
 
-  // Keeps associated ARC task id.
-  const int task_id_;
   // Keeps ARC shelf grouping id.
   const arc::ArcAppShelfId app_shelf_id_;
   // Keeps current full-screen mode.
@@ -86,8 +83,6 @@ class ArcAppWindow : public AppWindowBase,
   // Loads the ARC app icon to the window icon keys. Nullptr once a custom icon
   // has been successfully set.
   std::unique_ptr<AppServiceAppIconLoader> app_icon_loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAppWindow);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_SHELF_ARC_APP_WINDOW_H_

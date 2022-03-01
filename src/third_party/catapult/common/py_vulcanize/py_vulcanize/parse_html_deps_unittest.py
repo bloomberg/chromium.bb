@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import re
 import unittest
 
@@ -176,7 +177,9 @@ class ParseTests(unittest.TestCase):
                 </template>
               </polymer-element>"""
     parser = parse_html_deps.HTMLModuleParser()
-    self.assertRaises(lambda: parser.Parse(html))
+    with self.assertRaises(Exception):
+      parsed = parser.Parse(html)
+      parsed.html_contents_without_links_and_script()
 
   def test_nested_templates(self):
     orig_html = """<template>

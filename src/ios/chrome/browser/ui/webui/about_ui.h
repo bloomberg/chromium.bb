@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
 namespace web {
@@ -19,10 +18,11 @@ class WebUIIOS;
 class AboutUI : public web::WebUIIOSController {
  public:
   explicit AboutUI(web::WebUIIOS* web_ui, const std::string& name);
-  ~AboutUI() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AboutUI);
+  AboutUI(const AboutUI&) = delete;
+  AboutUI& operator=(const AboutUI&) = delete;
+
+  ~AboutUI() override;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_WEBUI_ABOUT_UI_H_

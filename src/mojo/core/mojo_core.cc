@@ -11,9 +11,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -36,6 +34,9 @@ class IPCSupport {
     mojo::core::Core::Get()->SetIOTaskRunner(ipc_thread_.task_runner());
   }
 
+  IPCSupport(const IPCSupport&) = delete;
+  IPCSupport& operator=(const IPCSupport&) = delete;
+
   ~IPCSupport() {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -55,8 +56,6 @@ class IPCSupport {
 #endif  // !defined(COMPONENT_BUILD)
 
   base::Thread ipc_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(IPCSupport);
 };
 
 std::unique_ptr<IPCSupport>& GetIPCSupport() {
@@ -146,9 +145,9 @@ MojoResult InitializeImpl(const struct MojoInitializeOptions* options) {
     argv = options->argv;
   }
 
-  static base::NoDestructor<GlobalStateInitializer> global_state_initializer;
+  static GlobalStateInitializer global_state_initializer;
   const bool was_global_state_already_initialized =
-      !global_state_initializer->Initialize(argc, argv);
+      !global_state_initializer.Initialize(argc, argv);
 
   if (!should_initialize_ipc_support) {
     if (was_global_state_already_initialized)

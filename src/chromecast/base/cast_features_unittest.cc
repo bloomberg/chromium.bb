@@ -4,7 +4,6 @@
 
 #include "chromecast/base/cast_features.h"
 
-#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,6 +24,10 @@ const char kTestParamsFeatureName[] = "test_params_feature";
 class CastFeaturesTest : public testing::Test {
  public:
   CastFeaturesTest() {}
+
+  CastFeaturesTest(const CastFeaturesTest&) = delete;
+  CastFeaturesTest& operator=(const CastFeaturesTest&) = delete;
+
   ~CastFeaturesTest() override {}
 
   // testing::Test implementation:
@@ -40,8 +43,6 @@ class CastFeaturesTest : public testing::Test {
 
  private:
   std::unique_ptr<base::FeatureList> original_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastFeaturesTest);
 };
 
 TEST_F(CastFeaturesTest, EnableDisableMultipleBooleanFeatures) {

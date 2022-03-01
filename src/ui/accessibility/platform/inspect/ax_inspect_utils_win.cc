@@ -9,9 +9,9 @@
 #include <map>
 #include <string>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -730,6 +730,10 @@ BOOL CALLBACK MatchWindow(HWND hwnd, LPARAM lParam) {
 }
 
 AX_EXPORT HWND GetHWNDBySelector(const AXTreeSelector& selector) {
+  if (selector.widget) {
+    return selector.widget;
+  }
+
   HWNDSearchInfo info;
   if (selector.types & AXTreeSelector::Chrome) {
     info.title = kChromeTitle;

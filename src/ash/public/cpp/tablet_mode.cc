@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/tablet_mode.h"
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/constants/ash_switches.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 
@@ -58,6 +58,11 @@ void TabletMode::Waiter::OnTabletModeStarted() {
 void TabletMode::Waiter::OnTabletModeEnded() {
   if (!enable_)
     run_loop_.QuitWhenIdle();
+}
+
+bool TabletMode::IsInTabletMode() {
+  const TabletMode* singleton = TabletMode::Get();
+  return singleton && singleton->InTabletMode();
 }
 
 }  // namespace ash

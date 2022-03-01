@@ -8,10 +8,9 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-
-// eslint-disable-next-line rulesdir/es_modules_import
-import type * as Main from './main.js';
 import type * as InspectorMain from '../inspector_main/inspector_main.js';
+
+import type * as Main from './main.js';
 
 import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
@@ -210,6 +209,11 @@ const UIStrings = {
    * Chrome's UI language.
    */
   browserLanguage: 'Browser UI language',
+  /**
+   * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
+   * of syncing DevTools settings via Chrome Sync.
+   */
+  enableSync: 'Enable settings sync',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/main-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -218,8 +222,6 @@ let loadedInspectorMainModule: (typeof InspectorMain|undefined);
 
 async function loadMainModule(): Promise<typeof Main> {
   if (!loadedMainModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('entrypoints/main');
     loadedMainModule = await import('./main.js');
   }
   return loadedMainModule;
@@ -232,8 +234,6 @@ async function loadMainModule(): Promise<typeof Main> {
 
 async function loadInspectorMainModule(): Promise<typeof InspectorMain> {
   if (!loadedInspectorMainModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('entrypoints/inspector_main');
     loadedInspectorMainModule = await import('../inspector_main/inspector_main.js');
   }
   return loadedInspectorMainModule;
@@ -583,6 +583,7 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.theme),
   settingName: 'uiTheme',
   settingType: Common.Settings.SettingType.ENUM,
@@ -613,6 +614,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.panelLayout),
   settingName: 'sidebarPosition',
   settingType: Common.Settings.SettingType.ENUM,
@@ -638,6 +640,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.colorFormat),
   settingName: 'colorFormat',
   settingType: Common.Settings.SettingType.ENUM,
@@ -671,13 +674,13 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
   titleMac: i18nLazyString(UIStrings.enableShortcutToSwitchPanels),
   settingName: 'shortcutPanelSwitch',
   settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
 });
-
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GLOBAL,
@@ -709,6 +712,7 @@ Common.Settings.registerSettingExtension({
 });
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'activeKeybindSet',
   settingType: Common.Settings.SettingType.ENUM,
   defaultValue: 'devToolsDefault',
@@ -731,8 +735,23 @@ function createLazyLocalizedLocaleSettingText(localeString: string): () => Commo
              i18n.i18n.getLocalizedLanguageRegion(localeString, i18n.DevToolsLocale.DevToolsLocale.instance());
 }
 
+function createOptionForLocale(localeString: string): Common.Settings.SettingExtensionOption {
+  return {
+    value: localeString,
+    title: createLazyLocalizedLocaleSettingText(localeString),
+    text: createLazyLocalizedLocaleSettingText(localeString),
+  };
+}
+
+// Not all locales that are supported should also be made available in the
+// settings. Filter out pseudo locales e.g.
+function filterLocalesForSettings(): string[] {
+  return i18n.i18n.getAllSupportedDevToolsLocales().filter(locale => locale !== 'en-XL');
+}
+
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'language',
   settingType: Common.Settings.SettingType.ENUM,
   title: i18nLazyString(UIStrings.language),
@@ -743,22 +762,24 @@ Common.Settings.registerSettingExtension({
       title: i18nLazyString(UIStrings.browserLanguage),
       text: i18nLazyString(UIStrings.browserLanguage),
     },
-    {
-      value: 'en-US',
-      title: createLazyLocalizedLocaleSettingText('en-US'),
-      text: createLazyLocalizedLocaleSettingText('en-US'),
-    },
-    {
-      value: 'zh',
-      title: createLazyLocalizedLocaleSettingText('zh'),
-      text: createLazyLocalizedLocaleSettingText('zh'),
-    },
+    ...filterLocalesForSettings().map(locale => createOptionForLocale(locale)),
   ],
   reloadRequired: true,
-  experiment: Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS,
 });
 
 Common.Settings.registerSettingExtension({
+  category: Common.Settings.SettingCategory.SYNC,
+  // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
+  settingName: 'sync_preferences',
+  settingType: Common.Settings.SettingType.BOOLEAN,
+  title: i18nLazyString(UIStrings.enableSync),
+  defaultValue: false,
+  reloadRequired: true,
+  experiment: Root.Runtime.ExperimentName.SYNC_SETTINGS,
+});
+
+Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'userShortcuts',
   settingType: Common.Settings.SettingType.ARRAY,
   defaultValue: [],
