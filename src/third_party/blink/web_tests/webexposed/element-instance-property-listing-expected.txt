@@ -185,7 +185,9 @@ namespace http://www.w3.org/1999/xhtml
     property onchange
     property onclick
     property onclose
+    property oncontextlost
     property oncontextmenu
+    property oncontextrestored
     property oncopy
     property oncuechange
     property oncut
@@ -245,11 +247,13 @@ namespace http://www.w3.org/1999/xhtml
     property onscroll
     property onscrollend
     property onsearch
+    property onsecuritypolicyviolation
     property onseeked
     property onseeking
     property onselect
     property onselectionchange
     property onselectstart
+    property onslotchange
     property onstalled
     property onsubmit
     property onsuspend
@@ -310,6 +314,7 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
+    property setHTML
     property setPointerCapture
     property shadowRoot
     property slot
@@ -557,8 +562,6 @@ html element embed
     property src
     property type
     property width
-html element fencedframe
-    property src
 html element fieldset
     property checkValidity
     property disabled
@@ -655,10 +658,10 @@ html element iframe
     property allow
     property allowFullscreen
     property allowPaymentRequest
+    property anonymous
     property contentDocument
     property contentWindow
     property csp
-    property disallowDocumentAccess
     property featurePolicy
     property frameBorder
     property getSVGDocument
@@ -674,7 +677,6 @@ html element iframe
     property scrolling
     property src
     property srcdoc
-    property trustToken
     property width
 html element img
     property align
@@ -745,6 +747,7 @@ html element input
     property setCustomValidity
     property setRangeText
     property setSelectionRange
+    property showPicker
     property size
     property src
     property step
@@ -824,6 +827,7 @@ html element menu
 html element meta
     property content
     property httpEquiv
+    property media
     property name
     property scheme
 html element meter
@@ -969,7 +973,18 @@ html element select
     property value
     property willValidate
 html element selectmenu
+    property checkValidity
+    property form
+    property name
+    property open
+    property reportValidity
+    property required
+    property setCustomValidity
+    property type
+    property validationMessage
+    property validity
     property value
+    property willValidate
 html element slot
     property assign
     property assignedElements
@@ -1386,7 +1401,9 @@ namespace http://www.w3.org/2000/svg
     property onchange
     property onclick
     property onclose
+    property oncontextlost
     property oncontextmenu
+    property oncontextrestored
     property oncopy
     property oncuechange
     property oncut
@@ -1446,11 +1463,13 @@ namespace http://www.w3.org/2000/svg
     property onscroll
     property onscrollend
     property onsearch
+    property onsecuritypolicyviolation
     property onseeked
     property onseeking
     property onselect
     property onselectionchange
     property onselectstart
+    property onslotchange
     property onstalled
     property onsubmit
     property onsuspend
@@ -1511,6 +1530,7 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
+    property setHTML
     property setPointerCapture
     property shadowRoot
     property slot

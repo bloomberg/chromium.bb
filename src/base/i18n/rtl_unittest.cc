@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -543,13 +542,18 @@ class SetICULocaleTest : public PlatformTest {};
 TEST_F(SetICULocaleTest, OverlongLocaleId) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   std::string id("fr-ca-x-foo");
-  while (id.length() < 152)
+  std::string lid("fr_CA@x=foo");
+  while (id.length() < 152) {
     id.append("-x-foo");
+    lid.append("-x-foo");
+  }
   SetICUDefaultLocale(id);
   EXPECT_STRNE("en_US", icu::Locale::getDefault().getName());
   id.append("zzz");
+  lid.append("zzz");
   SetICUDefaultLocale(id);
-  EXPECT_STREQ("en_US", icu::Locale::getDefault().getName());
+  // ICU-21639 fix the long locale issue now.
+  EXPECT_STREQ(lid.c_str(), icu::Locale::getDefault().getName());
 }
 
 }  // namespace i18n

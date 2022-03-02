@@ -11,7 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/signin/public/android/jni_headers/ProfileOAuth2TokenServiceDelegate_jni.h"
@@ -48,6 +48,11 @@ class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
       ProfileOAuth2TokenServiceDelegateAndroid* oauth2_token_service_delegate,
       OAuth2AccessTokenConsumer* consumer,
       const std::string& account_id);
+
+  AndroidAccessTokenFetcher(const AndroidAccessTokenFetcher&) = delete;
+  AndroidAccessTokenFetcher& operator=(const AndroidAccessTokenFetcher&) =
+      delete;
+
   ~AndroidAccessTokenFetcher() override;
 
   // Overrides from OAuth2AccessTokenFetcher:
@@ -64,12 +69,11 @@ class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  private:
   std::string CombineScopes(const std::vector<std::string>& scopes);
 
-  ProfileOAuth2TokenServiceDelegateAndroid* oauth2_token_service_delegate_;
+  raw_ptr<ProfileOAuth2TokenServiceDelegateAndroid>
+      oauth2_token_service_delegate_;
   std::string account_id_;
   bool request_was_cancelled_;
   base::WeakPtrFactory<AndroidAccessTokenFetcher> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AndroidAccessTokenFetcher);
 };
 
 AndroidAccessTokenFetcher::AndroidAccessTokenFetcher(
@@ -237,33 +241,6 @@ ProfileOAuth2TokenServiceDelegateAndroid::GetAccounts() const {
   return accounts_;
 }
 
-std::vector<std::string>
-ProfileOAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
-  std::vector<std::string> account_names;
-  JNIEnv* env = AttachCurrentThread();
-
-  // TODO(crbug.com/1028580) Pass |j_accounts| as a list of
-  // org.chromium.components.signin.identitymanager.CoreAccountId and convert it
-  // to CoreAccountId using ConvertFromJavaCoreAccountId.
-  ScopedJavaLocalRef<jobjectArray> j_accounts =
-      signin::Java_ProfileOAuth2TokenServiceDelegate_getSystemAccountNames(
-          env, java_ref_);
-  base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
-                                                     &account_names);
-  return account_names;
-}
-
-std::vector<CoreAccountId>
-ProfileOAuth2TokenServiceDelegateAndroid::GetSystemAccounts() {
-  std::vector<CoreAccountId> ids;
-  for (const std::string& name : GetSystemAccountNames()) {
-    CoreAccountId id(MapAccountNameToAccountId(name));
-    if (!id.empty())
-      ids.push_back(std::move(id));
-  }
-  return ids;
-}
-
 std::vector<CoreAccountId>
 ProfileOAuth2TokenServiceDelegateAndroid::GetValidAccounts() {
   std::vector<CoreAccountId> ids;
@@ -325,13 +302,24 @@ void ProfileOAuth2TokenServiceDelegateAndroid::
 void ProfileOAuth2TokenServiceDelegateAndroid::
     ReloadAllAccountsWithPrimaryAccountAfterSeeding(
         JNIEnv* env,
-        const base::android::JavaParamRef<jstring>& account_id) {
-  absl::optional<CoreAccountId> core_account_id;
-  if (account_id) {
-    core_account_id =
-        CoreAccountId::FromString(ConvertJavaStringToUTF8(env, account_id));
+        const base::android::JavaParamRef<jstring>& j_primary_account_id,
+        const base::android::JavaParamRef<jobjectArray>&
+            j_device_account_names) {
+  absl::optional<CoreAccountId> primary_account_id;
+  if (j_primary_account_id) {
+    primary_account_id = CoreAccountId::FromString(
+        ConvertJavaStringToUTF8(env, j_primary_account_id));
   }
-  UpdateAccountList(core_account_id, GetValidAccounts(), GetSystemAccounts());
+  std::vector<std::string> device_account_names;
+  base::android::AppendJavaStringArrayToStringVector(
+      env, j_device_account_names, &device_account_names);
+  std::vector<CoreAccountId> account_ids;
+  for (const std::string& name : device_account_names) {
+    CoreAccountId id(MapAccountNameToAccountId(name));
+    if (!id.empty())
+      account_ids.push_back(std::move(id));
+  }
+  UpdateAccountList(primary_account_id, GetValidAccounts(), account_ids);
 }
 
 void ProfileOAuth2TokenServiceDelegateAndroid::UpdateAccountList(

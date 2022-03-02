@@ -8,9 +8,9 @@
 #include <list>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "chrome/service/cloud_print/connector_settings.h"
 #include "printing/backend/print_backend.h"
@@ -34,6 +34,9 @@ class CloudPrintProxyFrontend {
  public:
   CloudPrintProxyFrontend() {}
 
+  CloudPrintProxyFrontend(const CloudPrintProxyFrontend&) = delete;
+  CloudPrintProxyFrontend& operator=(const CloudPrintProxyFrontend&) = delete;
+
   // We successfully authenticated with the cloud print server. This callback
   // allows the frontend to persist the tokens.
   virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,
@@ -53,9 +56,6 @@ class CloudPrintProxyFrontend {
  protected:
   // Don't delete through CloudPrintProxyFrontend interface.
   virtual ~CloudPrintProxyFrontend() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyFrontend);
 };
 
 class CloudPrintProxyBackend {
@@ -66,6 +66,10 @@ class CloudPrintProxyBackend {
       const gaia::OAuthClientInfo& oauth_client_info,
       bool enable_job_poll,
       network::NetworkConnectionTracker* network_connection_tracker);
+
+  CloudPrintProxyBackend(const CloudPrintProxyBackend&) = delete;
+  CloudPrintProxyBackend& operator=(const CloudPrintProxyBackend&) = delete;
+
   ~CloudPrintProxyBackend();
 
   // Legacy mechanism when we have saved user credentials but no saved robot
@@ -101,11 +105,9 @@ class CloudPrintProxyBackend {
 
   // The frontend which is responsible for displaying UI and updating Prefs.
   // Outlives this backend.
-  CloudPrintProxyFrontend* const frontend_;
+  const raw_ptr<CloudPrintProxyFrontend> frontend_;
 
   friend class base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyBackend);
 };
 
 }  // namespace cloud_print

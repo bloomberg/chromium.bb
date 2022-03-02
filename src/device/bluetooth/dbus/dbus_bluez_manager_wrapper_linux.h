@@ -5,7 +5,6 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_DBUS_BLUEZ_MANAGER_WRAPPER_LINUX_H_
 #define DEVICE_BLUETOOTH_DBUS_DBUS_BLUEZ_MANAGER_WRAPPER_LINUX_H_
 
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace bluez {
@@ -15,11 +14,13 @@ namespace bluez {
 // implementations.
 class DEVICE_BLUETOOTH_EXPORT DBusBluezManagerWrapperLinux {
  public:
+  DBusBluezManagerWrapperLinux() = delete;
+  DBusBluezManagerWrapperLinux(const DBusBluezManagerWrapperLinux&) = delete;
+  DBusBluezManagerWrapperLinux& operator=(const DBusBluezManagerWrapperLinux&) =
+      delete;
+
   static void Initialize();
   static void Shutdown();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DBusBluezManagerWrapperLinux);
 };
 
 }  // namespace bluez

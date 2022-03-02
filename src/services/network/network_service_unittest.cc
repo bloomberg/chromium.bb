@@ -41,7 +41,6 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/net_buildflags.h"
-#include "net/proxy_resolution/proxy_config.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -61,6 +60,7 @@
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_network_observer.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -85,14 +85,12 @@ GURL AddQuery(const GURL& url,
 }
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
-  mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr params =
+      CreateNetworkContextParamsForTesting();
   // Use a dummy CertVerifier that always passes cert verification, since
   // these unittests don't need to test CertVerifier behavior.
   params->cert_verifier_params =
       FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
-  // Use a fixed proxy config, to avoid dependencies on local network
-  // configuration.
-  params->initial_proxy_config = net::ProxyConfigWithAnnotation::CreateDirect();
   return params;
 }
 
@@ -146,8 +144,6 @@ TEST_F(NetworkServiceTest, DestroyingServiceDestroysContext) {
 
 TEST_F(NetworkServiceTest, CreateContextWithoutChannelID) {
   mojom::NetworkContextParamsPtr params = CreateContextParams();
-  params->cookie_path = base::FilePath();
-  params->enable_encrypted_cookies = false;
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(params));
@@ -924,11 +920,17 @@ class NetworkServiceTestWithService : public testing::Test {
  public:
   NetworkServiceTestWithService()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+
+  NetworkServiceTestWithService(const NetworkServiceTestWithService&) = delete;
+  NetworkServiceTestWithService& operator=(
+      const NetworkServiceTestWithService&) = delete;
+
   ~NetworkServiceTestWithService() override {}
 
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
+    scoped_features_.InitAndEnableFeature(net::features::kFirstPartySets);
     service_ = NetworkService::CreateForTesting();
     service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
@@ -993,7 +995,7 @@ class NetworkServiceTestWithService : public testing::Test {
   mojo::Remote<mojom::NetworkContext> network_context_;
   mojo::Remote<mojom::URLLoader> loader_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestWithService);
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 // Verifies that loading a URL through the network service's mojo interface
@@ -1047,92 +1049,8 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
   StartLoadingURL(request, 0);
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
-  EXPECT_TRUE(!client()->response_head()->raw_request_response_info);
   loader()->FollowRedirect({}, {}, {}, absl::nullopt);
   client()->RunUntilComplete();
-  EXPECT_TRUE(!client()->response_head()->raw_request_response_info);
-}
-
-TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
-  CreateNetworkContext();
-  ResourceRequest request;
-  request.url = test_server()->GetURL("/server-redirect?/echo");
-  request.method = "GET";
-  request.report_raw_headers = true;
-  request.request_initiator = url::Origin();
-  StartLoadingURL(request, 0);
-  client()->RunUntilRedirectReceived();
-  EXPECT_TRUE(client()->has_received_redirect());
-  {
-    auto& request_response_info =
-        client()->response_head()->raw_request_response_info;
-    ASSERT_TRUE(request_response_info);
-    EXPECT_EQ(301, request_response_info->http_status_code);
-    EXPECT_EQ("Moved Permanently", request_response_info->http_status_text);
-    EXPECT_TRUE(base::StartsWith(request_response_info->request_headers_text,
-                                 "GET /server-redirect?/echo HTTP/1.1\r\n",
-                                 base::CompareCase::SENSITIVE));
-    EXPECT_GE(request_response_info->request_headers.size(), 1lu);
-    EXPECT_GE(request_response_info->response_headers.size(), 1lu);
-    EXPECT_TRUE(base::StartsWith(request_response_info->response_headers_text,
-                                 "HTTP/1.1 301 Moved Permanently\r",
-                                 base::CompareCase::SENSITIVE));
-  }
-  loader()->FollowRedirect({}, {}, {}, absl::nullopt);
-  client()->RunUntilComplete();
-  {
-    auto& request_response_info =
-        client()->response_head()->raw_request_response_info;
-    EXPECT_EQ(200, request_response_info->http_status_code);
-    EXPECT_EQ("OK", request_response_info->http_status_text);
-    EXPECT_TRUE(base::StartsWith(request_response_info->request_headers_text,
-                                 "GET /echo HTTP/1.1\r\n",
-                                 base::CompareCase::SENSITIVE));
-    EXPECT_GE(request_response_info->request_headers.size(), 1lu);
-    EXPECT_GE(request_response_info->response_headers.size(), 1lu);
-    EXPECT_TRUE(base::StartsWith(request_response_info->response_headers_text,
-                                 "HTTP/1.1 200 OK\r",
-                                 base::CompareCase::SENSITIVE));
-  }
-}
-
-TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
-  const uint32_t process_id = 42;
-  CreateNetworkContext();
-  ResourceRequest request;
-  request.url = test_server()->GetURL("/nocache.html");
-  request.method = "GET";
-  request.report_raw_headers = true;
-  request.request_initiator = url::Origin();
-
-  StartLoadingURL(request, process_id);
-  client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head()->raw_request_response_info);
-  service()->SetRawHeadersAccess(
-      process_id,
-      {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80),
-       url::Origin::Create(request.url)});
-  StartLoadingURL(request, process_id);
-  client()->RunUntilComplete();
-  {
-    auto& request_response_info =
-        client()->response_head()->raw_request_response_info;
-    ASSERT_TRUE(request_response_info);
-    EXPECT_EQ(200, request_response_info->http_status_code);
-    EXPECT_EQ("OK", request_response_info->http_status_text);
-  }
-
-  service()->SetRawHeadersAccess(process_id, {});
-  StartLoadingURL(request, process_id);
-  client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head()->raw_request_response_info.get());
-
-  service()->SetRawHeadersAccess(
-      process_id,
-      {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80)});
-  StartLoadingURL(request, process_id);
-  client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head()->raw_request_response_info.get());
 }
 
 class NetworkServiceTestWithResolverMap : public NetworkServiceTestWithService {
@@ -1142,54 +1060,6 @@ class NetworkServiceTestWithResolverMap : public NetworkServiceTestWithService {
     NetworkServiceTestWithService::SetUp();
   }
 };
-
-TEST_F(NetworkServiceTestWithResolverMap, RawRequestAccessControlWithRedirect) {
-  CreateNetworkContext();
-
-  const uint32_t process_id = 42;
-  // initial_url in a.test redirects to b_url (in b.test) that then redirects to
-  // url_a in a.test.
-  GURL url_a = test_server()->GetURL("a.test", "/echo");
-  GURL url_b =
-      test_server()->GetURL("b.test", "/server-redirect?" + url_a.spec());
-  GURL initial_url =
-      test_server()->GetURL("a.test", "/server-redirect?" + url_b.spec());
-  ResourceRequest request;
-  request.url = initial_url;
-  request.method = "GET";
-  request.report_raw_headers = true;
-  request.request_initiator = url::Origin();
-
-  service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_a)});
-
-  StartLoadingURL(request, process_id);
-  client()->RunUntilRedirectReceived();  // from a.test to b.test
-  EXPECT_TRUE(client()->response_head()->raw_request_response_info);
-
-  loader()->FollowRedirect({}, {}, {}, absl::nullopt);
-  client()->ClearHasReceivedRedirect();
-  client()->RunUntilRedirectReceived();  // from b.test to a.test
-  EXPECT_FALSE(client()->response_head()->raw_request_response_info);
-
-  loader()->FollowRedirect({}, {}, {}, absl::nullopt);
-  client()->RunUntilComplete();  // Done loading a.test
-  EXPECT_TRUE(client()->response_head()->raw_request_response_info.get());
-
-  service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_b)});
-
-  StartLoadingURL(request, process_id);
-  client()->RunUntilRedirectReceived();  // from a.test to b.test
-  EXPECT_FALSE(client()->response_head()->raw_request_response_info);
-
-  loader()->FollowRedirect({}, {}, {}, absl::nullopt);
-  client()->ClearHasReceivedRedirect();
-  client()->RunUntilRedirectReceived();  // from b.test to a.test
-  EXPECT_TRUE(client()->response_head()->raw_request_response_info);
-
-  loader()->FollowRedirect({}, {}, {}, absl::nullopt);
-  client()->RunUntilComplete();  // Done loading a.test
-  EXPECT_FALSE(client()->response_head()->raw_request_response_info.get());
-}
 
 TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   const base::UnguessableToken profile_id = base::UnguessableToken::Create();
@@ -1305,6 +1175,24 @@ TEST_F(NetworkServiceTestWithService, GetNetworkList) {
   run_loop.Run();
 }
 
+TEST_F(NetworkServiceTestWithService,
+       SetPersistedFirstPartySetsAndGetCurrentSets) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath sets_file_path(temp_dir.GetPath().AppendASCII("sets_file"));
+  ASSERT_TRUE(base::WriteFile(sets_file_path, ""));
+
+  base::RunLoop run_loop;
+  network_service_->SetPersistedFirstPartySetsAndGetCurrentSets(
+      "", base::BindLambdaForTesting([&](const std::string& got) {
+        EXPECT_EQ(got, "{}");
+        run_loop.Quit();
+      }));
+  network_service_->SetFirstPartySets(base::File(
+      sets_file_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  run_loop.Run();
+}
+
 class TestNetworkChangeManagerClient
     : public mojom::NetworkChangeManagerClient {
  public:
@@ -1319,6 +1207,11 @@ class TestNetworkChangeManagerClient
     receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
     manager_remote->RequestNotifications(std::move(client_remote));
   }
+
+  TestNetworkChangeManagerClient(const TestNetworkChangeManagerClient&) =
+      delete;
+  TestNetworkChangeManagerClient& operator=(
+      const TestNetworkChangeManagerClient&) = delete;
 
   ~TestNetworkChangeManagerClient() override {}
 
@@ -1345,8 +1238,6 @@ class TestNetworkChangeManagerClient
   base::RunLoop run_loop_;
   mojom::ConnectionType connection_type_;
   mojo::Receiver<mojom::NetworkChangeManagerClient> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeManagerClient);
 };
 
 class NetworkChangeTest : public testing::Test {
@@ -1391,6 +1282,11 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
     service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
 
+  NetworkServiceNetworkChangeTest(const NetworkServiceNetworkChangeTest&) =
+      delete;
+  NetworkServiceNetworkChangeTest& operator=(
+      const NetworkServiceNetworkChangeTest&) = delete;
+
   ~NetworkServiceNetworkChangeTest() override {}
 
   mojom::NetworkService* service() { return network_service_.get(); }
@@ -1400,8 +1296,6 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojo::Remote<mojom::NetworkService> network_service_;
   std::unique_ptr<NetworkService> service_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkChangeTest);
 };
 
 TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
@@ -1423,6 +1317,12 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   NetworkServiceNetworkDelegateTest()
       : NetworkServiceTest(
             base::test::TaskEnvironment::TimeSource::SYSTEM_TIME) {}
+
+  NetworkServiceNetworkDelegateTest(const NetworkServiceNetworkDelegateTest&) =
+      delete;
+  NetworkServiceNetworkDelegateTest& operator=(
+      const NetworkServiceNetworkDelegateTest&) = delete;
+
   ~NetworkServiceNetworkDelegateTest() override = default;
 
   void CreateNetworkContext() {
@@ -1517,8 +1417,6 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   std::unique_ptr<TestURLLoaderClient> client_;
   mojo::Remote<mojom::NetworkContext> network_context_;
   mojo::Remote<mojom::URLLoader> loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
 class ClearSiteDataAuthCertObserver : public TestURLLoaderNetworkObserver {

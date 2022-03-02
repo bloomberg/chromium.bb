@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/containers/enum_set.h"
 #include "build/chromeos_buildflags.h"
-#include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -31,9 +31,9 @@ enum class UserSelectableType {
   kLastType = kWifiConfigurations
 };
 
-using UserSelectableTypeSet = EnumSet<UserSelectableType,
-                                      UserSelectableType::kFirstType,
-                                      UserSelectableType::kLastType>;
+using UserSelectableTypeSet = base::EnumSet<UserSelectableType,
+                                            UserSelectableType::kFirstType,
+                                            UserSelectableType::kLastType>;
 
 const char* GetUserSelectableTypeName(UserSelectableType type);
 // Returns the type if the string matches a known type.
@@ -58,11 +58,12 @@ enum class UserSelectableOsType {
   kLastType = kOsWifiConfigurations
 };
 
-using UserSelectableOsTypeSet = EnumSet<UserSelectableOsType,
-                                        UserSelectableOsType::kFirstType,
-                                        UserSelectableOsType::kLastType>;
+using UserSelectableOsTypeSet = base::EnumSet<UserSelectableOsType,
+                                              UserSelectableOsType::kFirstType,
+                                              UserSelectableOsType::kLastType>;
 
 const char* GetUserSelectableOsTypeName(UserSelectableOsType type);
+std::string UserSelectableOsTypeSetToString(UserSelectableOsTypeSet types);
 ModelTypeSet UserSelectableOsTypeToAllModelTypes(UserSelectableOsType type);
 ModelType UserSelectableOsTypeToCanonicalModelType(UserSelectableOsType type);
 

@@ -10,7 +10,7 @@
 #include "core/fxcrt/fx_coordinates.h"
 
 #include "core/fxcrt/unowned_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_GlyphBitmap;
 
@@ -20,7 +20,7 @@ class TextGlyphPos {
   TextGlyphPos(const TextGlyphPos&);
   ~TextGlyphPos();
 
-  Optional<CFX_Point> GetOrigin(const CFX_Point& offset) const;
+  absl::optional<CFX_Point> GetOrigin(const CFX_Point& offset) const;
 
   UnownedPtr<const CFX_GlyphBitmap> m_pGlyph;
   CFX_Point m_Origin;

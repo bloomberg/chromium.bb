@@ -15,7 +15,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_constants.h"
@@ -29,22 +28,13 @@ class SimpleMenuModel;
 
 namespace ash {
 
-class AppListModel;
 class AppListNotifier;
 enum class AppListViewState;
 struct AppLaunchedMetricParams;
-class SearchModel;
 
 class ASH_PUBLIC_EXPORT AppListViewDelegate {
  public:
-  virtual ~AppListViewDelegate() {}
-  // Gets the model associated with the view delegate. The model may be owned
-  // by the delegate, or owned elsewhere (e.g. a profile keyed service).
-  virtual AppListModel* GetModel() = 0;
-
-  // Gets the search model associated with the view delegate. The model may be
-  // owned by the delegate, or owned elsewhere (e.g. a profile keyed service).
-  virtual SearchModel* GetSearchModel() = 0;
+  virtual ~AppListViewDelegate() = default;
 
   // Returns the AppListNotifier instance. The notifier is owned by the
   // AppListClient, and may be nullptr if no client has been set for the
@@ -77,10 +67,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                                 bool launch_as_default) = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
-  // |action_index| corresponds to the index of an icon in
-  // |result.action_icons()|.
   virtual void InvokeSearchResultAction(const std::string& result_id,
-                                        int action_index) = 0;
+                                        SearchResultActionType action) = 0;
 
   // Returns the context menu model for a ChromeSearchResult with |result_id|,
   // or nullptr if there is currently no menu for the result.
@@ -101,9 +89,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
 
-  // Invoked when the app list is closed.
-  virtual void ViewClosed() = 0;
-
   // Gets the wallpaper prominent colors.
   virtual const std::vector<SkColor>& GetWallpaperProminentColors() = 0;
 
@@ -114,8 +99,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Returns the context menu model for a ChromeAppListItem with |id|, or
   // nullptr if there is currently no menu for the item (e.g. during install).
-  // Note the returned menu model is owned by that item.
+  // Requests the menu model to include sort options that can sort the app list
+  // if `add_sort_options` is true. Note the returned menu model is owned by
+  // that item.
   virtual void GetContextMenuModel(const std::string& id,
+                                   bool add_sort_options,
                                    GetContextMenuModelCallback callback) = 0;
 
   // Returns an animation observer if the |target_state| is interesting to the
@@ -176,11 +164,24 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // pressed to indicate not to show the view any more.
   virtual void MarkSuggestedContentInfoDismissed() = 0;
 
+  // Gets the app list page currently shown in the fullscreen app list, as
+  // reported from the app list view using `OnAppListPageChanged()`.
+  virtual AppListState GetCurrentAppListPage() const = 0;
+
+  // Called when the page shown in the app list contents view is updated.
+  virtual void OnAppListPageChanged(AppListState page) = 0;
+
+  // Gets the current app list view state, as reported by app list view using
+  // `OnViewStateChanged()`. Tracked for fullscreen app list view only.
+  virtual AppListViewState GetAppListViewState() const = 0;
+
   // Called when the app list view state is updated.
   virtual void OnViewStateChanged(AppListViewState state) = 0;
 
-  // Called when the app list view animation is completed.
-  virtual void OnStateTransitionAnimationCompleted(AppListViewState state) = 0;
+  // Called when the app list state transition animation is completed.
+  virtual void OnStateTransitionAnimationCompleted(
+      AppListViewState state,
+      bool was_animation_interrupted) = 0;
 
   // Fills the given AppLaunchedMetricParams with info known by the delegate.
   virtual void GetAppLaunchedMetricParams(
@@ -204,6 +205,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Adjust scrolls that happen in the view. This needs to be delegated because
   // it depends on the active user's preferences.
   virtual int AdjustAppListViewScrollOffset(int offset, ui::EventType type) = 0;
+
+  // Loads the icon of an app item identified by `app_id`.
+  virtual void LoadIcon(const std::string& app_id) = 0;
 };
 
 }  // namespace ash

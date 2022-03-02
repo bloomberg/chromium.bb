@@ -1,6 +1,6 @@
 'use strict';
 
-var GetIntrinsic = require('../GetIntrinsic');
+var GetIntrinsic = require('get-intrinsic');
 
 var $TypeError = GetIntrinsic('%TypeError%');
 
@@ -36,12 +36,12 @@ module.exports = function Set(O, P, V, Throw) {
 			throw new $TypeError('Attempted to assign to readonly property.');
 		}
 		return true;
-	} else {
-		try {
-			O[P] = V; // eslint-disable-line no-param-reassign
-			return noThrowOnStrictViolation ? SameValue(O[P], V) : true;
-		} catch (e) {
-			return false;
-		}
 	}
+	try {
+		O[P] = V; // eslint-disable-line no-param-reassign
+		return noThrowOnStrictViolation ? SameValue(O[P], V) : true;
+	} catch (e) {
+		return false;
+	}
+
 };

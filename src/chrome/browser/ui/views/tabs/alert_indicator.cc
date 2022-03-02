@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -23,16 +24,14 @@ namespace {
 // Fade-in/out duration for the tab indicator animations.  Fade-in is quick to
 // immediately notify the user.  Fade-out is more gradual, so that the user has
 // a chance of finding a tab that has quickly "blipped" on and off.
-constexpr auto kIndicatorFadeInDuration =
-    base::TimeDelta::FromMilliseconds(200);
-constexpr auto kIndicatorFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(1000);
+constexpr auto kIndicatorFadeInDuration = base::Milliseconds(200);
+constexpr auto kIndicatorFadeOutDuration = base::Milliseconds(1000);
 
 // Interval between frame updates of the tab indicator animations.  This is not
 // the usual 60 FPS because a trade-off must be made between tab UI animation
 // smoothness and media recording/playback performance on low-end hardware.
 constexpr base::TimeDelta kIndicatorFrameInterval =
-    base::TimeDelta::FromMilliseconds(50);  // 20 FPS
+    base::Milliseconds(50);  // 20 FPS
 
 std::unique_ptr<gfx::MultiAnimation> CreateTabRecordingIndicatorAnimation() {
   // Number of times the throbber fades in and out. After these cycles a final
@@ -166,7 +165,7 @@ class AlertIndicator::FadeAnimationDelegate
     indicator_->parent_tab_->AlertStateChanged();
   }
 
-  AlertIndicator* const indicator_;
+  const raw_ptr<AlertIndicator> indicator_;
 };
 
 AlertIndicator::AlertIndicator(Tab* parent_tab)

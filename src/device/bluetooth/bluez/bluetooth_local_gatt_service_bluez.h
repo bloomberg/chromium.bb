@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
@@ -32,6 +31,11 @@ class BluetoothLocalGattServiceBlueZ
       const device::BluetoothUUID& uuid,
       bool is_primary,
       device::BluetoothLocalGattService::Delegate* delegate);
+
+  BluetoothLocalGattServiceBlueZ(const BluetoothLocalGattServiceBlueZ&) =
+      delete;
+  BluetoothLocalGattServiceBlueZ& operator=(
+      const BluetoothLocalGattServiceBlueZ&) = delete;
 
   ~BluetoothLocalGattServiceBlueZ() override;
 
@@ -89,8 +93,6 @@ class BluetoothLocalGattServiceBlueZ
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothLocalGattServiceBlueZ> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLocalGattServiceBlueZ);
 };
 
 }  // namespace bluez

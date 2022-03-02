@@ -209,6 +209,13 @@ TEST_F(VkPortabilitySubsetTest, CreateImageView) {
     ci.subresourceRange.layerCount = 1;
     CreateImageViewTest(*this, &ci, "VUID-VkImageViewCreateInfo-imageViewFormatSwizzle-04465");
 
+    // Verify using VK_COMPONENT_SWIZZLE_R/G/B/A works when imageViewFormatSwizzle == VK_FALSE
+    ci.components.r = VK_COMPONENT_SWIZZLE_R;
+    ci.components.g = VK_COMPONENT_SWIZZLE_G;
+    ci.components.b = VK_COMPONENT_SWIZZLE_B;
+    ci.components.a = VK_COMPONENT_SWIZZLE_A;
+    CreateImageViewTest(*this, &ci);
+
     ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -636,7 +643,8 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
 
     // Attempt to use isolines in the TES shader when not available
     {
-        static const char *tes_source = R"glsl(#version 450
+        static const char *tes_source = R"glsl(
+            #version 450
             layout(isolines, equal_spacing, cw) in;
             void main() {
                 gl_Position = vec4(1);
@@ -644,14 +652,15 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
         )glsl";
         VkShaderObj tes_obj(DeviceObj(), tes_source, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, this);
         pipe.shader_stages_.emplace_back(tes_obj.GetStageCreateInfo());
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, kVUID_Portability_Tessellation_Isolines);
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-tessellationShader-06326");
         pipe.CreateGraphicsPipeline();
         m_errorMonitor->VerifyFound();
     }
 
     // Attempt to use point_mode in the TES shader when not available
     {
-        static const char *tes_source = R"glsl(#version 450
+        static const char *tes_source = R"glsl(
+            #version 450
             layout(triangles, point_mode) in;
             void main() {
                 gl_Position = vec4(1);
@@ -664,21 +673,23 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
         VkShaderObj tes_obj(DeviceObj(), tes_source, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, this);
         pipe.shader_stages_.emplace_back(tes_obj.GetStageCreateInfo());
 
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, kVUID_Portability_Tessellation_PointMode);
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-tessellationShader-06327");
         pipe.CreateGraphicsPipeline();
         m_errorMonitor->VerifyFound();
     }
 
     // Attempt to use interpolation functions when not supported
     {
-        static const char *vs_source = R"glsl(#version 450
+        static const char *vs_source = R"glsl(
+            #version 450
             layout(location = 0) out vec4 c;
             void main() {
                 c = vec4(1);
                 gl_Position = vec4(1);
             }
         )glsl";
-        static const char *fs_source = R"glsl(#version 450
+        static const char *fs_source = R"glsl(
+            #version 450
             layout(location = 0) in vec4 c;
             layout(location = 0) out vec4 frag_out;
             void main() {
@@ -696,7 +707,7 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
         iasci.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         pipe.ia_ci_ = iasci;
 
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, kVUID_Portability_InterpolationFunction);
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-shaderSampleRateInterpolationFunctions-06325");
         pipe.CreateGraphicsPipeline();
         m_errorMonitor->VerifyFound();
     }

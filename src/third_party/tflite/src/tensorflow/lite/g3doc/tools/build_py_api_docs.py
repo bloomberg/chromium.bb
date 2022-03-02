@@ -23,10 +23,6 @@ python build_docs.py --output_dir=/path/to/output
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import pathlib
 
 from absl import app
@@ -55,7 +51,7 @@ FLAGS = flags.FLAGS
 def main(_):
   doc_generator = generate_lib.DocGenerator(
       root_title='TensorFlow Lite',
-      py_modules=[('lite', tf.lite)],
+      py_modules=[('tf.lite', tf.lite)],
       base_dir=str(pathlib.Path(tf.__file__).parent),
       code_url_prefix=FLAGS.code_url_prefix,
       search_hints=FLAGS.search_hints,

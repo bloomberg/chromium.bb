@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
 
@@ -43,15 +42,16 @@ class MetricsDelegate {
   // the MetricsDelegate callback.
   struct Metrics {
     Metrics();
+
+    Metrics(const Metrics&) = delete;
+    Metrics& operator=(const Metrics&) = delete;
+
     ~Metrics();
 
     NSURLSessionTask* task;
     LoadTimingInfo load_timing_info;
     HttpResponseInfo response_info;
     base::Time response_end_time;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Metrics);
   };
 
   // Set the global instance of the MetricsDelegate.

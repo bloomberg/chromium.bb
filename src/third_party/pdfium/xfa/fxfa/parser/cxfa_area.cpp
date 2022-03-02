@@ -12,8 +12,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kAreaPropertyData[] = {
-    {XFA_Element::Desc, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Desc, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kAreaAttributeData[] = {
@@ -32,16 +32,16 @@ const CXFA_Node::AttributeData kAreaAttributeData[] = {
 }  // namespace
 
 CXFA_Area::CXFA_Area(CXFA_Document* doc, XFA_PacketType packet)
-    : CXFA_Node(
-          doc,
-          packet,
-          (XFA_XDPPACKET_Config | XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
-          XFA_ObjectType::ContainerNode,
-          XFA_Element::Area,
-          kAreaPropertyData,
-          kAreaAttributeData,
-          cppgc::MakeGarbageCollected<CJX_Container>(
-              doc->GetHeap()->GetAllocationHandle(),
-              this)) {}
+    : CXFA_Node(doc,
+                packet,
+                {XFA_XDPPACKET::kConfig, XFA_XDPPACKET::kTemplate,
+                 XFA_XDPPACKET::kForm},
+                XFA_ObjectType::ContainerNode,
+                XFA_Element::Area,
+                kAreaPropertyData,
+                kAreaAttributeData,
+                cppgc::MakeGarbageCollected<CJX_Container>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Area::~CXFA_Area() = default;

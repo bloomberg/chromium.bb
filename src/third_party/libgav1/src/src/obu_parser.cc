@@ -140,10 +140,10 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
   int64_t scratch;
   ColorConfig* const color_config = &sequence_header->color_config;
   OBU_READ_BIT_OR_FAIL;
-  const auto high_bitdepth = static_cast<bool>(scratch);
+  const bool high_bitdepth = scratch != 0;
   if (sequence_header->profile == kProfile2 && high_bitdepth) {
     OBU_READ_BIT_OR_FAIL;
-    const auto is_twelve_bit = static_cast<bool>(scratch);
+    const bool is_twelve_bit = scratch != 0;
     color_config->bitdepth = is_twelve_bit ? 12 : 10;
   } else {
     color_config->bitdepth = high_bitdepth ? 10 : 8;
@@ -152,10 +152,10 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
     color_config->is_monochrome = false;
   } else {
     OBU_READ_BIT_OR_FAIL;
-    color_config->is_monochrome = static_cast<bool>(scratch);
+    color_config->is_monochrome = scratch != 0;
   }
   OBU_READ_BIT_OR_FAIL;
-  const auto color_description_present_flag = static_cast<bool>(scratch);
+  const bool color_description_present_flag = scratch != 0;
   if (color_description_present_flag) {
     OBU_READ_LITERAL_OR_FAIL(8);
     color_config->color_primary = static_cast<ColorPrimary>(scratch);
@@ -230,7 +230,7 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
       }
     }
     OBU_READ_BIT_OR_FAIL;
-    color_config->separate_uv_delta_q = static_cast<bool>(scratch);
+    color_config->separate_uv_delta_q = scratch != 0;
   }
   if (color_config->matrix_coefficients == kMatrixCoefficientsIdentity &&
       (color_config->subsampling_x != 0 || color_config->subsampling_y != 0)) {
@@ -246,7 +246,7 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
 bool ObuParser::ParseTimingInfo(ObuSequenceHeader* sequence_header) {
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header->timing_info_present_flag = static_cast<bool>(scratch);
+  sequence_header->timing_info_present_flag = scratch != 0;
   if (!sequence_header->timing_info_present_flag) return true;
   TimingInfo* const info = &sequence_header->timing_info;
   OBU_READ_LITERAL_OR_FAIL(32);
@@ -262,7 +262,7 @@ bool ObuParser::ParseTimingInfo(ObuSequenceHeader* sequence_header) {
     return false;
   }
   OBU_READ_BIT_OR_FAIL;
-  info->equal_picture_interval = static_cast<bool>(scratch);
+  info->equal_picture_interval = scratch != 0;
   if (info->equal_picture_interval) {
     OBU_READ_UVLC_OR_FAIL(info->num_ticks_per_picture);
     ++info->num_ticks_per_picture;
@@ -274,7 +274,7 @@ bool ObuParser::ParseDecoderModelInfo(ObuSequenceHeader* sequence_header) {
   if (!sequence_header->timing_info_present_flag) return true;
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header->decoder_model_info_present_flag = static_cast<bool>(scratch);
+  sequence_header->decoder_model_info_present_flag = scratch != 0;
   if (!sequence_header->decoder_model_info_present_flag) return true;
   DecoderModelInfo* const info = &sequence_header->decoder_model_info;
   OBU_READ_LITERAL_OR_FAIL(5);
@@ -293,7 +293,7 @@ bool ObuParser::ParseOperatingParameters(ObuSequenceHeader* sequence_header,
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
   sequence_header->decoder_model_present_for_operating_point[index] =
-      static_cast<bool>(scratch);
+      scratch != 0;
   if (!sequence_header->decoder_model_present_for_operating_point[index]) {
     return true;
   }
@@ -305,7 +305,7 @@ bool ObuParser::ParseOperatingParameters(ObuSequenceHeader* sequence_header,
       sequence_header->decoder_model_info.encoder_decoder_buffer_delay_length);
   params->encoder_buffer_delay[index] = static_cast<uint32_t>(scratch);
   OBU_READ_BIT_OR_FAIL;
-  params->low_delay_mode_flag[index] = static_cast<bool>(scratch);
+  params->low_delay_mode_flag[index] = scratch != 0;
   return true;
 }
 
@@ -319,9 +319,9 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
   }
   sequence_header.profile = static_cast<BitstreamProfile>(scratch);
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.still_picture = static_cast<bool>(scratch);
+  sequence_header.still_picture = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.reduced_still_picture_header = static_cast<bool>(scratch);
+  sequence_header.reduced_still_picture_header = scratch != 0;
   if (sequence_header.reduced_still_picture_header) {
     if (!sequence_header.still_picture) {
       LIBGAV1_DLOG(
@@ -338,7 +338,7 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
       return false;
     }
     OBU_READ_BIT_OR_FAIL;
-    const auto initial_display_delay_present_flag = static_cast<bool>(scratch);
+    const bool initial_display_delay_present_flag = scratch != 0;
     OBU_READ_LITERAL_OR_FAIL(5);
     sequence_header.operating_points = static_cast<int>(1 + scratch);
     if (operating_point_ >= sequence_header.operating_points) {
@@ -374,7 +374,7 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
       }
       if (initial_display_delay_present_flag) {
         OBU_READ_BIT_OR_FAIL;
-        if (static_cast<bool>(scratch)) {
+        if (scratch != 0) {
           OBU_READ_LITERAL_OR_FAIL(4);
           sequence_header.initial_display_delay[i] = 1 + scratch;
         }
@@ -391,7 +391,7 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
   sequence_header.max_frame_height = static_cast<int32_t>(1 + scratch);
   if (!sequence_header.reduced_still_picture_header) {
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.frame_id_numbers_present = static_cast<bool>(scratch);
+    sequence_header.frame_id_numbers_present = scratch != 0;
   }
   if (sequence_header.frame_id_numbers_present) {
     OBU_READ_LITERAL_OR_FAIL(4);
@@ -409,33 +409,33 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
     }
   }
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.use_128x128_superblock = static_cast<bool>(scratch);
+  sequence_header.use_128x128_superblock = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.enable_filter_intra = static_cast<bool>(scratch);
+  sequence_header.enable_filter_intra = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.enable_intra_edge_filter = static_cast<bool>(scratch);
+  sequence_header.enable_intra_edge_filter = scratch != 0;
   if (sequence_header.reduced_still_picture_header) {
     sequence_header.force_screen_content_tools = kSelectScreenContentTools;
     sequence_header.force_integer_mv = kSelectIntegerMv;
   } else {
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.enable_interintra_compound = static_cast<bool>(scratch);
+    sequence_header.enable_interintra_compound = scratch != 0;
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.enable_masked_compound = static_cast<bool>(scratch);
+    sequence_header.enable_masked_compound = scratch != 0;
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.enable_warped_motion = static_cast<bool>(scratch);
+    sequence_header.enable_warped_motion = scratch != 0;
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.enable_dual_filter = static_cast<bool>(scratch);
+    sequence_header.enable_dual_filter = scratch != 0;
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.enable_order_hint = static_cast<bool>(scratch);
+    sequence_header.enable_order_hint = scratch != 0;
     if (sequence_header.enable_order_hint) {
       OBU_READ_BIT_OR_FAIL;
-      sequence_header.enable_jnt_comp = static_cast<bool>(scratch);
+      sequence_header.enable_jnt_comp = scratch != 0;
       OBU_READ_BIT_OR_FAIL;
-      sequence_header.enable_ref_frame_mvs = static_cast<bool>(scratch);
+      sequence_header.enable_ref_frame_mvs = scratch != 0;
     }
     OBU_READ_BIT_OR_FAIL;
-    sequence_header.choose_screen_content_tools = static_cast<bool>(scratch);
+    sequence_header.choose_screen_content_tools = scratch != 0;
     if (sequence_header.choose_screen_content_tools) {
       sequence_header.force_screen_content_tools = kSelectScreenContentTools;
     } else {
@@ -444,7 +444,7 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
     }
     if (sequence_header.force_screen_content_tools > 0) {
       OBU_READ_BIT_OR_FAIL;
-      sequence_header.choose_integer_mv = static_cast<bool>(scratch);
+      sequence_header.choose_integer_mv = scratch != 0;
       if (sequence_header.choose_integer_mv) {
         sequence_header.force_integer_mv = kSelectIntegerMv;
       } else {
@@ -462,14 +462,14 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
     }
   }
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.enable_superres = static_cast<bool>(scratch);
+  sequence_header.enable_superres = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.enable_cdef = static_cast<bool>(scratch);
+  sequence_header.enable_cdef = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.enable_restoration = static_cast<bool>(scratch);
+  sequence_header.enable_restoration = scratch != 0;
   if (!ParseColorConfig(&sequence_header)) return false;
   OBU_READ_BIT_OR_FAIL;
-  sequence_header.film_grain_params_present = static_cast<bool>(scratch);
+  sequence_header.film_grain_params_present = scratch != 0;
   // Compare new sequence header with old sequence header.
   if (has_sequence_header_ &&
       sequence_header.ParametersChanged(sequence_header_)) {
@@ -546,7 +546,7 @@ bool ObuParser::ParseFrameSizeAndRenderSize() {
 
   // Render Size.
   OBU_READ_BIT_OR_FAIL;
-  frame_header_.render_and_frame_size_different = static_cast<bool>(scratch);
+  frame_header_.render_and_frame_size_different = scratch != 0;
   if (frame_header_.render_and_frame_size_different) {
     OBU_READ_LITERAL_OR_FAIL(16);
     frame_header_.render_width = static_cast<int32_t>(1 + scratch);
@@ -567,7 +567,7 @@ bool ObuParser::ParseSuperResParametersAndComputeImageSize() {
   frame_header_.use_superres = false;
   if (sequence_header_.enable_superres) {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.use_superres = static_cast<bool>(scratch);
+    frame_header_.use_superres = scratch != 0;
   }
   if (frame_header_.use_superres) {
     OBU_READ_LITERAL_OR_FAIL(3);
@@ -878,14 +878,14 @@ bool ObuParser::ParseLoopFilterParameters() {
   OBU_READ_LITERAL_OR_FAIL(3);
   loop_filter->sharpness = scratch;
   OBU_READ_BIT_OR_FAIL;
-  loop_filter->delta_enabled = static_cast<bool>(scratch);
+  loop_filter->delta_enabled = scratch != 0;
   if (loop_filter->delta_enabled) {
     OBU_READ_BIT_OR_FAIL;
-    loop_filter->delta_update = static_cast<bool>(scratch);
+    loop_filter->delta_update = scratch != 0;
     if (loop_filter->delta_update) {
       for (auto& ref_delta : loop_filter->ref_deltas) {
         OBU_READ_BIT_OR_FAIL;
-        const auto update_ref_delta = static_cast<bool>(scratch);
+        const bool update_ref_delta = scratch != 0;
         if (update_ref_delta) {
           int scratch_int;
           if (!bit_reader_->ReadInverseSignedLiteral(6, &scratch_int)) {
@@ -897,7 +897,7 @@ bool ObuParser::ParseLoopFilterParameters() {
       }
       for (auto& mode_delta : loop_filter->mode_deltas) {
         OBU_READ_BIT_OR_FAIL;
-        const auto update_mode_delta = static_cast<bool>(scratch);
+        const bool update_mode_delta = scratch != 0;
         if (update_mode_delta) {
           int scratch_int;
           if (!bit_reader_->ReadInverseSignedLiteral(6, &scratch_int)) {
@@ -918,7 +918,7 @@ bool ObuParser::ParseDeltaQuantizer(int8_t* const delta) {
   int64_t scratch;
   *delta = 0;
   OBU_READ_BIT_OR_FAIL;
-  const auto delta_coded = static_cast<bool>(scratch);
+  const bool delta_coded = scratch != 0;
   if (delta_coded) {
     int scratch_int;
     if (!bit_reader_->ReadInverseSignedLiteral(6, &scratch_int)) {
@@ -940,7 +940,7 @@ bool ObuParser::ParseQuantizerParameters() {
     bool diff_uv_delta = false;
     if (sequence_header_.color_config.separate_uv_delta_q) {
       OBU_READ_BIT_OR_FAIL;
-      diff_uv_delta = static_cast<bool>(scratch);
+      diff_uv_delta = scratch != 0;
     }
     if (!ParseDeltaQuantizer(&quantizer->delta_dc[kPlaneU]) ||
         !ParseDeltaQuantizer(&quantizer->delta_ac[kPlaneU])) {
@@ -957,7 +957,7 @@ bool ObuParser::ParseQuantizerParameters() {
     }
   }
   OBU_READ_BIT_OR_FAIL;
-  quantizer->use_matrix = static_cast<bool>(scratch);
+  quantizer->use_matrix = scratch != 0;
   if (quantizer->use_matrix) {
     OBU_READ_LITERAL_OR_FAIL(4);
     quantizer->matrix_level[kPlaneY] = scratch;
@@ -987,20 +987,20 @@ bool ObuParser::ParseSegmentationParameters() {
   int64_t scratch;
   Segmentation* const segmentation = &frame_header_.segmentation;
   OBU_READ_BIT_OR_FAIL;
-  segmentation->enabled = static_cast<bool>(scratch);
+  segmentation->enabled = scratch != 0;
   if (!segmentation->enabled) return true;
   if (frame_header_.primary_reference_frame == kPrimaryReferenceNone) {
     segmentation->update_map = true;
     segmentation->update_data = true;
   } else {
     OBU_READ_BIT_OR_FAIL;
-    segmentation->update_map = static_cast<bool>(scratch);
+    segmentation->update_map = scratch != 0;
     if (segmentation->update_map) {
       OBU_READ_BIT_OR_FAIL;
-      segmentation->temporal_update = static_cast<bool>(scratch);
+      segmentation->temporal_update = scratch != 0;
     }
     OBU_READ_BIT_OR_FAIL;
-    segmentation->update_data = static_cast<bool>(scratch);
+    segmentation->update_data = scratch != 0;
     if (!segmentation->update_data) {
       // Part of the load_previous() function in the spec.
       const int prev_frame_index =
@@ -1014,7 +1014,7 @@ bool ObuParser::ParseSegmentationParameters() {
   for (int8_t i = 0; i < kMaxSegments; ++i) {
     for (int8_t j = 0; j < kSegmentFeatureMax; ++j) {
       OBU_READ_BIT_OR_FAIL;
-      segmentation->feature_enabled[i][j] = static_cast<bool>(scratch);
+      segmentation->feature_enabled[i][j] = scratch != 0;
       if (segmentation->feature_enabled[i][j]) {
         if (Segmentation::FeatureSigned(static_cast<SegmentFeature>(j))) {
           int scratch_int;
@@ -1049,7 +1049,7 @@ bool ObuParser::ParseQuantizerIndexDeltaParameters() {
   int64_t scratch;
   if (frame_header_.quantizer.base_index > 0) {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.delta_q.present = static_cast<bool>(scratch);
+    frame_header_.delta_q.present = scratch != 0;
     if (frame_header_.delta_q.present) {
       OBU_READ_LITERAL_OR_FAIL(2);
       frame_header_.delta_q.scale = scratch;
@@ -1063,13 +1063,13 @@ bool ObuParser::ParseLoopFilterDeltaParameters() {
   if (frame_header_.delta_q.present) {
     if (!frame_header_.allow_intrabc) {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.delta_lf.present = static_cast<bool>(scratch);
+      frame_header_.delta_lf.present = scratch != 0;
     }
     if (frame_header_.delta_lf.present) {
       OBU_READ_LITERAL_OR_FAIL(2);
       frame_header_.delta_lf.scale = scratch;
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.delta_lf.multi = static_cast<bool>(scratch);
+      frame_header_.delta_lf.multi = scratch != 0;
     }
   }
   return true;
@@ -1193,7 +1193,7 @@ bool ObuParser::ParseFrameReferenceModeSyntax() {
   int64_t scratch;
   if (!IsIntraFrame(frame_header_.frame_type)) {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.reference_mode_select = static_cast<bool>(scratch);
+    frame_header_.reference_mode_select = scratch != 0;
   }
   return true;
 }
@@ -1276,7 +1276,7 @@ bool ObuParser::ParseSkipModeParameters() {
   if (!IsSkipModeAllowed()) return true;
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  frame_header_.skip_mode_present = static_cast<bool>(scratch);
+  frame_header_.skip_mode_present = scratch != 0;
   return true;
 }
 
@@ -1348,15 +1348,15 @@ bool ObuParser::ParseGlobalMotionParameters() {
     GlobalMotion* const global_motion = &frame_header_.global_motion[ref];
     int64_t scratch;
     OBU_READ_BIT_OR_FAIL;
-    const auto is_global = static_cast<bool>(scratch);
+    const bool is_global = scratch != 0;
     if (is_global) {
       OBU_READ_BIT_OR_FAIL;
-      const auto is_rot_zoom = static_cast<bool>(scratch);
+      const bool is_rot_zoom = scratch != 0;
       if (is_rot_zoom) {
         global_motion->type = kGlobalMotionTransformationTypeRotZoom;
       } else {
         OBU_READ_BIT_OR_FAIL;
-        const auto is_translation = static_cast<bool>(scratch);
+        const bool is_translation = scratch != 0;
         global_motion->type = is_translation
                                   ? kGlobalMotionTransformationTypeTranslation
                                   : kGlobalMotionTransformationTypeAffine;
@@ -1399,7 +1399,7 @@ bool ObuParser::ParseFilmGrainParameters() {
   FilmGrainParams& film_grain_params = frame_header_.film_grain_params;
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  film_grain_params.apply_grain = static_cast<bool>(scratch);
+  film_grain_params.apply_grain = scratch != 0;
   if (!film_grain_params.apply_grain) {
     // film_grain_params is already zero-initialized.
     return true;
@@ -1410,7 +1410,7 @@ bool ObuParser::ParseFilmGrainParameters() {
   film_grain_params.update_grain = true;
   if (frame_header_.frame_type == kFrameInter) {
     OBU_READ_BIT_OR_FAIL;
-    film_grain_params.update_grain = static_cast<bool>(scratch);
+    film_grain_params.update_grain = scratch != 0;
   }
   if (!film_grain_params.update_grain) {
     OBU_READ_LITERAL_OR_FAIL(3);
@@ -1481,7 +1481,7 @@ bool ObuParser::ParseFilmGrainParameters() {
     film_grain_params.chroma_scaling_from_luma = false;
   } else {
     OBU_READ_BIT_OR_FAIL;
-    film_grain_params.chroma_scaling_from_luma = static_cast<bool>(scratch);
+    film_grain_params.chroma_scaling_from_luma = scratch != 0;
   }
   if (sequence_header_.color_config.is_monochrome ||
       film_grain_params.chroma_scaling_from_luma ||
@@ -1597,9 +1597,9 @@ bool ObuParser::ParseFilmGrainParameters() {
     film_grain_params.v_offset = static_cast<int16_t>(scratch - 256);
   }
   OBU_READ_BIT_OR_FAIL;
-  film_grain_params.overlap_flag = static_cast<bool>(scratch);
+  film_grain_params.overlap_flag = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  film_grain_params.clip_to_restricted_range = static_cast<bool>(scratch);
+  film_grain_params.clip_to_restricted_range = scratch != 0;
   return true;
 }
 
@@ -1626,7 +1626,7 @@ bool ObuParser::ParseTileInfoSyntax() {
       minlog2_tile_columns, TileLog2(sb_max_tile_area, sb_rows * sb_columns));
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  tile_info->uniform_spacing = static_cast<bool>(scratch);
+  tile_info->uniform_spacing = scratch != 0;
   if (tile_info->uniform_spacing) {
     // Read tile columns.
     tile_info->tile_columns_log2 = minlog2_tile_columns;
@@ -1759,7 +1759,7 @@ bool ObuParser::ReadAllowWarpedMotion() {
   }
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  frame_header_.allow_warped_motion = static_cast<bool>(scratch);
+  frame_header_.allow_warped_motion = scratch != 0;
   return true;
 }
 
@@ -1774,7 +1774,7 @@ bool ObuParser::ParseFrameParameters() {
     }
   } else {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.show_existing_frame = static_cast<bool>(scratch);
+    frame_header_.show_existing_frame = scratch != 0;
     if (frame_header_.show_existing_frame) {
       OBU_READ_LITERAL_OR_FAIL(3);
       frame_header_.frame_to_show = scratch;
@@ -1849,7 +1849,7 @@ bool ObuParser::ParseFrameParameters() {
     frame_header_.frame_type = static_cast<FrameType>(scratch);
     current_frame_->set_frame_type(frame_header_.frame_type);
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.show_frame = static_cast<bool>(scratch);
+    frame_header_.show_frame = scratch != 0;
     if (frame_header_.show_frame &&
         sequence_header_.decoder_model_info_present_flag &&
         !sequence_header_.timing_info.equal_picture_interval) {
@@ -1861,7 +1861,7 @@ bool ObuParser::ParseFrameParameters() {
       frame_header_.showable_frame = (frame_header_.frame_type != kFrameKey);
     } else {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.showable_frame = static_cast<bool>(scratch);
+      frame_header_.showable_frame = scratch != 0;
     }
     current_frame_->set_showable_frame(frame_header_.showable_frame);
     if (frame_header_.frame_type == kFrameSwitch ||
@@ -1869,7 +1869,7 @@ bool ObuParser::ParseFrameParameters() {
       frame_header_.error_resilient_mode = true;
     } else {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.error_resilient_mode = static_cast<bool>(scratch);
+      frame_header_.error_resilient_mode = scratch != 0;
     }
   }
   if (frame_header_.frame_type == kFrameKey && frame_header_.show_frame) {
@@ -1877,14 +1877,14 @@ bool ObuParser::ParseFrameParameters() {
     decoder_state_.reference_frame.fill(nullptr);
   }
   OBU_READ_BIT_OR_FAIL;
-  frame_header_.enable_cdf_update = !static_cast<bool>(scratch);
+  frame_header_.enable_cdf_update = scratch == 0;
   if (sequence_header_.force_screen_content_tools ==
       kSelectScreenContentTools) {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.allow_screen_content_tools = static_cast<bool>(scratch);
+    frame_header_.allow_screen_content_tools = scratch != 0;
   } else {
     frame_header_.allow_screen_content_tools =
-        static_cast<bool>(sequence_header_.force_screen_content_tools);
+        sequence_header_.force_screen_content_tools != 0;
   }
   if (frame_header_.allow_screen_content_tools) {
     if (sequence_header_.force_integer_mv == kSelectIntegerMv) {
@@ -1934,7 +1934,7 @@ bool ObuParser::ParseFrameParameters() {
     frame_header_.frame_size_override_flag = true;
   } else if (!sequence_header_.reduced_still_picture_header) {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.frame_size_override_flag = static_cast<bool>(scratch);
+    frame_header_.frame_size_override_flag = scratch != 0;
   }
   if (sequence_header_.order_hint_bits > 0) {
     OBU_READ_LITERAL_OR_FAIL(sequence_header_.order_hint_bits);
@@ -1950,7 +1950,7 @@ bool ObuParser::ParseFrameParameters() {
   }
   if (sequence_header_.decoder_model_info_present_flag) {
     OBU_READ_BIT_OR_FAIL;
-    const auto buffer_removal_time_present = static_cast<bool>(scratch);
+    const bool buffer_removal_time_present = scratch != 0;
     if (buffer_removal_time_present) {
       for (int i = 0; i < sequence_header_.operating_points; ++i) {
         if (!sequence_header_.decoder_model_present_for_operating_point[i]) {
@@ -1992,14 +1992,14 @@ bool ObuParser::ParseFrameParameters() {
     if (frame_header_.allow_screen_content_tools &&
         frame_header_.width == frame_header_.upscaled_width) {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.allow_intrabc = static_cast<bool>(scratch);
+      frame_header_.allow_intrabc = scratch != 0;
     }
   } else {
     if (!sequence_header_.enable_order_hint) {
       frame_header_.frame_refs_short_signaling = false;
     } else {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.frame_refs_short_signaling = static_cast<bool>(scratch);
+      frame_header_.frame_refs_short_signaling = scratch != 0;
       if (frame_header_.frame_refs_short_signaling) {
         OBU_READ_LITERAL_OR_FAIL(3);
         const int8_t last_frame_idx = scratch;
@@ -2054,7 +2054,7 @@ bool ObuParser::ParseFrameParameters() {
       // Section 5.9.7.
       for (int index : frame_header_.reference_frame_index) {
         OBU_READ_BIT_OR_FAIL;
-        frame_header_.found_reference = static_cast<bool>(scratch);
+        frame_header_.found_reference = scratch != 0;
         if (frame_header_.found_reference) {
           const RefCountedBuffer* reference_frame =
               decoder_state_.reference_frame[index].get();
@@ -2079,10 +2079,10 @@ bool ObuParser::ParseFrameParameters() {
       frame_header_.allow_high_precision_mv = false;
     } else {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.allow_high_precision_mv = static_cast<bool>(scratch);
+      frame_header_.allow_high_precision_mv = scratch != 0;
     }
     OBU_READ_BIT_OR_FAIL;
-    const auto is_filter_switchable = static_cast<bool>(scratch);
+    const bool is_filter_switchable = scratch != 0;
     if (is_filter_switchable) {
       frame_header_.interpolation_filter = kInterpolationFilterSwitchable;
     } else {
@@ -2091,13 +2091,13 @@ bool ObuParser::ParseFrameParameters() {
           static_cast<InterpolationFilter>(scratch);
     }
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.is_motion_mode_switchable = static_cast<bool>(scratch);
+    frame_header_.is_motion_mode_switchable = scratch != 0;
     if (frame_header_.error_resilient_mode ||
         !sequence_header_.enable_ref_frame_mvs) {
       frame_header_.use_ref_frame_mvs = false;
     } else {
       OBU_READ_BIT_OR_FAIL;
-      frame_header_.use_ref_frame_mvs = static_cast<bool>(scratch);
+      frame_header_.use_ref_frame_mvs = scratch != 0;
     }
   }
   // At this point, we have parsed the frame and render sizes and computed
@@ -2151,7 +2151,7 @@ bool ObuParser::ParseFrameParameters() {
   if (frame_header_.enable_cdf_update &&
       !sequence_header_.reduced_still_picture_header) {
     OBU_READ_BIT_OR_FAIL;
-    frame_header_.enable_frame_end_update_cdf = !static_cast<bool>(scratch);
+    frame_header_.enable_frame_end_update_cdf = scratch == 0;
   } else {
     frame_header_.enable_frame_end_update_cdf = false;
   }
@@ -2189,7 +2189,7 @@ bool ObuParser::ParseFrameHeader() {
   if (!status) return false;
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  frame_header_.reduced_tx_set = static_cast<bool>(scratch);
+  frame_header_.reduced_tx_set = scratch != 0;
   status = ParseGlobalMotionParameters();
   if (!status) return false;
   current_frame_->SetGlobalMotions(frame_header_.global_motion);
@@ -2236,16 +2236,13 @@ bool ObuParser::ParseMetadataScalability() {
     const auto spatial_layers_count = static_cast<int>(scratch) + 1;
     // spatial_layer_dimensions_present_flag
     OBU_READ_BIT_OR_FAIL;
-    const auto spatial_layer_dimensions_present_flag =
-        static_cast<bool>(scratch);
+    const auto spatial_layer_dimensions_present_flag = scratch != 0;
     // spatial_layer_description_present_flag
     OBU_READ_BIT_OR_FAIL;
-    const auto spatial_layer_description_present_flag =
-        static_cast<bool>(scratch);
+    const auto spatial_layer_description_present_flag = scratch != 0;
     // temporal_group_description_present_flag
     OBU_READ_BIT_OR_FAIL;
-    const auto temporal_group_description_present_flag =
-        static_cast<bool>(scratch);
+    const auto temporal_group_description_present_flag = scratch != 0;
     // scalability_structure_reserved_3bits
     OBU_READ_LITERAL_OR_FAIL(3);
     if (scratch != 0) {
@@ -2297,7 +2294,7 @@ bool ObuParser::ParseMetadataTimecode() {
   OBU_READ_LITERAL_OR_FAIL(5);
   // full_timestamp_flag
   OBU_READ_BIT_OR_FAIL;
-  const auto full_timestamp_flag = static_cast<bool>(scratch);
+  const bool full_timestamp_flag = scratch != 0;
   // discontinuity_flag
   OBU_READ_BIT_OR_FAIL;
   // cnt_dropped_flag
@@ -2329,7 +2326,7 @@ bool ObuParser::ParseMetadataTimecode() {
   } else {
     // seconds_flag
     OBU_READ_BIT_OR_FAIL;
-    const auto seconds_flag = static_cast<bool>(scratch);
+    const bool seconds_flag = scratch != 0;
     if (seconds_flag) {
       // seconds_value
       OBU_READ_LITERAL_OR_FAIL(6);
@@ -2340,7 +2337,7 @@ bool ObuParser::ParseMetadataTimecode() {
       }
       // minutes_flag
       OBU_READ_BIT_OR_FAIL;
-      const auto minutes_flag = static_cast<bool>(scratch);
+      const bool minutes_flag = scratch != 0;
       if (minutes_flag) {
         // minutes_value
         OBU_READ_LITERAL_OR_FAIL(6);
@@ -2351,7 +2348,7 @@ bool ObuParser::ParseMetadataTimecode() {
         }
         // hours_flag
         OBU_READ_BIT_OR_FAIL;
-        const auto hours_flag = static_cast<bool>(scratch);
+        const bool hours_flag = scratch != 0;
         if (hours_flag) {
           // hours_value
           OBU_READ_LITERAL_OR_FAIL(5);
@@ -2560,7 +2557,7 @@ bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
   }
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
-  const auto tile_start_and_end_present_flag = static_cast<bool>(scratch);
+  const bool tile_start_and_end_present_flag = scratch != 0;
   if (!tile_start_and_end_present_flag) {
     if (!bit_reader_->AlignToNextByte()) {
       LIBGAV1_DLOG(ERROR, "Byte alignment has non zero bits.");
@@ -2600,9 +2597,9 @@ bool ObuParser::ParseHeader() {
   OBU_READ_LITERAL_OR_FAIL(4);
   obu_header.type = static_cast<libgav1::ObuType>(scratch);
   OBU_READ_BIT_OR_FAIL;
-  const auto extension_flag = static_cast<bool>(scratch);
+  const bool extension_flag = scratch != 0;
   OBU_READ_BIT_OR_FAIL;
-  obu_header.has_size_field = static_cast<bool>(scratch);
+  obu_header.has_size_field = scratch != 0;
   OBU_READ_BIT_OR_FAIL;  // reserved.
   if (scratch != 0) {
     LIBGAV1_DLOG(WARNING, "obu_reserved_1bit is not zero.");

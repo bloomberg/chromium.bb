@@ -25,8 +25,8 @@ const CXFA_Node::AttributeData kTextAttributeData[] = {
 CXFA_Text::CXFA_Text(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_SourceSet | XFA_XDPPACKET_Template |
-                 XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kSourceSet, XFA_XDPPACKET::kTemplate,
+                 XFA_XDPPACKET::kForm},
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Text,
                 {},
@@ -37,6 +37,6 @@ CXFA_Text::CXFA_Text(CXFA_Document* doc, XFA_PacketType packet)
 
 CXFA_Text::~CXFA_Text() = default;
 
-WideString CXFA_Text::GetContent() {
+WideString CXFA_Text::GetContent() const {
   return JSObject()->GetContent(false);
 }

@@ -38,7 +38,7 @@ struct MaxPoolForwardWithOptionalArgmax {
                   const int width, const int channels, const int pooled_height,
                   const int pooled_width, const int kernel_h,
                   const int kernel_w, const int stride_h, const int stride_w,
-                  const int pad_t, const int pad_l, T* top_data, int64* mask,
+                  const int pad_t, const int pad_l, T* top_data, int64_t* mask,
                   const Eigen::GpuDevice& d, bool propagate_nans,
                   const bool include_batch_in_index);
 };
@@ -55,25 +55,15 @@ struct MaxPoolForwardNoMask_NCHW_VECT_C {
 template <typename T>
 struct MaxPoolBackwardWithArgmax {
   bool operator()(const int output_size, const int input_size,
-                  const T* top_diff, const int64* mask, const int top_offset,
+                  const T* top_diff, const int64_t* mask, const int top_offset,
                   const int bottom_offset, T* bottom_diff,
                   const Eigen::GpuDevice& d, const bool include_batch_in_index);
 };
 
 template <typename T>
-struct MaxPoolBackwardNoMask {
-  bool operator()(const T* bottom_data, const int batch, const int height,
-                  const int width, const int channels, const int pooled_height,
-                  const int pooled_width, const int kernel_h,
-                  const int kernel_w, const int stride_h, const int stride_w,
-                  const int pad_t, const int pad_l, const T* top_diff,
-                  T* bottom_diff, const Eigen::GpuDevice& d);
-};
-
-template <typename T>
 struct MaxPoolGradBackwardWithArgmax {
   bool operator()(const int output_size, const int input_size,
-                  const T* top_diff, const int64* mask, const int top_offset,
+                  const T* top_diff, const int64_t* mask, const int top_offset,
                   const int bottom_offset, T* bottom_diff,
                   const Eigen::GpuDevice& d, const bool include_batch_in_index);
 };

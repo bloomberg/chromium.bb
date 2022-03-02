@@ -8,9 +8,22 @@
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
-#include "base/notreached.h"
+#include "base/allocator/partition_allocator/partition_alloc_notreached.h"
+
+#include <versionhelpers.h>
 
 namespace base {
+
+namespace {
+
+// On Windows, discarded pages are not returned to the system immediately and
+// not guaranteed to be zeroed when returned to the application.
+using DiscardVirtualMemoryFunction = DWORD(WINAPI*)(PVOID virtualAddress,
+                                                    SIZE_T size);
+DiscardVirtualMemoryFunction s_discard_virtual_memory =
+    reinterpret_cast<DiscardVirtualMemoryFunction>(-1);
+
+}  // namespace
 
 // |VirtualAlloc| will fail if allocation at the hint address is blocked.
 constexpr bool kHintIsAdvisory = false;
@@ -29,7 +42,7 @@ int GetAccessFlags(PageAccessibilityConfiguration accessibility) {
     case PageReadWriteExecute:
       return PAGE_EXECUTE_READWRITE;
     default:
-      NOTREACHED();
+      PA_NOTREACHED();
       FALLTHROUGH;
     case PageInaccessible:
       return PAGE_NOACCESS;
@@ -114,6 +127,18 @@ void DecommitSystemPagesInternal(
   SetSystemPagesAccess(address, length, PageInaccessible);
 }
 
+void DecommitAndZeroSystemPagesInternal(void* address, size_t length) {
+  // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfree:
+  // "If a page is decommitted but not released, its state changes to reserved.
+  // Subsequently, you can call VirtualAlloc to commit it, or VirtualFree to
+  // release it. Attempts to read from or write to a reserved page results in an
+  // access violation exception."
+  // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
+  // for MEM_COMMIT: "The function also guarantees that when the caller later
+  // initially accesses the memory, the contents will be zero."
+  PA_CHECK(VirtualFree(address, length, MEM_DECOMMIT));
+}
+
 void RecommitSystemPagesInternal(
     void* address,
     size_t length,
@@ -135,22 +160,25 @@ bool TryRecommitSystemPagesInternal(
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {
-  // On Windows, discarded pages are not returned to the system immediately and
-  // not guaranteed to be zeroed when returned to the application.
-  using DiscardVirtualMemoryFunction =
-      DWORD(WINAPI*)(PVOID virtualAddress, SIZE_T size);
-  static DiscardVirtualMemoryFunction discard_virtual_memory =
-      reinterpret_cast<DiscardVirtualMemoryFunction>(-1);
-  if (discard_virtual_memory ==
-      reinterpret_cast<DiscardVirtualMemoryFunction>(-1))
-    discard_virtual_memory =
-        reinterpret_cast<DiscardVirtualMemoryFunction>(GetProcAddress(
-            GetModuleHandle(L"Kernel32.dll"), "DiscardVirtualMemory"));
+  if (s_discard_virtual_memory ==
+      reinterpret_cast<DiscardVirtualMemoryFunction>(-1)) {
+    // DiscardVirtualMemory's minimum supported client is Windows 8.1 Update.
+    // So skip GetProcAddress("DiscardVirtualMemory") if windows version is
+    // smaller than Windows 8.1.
+    if (IsWindows8Point1OrGreater()) {
+      s_discard_virtual_memory =
+          reinterpret_cast<DiscardVirtualMemoryFunction>(GetProcAddress(
+              GetModuleHandle(L"Kernel32.dll"), "DiscardVirtualMemory"));
+    } else {
+      s_discard_virtual_memory = nullptr;
+    }
+  }
+
   // Use DiscardVirtualMemory when available because it releases faster than
   // MEM_RESET.
   DWORD ret = 1;
-  if (discard_virtual_memory) {
-    ret = discard_virtual_memory(address, length);
+  if (s_discard_virtual_memory) {
+    ret = s_discard_virtual_memory(address, length);
   }
   // DiscardVirtualMemory is buggy in Win10 SP0, so fall back to MEM_RESET on
   // failure.

@@ -81,10 +81,6 @@ source_set("app_shell_lib") {
   # TODO(michaelpg): remove Mac support and always use aura.
   if (use_aura) {
     deps += [ "//ui/aura" ]
-
-    if (use_x11) {
-      deps += [ "//ui/events/devices/x11" ]
-    }
   }
 
   if (toolkit_views) {
@@ -198,6 +194,7 @@ source_set("app_shell_lib") {
       "browser/shell_native_app_window_aura.h",
     ]
     deps += [
+      "//ui/aura/cursor",
       "//ui/base/cursor",
       "//ui/base/cursor/mojom:cursor_type",
       "//ui/platform_window",
@@ -225,6 +222,10 @@ source_set("app_shell_lib") {
     ]
   }
 
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    deps += [ "//chromeos/dbus/constants" ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "browser/shell_screen.cc",
@@ -232,12 +233,12 @@ source_set("app_shell_lib") {
     ]
     deps += [
       "//ash/components/audio",
+      "//ash/components/disks",
       "//ash/constants",
       "//chromeos/dbus",
       "//chromeos/dbus/audio",
       "//chromeos/dbus/hermes",
       "//chromeos/dbus/power",
-      "//chromeos/disks",
       "//chromeos/login/login_state",
       "//chromeos/network",
       "//ui/chromeos",
@@ -245,6 +246,9 @@ source_set("app_shell_lib") {
     ]
   }
 
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/lacros/dbus" ]
+  }
   if (enable_nacl) {
     sources += [
       "browser/shell_nacl_browser_delegate.cc",
@@ -262,10 +266,6 @@ source_set("app_shell_lib") {
 
     if (is_linux || is_chromeos) {
       deps += [ "//components/nacl/loader:nacl_helper" ]
-
-      if (enable_nacl_nonsfi) {
-        deps += [ "//components/nacl/loader:helper_nonsfi" ]
-      }
     }
   }
 }
@@ -327,6 +327,7 @@ test("app_shell_unittests") {
     "//extensions/common/api",
     "//extensions/shell/browser/system_logs",
     "//testing/gtest",
+    "//ui/display:test_support",
     "//ui/gl:test_support",
     "//ui/platform_window",
   ]

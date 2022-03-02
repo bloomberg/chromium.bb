@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,14 +55,14 @@ ImportDataHandler::~ImportDataHandler() {
 void ImportDataHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initializeImportDialog",
       base::BindRepeating(&ImportDataHandler::HandleInitializeImportDialog,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "importData", base::BindRepeating(&ImportDataHandler::HandleImportData,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "importFromBookmarksFile",
       base::BindRepeating(&ImportDataHandler::HandleImportFromBookmarksFile,
                           base::Unretained(this)));
@@ -106,12 +105,13 @@ void ImportDataHandler::StartImport(
 
 void ImportDataHandler::HandleImportData(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const auto& list = args->GetList();
+  CHECK_GE(list.size(), 2u);
 
-  int browser_index;
-  CHECK(args->GetInteger(0, &browser_index));
+  int browser_index = list[0].GetInt();
 
-  const base::DictionaryValue* types = nullptr;
-  CHECK(args->GetDictionary(1, &types));
+  const base::Value& types = list[1];
+  CHECK(types.is_dict());
 
   if (!importer_list_loaded_ || browser_index < 0 ||
       browser_index >= static_cast<int>(importer_list_->count())) {
@@ -120,15 +120,15 @@ void ImportDataHandler::HandleImportData(const base::ListValue* args) {
   }
 
   uint16_t selected_items = importer::NONE;
-  if (*types->FindBoolKey(prefs::kImportDialogAutofillFormData))
+  if (*types.FindBoolKey(prefs::kImportDialogAutofillFormData))
     selected_items |= importer::AUTOFILL_FORM_DATA;
-  if (*types->FindBoolKey(prefs::kImportDialogBookmarks))
+  if (*types.FindBoolKey(prefs::kImportDialogBookmarks))
     selected_items |= importer::FAVORITES;
-  if (*types->FindBoolKey(prefs::kImportDialogHistory))
+  if (*types.FindBoolKey(prefs::kImportDialogHistory))
     selected_items |= importer::HISTORY;
-  if (*types->FindBoolKey(prefs::kImportDialogSavedPasswords))
+  if (*types.FindBoolKey(prefs::kImportDialogSavedPasswords))
     selected_items |= importer::PASSWORDS;
-  if (*types->FindBoolKey(prefs::kImportDialogSearchEngine))
+  if (*types.FindBoolKey(prefs::kImportDialogSearchEngine))
     selected_items |= importer::SEARCH_ENGINES;
 
   const importer::SourceProfile& source_profile =
@@ -148,9 +148,8 @@ void ImportDataHandler::HandleInitializeImportDialog(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  CHECK_EQ(1U, args->GetList().size());
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   importer_list_ = std::make_unique<ImporterList>();
   importer_list_->DetectSourceProfiles(
@@ -167,7 +166,7 @@ void ImportDataHandler::HandleImportFromBookmarksFile(
   if (select_file_dialog_)
     return;
 
-  DCHECK(args && args->empty());
+  DCHECK(args && args->GetList().empty());
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
       std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));

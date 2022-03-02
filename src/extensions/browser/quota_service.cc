@@ -25,9 +25,7 @@ namespace extensions {
 
 QuotaService::QuotaService() {
   if (!g_purge_disabled_for_testing && base::ThreadTaskRunnerHandle::IsSet()) {
-    purge_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromDays(kPurgeIntervalInDays),
-                       this,
+    purge_timer_.Start(FROM_HERE, base::Days(kPurgeIntervalInDays), this,
                        &QuotaService::Purge);
   }
 }
@@ -40,7 +38,7 @@ QuotaService::~QuotaService() {
 
 std::string QuotaService::Assess(const std::string& extension_id,
                                  ExtensionFunction* function,
-                                 const base::ListValue* args,
+                                 const base::Value* args,
                                  const base::TimeTicks& event_time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -100,7 +98,7 @@ void QuotaLimitHeuristic::Bucket::Reset(const Config& config,
 }
 
 void QuotaLimitHeuristic::SingletonBucketMapper::GetBucketsForArgs(
-    const base::ListValue* args,
+    const base::Value* args,
     BucketList* buckets) {
   buckets->push_back(&bucket_);
 }
@@ -112,7 +110,7 @@ QuotaLimitHeuristic::QuotaLimitHeuristic(const Config& config,
 
 QuotaLimitHeuristic::~QuotaLimitHeuristic() {}
 
-bool QuotaLimitHeuristic::ApplyToArgs(const base::ListValue* args,
+bool QuotaLimitHeuristic::ApplyToArgs(const base::Value* args,
                                       const base::TimeTicks& event_time) {
   BucketList buckets;
   bucket_mapper_->GetBucketsForArgs(args, &buckets);

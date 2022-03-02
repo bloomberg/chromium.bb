@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <iterator>
 
-#include "base/macros.h"
-#include "base/stl_util.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 
@@ -35,6 +33,11 @@ enum StadiaGamepadButtons {
   STADIA_GAMEPAD_BUTTON_COUNT
 };
 
+enum XboxSeriesXGamepadButtons {
+  kSeriesXGamepadButtonShare = BUTTON_INDEX_COUNT,
+  kSeriesXGamepadButtonCount
+};
+
 void MapperXInputStyleGamepad(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[2]);
@@ -52,6 +55,29 @@ void MapperXInputStyleGamepad(const Gamepad& input, Gamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
   mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperXboxSeriesXBluetooth(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
+  mapped->buttons[kSeriesXGamepadButtonShare] = input.buttons[15];
+  mapped->buttons_length = kSeriesXGamepadButtonCount;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -639,6 +665,12 @@ void MapperSteelSeriesStratusBt(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperSteelSeriesProtonBt(const Gamepad& input, Gamepad* mapped) {
+  MapperSteelSeriesStratusBt(input, mapped);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+}
+
 void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
@@ -861,6 +893,8 @@ constexpr struct MappingData {
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
     // Xbox One Elite 2 (Bluetooth)
     {GamepadId::kMicrosoftProduct0b05, MapperXboxElite2Bluetooth},
+    // Xbox Series X (Bluetooth)
+    {GamepadId::kMicrosoftProduct0b13, MapperXboxSeriesXBluetooth},
     // Logitech F310 D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510 D-mode
@@ -911,6 +945,8 @@ constexpr struct MappingData {
     {GamepadId::kSteelSeriesBtProduct1419, MapperSteelSeriesStratusBt},
     // SteelSeries Stratus Duo Bluetooth
     {GamepadId::kSteelSeriesBtProduct1431, MapperSteelSeriesStratusBt},
+    // SteelSeries "Proton" Bluetooth
+    {GamepadId::kSteelSeriesBtProduct1434, MapperSteelSeriesProtonBt},
     // Razer Serval Controller
     {GamepadId::kRazer1532Product0900, MapperRazerServal},
     // ADT-1 Controller
@@ -918,17 +954,17 @@ constexpr struct MappingData {
     // Stadia Controller
     {GamepadId::kGoogleProduct9400, MapperStadiaController},
     // Moga Pro Controller (HID mode)
-    {GamepadId::kVendor20d6Product6271, MapperMoga},
+    {GamepadId::kBdaProduct6271, MapperMoga},
     // Moga 2 HID
-    {GamepadId::kVendor20d6Product89e5, MapperMoga},
+    {GamepadId::kBdaProduct89e5, MapperMoga},
     // OnLive Controller (Bluetooth)
-    {GamepadId::kVendor2378Product1008, MapperOnLiveWireless},
+    {GamepadId::kOnLiveProduct1008, MapperOnLiveWireless},
     // OnLive Controller (Wired)
-    {GamepadId::kVendor2378Product100a, MapperOnLiveWireless},
+    {GamepadId::kOnLiveProduct100a, MapperOnLiveWireless},
     // OUYA Controller
-    {GamepadId::kVendor2836Product0001, MapperOUYA},
+    {GamepadId::kOuyaProduct0001, MapperOUYA},
     // SCUF Vantage, SCUF Vantage 2
-    {GamepadId::kVendor2e95Product7725, MapperDualshock4},
+    {GamepadId::kScufProduct7725, MapperDualshock4},
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype

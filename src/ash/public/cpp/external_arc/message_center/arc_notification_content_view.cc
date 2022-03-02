@@ -6,29 +6,35 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
+#include "ash/public/cpp/style/color_provider.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/root_view.h"
@@ -45,6 +51,10 @@ class ArcNotificationContentView::MouseEnterExitHandler
       : owner_(owner) {
     DCHECK(owner);
   }
+
+  MouseEnterExitHandler(const MouseEnterExitHandler&) = delete;
+  MouseEnterExitHandler& operator=(const MouseEnterExitHandler&) = delete;
+
   ~MouseEnterExitHandler() override = default;
 
   // ui::EventHandler
@@ -58,13 +68,15 @@ class ArcNotificationContentView::MouseEnterExitHandler
 
  private:
   ArcNotificationContentView* const owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(MouseEnterExitHandler);
 };
 
 class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
  public:
   explicit EventForwarder(ArcNotificationContentView* owner) : owner_(owner) {}
+
+  EventForwarder(const EventForwarder&) = delete;
+  EventForwarder& operator=(const EventForwarder&) = delete;
+
   ~EventForwarder() override = default;
 
  private:
@@ -200,8 +212,6 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
 
   ArcNotificationContentView* const owner_;
   bool is_current_slide_handled_by_android_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(EventForwarder);
 };
 
 class ArcNotificationContentView::SlideHelper {
@@ -215,6 +225,10 @@ class ArcNotificationContentView::SlideHelper {
       owner_->surface_->GetWindow()->layer()->SetOpacity(1.0f);
     }
   }
+
+  SlideHelper(const SlideHelper&) = delete;
+  SlideHelper& operator=(const SlideHelper&) = delete;
+
   virtual ~SlideHelper() = default;
 
   void Update(bool slide_in_progress) {
@@ -234,8 +248,6 @@ class ArcNotificationContentView::SlideHelper {
 
   // True if the view is not at the original position.
   bool slide_in_progress_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
 
 
@@ -257,6 +269,11 @@ ArcNotificationContentView::ArcNotificationContentView(
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetNotifyEnterExitOnChild(true);
+
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks, but this focusable View needs to
+  // add a name so that the screen reader knows what to announce.
+  SetProperty(views::kSkipAccessibilityPaintChecks, true);
 
   item_->IncrementWindowRefCount();
   item_->AddObserver(this);
@@ -355,8 +372,8 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
     floating_control_buttons_widget_->Hide();
 }
 
-void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
-                                                    int bottom_radius) {
+void ArcNotificationContentView::UpdateCornerRadius(float top_radius,
+                                                    float bottom_radius) {
   bool force_update =
       top_radius_ != top_radius || bottom_radius_ != bottom_radius;
 
@@ -555,11 +572,21 @@ void ArcNotificationContentView::UpdateMask(bool force_update) {
     return;
   mask_insets_ = new_insets;
 
+  SkColor color = GetColorProvider()->GetColor(
+      message_view_->is_active() ? ui::kColorNotificationBackgroundActive
+                                 : ui::kColorNotificationBackgroundInactive);
+
+  if (ash::features::IsNotificationsRefreshEnabled()) {
+    color = AshColorProvider::Get()->GetControlsLayerColor(
+        message_view_->is_active()
+            ? AshColorProvider::ControlsLayerType::kControlBackgroundColorActive
+            : AshColorProvider::ControlsLayerType::
+                  kControlBackgroundColorInactive);
+  }
+
   auto mask_painter =
       std::make_unique<message_center::NotificationBackgroundPainter>(
-          top_radius_, bottom_radius_,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_NotificationBackground));
+          top_radius_, bottom_radius_, color);
   // Set insets to round visible notification corners. https://crbug.com/866777
   mask_painter->set_insets(new_insets);
 
@@ -666,6 +693,9 @@ void ArcNotificationContentView::Layout() {
 }
 
 void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
+  if (ash::features::IsNotificationsRefreshEnabled())
+    return;
+
   views::NativeViewHost::OnPaint(canvas);
 
   SkScalar radii[8] = {top_radius_,    top_radius_,      // top-left
@@ -732,6 +762,13 @@ void ArcNotificationContentView::OnThemeChanged() {
   // OnThemeChanged may be called before container is set.
   if (GetWidget() && GetNativeViewContainer())
     UpdateMask(true);
+
+  if (ash::features::IsNotificationsRefreshEnabled()) {
+    // Adjust control button color.
+    control_buttons_view_.SetButtonIconColors(
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary));
+  }
 }
 
 void ArcNotificationContentView::OnRemoteInputActivationChanged(

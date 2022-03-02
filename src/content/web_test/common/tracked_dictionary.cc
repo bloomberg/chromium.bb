@@ -11,7 +11,7 @@ namespace content {
 TrackedDictionary::TrackedDictionary() {}
 
 void TrackedDictionary::ResetChangeTracking() {
-  changed_values_.Clear();
+  changed_values_.DictClear();
 }
 
 void TrackedDictionary::ApplyUntrackedChanges(
@@ -20,7 +20,7 @@ void TrackedDictionary::ApplyUntrackedChanges(
 
   for (base::DictionaryValue::Iterator it(new_changes); !it.IsAtEnd();
        it.Advance()) {
-    changed_values_.Remove(it.key(), nullptr);
+    changed_values_.RemoveKey(it.key());
   }
 }
 
@@ -33,8 +33,9 @@ void TrackedDictionary::Set(const std::string& path,
       return;
   }
 
-  changed_values_.Set(path, new_value->CreateDeepCopy());
-  current_values_.Set(path, std::move(new_value));
+  changed_values_.SetKey(path, new_value->Clone());
+  current_values_.SetKey(path,
+                         base::Value::FromUniquePtrValue(std::move(new_value)));
 }
 
 void TrackedDictionary::SetBoolean(const std::string& path, bool new_value) {

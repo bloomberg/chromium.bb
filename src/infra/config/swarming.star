@@ -45,7 +45,6 @@ swarming.task_triggerers(
     pool_realm = "@root",
     groups = [
         "mdb/chrome-troopers",
-        "google/luci-task-force@google.com",
     ],
 )
 
@@ -147,7 +146,7 @@ swarming.task_triggerers(
 swarming.pool_realm(
     name = "pools/tests-mac-arm64",
     groups = [
-        # Allow CI builders (mac-arm64-rel-tests) to trigger tests.
+        # Allow CI builders (mac*-arm64-rel-tests) to trigger tests.
         "project-chromium-ci-task-accounts",
         # V8 *CI* is using these Macs, too.
         "project-v8-ci-task-accounts",

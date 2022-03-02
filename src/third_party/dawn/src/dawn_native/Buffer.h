@@ -37,20 +37,25 @@ namespace dawn_native {
         wgpu::BufferUsage::Vertex | wgpu::BufferUsage::Uniform | kReadOnlyStorageBuffer |
         wgpu::BufferUsage::Indirect;
 
-    class BufferBase : public ObjectBase {
+    static constexpr wgpu::BufferUsage kMappableBufferUsages =
+        wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite;
+
+    class BufferBase : public ApiObjectBase {
+      public:
         enum class BufferState {
             Unmapped,
             Mapped,
             MappedAtCreation,
             Destroyed,
         };
-
-      public:
         BufferBase(DeviceBase* device, const BufferDescriptor* descriptor);
 
         static BufferBase* MakeError(DeviceBase* device, const BufferDescriptor* descriptor);
 
+        ObjectType GetType() const override;
+
         uint64_t GetSize() const;
+        uint64_t GetAllocatedSize() const;
         wgpu::BufferUsage GetUsage() const;
 
         MaybeError MapAtCreation();
@@ -59,6 +64,7 @@ namespace dawn_native {
         MaybeError ValidateCanUseOnQueueNow() const;
 
         bool IsFullBufferRange(uint64_t offset, uint64_t size) const;
+        bool NeedsInitialization() const;
         bool IsDataInitialized() const;
         void SetIsDataInitialized();
 
@@ -80,31 +86,32 @@ namespace dawn_native {
         BufferBase(DeviceBase* device,
                    const BufferDescriptor* descriptor,
                    ObjectBase::ErrorTag tag);
+
+        // Constructor used only for mocking and testing.
+        BufferBase(DeviceBase* device, BufferState state);
+        void DestroyImpl() override;
+
         ~BufferBase() override;
 
-        void DestroyInternal();
-
         MaybeError MapAtCreationInternal();
+
+        uint64_t mAllocatedSize = 0;
 
       private:
         virtual MaybeError MapAtCreationImpl() = 0;
         virtual MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) = 0;
         virtual void UnmapImpl() = 0;
-        virtual void DestroyImpl() = 0;
         virtual void* GetMappedPointerImpl() = 0;
 
         virtual bool IsCPUWritableAtCreation() const = 0;
         MaybeError CopyFromStagingBuffer();
         void CallMapCallback(MapRequestID mapID, WGPUBufferMapAsyncStatus status);
 
-        MaybeError ValidateMap(wgpu::BufferUsage requiredUsage,
-                               WGPUBufferMapAsyncStatus* status) const;
         MaybeError ValidateMapAsync(wgpu::MapMode mode,
                                     size_t offset,
                                     size_t size,
                                     WGPUBufferMapAsyncStatus* status) const;
         MaybeError ValidateUnmap() const;
-        MaybeError ValidateDestroy() const;
         bool CanGetMappedRange(bool writable, size_t offset, size_t size) const;
         void UnmapInternal(WGPUBufferMapAsyncStatus callbackStatus);
 

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
@@ -22,7 +22,6 @@ namespace {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
-using ::testing::Invoke;
 using ::testing::WithArgs;
 
 // A callback that expects to be called immediately.
@@ -57,14 +56,15 @@ class DirectCallback {
 class ScriptPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
-    ON_CALL(mock_web_controller_, OnFindElement(Selector({"exists"}), _))
-        .WillByDefault(WithArgs<1>([](auto&& callback) {
+    ON_CALL(mock_web_controller_,
+            FindElement(Selector({"exists"}), /* strict= */ false, _))
+        .WillByDefault(WithArgs<2>([](auto&& callback) {
           std::move(callback).Run(OkClientStatus(),
                                   std::make_unique<ElementFinder::Result>());
         }));
     ON_CALL(mock_web_controller_,
-            OnFindElement(Selector({"does_not_exist"}), _))
-        .WillByDefault(RunOnceCallback<1>(
+            FindElement(Selector({"does_not_exist"}), /* strict= */ false, _))
+        .WillByDefault(RunOnceCallback<2>(
             ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
 
     SetUrl("http://www.example.com/path");
@@ -83,8 +83,7 @@ class ScriptPreconditionTest : public testing::Test {
 
     DirectCallback callback;
     BatchElementChecker batch_checks;
-    precondition->Check(url_, &batch_checks, *trigger_context_,
-                        executed_scripts_, callback.Get());
+    precondition->Check(url_, &batch_checks, *trigger_context_, callback.Get());
     batch_checks.Run(&mock_web_controller_);
     return callback.GetResultOrDie();
   }
@@ -92,7 +91,6 @@ class ScriptPreconditionTest : public testing::Test {
   GURL url_;
   MockWebController mock_web_controller_;
   std::unique_ptr<TriggerContext> trigger_context_;
-  std::map<std::string, ScriptStatusProto> executed_scripts_;
 };
 
 TEST_F(ScriptPreconditionTest, NoConditions) {
@@ -179,72 +177,6 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
   EXPECT_EQ(nullptr, ScriptPrecondition::FromProto("unused", proto));
 }
 
-TEST_F(ScriptPreconditionTest, WrongScriptStatusEqualComparator) {
-  ScriptPreconditionProto proto;
-
-  ScriptStatusMatchProto* script_status_match = proto.add_script_status_match();
-  script_status_match->set_script("previous_script_success");
-  script_status_match->set_comparator(ScriptStatusMatchProto::EQUAL);
-  script_status_match->set_status(SCRIPT_STATUS_NOT_RUN);
-  executed_scripts_["previous_script_success"] = SCRIPT_STATUS_SUCCESS;
-
-  EXPECT_FALSE(Check(proto));
-}
-
-TEST_F(ScriptPreconditionTest, WrongScriptStatusDifferentComparator) {
-  ScriptPreconditionProto proto;
-
-  ScriptStatusMatchProto* script_status_match = proto.add_script_status_match();
-  script_status_match->set_script("previous_script_success");
-  script_status_match->set_comparator(ScriptStatusMatchProto::DIFFERENT);
-  script_status_match->set_status(SCRIPT_STATUS_NOT_RUN);
-  executed_scripts_["previous_script_success"] = SCRIPT_STATUS_SUCCESS;
-
-  EXPECT_TRUE(Check(proto));
-}
-
-TEST_F(ScriptPreconditionTest, WrongScriptStatusComparatorNotSet) {
-  ScriptPreconditionProto proto;
-
-  ScriptStatusMatchProto* script_status_match = proto.add_script_status_match();
-  script_status_match->set_script("previous_script_success");
-  script_status_match->set_comparator(ScriptStatusMatchProto::EQUAL);
-  script_status_match->set_status(SCRIPT_STATUS_NOT_RUN);
-  executed_scripts_["previous_script_success"] = SCRIPT_STATUS_SUCCESS;
-
-  EXPECT_FALSE(Check(proto));
-}
-
-TEST_F(ScriptPreconditionTest, WrongScriptStatus) {
-  ScriptPreconditionProto proto;
-
-  ScriptStatusMatchProto* script_status_match = proto.add_script_status_match();
-  script_status_match->set_script("previous_script_success");
-  script_status_match->set_comparator(ScriptStatusMatchProto::EQUAL);
-  script_status_match->set_status(SCRIPT_STATUS_NOT_RUN);
-  executed_scripts_["previous_script_success"] = SCRIPT_STATUS_SUCCESS;
-
-  EXPECT_FALSE(Check(proto));
-}
-
-TEST_F(ScriptPreconditionTest, MultipleScriptStatus) {
-  ScriptPreconditionProto proto;
-
-  ScriptStatusMatchProto* previous1 = proto.add_script_status_match();
-  previous1->set_script("previous1");
-  previous1->set_comparator(ScriptStatusMatchProto::EQUAL);
-  previous1->set_status(SCRIPT_STATUS_SUCCESS);
-
-  ScriptStatusMatchProto* previous2 = proto.add_script_status_match();
-  previous2->set_script("previous2");
-  previous2->set_comparator(ScriptStatusMatchProto::DIFFERENT);
-  previous2->set_status(SCRIPT_STATUS_NOT_RUN);
-
-  executed_scripts_["previous1"] = SCRIPT_STATUS_SUCCESS;
-
-  EXPECT_FALSE(Check(proto));
-}
-
 TEST_F(ScriptPreconditionTest, ParameterMustExist) {
   ScriptPreconditionProto proto;
   ScriptParameterMatchProto* match = proto.add_script_parameter_match();
@@ -255,7 +187,7 @@ TEST_F(ScriptPreconditionTest, ParameterMustExist) {
 
   trigger_context_ = std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(
-          std::map<std::string, std::string>{{"param", "exists"}}),
+          base::flat_map<std::string, std::string>{{"param", "exists"}}),
       TriggerContext::Options{});
 
   EXPECT_TRUE(Check(proto));
@@ -271,7 +203,7 @@ TEST_F(ScriptPreconditionTest, ParameterMustNotExist) {
 
   trigger_context_ = std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(
-          std::map<std::string, std::string>{{"param", "exists"}}),
+          base::flat_map<std::string, std::string>{{"param", "exists"}}),
       TriggerContext::Options{});
 
   EXPECT_FALSE(Check(proto));
@@ -287,13 +219,13 @@ TEST_F(ScriptPreconditionTest, ParameterMustHaveValue) {
 
   trigger_context_ = std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(
-          std::map<std::string, std::string>{{"param", "another"}}),
+          base::flat_map<std::string, std::string>{{"param", "another"}}),
       TriggerContext::Options{});
   EXPECT_FALSE(Check(proto));
 
   trigger_context_ = std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(
-          std::map<std::string, std::string>{{"param", "value"}}),
+          base::flat_map<std::string, std::string>{{"param", "value"}}),
       TriggerContext::Options{});
   EXPECT_TRUE(Check(proto));
 }

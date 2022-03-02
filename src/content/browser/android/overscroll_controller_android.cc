@@ -19,6 +19,8 @@
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/l10n/l10n_util_android.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 using ui::DidOverscrollParams;
@@ -48,6 +50,12 @@ std::unique_ptr<OverscrollGlow> CreateGlowEffect(OverscrollGlowClient* client) {
           switches::kDisableOverscrollEdgeEffect)) {
     return nullptr;
   }
+
+  // The elastic overscroll feature indicates when the user is scrolling beyond
+  // the range of the scrollable area. Showing a glow in addition would be
+  // redundant.
+  if (switches::IsElasticOverscrollEnabled())
+    return nullptr;
 
   return std::make_unique<OverscrollGlow>(client);
 }
@@ -255,7 +263,7 @@ void OverscrollControllerAndroid::OnFrameMetadataUpdated(
     float device_scale_factor,
     const gfx::SizeF& scrollable_viewport_size,
     const gfx::SizeF& root_layer_size,
-    const gfx::Vector2dF& root_scroll_offset,
+    const gfx::PointF& root_scroll_offset,
     bool root_overflow_y_hidden) {
   if (!refresh_effect_ && !glow_effect_)
     return;
@@ -269,8 +277,8 @@ void OverscrollControllerAndroid::OnFrameMetadataUpdated(
   gfx::SizeF viewport_size =
       gfx::ScaleSize(scrollable_viewport_size, scale_factor);
   gfx::SizeF content_size = gfx::ScaleSize(root_layer_size, scale_factor);
-  gfx::Vector2dF content_scroll_offset =
-      gfx::ScaleVector2d(root_scroll_offset, scale_factor);
+  gfx::PointF content_scroll_offset =
+      gfx::ScalePoint(root_scroll_offset, scale_factor);
 
   if (refresh_effect_) {
     refresh_effect_->OnFrameUpdated(viewport_size, content_scroll_offset,

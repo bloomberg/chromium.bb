@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -37,6 +36,7 @@
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -45,6 +45,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/device/public/cpp/device_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -726,19 +727,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(2U, new_bubble_content.media_menus.size());
 }
 
-class GeolocationContentSettingBubbleModelTest
-    : public ContentSettingBubbleModelTest {
- public:
-  GeolocationContentSettingBubbleModelTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kMacCoreLocationImplementation);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(GeolocationContentSettingBubbleModelTest, Geolocation) {
+TEST_F(ContentSettingBubbleModelTest, Geolocation) {
 #if defined(OS_MAC)
   auto fake_geolocation_manager =
       std::make_unique<device::FakeGeolocationManager>();
@@ -1053,7 +1042,7 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
-  ProtocolHandlerRegistry registry(
+  custom_handlers::ProtocolHandlerRegistry registry(
       profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
@@ -1120,7 +1109,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
-  ProtocolHandlerRegistry registry(
+  custom_handlers::ProtocolHandlerRegistry registry(
       profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
@@ -1434,7 +1423,7 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
   constexpr size_t kItemCount = 3;
   for (size_t i = 1; i <= kItemCount; i++) {
     NavigateParams navigate_params =
-        params.CreateNavigateParams(web_contents());
+        params.CreateNavigateParams(process(), web_contents());
     EXPECT_FALSE(blocked_content::MaybeBlockPopup(
         web_contents(), &url,
         std::make_unique<ChromePopupNavigationDelegate>(

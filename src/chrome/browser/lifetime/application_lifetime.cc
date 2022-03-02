@@ -13,6 +13,8 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/threading/hang_watcher.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
@@ -23,7 +25,7 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/metrics/thread_watcher.h"
+#include "chrome/browser/metrics/shutdown_watcher_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/buildflags.h"
@@ -36,9 +38,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -47,12 +51,16 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/aura/env.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -108,11 +116,12 @@ bool SetLocaleForNextStart(PrefService* local_state) {
   // If a policy mandates the login screen locale, use it.
   ash::CrosSettings* cros_settings = ash::CrosSettings::Get();
   const base::ListValue* login_screen_locales = nullptr;
-  std::string login_screen_locale;
-  if (cros_settings->GetList(chromeos::kDeviceLoginScreenLocales,
+  if (cros_settings->GetList(ash::kDeviceLoginScreenLocales,
                              &login_screen_locales) &&
-      !login_screen_locales->empty() &&
-      login_screen_locales->GetString(0, &login_screen_locale)) {
+      !login_screen_locales->GetList().empty() &&
+      login_screen_locales->GetList()[0].is_string()) {
+    std::string login_screen_locale =
+        login_screen_locales->GetList()[0].GetString();
     local_state->SetString(language::prefs::kApplicationLocale,
                            login_screen_locale);
     return true;
@@ -155,9 +164,10 @@ void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);
+  KeepAliveRegistry::GetInstance()->SetRestarting();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->set_restart_requested();
+  ash::BootTimesRecorder::Get()->set_restart_requested();
 
   DCHECK(!g_send_stop_request_to_session_manager);
   // Make sure we don't send stop request to the session manager.
@@ -165,14 +175,30 @@ void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
   // Run exit process in clean stack.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&ExitIgnoreUnloadHandlers));
-#else
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH).
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Request ash-chrome to relaunch Lacros on its process termination.
+  // Do not set kRestartLastSessionOnShutdown for Lacros, because it tries to
+  // respawn another Chrome process from the current Chrome process, which
+  // does not work on Lacros.
+  auto* lacros_service = chromeos::LacrosService::Get();
+  if (lacros_service->IsAvailable<crosapi::mojom::BrowserServiceHost>() &&
+      lacros_service->GetInterfaceVersion(
+          crosapi::mojom::BrowserServiceHost::Uuid_) >=
+          static_cast<int>(
+              crosapi::mojom::BrowserServiceHost::kRequestRelaunchMinVersion)) {
+    lacros_service->GetRemote<crosapi::mojom::BrowserServiceHost>()
+        ->RequestRelaunch();
+  }
+#else   // !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Set the flag to restore state after the restart.
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   if (ignore_unload_handlers)
     ExitIgnoreUnloadHandlers();
   else
     AttemptExit();
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -180,9 +206,12 @@ void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
 
 #if !defined(OS_ANDROID)
 void MarkAsCleanShutdown() {
-  // TODO(beng): Can this use ProfileManager::GetLoadedProfiles() instead?
-  for (auto* browser : *BrowserList::GetInstance())
-    browser->profile()->SetExitType(Profile::EXIT_NORMAL);
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (ExitTypeService* exit_type_service =
+            ExitTypeService::GetInstanceForProfile(browser->profile())) {
+      exit_type_service->SetCurrentSessionExitType(ExitType::kClean);
+    }
+  }
 }
 #endif
 
@@ -236,8 +265,8 @@ void CloseAllBrowsers() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker(
-      "StartedClosingWindows", false);
+  ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("StartedClosingWindows",
+                                                     false);
 #endif
   scoped_refptr<BrowserCloseManager> browser_close_manager =
       new BrowserCloseManager;
@@ -248,12 +277,11 @@ void CloseAllBrowsers() {
 void AttemptUserExit() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   VLOG(1) << "AttemptUserExit";
-  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("LogoutStarted",
-                                                          false);
+  ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("LogoutStarted", false);
 
   PrefService* state = g_browser_process->local_state();
   if (state) {
-    chromeos::BootTimesRecorder::Get()->OnLogoutStarted(state);
+    ash::BootTimesRecorder::Get()->OnLogoutStarted(state);
 
     if (SetLocaleForNextStart(state)) {
       TRACE_EVENT0("shutdown", "CommitPendingWrite");
@@ -378,11 +406,23 @@ void SessionEnding() {
   // to kill us soon. Either way we don't care about that here.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  // Start watching for hang during shutdown, and crash it if takes too long.
-  // We disarm when |shutdown_watcher| object is destroyed, which is when we
-  // exit this function.
-  ShutdownWatcherHelper shutdown_watcher;
-  shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
+  // Two different types of hang detection cannot attempt to upload crashes at
+  // the same time or they would interfere with each other.
+  absl::optional<ShutdownWatcherHelper> shutdown_watcher;
+  absl::optional<base::WatchHangsInScope> watch_hangs_scope;
+  constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(90)};
+  if (base::HangWatcher::IsCrashReportingEnabled()) {
+    // Use ShutdownWatcherHelper logic to choose delay to get identical
+    // behavior.
+    watch_hangs_scope.emplace(
+        ShutdownWatcherHelper::GetPerChannelTimeout(kShutdownHangDelay));
+  } else {
+    // Start watching for hang during shutdown, and crash it if takes too long.
+    // We disarm when |shutdown_watcher| object is destroyed, which is when we
+    // exit this function.
+    shutdown_watcher.emplace();
+    shutdown_watcher->Arm(kShutdownHangDelay);
+  }
 
   browser_shutdown::OnShutdownStarting(
       browser_shutdown::ShutdownType::kEndSession);

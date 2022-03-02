@@ -28,12 +28,11 @@ AXTreeFormatterBase::~AXTreeFormatterBase() = default;
 
 // static
 const char AXTreeFormatterBase::kChildrenDictAttr[] = "children";
-const char AXTreeFormatterBase::kScriptsDictAttr[] = "scripts";
 
 bool AXTreeFormatterBase::ShouldDumpNode(
     const AXPlatformNodeDelegate& node) const {
   for (const std::pair<ax::mojom::StringAttribute, std::string>&
-           string_attribute : node.GetData().string_attributes) {
+           string_attribute : node.GetStringAttributes()) {
     if (string_attribute.second.find(kSkipString) != std::string::npos)
       return false;
   }
@@ -43,7 +42,7 @@ bool AXTreeFormatterBase::ShouldDumpNode(
 bool AXTreeFormatterBase::ShouldDumpChildren(
     const AXPlatformNodeDelegate& node) const {
   for (const std::pair<ax::mojom::StringAttribute, std::string>&
-           string_attribute : node.GetData().string_attributes) {
+           string_attribute : node.GetStringAttributes()) {
     if (string_attribute.second.find(kSkipChildren) != std::string::npos)
       return false;
   }
@@ -66,20 +65,7 @@ base::Value AXTreeFormatterBase::BuildNode(AXPlatformNodeDelegate* node) const {
 
 std::string AXTreeFormatterBase::FormatTree(const base::Value& dict) const {
   std::string contents;
-
-  // Format the tree.
   RecursiveFormatTree(dict, &contents);
-
-  // Format scripts.
-  const base::Value* scripts = dict.FindListKey(kScriptsDictAttr);
-  if (!scripts)
-    return contents;
-
-  for (const base::Value& script : scripts->GetList()) {
-    WriteAttribute(false, script.GetString(), &contents);
-    contents += "\n";
-  }
-
   return contents;
 }
 
@@ -87,6 +73,15 @@ base::Value AXTreeFormatterBase::BuildTreeForNode(ui::AXNode* root) const {
   NOTREACHED()
       << "Only supported when called on AccessibilityTreeFormatterBlink.";
   return base::Value();
+}
+
+std::string AXTreeFormatterBase::EvaluateScript(
+    AXPlatformNodeDelegate* root,
+    const std::vector<AXScriptInstruction>& instructions,
+    size_t start_index,
+    size_t end_index) const {
+  NOTREACHED() << "Not implemented";
+  return {};
 }
 
 void AXTreeFormatterBase::RecursiveFormatTree(const base::Value& dict,

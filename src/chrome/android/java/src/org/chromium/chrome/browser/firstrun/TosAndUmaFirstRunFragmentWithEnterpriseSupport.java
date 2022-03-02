@@ -20,7 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.policy.EnterpriseInfo;
+import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.components.policy.PolicyService;
 import org.chromium.ui.widget.LoadingView;
@@ -33,23 +33,6 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
     private static final String TAG = "TosAndUmaFragment";
 
     private static Runnable sOverridenOnExitFreRunnableForTest;
-
-    /** FRE page that instantiates this fragment. */
-    public static class Page
-            implements FirstRunPage<TosAndUmaFirstRunFragmentWithEnterpriseSupport> {
-        @Override
-        public boolean shouldSkipPageOnCreate() {
-            // TODO(crbug.com/1111490): Revisit during post-MVP.
-            // There's an edge case where we accept the welcome page in the main app, abort the FRE,
-            // then go through this CCT FRE again.
-            return FirstRunStatus.shouldSkipWelcomePage();
-        }
-
-        @Override
-        public TosAndUmaFirstRunFragmentWithEnterpriseSupport instantiateFragment() {
-            return new TosAndUmaFirstRunFragmentWithEnterpriseSupport();
-        }
-    }
 
     private class CctTosFragmentMetricsNameProvider
             implements SkipTosDialogPolicyListener.HistogramNameProvider {

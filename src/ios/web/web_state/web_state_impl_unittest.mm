@@ -17,6 +17,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -24,12 +25,12 @@
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/deprecated/global_web_state_observer.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/test/fakes/async_web_state_policy_decider.h"
-#include "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_java_script_dialog_presenter.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
@@ -43,6 +44,7 @@
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+#include "ios/web/web_state/web_state_policy_decider_test_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -119,19 +121,17 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
       : WebStatePolicyDecider(web_state) {}
   virtual ~MockWebStatePolicyDecider() {}
 
-  MOCK_METHOD2(ShouldAllowRequest,
-               WebStatePolicyDecider::PolicyDecision(
-                   NSURLRequest* request,
-                   const WebStatePolicyDecider::RequestInfo& request_info));
+  MOCK_METHOD3(ShouldAllowRequest,
+               void(NSURLRequest* request,
+                    WebStatePolicyDecider::RequestInfo request_info,
+                    WebStatePolicyDecider::PolicyDecisionCallback callback));
 
   MOCK_METHOD2(ShouldAllowErrorPageToBeDisplayed,
                bool(NSURLResponse* response, bool for_main_frame));
-  MOCK_METHOD3(
-      ShouldAllowResponse,
-      void(NSURLResponse* response,
-           bool for_main_frame,
-           base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)>
-               callback));
+  MOCK_METHOD3(ShouldAllowResponse,
+               void(NSURLResponse* response,
+                    WebStatePolicyDecider::ResponseInfo response_info,
+                    WebStatePolicyDecider::PolicyDecisionCallback callback));
   MOCK_METHOD0(WebStateDestroyed, void());
 };
 
@@ -139,11 +139,11 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
 // Sets |is_called| to true if it is called, and checks that the parameters
 // match their expected values.
 void HandleScriptCommand(bool* is_called,
-                         base::DictionaryValue* expected_value,
+                         base::Value* expected_value,
                          const GURL& expected_url,
                          bool expected_user_is_interacting,
                          web::WebFrame* expected_sender_frame,
-                         const base::DictionaryValue& value,
+                         const base::Value& value,
                          const GURL& url,
                          bool user_is_interacting,
                          web::WebFrame* sender_frame) {
@@ -309,19 +309,19 @@ TEST_F(WebStateImplTest, ObserverTest) {
   // Test that WebFrameDidBecomeAvailable() is called.
   ASSERT_FALSE(observer->web_frame_available_info());
   auto main_frame = FakeWebFrame::CreateMainWebFrame(GURL::EmptyGURL());
-  web_state_->OnWebFrameAvailable(main_frame.get());
+  WebFrame* main_frame_ptr = main_frame.get();
+  web_state_->WebFrameBecameAvailable(std::move(main_frame));
   ASSERT_TRUE(observer->web_frame_available_info());
   EXPECT_EQ(web_state_.get(), observer->web_frame_available_info()->web_state);
-  EXPECT_EQ(main_frame.get(), observer->web_frame_available_info()->web_frame);
+  EXPECT_EQ(main_frame_ptr, observer->web_frame_available_info()->web_frame);
 
   // Test that WebFrameWillBecomeUnavailable() is called.
   ASSERT_FALSE(observer->web_frame_unavailable_info());
-  web_state_->OnWebFrameUnavailable(main_frame.get());
+  web_state_->WebFrameBecameUnavailable(main_frame_ptr->GetFrameId());
   ASSERT_TRUE(observer->web_frame_unavailable_info());
   EXPECT_EQ(web_state_.get(),
             observer->web_frame_unavailable_info()->web_state);
-  EXPECT_EQ(main_frame.get(),
-            observer->web_frame_unavailable_info()->web_frame);
+  EXPECT_EQ(main_frame_ptr, observer->web_frame_unavailable_info()->web_frame);
 
   // Test that RenderProcessGone() is called.
   SetIgnoreRenderProcessCrashesDuringTesting(true);
@@ -392,36 +392,6 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(nullptr, observer->web_state());
 }
 
-// Tests that placeholder navigations are not visible to WebStateObservers.
-TEST_F(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
-  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
-    return;
-
-  FakeWebStateObserver observer(web_state_.get());
-  GURL placeholder_url =
-      wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab"));
-  std::unique_ptr<NavigationContextImpl> context =
-      NavigationContextImpl::CreateNavigationContext(
-          web_state_.get(), placeholder_url,
-          /*has_user_gesture=*/true,
-          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
-          /*is_renderer_initiated=*/true);
-  context->SetPlaceholderNavigation(true);
-  // Test that OnPageLoaded() is not called.
-  web_state_->OnPageLoaded(placeholder_url, /*load_success=*/true);
-  EXPECT_FALSE(observer.load_page_info());
-  web_state_->OnPageLoaded(placeholder_url, /*load_success=*/false);
-  EXPECT_FALSE(observer.load_page_info());
-
-  // Test that OnNavigationStarted() is not called.
-  web_state_->OnNavigationStarted(context.get());
-  EXPECT_FALSE(observer.did_start_navigation_info());
-
-  // Test that OnNavigationFinished() is not called.
-  web_state_->OnNavigationFinished(context.get());
-  EXPECT_FALSE(observer.did_finish_navigation_info());
-}
-
 // Tests that WebStateDelegate methods appropriately called.
 TEST_F(WebStateImplTest, DelegateTest) {
   FakeWebStateDelegate delegate;
@@ -486,12 +456,6 @@ TEST_F(WebStateImplTest, DelegateTest) {
       PageTransitionCoreTypeIs(params.transition, actual_params.transition));
   EXPECT_EQ(params.is_renderer_initiated, actual_params.is_renderer_initiated);
 
-  // Test that HandleContextMenu() is called.
-  EXPECT_FALSE(delegate.handle_context_menu_called());
-  web::ContextMenuParams context_menu_params;
-  web_state_->HandleContextMenu(context_menu_params);
-  EXPECT_TRUE(delegate.handle_context_menu_called());
-
   // Test that ShowRepostFormWarningDialog() is called.
   EXPECT_FALSE(delegate.last_repost_form_request());
   base::OnceCallback<void(bool)> repost_callback;
@@ -532,32 +496,6 @@ TEST_F(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(delegate.last_authentication_request()->protection_space,
             protection_space);
   EXPECT_EQ(delegate.last_authentication_request()->credential, credential);
-
-  // Test that ShouldPreviewLink() is delegated correctly.
-  GURL link_url("http://link.test/");
-  delegate.SetShouldPreviewLink(false);
-  delegate.ClearLastLinkURL();
-  EXPECT_FALSE(web_state_->ShouldPreviewLink(link_url));
-  EXPECT_EQ(link_url, delegate.last_link_url());
-  delegate.SetShouldPreviewLink(true);
-  delegate.ClearLastLinkURL();
-  EXPECT_TRUE(web_state_->ShouldPreviewLink(link_url));
-  EXPECT_EQ(link_url, delegate.last_link_url());
-
-  // Test that GetPreviewingViewController() is delegated correctly.
-  UIViewController* previewing_view_controller =
-      OCMClassMock([UIViewController class]);
-  delegate.SetPreviewingViewController(previewing_view_controller);
-  delegate.ClearLastLinkURL();
-  EXPECT_EQ(previewing_view_controller,
-            web_state_->GetPreviewingViewController(link_url));
-  EXPECT_EQ(link_url, delegate.last_link_url());
-
-  // Test that CommitPreviewingViewController() is called.
-  delegate.ClearLastPreviewingViewController();
-  web_state_->CommitPreviewingViewController(previewing_view_controller);
-  EXPECT_EQ(previewing_view_controller,
-            delegate.last_previewing_view_controller());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.
@@ -595,11 +533,14 @@ TEST_F(WebStateImplTest, GlobalObserverTest) {
 // This is needed because WebStatePolicyDecider::RequestInfo doesn't support
 // operator==.
 MATCHER_P(RequestInfoMatch, expected_request_info, /* argument_name = */ "") {
-  return ui::PageTransitionTypeIncludingQualifiersIs(
-             arg.transition_type, expected_request_info.transition_type) &&
-         arg.target_frame_is_main ==
-             expected_request_info.target_frame_is_main &&
-         arg.has_user_gesture == expected_request_info.has_user_gesture;
+  return ::web::RequestInfoMatch(expected_request_info, arg);
+}
+
+// A Google Mock matcher which matches WebStatePolicyDecider::ResponseInfo.
+// This is needed because WebStatePolicyDecider::ResponseInfo doesn't support
+// operator==.
+MATCHER_P(ResponseInfoMatch, expected_response_info, /* argument_name = */ "") {
+  return ::web::ResponseInfoMatch(expected_response_info, arg);
 }
 
 // Verifies that policy deciders are correctly called by the web state.
@@ -616,41 +557,53 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
                                               textEncodingName:nil];
 
   // Test that ShouldAllowRequest() is called for the same parameters.
-  WebStatePolicyDecider::RequestInfo request_info_main_frame(
+  const WebStatePolicyDecider::RequestInfo request_info_main_frame(
       ui::PageTransition::PAGE_TRANSITION_LINK,
       /*target_main_frame=*/true,
       /*target_frame_is_cross_origin=*/false,
       /*has_user_gesture=*/false);
-  EXPECT_CALL(decider, ShouldAllowRequest(
-                           request, RequestInfoMatch(request_info_main_frame)))
+  EXPECT_CALL(
+      decider,
+      ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame), _))
       .Times(1)
-      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
-  EXPECT_CALL(decider2, ShouldAllowRequest(
-                            request, RequestInfoMatch(request_info_main_frame)))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(
+      decider2,
+      ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame), _))
       .Times(1)
-      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   WebStatePolicyDecider::PolicyDecision policy_decision =
-      web_state_->ShouldAllowRequest(request, request_info_main_frame);
+      WebStatePolicyDecider::PolicyDecision::Cancel();
+  auto callback = base::BindRepeating(
+      [](WebStatePolicyDecider::PolicyDecision* policy_decision,
+         WebStatePolicyDecider::PolicyDecision result) {
+        *policy_decision = result;
+      },
+      base::Unretained(&policy_decision));
+  web_state_->ShouldAllowRequest(request, request_info_main_frame, callback);
   EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
   EXPECT_FALSE(policy_decision.ShouldCancelNavigation());
 
-  WebStatePolicyDecider::RequestInfo request_info_iframe(
+  const WebStatePolicyDecider::RequestInfo request_info_iframe(
       ui::PageTransition::PAGE_TRANSITION_LINK,
       /*target_main_frame=*/false,
       /*target_frame_is_cross_origin=*/false,
       /*has_user_gesture=*/false);
   EXPECT_CALL(decider, ShouldAllowRequest(
-                           request, RequestInfoMatch(request_info_iframe)))
+                           request, RequestInfoMatch(request_info_iframe), _))
       .Times(1)
-      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(decider2, ShouldAllowRequest(
-                            request, RequestInfoMatch(request_info_iframe)))
+                            request, RequestInfoMatch(request_info_iframe), _))
       .Times(1)
-      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
-  policy_decision =
-      web_state_->ShouldAllowRequest(request, request_info_iframe);
+  web_state_->ShouldAllowRequest(request, request_info_iframe, callback);
   EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
   EXPECT_FALSE(policy_decision.ShouldCancelNavigation());
 
@@ -659,58 +612,63 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
   {
     bool decider_called = false;
     bool decider2_called = false;
-    EXPECT_CALL(
-        decider,
-        ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame)))
+    EXPECT_CALL(decider,
+                ShouldAllowRequest(
+                    request, RequestInfoMatch(request_info_main_frame), _))
         .Times(AtMost(1))
-        .WillOnce(
-            DoAll(Assign(&decider_called, true),
-                  Return(WebStatePolicyDecider::PolicyDecision::Cancel())));
-    EXPECT_CALL(
-        decider2,
-        ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame)))
+        .WillOnce(DoAll(Assign(&decider_called, true),
+                        RunOnceCallback<2>(
+                            WebStatePolicyDecider::PolicyDecision::Cancel())));
+    EXPECT_CALL(decider2,
+                ShouldAllowRequest(
+                    request, RequestInfoMatch(request_info_main_frame), _))
         .Times(AtMost(1))
-        .WillOnce(
-            DoAll(Assign(&decider2_called, true),
-                  Return(WebStatePolicyDecider::PolicyDecision::Cancel())));
+        .WillOnce(DoAll(Assign(&decider2_called, true),
+                        RunOnceCallback<2>(
+                            WebStatePolicyDecider::PolicyDecision::Cancel())));
 
-    WebStatePolicyDecider::PolicyDecision policy_decision =
-        web_state_->ShouldAllowRequest(request, request_info_main_frame);
+    web_state_->ShouldAllowRequest(request, request_info_main_frame, callback);
     EXPECT_FALSE(policy_decision.ShouldAllowNavigation());
     EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
     EXPECT_FALSE(decider_called && decider2_called);
   }
 
+  const WebStatePolicyDecider::ResponseInfo response_info_main_frame(
+      /* for_main_frame = */ true);
+
   // Test that ShouldAllowResponse() is called.
-  EXPECT_CALL(decider, ShouldAllowResponse(response, true, _))
+  EXPECT_CALL(decider,
+              ShouldAllowResponse(
+                  response, ResponseInfoMatch(response_info_main_frame), _))
       .Times(1)
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
-  EXPECT_CALL(decider2, ShouldAllowResponse(response, true, _))
+  EXPECT_CALL(decider2,
+              ShouldAllowResponse(
+                  response, ResponseInfoMatch(response_info_main_frame), _))
       .Times(1)
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
-  policy_decision = WebStatePolicyDecider::PolicyDecision::Cancel();
-  auto callback = base::BindRepeating(
-      [](WebStatePolicyDecider::PolicyDecision* policy_decision,
-         WebStatePolicyDecider::PolicyDecision result) {
-        *policy_decision = result;
-      },
-      base::Unretained(&policy_decision));
-  web_state_->ShouldAllowResponse(response, true, callback);
+  web_state_->ShouldAllowResponse(response, response_info_main_frame, callback);
   EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
   EXPECT_FALSE(policy_decision.ShouldCancelNavigation());
 
   // Test that ShouldAllowResponse() is stopping on negative answer. Only the
   // first decider should be called.
   {
-    EXPECT_CALL(decider, ShouldAllowResponse(response, false, _))
+    const WebStatePolicyDecider::ResponseInfo response_info_iframe(
+        /* for_main_frame = */ false);
+
+    EXPECT_CALL(decider,
+                ShouldAllowResponse(response,
+                                    ResponseInfoMatch(response_info_iframe), _))
         .Times(1)
         .WillOnce(RunOnceCallback<2>(
             WebStatePolicyDecider::PolicyDecision::Cancel()));
 
-    web_state_->ShouldAllowResponse(response, false, std::move(callback));
+    web_state_->ShouldAllowResponse(response, response_info_iframe,
+                                    std::move(callback));
     EXPECT_FALSE(policy_decision.ShouldAllowNavigation());
     EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
   }
@@ -722,7 +680,7 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
                    expectedContentLength:0
                         textEncodingName:nil];
 
-  WebStatePolicyDecider::RequestInfo error_request_info_main_frame(
+  const WebStatePolicyDecider::RequestInfo error_request_info_main_frame(
       ui::PageTransition::PAGE_TRANSITION_LINK,
       /*target_main_frame=*/true,
       /*target_frame_is_cross_origin=*/false,
@@ -771,6 +729,9 @@ TEST_F(WebStateImplTest, AsyncShouldAllowResponseTest) {
       WebStatePolicyDecider::PolicyDecision::Allow();
   __block bool callback_called = false;
 
+  const WebStatePolicyDecider::ResponseInfo expected_response_info(
+      /*for_main_frame=*/true);
+
   base::RepeatingCallback<void(WebStatePolicyDecider::PolicyDecision)>
       callback =
           base::BindRepeating(^(WebStatePolicyDecider::PolicyDecision result) {
@@ -779,11 +740,13 @@ TEST_F(WebStateImplTest, AsyncShouldAllowResponseTest) {
           });
 
   // Case 1: All deciders allow the navigation.
-  EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))
+  EXPECT_CALL(sync_decider,
+              ShouldAllowResponse(response,
+                                  ResponseInfoMatch(expected_response_info), _))
       .Times(1)
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
-  web_state_->ShouldAllowResponse(response, /*for_main_frame=*/true, callback);
+  web_state_->ShouldAllowResponse(response, expected_response_info, callback);
   EXPECT_FALSE(callback_called);
   async_decider1.InvokeCallback(WebStatePolicyDecider::PolicyDecision::Allow());
   EXPECT_FALSE(callback_called);
@@ -794,12 +757,14 @@ TEST_F(WebStateImplTest, AsyncShouldAllowResponseTest) {
   // Case 2: One decider allows the navigation, one decider wants to show an
   // error, and another decider wants to cancel the navigation. In this case,
   // the navigation should be cancelled, with no error shown.
-  EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))
+  EXPECT_CALL(sync_decider,
+              ShouldAllowResponse(response,
+                                  ResponseInfoMatch(expected_response_info), _))
       .Times(1)
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   callback_called = false;
-  web_state_->ShouldAllowResponse(response, /*for_main_frame=*/true, callback);
+  web_state_->ShouldAllowResponse(response, expected_response_info, callback);
   EXPECT_FALSE(callback_called);
   NSError* error1 = [NSError errorWithDomain:@"ErrorDomain"
                                         code:1
@@ -815,12 +780,14 @@ TEST_F(WebStateImplTest, AsyncShouldAllowResponseTest) {
 
   // Case 3: Two deciders want to show an error. In this case, the error to be
   // shown should be from the decider that responded first.
-  EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))
+  EXPECT_CALL(sync_decider,
+              ShouldAllowResponse(response,
+                                  ResponseInfoMatch(expected_response_info), _))
       .Times(1)
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   callback_called = false;
-  web_state_->ShouldAllowResponse(response, /*for_main_frame=*/true, callback);
+  web_state_->ShouldAllowResponse(response, expected_response_info, callback);
   EXPECT_FALSE(callback_called);
   NSError* error2 = [NSError errorWithDomain:@"ErrorDomain"
                                         code:2
@@ -841,8 +808,8 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   // Set up three script command callbacks.
   const std::string kPrefix1("prefix1");
   const std::string kCommand1("prefix1.command1");
-  base::DictionaryValue value_1;
-  value_1.SetString("a", "b");
+  base::Value value_1(base::Value::Type::DICTIONARY);
+  value_1.SetStringKey("a", "b");
   const GURL kUrl1("http://foo");
   bool is_called_1 = false;
   auto main_frame = FakeWebFrame::CreateMainWebFrame(GURL::EmptyGURL());
@@ -855,8 +822,8 @@ TEST_F(WebStateImplTest, ScriptCommand) {
 
   const std::string kPrefix2("prefix2");
   const std::string kCommand2("prefix2.command2");
-  base::DictionaryValue value_2;
-  value_2.SetString("c", "d");
+  base::Value value_2(base::Value::Type::DICTIONARY);
+  value_2.SetStringKey("c", "d");
   const GURL kUrl2("http://bar");
   bool is_called_2 = false;
   base::CallbackListSubscription subscription_2 =
@@ -868,8 +835,8 @@ TEST_F(WebStateImplTest, ScriptCommand) {
 
   const std::string kPrefix3("prefix3");
   const std::string kCommand3("prefix3.command3");
-  base::DictionaryValue value_3;
-  value_3.SetString("e", "f");
+  base::Value value_3(base::Value::Type::DICTIONARY);
+  value_3.SetStringKey("e", "f");
   const GURL kUrl3("http://iframe");
   bool is_called_3 = false;
   auto subframe = FakeWebFrame::CreateChildWebFrame(GURL::EmptyGURL());
@@ -1050,6 +1017,10 @@ TEST_F(WebStateImplTest, NoUncommittedRestoreSession) {
 }
 
 TEST_F(WebStateImplTest, BuildStorageDuringRestore) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({},
+                                       {features::kSynthesizedRestoreSession});
+
   GURL urls[3] = {GURL("https://chromium.test/1"),
                   GURL("https://chromium.test/2"),
                   GURL("https://chromium.test/3")};
@@ -1088,6 +1059,10 @@ TEST_F(WebStateImplTest, BuildStorageDuringRestore) {
   }));
   session_storage = web_state_->BuildSessionStorage();
   EXPECT_EQ(0, session_storage.lastCommittedItemIndex);
+
+  // Wait for the error to be displayed.
+  EXPECT_TRUE(web::test::WaitForWebViewContainingText(
+      web_state_.get(), "error", base::test::ios::kWaitForJSCompletionTimeout));
 }
 
 // Tests that CanTakeSnapshot() is false when a JavaScript dialog is being
@@ -1254,7 +1229,18 @@ TEST_F(WebStateImplTest, VisibilitychangeEventFired) {
 
 // Tests that WebState sessionState data doesn't load things with unsafe
 // restore.
-TEST_F(WebStateImplTest, DISABLED_MixedSafeUnsafeRestore) {
+TEST_F(WebStateImplTest, MixedSafeUnsafeRestore) {
+  if (@available(iOS 15, *)) {
+  } else {
+    return;
+  }
+
+  // There's never any unsafe restore with kSynthesizedRestoreSession and iOS15,
+  // so disable it first, and test again enabled after.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({},
+                                       {features::kSynthesizedRestoreSession});
+
   GURL urls[3] = {GURL("https://chromium.test/1"),
                   GURL("https://chromium.test/2"),
                   GURL("https://chromium.test/3")};
@@ -1275,13 +1261,30 @@ TEST_F(WebStateImplTest, DISABLED_MixedSafeUnsafeRestore) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return restore_done;
   }));
+  EXPECT_EQ(nullptr, web_state_->SessionStateData());
 
-  NSData* data = web_state_->SessionStateData();
-  EXPECT_EQ(nullptr, data);
+  // Enable kSynthesizedRestoreSession to test the opposite.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitWithFeatures({features::kSynthesizedRestoreSession},
+                                       {});
+  for (size_t index = 0; index < base::size(urls); ++index) {
+    items.push_back(NavigationItem::Create());
+    items.back()->SetURL(urls[index]);
+  }
+  web::WebState::CreateParams params(GetBrowserState());
+  __block auto web_state = std::make_unique<web::WebStateImpl>(params);
+  web_state->GetView();
+  web_state->SetKeepRenderProcessAlive(true);
+  web_state->GetNavigationManager()->Restore(0, std::move(items));
+  EXPECT_NE(nullptr, web_state->SessionStateData());
 }
 
 // Tests that WebState sessionState data can be read and writen.
-TEST_F(WebStateImplTest, DISABLED_ReadAndWriteSessionStateData) {
+TEST_F(WebStateImplTest, ReadAndWriteSessionStateData) {
+  if (@available(iOS 15, *)) {
+  } else {
+    return;
+  }
   web::WebState::CreateParams params(GetBrowserState());
   __block auto web_state = std::make_unique<web::WebStateImpl>(params);
   CRWWebController* web_controller = web_state->GetWebController();

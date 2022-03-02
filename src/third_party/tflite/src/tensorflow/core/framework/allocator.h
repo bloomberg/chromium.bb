@@ -32,24 +32,24 @@ limitations under the License.
 
 namespace tensorflow {
 
-class TensorShape;
-
 // Attributes for a single allocation call. Different calls to the same
 // allocator could potentially have different allocation attributes.
 struct AllocationAttributes {
   AllocationAttributes() = default;
 
-  AllocationAttributes(bool no_retry_on_failure, bool allocation_will_be_logged,
+  AllocationAttributes(bool retry_on_failure, bool allocation_will_be_logged,
                        std::function<uint64()>* freed_by_func)
-      : no_retry_on_failure(no_retry_on_failure),
+      : retry_on_failure(retry_on_failure),
         allocation_will_be_logged(allocation_will_be_logged),
         freed_by_func(freed_by_func) {}
 
-  // If the first attempt to allocate the memory fails, the allocation
-  // should return immediately without retrying.
-  // An example use case is optional scratch spaces where a failure
-  // has only performance impact.
-  bool no_retry_on_failure = false;
+  // If the first attempt to allocate the memory fails, the allocation should
+  // wait and retry (with a timeout).
+  //
+  // This is usually set to true, but we may set it to false in cases where a
+  // failure has only performance impact (e.g. optional scratch space
+  // allocation).
+  bool retry_on_failure = true;
   // If a Tensor is allocated without the following set to true, then
   // it is logged as an unknown allocation. During execution Tensors
   // should be allocated through the OpKernelContext which records
@@ -64,103 +64,27 @@ struct AllocationAttributes {
   TF_DISALLOW_COPY_AND_ASSIGN(AllocationAttributes);
 };
 
-// Annotations for memory profiling and debugging purpose. The runtime will
-// cache the annotations in thread-local memory, and some allocators will try to
-// tag allocations with the annotations.
-struct MemoryDebugAnnotation {
-  const char* pending_op_name = nullptr;
-  int64 pending_step_id = 0;
-  const char* pending_region_type = nullptr;
-  int32 pending_data_type = 0;
-  const TensorShape* pending_shape = nullptr;
-};
-
-// Wrapper class of MemoryDebugAnnotation for RAII.
-class ScopedMemoryDebugAnnotation {
- public:
-  static const MemoryDebugAnnotation& CurrentAnnotation() {
-    return annotation_;
-  }
-
-  explicit ScopedMemoryDebugAnnotation(const char* op_name) {
-    last_annotation_ = annotation_;
-    CleanupAnnotation();
-    annotation_.pending_op_name = op_name;
-  }
-
-  explicit ScopedMemoryDebugAnnotation(const char* op_name, int64 step_id) {
-    last_annotation_ = annotation_;
-    CleanupAnnotation();
-    annotation_.pending_op_name = op_name;
-    annotation_.pending_step_id = step_id;
-  }
-
-  // This constructor keeps the pending_op_name and pending_step_id from parent
-  // (if any).  Otherwise it overwrites with op_name.
-  explicit ScopedMemoryDebugAnnotation(const char* op_name,
-                                       const char* region_type, int32 data_type,
-                                       const TensorShape* shape) {
-    last_annotation_ = annotation_;
-    if (!annotation_.pending_op_name) {
-      annotation_.pending_op_name = op_name;
-    }
-    annotation_.pending_region_type = region_type;
-    annotation_.pending_data_type = data_type;
-    annotation_.pending_shape = shape;
-  }
-
-  explicit ScopedMemoryDebugAnnotation(const char* op_name, int64 step_id,
-                                       const char* region_type, int32 data_type,
-                                       const TensorShape* shape) {
-    last_annotation_ = annotation_;
-    annotation_.pending_op_name = op_name;
-    annotation_.pending_step_id = step_id;
-    annotation_.pending_region_type = region_type;
-    annotation_.pending_data_type = data_type;
-    annotation_.pending_shape = shape;
-  }
-
-  ~ScopedMemoryDebugAnnotation() { annotation_ = last_annotation_; }
-
- private:
-  void CleanupAnnotation() {
-    annotation_.pending_op_name = nullptr;
-    annotation_.pending_step_id = 0;
-    annotation_.pending_region_type = nullptr;
-    annotation_.pending_data_type = 0;
-    annotation_.pending_shape = nullptr;
-  }
-
-  // Stores the current annotations.
-  static thread_local MemoryDebugAnnotation annotation_;
-
-  // Stores the previous values in case the annotations are nested.
-  MemoryDebugAnnotation last_annotation_;
-
-  TF_DISALLOW_COPY_AND_ASSIGN(ScopedMemoryDebugAnnotation);
-};
-
 // Runtime statistics collected by an allocator. Exactly the same as
 // stream_executor::AllocatorStats, but independently defined to preserve the
 // mutual independence of StreamExecutor and TensorFlow.
 struct AllocatorStats {
-  int64 num_allocs;          // Number of allocations.
-  int64 bytes_in_use;        // Number of bytes in use.
-  int64 peak_bytes_in_use;   // The peak bytes in use.
-  int64 largest_alloc_size;  // The largest single allocation seen.
+  int64_t num_allocs;          // Number of allocations.
+  int64_t bytes_in_use;        // Number of bytes in use.
+  int64_t peak_bytes_in_use;   // The peak bytes in use.
+  int64_t largest_alloc_size;  // The largest single allocation seen.
 
   // The upper limit of bytes of user allocatable device memory, if such a limit
   // is known.
-  absl::optional<int64> bytes_limit;
+  absl::optional<int64_t> bytes_limit;
 
   // Stats for reserved memory usage.
-  int64 bytes_reserved;       // Number of bytes reserved.
-  int64 peak_bytes_reserved;  // The peak number of bytes reserved.
+  int64_t bytes_reserved;       // Number of bytes reserved.
+  int64_t peak_bytes_reserved;  // The peak number of bytes reserved.
   // The upper limit on the number bytes of reservable memory,
   // if such a limit is known.
-  absl::optional<int64> bytes_reservable_limit;
+  absl::optional<int64_t> bytes_reservable_limit;
 
-  int64 largest_free_block_bytes;  // Largest free block's size in heap.
+  int64_t largest_free_block_bytes;  // Largest free block's size in heap.
 
   AllocatorStats()
       : num_allocs(0),
@@ -262,7 +186,7 @@ class Allocator {
   //
   // REQUIRES: 'ptr!=nullptr' and points to a buffer previously
   // allocated by this allocator.
-  virtual int64 AllocationId(const void* ptr) const { return 0; }
+  virtual int64_t AllocationId(const void* ptr) const { return 0; }
 
   // Returns the allocated size of the buffer at 'ptr' if known,
   // otherwise returns 0. This method can be called when
@@ -280,10 +204,19 @@ class Allocator {
   // Fills in 'stats' with statistics collected by this allocator.
   virtual absl::optional<AllocatorStats> GetStats() { return absl::nullopt; }
 
-  // Clears the internal stats except for the `in_use` field.
-  virtual void ClearStats() {}
+  // If implemented, clears the internal stats except for the `in_use` fields
+  // and sets the `peak_bytes_in_use` to be equal to the `bytes_in_use`. Returns
+  //  true if implemented.
+  //
+  // REQUIRES: GetStats is overridden.
+  virtual bool ClearStats() TF_MUST_USE_RESULT { return false; }
 
   virtual void SetSafeFrontier(uint64 count) {}
+
+  // For allocator that are stream aware, allow to specify the compute
+  // stream this allocator is used for. This can also trigger memory
+  // preallocation.
+  virtual void SetStreamAndPreallocateMemory(void* stream) {}
 };
 
 // An implementation of Allocator that delegates all calls to another Allocator.
@@ -328,7 +261,7 @@ class AllocatorWrapper : public Allocator {
     return wrapped_->AllocatedSize(ptr);
   }
 
-  int64 AllocationId(const void* ptr) const override {
+  int64_t AllocationId(const void* ptr) const override {
     return wrapped_->AllocationId(ptr);
   }
 
@@ -408,14 +341,17 @@ Allocator* cpu_allocator_base();
 // call it directly.
 Allocator* cpu_allocator(int numa_node = port::kNUMANoAffinity);
 
-// If 'enable' is true, the default CPU allocator implementation will collect
-// AllocatorStats. By default, it's disabled.
-void EnableCPUAllocatorStats(bool enable);
+// Enables AllocatorStats in the default CPU allocator implementation.  By
+// default, it's disabled.
+void EnableCPUAllocatorStats();
+// Disables AllocatorStats in the default CPU allocator implementation.  By
+// default, it's disabled.
+void DisableCPUAllocatorStats();
 bool CPUAllocatorStatsEnabled();
 
-// If 'enable' is true, the default CPU allocator implementation will collect
-// full statistics. By default, it's disabled.
-void EnableCPUAllocatorFullStats(bool enable);
+// Enables full statistics collection in the default CPU allocator
+// implementation.  By default, it's disabled.
+void EnableCPUAllocatorFullStats();
 bool CPUAllocatorFullStatsEnabled();
 
 // An object that does the underlying suballoc/free of memory for a higher-level
@@ -434,8 +370,16 @@ class SubAllocator {
                const std::vector<Visitor>& free_visitors);
 
   virtual ~SubAllocator() {}
-  virtual void* Alloc(size_t alignment, size_t num_bytes) = 0;
+  // Allocates at least num_bytes. Returns actual number of bytes allocated in
+  // bytes_received. The caller can safely use the full bytes_received sized
+  // buffer following the returend pointer.
+  virtual void* Alloc(size_t alignment, size_t num_bytes,
+                      size_t* bytes_received) = 0;
   virtual void Free(void* ptr, size_t num_bytes) = 0;
+
+  // Returns true if the BFC allocator can safely coalesce adjacent regions
+  // returned by this allocator.
+  virtual bool SupportsCoalescing() const = 0;
 
  protected:
   // Implementation of Alloc() method must call this on newly allocated

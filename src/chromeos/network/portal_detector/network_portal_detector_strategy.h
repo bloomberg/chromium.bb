@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
@@ -35,6 +34,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) PortalDetectorStrategy {
     // Returns time when current attempt was started.
     virtual base::TimeTicks AttemptStartTime() = 0;
   };
+
+  PortalDetectorStrategy(const PortalDetectorStrategy&) = delete;
+  PortalDetectorStrategy& operator=(const PortalDetectorStrategy&) = delete;
 
   virtual ~PortalDetectorStrategy();
 
@@ -106,8 +108,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) PortalDetectorStrategy {
 
   // True when |next_attempt_timeout_for_testing_| is initialized.
   static bool next_attempt_timeout_for_testing_initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(PortalDetectorStrategy);
 };
 
 }  // namespace chromeos

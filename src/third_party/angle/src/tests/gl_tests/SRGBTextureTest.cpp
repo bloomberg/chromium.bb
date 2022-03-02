@@ -340,7 +340,7 @@ TEST_P(SRGBTextureTestES3, SRGBOverrideFormats)
     {
         GLTexture tex;
         glBindTexture(GL_TEXTURE_2D, tex.get());
-        glTexStorage2D(GL_TEXTURE_2D, 1, format, 1, 1);
+        glTexStorage2D(GL_TEXTURE_2D, 1, format, 4, 4);
         GLenum error = glGetError();
         if (error == GL_INVALID_ENUM)
         {
@@ -572,9 +572,6 @@ TEST_P(SRGBTextureTestES3, SRGBDecodeOverridePriority)
 TEST_P(SRGBTextureTestES3, GenerateMipmaps)
 {
     ANGLE_SKIP_TEST_IF(IsOpenGL() && ((IsIntel() && IsOSX()) || IsAMD()));
-
-    // http://anglebug.com/5108
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     auto createAndReadBackTexture = [this](GLenum internalFormat, const GLColor &color) {
         constexpr GLsizei width  = 128;

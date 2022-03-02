@@ -22,7 +22,6 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/memory/scoped_policy.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
@@ -56,6 +55,9 @@ class ScopedCSSM_CC_HANDLE {
   ScopedCSSM_CC_HANDLE() : handle_(0) {}
   explicit ScopedCSSM_CC_HANDLE(CSSM_CC_HANDLE handle) : handle_(handle) {}
 
+  ScopedCSSM_CC_HANDLE(const ScopedCSSM_CC_HANDLE&) = delete;
+  ScopedCSSM_CC_HANDLE& operator=(const ScopedCSSM_CC_HANDLE&) = delete;
+
   ~ScopedCSSM_CC_HANDLE() { reset(); }
 
   CSSM_CC_HANDLE get() const { return handle_; }
@@ -68,8 +70,6 @@ class ScopedCSSM_CC_HANDLE {
 
  private:
   CSSM_CC_HANDLE handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCSSM_CC_HANDLE);
 };
 
 class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
@@ -80,6 +80,9 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
       : pubkey_(std::move(pubkey)),
         key_(key, base::scoped_policy::RETAIN),
         cssm_key_(cssm_key) {}
+
+  SSLPlatformKeyCSSM(const SSLPlatformKeyCSSM&) = delete;
+  SSLPlatformKeyCSSM& operator=(const SSLPlatformKeyCSSM&) = delete;
 
   ~SSLPlatformKeyCSSM() override {}
 
@@ -195,8 +198,6 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
   bssl::UniquePtr<EVP_PKEY> pubkey_;
   base::ScopedCFTypeRef<SecKeyRef> key_;
   const CSSM_KEY* cssm_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyCSSM);
 };
 
 // Returns the corresponding SecKeyAlgorithm or nullptr if unrecognized.
@@ -253,6 +254,9 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
       }
     }
   }
+
+  SSLPlatformKeySecKey(const SSLPlatformKeySecKey&) = delete;
+  SSLPlatformKeySecKey& operator=(const SSLPlatformKeySecKey&) = delete;
 
   ~SSLPlatformKeySecKey() override {}
 
@@ -344,8 +348,6 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   std::vector<uint16_t> preferences_;
   bssl::UniquePtr<EVP_PKEY> pubkey_;
   base::ScopedCFTypeRef<SecKeyRef> key_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeySecKey);
 };
 
 scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecKey(

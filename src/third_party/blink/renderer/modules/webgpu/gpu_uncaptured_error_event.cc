@@ -21,20 +21,7 @@ GPUUncapturedErrorEvent::GPUUncapturedErrorEvent(
     const AtomicString& type,
     const GPUUncapturedErrorEventInit* gpuUncapturedErrorEventInitDict)
     : Event(type, Bubbles::kNo, Cancelable::kYes) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  const auto& old_union = gpuUncapturedErrorEventInitDict->error();
-  if (old_union.IsGPUOutOfMemoryError()) {
-    error_ =
-        MakeGarbageCollected<V8GPUError>(old_union.GetAsGPUOutOfMemoryError());
-  } else if (old_union.IsGPUValidationError()) {
-    error_ =
-        MakeGarbageCollected<V8GPUError>(old_union.GetAsGPUValidationError());
-  } else {
-    NOTREACHED();
-  }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   error_ = gpuUncapturedErrorEventInitDict->error();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 void GPUUncapturedErrorEvent::Trace(Visitor* visitor) const {
@@ -42,15 +29,8 @@ void GPUUncapturedErrorEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 const V8GPUError* GPUUncapturedErrorEvent::error() const {
   return error_;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void GPUUncapturedErrorEvent::error(
-    GPUOutOfMemoryErrorOrGPUValidationError& error) const {
-  error = error_;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 }  // namespace blink

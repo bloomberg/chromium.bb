@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 
@@ -16,7 +17,6 @@ class AutocompleteResult;
 class InstantController;
 class OmniboxClient;
 class OmniboxEditModel;
-class OmniboxPopupModel;
 
 // This class controls the various services that can modify the content
 // for the omnibox, including AutocompleteController and InstantController. It
@@ -49,14 +49,6 @@ class OmniboxController : public AutocompleteController::Observer {
   // have a valid match for the current text in the omnibox.
   void InvalidateCurrentMatch();
 
-  void set_popup_model(OmniboxPopupModel* popup_model) {
-    popup_ = popup_model;
-  }
-
-  // TODO(beaudoin): The edit and popup model should be siblings owned by the
-  // LocationBarView, making this accessor unnecessary.
-  OmniboxPopupModel* popup_model() const { return popup_; }
-
   const AutocompleteMatch& current_match() const { return current_match_; }
 
   // Turns off keyword mode for the current match.
@@ -72,11 +64,9 @@ class OmniboxController : public AutocompleteController::Observer {
 
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
-  OmniboxEditModel* omnibox_edit_model_;
+  raw_ptr<OmniboxEditModel> omnibox_edit_model_;
 
-  OmniboxClient* client_;
-
-  OmniboxPopupModel* popup_;
+  raw_ptr<OmniboxClient> client_;
 
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
 

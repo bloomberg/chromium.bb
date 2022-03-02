@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -25,6 +26,8 @@ class HttpRequestHeaders;
 }
 
 namespace signin {
+
+enum class Tribool;
 
 // Profile mode flags.
 enum ProfileMode {
@@ -91,6 +94,7 @@ struct ManageAccountsParams {
 
   ManageAccountsParams();
   ManageAccountsParams(const ManageAccountsParams& other);
+  ManageAccountsParams& operator=(const ManageAccountsParams& other);
 };
 
 // Struct describing the parameters received in the Dice response header.
@@ -147,9 +151,14 @@ struct DiceResponseParams {
   };
 
   DiceResponseParams();
-  ~DiceResponseParams();
+
+  DiceResponseParams(const DiceResponseParams&) = delete;
+  DiceResponseParams& operator=(const DiceResponseParams&) = delete;
+
   DiceResponseParams(DiceResponseParams&&);
   DiceResponseParams& operator=(DiceResponseParams&&);
+
+  ~DiceResponseParams();
 
   DiceAction user_intention = DiceAction::NONE;
 
@@ -161,9 +170,6 @@ struct DiceResponseParams {
 
   // Populated when |user_intention| is ENABLE_SYNC.
   std::unique_ptr<EnableSyncInfo> enable_sync_info;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DiceResponseParams);
 };
 
 class RequestAdapter {
@@ -172,6 +178,10 @@ class RequestAdapter {
                  const net::HttpRequestHeaders& original_headers,
                  net::HttpRequestHeaders* modified_headers,
                  std::vector<std::string>* headers_to_remove);
+
+  RequestAdapter(const RequestAdapter&) = delete;
+  RequestAdapter& operator=(const RequestAdapter&) = delete;
+
   virtual ~RequestAdapter();
 
   const GURL& GetUrl();
@@ -182,15 +192,16 @@ class RequestAdapter {
  private:
   const GURL url_;
   const net::HttpRequestHeaders& original_headers_;
-  net::HttpRequestHeaders* const modified_headers_;
-  std::vector<std::string>* const headers_to_remove_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestAdapter);
+  const raw_ptr<net::HttpRequestHeaders> modified_headers_;
+  const raw_ptr<std::vector<std::string>> headers_to_remove_;
 };
 
 // Base class for managing the signin headers (Dice and Chrome-Connected).
 class SigninHeaderHelper {
  public:
+  SigninHeaderHelper(const SigninHeaderHelper&) = delete;
+  SigninHeaderHelper& operator=(const SigninHeaderHelper&) = delete;
+
   // Appends or remove the header to a network request if necessary.
   // Returns whether the request has the request header.
   bool AppendOrRemoveRequestHeader(RequestAdapter* request,
@@ -218,9 +229,6 @@ class SigninHeaderHelper {
 
   // Returns whether the url is eligible for the request header.
   virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninHeaderHelper);
 };
 
 // Returns whether the url is eligible for account consistency on Google
@@ -245,7 +253,7 @@ void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& gaia_id,
-    const absl::optional<bool>& is_child_account,
+    Tribool is_child_account,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask,

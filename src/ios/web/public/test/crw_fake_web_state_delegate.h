@@ -15,9 +15,6 @@
     const web::WebState::OpenURLParams* openURLParams;
 // web::WebState received in delegate method calls.
 @property(nonatomic, readonly) web::WebState* webState;
-// ContextMenuParams reveived in |webState:handleContextMenu:| call.
-// nullptr if that delegate method was not called.
-@property(nonatomic, readonly) web::ContextMenuParams* contextMenuParams;
 // Whether |webState:createNewWebStateForURL:openerURL:initiatedByUser:| has
 // been called or not.
 @property(nonatomic, readonly) BOOL webStateCreationRequested;
@@ -31,20 +28,6 @@
 // Whether |webState:didRequestHTTPAuthForProtectionSpace:...| has been called
 // or not.
 @property(nonatomic, readonly) BOOL authenticationRequested;
-// Specifies the return value of |webState:shouldPreviewLinkWithURL:|.
-@property(nonatomic) BOOL shouldPreviewLinkWithURLReturnValue;
-// linkURL received in |webState:shouldPreviewLinkWithURL:| and
-// |webState:previewingViewControllerForLinkWithURL:| calls.
-@property(nonatomic, readonly) GURL linkURL;
-// Specifies the return value of
-// |webState:previewingViewControllerForLinkWithURL:|.
-@property(nonatomic)
-    UIViewController* previewingViewControllerForLinkWithURLReturnValue;
-// previewingViewController received in
-// |webState:commitPreviewingViewController:| call.
-@property(nonatomic, readonly) UIViewController* previewingViewController;
-// Whether |webState:commitPreviewingViewController:| has been called or not.
-@property(nonatomic, readonly) BOOL commitPreviewingViewControllerRequested;
 // Specifies the return value of |isAppLaunchingAllowedForWebState:|.
 @property(nonatomic) BOOL isAppLaunchingAllowedForWebStateReturnValue;
 

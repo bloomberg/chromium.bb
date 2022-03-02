@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/live_caption/caption_bubble_context.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -30,6 +33,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -146,7 +150,7 @@ bool ParseNonTransparentRGBACSSColorString(std::string css_string,
   // preferred style and use our default color.
   if (!match || a == 0)
     return false;
-  uint16_t a_int = uint16_t{a * 255};
+  uint16_t a_int = base::ClampRound<uint16_t>(a * 255);
 #if defined(OS_MAC)
   // On Mac, any opacity lower than 90% leaves rendering artifacts which make
   // it appear like there is a layer of faint text beneath the actual text.
@@ -368,7 +372,7 @@ class CaptionBubbleLabelAXModeObserver : public ui::AXModeObserver {
   }
 
  private:
-  CaptionBubbleLabel* owner_;
+  raw_ptr<CaptionBubbleLabel> owner_;
 };
 #endif
 
@@ -392,7 +396,7 @@ CaptionBubble::CaptionBubble(base::OnceClosure destroyed_callback,
     return;
 
   inactivity_timer_ = std::make_unique<base::RetainingOneShotTimer>(
-      FROM_HERE, base::TimeDelta::FromSeconds(kNoActivityIntervalSeconds),
+      FROM_HERE, base::Seconds(kNoActivityIntervalSeconds),
       base::BindRepeating(&CaptionBubble::OnInactivityTimeout,
                           base::Unretained(this)),
       tick_clock_);
@@ -581,7 +585,8 @@ std::u16string CaptionBubble::GetAccessibleWindowTitle() const {
 
 void CaptionBubble::BackToTabButtonPressed() {
   DCHECK(model_);
-  model_->ActivateContext();
+  DCHECK(model_->GetContext()->IsActivatable());
+  model_->GetContext()->Activate();
 }
 
 void CaptionBubble::CloseButtonPressed() {
@@ -613,7 +618,7 @@ void CaptionBubble::SetModel(CaptionBubbleModel* model) {
   model_ = model;
   if (model_) {
     model_->SetObserver(this);
-    back_to_tab_button_->SetVisible(model_->IsContextActivatable());
+    back_to_tab_button_->SetVisible(model_->GetContext()->IsActivatable());
   } else {
     UpdateBubbleVisibility();
   }
@@ -773,10 +778,10 @@ void CaptionBubble::SetTextColor() {
   views::SetImageFromVectorIcon(collapse_button_, vector_icons::kCaretUpIcon,
                                 kButtonDip, text_color);
 
-  back_to_tab_button_->ink_drop()->SetBaseColor(text_color);
-  close_button_->ink_drop()->SetBaseColor(text_color);
-  expand_button_->ink_drop()->SetBaseColor(text_color);
-  collapse_button_->ink_drop()->SetBaseColor(text_color);
+  views::InkDrop::Get(back_to_tab_button_)->SetBaseColor(text_color);
+  views::InkDrop::Get(close_button_)->SetBaseColor(text_color);
+  views::InkDrop::Get(expand_button_)->SetBaseColor(text_color);
+  views::InkDrop::Get(collapse_button_)->SetBaseColor(text_color);
 }
 
 void CaptionBubble::SetBackgroundColor() {
@@ -840,9 +845,9 @@ void CaptionBubble::ShowInactive() {
   // up in the bottom center of the second window, which is where the user is
   // already looking. It also ensures that the caption bubble will appear in the
   // right workspace if a user has Chrome windows open on multiple workspaces.
-  if (!model_->GetContextBoundsInScreen().has_value())
+  if (!model_->GetContext()->GetBounds().has_value())
     return;
-  gfx::Rect context_rect = model_->GetContextBoundsInScreen().value();
+  gfx::Rect context_rect = model_->GetContext()->GetBounds().value();
 
   context_rect.Inset(gfx::Insets(kMinAnchorMarginDip));
   gfx::Rect bubble_bounds = GetBubbleBounds();

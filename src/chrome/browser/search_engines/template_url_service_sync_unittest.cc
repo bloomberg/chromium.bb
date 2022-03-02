@@ -7,10 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -24,8 +23,8 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
 #include "components/sync/model/sync_error_factory.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -35,7 +34,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
-using base::TimeDelta;
 using testing::NotNull;
 
 namespace {
@@ -97,16 +95,16 @@ syncer::SyncData CreateCustomSyncData(const TemplateURL& turl,
 class TestChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   TestChangeProcessor();
+
+  TestChangeProcessor(const TestChangeProcessor&) = delete;
+  TestChangeProcessor& operator=(const TestChangeProcessor&) = delete;
+
   ~TestChangeProcessor() override;
 
   // Store a copy of all the changes passed in so we can examine them later.
   absl::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
-    return syncer::SyncDataList();
-  }
 
   bool contains_guid(const std::string& guid) const {
     return change_map_.count(guid) != 0;
@@ -125,8 +123,6 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
   // Track the changes received in ProcessSyncChanges.
   std::map<std::string, syncer::SyncChange> change_map_;
   bool erroneous_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
 };
 
 TestChangeProcessor::TestChangeProcessor() : erroneous_(false) {
@@ -171,6 +167,10 @@ class TemplateURLServiceSyncTest : public testing::Test {
   typedef TemplateURLService::SyncDataMap SyncDataMap;
 
   TemplateURLServiceSyncTest();
+
+  TemplateURLServiceSyncTest(const TemplateURLServiceSyncTest&) = delete;
+  TemplateURLServiceSyncTest& operator=(const TemplateURLServiceSyncTest&) =
+      delete;
 
   void SetUp() override;
   void TearDown() override;
@@ -240,8 +240,6 @@ class TemplateURLServiceSyncTest : public testing::Test {
   std::unique_ptr<TestChangeProcessor> sync_processor_;
   std::unique_ptr<syncer::SyncChangeProcessorWrapperForTest>
       sync_processor_wrapper_;
-
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceSyncTest);
 };
 
 TemplateURLServiceSyncTest::TemplateURLServiceSyncTest()
@@ -2171,7 +2169,7 @@ TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngineWithChangedKeyword) {
   // Now Sync data comes in changing the keyword.
   TemplateURLData changed_data(default_data);
   changed_data.SetKeyword(u"new_kw");
-  changed_data.last_modified += TimeDelta::FromMinutes(10);
+  changed_data.last_modified += base::Minutes(10);
   // It's important to set |safe_for_autoreplace| to false, which marks the
   // update as a manual user update. Without this,
   // TemplateURLService::UpdateTemplateURLIfPrepopulated would reset changes to
@@ -2236,7 +2234,7 @@ TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngine_Pref_Change_Add) {
 
   TemplateURLData changed_data(default_data);
   changed_data.SetKeyword(u"new_kw");
-  changed_data.last_modified += TimeDelta::FromMinutes(10);
+  changed_data.last_modified += base::Minutes(10);
   // It's important to set |safe_for_autoreplace| to false, which marks the
   // update as a manual user update. Without this,
   // TemplateURLService::UpdateTemplateURLIfPrepopulated would reset changes to
@@ -2304,7 +2302,7 @@ TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngine_Pref_Add_Change) {
 
   TemplateURLData changed_data(default_data);
   changed_data.SetKeyword(u"new_kw");
-  changed_data.last_modified += TimeDelta::FromMinutes(10);
+  changed_data.last_modified += base::Minutes(10);
   // It's important to set |safe_for_autoreplace| to false, which marks the
   // update as a manual user update. Without this,
   // TemplateURLService::UpdateTemplateURLIfPrepopulated would reset changes to
@@ -2368,7 +2366,7 @@ TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngine_Change_Add_Pref) {
 
   TemplateURLData changed_data(default_data);
   changed_data.SetKeyword(u"new_kw");
-  changed_data.last_modified += TimeDelta::FromMinutes(10);
+  changed_data.last_modified += base::Minutes(10);
   // It's important to set |safe_for_autoreplace| to false, which marks the
   // update as a manual user update. Without this,
   // TemplateURLService::UpdateTemplateURLIfPrepopulated would reset changes to
@@ -2436,7 +2434,7 @@ TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngine_Add_Change_Pref) {
 
   TemplateURLData changed_data(default_data);
   changed_data.SetKeyword(u"new_kw");
-  changed_data.last_modified += TimeDelta::FromMinutes(10);
+  changed_data.last_modified += base::Minutes(10);
   // It's important to set |safe_for_autoreplace| to false, which marks the
   // update as a manual user update. Without this,
   // TemplateURLService::UpdateTemplateURLIfPrepopulated would reset changes to

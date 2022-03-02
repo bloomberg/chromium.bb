@@ -4,7 +4,7 @@
 
 #include "base/allocator/partition_allocator/starscan/pcscan_scheduling.h"
 
-#include "base/synchronization/lock.h"
+#include "base/allocator/partition_allocator/partition_lock.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -17,7 +17,8 @@ namespace {
 constexpr size_t kMB = 1024 * 1024;
 }  // namespace
 
-TEST(PCScanSchedulerLimitBackendTest, NoScanBelowMinimumScanningThreshold) {
+TEST(PartitionAllocPCScanSchedulerLimitBackendTest,
+     NoScanBelowMinimumScanningThreshold) {
   PCScanScheduler scheduler;
   LimitBackend limit_backend(scheduler);
   scheduler.SetNewSchedulingBackend(limit_backend);
@@ -29,7 +30,8 @@ TEST(PCScanSchedulerLimitBackendTest, NoScanBelowMinimumScanningThreshold) {
   EXPECT_TRUE(scheduler.AccountFreed(1));
 }
 
-TEST(PCScanSchedulerLimitBackendTest, ScanAtQuarantineSizeFraction) {
+TEST(PartitionAllocPCScanSchedulerLimitBackendTest,
+     ScanAtQuarantineSizeFraction) {
   PCScanScheduler scheduler;
   LimitBackend limit_backend(scheduler);
   scheduler.SetNewSchedulingBackend(limit_backend);
@@ -45,7 +47,7 @@ TEST(PCScanSchedulerLimitBackendTest, ScanAtQuarantineSizeFraction) {
   EXPECT_TRUE(scheduler.AccountFreed(1));
 }
 
-class PCScanMUAwareTaskBasedBackendTest : public ::testing::Test {
+class PartitionAllocPCScanMUAwareTaskBasedBackendTest : public ::testing::Test {
  public:
   static constexpr size_t kHeapSize = 100 * kMB;
 
@@ -63,7 +65,7 @@ class PCScanMUAwareTaskBasedBackendTest : public ::testing::Test {
            1;
   }
 
-  PCScanMUAwareTaskBasedBackendTest()
+  PartitionAllocPCScanMUAwareTaskBasedBackendTest()
       : backend_(scheduler_,
                  base::BindLambdaForTesting([this](TimeDelta delay) {
                    delayed_scan_scheduled_count_++;
@@ -117,37 +119,39 @@ TimeTicks ScopedTimeTicksOverride::now_ticks_;
 
 }  // namespace
 
-TEST_F(PCScanMUAwareTaskBasedBackendTest,
+TEST_F(PartitionAllocPCScanMUAwareTaskBasedBackendTest,
        SoftLimitSchedulesScanIfMUNotSatisfied) {
   // Stop the time.
   ScopedTimeTicksOverride now_ticks_override;
   // Simulate PCScan that processed kHeapSize in 1s. Since time is stopped that
   // schedule is not reachable.
-  backend().UpdateScheduleAfterScan(0, TimeDelta::FromSeconds(1), kHeapSize);
+  backend().UpdateScheduleAfterScan(0, Seconds(1), kHeapSize);
 
   EXPECT_EQ(0u, delayed_scan_scheduled_count());
   EXPECT_FALSE(scheduler().AccountFreed(SoftLimitSize(kHeapSize)));
   EXPECT_EQ(1u, delayed_scan_scheduled_count());
 }
 
-TEST_F(PCScanMUAwareTaskBasedBackendTest, SoftLimitInvokesScanIfMUSatisfied) {
+TEST_F(PartitionAllocPCScanMUAwareTaskBasedBackendTest,
+       SoftLimitInvokesScanIfMUSatisfied) {
   // Stop the time.
   ScopedTimeTicksOverride now_ticks_override;
   // Simulate PCScan that processed kHeapSize in 0s. The next scan should thus
   // happen immediately.
-  backend().UpdateScheduleAfterScan(0, TimeDelta::FromSeconds(0), kHeapSize);
+  backend().UpdateScheduleAfterScan(0, Seconds(0), kHeapSize);
 
   EXPECT_EQ(0u, delayed_scan_scheduled_count());
   EXPECT_TRUE(scheduler().AccountFreed(SoftLimitSize(kHeapSize)));
   EXPECT_EQ(0u, delayed_scan_scheduled_count());
 }
 
-TEST_F(PCScanMUAwareTaskBasedBackendTest, HardLimitSchedulesScanImmediately) {
+TEST_F(PartitionAllocPCScanMUAwareTaskBasedBackendTest,
+       HardLimitSchedulesScanImmediately) {
   // Stop the time.
   ScopedTimeTicksOverride now_ticks_override;
   // Simulate PCScan that processed kHeapSize in 1s. Since time is stopped that
   // schedule is not reachable.
-  backend().UpdateScheduleAfterScan(0, TimeDelta::FromSeconds(0), kHeapSize);
+  backend().UpdateScheduleAfterScan(0, Seconds(0), kHeapSize);
 
   EXPECT_EQ(0u, delayed_scan_scheduled_count());
   // Triogering the hard limit should immediately require a scan and not

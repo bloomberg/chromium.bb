@@ -82,6 +82,8 @@ int GetIndexOfExistingTab(Browser* browser, const NavigateParams& params) {
   // In case the URL was rewritten by the BrowserURLHandler we need to ensure
   // that we do not open another URL that will get redirected to the rewritten
   // URL.
+  const bool target_is_view_source =
+      params.url.SchemeIs(content::kViewSourceScheme);
   GURL rewritten_url(params.url);
   content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
       &rewritten_url, browser->profile());
@@ -97,10 +99,12 @@ int GetIndexOfExistingTab(Browser* browser, const NavigateParams& params) {
 
     GURL tab_url = tab->GetVisibleURL();
 
-    // Skip view-source tabs. This is needed because RewriteURLIfNecessary
-    // removes the "view-source:" scheme which leads to incorrect matching.
-    if (tab_url.SchemeIs(content::kViewSourceScheme))
+    // RewriteURLIfNecessary removes the "view-source:" scheme which could lead
+    // to incorrect matching, so ensure that the target and the candidate are
+    // either both view-source:, or neither is.
+    if (tab_url.SchemeIs(content::kViewSourceScheme) != target_is_view_source) {
       continue;
+    }
 
     GURL rewritten_tab_url = tab_url;
     content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
@@ -127,8 +131,10 @@ int GetIndexOfExistingTab(Browser* browser, const NavigateParams& params) {
 std::pair<Browser*, int> GetIndexAndBrowserOfExistingTab(
     Profile* profile,
     const NavigateParams& params) {
-  for (auto browser_it = BrowserList::GetInstance()->begin_last_active();
-       browser_it != BrowserList::GetInstance()->end_last_active();
+  for (auto browser_it =
+           BrowserList::GetInstance()->begin_browsers_ordered_by_activation();
+       browser_it !=
+       BrowserList::GetInstance()->end_browsers_ordered_by_activation();
        ++browser_it) {
     Browser* browser = *browser_it;
     // When tab switching, only look at same profile and anonymity level.

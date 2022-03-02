@@ -13,15 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for `tf.data.experimental.assert_next()`."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.data.experimental.ops import testing
 from tensorflow.python.data.kernel_tests import test_base
 from tensorflow.python.data.ops import dataset_ops
+from tensorflow.python.data.ops import options as options_lib
 from tensorflow.python.framework import combinations
 from tensorflow.python.framework import errors
 from tensorflow.python.platform import test
@@ -33,33 +30,35 @@ class AssertNextTest(test_base.DatasetTestBase, parameterized.TestCase):
   def testAssertNext(self):
     dataset = dataset_ops.Dataset.from_tensors(0).apply(
         testing.assert_next(["Map"])).map(lambda x: x)
-    options = dataset_ops.Options()
+    options = options_lib.Options()
     options.experimental_optimization.apply_default_optimizations = False
     dataset = dataset.with_options(options)
     self.assertDatasetProduces(dataset, expected_output=[0])
 
   @combinations.generate(test_base.default_test_combinations())
-  def testAssertNextInvalid(self):
+  def testIgnoreVersionSuffix(self):
+    # The `batch` transformation creates a "BatchV2" dataset, but we should
+    # still match that with "Batch".
     dataset = dataset_ops.Dataset.from_tensors(0).apply(
-        testing.assert_next(["Whoops"])).map(lambda x: x)
-    options = dataset_ops.Options()
+        testing.assert_next(["Map", "Batch"])).map(lambda x: x).batch(1)
+    options = options_lib.Options()
     options.experimental_optimization.apply_default_optimizations = False
     dataset = dataset.with_options(options)
+    self.assertDatasetProduces(dataset, expected_output=[[0]])
+
+  @combinations.generate(test_base.default_test_combinations())
+  def testAssertNextInvalid(self):
+    dataset = dataset_ops.Dataset.from_tensors(0).apply(
+        testing.assert_next(["Whoops"]))
     self.assertDatasetProduces(
         dataset,
-        expected_error=(
-            errors.InvalidArgumentError,
-            "Asserted Whoops transformation at offset 0 but encountered "
-            "Map transformation instead."))
+        expected_error=(errors.InvalidArgumentError,
+                        "Asserted transformation matching Whoops"))
 
   @combinations.generate(test_base.default_test_combinations())
   def testAssertNextShort(self):
     dataset = dataset_ops.Dataset.from_tensors(0).apply(
-        testing.assert_next(["Map", "Whoops"])).map(lambda x: x)
-    options = dataset_ops.Options()
-    options.experimental_optimization.apply_default_optimizations = False
-    options.experimental_optimization.autotune = False
-    dataset = dataset.with_options(options)
+        testing.assert_next(["Root", "Whoops"]))
     self.assertDatasetProduces(
         dataset,
         expected_error=(

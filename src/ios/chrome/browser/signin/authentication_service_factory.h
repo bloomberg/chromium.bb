@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -39,6 +38,10 @@ class AuthenticationServiceFactory : public BrowserStateKeyedServiceFactory {
   // registered with SetTestingFactory to use real instances during testing.
   static TestingFactory GetDefaultFactory();
 
+  AuthenticationServiceFactory(const AuthenticationServiceFactory&) = delete;
+  AuthenticationServiceFactory& operator=(const AuthenticationServiceFactory&) =
+      delete;
+
  private:
   friend class base::NoDestructor<AuthenticationServiceFactory>;
 
@@ -53,8 +56,6 @@ class AuthenticationServiceFactory : public BrowserStateKeyedServiceFactory {
 
   // KeyedServiceBaseFactory implementation.
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticationServiceFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_AUTHENTICATION_SERVICE_FACTORY_H_

@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display_observer.h"
 
@@ -42,6 +41,9 @@ class DisplayInfoProvider : public display::DisplayObserver {
   using DisplayUnitInfoList = std::vector<api::system_display::DisplayUnitInfo>;
   using DisplayLayoutList = std::vector<api::system_display::DisplayLayout>;
   using ErrorCallback = base::OnceCallback<void(absl::optional<std::string>)>;
+
+  DisplayInfoProvider(const DisplayInfoProvider&) = delete;
+  DisplayInfoProvider& operator=(const DisplayInfoProvider&) = delete;
 
   ~DisplayInfoProvider() override;
 
@@ -140,7 +142,7 @@ class DisplayInfoProvider : public display::DisplayObserver {
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayInfoProvider);
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
 };
 
 }  // namespace extensions

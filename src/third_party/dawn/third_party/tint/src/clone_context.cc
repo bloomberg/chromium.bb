@@ -17,7 +17,7 @@
 #include <string>
 
 #include "src/program_builder.h"
-#include "src/utils/get_or_create.h"
+#include "src/utils/map.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::Cloneable);
 
@@ -57,15 +57,52 @@ Symbol CloneContext::Clone(Symbol s) {
 
 void CloneContext::Clone() {
   dst->AST().Copy(this, &src->AST());
+  dst->SetTransformApplied(src->TransformsApplied());
 }
 
 ast::FunctionList CloneContext::Clone(const ast::FunctionList& v) {
   ast::FunctionList out;
   out.reserve(v.size());
-  for (ast::Function* el : v) {
+  for (const ast::Function* el : v) {
     out.Add(Clone(el));
   }
   return out;
+}
+
+const tint::Cloneable* CloneContext::CloneCloneable(const Cloneable* object) {
+  // If the input is nullptr, there's nothing to clone - just return nullptr.
+  if (object == nullptr) {
+    return nullptr;
+  }
+
+  // Was Replace() called for this object?
+  auto it = replacements_.find(object);
+  if (it != replacements_.end()) {
+    return it->second();
+  }
+
+  // Attempt to clone using the registered replacer functions.
+  auto& typeinfo = object->TypeInfo();
+  for (auto& transform : transforms_) {
+    if (typeinfo.Is(*transform.typeinfo)) {
+      if (auto* transformed = transform.function(object)) {
+        return transformed;
+      }
+      break;
+    }
+  }
+
+  // No transform for this type, or the transform returned nullptr.
+  // Clone with T::Clone().
+  return object->Clone(this);
+}
+
+void CloneContext::CheckedCastFailure(const Cloneable* got,
+                                      const TypeInfo& expected) {
+  TINT_ICE(Clone, Diagnostics())
+      << "Cloned object was not of the expected type\n"
+      << "got:      " << got->TypeInfo().name << "\n"
+      << "expected: " << expected.name;
 }
 
 diag::List& CloneContext::Diagnostics() const {

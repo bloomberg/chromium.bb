@@ -73,6 +73,8 @@ static int bfi_read_header(AVFormatContext * s)
         return AVERROR_INVALIDDATA;
 
     bfi->nframes           = avio_rl32(pb);
+    if (bfi->nframes < 0)
+        return AVERROR_INVALIDDATA;
     avio_rl32(pb);
     avio_rl32(pb);
     avio_rl32(pb);
@@ -174,7 +176,7 @@ static int bfi_read_packet(AVFormatContext * s, AVPacket * pkt)
     return ret;
 }
 
-AVInputFormat ff_bfi_demuxer = {
+const AVInputFormat ff_bfi_demuxer = {
     .name           = "bfi",
     .long_name      = NULL_IF_CONFIG_SMALL("Brute Force & Ignorance"),
     .priv_data_size = sizeof(BFIContext),

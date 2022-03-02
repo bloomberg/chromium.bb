@@ -36,7 +36,7 @@ struct COMPONENT_EXPORT(CC_SHARED_MOJOM_TRAITS)
     return metadata.root_background_color;
   }
 
-  static absl::optional<gfx::Vector2dF> root_scroll_offset(
+  static absl::optional<gfx::PointF> root_scroll_offset(
       const cc::RenderFrameMetadata& metadata) {
     return metadata.root_scroll_offset;
   }
@@ -94,6 +94,11 @@ struct COMPONENT_EXPORT(CC_SHARED_MOJOM_TRAITS)
   static viz::VerticalScrollDirection new_vertical_scroll_direction(
       const cc::RenderFrameMetadata& metadata) {
     return metadata.new_vertical_scroll_direction;
+  }
+
+  static base::TimeDelta visual_properties_update_duration(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.visual_properties_update_duration;
   }
 
 #if defined(OS_ANDROID)

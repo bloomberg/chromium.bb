@@ -57,6 +57,11 @@ struct HloPosition {
            (instruction->unique_id() == other.instruction->unique_id() &&
             index < other.index);
   }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const HloPosition& pos) {
+    return H::combine(std::move(h), pos.instruction->Hash(), pos.index);
+  }
 };
 
 std::ostream& operator<<(std::ostream& out, const HloPosition& position);
@@ -67,7 +72,7 @@ struct HloUse {
   HloInstruction* instruction;
 
   // The operand number in which the value is appears.
-  int64 operand_number;
+  int64_t operand_number;
 
   // The shape index within the operand in which the value appears.
   ShapeIndex operand_index;
@@ -81,6 +86,12 @@ struct HloUse {
   }
 
   bool operator!=(const HloUse& other) const { return !(*this == other); }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const HloUse& use) {
+    return H::combine(std::move(h), use.instruction, use.operand_index,
+                      use.operand_number);
+  }
 };
 
 std::ostream& operator<<(std::ostream& out, const HloUse& use);
@@ -240,7 +251,8 @@ std::ostream& operator<<(std::ostream& out, const HloValueSet& hlo_value);
 // hold multiple HloValueSets.
 class InstructionValueSet : public ShapeTree<HloValueSet> {
  public:
-  InstructionValueSet(const Shape& shape) : ShapeTree<HloValueSet>(shape) {}
+  explicit InstructionValueSet(const Shape& shape)
+      : ShapeTree<HloValueSet>(shape) {}
 
   // Sets this value set to the union of the given value sets. Returns whether
   // this value set changed.

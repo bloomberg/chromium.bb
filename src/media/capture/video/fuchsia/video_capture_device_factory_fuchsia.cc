@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/system/system_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/capture/video/fuchsia/video_capture_device_fuchsia.h"
@@ -112,8 +113,7 @@ VideoCaptureDeviceFactoryFuchsia::~VideoCaptureDeviceFactoryFuchsia() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-std::unique_ptr<VideoCaptureDevice>
-VideoCaptureDeviceFactoryFuchsia::CreateDevice(
+VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryFuchsia::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   uint64_t device_id;
@@ -122,7 +122,9 @@ VideoCaptureDeviceFactoryFuchsia::CreateDevice(
 
   // Test may call CreateDevice() with an invalid |device_id|.
   if (!converted)
-    return nullptr;
+    return VideoCaptureErrorOrDevice(
+        VideoCaptureError::
+            kVideoCaptureControllerInvalidOrUnsupportedVideoCaptureParametersRequested);
 
   // CreateDevice() may be called before GetDeviceDescriptors(). Make sure
   // |device_watcher_| is initialized.
@@ -131,7 +133,8 @@ VideoCaptureDeviceFactoryFuchsia::CreateDevice(
 
   fidl::InterfaceHandle<fuchsia::camera3::Device> device;
   device_watcher_->ConnectToDevice(device_id, device.NewRequest());
-  return std::make_unique<VideoCaptureDeviceFuchsia>(std::move(device));
+  return VideoCaptureErrorOrDevice(
+      std::make_unique<VideoCaptureDeviceFuchsia>(std::move(device)));
 }
 
 void VideoCaptureDeviceFactoryFuchsia::GetDevicesInfo(
@@ -285,6 +288,14 @@ void VideoCaptureDeviceFactoryFuchsia::
     MaybeResolvePendingDeviceInfoCallbacks() {
   if (num_pending_device_info_requests_ > 0)
     return;
+
+  // Notify system monitor if devices have changed. This will indirectly update
+  // media device manager and the web app eventually.
+  auto* system_monitor = base::SystemMonitor::Get();
+  if (system_monitor) {
+    system_monitor->ProcessDevicesChanged(
+        base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
+  }
 
   std::vector<GetDevicesInfoCallback> callbacks;
   callbacks.swap(pending_devices_info_requests_);

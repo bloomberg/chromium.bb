@@ -44,8 +44,9 @@ namespace dawn_native { namespace opengl {
                     return GL_TEXTURE_3D;
 
                 case wgpu::TextureDimension::e1D:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         GLenum TargetForTextureViewDimension(wgpu::TextureViewDimension dimension,
@@ -69,8 +70,9 @@ namespace dawn_native { namespace opengl {
 
                 case wgpu::TextureViewDimension::e1D:
                 case wgpu::TextureViewDimension::Undefined:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         GLuint GenTexture(const OpenGLFunctions& gl) {
@@ -81,7 +83,7 @@ namespace dawn_native { namespace opengl {
 
         bool UsageNeedsTextureView(wgpu::TextureUsage usage) {
             constexpr wgpu::TextureUsage kUsageNeedingTextureView =
-                wgpu::TextureUsage::Storage | wgpu::TextureUsage::Sampled;
+                wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
             return usage & kUsageNeedingTextureView;
         }
 
@@ -100,7 +102,7 @@ namespace dawn_native { namespace opengl {
             }
 
             if (ToBackend(texture)->GetGLFormat().format == GL_DEPTH_STENCIL &&
-                (texture->GetUsage() & wgpu::TextureUsage::Sampled) != 0 &&
+                (texture->GetUsage() & wgpu::TextureUsage::TextureBinding) != 0 &&
                 textureViewDescriptor->aspect == wgpu::TextureAspect::StencilOnly) {
                 // We need a separate view for one of the depth or stencil planes
                 // because each glTextureView needs it's own handle to set
@@ -186,10 +188,10 @@ namespace dawn_native { namespace opengl {
     }
 
     Texture::~Texture() {
-        DestroyInternal();
     }
 
     void Texture::DestroyImpl() {
+        TextureBase::DestroyImpl();
         if (GetTextureState() == TextureState::OwnedInternal) {
             ToBackend(GetDevice())->gl.DeleteTextures(1, &mHandle);
             mHandle = 0;
@@ -210,7 +212,7 @@ namespace dawn_native { namespace opengl {
 
     MaybeError Texture::ClearTexture(const SubresourceRange& range,
                                      TextureBase::ClearValue clearValue) {
-        // TODO(jiawei.shao@intel.com): initialize the textures with compressed formats.
+        // TODO(crbug.com/dawn/850): initialize the textures with compressed formats.
         if (GetFormat().isCompressed) {
             return {};
         }
@@ -533,13 +535,18 @@ namespace dawn_native { namespace opengl {
         mTarget = TargetForTextureViewDimension(descriptor->dimension, descriptor->arrayLayerCount,
                                                 texture->GetSampleCount());
 
+        // Texture could be destroyed by the time we make a view.
+        if (GetTexture()->GetTextureState() == Texture::TextureState::Destroyed) {
+            return;
+        }
+
         if (!UsageNeedsTextureView(texture->GetUsage())) {
             mHandle = 0;
         } else if (!RequiresCreatingNewTextureView(texture, descriptor)) {
             mHandle = ToBackend(texture)->GetHandle();
         } else {
             // glTextureView() is supported on OpenGL version >= 4.3
-            // TODO(jiawei.shao@intel.com): support texture view on OpenGL version <= 4.2
+            // TODO(crbug.com/dawn/593): support texture view on OpenGL version <= 4.2 and ES
             const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
             mHandle = GenTexture(gl);
             const Texture* textureGL = ToBackend(texture);
@@ -552,6 +559,10 @@ namespace dawn_native { namespace opengl {
     }
 
     TextureView::~TextureView() {
+    }
+
+    void TextureView::DestroyImpl() {
+        TextureViewBase::DestroyImpl();
         if (mOwnsHandle) {
             ToBackend(GetDevice())->gl.DeleteTextures(1, &mHandle);
         }

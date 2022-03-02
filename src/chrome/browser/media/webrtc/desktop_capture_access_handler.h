@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/capture_access_handler_base.h"
 #include "chrome/browser/media/media_access_handler.h"
@@ -39,6 +38,11 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
   DesktopCaptureAccessHandler();
   explicit DesktopCaptureAccessHandler(
       std::unique_ptr<DesktopMediaPickerFactory> picker_factory);
+
+  DesktopCaptureAccessHandler(const DesktopCaptureAccessHandler&) = delete;
+  DesktopCaptureAccessHandler& operator=(const DesktopCaptureAccessHandler&) =
+      delete;
+
   ~DesktopCaptureAccessHandler() override;
 
   // MediaAccessHandler implementation.
@@ -63,12 +67,6 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
  private:
   friend class DesktopCaptureAccessHandlerTest;
 
-  class WebContentsDestroyedObserver;
-  struct PendingAccessRequest;
-  using RequestsQueue =
-      base::circular_deque<std::unique_ptr<PendingAccessRequest>>;
-  using RequestsQueues = base::flat_map<content::WebContents*, RequestsQueue>;
-
   void ProcessScreenCaptureAccessRequest(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -83,6 +81,13 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
   // Returns whether desktop capture is always approved for |url|.
   // Currently chrome://feedback/ is default approved.
   static bool IsDefaultApproved(const GURL& url);
+
+  // Returns whether the request is approved or not. Some extensions do not
+  // require user approval, because they provide their own user approval UI. For
+  // others, shows a message box and asks for user approval.
+  static bool IsRequestApproved(content::WebContents* web_contents,
+                                const content::MediaStreamRequest& request,
+                                const extensions::Extension* extension);
 
   // WebContentsCollection::Observer:
   void WebContentsDestroyed(content::WebContents* web_contents) override;
@@ -110,8 +115,6 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   aura::Window* primary_root_window_for_testing_ = nullptr;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopCaptureAccessHandler);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_CAPTURE_ACCESS_HANDLER_H_

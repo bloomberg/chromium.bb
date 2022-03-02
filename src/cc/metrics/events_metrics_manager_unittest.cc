@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/metrics/event_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,11 +53,11 @@ class EventsMetricsManagerTest : public testing::Test {
 
  protected:
   std::unique_ptr<EventMetrics> CreateEventMetrics(ui::EventType type) {
-    test_tick_clock_.Advance(base::TimeDelta::FromMicroseconds(10));
+    test_tick_clock_.Advance(base::Microseconds(10));
     base::TimeTicks event_time = test_tick_clock_.NowTicks();
-    test_tick_clock_.Advance(base::TimeDelta::FromMicroseconds(10));
-    return EventMetrics::CreateForTesting(type, absl::nullopt, absl::nullopt,
-                                          event_time, &test_tick_clock_);
+    test_tick_clock_.Advance(base::Microseconds(10));
+    return EventMetrics::CreateForTesting(type, absl::nullopt, event_time,
+                                          &test_tick_clock_);
   }
 
   EventsMetricsManager manager_;

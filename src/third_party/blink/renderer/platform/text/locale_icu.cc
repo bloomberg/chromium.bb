@@ -36,8 +36,8 @@
 #include <limits>
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -249,13 +249,8 @@ void LocaleICU::InitializeCalendar() {
                                          UCAL_FIRST_DAY_OF_WEEK) -
                        UCAL_SUNDAY;
 
-  if (features::IsFormControlsRefreshEnabled()) {
-    week_day_short_labels_ = CreateLabelVector(
-        short_date_format_, UDAT_NARROW_WEEKDAYS, UCAL_SUNDAY, 7);
-  } else {
-    week_day_short_labels_ = CreateLabelVector(
-        short_date_format_, UDAT_SHORT_WEEKDAYS, UCAL_SUNDAY, 7);
-  }
+  week_day_short_labels_ = CreateLabelVector(
+      short_date_format_, UDAT_NARROW_WEEKDAYS, UCAL_SUNDAY, 7);
   if (!week_day_short_labels_)
     week_day_short_labels_ = CreateFallbackWeekDayShortLabels();
 }

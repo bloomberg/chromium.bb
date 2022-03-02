@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
@@ -45,6 +45,11 @@ class SharingDeviceRegistration {
                             VapidKeyManager* vapid_key_manager,
                             instance_id::InstanceIDDriver* instance_id_driver,
                             syncer::SyncService* sync_service);
+
+  SharingDeviceRegistration(const SharingDeviceRegistration&) = delete;
+  SharingDeviceRegistration& operator=(const SharingDeviceRegistration&) =
+      delete;
+
   virtual ~SharingDeviceRegistration();
 
   // Registers device with sharing sync preferences. Takes a |callback| function
@@ -65,6 +70,10 @@ class SharingDeviceRegistration {
 
   // Returns if device can handle receiving of remote copy contents.
   virtual bool IsRemoteCopySupported() const;
+
+  // Returns if device can handle receiving of optimization guide push
+  // notification.
+  virtual bool IsOptimizationGuidePushNotificationSupported() const;
 
   // For testing
   void SetEnabledFeaturesForTesting(
@@ -121,17 +130,15 @@ class SharingDeviceRegistration {
   std::set<sync_pb::SharingSpecificFields_EnabledFeatures> GetEnabledFeatures(
       bool supports_vapid) const;
 
-  PrefService* pref_service_;
-  SharingSyncPreference* sharing_sync_preference_;
-  VapidKeyManager* vapid_key_manager_;
-  instance_id::InstanceIDDriver* instance_id_driver_;
-  syncer::SyncService* sync_service_;
+  raw_ptr<PrefService> pref_service_;
+  raw_ptr<SharingSyncPreference> sharing_sync_preference_;
+  raw_ptr<VapidKeyManager> vapid_key_manager_;
+  raw_ptr<instance_id::InstanceIDDriver> instance_id_driver_;
+  raw_ptr<syncer::SyncService> sync_service_;
   absl::optional<std::set<sync_pb::SharingSpecificFields_EnabledFeatures>>
       enabled_features_testing_value_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SharingDeviceRegistration);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_DEVICE_REGISTRATION_H_

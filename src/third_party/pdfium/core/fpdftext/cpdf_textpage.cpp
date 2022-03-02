@@ -6,8 +6,9 @@
 
 #include "core/fpdftext/cpdf_textpage.h"
 
+#include <math.h>
+
 #include <algorithm>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -25,18 +26,18 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_unicode.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
 constexpr float kDefaultFontSize = 1.0f;
 constexpr float kSizeEpsilon = 0.01f;
 
-const uint16_t* const g_UnicodeData_Normalization_Maps[] = {
-    g_UnicodeData_Normalization_Map2, g_UnicodeData_Normalization_Map3,
-    g_UnicodeData_Normalization_Map4};
+const uint16_t* const kUnicodeDataNormalizationMaps[] = {
+    kUnicodeDataNormalizationMap2, kUnicodeDataNormalizationMap3,
+    kUnicodeDataNormalizationMap4};
 
 float NormalizeThreshold(float threshold, int t1, int t2, int t3) {
   DCHECK(t1 < t2);
@@ -75,33 +76,25 @@ float CalculateBaseSpace(const CPDF_TextObject* pTextObj,
   return baseSpace;
 }
 
-size_t Unicode_GetNormalization(wchar_t wch, wchar_t* pDst) {
+std::vector<wchar_t, FxAllocAllocator<wchar_t>> GetUnicodeNormalization(
+    wchar_t wch) {
   wch = wch & 0xFFFF;
-  wchar_t wFind = g_UnicodeData_Normalization[wch];
-  if (!wFind) {
-    if (pDst)
-      *pDst = wch;
-    return 1;
-  }
+  wchar_t wFind = kUnicodeDataNormalization[wch];
+  if (!wFind)
+    return std::vector<wchar_t, FxAllocAllocator<wchar_t>>(1, wch);
+
   if (wFind >= 0x8000) {
-    const uint16_t* pMap = g_UnicodeData_Normalization_Map1 + (wFind - 0x8000);
-    if (pDst)
-      *pDst = *pMap;
-    return 1;
+    return std::vector<wchar_t, FxAllocAllocator<wchar_t>>(
+        1, kUnicodeDataNormalizationMap1[wFind - 0x8000]);
   }
 
   wch = wFind & 0x0FFF;
   wFind >>= 12;
-  const uint16_t* pMap = g_UnicodeData_Normalization_Maps[wFind - 2] + wch;
+  const uint16_t* pMap = kUnicodeDataNormalizationMaps[wFind - 2] + wch;
   if (wFind == 4)
     wFind = static_cast<wchar_t>(*pMap++);
 
-  if (pDst) {
-    wchar_t n = wFind;
-    while (n--)
-      *pDst++ = *pMap++;
-  }
-  return static_cast<size_t>(wFind);
+  return std::vector<wchar_t, FxAllocAllocator<wchar_t>>(pMap, pMap + wFind);
 }
 
 float MaskPercentFilled(const std::vector<bool>& mask,
@@ -234,7 +227,7 @@ float GetFontSize(const CPDF_TextObject* text_object) {
 
 CFX_FloatRect GetLooseBounds(const CPDF_TextPage::CharInfo& charinfo) {
   float font_size = GetFontSize(charinfo.m_pTextObj.Get());
-  if (charinfo.m_pTextObj && !IsFloatZero(font_size)) {
+  if (charinfo.m_pTextObj && !FXSYS_IsFloatZero(font_size)) {
     bool is_vert_writing = charinfo.m_pTextObj->GetFont()->IsVertWriting();
     if (is_vert_writing && charinfo.m_pTextObj->GetFont()->IsCIDFont()) {
       CPDF_CIDFont* pCIDFont = charinfo.m_pTextObj->GetFont()->AsCIDFont();
@@ -329,7 +322,7 @@ void CPDF_TextPage::Init() {
 }
 
 int CPDF_TextPage::CountChars() const {
-  return pdfium::CollectionSize<int>(m_CharList);
+  return fxcrt::CollectionSize<int>(m_CharList);
 }
 
 int CPDF_TextPage::CharIndexFromTextIndex(int text_index) const {
@@ -543,11 +536,11 @@ int CPDF_TextPage::CountRects(int start, int nCount) {
     return -1;
 
   m_SelRects = GetRectArray(start, nCount);
-  return pdfium::CollectionSize<int>(m_SelRects);
+  return fxcrt::CollectionSize<int>(m_SelRects);
 }
 
 bool CPDF_TextPage::GetRect(int rectIndex, CFX_FloatRect* pRect) const {
-  if (!pdfium::IndexInBounds(m_SelRects, rectIndex))
+  if (!fxcrt::IndexInBounds(m_SelRects, rectIndex))
     return false;
 
   *pRect = m_SelRects[rectIndex];
@@ -617,14 +610,14 @@ CPDF_TextPage::TextOrientation CPDF_TextPage::FindTextlineFlowOrientation()
 
 void CPDF_TextPage::AppendGeneratedCharacter(wchar_t unicode,
                                              const CFX_Matrix& formMatrix) {
-  Optional<CharInfo> pGenerateChar = GenerateCharInfo(unicode);
-  if (!pGenerateChar)
+  absl::optional<CharInfo> pGenerateChar = GenerateCharInfo(unicode);
+  if (!pGenerateChar.has_value())
     return;
 
   m_TextBuf.AppendChar(unicode);
   if (!formMatrix.IsIdentity())
     pGenerateChar->m_Matrix = formMatrix;
-  m_CharList.push_back(*pGenerateChar);
+  m_CharList.push_back(pGenerateChar.value());
 }
 
 void CPDF_TextPage::ProcessObject() {
@@ -674,21 +667,17 @@ void CPDF_TextPage::AddCharInfoByLRDirection(wchar_t wChar,
     m_CharList.push_back(info2);
     return;
   }
-
   info2.m_Index = m_TextBuf.GetLength();
-  size_t nCount = 0;
+  std::vector<wchar_t, FxAllocAllocator<wchar_t>> normalized;
   if (wChar >= 0xFB00 && wChar <= 0xFB06)
-    nCount = Unicode_GetNormalization(wChar, nullptr);
-  if (nCount == 0) {
+    normalized = GetUnicodeNormalization(wChar);
+  if (normalized.empty()) {
     m_TextBuf.AppendChar(wChar);
     m_CharList.push_back(info2);
     return;
   }
-
-  std::unique_ptr<wchar_t, FxFreeDeleter> pDst(FX_Alloc(wchar_t, nCount));
-  Unicode_GetNormalization(wChar, pDst.get());
-  for (size_t nIndex = 0; nIndex < nCount; ++nIndex) {
-    info2.m_Unicode = pDst.get()[nIndex];
+  for (wchar_t normalized_char : normalized) {
+    info2.m_Unicode = normalized_char;
     info2.m_CharType = CPDF_TextPage::CharType::kPiece;
     m_TextBuf.AppendChar(info2.m_Unicode);
     m_CharList.push_back(info2);
@@ -703,21 +692,18 @@ void CPDF_TextPage::AddCharInfoByRLDirection(wchar_t wChar,
     m_CharList.push_back(info2);
     return;
   }
-
   info2.m_Index = m_TextBuf.GetLength();
-  wChar = FX_GetMirrorChar(wChar);
-  size_t nCount = Unicode_GetNormalization(wChar, nullptr);
-  if (nCount == 0) {
+  wChar = pdfium::unicode::GetMirrorChar(wChar);
+  std::vector<wchar_t, FxAllocAllocator<wchar_t>> normalized =
+      GetUnicodeNormalization(wChar);
+  if (normalized.empty()) {
     info2.m_Unicode = wChar;
     m_TextBuf.AppendChar(info2.m_Unicode);
     m_CharList.push_back(info2);
     return;
   }
-
-  std::unique_ptr<wchar_t, FxFreeDeleter> pDst(FX_Alloc(wchar_t, nCount));
-  Unicode_GetNormalization(wChar, pDst.get());
-  for (size_t nIndex = 0; nIndex < nCount; ++nIndex) {
-    info2.m_Unicode = pDst.get()[nIndex];
+  for (wchar_t normalized_char : normalized) {
+    info2.m_Unicode = normalized_char;
     info2.m_CharType = CPDF_TextPage::CharType::kPiece;
     m_TextBuf.AppendChar(info2.m_Unicode);
     m_CharList.push_back(info2);
@@ -941,7 +927,7 @@ void CPDF_TextPage::SwapTempTextBuf(int iCharListStartAppend,
                                     int iBufStartAppend) {
   DCHECK(!m_TempCharList.empty());
   int i = iCharListStartAppend;
-  int j = pdfium::CollectionSize<int>(m_TempCharList) - 1;
+  int j = fxcrt::CollectionSize<int>(m_TempCharList) - 1;
   for (; i < j; ++i, --j) {
     std::swap(m_TempCharList[i], m_TempCharList[j]);
     std::swap(m_TempCharList[i].m_Index, m_TempCharList[j].m_Index);
@@ -950,7 +936,7 @@ void CPDF_TextPage::SwapTempTextBuf(int iCharListStartAppend,
   pdfium::span<wchar_t> temp_span = m_TempTextBuf.GetWideSpan();
   DCHECK(!temp_span.empty());
   i = iBufStartAppend;
-  j = pdfium::CollectionSize<int>(temp_span) - 1;
+  j = fxcrt::CollectionSize<int>(temp_span) - 1;
   for (; i < j; ++i, --j)
     std::swap(temp_span[i], temp_span[j]);
 }
@@ -981,12 +967,12 @@ void CPDF_TextPage::ProcessTextObject(const TransformedTextObject& obj) {
       case GenerateCharacter::kNone:
         break;
       case GenerateCharacter::kSpace: {
-        Optional<CharInfo> pGenerateChar = GenerateCharInfo(L' ');
-        if (pGenerateChar) {
+        absl::optional<CharInfo> pGenerateChar = GenerateCharInfo(L' ');
+        if (pGenerateChar.has_value()) {
           if (!form_matrix.IsIdentity())
             pGenerateChar->m_Matrix = form_matrix;
           m_TempTextBuf.AppendChar(L' ');
-          m_TempCharList.push_back(*pGenerateChar);
+          m_TempCharList.push_back(pGenerateChar.value());
         }
         break;
       }
@@ -1038,8 +1024,7 @@ void CPDF_TextPage::ProcessTextObject(const TransformedTextObject& obj) {
   const bool bIsBidiAndMirrorInverse =
       bR2L && (matrix.a * matrix.d - matrix.b * matrix.c) < 0;
   int32_t iBufStartAppend = m_TempTextBuf.GetLength();
-  int32_t iCharListStartAppend =
-      pdfium::CollectionSize<int32_t>(m_TempCharList);
+  int32_t iCharListStartAppend = fxcrt::CollectionSize<int32_t>(m_TempCharList);
 
   float spacing = 0;
   const size_t nItems = pTextObj->CountItems();
@@ -1135,12 +1120,12 @@ void CPDF_TextPage::ProcessTextObject(const TransformedTextObject& obj) {
     }
     int nTotal = wstrItem.GetLength();
     bool bDel = false;
-    const int count = std::min(pdfium::CollectionSize<int>(m_TempCharList), 7);
+    const int count = std::min(fxcrt::CollectionSize<int>(m_TempCharList), 7);
     constexpr float kTextCharRatioGapDelta = 0.07f;
     float threshold = charinfo.m_Matrix.TransformXDistance(
         kTextCharRatioGapDelta * pTextObj->GetFontSize());
-    for (int n = pdfium::CollectionSize<int>(m_TempCharList);
-         n > pdfium::CollectionSize<int>(m_TempCharList) - count; --n) {
+    for (int n = fxcrt::CollectionSize<int>(m_TempCharList);
+         n > fxcrt::CollectionSize<int>(m_TempCharList) - count; --n) {
       const CharInfo& charinfo1 = m_TempCharList[n - 1];
       CFX_PointF diff = charinfo1.m_Origin - charinfo.m_Origin;
       if (charinfo1.m_CharCode == charinfo.m_CharCode &&
@@ -1423,11 +1408,11 @@ bool CPDF_TextPage::IsSameAsPreTextObject(
   return false;
 }
 
-Optional<CPDF_TextPage::CharInfo> CPDF_TextPage::GenerateCharInfo(
+absl::optional<CPDF_TextPage::CharInfo> CPDF_TextPage::GenerateCharInfo(
     wchar_t unicode) {
   const CharInfo* pPrevCharInfo = GetPrevCharInfo();
   if (!pPrevCharInfo)
-    return {};
+    return absl::nullopt;
 
   CharInfo info;
   info.m_Index = m_TextBuf.GetLength();

@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_CAST_EXTENSION_URL_LOADER_FACTORY_H_
 #define CHROMECAST_BROWSER_CAST_EXTENSION_URL_LOADER_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
@@ -46,6 +45,10 @@ class CastExtensionURLLoaderFactory
   static mojo::PendingRemote<network::mojom::URLLoaderFactory> Create(
       content::BrowserContext* browser_context,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> extension_factory);
+
+  CastExtensionURLLoaderFactory(const CastExtensionURLLoaderFactory&) = delete;
+  CastExtensionURLLoaderFactory& operator=(
+      const CastExtensionURLLoaderFactory&) = delete;
 
   static void EnsureShutdownNotifierFactoryBuilt();
 
@@ -92,8 +95,6 @@ class CastExtensionURLLoaderFactory
   scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
 
   base::CallbackListSubscription browser_context_shutdown_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionURLLoaderFactory);
 };
 
 }  // namespace shell
