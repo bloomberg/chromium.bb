@@ -10,6 +10,7 @@
 #include <string>
 
 #include "media/base/audio_capturer_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -37,6 +38,10 @@ class MODULES_EXPORT LocalMediaStreamAudioSource final
       bool disable_local_echo,
       ConstraintsRepeatingCallback started_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  LocalMediaStreamAudioSource(const LocalMediaStreamAudioSource&) = delete;
+  LocalMediaStreamAudioSource& operator=(const LocalMediaStreamAudioSource&) =
+      delete;
 
   ~LocalMediaStreamAudioSource() final;
 
@@ -78,8 +83,6 @@ class MODULES_EXPORT LocalMediaStreamAudioSource final
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(LocalMediaStreamAudioSource);
 };
 
 }  // namespace blink

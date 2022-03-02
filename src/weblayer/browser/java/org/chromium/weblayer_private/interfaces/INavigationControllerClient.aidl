@@ -26,7 +26,7 @@ interface INavigationControllerClient {
 
   void navigationFailed(IClientNavigation navigation) = 5;
 
-  void loadStateChanged(boolean isLoading, boolean toDifferentDocument) = 6;
+  void loadStateChanged(boolean isLoading, boolean shouldShowLoadingUi) = 6;
 
   void loadProgressChanged(double progress) = 7;
 
@@ -41,4 +41,7 @@ interface INavigationControllerClient {
   // Added in M90.
   IClientPage createClientPage() = 12;
   void onPageDestroyed(IClientPage page) = 13;
+
+  // Added in M93.
+  void onPageLanguageDetermined(IClientPage page, in String language) = 14;
 }

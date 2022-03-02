@@ -12,7 +12,7 @@
 
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkMipmap.h"
-#include "src/core/SkUtils.h"
+#include "src/core/SkOpts.h"
 #include "tools/flags/CommandLineFlags.h"
 
 #include "tools/fiddle/fiddle_main.h"
@@ -26,6 +26,7 @@ static DEFINE_double(frame, 1.0,
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrRenderTarget.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "tools/gpu/ManagedBackendTexture.h"
 #include "tools/gpu/gl/GLTestContext.h"
 
@@ -175,8 +176,9 @@ static bool setup_backend_objects(GrDirectContext* dContext,
 
         constexpr int kSampleCnt = 0;
         sk_sp<GrTexture> tmp = resourceProvider->createTexture(
-                offscreenDims, renderableFormat, GrColorType::kRGBA_8888, GrRenderable::kYes,
-                kSampleCnt, SkBudgeted::kNo, GrMipMapped::kNo, GrProtected::kNo, &level0);
+                offscreenDims, renderableFormat, GrTextureType::k2D, GrColorType::kRGBA_8888,
+                GrRenderable::kYes, kSampleCnt, SkBudgeted::kNo, GrMipMapped::kNo, GrProtected::kNo,
+                &level0);
         if (!tmp || !tmp->asRenderTarget()) {
             fputs("GrTexture is invalid.\n", stderr);
             return false;

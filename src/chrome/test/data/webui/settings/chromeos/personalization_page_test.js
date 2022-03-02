@@ -5,20 +5,25 @@
 // clang-format off
 // #import 'chrome://os-settings/chromeos/os_settings.js';
 
-// #import {WallpaperBrowserProxyImpl, routes, Router} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {PersonalizationHubBrowserProxyImpl, WallpaperBrowserProxyImpl, routes, Router} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestPersonalizationHubBrowserProxy} from './test_personalization_hub_browser_proxy.m.js';
 // #import {TestWallpaperBrowserProxy} from './test_wallpaper_browser_proxy.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 let personalizationPage = null;
+
+/** @type {?settings.TestPersonalizationHubBrowserProxy} */
+let PersonalizationHubBrowserProxy = null;
 
 /** @type {?settings.TestWallpaperBrowserProxy} */
 let WallpaperBrowserProxy = null;
 
 function createPersonalizationPage() {
+  PersonalizationHubBrowserProxy.reset();
   WallpaperBrowserProxy.reset();
   PolymerTest.clearBody();
 
@@ -34,6 +39,13 @@ function createPersonalizationPage() {
         },
       },
     },
+    ash: {
+      dark_mode: {
+        enabled: {
+          value: true,
+        }
+      }
+    }
   });
 
   personalizationPage.set('pageVisibility', {
@@ -52,12 +64,17 @@ suite('PersonalizationHandler', function() {
   setup(function() {
     WallpaperBrowserProxy = new settings.TestWallpaperBrowserProxy();
     settings.WallpaperBrowserProxyImpl.instance_ = WallpaperBrowserProxy;
+    PersonalizationHubBrowserProxy =
+        new settings.TestPersonalizationHubBrowserProxy();
+    settings.PersonalizationHubBrowserProxyImpl.instance_ =
+        PersonalizationHubBrowserProxy;
     createPersonalizationPage();
   });
 
-  teardown(function() {
+  teardown(async function() {
     personalizationPage.remove();
     settings.Router.getInstance().resetRouteForTesting();
+    await test_util.flushTasks();
   });
 
   test('wallpaperManager', async () => {
@@ -66,7 +83,8 @@ suite('PersonalizationHandler', function() {
     // the page to be recreated.
     createPersonalizationPage();
     await WallpaperBrowserProxy.whenCalled('isWallpaperPolicyControlled');
-    const button = personalizationPage.$.wallpaperButton;
+    const button =
+        personalizationPage.shadowRoot.getElementById('wallpaperButton');
     assertTrue(!!button);
     assertFalse(button.disabled);
     button.click();
@@ -91,15 +109,14 @@ suite('PersonalizationHandler', function() {
   });
 
   test('Deep link to open wallpaper button', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
     const params = new URLSearchParams;
     params.append('settingId', '500');
     settings.Router.getInstance().navigateTo(
         settings.routes.PERSONALIZATION, params);
 
-    const deepLinkElement = personalizationPage.$.wallpaperButton.$$('#icon');
+    const deepLinkElement =
+        personalizationPage.shadowRoot.getElementById('wallpaperButton')
+            .shadowRoot.querySelector('#icon');
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
         deepLinkElement, getDeepActiveElement(),
@@ -107,7 +124,8 @@ suite('PersonalizationHandler', function() {
   });
 
   test('changePicture', function() {
-    const row = personalizationPage.$.changePictureRow;
+    const row =
+        personalizationPage.shadowRoot.getElementById('changePictureRow');
     assertTrue(!!row);
     row.click();
     assertEquals(
@@ -129,30 +147,84 @@ suite('PersonalizationHandler', function() {
     }
   });
 
-  suite('PersonalizationTest_ReleaseOnly', function() {
-    test('Deep link to change account picture', async () => {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+  test('darkMode', function() {
+    const isGuest = loadTimeData.getBoolean('isGuest');
+    // Enable dark mode feature and guest mode, so dark mode row should be
+    // hidden due to no personalization section show in the guest mode.
+    loadTimeData.overrideValues({isDarkModeAllowed: true, isGuest: true});
+    assertTrue(loadTimeData.getBoolean('isDarkModeAllowed'));
+    Polymer.dom.flush();
+    let row = personalizationPage.$$('#darkModeRow');
+    assertTrue(!row);
 
-      const params = new URLSearchParams;
-      params.append('settingId', '503');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CHANGE_PICTURE, params);
+    // Disable guest mode and check that dark mode row shows up.
+    loadTimeData.overrideValues({isDarkModeAllowed: true, isGuest: false});
+    assertFalse(loadTimeData.getBoolean('isGuest'));
+    createPersonalizationPage();
+    Polymer.dom.flush();
+    row = personalizationPage.$$('#darkModeRow');
+    assertFalse(!row);
+    row.click();
+    assertTrue(
+        settings.routes.DARK_MODE ===
+        settings.Router.getInstance().getCurrentRoute());
 
-      Polymer.dom.flush();
+    // Disable dark mode feature and check that dark mode row is hidden.
+    loadTimeData.overrideValues({isDarkModeAllowed: false, isGuest: false});
+    assertFalse(loadTimeData.getBoolean('isDarkModeAllowed'));
+    createPersonalizationPage();
+    personalizationPage.prefs.ash.dark_mode.enabled.value = false;
+    Polymer.dom.flush();
+    row = personalizationPage.$$('#darkModeRow');
+    assertTrue(!row);
+  });
 
-      await test_util.waitAfterNextRender(personalizationPage);
+  test('Deep link to change account picture', async () => {
+    const params = new URLSearchParams;
+    params.append('settingId', '503');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CHANGE_PICTURE, params);
 
-      const changePicturePage =
-          personalizationPage.$$('settings-change-picture');
-      assertTrue(!!changePicturePage);
-      const deepLinkElement = changePicturePage.$$('#pictureList')
-                                  .$$('#selector')
-                                  .$$('[class="iron-selected"]');
-      await test_util.waitAfterNextRender(deepLinkElement);
-      assertEquals(
-          deepLinkElement, getDeepActiveElement(),
-          'Account picture elem should be focused for settingId=503.');
-    });
+    Polymer.dom.flush();
+
+    await test_util.waitAfterNextRender(personalizationPage);
+
+    const changePicturePage = personalizationPage.$$('settings-change-picture');
+    assertTrue(!!changePicturePage);
+    const deepLinkElement = changePicturePage.$$('#pictureList')
+                                .$$('#selector')
+                                .$$('[class="iron-selected"]');
+    await test_util.waitAfterNextRender(deepLinkElement);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Account picture elem should be focused for settingId=503.');
+  });
+
+  test('Personalization hub feature shows only link to hub', async () => {
+    loadTimeData.overrideValues({isPersonalizationHubEnabled: true});
+    assertTrue(loadTimeData.getBoolean('isPersonalizationHubEnabled'));
+    createPersonalizationPage();
+    Polymer.dom.flush();
+    await test_util.waitAfterNextRender(personalizationPage);
+
+    const crLinks =
+        personalizationPage.shadowRoot.querySelectorAll('cr-link-row');
+
+    assertEquals(1, crLinks.length);
+    assertEquals('personalizationHubButton', crLinks[0].id);
+  });
+
+  test('Opens personalization hub when clicked', async () => {
+    loadTimeData.overrideValues({isPersonalizationHubEnabled: true});
+    assertTrue(loadTimeData.getBoolean('isPersonalizationHubEnabled'));
+    createPersonalizationPage();
+    Polymer.dom.flush();
+    await test_util.waitAfterNextRender(personalizationPage);
+
+    const hubLink = personalizationPage.shadowRoot.getElementById(
+        'personalizationHubButton');
+    hubLink.click();
+
+    await PersonalizationHubBrowserProxy.whenCalled('openPersonalizationHub');
   });
 });

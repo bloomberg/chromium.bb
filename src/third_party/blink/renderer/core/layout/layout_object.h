@@ -31,7 +31,7 @@
 
 #include "base/auto_reset.h"
 #include "base/dcheck_is_on.h"
-#include "cc/base/features.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
@@ -73,10 +73,10 @@ class Cursor;
 
 namespace blink {
 class AffineTransform;
+class FragmentDataIterator;
 class HitTestLocation;
 class HitTestRequest;
 class InlineBox;
-class LayoutBoxModelObject;
 class LayoutBlock;
 class LayoutBlockFlow;
 class LayoutFlowThread;
@@ -115,10 +115,15 @@ enum MarkingBehavior {
 enum ScheduleRelayoutBehavior { kScheduleRelayout, kDontScheduleRelayout };
 
 enum {
-  kBackgroundPaintInGraphicsLayer = 1 << 0,
-  kBackgroundPaintInScrollingContents = 1 << 1
+  // Backgrounds paint under FragmentData::LocalBorderBoxProperties().
+  kBackgroundPaintInBorderBoxSpace = 1 << 0,
+  // Backgrounds paint under FragmentData::ContentsProperties().
+  kBackgroundPaintInContentsSpace = 1 << 1,
+  // Paint backgrounds twice.
+  kBackgroundPaintInBothSpaces =
+      kBackgroundPaintInBorderBoxSpace | kBackgroundPaintInContentsSpace,
 };
-using BackgroundPaintLocation = uint8_t;
+using BackgroundPaintLocation = unsigned;
 
 struct AnnotatedRegionValue {
   DISALLOW_NEW();
@@ -133,7 +138,7 @@ struct AnnotatedRegionValue {
 // The axes which overflows should be clipped. This is not just because of
 // overflow clip, but other types of clip as well, such as control clips or
 // contain: paint.
-using OverflowClipAxes = uint8_t;
+using OverflowClipAxes = unsigned;
 
 enum {
   kNoOverflowClip = 0,
@@ -270,7 +275,8 @@ struct RecalcLayoutOverflowResult {
 // IntrinsicLogicalWidthsDirty.
 //
 // See the individual getters below for more details about what each width is.
-class CORE_EXPORT LayoutObject : public ImageResourceObserver,
+class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
+                                 public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
@@ -289,6 +295,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   FRIEND_TEST_ALL_PREFIXES(
       LayoutObjectTest,
       ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, VisualRect);
 
   friend class VisualRectMappingTest;
 
@@ -299,6 +306,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutObject(const LayoutObject&) = delete;
   LayoutObject& operator=(const LayoutObject&) = delete;
   ~LayoutObject() override;
+  void Trace(Visitor*) const override;
 
 // Should be added at the beginning of every method to ensure we are not
 // accessing a LayoutObject after the Desroy() call.
@@ -308,6 +316,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   ALWAYS_INLINE void CheckIsNotDestroyed() const {}
 #endif
 #define NOT_DESTROYED() CheckIsNotDestroyed()
+
+#if DCHECK_IS_ON()
+  bool IsDestroyed() const { return is_destroyed_; }
+#endif
 
   // Returns the name of the layout object.
   virtual const char* GetName() const = 0;
@@ -331,7 +343,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  protected:
   void EnsureIdForTesting() {
     NOT_DESTROYED();
-    fragment_.EnsureId();
+    fragment_->EnsureId();
   }
 
  private:
@@ -500,11 +512,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     for (const LayoutObject* layout_object = this; layout_object;
          layout_object = layout_object->ChildLayoutBlockedByDisplayLock()
-                             ? layout_object->NextInPreOrderAfterChildren()
-                             : layout_object->NextInPreOrder()) {
+                             ? layout_object->NextInPreOrderAfterChildren(this)
+                             : layout_object->NextInPreOrder(this)) {
       layout_object->AssertLaidOut();
     }
   }
+
+  // This function checks if the fragment tree is consistent with the
+  // |LayoutObject| tree. This consistency is critical, as sometimes we traverse
+  // the fragment tree, sometimes the |LayoutObject| tree, or mix the
+  // traversals. Also we rely on the consistency to avoid using fragments whose
+  // |LayoutObject| were destroyed.
+  void AssertFragmentTree(bool display_locked = false) const;
 
   void AssertClearedPaintInvalidationFlags() const;
 
@@ -512,8 +531,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     for (const LayoutObject* layout_object = this; layout_object;
          layout_object = layout_object->ChildPrePaintBlockedByDisplayLock()
-                             ? layout_object->NextInPreOrderAfterChildren()
-                             : layout_object->NextInPreOrder()) {
+                             ? layout_object->NextInPreOrderAfterChildren(this)
+                             : layout_object->NextInPreOrder(this)) {
       layout_object->AssertClearedPaintInvalidationFlags();
     }
   }
@@ -578,13 +597,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   UniqueObjectId UniqueId() const {
     NOT_DESTROYED();
-    return fragment_.UniqueId();
+    return fragment_->UniqueId();
+  }
+
+  inline bool IsEligibleForPaintOrLayoutContainment() const {
+    NOT_DESTROYED();
+    return (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
+           (!IsTablePart() || IsLayoutBlockFlow());
   }
 
   inline bool ShouldApplyPaintContainment(const ComputedStyle& style) const {
     NOT_DESTROYED();
-    return style.ContainsPaint() && (!IsInline() || IsAtomicInlineLevel()) &&
-           !IsRubyText() && (!IsTablePart() || IsLayoutBlockFlow());
+    return style.ContainsPaint() && IsEligibleForPaintOrLayoutContainment();
   }
 
   inline bool ShouldApplyPaintContainment() const {
@@ -594,8 +618,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline bool ShouldApplyLayoutContainment(const ComputedStyle& style) const {
     NOT_DESTROYED();
-    return style.ContainsLayout() && (!IsInline() || IsAtomicInlineLevel()) &&
-           !IsRubyText() && (!IsTablePart() || IsLayoutBlockFlow());
+    return style.ContainsLayout() && IsEligibleForPaintOrLayoutContainment();
   }
 
   inline bool ShouldApplyLayoutContainment() const {
@@ -614,13 +637,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   inline bool ShouldApplyInlineSizeContainment() const {
     NOT_DESTROYED();
-    return (StyleRef().ContainsInlineSize() || StyleRef().ContainsSize()) &&
-           IsEligibleForSizeContainment();
+    return StyleRef().ContainsInlineSize() && IsEligibleForSizeContainment();
   }
   inline bool ShouldApplyBlockSizeContainment() const {
     NOT_DESTROYED();
-    return (StyleRef().ContainsBlockSize() || StyleRef().ContainsSize()) &&
-           IsEligibleForSizeContainment();
+    return StyleRef().ContainsBlockSize() && IsEligibleForSizeContainment();
   }
   inline bool ShouldApplyStyleContainment() const {
     NOT_DESTROYED();
@@ -628,18 +649,24 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   inline bool ShouldApplyContentContainment() const {
     NOT_DESTROYED();
-    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment();
+    return ShouldApplyStyleContainment() && ShouldApplyPaintContainment() &&
+           ShouldApplyLayoutContainment();
   }
   inline bool ShouldApplyStrictContainment() const {
     NOT_DESTROYED();
-    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
-           ShouldApplySizeContainment();
+    return ShouldApplyStyleContainment() && ShouldApplyPaintContainment() &&
+           ShouldApplyLayoutContainment() && ShouldApplySizeContainment();
   }
+  inline bool ShouldApplyAnyContainment() const {
+    NOT_DESTROYED();
+    return ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
+           ShouldApplyStyleContainment() || ShouldApplyBlockSizeContainment() ||
+           ShouldApplyInlineSizeContainment();
+  }
+
   inline bool IsContainerForContainerQueries() const {
     NOT_DESTROYED();
-    return ShouldApplyLayoutContainment() && ShouldApplyStyleContainment() &&
-           (ShouldApplyInlineSizeContainment() ||
-            ShouldApplyBlockSizeContainment());
+    return StyleRef().IsContainerForContainerQueries();
   }
 
   inline bool IsStackingContext() const {
@@ -709,7 +736,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 #endif
 
-  void AddAbsoluteRectForLayer(IntRect& result);
+  void AddAbsoluteRectForLayer(gfx::Rect& result);
   bool RequiresAnonymousTableWrappers(const LayoutObject*) const;
 
  public:
@@ -755,10 +782,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   static LayoutObject* CreateObject(Element*,
                                     const ComputedStyle&,
                                     LegacyLayout);
-
-  // LayoutObjects are allocated out of the rendering partition.
-  void* operator new(size_t);
-  void operator delete(void*);
 
   bool IsPseudoElement() const {
     NOT_DESTROYED();
@@ -825,10 +848,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGGrid);
   }
-  bool IsLayoutNGMixin() const {
-    NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGMixin);
-  }
   bool IsLayoutNGListItem() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGListItem);
@@ -848,6 +867,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGText() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGText);
+  }
+  bool IsLayoutNGTextCombine() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectNGTextCombine);
   }
   bool IsLayoutTableCol() const {
     NOT_DESTROYED();
@@ -1256,6 +1279,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return !IsSVG() || IsSVGShape() || IsSVGImage() || IsSVGText() ||
            IsSVGInline() || IsSVGRoot() || IsSVGForeignObject() ||
+           IsNGSVGText() ||
            // Blending does not apply to non-renderable elements such as
            // patterns (see: https://github.com/w3c/fxtf-drafts/issues/309).
            (IsSVGContainer() && !IsSVGHiddenContainer());
@@ -1285,7 +1309,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // stroke-width). objectBoundingBox is returned in local coordinates and
   // always unzoomed.
   // The name objectBoundingBox is taken from the SVG 1.1 spec.
-  virtual FloatRect ObjectBoundingBox() const;
+  virtual gfx::RectF ObjectBoundingBox() const;
 
   // Returns the smallest rectangle enclosing all of the painted content
   // respecting clipping, masking, filters, opacity, stroke-width and markers.
@@ -1293,12 +1317,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // applies. For SVG objects defining viewports (e.g.
   // LayoutSVGViewportContainer and  LayoutSVGResourceMarker), the local SVG
   // coordinate space is the viewport space.
-  virtual FloatRect VisualRectInLocalSVGCoordinates() const;
+  virtual gfx::RectF VisualRectInLocalSVGCoordinates() const;
 
   // Like VisualRectInLocalSVGCoordinates() but does not include visual overflow
   // (name is misleading). May be zoomed (currently only for <foreignObject>,
   // which represents this via its LocalToSVGParentTransform()).
-  virtual FloatRect StrokeBoundingBox() const;
+  virtual gfx::RectF StrokeBoundingBox() const;
 
   // This returns the transform applying to the local SVG coordinate space,
   // which combines the CSS transform properties and animation motion transform.
@@ -1335,9 +1359,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            StyleRef().StyleType() == kPseudoIdNone && IsLayoutBlock() &&
            !IsLayoutFlowThread() && !IsLayoutMultiColumnSet();
   }
+  // This is similar to the negation of IsAnonymous, with a single difference.
+  // When a block is inside an inline, there is an anonymous block that is a
+  // continuation of the inline, wrapping the block that is inside it, as
+  // https://www.w3.org/TR/CSS21/visuren.html#anonymous-block-level describes.
+  // That anonymous block also returns true here.  This allows us to track
+  // when layout object parent-child relationships correspond to DOM
+  // parent-child relationships.
+  bool IsForElement() const;
   // If node has been split into continuations, it returns the first layout
   // object generated for the node.
   const LayoutObject* ContinuationRoot() const {
+    NOT_DESTROYED();
+    return GetNode() ? GetNode()->GetLayoutObject() : this;
+  }
+  LayoutObject* ContinuationRoot() {
     NOT_DESTROYED();
     return GetNode() ? GetNode()->GetLayoutObject() : this;
   }
@@ -1429,6 +1465,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsAtomicInlineLevel() const {
     NOT_DESTROYED();
     return bitfields_.IsAtomicInlineLevel();
+  }
+  bool IsBlockInInline() const {
+    return IsAnonymous() && !IsInline() && !IsFloatingOrOutOfFlowPositioned() &&
+           Parent() && Parent()->IsLayoutInline();
   }
   bool IsHorizontalWritingMode() const {
     NOT_DESTROYED();
@@ -1741,6 +1781,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // child of a DETAILS, and list-style-type is disclosure-*.
   bool IsListMarkerForSummary() const;
 
+  // Returns true if this object is a proper descendant of any list marker.
+  bool IsInListMarker() const;
+
   // The pseudo element style can be cached or uncached. Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
   // has no concept of changing state). The cached pseudo style always inherits
@@ -1749,6 +1792,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
   scoped_refptr<ComputedStyle> GetUncachedPseudoElementStyle(
       const StyleRequest&) const;
+
+  // Returns the ::selection style, which may be stored in StyleCachedData (old
+  // impl) or StyleHighlightData (new impl).
+  // TODO(crbug.com/1024156): inline and remove on shipping HighlightInheritance
+  const ComputedStyle* GetSelectionStyle() const;
 
   LayoutView* View() const {
     NOT_DESTROYED();
@@ -1965,7 +2013,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns false when certain font changes (e.g., font-face rule changes, web
   // font loaded, etc) have occurred, in which case |this| needs relayout.
-  bool IsFontFallbackValid() const;
+  virtual bool IsFontFallbackValid() const;
 
   // Traverses subtree, and marks all layout objects as need relayout, repaint
   // and preferred width recalc. Also invalidates shaping on all text nodes.
@@ -1998,11 +2046,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // object, when it comes to painting, hit-testing and other layout read
   // operations. If false is returned, we need to traverse the layout object
   // tree instead.
-  //
-  // It is not allowed to call this method on a non-LayoutBox object, unless its
-  // containing block is an NG object (e.g. not allowed to call it on a
-  // LayoutInline that's contained by a legacy LayoutBlockFlow).
-  inline bool CanTraversePhysicalFragments() const;
+  bool CanTraversePhysicalFragments() const {
+    NOT_DESTROYED();
+
+    if (!bitfields_.MightTraversePhysicalFragments())
+      return false;
+
+    // Non-LayoutBox objects (such as LayoutInline) don't necessarily create NG
+    // LayoutObjects. We'll allow traversing their fragments if they are laid
+    // out by an NG container.
+    if (!IsBox())
+      return IsInLayoutNGInlineFormattingContext();
+    return true;
+  }
 
   // Return true if |this| produces one or more inline fragments, including
   // whitespace-only text fragments.
@@ -2094,6 +2150,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     bitfields_.SetIsHTMLLegendElement(true);
   }
+  void SetWhitespaceChildrenMayChange(bool b) {
+    NOT_DESTROYED();
+    bitfields_.SetWhitespaceChildrenMayChange(b);
+  }
+  bool WhitespaceChildrenMayChange() const {
+    NOT_DESTROYED();
+    return bitfields_.WhitespaceChildrenMayChange();
+  }
 
   virtual void Paint(const PaintInfo&) const;
 
@@ -2132,8 +2196,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   // Flags used to mark if a descendant subtree of this object has changed.
-  void NotifyOfSubtreeChange();
-  void NotifyAncestorsOfSubtreeChange();
+
+  // Returns true if the flag did change.
+  bool NotifyOfSubtreeChange();
   bool WasNotifiedOfSubtreeChange() const {
     NOT_DESTROYED();
     return bitfields_.NotifiedOfSubtreeChange();
@@ -2237,8 +2302,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<const ComputedStyle>,
                                           ApplyStyleChanges);
 
-  void ClearBaseComputedStyle();
-
   // This function returns an enclosing non-anonymous LayoutBlock for this
   // element. This function is not always returning the containing block as
   // defined by CSS. In particular:
@@ -2265,9 +2328,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutObject* container,
       AncestorSkipInfo* = nullptr);
 
-  // Returns the nearest anceestor in the layout tree that is not anonymous,
+  // Returns the nearest ancestor in the layout tree that is not anonymous,
   // or null if there is none.
   LayoutObject* NonAnonymousAncestor() const;
+
+  // Returns the nearest ancestor in the layout tree that IsForElement(),
+  // or null if there is none.
+  LayoutObject* NearestAncestorForElement() const;
 
   const LayoutBlock* InclusiveContainingBlock() const;
 
@@ -2308,12 +2375,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                       const PhysicalOffset& p,
                                       MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
-    return PhysicalOffset::FromFloatPointRound(
-        AncestorToLocalFloatPoint(ancestor, FloatPoint(p), mode));
+    return PhysicalOffset::FromPointFRound(
+        AncestorToLocalPoint(ancestor, gfx::PointF(p), mode));
   }
-  FloatPoint AncestorToLocalFloatPoint(const LayoutBoxModelObject* ancestor,
-                                       const FloatPoint& p,
-                                       MapCoordinatesFlags = 0) const;
+  gfx::PointF AncestorToLocalPoint(const LayoutBoxModelObject* ancestor,
+                                   const gfx::PointF& p,
+                                   MapCoordinatesFlags = 0) const;
 
   // Convert a rect/quad/point in local physical coordinates into ancestor
   // coordinates, taking transforms into account unless kIgnoreTransforms is
@@ -2343,12 +2410,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                       const LayoutBoxModelObject* ancestor,
                                       MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
-    return PhysicalOffset::FromFloatPointRound(
-        LocalToAncestorFloatPoint(FloatPoint(p), ancestor, mode));
+    return PhysicalOffset::FromPointFRound(
+        LocalToAncestorPoint(gfx::PointF(p), ancestor, mode));
   }
-  FloatPoint LocalToAncestorFloatPoint(const FloatPoint&,
-                                       const LayoutBoxModelObject* ancestor,
-                                       MapCoordinatesFlags = 0) const;
+  gfx::PointF LocalToAncestorPoint(const gfx::PointF&,
+                                   const LayoutBoxModelObject* ancestor,
+                                   MapCoordinatesFlags = 0) const;
   void LocalToAncestorRects(Vector<PhysicalRect>&,
                             const LayoutBoxModelObject* ancestor,
                             const PhysicalOffset& pre_offset,
@@ -2391,10 +2458,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return LocalToAncestorPoint(p, nullptr, mode);
   }
-  FloatPoint LocalToAbsoluteFloatPoint(const FloatPoint& p,
-                                       MapCoordinatesFlags mode = 0) const {
+  gfx::PointF LocalToAbsolutePoint(const gfx::PointF& p,
+                                   MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
-    return LocalToAncestorFloatPoint(p, nullptr, mode);
+    return LocalToAncestorPoint(p, nullptr, mode);
   }
   PhysicalRect AbsoluteToLocalRect(const PhysicalRect& rect,
                                    MapCoordinatesFlags mode = 0) const {
@@ -2411,10 +2478,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return AncestorToLocalPoint(nullptr, p, mode);
   }
-  FloatPoint AbsoluteToLocalFloatPoint(const FloatPoint& p,
-                                       MapCoordinatesFlags mode = 0) const {
+  gfx::PointF AbsoluteToLocalPoint(const gfx::PointF& p,
+                                   MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
-    return AncestorToLocalFloatPoint(nullptr, p, mode);
+    return AncestorToLocalPoint(nullptr, p, mode);
   }
 
   // Return the offset from the container() layoutObject (excluding transforms
@@ -2428,10 +2495,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   PhysicalOffset OffsetFromAncestor(const LayoutObject*) const;
 
   FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;
-  // This returns an IntRect enclosing this object. If this object has an
+  // This returns an gfx::Rect enclosing this object. If this object has an
   // integral size and the position has fractional values, the resultant
-  // IntRect can be larger than the integral size.
-  IntRect AbsoluteBoundingBoxRect(MapCoordinatesFlags = 0) const;
+  // gfx::Rect can be larger than the integral size.
+  gfx::Rect AbsoluteBoundingBoxRect(MapCoordinatesFlags = 0) const;
 
   // These two functions also handle inlines without content for which the
   // location of the result rect (which may be empty) should be the absolute
@@ -2441,7 +2508,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // can combine this with AbsoluteBoundingBoxRect().
   virtual PhysicalRect AbsoluteBoundingBoxRectHandlingEmptyInline(
       MapCoordinatesFlags flags = 0) const;
-  // This returns an IntRect expanded from
+  // This returns an gfx::Rect expanded from
   // AbsoluteBoundingBoxRectHandlingEmptyInline by ScrollMargin.
   PhysicalRect AbsoluteBoundingBoxRectForScrollIntoView() const;
 
@@ -2453,7 +2520,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // The bounding box (see: absoluteBoundingBoxRect) including all descendant
   // bounding boxes.
-  IntRect AbsoluteBoundingBoxRectIncludingDescendants() const;
+  gfx::Rect AbsoluteBoundingBoxRectIncludingDescendants() const;
 
   // For accessibility, we want the bounding box rect of this element
   // in local coordinates, which can then be converted to coordinates relative
@@ -2681,7 +2748,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // destruction and don't waste time doing unnecessary work.
   bool DocumentBeingDestroyed() const;
 
-  void DestroyAndCleanupAnonymousWrappers();
+  void DestroyAndCleanupAnonymousWrappers(bool performing_reattach);
 
   void Destroy();
 
@@ -2779,7 +2846,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return StyleRef().Visibility() == EVisibility::kVisible &&
            (request.IgnorePointerEventsNone() ||
-            StyleRef().PointerEvents() != EPointerEvents::kNone);
+            StyleRef().UsedPointerEvents() != EPointerEvents::kNone);
   }
 
   bool VisibleToHitTesting() const {
@@ -2817,6 +2884,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // See |HasReflection()| for why |StyleRef().BoxReflect()| is not used.
     return StyleRef().HasGroupingProperty(HasReflection());
   }
+
+  // Return the outline rectangles of the current fragmentainer, as indicated by
+  // |iterator|. This method will also advance |iterator| to the next
+  // FragmentData (and therefore also next fragmentainer), if any.
+  Vector<PhysicalRect> CollectOutlineRectsAndAdvance(
+      NGOutlineType,
+      FragmentDataIterator& iterator) const;
 
   Vector<PhysicalRect> OutlineRects(const PhysicalOffset& additional_offset,
                                     NGOutlineType) const;
@@ -2982,7 +3056,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // See ../paint/README.md for more on fragments.
   const FragmentData& FirstFragment() const {
     NOT_DESTROYED();
-    return fragment_;
+    return *fragment_;
   }
 
   // Attempt to return the top/left fragment, to be used in block-fragmentation-
@@ -3007,8 +3081,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     if (LIKELY(!HasFlippedBlocksWritingMode() || !IsLayoutNGObject()))
-      return fragment_;
-    return fragment_.LastFragment();
+      return *fragment_;
+    return fragment_->LastFragment();
   }
 
   enum OverflowRecalcType {
@@ -3072,14 +3146,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void MarkBlockingWheelEventHandlerChanged();
   void MarkDescendantBlockingWheelEventHandlerChanged();
   bool BlockingWheelEventHandlerChanged() const {
-    // TODO(https://crbug.com/841364): This block is optimized to avoid costly
-    // checks for kWheelEventRegions. It will be simplified once
-    // kWheelEventRegions feature flag is removed.
-    if (!bitfields_.BlockingWheelEventHandlerChanged())
-      return false;
-    return base::FeatureList::IsEnabled(::features::kWheelEventRegions)
-               ? bitfields_.BlockingWheelEventHandlerChanged()
-               : false;
+    return bitfields_.BlockingWheelEventHandlerChanged();
   }
   bool DescendantBlockingWheelEventHandlerChanged() const {
     return bitfields_.DescendantBlockingWheelEventHandlerChanged();
@@ -3180,9 +3247,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           .SetShouldAssumePaintOffsetTranslationForLayoutShiftTracking(b);
     }
 
-    FragmentData& FirstFragment() { return layout_object_.fragment_; }
+    FragmentData& FirstFragment() { return *layout_object_.fragment_; }
 
-    void EnsureId() { layout_object_.fragment_.EnsureId(); }
+    void EnsureId() { layout_object_.fragment_->EnsureId(); }
 
    protected:
     friend class LayoutBoxModelObject;
@@ -3260,9 +3327,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     bitfields_.SetScrollAnchorDisablingStyleChanged(changed);
   }
-
-  bool CompositedScrollsWithRespectTo(
-      const LayoutBoxModelObject& paint_invalidation_container) const;
 
   BackgroundPaintLocation GetBackgroundPaintLocation() const {
     NOT_DESTROYED();
@@ -3349,10 +3413,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetIsTableColumnsConstraintsDirty(b);
   }
 
+  bool IsGridPlacementDirty() const {
+    NOT_DESTROYED();
+    return bitfields_.IsGridPlacementDirty();
+  }
+
+  void SetGridPlacementDirty(bool b) {
+    NOT_DESTROYED();
+    bitfields_.SetIsGridPlacementDirty(b);
+  }
+
   DisplayLockContext* GetDisplayLockContext() const {
     NOT_DESTROYED();
-    if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-      return nullptr;
     auto* element = DynamicTo<Element>(GetNode());
     if (!element)
       return nullptr;
@@ -3452,6 +3524,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGOutsideListMarker,
     kLayoutObjectNGProgress,
     kLayoutObjectNGText,
+    kLayoutObjectNGTextCombine,
     kLayoutObjectNGTextControlMultiLine,
     kLayoutObjectNGTextControlSingleLine,
     kLayoutObjectOutsideListMarker,
@@ -3499,16 +3572,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return false;
   }
 
-  // While the |DeleteThis()| method is virtual, this should only be overridden
-  // in very rare circumstances.
-  // You want to override |WillBeDestroyed()| instead unless you explicitly need
-  // to stop this object from being destroyed (for example,
-  // |LayoutEmbeddedContent| overrides |DeleteThis()| for this purpose).
-  virtual void DeleteThis();
-
-  void SetBeingDestroyedForTesting() {
+  void SetDestroyedForTesting() {
     NOT_DESTROYED();
     bitfields_.SetBeingDestroyed(true);
+#if DCHECK_IS_ON()
+    is_destroyed_ = true;
+#endif
   }
 
   const ComputedStyle& SlowEffectiveStyle(NGStyleVariant style_variant) const;
@@ -3621,6 +3690,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetBackgroundIsKnownToBeObscured(b);
   }
 
+  bool IsAnonymousNGMulticolInlineWrapper() const {
+    NOT_DESTROYED();
+    return bitfields_.IsAnonymousNGMulticolInlineWrapper();
+  }
+  void SetIsAnonymousNGMulticolInlineWrapper() {
+    NOT_DESTROYED();
+    bitfields_.SetIsAnonymousNGMulticolInlineWrapper(true);
+  }
+
   // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
   // containing LayoutBlock of it.
   LayoutBlock* ContainingBlockForAbsolutePosition(
@@ -3654,8 +3732,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                         MapCoordinatesFlags = 0) const;
 
   void ClearLayoutRootIfNeeded() const;
-
-  bool IsInert() const;
 
   void ScheduleRelayout();
 
@@ -3842,16 +3918,20 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           being_destroyed_(false),
           is_layout_ng_object_for_list_marker_image_(false),
           is_table_column_constraints_dirty_(false),
+          is_grid_placement_dirty_(false),
           transform_affects_vector_effect_(false),
           is_layout_ng_object_for_canvas_formatted_text(false),
           should_skip_next_layout_shift_tracking_(true),
           should_assume_paint_offset_translation_for_layout_shift_tracking_(
               false),
+          might_traverse_physical_fragments_(false),
+          is_anonymous_ng_multicol_inline_wrapper_(false),
+          whitespace_children_may_change_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
               static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
-          background_paint_location_(kBackgroundPaintInGraphicsLayer),
+          background_paint_location_(kBackgroundPaintInBorderBoxSpace),
           overflow_clip_axes_(kNoOverflowClip) {}
 
     // Self needs layout for style means that this layout object is marked for a
@@ -4141,6 +4221,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          HasNonCollapsedBorderDecoration);
 
     // True at start of |Destroy()| before calling |WillBeDestroyed()|.
+    // TODO(yukiy): Remove this bitfield
     ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);
 
     // From LayoutListMarkerImage
@@ -4151,6 +4232,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // When this flag is set, any cached constraints are invalid.
     ADD_BOOLEAN_BITFIELD(is_table_column_constraints_dirty_,
                          IsTableColumnsConstraintsDirty);
+
+    // Grid item placement is cached on LayoutNGGrid.
+    // When this flag is set, any cached item placements are invalid.
+    ADD_BOOLEAN_BITFIELD(is_grid_placement_dirty_, IsGridPlacementDirty);
 
     // For transformable SVG child objects, indicates if this object or any
     // descendant has special vector effect that is affected by transform on
@@ -4176,6 +4261,22 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
         should_assume_paint_offset_translation_for_layout_shift_tracking_,
         ShouldAssumePaintOffsetTranslationForLayoutShiftTracking);
 
+    // True if there's a possibility that we can walk NG fragment children of
+    // this object. False if we definitely need to walk the LayoutObject tree.
+    ADD_BOOLEAN_BITFIELD(might_traverse_physical_fragments_,
+                         MightTraversePhysicalFragments);
+
+    // True if this is an anonymous inline wrapper created for NG, and the
+    // wrapper is a direct child of a multicol.
+    ADD_BOOLEAN_BITFIELD(is_anonymous_ng_multicol_inline_wrapper_,
+                         IsAnonymousNGMulticolInlineWrapper);
+
+    // True if children that may affect whitespace have been removed. If true
+    // during style recalc, mark ancestors for layout tree rebuild to cause a
+    // re-evaluation of whitespace children.
+    ADD_BOOLEAN_BITFIELD(whitespace_children_may_change_,
+                         WhitespaceChildrenMayChange);
+
    private:
     // This is the cached 'position' value of this object
     // (see ComputedStyle::position).
@@ -4186,8 +4287,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     unsigned subtree_paint_property_update_reasons_
         : kSubtreePaintPropertyUpdateReasonsBitfieldWidth;
 
-    // Updated during CompositingUpdate in pre-CompositeAfterPaint, or PrePaint
-    // in CompositeAfterPaint.
+    // For LayoutBox. Updated during CompositingUpdate in
+    // pre-CompositeAfterPaint, or PrePaint in CompositeAfterPaint.
     unsigned background_paint_location_ : 2;  // BackgroundPaintLocation.
 
     unsigned overflow_clip_axes_ : 2;
@@ -4301,20 +4402,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
  private:
   friend class LineLayoutItem;
+  friend class LocalFrameView;
 
   scoped_refptr<const ComputedStyle> style_;
 
-  // Oilpan: This untraced pointer to the owning Node is considered safe.
-  UntracedMember<Node> node_;
+  Member<Node> node_;
 
-  LayoutObject* parent_;
-  LayoutObject* previous_;
-  LayoutObject* next_;
+  Member<LayoutObject> parent_;
+  Member<LayoutObject> previous_;
+  Member<LayoutObject> next_;
+  Member<FragmentData> fragment_;
 
   // Store state between styleWillChange and styleDidChange
   static bool affects_parent_block_;
-
-  FragmentData fragment_;
 
 #if DCHECK_IS_ON()
   bool is_destroyed_ = false;
@@ -4358,32 +4458,6 @@ inline bool LayoutObject::IsMarkerContent() const {
 
 inline bool LayoutObject::IsBeforeOrAfterContent() const {
   return IsBeforeContent() || IsAfterContent();
-}
-
-inline bool LayoutObject::CanTraversePhysicalFragments() const {
-  if (LIKELY(!RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled()))
-    return false;
-  // Non-NG objects should be painted by legacy.
-  if (!IsLayoutNGObject()) {
-    if (IsBox())
-      return false;
-    // Non-LayoutBox objects (such as LayoutInline) don't necessarily create NG
-    // LayoutObjects. If they are laid out by an NG container, though, we may be
-    // allowed to traverse their fragments. Otherwise, bail now.
-    if (!IsInLayoutNGInlineFormattingContext())
-      return false;
-  }
-  // The NG paint system currently doesn't support replaced content.
-  if (IsLayoutReplaced())
-    return false;
-  // The NG paint system currently doesn't support table-cells.
-  if (IsTableCellLegacy())
-    return false;
-  // Text controls have some logic in the layout objects that will be missed if
-  // we traverse the fragment tree when hit-testing.
-  if (IsTextControlIncludingNG())
-    return false;
-  return true;
 }
 
 // setNeedsLayout() won't cause full paint invalidations as
@@ -4532,17 +4606,16 @@ CORE_EXPORT bool IsListBox(const LayoutObject* object);
 
 #if DCHECK_IS_ON()
 // Outside the blink namespace for ease of invocation from gdb.
-CORE_EXPORT void showTree(const blink::LayoutObject*);
-CORE_EXPORT void showLineTree(const blink::LayoutObject*);
-CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1);
+CORE_EXPORT void ShowTree(const blink::LayoutObject*);
+CORE_EXPORT void ShowLineTree(const blink::LayoutObject*);
+CORE_EXPORT void ShowLayoutTree(const blink::LayoutObject* object1);
 // We don't make object2 an optional parameter so that showLayoutTree
 // can be called from gdb easily.
-CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1,
+CORE_EXPORT void ShowLayoutTree(const blink::LayoutObject* object1,
                                 const blink::LayoutObject* object2);
 
 #endif
 
-#if BUILDFLAG(USE_V8_OILPAN)
 namespace cppgc {
 // Assign LayoutObject to be allocated on custom LayoutObjectSpace.
 template <typename T>
@@ -4552,6 +4625,5 @@ struct SpaceTrait<
   using Space = blink::LayoutObjectSpace;
 };
 }  // namespace cppgc
-#endif  // USE_V8_OILPAN
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_

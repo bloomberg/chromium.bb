@@ -9,7 +9,8 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
@@ -22,10 +23,56 @@
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/containers/fixed_flat_set.h"
 #include "extensions/common/constants.h"
 #endif
+
+namespace {
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// These extensions automatically gain permissions for the smart card USB class
+constexpr auto kSmartCardPrivilegedExtensionIds =
+    base::MakeFixedFlatSet<base::StringPiece>({
+        // Smart Card Connector Extension and its Beta version, see
+        // crbug.com/1233881.
+        "khpfeaanjngmcnplbdlpegiifgpfgdco",
+        "mockcojkppdndnhgonljagclgpkjbkek",
+    });
+
+bool DeviceHasInterfaceWithClass(
+    const device::mojom::UsbDeviceInfo& device_info,
+    uint8_t interface_class) {
+  for (const auto& configuration : device_info.configurations) {
+    for (const auto& interface : configuration->interfaces) {
+      for (const auto& alternate : interface->alternates) {
+        if (alternate->class_code == interface_class)
+          return true;
+      }
+    }
+  }
+  return false;
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+bool IsDevicePermissionAutoGranted(
+    const url::Origin& origin,
+    const device::mojom::UsbDeviceInfo& device_info) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Note: The `DeviceHasInterfaceWithClass()` call is made after checking the
+  // origin, since that method call is expensive.
+  if (origin.scheme() == extensions::kExtensionScheme &&
+      base::Contains(kSmartCardPrivilegedExtensionIds, origin.host()) &&
+      DeviceHasInterfaceWithClass(device_info,
+                                  device::mojom::kUsbSmartCardClass)) {
+    return true;
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  return false;
+}
+
+}  // namespace
 
 // A UsbDeviceClient represents a UsbDevice pipe that has been passed to the
 // renderer process. The UsbDeviceClient pipe allows the browser process to
@@ -71,7 +118,7 @@ class WebUsbServiceImpl::UsbDeviceClient
   }
 
  private:
-  WebUsbServiceImpl* const service_;
+  const raw_ptr<WebUsbServiceImpl> service_;
   const std::string device_guid_;
   bool opened_ = false;
   mojo::Receiver<device::mojom::UsbDeviceClient> receiver_;
@@ -109,15 +156,19 @@ void WebUsbServiceImpl::BindReceiver(
   // to UsbChooserContext, meaning that all ephemeral permission checks in
   // OnDeviceRemoved() will fail.
   if (!device_observation_.IsObserving())
-    device_observation_.Observe(chooser_context_);
+    device_observation_.Observe(chooser_context_.get());
   if (!permission_observation_.IsObserving())
-    permission_observation_.Observe(chooser_context_);
+    permission_observation_.Observe(chooser_context_.get());
 }
 
 bool WebUsbServiceImpl::HasDevicePermission(
     const device::mojom::UsbDeviceInfo& device_info) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host_);
+
+  if (IsDevicePermissionAutoGranted(origin_, device_info))
+    return true;
+
   if (!chooser_context_)
     return false;
 
@@ -125,6 +176,7 @@ bool WebUsbServiceImpl::HasDevicePermission(
 }
 
 std::vector<uint8_t> WebUsbServiceImpl::GetProtectedInterfaceClasses() const {
+  // Specified in https://wicg.github.io/webusb#protected-interface-classes
   std::vector<uint8_t> classes = {
       device::mojom::kUsbAudioClass,       device::mojom::kUsbHidClass,
       device::mojom::kUsbMassStorageClass, device::mojom::kUsbSmartCardClass,
@@ -133,29 +185,59 @@ std::vector<uint8_t> WebUsbServiceImpl::GetProtectedInterfaceClasses() const {
   };
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
-  // These Imprivata extensions can claim the protected HID interface class
-  // (used as badge readers), see crbug.com/1065112 and crbug.com/995294.
-  static constexpr auto kImprivataExtensionIds = base::MakeFixedFlatSet<
-      base::StringPiece>({
-      "baobpecgllpajfeojepgedjdlnlfffde", "bnfoibgpjolimhppjmligmcgklpboloj",
-      "cdgickkdpbekbnalbmpgochbninibkko", "cjakdianfealdjlapagfagpdpemoppba",
-      "cokoeepjbmmnhgdhlkpahohdaiedfjgn", "dahgfgiifpnaoajmloofonkndaaafacp",
-      "dbknmmkopacopifbkgookcdbhfnggjjh", "ddcjglpbfbibgepfffpklmpihphbcdco",
-      "dhodapiemamlmhlhblgcibabhdkohlen", "dlahpllbhpbkfnoiedkgombmegnnjopi",
-      "egfpnfjeaopimgpiioeedbpmojdapaip", "fnbibocngjnefolmcodjkkghijpdlnfm",
-      "jcnflhjcfjkplgkcinikhbgbhfldkadl", "jkfjfbelolphkjckiolfcakgalloegek",
-      "kmhpgpnbglclbaccjjgoioogjlnfgbne", "lpimkpkllnkdlcigdbgmabfplniahkgm",
-      "odehonhhkcjnbeaomlodfkjaecbmhklm", "olnmflhcfkifkgbiegcoabineoknmbjc",
-      "omificdfgpipkkpdhbjmefgfgbppehke", "phjobickjiififdadeoepbdaciefacfj",
-      "pkeacbojooejnjolgjdecbpnloibpafm", "pllbepacblmgialkkpcceohmjakafnbb",
-      "plpogimmgnkkiflhpidbibfmgpkaofec", "pmhiabnkkchjeaehcodceadhdpfejmmd",
-  });
+  // These extensions can claim the protected HID interface class (example: used
+  // as badge readers)
+  static constexpr auto kHidPrivilegedExtensionIds =
+      base::MakeFixedFlatSet<base::StringPiece>({
+          // Imprivata Extensions, see crbug.com/1065112 and crbug.com/995294.
+          "baobpecgllpajfeojepgedjdlnlfffde",
+          "bnfoibgpjolimhppjmligmcgklpboloj",
+          "cdgickkdpbekbnalbmpgochbninibkko",
+          "cjakdianfealdjlapagfagpdpemoppba",
+          "cokoeepjbmmnhgdhlkpahohdaiedfjgn",
+          "dahgfgiifpnaoajmloofonkndaaafacp",
+          "dbknmmkopacopifbkgookcdbhfnggjjh",
+          "ddcjglpbfbibgepfffpklmpihphbcdco",
+          "dhodapiemamlmhlhblgcibabhdkohlen",
+          "dlahpllbhpbkfnoiedkgombmegnnjopi",
+          "egfpnfjeaopimgpiioeedbpmojdapaip",
+          "fnbibocngjnefolmcodjkkghijpdlnfm",
+          "jcnflhjcfjkplgkcinikhbgbhfldkadl",
+          "jkfjfbelolphkjckiolfcakgalloegek",
+          "kmhpgpnbglclbaccjjgoioogjlnfgbne",
+          "lpimkpkllnkdlcigdbgmabfplniahkgm",
+          "odehonhhkcjnbeaomlodfkjaecbmhklm",
+          "olnmflhcfkifkgbiegcoabineoknmbjc",
+          "omificdfgpipkkpdhbjmefgfgbppehke",
+          "phjobickjiififdadeoepbdaciefacfj",
+          "pkeacbojooejnjolgjdecbpnloibpafm",
+          "pllbepacblmgialkkpcceohmjakafnbb",
+          "plpogimmgnkkiflhpidbibfmgpkaofec",
+          "pmhiabnkkchjeaehcodceadhdpfejmmd",
+
+          // Hotrod Extensions, see crbug.com/1220165
+          "acdafoiapclbpdkhnighhilgampkglpc",
+          "denipklgekfpcdmbahmbpnmokgajnhma",
+          "hkamnlhnogggfddmjomgbdokdkgfelgg",
+          "ikfcpmgefdpheiiomgmhlmmkihchmdlj",
+          "jlgegmdnodfhciolbdjciihnlaljdbjo",
+          "ldmpofkllgeicjiihkimgeccbhghhmfj",
+          "lkbhffjfgpmpeppncnimiiikojibkhnm",
+          "moklfjoegmpoolceggbebbmgbddlhdgp",
+      });
 
   if (origin_.scheme() == extensions::kExtensionScheme &&
-      base::Contains(kImprivataExtensionIds, origin_.host())) {
+      base::Contains(kHidPrivilegedExtensionIds, origin_.host())) {
     base::Erase(classes, device::mojom::kUsbHidClass);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (origin_.scheme() == extensions::kExtensionScheme &&
+      base::Contains(kSmartCardPrivilegedExtensionIds, origin_.host())) {
+    base::Erase(classes, device::mojom::kUsbSmartCardClass);
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   return classes;
 }

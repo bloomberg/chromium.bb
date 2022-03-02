@@ -302,8 +302,8 @@ TEST_F(VideoCodecInitializerTest, Vp9SvcAdjustedLayering) {
   VideoStream stream = DefaultStream();
   stream.num_temporal_layers = 3;
   // Set resolution which is only enough to produce 2 spatial layers.
-  stream.width = kMinVp9SpatialLayerWidth * 2;
-  stream.height = kMinVp9SpatialLayerHeight * 2;
+  stream.width = kMinVp9SpatialLayerLongSideLength * 2;
+  stream.height = kMinVp9SpatialLayerShortSideLength * 2;
 
   streams_.push_back(stream);
 
@@ -459,6 +459,36 @@ TEST_F(VideoCodecInitializerTest, Av1TwoSpatialLayersBitratesAreConsistent) {
             codec.spatialLayers[1].minBitrate);
   EXPECT_LE(codec.spatialLayers[1].targetBitrate,
             codec.spatialLayers[1].maxBitrate);
+}
+
+TEST_F(VideoCodecInitializerTest, Av1TwoSpatialLayersActiveByDefault) {
+  VideoEncoderConfig config;
+  config.codec_type = VideoCodecType::kVideoCodecAV1;
+  std::vector<VideoStream> streams = {DefaultStream()};
+  streams[0].scalability_mode = "L2T2";
+  config.spatial_layers = {};
+
+  VideoCodec codec;
+  EXPECT_TRUE(VideoCodecInitializer::SetupCodec(config, streams, &codec));
+
+  EXPECT_TRUE(codec.spatialLayers[0].active);
+  EXPECT_TRUE(codec.spatialLayers[1].active);
+}
+
+TEST_F(VideoCodecInitializerTest, Av1TwoSpatialLayersOneDeactivated) {
+  VideoEncoderConfig config;
+  config.codec_type = VideoCodecType::kVideoCodecAV1;
+  std::vector<VideoStream> streams = {DefaultStream()};
+  streams[0].scalability_mode = "L2T2";
+  config.spatial_layers.resize(2);
+  config.spatial_layers[0].active = true;
+  config.spatial_layers[1].active = false;
+
+  VideoCodec codec;
+  EXPECT_TRUE(VideoCodecInitializer::SetupCodec(config, streams, &codec));
+
+  EXPECT_TRUE(codec.spatialLayers[0].active);
+  EXPECT_FALSE(codec.spatialLayers[1].active);
 }
 
 }  // namespace webrtc

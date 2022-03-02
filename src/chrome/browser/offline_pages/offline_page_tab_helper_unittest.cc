@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -78,6 +79,10 @@ std::unique_ptr<KeyedService> BuildTestPrefetchService(SimpleFactoryKey*) {
 class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
  public:
   OfflinePageTabHelperTest();
+
+  OfflinePageTabHelperTest(const OfflinePageTabHelperTest&) = delete;
+  OfflinePageTabHelperTest& operator=(const OfflinePageTabHelperTest&) = delete;
+
   ~OfflinePageTabHelperTest() override {}
 
   void SetUp() override;
@@ -101,12 +106,11 @@ class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
   }
 
  private:
-  OfflinePageTabHelper* tab_helper_;   // Owned by WebContents.
-  PrefetchService* prefetch_service_;  // Keyed Service.
+  raw_ptr<OfflinePageTabHelper> tab_helper_;   // Owned by WebContents.
+  raw_ptr<PrefetchService> prefetch_service_;  // Keyed Service.
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
 
   base::WeakPtrFactory<OfflinePageTabHelperTest> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelperTest);
 };
 
 OfflinePageTabHelperTest::OfflinePageTabHelperTest() : tab_helper_(nullptr) {}

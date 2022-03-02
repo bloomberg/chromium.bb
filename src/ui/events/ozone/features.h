@@ -44,6 +44,12 @@ COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::FeatureParam<int> kHeuristicStrokeCount;
 
 COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kEnableInputEventLogging;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kLibinputHandleTouchpad;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
 extern const char kOzoneNNPalmSwitchName[];
 
 COMPONENT_EXPORT(EVENTS_OZONE)

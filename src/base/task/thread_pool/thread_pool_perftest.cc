@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -83,7 +84,7 @@ class PostingThread : public SimpleThread {
   }
 
  private:
-  WaitableEvent* const start_event_;
+  const raw_ptr<WaitableEvent> start_event_;
   base::OnceClosure action_;
   base::OnceClosure completion_;
 };
@@ -147,7 +148,7 @@ class ThreadPoolPerfTest : public testing::Test {
   void StartThreadPool(size_t num_running_threads,
                        size_t num_posting_threads,
                        base::RepeatingClosure post_action) {
-    ThreadPoolInstance::Get()->Start({num_running_threads});
+    ThreadPoolInstance::Get()->Start({static_cast<int>(num_running_threads)});
 
     base::RepeatingClosure done = BarrierClosure(
         num_posting_threads,
@@ -261,8 +262,7 @@ TEST_F(ThreadPoolPerfTest, PostRunBusyTasksManyThreads) {
   StartThreadPool(
       4, 4,
       BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostBusyWaitTasks,
-                    Unretained(this), 10000,
-                    base::TimeDelta::FromMicroseconds(200)));
+                    Unretained(this), 10000, base::Microseconds(200)));
   Benchmark(kStoryPostRunBusyManyThreads, ExecutionMode::kPostAndRun);
 }
 

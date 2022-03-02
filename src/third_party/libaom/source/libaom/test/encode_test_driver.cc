@@ -226,18 +226,18 @@ void EncoderTest::RunLoop(VideoSource *video) {
         encoder->EncodeFrame(video, frame_flags_);
 
         CxDataIterator iter = encoder->GetCxData();
+        bool has_cxdata = false;
 
 #if CONFIG_AV1_DECODER
-        bool has_cxdata = false;
         bool has_dxdata = false;
 #endif
         while (const aom_codec_cx_pkt_t *pkt = iter.Next()) {
           pkt = MutateEncoderOutputHook(pkt);
           again = true;
           switch (pkt->kind) {
-            case AOM_CODEC_CX_FRAME_PKT:
-#if CONFIG_AV1_DECODER
+            case AOM_CODEC_CX_FRAME_PKT:  //
               has_cxdata = true;
+#if CONFIG_AV1_DECODER
               if (decoder.get() != NULL && DoDecode()) {
                 aom_codec_err_t res_dec;
                 if (DoDecodeInvisible()) {
@@ -267,21 +267,27 @@ void EncoderTest::RunLoop(VideoSource *video) {
             default: break;
           }
         }
-#if CONFIG_AV1_DECODER
-        if (has_dxdata && has_cxdata) {
+        if (has_cxdata) {
           const aom_image_t *img_enc = encoder->GetPreviewFrame();
-          DxDataIterator dec_iter = decoder->GetDxData();
-          const aom_image_t *img_dec = dec_iter.Next();
-          if (img_enc && img_dec) {
-            const bool res =
-                compare_img(img_enc, img_dec, NULL, NULL, NULL, NULL, NULL);
-            if (!res) {  // Mismatch
-              MismatchHook(img_enc, img_dec);
-            }
+          if (img_enc) {
+            CalculateFrameLevelSSIM(video->img(), img_enc, cfg_.g_bit_depth,
+                                    cfg_.g_input_bit_depth);
           }
-          if (img_dec) DecompressedFrameHook(*img_dec, video->pts());
-        }
+#if CONFIG_AV1_DECODER
+          if (has_dxdata) {
+            DxDataIterator dec_iter = decoder->GetDxData();
+            const aom_image_t *img_dec = dec_iter.Next();
+            if (img_enc && img_dec) {
+              const bool res =
+                  compare_img(img_enc, img_dec, NULL, NULL, NULL, NULL, NULL);
+              if (!res) {  // Mismatch
+                MismatchHook(img_enc, img_dec);
+              }
+            }
+            if (img_dec) DecompressedFrameHook(*img_dec, video->pts());
+          }
 #endif
+        }
         if (!Continue()) break;
       }  // Loop over spatial layers
     }

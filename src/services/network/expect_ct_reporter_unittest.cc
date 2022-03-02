@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -37,9 +36,6 @@
 
 namespace network {
 namespace {
-
-const char kSendHistogramName[] = "SSL.ExpectCTReportSendingAttempt";
-const char kFailureHistogramName[] = "SSL.ExpectCTReportFailure2";
 
 // A test ReportSender that exposes the latest report URI and
 // serialized report to be sent.
@@ -136,12 +132,12 @@ void CheckReportCertificateChain(
     const base::ListValue& chain) {
   std::vector<std::string> pem_encoded_chain;
   expected_cert->GetPEMEncodedChain(&pem_encoded_chain);
-  ASSERT_EQ(pem_encoded_chain.size(), chain.GetSize());
+  base::Value::ConstListView chain_list = chain.GetList();
+  ASSERT_EQ(pem_encoded_chain.size(), chain_list.size());
 
   for (size_t i = 0; i < pem_encoded_chain.size(); i++) {
-    std::string cert_pem;
-    ASSERT_TRUE(chain.GetString(i, &cert_pem));
-    EXPECT_EQ(pem_encoded_chain[i], cert_pem);
+    ASSERT_TRUE(chain_list[i].is_string());
+    EXPECT_EQ(pem_encoded_chain[i], chain_list[i].GetString());
   }
 }
 
@@ -171,26 +167,26 @@ net::ct::SignedCertificateTimestamp::Origin SCTOriginStringToOrigin(
     return ::testing::AssertionFailure() << "Failed to serialize SCT";
   }
 
-  for (size_t i = 0; i < report_list.GetSize(); i++) {
-    const base::DictionaryValue* report_sct;
-    if (!report_list.GetDictionary(i, &report_sct)) {
+  for (const base::Value& report_sct_value : report_list.GetList()) {
+    if (!report_sct_value.is_dict()) {
       return ::testing::AssertionFailure()
              << "Failed to get dictionary value from report SCT list";
     }
-
+    const base::DictionaryValue& report_sct =
+        base::Value::AsDictionaryValue(report_sct_value);
     std::string serialized_sct;
-    EXPECT_TRUE(report_sct->GetString("serialized_sct", &serialized_sct));
+    EXPECT_TRUE(report_sct.GetString("serialized_sct", &serialized_sct));
     std::string decoded_serialized_sct;
     EXPECT_TRUE(base::Base64Decode(serialized_sct, &decoded_serialized_sct));
     if (decoded_serialized_sct != expected_serialized_sct)
       continue;
 
     std::string source;
-    EXPECT_TRUE(report_sct->GetString("source", &source));
+    EXPECT_TRUE(report_sct.GetString("source", &source));
     EXPECT_EQ(expected_sct->origin, SCTOriginStringToOrigin(source));
 
     std::string report_status;
-    EXPECT_TRUE(report_sct->GetString("status", &report_status));
+    EXPECT_TRUE(report_sct.GetString("status", &report_status));
     switch (expected_status) {
       case net::ct::SCT_STATUS_LOG_UNKNOWN:
         EXPECT_EQ("unknown", report_status);
@@ -218,7 +214,7 @@ net::ct::SignedCertificateTimestamp::Origin SCTOriginStringToOrigin(
 void CheckReportSCTs(
     const net::SignedCertificateTimestampAndStatusList& expected_scts,
     const base::ListValue& scts) {
-  EXPECT_EQ(expected_scts.size(), scts.GetSize());
+  EXPECT_EQ(expected_scts.size(), scts.GetList().size());
   for (const auto& expected_sct : expected_scts) {
     ASSERT_TRUE(
         FindSCTInReportList(expected_sct.sct, expected_sct.status, scts));
@@ -282,6 +278,10 @@ class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   TestExpectCTNetworkDelegate() = default;
 
+  TestExpectCTNetworkDelegate(const TestExpectCTNetworkDelegate&) = delete;
+  TestExpectCTNetworkDelegate& operator=(const TestExpectCTNetworkDelegate&) =
+      delete;
+
   using OnBeforeURLRequestCallback =
       base::RepeatingCallback<void(net::URLRequest* request)>;
 
@@ -311,8 +311,6 @@ class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
  private:
   OnBeforeURLRequestCallback on_before_url_request_callback_;
   base::RepeatingClosure url_request_destroyed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestExpectCTNetworkDelegate);
 };
 
 // A test fixture that allows tests to send a report and wait until the
@@ -321,6 +319,9 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
  public:
   ExpectCTReporterWaitTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+
+  ExpectCTReporterWaitTest(const ExpectCTReporterWaitTest&) = delete;
+  ExpectCTReporterWaitTest& operator=(const ExpectCTReporterWaitTest&) = delete;
 
   void SetUp() override {
     // Initializes URLRequestContext after the thread is set up.
@@ -357,8 +358,6 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
   TestExpectCTNetworkDelegate network_delegate_;
   std::unique_ptr<net::TestURLRequestContext> context_;
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExpectCTReporterWaitTest);
 };
 
 std::unique_ptr<net::test_server::HttpResponse> ReplyToPostWith200(
@@ -489,9 +488,6 @@ TEST_F(ExpectCTReporterTest, FeatureDisabled) {
       &HandleReportPreflight, kGoodCorsHeaders, base::RepeatingClosure()));
   ASSERT_TRUE(test_server().Start());
 
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kSendHistogramName, 0);
-
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ExpectCTReporter reporter(&context, base::NullCallback(),
@@ -519,8 +515,6 @@ TEST_F(ExpectCTReporterTest, FeatureDisabled) {
         net::NetworkIsolationKey());
     EXPECT_TRUE(sender->latest_report_uri().is_empty());
     EXPECT_TRUE(sender->latest_serialized_report().empty());
-
-    histograms.ExpectTotalCount(kSendHistogramName, 0);
   }
 
   // Enable the feature and send a dummy report. The test will fail if the
@@ -543,9 +537,6 @@ TEST_F(ExpectCTReporterTest, FeatureDisabled) {
 
 // Test that no report is sent if the report URI is empty.
 TEST_F(ExpectCTReporterTest, EmptyReportURI) {
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kSendHistogramName, 0);
-
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ExpectCTReporter reporter(&context, base::NullCallback(),
@@ -560,36 +551,6 @@ TEST_F(ExpectCTReporterTest, EmptyReportURI) {
                             net::NetworkIsolationKey());
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
-
-  histograms.ExpectTotalCount(kSendHistogramName, 0);
-}
-
-// Test that if a report fails to send, the UMA metric is recorded.
-TEST_F(ExpectCTReporterWaitTest, SendReportFailure) {
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kFailureHistogramName, 0);
-  histograms.ExpectTotalCount(kSendHistogramName, 0);
-
-  ExpectCTReporter reporter(context(), base::NullCallback(),
-                            base::NullCallback());
-
-  net::SSLInfo ssl_info;
-  ssl_info.cert =
-      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-  ssl_info.unverified_cert = net::ImportCertFromFile(
-      net::GetTestCertsDirectory(), "localhost_cert.pem");
-
-  net::HostPortPair host_port("example.test", 443);
-  GURL report_uri(
-      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
-
-  SendReport(&reporter, host_port, report_uri, base::Time(), ssl_info);
-
-  histograms.ExpectTotalCount(kFailureHistogramName, 1);
-  histograms.ExpectBucketCount(kFailureHistogramName,
-                               -net::ERR_CONNECTION_FAILED, 1);
-  histograms.ExpectTotalCount(kSendHistogramName, 1);
-  histograms.ExpectBucketCount(kSendHistogramName, true, 1);
 }
 
 // Test that if a report fails to send, the failure callback is called.
@@ -616,10 +577,6 @@ TEST_F(ExpectCTReporterWaitTest, SendReportFailureCallback) {
 
 // Test that a sent report has the right format.
 TEST_F(ExpectCTReporterTest, SendReport) {
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kFailureHistogramName, 0);
-  histograms.ExpectTotalCount(kSendHistogramName, 0);
-
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ExpectCTReporter reporter(&context, base::NullCallback(),
@@ -714,10 +671,6 @@ TEST_F(ExpectCTReporterTest, SendReport) {
   ASSERT_NO_FATAL_FAILURE(CheckExpectCTReport(
       sender->latest_serialized_report(),
       net::HostPortPair::FromURL(report_uri), kExpirationTimeStr, ssl_info));
-
-  histograms.ExpectTotalCount(kFailureHistogramName, 0);
-  histograms.ExpectTotalCount(kSendHistogramName, 1);
-  histograms.ExpectBucketCount(kSendHistogramName, true, 1);
 }
 
 // Test that the success callback is called when a report is successfully sent.

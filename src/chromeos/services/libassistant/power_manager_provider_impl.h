@@ -10,12 +10,11 @@
 #include <utility>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/services/libassistant/public/mojom/platform_delegate.mojom-forward.h"
-#include "libassistant/shared/public/platform_system.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
@@ -39,6 +38,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
     : public assistant_client::PowerManagerProvider {
  public:
   PowerManagerProviderImpl();
+
+  PowerManagerProviderImpl(const PowerManagerProviderImpl&) = delete;
+  PowerManagerProviderImpl& operator=(const PowerManagerProviderImpl&) = delete;
+
   ~PowerManagerProviderImpl() override;
 
   void Initialize(chromeos::libassistant::mojom::PlatformDelegate* delegate);
@@ -112,8 +115,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   const base::TickClock* tick_clock_ = nullptr;
 
   base::WeakPtrFactory<PowerManagerProviderImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PowerManagerProviderImpl);
 };
 
 }  // namespace libassistant

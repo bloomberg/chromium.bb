@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "build/build_config.h"
 #include "gpu/ipc/scheduler_sequence.h"
 
@@ -128,7 +129,7 @@ DisplayResourceProviderSkia::LockSetForExternalUse::LockResource(
     ResourceId id,
     bool maybe_concurrent_reads,
     bool is_video_plane,
-    const gfx::ColorSpace& color_space) {
+    const absl::optional<gfx::ColorSpace>& override_color_space) {
   auto it = resource_provider_->resources_.find(id);
   DCHECK(it != resource_provider_->resources_.end());
 
@@ -145,10 +146,14 @@ DisplayResourceProviderSkia::LockSetForExternalUse::LockResource(
         // HDR video color conversion is handled externally in SkiaRenderer
         // using a special color filter and |color_space| is set to destination
         // color space so that Skia doesn't perform implicit color conversion.
+
+        // TODO(https://crbug.com/1271212): Skia doesn't support limited range
+        // color spaces, so we treat it as fullrange, resulting color difference
+        // is very subtle.
         image_color_space =
-            color_space.IsValid()
-                ? color_space.ToSkColorSpace()
-                : resource.transferable.color_space.ToSkColorSpace();
+            override_color_space
+                .value_or(resource.transferable.color_space.GetAsFullRangeRGB())
+                .ToSkColorSpace();
       }
       resource.image_context =
           resource_provider_->external_use_client_->CreateImageContext(

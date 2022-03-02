@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "chromecast/public/media/cast_key_system.h"
 #include "chromecast/public/media/decrypt_context.h"
 
@@ -33,6 +32,10 @@ class DecryptContextImpl : public DecryptContext {
   enum class OutputType { kSecure, kClearAllowed, kClearRequired };
 
   explicit DecryptContextImpl(CastKeySystem key_system);
+
+  DecryptContextImpl(const DecryptContextImpl&) = delete;
+  DecryptContextImpl& operator=(const DecryptContextImpl&) = delete;
+
   ~DecryptContextImpl() override;
 
   // DecryptContext implementation:
@@ -57,8 +60,6 @@ class DecryptContextImpl : public DecryptContext {
 
  private:
   CastKeySystem key_system_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecryptContextImpl);
 };
 
 }  // namespace media

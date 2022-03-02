@@ -51,7 +51,23 @@ bool VideoFrameValidator::Initialize() {
   return true;
 }
 
+void VideoFrameValidator::CleanUpOnValidatorThread() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
+  corrupt_frame_processor_.reset();
+  video_frame_mapper_.reset();
+}
+
 void VideoFrameValidator::Destroy() {
+  if (frame_validator_thread_.task_runner()) {
+    // It's safe to use base::Unretained(this) because we own
+    // |frame_validator_thread_|, so |this| should be valid until at least the
+    // frame_validator_thread_.Stop() returns below which won't happen until
+    // CleanUpOnValidatorThread() returns.
+    frame_validator_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoFrameValidator::CleanUpOnValidatorThread,
+                       base::Unretained(this)));
+  }
   frame_validator_thread_.Stop();
   base::AutoLock auto_lock(frame_validator_lock_);
   DCHECK_EQ(0u, num_frames_validating_);
@@ -329,7 +345,7 @@ RawVideoFrameValidator::~RawVideoFrameValidator() = default;
 std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
 RawVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
                                  size_t frame_index) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   auto model_frame = get_model_frame_cb_.Run(frame_index);
   CHECK(model_frame);
   size_t diff_cnt =
@@ -383,7 +399,7 @@ PSNRVideoFrameValidator::~PSNRVideoFrameValidator() = default;
 std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
 PSNRVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
                                   size_t frame_index) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   auto model_frame = get_model_frame_cb_.Run(frame_index);
   CHECK(model_frame);
   double psnr = ComputePSNR(*frame, *model_frame);
@@ -456,8 +472,9 @@ SSIMVideoFrameValidator::~SSIMVideoFrameValidator() = default;
 std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
 SSIMVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
                                   size_t frame_index) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   auto model_frame = get_model_frame_cb_.Run(frame_index);
+
   CHECK(model_frame);
   double ssim = ComputeSSIM(*frame, *model_frame);
   DVLOGF(4) << "frame_index: " << frame_index << ", ssim: " << ssim;

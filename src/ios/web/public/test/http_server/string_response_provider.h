@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #import "ios/web/public/test/http_server/data_response_provider.h"
 
 namespace web {
@@ -17,6 +16,9 @@ namespace web {
 class StringResponseProvider : public web::DataResponseProvider {
  public:
   explicit StringResponseProvider(const std::string& response_body);
+
+  StringResponseProvider(const StringResponseProvider&) = delete;
+  StringResponseProvider& operator=(const StringResponseProvider&) = delete;
 
   // web::DataResponseProvider methods.
   bool CanHandleRequest(const Request& request) override;
@@ -28,7 +30,6 @@ class StringResponseProvider : public web::DataResponseProvider {
  private:
   // The string that is returned in the response body.
   std::string response_body_;
-  DISALLOW_COPY_AND_ASSIGN(StringResponseProvider);
 };
 
 }  // namespace web

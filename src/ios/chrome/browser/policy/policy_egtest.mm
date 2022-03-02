@@ -4,19 +4,26 @@
 
 #include "ios/testing/earl_grey/earl_grey_test.h"
 
-#include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/translate_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#include "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
+#include "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/elements_constants.h"
@@ -26,10 +33,13 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #include "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/chrome/test/earl_grey/test_switches.h"
 #include "ios/testing/earl_grey/app_launch_configuration.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -37,46 +47,9 @@
 #error "This file requires ARC support."
 #endif
 
+using policy_test_utils::SetPolicy;
+
 namespace {
-
-// Returns a JSON-encoded string representing the given |base::Value|. If
-// |value| is nullptr, returns a string representing a |base::Value| of type
-// NONE.
-NSString* SerializeValue(const base::Value value) {
-  std::string serialized_value;
-  JSONStringValueSerializer serializer(&serialized_value);
-  serializer.Serialize(std::move(value));
-  return base::SysUTF8ToNSString(serialized_value);
-}
-
-// Sets the value of the policy with the |policy_key| key to the given value.
-// The value must be serialized as a JSON string.
-// Prefer using the other type-specific helpers instead of this generic helper
-// if possible.
-void SetPolicy(NSString* json_value, const std::string& policy_key) {
-  [PolicyAppInterface setPolicyValue:json_value
-                              forKey:base::SysUTF8ToNSString(policy_key)];
-}
-
-// Sets the value of the policy with the |policy_key| key to the given value.
-// The value must be wrapped in a |base::Value|.
-// Prefer using the other type-specific helpers instead of this generic helper
-// if possible.
-void SetPolicy(base::Value value, const std::string& policy_key) {
-  SetPolicy(SerializeValue(std::move(value)), policy_key);
-}
-
-// Sets the value of the policy with the |policy_key| key to the given boolean
-// value.
-void SetPolicy(bool enabled, const std::string& policy_key) {
-  SetPolicy(base::Value(enabled), policy_key);
-}
-
-// Sets the value of the policy with the |policy_key| key to the given integer
-// value.
-void SetPolicy(int value, const std::string& policy_key) {
-  SetPolicy(base::Value(value), policy_key);
-}
 
 // TODO(crbug.com/1065522): Add helpers as needed for:
 //    - STRING
@@ -400,8 +373,13 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
 // Tests that the feed is disappearing when the policy is set to false while it
 // is visible.
 - (void)testDisableContentSuggestions {
-  NSString* feedTitle = l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_TITLE);
+  // Relaunch the app with Discover enabled, as it is required for this test.
+  AppLaunchConfiguration config = [self appConfigurationForTestCase];
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.features_enabled.push_back(kDiscoverFeedInNtp);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
+  NSString* feedTitle = l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_TITLE);
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(feedTitle),
                                           grey_sufficientlyVisible(), nil)]
@@ -474,6 +452,101 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
 
   // Open the "learn more" link.
   [ChromeEarlGrey tapWebStateElementWithID:@"learn-more-link"];
+}
+
+// Tests that when the BrowserSignin policy is updated while the app is not
+// launched, a policy screen is displayed at startup.
+- (void)testBrowserSignInDisabledAtStartup {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Create the config to relaunch Chrome.
+  AppLaunchConfiguration config;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+
+  // Configure the policy to disable SignIn.
+  std::string policy_data = "<dict>"
+                            "    <key>BrowserSignin</key>"
+                            "    <integer>0</integer>"
+                            "</dict>";
+  base::RemoveChars(policy_data, base::kWhitespaceASCII, &policy_data);
+
+  config.additional_args.push_back(
+      "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
+  config.additional_args.push_back(policy_data);
+
+  // Add the switch to make sure that fakeIdentity1 is known at startup to avoid
+  // automatic sign out.
+  config.additional_args.push_back(std::string("-") +
+                                   test_switches::kSignInAtStartup);
+
+  // Relaunch the app to take the configuration into account.
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Check that the sign out pop up is presented.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                     IDS_IOS_ENTERPRISE_SIGNED_OUT))]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  bool promptPresented = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, condition);
+  GREYAssertTrue(promptPresented, @"'Signed Out' prompt not shown");
+}
+
+// Tests that the UI notifying the user of their sign out is displayed when the
+// policy changes while the app is launched.
+- (void)testBrowserSignInDisabledWhileAppVisible {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Force sign out.
+  SetPolicy(0, policy::key::kBrowserSignin);
+
+  // Check that the sign out pop up is presented.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                     IDS_IOS_ENTERPRISE_SIGNED_OUT))]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  bool promptPresented = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, condition);
+  GREYAssertTrue(promptPresented, @"'Signed Out' prompt not shown");
+}
+
+// Tests that the UI notifying the user of their sign out is displayed when the
+// primary account is restricted.
+- (void)testBrowserAccountRestrictedAlert {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Set restrictions.
+  std::vector<base::Value> restrictions;
+  restrictions.push_back(base::Value("restricted"));
+  SetPolicy(base::Value(std::move(restrictions)),
+            policy::key::kRestrictAccountsToPatterns);
+
+  // Check that the sign out pop up is presented.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                     IDS_IOS_ENTERPRISE_SIGNED_OUT))]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  bool promptPresented = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, condition);
+  GREYAssertTrue(promptPresented, @"'Signed Out' prompt not shown");
 }
 
 @end

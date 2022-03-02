@@ -4,6 +4,7 @@
 
 /**
  * @fileoverview Handles automation intents for speech feedback.
+ * Braille is *not* handled in this module.
  */
 
 goog.provide('IntentHandler');
@@ -14,11 +15,13 @@ goog.require('Output');
 
 goog.scope(function() {
 const AutomationIntent = chrome.automation.AutomationIntent;
+const Cursor = cursors.Cursor;
 const Dir = constants.Dir;
 const IntentCommandType = chrome.automation.IntentCommandType;
 const IntentTextBoundaryType = chrome.automation.IntentTextBoundaryType;
 const Movement = cursors.Movement;
 const Range = cursors.Range;
+const RoleType = chrome.automation.RoleType;
 const Unit = cursors.Unit;
 
 /**
@@ -85,56 +88,104 @@ IntentHandler = class {
    */
   static onMoveSelection(intent, cur, prev) {
     switch (intent.textBoundary) {
-      case IntentTextBoundaryType.CHARACTER:
-        // Read character to the right of the cursor. It is assumed to be a new
-        // line if empty.
-        // TODO: detect when this is the end of the document; read "end of text"
-        // if so.
+      case IntentTextBoundaryType.CHARACTER: {
         const text = cur.text.substring(cur.startOffset, cur.startOffset + 1);
-        ChromeVox.tts.speak(text || '\n', QueueMode.CATEGORY_FLUSH);
-        // Return false if |text| is empty. Do this to give the user more
-        // information than just "new line". For example, if moving by character
-        // moves us to the beginning/end of a separator, we want to include
-        // additional context.
-        if (!text) {
-          return false;
-        }
-        return true;
 
+        // First, handle the case where there is no text to the right of the
+        // cursor.
+        if (!text && prev) {
+          // Detect cases where |cur| is immediately before an abstractSpan.
+          const enteredAncestors =
+              AutomationUtil.getUniqueAncestors(prev.end.node, cur.end.node);
+          const exitedAncestors =
+              AutomationUtil.getUniqueAncestors(cur.end.node, prev.end.node);
+
+          // Scan up only to a root or the editable root.
+          let ancestor;
+          const ancestors = enteredAncestors.concat(exitedAncestors);
+          while ((ancestor = ancestors.pop()) &&
+                 !AutomationPredicate.rootOrEditableRoot(ancestor)) {
+            const roleInfo = OutputRoleInfo[ancestor.role];
+            if (roleInfo && roleInfo['inherits'] === 'abstractSpan') {
+              // Let the caller handle this case.
+              return false;
+            }
+          }
+
+          // It is assumed to be a new line otherwise.
+          ChromeVox.tts.speak('\n', QueueMode.CATEGORY_FLUSH);
+          return true;
+        }
+
+        // Read character to the right of the cursor by building a character
+        // range.
+        let prevRange = null;
+        if (prev) {
+          prevRange = prev.createCharRange();
+        }
+        const newRange = cur.createCharRange();
+
+        // Use the Output module for feedback so that we get contextual
+        // information e.g. if we've entered a suggestion, insertion, or
+        // deletion.
+        new Output()
+            .withRichSpeech(newRange, prevRange, OutputEventType.NAVIGATE)
+            .go();
+
+        // Handled.
+        return true;
+      }
       case IntentTextBoundaryType.LINE_END:
       case IntentTextBoundaryType.LINE_START:
       case IntentTextBoundaryType.LINE_START_OR_END:
         cur.speakLine(prev);
         return true;
 
-      case IntentTextBoundaryType.WORD_END:
-      case IntentTextBoundaryType.WORD_START:
-        const pos = cur.startCursor;
+      case IntentTextBoundaryType.PARAGRAPH_START: {
+        let node = cur.startContainer;
 
-        // When movement goes to the end of a word, we actually want to describe
-        // the word itself; this is considered the previous word so impacts the
-        // movement type below. We can give further context e.g. by saying "end
-        // of word", if we chose to be more verbose.
-        const shouldMoveToPreviousWord =
-            intent.textBoundary === IntentTextBoundaryType.WORD_END;
-        const start = pos.move(
-            Unit.WORD,
-            shouldMoveToPreviousWord ? Movement.DIRECTIONAL : Movement.BOUND,
-            Dir.BACKWARD);
-        const end = pos.move(Unit.WORD, Movement.BOUND, Dir.FORWARD);
+        if (node.role === RoleType.LINE_BREAK) {
+          return false;
+        }
+
+        while (node && AutomationPredicate.text(node)) {
+          node = node.parent;
+        }
+
+        if (!node || node.role === RoleType.TEXT_FIELD) {
+          return false;
+        }
+
         new Output()
-            .withSpeech(new Range(start, end), null, OutputEventType.NAVIGATE)
+            .withRichSpeech(
+                cursors.Range.fromNode(node), null, OutputEventType.NAVIGATE)
             .go();
         return true;
+      }
 
+      case IntentTextBoundaryType.WORD_END:
+      case IntentTextBoundaryType.WORD_START: {
+        let prevRange = null;
+        if (prev) {
+          prevRange = prev.createWordRange(false);
+        }
+
+        const newRange = cur.createWordRange(
+            intent.textBoundary === IntentTextBoundaryType.WORD_END);
+        new Output()
+            .withSpeech(newRange, prevRange, OutputEventType.NAVIGATE)
+            .go();
+        return true;
+      }
         // TODO: implement support.
-      case IntentTextBoundaryType.FORMAT:
+      case IntentTextBoundaryType.FORMAT_END:
+      case IntentTextBoundaryType.FORMAT_START:
+      case IntentTextBoundaryType.FORMAT_START_OR_END:
       case IntentTextBoundaryType.OBJECT:
       case IntentTextBoundaryType.PAGE_END:
       case IntentTextBoundaryType.PAGE_START:
       case IntentTextBoundaryType.PAGE_START_OR_END:
       case IntentTextBoundaryType.PARAGRAPH_END:
-      case IntentTextBoundaryType.PARAGRAPH_START:
       case IntentTextBoundaryType.PARAGRAPH_START_OR_END:
       case IntentTextBoundaryType.SENTENCE_END:
       case IntentTextBoundaryType.SENTENCE_START:

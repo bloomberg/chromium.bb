@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -236,6 +235,10 @@ class TestTargetService : public Service {
  public:
   explicit TestTargetService(mojo::PendingReceiver<mojom::Service> receiver)
       : receiver_(this, std::move(receiver)) {}
+
+  TestTargetService(const TestTargetService&) = delete;
+  TestTargetService& operator=(const TestTargetService&) = delete;
+
   ~TestTargetService() override = default;
 
   const Identity& identity() const { return receiver_.identity(); }
@@ -275,8 +278,6 @@ class TestTargetService : public Service {
   base::RunLoop wait_for_disconnect_loop_;
   absl::optional<base::RunLoop> wait_for_bind_interface_loop_;
   base::OnceClosure next_bind_interface_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTargetService);
 };
 
 class ConnectTest : public testing::Test,
@@ -284,6 +285,10 @@ class ConnectTest : public testing::Test,
                     public test::mojom::ExposedInterface {
  public:
   ConnectTest() : test_service_manager_(GetTestManifests()) {}
+
+  ConnectTest(const ConnectTest&) = delete;
+  ConnectTest& operator=(const ConnectTest&) = delete;
+
   ~ConnectTest() override = default;
 
   Connector* connector() { return service_receiver_.GetConnector(); }
@@ -347,8 +352,6 @@ class ConnectTest : public testing::Test,
   ServiceReceiver service_receiver_{this};
   mojo::ReceiverSet<test::mojom::ExposedInterface> receivers_;
   test::mojom::ConnectionStatePtr connection_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectTest);
 };
 
 // Ensure the connection was properly established and that a round trip

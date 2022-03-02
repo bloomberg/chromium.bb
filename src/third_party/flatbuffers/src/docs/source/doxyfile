@@ -753,7 +753,9 @@ INPUT = "FlatBuffers.md" \
         "CUsage.md" \
         "DartUsage.md" \
         "GoUsage.md" \
-        "JavaCsharpUsage.md" \
+        "JavaUsage.md" \
+        "CsharpUsage.md" \
+        "SwiftUsage.md" \
         "JavaScriptUsage.md" \
         "TypeScriptUsage.md" \
         "PHPUsage.md" \
@@ -766,6 +768,7 @@ INPUT = "FlatBuffers.md" \
         "WhitePaper.md" \
         "FlexBuffers.md" \
         "Internals.md" \
+        "IntermediateRepresentation.md" \
         "Grammar.md" \
         "../../CONTRIBUTING.md" \
         "Tutorial.md" \

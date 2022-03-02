@@ -12,10 +12,11 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_cross_origin_callback_info.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -128,6 +129,8 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   ScriptState(v8::Local<v8::Context>,
               scoped_refptr<DOMWrapperWorld>,
               ExecutionContext* execution_context);
+  ScriptState(const ScriptState&) = delete;
+  ScriptState& operator=(const ScriptState&) = delete;
   ~ScriptState();
 
   void Trace(Visitor*) const;
@@ -224,7 +227,7 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   // use |reference_from_v8_context_| to represent this strong reference.  The
   // lifetime of |reference_from_v8_context_| and the internal field must match
   // exactly.
-  SelfKeepAlive<ScriptState> reference_from_v8_context_;
+  SelfKeepAlive<ScriptState> reference_from_v8_context_{this};
 
   // Serves as a unique ID for this context, which can be used to name the
   // context in browser/renderer communications.
@@ -233,8 +236,6 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   static constexpr int kV8ContextPerContextDataIndex =
       static_cast<int>(gin::kPerContextDataStartIndex) +
       static_cast<int>(gin::kEmbedderBlink);
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptState);
 };
 
 // ScriptStateProtectingContext keeps the context associated with the
@@ -251,6 +252,9 @@ class ScriptStateProtectingContext final
           "blink::ScriptStateProtectingContext::context_");
     }
   }
+  ScriptStateProtectingContext(const ScriptStateProtectingContext&) = delete;
+  ScriptStateProtectingContext& operator=(const ScriptStateProtectingContext&) =
+      delete;
 
   void Trace(Visitor* visitor) const { visitor->Trace(script_state_); }
 
@@ -270,8 +274,6 @@ class ScriptStateProtectingContext final
  private:
   Member<ScriptState> script_state_;
   ScopedPersistent<v8::Context> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptStateProtectingContext);
 };
 
 }  // namespace blink

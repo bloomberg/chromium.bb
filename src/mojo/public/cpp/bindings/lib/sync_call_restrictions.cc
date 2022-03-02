@@ -8,7 +8,6 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequence_local_storage_map.h"
@@ -26,6 +25,10 @@ std::atomic<bool> g_force_sync_call_allowed{false};
 class GlobalSyncCallSettings {
  public:
   GlobalSyncCallSettings() = default;
+
+  GlobalSyncCallSettings(const GlobalSyncCallSettings&) = delete;
+  GlobalSyncCallSettings& operator=(const GlobalSyncCallSettings&) = delete;
+
   ~GlobalSyncCallSettings() = default;
 
   bool sync_call_allowed_by_default() const {
@@ -41,8 +44,6 @@ class GlobalSyncCallSettings {
  private:
   mutable base::Lock lock_;
   bool sync_call_allowed_by_default_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalSyncCallSettings);
 };
 
 GlobalSyncCallSettings& GetGlobalSettings() {
@@ -51,8 +52,8 @@ GlobalSyncCallSettings& GetGlobalSettings() {
 }
 
 size_t& GetSequenceLocalScopedAllowCount() {
-  static base::NoDestructor<base::SequenceLocalStorageSlot<size_t>> count;
-  return count->GetOrCreateValue();
+  static base::SequenceLocalStorageSlot<size_t> count;
+  return count.GetOrCreateValue();
 }
 
 // Sometimes sync calls need to be made while sequence-local storage is not

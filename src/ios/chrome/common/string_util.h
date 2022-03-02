@@ -7,6 +7,7 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <string>
 #include <vector>
@@ -44,13 +45,6 @@ NSAttributedString* AttributedStringFromStringWithLink(
     NSString* text,
     NSDictionary* text_attributes,
     NSDictionary* link_attributes);
-
-// Deprecated.
-// Prefer |AttributedStringFromStringWithLink|. Do not use LabelLinkController.
-// Parses a string with an embedded link inside, delineated by "BEGIN_LINK" and
-// "END_LINK". Returns the string without the delimiters. The function
-// asserts that there is at most one link.
-StringWithTag ParseStringWithLink(NSString* text);
 
 // Parses a string with embedded links inside, delineated by "BEGIN_LINK" and
 // "END_LINK". Returns the string without the delimiters and a list of all
@@ -91,5 +85,9 @@ NSString* SubstringOfWidth(NSString* string,
                            NSDictionary* attributes,
                            CGFloat targetWidth,
                            BOOL trailing);
+
+// Returns the bound of an attributed string with NSRange
+// |characterRange| in the |textView|.
+CGRect TextViewLinkBound(UITextView* textView, NSRange characterRange);
 
 #endif  // IOS_CHROME_COMMON_STRING_UTIL_H_

@@ -17,7 +17,6 @@
 <translation id="1087148255821848488">現在の表示スタイルは交互表示です</translation>
 <translation id="1087788677726983142">イベント ストリーム フィルタを非表示にする</translation>
 <translation id="1088402100970133699">前のリスト項目はありません</translation>
-<translation id="1114836634143403764">提案</translation>
 <translation id="1120743664840974483">{"a": "アルファ", "b": "ブラボー", "c": "チャーリー", "d": "デルタ", "e": "エコー", "f": "フォックストロット", "g": "ゴルフ", "h": "ホテル", "i": "インディア", "j": "ジュリエット","k": "キロ", "l": "リマ", "m": "マイク", "n": "ノベンバー", "o": "オスカー","p": "パパ", "q": "ケベック", "r": "ロメオ", "s": "シエラ", "t": "タンゴ", "u": "ユニフォーム", "v": "ビクター", "w": "ウイスキー","x": "エックスレイ", "y": "ヤンキー", "z": "ズールー"}</translation>
 <translation id="1120938014254001895">2 本の指で上にスワイプします</translation>
 <translation id="1126928665165112660">斜体オフ</translation>
@@ -31,6 +30,7 @@
 <translation id="1189258430971676908">練習エリア: プルダウン リスト</translation>
 <translation id="1195238899008218998">後書き</translation>
 <translation id="1197088940767939838">オレンジ</translation>
+<translation id="1198865190323699001">タップ操作</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1206619573307042055">マーキー</translation>
 <translation id="1207086294218137981">次のレベル 4 の見出しはありません</translation>
@@ -67,8 +67,10 @@
 <translation id="133801305381959373">次の編集可能テキスト フィールドはありません</translation>
 <translation id="1342835525016946179">記事</translation>
 <translation id="1346059596910821859">ヒント</translation>
+<translation id="1354356357730355833">コピー</translation>
 <translation id="135978014023467274">ChromeVox 63 にアップデートしました。</translation>
 <translation id="1360699455582016846">ルーティング キー <ph name="ROUTING_KEY_NUMBER" /> の下のアイテムをクリックします</translation>
+<translation id="1376703628032300005">次の文字に移動</translation>
 <translation id="1377925789329510816">これは最後の見出しです。このページの最初の見出しに移動するには検索+H キーを押します。2 番目の見出しに移動するには検索+Shift+H キーを押します。</translation>
 <translation id="138218114945450791">ライトブルー</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -183,6 +185,7 @@
 <translation id="2243633977138166243">移動するには左矢印キーまたは右矢印キーを押し、有効にするには Enter キーを押します</translation>
 <translation id="224426591676115802"><ph name="LANGUAGE" />の音声はご利用いただけません</translation>
 <translation id="2247700577781885251">学習モードを停止します</translation>
+<translation id="2247870315273396641">音声プレビュー</translation>
 <translation id="225732394367814946">読み上げの速度を上げる</translation>
 <translation id="2267538686624070261">スペルミスが残っています</translation>
 <translation id="2267945578749931355">次の文字</translation>
@@ -199,18 +202,20 @@
 <translation id="2390264819538553347">次に進むには Enter キー、前に戻るには Backspace キーを押します。</translation>
 <translation id="2398579267367951220">ページ内を検索するには入力してください。見つかった結果に移動するには、Enter キーを押します。結果を 1 つずつ確認するには、上矢印または下矢印キーを押します。違う語句を検索する場合は、その語句を入力します。キャンセルする場合は、Esc キーを押します。</translation>
 <translation id="240709722712693803">ブルー バイオレット</translation>
+<translation id="2410298923485357543">デバイスがオンラインのときは自然な音声を使用する</translation>
 <translation id="2416512023405990736">チェックボックスがオフ</translation>
 <translation id="2417569100218200841">コンテンツ情報</translation>
 <translation id="2417948780551741035">巻末注</translation>
 <translation id="2419852971200420169">説明リスト</translation>
-<translation id="2421113964388408478">削除</translation>
 <translation id="2422937916923936891">メニュー項目のチェックボックス</translation>
 <translation id="2428534162001909979">コマンド メニュー</translation>
 <translation id="242998846562331953">字幕</translation>
 <translation id="2435422727584637732">ドジャーブルー</translation>
+<translation id="2438712309510062123">提案</translation>
 <translation id="2450814015951372393">チェックボックス</translation>
 <translation id="2461822463642141190">電流</translation>
 <translation id="2462626033734746142">ラジオボタン グループ</translation>
+<translation id="2467741090055146971">選択解除</translation>
 <translation id="2471138580042810658">見出し 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{アスタリスク}other{# 個のアスタリスク}}</translation>
 <translation id="2490721194269245365">ロージー ブラウン</translation>
@@ -226,6 +231,7 @@
 <translation id="2592212930811759050">編集を開始するにはダブルタップします</translation>
 <translation id="2598495320872286378">文法ミス</translation>
 <translation id="2603828437139726540">1 文字前へ移動</translation>
+<translation id="2619052155095999743">挿入</translation>
 <translation id="2619344480613750862">画面上のセクション間を移動することもできます。たとえば、ランチャー、シェルフ、Chrome のタブの間を移動できます。次のセクションに移動するには、4 本の指で左から右にスワイプします。実際にやってみて、次へ進みましょう。</translation>
 <translation id="2624431853467395961">学習モードを開く</translation>
 <translation id="2626530649491650971">クリック可能</translation>
@@ -240,6 +246,7 @@
 <translation id="267442004702508783">更新</translation>
 <translation id="2675533876313964202">シャルトリューズ</translation>
 <translation id="2684412629217766642">ChromeVox のチュートリアルを閉じる</translation>
+<translation id="2692503699962701720">要素タイプと書式付きテキストを読み上げるときにピッチを変更する</translation>
 <translation id="2697408785920771974">インライン オートコンプリート</translation>
 <translation id="2697786971245905543">テキスト変換候補</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{左丸かっこ}other{# 個の左丸かっこ}}</translation>
@@ -299,6 +306,7 @@
 <translation id="3046838483509668188">ChromeVox のオプション</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> メニューを開きました</translation>
 <translation id="3060880924447482063">項目間を移動するには左または右にスワイプします</translation>
+<translation id="3061302636956643119">テキストは Google に送信されて処理されます。</translation>
 <translation id="3070245424257836917">3 本の指で上にスワイプします</translation>
 <translation id="307516670110542567">クイックガイド</translation>
 <translation id="3078345202707391975">次のレベル 2 見出し</translation>
@@ -349,6 +357,7 @@
 <translation id="3286372614333682499">縦向き</translation>
 <translation id="3286390186030710347">スライダ</translation>
 <translation id="3300348286427369683">リッチテキストのサポート。リッチテキスト フィールド（ジャンプ コマンド、点字ディスプレイでのカーソル移動、選択など）が ChromeVox でサポートされるようになりました。</translation>
+<translation id="3300733168898541351">元に戻す</translation>
 <translation id="3307886118343381874">表の末尾に移動</translation>
 <translation id="3312997241656799641">次にアクセスしたリンク</translation>
 <translation id="3313245066383501820">ChromeVox の修飾キー</translation>
@@ -369,6 +378,7 @@
 <translation id="3406283310380167331">フォーム リストを表示</translation>
 <translation id="3414400929511680526">アリスブルー</translation>
 <translation id="3418936350470374046">下にセルはありません</translation>
+<translation id="3419269701801640163">貼り付け</translation>
 <translation id="3435494200763325275">タブの操作（続き）</translation>
 <translation id="344800400831402066">ペルー</translation>
 <translation id="3457000393508828486">一部オン</translation>
@@ -380,7 +390,9 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{右角かっこ}other{# 個の右角かっこ}}</translation>
 <translation id="3494946239022273294">メニュー項目</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{疑問符}other{# 個の疑問符}}</translation>
+<translation id="3505359110822747654">ChromeVox メニューを折りたたむ</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{キャレット}other{# 個のキャレット}}</translation>
+<translation id="3518600448524470129">{COUNT,plural, =1{白色の箇条書き記号}other{# 個の白色の箇条書き記号}}</translation>
 <translation id="352577523970648069">編集可能なテキスト欄</translation>
 <translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> を切り取ります。</translation>
@@ -421,6 +433,8 @@
 <translation id="3810838688059735925">動画</translation>
 <translation id="3813387282697781382">ライトコーラル</translation>
 <translation id="3816633764618089385">次のメディア</translation>
+<translation id="3840823741487267909">略語</translation>
+<translation id="3841319830220785495">デフォルトの自然な音声</translation>
 <translation id="385383972552776628">オプション ページを開く</translation>
 <translation id="3856075812838139784">読み取り専用</translation>
 <translation id="3857141338659865495">ミディアム ターコイズ</translation>
@@ -428,6 +442,7 @@
 <translation id="3887399638190992181">必須キー</translation>
 <translation id="3887576927692165210">編集</translation>
 <translation id="3897092660631435901">メニュー</translation>
+<translation id="3898233949376129212">デバイスの言語</translation>
 <translation id="3907138069015388678">リストグリッド</translation>
 <translation id="3909320334364316587">前のレベル 6 見出し</translation>
 <translation id="3914173277599553213">必須</translation>
@@ -446,7 +461,9 @@
 <translation id="4006140876663370126">画像</translation>
 <translation id="4021716437419160885">下にスクロール</translation>
 <translation id="4035381225449278841">春</translation>
+<translation id="4038098586530338813">やり直し</translation>
 <translation id="4047216625641135770">マーク</translation>
+<translation id="4047910800766704982">デバイスがオンラインのときは人が話すような自然な音声を使用します。テキストは Google に送信されて処理されます。この設定は [設定] でいつでも OFF にできます。</translation>
 <translation id="4053520724192563562">ライムグリーン</translation>
 <translation id="4054936709456751127">ステータス</translation>
 <translation id="4058278702844053247">ページの読み込み中</translation>
@@ -507,7 +524,6 @@
 <translation id="4479068155583208887">ファイア ブリック</translation>
 <translation id="4482330759234983253">前の表</translation>
 <translation id="4491109536499578614">画像</translation>
-<translation id="4505167975768625962">挿入</translation>
 <translation id="4511186779140817916">ブランチド アーモンド</translation>
 <translation id="451510441928265982">前のレベル 2 の見出しはありません</translation>
 <translation id="4515799157838123044">背景コンテンツに影をつける</translation>
@@ -554,6 +570,7 @@
 <translation id="4854380505292502090">前のメディア ウィジェットはありません</translation>
 <translation id="4855927945655956315">必須キー: Ctrl</translation>
 <translation id="4862744964787595316">太字オフ</translation>
+<translation id="4865995900839719272">前の行に移動</translation>
 <translation id="4866956062845190338">メニュー項目のラジオボタン</translation>
 <translation id="4867316986324544967">TTS ログを有効にする</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -601,15 +618,18 @@
 <translation id="5170206230005240598">点字表示が有効になっています</translation>
 <translation id="5183440668879371625">ブライユ点字の前の行</translation>
 <translation id="5189244881767082992">行</translation>
+<translation id="5234747236692380506"><ph name="TEXT" /> を入力</translation>
 <translation id="5263034204789987535">コーンシルク</translation>
 <translation id="5263344797180442561">見出し 2</translation>
 <translation id="528468243742722775">終了</translation>
 <translation id="5290220123487191192">まずはよく使う操作から始めましょう。有効にしたいアイテムを見つけたら、1 本の指で画面をダブルタップします。次に進むには、ダブルタップしてください。</translation>
+<translation id="5302048478445481009">言語</translation>
 <translation id="5302089807023311274">文献参照</translation>
 <translation id="530391007967514163">次のテキスト間を、見出しごとにジャンプ（移動）してみましょう。</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />、タブ</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5310788376443009632">次の内容を削除しました:</translation>
+<translation id="5316825363044614340">次の行に移動</translation>
 <translation id="5320727453979144100">スティッキー モードは有効</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{カンマ}other{# 個のカンマ}}</translation>
 <translation id="532485153932049746">テキストの書式設定
@@ -637,6 +657,7 @@
 <translation id="5452267669091857717">次のレベル 1 の見出しはありません</translation>
 <translation id="5455441614648621694">補足的情報</translation>
 <translation id="5462510922370980473">ページリスト</translation>
+<translation id="5471768120198416576">こんにちは。テキスト読み上げの音声です。</translation>
 <translation id="5495517933067991341">必須キー: Shift</translation>
 <translation id="549602578321198708">単語</translation>
 <translation id="5513242761114685513">コンテキスト メニュー</translation>
@@ -655,6 +676,7 @@
 <translation id="5597170376237141345">次のチェックボックス</translation>
 <translation id="5598905979683743333"><ph name="NAME" />、選択されていないラジオボタン</translation>
 <translation id="5601172225407283979">デフォルトの操作を実行します</translation>
+<translation id="5604302400025591178">{COUNT,plural, =1{四角形の箇条書き記号}other{# 個の四角形の箇条書き記号}}</translation>
 <translation id="5608798115546226984">オートコンプリートはインライン表示</translation>
 <translation id="5616029807486814372">次のレッスン</translation>
 <translation id="561939826962581046">日時</translation>
@@ -681,6 +703,7 @@
 <translation id="5748623122140342504">前のレベル 5 見出し</translation>
 <translation id="5760594853119905566">付録</translation>
 <translation id="5761219715606611783">お疲れさまでした。ChromeVox の基本のタッチ操作はこれで終わりです。チュートリアルをもう一度確認する場合や終了する場合は、下のボタンを押してください。</translation>
+<translation id="5776001898637896684">Google Enhanced Network テキスト読み上げ拡張機能</translation>
 <translation id="5805940204952508776">2 本の指でタップします</translation>
 <translation id="5819072574982403430">ツリー項目</translation>
 <translation id="5822819874379903994">ダーク ターコイズ</translation>
@@ -725,6 +748,7 @@
 <translation id="6034000775414344507">ライトグレー</translation>
 <translation id="6036135911048686884">タッチガイド</translation>
 <translation id="6037602951055904232">前方にパンします</translation>
+<translation id="604240746417122825">文法ミス</translation>
 <translation id="6082768461603900813">基本的な操作</translation>
 <translation id="609281021724813947">前のスライダーはありません。</translation>
 <translation id="6100239002225743044">1 行上へ移動</translation>
@@ -736,6 +760,7 @@
 <translation id="6150023170003443621">イエロー グリーン</translation>
 <translation id="6158882249329863701">行 <ph name="TABLECELLROWINDEX" /> 列 <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">メーター</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6166362019018438352">点字表示が無効になっています</translation>
 <translation id="6186305613600865047">ページの最後に移動します</translation>
 <translation id="6187190722927752226">アクアマリン</translation>
@@ -780,6 +805,7 @@
 <translation id="6544923685317771506">シーシェル</translation>
 <translation id="6551185905438378412">アイボリー</translation>
 <translation id="6561818612645211875">現在の行の先頭に移動</translation>
+<translation id="6563126228219321999">無効なアイテムはありません</translation>
 <translation id="6579990219486187401">ライトピンク</translation>
 <translation id="6583174818554398774">次の詳細レベルに移動します</translation>
 <translation id="6584162722998608255">次は、画面上を移動する方法を学びます。次のアイテムに移動するには、1 本の指で左から右にスワイプします。実際にやってみて、次のステップに進みましょう。</translation>
@@ -804,11 +830,13 @@
 <translation id="6759710362319508545">リソース</translation>
 <translation id="67862343314499040">バイオレット</translation>
 <translation id="6786800275320335305">記事</translation>
+<translation id="6790428901817661496">再生</translation>
 <translation id="6790781785997195160">練習したら、[次のレッスン] ボタンを探して、ダブルタップし、次に進んでください。</translation>
 <translation id="6793101435925451627">リスト ボックス</translation>
 <translation id="6815255864998354418">レモンシフォン</translation>
 <translation id="6816066673340002913">ペール ゴールデン ロッド</translation>
 <translation id="6826226459053491773">2 本の指で下にスワイプします</translation>
+<translation id="6826669432862053130">次の無効なアイテム</translation>
 <translation id="6833103209700200188">フッター</translation>
 <translation id="6837853484260746864">音声を選択:</translation>
 <translation id="6858047746862060282">プロローグ</translation>
@@ -822,6 +850,7 @@
 <translation id="6910211073230771657">削除済み</translation>
 <translation id="6910969481785184048">オン、オフ、停止</translation>
 <translation id="6919104639734799681">表リストを表示</translation>
+<translation id="692135145298539227">削除</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6949846980769640811">ミディアム アクアマリン</translation>
 <translation id="6951482098621102657">次のレベル 5 の見出しはありません</translation>
@@ -881,6 +910,7 @@
 <translation id="7292195267473691167"><ph name="LOCALE" />（<ph name="VARIANT" />）</translation>
 <translation id="7308519659008003150">前のフォーム フィールドはありません</translation>
 <translation id="731121099745151312">ツリー項目</translation>
+<translation id="7313717760367325059">ヘルプ</translation>
 <translation id="7317017974771324508">一部選択</translation>
 <translation id="7322442671176251901">タッチガイド</translation>
 <translation id="7344012264516629579">ジャンプ コマンドでは、他にも、リンク、ボタン、チェックボックスなどの要素間を移動できます。ChromeVox メニューでジャンプ コマンドの一覧をご覧になれます。メニューを開くには検索+ピリオド（.）キーを押してください。</translation>
@@ -901,7 +931,7 @@
 <translation id="743783356331413498">例</translation>
 <translation id="7439060726180460871">ディレクトリ</translation>
 <translation id="744163271241493234">パスワードを編集</translation>
-<translation id="7484805699335881122">要素タイプと引用符付き、削除済み、太字、カッコ付き、または大文字のテキストを読み上げるときにピッチを変更する。</translation>
+<translation id="7465123027577412805">自然な音声を使用しますか？</translation>
 <translation id="7491962110804786152">タブ</translation>
 <translation id="7492497529767769458">次のセクションに移動します。たとえばステータス トレイやランチャーなどです。</translation>
 <translation id="7505149250476994901">「大文字の」と言ってから文字を読み上げる</translation>
@@ -933,6 +963,7 @@
 <translation id="7693840228159394336">前のラジオボタン</translation>
 <translation id="7701040980221191251">なし</translation>
 <translation id="7701196182766842984">リストのオートコンプリート</translation>
+<translation id="7713139339518499741">自然な音声</translation>
 <translation id="7714340021005120797">次のコンボボックスはありません</translation>
 <translation id="772146615414628379">以上が ChromeVox を使用するための基本事項です。ChromeVox のコマンド メニューは、検索+ピリオド（.）キーを押していつでも開くことができます。ChromeVox と Chrome OS について詳しくは、以下の記事をご覧ください。
     チュートリアルを終了するには、ChromeVox を使って閉じるボタンまで移動し、クリックしてください。</translation>
@@ -963,12 +994,14 @@
 <translation id="7939428177581522200">選択範囲に追加しました</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{アットマーク}other{# 個のアットマーク}}</translation>
 <translation id="7942349550061667556">赤</translation>
+<translation id="7945703887991230167">好きな音声</translation>
 <translation id="7948364528129376623">次にアクセスしたリンクはありません</translation>
 <translation id="7952460583030260752">コマンド リファレンス</translation>
 <translation id="7965147473449754028">メニューを閉じました</translation>
 <translation id="7968340748835037139">ダークグリーン</translation>
 <translation id="7972507042926081808">チョコレート</translation>
 <translation id="7974390230414479278">メニュー項目</translation>
+<translation id="7990863024647916394"><ph name="DISPLAY_NAME" /> 音声 <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">1 つの数値として</translation>
 <translation id="8004512796067398576">増やす</translation>
 <translation id="8007540374018858731">見出し 3</translation>
@@ -994,8 +1027,10 @@
 <translation id="8126386426083591964">前のレベル 5 の見出しはありません</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> のダウンロードを停止しました</translation>
 <translation id="8129445297241948503">上にセルはありません</translation>
+<translation id="8132248161074464367">前の無効なアイテム</translation>
 <translation id="8138880386467279117">タップ</translation>
 <translation id="8146613869421949343">次は検索キーについて見てみましょう。検索キーは他のキーと組み合わせて、ChromeVox コマンドとして使用します。検索キーは、左 Shift キーのすぐ上にあります。次へ進むには、検索キーを押してください。</translation>
+<translation id="8158033275290782295">すべて選択</translation>
 <translation id="816818801578874684">これは最初の見出しです。次の見出しに移動するには検索+H キーを押します。</translation>
 <translation id="8173092779156526980">4 本の指で左にスワイプします</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{アンダースコア}other{# 個のアンダースコア}}</translation>
@@ -1010,6 +1045,7 @@
 <translation id="8212109599554677485">表示スタイルを横並びに変更する</translation>
 <translation id="8215202828671303819">複数選択可</translation>
 <translation id="8249864170673238087"><ph name="COLOR" />（不透明度 <ph name="OPACITY_PERCENTAGE" />%）</translation>
+<translation id="8261506727792406068">削除</translation>
 <translation id="826825447994856889">序論</translation>
 <translation id="827266600368092403">選択を開始または終了します</translation>
 <translation id="827422111966801947">インディゴ</translation>
@@ -1062,7 +1098,9 @@
 <translation id="8653646212587894517">リンク リストを表示</translation>
 <translation id="8656888282555543604">点字のログを有効にする</translation>
 <translation id="8659501358298941449">プルダウン リスト</translation>
+<translation id="8666733765751421568"><ph name="TYPE" /> ここまで</translation>
 <translation id="867187640362843212">見出し 5</translation>
+<translation id="8690400660839620419">{COUNT,plural, =1{}other{ネストレベル #}}</translation>
 <translation id="8693391540059827073">お気に入りの季節</translation>
 <translation id="8696284982970258155">ハニーデュー</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{パイプ}other{# 個のパイプ}}</translation>
@@ -1101,6 +1139,7 @@
 <translation id="9014206344398081366">ChromeVox チュートリアル</translation>
 <translation id="9040132695316389094">見出し 1</translation>
 <translation id="9061884144798498064">8 点点字表を選択:</translation>
+<translation id="9063946545000394379">前の文字に移動</translation>
 <translation id="9065283790526219006">ポップアップあり</translation>
 <translation id="9065912140022662363">次のラジオボタンはありません</translation>
 <translation id="9067522039955793016">改ページ</translation>
@@ -1109,6 +1148,7 @@
 <translation id="9077305471618729969">ライト シーグリーン</translation>
 <translation id="9080299285199342830">末尾へ移動</translation>
 <translation id="9089864840575085222">入力読み上げを切り替えます</translation>
+<translation id="9099429023611373837">切り取り</translation>
 <translation id="9108370397979208512">数式</translation>
 <translation id="9108589040018540527">スクロールバー</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{パーセント}other{# 個のパーセント記号}}</translation>

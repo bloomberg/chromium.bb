@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/eye_dropper.h"
@@ -42,7 +43,7 @@ class EyeDropperView : public content::EyeDropper,
 
   class PreEventDispatchHandler : public ui::EventHandler {
    public:
-    explicit PreEventDispatchHandler(EyeDropperView* view);
+    PreEventDispatchHandler(EyeDropperView* view, gfx::NativeView parent);
     PreEventDispatchHandler(const PreEventDispatchHandler&) = delete;
     PreEventDispatchHandler& operator=(const PreEventDispatchHandler&) = delete;
     ~PreEventDispatchHandler() override;
@@ -50,7 +51,11 @@ class EyeDropperView : public content::EyeDropper,
    private:
     void OnMouseEvent(ui::MouseEvent* event) override;
 
-    EyeDropperView* view_;
+    raw_ptr<EyeDropperView> view_;
+#if defined(USE_AURA)
+    class KeyboardHandler;
+    std::unique_ptr<KeyboardHandler> keyboard_handler_;
+#endif
 #if defined(OS_MAC)
     id clickEventTap_;
     id notificationObserver_;
@@ -69,14 +74,15 @@ class EyeDropperView : public content::EyeDropper,
 
   // Handles color selection and notifies the listener.
   void OnColorSelected();
+  void OnColorSelectionCanceled();
 
-  content::RenderFrameHost* render_frame_host_;
+  raw_ptr<content::RenderFrameHost> render_frame_host_;
 
   gfx::Size GetSize() const;
   float GetDiameter() const;
 
   // Receives the color selection.
-  content::EyeDropperListener* listener_;
+  raw_ptr<content::EyeDropperListener> listener_;
 
   std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
   std::unique_ptr<ViewPositionHandler> view_position_handler_;

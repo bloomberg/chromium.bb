@@ -9,16 +9,17 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/debug/activity_tracker.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/pending_task.h"
 #include "base/process/process.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -121,6 +122,9 @@ class SimpleActivityThread : public SimpleThread {
         exit_(false),
         exit_condition_(&lock_) {}
 
+  SimpleActivityThread(const SimpleActivityThread&) = delete;
+  SimpleActivityThread& operator=(const SimpleActivityThread&) = delete;
+
   ~SimpleActivityThread() override = default;
 
   void Run() override {
@@ -150,7 +154,7 @@ class SimpleActivityThread : public SimpleThread {
   }
 
  private:
-  const void* source_;
+  raw_ptr<const void> source_;
   Activity::Type activity_;
   ActivityData data_;
 
@@ -158,8 +162,6 @@ class SimpleActivityThread : public SimpleThread {
   std::atomic<bool> exit_;
   Lock lock_;
   ConditionVariable exit_condition_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleActivityThread);
 };
 
 }  // namespace

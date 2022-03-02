@@ -18,7 +18,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
+#include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
@@ -53,6 +54,10 @@ void SetCurrentIme(const std::string& current_ime_id,
 class ImeMenuTrayTest : public AshTestBase {
  public:
   ImeMenuTrayTest() = default;
+
+  ImeMenuTrayTest(const ImeMenuTrayTest&) = delete;
+  ImeMenuTrayTest& operator=(const ImeMenuTrayTest&) = delete;
+
   ~ImeMenuTrayTest() override = default;
 
  protected:
@@ -121,9 +126,6 @@ class ImeMenuTrayTest : public AshTestBase {
       return false;
     return ImeListViewTestApi(GetTray()->ime_list_view_).GetToggleView();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ImeMenuTrayTest);
 };
 
 // Tests that visibility of IME menu tray should be consistent with the
@@ -162,6 +164,39 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   // Changes the input method to a third-party IME extension.
   SetCurrentIme("ime2", {info1, info2});
   EXPECT_EQ(u"UK*", GetTrayText());
+}
+
+TEST_F(ImeMenuTrayTest, TrayLabelExludesDictation) {
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+  ASSERT_TRUE(IsVisible());
+
+  ImeInfo info1;
+  info1.id = "ime1";
+  info1.name = u"English";
+  info1.short_name = u"US";
+  info1.third_party = false;
+
+  ImeInfo info2;
+  info2.id = "ime2";
+  info2.name = u"English UK";
+  info2.short_name = u"UK";
+  info2.third_party = true;
+
+  ImeInfo dictation;
+  dictation.id = "_ext_ime_egfdjlfmgnehecnclamagfafdccgfndpdictation";
+  dictation.name = u"Dictation";
+
+  // Changes the input method to "ime1".
+  SetCurrentIme("ime1", {info1, dictation, info2});
+  EXPECT_EQ(u"US", GetTrayText());
+
+  // Changes the input method to a third-party IME extension.
+  SetCurrentIme("ime2", {info1, dictation, info2});
+  EXPECT_EQ(u"UK*", GetTrayText());
+
+  // Sets to "dictation", which shouldn't be shown.
+  SetCurrentIme(dictation.id, {info1, dictation, info2});
+  EXPECT_EQ(u"", GetTrayText());
 }
 
 // Tests that IME menu tray changes background color when tapped/clicked. And
@@ -265,7 +300,7 @@ TEST_F(ImeMenuTrayTest, TestAccelerator) {
   ASSERT_FALSE(IsTrayBackgroundActive());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      SHOW_IME_MENU_BUBBLE, {});
+      TOGGLE_IME_MENU_BUBBLE, {});
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());
 
@@ -289,14 +324,35 @@ TEST_F(ImeMenuTrayTest, ShowingEmojiKeysetHidesBubble) {
 
   TestImeControllerClient client;
   Shell::Get()->ime_controller()->SetClient(&client);
-  GetTray()->ShowKeyboardWithKeyset(chromeos::input_method::ImeKeyset::kEmoji);
+  GetTray()->ShowKeyboardWithKeyset(input_method::ImeKeyset::kEmoji);
 
   // The menu should be hidden.
   EXPECT_FALSE(IsBubbleShown());
 }
 
+// Tests that the IME menu accelerator toggles the bubble on and off.
+TEST_F(ImeMenuTrayTest, ImeBubbleAccelerator) {
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+  ASSERT_TRUE(IsVisible());
+  EXPECT_FALSE(IsBubbleShown());
+
+  PressAndReleaseKey(ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(IsBubbleShown());
+
+  PressAndReleaseKey(ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(IsBubbleShown());
+}
+
 // Tests that tapping the emoji button does not crash. http://crbug.com/739630
 TEST_F(ImeMenuTrayTest, TapEmojiButton) {
+  int callCount = 0;
+  ui::SetShowEmojiKeyboardCallback(
+      base::BindRepeating([](int* count) { (*count)++; }, (&callCount)));
+
   Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   Shell::Get()->ime_controller()->SetExtraInputOptionsEnabledState(
       true /* ui enabled */, true /* emoji input enabled */,
@@ -312,8 +368,11 @@ TEST_F(ImeMenuTrayTest, TapEmojiButton) {
   ASSERT_TRUE(emoji_button);
   emoji_button->OnGestureEvent(&tap);
 
-  // The menu should be hidden.
-  EXPECT_FALSE(IsBubbleShown());
+  // The callback should have been called.
+  EXPECT_EQ(callCount, 1);
+
+  // Cleanup.
+  ui::SetShowEmojiKeyboardCallback(base::DoNothing());
 }
 
 TEST_F(ImeMenuTrayTest, ShouldShowBottomButtons) {

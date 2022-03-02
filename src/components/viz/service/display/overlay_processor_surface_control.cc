@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "cc/base/math_util.h"
+#include "components/viz/common/features.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -31,7 +33,8 @@ gfx::RectF ClipFromOrigin(gfx::RectF input) {
 }  // namespace
 
 OverlayProcessorSurfaceControl::OverlayProcessorSurfaceControl()
-    : OverlayProcessorUsingStrategy() {
+    : OverlayProcessorUsingStrategy(),
+      use_real_color_space_(features::UseRealVideoColorSpaceForDisplay()) {
   strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
@@ -52,9 +55,16 @@ void OverlayProcessorSurfaceControl::CheckOverlaySupport(
   DCHECK(!candidates->empty());
 
   for (auto& candidate : *candidates) {
-    if (!gfx::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
-      candidate.overlay_handled = false;
-      return;
+    // If we're going to use real color space from media codec, we should check
+    // if it's supported.
+    if (use_real_color_space_) {
+      if (!gfx::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
+        candidate.overlay_handled = false;
+        return;
+      }
+    } else {
+      candidate.color_space = gfx::ColorSpace::CreateSRGB();
+      candidate.hdr_metadata.reset();
     }
 
     // Check if screen rotation matches.
@@ -83,6 +93,9 @@ void OverlayProcessorSurfaceControl::CheckOverlaySupport(
         gfx::SizeF(viewport_size_));
     display_inverse.TransformRect(&orig_display_rect);
     display_inverse.TransformRect(&display_rect);
+
+    candidate.unclipped_display_rect = orig_display_rect;
+    candidate.unclipped_uv_rect = candidate.uv_rect;
 
     candidate.display_rect = gfx::RectF(gfx::ToEnclosingRect(display_rect));
     candidate.uv_rect = cc::MathUtil::ScaleRectProportional(

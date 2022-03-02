@@ -18,7 +18,6 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "include/utils/SkRandom.h"
-#include "src/core/SkClipOpPriv.h"
 
 namespace skiagm {
 
@@ -91,8 +90,8 @@ protected:
         fRectColors[4] = SK_ColorCYAN;
 
         const SkClipOp ops[] = {
-            kDifference_SkClipOp,
-            kIntersect_SkClipOp,
+            SkClipOp::kDifference,
+            SkClipOp::kIntersect,
         };
 
         SkRandom r;
@@ -105,10 +104,10 @@ protected:
         }
     }
 
-    static constexpr int kRows = 5;
-    static constexpr int kCols = 5;
-    static constexpr int kPadX = 20;
-    static constexpr int kPadY = 20;
+    inline static constexpr int kRows = 5;
+    inline static constexpr int kCols = 5;
+    inline static constexpr int kPadX = 20;
+    inline static constexpr int kPadY = 20;
 
     static const char* ClipStr(Clip clip) {
         switch (clip) {

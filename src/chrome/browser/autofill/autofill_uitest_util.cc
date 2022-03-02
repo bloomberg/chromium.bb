@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/autofill/autofill_uitest_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+
 #include "base/run_loop.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -25,6 +27,9 @@ class PdmChangeWaiter : public PersonalDataManagerObserver {
         base_profile_(base_profile) {
     PersonalDataManagerFactory::GetForProfile(base_profile_)->AddObserver(this);
   }
+
+  PdmChangeWaiter(const PdmChangeWaiter&) = delete;
+  PdmChangeWaiter& operator=(const PdmChangeWaiter&) = delete;
 
   ~PdmChangeWaiter() override {}
 
@@ -51,9 +56,7 @@ class PdmChangeWaiter : public PersonalDataManagerObserver {
  private:
   bool alerted_;
   bool has_run_message_loop_;
-  Profile* base_profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(PdmChangeWaiter);
+  raw_ptr<Profile> base_profile_;
 };
 
 static PersonalDataManager* GetPersonalDataManager(Profile* profile) {
@@ -119,6 +122,24 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
       autofill::PersonalDataManagerFactory::GetForProfile(base_profile);
   while (!pdm->IsDataLoaded())
     WaitForPersonalDataChange(base_profile);
+}
+
+void GenerateTestAutofillPopup(
+    AutofillExternalDelegate* autofill_external_delegate) {
+  int query_id = 1;
+  FormData form;
+  FormFieldData field;
+  field.is_focusable = true;
+  field.should_autocomplete = true;
+  gfx::RectF bounds(100.f, 100.f);
+
+  ContentAutofillDriver* driver = static_cast<ContentAutofillDriver*>(
+      absl::get<AutofillDriver*>(autofill_external_delegate->GetDriver()));
+  driver->AskForValuesToFill(query_id, form, field, bounds, false);
+
+  std::vector<Suggestion> suggestions = {Suggestion(u"Test suggestion")};
+  autofill_external_delegate->OnSuggestionsReturned(
+      query_id, suggestions, /*autoselect_first_suggestion=*/false);
 }
 
 }  // namespace autofill

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -33,6 +33,9 @@ ManageAccountsParams::ManageAccountsParams() = default;
 
 ManageAccountsParams::ManageAccountsParams(const ManageAccountsParams&) =
     default;
+
+ManageAccountsParams& ManageAccountsParams::operator=(
+    const ManageAccountsParams&) = default;
 
 // Trivial constructors and destructors.
 DiceResponseParams::DiceResponseParams() {}
@@ -169,7 +172,7 @@ void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& gaia_id,
-    const absl::optional<bool>& is_child_account,
+    Tribool is_child_account,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask,

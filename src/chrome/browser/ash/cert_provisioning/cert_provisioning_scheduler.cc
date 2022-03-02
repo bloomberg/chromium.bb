@@ -21,12 +21,12 @@
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_metrics.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_worker.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -49,12 +49,11 @@ void EraseByKey(Container& container, const Value& value) {
   container.erase(iter);
 }
 
-const base::TimeDelta kInconsistentDataErrorRetryDelay =
-    base::TimeDelta::FromSeconds(30);
+const base::TimeDelta kInconsistentDataErrorRetryDelay = base::Seconds(30);
 
 policy::CloudPolicyClient* GetCloudPolicyClientForUser(Profile* profile) {
-  policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
-      profile->GetUserCloudPolicyManagerChromeOS();
+  policy::UserCloudPolicyManagerAsh* user_cloud_policy_manager =
+      profile->GetUserCloudPolicyManagerAsh();
   if (!user_cloud_policy_manager) {
     return nullptr;
   }
@@ -181,7 +180,7 @@ void CertProvisioningSchedulerImpl::ScheduleDailyUpdate() {
       FROM_HERE,
       base::BindOnce(&CertProvisioningSchedulerImpl::DailyUpdateCerts,
                      weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromDays(1));
+      base::Days(1));
 }
 
 void CertProvisioningSchedulerImpl::ScheduleRetry(
@@ -224,30 +223,21 @@ void CertProvisioningSchedulerImpl::DeleteCertsWithoutPolicy() {
     return;
   }
 
-  base::flat_set<CertProfileId> cert_profile_ids_to_keep;
-  {
-    std::vector<CertProfile> profiles = GetCertProfiles();
-    std::vector<CertProfileId> ids;
-    for (auto& profile : profiles) {
-      ids.emplace_back(std::move(profile.profile_id));
-    }
-    cert_profile_ids_to_keep = base::flat_set<CertProfileId>(std::move(ids));
-  }
-
   cert_deleter_.DeleteCerts(
-      cert_profile_ids_to_keep,
+      base::MakeFlatSet<CertProfileId>(GetCertProfiles(), {},
+                                       &CertProfile::profile_id),
       base::BindOnce(
           &CertProvisioningSchedulerImpl::OnDeleteCertsWithoutPolicyDone,
           weak_factory_.GetWeakPtr()));
 }
 
 void CertProvisioningSchedulerImpl::OnDeleteCertsWithoutPolicyDone(
-    platform_keys::Status status) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (status != platform_keys::Status::kSuccess) {
+  if (status != chromeos::platform_keys::Status::kSuccess) {
     LOG(ERROR) << "Failed to delete certificates without policies: "
-               << platform_keys::StatusToString(status);
+               << chromeos::platform_keys::StatusToString(status);
   }
 
   DeserializeWorkers();
@@ -307,7 +297,7 @@ void CertProvisioningSchedulerImpl::DeserializeWorkers() {
     return;
   }
 
-  for (const auto& kv : saved_workers->DictItems()) {
+  for (const auto kv : saved_workers->DictItems()) {
     const base::Value& saved_worker = kv.second;
 
     std::unique_ptr<CertProvisioningWorker> worker =
@@ -403,12 +393,12 @@ void CertProvisioningSchedulerImpl::UpdateCertListWithExistingCerts(
     std::vector<CertProfile> profiles,
     base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
         existing_certs_with_ids,
-    platform_keys::Status status) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (status != platform_keys::Status::kSuccess) {
+  if (status != chromeos::platform_keys::Status::kSuccess) {
     LOG(ERROR) << "Failed to get existing cert ids: "
-               << platform_keys::StatusToString(status);
+               << chromeos::platform_keys::StatusToString(status);
     return;
   }
 
@@ -432,7 +422,7 @@ void CertProvisioningSchedulerImpl::UpdateCertListWithExistingCerts(
       continue;
     }
 
-    if ((now + base::TimeDelta::FromDays(1) + profile.renewal_period) >=
+    if ((now + base::Days(1) + profile.renewal_period) >=
         cert->valid_expiry()) {
       // The certificate should be renewed within 1 day.
       base::Time target_time = cert->valid_expiry() - profile.renewal_period;

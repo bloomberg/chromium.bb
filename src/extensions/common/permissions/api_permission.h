@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/pickle.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "extensions/common/mojom/api_permission_id.mojom-shared.h"
 
@@ -101,18 +101,8 @@ class APIPermission {
   virtual std::unique_ptr<APIPermission> Intersect(
       const APIPermission* rhs) const = 0;
 
-  // IPC functions
-  // Writes this into the given IPC message |m|.
-  virtual void Write(base::Pickle* m) const = 0;
-
-  // Reads from the given IPC message |m|.
-  virtual bool Read(const base::Pickle* m, base::PickleIterator* iter) = 0;
-
-  // Logs this permission.
-  virtual void Log(std::string* log) const = 0;
-
  private:
-  const APIPermissionInfo* const info_;
+  const raw_ptr<const APIPermissionInfo> info_;
 };
 
 

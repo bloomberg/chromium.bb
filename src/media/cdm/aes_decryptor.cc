@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "crypto/symmetric_key.h"
@@ -78,6 +77,11 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
 
  public:
   SessionIdDecryptionKeyMap() = default;
+
+  SessionIdDecryptionKeyMap(const SessionIdDecryptionKeyMap&) = delete;
+  SessionIdDecryptionKeyMap& operator=(const SessionIdDecryptionKeyMap&) =
+      delete;
+
   ~SessionIdDecryptionKeyMap() = default;
 
   // Replaces value if |session_id| is already present, or adds it if not.
@@ -110,8 +114,6 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   void Erase(KeyList::iterator position);
 
   KeyList key_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionIdDecryptionKeyMap);
 };
 
 void AesDecryptor::SessionIdDecryptionKeyMap::Insert(
@@ -367,7 +369,7 @@ void AesDecryptor::CloseSession(const std::string& session_id,
 
   // 5.3. Queue a task to run the following steps:
   // 5.3.1. Run the Session Closed algorithm on the session.
-  session_closed_cb_.Run(session_id);
+  session_closed_cb_.Run(session_id, CdmSessionClosedReason::kClose);
   // 5.3.2. Resolve promise.
   promise->resolve();
 }

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_PAINT_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_PAINT_STATE_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -45,7 +46,9 @@ class ScopedPaintState {
       return;
     }
     const auto* properties = fragment_to_paint_->PaintProperties();
-    if (properties && properties->PaintOffsetTranslation()) {
+    if (!properties)
+      return;
+    if (properties->PaintOffsetTranslation()) {
       AdjustForPaintOffsetTranslation(object,
                                       *properties->PaintOffsetTranslation());
     }
@@ -80,12 +83,6 @@ class ScopedPaintState {
   PhysicalOffset PaintOffset() const { return paint_offset_; }
 
   const FragmentData* FragmentToPaint() const { return fragment_to_paint_; }
-
-  PhysicalRect LocalCullRect() const {
-    PhysicalRect cull_rect(LayoutRect(GetPaintInfo().GetCullRect().Rect()));
-    cull_rect.Move(-PaintOffset());
-    return cull_rect;
-  }
 
   bool LocalRectIntersectsCullRect(const PhysicalRect& local_rect) const {
     return GetPaintInfo().IntersectsCullRect(local_rect, PaintOffset());

@@ -1704,8 +1704,8 @@ static void lowbd_fwd_txfm2d_64x64_avx2(const int16_t *input, int32_t *output,
     }
     fdct64_new_avx2(bufA, bufA, cos_bit_row);
     fdct64_new_avx2(bufB, bufB, cos_bit_row);
-    av1_round_shift_array_32_avx2(bufA, bufA, 32, -shift[2]);
-    av1_round_shift_array_32_avx2(bufB, bufB, 32, -shift[2]);
+    round_shift_array_32_avx2(bufA, bufA, 32, -shift[2]);
+    round_shift_array_32_avx2(bufB, bufB, 32, -shift[2]);
 
     int32_t *output8 = output + 16 * 32 * i;
     for (int j = 0; j < 4; ++j) {
@@ -1843,8 +1843,8 @@ static void lowbd_fwd_txfm2d_64x32_avx2(const int16_t *input, int32_t *output,
     }
     fdct64_new_avx2(bufA, bufA, cos_bit_row);
     fdct64_new_avx2(bufB, bufB, cos_bit_row);
-    av1_round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
-    av1_round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
+    round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
+    round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
 
     int32_t *output8 = output + 16 * 32 * i;
     for (int j = 0; j < 4; ++j) {
@@ -1893,8 +1893,8 @@ static void lowbd_fwd_txfm2d_32x64_avx2(const int16_t *input, int32_t *output,
     }
     fdct32_avx2(bufA, bufA, cos_bit_row);
     fdct32_avx2(bufB, bufB, cos_bit_row);
-    av1_round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
-    av1_round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
+    round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
+    round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
 
     int32_t *output8 = output + 16 * 32 * i;
     for (int j = 0; j < 4; ++j) {

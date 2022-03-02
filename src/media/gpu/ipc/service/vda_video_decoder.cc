@@ -23,6 +23,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/video_aspect_ratio.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
@@ -485,7 +486,8 @@ bool VdaVideoDecoder::NeedsBitstreamConversion() const {
 
   // TODO(sandersd): Can we move bitstream conversion into VdaVideoDecoder and
   // always return false?
-  return config_.codec() == kCodecH264 || config_.codec() == kCodecHEVC;
+  return config_.codec() == VideoCodec::kH264 ||
+         config_.codec() == VideoCodec::kHEVC;
 }
 
 bool VdaVideoDecoder::CanReadWithoutStalling() const {
@@ -635,7 +637,7 @@ void VdaVideoDecoder::PictureReadyOnParentThread(Picture picture) {
   // Create a VideoFrame for the picture.
   scoped_refptr<VideoFrame> frame = picture_buffer_manager_->CreateVideoFrame(
       picture, timestamp, visible_rect,
-      GetNaturalSize(visible_rect, config_.GetPixelAspectRatio()));
+      config_.aspect_ratio().GetNaturalSize(visible_rect));
   if (!frame) {
     EnterErrorState();
     return;

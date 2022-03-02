@@ -11,13 +11,14 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/buildflags.h"
@@ -77,19 +77,6 @@
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
-class SkBitmap;
-
-namespace {
-
-const char kAppUrl[] = "http://www.google.com";
-const char16_t kAppTitle[] = u"Test title";
-const char16_t kAppDescription[] = u"Test description";
-const char16_t kShortcutItemName[] = u"shortcut";
-const char kShortcutUrl[] = "http://www.google.com/shortcut";
-const char kShortcutIconUrl[] = "http://www.google.com/shortcut/icon.png";
-
-}  // anonymous namespace
-
 namespace extensions {
 
 namespace {
@@ -104,6 +91,10 @@ class MockPromptProxy {
  public:
   MockPromptProxy(content::WebContents* web_contents,
                   ScopedTestDialogAutoConfirm::AutoConfirm confirm_mode);
+
+  MockPromptProxy(const MockPromptProxy&) = delete;
+  MockPromptProxy& operator=(const MockPromptProxy&) = delete;
+
   ~MockPromptProxy();
 
   bool did_succeed() const { return !extension_id_.empty(); }
@@ -121,7 +112,7 @@ class MockPromptProxy {
 
  private:
   // Data used to create a prompt.
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 
   // Data reported back to us by the prompt we created.
   bool confirmation_requested_;
@@ -129,46 +120,7 @@ class MockPromptProxy {
   std::u16string error_;
 
   std::unique_ptr<ScopedTestDialogAutoConfirm> auto_confirm;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPromptProxy);
 };
-
-SkBitmap CreateSquareBitmap(int size) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size, size);
-  bitmap.eraseColor(SK_ColorRED);
-  return bitmap;
-}
-
-WebApplicationInfo CreateWebAppInfo(const char16_t* title,
-                                    const char16_t* description,
-                                    const char* start_url,
-                                    int size,
-                                    bool create_with_shortcuts) {
-  WebApplicationInfo web_app_info;
-  web_app_info.title = title;
-  web_app_info.description = description;
-  web_app_info.start_url = GURL(start_url);
-  web_app_info.scope = GURL(start_url);
-  web_app_info.icon_bitmaps.any[size] = CreateSquareBitmap(size);
-  if (create_with_shortcuts) {
-    WebApplicationShortcutsMenuItemInfo shortcut_item;
-    WebApplicationShortcutsMenuItemInfo::Icon icon;
-    IconBitmaps shortcut_icon_bitmaps;
-    shortcut_item.name = kShortcutItemName;
-    shortcut_item.url = GURL(kShortcutUrl);
-    icon.url = GURL(kShortcutIconUrl);
-    icon.square_size_px = size;
-    shortcut_item.SetShortcutIconInfosForPurpose(IconPurpose::ANY,
-                                                 {std::move(icon)});
-    web_app_info.shortcuts_menu_item_infos.emplace_back(
-        std::move(shortcut_item));
-    shortcut_icon_bitmaps.any[size] = CreateSquareBitmap(size);
-    web_app_info.shortcuts_menu_icon_bitmaps.emplace_back(
-        std::move(shortcut_icon_bitmaps));
-  }
-  return web_app_info;
-}
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
@@ -176,6 +128,9 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
                     MockPromptProxy* proxy) :
       ExtensionInstallPrompt(web_contents),
       proxy_(proxy) {}
+
+  MockInstallPrompt(const MockInstallPrompt&) = delete;
+  MockInstallPrompt& operator=(const MockInstallPrompt&) = delete;
 
   // Overriding some of the ExtensionInstallUI API.
   void OnInstallSuccess(scoped_refptr<const Extension> extension,
@@ -189,9 +144,7 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   }
 
  private:
-  MockPromptProxy* proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockInstallPrompt);
+  raw_ptr<MockPromptProxy> proxy_;
 };
 
 MockPromptProxy::MockPromptProxy(
@@ -420,26 +373,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
         ExtensionPrefs::Get(browser()->profile())
             ->GetGrantedPermissions(mock_prompt->extension_id());
     ASSERT_TRUE(permissions.get());
-  }
-
-  void InstallWebAppAndVerifyNoErrors() {
-    scoped_refptr<CrxInstaller> crx_installer(
-        CrxInstaller::CreateSilent(extension_service()));
-    crx_installer->set_error_on_unsupported_requirements(true);
-    crx_installer->InstallWebApp(
-        CreateWebAppInfo(kAppTitle, kAppDescription, kAppUrl, 64, false));
-    EXPECT_TRUE(WaitForCrxInstallerDone());
-    ASSERT_TRUE(crx_installer->extension());
-  }
-
-  void InstallWebAppWithShortcutsAndVerifyNoErrors() {
-    scoped_refptr<CrxInstaller> crx_installer(
-        CrxInstaller::CreateSilent(extension_service()));
-    crx_installer->set_error_on_unsupported_requirements(true);
-    crx_installer->InstallWebApp(
-        CreateWebAppInfo(kAppTitle, kAppDescription, kAppUrl, 64, true));
-    EXPECT_TRUE(WaitForCrxInstallerDone());
-    ASSERT_TRUE(crx_installer->extension());
   }
 };
 
@@ -689,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   // Make the extension idle again by navigating away from the options page.
   // This should not trigger the delayed install.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForExtensionIdle(extension_id);
   ASSERT_EQ(1u, service->delayed_installs()->size());
   extension = registry->enabled_extensions().GetByID(extension_id);
@@ -1107,27 +1040,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, ManagementPolicy) {
 
   base::FilePath crx_path = test_data_dir_.AppendASCII("crx_installer/v1.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallWebApp) {
-  InstallWebAppAndVerifyNoErrors();
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallWebAppWithShortcuts) {
-  InstallWebAppWithShortcutsAndVerifyNoErrors();
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       InstallWebAppSucceedsWithBlockPolicy) {
-  // Verify that the install still works when a management policy blocking
-  // extension installation is in force. Bookmark apps are special-cased to skip
-  // these checks (see https://crbug.com/545541).
-  ManagementPolicyMock policy;
-  extensions::ExtensionSystem::Get(profile())
-      ->management_policy()
-      ->RegisterProvider(&policy);
-
-  InstallWebAppAndVerifyNoErrors();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, UpdateWithFileAccess) {

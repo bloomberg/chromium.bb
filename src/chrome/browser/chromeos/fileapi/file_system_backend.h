@@ -11,14 +11,13 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/account_id/account_id.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -86,6 +85,10 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       std::unique_ptr<FileSystemBackendDelegate> smbfs_delegate,
       scoped_refptr<storage::ExternalMountPoints> mount_points,
       storage::ExternalMountPoints* system_mount_points);
+
+  FileSystemBackend(const FileSystemBackend&) = delete;
+  FileSystemBackend& operator=(const FileSystemBackend&) = delete;
+
   ~FileSystemBackend() override;
 
   // Adds system mount points, such as "archive", and "removable". This
@@ -110,7 +113,7 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
   storage::CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       storage::FileSystemType type,
       base::File::Error* error_code) override;
-  storage::FileSystemOperation* CreateFileSystemOperation(
+  std::unique_ptr<storage::FileSystemOperation> CreateFileSystemOperation(
       const storage::FileSystemURL& url,
       storage::FileSystemContext* context,
       base::File::Error* error_code) const override;
@@ -138,9 +141,9 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
   // storage::ExternalFileSystemBackend overrides.
   bool IsAccessAllowed(const storage::FileSystemURL& url) const override;
   std::vector<base::FilePath> GetRootDirectories() const override;
-  void GrantFileAccessToExtension(const std::string& extension_id,
-                                  const base::FilePath& virtual_path) override;
-  void RevokeAccessForExtension(const std::string& extension_id) override;
+  void GrantFileAccessToOrigin(const url::Origin& origin,
+                               const base::FilePath& virtual_path) override;
+  void RevokeAccessForOrigin(const url::Origin& origin) override;
   bool GetVirtualPath(const base::FilePath& filesystem_path,
                       base::FilePath* virtual_path) const override;
   void GetRedirectURLForContents(const storage::FileSystemURL& url,
@@ -189,8 +192,6 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
   // Globally visible mount points. System MountPonts instance should outlive
   // all FileSystemBackend instances, so raw pointer is safe.
   storage::ExternalMountPoints* system_mount_points_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemBackend);
 };
 
 }  // namespace chromeos

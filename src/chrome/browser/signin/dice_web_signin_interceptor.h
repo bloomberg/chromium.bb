@@ -11,11 +11,12 @@
 #include "base/cancelable_callback.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -28,6 +29,9 @@ namespace content {
 class WebContents;
 }
 
+namespace policy {
+class UserCloudSigninRestrictionPolicyFetcher;
+}
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -81,7 +85,14 @@ enum class SigninInterceptionHeuristicOutcome {
   // Signin interception is disabled by the SigninInterceptionEnabled policy.
   kAbortInterceptionDisabled = 15,
 
-  kMaxValue = kAbortInterceptionDisabled,
+  // Interception succeeded when enteprise account separation is mandatory.
+  kInterceptEnterpriseForced = 16,
+  kInterceptEnterpriseForcedProfileSwitch = 17,
+
+  // The interceptor is not triggered if the tab has already been closed.
+  kAbortTabClosed = 18,
+
+  kMaxValue = kAbortTabClosed,
 };
 
 // User selection in the interception bubble.
@@ -136,10 +147,15 @@ bool SigninInterceptionHeuristicOutcomeIsSuccess(
 //   - The interception bubble is closed by deleting the handle,
 //   - The profile customization bubble is shown.
 class DiceWebSigninInterceptor : public KeyedService,
-                                 public content::WebContentsObserver,
                                  public signin::IdentityManager::Observer {
  public:
-  enum class SigninInterceptionType { kProfileSwitch, kEnterprise, kMultiUser };
+  enum class SigninInterceptionType {
+    kProfileSwitch,
+    kEnterprise,
+    kMultiUser,
+    kEnterpriseForced,
+    kProfileSwitchForced
+  };
 
   // Delegate class responsible for showing the various interception UIs.
   class Delegate {
@@ -230,6 +246,12 @@ class DiceWebSigninInterceptor : public KeyedService,
     return is_interception_in_progress_;
   }
 
+  void SetAccountLevelSigninRestrictionFetchResultForTesting(
+      absl::optional<std::string> value) {
+    intercepted_account_level_policy_value_fetch_result_for_testing_ =
+        std::move(value);
+  }
+
   // KeyedService:
   void Shutdown() override;
 
@@ -245,6 +267,21 @@ class DiceWebSigninInterceptor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
                            ShouldShowMultiUserBubble);
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest, PersistentHash);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorForcedSeparationTest,
+                           ShouldEnforceEnterpriseProfileSeparation);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorForcedSeparationTest,
+                           ShouldEnforceEnterpriseProfileSeparationWithoutUPA);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorForcedSeparationTest,
+                           ShouldEnforceEnterpriseProfileSeparationReauth);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorForcedSeparationTest,
+                           EnforceManagedAccountAsPrimary);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorForcedSeparationTest,
+                           ShouldEnforceEnterpriseProfileSeparationReauth);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorEnterpriseBrowserTest,
+                           ForcedEnterpriseInterceptionTestAccountLevelPolicy);
+  FRIEND_TEST_ALL_PREFIXES(
+      DiceWebSigninInterceptorEnterpriseBrowserTest,
+      ForcedEnterpriseInterceptionTestNoForcedInterception);
 
   // Cancels any current signin interception and resets the interceptor to its
   // initial state.
@@ -254,10 +291,14 @@ class DiceWebSigninInterceptor : public KeyedService,
   const ProfileAttributesEntry* ShouldShowProfileSwitchBubble(
       const std::string& intercepted_email,
       ProfileAttributesStorage* profile_attribute_storage) const;
+  bool ShouldEnforceEnterpriseProfileSeparation(
+      const AccountInfo& intercepted_account_info) const;
   bool ShouldShowEnterpriseBubble(
       const AccountInfo& intercepted_account_info) const;
   bool ShouldShowMultiUserBubble(
       const AccountInfo& intercepted_account_info) const;
+
+  void OnInterceptionReadyToBeProcessed(const AccountInfo& info);
 
   // signin::IdentityManager::Observer:
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
@@ -281,6 +322,13 @@ class DiceWebSigninInterceptor : public KeyedService,
   void OnNewSignedInProfileCreated(absl::optional<SkColor> profile_color,
                                    Profile* new_profile);
 
+  // Called after the user choses whether the session should continue in a new
+  // work profile or not. If the user choses not to continue in a work profile,
+  // the account is signed out.
+  void OnEnterpriseProfileCreationResult(const AccountInfo& account_info,
+                                         SkColor profile_color,
+                                         SigninInterceptionResult create);
+
   // Called when the new browser is created after interception. Passed as
   // callback to `session_startup_helper_`.
   void OnNewBrowserCreated(bool is_new_profile);
@@ -288,33 +336,45 @@ class DiceWebSigninInterceptor : public KeyedService,
   // Returns a 8-bit hash of the email that can be persisted.
   static std::string GetPersistentEmailHash(const std::string& email);
 
-  // Should be called when the user declines profile creation or profile switch,
-  // in order to remember their decision. This information is stored in prefs.
-  // Only a hash of the email is saved, as Chrome does not need to store the
-  // actual email, but only need to compare emails. The hash has low entropy to
-  // ensure it cannot be reversed.
+  // Should be called when the user declines profile creation, in order to
+  // remember their decision. This information is stored in prefs. Only a hash
+  // of the email is saved, as Chrome does not need to store the actual email,
+  // but only need to compare emails. The hash has low entropy to ensure it
+  // cannot be reversed.
   void RecordProfileCreationDeclined(const std::string& email);
-  void RecordProfileSwitchDeclined(const std::string& email);
 
   // Checks if the user previously declined 2 times creating a new profile for
   // this account.
   bool HasUserDeclinedProfileCreation(const std::string& email) const;
 
-  // Checks if the user previously declined more than a threshold number of
-  // times switching to a new profile for this account. The limit is set up
-  // via an experiment parameter.
-  bool HasUserDeclinedProfileSwitch(const std::string& email) const;
+  // Fetches the value of the cloud user level value of the
+  // ManagedAccountsSigninRestriction policy for 'account_info' and runs
+  // `callback` with the result. This is a network call that has a 5 seconds
+  // timeout.
+  void FetchAccountLevelSigninRestrictionForInterceptedAccount(
+      const AccountInfo& account_info,
+      base::OnceCallback<void(const std::string&)> callback);
 
-  Profile* const profile_;
-  signin::IdentityManager* const identity_manager_;
+  // Called when the the value of the cloud user level value of the
+  // ManagedAccountsSigninRestriction is received.
+  void OnAccountLevelManagedAccountsSigninRestrictionReceived(
+      bool timed_out,
+      const AccountInfo& account_info,
+      const std::string& signin_restriction);
+
+  const raw_ptr<Profile> profile_;
+  const raw_ptr<signin::IdentityManager> identity_manager_;
   std::unique_ptr<Delegate> delegate_;
 
   // Used in the profile that was created after the interception succeeded.
   std::unique_ptr<DiceInterceptedSessionStartupHelper> session_startup_helper_;
 
   // Members below are related to the interception in progress.
+  base::WeakPtr<content::WebContents> web_contents_;
   bool is_interception_in_progress_ = false;
   CoreAccountId account_id_;
+  bool new_account_interception_ = false;
+  bool intercepted_account_management_accepted_ = false;
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       account_info_update_observation_{this};
@@ -329,6 +389,23 @@ class DiceWebSigninInterceptor : public KeyedService,
   bool was_interception_ui_displayed_ = false;
   base::TimeTicks account_info_fetch_start_time_;
   base::TimeTicks profile_creation_start_time_;
+
+  // Timeout for the fetch of cloud user level policy value of
+  // ManagedAccountsSigninRestriction. The signin interception continue with an
+  // empty value for the policy if we cannot get the value.
+  base::CancelableOnceCallback<void()>
+      on_intercepted_account_level_policy_value_timeout_;
+
+  // Used to fetch the cloud user level policy value of
+  // ManagedAccountsSigninRestriction. This can only fetch one policy value for
+  // one account at the time.
+  std::unique_ptr<policy::UserCloudSigninRestrictionPolicyFetcher>
+      account_level_signin_restriction_policy_fetcher_;
+  // Value of the ManagedAccountsSigninRestriction for the intercepted account.
+  // If no value is set, then we have not yet received the policy value.
+  absl::optional<std::string> intercepted_account_level_policy_value_;
+  absl::optional<std::string>
+      intercepted_account_level_policy_value_fetch_result_for_testing_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_H_

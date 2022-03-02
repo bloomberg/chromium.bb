@@ -10,8 +10,10 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "base/atomicops.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_base.h"
 
 namespace base {
@@ -150,8 +152,7 @@ class BASE_EXPORT HistogramSamples {
   // Returns ASCII representation of histograms data for histogram samples.
   // The dictionary returned will be of the form
   // {"name":<string>, "header":<string>, "body": <string>}
-  base::DictionaryValue ToGraphDict(StringPiece histogram_name,
-                                    int32_t flags) const;
+  base::Value ToGraphDict(StringPiece histogram_name, int32_t flags) const;
 
   // Accessor functions.
   uint64_t id() const { return meta_->id; }
@@ -231,7 +232,7 @@ class BASE_EXPORT HistogramSamples {
   // Depending on derived class meta values can come from local stoarge or
   // external storage in which case HistogramSamples class cannot take ownership
   // of Metadata*.
-  Metadata* meta_;
+  raw_ptr<Metadata> meta_;
 };
 
 class BASE_EXPORT SampleCountIterator {

@@ -10,9 +10,9 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -329,10 +329,9 @@ void NetworkingPrivateServiceClient::SelectCellularMobileNetwork(
   std::move(failure_callback).Run(networking_private::kErrorNotSupported);
 }
 
-std::unique_ptr<base::ListValue>
-NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
-  auto network_list = std::make_unique<base::ListValue>();
-  network_list->AppendString(::onc::network_type::kWiFi);
+base::Value NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
+  base::Value network_list(base::Value::Type::LIST);
+  network_list.Append(::onc::network_type::kWiFi);
   return network_list;
 }
 

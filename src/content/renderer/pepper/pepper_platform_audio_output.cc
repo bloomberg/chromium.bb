@@ -8,13 +8,13 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/renderer/pepper/audio_helper.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "third_party/blink/public/web/modules/media/audio/web_audio_output_ipc_factory.h"
+#include "third_party/blink/public/web/modules/media/audio/audio_output_ipc_factory.h"
 
 namespace content {
 
@@ -136,7 +136,7 @@ bool PepperPlatformAudioOutput::Initialize(
   DCHECK(client);
   client_ = client;
 
-  ipc_ = blink::WebAudioOutputIPCFactory::GetInstance().CreateAudioOutputIPC(
+  ipc_ = blink::AudioOutputIPCFactory::GetInstance().CreateAudioOutputIPC(
       source_frame_token);
   CHECK(ipc_);
 

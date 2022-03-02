@@ -15,11 +15,10 @@
 #include "core/fxcrt/cfx_widetextbuf.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
-#include "third_party/base/optional.h"
+#include "core/fxcrt/widestring.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-class CPDF_Font;
 class CPDF_FormObject;
 class CPDF_Page;
 class CPDF_TextObject;
@@ -115,7 +114,7 @@ class CPDF_TextPage {
   GenerateCharacter ProcessInsertObject(const CPDF_TextObject* pObj,
                                         const CFX_Matrix& formMatrix);
   const CharInfo* GetPrevCharInfo() const;
-  Optional<CharInfo> GenerateCharInfo(wchar_t unicode);
+  absl::optional<CharInfo> GenerateCharInfo(wchar_t unicode);
   bool IsSameAsPreTextObject(CPDF_TextObject* pTextObj,
                              const CPDF_PageObjectHolder* pObjList,
                              CPDF_PageObjectHolder::const_iterator iter) const;

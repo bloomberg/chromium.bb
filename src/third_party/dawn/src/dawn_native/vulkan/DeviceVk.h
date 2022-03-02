@@ -21,6 +21,7 @@
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/vulkan/CommandRecordingContext.h"
+#include "dawn_native/vulkan/DescriptorSetAllocator.h"
 #include "dawn_native/vulkan/Forward.h"
 #include "dawn_native/vulkan/VulkanFunctions.h"
 #include "dawn_native/vulkan/VulkanInfo.h"
@@ -40,9 +41,10 @@ namespace dawn_native { namespace vulkan {
     class RenderPassCache;
     class ResourceMemoryAllocator;
 
-    class Device : public DeviceBase {
+    class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(Adapter* adapter, const DeviceDescriptor* descriptor);
+        static ResultOrError<Device*> Create(Adapter* adapter,
+                                             const DawnDeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -59,11 +61,12 @@ namespace dawn_native { namespace vulkan {
 
         FencedDeleter* GetFencedDeleter() const;
         RenderPassCache* GetRenderPassCache() const;
+        ResourceMemoryAllocator* GetResourceMemoryAllocator() const;
 
         CommandRecordingContext* GetPendingRecordingContext();
         MaybeError SubmitPendingCommands();
 
-        void EnqueueDeferredDeallocation(BindGroupLayout* bindGroupLayout);
+        void EnqueueDeferredDeallocation(DescriptorSetAllocator* allocator);
 
         // Dawn Native API
 
@@ -93,14 +96,6 @@ namespace dawn_native { namespace vulkan {
                                             TextureCopy* dst,
                                             const Extent3D& copySizePixels) override;
 
-        ResultOrError<ResourceMemoryAllocation> AllocateMemory(VkMemoryRequirements requirements,
-                                                               bool mappable);
-        void DeallocateMemory(ResourceMemoryAllocation* allocation);
-
-        int FindBestMemoryTypeIndex(VkMemoryRequirements requirements, bool mappable);
-
-        ResourceMemoryAllocator* GetResourceMemoryAllocatorForTesting() const;
-
         // Return the fixed subgroup size to use for compute shaders on this device or 0 if none
         // needs to be set.
         uint32_t GetComputeSubgroupSize() const;
@@ -111,22 +106,19 @@ namespace dawn_native { namespace vulkan {
         float GetTimestampPeriodInNS() const override;
 
       private:
-        Device(Adapter* adapter, const DeviceDescriptor* descriptor);
+        Device(Adapter* adapter, const DawnDeviceDescriptor* descriptor);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) override;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) override;
         ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) override;
-        ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
-            const ComputePipelineDescriptor* descriptor) override;
         ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
-        ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -143,6 +135,16 @@ namespace dawn_native { namespace vulkan {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
+        Ref<ComputePipelineBase> CreateUninitializedComputePipelineImpl(
+            const ComputePipelineDescriptor* descriptor) override;
+        Ref<RenderPipelineBase> CreateUninitializedRenderPipelineImpl(
+            const RenderPipelineDescriptor* descriptor) override;
+        void InitializeComputePipelineAsyncImpl(Ref<ComputePipelineBase> computePipeline,
+                                                WGPUCreateComputePipelineAsyncCallback callback,
+                                                void* userdata) override;
+        void InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                               WGPUCreateRenderPipelineAsyncCallback callback,
+                                               void* userdata) override;
 
         ResultOrError<VulkanDeviceKnobs> CreateDevice(VkPhysicalDevice physicalDevice);
         void GatherQueueFromDevice();
@@ -151,7 +153,7 @@ namespace dawn_native { namespace vulkan {
         void InitTogglesFromDriver();
         void ApplyDepth24PlusS8Toggle();
 
-        void ShutDownImpl() override;
+        void DestroyImpl() override;
         MaybeError WaitForIdleForDestruction() override;
 
         // To make it easier to use fn it is a public const member. However
@@ -164,7 +166,8 @@ namespace dawn_native { namespace vulkan {
         VkQueue mQueue = VK_NULL_HANDLE;
         uint32_t mComputeSubgroupSize = 0;
 
-        SerialQueue<ExecutionSerial, Ref<BindGroupLayout>> mBindGroupLayoutsPendingDeallocation;
+        SerialQueue<ExecutionSerial, Ref<DescriptorSetAllocator>>
+            mDescriptorAllocatorsPendingDeallocation;
         std::unique_ptr<FencedDeleter> mDeleter;
         std::unique_ptr<ResourceMemoryAllocator> mResourceMemoryAllocator;
         std::unique_ptr<RenderPassCache> mRenderPassCache;

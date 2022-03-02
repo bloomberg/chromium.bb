@@ -9,24 +9,26 @@
 #include <vector>
 
 #include "ash/shortcut_viewer/ksv_export.h"
-#include "base/containers/span.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace gfx {
 struct VectorIcon;
 }  // namespace gfx
 
-namespace keyboard_shortcut_viewer {
+namespace ash {
 
 struct KeyboardShortcutItem;
 enum class ShortcutCategory;
 
+}  // namespace ash
+
+namespace keyboard_shortcut_viewer {
+
 // Returns a list of Ash and Chrome keyboard shortcuts metadata.
-KSV_EXPORT const std::vector<KeyboardShortcutItem>&
+KSV_EXPORT const std::vector<ash::KeyboardShortcutItem>&
 GetKeyboardShortcutItemList();
 
-std::u16string GetStringForCategory(ShortcutCategory category);
+std::u16string GetStringForCategory(ash::ShortcutCategory category);
 
 // Returns the string of a DomKey for a given VKEY. VKEY needs to be mapped to
 // a physical key |dom_code| and then the |dom_code| needs to be mapped to a

@@ -17,8 +17,13 @@
 #ifndef LIBGAV1_SRC_TILE_SCRATCH_BUFFER_H_
 #define LIBGAV1_SRC_TILE_SCRATCH_BUFFER_H_
 
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <memory>
 #include <mutex>  // NOLINT (unapproved c++11 header)
+#include <new>
+#include <utility>
 
 #include "src/dsp/constants.h"
 #include "src/utils/common.h"
@@ -42,9 +47,10 @@ struct TileScratchBuffer : public MaxAlignedAllocable {
     const int pixel_size = 1;
 #endif
 
+    static_assert(kConvolveScaleBorderRight >= kConvolveBorderRight, "");
     constexpr int unaligned_convolve_buffer_stride =
         kMaxScaledSuperBlockSizeInPixels + kConvolveBorderLeftTop +
-        kConvolveBorderRight;
+        kConvolveScaleBorderRight;
     convolve_block_buffer_stride = Align<ptrdiff_t>(
         unaligned_convolve_buffer_stride * pixel_size, kMaxAlignment);
     constexpr int convolve_buffer_height = kMaxScaledSuperBlockSizeInPixels +
@@ -53,6 +59,13 @@ struct TileScratchBuffer : public MaxAlignedAllocable {
 
     convolve_block_buffer = MakeAlignedUniquePtr<uint8_t>(
         kMaxAlignment, convolve_buffer_height * convolve_block_buffer_stride);
+#if LIBGAV1_MSAN
+    // Quiet msan warnings in ConvolveScale2D_NEON(). Set with random non-zero
+    // value to aid in future debugging.
+    memset(convolve_block_buffer.get(), 0x66,
+           convolve_buffer_height * convolve_block_buffer_stride);
+#endif
+
     return convolve_block_buffer != nullptr;
   }
 

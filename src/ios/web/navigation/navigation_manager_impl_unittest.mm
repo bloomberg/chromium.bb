@@ -17,7 +17,7 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/reload_type.h"
 #include "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
@@ -1550,7 +1550,8 @@ TEST_F(NavigationManagerTest, TestBackwardForwardItems) {
   navigation_manager()->CommitPendingItem();
 
   EXPECT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
-  NavigationItemList back_items = navigation_manager()->GetBackwardItems();
+  std::vector<NavigationItem*> back_items =
+      navigation_manager()->GetBackwardItems();
   EXPECT_EQ(2U, back_items.size());
   EXPECT_EQ("http://www.url.com/1", back_items[0]->GetURL().spec());
   EXPECT_EQ("http://www.url.com/0", back_items[1]->GetURL().spec());
@@ -1561,7 +1562,8 @@ TEST_F(NavigationManagerTest, TestBackwardForwardItems) {
   back_items = navigation_manager()->GetBackwardItems();
   EXPECT_EQ(1U, back_items.size());
   EXPECT_EQ("http://www.url.com/0", back_items[0]->GetURL().spec());
-  NavigationItemList forward_items = navigation_manager()->GetForwardItems();
+  std::vector<NavigationItem*> forward_items =
+      navigation_manager()->GetForwardItems();
   EXPECT_EQ(1U, forward_items.size());
   EXPECT_EQ("http://www.url.com/2", forward_items[0]->GetURL().spec());
 }
@@ -1632,18 +1634,17 @@ TEST_F(NavigationManagerTest, Restore) {
   for (size_t i = 0; i < base::size(restore_information); ++i) {
     NavigationItem* navigation_item = navigation_manager()->GetItemAtIndex(i);
     EXPECT_EQ(restore_information[i].url, navigation_item->GetURL());
-    if (@available(iOS 13, *)) {
-      if (!restore_information[i].virtual_url.is_empty()) {
-        EXPECT_EQ(restore_information[i].virtual_url,
-                  navigation_item->GetVirtualURL());
-      }
-      if (net::GURLWithNSURL(mock_wk_list_.currentItem.URL) !=
-          restore_information[i].url) {
-        // The User Agent of the current item is restored through the
-        // restoration of the User Agent of the WebState.
-        EXPECT_EQ(restore_information[i].user_agent,
-                  navigation_item->GetUserAgentType());
-      }
+
+    if (!restore_information[i].virtual_url.is_empty()) {
+      EXPECT_EQ(restore_information[i].virtual_url,
+                navigation_item->GetVirtualURL());
+    }
+    if (net::GURLWithNSURL(mock_wk_list_.currentItem.URL) !=
+        restore_information[i].url) {
+      // The User Agent of the current item is restored through the
+      // restoration of the User Agent of the WebState.
+      EXPECT_EQ(restore_information[i].user_agent,
+                navigation_item->GetUserAgentType());
     }
     EXPECT_EQ(restore_information[i].display_state,
               navigation_item->GetPageDisplayState());
@@ -1686,7 +1687,8 @@ TEST_F(NavigationManagerTest, NewPendingItemIsHiddenFromHistory) {
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_TRUE(navigation_manager()->GetPendingItem());
 
-  NavigationItemList back_items = navigation_manager()->GetBackwardItems();
+  std::vector<NavigationItem*> back_items =
+      navigation_manager()->GetBackwardItems();
   EXPECT_EQ(1U, back_items.size());
   EXPECT_EQ("http://www.url.com/0", back_items[0]->GetURL().spec());
 }
@@ -2117,7 +2119,6 @@ TEST_F(NavigationManagerTest, UpdateCurrentItemForReplaceState) {
   auto* pending_item =
       static_cast<NavigationItemImpl*>(navigation_manager()->GetPendingItem());
   EXPECT_EQ(replace_page_url, pending_item->GetURL());
-  EXPECT_FALSE(pending_item->IsCreatedFromPushState());
   EXPECT_NSEQ(state_object, pending_item->GetSerializedStateObject());
   EXPECT_EQ(GURL("http://referrer.com"), pending_item->GetReferrer().url);
 
@@ -2134,7 +2135,6 @@ TEST_F(NavigationManagerTest, UpdateCurrentItemForReplaceState) {
   auto* last_committed_item = static_cast<NavigationItemImpl*>(
       navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(replace_page_url2, last_committed_item->GetURL());
-  EXPECT_FALSE(last_committed_item->IsCreatedFromPushState());
   EXPECT_NSEQ(nil, last_committed_item->GetSerializedStateObject());
   EXPECT_EQ(GURL("http://referrer.com"),
             last_committed_item->GetReferrer().url);
@@ -2342,28 +2342,6 @@ TEST_F(NavigationManagerTest, ReusePendingItemForHistoryNavigation) {
                            /*is_post_navigation=*/false,
                            /*is_using_https_as_default_scheme=*/false);
   EXPECT_EQ(original_item0, manager_->GetPendingItem());
-}
-
-// Tests that AddPendingItem does not create a new NavigationItem if the new
-// pending item is a reload of app-specific URL.
-TEST_F(NavigationManagerTest, ReusePendingItemForReloadAppSpecificURL) {
-  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage))
-    return;
-
-  // Simulate a previous app-specific navigation.
-  NSString* url = @"about:blank?for=chrome%3A%2F%2Fnewtab";
-  [mock_wk_list_ setCurrentURL:url];
-  NavigationItem* original_item = manager_->GetItemAtIndex(0);
-
-  OCMExpect([mock_web_view_ URL]).andReturn([[NSURL alloc] initWithString:url]);
-
-  manager_->AddPendingItem(GURL("chrome://newtab"), Referrer(),
-                           ui::PAGE_TRANSITION_RELOAD,
-                           web::NavigationInitiationType::BROWSER_INITIATED,
-                           /*is_post_navigation=*/false,
-                           /*is_using_https_as_default_scheme=*/false);
-
-  EXPECT_EQ(original_item, manager_->GetPendingItem());
 }
 
 // Tests that transient URL rewriters are only applied to a new pending item.
@@ -2739,22 +2717,6 @@ TEST_F(NavigationManagerTest, HideInternalRedirectUrl) {
   EXPECT_EQ(url, item->GetURL());
 }
 
-// Tests that the virtual URL of a placeholder item is updated to the original
-// URL.
-TEST_F(NavigationManagerTest, HideInternalPlaceholderUrl) {
-  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
-    return;
-
-  GURL original_url = GURL("http://www.1.com?query=special%26chars");
-  GURL url = wk_navigation_util::CreatePlaceholderUrlForUrl(original_url);
-  NSString* url_spec = base::SysUTF8ToNSString(url.spec());
-  [mock_wk_list_ setCurrentURL:url_spec];
-  NavigationItem* item = manager_->GetItemAtIndex(0);
-  ASSERT_TRUE(item);
-  EXPECT_EQ(original_url, item->GetVirtualURL());
-  EXPECT_EQ(url, item->GetURL());
-}
-
 // Tests that all NavigationManager APIs return reasonable values in the Empty
 // Window Open Navigation edge case. See comments in header file for details.
 TEST_F(NavigationManagerTest, EmptyWindowOpenNavigation) {
@@ -2907,11 +2869,11 @@ TEST_F(NavigationManagerDetachedModeTest, CachedSessionHistory) {
   EXPECT_EQ(1, manager_->GetIndexForOffset(0));
   EXPECT_EQ(2, manager_->GetIndexForOffset(1));
 
-  NavigationItemList backward_items = manager_->GetBackwardItems();
+  std::vector<NavigationItem*> backward_items = manager_->GetBackwardItems();
   EXPECT_EQ(1UL, backward_items.size());
   EXPECT_EQ(url0_, backward_items[0]->GetURL());
 
-  NavigationItemList forward_items = manager_->GetForwardItems();
+  std::vector<NavigationItem*> forward_items = manager_->GetForwardItems();
   EXPECT_EQ(1UL, forward_items.size());
   EXPECT_EQ(url2_, forward_items[0]->GetURL());
 }

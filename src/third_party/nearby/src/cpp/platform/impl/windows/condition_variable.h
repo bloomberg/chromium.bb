@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,44 +11,45 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #ifndef PLATFORM_IMPL_WINDOWS_CONDITION_VARIABLE_H_
 #define PLATFORM_IMPL_WINDOWS_CONDITION_VARIABLE_H_
+#include <windows.h>
+#include <stdio.h>
+#include <synchapi.h>
+
+#include <mutex>  //  NOLINT
 
 #include "platform/api/condition_variable.h"
+#include "platform/impl/windows/mutex.h"
+#include "platform/public/mutex.h"
 
 namespace location {
 namespace nearby {
 namespace windows {
 
-// The ConditionVariable class is a synchronization primitive that can be used
-// to block a thread, or multiple threads at the same time, until another thread
-// both modifies a shared variable (the condition), and notifies the
-// ConditionVariable.
 class ConditionVariable : public api::ConditionVariable {
  public:
-  // TODO(b/184975123): replace with real implementation.
+  explicit ConditionVariable(api::Mutex* mutex)
+      : mutex_(&(static_cast<windows::Mutex*>(mutex))->mutex_) {}
   ~ConditionVariable() override = default;
 
-  // Notifies all the waiters that condition state has changed.
-  // TODO(b/184975123): replace with real implementation.
-  void Notify() override {}
+  Exception Wait() override {
+    cond_var_.Wait(mutex_);
+    return {Exception::kSuccess};
+  }
 
-  // Waits indefinitely for Notify to be called.
-  // May return prematurely in case of interrupt, if supported by platform.
-  // Returns kSuccess, or kInterrupted on interrupt.
-  // TODO(b/184975123): replace with real implementation.
-  Exception Wait() override { return Exception{}; }
+  Exception Wait(absl::Duration timeout) override {
+    cond_var_.WaitWithTimeout(mutex_, timeout);
+    return {Exception::kSuccess};
+  }
 
-  // Waits while timeout has not expired for Notify to be called.
-  // May return prematurely in case of interrupt, if supported by platform.
-  // Returns kSuccess, or kInterrupted on interrupt.
-  // TODO(b/184975123): replace with real implementation.
-  Exception Wait(absl::Duration timeout) override { return Exception{}; }
+  void Notify() override { cond_var_.SignalAll(); }
+
+ private:
+  absl::Mutex* mutex_;
+  absl::CondVar cond_var_;
 };
-
 }  // namespace windows
 }  // namespace nearby
 }  // namespace location
-
 #endif  // PLATFORM_IMPL_WINDOWS_CONDITION_VARIABLE_H_

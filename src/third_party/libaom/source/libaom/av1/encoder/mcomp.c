@@ -41,9 +41,14 @@ static INLINE void init_mv_cost_params(MV_COST_PARAMS *mv_cost_params,
   mv_cost_params->mv_cost_type = MV_COST_ENTROPY;
   mv_cost_params->error_per_bit = errorperbit;
   mv_cost_params->sad_per_bit = sadperbit;
-  mv_cost_params->mvjcost = mv_costs->nmv_joint_cost;
-  mv_cost_params->mvcost[0] = mv_costs->mv_cost_stack[0];
-  mv_cost_params->mvcost[1] = mv_costs->mv_cost_stack[1];
+  // For allintra encoding mode, 'mv_costs' is not allocated. Hence, the
+  // population of mvjcost and mvcost are avoided. In case of IntraBC, these
+  // values are populated from 'dv_costs' in av1_set_ms_to_intra_mode().
+  if (mv_costs != NULL) {
+    mv_cost_params->mvjcost = mv_costs->nmv_joint_cost;
+    mv_cost_params->mvcost[0] = mv_costs->mv_cost_stack[0];
+    mv_cost_params->mvcost[1] = mv_costs->mv_cost_stack[1];
+  }
 }
 
 static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {

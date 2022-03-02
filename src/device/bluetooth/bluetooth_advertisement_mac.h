@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -37,6 +36,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementMac
       BluetoothAdapter::CreateAdvertisementCallback callback,
       BluetoothAdapter::AdvertisementErrorCallback error_callback,
       BluetoothLowEnergyAdvertisementManagerMac* advertisement_manager);
+
+  BluetoothAdvertisementMac(const BluetoothAdvertisementMac&) = delete;
+  BluetoothAdvertisementMac& operator=(const BluetoothAdvertisementMac&) =
+      delete;
 
   // BluetoothAdvertisement overrides:
   void Unregister(SuccessCallback success_callback,
@@ -72,8 +75,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementMac
   BluetoothAdapter::AdvertisementErrorCallback error_callback_;
   BluetoothLowEnergyAdvertisementManagerMac* advertisement_manager_;
   Status status_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementMac);
 };
 
 }  // namespace device

@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_service.h"
@@ -31,6 +30,10 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // instance will set the global instance for the fake and for the base class,
   // so the static Get() accessor can be used with that pattern.
   FakeCrosHealthdClient();
+
+  FakeCrosHealthdClient(const FakeCrosHealthdClient&) = delete;
+  FakeCrosHealthdClient& operator=(const FakeCrosHealthdClient&) = delete;
+
   ~FakeCrosHealthdClient() override;
 
   // Checks that a FakeCrosHealthdClient instance was initialized and returns
@@ -107,6 +110,18 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // Calls the lid event OnLidOpened on all registered lid observers.
   void EmitLidOpenedEventForTesting();
 
+  // Calls the audio event OnUnderrun on all registered audio observers.
+  void EmitAudioUnderrunEventForTesting();
+
+  // Calls the audio event OnSevereUnderrun on all registered audio observers.
+  void EmitAudioSevereUnderrunEventForTesting();
+
+  // Calls the Thunderbolt event OnAdd on all registered Thunderbolt observers.
+  void EmitThunderboltAddEventForTesting();
+
+  // Calls the USB event OnAdd on all registered USB observers.
+  void EmitUsbAddEventForTesting();
+
   // Calls the network event OnConnectionStateChangedEvent on all registered
   // network observers.
   void EmitConnectionStateChangedEventForTesting(
@@ -128,7 +143,10 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // remote.
   void RunLanConnectivityRoutineForTesting(
       chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
-          LanConnectivityCallback);
+          RunLanConnectivityCallback);
+
+  // Returns the last created routine by any Run*Routine method.
+  absl::optional<mojom::DiagnosticRoutineEnum> GetLastRunRoutine() const;
 
   // Returns the parameters passed for the most recent call to
   // `GetRoutineUpdate`.
@@ -138,11 +156,16 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
  private:
   FakeCrosHealthdService fake_service_;
   mojo::Receiver<mojom::CrosHealthdServiceFactory> receiver_{&fake_service_};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdClient);
 };
 
 }  // namespace cros_healthd
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+namespace cros_healthd {
+using ::chromeos::cros_healthd::FakeCrosHealthdClient;
+}  // namespace cros_healthd
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_CROS_HEALTHD_FAKE_CROS_HEALTHD_CLIENT_H_

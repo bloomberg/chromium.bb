@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {RemoteCall} from './remote_call.js';
 
 /**
  * Sends a command to the controlling test harness, namely and usually, the
@@ -21,7 +21,7 @@
  * @return {Promise} Promise to be fulfilled with the value returned by the
  *     chrome.test.sendMessage callback.
  */
-function sendTestMessage(command) {
+export function sendTestMessage(command) {
   if (typeof command.name === 'string') {
     return new Promise(function(fulfill) {
       chrome.test.sendMessage(JSON.stringify(command), fulfill);
@@ -38,7 +38,7 @@ function sendTestMessage(command) {
  * @return {Promise} Promise that will resolve after Time in milliseconds
  *     has elapsed.
  */
-function wait(time) {
+export function wait(time) {
   return new Promise(function(resolve) {
     setTimeout(resolve, time);
   });
@@ -51,7 +51,7 @@ function wait(time) {
  * @param {function()=} callback Completion callback.
  * @return {Promise} Promise to be fulfilled on completion.
  */
-async function checkIfNoErrorsOccuredOnApp(app, callback) {
+export async function checkIfNoErrorsOccuredOnApp(app, callback) {
   const count = await app.callRemoteTestUtil('getErrorCount', null, []);
   chrome.test.assertEq(0, count, 'The error count is not 0.');
   if (callback) {
@@ -64,7 +64,7 @@ async function checkIfNoErrorsOccuredOnApp(app, callback) {
  * @param {Promise} promise Promise to add the check to.
  * @param {Array<!RemoteCall>} apps An array of RemoteCall interfaces.
  */
-async function testPromiseAndApps(promise, apps) {
+export async function testPromiseAndApps(promise, apps) {
   const finished = chrome.test.callbackPass(function() {
     // The callbackPass is necessary to avoid prematurely finishing tests.
     // Don't use chrome.test.succeed() here to avoid doubled success log.
@@ -84,21 +84,21 @@ async function testPromiseAndApps(promise, apps) {
  * @type {number}
  * @const
  */
-const REPEAT_UNTIL_INTERVAL = 200;
+export const REPEAT_UNTIL_INTERVAL = 200;
 
 /**
  * Interval milliseconds between log output of repeatUntil.
  * @type {number}
  * @const
  */
-const LOG_INTERVAL = 3000;
+export const LOG_INTERVAL = 3000;
 
 /**
  * Returns caller's file, function and line/column number from the call stack.
  * @return {string} String with the caller's file name and line/column number,
  *     as returned by exception stack trace. Example "at /a_file.js:1:1".
  */
-function getCaller() {
+export function getCaller() {
   const error = new Error('For extracting error.stack');
   const ignoreStackLines = 3;
   const lines = error.stack.split('\n');
@@ -121,7 +121,7 @@ function getCaller() {
  * @return {Object} Object which returns true for the expression: obj instanceof
  *     pending.
  */
-function pending(caller, message, var_args) {
+export function pending(caller, message, var_args) {
   // |index| is used to ignore caller and message arguments subsisting markers
   // (%s, %d and %j) within message with the remaining |arguments|.
   let index = 2;
@@ -153,7 +153,7 @@ function pending(caller, message, var_args) {
  *     checkFunction when the checkFunction reutrns a value but a pending
  *     marker.
  */
-async function repeatUntil(checkFunction) {
+export async function repeatUntil(checkFunction) {
   let logTime = Date.now() + LOG_INTERVAL;
   while (true) {
     const result = await checkFunction();
@@ -176,7 +176,7 @@ async function repeatUntil(checkFunction) {
  * @param {function(string)} callback Completion callback.
  * @param {Object=} opt_debug If truthy, log the result.
  */
-async function sendBrowserTestCommand(command, callback, opt_debug) {
+export async function sendBrowserTestCommand(command, callback, opt_debug) {
   const caller = getCaller();
   if (typeof command.name !== 'string') {
     chrome.test.fail('Invalid test command: ' + JSON.stringify(command));
@@ -206,7 +206,7 @@ async function sendBrowserTestCommand(command, callback, opt_debug) {
  * @return {Promise} Promise to be fulfilled with the window ID of the
  *     app window.
  */
-function waitForAppWindow(windowUrl) {
+export function waitForAppWindow(windowUrl) {
   const caller = getCaller();
   const command = {'name': 'getAppWindowId', 'windowUrl': windowUrl};
   return repeatUntil(async () => {
@@ -219,35 +219,18 @@ function waitForAppWindow(windowUrl) {
 }
 
 /**
- * Wait for the count of windows for app |appId| to equal |expectedCount|.
- * @param{string} appId ID of the app to count windows for.
- * @param{number} expectedCount Number of app windows to wait for.
- * @return {Promise} Promise to be fulfilled when the number of app windows
- *     equals |expectedCount|.
- */
-function waitForAppWindowCount(appId, expectedCount) {
-  const caller = getCaller();
-  const command = {'name': 'countAppWindows', 'appId': appId};
-  return repeatUntil(async () => {
-    if (await sendTestMessage(command) != expectedCount) {
-      return pending(
-          caller, 'waitForAppWindowCount ' + appId + ' ' + expectedCount);
-    }
-    return true;
-  });
-}
-
-/**
  * Get all the browser windows.
+ * @param {number} expectedInitialCount The number of windows expected before
+ *     opening a new one.
  * @return {Object} Object returned from chrome.windows.getAll().
  */
-async function getBrowserWindows() {
+export async function getBrowserWindows(expectedInitialCount = 0) {
   const caller = getCaller();
   return repeatUntil(async () => {
     const result = await new Promise(function(fulfill) {
       chrome.windows.getAll({'populate': true}, fulfill);
     });
-    if (result.length == 0) {
+    if (result.length === expectedInitialCount) {
       return pending(caller, 'getBrowserWindows ' + result.length);
     }
     return result;
@@ -262,7 +245,7 @@ async function getBrowserWindows() {
  *     result of function. The argument is true on success.
  * @return {Promise} Promise to be fulfilled when the entries are added.
  */
-async function addEntries(volumeNames, entries, opt_callback) {
+export async function addEntries(volumeNames, entries, opt_callback) {
   if (volumeNames.length == 0) {
     opt_callback && opt_callback(true);
     return;
@@ -290,7 +273,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
  * @enum {string}
  * @const
  */
-const EntryType = {
+export const EntryType = {
   FILE: 'file',
   DIRECTORY: 'directory',
   LINK: 'link',
@@ -304,7 +287,7 @@ Object.freeze(EntryType);
  * @const
  */
 
-const SharedOption = {
+export const SharedOption = {
   NONE: 'none',
   SHARED: 'shared',
   SHARED_WITH_ME: 'sharedWithMe',
@@ -321,7 +304,7 @@ Object.freeze(SharedOption);
  * }}
  *
  */
-let getRootPathsResult;
+export let getRootPathsResult;
 
 /**
  * @typedef {{
@@ -330,7 +313,7 @@ let getRootPathsResult;
  *   ANDROID_FILES: string,
  * }}
  */
-const RootPath = {
+export const RootPath = {
   DOWNLOADS: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
   ANDROID_FILES: '/must-be-filled-in-test-setup',
@@ -351,7 +334,7 @@ Object.seal(RootPath);
  *    canShare: (boolean|undefined),
  * }}
  */
-let TestEntryCapabilities;
+export let TestEntryCapabilities;
 
 /**
  * The folder features for the test entry. Structure should match
@@ -364,7 +347,7 @@ let TestEntryCapabilities;
  *    isExternalMedia: (boolean|undefined),
  * }}
  */
-let TestEntryFolderFeature;
+export let TestEntryFolderFeature;
 
 /**
  * Parameters to creat a Test Entry in the file manager. Structure should match
@@ -415,7 +398,7 @@ let TestEntryFolderFeature;
  *    folderFeature: (TestEntryFolderFeature|undefined),
  * }}
  */
-let TestEntryInfoOptions;
+export let TestEntryInfoOptions;
 
 /**
  * File system entry information for tests. Structure should match TestEntryInfo
@@ -423,7 +406,7 @@ let TestEntryInfoOptions;
  * TODO(sashab): Remove this, rename TestEntryInfoOptions to TestEntryInfo and
  * set the defaults in the record definition above.
  */
-class TestEntryInfo {
+export class TestEntryInfo {
   /**
    * @param {TestEntryInfoOptions} options Parameters to create the
    *     TestEntryInfo.
@@ -470,7 +453,7 @@ class TestEntryInfo {
  * @type {Object<TestEntryInfo>}
  * @const
  */
-const ENTRIES = {
+export const ENTRIES = {
   hello: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
@@ -616,6 +599,17 @@ const ENTRIES = {
     nameText: 'exif.jpg',
     sizeText: '31 KB',
     typeText: 'JPEG image'
+  }),
+
+  webpImage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'image.webp',
+    // No mime type.
+    targetPath: 'image.webp',
+    lastModifiedTime: 'Jan 19, 2021, 1:10 PM',
+    nameText: 'image.webp',
+    sizeText: '5 KB',
+    typeText: 'WebP image'
   }),
 
   rawImage: new TestEntryInfo({
@@ -940,50 +934,6 @@ const ENTRIES = {
     lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
     nameText: 'archive.zip',
     sizeText: '743 bytes',
-    typeText: 'Zip archive'
-  }),
-
-  zipArchiveSJIS: new TestEntryInfo({
-    type: EntryType.FILE,
-    sourceFileName: 'archive_sjis.zip',
-    targetPath: 'archive_sjis.zip',
-    mimeType: 'application/x-zip',
-    lastModifiedTime: 'Dec 21, 2018, 12:21 PM',
-    nameText: 'archive_sjis.zip',
-    sizeText: '160 bytes',
-    typeText: 'Zip archive'
-  }),
-
-  zipArchiveMacOs: new TestEntryInfo({
-    type: EntryType.FILE,
-    sourceFileName: 'archive_macos.zip',
-    targetPath: 'archive_macos.zip',
-    mimeType: 'application/x-zip',
-    lastModifiedTime: 'Dec 21, 2018, 12:21 PM',
-    nameText: 'archive_macos.zip',
-    sizeText: '190 bytes',
-    typeText: 'Zip archive'
-  }),
-
-  zipArchiveWithAbsolutePaths: new TestEntryInfo({
-    type: EntryType.FILE,
-    sourceFileName: 'absolute_paths.zip',
-    targetPath: 'absolute_paths.zip',
-    mimeType: 'application/x-zip',
-    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
-    nameText: 'absolute_paths.zip',
-    sizeText: '400 bytes',
-    typeText: 'Zip archive'
-  }),
-
-  zipArchiveEncrypted: new TestEntryInfo({
-    type: EntryType.FILE,
-    sourceFileName: 'encrypted.zip',
-    targetPath: 'encrypted.zip',
-    mimeType: 'application/x-zip',
-    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
-    nameText: 'encrypted.zip',
-    sizeText: '589 bytes',
     typeText: 'Zip archive'
   }),
 
@@ -1417,7 +1367,7 @@ const ENTRIES = {
  * @param {number} value The value within that histogram to query.
  * @return {!Promise<number>} A promise fulfilled with the count.
  */
-async function getHistogramCount(name, value) {
+export async function getHistogramCount(name, value) {
   const result = await sendTestMessage({
     'name': 'getHistogramCount',
     'histogramName': name,
@@ -1431,7 +1381,7 @@ async function getHistogramCount(name, value) {
  * @param {string} name The user action to be queried.
  * @return {!Promise<number>} A promise fulfilled with the count.
  */
-async function getUserActionCount(name) {
+export async function getUserActionCount(name) {
   const result = await sendTestMessage({
     'name': 'getUserActionCount',
     'userActionName': name,

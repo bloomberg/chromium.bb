@@ -25,7 +25,7 @@ class CFX_GifContext : public ProgressiveDecoderIface::Context {
   explicit CFX_GifContext(GifDecoder::Delegate* delegate);
   ~CFX_GifContext() override;
 
-  void RecordCurrentPosition(uint32_t* cur_pos);
+  uint32_t CurrentPosition() const;
   void ReadScanline(int32_t row_num, uint8_t* row_buf);
   bool GetRecordPosition(uint32_t cur_pos,
                          int32_t left,
@@ -34,14 +34,11 @@ class CFX_GifContext : public ProgressiveDecoderIface::Context {
                          int32_t height,
                          int32_t pal_num,
                          CFX_GifPalette* pal,
-                         int32_t delay_time,
-                         bool user_input,
                          int32_t trans_index,
-                         int32_t disposal_method,
                          bool interlace);
   GifDecoder::Status ReadHeader();
   GifDecoder::Status GetFrame();
-  GifDecoder::Status LoadFrame(int32_t frame_num);
+  GifDecoder::Status LoadFrame(size_t frame_num);
   void SetInputBuffer(RetainPtr<CFX_CodecMemory> codec_memory);
   uint32_t GetAvailInput() const;
   size_t GetFrameNum() const { return images_.size(); }

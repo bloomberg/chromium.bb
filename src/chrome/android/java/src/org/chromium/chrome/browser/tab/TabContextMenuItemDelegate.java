@@ -18,7 +18,6 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.blink.mojom.TextFragmentReceiver;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -56,20 +55,19 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
     private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
     private final Runnable mContextMenuCopyLinkObserver;
-    private final Supplier<SnackbarManager> mSnackbarManagerSupplier;
+    private final Supplier<SnackbarManager> mSnackbarManager;
 
     /**
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
     public TabContextMenuItemDelegate(Tab tab, TabModelSelector tabModelSelector,
             Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
-            Runnable contextMenuCopyLinkObserver,
-            Supplier<SnackbarManager> snackbarManagerSupplier) {
+            Runnable contextMenuCopyLinkObserver, Supplier<SnackbarManager> snackbarManager) {
         mTab = (TabImpl) tab;
         mTabModelSelector = tabModelSelector;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mContextMenuCopyLinkObserver = contextMenuCopyLinkObserver;
-        mSnackbarManagerSupplier = snackbarManagerSupplier;
+        mSnackbarManager = snackbarManager;
 
         mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
             @Override
@@ -287,7 +285,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         bookmarkModel.finishLoadingBookmarkModel(() -> {
             // Add to reading list.
             BookmarkUtils.addToReadingList(
-                    url, title, mSnackbarManagerSupplier.get(), bookmarkModel, mTab.getContext());
+                    url, title, mSnackbarManager.get(), bookmarkModel, mTab.getContext());
             TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
                     .notifyEvent(EventConstants.READ_LATER_CONTEXT_MENU_TAPPED);
             bookmarkModel.destroy();
@@ -329,15 +327,6 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         }
     }
 
-    /**
-     * Returns whether the 'open in chrome' menu item should be shown. This is only called when the
-     * context menu is shown in cct.
-     */
-    @Override
-    public boolean supportsOpenInChromeFromCct() {
-        return true;
-    }
-
     @Override
     public void onOpenInNewChromeTabFromCCT(GURL linkUrl, boolean isIncognito) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl.getSpec()));
@@ -347,7 +336,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
             intent.putExtra(Browser.EXTRA_APPLICATION_ID,
                     ContextUtils.getApplicationContext().getPackageName());
-            IntentHandler.addTrustedIntentExtras(intent);
+            IntentUtils.addTrustedIntentExtras(intent);
             IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         }
         IntentUtils.safeStartActivity(mTab.getContext(), intent);
@@ -363,13 +352,5 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url.getSpec()));
         CustomTabsIntent.setAlwaysUseBrowserUI(intent);
         IntentUtils.safeStartActivity(mTab.getContext(), intent);
-    }
-
-    @Override
-    public void removeHighlighting() {
-        TextFragmentReceiver producer =
-                mTab.getWebContents().getMainFrame().getInterfaceToRendererFrame(
-                        TextFragmentReceiver.MANAGER);
-        producer.removeFragments();
     }
 }

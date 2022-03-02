@@ -8,6 +8,7 @@
 #include <deque>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
@@ -17,6 +18,8 @@
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
+#include "ash/public/cpp/holding_space/mock_holding_space_client.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -25,21 +28,25 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/layer_animation_stopped_waiter.h"
+#include "ash/test/view_drawn_waiter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_preview_view.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -74,6 +81,14 @@ void DoubleClick(const views::View* view, int flags = ui::EF_NONE) {
   event_generator.DoubleClickLeftButton();
 }
 
+void RightClick(const views::View* view, int flags = ui::EF_NONE) {
+  auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
+  ui::test::EventGenerator event_generator(root_window);
+  event_generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
+  event_generator.set_flags(flags);
+  event_generator.ClickRightButton();
+}
+
 void GestureTap(const views::View* view) {
   auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
@@ -101,13 +116,10 @@ void LongPress(const views::View* view) {
   event_generator.Dispatch(&gesture_end);
 }
 
-void PressAndReleaseKey(const views::View* view,
-                        ui::KeyboardCode key_code,
-                        int flags = ui::EF_NONE) {
+void MoveMouseTo(const views::View* view) {
   auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
-  event_generator.PressKey(key_code, flags);
-  event_generator.ReleaseKey(key_code, flags);
+  event_generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint(), 10);
 }
 
 bool PressTabUntilFocused(const views::View* view, int max_count = 10) {
@@ -122,101 +134,24 @@ std::unique_ptr<HoldingSpaceImage> CreateStubHoldingSpaceImage(
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path) {
   return std::make_unique<HoldingSpaceImage>(
-      HoldingSpaceImage::GetMaxSizeForType(type), file_path,
+      holding_space_util::GetMaxImageSizeForType(type), file_path,
       /*async_bitmap_resolver=*/base::DoNothing());
 }
 
-// Mocks -----------------------------------------------------------------------
+std::vector<HoldingSpaceItem::Type> GetHoldingSpaceItemTypes() {
+  std::vector<HoldingSpaceItem::Type> types;
+  for (int i = 0; i <= static_cast<int>(HoldingSpaceItem::Type::kMaxValue); ++i)
+    types.push_back(static_cast<HoldingSpaceItem::Type>(i));
+  return types;
+}
 
-class MockHoldingSpaceClient : public HoldingSpaceClient {
- public:
-  // HoldingSpaceClient:
-  MOCK_METHOD(void,
-              AddScreenshot,
-              (const base::FilePath& file_path),
-              (override));
-  MOCK_METHOD(void,
-              AddScreenRecording,
-              (const base::FilePath& file_path),
-              (override));
-  MOCK_METHOD(void,
-              CopyImageToClipboard,
-              (const HoldingSpaceItem& item, SuccessCallback callback),
-              (override));
-  MOCK_METHOD(base::FilePath,
-              CrackFileSystemUrl,
-              (const GURL& file_system_url),
-              (const, override));
-  MOCK_METHOD(void, OpenDownloads, (SuccessCallback callback), (override));
-  MOCK_METHOD(void, OpenMyFiles, (SuccessCallback callback), (override));
-  MOCK_METHOD(void,
-              OpenItems,
-              (const std::vector<const HoldingSpaceItem*>& items,
-               SuccessCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              ShowItemInFolder,
-              (const HoldingSpaceItem& item, SuccessCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              PinFiles,
-              (const std::vector<base::FilePath>& file_paths),
-              (override));
-  MOCK_METHOD(void,
-              PinItems,
-              (const std::vector<const HoldingSpaceItem*>& items),
-              (override));
-  MOCK_METHOD(void,
-              UnpinItems,
-              (const std::vector<const HoldingSpaceItem*>& items),
-              (override));
-};
-
-// Waiters ---------------------------------------------------------------------
-
-// A class capable of waiting until a layer has stopped animating.
-class LayerAnimationStoppedWaiter : public ui::LayerAnimationObserver {
- public:
-  // Waits until the specified `layer`'s animation is stopped.
-  void Wait(ui::Layer* layer) {
-    if (!layer->GetAnimator()->is_animating())
-      return;
-
-    // Temporarily cache and observe `layer`'s animator.
-    layer_animator_ = layer->GetAnimator();
-    base::ScopedObservation<ui::LayerAnimator, ui::LayerAnimationObserver>
-        layer_animator_observer{this};
-    layer_animator_observer.Observe(layer_animator_);
-
-    // Loop until the `layer`'s animation is stopped.
-    wait_loop_ = std::make_unique<base::RunLoop>();
-    wait_loop_->Run();
-
-    // Reset.
-    layer_animator_ = nullptr;
-    wait_loop_.reset();
-  }
-
- private:
-  // ui::LayerAnimationObserver:
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override {}
-
-  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {}
-
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
-    if (!layer_animator_->is_animating())
-      wait_loop_->Quit();
-  }
-
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
-    if (!layer_animator_->is_animating())
-      wait_loop_->Quit();
-  }
-
-  ui::LayerAnimator* layer_animator_ = nullptr;
-  std::unique_ptr<base::RunLoop> wait_loop_;
-};
+std::vector<HoldingSpaceCommandId> GetHoldingSpaceCommandIds() {
+  std::vector<HoldingSpaceCommandId> ids;
+  for (int i = static_cast<int>(HoldingSpaceCommandId::kMinValue);
+       i <= static_cast<int>(HoldingSpaceCommandId::kMaxValue); ++i)
+    ids.push_back(static_cast<HoldingSpaceCommandId>(i));
+  return ids;
+}
 
 // ViewVisibilityChangedWaiter -------------------------------------------------
 
@@ -371,19 +306,23 @@ class HoldingSpaceTrayTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  HoldingSpaceItem* AddItem(HoldingSpaceItem::Type type,
-                            const base::FilePath& path) {
-    return AddItemToModel(model(), type, path);
+  HoldingSpaceItem* AddItem(
+      HoldingSpaceItem::Type type,
+      const base::FilePath& path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress()) {
+    return AddItemToModel(model(), type, path, progress);
   }
 
-  HoldingSpaceItem* AddItemToModel(HoldingSpaceModel* target_model,
-                                   HoldingSpaceItem::Type type,
-                                   const base::FilePath& path) {
+  HoldingSpaceItem* AddItemToModel(
+      HoldingSpaceModel* target_model,
+      HoldingSpaceItem::Type type,
+      const base::FilePath& path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress()) {
     GURL file_system_url(
         base::StrCat({"filesystem:", path.BaseName().value()}));
     std::unique_ptr<HoldingSpaceItem> item =
         HoldingSpaceItem::CreateFileBackedItem(
-            type, path, file_system_url,
+            type, path, file_system_url, progress,
             base::BindOnce(&CreateStubHoldingSpaceImage));
     HoldingSpaceItem* item_ptr = item.get();
     target_model->AddItem(std::move(item));
@@ -788,7 +727,7 @@ TEST_F(
 
   // Transition to overview, the shelf is expected to remain in home screen
   // style state.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kEnterAnimationComplete);
 
@@ -854,9 +793,6 @@ TEST_F(HoldingSpaceTrayTest, ShelfConfigChangeWithDelayedItemRemoval) {
 // Tests that a shelf alignment change will behave as expected when there are
 // multiple displays (and therefore multiple shelves/trays).
 TEST_F(HoldingSpaceTrayTest, ShelfAlignmentChangeWithMultipleDisplays) {
-  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-
   // This test requires multiple displays. Create two.
   UpdateDisplay("1280x768,1280x768");
 
@@ -943,23 +879,51 @@ TEST_F(HoldingSpaceTrayTest, ShelfAlignmentChangeWithMultipleDisplays) {
 }
 
 // Base class for tests of the holding space downloads section parameterized by
-// the set of holding space item types which are expected to appear there.
+// the set of holding space item types which are expected to appear there and
+// whether or not the in-progress downloads integration feature is enabled.
 class HoldingSpaceTrayDownloadsSectionTest
     : public HoldingSpaceTrayTest,
-      public ::testing::WithParamInterface<HoldingSpaceItem::Type> {
+      public ::testing::WithParamInterface<
+          std::tuple<HoldingSpaceItem::Type, bool>> {
  public:
-  HoldingSpaceItem::Type GetType() const { return GetParam(); }
+  HoldingSpaceTrayDownloadsSectionTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kHoldingSpaceInProgressDownloadsIntegration,
+        IsInProgressDownloadsIntegrationEnabled());
+  }
+
+  // Returns the max number of downloads given the test parameterization.
+  size_t GetMaxNumberOfDownloads() const {
+    return IsInProgressDownloadsIntegrationEnabled()
+               ? kMaxDownloadsWithInProgressDownloadIntegration
+               : kMaxDownloads;
+  }
+
+  // Returns the holding space item type given the test parameterization.
+  HoldingSpaceItem::Type GetType() const { return std::get<0>(GetParam()); }
+
+  // Returns whether in-progress downloads integration is enabled given test
+  // parameterization.
+  bool IsInProgressDownloadsIntegrationEnabled() const {
+    return std::get<1>(GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     HoldingSpaceTrayDownloadsSectionTest,
-    ::testing::Values(HoldingSpaceItem::Type::kArcDownload,
-                      HoldingSpaceItem::Type::kDiagnosticsLog,
-                      HoldingSpaceItem::Type::kDownload,
-                      HoldingSpaceItem::Type::kLacrosDownload,
-                      HoldingSpaceItem::Type::kNearbyShare,
-                      HoldingSpaceItem::Type::kPrintedPdf));
+    ::testing::Combine(
+        ::testing::Values(HoldingSpaceItem::Type::kArcDownload,
+                          HoldingSpaceItem::Type::kDiagnosticsLog,
+                          HoldingSpaceItem::Type::kDownload,
+                          HoldingSpaceItem::Type::kLacrosDownload,
+                          HoldingSpaceItem::Type::kNearbyShare,
+                          HoldingSpaceItem::Type::kPrintedPdf,
+                          HoldingSpaceItem::Type::kScan),
+        ::testing::Bool()));
 
 // Tests how download chips are updated during item addition, removal and
 // initialization.
@@ -973,7 +937,8 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
 
   // Add a download item and verify recent file bubble gets shown.
-  HoldingSpaceItem* item_1 = AddItem(GetType(), base::FilePath("/tmp/fake_1"));
+  std::vector<HoldingSpaceItem*> items;
+  items.push_back(AddItem(GetType(), base::FilePath("/tmp/fake_1")));
 
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
   EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
@@ -984,65 +949,77 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
 
   // Add partially initialized download item - verify it doesn't get shown in
   // the UI yet.
-  HoldingSpaceItem* item_2 =
-      AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_2"));
+  items.push_back(
+      AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_2")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
   ASSERT_EQ(1u, download_chips.size());
-  EXPECT_EQ(item_1->id(),
+  EXPECT_EQ(items[0]->id(),
             HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
 
-  // Add another download, and verify it's shown in the UI.
-  HoldingSpaceItem* item_3 = AddItem(GetType(), base::FilePath("/tmp/fake_3"));
+  // Add a few more download items until the section reaches capacity.
+  for (size_t i = 2; i <= GetMaxNumberOfDownloads(); ++i) {
+    items.push_back(AddItem(
+        GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
+  }
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
+  ASSERT_EQ(GetMaxNumberOfDownloads(), download_chips.size());
+
+  // All downloads should be visible except for that which is associated with
+  // the partially initialized item at index == `1`.
+  for (int download_chip_index = 0, item_index = items.size() - 1;
+       item_index >= 0; --item_index) {
+    if (item_index != 1) {
+      HoldingSpaceItemView* download_chip =
+          HoldingSpaceItemView::Cast(download_chips.at(download_chip_index++));
+      EXPECT_EQ(download_chip->item()->id(), items[item_index]->id());
+    }
+  }
 
   // Fully initialize partially initialized item, and verify it gets added to
   // the section, in the order of addition, replacing the oldest item.
-  model()->InitializeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
+  model()->InitializeOrRemoveItem(items[1]->id(), GURL("filesystem:fake_2"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
+
+  for (int download_chip_index = 0, item_index = items.size() - 1;
+       item_index > 0; ++download_chip_index, --item_index) {
+    HoldingSpaceItemView* download_chip =
+        HoldingSpaceItemView::Cast(download_chips.at(download_chip_index));
+    EXPECT_EQ(download_chip->item()->id(), items[item_index]->id());
+  }
 
   // Remove the newest item, and verify the section gets updated.
-  model()->RemoveItem(item_3->id());
+  auto item_it = items.end() - 1;
+  model()->RemoveItem((*item_it)->id());
+  items.erase(item_it);
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
+  ASSERT_EQ(GetMaxNumberOfDownloads(), download_chips.size());
 
-  // Remove other items, and verify the recent files bubble gets hidden.
-  model()->RemoveItem(item_2->id());
+  for (int download_chip_index = 0, item_index = items.size() - 1;
+       item_index >= 0; ++download_chip_index, --item_index) {
+    HoldingSpaceItemView* download_chip =
+        HoldingSpaceItemView::Cast(download_chips.at(download_chip_index));
+    EXPECT_EQ(download_chip->item()->id(), items[item_index]->id());
+  }
 
-  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(1u, download_chips.size());
-  EXPECT_EQ(item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
+  // Remove other items and verify the recent files bubble gets hidden.
+  while (!items.empty()) {
+    model()->RemoveItem(items.front()->id());
+    items.erase(items.begin());
+  }
 
-  model()->RemoveItem(item_1->id());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
-
   EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
 
   // Pinned bubble is showing "educational" info, and it should remain shown.
@@ -1058,7 +1035,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
 
   // Add a number of initialized download items.
   std::deque<HoldingSpaceItem*> items;
-  for (size_t i = 0; i < kMaxDownloads; ++i) {
+  for (size_t i = 0; i < GetMaxNumberOfDownloads(); ++i) {
     items.push_back(AddItem(
         GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
   }
@@ -1090,45 +1067,59 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
 
   // Add partially initialized download item - verify it doesn't get shown in
   // the UI yet.
-  HoldingSpaceItem* item_1 =
-      AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_1"));
+  std::vector<HoldingSpaceItem*> items;
+  items.push_back(
+      AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_1")));
 
-  // Add two download items.
-  HoldingSpaceItem* item_2 = AddItem(GetType(), base::FilePath("/tmp/fake_2"));
-  HoldingSpaceItem* item_3 = AddItem(GetType(), base::FilePath("/tmp/fake_3"));
+  // Add download items until the section reaches capacity.
+  for (size_t i = 1; i < GetMaxNumberOfDownloads() + 1; ++i) {
+    items.push_back(AddItem(
+        GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
+  }
+
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
+  ASSERT_EQ(GetMaxNumberOfDownloads(), download_chips.size());
+
+  for (size_t download_chip_index = 0, item_index = items.size() - 1;
+       item_index > 0; ++download_chip_index, --item_index) {
+    HoldingSpaceItemView* download_chip =
+        HoldingSpaceItemView::Cast(download_chips.at(download_chip_index));
+    EXPECT_EQ(download_chip->item()->id(), items[item_index]->id());
+  }
 
   // Fully initialize partially initialized item, and verify it's not added to
   // the section.
-  model()->InitializeOrRemoveItem(item_1->id(), GURL("filesystem:fake_1"));
+  model()->InitializeOrRemoveItem(items[0]->id(), GURL("filesystem:fake_1"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
+  ASSERT_EQ(GetMaxNumberOfDownloads(), download_chips.size());
+
+  for (size_t download_chip_index = 0, item_index = items.size() - 1;
+       item_index > 0; ++download_chip_index, --item_index) {
+    HoldingSpaceItemView* download_chip =
+        HoldingSpaceItemView::Cast(download_chips.at(download_chip_index));
+    EXPECT_EQ(download_chip->item()->id(), items[item_index]->id());
+  }
 
   // Remove the oldest item, and verify the section doesn't get updated.
-  model()->RemoveItem(item_1->id());
+  model()->RemoveItem(items.front()->id());
+  items.erase(items.begin());
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
+  ASSERT_EQ(GetMaxNumberOfDownloads(), download_chips.size());
+
+  for (int download_chip_index = 0, item_index = items.size() - 1;
+       item_index >= 0; ++download_chip_index, --item_index) {
+    HoldingSpaceItemView* download_chip =
+        HoldingSpaceItemView::Cast(download_chips.at(download_chip_index));
+    EXPECT_EQ(download_chip->item()->id(), items[item_index]->id());
+  }
 }
 
 // Tests that a partially initialized download item does not get shown if a full
@@ -1986,7 +1977,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensDownloads) {
   // app. There should be *no* attempts to open an holding space items.
   EXPECT_CALL(*client(), OpenItems).Times(0);
   EXPECT_CALL(*client(), OpenDownloads);
-  PressAndReleaseKey(downloads_section_header, ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
 }
 
 // User should be able to launch selected holding space items by pressing the
@@ -2013,7 +2004,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
 
   // Press the enter key. The client should *not* attempt to open any items.
   EXPECT_CALL(*client(), OpenItems).Times(0);
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Click an item. The view should be selected.
@@ -2025,7 +2016,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   // Press the enter key. We expect the client to open the selected item.
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item()),
                                    testing::_));
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Shift-click on the second item. Both views should be selected.
@@ -2037,7 +2028,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item(),
                                                         item_views[1]->item()),
                                    testing::_));
-  PressAndReleaseKey(item_views[1], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Tab traverse to the last item.
@@ -2047,7 +2038,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   // it was *not* selected prior to pressing the enter key.
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[2]->item()),
                                    testing::_));
-  PressAndReleaseKey(item_views[2], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   EXPECT_FALSE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
   EXPECT_TRUE(item_views[2]->selected());
@@ -2264,7 +2255,7 @@ TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
   // Close the context menu. The view that was long pressed should still be
   // selected.
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE);
   EXPECT_FALSE(views::MenuController::GetActiveInstance());
   EXPECT_TRUE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
@@ -2280,7 +2271,7 @@ TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
   // Close the context menu. Both views that were long pressed should still be
   // selected.
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE);
   EXPECT_FALSE(views::MenuController::GetActiveInstance());
   EXPECT_TRUE(item_views[0]->selected());
   EXPECT_TRUE(item_views[1]->selected());
@@ -2321,9 +2312,6 @@ TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 // Verifies that selection UI is correctly represented depending on device state
 // and the number of selected holding space item views.
 TEST_F(HoldingSpaceTrayTest, SelectionUi) {
-  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-
   StartSession();
 
   // Add both a chip-style and screen-capture-style holding space item.
@@ -2453,12 +2441,108 @@ TEST_F(HoldingSpaceTrayTest, SelectionUi) {
   expect_image_visible(item_views[0], true);
 }
 
+// Verifies selection state after pressing primary/secondary actions.
+TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
+  StartSession();
+
+  // Add multiple in-progress holding space items.
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake1"),
+          HoldingSpaceProgress(0, 100));
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake2"),
+          HoldingSpaceProgress(0, 100));
+
+  // Show UI.
+  test_api()->Show();
+  ASSERT_TRUE(test_api()->IsShowing());
+
+  // Cache views.
+  const std::vector<views::View*> views = test_api()->GetDownloadChips();
+  ASSERT_EQ(views.size(), 2u);
+  const std::vector<HoldingSpaceItemView*> item_views = {
+      HoldingSpaceItemView::Cast(views[0]),
+      HoldingSpaceItemView::Cast(views[1])};
+
+  // Verify initial selection state.
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  // Move mouse to the 1st item.
+  MoveMouseTo(item_views[0]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  // Select the 1st item.
+  Click(item_views[0]);
+  EXPECT_TRUE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  {
+    auto* primary_action =
+        item_views[0]->GetViewByID(kHoldingSpaceItemPrimaryActionContainerId);
+    ViewDrawnWaiter().Wait(primary_action);
+
+    // Click the 1st item's primary action. Selection state shouldn't change.
+    EXPECT_CALL(*client(), CancelItems(ElementsAre(item_views[0]->item())));
+    Click(primary_action);
+    EXPECT_TRUE(item_views[0]->selected());
+    EXPECT_FALSE(item_views[1]->selected());
+  }
+
+  // Move mouse to the 2nd item.
+  MoveMouseTo(item_views[1]);
+  EXPECT_TRUE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  {
+    auto* primary_action =
+        item_views[1]->GetViewByID(kHoldingSpaceItemPrimaryActionContainerId);
+    ViewDrawnWaiter().Wait(primary_action);
+
+    // Click the 2nd item's primary action. Selection state should change.
+    EXPECT_CALL(*client(), CancelItems(ElementsAre(item_views[1]->item())));
+    Click(primary_action);
+    EXPECT_FALSE(item_views[0]->selected());
+    EXPECT_FALSE(item_views[1]->selected());
+  }
+
+  // Select the 2nd item.
+  Click(item_views[1]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_TRUE(item_views[1]->selected());
+
+  {
+    auto* secondary_action =
+        item_views[1]->GetViewByID(kHoldingSpaceItemSecondaryActionContainerId);
+    ViewDrawnWaiter().Wait(secondary_action);
+
+    // Click the 2nd item's secondary action. Selection state shouldn't change.
+    EXPECT_CALL(*client(), PauseItems(ElementsAre(item_views[1]->item())));
+    Click(secondary_action);
+    EXPECT_FALSE(item_views[0]->selected());
+    EXPECT_TRUE(item_views[1]->selected());
+  }
+
+  // Move mouse to the 1st item.
+  MoveMouseTo(item_views[0]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_TRUE(item_views[1]->selected());
+
+  {
+    auto* secondary_action =
+        item_views[0]->GetViewByID(kHoldingSpaceItemSecondaryActionContainerId);
+    ViewDrawnWaiter().Wait(secondary_action);
+
+    // Click the 1st item's secondary action. Selection state should change.
+    EXPECT_CALL(*client(), PauseItems(ElementsAre(item_views[0]->item())));
+    Click(secondary_action);
+    EXPECT_FALSE(item_views[0]->selected());
+    EXPECT_FALSE(item_views[1]->selected());
+  }
+}
+
 // Verifies that attempting to open holding space items via double click works
 // as expected with event modifiers.
 TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
-  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-
   StartSession();
 
   // Add multiple holding space items.
@@ -2550,9 +2634,6 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
 // TODO(crbug.com/1208501): Fix flakes and re-enable.
 // Verifies that the holding space tray animates in and out as expected.
 TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
-  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
   // Prior to session start, the tray should not be showing.
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 
@@ -2664,6 +2745,144 @@ TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
 
   // Clean up.
   UnregisterModelForUser(kSecondaryUserId);
+}
+
+// Base class for holding space tray tests which make assertions about primary
+// and secondary actions on holding space item views. Tests are parameterized by
+// holding space item type.
+class HoldingSpaceTrayPrimaryAndSecondaryActionsTest
+    : public HoldingSpaceTrayTest,
+      public testing::WithParamInterface<HoldingSpaceItem::Type> {
+ public:
+  // Returns the parameterized holding space item type.
+  HoldingSpaceItem::Type GetType() const { return GetParam(); }
+
+  // Returns whether a context menu is currently showing.
+  bool IsShowingContextMenu() const {
+    return views::MenuController::GetActiveInstance();
+  }
+
+  // Returns whether a primary action is currently showing.
+  bool IsShowingPrimaryAction(views::View* view) const {
+    auto* v = view->GetViewByID(kHoldingSpaceItemPrimaryActionContainerId);
+    return v && v->GetVisible();
+  }
+
+  // Returns whether a secondary action is currently showing.
+  bool IsShowingSecondaryAction(views::View* view) const {
+    auto* v = view->GetViewByID(kHoldingSpaceItemSecondaryActionContainerId);
+    return v && v->GetVisible();
+  }
+
+  // Returns whether a context menu is showing with a command matching `id`.
+  bool HasContextMenuCommand(HoldingSpaceCommandId id) const {
+    if (!IsShowingContextMenu())
+      return false;
+    auto* menu_controller = views::MenuController::GetActiveInstance();
+    auto* menu_item = menu_controller->GetSelectedMenuItem();
+    return menu_item && menu_item->GetMenuItemByID(static_cast<int>(id));
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HoldingSpaceTrayPrimaryAndSecondaryActionsTest,
+                         testing::ValuesIn(GetHoldingSpaceItemTypes()));
+
+// Verifies that holding space item views have the expected primary and
+// secondary actions for their state of progress, both inline and in their
+// associated context menu.
+TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
+  StartSession();
+
+  // Create an in-progress holding space `item` of the parameterized type.
+  HoldingSpaceItem* item = AddItem(GetType(), base::FilePath("/tmp/fake"),
+                                   HoldingSpaceProgress(0, 100));
+
+  // Show holding space UI.
+  test_api()->Show();
+  ASSERT_TRUE(test_api()->IsShowing());
+
+  // Expect and cache a single holding space item view.
+  std::vector<views::View*> item_views = test_api()->GetHoldingSpaceItemViews();
+  ASSERT_EQ(item_views.size(), 1u);
+
+  // Hover over the item view.
+  MoveMouseTo(item_views.front());
+
+  // Expect a primary and secondary action to be shown only for download type
+  // holding space items. In-progress items of other types do not currently
+  // support primary and secondary actions.
+  EXPECT_EQ(IsShowingPrimaryAction(item_views.front()),
+            HoldingSpaceItem::IsDownload(item->type()));
+  EXPECT_EQ(IsShowingSecondaryAction(item_views.front()),
+            HoldingSpaceItem::IsDownload(item->type()));
+
+  // Right click the item view to show the context menu.
+  RightClick(item_views.front());
+  EXPECT_TRUE(IsShowingContextMenu());
+
+  // Verify context menu commands for in-progress holding space items.
+  for (const HoldingSpaceCommandId& id : GetHoldingSpaceCommandIds()) {
+    bool expect_context_menu_command = false;
+    switch (id) {
+      case HoldingSpaceCommandId::kShowInFolder:
+        expect_context_menu_command = true;
+        break;
+      case HoldingSpaceCommandId::kCancelItem:
+      case HoldingSpaceCommandId::kPauseItem:
+        expect_context_menu_command =
+            HoldingSpaceItem::IsDownload(item->type());
+        break;
+      default:
+        // No action necessary.
+        break;
+    }
+    EXPECT_EQ(HasContextMenuCommand(id), expect_context_menu_command);
+  }
+
+  // Press and release ESC to close the context menu.
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE);
+  EXPECT_FALSE(IsShowingContextMenu());
+
+  // Complete the holding space `item`.
+  model()->UpdateItem(item->id())->SetProgress(HoldingSpaceProgress(100, 100));
+
+  // Hover over the item view.
+  MoveMouseTo(item_views.front());
+
+  // Expect only a primary action to be shown for completed items.
+  EXPECT_TRUE(IsShowingPrimaryAction(item_views.front()));
+  EXPECT_FALSE(IsShowingSecondaryAction(item_views.front()));
+
+  // Right click the item view to show the context menu.
+  RightClick(item_views.front());
+  EXPECT_TRUE(IsShowingContextMenu());
+
+  // Verify context menu commands for completed holding space items.
+  for (const HoldingSpaceCommandId& id : GetHoldingSpaceCommandIds()) {
+    bool expect_context_menu_command = false;
+    switch (id) {
+      case HoldingSpaceCommandId::kPinItem:
+        expect_context_menu_command =
+            item->type() != HoldingSpaceItem::Type::kPinnedFile;
+        break;
+      case HoldingSpaceCommandId::kRemoveItem:
+        expect_context_menu_command =
+            item->type() != HoldingSpaceItem::Type::kPinnedFile;
+        break;
+      case HoldingSpaceCommandId::kShowInFolder:
+        expect_context_menu_command = true;
+        break;
+      case HoldingSpaceCommandId::kUnpinItem:
+        expect_context_menu_command =
+            item->type() == HoldingSpaceItem::Type::kPinnedFile;
+        break;
+      default:
+        // No action necessary.
+        break;
+    }
+    EXPECT_EQ(HasContextMenuCommand(id), expect_context_menu_command);
+  }
 }
 
 }  // namespace ash

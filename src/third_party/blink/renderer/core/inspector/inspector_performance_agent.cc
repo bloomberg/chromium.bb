@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
-#include "base/stl_util.h"
 #include "base/time/time_override.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -146,7 +146,7 @@ base::TimeTicks InspectorPerformanceAgent::GetTimeTicksNow() {
 
 base::TimeTicks InspectorPerformanceAgent::GetThreadTimeNow() {
   return base::TimeTicks() +
-         base::TimeDelta::FromMicroseconds(
+         base::Microseconds(
              base::ThreadTicks::Now().since_origin().InMicroseconds());
 }
 

@@ -12,16 +12,15 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 
 class Profile;
 
-namespace apps {
-class AppServiceProxyChromeOs;
-class AppUpdate;
-class InstanceUpdate;
-}  // namespace apps
+namespace base {
+class UnguessableToken;
+}  // namespace base
 
 namespace gfx {
 class ImageSkia;
@@ -61,29 +60,29 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
 
     // Called when app with |app_id| becomes active.
     // Active means that the app is in usage (visible in foreground).
-    // |window| If the app is launched multiple times, |window| indicates which
-    // of the windows is active.
+    // If the app is launched multiple times, |instance_id| indicates which
+    // of the instances is active.
     // |timestamp| indicates the time when the app became active.
     virtual void OnAppActive(const AppId& app_id,
-                             aura::Window* window,
+                             const base::UnguessableToken& instance_id,
                              base::Time timestamp) {}
 
     // Called when app with |app_id| becomes inactive.
     // Inactive means that the app is not in the foreground. It still can run
     // and be partially visible. |timestamp| indicates the time when the app
-    // became inactive. |window| to specify which of the application's
-    // potentially multiple windows became inactive.Note: This can be called
+    // became inactive. |instance_id| to specify which of the application's
+    // potentially multiple instances became inactive. Note: This can be called
     // for the app that is already inactive.
     virtual void OnAppInactive(const AppId& app_id,
-                               aura::Window* window,
+                               const base::UnguessableToken& instance_id,
                                base::Time timestamp) {}
 
     // Called when app with |app_id| is destroyed.
     // |timestamp| indicates the time when the app is destroyed.
-    // |window| to specify which of the application's potentially multiple
-    // window was destroyed.
+    // |instance_id| to specify which of the application's potentially multiple
+    // instances was destroyed.
     virtual void OnAppDestroyed(const AppId& app_id,
-                                aura::Window* window,
+                                const base::UnguessableToken& instance_id,
                                 base::Time timestamp) {}
   };
 
@@ -156,10 +155,11 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* cache) override;
 
- private:
-  apps::AppServiceProxyChromeOs* GetAppProxy();
-  apps::AppRegistryCache& GetAppCache() const;
   apps::InstanceRegistry& GetInstanceRegistry() const;
+
+ private:
+  apps::AppServiceProxy* GetAppProxy() const;
+  apps::AppRegistryCache& GetAppCache() const;
 
   // Return whether app with |app_id| should be included for per-app time
   // limits.
