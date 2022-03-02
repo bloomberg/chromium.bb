@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/hash/hash.h"
 #include "quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -23,9 +24,11 @@ class QUIC_EXPORT_PRIVATE QuicServerId {
                bool privacy_mode_enabled);
   ~QuicServerId();
 
-  // Needed to be an element of std::set.
+  // Needed to be an element of an ordered container.
   bool operator<(const QuicServerId& other) const;
   bool operator==(const QuicServerId& other) const;
+
+  bool operator!=(const QuicServerId& other) const;
 
   const std::string& host() const { return host_; }
 
@@ -33,12 +36,18 @@ class QUIC_EXPORT_PRIVATE QuicServerId {
 
   bool privacy_mode_enabled() const { return privacy_mode_enabled_; }
 
-  size_t EstimateMemoryUsage() const;
-
  private:
   std::string host_;
   uint16_t port_;
   bool privacy_mode_enabled_;
+};
+
+class QUIC_EXPORT_PRIVATE QuicServerIdHash {
+ public:
+  size_t operator()(const quic::QuicServerId& server_id) const noexcept {
+    return absl::HashOf(server_id.host(), server_id.port(),
+                        server_id.privacy_mode_enabled());
+  }
 };
 
 }  // namespace quic

@@ -9,9 +9,8 @@
 #include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/cycle/status_controller.h"
@@ -84,6 +83,10 @@ class SyncCycle {
   };
 
   SyncCycle(SyncCycleContext* context, Delegate* delegate);
+
+  SyncCycle(const SyncCycle&) = delete;
+  SyncCycle& operator=(const SyncCycle&) = delete;
+
   ~SyncCycle();
 
   // Builds a thread-safe and read-only copy of the current cycle state.
@@ -110,15 +113,13 @@ class SyncCycle {
 
  private:
   // The context for this cycle, guaranteed to outlive |this|.
-  SyncCycleContext* const context_;
+  const raw_ptr<SyncCycleContext> context_;
 
   // The delegate for this cycle, must never be null.
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   // Our controller for various status and error counters.
   std::unique_ptr<StatusController> status_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncCycle);
 };
 
 }  // namespace syncer

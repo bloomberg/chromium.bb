@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -33,7 +33,7 @@ DesktopProfileSessionDurationsServiceFactory::
     : BrowserContextKeyedServiceFactory(
           "DesktopProfileSessionDurationsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 
@@ -47,10 +47,9 @@ DesktopProfileSessionDurationsServiceFactory::BuildServiceInstanceFor(
 
   DCHECK(!profile->IsSystemProfile());
   DCHECK(!profile->IsGuestSession());
-  DCHECK(!profile->IsEphemeralGuestProfile());
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   DesktopSessionDurationTracker* tracker = DesktopSessionDurationTracker::Get();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -67,8 +66,7 @@ DesktopProfileSessionDurationsServiceFactory::GetBrowserContextToUse(
   // created when presenting the profile picker (per crbug.com/1150326) and this
   // would skew the metrics.
   Profile* profile = Profile::FromBrowserContext(context);
-  if (profile->IsSystemProfile() || profile->IsGuestSession() ||
-      profile->IsEphemeralGuestProfile()) {
+  if (profile->IsSystemProfile() || profile->IsGuestSession()) {
     return nullptr;
   }
 

@@ -27,9 +27,12 @@ namespace dawn_native { namespace metal {
 
     class ComputePipeline final : public ComputePipelineBase {
       public:
-        static ResultOrError<Ref<ComputePipeline>> Create(
+        static Ref<ComputePipeline> CreateUninitialized(
             Device* device,
             const ComputePipelineDescriptor* descriptor);
+        static void InitializeAsync(Ref<ComputePipelineBase> computePipeline,
+                                    WGPUCreateComputePipelineAsyncCallback callback,
+                                    void* userdata);
 
         void Encode(id<MTLComputeCommandEncoder> encoder);
         MTLSize GetLocalWorkGroupSize() const;
@@ -37,11 +40,12 @@ namespace dawn_native { namespace metal {
 
       private:
         using ComputePipelineBase::ComputePipelineBase;
-        MaybeError Initialize(const ComputePipelineDescriptor* descriptor);
+        MaybeError Initialize() override;
 
         NSPRef<id<MTLComputePipelineState>> mMtlComputePipelineState;
         MTLSize mLocalWorkgroupSize;
         bool mRequiresStorageBufferLength;
+        std::vector<uint32_t> mWorkgroupAllocations;
     };
 
 }}  // namespace dawn_native::metal

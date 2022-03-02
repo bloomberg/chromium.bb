@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "content/public/test/test_utils.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -43,8 +43,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
       OnSpeechResult,
       void(const std::u16string& text,
            bool is_final,
-           const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>&
-               timing));
+           const absl::optional<media::SpeechRecognitionResult>& timing));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerStatus));
 
@@ -115,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(NetworkSpeechRecognizerBrowserTest, RecognizeSpeech) {
   first_response_loop.Run();
 
   // Try another speech response.
-  fake_speech_recognition_manager_->SetFakeResult("Pictures of mars!");
+  fake_speech_recognition_manager_->SetFakeResult("Pictures of mars!",
+                                                  /*is_final=*/true);
   base::RunLoop second_response_loop;
   EXPECT_CALL(
       *mock_speech_delegate_,

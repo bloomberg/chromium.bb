@@ -25,12 +25,16 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/crash_keys.h"
 #include "perfetto/ext/base/metatrace.h"
 #include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/string_splitter.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/utils.h"
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "src/kallsyms/kernel_symbol_map.h"
 #include "src/kallsyms/lazy_kernel_symbolizer.h"
+#include "src/traced/probes/ftrace/cpu_stats_parser.h"
 #include "src/traced/probes/ftrace/ftrace_config_muxer.h"
 #include "src/traced/probes/ftrace/ftrace_controller.h"
 #include "src/traced/probes/ftrace/ftrace_data_source.h"
@@ -61,28 +65,21 @@ constexpr uint32_t kTypePadding = 29;
 constexpr uint32_t kTypeTimeExtend = 30;
 constexpr uint32_t kTypeTimeStamp = 31;
 
+base::CrashKey g_crash_key_cpu("ftrace_cpu");
+
 struct EventHeader {
   uint32_t type_or_length : 5;
   uint32_t time_delta : 27;
 };
 
-struct TimeStamp {
-  uint64_t tv_nsec;
-  uint64_t tv_sec;
-};
-
-bool ReadIntoString(const uint8_t* start,
-                    const uint8_t* end,
+// Reads a string from `start` until the first '\0' byte or until fixed_len
+// characters have been read. Appends it to `*out` as field `field_id`.
+void ReadIntoString(const uint8_t* start,
+                    size_t fixed_len,
                     uint32_t field_id,
                     protozero::Message* out) {
-  for (const uint8_t* c = start; c < end; c++) {
-    if (*c != '\0')
-      continue;
-    out->AppendBytes(field_id, reinterpret_cast<const char*>(start),
-                     static_cast<uintptr_t>(c - start));
-    return true;
-  }
-  return false;
+  size_t len = strnlen(reinterpret_cast<const char*>(start), fixed_len);
+  out->AppendBytes(field_id, reinterpret_cast<const char*>(start), len);
 }
 
 bool ReadDataLoc(const uint8_t* start,
@@ -103,12 +100,11 @@ bool ReadDataLoc(const uint8_t* start,
   const uint16_t offset = data & 0xffff;
   const uint16_t len = (data >> 16) & 0xffff;
   const uint8_t* const string_start = start + offset;
-  const uint8_t* const string_end = string_start + len;
-  if (string_start <= start || string_end > end) {
+  if (string_start <= start || string_start + len > end) {
     PERFETTO_DFATAL("Buffer overflowed.");
     return false;
   }
-  ReadIntoString(string_start, string_end, field.proto_field_id, message);
+  ReadIntoString(string_start, len, field.proto_field_id, message);
   return true;
 }
 
@@ -141,6 +137,16 @@ bool SetBlocking(int fd, bool is_blocking) {
   return fcntl(fd, F_SETFL, flags) == 0;
 }
 
+void LogInvalidPage(const void* start, size_t size) {
+  PERFETTO_ELOG("Invalid ftrace page");
+  std::string hexdump = base::HexDump(start, size);
+  // Only a single line per log message, because log message size might be
+  // limited.
+  for (base::StringSplitter ss(std::move(hexdump), '\n'); ss.Next();) {
+    PERFETTO_ELOG("%s", ss.cur_token());
+  }
+}
+
 }  // namespace
 
 using protos::pbzero::GenericFtraceEvent;
@@ -148,10 +154,12 @@ using protos::pbzero::GenericFtraceEvent;
 CpuReader::CpuReader(size_t cpu,
                      const ProtoTranslationTable* table,
                      LazyKernelSymbolizer* symbolizer,
+                     const FtraceClockSnapshot* ftrace_clock_snapshot,
                      base::ScopedFile trace_fd)
     : cpu_(cpu),
       table_(table),
       symbolizer_(symbolizer),
+      ftrace_clock_snapshot_(ftrace_clock_snapshot),
       trace_fd_(std::move(trace_fd)) {
   PERFETTO_CHECK(trace_fd_);
   PERFETTO_CHECK(SetBlocking(*trace_fd_, false));
@@ -165,6 +173,7 @@ size_t CpuReader::ReadCycle(
     size_t max_pages,
     const std::set<FtraceDataSource*>& started_data_sources) {
   PERFETTO_DCHECK(max_pages > 0 && parsing_buf_size_pages > 0);
+  auto scoped_key = g_crash_key_cpu.SetScoped(static_cast<int>(cpu_));
   metatrace::ScopedEvent evt(metatrace::TAG_FTRACE,
                              metatrace::FTRACE_CPU_READ_CYCLE);
 
@@ -273,11 +282,15 @@ size_t CpuReader::ReadAndProcessBatch(
     return pages_read;
 
   for (FtraceDataSource* data_source : started_data_sources) {
-    bool success = ProcessPagesForDataSource(
+    bool pages_parsed_ok = ProcessPagesForDataSource(
         data_source->trace_writer(), data_source->mutable_metadata(), cpu_,
         data_source->parsing_config(), parsing_buf, pages_read, table_,
-        symbolizer_);
-    PERFETTO_CHECK(success);
+        symbolizer_, ftrace_clock_snapshot_, ftrace_clock_);
+    // If this CHECK fires, it means that we did not know how to parse the
+    // kernel binary format. This is a bug in either perfetto or the kernel, and
+    // must be investigated. Hence we CHECK instead of recording a bit
+    // in the ftrace stats proto, which is easier to overlook.
+    PERFETTO_CHECK(pages_parsed_ok);
   }
 
   return pages_read;
@@ -292,7 +305,9 @@ bool CpuReader::ProcessPagesForDataSource(
     const uint8_t* parsing_buf,
     const size_t pages_read,
     const ProtoTranslationTable* table,
-    LazyKernelSymbolizer* symbolizer) {
+    LazyKernelSymbolizer* symbolizer,
+    const FtraceClockSnapshot* ftrace_clock_snapshot,
+    protos::pbzero::FtraceClock ftrace_clock) {
   // Allocate the buffer for compact scheduler events (which will be unused if
   // the compact option isn't enabled).
   CompactSchedBuffer compact_sched;
@@ -313,7 +328,6 @@ bool CpuReader::ProcessPagesForDataSource(
     // Write the kernel symbol index (mangled address) -> name table.
     // |metadata| is shared across all cpus, is distinct per |data_source| (i.e.
     // tracing session) and is cleared after each FtraceController::ReadTick().
-    // const size_t kaddrs_size = metadata->kernel_addrs.size();
     if (ds_config->symbolize_ksyms) {
       // Symbol indexes are assigned mononically as |kernel_addrs.size()|,
       // starting from index 1 (no symbol has index 0). Here we remember the
@@ -323,6 +337,7 @@ bool CpuReader::ProcessPagesForDataSource(
       PERFETTO_DCHECK(max_index_at_start <= metadata->kernel_addrs.size());
       protos::pbzero::InternedData* interned_data = nullptr;
       auto* ksyms_map = symbolizer->GetOrCreateKernelSymbolMap();
+      bool wrote_at_least_one_symbol = false;
       for (const FtraceMetadata::KernelAddr& kaddr : metadata->kernel_addrs) {
         if (kaddr.index <= max_index_at_start)
           continue;
@@ -351,9 +366,18 @@ bool CpuReader::ProcessPagesForDataSource(
         auto* interned_sym = interned_data->add_kernel_symbols();
         interned_sym->set_iid(kaddr.index);
         interned_sym->set_str(sym_name);
+        wrote_at_least_one_symbol = true;
       }
+
       auto max_it_at_end = static_cast<uint32_t>(metadata->kernel_addrs.size());
-      metadata->last_kernel_addr_index_written = max_it_at_end;
+
+      // Rationale for the if (wrote_at_least_one_symbol) check: in rare cases,
+      // all symbols seen in a ProcessPagesForDataSource() call can fail the
+      // ksyms_map->Lookup(). If that happens we don't want to bump the
+      // last_kernel_addr_index_written watermark, as that would cause the next
+      // call to NOT emit the SEQ_INCREMENTAL_STATE_CLEARED.
+      if (wrote_at_least_one_symbol)
+        metadata->last_kernel_addr_index_written = max_it_at_end;
     }
 
     packet->Finalize();
@@ -364,6 +388,15 @@ bool CpuReader::ProcessPagesForDataSource(
       finalize_cur_packet();
     packet = trace_writer->NewTracePacket();
     bundle = packet->set_ftrace_events();
+    if (ftrace_clock) {
+      bundle->set_ftrace_clock(ftrace_clock);
+
+      if (ftrace_clock_snapshot && ftrace_clock_snapshot->ftrace_clock_ts) {
+        bundle->set_ftrace_timestamp(ftrace_clock_snapshot->ftrace_clock_ts);
+        bundle->set_boot_timestamp(ftrace_clock_snapshot->boot_clock_ts);
+      }
+    }
+
     // Note: The fastpath in proto_trace_parser.cc speculates on the fact
     // that the cpu field is the first field of the proto message. If this
     // changes, change proto_trace_parser.cc accordingly.
@@ -372,6 +405,7 @@ bool CpuReader::ProcessPagesForDataSource(
       bundle->set_lost_events(true);
   };
 
+  bool pages_parsed_ok = true;
   start_new_packet(/*lost_events=*/false);
   for (size_t i = 0; i < pages_read; i++) {
     const uint8_t* curr_page = parsing_buf + (i * base::kPageSize);
@@ -383,6 +417,7 @@ bool CpuReader::ProcessPagesForDataSource(
     if (!page_header.has_value() || page_header->size == 0 ||
         parse_pos >= curr_page_end ||
         parse_pos + page_header->size > curr_page_end) {
+      LogInvalidPage(curr_page, base::kPageSize);
       PERFETTO_DFATAL("invalid page header");
       return false;
     }
@@ -406,13 +441,15 @@ bool CpuReader::ProcessPagesForDataSource(
         ParsePagePayload(parse_pos, &page_header.value(), table, ds_config,
                          &compact_sched, bundle, metadata);
 
-    // TODO(rsavitski): propagate error to trace processor in release builds.
-    // (FtraceMetadata -> FtraceStats in trace).
-    PERFETTO_DCHECK(evt_size == page_header->size);
+    if (evt_size != page_header->size) {
+      pages_parsed_ok = false;
+      LogInvalidPage(curr_page, base::kPageSize);
+      PERFETTO_DFATAL("could not parse ftrace page");
+    }
   }
   finalize_cur_packet();
 
-  return true;
+  return pages_parsed_ok;
 }
 
 // A page header consists of:
@@ -499,7 +536,7 @@ size_t CpuReader::ParsePagePayload(const uint8_t* start_of_payload,
           PERFETTO_DFATAL("Empty padding event.");
           return 0;
         }
-        uint32_t length;
+        uint32_t length = 0;
         if (!ReadAndAdvance<uint32_t>(&ptr, end, &length))
           return 0;
         // length includes itself (4 bytes)
@@ -510,20 +547,23 @@ size_t CpuReader::ParsePagePayload(const uint8_t* start_of_payload,
       }
       case kTypeTimeExtend: {
         // Extend the time delta.
-        uint32_t time_delta_ext;
+        uint32_t time_delta_ext = 0;
         if (!ReadAndAdvance<uint32_t>(&ptr, end, &time_delta_ext))
           return 0;
-        // See https://goo.gl/CFBu5x
         timestamp += (static_cast<uint64_t>(time_delta_ext)) << 27;
         break;
       }
       case kTypeTimeStamp: {
-        // Sync time stamp with external clock.
-        TimeStamp time_stamp;
-        if (!ReadAndAdvance<TimeStamp>(&ptr, end, &time_stamp))
+        // Absolute timestamp. This was historically partially implemented, but
+        // not written. Kernels 4.17+ reimplemented this record, changing its
+        // size in the process. We assume the newer layout. Parsed the same as
+        // kTypeTimeExtend, except that the timestamp is interpreted as an
+        // absolute, instead of a delta on top of the previous state.
+        uint32_t time_delta_ext = 0;
+        if (!ReadAndAdvance<uint32_t>(&ptr, end, &time_delta_ext))
           return 0;
-        // Not implemented in the kernel, nothing should generate this.
-        PERFETTO_DFATAL("Unimplemented in kernel. Should be unreachable.");
+        timestamp = event_header.time_delta +
+                    (static_cast<uint64_t>(time_delta_ext) << 27);
         break;
       }
       // Data record:
@@ -533,7 +573,7 @@ size_t CpuReader::ParsePagePayload(const uint8_t* start_of_payload,
         // record. if == 0, this is an extended record and the size of the
         // record is stored in the first uint32_t word in the payload. See
         // Kernel's include/linux/ring_buffer.h
-        uint32_t event_size;
+        uint32_t event_size = 0;
         if (event_header.type_or_length == 0) {
           if (!ReadAndAdvance<uint32_t>(&ptr, end, &event_size))
             return 0;
@@ -707,12 +747,14 @@ bool CpuReader::ParseField(const Field& field,
       ReadIntoVarInt<int64_t>(field_start, field_id, message);
       return true;
     case kFixedCStringToString:
-      // TODO(hjd): Add AppendMaxLength string to protozero.
-      return ReadIntoString(field_start, field_start + field.ftrace_size,
-                            field_id, message);
+      // TODO(hjd): Kernel-dive to check this how size:0 char fields work.
+      ReadIntoString(field_start, field.ftrace_size, field_id, message);
+      return true;
     case kCStringToString:
       // TODO(hjd): Kernel-dive to check this how size:0 char fields work.
-      return ReadIntoString(field_start, end, field_id, message);
+      ReadIntoString(field_start, static_cast<size_t>(end - field_start),
+                     field_id, message);
+      return true;
     case kStringPtrToString: {
       uint64_t n = 0;
       // The ftrace field may be 8 or 4 bytes and we need to copy it into the

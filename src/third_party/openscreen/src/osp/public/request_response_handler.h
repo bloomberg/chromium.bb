@@ -59,12 +59,14 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() = default;
 
     virtual void OnMatchedResponse(RequestT* request,
                                    typename RequestT::ResponseMsgType* response,
                                    uint64_t endpoint_id) = 0;
     virtual void OnError(RequestT* request, Error error) = 0;
+
+   protected:
+    virtual ~Delegate() = default;
   };
 
   explicit RequestResponseHandler(Delegate* delegate) : delegate_(delegate) {}

@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "components/cast/message_port/platform_message_port.h"
 #include "components/cast/message_port/test_message_port_receiver.h"
 #include "components/cast_streaming/browser/message_serialization.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,8 +30,8 @@ class CastMessagePortImplTest : public testing::Test,
 
   void SetUp() override {
     std::unique_ptr<cast_api_bindings::MessagePort> receiver;
-    cast_api_bindings::MessagePort::CreatePair(&sender_message_port_,
-                                               &receiver);
+    cast_api_bindings::CreatePlatformMessagePortPair(&sender_message_port_,
+                                                     &receiver);
 
     sender_message_port_->SetReceiver(&sender_message_port_receiver_);
     receiver_message_port_ = std::make_unique<CastMessagePortImpl>(
@@ -206,6 +207,137 @@ TEST_F(CastMessagePortImplTest, BadMessage) {
 TEST_F(CastMessagePortImplTest, CastChannelClosed) {
   sender_message_port_.reset();
   RunUntilCastChannelClosed();
+}
+
+// Tests the media status namespace is properly handled.
+TEST_F(CastMessagePortImplTest, MediaStatus) {
+  const int kRequestId = 42;
+  base::Value media_value(base::Value::Type::DICTIONARY);
+  media_value.SetKey(kKeyType, base::Value(kValueMediaGetStatus));
+  media_value.SetKey(kKeyRequestId, base::Value(kRequestId));
+  std::string media_message;
+  ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+
+  sender_message_port_->PostMessage(
+      SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  sender_message_port_receiver_.RunUntilMessageCountEqual(2u);
+  ASSERT_EQ(sender_message_port_receiver_.buffer().size(), 2u);
+
+  std::string sender_id;
+  std::string message_namespace;
+  std::string message;
+  ASSERT_TRUE(
+      DeserializeCastMessage(sender_message_port_receiver_.buffer().at(1).first,
+                             &sender_id, &message_namespace, &message));
+  EXPECT_EQ(sender_id, kSenderId);
+  EXPECT_EQ(message_namespace, kMediaNamespace);
+
+  absl::optional<base::Value> return_value = base::JSONReader::Read(message);
+  ASSERT_TRUE(return_value);
+  ASSERT_TRUE(return_value->is_dict());
+
+  const std::string* type_value = return_value->FindStringKey(kKeyType);
+  ASSERT_TRUE(type_value);
+  EXPECT_EQ(*type_value, kValueMediaStatus);
+
+  absl::optional<int> request_id_value =
+      return_value->FindIntKey(kKeyRequestId);
+  ASSERT_TRUE(request_id_value);
+  EXPECT_EQ(request_id_value.value(), kRequestId);
+
+  const base::Value* status_value = return_value->FindListKey(kKeyStatus);
+  ASSERT_TRUE(status_value);
+  EXPECT_EQ(status_value->GetList().size(), 1u);
+}
+
+// Checks sending invalid media messages results in no response.
+TEST_F(CastMessagePortImplTest, InvalidMediaMessages) {
+  const int kRequestId = 42;
+
+  {
+    // Send an invalid message value.
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, "not a json"));
+  }
+
+  {
+    // Send a non-dictionary value.
+    std::string media_message;
+    ASSERT_TRUE(
+        base::JSONWriter::Write(base::Value("string value"), &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  {
+    // Send a message with no type.
+    base::Value media_value(base::Value::Type::DICTIONARY);
+    media_value.SetKey(kKeyRequestId, base::Value(kRequestId));
+    std::string media_message;
+    ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  {
+    // Send a PLAY message. This is not incorrect but should be ignored.
+    base::Value media_value(base::Value::Type::DICTIONARY);
+    media_value.SetKey(kKeyType, base::Value(kValueMediaPlay));
+    media_value.SetKey(kKeyRequestId, base::Value(kRequestId));
+    std::string media_message;
+    ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  {
+    // Send a PAUSE message. This is not incorrect but should be ignored.
+    base::Value media_value(base::Value::Type::DICTIONARY);
+    media_value.SetKey(kKeyType, base::Value(kValueMediaPause));
+    media_value.SetKey(kKeyRequestId, base::Value(kRequestId));
+    std::string media_message;
+    ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  {
+    // Send a message with an invalid type.
+    base::Value media_value(base::Value::Type::DICTIONARY);
+    media_value.SetKey(kKeyType, base::Value("INVALID_TYPE"));
+    media_value.SetKey(kKeyRequestId, base::Value(kRequestId));
+    std::string media_message;
+    ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  {
+    // Send a GET_STATUS message with no request ID.
+    base::Value media_value(base::Value::Type::DICTIONARY);
+    media_value.SetKey(kKeyType, base::Value(kValueMediaGetStatus));
+    std::string media_message;
+    ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  {
+    // Send a message with a non-integer request ID.
+    base::Value media_value(base::Value::Type::DICTIONARY);
+    media_value.SetKey(kKeyType, base::Value(kValueMediaGetStatus));
+    media_value.SetKey(kKeyRequestId, base::Value("not an integer"));
+    std::string media_message;
+    ASSERT_TRUE(base::JSONWriter::Write(media_value, &media_message));
+    sender_message_port_->PostMessage(
+        SerializeCastMessage(kSenderId, kMediaNamespace, media_message));
+  }
+
+  // Process all the things. There should be a single message (the original
+  // system message), since none of the other messages sent will trigger a
+  // response.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(sender_message_port_receiver_.buffer().size(), 1u);
 }
 
 }  // namespace cast_streaming

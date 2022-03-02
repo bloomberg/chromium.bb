@@ -71,10 +71,11 @@ void av1_upscale_normative_and_extend_frame(const AV1_COMMON *cm,
                                             const YV12_BUFFER_CONFIG *src,
                                             YV12_BUFFER_CONFIG *dst);
 
-YV12_BUFFER_CONFIG *av1_scale_if_required(
+YV12_BUFFER_CONFIG *av1_realloc_and_scale_if_required(
     AV1_COMMON *cm, YV12_BUFFER_CONFIG *unscaled, YV12_BUFFER_CONFIG *scaled,
     const InterpFilter filter, const int phase, const bool use_optimized_scaler,
-    const bool for_psnr);
+    const bool for_psnr, const int border_in_pixels,
+    const bool alloc_y_buffer_8bit);
 
 void av1_resize_and_extend_frame_nonnormative(const YV12_BUFFER_CONFIG *src,
                                               YV12_BUFFER_CONFIG *dst, int bd,

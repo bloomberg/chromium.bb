@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace chromecast {
 namespace media {
@@ -17,16 +17,15 @@ CastAudioManagerHelper::CastAudioManagerHelper(
     Delegate* delegate,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector)
+    external_service_support::ExternalConnector* connector)
     : audio_manager_(audio_manager),
       delegate_(delegate),
       backend_factory_getter_(std::move(backend_factory_getter)),
       media_task_runner_(std::move(media_task_runner)),
-      pending_connector_(std::move(connector)) {
+      audio_thread_connector_(connector->Clone()) {
   DCHECK(audio_manager_);
   DCHECK(delegate_);
   DCHECK(backend_factory_getter_);
-  DCHECK(pending_connector_);
 }
 
 CastAudioManagerHelper::~CastAudioManagerHelper() = default;
@@ -46,12 +45,13 @@ bool CastAudioManagerHelper::IsAudioOnlySession(const std::string& session_id) {
   return delegate_->IsAudioOnlySession(session_id);
 }
 
-chromecast::mojom::ServiceConnector* CastAudioManagerHelper::GetConnector() {
-  if (!connector_) {
-    DCHECK(pending_connector_);
-    connector_.Bind(std::move(pending_connector_));
-  }
-  return connector_.get();
+bool CastAudioManagerHelper::IsGroup(const std::string& session_id) {
+  return delegate_->IsGroup(session_id);
+}
+
+external_service_support::ExternalConnector*
+CastAudioManagerHelper::GetConnector() {
+  return audio_thread_connector_.get();
 }
 
 }  // namespace media

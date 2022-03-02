@@ -8,7 +8,9 @@ namespace extensions {
 
 CastExtensionWebContentsObserver::CastExtensionWebContentsObserver(
     content::WebContents* web_contents)
-    : ExtensionWebContentsObserver(web_contents) {}
+    : ExtensionWebContentsObserver(web_contents),
+      content::WebContentsUserData<CastExtensionWebContentsObserver>(
+          *web_contents) {}
 
 CastExtensionWebContentsObserver::~CastExtensionWebContentsObserver() {}
 
@@ -21,6 +23,6 @@ void CastExtensionWebContentsObserver::CreateForWebContents(
   FromWebContents(web_contents)->Initialize();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(CastExtensionWebContentsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CastExtensionWebContentsObserver);
 
 }  // namespace extensions

@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/components/arc/mojom/screen_capture.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/notifications/screen_capture_notification_ui_ash.h"
 #include "chrome/browser/media/webrtc/desktop_capture_access_handler.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/mojom/screen_capture.mojom.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -29,6 +29,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -121,6 +122,8 @@ ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
   }
 
   auto context_provider = GetContextProvider();
+  context_provider->AddObserver(this);
+
   gl_helper_ = std::make_unique<gpu::GLHelper>(
       context_provider->ContextGL(), context_provider->ContextSupport());
 
@@ -146,7 +149,8 @@ ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
     notification_ui_->OnStarted(
         base::BindOnce(&ArcScreenCaptureSession::NotificationStop,
                        weak_ptr_factory_.GetWeakPtr()),
-        content::MediaStreamUI::SourceCallback());
+        content::MediaStreamUI::SourceCallback(),
+        std::vector<content::DesktopMediaID>{});
   }
 
   ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();
@@ -165,6 +169,8 @@ void ArcScreenCaptureSession::Close() {
 }
 
 ArcScreenCaptureSession::~ArcScreenCaptureSession() {
+  GetContextProvider()->RemoveObserver(this);
+
   if (!display_root_window_)
     return;
 
@@ -178,8 +184,26 @@ void ArcScreenCaptureSession::NotificationStop() {
   Close();
 }
 
+void ArcScreenCaptureSession::SetOutputBufferDeprecated(
+    mojo::ScopedHandle graphics_buffer,
+    uint32_t stride,
+    SetOutputBufferDeprecatedCallback callback) {
+  // Defined locally to avoid having to add a dependency on drm_fourcc.h
+  constexpr uint64_t DRM_FORMAT_MOD_LINEAR = 0;
+
+  SetOutputBuffer(std::move(graphics_buffer), gfx::BufferFormat::RGBX_8888,
+                  DRM_FORMAT_MOD_LINEAR, stride,
+                  base::BindOnce(
+                      [](base::OnceCallback<void()> callback) {
+                        std::move(callback).Run();
+                      },
+                      std::move(callback)));
+}
+
 void ArcScreenCaptureSession::SetOutputBuffer(
     mojo::ScopedHandle graphics_buffer,
+    gfx::BufferFormat buffer_format,
+    uint64_t buffer_format_modifier,
     uint32_t stride,
     SetOutputBufferCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -197,8 +221,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
-  // Dummy modifier.
-  handle.native_pixmap_handle.modifier = 0;
+  handle.native_pixmap_handle.modifier = buffer_format_modifier;
   base::ScopedPlatformFile platform_file;
   MojoResult mojo_result =
       mojo::UnwrapPlatformFile(std::move(graphics_buffer), &platform_file);
@@ -213,7 +236,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
           client_native_pixmap_factory_.get(), std::move(handle), size_,
-          gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT,
+          buffer_format, gfx::BufferUsage::SCANOUT,
           gpu::GpuMemoryBufferImpl::DestructionCallback());
   if (!gpu_memory_buffer) {
     LOG(ERROR) << "Failed creating GpuMemoryBuffer";
@@ -284,16 +307,28 @@ void ArcScreenCaptureSession::OnDesktopCaptured(
   if (result->IsEmpty())
     return;
 
-  // Get the source texture
-  gl->WaitSyncTokenCHROMIUM(
-      result->GetTextureResult()->sync_token.GetConstData());
-  GLuint src_texture = gl->CreateAndConsumeTextureCHROMIUM(
-      result->GetTextureResult()->mailbox.name);
-  viz::ReleaseCallback release_callback = result->TakeTextureOwnership();
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA);
+  DCHECK_EQ(result->destination(),
+            viz::CopyOutputResult::Destination::kNativeTextures);
+
+  // Get the source texture - RGBA format is guaranteed to have 1 valid texture
+  // if the CopyOutputRequest succeeded:
+  const gpu::MailboxHolder& plane = result->GetTextureResult()->planes[0];
+  gl->WaitSyncTokenCHROMIUM(plane.sync_token.GetConstData());
+  GLuint src_texture = gl->CreateAndConsumeTextureCHROMIUM(plane.mailbox.name);
+  viz::CopyOutputResult::ReleaseCallbacks release_callbacks =
+      result->TakeTextureOwnership();
+
+  DCHECK_EQ(1u, release_callbacks.size());
+
+  // The returned texture will later be bound to GL_TEXTURE_2D target, verify it
+  // here:
+  DCHECK_EQ(result->GetTextureResult()->planes[0].texture_target,
+            GL_TEXTURE_2D);
 
   std::unique_ptr<DesktopTexture> desktop_texture =
       std::make_unique<DesktopTexture>(src_texture, result->size(),
-                                       std::move(release_callback));
+                                       std::move(release_callbacks[0]));
   if (buffer_queue_.empty()) {
     // We don't have a GPU buffer to render to, so put this in a queue to use
     // when we have one.
@@ -360,7 +395,8 @@ void ArcScreenCaptureSession::OnAnimationStep(base::TimeTicks timestamp) {
   }
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+          viz::CopyOutputRequest::ResultFormat::RGBA,
+          viz::CopyOutputRequest::ResultDestination::kNativeTextures,
           base::BindOnce(&ArcScreenCaptureSession::OnDesktopCaptured,
                          weak_ptr_factory_.GetWeakPtr()));
   // Clip the requested area to the desktop area. See b/118675936.
@@ -372,6 +408,11 @@ void ArcScreenCaptureSession::OnCompositingShuttingDown(
     ui::Compositor* compositor) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   compositor->RemoveAnimationObserver(this);
+}
+
+void ArcScreenCaptureSession::OnContextLost() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Close();
 }
 
 }  // namespace arc

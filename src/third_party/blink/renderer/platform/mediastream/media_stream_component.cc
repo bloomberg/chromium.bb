@@ -33,7 +33,7 @@
 
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
@@ -85,6 +85,12 @@ void MediaStreamComponent::GetSettings(
   platform_track_->GetSettings(settings);
 }
 
+MediaStreamTrackPlatform::CaptureHandle
+MediaStreamComponent::GetCaptureHandle() {
+  DCHECK(platform_track_);
+  return platform_track_->GetCaptureHandle();
+}
+
 void MediaStreamComponent::SetContentHint(
     WebMediaStreamTrack::ContentHintType hint) {
   switch (hint) {
@@ -111,7 +117,7 @@ void MediaStreamComponent::SetContentHint(
 
 void MediaStreamComponent::AudioSourceProviderImpl::ProvideInput(
     AudioBus* bus,
-    uint32_t frames_to_process) {
+    int frames_to_process) {
   DCHECK(bus);
   if (!bus)
     return;

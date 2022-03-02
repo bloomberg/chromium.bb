@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -32,6 +31,9 @@ namespace bluetooth {
 // instance closes the binding which causes the instance to be deleted.
 class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
  public:
+  Device(const Device&) = delete;
+  Device& operator=(const Device&) = delete;
+
   ~Device() override;
 
   static void Create(
@@ -125,8 +127,6 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
   std::vector<base::OnceClosure> pending_services_requests_;
 
   base::WeakPtrFactory<Device> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Device);
 };
 
 }  // namespace bluetooth

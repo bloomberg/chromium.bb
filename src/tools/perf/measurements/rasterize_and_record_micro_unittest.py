@@ -35,7 +35,6 @@ class RasterizeAndRecordMicroUnitTest(legacy_page_test_case.LegacyPageTestCase):
         'pixels_rasterized_as_opaque',
         'total_layers',
         'total_picture_layers',
-        'total_picture_layers_with_no_content',
         'painter_memory_usage',
         'paint_op_memory_usage',
         'paint_op_count',

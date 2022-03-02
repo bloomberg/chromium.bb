@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_INTERNAL_API_H_
 #define EXTENSIONS_BROWSER_API_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_INTERNAL_API_H_
 
-#include "base/macros.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -16,12 +15,14 @@ class AppViewGuestInternalAttachFrameFunction : public ExtensionFunction {
                              APPVIEWINTERNAL_ATTACHFRAME)
   AppViewGuestInternalAttachFrameFunction();
 
+  AppViewGuestInternalAttachFrameFunction(
+      const AppViewGuestInternalAttachFrameFunction&) = delete;
+  AppViewGuestInternalAttachFrameFunction& operator=(
+      const AppViewGuestInternalAttachFrameFunction&) = delete;
+
  protected:
   ~AppViewGuestInternalAttachFrameFunction() override {}
   ResponseAction Run() final;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppViewGuestInternalAttachFrameFunction);
 };
 
 class AppViewGuestInternalDenyRequestFunction : public ExtensionFunction {
@@ -30,12 +31,14 @@ class AppViewGuestInternalDenyRequestFunction : public ExtensionFunction {
                              APPVIEWINTERNAL_DENYREQUEST)
   AppViewGuestInternalDenyRequestFunction();
 
+  AppViewGuestInternalDenyRequestFunction(
+      const AppViewGuestInternalDenyRequestFunction&) = delete;
+  AppViewGuestInternalDenyRequestFunction& operator=(
+      const AppViewGuestInternalDenyRequestFunction&) = delete;
+
  protected:
   ~AppViewGuestInternalDenyRequestFunction() override {}
   ResponseAction Run() final;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppViewGuestInternalDenyRequestFunction);
 };
 
 }  // namespace extensions

@@ -99,6 +99,7 @@ CSSColorInterpolationType::MaybeCreateInterpolableColor(const CSSValue& value) {
   return CreateInterpolableColor(identifier_value->GetValueID());
 }
 
+// Spec link: https://www.w3.org/TR/css-color-4/#interpolation-alpha
 Color CSSColorInterpolationType::GetRGBA(const InterpolableValue& value) {
   const InterpolableList& list = To<InterpolableList>(value);
   DCHECK_GE(list.length(), kAlpha);
@@ -107,6 +108,9 @@ Color CSSColorInterpolationType::GetRGBA(const InterpolableValue& value) {
     const InterpolableValue& current_value = *(list.Get(i));
     color[i] = To<InterpolableNumber>(current_value).Value();
   }
+  // Prevent dividing 0
+  if (color[kAlpha] == 0)
+    return Color::kTransparent;
   return Color(MakeRGBA(std::round(color[kRed] / color[kAlpha]),
                         std::round(color[kGreen] / color[kAlpha]),
                         std::round(color[kBlue] / color[kAlpha]),
@@ -177,13 +181,13 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
     AddPremultipliedColor(red, green, blue, alpha, quirk_inherit_fraction,
                           colors.TextColor());
 
-  alpha = clampTo<double>(alpha, 0, 255);
+  alpha = ClampTo<double>(alpha, 0, 255);
   if (alpha == 0)
     return Color::kTransparent;
 
   return MakeRGBA(
-      clampTo<int>(round(red / alpha)), clampTo<int>(round(green / alpha)),
-      clampTo<int>(round(blue / alpha)), clampTo<int>(round(alpha)));
+      ClampTo<int>(round(red / alpha)), ClampTo<int>(round(green / alpha)),
+      ClampTo<int>(round(blue / alpha)), ClampTo<int>(round(alpha)));
 }
 
 class InheritedColorChecker

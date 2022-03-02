@@ -175,6 +175,9 @@ TEST_F(RedactionToolTest, RedactCustomPatterns) {
   EXPECT_EQ(
       "a\nb [SSID=<SSID: 3>] [SSID=<SSID: 1>] [SSID=foo\nbar] b",
       RedactCustomPatterns("a\nb [SSID=foo] [SSID=Joe's] [SSID=foo\nbar] b"));
+  EXPECT_EQ("ssid=\"<SSID: 4>\"",
+            RedactCustomPatterns("ssid=\"LittleTsunami\""));
+  EXPECT_EQ("* SSID=<SSID: 5>", RedactCustomPatterns("* SSID=agnagna"));
 
   EXPECT_EQ("SerialNumber: <Serial: 1>",
             RedactCustomPatterns("SerialNumber: 1217D7EF"));
@@ -196,6 +199,13 @@ TEST_F(RedactionToolTest, RedactCustomPatterns) {
             RedactCustomPatterns("Foo serial number 123"));
   EXPECT_EQ("Foo Serial Number <Serial: 7>",
             RedactCustomPatterns("Foo Serial Number 123"));
+  // redact serial number separated by a | with the label "serial"
+  EXPECT_EQ("serial               | <Serial: 8>",
+            RedactCustomPatterns("serial               | 0x1cc04416"));
+  EXPECT_EQ("serial               |<Serial: 9>",
+            RedactCustomPatterns("serial               |0x1cc04417"));
+  EXPECT_EQ("serial|<Serial: 10>", RedactCustomPatterns("serial|0x1cc04418"));
+  EXPECT_EQ("serial|<Serial: 11>", RedactCustomPatterns("serial|agnagna"));
 
   EXPECT_EQ("\"gaia_id\":\"<GAIA: 1>\"",
             RedactCustomPatterns("\"gaia_id\":\"1234567890\""));
@@ -216,7 +226,17 @@ TEST_F(RedactionToolTest, RedactCustomPatterns) {
   EXPECT_EQ("[<IPv6: 4>]", RedactCustomPatterns("[aa::bb]"));
   EXPECT_EQ("State::Abort", RedactCustomPatterns("State::Abort"));
 
+  // Real IPv4 address
   EXPECT_EQ("<IPv4: 1>", RedactCustomPatterns("192.160.0.1"));
+
+  // Non-PII IPv4 address (see MaybeScrubIPAddress)
+  EXPECT_EQ("255.255.255.255", RedactCustomPatterns("255.255.255.255"));
+
+  // Not an actual IPv4 address
+  EXPECT_EQ("75.748.86.91", RedactCustomPatterns("75.748.86.91"));
+
+  // USB Path - not an actual IPv4 Address
+  EXPECT_EQ("4-3.3.3.3", RedactCustomPatterns("4-3.3.3.3"));
 
   EXPECT_EQ("<URL: 1>", RedactCustomPatterns("http://example.com/foo?test=1"));
   EXPECT_EQ("Foo <URL: 2> Bar",
@@ -368,6 +388,8 @@ TEST_F(RedactionToolTest, RedactChunk) {
      "255.255.259.255"},
     {"255.300.255.255",  // Not an IP address.
      "255.300.255.255"},
+    {"3-1.2.3.4",  // USB path, not an IP address.
+     "3-1.2.3.4"},
     {"aaaa123.123.45.4aaa",  // IP address.
      "aaaa<IPv4: 23>aaa"},
     {"11:11;11::11",  // IP address.
@@ -516,6 +538,16 @@ TEST_F(RedactionToolTest, RedactBlockDevices) {
       // Volume labels.
       {"LABEL=\"ntfs\"", "LABEL=\"<Volume Label: 1>\""},
       {"PARTLABEL=\"SD Card\"", "PARTLABEL=\"<Volume Label: 2>\""},
+
+      // LVM UUIDd.
+      {"{\"pv_fmt\":\"lvm2\", "
+       "\"pv_uuid\":\"duD18x-P7QE-sTya-SaeO-aq07-YgEq-xj8UEz\", "
+       "\"dev_size\":\"230.33g\"}",
+       "{\"pv_fmt\":\"lvm2\", \"pv_uuid\":\"<UUID: 4>\", "
+       "\"dev_size\":\"230.33g\"}"},
+      {"{\"lv_uuid\":\"lKYORl-TWDP-OFLT-yDnB-jlQ7-aQrE-AwA8Oa\", "
+       "\"lv_name\":\"[thinpool_tdata]\"",
+       "{\"lv_uuid\":\"<UUID: 5>\", \"lv_name\":\"[thinpool_tdata]\""},
 
       // Removable media paths.
       {"/media/removable/SD Card/", "/media/removable/<Volume Label: 2>/"},

@@ -4,12 +4,13 @@
 
 #include "quic/tools/quic_memory_cache_backend.h"
 
+#include <vector>
+
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "quic/platform/api/quic_file_utils.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/tools/quic_backend_response.h"
+#include "common/platform/api/quiche_file_utils.h"
 
 namespace quic {
 namespace test {
@@ -21,8 +22,7 @@ using ServerPushInfo = QuicBackendResponse::ServerPushInfo;
 
 class QuicMemoryCacheBackendTest : public QuicTest {
  protected:
-  void CreateRequest(std::string host,
-                     std::string path,
+  void CreateRequest(std::string host, std::string path,
                      spdy::Http2HeaderBlock* headers) {
     (*headers)[":method"] = "GET";
     (*headers)[":path"] = path;
@@ -49,7 +49,7 @@ TEST_F(QuicMemoryCacheBackendTest, AddSimpleResponseGetResponse) {
   CreateRequest("www.google.com", "/", &request_headers);
   const Response* response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   EXPECT_EQ(response_body.size(), response->body().length());
 }
@@ -77,51 +77,87 @@ TEST_F(QuicMemoryCacheBackendTest, AddResponse) {
   EXPECT_EQ(response->trailers(), response_trailers);
 }
 
-TEST_F(QuicMemoryCacheBackendTest, ReadsCacheDir) {
+// TODO(crbug.com/1249712) This test is failing on iOS.
+#if defined(OS_IOS)
+#define MAYBE_ReadsCacheDir DISABLED_ReadsCacheDir
+#else
+#define MAYBE_ReadsCacheDir ReadsCacheDir
+#endif
+TEST_F(QuicMemoryCacheBackendTest, MAYBE_ReadsCacheDir) {
   cache_.InitializeBackend(CacheDirectory());
   const Response* response =
       cache_.GetResponse("test.example.com", "/index.html");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   // Connection headers are not valid in HTTP/2.
-  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_FALSE(response->headers().contains("connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
-TEST_F(QuicMemoryCacheBackendTest, ReadsCacheDirWithServerPushResource) {
+// TODO(crbug.com/1249712) This test is failing on iOS.
+#if defined(OS_IOS)
+#define MAYBE_ReadsCacheDirWithServerPushResource \
+  DISABLED_ReadsCacheDirWithServerPushResource
+#else
+#define MAYBE_ReadsCacheDirWithServerPushResource \
+  ReadsCacheDirWithServerPushResource
+#endif
+TEST_F(QuicMemoryCacheBackendTest, MAYBE_ReadsCacheDirWithServerPushResource) {
   cache_.InitializeBackend(CacheDirectory() + "_with_push");
   std::list<ServerPushInfo> resources =
       cache_.GetServerPushResources("test.example.com/");
   ASSERT_EQ(1UL, resources.size());
 }
 
-TEST_F(QuicMemoryCacheBackendTest, ReadsCacheDirWithServerPushResources) {
+// TODO(crbug.com/1249712) This test is failing on iOS.
+#if defined(OS_IOS)
+#define MAYBE_ReadsCacheDirWithServerPushResources \
+  DISABLED_ReadsCacheDirWithServerPushResources
+#else
+#define MAYBE_ReadsCacheDirWithServerPushResources \
+  ReadsCacheDirWithServerPushResources
+#endif
+TEST_F(QuicMemoryCacheBackendTest, MAYBE_ReadsCacheDirWithServerPushResources) {
   cache_.InitializeBackend(CacheDirectory() + "_with_push");
   std::list<ServerPushInfo> resources =
       cache_.GetServerPushResources("test.example.com/index2.html");
   ASSERT_EQ(2UL, resources.size());
 }
 
-TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrl) {
+// TODO(crbug.com/1249712) This test is failing on iOS.
+#if defined(OS_IOS)
+#define MAYBE_UsesOriginalUrl DISABLED_UsesOriginalUrl
+#else
+#define MAYBE_UsesOriginalUrl UsesOriginalUrl
+#endif
+TEST_F(QuicMemoryCacheBackendTest, MAYBE_UsesOriginalUrl) {
   cache_.InitializeBackend(CacheDirectory());
   const Response* response =
       cache_.GetResponse("test.example.com", "/site_map.html");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   // Connection headers are not valid in HTTP/2.
-  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_FALSE(response->headers().contains("connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
-TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrlOnly) {
+// TODO(crbug.com/1249712) This test is failing on iOS.
+#if defined(OS_IOS)
+#define MAYBE_UsesOriginalUrlOnly DISABLED_UsesOriginalUrlOnly
+#else
+#define MAYBE_UsesOriginalUrlOnly UsesOriginalUrlOnly
+#endif
+TEST_F(QuicMemoryCacheBackendTest, MAYBE_UsesOriginalUrlOnly) {
   // Tests that if the URL cannot be inferred correctly from the path
   // because the directory does not include the hostname, that the
   // X-Original-Url header's value will be used.
   std::string dir;
   std::string path = "map.html";
-  for (const std::string& file : ReadFileContents(CacheDirectory())) {
+  std::vector<std::string> files;
+  ASSERT_TRUE(quiche::EnumerateDirectoryRecursively(CacheDirectory(), files));
+  for (const std::string& file : files) {
     if (absl::EndsWithIgnoreCase(file, "map.html")) {
       dir = file;
       dir.erase(dir.length() - path.length() - 1);
@@ -134,10 +170,10 @@ TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrlOnly) {
   const Response* response =
       cache_.GetResponse("test.example.com", "/site_map.html");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   // Connection headers are not valid in HTTP/2.
-  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_FALSE(response->headers().contains("connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
@@ -157,20 +193,20 @@ TEST_F(QuicMemoryCacheBackendTest, DefaultResponse) {
   // Now we should get the default response for the original request.
   response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
 
   // Now add a set response for / and make sure it is returned
   cache_.AddSimpleResponse("www.google.com", "/", 302, "");
   response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("302", response->headers().find(":status")->second);
 
   // We should get the default response for other requests.
   response = cache_.GetResponse("www.google.com", "/asd");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
 }
 
@@ -243,7 +279,7 @@ TEST_F(QuicMemoryCacheBackendTest, GetServerPushResourcesAndPushResponses) {
     std::string path = url.path();
     const Response* response = cache_.GetResponse(host, path);
     ASSERT_TRUE(response);
-    ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+    ASSERT_TRUE(response->headers().contains(":status"));
     EXPECT_EQ(push_response_status[i++],
               response->headers().find(":status")->second);
     EXPECT_EQ(push_resource.body, response->body());

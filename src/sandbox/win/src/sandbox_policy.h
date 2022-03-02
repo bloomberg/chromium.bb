@@ -29,10 +29,9 @@ class TargetPolicy {
     SUBSYS_FILES,            // Creation and opening of files and pipes.
     SUBSYS_NAMED_PIPES,      // Creation of named pipes.
     SUBSYS_PROCESS,          // Creation of child processes.
-    SUBSYS_REGISTRY,         // Creation and opening of registry keys.
-    SUBSYS_SYNC,             // Creation of named sync objects.
     SUBSYS_WIN32K_LOCKDOWN,  // Win32K Lockdown related policy.
-    SUBSYS_SIGNED_BINARY     // Signed binary policy.
+    SUBSYS_SIGNED_BINARY,    // Signed binary policy.
+    SUBSYS_SOCKET            // Socket brokering policy.
   };
 
   // Allowable semantics when a rule is matched.
@@ -44,22 +43,11 @@ class TargetPolicy {
     FILES_ALLOW_DIR_ANY,   // Allows open or create with directory semantics
                            // only.
     NAMEDPIPES_ALLOW_ANY,  // Allows creation of a named pipe.
-    PROCESS_MIN_EXEC,      // Allows to create a process with minimal rights
-                           // over the resulting process and thread handles.
-                           // No other parameters besides the command line are
-                           // passed to the child process.
-    PROCESS_ALL_EXEC,      // Allows the creation of a process and return full
-                           // access on the returned handles.
-                           // This flag can be used only when the main token of
-                           // the sandboxed application is at least INTERACTIVE.
-    EVENTS_ALLOW_ANY,      // Allows the creation of an event with full access.
-    EVENTS_ALLOW_READONLY,  // Allows opening an even with synchronize access.
-    REG_ALLOW_READONLY,     // Allows readonly access to a registry key.
-    REG_ALLOW_ANY,          // Allows read and write access to a registry key.
-    FAKE_USER_GDI_INIT,     // Fakes user32 and gdi32 initialization. This can
-                            // be used to allow the DLLs to load and initialize
-                            // even if the process cannot access that subsystem.
-    SIGNED_ALLOW_LOAD       // Allows loading the module when CIG is enabled.
+    FAKE_USER_GDI_INIT,    // Fakes user32 and gdi32 initialization. This can
+                           // be used to allow the DLLs to load and initialize
+                           // even if the process cannot access that subsystem.
+    SIGNED_ALLOW_LOAD,     // Allows loading the module when CIG is enabled.
+    SOCKET_ALLOW_BROKER    // Allows brokering of sockets.
   };
 
   // Increments the reference count of this object. The reference count must
@@ -271,6 +259,13 @@ class TargetPolicy {
 
   // Returns a snapshot of the policy configuration.
   virtual std::unique_ptr<PolicyInfo> GetPolicyInfo() = 0;
+
+  // Allows the launch of the the target process to proceed even if no job can
+  // be created.
+  virtual void SetAllowNoSandboxJob() = 0;
+
+  // Returns true if target process launch should proceed if job creation fails.
+  virtual bool GetAllowNoSandboxJob() = 0;
 
  protected:
   ~TargetPolicy() {}

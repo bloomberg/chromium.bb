@@ -9,23 +9,21 @@
 #include <utility>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -81,14 +79,7 @@ ChromeAppSorting::ChromeAppSorting(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       default_ordinals_created_(false) {
   ExtensionIdList extensions;
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
-  std::unique_ptr<extensions::ExtensionPrefs::ExtensionsInfo> extensions_info =
-      prefs->GetInstalledExtensionsInfo();
-  for (size_t i = 0; i < extensions_info->size(); ++i) {
-    ExtensionInfo* info = extensions_info->at(i).get();
-    if (!prefs->IsFromBookmark(info->extension_id))
-      extensions.push_back(info->extension_id);
-  }
+  ExtensionPrefs::Get(browser_context_)->GetExtensions(&extensions);
   InitializePageOrdinalMap(extensions);
   MigrateAppIndex(extensions);
 }
@@ -198,24 +189,14 @@ void ChromeAppSorting::MigrateAppIndex(
 void ChromeAppSorting::InitializePageOrdinalMapFromWebApps() {
   auto* profile = Profile::FromBrowserContext(browser_context_);
   DCHECK(profile);
-  auto* web_app_provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
-  DCHECK(web_app_provider);
-  web_app_registrar_ = web_app_provider->registrar().AsWebAppRegistrar();
-  web_app_sync_bridge_ =
-      web_app_provider->registry_controller().AsWebAppSyncBridge();
+  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile);
+  if (!web_app_provider)
+    return;
+
+  web_app_registrar_ = &web_app_provider->registrar();
+  web_app_sync_bridge_ = &web_app_provider->sync_bridge();
   app_registrar_observation_.Observe(&web_app_provider->registrar());
   InitializePageOrdinalMap(web_app_registrar_->GetAppIds());
-}
-
-void ChromeAppSorting::SetWebAppRegistrarForTesting(
-    const web_app::WebAppRegistrar* web_app_registrar) {
-  web_app_registrar_ = web_app_registrar;
-}
-
-void ChromeAppSorting::SetWebAppSyncBridgeForTesting(
-    web_app::WebAppSyncBridge* sync_bridge) {
-  web_app_sync_bridge_ = sync_bridge;
 }
 
 void ChromeAppSorting::FixNTPOrdinalCollisions() {
@@ -268,11 +249,7 @@ void ChromeAppSorting::FixNTPOrdinalCollisions() {
       }
     }
   }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
-      content::Source<ChromeAppSorting>(this),
-      content::NotificationService::NoDetails());
+  InstallTracker::Get(browser_context_)->OnAppsReordered(absl::nullopt);
 }
 
 void ChromeAppSorting::EnsureValidOrdinals(
@@ -351,10 +328,7 @@ void ChromeAppSorting::OnExtensionMoved(
 
   SyncIfNeeded(moved_extension_id);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
-      content::Source<ChromeAppSorting>(this),
-      content::Details<const std::string>(&moved_extension_id));
+  InstallTracker::Get(browser_context_)->OnAppsReordered(moved_extension_id);
 }
 
 syncer::StringOrdinal ChromeAppSorting::GetAppLaunchOrdinal(

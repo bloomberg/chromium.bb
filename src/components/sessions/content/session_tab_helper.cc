@@ -22,6 +22,7 @@ namespace sessions {
 SessionTabHelper::SessionTabHelper(content::WebContents* contents,
                                    DelegateLookup lookup)
     : content::WebContentsObserver(contents),
+      content::WebContentsUserData<SessionTabHelper>(*contents),
       delegate_lookup_(std::move(lookup)),
       session_id_(SessionID::NewUnique()),
       window_id_(SessionID::InvalidValue()) {}
@@ -120,6 +121,6 @@ SessionTabHelperDelegate* SessionTabHelper::GetDelegate() {
   return delegate_lookup_ ? delegate_lookup_.Run(web_contents()) : nullptr;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SessionTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SessionTabHelper);
 
 }  // namespace sessions

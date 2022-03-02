@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
@@ -23,6 +22,10 @@ class GlobalWebStateEventTracker : public WebStateObserver {
  public:
   // Returns the instance of GlobalWebStateEventTracker.
   static GlobalWebStateEventTracker* GetInstance();
+
+  GlobalWebStateEventTracker(const GlobalWebStateEventTracker&) = delete;
+  GlobalWebStateEventTracker& operator=(const GlobalWebStateEventTracker&) =
+      delete;
 
   // Adds/removes observers.
   void AddObserver(GlobalWebStateObserver* observer);
@@ -53,8 +56,6 @@ class GlobalWebStateEventTracker : public WebStateObserver {
 
   // List of observers currently registered with the tracker.
   base::ObserverList<GlobalWebStateObserver, true>::Unchecked observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalWebStateEventTracker);
 };
 
 }  // namespace web

@@ -28,7 +28,7 @@ namespace tensorflow {
       Name("Mean")                                                      \
           .Device(DEVICE_CPU)                                           \
           .TypeConstraint<type>("T")                                    \
-          .TypeConstraint<int64>("Tidx"),                               \
+          .TypeConstraint<int64_t>("Tidx"),                             \
       ReductionOp<CPUDevice, type, int64, functor::MeanReducer<type>>);
 TF_CALL_NUMBER_TYPES(REGISTER_CPU_KERNELS);
 #undef REGISTER_CPU_KERNELS
@@ -47,7 +47,7 @@ TF_CALL_NUMBER_TYPES(REGISTER_CPU_KERNELS);
       Name("Mean")                                                      \
           .Device(DEVICE_GPU)                                           \
           .TypeConstraint<type>("T")                                    \
-          .TypeConstraint<int64>("Tidx")                                \
+          .TypeConstraint<int64_t>("Tidx")                              \
           .HostMemory("reduction_indices"),                             \
       ReductionOp<GPUDevice, type, int64, functor::MeanReducer<type>>);
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_GPU_KERNELS);
@@ -58,25 +58,5 @@ TF_CALL_COMPLEX_TYPES(REGISTER_GPU_KERNELS);
 
 #endif
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNELS(type)                                      \
-  REGISTER_KERNEL_BUILDER(                                               \
-      Name("Mean")                                                       \
-          .Device(DEVICE_SYCL)                                           \
-          .TypeConstraint<type>("T")                                     \
-          .TypeConstraint<int32>("Tidx")                                 \
-          .HostMemory("reduction_indices"),                              \
-      ReductionOp<SYCLDevice, type, int32, functor::MeanReducer<type>>); \
-  REGISTER_KERNEL_BUILDER(                                               \
-      Name("Mean")                                                       \
-          .Device(DEVICE_SYCL)                                           \
-          .TypeConstraint<type>("T")                                     \
-          .TypeConstraint<int64>("Tidx")                                 \
-          .HostMemory("reduction_indices"),                              \
-      ReductionOp<SYCLDevice, type, int64, functor::MeanReducer<type>>);
-REGISTER_SYCL_KERNELS(float);
-REGISTER_SYCL_KERNELS(double);
-#undef REGISTER_SYCL_KERNELS
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // namespace tensorflow

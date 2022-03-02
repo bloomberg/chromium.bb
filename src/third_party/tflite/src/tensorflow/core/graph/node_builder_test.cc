@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/core/graph/node_builder.h"
 
+#include "tensorflow/core/framework/full_type.pb.h"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/graph/graph.h"
 #include "tensorflow/core/kernels/ops_util.h"
@@ -67,6 +68,140 @@ TEST(NodeBuilderTest, Simple) {
                    .Input(NodeBuilder::NodeOut(nullptr, 0))
                    .Finalize(&graph, nullptr)
                    .ok());
+}
+
+REGISTER_OP("FullTypeOpBasicType")
+    .Output("o1: out_type")
+    .Attr("out_type: type")
+    .SetTypeConstructor([](OpDef* op_def) {
+      FullTypeDef* tdef =
+          op_def->mutable_output_arg(0)->mutable_experimental_full_type();
+      tdef->set_type_id(TFT_ARRAY);
+
+      FullTypeDef* arg = tdef->add_args();
+      arg->set_type_id(TFT_VAR);
+      arg->set_s("out_type");
+
+      return Status::OK();
+    });
+
+TEST(NodeBuilderTest, TypeConstructorBasicType) {
+  Graph graph(OpRegistry::Global());
+  Node* node;
+  TF_EXPECT_OK(NodeBuilder("op", "FullTypeOpBasicType")
+                   .Attr("out_type", DT_FLOAT)
+                   .Finalize(&graph, &node));
+  ASSERT_TRUE(node->def().has_experimental_type());
+  const FullTypeDef& ft = node->def().experimental_type();
+  ASSERT_EQ(ft.type_id(), TFT_PRODUCT);
+  ASSERT_EQ(ft.args_size(), 1);
+  auto ot = ft.args(0);
+  ASSERT_EQ(ot.type_id(), TFT_ARRAY);
+  ASSERT_EQ(ot.args(0).type_id(), TFT_TENSOR);
+  ASSERT_EQ(ot.args(0).args(0).type_id(), TFT_FLOAT);
+  ASSERT_EQ(ot.args(0).args(0).args().size(), 0);
+}
+
+REGISTER_OP("TypeInferenceOpTensorOutput")
+    .Output("o1: float32")
+    .SetTypeConstructor([](OpDef* op_def) {
+      FullTypeDef* tdef =
+          op_def->mutable_output_arg(0)->mutable_experimental_full_type();
+      tdef->set_type_id(TFT_TENSOR);
+      return Status::OK();
+    });
+
+REGISTER_OP("TypeInferenceOpArrayOutput")
+    .Output("o1: variant")
+    .SetTypeConstructor([](OpDef* op_def) {
+      FullTypeDef* tdef =
+          op_def->mutable_output_arg(0)->mutable_experimental_full_type();
+      tdef->set_type_id(TFT_ARRAY);
+      return Status::OK();
+    });
+
+REGISTER_OP("TypeInferenceOpBasicType")
+    .Input("i1: T")
+    .Output("o1: T")
+    .Attr("T: type")
+    .SetForwardTypeFn(
+        [](const std::vector<std::reference_wrapper<const FullTypeDef>>&
+               input_types) {
+          FullTypeDef mock;
+          mock.set_type_id(TFT_PRODUCT);
+          if (input_types[0].get().type_id() == TFT_TENSOR) {
+            mock.add_args()->set_type_id(TFT_TENSOR);
+          } else {
+            mock.add_args()->set_type_id(TFT_ARRAY);
+          }
+          return mock;
+        });
+
+TEST(NodeBuilderTest, FwdTypeInferenceBasicType) {
+  Graph graph(OpRegistry::Global());
+  Node* input_node;
+  Node* node;
+
+  TF_EXPECT_OK(NodeBuilder("op", "TypeInferenceOpTensorOutput")
+                   .Finalize(&graph, &input_node));
+  TF_EXPECT_OK(NodeBuilder("op", "TypeInferenceOpBasicType")
+                   .Attr("T", DT_FLOAT)
+                   .Input(input_node)
+                   .Finalize(&graph, &node));
+
+  ASSERT_TRUE(node->def().has_experimental_type());
+  FullTypeDef ft = node->def().experimental_type();
+  ASSERT_EQ(input_node->def().experimental_type().type_id(), TFT_PRODUCT);
+  // The fwd_type_fn of TypeInferenceOpBasicType should have picked the first
+  // branch based on input type.
+  EXPECT_EQ(ft.args(0).type_id(), TFT_TENSOR);
+
+  TF_EXPECT_OK(NodeBuilder("op", "TypeInferenceOpArrayOutput")
+                   .Finalize(&graph, &input_node));
+  TF_EXPECT_OK(NodeBuilder("op", "TypeInferenceOpBasicType")
+                   .Attr("T", DT_VARIANT)
+                   .Input(input_node)
+                   .Finalize(&graph, &node));
+
+  ASSERT_TRUE(node->def().has_experimental_type());
+  ft = node->def().experimental_type();
+  ASSERT_EQ(input_node->def().experimental_type().type_id(), TFT_PRODUCT);
+  // The fwd_type_fn of TypeInferenceOpBasicType should have picked the second
+  // branch based on input type.
+  EXPECT_EQ(ft.args(0).type_id(), TFT_ARRAY);
+}
+
+REGISTER_OP("FullTypeOpListType")
+    .Output("o1: out_types")
+    .Attr("out_types: list(type)")
+    .SetTypeConstructor([](OpDef* op_def) {
+      FullTypeDef* tdef =
+          op_def->mutable_output_arg(0)->mutable_experimental_full_type();
+      tdef->set_type_id(TFT_ARRAY);
+
+      FullTypeDef* arg = tdef->add_args();
+      arg->set_type_id(TFT_VAR);
+      arg->set_s("out_types");
+
+      return Status::OK();
+    });
+
+TEST(NodeBuilderTest, TypeConstructorListType) {
+  Graph graph(OpRegistry::Global());
+  Node* node;
+  TF_EXPECT_OK(NodeBuilder("op", "FullTypeOpListType")
+                   .Attr("out_types", {DT_FLOAT, DT_INT32})
+                   .Finalize(&graph, &node));
+  ASSERT_TRUE(node->def().has_experimental_type());
+  const FullTypeDef& ft = node->def().experimental_type();
+  ASSERT_EQ(ft.type_id(), TFT_PRODUCT);
+  ASSERT_EQ(ft.args_size(), 1);
+  auto ot = ft.args(0);
+  ASSERT_EQ(ot.type_id(), TFT_ARRAY);
+  ASSERT_EQ(ot.args(0).type_id(), TFT_PRODUCT);
+  ASSERT_EQ(ot.args(0).args(0).type_id(), TFT_TENSOR);
+  ASSERT_EQ(ot.args(0).args(0).args(0).type_id(), TFT_FLOAT);
+  ASSERT_EQ(ot.args(0).args(0).args(0).args().size(), 0);
 }
 
 }  // namespace

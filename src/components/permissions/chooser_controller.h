@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace permissions {
 
@@ -22,6 +22,10 @@ namespace permissions {
 class ChooserController {
  public:
   explicit ChooserController(std::u16string title);
+
+  ChooserController(const ChooserController&) = delete;
+  ChooserController& operator=(const ChooserController&) = delete;
+
   virtual ~ChooserController();
 
   // Since the set of options can change while the UI is visible an
@@ -173,9 +177,7 @@ class ChooserController {
 
  private:
   std::u16string title_;
-  View* view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ChooserController);
+  raw_ptr<View> view_ = nullptr;
 };
 
 }  // namespace permissions

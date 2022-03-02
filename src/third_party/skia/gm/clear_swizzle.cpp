@@ -9,33 +9,43 @@
 #include "include/core/SkPoint.h"
 #include "include/core/SkRect.h"
 #include "include/private/SkColorData.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/core/SkCanvasPriv.h"
+#include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSwizzle.h"
+#include "src/gpu/SurfaceFillContext.h"
+
+namespace skiagm {
 
 // Size of each clear
 static constexpr int kSize = 64;
 
-DEF_SIMPLE_GPU_GM(clear_swizzle, ctx, rtCtx, canvas, 6*kSize, 2*kSize) {
-    if (ctx->abandoned()) {
-        return;
+DEF_SIMPLE_GPU_GM_CAN_FAIL(clear_swizzle, rContext, canvas, errorMsg, 6*kSize, 2*kSize) {
+    if (rContext->abandoned()) {
+        *errorMsg = GM::kErrorMsg_DrawSkippedGpuOnly;
+        return DrawResult::kSkip;
+    }
+
+    auto sfc = SkCanvasPriv::TopDeviceSurfaceFillContext(canvas);
+    if (!sfc) {
+        *errorMsg = GM::kErrorMsg_DrawSkippedGpuOnly;
+        return DrawResult::kSkip;
     }
 
     auto make_offscreen = [&](const SkISize dimensions) {
-        GrSwizzle readSwizzle  = GrSwizzle::Concat(rtCtx->readSwizzle(), GrSwizzle{"bgra"});
-        GrSwizzle writeSwizzle = GrSwizzle::Concat(rtCtx->readSwizzle(), GrSwizzle{"bgra"});
-        return GrSurfaceFillContext::Make(ctx,
-                                          kPremul_SkAlphaType,
-                                          rtCtx->colorInfo().refColorSpace(),
-                                          dimensions,
-                                          SkBackingFit::kExact,
-                                          rtCtx->asSurfaceProxy()->backendFormat(),
-                                          /* sample count*/ 1,
-                                          GrMipmapped::kNo,
-                                          rtCtx->asSurfaceProxy()->isProtected(),
-                                          readSwizzle,
-                                          writeSwizzle,
-                                          kTopLeft_GrSurfaceOrigin,
-                                          SkBudgeted::kYes);
+        GrSwizzle readSwizzle  = GrSwizzle::Concat(sfc->readSwizzle(), GrSwizzle{"bgra"});
+        GrSwizzle writeSwizzle = GrSwizzle::Concat(sfc->readSwizzle(), GrSwizzle{"bgra"});
+        return rContext->priv().makeSFC(kPremul_SkAlphaType,
+                                        sfc->colorInfo().refColorSpace(),
+                                        dimensions,
+                                        SkBackingFit::kExact,
+                                        sfc->asSurfaceProxy()->backendFormat(),
+                                        /* sample count*/ 1,
+                                        GrMipmapped::kNo,
+                                        sfc->asSurfaceProxy()->isProtected(),
+                                        readSwizzle,
+                                        writeSwizzle,
+                                        kTopLeft_GrSurfaceOrigin,
+                                        SkBudgeted::kYes);
     };
 
     struct {
@@ -50,7 +60,7 @@ DEF_SIMPLE_GPU_GM(clear_swizzle, ctx, rtCtx, canvas, 6*kSize, 2*kSize) {
 
     // onscreen for reference
     for (const auto& c : clears) {
-        rtCtx->clear(c.rect, c.color);
+        sfc->clear(c.rect, c.color);
     }
 
     // partial clear offscreen
@@ -58,16 +68,20 @@ DEF_SIMPLE_GPU_GM(clear_swizzle, ctx, rtCtx, canvas, 6*kSize, 2*kSize) {
     for (const auto& c : clears) {
         offscreen->clear(c.rect, c.color);
     }
-    rtCtx->blitTexture(offscreen->readSurfaceView(),
-                       SkIRect::MakeSize({2*kSize, 2*kSize}),
-                       SkIPoint{2*kSize, 0});
+    sfc->blitTexture(offscreen->readSurfaceView(),
+                     SkIRect::MakeSize({2*kSize, 2*kSize}),
+                     SkIPoint{2*kSize, 0});
 
     // full offscreen clears
     for (const auto& c : clears) {
         offscreen = make_offscreen(c.rect.size());
         offscreen->clear(SkIRect::MakeSize(c.rect.size()), c.color);
-        rtCtx->blitTexture(offscreen->readSurfaceView(),
-                           SkIRect::MakeSize(offscreen->dimensions()),
-                           c.rect.topLeft() + SkIPoint{4*kSize, 0});
+        sfc->blitTexture(offscreen->readSurfaceView(),
+                         SkIRect::MakeSize(offscreen->dimensions()),
+                         c.rect.topLeft() + SkIPoint{4*kSize, 0});
     }
+
+    return DrawResult::kOk;
 }
+
+} // namespace skiagm

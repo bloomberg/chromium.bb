@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -71,9 +71,11 @@ void DrawContents(SkImage* background_grid_image,
                   base::TimeDelta elapsed_time,
                   SkCanvas* canvas) {
   // Draw background grid.
-  SkPaint paint;
-  paint.setBlendMode(SkBlendMode::kSrc);
-  canvas->drawImage(background_grid_image, 0, 0, SkSamplingOptions(), &paint);
+  {
+    SkPaint paint;
+    paint.setBlendMode(SkBlendMode::kSrc);
+    canvas->drawImage(background_grid_image, 0, 0, SkSamplingOptions(), &paint);
+  }
 
   // Draw rotated rectangles.
   SkScalar rect_size =

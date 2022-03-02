@@ -40,17 +40,19 @@ constexpr int kInterPostRoundBit =
 namespace low_bitdepth {
 namespace {
 
-inline uint8x8_t AverageBlend8Row(const int16_t* prediction_0,
-                                  const int16_t* prediction_1) {
+inline uint8x8_t AverageBlend8Row(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                                  const int16_t* LIBGAV1_RESTRICT
+                                      prediction_1) {
   const int16x8_t pred0 = vld1q_s16(prediction_0);
   const int16x8_t pred1 = vld1q_s16(prediction_1);
   const int16x8_t res = vaddq_s16(pred0, pred1);
   return vqrshrun_n_s16(res, kInterPostRoundBit + 1);
 }
 
-inline void AverageBlendLargeRow(const int16_t* prediction_0,
-                                 const int16_t* prediction_1, const int width,
-                                 uint8_t* dest) {
+inline void AverageBlendLargeRow(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                                 const int16_t* LIBGAV1_RESTRICT prediction_1,
+                                 const int width,
+                                 uint8_t* LIBGAV1_RESTRICT dest) {
   int x = width;
   do {
     const int16x8_t pred_00 = vld1q_s16(prediction_0);
@@ -71,8 +73,10 @@ inline void AverageBlendLargeRow(const int16_t* prediction_0,
   } while (x != 0);
 }
 
-void AverageBlend_NEON(const void* prediction_0, const void* prediction_1,
-                       const int width, const int height, void* const dest,
+void AverageBlend_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                       const void* LIBGAV1_RESTRICT prediction_1,
+                       const int width, const int height,
+                       void* LIBGAV1_RESTRICT const dest,
                        const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
@@ -139,10 +143,10 @@ void Init8bpp() {
 namespace high_bitdepth {
 namespace {
 
-inline uint16x8_t AverageBlend8Row(const uint16_t* prediction_0,
-                                   const uint16_t* prediction_1,
-                                   const int32x4_t compound_offset,
-                                   const uint16x8_t v_bitdepth) {
+inline uint16x8_t AverageBlend8Row(
+    const uint16_t* LIBGAV1_RESTRICT prediction_0,
+    const uint16_t* LIBGAV1_RESTRICT prediction_1,
+    const int32x4_t compound_offset, const uint16x8_t v_bitdepth) {
   const uint16x8_t pred0 = vld1q_u16(prediction_0);
   const uint16x8_t pred1 = vld1q_u16(prediction_1);
   const uint32x4_t pred_lo =
@@ -158,9 +162,10 @@ inline uint16x8_t AverageBlend8Row(const uint16_t* prediction_0,
   return vminq_u16(vcombine_u16(res_lo, res_hi), v_bitdepth);
 }
 
-inline void AverageBlendLargeRow(const uint16_t* prediction_0,
-                                 const uint16_t* prediction_1, const int width,
-                                 uint16_t* dest,
+inline void AverageBlendLargeRow(const uint16_t* LIBGAV1_RESTRICT prediction_0,
+                                 const uint16_t* LIBGAV1_RESTRICT prediction_1,
+                                 const int width,
+                                 uint16_t* LIBGAV1_RESTRICT dest,
                                  const int32x4_t compound_offset,
                                  const uint16x8_t v_bitdepth) {
   int x = width;
@@ -181,8 +186,10 @@ inline void AverageBlendLargeRow(const uint16_t* prediction_0,
   } while (x != 0);
 }
 
-void AverageBlend_NEON(const void* prediction_0, const void* prediction_1,
-                       const int width, const int height, void* const dest,
+void AverageBlend_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                       const void* LIBGAV1_RESTRICT prediction_1,
+                       const int width, const int height,
+                       void* LIBGAV1_RESTRICT const dest,
                        const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint16_t*>(dest);
   const auto* pred_0 = static_cast<const uint16_t*>(prediction_0);

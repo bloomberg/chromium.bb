@@ -12,10 +12,11 @@
   },
   "v8_linux_chromium_gn_rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
-      "symbol_level": 1,
+      "symbol_level": 0,
       "use_goma": true
     }
   }

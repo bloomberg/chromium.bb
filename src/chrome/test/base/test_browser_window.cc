@@ -4,12 +4,17 @@
 
 #include "chrome/test/base/test_browser_window.h"
 
+#include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "base/values.h"
+#endif
 
 // Helpers --------------------------------------------------------------------
 
@@ -23,7 +28,8 @@ std::unique_ptr<Browser> CreateBrowserWithTestWindowForParams(
                            ui::SHOW_STATE_MINIMIZED);
   // Tests generally expect TestBrowserWindows not to be active.
   window->set_is_active(params.initial_show_state != ui::SHOW_STATE_INACTIVE &&
-                        params.initial_show_state != ui::SHOW_STATE_DEFAULT);
+                        params.initial_show_state != ui::SHOW_STATE_DEFAULT &&
+                        params.initial_show_state != ui::SHOW_STATE_MINIMIZED);
 
   return std::unique_ptr<Browser>(Browser::Create(params));
 }
@@ -103,6 +109,10 @@ bool TestBrowserWindow::DoBrowserControlsShrinkRendererSize(
 }
 
 ui::NativeTheme* TestBrowserWindow::GetNativeTheme() {
+  return nullptr;
+}
+
+const ui::ColorProvider* TestBrowserWindow::GetColorProvider() const {
   return nullptr;
 }
 
@@ -220,7 +230,8 @@ qrcode_generator::QRCodeGeneratorBubbleView*
 TestBrowserWindow::ShowQRCodeGeneratorBubble(
     content::WebContents* contents,
     qrcode_generator::QRCodeGeneratorBubbleController* controller,
-    const GURL& url) {
+    const GURL& url,
+    bool show_back_button) {
   return nullptr;
 }
 
@@ -230,6 +241,16 @@ SharingDialog* TestBrowserWindow::ShowSharingDialog(
   return nullptr;
 }
 
+#if !defined(OS_ANDROID)
+sharing_hub::ScreenshotCapturedBubble*
+TestBrowserWindow::ShowScreenshotCapturedBubble(
+    content::WebContents* contents,
+    const gfx::Image& image,
+    sharing_hub::ScreenshotCapturedBubbleController* controller) {
+  return nullptr;
+}
+#endif
+
 send_tab_to_self::SendTabToSelfBubbleView*
 TestBrowserWindow::ShowSendTabToSelfBubble(
     content::WebContents* contents,
@@ -238,12 +259,18 @@ TestBrowserWindow::ShowSendTabToSelfBubble(
   return nullptr;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+views::Button* TestBrowserWindow::GetSharingHubIconButton() {
+  return nullptr;
+}
+#else
 sharing_hub::SharingHubBubbleView* TestBrowserWindow::ShowSharingHubBubble(
     content::WebContents* contents,
     sharing_hub::SharingHubBubbleController* controller,
     bool is_user_gesture) {
   return nullptr;
 }
+#endif
 
 bool TestBrowserWindow::IsDownloadShelfVisible() const {
   return false;
@@ -287,6 +314,15 @@ void TestBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
 void TestBrowserWindow::SetCloseCallback(base::OnceClosure close_callback) {
   close_callback_ = std::move(close_callback);
 }
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+bool TestBrowserWindow::IsSideSearchPanelVisible() const {
+  return false;
+}
+
+void TestBrowserWindow::MaybeRestoreSideSearchStatePerWindow(
+    const std::map<std::string, std::string>& extra_data) {}
+#endif
 
 FeaturePromoController* TestBrowserWindow::GetFeaturePromoController() {
   return feature_promo_controller_.get();

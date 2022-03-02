@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
@@ -75,7 +76,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -300,9 +301,9 @@ int16_t ComparePositions(const Position& a, const Position& b) {
   int16_t bias = 0;
   if (node_a == node_b) {
     if (has_descendent_a)
-      bias = -1;
-    else if (has_descendent_b)
       bias = 1;
+    else if (has_descendent_b)
+      bias = -1;
   }
 
   int16_t result =
@@ -787,6 +788,14 @@ int FindNextBoundaryOffset(const String& str, int current) {
   return current + machine.FinalizeAndGetBoundaryOffset();
 }
 
+// Explicit instantiation to avoid link error for the usage in EditContext.
+template int FindNextBoundaryOffset<BackwardGraphemeBoundaryStateMachine>(
+    const String& str,
+    int current);
+template int FindNextBoundaryOffset<ForwardGraphemeBoundaryStateMachine>(
+    const String& str,
+    int current);
+
 int PreviousGraphemeBoundaryOf(const Node& node, int current) {
   // TODO(yosin): Need to support grapheme crossing |Node| boundary.
   DCHECK_GE(current, 0);
@@ -1195,7 +1204,7 @@ static Node* EnclosingNodeOfTypeAlgorithm(const PositionTemplate<Strategy>& p,
     return nullptr;
 
   ContainerNode* const root =
-      rule == kCannotCrossEditingBoundary ? HighestEditableRoot(p) : nullptr;
+      rule == kCannotCrossEditingBoundary ? RootEditableElementOf(p) : nullptr;
   for (Node* n = p.AnchorNode(); n; n = Strategy::Parent(*n)) {
     // Don't return a non-editable node if the input position was editable,
     // since the callers from editing will no doubt want to perform editing
@@ -1331,6 +1340,14 @@ HTMLSpanElement* CreateTabSpanElement(Document& document) {
   return CreateTabSpanElement(document, nullptr);
 }
 
+static bool IsInPlaceholder(const TextControlElement& text_control,
+                            const Position& position) {
+  const auto* const placeholder_element = text_control.PlaceholderElement();
+  if (!placeholder_element)
+    return false;
+  return placeholder_element->contains(position.ComputeContainerNode());
+}
+
 // Returns user-select:contain boundary element of specified position.
 // Because of we've not yet implemented "user-select:contain", we consider
 // following elements having "user-select:contain"
@@ -1341,6 +1358,8 @@ HTMLSpanElement* CreateTabSpanElement(Document& document) {
 // See http:/crbug.com/658129
 static Element* UserSelectContainBoundaryOf(const Position& position) {
   if (auto* text_control = EnclosingTextControl(position)) {
+    if (IsInPlaceholder(*text_control, position))
+      return nullptr;
     // for <input readonly>. See http://crbug.com/185089
     return text_control->InnerEditorElement();
   }
@@ -1365,7 +1384,7 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     return hit_test_result.GetPosition();
 
   const LayoutObject* editable_object = editable_element->GetLayoutObject();
-  if (!editable_object)
+  if (!editable_object || !editable_object->VisibleToHitTesting())
     return PositionWithAffinity();
 
   // TODO(yosin): Is this kIgnoreTransforms correct here?

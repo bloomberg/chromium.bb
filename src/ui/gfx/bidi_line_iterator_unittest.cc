@@ -4,7 +4,6 @@
 
 #include "ui/gfx/bidi_line_iterator.h"
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,12 +16,13 @@ class BiDiLineIteratorTest
  public:
   BiDiLineIteratorTest() = default;
 
+  BiDiLineIteratorTest(const BiDiLineIteratorTest&) = delete;
+  BiDiLineIteratorTest& operator=(const BiDiLineIteratorTest&) = delete;
+
   BiDiLineIterator* iterator() { return &iterator_; }
 
  private:
   BiDiLineIterator iterator_;
-
-  DISALLOW_COPY_AND_ASSIGN(BiDiLineIteratorTest);
 };
 
 TEST_P(BiDiLineIteratorTest, OnlyLTR) {

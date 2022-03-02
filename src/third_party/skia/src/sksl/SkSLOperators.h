@@ -22,7 +22,7 @@ public:
 
     // Allow implicit conversion from Token::Kind, since this is just a utility wrapper on top.
     Operator(Token::Kind t) : fKind(t) {
-        SkASSERTF(this->isOperator(), "token-kind %d is not an operator", fKind);
+        SkASSERTF(this->isOperator(), "token-kind %d is not an operator", (int)fKind);
     }
 
     enum class Precedence {
@@ -47,6 +47,10 @@ public:
     };
 
     Token::Kind kind() const { return fKind; }
+
+    bool isEquality() const {
+        return fKind == Token::Kind::TK_EQEQ || fKind == Token::Kind::TK_NEQ;
+    }
 
     Precedence getBinaryPrecedence() const;
 

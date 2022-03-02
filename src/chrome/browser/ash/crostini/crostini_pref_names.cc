@@ -20,7 +20,6 @@ namespace prefs {
 // A boolean preference representing whether a user has opted in to use
 // Crostini (Called "Linux Apps" in UI).
 const char kCrostiniEnabled[] = "crostini.enabled";
-const char kCrostiniMimeTypes[] = "crostini.mime_types";
 // List of USB devices with their system guid, a name/description and their
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
@@ -30,6 +29,9 @@ const char kCrostiniTerminalSettings[] = "crostini.terminal_settings";
 const char kVmKey[] = "vm_name";
 const char kContainerKey[] = "container_name";
 const char kContainerOsVersionKey[] = "container_os_version";
+const char kContainerOsPrettyNameKey[] = "container_os_pretty_name";
+// SkColor used to assign badges to apps associated with this container.
+const char kContainerColorKey[] = "badge_color";
 // Boolean preferences indicating whether Crostini is allowed to use mic.
 const char kCrostiniMicAllowed[] = "crostini.mic_allowed";
 
@@ -93,7 +95,6 @@ const char kEngagementPrefsPrefix[] = "crostini.metrics";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
-  registry->RegisterDictionaryPref(kCrostiniMimeTypes);
   registry->RegisterListPref(kCrostiniPortForwarding);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);
   registry->RegisterBooleanPref(kCrostiniMicAllowed, false);

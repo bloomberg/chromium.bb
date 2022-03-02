@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/der/input.h"
 #include "net/der/tag.h"
@@ -96,6 +95,9 @@ class NET_EXPORT Parser {
   // assumes that the underlying data will not change over the lifetime of
   // the Parser object.
   explicit Parser(const Input& input);
+
+  Parser(const Parser&) = default;
+  Parser& operator=(const Parser&) = default;
 
   // Returns whether there is any more data left in the input to parse. This
   // does not guarantee that the data is parseable.
@@ -206,8 +208,6 @@ class NET_EXPORT Parser {
  private:
   CBS cbs_;
   size_t advance_len_;
-
-  DISALLOW_COPY(Parser);
 };
 
 }  // namespace der

@@ -9,7 +9,6 @@
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/system/unified/top_shortcut_button.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
@@ -19,6 +18,7 @@
 
 namespace ash {
 
+class IconButton;
 class TrayNetworkStateModel;
 
 namespace tray {
@@ -29,6 +29,10 @@ namespace tray {
 class NetworkSectionHeaderView : public views::View {
  public:
   explicit NetworkSectionHeaderView(int title_id);
+
+  NetworkSectionHeaderView(const NetworkSectionHeaderView&) = delete;
+  NetworkSectionHeaderView& operator=(const NetworkSectionHeaderView&) = delete;
+
   ~NetworkSectionHeaderView() override = default;
 
   // Modify visibility of section toggle
@@ -80,8 +84,6 @@ class NetworkSectionHeaderView : public views::View {
 
   // ToggleButton to toggle section on or off.
   views::ToggleButton* toggle_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkSectionHeaderView);
 };
 
 // "Mobile Data" header row. Mobile Data reflects both Cellular state and
@@ -91,6 +93,10 @@ class MobileSectionHeaderView : public NetworkSectionHeaderView,
                                 public TrayNetworkStateObserver {
  public:
   MobileSectionHeaderView();
+
+  MobileSectionHeaderView(const MobileSectionHeaderView&) = delete;
+  MobileSectionHeaderView& operator=(const MobileSectionHeaderView&) = delete;
+
   ~MobileSectionHeaderView() override;
 
   // Updates mobile toggle state and returns the id of the status message
@@ -125,22 +131,23 @@ class MobileSectionHeaderView : public NetworkSectionHeaderView,
   base::OneShotTimer enable_bluetooth_timer_;
 
   // Button that navigates to the Settings mobile data subpage with the eSIM
-  // setup dialog open. This is null when the updatedCellularActivationUi flag
-  // is off or the device is not eSIM-capable.
-  TopShortcutButton* add_esim_button_ = nullptr;
+  // setup dialog open. This is null when the device is not eSIM-capable.
+  IconButton* add_esim_button_ = nullptr;
 
   // Indicates whether add_esim_button_ should be enabled when the device is
   // not inhibited.
   bool can_add_esim_button_be_enabled_ = false;
 
   base::WeakPtrFactory<MobileSectionHeaderView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MobileSectionHeaderView);
 };
 
 class WifiSectionHeaderView : public NetworkSectionHeaderView {
  public:
   WifiSectionHeaderView();
+
+  WifiSectionHeaderView(const WifiSectionHeaderView&) = delete;
+  WifiSectionHeaderView& operator=(const WifiSectionHeaderView&) = delete;
+
   ~WifiSectionHeaderView() override = default;
 
   // NetworkSectionHeaderView:
@@ -157,9 +164,7 @@ class WifiSectionHeaderView : public NetworkSectionHeaderView {
   void JoinButtonPressed();
 
   // A button to invoke "Join Wi-Fi network" dialog.
-  views::Button* join_button_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WifiSectionHeaderView);
+  IconButton* join_button_ = nullptr;
 };
 
 }  // namespace tray

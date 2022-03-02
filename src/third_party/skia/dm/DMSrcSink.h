@@ -86,18 +86,18 @@ struct SinkFlags {
 
 struct Src {
     virtual ~Src() {}
-    virtual Result SK_WARN_UNUSED_RESULT draw(GrDirectContext*, SkCanvas*) const = 0;
+    virtual Result SK_WARN_UNUSED_RESULT draw(GrDirectContext* context, SkCanvas* canvas) const = 0;
     virtual SkISize size() const = 0;
     virtual Name name() const = 0;
     virtual void modifyGrContextOptions(GrContextOptions* options) const {}
     virtual bool veto(SinkFlags) const { return false; }
 
     virtual int pageCount() const { return 1; }
-    virtual Result SK_WARN_UNUSED_RESULT draw(int, GrDirectContext* context,
+    virtual Result SK_WARN_UNUSED_RESULT draw([[maybe_unused]] int page, GrDirectContext* context,
                                               SkCanvas* canvas) const {
         return this->draw(context, canvas);
     }
-    virtual SkISize size(int) const { return this->size(); }
+    virtual SkISize size([[maybe_unused]] int page) const { return this->size(); }
     // Force Tasks using this Src to run on the main thread?
     virtual bool serial() const { return false; }
 
@@ -112,6 +112,9 @@ struct Sink {
     // You may write to either the bitmap or stream.  If you write to log, we'll print that out.
     virtual Result SK_WARN_UNUSED_RESULT draw(const Src&, SkBitmap*, SkWStream*, SkString* log)
         const = 0;
+
+    // Override the color space of this Sink, after creation
+    virtual void setColorSpace(sk_sp<SkColorSpace>) {}
 
     // Force Tasks using this Sink to run on the main thread?
     virtual bool serial() const { return false; }
@@ -294,11 +297,11 @@ public:
 
 private:
     // Generates a kTileCount x kTileCount filmstrip with evenly distributed frames.
-    static constexpr int      kTileCount = 5;
+    inline static constexpr int      kTileCount = 5;
 
     // Fit kTileCount x kTileCount frames to a 1000x1000 film strip.
-    static constexpr SkScalar kTargetSize = 1000;
-    static constexpr SkScalar kTileSize = kTargetSize / kTileCount;
+    inline static constexpr SkScalar kTargetSize = 1000;
+    inline static constexpr SkScalar kTileSize = kTargetSize / kTileCount;
 
     Path                      fPath;
 };
@@ -316,17 +319,17 @@ public:
 
 private:
     // Generates a kTileCount x kTileCount filmstrip with evenly distributed frames.
-    static constexpr int      kTileCount  = 5;
+    inline static constexpr int      kTileCount  = 5;
 
     // Fit kTileCount x kTileCount frames to a 1000x1000 film strip.
-    static constexpr SkScalar kTargetSize = 1000;
-    static constexpr SkScalar kTileSize   = kTargetSize / kTileCount;
+    inline static constexpr SkScalar kTargetSize = 1000;
+    inline static constexpr SkScalar kTileSize   = kTargetSize / kTileCount;
 
     const Path fPath;
 };
 #endif
 
-#if defined(SK_XML)
+#if defined(SK_ENABLE_SVG)
 } // namespace DM
 
 class SkSVGDOM;
@@ -349,7 +352,7 @@ private:
 
     using INHERITED = Src;
 };
-#endif // SK_XML
+#endif // SK_ENABLE_SVG
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 class MSKPSrc : public Src {
@@ -401,6 +404,7 @@ public:
         return SinkFlags{ SinkFlags::kGPU, SinkFlags::kDirect, ms };
     }
     const GrContextOptions& baseContextOptions() const { return fBaseContextOptions; }
+    void setColorSpace(sk_sp<SkColorSpace> colorSpace) override { fColorSpace = colorSpace; }
     SkColorInfo colorInfo() const override {
         return SkColorInfo(fColorType, fAlphaType, fColorSpace);
     }
@@ -535,21 +539,16 @@ public:
 
 class RasterSink : public Sink {
 public:
-    explicit RasterSink(SkColorType, sk_sp<SkColorSpace> = nullptr);
+    explicit RasterSink(SkColorType);
 
     Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
     const char* fileExtension() const override { return "png"; }
     SinkFlags flags() const override { return SinkFlags{ SinkFlags::kRaster, SinkFlags::kDirect }; }
+    void setColorSpace(sk_sp<SkColorSpace> colorSpace) override { fColorSpace = colorSpace; }
 
 private:
     SkColorType         fColorType;
     sk_sp<SkColorSpace> fColorSpace;
-};
-
-class ThreadedSink : public RasterSink {
-public:
-    explicit ThreadedSink(SkColorType, sk_sp<SkColorSpace> = nullptr);
-    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 };
 
 class SKPSink : public Sink {
@@ -580,6 +579,26 @@ private:
     int fPageIndex;
 };
 
+#ifdef SK_GRAPHITE_ENABLED
+
+class GraphiteSink : public Sink {
+public:
+    using ContextType = skiatest::graphite::ContextFactory::ContextType;
+
+    GraphiteSink(const SkCommandLineConfigGraphite*);
+
+    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
+    const char* fileExtension() const override { return "png"; }
+    SinkFlags flags() const override { return SinkFlags{ SinkFlags::kGPU, SinkFlags::kDirect }; }
+
+private:
+    ContextType fContextType;
+    SkColorType fColorType;
+    SkAlphaType fAlphaType;
+    bool        fTestPrecompile;
+};
+
+#endif
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -592,6 +611,9 @@ public:
         SinkFlags flags = fSink->flags();
         flags.approach = SinkFlags::kIndirect;
         return flags;
+    }
+    void setColorSpace(sk_sp<SkColorSpace> colorSpace) override {
+        fSink->setColorSpace(colorSpace);
     }
 protected:
     std::unique_ptr<Sink> fSink;
@@ -622,6 +644,12 @@ public:
 class ViaPicture : public Via {
 public:
     explicit ViaPicture(Sink* sink) : Via(sink) {}
+    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
+};
+
+class ViaRuntimeBlend : public Via {
+public:
+    explicit ViaRuntimeBlend(Sink* sink) : Via(sink) {}
     Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 };
 

@@ -34,8 +34,8 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -48,7 +48,7 @@ namespace blink {
 static inline String LanguageFromLocale(const String& locale) {
   String normalized_locale = locale;
   normalized_locale.Replace('-', '_');
-  size_t separator_position = normalized_locale.find('_');
+  wtf_size_t separator_position = normalized_locale.find('_');
   if (separator_position == kNotFound)
     return normalized_locale;
   return normalized_locale.Left(separator_position);
@@ -137,9 +137,7 @@ const Vector<String>& LocaleMac::WeekDayShortLabels() {
   if (!week_day_short_labels_.IsEmpty())
     return week_day_short_labels_;
   week_day_short_labels_.ReserveCapacity(7);
-  NSArray* array = features::IsFormControlsRefreshEnabled()
-                       ? [ShortDateFormatter() veryShortWeekdaySymbols]
-                       : [ShortDateFormatter() shortWeekdaySymbols];
+  NSArray* array = [ShortDateFormatter() veryShortWeekdaySymbols];
   if ([array count] == 7) {
     for (unsigned i = 0; i < 7; ++i)
       week_day_short_labels_.push_back(String(array[i]));
@@ -156,7 +154,7 @@ unsigned LocaleMac::FirstDayOfWeek() {
   // The document for NSCalendar - firstWeekday doesn't have an explanation of
   // firstWeekday value. We can guess it by the document of NSDateComponents -
   // weekDay, so it can be 1 through 7 and 1 is Sunday.
-  return [gregorian_calendar_ firstWeekday] - 1;
+  return static_cast<unsigned>([gregorian_calendar_ firstWeekday] - 1);
 }
 
 bool LocaleMac::IsRTL() {

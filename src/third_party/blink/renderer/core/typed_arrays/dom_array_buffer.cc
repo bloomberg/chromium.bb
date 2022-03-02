@@ -10,9 +10,37 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+// Construction of WrapperTypeInfo may require non-trivial initialization due
+// to cross-component address resolution in order to load the pointer to the
+// parent interface's WrapperTypeInfo.  We ignore this issue because the issue
+// happens only on component builds and the official release builds
+// (statically-linked builds) are never affected by this issue.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
+
+const WrapperTypeInfo DOMArrayBuffer::wrapper_type_info_body_{
+    gin::kEmbedderBlink,
+    nullptr,
+    nullptr,
+    "ArrayBuffer",
+    nullptr,
+    WrapperTypeInfo::kWrapperTypeObjectPrototype,
+    WrapperTypeInfo::kObjectClassId,
+    WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
+    WrapperTypeInfo::kIdlBufferSourceType,
+};
+
+const WrapperTypeInfo& DOMArrayBuffer::wrapper_type_info_ =
+    DOMArrayBuffer::wrapper_type_info_body_;
+
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 static void AccumulateArrayBuffersForAllWorlds(
     v8::Isolate* isolate,
@@ -63,8 +91,9 @@ bool DOMArrayBuffer::TransferDetachable(v8::Isolate* isolate,
     result = ArrayBufferContents(Content()->BackingStore());
   } else {
     Content()->Transfer(result);
-    Detach();
   }
+  // For consistency, the source is detached even if it was empty.
+  Detach();
 
   Vector<v8::Local<v8::ArrayBuffer>, 4> buffer_handles;
   v8::HandleScope handle_scope(isolate);
@@ -85,6 +114,17 @@ DOMArrayBuffer* DOMArrayBuffer::CreateOrNull(size_t num_elements,
     return nullptr;
   }
   return Create(std::move(contents));
+}
+
+DOMArrayBuffer* DOMArrayBuffer::CreateOrNull(const void* source,
+                                             size_t byte_length) {
+  DOMArrayBuffer* buffer = CreateUninitializedOrNull(byte_length, 1);
+  if (!buffer) {
+    return nullptr;
+  }
+
+  memcpy(buffer->Data(), source, byte_length);
+  return buffer;
 }
 
 DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
@@ -158,4 +198,5 @@ DOMArrayBuffer* DOMArrayBuffer::Slice(size_t begin, size_t end) const {
   size_t size = begin <= end ? end - begin : 0;
   return Create(static_cast<const char*>(Data()) + begin, size);
 }
+
 }  // namespace blink

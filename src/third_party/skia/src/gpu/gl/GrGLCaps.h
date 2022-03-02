@@ -93,7 +93,7 @@ public:
 
     enum class TransferBufferType {
         kNone,
-        kNV_PBO,    // NV__pixel_buffer_object
+        kNV_PBO,    // NV_pixel_buffer_object
         kARB_PBO,   // ARB_pixel_buffer_object
         kChromium,  // CHROMIUM_pixel_transfer_buffer_object
     };
@@ -120,7 +120,7 @@ public:
 
     bool isFormatSRGB(const GrBackendFormat&) const override;
 
-    bool isFormatTexturable(const GrBackendFormat&) const override;
+    bool isFormatTexturable(const GrBackendFormat&, GrTextureType) const override;
     bool isFormatTexturable(GrGLFormat) const;
 
     bool isFormatAsColorTypeRenderable(GrColorType ct, const GrBackendFormat& format,
@@ -266,9 +266,22 @@ public:
     }
 
     /**
-     * What functionality is supported by glBlitFramebuffer.
+     * Is it unsupported to only resolve a sub-rectangle of a framebuffer?
      */
-    uint32_t blitFramebufferSupportFlags() const { return fBlitFramebufferFlags; }
+    bool framebufferResolvesMustBeFullSize() const {
+        SkASSERT(fMSFBOType != kNone_MSFBOType);
+        return fMSFBOType == kES_Apple_MSFBOType ||
+               (fBlitFramebufferFlags & kResolveMustBeFull_BlitFrambufferFlag);
+    }
+
+    /**
+     * Can we resolve a single-sample framebuffer into an MSAA framebuffer?
+     */
+    bool canResolveSingleToMSAA() const {
+        SkASSERT(fMSFBOType != kNone_MSFBOType);
+        return fMSFBOType != kES_Apple_MSFBOType &&
+               !(fBlitFramebufferFlags & GrGLCaps::kNoMSAADst_BlitFramebufferFlag);
+    }
 
     /**
      * Is the MSAA FBO extension one where the texture is multisampled when bound to an FBO and
@@ -391,6 +404,25 @@ public:
         return fMustSetAnyTexParameterToEnableMipmapping;
     }
 
+    // Whether we must reset the blend function to not reference src2 when disabling blending after
+    // previously referencing src2.
+    bool mustResetBlendFuncBetweenDualSourceAndDisable() const {
+        return fMustResetBlendFuncBetweenDualSourceAndDisable;
+    }
+
+    // Before changing the sample count of a texture bound to an FBO with
+    // glFramebufferTexture2DMultisample() temporarily bind texture 0 to avoid corruption int the
+    // texture contents.
+    bool bindTexture0WhenChangingTextureFBOMultisampleCount() const {
+        return fBindTexture0WhenChangingTextureFBOMultisampleCount;
+    }
+
+    // After using glCheckFramebufferStatus() bind 0 to the color attachment and then rebind the
+    // original color attachment.
+    bool rebindColorAttachmentAfterCheckFramebufferStatus() const {
+        return fRebindColorAttachmentAfterCheckFramebufferStatus;
+    }
+
     // Returns the observed maximum number of instances the driver can handle in a single draw call
     // without crashing, or 'pendingInstanceCount' if this workaround is not necessary.
     // NOTE: the return value may be larger than pendingInstanceCount.
@@ -438,6 +470,10 @@ public:
     /** Skip checks for GL errors, shader compilation success, program link success. */
     bool skipErrorChecks() const { return fSkipErrorChecks; }
 
+    bool supportsProtected() const { return fSupportsProtected; }
+
+    bool clientCanDisableMultisample() const { return fClientCanDisableMultisample; }
+
     GrBackendFormat getBackendFormatFromCompressionType(SkImage::CompressionType) const override;
 
     GrSwizzle getWriteSwizzle(const GrBackendFormat&, GrColorType) const override;
@@ -475,6 +511,9 @@ private:
         bool fDisallowDirectRG8ReadPixels = false;
         bool fDisallowBGRA8ReadPixels = false;
         bool fDisallowR8ForPowerVRSGX54x = false;
+        bool fDisallowUnorm16Transfers = false;
+        bool fDisallowTextureUnorm16 = false;
+        bool fDisallowETC2Compression = false;
     };
 
     void applyDriverCorrectnessWorkarounds(const GrGLContextInfo&, const GrContextOptions&,
@@ -503,21 +542,9 @@ private:
 
     GrSwizzle onGetReadSwizzle(const GrBackendFormat&, GrColorType) const override;
 
-    GrDstSampleType onGetDstSampleTypeForProxy(const GrRenderTargetProxy*) const override;
+    GrDstSampleFlags onGetDstSampleFlagsForProxy(const GrRenderTargetProxy*) const override;
 
-    bool onSupportsDynamicMSAA(const GrRenderTargetProxy*) const override {
-        switch (fMSFBOType) {
-            // The Apple extension doesn't support blitting from single to multisample.
-            case kES_Apple_MSFBOType:
-            case kNone_MSFBOType:
-                return false;
-            case kStandard_MSFBOType:
-            case kES_IMG_MsToTexture_MSFBOType:
-            case kES_EXT_MsToTexture_MSFBOType:
-                return true;
-        }
-        SkUNREACHABLE;
-    }
+    bool onSupportsDynamicMSAA(const GrRenderTargetProxy*) const override;
 
     GrGLStandard fStandard = kNone_GrGLStandard;
 
@@ -557,6 +584,8 @@ private:
     bool fFBFetchRequiresEnablePerSample : 1;
     bool fSRGBWriteControl : 1;
     bool fSkipErrorChecks : 1;
+    bool fClientCanDisableMultisample : 1;
+    bool fSupportsProtected : 1;
 
     // Driver workarounds
     bool fDoManualMipmapping : 1;
@@ -569,6 +598,10 @@ private:
     bool fNeverDisableColorWrites : 1;
     bool fMustSetAnyTexParameterToEnableMipmapping : 1;
     bool fAllowBGRA8CopyTexSubImage : 1;
+    bool fDisallowDynamicMSAA : 1;
+    bool fMustResetBlendFuncBetweenDualSourceAndDisable : 1;
+    bool fBindTexture0WhenChangingTextureFBOMultisampleCount : 1;
+    bool fRebindColorAttachmentAfterCheckFramebufferStatus : 1;
     int fMaxInstancesPerDrawWithoutCrashing = 0;
 
     uint32_t fBlitFramebufferFlags = kNoSupport_BlitFramebufferFlag;
@@ -682,12 +715,17 @@ private:
         }
 
         enum {
-            kTexturable_Flag                 = 0x1,
+            kTexturable_Flag                 = 0x01,
             /** kFBOColorAttachment means that even if the format cannot be a GrRenderTarget, we can
                 still attach it to a FBO for blitting or reading pixels. */
-            kFBOColorAttachment_Flag         = 0x2,
-            kFBOColorAttachmentWithMSAA_Flag = 0x4,
-            kUseTexStorage_Flag              = 0x8,
+            kFBOColorAttachment_Flag         = 0x02,
+            kFBOColorAttachmentWithMSAA_Flag = 0x04,
+            kUseTexStorage_Flag              = 0x08,
+            /**
+             * Are pixel buffer objects supported in/out of this format? Ignored if PBOs are not
+             * supported at all.
+             */
+            kTransfers_Flag                  = 0x10,
         };
         uint32_t fFlags = 0;
 

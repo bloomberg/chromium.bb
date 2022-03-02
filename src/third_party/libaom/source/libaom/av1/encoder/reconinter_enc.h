@@ -24,6 +24,13 @@
 extern "C" {
 #endif
 
+void aom_highbd_comp_mask_upsampled_pred(
+    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+    const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
+    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
+    int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask,
+    int bd, int subpel_search);
+
 // Build single or compound reference inter predictors for all planes.
 // Can build inter-intra predictors, masked predictors etc as well.
 void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,

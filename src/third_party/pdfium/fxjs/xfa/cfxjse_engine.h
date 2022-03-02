@@ -9,12 +9,15 @@
 
 #include <map>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
+#include "core/fxcrt/mask.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fxjs/cfx_v8.h"
 #include "v8/include/cppgc/persistent.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_script.h"
@@ -25,20 +28,22 @@ class CFXJSE_Context;
 class CFXJSE_FormCalcContext;
 class CFXJSE_HostObject;
 class CFXJSE_ResolveProcessor;
+class CFXJSE_Value;
 class CJS_Runtime;
 
-// Flags for |dwStyles| argument to CFXJSE_Engine::ResolveObjects().
-#define XFA_RESOLVENODE_Children 0x0001
-#define XFA_RESOLVENODE_TagName 0x0002
-#define XFA_RESOLVENODE_Attributes 0x0004
-#define XFA_RESOLVENODE_Properties 0x0008
-#define XFA_RESOLVENODE_Siblings 0x0020
-#define XFA_RESOLVENODE_Parent 0x0040
-#define XFA_RESOLVENODE_AnyChild 0x0080
-#define XFA_RESOLVENODE_ALL 0x0100
-#define XFA_RESOLVENODE_CreateNode 0x0400
-#define XFA_RESOLVENODE_Bind 0x0800
-#define XFA_RESOLVENODE_BindNew 0x1000
+enum class XFA_ResolveFlag : uint16_t {
+  kChildren = 1 << 0,
+  kTagName = 1 << 1,
+  kAttributes = 1 << 2,
+  kProperties = 1 << 3,
+  kSiblings = 1 << 5,
+  kParent = 1 << 6,
+  kAnyChild = 1 << 7,
+  kALL = 1 << 8,
+  kCreateNode = 1 << 10,
+  kBind = 1 << 11,
+  kBindNew = 1 << 12,
+};
 
 class CFXJSE_Engine final : public CFX_V8 {
  public:
@@ -92,14 +97,14 @@ class CFXJSE_Engine final : public CFX_V8 {
   static CJS_Result NormalMethodCall(
       const v8::FunctionCallbackInfo<v8::Value>& info,
       const WideString& functionName);
-  static int32_t NormalPropTypeGetter(v8::Isolate* pIsolate,
-                                      v8::Local<v8::Object> pObject,
-                                      ByteStringView szPropName,
-                                      bool bQueryIn);
-  static int32_t GlobalPropTypeGetter(v8::Isolate* pIsolate,
-                                      v8::Local<v8::Object> pObject,
-                                      ByteStringView szPropName,
-                                      bool bQueryIn);
+  static FXJSE_ClassPropType NormalPropTypeGetter(v8::Isolate* pIsolate,
+                                                  v8::Local<v8::Object> pObject,
+                                                  ByteStringView szPropName,
+                                                  bool bQueryIn);
+  static FXJSE_ClassPropType GlobalPropTypeGetter(v8::Isolate* pIsolate,
+                                                  v8::Local<v8::Object> pObject,
+                                                  ByteStringView szPropName,
+                                                  bool bQueryIn);
 
   CFXJSE_Engine(CXFA_Document* pDocument, CJS_Runtime* fxjs_runtime);
   ~CFXJSE_Engine() override;
@@ -111,14 +116,14 @@ class CFXJSE_Engine final : public CFX_V8 {
                  CFXJSE_Value* pRetValue,
                  CXFA_Object* pThisObject);
 
-  Optional<ResolveResult> ResolveObjects(CXFA_Object* refObject,
-                                         WideStringView wsExpression,
-                                         uint32_t dwStyles);
+  absl::optional<ResolveResult> ResolveObjects(CXFA_Object* refObject,
+                                               WideStringView wsExpression,
+                                               Mask<XFA_ResolveFlag> dwStyles);
 
-  Optional<ResolveResult> ResolveObjectsWithBindNode(
+  absl::optional<ResolveResult> ResolveObjectsWithBindNode(
       CXFA_Object* refObject,
       WideStringView wsExpression,
-      uint32_t dwStyles,
+      Mask<XFA_ResolveFlag> dwStyles,
       CXFA_Node* bindNode);
 
   v8::Local<v8::Object> GetOrCreateJSBindingFromMap(CXFA_Object* pObject);
@@ -149,15 +154,21 @@ class CFXJSE_Engine final : public CFX_V8 {
   bool QueryNodeByFlag(CXFA_Node* refNode,
                        WideStringView propname,
                        v8::Local<v8::Value>* pValue,
-                       uint32_t dwFlag,
-                       bool bSetting);
+                       Mask<XFA_ResolveFlag> dwFlag);
+  bool UpdateNodeByFlag(CXFA_Node* refNode,
+                        WideStringView propname,
+                        v8::Local<v8::Value> pValue,
+                        Mask<XFA_ResolveFlag> dwFlag);
   bool IsStrictScopeInJavaScript();
   CXFA_Object* GetVariablesThis(CXFA_Object* pObject);
   CXFA_Object* GetVariablesScript(CXFA_Object* pObject);
+  CFXJSE_Context* VariablesContextForScriptNode(CXFA_Node* pScriptNode);
   bool QueryVariableValue(CXFA_Node* pScriptNode,
                           ByteStringView szPropName,
-                          v8::Local<v8::Value>* pValue,
-                          bool bGetter);
+                          v8::Local<v8::Value>* pValue);
+  bool UpdateVariableValue(CXFA_Node* pScriptNode,
+                           ByteStringView szPropName,
+                           v8::Local<v8::Value> pValue);
   bool RunVariablesScript(CXFA_Node* pScriptNode);
 
   UnownedPtr<CJS_Runtime> const m_pSubordinateRuntime;

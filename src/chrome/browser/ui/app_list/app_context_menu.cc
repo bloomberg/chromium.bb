@@ -8,12 +8,14 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/vector_icons.h"
@@ -75,7 +77,7 @@ ui::ImageModel AppContextMenu::GetIconForCommandId(int command_id) const {
       GetMenuItemVectorIcon(command_id, controller_->IsAppPinned(app_id_)
                                             ? IDS_APP_LIST_CONTEXT_MENU_UNPIN
                                             : IDS_APP_LIST_CONTEXT_MENU_PIN);
-  return ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+  return ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
                                         ash::kAppContextMenuIconSize);
 }
 
@@ -114,6 +116,8 @@ const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(int command_id,
     case ash::USE_LAUNCH_TYPE_WINDOW:
       // Check items use the default icon.
       return gfx::kNoneIcon;
+    case ash::REORDER_SUBMENU:
+      return ash::kReorderIcon;
     case ash::NOTIFICATION_CONTAINER:
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";
@@ -158,7 +162,7 @@ void AppContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
   if (!icon.is_empty()) {
     menu_model->AddItemWithStringIdAndIcon(
         command_id, string_id,
-        ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+        ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
                                        ash::kAppContextMenuIconSize));
     return;
   }

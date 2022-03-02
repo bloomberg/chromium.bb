@@ -28,7 +28,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence,
     const GURL& script_url,
     const GURL& scope,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     int64_t registration_id,
     int64_t version_id,
     int process_id,
@@ -36,7 +36,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     int devtools_agent_route_id,
     ukm::SourceId ukm_source_id)
     : ServiceWorkerVersionBaseInfo(scope,
-                                   origin,
+                                   storage_key,
                                    registration_id,
                                    version_id,
                                    process_id),
@@ -62,9 +62,11 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& scope,
+    const blink::StorageKey& key,
     int64_t registration_id,
     DeleteFlag delete_flag)
     : scope(scope),
+      key(key),
       registration_id(registration_id),
       delete_flag(delete_flag),
       stored_version_size_bytes(0),
@@ -73,6 +75,7 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& scope,
+    const blink::StorageKey& key,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     int64_t registration_id,
     DeleteFlag delete_flag,
@@ -83,6 +86,7 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     bool navigation_preload_enabled,
     size_t navigation_preload_header_length)
     : scope(scope),
+      key(key),
       update_via_cache(update_via_cache),
       registration_id(registration_id),
       delete_flag(delete_flag),

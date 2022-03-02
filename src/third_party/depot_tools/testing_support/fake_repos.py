@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -11,6 +11,7 @@ from __future__ import print_function
 import atexit
 import datetime
 import errno
+import io
 import logging
 import os
 import pprint
@@ -28,7 +29,7 @@ import gclient_utils
 import scm
 import subprocess2
 
-DEFAULT_BRANCH = 'master'
+DEFAULT_BRANCH = 'main'
 
 
 def write(path, content):
@@ -49,7 +50,8 @@ def read_tree(tree_root):
     for f in [join(root, f) for f in files if not f.startswith('.')]:
       filepath = f[len(tree_root) + 1:].replace(os.sep, '/')
       assert len(filepath), f
-      tree[filepath] = gclient_utils.FileRead(join(root, f))
+      with io.open(join(root, f), encoding='utf-8') as f:
+        tree[filepath] = f.read()
   return tree
 
 

@@ -16,6 +16,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "include/v8-container.h"
+#include "include/v8-template.h"
 #include "src/base/platform/wrappers.h"
 #include "src/d8/d8.h"
 
@@ -163,10 +165,12 @@ class ExecArgs {
           "os.system(): String conversion of program name failed");
       return false;
     }
-    int len = prog.length() + 3;
-    char* c_arg = new char[len];
-    snprintf(c_arg, len, "%s", *prog);
-    exec_args_[0] = c_arg;
+    {
+      int len = prog.length() + 3;
+      char* c_arg = new char[len];
+      snprintf(c_arg, len, "%s", *prog);
+      exec_args_[0] = c_arg;
+    }
     int i = 1;
     for (unsigned j = 0; j < command_args->Length(); i++, j++) {
       Local<Value> arg(
@@ -318,7 +322,7 @@ static Local<Value> GetStdout(Isolate* isolate, int child_fd,
               .ToLocalChecked();
       accumulator = String::Concat(isolate, accumulator, addition);
       fullness = bytes_read + fullness - length;
-      base::Memcpy(buffer, buffer + length, fullness);
+      memcpy(buffer, buffer + length, fullness);
     }
   } while (bytes_read != 0);
   return accumulator;
@@ -343,7 +347,7 @@ static Local<Value> GetStdout(Isolate* isolate, int child_fd,
 
 // Get exit status of child.
 static bool WaitForChild(Isolate* isolate, int pid,
-                         ZombieProtector& child_waiter,  // NOLINT
+                         ZombieProtector& child_waiter,
                          const struct timeval& start_time, int read_timeout,
                          int total_timeout) {
 #ifdef HAS_WAITID

@@ -18,6 +18,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -103,9 +104,9 @@ void PrivacyInfoView::OnPaintBackground(gfx::Canvas* canvas) {
     const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(SkColorSetA(
-        color_provider->GetRippleAttributesBaseColor(bg_color),
-        color_provider->GetRippleAttributesHighlightOpacity(bg_color) * 255));
+    flags.setColor(
+        SkColorSetA(color_provider->GetInkDropBaseColor(bg_color),
+                    color_provider->GetInkDropOpacity(bg_color) * 255));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawCircle(close_button_->bounds().CenterPoint(),
                        close_button_->width() / 2, flags);
@@ -297,13 +298,16 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->SizeToPreferredSize();
 
   // Ink ripple.
-  close_button->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(close_button.get())
+      ->SetMode(views::InkDropHost::InkDropMode::ON);
   constexpr SkColor kInkDropBaseColor = gfx::kGoogleGrey900;
   constexpr float kInkDropVisibleOpacity = 0.06f;
   constexpr float kInkDropHighlightOpacity = 0.08f;
-  close_button->ink_drop()->SetVisibleOpacity(kInkDropVisibleOpacity);
-  close_button->ink_drop()->SetHighlightOpacity(kInkDropHighlightOpacity);
-  close_button->ink_drop()->SetBaseColor(kInkDropBaseColor);
+  views::InkDrop::Get(close_button.get())
+      ->SetVisibleOpacity(kInkDropVisibleOpacity);
+  views::InkDrop::Get(close_button.get())
+      ->SetHighlightOpacity(kInkDropHighlightOpacity);
+  views::InkDrop::Get(close_button.get())->SetBaseColor(kInkDropBaseColor);
   close_button->SetHasInkDropActionOnClick(true);
   views::InstallCircleHighlightPathGenerator(close_button.get());
   close_button_ = AddChildView(std::move(close_button));

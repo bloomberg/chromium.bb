@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GENERIC_SENSOR_SENSOR_PROVIDER_PROXY_IMPL_H_
 #define CONTENT_BROWSER_GENERIC_SENSOR_SENSOR_PROVIDER_PROXY_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -26,6 +27,10 @@ class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
  public:
   SensorProviderProxyImpl(PermissionControllerImpl* permission_controller,
                           RenderFrameHost* render_frame_host);
+
+  SensorProviderProxyImpl(const SensorProviderProxyImpl&) = delete;
+  SensorProviderProxyImpl& operator=(const SensorProviderProxyImpl&) = delete;
+
   ~SensorProviderProxyImpl() override;
 
   void Bind(mojo::PendingReceiver<device::mojom::SensorProvider> receiver);
@@ -48,14 +53,15 @@ class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
                                     blink::mojom::PermissionStatus);
   void OnConnectionError();
 
-  mojo::ReceiverSet<device::mojom::SensorProvider> receiver_set_;
-  PermissionControllerImpl* permission_controller_;
-  RenderFrameHost* render_frame_host_;
+  // Callbacks from |receiver_set_| are passed to |sensor_provider_| and so
+  // the ReceiverSet should be destroyed first so that the callbacks are
+  // invalidated before being discarded.
   mojo::Remote<device::mojom::SensorProvider> sensor_provider_;
+  mojo::ReceiverSet<device::mojom::SensorProvider> receiver_set_;
+  raw_ptr<PermissionControllerImpl> permission_controller_;
+  raw_ptr<RenderFrameHost> render_frame_host_;
 
   base::WeakPtrFactory<SensorProviderProxyImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SensorProviderProxyImpl);
 };
 
 }  // namespace content

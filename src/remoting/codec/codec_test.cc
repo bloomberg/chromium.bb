@@ -12,8 +12,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "remoting/base/util.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_encoder.h"
@@ -64,6 +65,9 @@ class VideoDecoderTester {
         decoder_(decoder),
         frame_(new BasicDesktopFrame(screen_size)),
         expected_frame_(nullptr) {}
+
+  VideoDecoderTester(const VideoDecoderTester&) = delete;
+  VideoDecoderTester& operator=(const VideoDecoderTester&) = delete;
 
   void Reset() {
     frame_ = std::make_unique<BasicDesktopFrame>(frame_->size());
@@ -164,11 +168,9 @@ class VideoDecoderTester {
  private:
   bool strict_;
   DesktopRegion expected_region_;
-  VideoDecoder* decoder_;
+  raw_ptr<VideoDecoder> decoder_;
   std::unique_ptr<DesktopFrame> frame_;
-  DesktopFrame* expected_frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderTester);
+  raw_ptr<DesktopFrame> expected_frame_;
 };
 
 // The VideoEncoderTester provides a hook for retrieving the data, and passing
@@ -176,6 +178,9 @@ class VideoDecoderTester {
 class VideoEncoderTester {
  public:
   VideoEncoderTester() : decoder_tester_(nullptr), data_available_(0) {}
+
+  VideoEncoderTester(const VideoEncoderTester&) = delete;
+  VideoEncoderTester& operator=(const VideoEncoderTester&) = delete;
 
   ~VideoEncoderTester() {
     EXPECT_GT(data_available_, 0);
@@ -194,10 +199,8 @@ class VideoEncoderTester {
   }
 
  private:
-  VideoDecoderTester* decoder_tester_;
+  raw_ptr<VideoDecoderTester> decoder_tester_;
   int data_available_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoEncoderTester);
 };
 
 std::unique_ptr<DesktopFrame> PrepareFrame(const DesktopSize& size) {

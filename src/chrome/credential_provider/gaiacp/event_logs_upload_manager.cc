@@ -8,6 +8,7 @@
 #include <winevt.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -28,7 +29,7 @@ const char kGcpwServiceUploadEventLogsPath[] = "/v1/uploadEventViewerLogs";
 
 // Default timeout when trying to make requests to the GCPW service.
 const base::TimeDelta kDefaultUploadLogsRequestTimeout =
-    base::TimeDelta::FromMilliseconds(12000);
+    base::Milliseconds(12000);
 
 // Parameter names that are used in the JSON payload of the requests.
 const char kRequestSerialNumberParameterName[] = "device_serial_number";

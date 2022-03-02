@@ -4,7 +4,7 @@
 
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
@@ -12,6 +12,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/bind.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/client/aura_constants.h"
@@ -44,6 +45,9 @@ class ShelfDragCallback {
         was_visible_on_drag_start_(false) {
     EXPECT_EQ(auto_hidden_shelf_bounds_.size(), visible_shelf_bounds_.size());
   }
+
+  ShelfDragCallback(const ShelfDragCallback&) = delete;
+  ShelfDragCallback& operator=(const ShelfDragCallback&) = delete;
 
   virtual ~ShelfDragCallback() = default;
 
@@ -162,8 +166,6 @@ class ShelfDragCallback {
   const gfx::Rect visible_shelf_bounds_;
   gfx::Vector2dF scroll_;
   bool was_visible_on_drag_start_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfDragCallback);
 };
 }  // namespace
 
@@ -254,7 +256,7 @@ void ShelfLayoutManagerTestBase::EndScroll(bool is_fling, float velocity_y) {
 }
 
 void ShelfLayoutManagerTestBase::IncreaseTimestamp() {
-  timestamp_ += base::TimeDelta::FromMilliseconds(25);
+  timestamp_ += base::Milliseconds(25);
 }
 
 WorkspaceWindowState ShelfLayoutManagerTestBase::GetWorkspaceWindowState()
@@ -294,7 +296,7 @@ void ShelfLayoutManagerTestBase::SwipeUpOnShelf() {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Point start(display_bounds.bottom_center());
   const gfx::Point end(start + gfx::Vector2d(0, -80));
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kTimeDelta = base::Milliseconds(100);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                              kNumScrollSteps);
@@ -307,7 +309,7 @@ void ShelfLayoutManagerTestBase::SwipeDownOnShelf() {
                        ->GetBoundsInScreen()
                        .top_center());
   const gfx::Point end(start + gfx::Vector2d(0, 40));
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kTimeDelta = base::Milliseconds(100);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                              kNumScrollSteps);
@@ -318,7 +320,7 @@ void ShelfLayoutManagerTestBase::FlingUpOnShelf() {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Point start(display_bounds.bottom_center());
   const gfx::Point end(start.x(), 10);
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(10);
+  const base::TimeDelta kTimeDelta = base::Milliseconds(10);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                              kNumScrollSteps);
@@ -332,7 +334,7 @@ void ShelfLayoutManagerTestBase::DragHotseatDownToBezel() {
   const gfx::Point end =
       gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
                  shelf_widget_bounds.bottom() + 1);
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kTimeDelta = base::Milliseconds(100);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                              kNumScrollSteps);
@@ -398,7 +400,7 @@ void ShelfLayoutManagerTestBase::RunGestureDragTests(
   widget->Maximize();
 
   // The time delta should be large enough to prevent accidental fling creation.
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kTimeDelta = base::Milliseconds(100);
 
   aura::Window* window = widget->GetNativeWindow();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();

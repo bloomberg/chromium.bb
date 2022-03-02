@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 
 namespace ash {
 
 // Define timeout for issued sign_request_id.
-constexpr base::TimeDelta kSignRequestIdTimeout =
-    base::TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kSignRequestIdTimeout = base::Minutes(10);
 
 PinDialogManager::PinDialogManager() = default;
 
@@ -29,8 +28,8 @@ void PinDialogManager::AddSignRequestId(
                                            authenticating_user_account_id)));
 }
 
-void PinDialogManager::AbortSignRequest(const std::string& extension_id,
-                                        int sign_request_id) {
+void PinDialogManager::RemoveSignRequest(const std::string& extension_id,
+                                         int sign_request_id) {
   if (active_dialog_state_ &&
       active_dialog_state_->extension_id == extension_id &&
       active_dialog_state_->sign_request_id == sign_request_id) {

@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
@@ -42,6 +42,12 @@ class MutableProfileOAuth2TokenServiceDelegate
       signin::AccountConsistencyMethod account_consistency,
       bool revoke_all_tokens_on_load,
       FixRequestErrorCallback fix_request_error_callback);
+
+  MutableProfileOAuth2TokenServiceDelegate(
+      const MutableProfileOAuth2TokenServiceDelegate&) = delete;
+  MutableProfileOAuth2TokenServiceDelegate& operator=(
+      const MutableProfileOAuth2TokenServiceDelegate&) = delete;
+
   ~MutableProfileOAuth2TokenServiceDelegate() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -221,9 +227,9 @@ class MutableProfileOAuth2TokenServiceDelegate
   net::BackoffEntry backoff_entry_;
   GoogleServiceAuthError backoff_error_;
 
-  SigninClient* client_;
-  AccountTrackerService* account_tracker_service_;
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<SigninClient> client_;
+  raw_ptr<AccountTrackerService> account_tracker_service_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
   scoped_refptr<TokenWebData> token_web_data_;
   signin::AccountConsistencyMethod account_consistency_;
 
@@ -235,8 +241,6 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Callback function that attempts to correct request errors.  Best effort
   // only.  Returns true if the error was fixed and retry should be reattempted.
   FixRequestErrorCallback fix_request_error_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
 };
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_

@@ -148,6 +148,13 @@ WebNode WebElement::ShadowRoot() const {
   return WebNode(root);
 }
 
+WebElement WebElement::OwnerShadowHost() const {
+  if (auto* host = ConstUnwrap<Element>()->OwnerShadowHost()) {
+    return WebElement(host);
+  }
+  return WebElement();
+}
+
 WebNode WebElement::OpenOrClosedShadowRoot() {
   if (IsNull())
     return WebNode();
@@ -169,7 +176,7 @@ SkBitmap WebElement::ImageContents() {
 
 std::vector<uint8_t> WebElement::CopyOfImageData() {
   Image* image = GetImage();
-  if (!image || !image->Data())
+  if (!image || !image->HasData())
     return std::vector<uint8_t>();
   return image->Data()->CopyAs<std::vector<uint8_t>>();
 }

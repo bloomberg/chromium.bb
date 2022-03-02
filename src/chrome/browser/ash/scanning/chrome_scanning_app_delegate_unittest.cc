@@ -5,10 +5,13 @@
 #include "chrome/browser/ash/scanning/chrome_scanning_app_delegate.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -69,11 +72,21 @@ class ChromeScanningAppDelegateTest : public testing::Test {
     EXPECT_TRUE(base::CreateDirectory(drive_path_));
     my_files_path_ = temp_dir_.GetPath().Append("MyFiles");
     EXPECT_TRUE(base::CreateDirectory(my_files_path_));
+    removable_media_path_ = temp_dir_.GetPath().Append("removable/media");
+    EXPECT_TRUE(base::CreateDirectory(removable_media_path_));
 
     chrome_scanning_app_delegate_ =
         std::make_unique<ChromeScanningAppDelegate>(web_ui_.get());
-    chrome_scanning_app_delegate_->SetGoogleDrivePathForTesting(drive_path_);
-    chrome_scanning_app_delegate_->SetMyFilesPathForTesting(my_files_path_);
+    chrome_scanning_app_delegate_->SetValidPaths(drive_path_, my_files_path_);
+    chrome_scanning_app_delegate_->SetRemoveableMediaPathForTesting(
+        removable_media_path_);
+  }
+
+  void TearDown() override { web_contents_.reset(); }
+
+  void DidFilesAppOpen(bool expected_value, bool files_app_opened) {
+    EXPECT_EQ(expected_value, files_app_opened);
+    std::move(run_loop_closure_).Run();
   }
 
  protected:
@@ -83,12 +96,19 @@ class ChromeScanningAppDelegateTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath my_files_path_;
   base::FilePath drive_path_;
+  base::FilePath removable_media_path_;
+  base::OnceClosure run_loop_closure_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<content::WebContents> web_contents_;
 };
+
+// Validates that the correct My Files path is returned.
+TEST_F(ChromeScanningAppDelegateTest, GetMyFilesPath) {
+  EXPECT_EQ(my_files_path_, chrome_scanning_app_delegate_->GetMyFilesPath());
+}
 
 // Validates that the correct base name is returned from a generic filepath.
 TEST_F(ChromeScanningAppDelegateTest, BaseNameFromGenericPath) {
@@ -117,47 +137,105 @@ TEST_F(ChromeScanningAppDelegateTest, BaseNameFromMyFilesPath) {
 // Validates that passing a file path that exists and is a child of the MyFiles
 // path returns true for showing the Files app.
 TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppMyFilesChild) {
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
+
   const base::FilePath test_file = my_files_path_.Append("test_file.png");
   base::File(test_file, base::File::FLAG_CREATE | base::File::FLAG_READ);
-  EXPECT_TRUE(chrome_scanning_app_delegate_->ShowFileInFilesApp(test_file));
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      test_file,
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/true));
+  run_loop.Run();
 }
 
 // Validates that passing a file path that exists and is a child of the Drive
 // path returns true for showing the Files app.
 TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppGoogleDrivePathChild) {
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
+
   const base::FilePath test_file = drive_path_.Append("test_file.png");
   base::File(test_file, base::File::FLAG_CREATE | base::File::FLAG_READ);
-  EXPECT_TRUE(chrome_scanning_app_delegate_->ShowFileInFilesApp(test_file));
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      test_file,
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/true));
+  run_loop.Run();
 }
 
-// Validates that passing a non-existent file returns false for showing the
-// Files app.
-TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppFileNotFound) {
+// Validates that passing a file path that exists and is a child of a removable
+// media returns true for showing the Files app.
+TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppRemovableMediaPathChild) {
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
+
+  const base::FilePath test_file =
+      removable_media_path_.Append("test_file.png");
+  base::File(test_file, base::File::FLAG_CREATE | base::File::FLAG_READ);
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      test_file,
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/true));
+  run_loop.Run();
+}
+
+// Validates that passing a non-existent file in the MyFiles path returns false
+// for showing the Files app.
+TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppMyFilesFileNotFound) {
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
+
   const base::FilePath missing_my_file =
       my_files_path_.Append("missing_my_file.png");
-  ASSERT_FALSE(
-      chrome_scanning_app_delegate_->ShowFileInFilesApp(missing_my_file));
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      missing_my_file,
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/false));
+  run_loop.Run();
+}
+
+// Validates that passing a non-existent file in the Drive path returns false
+// for showing the Files app.
+TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppGoogleDriveFileNotFound) {
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
 
   const base::FilePath missing_drive_file =
       drive_path_.Append("missing_drive_file.png");
-  ASSERT_FALSE(
-      chrome_scanning_app_delegate_->ShowFileInFilesApp(missing_drive_file));
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      missing_drive_file,
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/false));
+  run_loop.Run();
 }
 
 // Validates that passing a unsupported path returns false for showing the Files
 // app.
 TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppPathNotSupported) {
-  ASSERT_FALSE(chrome_scanning_app_delegate_->ShowFileInFilesApp(
-      base::FilePath("/wrong/file/path/file.png")));
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
+
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      base::FilePath("/wrong/file/path/file.png"),
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/false));
+  run_loop.Run();
 }
 
 // Validates that passing file paths with references returns false for showing
 // the Files app.
 TEST_F(ChromeScanningAppDelegateTest, ShowFilesAppReferencesNotSupported) {
+  base::RunLoop run_loop;
+  run_loop_closure_ = run_loop.QuitWhenIdleClosure();
+
   const base::FilePath test_file = my_files_path_.Append("test_file.png");
   base::File(test_file, base::File::FLAG_CREATE | base::File::FLAG_READ);
-  ASSERT_FALSE(chrome_scanning_app_delegate_->ShowFileInFilesApp(
-      my_files_path_.Append("../MyFiles/test_file.png")));
+  chrome_scanning_app_delegate_->ShowFileInFilesApp(
+      my_files_path_.Append("../MyFiles/test_file.png"),
+      base::BindOnce(&ChromeScanningAppDelegateTest::DidFilesAppOpen,
+                     base::Unretained(this), /*expected_value=*/false));
+  run_loop.Run();
 }
 
 // Validates that scan settings are saved to the Pref service.

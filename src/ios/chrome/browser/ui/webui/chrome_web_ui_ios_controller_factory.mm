@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/crashes_ui.h"
+#include "ios/chrome/browser/ui/webui/download_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/flags_ui.h"
 #include "ios/chrome/browser/ui/webui/gcm/gcm_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/inspect/inspect_ui.h"
@@ -26,7 +27,6 @@
 #include "ios/chrome/browser/ui/webui/policy/policy_ui.h"
 #include "ios/chrome/browser/ui/webui/prefs_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
-#include "ios/chrome/browser/ui/webui/suggestions_ui.h"
 #include "ios/chrome/browser/ui/webui/terms_ui.h"
 #include "ios/chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/ukm_internals_ui.h"
@@ -75,6 +75,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOS<AboutUI>;
   if (url_host == kChromeUICrashesHost)
     return &NewWebUIIOS<CrashesUI>;
+  if (url_host == kChromeUIDownloadInternalsHost)
+    return &NewWebUIIOS<DownloadInternalsUI>;
   if (url_host == kChromeUIFlagsHost)
     return &NewWebUIIOS<FlagsUI>;
   if (url_host == kChromeUIGCMInternalsHost)
@@ -97,8 +99,6 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOS<PrefsInternalsUI>;
   if (url_host == kChromeUISignInInternalsHost)
     return &NewWebUIIOS<SignInInternalsUIIOS>;
-  if (url.host_piece() == kChromeUISuggestionsHost)
-    return &NewWebUIIOS<suggestions::SuggestionsUI>;
   if (url.host_piece() == kChromeUITranslateInternalsHost)
     return &NewWebUIIOS<TranslateInternalsUI>;
   if (url_host == kChromeUIURLKeyedMetricsHost)

@@ -8,6 +8,7 @@
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/activity_tracker.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
@@ -19,13 +20,13 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/app/content_main_runner_impl.h"
@@ -168,12 +169,18 @@ void InitializeMojo(mojo::core::Configuration* config) {
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
   if (is_browser) {
-    if (mojo::PlatformChannel::CommandLineHasPassedEndpoint(command_line)) {
-      config->is_broker_process = false;
+    // On Lacros, Chrome is not always the broker, because ash-chrome is.
+    // Otherwise, look at the command line flag to decide whether it is
+    // a broker.
+    config->is_broker_process =
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+        false
+#else
+        !mojo::PlatformChannel::CommandLineHasPassedEndpoint(command_line)
+#endif
+        ;
+    if (!config->is_broker_process)
       config->force_direct_shared_memory_allocation = true;
-    } else {
-      config->is_broker_process = true;
-    }
   } else {
 #if defined(OS_WIN)
     if (base::win::GetVersion() >= base::win::Version::WIN8_1) {
@@ -209,10 +216,19 @@ void InitializeMojo(mojo::core::Configuration* config) {
 
 }  // namespace
 
-int RunContentProcess(const ContentMainParams& params,
-                      ContentMainRunner* content_main_runner) {
-  ContentMainParams content_main_params(params);
+ContentMainParams::ContentMainParams(ContentMainDelegate* delegate)
+    : delegate(delegate) {}
 
+ContentMainParams::~ContentMainParams() = default;
+
+ContentMainParams::ContentMainParams(ContentMainParams&&) = default;
+ContentMainParams& ContentMainParams::operator=(ContentMainParams&&) = default;
+
+// This function must be marked with NO_STACK_PROTECTOR or it may crash on
+// return, see the --change-stack-guard-on-fork command line flag.
+int NO_STACK_PROTECTOR
+RunContentProcess(ContentMainParams params,
+                  ContentMainRunner* content_main_runner) {
   int exit_code = -1;
   base::debug::GlobalActivityTracker* tracker = nullptr;
 #if defined(OS_MAC)
@@ -226,7 +242,9 @@ int RunContentProcess(const ContentMainParams& params,
 #if !defined(OS_ANDROID)
   DCHECK(!is_initialized);
 #endif
-  if (!is_initialized) {
+  if (is_initialized) {
+    content_main_runner->ReInitializeParams(std::move(params));
+  } else {
     is_initialized = true;
 #if defined(OS_MAC) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     base::allocator::InitializeAllocatorShim();
@@ -304,7 +322,7 @@ int RunContentProcess(const ContentMainParams& params,
     // Each "main" needs to flush this pool right before it goes into its main
     // event loop to get rid of the cruft.
     autorelease_pool = std::make_unique<base::mac::ScopedNSAutoreleasePool>();
-    content_main_params.autorelease_pool = autorelease_pool.get();
+    params.autorelease_pool = autorelease_pool.get();
     InitializeMac();
 #endif
 
@@ -318,7 +336,7 @@ int RunContentProcess(const ContentMainParams& params,
 
     ui::RegisterPathProvider();
     tracker = base::debug::GlobalActivityTracker::Get();
-    exit_code = content_main_runner->Initialize(content_main_params);
+    exit_code = content_main_runner->Initialize(std::move(params));
 
     if (exit_code >= 0) {
       if (tracker) {
@@ -377,7 +395,7 @@ int RunContentProcess(const ContentMainParams& params,
 
   if (IsSubprocess())
     CommonSubprocessInit();
-  exit_code = content_main_runner->Run(params.minimal_browser_mode);
+  exit_code = content_main_runner->Run();
 
   if (tracker) {
     if (exit_code == 0) {
@@ -401,9 +419,11 @@ int RunContentProcess(const ContentMainParams& params,
   return exit_code;
 }
 
-int ContentMain(const ContentMainParams& params) {
+// This function must be marked with NO_STACK_PROTECTOR or it may crash on
+// return, see the --change-stack-guard-on-fork command line flag.
+int NO_STACK_PROTECTOR ContentMain(ContentMainParams params) {
   auto runner = ContentMainRunner::Create();
-  return RunContentProcess(params, runner.get());
+  return RunContentProcess(std::move(params), runner.get());
 }
 
 }  // namespace content

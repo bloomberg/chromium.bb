@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -34,6 +33,10 @@ class BufferingController {
   BufferingController(
       const scoped_refptr<BufferingConfig>& config,
       const BufferingNotificationCB& buffering_notification_cb);
+
+  BufferingController(const BufferingController&) = delete;
+  BufferingController& operator=(const BufferingController&) = delete;
+
   ~BufferingController();
 
   // Creates a buffering state for one stream. This state is added to the list
@@ -106,8 +109,6 @@ class BufferingController {
 
   base::WeakPtr<BufferingController> weak_this_;
   base::WeakPtrFactory<BufferingController> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(BufferingController);
 };
 
 }  // namespace media

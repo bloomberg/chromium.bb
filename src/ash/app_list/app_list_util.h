@@ -6,14 +6,26 @@
 #define ASH_APP_LIST_APP_LIST_UTIL_H_
 
 #include "ash/ash_export.h"
-#include "ui/events/event.h"
-#include "ui/gfx/image/image_skia.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/events/keycodes/keyboard_codes.h"
+
+namespace gfx {
+class Canvas;
+class ImageSkia;
+class Point;
+}  // namespace gfx
+
+namespace ui {
+class KeyEvent;
+}  // namespace ui
 
 namespace views {
 class Textfield;
-}
+class View;
+}  // namespace views
 
 namespace ash {
+class AppListItem;
 
 // Returns true if the key event is an unhandled left or right arrow (unmodified
 // by ctrl, shift, or alt)
@@ -34,6 +46,9 @@ ASH_EXPORT bool IsArrowKeyEvent(const ui::KeyEvent& event);
 // |VKEY_RIGHT|, |VKEY_DOWN|
 ASH_EXPORT bool IsArrowKey(const ui::KeyboardCode& key_code);
 
+// Returns true if the |item| is a folder item.
+ASH_EXPORT bool IsFolderItem(AppListItem* item);
+
 // Returns true if the arrow key event should move focus away from the
 // |textfield|. This is usually when the insertion point would move away from
 // text.
@@ -51,6 +66,16 @@ ASH_EXPORT bool ProcessLeftRightKeyTraversalForTextfield(
 ASH_EXPORT gfx::ImageSkia CreateIconWithCircleBackground(
     const gfx::ImageSkia& icon,
     SkColor background_color);
+
+// Paints a rounded focus bar on |canvas| starting at |content_origin| extending
+// |height| dips vertically.
+ASH_EXPORT void PaintFocusBar(gfx::Canvas* canvas,
+                              const gfx::Point content_origin,
+                              const int height);
+
+// Sets a view as an ignored leaf node, so that it and its child views will be
+// ignored by ChromeVox.
+ASH_EXPORT void SetViewIgnoredForAccessibility(views::View* view, bool ignored);
 
 }  // namespace ash
 

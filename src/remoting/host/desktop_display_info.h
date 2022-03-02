@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -26,6 +25,8 @@ struct DisplayGeometry {
 class DesktopDisplayInfo {
  public:
   DesktopDisplayInfo();
+  DesktopDisplayInfo(DesktopDisplayInfo&&);
+  DesktopDisplayInfo& operator=(DesktopDisplayInfo&&);
   ~DesktopDisplayInfo();
 
   static webrtc::DesktopSize CalcSizeDips(webrtc::DesktopSize size,
@@ -41,24 +42,17 @@ class DesktopDisplayInfo {
   webrtc::DesktopVector CalcDisplayOffset(webrtc::ScreenId id);
 
   // Add a new display with the given info to the display list.
-  void AddDisplay(std::unique_ptr<DisplayGeometry> display);
+  void AddDisplay(const DisplayGeometry& display);
 
-  void AddDisplayFrom(protocol::VideoTrackLayout track);
-
-  // Query the OS for the set of currently active desktop displays.
-  void LoadCurrentDisplayInfo();
+  void AddDisplayFrom(const protocol::VideoTrackLayout& track);
 
   bool operator==(const DesktopDisplayInfo& other);
   bool operator!=(const DesktopDisplayInfo& other);
 
-  const std::vector<std::unique_ptr<DisplayGeometry>>& displays() const {
-    return displays_;
-  }
+  const std::vector<DisplayGeometry>& displays() const { return displays_; }
 
  private:
-  std::vector<std::unique_ptr<DisplayGeometry>> displays_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopDisplayInfo);
+  std::vector<DisplayGeometry> displays_;
 };
 
 }  // namespace remoting

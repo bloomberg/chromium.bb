@@ -82,6 +82,10 @@ static inline std::string GetOperatorBuilderName(StringRef op_name) {
   return oss.str();
 }
 
+static inline bool IsLstmOp(const StringRef op_name) {
+  return op_name.take_back(6) == "LSTMOp";
+}
+
 static void EmitOptionBuilders(const RecordKeeper &record_keeper,
                                const std::vector<Record *> &defs,
                                raw_ostream *ostream) {
@@ -123,7 +127,7 @@ static void EmitOptionBuilders(const RecordKeeper &record_keeper,
         // in the exporter. They are special because though they are attributes
         // in the MLIR they are expressed as tensors in the flatbuffer instead
         // of option.
-        if (op_name == "LSTMOp" && arg_name.take_back(12) == "intermediate")
+        if (IsLstmOp(op_name) && arg_name.take_back(12) == "intermediate")
           continue;
         os << formatv(
             "  auto {0} = Convert{1}ForOptionWriter(op.{0}(), fbb);\n",
@@ -170,7 +174,7 @@ static void EmitOperatorBuilders(const std::vector<Record *> &defs,
   for (const auto *def : defs) {
     StringRef op_name = def->getName().drop_front(4);
 
-    const bool has_intermediates = op_name == "LSTMOp";
+    const bool has_intermediates = op_name.take_back(6) == "LSTMOp";
     // Signature
     os << "static flatbuffers::Offset<tflite::Operator> "
        << GetOperatorBuilderName(def->getName()) << "(mlir::TFL::" << op_name
@@ -201,7 +205,7 @@ static void EmitOperatorBuilders(const std::vector<Record *> &defs,
     } else {
       os << "      tflite::BuiltinOptions_NONE, /*builtin_options=*/0,\n";
     }
-    // Only builtin ops' builders are auto-generated. custom_options are only
+    // Only built-in ops' builders are auto-generated. custom_options are only
     // used by custom or flex ops and those ops are handled manually.
     os << "      /*custom_options=*/0, "
        << "tflite::CustomOptionsFormat_FLEXBUFFERS,\n"
@@ -219,7 +223,7 @@ static inline std::string GetOperatorName(const Record &def) {
   return name.upper();
 }
 
-// Emits a function that returns builtin operator code for each TFLite op.
+// Emits a function that returns built-in operator code for each TFLite op.
 //
 // The signature of the function is:
 //
@@ -237,9 +241,9 @@ static void EmitGetBuiltinOpCode(const std::vector<Record *> &defs,
 
   for (const auto *def : defs) {
     StringRef op_name = def->getName().drop_front(4);
+    auto operator_name = GetOperatorName(*def);
     os << "  if (isa<mlir::TFL::" << op_name << ">(op))\n"
-       << "    return tflite::BuiltinOperator_" << GetOperatorName(*def)
-       << ";\n";
+       << "    return tflite::BuiltinOperator_" << operator_name << ";\n";
   }
 
   os << "  return llvm::None;\n"
@@ -324,7 +328,8 @@ static void EmitBuildOperator(const std::vector<Record *> &defs,
        << ">(op))\n"
        << "    return " << GetOperatorBuilderName(def->getName())
        << "(tflOp, opcode_index, operands, results, "
-       << (op_name == "LSTMOp" ? "intermediates, " : "") << "fbb);\n";
+       << (op_name.take_back(6) == "LSTMOp" ? "intermediates, " : "")
+       << "fbb);\n";
   }
 
   os << "  return llvm::None;\n"
@@ -368,7 +373,8 @@ static void EmitBuiltinOptionsToAttributes(const RecordKeeper &record_keeper,
       if (arg_def->getDef()->isSubClassOf(attr_type)) {
         StringRef arg_name = arg_values->getArgNameStr(i);
         // Already handle this case in flatbuffer_import.cc.
-        if (option_name == "LSTMOptions" &&
+        if ((option_name == "LSTMOptions" ||
+             option_name == "UnidirectionalSequenceLSTMOptions") &&
             arg_name.take_back(12) == "intermediate")
           continue;
         StringRef attr_type = mlir::tblgen::Attribute(arg_def).getAttrDefName();
@@ -455,10 +461,14 @@ static void GenOperandResultVerifier(raw_ostream &os,
     os << "      (void)v;\n"
        << "      if (!("
        << tgfmt(pred.getCondition(), &fctx.withSelf("v.getType()")) << ")) {\n"
+       << "        if (emit_error_on_verify_fail) {\n"
        << formatv(
-              "      return op->emitOpError(\"{0} #\") << index "
+              "        return op->emitOpError(\"{0} #\") << index "
               "<< \" must be {1}, but got \" << v.getType();\n",
               valueKind, desc)
+       << "        } else {\n"
+       << "          return failure();\n"
+       << "        }\n"
        << "      }\n"  // if
        << "      ++index;\n"
        << "    }\n";  // for
@@ -483,22 +493,23 @@ static bool RuntimeVerifierWriterMain(raw_ostream &os, RecordKeeper &records) {
 
     mlir::tblgen::FmtContext verify_ctx;
     os << "::mlir::LogicalResult " << op.getCppClassName()
-       << "::VerifyTflRuntimeConstraints(::mlir::Operation *op) {\n";
+       << "::VerifyTflRuntimeConstraints(::mlir::Operation *op, bool "
+          "emit_error_on_verify_fail) {\n";
     os << "  auto top = cast<" << op.getCppClassName() << ">(op); (void)top;\n";
     verify_ctx.withOp("top");
 
     for (int i = 0, e = op.getNumOperands(); i < e; ++i) {
       auto &value = op.getOperand(i);
-      // Skip from from first variadic operands for now. Else getOperand index
-      // used below doesn't match.
+      // Skip from first variadic operands for now. Else getOperand index used
+      // below doesn't match.
       if (value.isVariableLength()) break;
       if (!value.name.empty())
         verify_ctx.addSubst(value.name, formatv("op->getOperand({0})", i));
     }
     for (int i = 0, e = op.getNumResults(); i < e; ++i) {
       auto &value = op.getResult(i);
-      // Skip from from first variadic results for now. Else getResult index
-      // used below doesn't match.
+      // Skip from first variadic results for now. Else getResult index used
+      // below doesn't match.
       if (value.isVariableLength()) break;
       if (!value.name.empty())
         verify_ctx.addSubst(value.name, formatv("op->getResult({0})", i));
@@ -513,7 +524,7 @@ static bool RuntimeVerifierWriterMain(raw_ostream &os, RecordKeeper &records) {
         continue;
       }
       if (trait.getDef().getValueAsString("trait") !=
-          "OpTrait::TFLRuntimeOpTrait") {
+          "::mlir::OpTrait::TFLRuntimeOpTrait") {
         continue;
       }
 
@@ -524,11 +535,37 @@ static bool RuntimeVerifierWriterMain(raw_ostream &os, RecordKeeper &records) {
 
       mlir::tblgen::Pred pred(dyn_cast<llvm::DefInit>(val->getValue()));
       os << tgfmt(
-          "  if (!($0))\n"
-          "    return top.emitOpError(\"failed to verify that $1\");\n",
+          "  if (!($0)) {\n    "
+          "    if (emit_error_on_verify_fail) {\n"
+          "      return top.emitOpError(\"failed to verify that $1\");\n"
+          "    } else {\n"
+          "      return failure();\n  }\n  }\n",
           &verify_ctx, tgfmt(pred.getCondition(), &verify_ctx), desc);
     }
+    os << "    if (!emit_error_on_verify_fail) {\n";
+    os << "// Ignore transient errors by registering an no-op handler.\n"
+          "// Applying legalization patterns will emit unwanted, transient \n"
+          "// errors when the replaced TFLite ops do not meet the sanity \n"
+          "// checks. \n"
+          "// In order to ignore the transient errors, the following lines \n"
+          "// override a diagnostic handler with an no-op handler only\n"
+          "// while this pass runs.\n"
+          "uint64_t current_thread_id = llvm::get_threadid();\n"
+          "ScopedDiagnosticHandler scoped_diag_handler(\n"
+          "      top.getContext(), [&current_thread_id](Diagnostic&) -> "
+          "LogicalResult "
+          "{\n"
+          "        // Consume only errors that are coming from the same thread "
+          "in order not\n"
+          "  // to ignore errors from other passes that are running. Things\n"
+          "         // running\n"
+          "     // in the pass manager can be multi-threaded.\n"
+          "        return success(current_thread_id == llvm::get_threadid());\n"
+          "   });\n";
+    os << "  return top.verify();\n";
+    os << "    } else {\n";
     os << "  return top.verify();\n}\n";
+    os << "}\n";
   }
 
   return false;

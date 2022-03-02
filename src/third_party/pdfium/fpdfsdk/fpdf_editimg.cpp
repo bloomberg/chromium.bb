@@ -135,28 +135,6 @@ FPDFImageObj_LoadJpegFileInline(FPDF_PAGE* pages,
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFImageObj_GetMatrix(FPDF_PAGEOBJECT image_object,
-                       double* a,
-                       double* b,
-                       double* c,
-                       double* d,
-                       double* e,
-                       double* f) {
-  CPDF_ImageObject* pImgObj = CPDFImageObjectFromFPDFPageObject(image_object);
-  if (!pImgObj || !a || !b || !c || !d || !e || !f)
-    return false;
-
-  const CFX_Matrix& matrix = pImgObj->matrix();
-  *a = matrix.a;
-  *b = matrix.b;
-  *c = matrix.c;
-  *d = matrix.d;
-  *e = matrix.e;
-  *f = matrix.f;
-  return true;
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFImageObj_SetMatrix(FPDF_PAGEOBJECT image_object,
                        double a,
                        double b,
@@ -168,10 +146,9 @@ FPDFImageObj_SetMatrix(FPDF_PAGEOBJECT image_object,
   if (!pImgObj)
     return false;
 
-  pImgObj->set_matrix(CFX_Matrix(static_cast<float>(a), static_cast<float>(b),
-                                 static_cast<float>(c), static_cast<float>(d),
-                                 static_cast<float>(e), static_cast<float>(f)));
-  pImgObj->CalcBoundingBox();
+  pImgObj->SetImageMatrix(CFX_Matrix(
+      static_cast<float>(a), static_cast<float>(b), static_cast<float>(c),
+      static_cast<float>(d), static_cast<float>(e), static_cast<float>(f)));
   pImgObj->SetDirty(true);
   return true;
 }
@@ -217,15 +194,13 @@ FPDFImageObj_GetBitmap(FPDF_PAGEOBJECT image_object) {
   if (!pSource)
     return nullptr;
 
-  RetainPtr<CFX_DIBitmap> pBitmap;
   // If the source image has a representation of 1 bit per pixel, then convert
   // it to a grayscale bitmap having 1 byte per pixel, since bitmaps have no
   // concept of bits. Otherwise, convert the source image to a bitmap directly,
   // retaining its color representation.
-  if (pSource->GetBPP() == 1)
-    pBitmap = pSource->CloneConvert(FXDIB_Format::k8bppRgb);
-  else
-    pBitmap = pSource->Clone(nullptr);
+  RetainPtr<CFX_DIBitmap> pBitmap =
+      pSource->GetBPP() == 1 ? pSource->ConvertTo(FXDIB_Format::k8bppRgb)
+                             : pSource->Realize();
 
   return FPDFBitmapFromCFXDIBitmap(pBitmap.Leak());
 }

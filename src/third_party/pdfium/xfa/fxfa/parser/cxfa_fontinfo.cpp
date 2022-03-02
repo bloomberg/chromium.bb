@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kFontInfoPropertyData[] = {
-    {XFA_Element::SubsetBelow, 1, 0},
-    {XFA_Element::Map, 1, 0},
-    {XFA_Element::Embed, 1, 0},
+    {XFA_Element::SubsetBelow, 1, {}},
+    {XFA_Element::Map, 1, {}},
+    {XFA_Element::Embed, 1, {}},
 };
 
 const CXFA_Node::AttributeData kFontInfoAttributeData[] = {
@@ -27,7 +27,7 @@ const CXFA_Node::AttributeData kFontInfoAttributeData[] = {
 CXFA_FontInfo::CXFA_FontInfo(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::FontInfo,
                 kFontInfoPropertyData,

@@ -10,7 +10,8 @@
 #include <limits>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -108,7 +109,7 @@ class IndexedLessThan {
   }
 
  private:
-  const T* values_;
+  raw_ptr<const T> values_;
   LessThan less_than_;
 };
 

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef TOOLS_ARGS_H_
 #define TOOLS_ARGS_H_
@@ -23,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "lib/extras/color_hints.h"
 #include "lib/jxl/base/override.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/codec_in_out.h"  // DecoderHints
@@ -108,7 +100,7 @@ static inline bool ParseDouble(const char* arg, double* out) {
 }
 
 static inline bool ParseAndAppendKeyValue(const char* arg,
-                                          jxl::DecoderHints* out) {
+                                          jxl::ColorHints* out) {
   const char* eq = strchr(arg, '=');
   if (!eq) {
     fprintf(stderr, "Expected argument as 'key=value' but received '%s'\n",
@@ -128,7 +120,7 @@ static inline bool ParsePredictor(const char* arg, jxl::Predictor* out) {
     return JXL_FAILURE("Args");
   }
   if (p >= jxl::kNumModularPredictors) {
-    fprintf(stderr, "Invalid predictor value %zu, must be less than %zu.", p,
+    fprintf(stderr, "Invalid predictor value %zu, must be less than %zu.\n", p,
             jxl::kNumModularPredictors);
     return JXL_FAILURE("Args");
   }

@@ -21,14 +21,14 @@
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
+#include "chrome/browser/ash/policy/core/user_policy_test_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -42,6 +42,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
+namespace ash {
 namespace {
 
 constexpr char kExampleHost[] = "www.example.com";
@@ -84,6 +85,7 @@ void LoadFinishedWaiter::DidFinishLoad(
     run_loop_.Quit();
   }
 }
+
 }  // namespace
 
 class WebTimeLimitEnforcerThrottleTest : public MixinBasedInProcessBrowserTest {
@@ -93,9 +95,9 @@ class WebTimeLimitEnforcerThrottleTest : public MixinBasedInProcessBrowserTest {
   void SetUpOnMainThread() override;
   bool IsErrorPageBeingShownInWebContents(content::WebContents* tab);
   void AllowlistUrlRegx(const std::string& host);
-  void AllowlistApp(const ash::app_time::AppId& app_id);
+  void AllowlistApp(const app_time::AppId& app_id);
   void BlockWeb();
-  ash::app_time::WebTimeLimitEnforcer* GetWebTimeLimitEnforcer();
+  app_time::WebTimeLimitEnforcer* GetWebTimeLimitEnforcer();
   content::WebContents* InstallAndLaunchWebApp(const GURL& url,
                                                bool allowlisted_app);
 
@@ -104,11 +106,11 @@ class WebTimeLimitEnforcerThrottleTest : public MixinBasedInProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  ash::app_time::AppTimeLimitsAllowlistPolicyBuilder builder_;
+  app_time::AppTimeLimitsAllowlistPolicyBuilder builder_;
 
-  chromeos::LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server(), this};
+  LoggedInUserMixin logged_in_user_mixin_{&mixin_host_,
+                                          LoggedInUserMixin::LogInType::kChild,
+                                          embedded_test_server(), this};
 };
 
 void WebTimeLimitEnforcerThrottleTest::SetUp() {
@@ -154,24 +156,22 @@ void WebTimeLimitEnforcerThrottleTest::AllowlistUrlRegx(
 }
 
 void WebTimeLimitEnforcerThrottleTest::AllowlistApp(
-    const ash::app_time::AppId& app_id) {
+    const app_time::AppId& app_id) {
   builder_.AppendToAllowlistAppList(app_id);
   UpdatePolicy();
 }
 
 void WebTimeLimitEnforcerThrottleTest::BlockWeb() {
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached(
-      base::TimeDelta::FromHours(1));
+  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached(base::Hours(1));
 }
 
-ash::app_time::WebTimeLimitEnforcer*
+app_time::WebTimeLimitEnforcer*
 WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  ash::ChildUserService::TestApi child_user_service =
-      ash::ChildUserService::TestApi(
-          ash::ChildUserServiceFactory::GetForBrowserContext(browser_context));
+  ChildUserService::TestApi child_user_service = ChildUserService::TestApi(
+      ChildUserServiceFactory::GetForBrowserContext(browser_context));
   return child_user_service.web_time_enforcer();
 }
 
@@ -183,12 +183,12 @@ content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
   web_app_info->description = u"Web app";
   web_app_info->start_url = url;
   web_app_info->scope = url;
-  web_app_info->open_as_window = true;
+  web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app::AppId app_id = web_app::test::InstallWebApp(browser()->profile(),
                                                        std::move(web_app_info));
 
   if (allowlisted_app)
-    AllowlistApp(ash::app_time::AppId(apps::mojom::AppType::kWeb, app_id));
+    AllowlistApp(app_time::AppId(apps::mojom::AppType::kWeb, app_id));
   base::RunLoop().RunUntilIdle();
 
   // Add a tab to |browser()| and return the newly added WebContents.
@@ -211,8 +211,8 @@ void WebTimeLimitEnforcerThrottleTest::UpdatePolicy() {
   const user_manager::UserManager* const user_manager =
       user_manager::UserManager::Get();
 
-  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(
-      user_manager->GetActiveUser());
+  auto* profile =
+      ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser());
 
   logged_in_user_mixin_.GetUserPolicyTestHelper()->RefreshPolicyAndWait(
       profile);
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
   ui_test_utils::NavigateToURL(&params);
   auto* web_contents = params.navigated_or_inserted_contents;
   auto* navigation_observer =
-      ash::app_time::WebTimeNavigationObserver::FromWebContents(web_contents);
+      app_time::WebTimeNavigationObserver::FromWebContents(web_contents);
   std::u16string title = web_contents->GetTitle();
   EXPECT_EQ(title, navigation_observer->previous_title());
 
@@ -456,3 +456,5 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, EnsureQueryIsCleared) {
 
 // TODO(yilkal): Add AllowlistedSchemeNotBlocked test for  chrome://settings
 // TODO(yilkal): Add test for blocked web contents without browser window.
+
+}  // namespace ash

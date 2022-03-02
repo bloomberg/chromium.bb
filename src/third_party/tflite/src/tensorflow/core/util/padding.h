@@ -48,17 +48,17 @@ enum Padding {
 
 // Returns an error if the padding attributes are invalid.
 Status CheckValidPadding(Padding padding_type,
-                         const std::vector<int64>& explicit_paddings,
+                         const std::vector<int64_t>& explicit_paddings,
                          int num_dims, TensorFormat data_format);
 
 // Return the string containing the list of valid padding types, that can be
 // used as an Attr() in REGISTER_OP.
-string GetPaddingAttrString();
+std::string GetPaddingAttrString();
 
 // Like GetPaddingAttrString(), but also includes EXPLICIT.
-string GetPaddingAttrStringWithExplicit();
+std::string GetPaddingAttrStringWithExplicit();
 
-string GetExplicitPaddingsAttrString();
+std::string GetExplicitPaddingsAttrString();
 
 // Sets padding value based on the given string padding value.
 Status GetPaddingFromString(StringPiece str_value, Padding* value);

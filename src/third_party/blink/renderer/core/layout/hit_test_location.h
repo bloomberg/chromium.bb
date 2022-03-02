@@ -47,17 +47,17 @@ class CORE_EXPORT HitTestLocation {
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
   HitTestLocation();
   explicit HitTestLocation(const PhysicalOffset&);
-  explicit HitTestLocation(const IntPoint&);
-  explicit HitTestLocation(const FloatPoint&);
+  explicit HitTestLocation(const gfx::Point&);
+  explicit HitTestLocation(const gfx::PointF&);
   explicit HitTestLocation(const DoublePoint&);
-  explicit HitTestLocation(const FloatPoint&, const FloatQuad&);
+  explicit HitTestLocation(const gfx::PointF&, const FloatQuad&);
   explicit HitTestLocation(const PhysicalRect&);
 
   // The bounding box isn't always a 1x1 rect even when the hit test is not
   // rect-based. When we hit test a transformed box and transform the hit test
   // location into the box's local coordinate space, the bounding box should
   // also be transformed accordingly.
-  explicit HitTestLocation(const FloatPoint& point,
+  explicit HitTestLocation(const gfx::PointF& point,
                            const PhysicalRect& bounding_box);
 
   HitTestLocation(const HitTestLocation&, const PhysicalOffset& offset);
@@ -66,7 +66,7 @@ class CORE_EXPORT HitTestLocation {
   HitTestLocation& operator=(const HitTestLocation&);
 
   const PhysicalOffset& Point() const { return point_; }
-  IntPoint RoundedPoint() const { return RoundedIntPoint(point_); }
+  gfx::Point RoundedPoint() const { return ToRoundedPoint(point_); }
 
   int FragmentIndex() const { return fragment_index_; }
 
@@ -74,8 +74,8 @@ class CORE_EXPORT HitTestLocation {
   bool IsRectBasedTest() const { return is_rect_based_; }
   bool IsRectilinear() const { return is_rectilinear_; }
   const PhysicalRect& BoundingBox() const { return bounding_box_; }
-  IntRect EnclosingIntRect() const {
-    return ::blink::EnclosingIntRect(bounding_box_);
+  gfx::Rect ToEnclosingRect() const {
+    return ::blink::ToEnclosingRect(bounding_box_);
   }
 
   // Returns the 1px x 1px hit test rect for a point.
@@ -84,19 +84,21 @@ class CORE_EXPORT HitTestLocation {
   }
 
   bool Intersects(const PhysicalRect&) const;
+
   // Uses floating-point intersection, which uses inclusive intersection
   // (see LayoutRect::InclusiveIntersect for a definition)
   bool Intersects(const FloatRect&) const;
+  bool Intersects(const gfx::RectF& r) const {
+    return Intersects(FloatRect(r));
+  }
   bool Intersects(const FloatRoundedRect&) const;
   bool Intersects(const FloatQuad&) const;
-  bool ContainsPoint(const FloatPoint&) const;
+  bool ContainsPoint(const gfx::PointF&) const;
 
-  const FloatPoint& TransformedPoint() const { return transformed_point_; }
+  const gfx::PointF& TransformedPoint() const { return transformed_point_; }
   const FloatQuad& TransformedRect() const { return transformed_rect_; }
 
  private:
-  template <typename RectType>
-  bool IntersectsRect(const RectType&, const RectType& bounding_box) const;
   void Move(const PhysicalOffset& offset);
 
   // These are cached forms of the more accurate |transformed_point_| and
@@ -104,7 +106,7 @@ class CORE_EXPORT HitTestLocation {
   PhysicalOffset point_;
   PhysicalRect bounding_box_;
 
-  FloatPoint transformed_point_;
+  gfx::PointF transformed_point_;
   FloatQuad transformed_rect_;
 
   // Index of fragment (FragmentData) to hit-test. If it's -1, all fragments

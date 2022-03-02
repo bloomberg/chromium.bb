@@ -29,6 +29,9 @@ class TestCase(unittest.TestCase):
     context = None
     maxDiff = 80 * 66
     artifacts = None
+    # Should be set if the test determines that it should be retried on
+    # failure in some way outside of the normal test expectation approach.
+    retryOnFailure = False
 
     def set_artifacts(self, artifacts):
         # We need this setter instead of setting artifacts directly so that
@@ -120,6 +123,10 @@ class MainTestCase(TestCase):
         if universal_newlines:
             actual_out = convert_newlines(actual_out)
             actual_err = convert_newlines(actual_err)
+
+        # Ignore the new logging added for timing.
+        if actual_out.startswith('Start running tests'):
+            actual_out = '\n'.join(actual_out.split('\n')[1:])
 
         if ret is not None:
             self.assertEqual(ret, actual_ret)

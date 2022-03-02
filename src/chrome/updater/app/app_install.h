@@ -59,11 +59,13 @@ class AppInstall : public App {
   void GetVersionDone(scoped_refptr<UpdateService>,
                       const base::Version& version);
 
-  void InstallCandidateDone(int result);
+  void InstallCandidateDone(bool valid_version, int result);
 
   void WakeCandidate();
 
   void WakeCandidateDone();
+
+  void RegisterUpdater();
 
   // Handles the --tag and --app-id command line arguments, and triggers
   // installing of the corresponding application if either argument is present.

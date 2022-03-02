@@ -14,10 +14,18 @@ AutocompleteProviderClient::GetNtpMostVisitedSites() {
   return nullptr;
 }
 
+bool AutocompleteProviderClient::AllowDeletingBrowserHistory() const {
+  return true;
+}
+
 std::string AutocompleteProviderClient::ProfileUserName() const {
   return "";
 }
 
 bool AutocompleteProviderClient::IsIncognitoModeAvailable() const {
   return true;
+}
+
+bool AutocompleteProviderClient::IsSharingHubAvailable() const {
+  return false;
 }

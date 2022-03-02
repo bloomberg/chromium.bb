@@ -8,11 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/password_manager/android/password_infobar_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/chromium_strings.h"
@@ -34,7 +33,7 @@ void SavePasswordInfoBarDelegate::Create(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   // is_smartlock_branding_enabled indicates whether the user is syncing
   // passwords to their Google Account.
   bool is_smartlock_branding_enabled =
@@ -51,7 +50,9 @@ void SavePasswordInfoBarDelegate::Create(
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogSaveUIDismissalReason(
-      infobar_response_, /*user_state=*/absl::nullopt);
+      infobar_response_,
+      form_to_save_->GetPendingCredentials().submission_event,
+      /*user_state=*/absl::nullopt);
   if (form_to_save_->WasUnblocklisted()) {
     password_manager::metrics_util::LogSaveUIDismissalReasonAfterUnblocklisting(
         infobar_response_);

@@ -5,6 +5,7 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -12,10 +13,10 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -66,6 +67,11 @@ class ClearPrimaryAccountTestObserver
     scoped_observation_.Observe(identity_manager);
   }
 
+  ClearPrimaryAccountTestObserver(const ClearPrimaryAccountTestObserver&) =
+      delete;
+  ClearPrimaryAccountTestObserver& operator=(
+      const ClearPrimaryAccountTestObserver&) = delete;
+
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event) override {
@@ -87,8 +93,6 @@ class ClearPrimaryAccountTestObserver
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       scoped_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClearPrimaryAccountTestObserver);
 };
 
 // Helper for testing of RevokeSyncConsent/ClearPrimaryAccount(). This function
@@ -127,8 +131,11 @@ void RunRevokeConsentTest(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
   AccountInfo account_info =
       environment.MakeAccountAvailable(kPrimaryAccountEmail);
-  EXPECT_TRUE(primary_account_mutator->SetPrimaryAccount(
-      account_info.account_id, signin::ConsentLevel::kSync));
+  signin::PrimaryAccountMutator::PrimaryAccountError setPrimaryAccountResult =
+      primary_account_mutator->SetPrimaryAccount(account_info.account_id,
+                                                 signin::ConsentLevel::kSync);
+  EXPECT_EQ(signin::PrimaryAccountMutator::PrimaryAccountError::kNoError,
+            setPrimaryAccountResult);
   EXPECT_TRUE(identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
   EXPECT_TRUE(identity_manager->HasPrimaryAccountWithRefreshToken(
       signin::ConsentLevel::kSync));
@@ -265,8 +272,11 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
 
   EXPECT_FALSE(environment.identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kSync));
-  EXPECT_TRUE(primary_account_mutator->SetPrimaryAccount(
-      account_info.account_id, signin::ConsentLevel::kSync));
+  signin::PrimaryAccountMutator::PrimaryAccountError setPrimaryAccountResult =
+      primary_account_mutator->SetPrimaryAccount(account_info.account_id,
+                                                 signin::ConsentLevel::kSync);
+  EXPECT_EQ(signin::PrimaryAccountMutator::PrimaryAccountError::kNoError,
+            setPrimaryAccountResult);
 
   EXPECT_TRUE(identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
   EXPECT_EQ(identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
@@ -296,8 +306,12 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
 
   EXPECT_FALSE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
-  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
-      CoreAccountId(kUnknownAccountId), signin::ConsentLevel::kSync));
+  signin::PrimaryAccountMutator::PrimaryAccountError setPrimaryAccountResult =
+      primary_account_mutator->SetPrimaryAccount(
+          CoreAccountId(kUnknownAccountId), signin::ConsentLevel::kSync);
+  EXPECT_EQ(
+      signin::PrimaryAccountMutator::PrimaryAccountError::kAccountInfoEmpty,
+      setPrimaryAccountResult);
 }
 
 // Checks that setting the primary account fails if the account is unknown.
@@ -319,8 +333,12 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_UnknownAccount) {
 
   EXPECT_FALSE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
-  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
-      CoreAccountId(kUnknownAccountId), signin::ConsentLevel::kSync));
+  signin::PrimaryAccountMutator::PrimaryAccountError setPrimaryAccountResult =
+      primary_account_mutator->SetPrimaryAccount(
+          CoreAccountId(kUnknownAccountId), signin::ConsentLevel::kSync);
+  EXPECT_EQ(
+      signin::PrimaryAccountMutator::PrimaryAccountError::kAccountInfoEmpty,
+      setPrimaryAccountResult);
 }
 
 // Checks that trying to set the primary account fails when there is already a
@@ -345,17 +363,24 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_AlreadyHasPrimaryAccount) {
 
   EXPECT_FALSE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
-  EXPECT_TRUE(primary_account_mutator->SetPrimaryAccount(
-      primary_account_info.account_id, signin::ConsentLevel::kSync));
+  signin::PrimaryAccountMutator::PrimaryAccountError setPrimaryAccountResult =
+      primary_account_mutator->SetPrimaryAccount(
+          primary_account_info.account_id, signin::ConsentLevel::kSync);
+  EXPECT_EQ(signin::PrimaryAccountMutator::PrimaryAccountError::kNoError,
+            setPrimaryAccountResult);
 
   EXPECT_TRUE(identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
-  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
-      another_account_info.account_id, signin::ConsentLevel::kSync));
+  setPrimaryAccountResult = primary_account_mutator->SetPrimaryAccount(
+      another_account_info.account_id, signin::ConsentLevel::kSync);
+  EXPECT_EQ(signin::PrimaryAccountMutator::PrimaryAccountError::
+                kSyncConsentAlreadySet,
+            setPrimaryAccountResult);
 
   EXPECT_EQ(identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
             primary_account_info.account_id);
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Checks that trying to set the primary account fails if setting the primary
 // account is not allowed.
 TEST_F(PrimaryAccountMutatorTest,
@@ -383,9 +408,14 @@ TEST_F(PrimaryAccountMutatorTest,
 
   EXPECT_FALSE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
-  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
-      primary_account_info.account_id, signin::ConsentLevel::kSync));
+  signin::PrimaryAccountMutator::PrimaryAccountError setPrimaryAccountResult =
+      primary_account_mutator->SetPrimaryAccount(
+          primary_account_info.account_id, signin::ConsentLevel::kSync);
+  EXPECT_EQ(
+      signin::PrimaryAccountMutator::PrimaryAccountError::kSigninNotAllowed,
+      setPrimaryAccountResult);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // End of tests of preconditions not being satisfied causing the setting of
 // the primary account to fail.
@@ -418,9 +448,13 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
 // consistency method.
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount) {
   const signin::AccountConsistencyMethod kTestedAccountConsistencyMethods[] = {
-      signin::AccountConsistencyMethod::kDisabled,
-      signin::AccountConsistencyMethod::kMirror,
-      signin::AccountConsistencyMethod::kDice,
+    signin::AccountConsistencyMethod::kDisabled,
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Signout is not supported with Mirror on Lacros.
+    // TODO(https://crbug.com/1260291): Re-enable when signout is supported.
+    signin::AccountConsistencyMethod::kMirror,
+#endif
+    signin::AccountConsistencyMethod::kDice,
   };
   for (signin::AccountConsistencyMethod account_consistency_method :
        kTestedAccountConsistencyMethods) {
@@ -437,10 +471,14 @@ TEST_F(PrimaryAccountMutatorTest, RevokeSyncConsent_DisabledConsistency) {
 
 // Test that revoking sync consent when Mirror account consistency is enabled
 // clears the primary account.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+// Revoking sync consent not supported with Mirror on Lacros.
+// TODO(https://crbug.com/1260291): Re-enable when it is supported.
 TEST_F(PrimaryAccountMutatorTest, RevokeSyncConsent_MirrorConsistency) {
   RunRevokeSyncConsentTest(signin::AccountConsistencyMethod::kMirror,
                            RemoveAccountExpectation::kRemoveAll);
 }
+#endif
 
 // Test that revoking the sync consent when DICE account consistency is
 // enabled does not clear the primary account.

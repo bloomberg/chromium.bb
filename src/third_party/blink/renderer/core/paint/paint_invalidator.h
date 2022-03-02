@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATOR_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
@@ -105,11 +106,10 @@ class PaintInvalidator final {
   friend struct PaintInvalidatorContext;
 
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,
-                                         PaintInvalidatorContext&,
-                                         bool is_ng_painting);
-  ALWAYS_INLINE void UpdateDirectlyCompositedContainer(const LayoutObject&,
-                                                       PaintInvalidatorContext&,
-                                                       bool is_ng_painting);
+                                         PaintInvalidatorContext&);
+  ALWAYS_INLINE void UpdateDirectlyCompositedContainer(
+      const LayoutObject&,
+      PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdateFromTreeBuilderContext(
       const PaintPropertyTreeBuilderFragmentContext&,
       PaintInvalidatorContext&);
@@ -118,7 +118,7 @@ class PaintInvalidator final {
       const PaintPropertyTreeBuilderFragmentContext&,
       PaintInvalidatorContext&);
 
-  Vector<const LayoutObject*> pending_delayed_paint_invalidations_;
+  HeapVector<Member<const LayoutObject>> pending_delayed_paint_invalidations_;
 };
 
 }  // namespace blink
