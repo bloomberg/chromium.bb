@@ -1576,7 +1576,7 @@ void Element::setScrollLeft(double new_left) {
     }
 
     // blpwtk2: round x
-    end_offset.SetWidth(std::roundf(end_offset.Width()));
+    end_offset.set_x(std::roundf(end_offset.x()));
 
     scrollable_area->SetScrollOffset(end_offset,
                                      mojom::blink::ScrollType::kProgrammatic,
@@ -1631,7 +1631,7 @@ void Element::setScrollTop(double new_top) {
     }
 
     // blpwtk2: round y
-    end_offset.SetHeight(std::roundf(end_offset.Height()));
+    end_offset.set_y(std::roundf(end_offset.y()));
 
     scrollable_area->SetScrollOffset(end_offset,
                                      mojom::blink::ScrollType::kProgrammatic,
