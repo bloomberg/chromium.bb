@@ -42,7 +42,7 @@ namespace dawn_native { namespace metal {
             }
             ASSERT(descriptor.counterSet != nullptr);
 
-            descriptor.sampleCount = count;
+            descriptor.sampleCount = static_cast<NSUInteger>(std::max(count, uint32_t(1u)));
             descriptor.storageMode = MTLStorageModePrivate;
             if (device->IsToggleEnabled(Toggle::MetalUseSharedModeForCounterSampleBuffer)) {
                 descriptor.storageMode = MTLStorageModeShared;
@@ -53,8 +53,8 @@ namespace dawn_native { namespace metal {
                 [device->GetMTLDevice() newCounterSampleBufferWithDescriptor:descriptor
                                                                        error:&error];
             if (error != nullptr) {
-                const char* errorString = [error.localizedDescription UTF8String];
-                return DAWN_INTERNAL_ERROR(std::string("Error creating query set: ") + errorString);
+                return DAWN_OUT_OF_MEMORY_ERROR(std::string("Error creating query set: ") +
+                                                [error.localizedDescription UTF8String]);
             }
 
             return counterSampleBuffer;
@@ -75,10 +75,15 @@ namespace dawn_native { namespace metal {
         switch (GetQueryType()) {
             case wgpu::QueryType::Occlusion: {
                 // Create buffer for writing 64-bit results.
-                NSUInteger bufferSize = static_cast<NSUInteger>(GetQueryCount() * sizeof(uint64_t));
+                NSUInteger bufferSize = static_cast<NSUInteger>(
+                    std::max(GetQueryCount() * sizeof(uint64_t), size_t(4u)));
                 mVisibilityBuffer = AcquireNSPRef([device->GetMTLDevice()
                     newBufferWithLength:bufferSize
                                 options:MTLResourceStorageModePrivate]);
+
+                if (mVisibilityBuffer == nil) {
+                    return DAWN_OUT_OF_MEMORY_ERROR("Failed to allocate query set.");
+                }
                 break;
             }
             case wgpu::QueryType::PipelineStatistics:
@@ -116,11 +121,11 @@ namespace dawn_native { namespace metal {
         return mCounterSampleBuffer;
     }
 
-    QuerySet::~QuerySet() {
-        DestroyInternal();
-    }
+    QuerySet::~QuerySet() = default;
 
     void QuerySet::DestroyImpl() {
+        QuerySetBase::DestroyImpl();
+
         mVisibilityBuffer = nullptr;
 
         // mCounterSampleBuffer isn't an NSRef because API_AVAILABLE doesn't work will with

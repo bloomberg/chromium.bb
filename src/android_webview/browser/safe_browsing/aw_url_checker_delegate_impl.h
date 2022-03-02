@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +32,9 @@ class AwUrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
           database_manager,
       scoped_refptr<AwSafeBrowsingUIManager> ui_manager,
       AwSafeBrowsingAllowlistManager* allowlist_manager);
+
+  AwUrlCheckerDelegateImpl(const AwUrlCheckerDelegateImpl&) = delete;
+  AwUrlCheckerDelegateImpl& operator=(const AwUrlCheckerDelegateImpl&) = delete;
 
  private:
   ~AwUrlCheckerDelegateImpl() override;
@@ -86,9 +89,7 @@ class AwUrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
   scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<AwSafeBrowsingUIManager> ui_manager_;
   safe_browsing::SBThreatTypeSet threat_types_;
-  AwSafeBrowsingAllowlistManager* allowlist_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwUrlCheckerDelegateImpl);
+  raw_ptr<AwSafeBrowsingAllowlistManager> allowlist_manager_;
 };
 
 }  // namespace android_webview

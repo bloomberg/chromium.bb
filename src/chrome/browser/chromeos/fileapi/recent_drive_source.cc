@@ -7,15 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/drivefs/drivefs_util.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
-#include "chromeos/components/drivefs/drivefs_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/file_system_operation.h"
@@ -132,7 +132,7 @@ void RecentDriveSource::GotSearchResults(
     }
     files_.emplace_back(
         params_.value().file_system_context()->CreateCrackedFileSystemURL(
-            url::Origin::Create(params_->origin()),
+            blink::StorageKey(url::Origin::Create(params_->origin())),
             storage::kFileSystemTypeExternal, path),
         result->metadata->last_viewed_by_me_time);
   }

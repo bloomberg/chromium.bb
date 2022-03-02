@@ -5,4 +5,10 @@
 
 base_dir=$(dirname "$0")
 
+# In git bash on Windows, invoke the batch file.
+if [ "$(expr "$(uname -s)" : "^MINGW64_NT")" == "10" ]; then
+    gn.bat "$@"
+    exit
+fi
+
 PYTHONDONTWRITEBYTECODE=1 exec python3 "$base_dir/gn.py" "$@"

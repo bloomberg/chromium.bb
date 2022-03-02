@@ -14,10 +14,6 @@
 # ==============================================================================
 """Test LRUCache by running different input batch sizes on same network."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.python.compiler.tensorrt.test import tf_trt_integration_test_base as trt_test
@@ -33,14 +29,6 @@ from tensorflow.python.platform import test
 class LRUCacheTest(trt_test.TfTrtIntegrationTestBase):
 
   def GraphFn(self, x):
-    conv_filter = constant_op.constant(
-        np.random.randn(3, 3, 2, 1), dtype=dtypes.float32)
-    x = nn.conv2d(
-        input=x,
-        filter=conv_filter,
-        strides=[1, 1, 1, 1],
-        padding="SAME",
-        name="conv")
     bias = constant_op.constant(
         np.random.randn(1, 10, 10, 1), dtype=dtypes.float32)
     x = math_ops.add(x, bias)
@@ -51,9 +39,9 @@ class LRUCacheTest(trt_test.TfTrtIntegrationTestBase):
     dtype = dtypes.float32
     input_dims = [[[1, 10, 10, 2]], [[2, 10, 10, 2]], [[4, 10, 10, 2]],
                   [[2, 10, 10, 2]]]
-    expected_output_dims = [[[1, 10, 10, 1]], [[2, 10, 10, 1]], [[4, 10, 10,
-                                                                  1]],
-                            [[2, 10, 10, 1]]]
+    expected_output_dims = [[[1, 10, 10, 2]], [[2, 10, 10, 2]], [[4, 10, 10,
+                                                                  2]],
+                            [[2, 10, 10, 2]]]
     return trt_test.TfTrtIntegrationTestParams(
         graph_fn=self.GraphFn,
         input_specs=[

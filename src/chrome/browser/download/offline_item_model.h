@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "components/offline_items_collection/core/filtered_offline_item_observer.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -30,6 +32,10 @@ class OfflineItemModel : public DownloadUIModel,
   // Constructs a OfflineItemModel.
   OfflineItemModel(OfflineItemModelManager* manager,
                    const OfflineItem& offline_item);
+
+  OfflineItemModel(const OfflineItemModel&) = delete;
+  OfflineItemModel& operator=(const OfflineItemModel&) = delete;
+
   ~OfflineItemModel() override;
 
   // DownloadUIModel implementation.
@@ -81,12 +87,10 @@ class OfflineItemModel : public DownloadUIModel,
   // DownloadUIModel implementation.
   std::string GetMimeType() const override;
 
-  OfflineItemModelManager* manager_;
+  raw_ptr<OfflineItemModelManager> manager_;
 
   std::unique_ptr<FilteredOfflineItemObserver> offline_item_observer_;
   std::unique_ptr<OfflineItem> offline_item_;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflineItemModel);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_OFFLINE_ITEM_MODEL_H_

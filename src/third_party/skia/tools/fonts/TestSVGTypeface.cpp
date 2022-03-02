@@ -7,7 +7,7 @@
 
 #include "tools/fonts/TestSVGTypeface.h"
 
-#ifdef SK_XML
+#if defined(SK_ENABLE_SVG)
 
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
@@ -30,6 +30,7 @@
 #include "include/private/SkTemplates.h"
 #include "include/utils/SkNoDrawCanvas.h"
 #include "modules/svg/include/SkSVGDOM.h"
+#include "modules/svg/include/SkSVGNode.h"
 #include "src/core/SkAdvancedTypefaceMetrics.h"
 #include "src/core/SkFontDescriptor.h"
 #include "src/core/SkFontPriv.h"
@@ -193,12 +194,13 @@ protected:
         return true;
     }
 
-    void generateMetrics(SkGlyph* glyph) override {
+    void generateMetrics(SkGlyph* glyph, SkArenaAlloc* alloc) override {
         SkGlyphID glyphID = glyph->getGlyphID();
         glyphID           = glyphID < this->getTestSVGTypeface()->fGlyphCount ? glyphID : 0;
 
         glyph->zeroMetrics();
         glyph->fMaskFormat = SkMask::kARGB32_Format;
+        glyph->setPath(alloc, nullptr, false);
         this->generateAdvance(glyph);
 
         TestSVGTypeface::Glyph& glyphData = this->getTestSVGTypeface()->fGlyphs[glyphID];
@@ -246,7 +248,9 @@ protected:
         glyphData.render(&canvas);
     }
 
-    bool generatePath(SkGlyphID glyph, SkPath* path) override {
+    bool generatePath(const SkGlyph& glyph, SkPath* path) override {
+        // Should never get here since generateMetrics always sets the path to not exist.
+        SK_ABORT("Path requested, but it should have been indicated that there isn't one.");
         path->reset();
         return false;
     }
@@ -800,13 +804,13 @@ void TestSVGTypeface::exportTtxCbdt(SkWStream* out, SkSpan<unsigned> strikeSizes
             out->writeText("        </SmallGlyphMetrics>\n");
             out->writeText("        <rawimagedata>");
             uint8_t const* bytes = data->bytes();
-            for (size_t i = 0; i < data->size(); ++i) {
-                if ((i % 0x10) == 0x0) {
+            for (size_t j = 0; j < data->size(); ++j) {
+                if ((j % 0x10) == 0x0) {
                     out->writeText("\n          ");
-                } else if (((i - 1) % 0x4) == 0x3) {
+                } else if (((j - 1) % 0x4) == 0x3) {
                     out->writeText(" ");
                 }
-                out->writeHexAsText(bytes[i], 2);
+                out->writeHexAsText(bytes[j], 2);
             }
             out->writeText("\n");
             out->writeText("        </rawimagedata>\n");
@@ -1029,13 +1033,13 @@ void TestSVGTypeface::exportTtxSbix(SkWStream* out, SkSpan<unsigned> strikeSizes
 
             out->writeText("        <hexdata>");
             uint8_t const* bytes = data->bytes();
-            for (size_t i = 0; i < data->size(); ++i) {
-                if ((i % 0x10) == 0x0) {
+            for (size_t j = 0; j < data->size(); ++j) {
+                if ((j % 0x10) == 0x0) {
                     out->writeText("\n          ");
-                } else if (((i - 1) % 0x4) == 0x3) {
+                } else if (((j - 1) % 0x4) == 0x3) {
                     out->writeText(" ");
                 }
-                out->writeHexAsText(bytes[i], 2);
+                out->writeHexAsText(bytes[j], 2);
             }
             out->writeText("\n");
             out->writeText("        </hexdata>\n");
@@ -1434,4 +1438,4 @@ void TestSVGTypeface::exportTtxColr(SkWStream* out) const {
 
     out->writeText("</ttFont>\n");
 }
-#endif  // SK_XML
+#endif  // SK_ENABLE_SVG

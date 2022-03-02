@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -19,6 +20,7 @@ namespace gfx {
 class Point;
 class Rect;
 class Vector2d;
+class Vector2dF;
 }  // namespace gfx
 
 namespace pp {
@@ -97,6 +99,13 @@ class SkiaGraphics final : public Graphics {
 
     // Updates the client with the latest snapshot created by Flush().
     virtual void UpdateSnapshot(sk_sp<SkImage> snapshot) = 0;
+
+    // Updates the client with the latest output scale.
+    virtual void UpdateScale(float scale) = 0;
+
+    // Updates the client with the latest output layer transform.
+    virtual void UpdateLayerTransform(float scale,
+                                      const gfx::Vector2dF& translate) = 0;
   };
 
   // `client` must remain valid throughout the lifespan of the object.
@@ -119,7 +128,7 @@ class SkiaGraphics final : public Graphics {
   explicit SkiaGraphics(Client* client, const gfx::Size& size);
 
   // Unowned pointer. The client is required to outlive this object.
-  Client* client_;
+  raw_ptr<Client> client_;
 
   sk_sp<SkSurface> skia_graphics_;
 };

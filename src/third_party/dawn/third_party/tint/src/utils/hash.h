@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <cstdio>
 #include <functional>
+#include <vector>
 
 namespace tint {
 namespace utils {
@@ -42,29 +43,37 @@ struct HashCombineOffset<8> {
   static constexpr inline uint64_t value() { return 0x9e3779b97f4a7c16; }
 };
 
-// When hashing sparse structures we want to iteratively build a hash value with
-// only parts of the data. HashCombine "hashes" together an existing hash and
-// hashable values.
+}  // namespace detail
+
+/// HashCombine "hashes" together an existing hash and hashable values.
 template <typename T>
 void HashCombine(size_t* hash, const T& value) {
-  constexpr size_t offset = HashCombineOffset<sizeof(size_t)>::value();
+  constexpr size_t offset = detail::HashCombineOffset<sizeof(size_t)>::value();
   *hash ^= std::hash<T>()(value) + offset + (*hash << 6) + (*hash >> 2);
 }
 
+/// HashCombine "hashes" together an existing hash and hashable values.
+template <typename T>
+void HashCombine(size_t* hash, const std::vector<T>& vector) {
+  HashCombine(hash, vector.size());
+  for (auto& el : vector) {
+    HashCombine(hash, el);
+  }
+}
+
+/// HashCombine "hashes" together an existing hash and hashable values.
 template <typename T, typename... ARGS>
 void HashCombine(size_t* hash, const T& value, const ARGS&... args) {
   HashCombine(hash, value);
   HashCombine(hash, args...);
 }
 
-}  // namespace detail
-
 /// @returns a hash of the combined arguments. The returned hash is dependent on
 /// the order of the arguments.
 template <typename... ARGS>
 size_t Hash(const ARGS&... args) {
   size_t hash = 102931;  // seed with an arbitrary prime
-  detail::HashCombine(&hash, args...);
+  HashCombine(&hash, args...);
   return hash;
 }
 

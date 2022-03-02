@@ -7,7 +7,6 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Root from '../../../../core/root/root.js';
 import * as UI from '../../legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as PerfUI from './perf_ui.js';
 
 const UIStrings = {
@@ -51,8 +50,6 @@ let loadedPerfUIModule: (typeof PerfUI|undefined);
 
 async function loadPerfUIModule(): Promise<typeof PerfUI> {
   if (!loadedPerfUIModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('perf_ui');
     loadedPerfUIModule = await import('./perf_ui.js');
   }
   return loadedPerfUIModule;
@@ -71,6 +68,7 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.flamechartMouseWheelAction),
   settingName: 'flamechartMouseWheelAction',
   settingType: Common.Settings.SettingType.ENUM,

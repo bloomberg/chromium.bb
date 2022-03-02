@@ -16,20 +16,23 @@
  *
  */
 
+#include <sstream>
+
+#include "absl/flags/flag.h"
+#include "absl/strings/str_cat.h"
+#include "absl/synchronization/mutex.h"
+
 #include <grpc/grpc.h>
 #include <grpc/support/log.h>
 #include <grpc/support/time.h>
+#include <grpcpp/ext/admin_services.h>
+#include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/health_check_service_interface.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server_context.h>
 #include <grpcpp/xds_server_builder.h>
 
-#include <sstream>
-
-#include "absl/flags/flag.h"
-#include "absl/strings/str_cat.h"
-#include "absl/synchronization/mutex.h"
 #include "src/core/lib/gpr/string.h"
 #include "src/core/lib/iomgr/gethostname.h"
 #include "src/core/lib/transport/byte_stream.h"
@@ -53,7 +56,7 @@ using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using grpc::experimental::XdsServerBuilder;
+using grpc::XdsServerBuilder;
 using grpc::testing::Empty;
 using grpc::testing::HealthCheckServiceImpl;
 using grpc::testing::SimpleRequest;
@@ -123,17 +126,19 @@ void RunServer(bool secure_mode, const int port, const int maintenance_port,
       grpc::health::v1::HealthCheckResponse::SERVING);
   XdsUpdateHealthServiceImpl update_health_service(&health_check_service);
 
+  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;
   if (secure_mode) {
-    XdsServerBuilder xds_builder;
+    grpc::XdsServerBuilder xds_builder;
     xds_builder.RegisterService(&service);
-    xds_builder.AddListeningPort(absl::StrCat("0.0.0.0:", port),
-                                 grpc::experimental::XdsServerCredentials(
-                                     grpc::InsecureServerCredentials()));
+    xds_builder.AddListeningPort(
+        absl::StrCat("0.0.0.0:", port),
+        grpc::XdsServerCredentials(grpc::InsecureServerCredentials()));
     xds_enabled_server = xds_builder.BuildAndStart();
     gpr_log(GPR_INFO, "Server starting on 0.0.0.0:%d", port);
     builder.RegisterService(&health_check_service);
     builder.RegisterService(&update_health_service);
+    grpc::AddAdminServices(&builder);
     builder.AddListeningPort(absl::StrCat("0.0.0.0:", maintenance_port),
                              grpc::InsecureServerCredentials());
     server = builder.BuildAndStart();
@@ -143,6 +148,7 @@ void RunServer(bool secure_mode, const int port, const int maintenance_port,
     builder.RegisterService(&service);
     builder.RegisterService(&health_check_service);
     builder.RegisterService(&update_health_service);
+    grpc::AddAdminServices(&builder);
     builder.AddListeningPort(absl::StrCat("0.0.0.0:", port),
                              grpc::InsecureServerCredentials());
     server = builder.BuildAndStart();
@@ -155,7 +161,6 @@ void RunServer(bool secure_mode, const int port, const int maintenance_port,
 int main(int argc, char** argv) {
   grpc::testing::TestEnvironment env(argc, argv);
   grpc::testing::InitTest(&argc, &argv, true);
-
   char* hostname = grpc_gethostname();
   if (hostname == nullptr) {
     std::cout << "Failed to get hostname, terminating" << std::endl;

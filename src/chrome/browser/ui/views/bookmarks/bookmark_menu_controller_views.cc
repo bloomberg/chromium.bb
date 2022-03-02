@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -130,6 +129,16 @@ ui::mojom::DragOperation BookmarkMenuController::OnPerformDrop(
   if (for_drop_)
     delete this;
   return result;
+}
+
+views::View::DropCallback BookmarkMenuController::GetDropCallback(
+    views::MenuItemView* menu,
+    DropPosition position,
+    const ui::DropTargetEvent& event) {
+  auto drop_cb = menu_delegate_->GetDropCallback(menu, position, event);
+  if (for_drop_)
+    delete this;
+  return drop_cb;
 }
 
 bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,

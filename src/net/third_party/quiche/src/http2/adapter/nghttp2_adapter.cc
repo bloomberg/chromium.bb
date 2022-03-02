@@ -3,34 +3,70 @@
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "http2/adapter/http2_visitor_interface.h"
+#include "http2/adapter/nghttp2.h"
 #include "http2/adapter/nghttp2_callbacks.h"
-#include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
+#include "http2/adapter/nghttp2_data_provider.h"
 #include "common/platform/api/quiche_logging.h"
 #include "common/quiche_endian.h"
 
 namespace http2 {
 namespace adapter {
 
+namespace {
+
+using ConnectionError = Http2VisitorInterface::ConnectionError;
+
+// A metadata source that deletes itself upon completion.
+class SelfDeletingMetadataSource : public MetadataSource {
+ public:
+  explicit SelfDeletingMetadataSource(std::unique_ptr<MetadataSource> source)
+      : source_(std::move(source)) {}
+
+  size_t NumFrames(size_t max_frame_size) const override {
+    return source_->NumFrames(max_frame_size);
+  }
+
+  std::pair<int64_t, bool> Pack(uint8_t* dest, size_t dest_len) override {
+    const auto result = source_->Pack(dest, dest_len);
+    if (result.first < 0 || result.second) {
+      delete this;
+    }
+    return result;
+  }
+
+ private:
+  std::unique_ptr<MetadataSource> source_;
+};
+
+}  // anonymous namespace
+
 /* static */
 std::unique_ptr<NgHttp2Adapter> NgHttp2Adapter::CreateClientAdapter(
-    Http2VisitorInterface& visitor) {
-  auto adapter = new NgHttp2Adapter(visitor, Perspective::kClient);
+    Http2VisitorInterface& visitor, const nghttp2_option* options) {
+  auto adapter = new NgHttp2Adapter(visitor, Perspective::kClient, options);
   adapter->Initialize();
   return absl::WrapUnique(adapter);
 }
 
 /* static */
 std::unique_ptr<NgHttp2Adapter> NgHttp2Adapter::CreateServerAdapter(
-    Http2VisitorInterface& visitor) {
-  auto adapter = new NgHttp2Adapter(visitor, Perspective::kServer);
+    Http2VisitorInterface& visitor, const nghttp2_option* options) {
+  auto adapter = new NgHttp2Adapter(visitor, Perspective::kServer, options);
   adapter->Initialize();
   return absl::WrapUnique(adapter);
 }
 
-ssize_t NgHttp2Adapter::ProcessBytes(absl::string_view bytes) {
-  const ssize_t processed_bytes = session_->ProcessBytes(bytes);
+bool NgHttp2Adapter::IsServerSession() const {
+  int result = nghttp2_session_check_server_session(session_->raw_ptr());
+  QUICHE_DCHECK_EQ(perspective_ == Perspective::kServer, result > 0);
+  return result > 0;
+}
+
+int64_t NgHttp2Adapter::ProcessBytes(absl::string_view bytes) {
+  const int64_t processed_bytes = session_->ProcessBytes(bytes);
   if (processed_bytes < 0) {
-    visitor_.OnConnectionError();
+    visitor_.OnConnectionError(ConnectionError::kParseError);
   }
   return processed_bytes;
 }
@@ -64,6 +100,10 @@ void NgHttp2Adapter::SubmitPing(Http2PingId ping_id) {
   nghttp2_submit_ping(session_->raw_ptr(), NGHTTP2_FLAG_NONE, opaque_data);
 }
 
+void NgHttp2Adapter::SubmitShutdownNotice() {
+  nghttp2_submit_shutdown_notice(session_->raw_ptr());
+}
+
 void NgHttp2Adapter::SubmitGoAway(Http2StreamId last_accepted_stream_id,
                                   Http2ErrorCode error_code,
                                   absl::string_view opaque_data) {
@@ -80,29 +120,69 @@ void NgHttp2Adapter::SubmitWindowUpdate(Http2StreamId stream_id,
 }
 
 void NgHttp2Adapter::SubmitMetadata(Http2StreamId stream_id,
-                                    bool end_metadata) {
-  QUICHE_LOG(DFATAL) << "Not implemented";
+                                    size_t max_frame_size,
+                                    std::unique_ptr<MetadataSource> source) {
+  auto* wrapped_source = new SelfDeletingMetadataSource(std::move(source));
+  const size_t num_frames = wrapped_source->NumFrames(max_frame_size);
+  size_t num_successes = 0;
+  for (size_t i = 1; i <= num_frames; ++i) {
+    const int result = nghttp2_submit_extension(
+        session_->raw_ptr(), kMetadataFrameType,
+        i == num_frames ? kMetadataEndFlag : 0, stream_id, wrapped_source);
+    if (result != 0) {
+      QUICHE_LOG(DFATAL) << "Failed to submit extension frame " << i << " of "
+                         << num_frames;
+      break;
+    }
+    ++num_successes;
+  }
+  if (num_successes == 0) {
+    delete wrapped_source;
+  }
 }
 
-std::string NgHttp2Adapter::GetBytesToWrite(absl::optional<size_t> max_bytes) {
-  ssize_t num_bytes = 0;
-  std::string result;
-  do {
-    const uint8_t* data = nullptr;
-    num_bytes = nghttp2_session_mem_send(session_->raw_ptr(), &data);
-    if (num_bytes > 0) {
-      absl::StrAppend(
-          &result,
-          absl::string_view(reinterpret_cast<const char*>(data), num_bytes));
-    } else if (num_bytes < 0) {
-      visitor_.OnConnectionError();
-    }
-  } while (num_bytes > 0);
+int NgHttp2Adapter::Send() {
+  const int result = nghttp2_session_send(session_->raw_ptr());
+  if (result != 0) {
+    QUICHE_VLOG(1) << "nghttp2_session_send returned " << result;
+    visitor_.OnConnectionError(ConnectionError::kSendError);
+  }
   return result;
 }
 
-int NgHttp2Adapter::GetPeerConnectionWindow() const {
+int NgHttp2Adapter::GetSendWindowSize() const {
   return session_->GetRemoteWindowSize();
+}
+
+int NgHttp2Adapter::GetStreamSendWindowSize(Http2StreamId stream_id) const {
+  return nghttp2_session_get_stream_remote_window_size(session_->raw_ptr(),
+                                                       stream_id);
+}
+
+int NgHttp2Adapter::GetStreamReceiveWindowLimit(Http2StreamId stream_id) const {
+  return nghttp2_session_get_stream_effective_local_window_size(
+      session_->raw_ptr(), stream_id);
+}
+
+int NgHttp2Adapter::GetStreamReceiveWindowSize(Http2StreamId stream_id) const {
+  return nghttp2_session_get_stream_local_window_size(session_->raw_ptr(),
+                                                      stream_id);
+}
+
+int NgHttp2Adapter::GetReceiveWindowSize() const {
+  return nghttp2_session_get_local_window_size(session_->raw_ptr());
+}
+
+int NgHttp2Adapter::GetHpackEncoderDynamicTableSize() const {
+  return nghttp2_session_get_hd_deflate_dynamic_table_size(session_->raw_ptr());
+}
+
+int NgHttp2Adapter::GetHpackDecoderDynamicTableSize() const {
+  return nghttp2_session_get_hd_inflate_dynamic_table_size(session_->raw_ptr());
+}
+
+Http2StreamId NgHttp2Adapter::GetHighestReceivedStreamId() const {
+  return nghttp2_session_get_last_proc_stream_id(session_->raw_ptr());
 }
 
 void NgHttp2Adapter::MarkDataConsumedForStream(Http2StreamId stream_id,
@@ -125,24 +205,96 @@ void NgHttp2Adapter::SubmitRst(Http2StreamId stream_id,
   }
 }
 
+int32_t NgHttp2Adapter::SubmitRequest(
+    absl::Span<const Header> headers,
+    std::unique_ptr<DataFrameSource> data_source, void* stream_user_data) {
+  auto nvs = GetNghttp2Nvs(headers);
+  std::unique_ptr<nghttp2_data_provider> provider =
+      MakeDataProvider(data_source.get());
+
+  int32_t stream_id =
+      nghttp2_submit_request(session_->raw_ptr(), nullptr, nvs.data(),
+                             nvs.size(), provider.get(), stream_user_data);
+  // TODO(birenroy): clean up data source on stream close
+  sources_.emplace(stream_id, std::move(data_source));
+  QUICHE_VLOG(1) << "Submitted request with " << nvs.size()
+                 << " request headers and user data " << stream_user_data
+                 << "; resulted in stream " << stream_id;
+  return stream_id;
+}
+
+int NgHttp2Adapter::SubmitResponse(
+    Http2StreamId stream_id, absl::Span<const Header> headers,
+    std::unique_ptr<DataFrameSource> data_source) {
+  auto nvs = GetNghttp2Nvs(headers);
+  std::unique_ptr<nghttp2_data_provider> provider =
+      MakeDataProvider(data_source.get());
+
+  // TODO(birenroy): clean up data source on stream close
+  sources_.emplace(stream_id, std::move(data_source));
+
+  int result = nghttp2_submit_response(session_->raw_ptr(), stream_id,
+                                       nvs.data(), nvs.size(), provider.get());
+  QUICHE_VLOG(1) << "Submitted response with " << nvs.size()
+                 << " response headers; result = " << result;
+  return result;
+}
+
+int NgHttp2Adapter::SubmitTrailer(Http2StreamId stream_id,
+                                  absl::Span<const Header> trailers) {
+  auto nvs = GetNghttp2Nvs(trailers);
+  int result = nghttp2_submit_trailer(session_->raw_ptr(), stream_id,
+                                      nvs.data(), nvs.size());
+  QUICHE_VLOG(1) << "Submitted trailers with " << nvs.size()
+                 << " response trailers; result = " << result;
+  return result;
+}
+
+void NgHttp2Adapter::SetStreamUserData(Http2StreamId stream_id,
+                                       void* stream_user_data) {
+  nghttp2_session_set_stream_user_data(session_->raw_ptr(), stream_id,
+                                       stream_user_data);
+}
+
+void* NgHttp2Adapter::GetStreamUserData(Http2StreamId stream_id) {
+  return nghttp2_session_get_stream_user_data(session_->raw_ptr(), stream_id);
+}
+
+bool NgHttp2Adapter::ResumeStream(Http2StreamId stream_id) {
+  return 0 == nghttp2_session_resume_data(session_->raw_ptr(), stream_id);
+}
+
 NgHttp2Adapter::NgHttp2Adapter(Http2VisitorInterface& visitor,
-                               Perspective perspective)
-    : Http2Adapter(visitor), visitor_(visitor), perspective_(perspective) {}
+                               Perspective perspective,
+                               const nghttp2_option* options)
+    : Http2Adapter(visitor),
+      visitor_(visitor),
+      options_(options),
+      perspective_(perspective) {}
 
 NgHttp2Adapter::~NgHttp2Adapter() {}
 
 void NgHttp2Adapter::Initialize() {
-  nghttp2_option* options;
-  nghttp2_option_new(&options);
-  // Set some common options for compatibility.
-  nghttp2_option_set_no_closed_streams(options, 1);
-  nghttp2_option_set_no_auto_window_update(options, 1);
-  nghttp2_option_set_max_send_header_block_length(options, 0x2000000);
-  nghttp2_option_set_max_outbound_ack(options, 10000);
+  nghttp2_option* owned_options = nullptr;
+  if (options_ == nullptr) {
+    nghttp2_option_new(&owned_options);
+    // Set some common options for compatibility.
+    nghttp2_option_set_no_closed_streams(owned_options, 1);
+    nghttp2_option_set_no_auto_window_update(owned_options, 1);
+    nghttp2_option_set_max_send_header_block_length(owned_options, 0x2000000);
+    nghttp2_option_set_max_outbound_ack(owned_options, 10000);
+    nghttp2_option_set_user_recv_extension_type(owned_options,
+                                                kMetadataFrameType);
+    options_ = owned_options;
+  }
 
-  session_ =
-      absl::make_unique<NgHttp2Session>(perspective_, callbacks::Create(),
-                                        options, static_cast<void*>(&visitor_));
+  session_ = absl::make_unique<NgHttp2Session>(perspective_,
+                                               callbacks::Create(), options_,
+                                               static_cast<void*>(&visitor_));
+  if (owned_options != nullptr) {
+    nghttp2_option_del(owned_options);
+  }
+  options_ = nullptr;
 }
 
 }  // namespace adapter

@@ -10,8 +10,8 @@
 #include "base/base_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/simple_task_executor.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace base {
 
@@ -34,6 +34,9 @@ class BASE_EXPORT SingleThreadTaskExecutor {
   // Creates a SingleThreadTaskExecutor pumping from a custom |pump|.
   // The above constructor using MessagePumpType is generally preferred.
   explicit SingleThreadTaskExecutor(std::unique_ptr<MessagePump> pump);
+
+  SingleThreadTaskExecutor(const SingleThreadTaskExecutor&) = delete;
+  SingleThreadTaskExecutor& operator=(const SingleThreadTaskExecutor&) = delete;
 
   // Shuts down the SingleThreadTaskExecutor, after this no tasks can be
   // executed and the base::TaskExecutor APIs are non-functional but won't crash
@@ -75,8 +78,6 @@ class BASE_EXPORT SingleThreadTaskExecutor {
   // Should be set to true if IPC sync messages should PeekMessage periodically.
   bool ipc_sync_messages_should_peek_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(SingleThreadTaskExecutor);
 };
 
 }  // namespace base

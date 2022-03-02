@@ -35,7 +35,7 @@ Handle<Name> NewNameWithHash(Isolate* isolate, const char* str, uint32_t hash,
     hash_field |= Name::kIsNotIntegerIndexMask;
   }
   Handle<Name> name = isolate->factory()->NewOneByteInternalizedString(
-      OneByteVector(str), hash_field);
+      base::OneByteVector(str), hash_field);
   name->set_raw_hash_field(hash_field);
   CHECK(name->IsUniqueName());
   return name;
@@ -192,7 +192,7 @@ Handle<JSFunction> CreateCsaTransitionArrayLookup(Isolate* isolate) {
 
     m.BIND(&if_found);
     {
-      STATIC_ASSERT(kData == 0);
+      STATIC_ASSERT(static_cast<int>(PropertyKind::kData) == 0);
       STATIC_ASSERT(NONE == 0);
       const int kKeyToTargetOffset = (TransitionArray::kEntryTargetIndex -
                                       TransitionArray::kEntryKeyIndex) *

@@ -69,9 +69,13 @@ component("gtk") {
     "select_file_dialog_impl_gtk.cc",
     "select_file_dialog_impl_gtk.h",
     "select_file_dialog_impl_kde.cc",
+    "select_file_dialog_impl_portal.cc",
+    "select_file_dialog_impl_portal.h",
     "settings_provider.h",
     "settings_provider_gtk.cc",
     "settings_provider_gtk.h",
+    "window_frame_provider_gtk.cc",
+    "window_frame_provider_gtk.h",
   ]
   defines = [ "IS_GTK_IMPL" ]
   configs += [ "//build/config/linux/pangocairo" ]
@@ -83,13 +87,11 @@ component("gtk") {
     configs += [ "//build/linux:gio_config" ]
   }
 
-  if (use_cups) {
-    configs += [ "//printing:cups" ]
-  }
-
   deps = [
     ":gtk_stubs",
     "//base",
+    "//components/dbus/thread_linux",
+    "//dbus",
     "//skia",
 
     # GTK pulls pangoft2, which requires HarfBuzz symbols. When linking
@@ -115,6 +117,7 @@ component("gtk") {
     "//ui/shell_dialogs",
     "//ui/strings",
     "//ui/views",
+    "//url",
   ]
 
   if (enable_basic_printing) {
@@ -125,7 +128,7 @@ component("gtk") {
     deps += [ "//printing/mojom" ]
   }
 
-  if (use_x11 || ozone_platform_x11) {
+  if (ozone_platform_x11) {
     sources += [
       "x/gtk_event_loop_x11.cc",
       "x/gtk_event_loop_x11.h",
@@ -133,9 +136,9 @@ component("gtk") {
       "x/gtk_ui_platform_x11.h",
     ]
     deps += [
+      "//ui/base/x",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
-      "//ui/platform_window/x11",
     ]
   }
 
@@ -147,22 +150,5 @@ component("gtk") {
   }
 
   # TODO: This should be removed.
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-}
-
-test("gtk_unittests") {
-  sources = [ "native_theme_gtk_unittest.cc" ]
-
-  deps = [
-    ":gtk",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//testing/gtest",
-    "//ui/base:features",
-    "//ui/native_theme",
-    "//ui/native_theme:test_support",
-    "//ui/views",
-  ]
+  deps += [ "//ui/ozone" ]
 }

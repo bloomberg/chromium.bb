@@ -8,6 +8,7 @@
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace storage {
 
@@ -28,8 +29,8 @@ QuotaOverrideHandle::~QuotaOverrideHandle() {
   }
 }
 
-void QuotaOverrideHandle::OverrideQuotaForOrigin(
-    url::Origin origin,
+void QuotaOverrideHandle::OverrideQuotaForStorageKey(
+    const blink::StorageKey& storage_key,
     absl::optional<int64_t> quota_size,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -38,13 +39,13 @@ void QuotaOverrideHandle::OverrideQuotaForOrigin(
     // and the callbacks within, so it's guaranteed to be alive when the
     // callback is dispatched.
     override_callback_queue_.push_back(base::BindOnce(
-        &QuotaOverrideHandle::OverrideQuotaForOrigin, base::Unretained(this),
-        origin, quota_size, std::move(callback)));
+        &QuotaOverrideHandle::OverrideQuotaForStorageKey,
+        base::Unretained(this), storage_key, quota_size, std::move(callback)));
     return;
   }
-  quota_manager_proxy_->OverrideQuotaForOrigin(
-      id_.value(), origin, quota_size, base::SequencedTaskRunnerHandle::Get(),
-      std::move(callback));
+  quota_manager_proxy_->OverrideQuotaForStorageKey(
+      id_.value(), storage_key, quota_size,
+      base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
 
 void QuotaOverrideHandle::DidGetOverrideHandleId(int id) {

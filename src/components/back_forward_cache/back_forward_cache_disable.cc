@@ -35,8 +35,12 @@ std::string ReasonIdToString(DisabledReasonId reason_id) {
       return "Extensions";
     case DisabledReasonId::kExtensionMessaging:
       return "ExtensionMessaging";
-    default:
-      return "Unknown (default)";
+    case DisabledReasonId::kExtensionMessagingForOpenPort:
+      return "ExtensionMessagingForOpenPort";
+    case DisabledReasonId::kExtensionSentMessageToCachedFrame:
+      return "ExtensionSentMessageToCachedFrame";
+    case DisabledReasonId::kOomInterventionTabHelper:
+      return "OomInterventionTabHelper";
   }
 }
 

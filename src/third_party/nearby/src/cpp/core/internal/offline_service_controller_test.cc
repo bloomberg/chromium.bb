@@ -16,6 +16,8 @@
 
 #include <array>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "core/internal/offline_simulation_user.h"
 #include "platform/base/medium_environment.h"
 #include "platform/base/output_stream.h"
@@ -23,8 +25,6 @@
 #include "platform/public/logging.h"
 #include "platform/public/pipe.h"
 #include "platform/public/system_clock.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 
 namespace location {
 namespace nearby {
@@ -38,8 +38,8 @@ constexpr absl::string_view kServiceId = "service-id";
 constexpr absl::string_view kDeviceA = "device-a";
 constexpr absl::string_view kDeviceB = "device-b";
 constexpr absl::string_view kMessage = "message";
-constexpr absl::Duration kProgressTimeout = absl::Milliseconds(1000);
-constexpr absl::Duration kDefaultTimeout = absl::Milliseconds(1000);
+constexpr absl::Duration kProgressTimeout = absl::Milliseconds(1500);
+constexpr absl::Duration kDefaultTimeout = absl::Milliseconds(1500);
 constexpr absl::Duration kDisconnectTimeout = absl::Milliseconds(15000);
 
 constexpr BooleanMediumSelector kTestCases[] = {
@@ -373,11 +373,11 @@ TEST_F(OfflineServiceControllerTest, InjectEndpoint) {
               Eq(Status{Status::kSuccess}));
   EXPECT_TRUE(user_a.IsDiscovering());
   user_a.InjectEndpoint(
-        std::string(kServiceId),
-        OutOfBandConnectionMetadata{
-            .medium = Medium::BLUETOOTH,
-            .remote_bluetooth_mac_address = ByteArray(kFakeMacAddress),
-        });
+      std::string(kServiceId),
+      OutOfBandConnectionMetadata{
+          .medium = Medium::BLUETOOTH,
+          .remote_bluetooth_mac_address = ByteArray(kFakeMacAddress),
+      });
   user_a.Stop();
   env_.Stop();
 }

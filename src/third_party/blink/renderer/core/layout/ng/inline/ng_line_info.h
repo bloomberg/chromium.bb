@@ -8,6 +8,8 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 
 namespace blink {
@@ -51,11 +53,32 @@ class CORE_EXPORT NGLineInfo {
   bool IsLastLine() const { return is_last_line_; }
   void SetIsLastLine(bool is_last_line) { is_last_line_ = is_last_line; }
 
+  // Whether this line has ended with a forced break or not. Note, the forced
+  // break item may not be the last item if trailing items are included, or even
+  // does not exist if synthesized for block-in-inline.
+  bool HasForcedBreak() const { return has_forced_break_; }
+  void SetHasForcedBreak() { has_forced_break_ = true; }
+
   // If the line is marked as empty, it means that there's no content that
   // requires it to be present at all, e.g. when there are only close tags with
   // no margin/border/padding.
   bool IsEmptyLine() const { return is_empty_line_; }
   void SetIsEmptyLine() { is_empty_line_ = true; }
+
+  // If this line is empty, but still should have height as editable.
+  bool HasLineEvenIfEmpty() const { return has_line_even_if_empty_; }
+  void SetHasLineEvenIfEmpty() { has_line_even_if_empty_ = true; }
+
+  // Returns true if this line is a block-in-inline.
+  bool IsBlockInInline() const { return is_block_in_inline_; }
+  void SetIsBlockInInline() { is_block_in_inline_ = true; }
+  const NGBlockBreakToken* BlockInInlineBreakToken() const {
+    if (!block_in_inline_layout_result_)
+      return nullptr;
+
+    return To<NGBlockBreakToken>(
+        block_in_inline_layout_result_->PhysicalFragment().BreakToken());
+  }
 
   // NGInlineItemResults for this line.
   NGInlineItemResults* MutableResults() { return &results_; }
@@ -131,6 +154,20 @@ class CORE_EXPORT NGLineInfo {
   // justify alignment.
   bool NeedsAccurateEndPosition() const { return needs_accurate_end_position_; }
 
+  // The block-in-inline layout result.
+  const NGLayoutResult* BlockInInlineLayoutResult() const {
+    return block_in_inline_layout_result_.get();
+  }
+  void SetBlockInInlineLayoutResult(
+      scoped_refptr<const NGLayoutResult> layout_result) {
+    block_in_inline_layout_result_ = std::move(layout_result);
+  }
+
+  // |MayHaveTextCombineItem()| is used for treating text-combine box as
+  // ideographic character during "text-align:justify".
+  bool MayHaveTextCombineItem() const { return may_have_text_combine_item_; }
+  void SetHaveTextCombineItem() { may_have_text_combine_item_ = true; }
+
  private:
   ETextAlign GetTextAlign(bool is_last_line = false) const;
   bool ComputeNeedsAccurateEndPosition() const;
@@ -144,6 +181,8 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults results_;
 
   NGBfcOffset bfc_offset_;
+
+  scoped_refptr<const NGLayoutResult> block_in_inline_layout_result_;
 
   LayoutUnit available_width_;
   LayoutUnit width_;
@@ -159,12 +198,21 @@ class CORE_EXPORT NGLineInfo {
 
   bool use_first_line_style_ = false;
   bool is_last_line_ = false;
+  bool has_forced_break_ = false;
   bool is_empty_line_ = false;
+  bool has_line_even_if_empty_ = false;
+  bool is_block_in_inline_ = false;
   bool has_overflow_ = false;
   bool has_trailing_spaces_ = false;
   bool needs_accurate_end_position_ = false;
   bool is_ruby_base_ = false;
   bool is_ruby_text_ = false;
+  // Even if text combine item causes line break, this variable is not reset.
+  // This variable is used to add spacing before/after text combine items if
+  // "text-align: justify".
+  // Note: To avoid scanning |NGInlineItemResults|, this variable is true
+  // when |NGInlineItemResult| to |results_|.
+  bool may_have_text_combine_item_ = false;
 };
 
 std::ostream& operator<<(std::ostream& ostream, const NGLineInfo& line_info);

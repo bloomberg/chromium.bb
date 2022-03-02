@@ -6,7 +6,7 @@
 #define REMOTING_PROTOCOL_MONITORED_VIDEO_STUB_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/video_stub.h"
@@ -38,6 +38,10 @@ class MonitoredVideoStub : public VideoStub {
       VideoStub* video_stub,
       base::TimeDelta connectivity_check_delay,
       const ChannelStateCallback& callback);
+
+  MonitoredVideoStub(const MonitoredVideoStub&) = delete;
+  MonitoredVideoStub& operator=(const MonitoredVideoStub&) = delete;
+
   ~MonitoredVideoStub() override;
 
   // VideoStub implementation.
@@ -48,13 +52,11 @@ class MonitoredVideoStub : public VideoStub {
   void OnConnectivityCheckTimeout();
   void NotifyChannelState(bool connected);
 
-  VideoStub* video_stub_;
+  raw_ptr<VideoStub> video_stub_;
   ChannelStateCallback callback_;
   base::ThreadChecker thread_checker_;
   bool is_connected_;
   base::DelayTimer connectivity_check_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(MonitoredVideoStub);
 };
 
 }  // namespace protocol

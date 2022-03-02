@@ -43,17 +43,16 @@ namespace dawn_native { namespace vulkan {
     // the pools are reused when no longer used. Minimizing the number of descriptor pool allocation
     // is important because creating them can incur GPU memory allocation which is usually an
     // expensive syscall.
-    //
-    // The Vulkan BindGroupLayout is dependent on UseTintGenerator or not.
-    // When UseTintGenerator is on, VkDescriptorSetLayoutBinding::binding is set to BindingIndex,
-    // otherwise it is set to BindingNumber.
     class BindGroupLayout final : public BindGroupLayoutBase {
       public:
         static ResultOrError<Ref<BindGroupLayout>> Create(
             Device* device,
-            const BindGroupLayoutDescriptor* descriptor);
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken);
 
-        BindGroupLayout(DeviceBase* device, const BindGroupLayoutDescriptor* descriptor);
+        BindGroupLayout(DeviceBase* device,
+                        const BindGroupLayoutDescriptor* descriptor,
+                        PipelineCompatibilityToken pipelineCompatibilityToken);
 
         VkDescriptorSetLayout GetHandle() const;
 
@@ -61,16 +60,19 @@ namespace dawn_native { namespace vulkan {
                                                         const BindGroupDescriptor* descriptor);
         void DeallocateBindGroup(BindGroup* bindGroup,
                                  DescriptorSetAllocation* descriptorSetAllocation);
-        void FinishDeallocation(ExecutionSerial completedSerial);
 
       private:
         ~BindGroupLayout() override;
         MaybeError Initialize();
+        void DestroyImpl() override;
+
+        // Dawn API
+        void SetLabelImpl() override;
 
         VkDescriptorSetLayout mHandle = VK_NULL_HANDLE;
 
         SlabAllocator<BindGroup> mBindGroupAllocator;
-        std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
+        Ref<DescriptorSetAllocator> mDescriptorSetAllocator;
     };
 
 }}  // namespace dawn_native::vulkan

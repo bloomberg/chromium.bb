@@ -28,6 +28,8 @@ if (testRunnerCWDConfig && testRunnerTestSourceDirConfig) {
 const allTestFiles = glob.sync(path.join(ROOT_DIRECTORY, '**/*_test.ts'));
 /**
  * TODO(jacktfranklin): once we are migrated to the new test runner, we can remove the fallback to process.env['TESET_PATTERNS']
+ * alexrudenko: Note that if TEST_PATTERNS is removed, the docs for running stressor (deflake) bots should be updated
+ * and the bots should be able to consume custom config files provided via `git cl try`.
  */
 const customPattern = getTestRunnerConfigSetting('test-file-pattern', process.env['TEST_PATTERNS']);
 
@@ -57,7 +59,7 @@ const spec = testFiles.map(fileName => {
 
 // When we are debugging, we don't want to timeout any test. This allows to inspect the state
 // of the application at the moment of the timeout. Here, 0 denotes "indefinite timeout".
-const timeout = process.env['DEBUG'] ? 0 : 5 * 1000;
+const timeout = process.env['DEBUG_TEST'] ? 0 : 5 * 1000;
 module.exports = {
   require: path.join(__dirname, '..', 'conductor', 'mocha_hooks.js'),
   spec,

@@ -4,30 +4,48 @@
 
 import 'chrome://diagnostics/network_list.js';
 
-import {NetworkGuidInfo} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
+import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
+import {NavigationView, NetworkGuidInfo} from 'chrome://diagnostics/diagnostics_types.js';
+import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakePowerRoutineResults, fakeRoutineResults, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
-import {setNetworkHealthProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
+import {setNetworkHealthProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {flushTasks, isVisible} from '../../test_util.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
+import {TestDiagnosticsBrowserProxy} from './test_diagnostics_browser_proxy.js';
 
 export function networkListTestSuite() {
+  /** @type {?TestDiagnosticsBrowserProxy} */
+  let DiagnosticsBrowserProxy = null;
+
   /** @type {?NetworkListElement} */
   let networkListElement = null;
 
   /** @type {?FakeNetworkHealthProvider} */
   let provider = null;
 
+  /** @type {!FakeSystemRoutineController} */
+  let routineController;
+
   suiteSetup(() => {
     provider = new FakeNetworkHealthProvider();
     setNetworkHealthProviderForTesting(provider);
-  });
 
-  setup(() => {
-    document.body.innerHTML = '';
+    // Setup a fake routine controller.
+    routineController = new FakeSystemRoutineController();
+    routineController.setDelayTimeInMillisecondsForTesting(-1);
+
+    // Enable all routines by default.
+    routineController.setFakeSupportedRoutines(
+        [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()]);
+
+    setSystemRoutineControllerForTesting(routineController);
+
+    DiagnosticsBrowserProxy = new TestDiagnosticsBrowserProxy();
+    DiagnosticsBrowserProxyImpl.instance_ = DiagnosticsBrowserProxy;
   });
 
   teardown(() => {
@@ -84,12 +102,41 @@ export function networkListTestSuite() {
   }
 
   /**
+   * @param {string} guid
+   * @suppress {visibility} // access private member
+   * @return {!Promise}
+   */
+  function changeActiveGuid(guid) {
+    networkListElement.activeGuid_ = guid;
+    return flushTasks();
+  }
+
+  /** @return {!HTMLElement} */
+  function getSettingsLink() {
+    assertTrue(!!networkListElement);
+
+    return /** @type {!HTMLElement} */ (networkListElement.$$('#settingsLink'));
+  }
+
+  /**
    * Returns list of network guids.
    * @suppress {visibility} // access private member for test
    * @return {Array<?string>}
    */
   function getOtherNetworkGuids() {
     return networkListElement.otherNetworkGuids_;
+  }
+
+  /**
+   * @suppress {visibility}
+   * @param {boolean} state
+   * @return {!Promise}
+   */
+  function setIsLoggedIn_(state) {
+    assertTrue(!!networkListElement);
+    networkListElement.isLoggedIn_ = state;
+
+    return flushTasks();
   }
 
   test('ActiveGuidPresent', () => {
@@ -146,19 +193,18 @@ export function networkListTestSuite() {
   test('NetworkCardElementsPopulated', () => {
     let networkCardElements;
     return initializeNetworkList(fakeNetworkGuidInfoList)
-        .then(async () => {
+        .then(() => flushTasks())
+        .then(() => {
           networkCardElements = getNetworkCardElements();
+
           // The first network list observation provides guids for Cellular
           // and WiFi. The connectivity-card is responsbile for the Ethernet
           // guid as it's the currently active guid.
           const wifiInfoElement = dx_utils.getWifiInfoElement(
               networkCardElements[0].$$('network-info'));
-          const cellularInfoElement = dx_utils.getCellularInfoElement(
-              networkCardElements[1].$$('network-info'));
           dx_utils.assertTextContains(
-              wifiInfoElement.$$('#guid').value, fakeWifiNetwork.guid);
-          dx_utils.assertTextContains(
-              cellularInfoElement.$$('#guid').value, fakeCellularNetwork.guid);
+              wifiInfoElement.$$('#ssid').value,
+              fakeWifiNetwork.typeProperties.wifi.ssid);
 
           assertEquals(
               getConnectivityCard().activeGuid,
@@ -166,14 +212,69 @@ export function networkListTestSuite() {
 
           return triggerNetworkListObserver();
         })
+        .then(() => flushTasks())
         .then(() => {
+          networkCardElements = getNetworkCardElements();
           const cellularInfoElement = dx_utils.getCellularInfoElement(
               networkCardElements[0].$$('network-info'));
           dx_utils.assertTextContains(
-              cellularInfoElement.$$('#guid').value, fakeCellularNetwork.guid);
+              cellularInfoElement.$$('#iccid').value,
+              fakeCellularNetwork.typeProperties.cellular.iccid);
           assertEquals(
               getConnectivityCard().activeGuid,
               fakeNetworkGuidInfoList[1].activeGuid);
         });
+  });
+
+  test('ConnectivityCardHiddenWithNoActiveGuid', () => {
+    return initializeNetworkList(fakeNetworkGuidInfoList)
+        .then(() => changeActiveGuid(''))
+        .then(() => assertFalse(!!networkListElement.$$('connectivity-card')));
+  });
+
+  test('SettingsLinkHiddenWhenNotLoggedIn', () => {
+    return initializeNetworkList(fakeNetworkGuidInfoList)
+        .then(() => {
+          assertTrue(isVisible(getSettingsLink()));
+
+          return setIsLoggedIn_(false);
+        })
+        .then(() => {
+          assertFalse(isVisible(getSettingsLink()));
+        });
+  });
+
+  test('RecordNavigationCalled', () => {
+    return initializeNetworkList(fakeNetworkGuidInfoList)
+        .then(() => {
+          networkListElement.onNavigationPageChanged({isActive: false});
+
+          return flushTasks();
+        })
+        .then(() => {
+          assertEquals(
+              0, DiagnosticsBrowserProxy.getCallCount('recordNavigation'));
+
+          DiagnosticsBrowserProxy.setPreviousView(NavigationView.kSystem);
+          networkListElement.onNavigationPageChanged({isActive: true});
+
+          return flushTasks();
+        })
+        .then(() => {
+          assertEquals(
+              1, DiagnosticsBrowserProxy.getCallCount('recordNavigation'));
+          assertArrayEquals(
+              [NavigationView.kSystem, NavigationView.kConnectivity],
+              /** @type {!Array<!NavigationView>} */
+              (DiagnosticsBrowserProxy.getArgs('recordNavigation')[0]));
+        });
+  });
+
+  test('TastIdentifierPresent', () => {
+    return initializeNetworkList(fakeNetworkGuidInfoList)
+        .then(
+            () => assertTrue(isVisible(
+                /** @type {!HTMLElement} */ (networkListElement.$$(
+                    '.diagnostics-network-list-container')))));
   });
 }

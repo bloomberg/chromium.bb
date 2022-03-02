@@ -28,10 +28,24 @@ struct GpuVuidsCmdDraw : GpuVuid {
     }
 };
 
+struct GpuVuidsCmdDrawMultiEXT : GpuVuid {
+    GpuVuidsCmdDrawMultiEXT() : GpuVuid() {
+        uniform_access_oob = "VUID-vkCmdDrawMultiEXT-None-02705";
+        storage_access_oob = "VUID-vkCmdDrawMultiEXT-None-02706";
+    }
+};
+
 struct GpuVuidsCmdDrawIndexed : GpuVuid {
     GpuVuidsCmdDrawIndexed() : GpuVuid() {
         uniform_access_oob = "VUID-vkCmdDrawIndexed-None-02705";
         storage_access_oob = "VUID-vkCmdDrawIndexed-None-02706";
+    }
+};
+
+struct GpuVuidsCmdDrawMultiIndexedEXT : GpuVuid {
+    GpuVuidsCmdDrawMultiIndexedEXT() : GpuVuid() {
+        uniform_access_oob = "VUID-vkCmdDrawMultiIndexedEXT-None-02705";
+        storage_access_oob = "VUID-vkCmdDrawMultiIndexedEXT-None-02706";
     }
 };
 
@@ -144,13 +158,17 @@ struct GpuVuidsCmdDispatchBase : GpuVuid {
 // This LUT is created to allow a static listing of each VUID that is covered by drawdispatch commands
 static const std::map<CMD_TYPE, GpuVuid> gpu_vuid = {
     {CMD_DRAW, GpuVuidsCmdDraw()},
+    {CMD_DRAWMULTIEXT, GpuVuidsCmdDrawMultiEXT()},
     {CMD_DRAWINDEXED, GpuVuidsCmdDrawIndexed()},
+    {CMD_DRAWMULTIINDEXEDEXT, GpuVuidsCmdDrawMultiIndexedEXT()},
     {CMD_DRAWINDIRECT, GpuVuidsCmdDrawIndirect()},
     {CMD_DRAWINDEXEDINDIRECT, GpuVuidsCmdDrawIndexedIndirect()},
     {CMD_DISPATCH, GpuVuidsCmdDispatch()},
     {CMD_DISPATCHINDIRECT, GpuVuidsCmdDispatchIndirect()},
     {CMD_DRAWINDIRECTCOUNT, GpuVuidsCmdDrawIndirectCount()},
+    {CMD_DRAWINDIRECTCOUNTKHR, GpuVuidsCmdDrawIndirectCount()},
     {CMD_DRAWINDEXEDINDIRECTCOUNT, GpuVuidsCmdDrawIndexedIndirectCount()},
+    {CMD_DRAWINDEXEDINDIRECTCOUNTKHR, GpuVuidsCmdDrawIndexedIndirectCount()},
     {CMD_TRACERAYSNV, GpuVuidsCmdTraceRaysNV()},
     {CMD_TRACERAYSKHR, GpuVuidsCmdTraceRaysKHR()},
     {CMD_TRACERAYSINDIRECTKHR, GpuVuidsCmdTraceRaysIndirectKHR()},
@@ -159,6 +177,7 @@ static const std::map<CMD_TYPE, GpuVuid> gpu_vuid = {
     {CMD_DRAWMESHTASKSINDIRECTCOUNTNV, GpuVuidsCmdDrawMeshTasksIndirectCountNV()},
     {CMD_DRAWINDIRECTBYTECOUNTEXT, GpuVuidsCmdDrawIndirectByteCountEXT()},
     {CMD_DISPATCHBASE, GpuVuidsCmdDispatchBase()},
+    {CMD_DISPATCHBASEKHR, GpuVuidsCmdDispatchBase()},
     // Used if invalid cmd_type is used
     {CMD_NONE, GpuVuid()}
 };

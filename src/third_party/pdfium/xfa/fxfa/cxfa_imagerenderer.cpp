@@ -6,6 +6,8 @@
 
 #include "xfa/fxfa/cxfa_imagerenderer.h"
 
+#include <math.h>
+
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -15,7 +17,7 @@
 CXFA_ImageRenderer::CXFA_ImageRenderer(CFX_RenderDevice* pDevice,
                                        const RetainPtr<CFX_DIBBase>& pDIBBase,
                                        const CFX_Matrix& pImage2Device)
-    : m_pDevice(pDevice), m_ImageMatrix(pImage2Device), m_pDIBBase(pDIBBase) {}
+    : m_ImageMatrix(pImage2Device), m_pDevice(pDevice), m_pDIBBase(pDIBBase) {}
 
 CXFA_ImageRenderer::~CXFA_ImageRenderer() = default;
 
@@ -25,7 +27,7 @@ bool CXFA_ImageRenderer::Start() {
   if (m_pDevice->StartDIBits(m_pDIBBase, 255, 0, m_ImageMatrix, options,
                              &m_DeviceHandle)) {
     if (m_DeviceHandle) {
-      m_Status = 3;
+      m_State = State::kStarted;
       return true;
     }
     return false;
@@ -40,7 +42,7 @@ bool CXFA_ImageRenderer::Start() {
     if (m_pDIBBase->IsAlphaFormat() &&
         !(m_pDevice->GetRenderCaps() & FXRC_ALPHA_IMAGE) &&
         !(m_pDevice->GetRenderCaps() & FXRC_GET_BITS)) {
-      m_pCloneConvert = m_pDIBBase->CloneConvert(FXDIB_Format::kRgb);
+      m_pCloneConvert = m_pDIBBase->ConvertTo(FXDIB_Format::kRgb);
       if (!m_pCloneConvert)
         return false;
 
@@ -48,7 +50,7 @@ bool CXFA_ImageRenderer::Start() {
     }
     FX_RECT clip_box = m_pDevice->GetClipBox();
     clip_box.Intersect(image_rect);
-    m_Status = 2;
+    m_State = State::kTransforming;
     m_pTransformer = std::make_unique<CFX_ImageTransformer>(pDib, m_ImageMatrix,
                                                             options, &clip_box);
     return true;
@@ -89,7 +91,7 @@ bool CXFA_ImageRenderer::Start() {
 }
 
 bool CXFA_ImageRenderer::Continue() {
-  if (m_Status == 2) {
+  if (m_State == State::kTransforming) {
     if (m_pTransformer->Continue(nullptr))
       return true;
 
@@ -107,7 +109,7 @@ bool CXFA_ImageRenderer::Continue() {
     }
     return false;
   }
-  if (m_Status == 3)
+  if (m_State == State::kStarted)
     return m_pDevice->ContinueDIBits(m_DeviceHandle.get(), nullptr);
 
   return false;
@@ -142,12 +144,11 @@ void CXFA_ImageRenderer::CompositeDIBitmap(
     return;
   }
 
-  RetainPtr<CFX_DIBitmap> pCloneConvert =
-      pDIBitmap->CloneConvert(FXDIB_Format::kRgb);
-  if (!pCloneConvert)
+  RetainPtr<CFX_DIBitmap> pConverted = pDIBitmap->ConvertTo(FXDIB_Format::kRgb);
+  if (!pConverted)
     return;
 
-  CXFA_ImageRenderer imageRender(m_pDevice.Get(), pCloneConvert, m_ImageMatrix);
+  CXFA_ImageRenderer imageRender(m_pDevice.Get(), pConverted, m_ImageMatrix);
   if (!imageRender.Start())
     return;
 

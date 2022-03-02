@@ -54,7 +54,17 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 		w = As<Float4>(face);
 	}
 
-	if(function == Implicit || function == Bias || function == Grad || function == Query)
+	// Determine if we can skip the LOD computation. This is the case when the mipmap has only one level, except for LOD query,
+	// where we have to return the computed value. Anisotropic filtering requires computing the anisotropy factor even for a single mipmap level.
+	bool singleMipLevel = (state.minLod == state.maxLod);
+	bool requiresLodComputation = (function == Query) || (state.textureFilter == FILTER_ANISOTROPIC);
+	bool skipLodComputation = singleMipLevel && !requiresLodComputation;
+
+	if(skipLodComputation)
+	{
+		lod = state.minLod;
+	}
+	else if(function == Implicit || function == Bias || function == Grad || function == Query)
 	{
 		if(state.is1D())
 		{
@@ -108,8 +118,11 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 			c.y = Float4(lod);  // Unclamped LOD.
 		}
 
-		lod = Max(lod, state.minLod);
-		lod = Min(lod, state.maxLod);
+		if(!skipLodComputation)
+		{
+			lod = Max(lod, state.minLod);
+			lod = Min(lod, state.maxLod);
+		}
 
 		if(function == Query)
 		{
@@ -129,6 +142,9 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 	bool use32BitFiltering = hasFloatTexture() || hasUnnormalizedIntegerTexture() || force32BitFiltering ||
 	                         state.isCube() || state.unnormalizedCoordinates || state.compareEnable ||
 	                         borderModeActive() || (function == Gather) || (function == Fetch);
+	const sw::float4 compScale = getComponentScale();
+	int gatherComponent = (function == Gather) ? getGatherComponent() : 0;
+	int numComponents = (function == Gather) ? 4 : textureComponentCount();
 
 	if(use32BitFiltering)
 	{
@@ -136,61 +152,9 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 
 		if(!hasFloatTexture() && !hasUnnormalizedIntegerTexture() && !state.compareEnable)
 		{
-			switch(state.textureFormat)
+			for(int component = 0; component < numComponents; component++)
 			{
-			case VK_FORMAT_R5G6B5_UNORM_PACK16:
-				c.x *= Float4(1.0f / 0xF800);
-				c.y *= Float4(1.0f / 0xFC00);
-				c.z *= Float4(1.0f / 0xF800);
-				break;
-			case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-				c.x *= Float4(1.0f / 0xF000);
-				c.y *= Float4(1.0f / 0xF000);
-				c.z *= Float4(1.0f / 0xF000);
-				c.w *= Float4(1.0f / 0xF000);
-				break;
-			case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-				c.x *= Float4(1.0f / 0xF800);
-				c.y *= Float4(1.0f / 0xF800);
-				c.z *= Float4(1.0f / 0xF800);
-				c.w *= Float4(1.0f / 0x8000);
-				break;
-			case VK_FORMAT_R8_SNORM:
-			case VK_FORMAT_R8G8_SNORM:
-			case VK_FORMAT_R8G8B8A8_SNORM:
-			case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-				c.x = Max(c.x * Float4(1.0f / 0x7F00), Float4(-1.0f));
-				c.y = Max(c.y * Float4(1.0f / 0x7F00), Float4(-1.0f));
-				c.z = Max(c.z * Float4(1.0f / 0x7F00), Float4(-1.0f));
-				c.w = Max(c.w * Float4(1.0f / 0x7F00), Float4(-1.0f));
-				break;
-			case VK_FORMAT_R8_UNORM:
-			case VK_FORMAT_R8G8_UNORM:
-			case VK_FORMAT_R8G8B8A8_UNORM:
-			case VK_FORMAT_B8G8R8A8_UNORM:
-			case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-			case VK_FORMAT_B8G8R8A8_SRGB:
-			case VK_FORMAT_R8G8B8A8_SRGB:
-			case VK_FORMAT_R8_SRGB:
-			case VK_FORMAT_R8G8_SRGB:
-				c.x *= Float4(1.0f / 0xFF00u);
-				c.y *= Float4(1.0f / 0xFF00u);
-				c.z *= Float4(1.0f / 0xFF00u);
-				c.w *= Float4(1.0f / 0xFF00u);
-				break;
-			case VK_FORMAT_R16_SNORM:
-			case VK_FORMAT_R16G16_SNORM:
-			case VK_FORMAT_R16G16B16A16_SNORM:
-				c.x = Max(c.x * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-				c.y = Max(c.y * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-				c.z = Max(c.z * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-				c.w = Max(c.w * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-				break;
-			default:
-				for(int component = 0; component < textureComponentCount(); component++)
-				{
-					c[component] *= Float4(hasUnsignedTextureComponent(component) ? 1.0f / 0xFFFF : 1.0f / 0x7FFF);
-				}
+				c[component] *= Float4(1.0f / compScale[(function == Gather) ? gatherComponent : component]);
 			}
 		}
 	}
@@ -198,68 +162,26 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 	{
 		Vector4s cs = sampleFilter(texture, u, v, w, a, offset, sample, lod, anisotropy, uDelta, vDelta, function);
 
-		switch(state.textureFormat)
+		for(int component = 0; component < numComponents; component++)
 		{
-		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-			c.x = Float4(As<UShort4>(cs.x)) * Float4(1.0f / 0xF800);
-			c.y = Float4(As<UShort4>(cs.y)) * Float4(1.0f / 0xFC00);
-			c.z = Float4(As<UShort4>(cs.z)) * Float4(1.0f / 0xF800);
-			break;
-		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-			c.x = Float4(As<UShort4>(cs.x)) * Float4(1.0f / 0xF000);
-			c.y = Float4(As<UShort4>(cs.y)) * Float4(1.0f / 0xF000);
-			c.z = Float4(As<UShort4>(cs.z)) * Float4(1.0f / 0xF000);
-			c.w = Float4(As<UShort4>(cs.w)) * Float4(1.0f / 0xF000);
-			break;
-		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-			c.x = Float4(As<UShort4>(cs.x)) * Float4(1.0f / 0xF800);
-			c.y = Float4(As<UShort4>(cs.y)) * Float4(1.0f / 0xF800);
-			c.z = Float4(As<UShort4>(cs.z)) * Float4(1.0f / 0xF800);
-			c.w = Float4(As<UShort4>(cs.w)) * Float4(1.0f / 0x8000);
-			break;
-		case VK_FORMAT_R8_SNORM:
-		case VK_FORMAT_R8G8_SNORM:
-		case VK_FORMAT_R8G8B8A8_SNORM:
-		case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-			c.x = Max(Float4(cs.x) * Float4(1.0f / 0x7F00), Float4(-1.0f));
-			c.y = Max(Float4(cs.y) * Float4(1.0f / 0x7F00), Float4(-1.0f));
-			c.z = Max(Float4(cs.z) * Float4(1.0f / 0x7F00), Float4(-1.0f));
-			c.w = Max(Float4(cs.w) * Float4(1.0f / 0x7F00), Float4(-1.0f));
-			break;
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_B8G8R8A8_SRGB:
-		case VK_FORMAT_R8G8B8A8_SRGB:
-		case VK_FORMAT_R8_SRGB:
-		case VK_FORMAT_R8G8_SRGB:
-			c.x = Float4(As<UShort4>(cs.x)) * Float4(1.0f / 0xFF00u);
-			c.y = Float4(As<UShort4>(cs.y)) * Float4(1.0f / 0xFF00u);
-			c.z = Float4(As<UShort4>(cs.z)) * Float4(1.0f / 0xFF00u);
-			c.w = Float4(As<UShort4>(cs.w)) * Float4(1.0f / 0xFF00u);
-			break;
-		case VK_FORMAT_R16_SNORM:
-		case VK_FORMAT_R16G16_SNORM:
-		case VK_FORMAT_R16G16B16A16_SNORM:
-			c.x = Max(Float4(cs.x) * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-			c.y = Max(Float4(cs.y) * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-			c.z = Max(Float4(cs.z) * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-			c.w = Max(Float4(cs.w) * Float4(1.0f / 0x7FFF), Float4(-1.0f));
-			break;
-		default:
-			for(int component = 0; component < textureComponentCount(); component++)
+			if(hasUnsignedTextureComponent(component))
 			{
-				if(hasUnsignedTextureComponent(component))
-				{
-					convertUnsigned16(c[component], cs[component]);
-				}
-				else
-				{
-					convertSigned15(c[component], cs[component]);
-				}
+				c[component] = Float4(As<UShort4>(cs[component]));
 			}
+			else
+			{
+				c[component] = Float4(cs[component]);
+			}
+
+			c[component] *= Float4(1.0f / compScale[(function == Gather) ? gatherComponent : component]);
+		}
+	}
+
+	if(state.textureFormat.isSignedNormalized())
+	{
+		for(int component = 0; component < numComponents; component++)
+		{
+			c[component] = Max(c[component], Float4(-1.0f));
 		}
 	}
 
@@ -1229,6 +1151,8 @@ void SamplerCore::computeLod2D(Pointer<Byte> &texture, Float &lod, Float &anisot
 		anisotropy = lod * Rcp(det, Precision::Relaxed);
 		anisotropy = Min(anisotropy, state.maxAnisotropy);
 
+		// TODO(b/151263485): While we always need `lod` above, when there's only
+		// a single mipmap level the following calculations could be skipped.
 		lod *= Rcp(anisotropy * anisotropy, Precision::Relaxed);
 	}
 
@@ -1511,11 +1435,46 @@ Vector4s SamplerCore::sampleTexel(UInt index[4], Pointer<Byte> buffer)
 			c.y = (c.x & Short4(0x07E0u)) << 5;
 			c.x = (c.x & Short4(0xF800u));
 			break;
+		case VK_FORMAT_B5G6R5_UNORM_PACK16:
+			c.z = (c.x & Short4(0xF800u));
+			c.y = (c.x & Short4(0x07E0u)) << 5;
+			c.x = (c.x & Short4(0x001Fu)) << 11;
+			break;
+		case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+			c.w = (c.x << 12) & Short4(0xF000u);
+			c.z = (c.x << 8) & Short4(0xF000u);
+			c.y = (c.x << 4) & Short4(0xF000u);
+			c.x = (c.x) & Short4(0xF000u);
+			break;
 		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
 			c.w = (c.x << 12) & Short4(0xF000u);
 			c.z = (c.x) & Short4(0xF000u);
 			c.y = (c.x << 4) & Short4(0xF000u);
 			c.x = (c.x << 8) & Short4(0xF000u);
+			break;
+		case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+			c.w = (c.x) & Short4(0xF000u);
+			c.z = (c.x << 12) & Short4(0xF000u);
+			c.y = (c.x << 8) & Short4(0xF000u);
+			c.x = (c.x << 4) & Short4(0xF000u);
+			break;
+		case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+			c.w = (c.x) & Short4(0xF000u);
+			c.z = (c.x << 4) & Short4(0xF000u);
+			c.y = (c.x << 8) & Short4(0xF000u);
+			c.x = (c.x << 12) & Short4(0xF000u);
+			break;
+		case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+			c.w = (c.x << 15) & Short4(0x8000u);
+			c.z = (c.x << 10) & Short4(0xF800u);
+			c.y = (c.x << 5) & Short4(0xF800u);
+			c.x = (c.x) & Short4(0xF800u);
+			break;
+		case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
+			c.w = (c.x << 15) & Short4(0x8000u);
+			c.z = (c.x) & Short4(0xF800u);
+			c.y = (c.x << 5) & Short4(0xF800u);
+			c.x = (c.x << 10) & Short4(0xF800u);
 			break;
 		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 			c.w = (c.x) & Short4(0x8000u);
@@ -1699,7 +1658,10 @@ Vector4s SamplerCore::sampleTexel(UInt index[4], Pointer<Byte> buffer)
 		cc = Insert(cc, Pointer<Int>(buffer)[index[2]], 2);
 		cc = Insert(cc, Pointer<Int>(buffer)[index[3]], 3);
 
-		c = a2b10g10r10Unpack(cc);
+		c.x = Short4(cc << 6) & Short4(0xFFC0u);
+		c.y = Short4(cc >> 4) & Short4(0xFFC0u);
+		c.z = Short4(cc >> 14) & Short4(0xFFC0u);
+		c.w = Short4(cc >> 16) & Short4(0xC000u);
 	}
 	else if(state.textureFormat == VK_FORMAT_A2R10G10B10_UNORM_PACK32)
 	{
@@ -1709,7 +1671,10 @@ Vector4s SamplerCore::sampleTexel(UInt index[4], Pointer<Byte> buffer)
 		cc = Insert(cc, Pointer<Int>(buffer)[index[2]], 2);
 		cc = Insert(cc, Pointer<Int>(buffer)[index[3]], 3);
 
-		c = a2r10g10b10Unpack(cc);
+		c.x = Short4(cc >> 14) & Short4(0xFFC0u);
+		c.y = Short4(cc >> 4) & Short4(0xFFC0u);
+		c.z = Short4(cc << 6) & Short4(0xFFC0u);
+		c.w = Short4(cc >> 16) & Short4(0xC000u);
 	}
 	else if(state.textureFormat == VK_FORMAT_A2B10G10R10_UINT_PACK32)
 	{
@@ -1719,10 +1684,10 @@ Vector4s SamplerCore::sampleTexel(UInt index[4], Pointer<Byte> buffer)
 		cc = Insert(cc, Pointer<Int>(buffer)[index[2]], 2);
 		cc = Insert(cc, Pointer<Int>(buffer)[index[3]], 3);
 
-		c.x = Short4((cc & Int4(0x3FF)));
-		c.y = Short4(((cc >> 10) & Int4(0x3FF)));
-		c.z = Short4(((cc >> 20) & Int4(0x3FF)));
-		c.w = Short4(((cc >> 30) & Int4(0x3)));
+		c.x = Short4(cc & Int4(0x3FF));
+		c.y = Short4((cc >> 10) & Int4(0x3FF));
+		c.z = Short4((cc >> 20) & Int4(0x3FF));
+		c.w = Short4((cc >> 30) & Int4(0x3));
 	}
 	else if(state.textureFormat == VK_FORMAT_A2R10G10B10_UINT_PACK32)
 	{
@@ -2105,45 +2070,67 @@ Vector4f SamplerCore::sampleTexel(Int4 &uuuu, Int4 &vvvv, Int4 &wwww, Float4 &dR
 
 Vector4f SamplerCore::replaceBorderTexel(const Vector4f &c, Int4 valid)
 {
-	Int4 borderRGB;
-	Int4 borderA;
+	Vector4i border;
 
-	bool scaled = !hasFloatTexture() && !hasUnnormalizedIntegerTexture() && !state.compareEnable;
-	bool sign = !hasUnsignedTextureComponent(0);
-	Int4 float_one = scaled ? As<Int4>(Float4(static_cast<float>(sign ? 0x7FFF : 0xFFFF))) : As<Int4>(Float4(1.0f));
+	const bool scaled = !hasFloatTexture() && !hasUnnormalizedIntegerTexture() && !state.compareEnable;
+	const sw::float4 scaleComp = scaled ? getComponentScale() : sw::float4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	switch(state.border)
 	{
 	case VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK:
 	case VK_BORDER_COLOR_INT_TRANSPARENT_BLACK:
-		borderRGB = Int4(0);
-		borderA = Int4(0);
+		border.x = Int4(0);
+		border.y = Int4(0);
+		border.z = Int4(0);
+		border.w = Int4(0);
 		break;
 	case VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK:
-		borderRGB = Int4(0);
-		borderA = float_one;
+		border.x = Int4(0);
+		border.y = Int4(0);
+		border.z = Int4(0);
+		border.w = Int4(bit_cast<int>(scaleComp.w));
 		break;
 	case VK_BORDER_COLOR_INT_OPAQUE_BLACK:
-		borderRGB = Int4(0);
-		borderA = Int4(1);
+		border.x = Int4(0);
+		border.y = Int4(0);
+		border.z = Int4(0);
+		border.w = Int4(1);
 		break;
 	case VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE:
-		borderRGB = float_one;
-		borderA = float_one;
+		border.x = Int4(bit_cast<int>(scaleComp.x));
+		border.y = Int4(bit_cast<int>(scaleComp.y));
+		border.z = Int4(bit_cast<int>(scaleComp.z));
+		border.w = Int4(bit_cast<int>(scaleComp.w));
 		break;
 	case VK_BORDER_COLOR_INT_OPAQUE_WHITE:
-		borderRGB = Int4(1);
-		borderA = Int4(1);
+		border.x = Int4(1);
+		border.y = Int4(1);
+		border.z = Int4(1);
+		border.w = Int4(1);
+		break;
+	case VK_BORDER_COLOR_FLOAT_CUSTOM_EXT:
+		// This bit-casts from float to int in C++ code instead of Reactor code
+		// because Reactor does not guarantee preserving infinity (b/140302841).
+		border.x = Int4(bit_cast<int>(scaleComp.x * state.customBorder.float32[0]));
+		border.y = Int4(bit_cast<int>(scaleComp.y * state.customBorder.float32[1]));
+		border.z = Int4(bit_cast<int>(scaleComp.z * state.customBorder.float32[2]));
+		border.w = Int4(bit_cast<int>(scaleComp.w * state.customBorder.float32[3]));
+		break;
+	case VK_BORDER_COLOR_INT_CUSTOM_EXT:
+		border.x = Int4(state.customBorder.int32[0]);
+		border.y = Int4(state.customBorder.int32[1]);
+		border.z = Int4(state.customBorder.int32[2]);
+		border.w = Int4(state.customBorder.int32[3]);
 		break;
 	default:
 		UNSUPPORTED("sint/uint/sfloat border: %u", state.border);
 	}
 
 	Vector4f out;
-	out.x = As<Float4>((valid & As<Int4>(c.x)) | (~valid & borderRGB));  // TODO: IfThenElse()
-	out.y = As<Float4>((valid & As<Int4>(c.y)) | (~valid & borderRGB));
-	out.z = As<Float4>((valid & As<Int4>(c.z)) | (~valid & borderRGB));
-	out.w = As<Float4>((valid & As<Int4>(c.w)) | (~valid & borderA));
+	out.x = As<Float4>((valid & As<Int4>(c.x)) | (~valid & border.x));  // TODO: IfThenElse()
+	out.y = As<Float4>((valid & As<Int4>(c.y)) | (~valid & border.y));
+	out.z = As<Float4>((valid & As<Int4>(c.z)) | (~valid & border.z));
+	out.w = As<Float4>((valid & As<Int4>(c.w)) | (~valid & border.w));
 
 	return out;
 }
@@ -2503,16 +2490,6 @@ Int4 SamplerCore::computeLayerIndex(const Float4 &a, Pointer<Byte> &mipmap, Samp
 	}
 }
 
-void SamplerCore::convertSigned15(Float4 &cf, Short4 &cs)
-{
-	cf = Float4(cs) * Float4(1.0f / 0x7FFF);
-}
-
-void SamplerCore::convertUnsigned16(Float4 &cf, Short4 &cs)
-{
-	cf = Float4(As<UShort4>(cs)) * Float4(1.0f / 0xFFFF);
-}
-
 void SamplerCore::sRGBtoLinearFF00(Short4 &c)
 {
 	c = As<UShort4>(c) >> 8;
@@ -2594,6 +2571,51 @@ VkComponentSwizzle SamplerCore::gatherSwizzle() const
 		UNREACHABLE("Invalid component");
 		return VK_COMPONENT_SWIZZLE_R;
 	}
+}
+
+sw::float4 SamplerCore::getComponentScale() const
+{
+	// TODO(b/204709464): Unlike other formats, the fixed-point representation of the formats below are handled with bit extension.
+	// This special handling of such formats should be removed later.
+	switch(state.textureFormat)
+	{
+	case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+	case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		return sw::float4(0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF);
+	default:
+		break;
+	};
+
+	const sw::int4 bits = state.textureFormat.bitsPerComponent();
+	const sw::int4 shift = sw::int4(16 - bits.x, 16 - bits.y, 16 - bits.z, 16 - bits.w);
+	const uint16_t sign = state.textureFormat.isUnsigned() ? 0xFFFF : 0x7FFF;
+
+	return sw::float4(static_cast<uint16_t>(0xFFFF << shift.x) & sign,
+	                  static_cast<uint16_t>(0xFFFF << shift.y) & sign,
+	                  static_cast<uint16_t>(0xFFFF << shift.z) & sign,
+	                  static_cast<uint16_t>(0xFFFF << shift.w) & sign);
+}
+
+int SamplerCore::getGatherComponent() const
+{
+	VkComponentSwizzle swizzle = gatherSwizzle();
+
+	switch(swizzle)
+	{
+	default: UNSUPPORTED("VkComponentSwizzle %d", (int)swizzle); return 0;
+	case VK_COMPONENT_SWIZZLE_R:
+	case VK_COMPONENT_SWIZZLE_G:
+	case VK_COMPONENT_SWIZZLE_B:
+	case VK_COMPONENT_SWIZZLE_A:
+		// Normalize all components using the gather component scale.
+		return swizzle - VK_COMPONENT_SWIZZLE_R;
+	case VK_COMPONENT_SWIZZLE_ZERO:
+	case VK_COMPONENT_SWIZZLE_ONE:
+		// These cases are handled later.
+		return 0;
+	}
+
+	return 0;
 }
 
 }  // namespace sw

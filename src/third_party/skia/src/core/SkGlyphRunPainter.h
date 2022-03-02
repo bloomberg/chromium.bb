@@ -18,7 +18,7 @@
 #if SK_SUPPORT_GPU
 #include "src/gpu/text/GrSDFTControl.h"
 class GrColorInfo;
-class GrSurfaceDrawContext;
+namespace skgpu { namespace v1 { class SurfaceDrawContext; }}
 #endif
 
 class SkGlyphRunPainterInterface;
@@ -47,7 +47,7 @@ class SkStrikeCommon {
 public:
     // An atlas consists of plots, and plots hold glyphs. The minimum a plot can be is 256x256.
     // This means that the maximum size a glyph can be is 256x256.
-    static constexpr uint16_t kSkSideTooBigForAtlas = 256;
+    inline static constexpr uint16_t kSkSideTooBigForAtlas = 256;
 };
 
 class SkGlyphRunListPainter {
@@ -62,11 +62,13 @@ public:
     // The following two ctors are used exclusively by the GPU, and will always use the global
     // strike cache.
     SkGlyphRunListPainter(const SkSurfaceProps&, const GrColorInfo&);
-    explicit SkGlyphRunListPainter(const GrSurfaceDrawContext& surfaceDrawContext);
+    explicit SkGlyphRunListPainter(const skgpu::v1::SurfaceDrawContext&);
 #endif  // SK_SUPPORT_GPU
 
     class BitmapDevicePainter {
     public:
+        BitmapDevicePainter() = default;
+        BitmapDevicePainter(const BitmapDevicePainter&) = default;
         virtual ~BitmapDevicePainter() = default;
 
         virtual void paintPaths(
@@ -90,7 +92,8 @@ public:
                          const SkPaint& drawPaint,
                          const GrSDFTControl& control,
                          SkGlyphRunPainterInterface* process,
-                         const char* tag = nullptr);
+                         const char* tag = nullptr,
+                         uint64_t blobID = SK_InvalidUniqueID);
 #endif  // SK_SUPPORT_GPU
 
 private:
@@ -99,6 +102,8 @@ private:
 
     struct ScopedBuffers {
         ScopedBuffers(SkGlyphRunListPainter* painter, size_t size);
+        // Required until C++17 copy elision
+        ScopedBuffers(const ScopedBuffers&) = default;
         ~ScopedBuffers();
         SkGlyphRunListPainter* fPainter;
     };
@@ -136,17 +141,19 @@ public:
     virtual ~SkGlyphRunPainterInterface() = default;
 
     virtual void processDeviceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
-                                    const SkStrikeSpec& strikeSpec) = 0;
+                                    sk_sp<SkStrike>&& strike) = 0;
 
     virtual void processSourceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
-                                    const SkStrikeSpec& strikeSpec) = 0;
+                                    sk_sp<SkStrike>&& strike,
+                                    SkScalar strikeToSourceScale) = 0;
 
     virtual void processSourcePaths(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                                     const SkFont& runFont,
-                                    const SkStrikeSpec& strikeSpec) = 0;
+                                    SkScalar strikeToSourceScale) = 0;
 
     virtual void processSourceSDFT(const SkZip<SkGlyphVariant, SkPoint>& drawables,
-                                   const SkStrikeSpec& strikeSpec,
+                                   sk_sp<SkStrike>&& strike,
+                                   SkScalar strikeToSourceScale,
                                    const SkFont& runFont,
                                    SkScalar minScale,
                                    SkScalar maxScale) = 0;

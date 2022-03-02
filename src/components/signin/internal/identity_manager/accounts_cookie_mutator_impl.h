@@ -6,10 +6,9 @@
 #define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_ACCOUNTS_COOKIE_MUTATOR_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/signin/internal/identity_manager/oauth_multilogin_helper.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
@@ -33,6 +32,11 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
       ProfileOAuth2TokenService* token_service,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       AccountTrackerService* account_tracker_service);
+
+  AccountsCookieMutatorImpl(const AccountsCookieMutatorImpl&) = delete;
+  AccountsCookieMutatorImpl& operator=(const AccountsCookieMutatorImpl&) =
+      delete;
+
   ~AccountsCookieMutatorImpl() override;
 
   void AddAccountToCookie(
@@ -81,12 +85,10 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
     std::unique_ptr<OAuthMultiloginHelper> helper_;
   };
 
-  SigninClient* signin_client_;
-  ProfileOAuth2TokenService* token_service_;
-  GaiaCookieManagerService* gaia_cookie_manager_service_;
-  AccountTrackerService* account_tracker_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorImpl);
+  raw_ptr<SigninClient> signin_client_;
+  raw_ptr<ProfileOAuth2TokenService> token_service_;
+  raw_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
+  raw_ptr<AccountTrackerService> account_tracker_service_;
 };
 
 }  // namespace signin

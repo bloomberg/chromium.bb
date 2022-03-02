@@ -16,3 +16,16 @@
 .manifest-container {
   overflow: auto;
 }
+
+.inline-icon {
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.multiline-value {
+  white-space: normal;
+}
+
+.learn-more {
+  padding-left: 4px;
+}

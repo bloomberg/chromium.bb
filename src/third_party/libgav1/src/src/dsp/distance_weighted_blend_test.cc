@@ -14,13 +14,13 @@
 
 #include "src/dsp/distance_weighted_blend.h"
 
+#include <cassert>
 #include <cstdint>
 #include <ostream>
 #include <string>
 #include <type_traits>
 
 #include "absl/strings/match.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
@@ -43,18 +43,8 @@ constexpr int kNumSpeedTests = 500000;
 constexpr int kQuantizedDistanceLookup[4][2] = {
     {9, 7}, {11, 5}, {12, 4}, {13, 3}};
 
-struct TestParam {
-  TestParam(int width, int height) : width(width), height(height) {}
-  int width;
-  int height;
-};
-
-std::ostream& operator<<(std::ostream& os, const TestParam& param) {
-  return os << "BlockSize" << param.width << "x" << param.height;
-}
-
 template <int bitdepth, typename Pixel>
-class DistanceWeightedBlendTest : public ::testing::TestWithParam<TestParam>,
+class DistanceWeightedBlendTest : public testing::TestWithParam<BlockSize>,
                                   public test_utils::MaxAlignedAllocable {
  public:
   DistanceWeightedBlendTest() = default;
@@ -66,8 +56,8 @@ class DistanceWeightedBlendTest : public ::testing::TestWithParam<TestParam>,
     const dsp::Dsp* const dsp = dsp::GetDspTable(bitdepth);
     ASSERT_NE(dsp, nullptr);
     base_func_ = dsp->distance_weighted_blend;
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
     const absl::string_view test_case = test_info->test_suite_name();
     if (absl::StartsWith(test_case, "C/")) {
       base_func_ = nullptr;
@@ -91,8 +81,8 @@ class DistanceWeightedBlendTest : public ::testing::TestWithParam<TestParam>,
   using PredType =
       typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   static constexpr int kDestStride = kMaxSuperBlockSizeInPixels;
-  const int width_ = GetParam().width;
-  const int height_ = GetParam().height;
+  const int width_ = kBlockWidthPixels[GetParam()];
+  const int height_ = kBlockHeightPixels[GetParam()];
   alignas(kMaxAlignment) PredType
       source1_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels];
   alignas(kMaxAlignment) PredType
@@ -149,74 +139,51 @@ void DistanceWeightedBlendTest<bitdepth, Pixel>::Test(const char* digest,
     elapsed_time += absl::Now() - start;
   }
 
-  test_utils::CheckMd5Digest(
-      "DistanceWeightedBlend",
-      absl::StrFormat("BlockSize%dx%d", width_, height_).c_str(), digest, dest_,
-      sizeof(dest_), elapsed_time);
+  test_utils::CheckMd5Digest("DistanceWeightedBlend", ToString(GetParam()),
+                             digest, dest_, sizeof(dest_), elapsed_time);
 }
 
-const TestParam kTestParam[] = {
-    TestParam(4, 4),    TestParam(4, 8),    TestParam(4, 16),
-    TestParam(8, 4),    TestParam(8, 8),    TestParam(8, 16),
-    TestParam(8, 32),   TestParam(16, 4),   TestParam(16, 8),
-    TestParam(16, 16),  TestParam(16, 32),  TestParam(16, 64),
-    TestParam(32, 8),   TestParam(32, 16),  TestParam(32, 32),
-    TestParam(32, 64),  TestParam(32, 128), TestParam(64, 16),
-    TestParam(64, 32),  TestParam(64, 64),  TestParam(64, 128),
-    TestParam(128, 32), TestParam(128, 64), TestParam(128, 128),
+const BlockSize kTestParam[] = {
+    kBlock4x4,    kBlock4x8,     kBlock4x16,  kBlock8x4,   kBlock8x8,
+    kBlock8x16,   kBlock8x32,    kBlock16x4,  kBlock16x8,  kBlock16x16,
+    kBlock16x32,  kBlock16x64,   kBlock32x8,  kBlock32x16, kBlock32x32,
+    kBlock32x64,  kBlock64x16,   kBlock64x32, kBlock64x64, kBlock64x128,
+    kBlock128x64, kBlock128x128,
 };
 
-const char* GetDistanceWeightedBlendDigest8bpp(const TestParam block_size) {
-  static const char* const kDigestsWidth4[] = {
+const char* GetDistanceWeightedBlendDigest8bpp(const BlockSize block_size) {
+  static const char* const kDigests[kMaxBlockSizes] = {
+      // 4xN
       "ebf389f724f8ab46a2cac895e4e073ca",
       "09acd567b6b12c8cf8eb51d8b86eb4bf",
       "57bb4d65695d8ec6752f2bd8686b64fd",
-  };
-  static const char* const kDigestsWidth8[] = {
+      // 8xN
       "270905ac76f9a2cba8a552eb0bf7c8c1",
       "f0801c8574d2c271ef2bbea77a1d7352",
       "e761b580e3312be33a227492a233ce72",
       "ff214dab1a7e98e2285961d6421720c6",
-  };
-  static const char* const kDigestsWidth16[] = {
-      "4f712609a36e817f9752326d58562ff8", "14243f5c5f7c7104160c1f2cef0a0fbc",
-      "3ac3f3161b7c8dd8436b02abfdde104a", "81a00b704e0e41a5dbe6436ac70c098d",
+      // 16xN
+      "4f712609a36e817f9752326d58562ff8",
+      "14243f5c5f7c7104160c1f2cef0a0fbc",
+      "3ac3f3161b7c8dd8436b02abfdde104a",
+      "81a00b704e0e41a5dbe6436ac70c098d",
       "af8fd02017c7acdff788be742d700baa",
-  };
-  static const char* const kDigestsWidth32[] = {
-      "ee34332c66a6d6ed8ce64031aafe776c", "b5e3d22bd2dbdb624c8b86a1afb5ce6d",
-      "607ffc22098d81b7e37a7bf62f4af5d3", "3823dbf043b4682f56d5ca698e755ea5",
-      "57f7e8d1e67645269ce760a2c8da4afc",
-  };
-  static const char* const kDigestsWidth64[] = {
+      // 32xN
+      "ee34332c66a6d6ed8ce64031aafe776c",
+      "b5e3d22bd2dbdb624c8b86a1afb5ce6d",
+      "607ffc22098d81b7e37a7bf62f4af5d3",
+      "3823dbf043b4682f56d5ca698e755ea5",
+      // 64xN
       "4acf556b921956c2bc24659cd5128401",
       "a298c544c9c3b27924b4c23cc687ea5a",
       "539e2df267782ce61c70103b23b7d922",
       "3b0cb2a0b5d384efee4d81401025bec1",
-  };
-  static const char* const kDigestsWidth128[] = {
-      "d71ee689a40ff5f390d07717df4b7233",
+      // 128xN
       "8b56b636dd712c2f8d138badb7219991",
       "8cfc8836908902b8f915639b7bff45b3",
   };
-  const int height_index =
-      FloorLog2(block_size.height) - FloorLog2(block_size.width) + 2;
-  switch (block_size.width) {
-    case 4:
-      return kDigestsWidth4[height_index - 2];
-    case 8:
-      return kDigestsWidth8[height_index - 1];
-    case 16:
-      return kDigestsWidth16[height_index];
-    case 32:
-      return kDigestsWidth32[height_index];
-    case 64:
-      return kDigestsWidth64[height_index];
-    default:
-      EXPECT_EQ(block_size.width, 128)
-          << "Unknown width parameter: " << block_size.width;
-      return kDigestsWidth128[height_index];
-  }
+  assert(block_size < kMaxBlockSizes);
+  return kDigests[block_size];
 }
 
 using DistanceWeightedBlendTest8bpp = DistanceWeightedBlendTest<8, uint8_t>;
@@ -230,70 +197,52 @@ TEST_P(DistanceWeightedBlendTest8bpp, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_SUITE_P(C, DistanceWeightedBlendTest8bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, DistanceWeightedBlendTest8bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #endif
 
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, DistanceWeightedBlendTest8bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #endif
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
-const char* GetDistanceWeightedBlendDigest10bpp(const TestParam block_size) {
-  static const char* const kDigestsWidth4[] = {
+const char* GetDistanceWeightedBlendDigest10bpp(const BlockSize block_size) {
+  static const char* const kDigests[] = {
+      // 4xN
       "55f594b56e16d5c401274affebbcc3d3",
       "69df14da4bb33a8f7d7087921008e919",
       "1b61f33604c54015794198a13bfebf46",
-  };
-  static const char* const kDigestsWidth8[] = {
+      // 8xN
       "825a938185b152f7cf09bf1c0723ce2b",
       "85ea315c51d979bc9b45834d6b40ec6f",
       "92ebde208e8c39f7ec6de2de82182dbb",
       "520f84716db5b43684dbb703806383fe",
-  };
-  static const char* const kDigestsWidth16[] = {
-      "12ca23e3e2930005a0511646e8c83da4", "6208694a6744f4a3906f58c1add670e3",
-      "a33d63889df989a3bbf84ff236614267", "34830846ecb0572a98bbd192fed02b16",
+      // 16xN
+      "12ca23e3e2930005a0511646e8c83da4",
+      "6208694a6744f4a3906f58c1add670e3",
+      "a33d63889df989a3bbf84ff236614267",
+      "34830846ecb0572a98bbd192fed02b16",
       "34bb2f79c0bd7f9a80691b8af597f2a8",
-  };
-  static const char* const kDigestsWidth32[] = {
-      "fa97f2d0e3143f1f44d3ac018b0d696d", "3df4a22456c9ab6ed346ab1b9750ae7d",
-      "6276a058b35c6131bc0c94a4b4a37ebc", "9ca42da5d2d5eb339df03ae2c7a26914",
-      "2ff0dc010a7b40830fb47423a9beb894",
-  };
-  static const char* const kDigestsWidth64[] = {
+      // 32xN
+      "fa97f2d0e3143f1f44d3ac018b0d696d",
+      "3df4a22456c9ab6ed346ab1b9750ae7d",
+      "6276a058b35c6131bc0c94a4b4a37ebc",
+      "9ca42da5d2d5eb339df03ae2c7a26914",
+      // 64xN
       "800e692c520f99223bc24c1ac95a0166",
       "818b6d20426585ef7fe844015a03aaf5",
       "fb48691ccfff083e01d74826e88e613f",
       "0bd350bc5bc604a224d77a5f5a422698",
-  };
-  static const char* const kDigestsWidth128[] = {
-      "02aac5d5669c1245da876c5440c4d829",
+      // 128xN
       "a130840813cd6bd69d09bcf5f8d0180f",
       "6ece1846bea55e8f8f2ed7fbf73718de",
   };
-  const int height_index =
-      FloorLog2(block_size.height) - FloorLog2(block_size.width) + 2;
-  switch (block_size.width) {
-    case 4:
-      return kDigestsWidth4[height_index - 2];
-    case 8:
-      return kDigestsWidth8[height_index - 1];
-    case 16:
-      return kDigestsWidth16[height_index];
-    case 32:
-      return kDigestsWidth32[height_index];
-    case 64:
-      return kDigestsWidth64[height_index];
-    default:
-      EXPECT_EQ(block_size.width, 128)
-          << "Unknown width parameter: " << block_size.width;
-      return kDigestsWidth128[height_index];
-  }
+  assert(block_size < kMaxBlockSizes);
+  return kDigests[block_size];
 }
 
 using DistanceWeightedBlendTest10bpp = DistanceWeightedBlendTest<10, uint16_t>;
@@ -307,14 +256,23 @@ TEST_P(DistanceWeightedBlendTest10bpp, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_SUITE_P(C, DistanceWeightedBlendTest10bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, DistanceWeightedBlendTest10bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
+#endif
+#if LIBGAV1_ENABLE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, DistanceWeightedBlendTest10bpp,
+                         testing::ValuesIn(kTestParam));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 }  // namespace
 }  // namespace dsp
+
+static std::ostream& operator<<(std::ostream& os, const BlockSize param) {
+  return os << ToString(param);
+}
+
 }  // namespace libgav1

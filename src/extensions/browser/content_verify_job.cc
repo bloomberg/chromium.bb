@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/elapsed_timer.h"
@@ -46,7 +46,7 @@ class ScopedElapsedTimer {
  private:
   // Some total amount of time we should add our elapsed time to at
   // destruction.
-  base::TimeDelta* total_;
+  raw_ptr<base::TimeDelta> total_;
 
   // A timer for how long this object has been alive.
   base::ElapsedTimer timer;
@@ -236,7 +236,7 @@ void ContentVerifyJob::OnHashesReady(
     }
     case ContentHashReader::InitStatus::NO_HASHES_FOR_NON_EXISTING_RESOURCE: {
       // Ignore verification of non-existent resources.
-      scoped_refptr<TestObserver> test_observer = GetTestObserver();
+      test_observer = GetTestObserver();
       if (test_observer)
         test_observer->JobFinished(extension_id_, relative_path_, NONE);
       return;
@@ -266,7 +266,7 @@ void ContentVerifyJob::OnHashesReady(
     if (!has_ignorable_read_error_ && !FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
     } else {
-      scoped_refptr<TestObserver> test_observer = GetTestObserver();
+      test_observer = GetTestObserver();
       if (test_observer)
         test_observer->JobFinished(extension_id_, relative_path_, NONE);
     }

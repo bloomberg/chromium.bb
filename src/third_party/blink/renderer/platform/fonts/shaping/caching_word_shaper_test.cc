@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -361,7 +361,7 @@ TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList) {
   ASSERT_TRUE(vertical_mixed_font.CanShapeWordByWord());
 
   CachingWordShaper shaper(vertical_mixed_font);
-  FloatRect glyph_bounds;
+  gfx::RectF glyph_bounds;
   HashSet<const SimpleFontData*> fallback_fonts;
   ASSERT_GT(shaper.Width(text_run, &fallback_fonts, &glyph_bounds), 0);
   EXPECT_EQ(0u, fallback_fonts.size());
@@ -371,12 +371,12 @@ TEST_F(CachingWordShaperTest, GlyphBoundsWithSpaces) {
   CachingWordShaper shaper(font);
 
   TextRun periods(reinterpret_cast<const LChar*>(".........."), 10);
-  FloatRect periods_glyph_bounds;
+  gfx::RectF periods_glyph_bounds;
   float periods_width = shaper.Width(periods, nullptr, &periods_glyph_bounds);
 
   TextRun periods_and_spaces(
       reinterpret_cast<const LChar*>(". . . . . . . . . ."), 19);
-  FloatRect periods_and_spaces_glyph_bounds;
+  gfx::RectF periods_and_spaces_glyph_bounds;
   float periods_and_spaces_width = shaper.Width(
       periods_and_spaces, nullptr, &periods_and_spaces_glyph_bounds);
 
@@ -386,8 +386,8 @@ TEST_F(CachingWordShaperTest, GlyphBoundsWithSpaces) {
 
   // The glyph bounds of periods and spaces should be longer than the glyph
   // bounds of periods alone.
-  ASSERT_GT(periods_and_spaces_glyph_bounds.Width(),
-            periods_glyph_bounds.Width());
+  ASSERT_GT(periods_and_spaces_glyph_bounds.width(),
+            periods_glyph_bounds.width());
 }
 
 }  // namespace blink

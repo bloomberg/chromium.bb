@@ -16,13 +16,19 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/native_cursor.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
@@ -53,23 +59,60 @@ const int TableHeader::kHorizontalPadding = 7;
 const int TableHeader::kSortIndicatorWidth =
     kSortIndicatorSize + TableHeader::kHorizontalPadding * 2;
 
+class TableHeader::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+  HighlightPathGenerator(const HighlightPathGenerator&) = delete;
+  HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
+  ~HighlightPathGenerator() override = default;
+
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const View* view) override {
+    if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
+      return SkPath();
+
+    const TableHeader* const header = static_cast<const TableHeader*>(view);
+    // If there's no focus indicator fall back on the default highlight path
+    // (highlights entire view instead of active cell).
+    if (!header->HasFocusIndicator())
+      return SkPath();
+
+    // Draw a focus indicator around the active cell.
+    gfx::Rect bounds = header->GetActiveHeaderCellBounds();
+    bounds.set_x(header->GetMirroredXForRect(bounds));
+    return SkPath().addRect(gfx::RectToSkRect(bounds));
+  }
+};
+
 using Columns = std::vector<TableView::VisibleColumn>;
 
-TableHeader::TableHeader(TableView* table) : table_(table) {}
+TableHeader::TableHeader(TableView* table) : table_(table) {
+  HighlightPathGenerator::Install(
+      this, std::make_unique<TableHeader::HighlightPathGenerator>());
+  FocusRing::Install(this);
+  views::FocusRing::Get(this)->SetHasFocusPredicate([&](View* view) {
+    return static_cast<TableHeader*>(view)->GetHeaderRowHasFocus();
+  });
+}
 
 TableHeader::~TableHeader() = default;
 
+void TableHeader::UpdateFocusState() {
+  views::FocusRing::Get(this)->SchedulePaint();
+}
+
 void TableHeader::OnPaint(gfx::Canvas* canvas) {
-  ui::NativeTheme* theme = GetNativeTheme();
+  ui::ColorProvider* color_provider = GetColorProvider();
   const SkColor text_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderText);
+      color_provider->GetColor(ui::kColorTableHeaderForeground);
   const SkColor separator_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderSeparator);
+      color_provider->GetColor(ui::kColorTableHeaderSeparator);
   // Paint the background and a separator at the bottom. The separator color
   // matches that of the border around the scrollview.
   OnPaintBackground(canvas);
   SkColor border_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_UnfocusedBorderColor);
+      color_provider->GetColor(ui::kColorFocusableBorderUnfocused);
   canvas->DrawSharpLine(gfx::PointF(0, height() - 1),
                         gfx::PointF(width(), height() - 1), border_color);
 
@@ -243,8 +286,8 @@ void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
 
 void TableHeader::OnThemeChanged() {
   View::OnThemeChanged();
-  SetBackground(CreateSolidBackground(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TableHeaderBackground)));
+  SetBackground(CreateSolidBackground(
+      GetColorProvider()->GetColor(ui::kColorTableHeaderBackground)));
 }
 
 void TableHeader::ResizeColumnViaKeyboard(
@@ -268,6 +311,23 @@ void TableHeader::ResizeColumnViaKeyboard(
 
   table_->SetVisibleColumnWidth(
       index, std::max({kMinColumnWidth, needed_for_title, new_width}));
+}
+
+bool TableHeader::GetHeaderRowHasFocus() const {
+  return table_->HasFocus() && table_->header_row_is_active();
+}
+
+gfx::Rect TableHeader::GetActiveHeaderCellBounds() const {
+  const int active_index = table_->GetActiveVisibleColumnIndex();
+  DCHECK_NE(ui::ListSelectionModel::kUnselectedIndex, active_index);
+  const TableView::VisibleColumn& column =
+      table_->GetVisibleColumn(active_index);
+  return gfx::Rect(column.x, 0, column.width, height());
+}
+
+bool TableHeader::HasFocusIndicator() const {
+  return table_->GetActiveVisibleColumnIndex() !=
+         ui::ListSelectionModel::kUnselectedIndex;
 }
 
 bool TableHeader::StartResize(const ui::LocatedEvent& event) {

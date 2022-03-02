@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -53,6 +53,11 @@ class WebstoreStandaloneInstaller
   WebstoreStandaloneInstaller(const std::string& webstore_item_id,
                               Profile* profile,
                               Callback callback);
+
+  WebstoreStandaloneInstaller(const WebstoreStandaloneInstaller&) = delete;
+  WebstoreStandaloneInstaller& operator=(const WebstoreStandaloneInstaller&) =
+      delete;
+
   void BeginInstall();
 
  protected:
@@ -125,7 +130,8 @@ class WebstoreStandaloneInstaller
   virtual std::unique_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
   // Called once the install prompt has finished.
-  virtual void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+  virtual void OnInstallPromptDone(
+      ExtensionInstallPrompt::DoneCallbackPayload payload);
 
   // Accessors to be used by subclasses.
   bool show_user_count() const { return show_user_count_; }
@@ -195,7 +201,7 @@ class WebstoreStandaloneInstaller
   // Input configuration.
   std::string id_;
   Callback callback_;
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   WebstoreInstaller::InstallSource install_source_;
 
   // Installation dialog and its underlying prompt.
@@ -222,8 +228,6 @@ class WebstoreStandaloneInstaller
   // Created by ShowInstallUI() when a prompt is shown (if
   // the implementor returns a non-NULL in CreateInstallPrompt()).
   scoped_refptr<Extension> localized_extension_for_display_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreStandaloneInstaller);
 };
 
 }  // namespace extensions

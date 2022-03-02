@@ -17,7 +17,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -31,6 +30,10 @@ class NET_EXPORT GZipHeader {
   };
 
   GZipHeader();
+
+  GZipHeader(const GZipHeader&) = delete;
+  GZipHeader& operator=(const GZipHeader&) = delete;
+
   ~GZipHeader();
 
   // Wipe the slate clean and start from scratch.
@@ -88,8 +91,6 @@ class NET_EXPORT GZipHeader {
   int    state_;  // our current State in the parsing FSM: an int so we can ++
   uint8_t flags_;  // the flags byte of the header ("FLG" in the RFC)
   uint16_t extra_length_;  // how much of the "extra field" we have yet to read
-
-  DISALLOW_COPY_AND_ASSIGN(GZipHeader);
 };
 
 }  // namespace net

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
+#include "base/observer_list.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -32,12 +33,22 @@ enum AcceleratorAction {
   DESKS_MOVE_ACTIVE_ITEM_RIGHT,
   DESKS_NEW_DESK,
   DESKS_REMOVE_CURRENT_DESK,
+  DESKS_ACTIVATE_0,
+  DESKS_ACTIVATE_1,
+  DESKS_ACTIVATE_2,
+  DESKS_ACTIVATE_3,
+  DESKS_ACTIVATE_4,
+  DESKS_ACTIVATE_5,
+  DESKS_ACTIVATE_6,
+  DESKS_ACTIVATE_7,
+  DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS,
   DISABLE_CAPS_LOCK,
   EXIT,
   FOCUS_NEXT_PANE,
   FOCUS_PREVIOUS_PANE,
   FOCUS_SHELF,
   FOCUS_PIP,
+  KEYBOARD_BACKLIGHT_TOGGLE,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
   LAUNCH_APP_0,
@@ -62,6 +73,7 @@ enum AcceleratorAction {
   MEDIA_PREV_TRACK,
   MEDIA_REWIND,
   MEDIA_STOP,
+  MICROPHONE_MUTE_TOGGLE,
   MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS,
   NEW_INCOGNITO_WINDOW,
   NEW_TAB,
@@ -83,7 +95,7 @@ enum AcceleratorAction {
   SCALE_UI_RESET,
   SCALE_UI_UP,
   SHOW_EMOJI_PICKER,
-  SHOW_IME_MENU_BUBBLE,
+  TOGGLE_IME_MENU_BUBBLE,
   SHOW_SHORTCUT_VIEWER,
   SHOW_STYLUS_TOOLS,
   SHOW_TASK_MANAGER,
@@ -105,6 +117,7 @@ enum AcceleratorAction {
   TOGGLE_CLIPBOARD_HISTORY,
   TOGGLE_DICTATION,
   TOGGLE_DOCKED_MAGNIFIER,
+  TOGGLE_FLOATING,
   TOGGLE_FULLSCREEN,
   TOGGLE_FULLSCREEN_MAGNIFIER,
   TOGGLE_HIGH_CONTRAST,
@@ -112,6 +125,7 @@ enum AcceleratorAction {
   TOGGLE_MESSAGE_CENTER_BUBBLE,
   TOGGLE_MIRROR_MODE,
   TOGGLE_OVERVIEW,
+  TOGGLE_RESIZE_LOCK_MENU,
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_SYSTEM_TRAY_BUBBLE,
   TOGGLE_WIFI,
@@ -128,6 +142,8 @@ enum AcceleratorAction {
 
   // Debug accelerators are intentionally at the end, so that if you remove one
   // you don't need to update tests which check hashes of the ids.
+  DEBUG_KEYBOARD_BACKLIGHT_TOGGLE,
+  DEBUG_MICROPHONE_MUTE_TOGGLE,
   DEBUG_PRINT_LAYER_HIERARCHY,
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
@@ -180,10 +196,25 @@ ASH_PUBLIC_EXPORT extern const AcceleratorData
 ASH_PUBLIC_EXPORT extern const size_t
     kEnableWithPositionalAcceleratorsDataLength;
 
+// Accelerators that are enabled with improved desks keyboards shortcuts.
+ASH_PUBLIC_EXPORT extern const AcceleratorData
+    kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData[];
+ASH_PUBLIC_EXPORT extern const size_t
+    kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength;
+
 // The public-facing interface for accelerator handling, which is Ash's duty to
 // implement.
 class ASH_PUBLIC_EXPORT AcceleratorController {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Invoked when `action` is performed.
+    virtual void OnActionPerformed(AcceleratorAction action) = 0;
+    // Invoked when `controller` is destroyed.
+    virtual void OnAcceleratorControllerWillBeDestroyed(
+        AcceleratorController* controller) {}
+  };
+
   // Returns the singleton instance.
   static AcceleratorController* Get();
 
@@ -222,9 +253,20 @@ class ASH_PUBLIC_EXPORT AcceleratorController {
   // Returns the accelerator histotry.
   virtual AcceleratorHistory* GetAcceleratorHistory() = 0;
 
+  // Returns true if the provided accelerator matches the provided accelerator
+  // action.
+  virtual bool DoesAcceleratorMatchAction(const ui::Accelerator& accelerator,
+                                          const AcceleratorAction action) = 0;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  protected:
   AcceleratorController();
   virtual ~AcceleratorController();
+  void NotifyActionPerformed(AcceleratorAction action);
+
+  base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };
 
 // The public facing interface for AcceleratorHistory, which is implemented in

@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/callback_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -48,6 +49,10 @@ const char kServerAuthSecret[] = "test_server_auth_secret";
 class FakeGCMDriver : public gcm::FakeGCMDriver {
  public:
   FakeGCMDriver() = default;
+
+  FakeGCMDriver(const FakeGCMDriver&) = delete;
+  FakeGCMDriver& operator=(const FakeGCMDriver&) = delete;
+
   ~FakeGCMDriver() override = default;
 
   void EncryptMessage(const std::string& app_id,
@@ -71,13 +76,15 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
 
  private:
   std::string app_id_, authorized_entity_, p256dh_, auth_secret_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
 };
 
 class FakeWebPushSender : public WebPushSender {
  public:
   FakeWebPushSender() : WebPushSender(/*url_loader_factory=*/nullptr) {}
+
+  FakeWebPushSender(const FakeWebPushSender&) = delete;
+  FakeWebPushSender& operator=(const FakeWebPushSender&) = delete;
+
   ~FakeWebPushSender() override = default;
 
   void SendMessage(const std::string& fcm_token,
@@ -99,16 +106,18 @@ class FakeWebPushSender : public WebPushSender {
 
  private:
   std::string fcm_token_;
-  crypto::ECPrivateKey* vapid_key_;
+  raw_ptr<crypto::ECPrivateKey> vapid_key_;
   absl::optional<WebPushMessage> message_;
   SendWebPushMessageResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeWebPushSender);
 };
 
 class FakeSharingMessageBridge : public SharingMessageBridge {
  public:
   FakeSharingMessageBridge() = default;
+
+  FakeSharingMessageBridge(const FakeSharingMessageBridge&) = delete;
+  FakeSharingMessageBridge& operator=(const FakeSharingMessageBridge&) = delete;
+
   ~FakeSharingMessageBridge() override = default;
 
   // SharingMessageBridge:
@@ -139,8 +148,6 @@ class FakeSharingMessageBridge : public SharingMessageBridge {
  private:
   absl::optional<sync_pb::SharingMessageSpecifics> specifics_;
   sync_pb::SharingMessageCommitError::ErrorCode error_code_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSharingMessageBridge);
 };
 
 class MockVapidKeyManager : public VapidKeyManager {
@@ -170,7 +177,7 @@ class SharingFCMSenderTest : public testing::Test {
   SharingFCMSenderTest()
       : fake_web_push_sender_(new FakeWebPushSender()),
         sync_prefs_(&prefs_, &fake_device_info_sync_service_),
-        sharing_fcm_sender_(base::WrapUnique(fake_web_push_sender_),
+        sharing_fcm_sender_(base::WrapUnique(fake_web_push_sender_.get()),
                             &fake_sharing_message_bridge_,
                             &sync_prefs_,
                             &vapid_key_manager_,
@@ -182,7 +189,7 @@ class SharingFCMSenderTest : public testing::Test {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  FakeWebPushSender* fake_web_push_sender_;
+  raw_ptr<FakeWebPushSender> fake_web_push_sender_;
   FakeSharingMessageBridge fake_sharing_message_bridge_;
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
   SharingSyncPreference sync_prefs_;
@@ -223,8 +230,7 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -257,8 +263,7 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -287,8 +292,7 @@ TEST_F(SharingFCMSenderTest, NoChannelsSpecified) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -321,8 +325,7 @@ TEST_F(SharingFCMSenderTest, SendViaSyncDisabled) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -362,8 +365,7 @@ TEST_F(SharingFCMSenderTest, PreferVapid) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -408,8 +410,7 @@ TEST_F(SharingFCMSenderTest, PreferSync) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -475,8 +476,7 @@ TEST_P(SharingFCMSenderWebPushResultTest, ResultTest) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));
@@ -554,8 +554,7 @@ TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToFcmTarget(
-      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      fcm_channel, base::Seconds(kTtlSeconds), std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id,
                      &channel_type));

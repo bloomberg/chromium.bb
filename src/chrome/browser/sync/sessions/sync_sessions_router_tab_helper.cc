@@ -13,6 +13,7 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -21,7 +22,9 @@ namespace sync_sessions {
 SyncSessionsRouterTabHelper::SyncSessionsRouterTabHelper(
     content::WebContents* web_contents,
     SyncSessionsWebContentsRouter* router)
-    : content::WebContentsObserver(web_contents), router_(router) {
+    : content::WebContentsUserData<SyncSessionsRouterTabHelper>(*web_contents),
+      content::WebContentsObserver(web_contents),
+      router_(router) {
   chrome_translate_client_ =
       ChromeTranslateClient::FromWebContents(web_contents);
   // A translate client is not always attached to web contents (e.g. tests).
@@ -59,11 +62,8 @@ void SyncSessionsRouterTabHelper::WebContentsDestroyed() {
 void SyncSessionsRouterTabHelper::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  // Only notify when the main frame finishes loading; only the main frame
-  // doesn't have a parent.
-  if (render_frame_host && !render_frame_host->GetParent() &&
-      render_frame_host->GetLifecycleState() ==
-          content::RenderFrameHost::LifecycleState::kActive) {
+  // Only notify when the primary main frame finishes loading.
+  if (render_frame_host && render_frame_host->IsInPrimaryMainFrame()) {
     NotifyRouter(true);
   }
 }
@@ -104,6 +104,6 @@ void SyncSessionsRouterTabHelper::OnFaviconUpdated(
   }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SyncSessionsRouterTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SyncSessionsRouterTabHelper);
 
 }  // namespace sync_sessions

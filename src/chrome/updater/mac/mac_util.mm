@@ -4,19 +4,23 @@
 
 #import "chrome/updater/mac/mac_util.h"
 
+#include <sys/stat.h>
 #include <pwd.h>
 #include <unistd.h>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/process/launch.h"
+#include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #include "chrome/common/mac/launchd.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -27,17 +31,6 @@ namespace updater {
 namespace {
 
 constexpr int kLaunchctlExitCodeNoSuchProcess = 3;
-
-base::FilePath GetUpdateFolderName() {
-  return base::FilePath(COMPANY_SHORTNAME_STRING)
-      .AppendASCII(PRODUCT_FULLNAME_STRING);
-}
-
-base::FilePath ExecutableFolderPath() {
-  return base::FilePath(FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING ".app"))
-      .Append(FILE_PATH_LITERAL("Contents"))
-      .Append(FILE_PATH_LITERAL("MacOS"));
-}
 
 }  // namespace
 
@@ -75,46 +68,19 @@ absl::optional<base::FilePath> GetApplicationSupportDirectory(
   return absl::nullopt;
 }
 
-absl::optional<base::FilePath> GetUpdaterFolderPath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetLibraryFolderPath(scope);
-  if (!path)
+absl::optional<base::FilePath> GetKSAdminPath(UpdaterScope scope) {
+  const absl::optional<base::FilePath> keystone_folder_path =
+      GetKeystoneFolderPath(scope);
+  if (!keystone_folder_path || !base::PathExists(*keystone_folder_path))
     return absl::nullopt;
-  return path->Append(GetUpdateFolderName());
-}
-
-absl::optional<base::FilePath> GetVersionedUpdaterFolderPathForVersion(
-    UpdaterScope scope,
-    const base::Version& version) {
-  absl::optional<base::FilePath> path = GetUpdaterFolderPath(scope);
-  if (!path)
+  base::FilePath ksadmin_path =
+      keystone_folder_path->Append(FILE_PATH_LITERAL(KEYSTONE_NAME ".bundle"))
+          .Append(FILE_PATH_LITERAL("Contents"))
+          .Append(FILE_PATH_LITERAL("Helpers"))
+          .Append(FILE_PATH_LITERAL("ksadmin"));
+  if (!base::PathExists(ksadmin_path))
     return absl::nullopt;
-  return path->AppendASCII(version.GetString());
-}
-
-absl::optional<base::FilePath> GetVersionedUpdaterFolderPath(
-    UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetUpdaterFolderPath(scope);
-  if (!path)
-    return absl::nullopt;
-  return path->AppendASCII(kUpdaterVersion);
-}
-
-absl::optional<base::FilePath> GetExecutableFolderPathForVersion(
-    UpdaterScope scope,
-    const base::Version& version) {
-  absl::optional<base::FilePath> path =
-      GetVersionedUpdaterFolderPathForVersion(scope, version);
-  if (!path)
-    return absl::nullopt;
-  return path->Append(ExecutableFolderPath());
-}
-
-absl::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetVersionedUpdaterFolderPath(scope);
-  if (!path)
-    return absl::nullopt;
-  return path->Append(ExecutableFolderPath())
-      .Append(FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING));
+  return absl::make_optional(ksadmin_path);
 }
 
 bool PathOwnedByUser(const base::FilePath& path) {

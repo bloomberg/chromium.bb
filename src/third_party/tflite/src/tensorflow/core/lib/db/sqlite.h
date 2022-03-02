@@ -105,12 +105,12 @@ class TF_LOCKABLE Sqlite : public core::RefCounted {
   }
 
   /// \brief Returns rowid assigned to last successful insert.
-  int64 last_insert_rowid() const TF_EXCLUSIVE_LOCKS_REQUIRED(this) {
+  int64_t last_insert_rowid() const TF_EXCLUSIVE_LOCKS_REQUIRED(this) {
     return sqlite3_last_insert_rowid(db_);
   }
 
   /// \brief Returns number of rows directly changed by last write.
-  int64 changes() const TF_EXCLUSIVE_LOCKS_REQUIRED(this) {
+  int64_t changes() const TF_EXCLUSIVE_LOCKS_REQUIRED(this) {
     return sqlite3_changes(db_);
   }
 
@@ -172,8 +172,8 @@ class SqliteStatement {
   /// The OrDie version returns `!is_done` which, if true, indicates a
   /// row is available.
   ///
-  /// This statement should be Reset() or destructed when when finished
-  /// with the result.
+  /// This statement should be Reset() or destructed when finished with
+  /// the result.
   Status Step(bool* is_done);
   bool StepOrDie() TF_MUST_USE_RESULT;
 
@@ -182,8 +182,8 @@ class SqliteStatement {
   /// If a row isn't returned, an internal error Status is returned
   /// that won't be reflected in the connection error state.
   ///
-  /// This statement should be Reset() or destructed when when finished
-  /// with the result.
+  /// This statement should be Reset() or destructed when finished with
+  /// the result.
   Status StepOnce();
   const SqliteStatement& StepOnceOrDie();
 
@@ -203,11 +203,11 @@ class SqliteStatement {
   void Reset();
 
   /// \brief Binds signed 64-bit integer to 1-indexed query parameter.
-  void BindInt(int parameter, int64 value) {
+  void BindInt(int parameter, int64_t value) {
     Update(sqlite3_bind_int64(stmt_, parameter, value), parameter);
-    size_ += sizeof(int64);
+    size_ += sizeof(int64_t);
   }
-  void BindInt(const char* parameter, int64 value) {
+  void BindInt(const char* parameter, int64_t value) {
     BindInt(GetParameterIndex(parameter), value);
   }
 
@@ -284,7 +284,7 @@ class SqliteStatement {
   }
 
   /// \brief Returns 0-indexed column from row result coerced as an integer.
-  int64 ColumnInt(int column) const TF_MUST_USE_RESULT {
+  int64_t ColumnInt(int column) const TF_MUST_USE_RESULT {
     return sqlite3_column_int64(stmt_, column);
   }
 

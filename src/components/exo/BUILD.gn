@@ -2,12 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//components/exo/buildflags.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [
+    "ENABLE_COLOR_MANAGER=$enable_color_manager",
+    "ENABLE_WESTON_TEST=$enable_weston_test",
+  ]
+}
 
 if (use_xkbcommon) {
   pkg_config("xkbcommon") {
@@ -19,6 +29,8 @@ static_library("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
+    "capabilities.cc",
+    "capabilities.h",
     "data_device.cc",
     "data_device.h",
     "data_device_delegate.h",
@@ -61,6 +73,7 @@ static_library("exo") {
     "shell_surface_util.h",
     "sub_surface.cc",
     "sub_surface.h",
+    "sub_surface_observer.h",
     "surface.cc",
     "surface.h",
     "surface_delegate.h",
@@ -72,6 +85,8 @@ static_library("exo") {
     "touch_delegate.h",
     "vsync_timing_manager.cc",
     "vsync_timing_manager.h",
+    "window_properties.cc",
+    "window_properties.h",
     "wm_helper.cc",
     "wm_helper.h",
   ]
@@ -92,7 +107,7 @@ static_library("exo") {
     "//third_party/blink/public/common",
     "//ui/accessibility:ax_base",
     "//ui/aura",
-    "//ui/base/cursor",
+    "//ui/aura/cursor",
     "//ui/base/dragdrop:types",
     "//ui/base/dragdrop/mojom",
     "//ui/base/ime",
@@ -113,13 +128,14 @@ static_library("exo") {
   ]
 
   assert_no_deps = [
+    "//ash/components/arc",
     "//components/arc",
     "//content/public/browser",
     "//content/public/common",
   ]
 
   public_deps = [
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/dragdrop/mojom:mojom_headers",
   ]
@@ -133,7 +149,7 @@ static_library("exo") {
       "//chromeos/crosapi/cpp",
       "//chromeos/ui/base",
       "//chromeos/ui/frame",
-      "//components/full_restore",
+      "//components/app_restore",
       "//components/fullscreen_control",
       "//components/strings",
       "//ui/base",
@@ -364,7 +380,6 @@ test("exo_unittests") {
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/compositor:test_support",
-    "//ui/display:display_manager_test_api",
     "//ui/gl:test_support",
   ]
 
@@ -384,6 +399,7 @@ test("exo_unittests") {
       "//ash:test_support",
       "//ash/public/cpp",
       "//components/exo/server:unit_tests",
+      "//ui/display:display_manager_test_api",
     ]
 
     data_deps += [

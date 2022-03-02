@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -43,7 +43,6 @@ class ExceptionState;
 class GetAnimationsOptions;
 class ScriptState;
 class ScriptValue;
-class UnrestrictedDoubleOrKeyframeAnimationOptions;
 class V8UnionKeyframeAnimationOptionsOrUnrestrictedDouble;
 
 // https://drafts.csswg.org/web-animations-1/#the-animatable-interface-mixin
@@ -53,18 +52,11 @@ class CORE_EXPORT Animatable {
   // called on.
   virtual Element* GetAnimationTarget() = 0;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Animation* animate(
       ScriptState* script_state,
       const ScriptValue& keyframes,
       const V8UnionKeyframeAnimationOptionsOrUnrestrictedDouble* options,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  Animation* animate(ScriptState*,
-                     const ScriptValue&,
-                     const UnrestrictedDoubleOrKeyframeAnimationOptions&,
-                     ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   Animation* animate(ScriptState*, const ScriptValue&, ExceptionState&);
 

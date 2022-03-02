@@ -10,7 +10,6 @@
 #define JINGLE_NOTIFIER_BASE_WEAK_XMPP_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
@@ -27,6 +26,9 @@ namespace notifier {
 class WeakXmppClient : public jingle_xmpp::XmppClient {
  public:
   explicit WeakXmppClient(jingle_xmpp::TaskParent* parent);
+
+  WeakXmppClient(const WeakXmppClient&) = delete;
+  WeakXmppClient& operator=(const WeakXmppClient&) = delete;
 
   ~WeakXmppClient() override;
 
@@ -49,8 +51,6 @@ class WeakXmppClient : public jingle_xmpp::XmppClient {
   // SupportsWeakPtr since we want to invalidate in other places
   // besides the destructor.
   base::WeakPtrFactory<WeakXmppClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WeakXmppClient);
 };
 
 }  // namespace notifier

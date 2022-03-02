@@ -29,6 +29,10 @@ class FileSystemFileHandle final : public FileSystemHandle {
                                ExceptionState&);
   ScriptPromise getFile(ScriptState*, ExceptionState&);
 
+  // TODO(fivedots): Define if this method should be generally exposed or only
+  // on files backed by the Origin Private File System.
+  ScriptPromise createSyncAccessHandle(ScriptState*, ExceptionState&);
+
   mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> Transfer()
       override;
 
@@ -46,6 +50,19 @@ class FileSystemFileHandle final : public FileSystemHandle {
       bool writable,
       base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr,
                               mojom::blink::PermissionStatus)>) override;
+  void RenameImpl(
+      const String& new_entry_name,
+      base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr)>)
+      override;
+  void MoveImpl(
+      mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> dest,
+      const String& new_entry_name,
+      base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr)>)
+      override;
+  void RemoveImpl(
+      const FileSystemRemoveOptions* options,
+      base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr)>)
+      override;
   void IsSameEntryImpl(
       mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> other,
       base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr, bool)>)

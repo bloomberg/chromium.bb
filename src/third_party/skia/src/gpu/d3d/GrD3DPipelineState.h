@@ -33,9 +33,9 @@ public:
                        const UniformInfoArray& uniforms,
                        uint32_t uniformSize,
                        uint32_t numSamplers,
-                       std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
-                       std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-                       std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls,
+                       std::unique_ptr<GrGeometryProcessor::ProgramImpl> gpImpl,
+                       std::unique_ptr<GrXferProcessor::ProgramImpl> xpImpl,
+                       std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls,
                        size_t vertexStride,
                        size_t instanceStride);
 
@@ -74,26 +74,6 @@ private:
             fRenderTargetSize.fHeight = -1;
             fRenderTargetOrigin = (GrSurfaceOrigin)-1;
         }
-
-        /**
-        * Gets a float4 that adjusts the position from Skia device coords to D3D's normalized device
-        * coords. Assuming the transformed position, pos, is a homogeneous float3, the vec, v, is
-        * applied as such:
-        * pos.x = dot(v.xy, pos.xz)
-        * pos.y = dot(v.zw, pos.yz)
-        */
-        void getRTAdjustmentVec(float* destVec) {
-            destVec[0] = 2.f / fRenderTargetSize.fWidth;
-            destVec[1] = -1.f;
-            // D3D's NDC space is flipped from Vulkan and Metal
-            if (kTopLeft_GrSurfaceOrigin == fRenderTargetOrigin) {
-                destVec[2] = -2.f / fRenderTargetSize.fHeight;
-                destVec[3] = 1.f;
-            } else {
-                destVec[2] = 2.f / fRenderTargetSize.fHeight;
-                destVec[3] = -1.f;
-            }
-        }
     };
 
     // Helper for setData() that sets the view matrix and loads the render target height uniform
@@ -107,9 +87,9 @@ private:
     GrGLSLBuiltinUniformHandles fBuiltinUniformHandles;
 
     // Processors in the GrD3DPipelineState
-    std::unique_ptr<GrGLSLGeometryProcessor> fGeometryProcessor;
-    std::unique_ptr<GrGLSLXferProcessor> fXferProcessor;
-    std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
+    std::unique_ptr<GrGeometryProcessor::ProgramImpl>              fGPImpl;
+    std::unique_ptr<GrXferProcessor::ProgramImpl>                  fXPImpl;
+    std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fFPImpls;
 
     GrD3DPipelineStateDataManager fDataManager;
 

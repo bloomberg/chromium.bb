@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
 #include "chromeos/ui/frame/caption_buttons/frame_size_button_delegate.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
@@ -42,8 +41,12 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
  public:
   METADATA_HEADER(FrameCaptionButtonContainerView);
 
-  // |frame| is the views::Widget that the caption buttons act on.
-  explicit FrameCaptionButtonContainerView(views::Widget* frame);
+  // `frame` is the views::Widget that the caption buttons act on.
+  // `custom_button` is an optional caption button. It is placed as the
+  // left-most caption button (in LTR mode).
+  FrameCaptionButtonContainerView(
+      views::Widget* frame,
+      std::unique_ptr<views::FrameCaptionButton> custom_button = nullptr);
   FrameCaptionButtonContainerView(const FrameCaptionButtonContainerView&) =
       delete;
   FrameCaptionButtonContainerView& operator=(
@@ -76,6 +79,10 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
       return container_view_->menu_button_;
     }
 
+    views::FrameCaptionButton* custom_button() const {
+      return container_view_->custom_button_;
+    }
+
    private:
     FrameCaptionButtonContainerView* container_view_;
   };
@@ -96,6 +103,11 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
 
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();
+
+  // Creates or removes a layer for the caption button container when window
+  // controls overlay is enabled or disabled.
+  void OnWindowControlsOverlayEnabledChanged(bool enabled,
+                                             SkColor background_color);
 
   // Updates the caption buttons' state based on the caption button model's
   // state. A parent view should relayout to reflect the change in states.
@@ -155,7 +167,7 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
       const views::FrameCaptionButton* to_hover,
       const views::FrameCaptionButton* to_press) override;
   bool CanSnap() override;
-  void ShowSnapPreview(SnapDirection snap) override;
+  void ShowSnapPreview(SnapDirection snap, bool allow_haptic_feedback) override;
   void CommitSnap(SnapDirection snap) override;
 
   // The widget that the buttons act on.
@@ -163,6 +175,7 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
+  views::FrameCaptionButton* custom_button_ = nullptr;
   views::FrameCaptionButton* menu_button_ = nullptr;
   views::FrameCaptionButton* minimize_button_ = nullptr;
   views::FrameCaptionButton* size_button_ = nullptr;
@@ -182,6 +195,11 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
   // Callback for the size button action, which overrides the default behavior.
   // If the callback returns false, it will fall back to the default dehavior.
   base::RepeatingCallback<bool()> on_size_button_pressed_callback_;
+
+  // Keeps track of the window-controls-overlay toggle, and defines if the
+  // background of the entire view should be updated when the background of the
+  // button container changes and SetBackgroundColor() gets called.
+  bool window_controls_overlay_enabled_ = false;
 };
 
 }  // namespace chromeos

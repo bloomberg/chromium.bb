@@ -10,6 +10,7 @@ source_set("web_instance_host") {
   deps = [
     "//base",
     "//base:base_static",
+    "//components/embedder_support",
     "//content/public/common",
     "//fuchsia/base",
     "//fuchsia/engine:switches",
@@ -28,6 +29,7 @@ source_set("web_instance_host") {
   public_deps = [
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/fidl",
   ]

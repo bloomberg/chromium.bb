@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 import type * as SDKModule from '../../../../../front_end/core/sdk/sdk.js';
+import type * as Protocol from '../../../../../front_end/generated/protocol.js';
 
 import {createTarget, describeWithEnvironment} from '../../helpers/EnvironmentHelpers.js';
 import {describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler} from '../../helpers/MockConnection.js';
 
 const {assert} = chai;
+
+const SCRIPT_ID_ONE = '1' as Protocol.Runtime.ScriptId;
+const SCRIPT_ID_TWO = '2' as Protocol.Runtime.ScriptId;
 
 describeWithMockConnection('DebuggerModel', () => {
   let SDK: typeof SDKModule;
@@ -21,7 +25,7 @@ describeWithMockConnection('DebuggerModel', () => {
       const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
       const url = 'http://localhost/index.html';
       dispatchEvent(target, 'Debugger.scriptParsed', {
-        scriptId: '1',
+        scriptId: SCRIPT_ID_ONE,
         url,
         startLine: 0,
         startColumn: 0,
@@ -35,7 +39,7 @@ describeWithMockConnection('DebuggerModel', () => {
         length: 10,
       });
       dispatchEvent(target, 'Debugger.scriptParsed', {
-        scriptId: '2',
+        scriptId: SCRIPT_ID_TWO,
         url,
         startLine: 20,
         startColumn: 0,
@@ -48,26 +52,42 @@ describeWithMockConnection('DebuggerModel', () => {
         hasSourceURL: false,
         length: 10,
       });
-      assert.strictEqual(debuggerModel?.createRawLocationByURL(url, 0)?.scriptId, '1');
-      assert.strictEqual(debuggerModel?.createRawLocationByURL(url, 20, 1)?.scriptId, '2');
+      assert.strictEqual(debuggerModel?.createRawLocationByURL(url, 0)?.scriptId, SCRIPT_ID_ONE);
+      assert.strictEqual(debuggerModel?.createRawLocationByURL(url, 20, 1)?.scriptId, SCRIPT_ID_TWO);
       assert.strictEqual(debuggerModel?.createRawLocationByURL(url, 5, 5), null);
     });
   });
 
+  const breakpointId1 = 'fs.js:1' as Protocol.Debugger.BreakpointId;
+  const breakpointId2 = 'unsupported' as Protocol.Debugger.BreakpointId;
+
   describe('setBreakpointByURL', () => {
     it('correctly sets only a single breakpoint in Node.js internal scripts', async () => {
-      setMockConnectionResponseHandler('Debugger.setBreakpointByUrl', ({url}) => {
-        if (url === 'fs.js') {
-          return {breakpointId: 'fs.js:1', locations: []};
-        }
-        return {breakpointId: 'unsupported', locations: []};
-      });
+      setMockConnectionResponseHandler(
+          'Debugger.setBreakpointByUrl', ({url}): Protocol.Debugger.SetBreakpointByUrlResponse => {
+            if (url === 'fs.js') {
+              return {
+                breakpointId: breakpointId1,
+                locations: [],
+                getError() {
+                  return undefined;
+                },
+              };
+            }
+            return {
+              breakpointId: breakpointId2,
+              locations: [],
+              getError() {
+                return undefined;
+              },
+            };
+          });
 
       const target = createTarget();
       target.markAsNodeJSForTest();
       const model = new SDK.DebuggerModel.DebuggerModel(target);
       const {breakpointId} = await model.setBreakpointByURL('fs.js', 1);
-      assert.strictEqual(breakpointId, 'fs.js:1');
+      assert.strictEqual(breakpointId, breakpointId1);
     });
   });
 });
@@ -78,7 +98,8 @@ describeWithEnvironment('LocationRanges', () => {
     SDK = await import('../../../../../front_end/core/sdk/sdk.js');
   });
 
-  function createRange(scriptId: string, startLine: number, startColumn: number, endLine: number, endColumn: number) {
+  function createRange(
+      scriptId: Protocol.Runtime.ScriptId, startLine: number, startColumn: number, endLine: number, endColumn: number) {
     return new SDK.DebuggerModel.LocationRange(
         scriptId, new SDK.DebuggerModel.ScriptPosition(startLine, startColumn),
         new SDK.DebuggerModel.ScriptPosition(endLine, endColumn));
@@ -97,9 +118,6 @@ describeWithEnvironment('LocationRanges', () => {
       assert.isTrue(locationRange[i - 1].compareTo(locationRange[i]) < 0);
     }
   }
-
-  const SCRIPT_ID_ONE = 'one';
-  const SCRIPT_ID_TWO = 'two';
 
   it('can be sorted after scriptId', () => {
     const locationRanges = [

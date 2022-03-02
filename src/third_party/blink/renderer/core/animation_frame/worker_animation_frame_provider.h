@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_FRAME_WORKER_ANIMATION_FRAME_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_FRAME_WORKER_ANIMATION_FRAME_PROVIDER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -33,6 +33,9 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   WorkerAnimationFrameProvider(
       ExecutionContext* context,
       const BeginFrameProviderParams& begin_frame_provider_params);
+  WorkerAnimationFrameProvider(const WorkerAnimationFrameProvider&) = delete;
+  WorkerAnimationFrameProvider& operator=(const WorkerAnimationFrameProvider&) =
+      delete;
 
   int RegisterCallback(FrameCallback* callback);
   void CancelCallback(int id);
@@ -49,7 +52,6 @@ class CORE_EXPORT WorkerAnimationFrameProvider
 
  private:
   const Member<BeginFrameProvider> begin_frame_provider_;
-  DISALLOW_COPY_AND_ASSIGN(WorkerAnimationFrameProvider);
   FrameRequestCallbackCollection callback_collection_;
 
   HeapLinkedHashSet<WeakMember<OffscreenCanvas>> offscreen_canvases_;

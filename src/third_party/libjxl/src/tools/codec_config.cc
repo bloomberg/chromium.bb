@@ -1,22 +1,14 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/codec_config.h"
 
 #include <hwy/targets.h>
 
 #include "lib/jxl/base/status.h"
+#include "tools/tool_version.h"
 
 namespace jpegxl {
 namespace tools {
@@ -32,7 +24,7 @@ std::string CodecConfigString(uint32_t lib_version) {
     config += version_str;
   }
 
-  std::string version = JPEGXL_VERSION;
+  std::string version = kJpegxlVersion;
   if (version != "(unknown)") {
     config += version + ' ';
   }
@@ -47,7 +39,7 @@ std::string CodecConfigString(uint32_t lib_version) {
 #endif
 
   bool saw_target = false;
-  config += "| SIMD supported: ";
+  config += "[";
   for (const uint32_t target : hwy::SupportedAndGeneratedTargets()) {
     config += hwy::TargetName(target);
     config += ',';
@@ -56,6 +48,7 @@ std::string CodecConfigString(uint32_t lib_version) {
   JXL_ASSERT(saw_target);
   (void)saw_target;
   config.resize(config.size() - 1);  // remove trailing comma
+  config += "]";
 
   return config;
 }

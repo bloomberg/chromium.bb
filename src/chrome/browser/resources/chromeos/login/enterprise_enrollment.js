@@ -30,6 +30,8 @@ var ENROLLMENT_STEP = {
   ATTRIBUTE_PROMPT: 'attribute-prompt',
   ERROR: 'error',
   SUCCESS: 'success',
+  CHECKING: 'checking',
+  TPM_CHECKING: 'tpm-checking',
 
   /* TODO(dzhioev): define this step on C++ side.
    */
@@ -59,8 +61,10 @@ Polymer({
     'setAdJoinConfiguration',
     'setAdJoinParams',
     'setEnterpriseDomainInfo',
+    'setIsBrandedBuild',
     'showAttributePromptStep',
     'showError',
+    'showOSNotInstalledError',
     'showStep',
   ],
 
@@ -119,6 +123,14 @@ Polymer({
     },
 
     /**
+     * Whether account identifier should be sent for check.
+     */
+    hasAccountCheck_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the enrollment is automatic
      *
      * True:  Automatic (Attestation-based)
@@ -155,6 +167,11 @@ Polymer({
             (loadTimeData.getString('flowType') == 'meet');
       },
       readOnly: true,
+    },
+
+    isBranded: {
+      type: Boolean,
+      value: true,
     },
   },
 
@@ -224,9 +241,6 @@ Polymer({
       chrome.send(
           'oauthEnrollAdUnlockConfiguration', [e.detail.unlock_password]);
     }.bind(this));
-
-
-
     this.authenticator_.insecureContentBlockedCallback =
         (function(url) {
           this.showError(
@@ -247,6 +261,10 @@ Polymer({
    * URL.
    */
   onBeforeShow(data) {
+    if (data == undefined) {
+      return;
+    }
+
     if (Oobe.getInstance().forceKeyboardFlow) {
       // We run the tab remapping logic inside of the webview so that the
       // simulated tab events will use the webview tab-stops. Simulated tab
@@ -260,7 +278,10 @@ Polymer({
       }]);
     }
 
-    this.authenticator_.setWebviewPartition(data.webviewPartitionName);
+    // TODO(crbug.com/1187024) - Improve the type checking in `data`
+    //
+    this.authenticator_.setWebviewPartition(
+      'webviewPartitionName' in data ? data.webviewPartitionName : '');
 
     var gaiaParams = {};
     gaiaParams.gaiaUrl = data.gaiaUrl;
@@ -276,15 +297,18 @@ Polymer({
     this.authenticator_.load(
         cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
 
-    this.isManualEnrollment_ = data.enrollment_mode === 'manual';
-    this.isForced_ = data.is_enrollment_enforced;
-    this.isAutoEnroll_ = data.attestationBased;
+    this.isManualEnrollment_ = 'enrollment_mode' in data ?
+                               data.enrollment_mode === 'manual' : undefined;
+    this.isForced_ = 'is_enrollment_enforced' in data ?
+                     data.is_enrollment_enforced : undefined;
+    this.isAutoEnroll_ = 'attestationBased' in data ?
+                         data.attestationBased : undefined;
+    this.hasAccountCheck_ =
+        'flow' in data ? (data.flow == 'enterpriseLicense') : false;
 
     cr.ui.login.invokePolymerMethod(this.$["step-ad-join"], 'onBeforeShow');
-    if (!this.uiStep) {
-      this.showStep(data.attestationBased ?
-          ENROLLMENT_STEP.WORKING : ENROLLMENT_STEP.SIGNIN);
-    }
+    this.showStep(
+        this.isAutoEnroll_ ? ENROLLMENT_STEP.WORKING : ENROLLMENT_STEP.SIGNIN);
   },
 
   /**
@@ -318,6 +342,19 @@ Polymer({
   },
 
   /**
+   * Invoked when identifierEntered message received.
+   * @param {!CustomEvent<!{accountIdentifier: string}>} e Event with payload
+   *     containing: {string} accountIdentifier User identifier.
+   * @private
+   */
+  onIdentifierEnteredMessage_(e) {
+    if (this.hasAccountCheck_) {
+      this.showStep(ENROLLMENT_STEP.CHECKING);
+      chrome.send('enterpriseIdentifierEntered', [e.detail.accountIdentifier]);
+    }
+  },
+
+  /**
    * Cancels the current authentication and drops the user back to the next
    * screen (either the next authentication or the login screen).
    */
@@ -332,6 +369,7 @@ Polymer({
    * Switches between the different steps in the enrollment flow.
    * @param {string} step the steps to show, one of "signin", "working",
    * "attribute-prompt", "error", "success".
+   * @suppress {missingProperties} setOobeUIState() exists
    */
   showStep(step) {
     this.setUIStep(step);
@@ -342,7 +380,15 @@ Polymer({
     }
     this.isCancelDisabled =
         (step === ENROLLMENT_STEP.SIGNIN && !this.isManualEnrollment_) ||
-        step === ENROLLMENT_STEP.AD_JOIN || step === ENROLLMENT_STEP.WORKING;
+        step === ENROLLMENT_STEP.AD_JOIN || step === ENROLLMENT_STEP.WORKING ||
+        step === ENROLLMENT_STEP.CHECKING || step === ENROLLMENT_STEP.SUCCESS ||
+        step == ENROLLMENT_STEP.TPM_CHECKING;
+    if (this.isCancelDisabled) {
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.ENROLLMENT);
+    } else {
+      Oobe.getInstance().setOobeUIState(
+          OOBE_UI_STATE.ENROLLMENT_CANCEL_ENABLED);
+    }
   },
 
   doReload() {
@@ -490,6 +536,15 @@ Polymer({
     }
   },
 
+  showOSNotInstalledError() {
+    this.canRetryAfterError_ = false;
+    this.errorText_ = this.i18nDynamic(
+        this.locale, 'oauthOSNotInstalledError',
+        this.isBranded ? loadTimeData.getString('osInstallCloudReadyOS') :
+                         loadTimeData.getString('osInstallChromiumOS'));
+    this.showStep(ENROLLMENT_STEP.ERROR);
+  },
+
   /**
    *  Provides the label for the generic cancel button (Skip / Enroll Manually)
    *
@@ -541,6 +596,20 @@ Polymer({
    */
   isSaml_(authFlow) {
     return authFlow === cr.login.Authenticator.AuthFlow.SAML;
+  },
+
+  /*
+   * Called when we cancel TPM check early.
+   */
+  onTPMCheckCanceled_() {
+    this.userActed('cancel-tpm-check');
+  },
+
+  /**
+   * @param {boolean} is_branded
+   */
+  setIsBrandedBuild(is_branded) {
+    this.isBranded = is_branded;
   },
 });
 })();
