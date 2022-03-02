@@ -16,14 +16,15 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/size.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -111,6 +112,8 @@ void ImageResourceContent::SetImageResourceInfo(ImageResourceInfo* info) {
 
 void ImageResourceContent::Trace(Visitor* visitor) const {
   visitor->Trace(info_);
+  visitor->Trace(observers_);
+  visitor->Trace(finished_observers_);
   ImageObserver::Trace(visitor);
 }
 
@@ -226,10 +229,10 @@ blink::Image* ImageResourceContent::GetImage() const {
   return image_.get();
 }
 
-IntSize ImageResourceContent::IntrinsicSize(
+gfx::Size ImageResourceContent::IntrinsicSize(
     RespectImageOrientationEnum should_respect_image_orientation) const {
   if (!image_)
-    return IntSize();
+    return gfx::Size();
   RespectImageOrientationEnum respect_orientation =
       ForceOrientationIfNecessary(should_respect_image_orientation);
   return image_->Size(respect_orientation);
@@ -246,27 +249,27 @@ void ImageResourceContent::NotifyObservers(
     NotifyFinishOption notifying_finish_option,
     CanDeferInvalidation defer) {
   {
-    Vector<ImageResourceObserver*> finished_observers_as_vector;
+    HeapVector<Member<ImageResourceObserver>> finished_observers_as_vector;
     {
       ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
           this);
-      finished_observers_as_vector = finished_observers_.AsVector();
+      CopyToVector(finished_observers_, finished_observers_as_vector);
     }
 
-    for (auto* observer : finished_observers_as_vector) {
+    for (ImageResourceObserver* observer : finished_observers_as_vector) {
       if (finished_observers_.Contains(observer))
         observer->ImageChanged(this, defer);
     }
   }
   {
-    Vector<ImageResourceObserver*> observers_as_vector;
+    HeapVector<Member<ImageResourceObserver>> observers_as_vector;
     {
       ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
           this);
-      observers_as_vector = observers_.AsVector();
+      CopyToVector(observers_, observers_as_vector);
     }
 
-    for (auto* observer : observers_as_vector) {
+    for (ImageResourceObserver* observer : observers_as_vector) {
       if (observers_.Contains(observer)) {
         observer->ImageChanged(this, defer);
         if (notifying_finish_option == kShouldNotifyFinish &&
@@ -300,7 +303,7 @@ scoped_refptr<Image> ImageResourceContent::CreateImage(bool is_multipart) {
 void ImageResourceContent::ClearImage() {
   if (!image_)
     return;
-  int64_t length = image_->Data() ? image_->Data()->size() : 0;
+  int64_t length = image_->HasData() ? image_->DataSize() : 0;
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-length);
 
   // If our Image has an observer, it's always us so we need to clear the back
@@ -482,15 +485,15 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   if (!image_)
     return true;
 
-  uint64_t pixels = image_->Size().Area();
+  uint64_t pixels = image_->Size().Area64();
   if (!pixels)
     return true;
 
   double resource_length =
       static_cast<double>(GetResponse().ExpectedContentLength());
-  if (resource_length <= 0 && image_->Data()) {
+  if (resource_length <= 0 && image_->HasData()) {
     // WPT and LayoutTests server returns -1 or 0 for the content length.
-    resource_length = static_cast<double>(image_->Data()->size());
+    resource_length = static_cast<double>(image_->DataSize());
   }
 
   // Calculate the image's compression ratio (in bytes per pixel) with both 1k
@@ -624,7 +627,12 @@ ResourceStatus ImageResourceContent::GetContentStatus() const {
   return content_status_;
 }
 
-// TODO(hiroshige): Consider removing the following methods, or stoping
+bool ImageResourceContent::IsAnimatedImageWithPaintedFirstFrame() const {
+  return (image_ && !image_->IsNull() && image_->MaybeAnimated() &&
+          image_->CurrentFrameIsComplete());
+}
+
+// TODO(hiroshige): Consider removing the following methods, or stopping
 // redirecting to ImageResource.
 const KURL& ImageResourceContent::Url() const {
   return info_->Url();

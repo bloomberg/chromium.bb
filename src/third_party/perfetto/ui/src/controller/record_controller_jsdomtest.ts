@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {dingus} from 'dingusjs';
-
 import {assertExists} from '../base/logging';
 import {TraceConfig} from '../common/protos';
-import {createEmptyRecordConfig, RecordConfig} from '../common/state';
 
-import {App} from './globals';
-import {genConfigProto, RecordController, toPbtxt} from './record_controller';
+import {createEmptyRecordConfig} from './record_config_types';
+import {genConfigProto, toPbtxt} from './record_controller';
 
 test('encodeConfig', () => {
   const config = createEmptyRecordConfig();
-  config.durationSeconds = 10;
+  config.durationMs = 20000;
   const result =
       TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
-  expect(result.durationMs).toBe(10000);
+  expect(result.durationMs).toBe(20000);
 });
 
 test('SysConfig', () => {
@@ -40,6 +37,47 @@ test('SysConfig', () => {
   const ftraceEvents = assertExists(ftraceConfig.ftraceEvents);
   expect(ftraceEvents.includes('raw_syscalls/sys_enter')).toBe(true);
   expect(ftraceEvents.includes('raw_syscalls/sys_exit')).toBe(true);
+});
+
+test('cpu scheduling includes kSyms', () => {
+  const config = createEmptyRecordConfig();
+  config.cpuSched = true;
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
+  const sources = assertExists(result.dataSources);
+  const srcConfig = assertExists(sources[1].config);
+  const ftraceConfig = assertExists(srcConfig.ftraceConfig);
+  const ftraceEvents = assertExists(ftraceConfig.ftraceEvents);
+  expect(ftraceConfig.symbolizeKsyms).toBe(true);
+  expect(ftraceEvents.includes('sched/sched_blocked_reason')).toBe(true);
+});
+
+test('kSyms can be enabled individually', () => {
+  const config = createEmptyRecordConfig();
+  config.ftrace = true;
+  config.symbolizeKsyms = true;
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
+  const sources = assertExists(result.dataSources);
+  const srcConfig = assertExists(sources[0].config);
+  const ftraceConfig = assertExists(srcConfig.ftraceConfig);
+  const ftraceEvents = assertExists(ftraceConfig.ftraceEvents);
+  expect(ftraceConfig.symbolizeKsyms).toBe(true);
+  expect(ftraceEvents.includes('sched/sched_blocked_reason')).toBe(true);
+});
+
+test('kSyms can be disabled individually', () => {
+  const config = createEmptyRecordConfig();
+  config.ftrace = true;
+  config.symbolizeKsyms = false;
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
+  const sources = assertExists(result.dataSources);
+  const srcConfig = assertExists(sources[0].config);
+  const ftraceConfig = assertExists(srcConfig.ftraceConfig);
+  const ftraceEvents = assertExists(ftraceConfig.ftraceEvents);
+  expect(ftraceConfig.symbolizeKsyms).toBe(false);
+  expect(ftraceEvents.includes('sched/sched_blocked_reason')).toBe(false);
 });
 
 test('toPbtxt', () => {
@@ -90,21 +128,6 @@ max_file_size_bytes: 43
 `);
 });
 
-test('RecordController', () => {
-  const app = dingus<App>('globals');
-  (app.state.recordConfig as RecordConfig) = createEmptyRecordConfig();
-  const m: MessageChannel = dingus<MessageChannel>('extensionPort');
-  const controller = new RecordController({app, extensionPort: m.port1});
-  controller.run();
-  controller.run();
-  controller.run();
-  // tslint:disable-next-line no-any
-  const calls = app.calls.filter((call: any) => call[0] === 'publish()');
-  expect(calls.length).toBe(1);
-  // TODO(hjd): Fix up dingus to have a more sensible API.
-  expect(calls[0][1][0]).toEqual('TrackData');
-});
-
 test('ChromeConfig', () => {
   const config = createEmptyRecordConfig();
   config.ipcFlows = true;
@@ -134,7 +157,8 @@ test('ChromeConfig', () => {
 
 test('ChromeMemoryConfig', () => {
   const config = createEmptyRecordConfig();
-  config.chromeCategoriesSelected = ['disabled-by-default-memory-infra'];
+  config.chromeHighOverheadCategoriesSelected =
+      ['disabled-by-default-memory-infra'];
   const result =
       TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
   const sources = assertExists(result.dataSources);
@@ -149,12 +173,25 @@ test('ChromeMemoryConfig', () => {
   const chromeConfigM = assertExists(metadataConfigSource.chromeConfig);
   const traceConfigM = assertExists(chromeConfigM.traceConfig);
 
-  const expectedTraceConfig = '{"record_mode":"record-until-full",' +
-      '"included_categories":["disabled-by-default-memory-infra"],' +
-      '"memory_dump_config":{"triggers":' +
-      '[{"mode":"detailed","periodic_interval_ms":10000}]}}';
+  const miConfigSource = assertExists(sources[2].config);
+  expect(miConfigSource.name).toBe('org.chromium.memory_instrumentation');
+  const chromeConfigI = assertExists(miConfigSource.chromeConfig);
+  const traceConfigI = assertExists(chromeConfigI.traceConfig);
+
+  const hpConfigSource = assertExists(sources[3].config);
+  expect(hpConfigSource.name).toBe('org.chromium.native_heap_profiler');
+  const chromeConfigH = assertExists(hpConfigSource.chromeConfig);
+  const traceConfigH = assertExists(chromeConfigH.traceConfig);
+
+  const expectedTraceConfig = '{\"record_mode\":\"record-until-full\",' +
+      '\"included_categories\":[\"disabled-by-default-memory-infra\"],' +
+      '\"memory_dump_config\":{\"allowed_dump_modes\":[\"background\",' +
+      '\"light\",\"detailed\"],\"triggers\":[{\"min_time_between_dumps_ms\":' +
+      '10000,\"mode\":\"detailed\",\"type\":\"periodic_interval\"}]}}';
   expect(traceConfigM).toEqual(expectedTraceConfig);
   expect(traceConfig).toEqual(expectedTraceConfig);
+  expect(traceConfigI).toEqual(expectedTraceConfig);
+  expect(traceConfigH).toEqual(expectedTraceConfig);
 });
 
 test('ChromeConfigRingBuffer', () => {
@@ -183,7 +220,6 @@ test('ChromeConfigRingBuffer', () => {
   expect(traceConfigM).toEqual(expectedTraceConfig);
   expect(traceConfig).toEqual(expectedTraceConfig);
 });
-
 
 test('ChromeConfigLongTrace', () => {
   const config = createEmptyRecordConfig();

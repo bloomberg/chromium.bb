@@ -63,7 +63,7 @@ def CreateStorySetFromPath(
   def _AddPage(path):
     if not path.endswith('.html'):
       return
-    if '../' in open(path, 'r').read():
+    if b'../' in open(path, 'rb').read():
       # If the page looks like it references its parent dir, include it.
       serving_dirs.add(os.path.dirname(os.path.dirname(path)))
     page_url = 'file://' + path.replace('\\', '/')
@@ -380,7 +380,7 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
                                   extra_tags=self.TAGS)
 
 
-@benchmark.Info(emails=['dmazzoni@chromium.org'],
+@benchmark.Info(emails=['aleventhal@chromium.org'],
                 component='Blink>Accessibility',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfAccessibility(_BlinkPerfBenchmark):
@@ -701,7 +701,8 @@ class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
     options.AppendExtraBrowserArgs(
       ['--enable-blink-features=DisplayLocking,CSSContentSize'])
 
-@benchmark.Info(emails=['hongchan@chromium.org', 'rtoy@chromium.org'],
+
+@benchmark.Info(emails=['hongchan@chromium.org'],
                 component='Blink>WebAudio',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfWebAudio(_BlinkPerfBenchmark):
@@ -711,6 +712,18 @@ class BlinkPerfWebAudio(_BlinkPerfBenchmark):
   @classmethod
   def Name(cls):
     return 'blink_perf.webaudio'
+
+
+@benchmark.Info(emails=['media-dev@chromium.org'],
+                component='Blink>WebCodecs',
+                documentation_url='https://bit.ly/blink-perf-benchmarks')
+class BlinkPerfWebCodecs(_BlinkPerfBenchmark):
+  SUBDIR = 'webcodecs'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
+
+  @classmethod
+  def Name(cls):
+    return 'UNSCHEDULED_blink_perf.webcodecs'
 
 
 @benchmark.Info(
@@ -725,10 +738,13 @@ class BlinkPerfWebGL(_BlinkPerfBenchmark):
   def Name(cls):
     return 'blink_perf.webgl'
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--disable-features=V8TurboFastApiCalls'])
+
 
 @benchmark.Info(emails=[
     'kbr@chromium.org', 'enga@chromium.org', 'mslekova@chromium.org',
-    'webgl-team@google.com'
+    'junov@chromium.org', 'webgl-team@google.com'
 ],
                 component='Blink>WebGL',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
@@ -741,7 +757,7 @@ class BlinkPerfWebGLFastCall(_BlinkPerfBenchmark):
     return 'blink_perf.webgl_fast_call'
 
   def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--enable-unsafe-fast-js-calls'])
+    options.AppendExtraBrowserArgs(['--enable-features=V8TurboFastApiCalls'])
 
 
 @benchmark.Info(emails=[
@@ -758,12 +774,13 @@ class BlinkPerfWebGPU(_BlinkPerfBenchmark):
     return 'blink_perf.webgpu'
 
   def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--enable-unsafe-webgpu'])
+    options.AppendExtraBrowserArgs(
+        ['--enable-unsafe-webgpu', '--disable-features=V8TurboFastApiCalls'])
 
 
 @benchmark.Info(emails=[
     'enga@chromium.org', 'cwallez@chromium.org', 'mslekova@chromium.org',
-    'webgpu-developers@google.com'
+    'junov@chromium.org', 'webgpu-developers@google.com'
 ],
                 component='Blink>WebGPU',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
@@ -777,4 +794,4 @@ class BlinkPerfWebGPUFastCall(_BlinkPerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
-        ['--enable-unsafe-webgpu', '--enable-unsafe-fast-js-calls'])
+        ['--enable-unsafe-webgpu', '--enable-features=V8TurboFastApiCalls'])

@@ -5,8 +5,6 @@
 #ifndef ASH_APP_LIST_MODEL_APP_LIST_MODEL_OBSERVER_H_
 #define ASH_APP_LIST_MODEL_APP_LIST_MODEL_OBSERVER_H_
 
-#include <string>
-
 #include "ash/app_list/model/app_list_model_export.h"
 #include "base/observer_list_types.h"
 
@@ -27,15 +25,8 @@ class APP_LIST_MODEL_EXPORT AppListModelObserver
   // Triggered just before an item is deleted from the model.
   virtual void OnAppListItemWillBeDeleted(AppListItem* item) {}
 
-  // Triggered just after an item is deleted from the model.
-  virtual void OnAppListItemDeleted(const std::string& id) {}
-
   // Triggered after |item| has moved, changed folders, or changed properties.
   virtual void OnAppListItemUpdated(AppListItem* item) {}
-
-  // Triggered after AppListState has changed.
-  virtual void OnAppListStateChanged(AppListState new_state,
-                                     AppListState old_state) {}
 
   // Triggered when the custom launcher page enabled state is changed.
   virtual void OnCustomLauncherPageEnabledStateChanged(bool enabled) {}

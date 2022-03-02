@@ -10,13 +10,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/projector/projector_metadata_model.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 
 namespace base {
 class FilePath;
-class TimeDelta;
 }  // namespace base
 
 namespace ash {
@@ -35,10 +33,7 @@ class ASH_EXPORT ProjectorMetadataController {
   virtual void OnRecordingStarted();
   // Records the transcript in metadata. Virtual for testing.
   virtual void RecordTranscription(
-      const std::string& transcription,
-      const base::TimeDelta start_time,
-      const base::TimeDelta end_time,
-      const std::vector<base::TimeDelta>& word_alignments);
+      const media::SpeechRecognitionResult& speech_result);
   // Marks the next transcript as the beginning of a key idea.
   // Virtual for testing.
   virtual void RecordKeyIdea();
@@ -51,8 +46,6 @@ class ASH_EXPORT ProjectorMetadataController {
  private:
   std::unique_ptr<ProjectorMetadata> metadata_;
 
-  // A blocking task runner for file IO operations.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::WeakPtrFactory<ProjectorMetadataController> weak_factory_{this};
 };
 

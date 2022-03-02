@@ -430,6 +430,17 @@ NET_ERROR(TLS13_DOWNGRADE_DETECTED, -180)
 // negotiated TLS key exchange method.
 NET_ERROR(SSL_KEY_USAGE_INCOMPATIBLE, -181)
 
+// The ECHConfigList fetched over DNS cannot be parsed.
+NET_ERROR(INVALID_ECH_CONFIG_LIST, -182)
+
+// ECH was enabled, but the server was unable to decrypt the encrypted
+// ClientHello.
+NET_ERROR(ECH_NOT_NEGOTIATED, -183)
+
+// ECH was enabled, the server was unable to decrypt the encrypted ClientHello,
+// and additionally did not present a certificate valid for the public name.
+NET_ERROR(ECH_FALLBACK_CERTIFICATE_INVALID, -184)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
@@ -548,8 +559,8 @@ NET_ERROR(CERT_SYMANTEC_LEGACY, -215)
 // the device owner.
 NET_ERROR(CERT_KNOWN_INTERCEPTION_BLOCKED, -217)
 
-// The connection uses an obsolete version of SSL/TLS.
-NET_ERROR(SSL_OBSOLETE_VERSION, -218)
+// -218 was SSL_OBSOLETE_VERSION which is not longer used. TLS 1.0/1.1 instead
+// cause SSL_VERSION_OR_CIPHER_MISMATCH now.
 
 // Add new certificate error codes here.
 //
@@ -996,3 +1007,8 @@ NET_ERROR(DNS_SORT_ERROR, -806)
 
 // Failed to resolve the hostname of a DNS-over-HTTPS server.
 NET_ERROR(DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED, -808)
+
+// DNS identified the request as disallowed for insecure connection (http/ws).
+// Error should be handled as if an HTTP redirect was received to redirect to
+// https or wss.
+NET_ERROR(DNS_NAME_HTTPS_ONLY, -809)

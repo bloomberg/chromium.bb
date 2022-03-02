@@ -17,10 +17,24 @@ namespace apps {
 class StubIconLoader : public IconLoader {
  public:
   StubIconLoader();
+
+  StubIconLoader(const StubIconLoader&) = delete;
+  StubIconLoader& operator=(const StubIconLoader&) = delete;
+
   ~StubIconLoader() override;
 
   // IconLoader overrides.
-  apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
+  absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
+  std::unique_ptr<Releaser> LoadIconFromIconKey(
+      AppType app_type,
+      const std::string& app_id,
+      const IconKey& icon_key,
+      IconType icon_type,
+      int32_t size_hint_in_dip,
+      bool allow_placeholder_icon,
+      apps::LoadIconCallback callback) override;
+
+  // TODO(crbug.com/1253250): Will be removed soon.
   std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
       apps::mojom::AppType app_type,
       const std::string& app_id,
@@ -36,8 +50,6 @@ class StubIconLoader : public IconLoader {
 
  private:
   int num_load_calls_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(StubIconLoader);
 };
 
 }  // namespace apps

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handler.h"
@@ -29,6 +28,10 @@ struct AppIsolationInfo : public Extension::ManifestData {
 class AppIsolationHandler : public ManifestHandler {
  public:
   AppIsolationHandler();
+
+  AppIsolationHandler(const AppIsolationHandler&) = delete;
+  AppIsolationHandler& operator=(const AppIsolationHandler&) = delete;
+
   ~AppIsolationHandler() override;
 
   bool Parse(Extension* extension, std::u16string* error) override;
@@ -36,8 +39,6 @@ class AppIsolationHandler : public ManifestHandler {
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(AppIsolationHandler);
 };
 
 }  // namespace extensions

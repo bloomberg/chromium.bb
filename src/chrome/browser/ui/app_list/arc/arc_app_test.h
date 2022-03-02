@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "components/arc/mojom/app.mojom-forward.h"
+#include "ash/components/arc/mojom/app.mojom-forward.h"
 
 namespace arc {
 namespace mojom {
@@ -40,6 +39,10 @@ class Profile;
 class ArcAppTest {
  public:
   ArcAppTest();
+
+  ArcAppTest(const ArcAppTest&) = delete;
+  ArcAppTest& operator=(const ArcAppTest&) = delete;
+
   virtual ~ArcAppTest();
 
   void SetUp(Profile* profile);
@@ -111,6 +114,10 @@ class ArcAppTest {
     persist_service_manager_ = persist_service_manager;
   }
 
+  void set_start_app_service_publisher(bool start_app_service_publisher) {
+    start_app_service_publisher_ = start_app_service_publisher;
+  }
+
  private:
   const user_manager::User* CreateUserAndLogin();
   bool FindPackage(const std::string& package_name);
@@ -130,6 +137,10 @@ class ArcAppTest {
   // down.
   bool persist_service_manager_ = false;
 
+  // Whether the ArcApps AppService publisher should be started during
+  // initialization.
+  bool start_app_service_publisher_ = true;
+
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
   std::unique_ptr<arc::ArcPlayStoreEnabledPreferenceHandler>
@@ -145,8 +156,6 @@ class ArcAppTest {
   std::vector<arc::mojom::ShortcutInfo> fake_shortcuts_;
 
   bool dbus_thread_manager_initialized_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAppTest);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_

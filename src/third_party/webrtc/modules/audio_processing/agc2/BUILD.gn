@@ -17,16 +17,21 @@ group("agc2") {
 
 rtc_library("adaptive_digital") {
   sources = [
-    "adaptive_agc.cc",
-    "adaptive_agc.h",
     "adaptive_digital_gain_applier.cc",
     "adaptive_digital_gain_applier.h",
+    "adaptive_digital_gain_controller.cc",
+    "adaptive_digital_gain_controller.h",
     "adaptive_mode_level_estimator.cc",
     "adaptive_mode_level_estimator.h",
     "saturation_protector.cc",
     "saturation_protector.h",
     "saturation_protector_buffer.cc",
     "saturation_protector_buffer.h",
+  ]
+
+  visibility = [
+    "..:gain_controller2",
+    "./*",
   ]
 
   configs += [ "..:apm_debug_dump" ]
@@ -36,7 +41,7 @@ rtc_library("adaptive_digital") {
     ":cpu_features",
     ":gain_applier",
     ":noise_level_estimator",
-    ":rnn_vad_with_level",
+    ":vad_wrapper",
     "..:api",
     "..:apm_logging",
     "..:audio_frame_view",
@@ -79,6 +84,12 @@ rtc_library("fixed_digital") {
     "limiter.h",
   ]
 
+  visibility = [
+    "..:gain_controller2",
+    "../../audio_mixer:audio_mixer_impl",
+    "./*",
+  ]
+
   configs += [ "..:apm_debug_dump" ]
 
   deps = [
@@ -90,6 +101,7 @@ rtc_library("fixed_digital") {
     "../../../rtc_base:checks",
     "../../../rtc_base:gtest_prod",
     "../../../rtc_base:rtc_base_approved",
+    "../../../rtc_base:safe_conversions",
     "../../../rtc_base:safe_minmax",
     "../../../system_wrappers:metrics",
   ]
@@ -100,6 +112,12 @@ rtc_library("gain_applier") {
     "gain_applier.cc",
     "gain_applier.h",
   ]
+
+  visibility = [
+    "..:gain_controller2",
+    "./*",
+  ]
+
   deps = [
     ":common",
     "..:audio_frame_view",
@@ -110,34 +128,31 @@ rtc_library("gain_applier") {
 
 rtc_library("noise_level_estimator") {
   sources = [
-    "down_sampler.cc",
-    "down_sampler.h",
     "noise_level_estimator.cc",
     "noise_level_estimator.h",
-    "noise_spectrum_estimator.cc",
-    "noise_spectrum_estimator.h",
-    "signal_classifier.cc",
-    "signal_classifier.h",
   ]
+  visibility = [ "./*" ]
   deps = [
     ":biquad_filter",
     "..:apm_logging",
     "..:audio_frame_view",
     "../../../api:array_view",
-    "../../../common_audio",
-    "../../../common_audio/third_party/ooura:fft_size_128",
     "../../../rtc_base:checks",
-    "../../../rtc_base:macromagic",
     "../../../system_wrappers",
   ]
 
   configs += [ "..:apm_debug_dump" ]
 }
 
-rtc_library("rnn_vad_with_level") {
+rtc_library("vad_wrapper") {
   sources = [
-    "vad_with_level.cc",
-    "vad_with_level.h",
+    "vad_wrapper.cc",
+    "vad_wrapper.h",
+  ]
+
+  visibility = [
+    "..:gain_controller2",
+    "./*",
   ]
 
   defines = []
@@ -163,7 +178,12 @@ rtc_library("cpu_features") {
     "cpu_features.cc",
     "cpu_features.h",
   ]
-  visibility = [ "./*" ]
+
+  visibility = [
+    "..:gain_controller2",
+    "./*",
+  ]
+
   deps = [
     "../../../rtc_base:stringutils",
     "../../../rtc_base/system:arch",
@@ -187,6 +207,7 @@ rtc_library("adaptive_digital_unittests") {
     ":common",
     ":gain_applier",
     ":test_utils",
+    "..:api",
     "..:apm_logging",
     "..:audio_frame_view",
     "../../../api:array_view",
@@ -241,10 +262,7 @@ rtc_library("noise_estimator_unittests") {
   testonly = true
   configs += [ "..:apm_debug_dump" ]
 
-  sources = [
-    "noise_level_estimator_unittest.cc",
-    "signal_classifier_unittest.cc",
-  ]
+  sources = [ "noise_level_estimator_unittest.cc" ]
   deps = [
     ":noise_level_estimator",
     ":test_utils",
@@ -258,13 +276,14 @@ rtc_library("noise_estimator_unittests") {
   ]
 }
 
-rtc_library("rnn_vad_with_level_unittests") {
+rtc_library("vad_wrapper_unittests") {
   testonly = true
-  sources = [ "vad_with_level_unittest.cc" ]
+  sources = [ "vad_wrapper_unittest.cc" ]
   deps = [
     ":common",
-    ":rnn_vad_with_level",
+    ":vad_wrapper",
     "..:audio_frame_view",
+    "../../../rtc_base:checks",
     "../../../rtc_base:gunit_helpers",
     "../../../rtc_base:safe_compare",
     "../../../test:test_support",

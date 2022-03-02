@@ -19,6 +19,7 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -26,7 +27,7 @@ namespace content {
 namespace {
 
 constexpr char kSignedExchangeEnabledAcceptHeaderForPrefetch[] =
-    "application/signed-exchange;v=b3;q=0.9,*/*;q=0.8";
+    "application/signed-exchange;v=b3;q=0.7,*/*;q=0.8";
 
 }  // namespace
 

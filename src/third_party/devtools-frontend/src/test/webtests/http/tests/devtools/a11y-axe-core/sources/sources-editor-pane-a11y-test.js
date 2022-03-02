@@ -13,6 +13,10 @@
       enabled: false,
       selector: ':not(.tabbed-pane-header-tabs)'
     },
+    'aria-allowed-attr': {
+      enabled: false,
+      selector: '.cm-content'
+    }
   };
 
   await TestRunner.loadTestModule('axe_core_test_runner');
@@ -37,8 +41,8 @@
 
   async function runTest() {
     // Verify contents of the TabHeader to make sure files are open
-    const tabbedPane = UI.panels.sources._sourcesView._editorContainer._tabbedPane;
-    const tabs = tabbedPane._tabs;
+    const tabbedPane = UI.panels.sources.sourcesView().editorContainer.tabbedPane;
+    const tabs = tabbedPane.tabs;
     TestRunner.addResult('All tabs:');
     tabs.forEach(tab => TestRunner.addResult(tab.title));
     TestRunner.addResult('\n');
@@ -48,7 +52,7 @@
 
   async function runA11yTest() {
     await UI.viewManager.showView('sources');
-    const element = UI.panels.sources._sourcesView.contentElement;
+    const element = UI.panels.sources.sourcesView().contentElement;
     await AxeCoreTestRunner.runValidation(element, NO_REQUIRED_CHILDREN_RULESET);
   }
 })();

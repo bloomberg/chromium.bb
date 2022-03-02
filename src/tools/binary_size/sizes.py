@@ -32,8 +32,12 @@ SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(os.path.join(SRC_DIR, 'third_party', 'catapult', 'tracing'))
 from tracing.value import convert_chart_json
 
+sys.path.insert(0, os.path.join(SRC_DIR, 'build', 'util'))
+from lib.results import result_sink
+from lib.results import result_types
 
-class ResultsCollector(object):
+
+class ResultsCollector:
 
   def __init__(self):
     self.results = {}
@@ -74,9 +78,8 @@ def get_linux_stripped_size(filename):
 
 
 def run_process(result, command):
-  # TODO: When converting to Python 3, pass param encoding='ascii'.
   p = subprocess.Popen(command, stdout=subprocess.PIPE)
-  stdout = p.communicate()[0]
+  stdout = p.communicate()[0].decode()
   if p.returncode != 0:
     print('ERROR from command "%s": %d' % (' '.join(command), p.returncode))
     if result == 0:
@@ -279,7 +282,7 @@ def main_linux(output_directory, results_collector, size_path):
   # TODO(mcgrathr): This should all be refactored so the mac and win flavors
   # also deliver data structures rather than printing, and the logic for
   # the printing and the summing totals is shared across all three flavors.
-  for (identifier, units), value in sorted(totals.iteritems()):
+  for (identifier, units), value in sorted(totals.items()):
     results_collector.add_result('totals-%s' % identifier, identifier, value,
                                  units)
 
@@ -395,7 +398,7 @@ def format_for_histograms_conversion(data):
   # 1. Add a top-level "benchmark_name" key.
   # 2. Pull out the "identifier" value to be the story name.
   formatted_data = {}
-  for metric, metric_data in data.iteritems():
+  for metric, metric_data in data.items():
     story = metric_data['identifier']
     formatted_data[metric] = {story: metric_data.copy()}
     del formatted_data[metric][story]['identifier']
@@ -407,7 +410,7 @@ def main():
     default_platform = 'win'
   elif sys.platform.startswith('darwin'):
     default_platform = 'mac'
-  elif sys.platform == 'linux2':
+  elif sys.platform.startswith('linux'):
     default_platform = 'linux'
   else:
     default_platform = None
@@ -470,6 +473,7 @@ def main():
       os.makedirs(results_directory)
 
   results_collector = ResultsCollector()
+  result_sink_client = result_sink.TryInitClient()
   try:
     rc = real_main(args.output_directory, results_collector, args.size_path)
     isolated_script_output = {
@@ -496,8 +500,15 @@ def main():
             'chartjson conversion failed: %s\n' % histogram_result.stdout)
         rc = rc or histogram_result.returncode
       else:
-        with open(histogram_path, 'w') as f:
+        with open(histogram_path, 'wb') as f:
           f.write(histogram_result.stdout)
+    if result_sink_client:
+      status = result_types.PASS
+      if not isolated_script_output['valid']:
+        status = result_types.UNKNOWN
+      elif isolated_script_output['failures']:
+        status = result_types.FAIL
+      result_sink_client.Post(test_name, status, None, None, None)
 
   return rc
 

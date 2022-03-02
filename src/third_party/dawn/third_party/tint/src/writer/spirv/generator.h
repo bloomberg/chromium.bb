@@ -19,34 +19,58 @@
 #include <string>
 #include <vector>
 
-#include "src/writer/spirv/binary_writer.h"
 #include "src/writer/writer.h"
 
 namespace tint {
+
+// Forward declarations
+class Program;
+
 namespace writer {
 namespace spirv {
 
-/// Class to generate SPIR-V from a Tint program
-class Generator : public writer::Writer {
- public:
+/// Forward declarations
+class Builder;
+class BinaryWriter;
+
+/// Configuration options used for generating SPIR-V.
+struct Options {
+  /// Set to `true` to generate a PointSize builtin and have it set to 1.0
+  /// from all vertex shaders in the module.
+  bool emit_vertex_point_size = true;
+
+  /// Set to `true` to disable workgroup memory zero initialization
+  bool disable_workgroup_init = false;
+};
+
+/// The result produced when generating SPIR-V.
+struct Result {
   /// Constructor
-  /// @param program the program to convert
-  explicit Generator(const Program* program);
+  Result();
 
   /// Destructor
-  ~Generator() override;
+  ~Result();
 
-  /// Generates the result data
-  /// @returns true on successful generation; false otherwise
-  bool Generate() override;
+  /// Copy constructor
+  Result(const Result&);
 
-  /// @returns the result data
-  const std::vector<uint32_t>& result() const { return writer_->result(); }
+  /// True if generation was successful.
+  bool success = false;
 
- private:
-  std::unique_ptr<Builder> builder_;
-  std::unique_ptr<BinaryWriter> writer_;
+  /// The errors generated during code generation, if any.
+  std::string error;
+
+  /// The generated SPIR-V.
+  std::vector<uint32_t> spirv;
 };
+
+/// Generate SPIR-V for a program, according to a set of configuration options.
+/// The result will contain the SPIR-V, as well as success status and diagnostic
+/// information.
+/// @param program the program to translate to SPIR-V
+/// @param options the configuration options to use when generating SPIR-V
+/// @returns the resulting SPIR-V and supplementary information
+Result Generate(const Program* program, const Options& options);
 
 }  // namespace spirv
 }  // namespace writer

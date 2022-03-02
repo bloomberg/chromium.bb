@@ -22,8 +22,7 @@ namespace ash {
 namespace {
 // Battery percentage threshold used to label the battery level as Low.
 constexpr int kStylusLowBatteryThreshold = 24;
-constexpr base::TimeDelta kStylusBatteryStatusStaleThreshold =
-    base::TimeDelta::FromDays(14);
+constexpr base::TimeDelta kStylusBatteryStatusStaleThreshold = base::Days(14);
 }  // namespace
 
 StylusBatteryDelegate::StylusBatteryDelegate() {
@@ -58,8 +57,8 @@ gfx::ImageSkia StylusBatteryDelegate::GetBatteryImage() const {
   const SkColor icon_fg_color = GetColorForBatteryLevel();
   const SkColor icon_bg_color = AshColorProvider::Get()->GetBackgroundColor();
 
-  return PowerStatus::GetBatteryImage(info, kUnifiedTrayIconSize, icon_bg_color,
-                                      icon_fg_color);
+  return PowerStatus::GetBatteryImage(info, kUnifiedTrayBatteryIconSize,
+                                      icon_bg_color, icon_fg_color);
 }
 
 gfx::ImageSkia StylusBatteryDelegate::GetBatteryStatusUnknownImage() const {
@@ -89,7 +88,7 @@ bool StylusBatteryDelegate::IsBatteryLevelLow() const {
 }
 
 bool StylusBatteryDelegate::ShouldShowBatteryStatus() const {
-  return last_update_timestamp_.has_value();
+  return last_update_timestamp_.has_value() && last_update_eligible_;
 }
 
 bool StylusBatteryDelegate::IsBatteryStatusStale() const {
@@ -98,6 +97,10 @@ bool StylusBatteryDelegate::IsBatteryStatusStale() const {
 
   return (base::TimeTicks::Now() - last_update_timestamp_.value()) >
          kStylusBatteryStatusStaleThreshold;
+}
+
+bool StylusBatteryDelegate::IsBatteryStatusEligible() const {
+  return last_update_eligible_;
 }
 
 bool StylusBatteryDelegate::IsBatteryInfoValid(
@@ -136,6 +139,7 @@ void StylusBatteryDelegate::OnUpdatedBatteryLevel(
   battery_level_ = battery.level;
   battery_charge_status_ = battery.charge_status;
   last_update_timestamp_ = battery.last_active_update_timestamp;
+  last_update_eligible_ = battery.battery_report_eligible;
   if (battery_update_callback_)
     battery_update_callback_.Run();
 }

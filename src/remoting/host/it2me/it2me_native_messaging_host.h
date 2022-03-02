@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -43,6 +43,10 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
                            std::unique_ptr<PolicyWatcher> policy_watcher,
                            std::unique_ptr<ChromotingHostContext> host_context,
                            std::unique_ptr<It2MeHostFactory> host_factory);
+
+  It2MeNativeMessagingHost(const It2MeNativeMessagingHost&) = delete;
+  It2MeNativeMessagingHost& operator=(const It2MeNativeMessagingHost&) = delete;
+
   ~It2MeNativeMessagingHost() override;
 
   // extensions::NativeMessageHost implementation.
@@ -63,8 +67,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // Set a callback to be called when a policy error notification has been
   // processed.
   void SetPolicyErrorClosureForTesting(base::OnceClosure closure);
-
-  static std::string HostStateToString(It2MeHostState host_state);
 
  private:
   // These "Process.." methods handle specific request types. The |response|
@@ -119,7 +121,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   std::unique_ptr<ElevatedNativeMessagingHost> elevated_host_;
 #endif  // defined(OS_WIN)
 
-  Client* client_ = nullptr;
+  raw_ptr<Client> client_ = nullptr;
   DelegatingSignalStrategy::IqCallback incoming_message_callback_;
   std::unique_ptr<ChromotingHostContext> host_context_;
   std::unique_ptr<It2MeHostFactory> factory_;
@@ -155,8 +157,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 
   base::WeakPtr<It2MeNativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<It2MeNativeMessagingHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHost);
 };
 
 }  // namespace remoting

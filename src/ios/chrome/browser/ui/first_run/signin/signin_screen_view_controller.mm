@@ -7,6 +7,11 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_view.h"
+#import "ios/chrome/browser/ui/first_run/first_run_constants.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
+#import "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -17,17 +22,39 @@
 #endif
 
 namespace {
+
 // Width of the identity control if nothing is contraining it.
 const CGFloat kIdentityControlMaxWidth = 327;
+const CGFloat kIdentityTopMargin = 16;
+
+// URL for the learn more text.
+// Need to set a value so the delegate gets called.
+NSString* const kLearnMoreUrl = @"internal://learn-more";
+
+NSString* const kLearnMoreTextViewAccessibilityIdentifier =
+    @"kLearnMoreTextViewAccessibilityIdentifier";
+
 }  // namespace
 
-@interface SigninScreenViewController ()
+@interface SigninScreenViewController () <UITextViewDelegate>
 
 // Button controlling the display of the selected identity.
 @property(nonatomic, strong) IdentityButtonControl* identityControl;
 
+// The string to be displayed in the "Cotinue" button to personalize it. Usually
+// the given name, or the email address if no given name.
+@property(nonatomic, copy) NSString* personalizedButtonPrompt;
+
 // Scrim displayed above the view when the UI is disabled.
 @property(nonatomic, strong) ActivityOverlayView* overlay;
+
+// Text view that displays an attributed string with the "Learn More" link that
+// opens a popover.
+@property(nonatomic, strong) UITextView* learnMoreTextView;
+
+// Popover shown when "Details" link is tapped.
+@property(nonatomic, strong)
+    EnterpriseInfoPopoverViewController* bubbleViewController;
 
 @end
 
@@ -37,18 +64,61 @@ const CGFloat kIdentityControlMaxWidth = 327;
 #pragma mark - Public
 
 - (void)viewDidLoad {
-  self.bannerImage = [UIImage imageNamed:@"signin_screen_banner"];
+  self.view.accessibilityIdentifier =
+      first_run::kFirstRunSignInScreenAccessibilityIdentifier;
+  self.isTallBanner = NO;
+  self.scrollToEndMandatory = YES;
+  self.readMoreString =
+      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SCREEN_READ_MORE);
+
   self.titleText = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE);
-  self.subtitleText = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE);
+  if (self.enterpriseSignInRestrictions == kNoEnterpriseRestriction) {
+    self.subtitleText =
+        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE);
+  } else {
+    self.subtitleText =
+        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_MANAGED);
+  }
   if (!self.primaryActionString) {
     // |primaryActionString| could already be set using the consumer methods.
     self.primaryActionString =
         l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION);
   }
-  self.secondaryActionString =
-      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN);
 
   [self.specificContentView addSubview:self.identityControl];
+
+  // Add Learn More text label according to EnterpriseSignInRestrictions.
+  if (self.enterpriseSignInRestrictions != kNoEnterpriseRestriction) {
+    self.learnMoreTextView.delegate = self;
+    [self.specificContentView addSubview:self.learnMoreTextView];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [self.learnMoreTextView.topAnchor
+          constraintGreaterThanOrEqualToAnchor:self.identityControl
+                                                   .bottomAnchor],
+      [self.learnMoreTextView.bottomAnchor
+          constraintEqualToAnchor:self.specificContentView.bottomAnchor],
+      [self.learnMoreTextView.centerXAnchor
+          constraintEqualToAnchor:self.specificContentView.centerXAnchor],
+      [self.learnMoreTextView.widthAnchor
+          constraintLessThanOrEqualToAnchor:self.specificContentView
+                                                .widthAnchor],
+    ]];
+  }
+
+  bool forceSignInEnabled =
+      self.enterpriseSignInRestrictions & kEnterpriseForceSignIn;
+  bool signinRestricted =
+      self.enterpriseSignInRestrictions || forceSignInEnabled;
+
+  self.bannerImage =
+      [UIImage imageNamed:signinRestricted ? @"forced_signin_screen_banner"
+                                           : @"signin_screen_banner"];
+  // Only add "Don't Sign In" button when signin is not required.
+  if (!forceSignInEnabled) {
+    self.secondaryActionString =
+        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN);
+  }
 
   NSLayoutConstraint* widthConstraint = [self.identityControl.widthAnchor
       constraintEqualToConstant:kIdentityControlMaxWidth];
@@ -56,7 +126,8 @@ const CGFloat kIdentityControlMaxWidth = 327;
 
   [NSLayoutConstraint activateConstraints:@[
     [self.identityControl.topAnchor
-        constraintEqualToAnchor:self.specificContentView.topAnchor],
+        constraintEqualToAnchor:self.specificContentView.topAnchor
+                       constant:kIdentityTopMargin],
     [self.identityControl.centerXAnchor
         constraintEqualToAnchor:self.specificContentView.centerXAnchor],
     [self.identityControl.widthAnchor
@@ -67,22 +138,23 @@ const CGFloat kIdentityControlMaxWidth = 327;
                                               .bottomAnchor],
   ]];
 
-  // TODO(crbug.com/1189836): Add the identity control to the wrapper view.
-
   // Call super after setting up the strings and others, as required per super
   // class.
   [super viewDidLoad];
 }
 
-#pragma mark - Properties
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
 
-- (ActivityOverlayView*)overlay {
-  if (!_overlay) {
-    _overlay = [[ActivityOverlayView alloc] init];
-    _overlay.translatesAutoresizingMaskIntoConstraints = NO;
+  // Close popover when font size changed for accessibility because it does not
+  // resize properly and the arrow is not aligned.
+  if (self.bubbleViewController) {
+    [self.bubbleViewController dismissViewControllerAnimated:YES
+                                                  completion:nil];
   }
-  return _overlay;
 }
+
+#pragma mark - Properties
 
 - (IdentityButtonControl*)identityControl {
   if (!_identityControl) {
@@ -103,19 +175,66 @@ const CGFloat kIdentityControlMaxWidth = 327;
   return _identityControl;
 }
 
-#pragma mark - SignInScreenConsumer
-
-- (void)setUserImage:(UIImage*)userImage {
-  if (userImage) {
-    [self.identityControl setIdentityAvatar:userImage];
-  } else {
-    // TODO(crbug.com/1189836): Update with default avatar.
+- (ActivityOverlayView*)overlay {
+  if (!_overlay) {
+    _overlay = [[ActivityOverlayView alloc] init];
+    _overlay.translatesAutoresizingMaskIntoConstraints = NO;
   }
+  return _overlay;
 }
 
-- (void)setSelectedIdentityUserName:(NSString*)userName email:(NSString*)email {
+- (UITextView*)learnMoreTextView {
+  if (!_learnMoreTextView) {
+    _learnMoreTextView = [[UITextView alloc] init];
+    _learnMoreTextView.backgroundColor = UIColor.clearColor;
+    _learnMoreTextView.scrollEnabled = NO;
+    _learnMoreTextView.editable = NO;
+    _learnMoreTextView.adjustsFontForContentSizeCategory = YES;
+    _learnMoreTextView.textContainerInset = UIEdgeInsetsZero;
+    _learnMoreTextView.textContainer.lineFragmentPadding = 0;
+    _learnMoreTextView.accessibilityIdentifier =
+        kLearnMoreTextViewAccessibilityIdentifier;
+
+    _learnMoreTextView.linkTextAttributes =
+        @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
+    _learnMoreTextView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSMutableParagraphStyle* paragraphStyle =
+        [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.alignment = NSTextAlignmentCenter;
+
+    NSDictionary* textAttributes = @{
+      NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
+      NSFontAttributeName :
+          [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+      NSParagraphStyleAttributeName : paragraphStyle
+    };
+
+    NSDictionary* linkAttributes =
+        @{NSLinkAttributeName : [NSURL URLWithString:kLearnMoreUrl]};
+
+    NSAttributedString* learnMoreTextAttributedString =
+        AttributedStringFromStringWithLink(
+            l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SIGNIN_DETAILS),
+            textAttributes, linkAttributes);
+
+    _learnMoreTextView.attributedText = learnMoreTextAttributedString;
+  }
+  return _learnMoreTextView;
+}
+
+#pragma mark - SignInScreenConsumer
+
+- (void)setSelectedIdentityUserName:(NSString*)userName
+                              email:(NSString*)email
+                          givenName:(NSString*)givenName
+                             avatar:(UIImage*)avatar {
+  DCHECK(email);
+  DCHECK(avatar);
+  self.personalizedButtonPrompt = givenName ? givenName : email;
   [self updateUIForIdentityAvailable:YES];
   [self.identityControl setIdentityName:userName email:email];
+  [self.identityControl setIdentityAvatar:avatar];
 }
 
 - (void)noIdentityAvailable {
@@ -132,16 +251,6 @@ const CGFloat kIdentityControlMaxWidth = 327;
   }
 }
 
-#pragma mark - AuthenticationFlowDelegate
-
-- (void)didPresentDialog {
-  [self.overlay.indicator stopAnimating];
-}
-
-- (void)didDismissDialog {
-  [self.overlay.indicator startAnimating];
-}
-
 #pragma mark - Private
 
 // Callback for |identityControl|.
@@ -154,15 +263,68 @@ const CGFloat kIdentityControlMaxWidth = 327;
 - (void)updateUIForIdentityAvailable:(BOOL)identityAvailable {
   self.identityControl.hidden = !identityAvailable;
   if (identityAvailable) {
-    // TODO(crbug.com/1189836): Use the real name.
     self.primaryActionString = l10n_util::GetNSStringF(
         IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS,
-        base::SysNSStringToUTF16(@"Account Name (Test)"));
+        base::SysNSStringToUTF16(self.personalizedButtonPrompt));
     ;
   } else {
     self.primaryActionString =
         l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION);
   }
+}
+
+#pragma mark - UITextViewDelegate
+
+- (BOOL)textView:(UITextView*)textView
+    shouldInteractWithURL:(NSURL*)URL
+                  inRange:(NSRange)characterRange
+              interaction:(UITextItemInteraction)interaction {
+  DCHECK(textView == self.learnMoreTextView);
+
+  NSMutableString* detailsMessage = [[NSMutableString alloc] init];
+  NSString* detailsPadding = @"\n\n";
+  if (self.enterpriseSignInRestrictions & kEnterpriseForceSignIn) {
+    [detailsMessage appendString:l10n_util::GetNSString(
+                                     IDS_IOS_ENTERPRISE_FORCED_SIGNIN_MESSAGE)];
+  }
+  if (self.enterpriseSignInRestrictions & kEnterpriseRestrictAccounts) {
+    if ([detailsMessage length])
+      [detailsMessage appendString:detailsPadding];
+    [detailsMessage
+        appendString:
+            l10n_util::GetNSString(
+                IDS_IOS_ENTERPRISE_RESTRICTED_ACCOUNTS_TO_PATTERNS_MESSAGE)];
+  }
+
+  // Open signin popover.
+  self.bubbleViewController = [[EnterpriseInfoPopoverViewController alloc]
+             initWithMessage:detailsMessage
+              enterpriseName:nil  // TODO(crbug.com/1251986): Remove this
+                                  // variable.
+      isPresentingFromButton:NO
+            addLearnMoreLink:NO];
+  [self presentViewController:self.bubbleViewController
+                     animated:YES
+                   completion:nil];
+
+  // Set the anchor and arrow direction of the bubble.
+  self.bubbleViewController.popoverPresentationController.sourceView =
+      self.learnMoreTextView;
+  self.bubbleViewController.popoverPresentationController.sourceRect =
+      TextViewLinkBound(textView, characterRange);
+  self.bubbleViewController.popoverPresentationController
+      .permittedArrowDirections =
+      UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
+
+  // The handler is already handling the tap.
+  return NO;
+}
+
+- (void)textViewDidChangeSelection:(UITextView*)textView {
+  // Always force the |selectedTextRange| to |nil| to prevent users from
+  // selecting text. Setting the |selectable| property to |NO| doesn't help
+  // since it makes links inside the text view untappable.
+  textView.selectedTextRange = nil;
 }
 
 @end

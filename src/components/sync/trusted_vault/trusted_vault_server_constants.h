@@ -13,9 +13,12 @@
 
 namespace syncer {
 
+extern const int kUnknownConstantKeyVersion;
+
 extern const char kSyncSecurityDomainName[];
 extern const char kSecurityDomainMemberNamePrefix[];
 extern const char kJoinSecurityDomainsURLPath[];
+extern const char kJoinSecurityDomainsErrorDetailTypeURL[];
 extern const char kGetSecurityDomainURLPathAndQuery[];
 
 std::vector<uint8_t> GetConstantTrustedVaultKey();

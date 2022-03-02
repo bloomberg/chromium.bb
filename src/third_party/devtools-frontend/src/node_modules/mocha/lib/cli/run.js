@@ -83,6 +83,10 @@ exports.builder = yargs =>
         description: 'Show diff on failure',
         group: GROUPS.OUTPUT
       },
+      'dry-run': {
+        description: 'Report tests without executing them',
+        group: GROUPS.RULES
+      },
       exit: {
         description: 'Force Mocha to quit after tests complete',
         group: GROUPS.RULES
@@ -93,6 +97,10 @@ exports.builder = yargs =>
         group: GROUPS.FILES,
         requiresArg: true,
         coerce: list
+      },
+      'fail-zero': {
+        description: 'Fail test run if no test(s) encountered',
+        group: GROUPS.RULES
       },
       fgrep: {
         conflicts: 'grep',
@@ -171,6 +179,10 @@ exports.builder = yargs =>
         description: 'Force-disable color output',
         group: GROUPS.OUTPUT,
         hidden: true
+      },
+      'node-option': {
+        description: 'Node or V8 option (no leading "--")',
+        group: GROUPS.CONFIG
       },
       package: {
         description: 'Path to package.json for config',

@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
@@ -47,6 +46,10 @@ const char kSecondaryChannelHandleSwitch[] = "test-secondary-channel-handle";
 class InvitationTest : public test::MojoTestBase {
  public:
   InvitationTest() = default;
+
+  InvitationTest(const InvitationTest&) = delete;
+  InvitationTest& operator=(const InvitationTest&) = delete;
+
   ~InvitationTest() override = default;
 
  protected:
@@ -74,8 +77,6 @@ class InvitationTest : public test::MojoTestBase {
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(InvitationTest);
 };
 
 void PrepareToPassRemoteEndpoint(PlatformChannel* channel,
@@ -404,6 +405,9 @@ void InvitationTest::SendInvitationToClient(
 
 class TestClientBase : public InvitationTest {
  public:
+  TestClientBase(const TestClientBase&) = delete;
+  TestClientBase& operator=(const TestClientBase&) = delete;
+
   static MojoHandle AcceptInvitation(MojoAcceptInvitationFlags flags,
                                      base::StringPiece switch_name = {}) {
     const auto& command_line = *base::CommandLine::ForCurrentProcess();
@@ -439,9 +443,6 @@ class TestClientBase : public InvitationTest {
              MojoAcceptInvitation(&transport_endpoint, &options, &invitation));
     return invitation;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestClientBase);
 };
 
 #define DEFINE_TEST_CLIENT(name)             \
@@ -587,6 +588,10 @@ class RemoteProcessState {
  public:
   RemoteProcessState()
       : callback_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+  RemoteProcessState(const RemoteProcessState&) = delete;
+  RemoteProcessState& operator=(const RemoteProcessState&) = delete;
+
   ~RemoteProcessState() = default;
 
   bool disconnected() {
@@ -620,8 +625,6 @@ class RemoteProcessState {
   bool disconnected_ = false;
   std::string expected_error_message_;
   base::RepeatingClosure error_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteProcessState);
 };
 
 void TestProcessErrorHandler(uintptr_t context,
@@ -693,7 +696,8 @@ DEFINE_TEST_CLIENT(ProcessErrorsClient) {
   EXPECT_EQ(kDisconnectMessage, ReadMessage(pipe));
 }
 
-TEST_F(InvitationTest, Reinvitation) {
+// Temporary removed support for reinvitation for non-isolated connections.
+TEST_F(InvitationTest, DISABLED_Reinvitation) {
   // The gist of this test is that a process should be able to accept an
   // invitation, lose its connection to the process network, and then accept a
   // new invitation to re-establish communication.

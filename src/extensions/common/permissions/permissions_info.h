@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "extensions/common/mojom/api_permission_id.mojom-shared.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -30,6 +29,9 @@ struct Alias;
 // methods for accessing them.
 class PermissionsInfo {
  public:
+  PermissionsInfo(const PermissionsInfo&) = delete;
+  PermissionsInfo& operator=(const PermissionsInfo&) = delete;
+
   static PermissionsInfo* GetInstance();
 
   // Registers the permissions specified by |infos| along with the
@@ -83,8 +85,6 @@ class PermissionsInfo {
   NameMap name_map_;
 
   size_t permission_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionsInfo);
 };
 
 }  // namespace extensions

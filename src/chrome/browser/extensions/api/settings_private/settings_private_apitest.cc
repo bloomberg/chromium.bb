@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
@@ -45,25 +44,28 @@ namespace extensions {
 
 namespace {
 
-class SettingsPrivateApiTest : public ExtensionApiTest {
+using ContextType = ExtensionBrowserTest::ContextType;
+
+class SettingsPrivateApiTest : public ExtensionApiTest,
+                               public testing::WithParamInterface<ContextType> {
  public:
-  SettingsPrivateApiTest() {}
-  ~SettingsPrivateApiTest() override {}
+  SettingsPrivateApiTest() : ExtensionApiTest(GetParam()) {}
+  ~SettingsPrivateApiTest() override = default;
+  SettingsPrivateApiTest(const SettingsPrivateApiTest&) = delete;
+  SettingsPrivateApiTest& operator=(const SettingsPrivateApiTest&) = delete;
 
   void SetUpInProcessBrowserTestFixture() override {
-    ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
  protected:
   bool RunSettingsSubtest(const std::string& subtest) {
-    const std::string page_url = "main.html?" + subtest;
-    return RunExtensionTest(
-        {.name = "settings_private", .page_url = page_url.c_str()},
-        {.load_as_component = true});
+    return RunExtensionTest("settings_private", {.custom_arg = subtest.c_str()},
+                            {.load_as_component = true});
   }
 
   void SetPrefPolicy(const std::string& key, policy::PolicyLevel level) {
@@ -82,41 +84,45 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateApiTest);
 };
 
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         SettingsPrivateApiTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         SettingsPrivateApiTest,
+                         ::testing::Values(ContextType::kServiceWorker));
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, SetPref) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, SetPref) {
   EXPECT_TRUE(RunSettingsSubtest("setPref")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPref) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetPref) {
   EXPECT_TRUE(RunSettingsSubtest("getPref")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetEnforcedPref) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetEnforcedPref) {
   SetPrefPolicy(policy::key::kHomepageIsNewTabPage,
                 policy::POLICY_LEVEL_MANDATORY);
   EXPECT_TRUE(RunSettingsSubtest("getEnforcedPref")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetRecommendedPref) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetRecommendedPref) {
   SetPrefPolicy(policy::key::kHomepageIsNewTabPage,
                 policy::POLICY_LEVEL_RECOMMENDED);
   EXPECT_TRUE(RunSettingsSubtest("getRecommendedPref")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetDisabledPref) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetDisabledPref) {
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetDefaultContentSetting(ContentSettingsType::COOKIES,
                                  ContentSetting::CONTENT_SETTING_BLOCK);
   EXPECT_TRUE(RunSettingsSubtest("getDisabledPref")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPartiallyManagedPref) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetPartiallyManagedPref) {
   auto provider = std::make_unique<content_settings::MockProvider>();
   provider->SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
@@ -128,24 +134,24 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPartiallyManagedPref) {
   EXPECT_TRUE(RunSettingsSubtest("getPartiallyManagedPref")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetAllPrefs) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetAllPrefs) {
   EXPECT_TRUE(RunSettingsSubtest("getAllPrefs")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, OnPrefsChanged) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, OnPrefsChanged) {
   EXPECT_TRUE(RunSettingsSubtest("onPrefsChanged")) << message_;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPref_CrOSSetting) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetPref_CrOSSetting) {
   EXPECT_TRUE(RunSettingsSubtest("getPref_CrOSSetting")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, SetPref_CrOSSetting) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, SetPref_CrOSSetting) {
   EXPECT_TRUE(RunSettingsSubtest("setPref_CrOSSetting")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, OnPrefsChanged_CrOSSetting) {
+IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, OnPrefsChanged_CrOSSetting) {
   EXPECT_TRUE(RunSettingsSubtest("onPrefsChanged_CrOSSetting")) << message_;
 }
 #endif

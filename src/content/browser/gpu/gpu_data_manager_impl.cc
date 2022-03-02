@@ -97,11 +97,11 @@ bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) {
   return private_->GpuAccessAllowed(reason);
 }
 
-void GpuDataManagerImpl::RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+void GpuDataManagerImpl::RequestDxdiagDx12VulkanVideoGpuInfoIfNeeded(
     GpuInfoRequest request,
     bool delayed) {
   base::AutoLock auto_lock(lock_);
-  private_->RequestDxdiagDx12VulkanGpuInfoIfNeeded(request, delayed);
+  private_->RequestDxdiagDx12VulkanVideoGpuInfoIfNeeded(request, delayed);
 }
 
 bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() {
@@ -232,6 +232,12 @@ void GpuDataManagerImpl::TerminateInfoCollectionGpuProcess() {
 }
 #endif
 
+void GpuDataManagerImpl::UpdateDawnInfo(
+    const std::vector<std::string>& dawn_info_list) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateDawnInfo(dawn_info_list);
+}
+
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     const absl::optional<gpu::GpuFeatureInfo>&
@@ -245,6 +251,12 @@ void GpuDataManagerImpl::UpdateGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuExtraInfo(gpu_extra_info);
+}
+
+void GpuDataManagerImpl::UpdateMojoMediaVideoCapabilities(
+    const media::SupportedVideoDecoderConfigs& configs) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateMojoMediaVideoCapabilities(configs);
 }
 
 gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfo() const {
@@ -261,6 +273,11 @@ gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
     const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfoForHardwareGpu();
+}
+
+std::vector<std::string> GpuDataManagerImpl::GetDawnInfoList() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GetDawnInfoList();
 }
 
 bool GpuDataManagerImpl::GpuAccessAllowedForHardwareGpu(std::string* reason) {

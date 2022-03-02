@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/drag_drop/tab_drag_drop_delegate.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -88,12 +88,12 @@ gfx::Rect GetBoundsInTabletMode(WindowState* state_object) {
   if (state_object->IsFullscreen() || state_object->IsPinned())
     return screen_util::GetFullscreenWindowBoundsInParent(window);
 
-  if (state_object->GetStateType() == WindowStateType::kLeftSnapped) {
+  if (state_object->GetStateType() == WindowStateType::kPrimarySnapped) {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow())
         ->GetSnappedWindowBoundsInParent(SplitViewController::LEFT, window);
   }
 
-  if (state_object->GetStateType() == WindowStateType::kRightSnapped) {
+  if (state_object->GetStateType() == WindowStateType::kSecondarySnapped) {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow())
         ->GetSnappedWindowBoundsInParent(SplitViewController::RIGHT, window);
   }
@@ -162,18 +162,25 @@ bool IsTopWindow(aura::Window* window) {
 }
 
 bool IsSnapped(WindowStateType state) {
-  return state == WindowStateType::kLeftSnapped ||
-         state == WindowStateType::kRightSnapped;
+  return state == WindowStateType::kPrimarySnapped ||
+         state == WindowStateType::kSecondarySnapped;
 }
 
 // Returns true if the bounds change of |window| is from VK request and can be
 // allowed by the current window's state.
 bool BoundsChangeIsFromVKAndAllowed(aura::Window* window) {
-  if (!window->GetProperty(wm::kVirtualKeyboardRestoreBoundsKey))
-    return false;
   WindowStateType state_type = WindowState::Get(window)->GetStateType();
-  return state_type == WindowStateType::kNormal ||
-         state_type == WindowStateType::kDefault;
+  if (state_type == WindowStateType::kNormal ||
+      state_type == WindowStateType::kDefault) {
+    return window->GetProperty(wm::kVirtualKeyboardRestoreBoundsKey) != nullptr;
+  }
+
+  if (state_type == WindowStateType::kPrimarySnapped ||
+      state_type == WindowStateType::kSecondarySnapped) {
+    return SplitViewController::Get(window)->BoundsChangeIsFromVKAndAllowed(
+        window);
+  }
+  return false;
 }
 
 }  // namespace
@@ -272,6 +279,7 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
         UpdateWindow(window_state, WindowStateType::kTrustedPinned,
                      true /* animated */);
       break;
+    case WM_EVENT_TOGGLE_FLOATING:
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
@@ -282,14 +290,14 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
                    true /* animated */);
       return;
-    case WM_EVENT_SNAP_LEFT:
-    case WM_EVENT_SNAP_RIGHT:
+    case WM_EVENT_SNAP_PRIMARY:
+    case WM_EVENT_SNAP_SECONDARY:
       DoTabletSnap(window_state, event->type());
       return;
-    case WM_EVENT_CYCLE_SNAP_LEFT:
+    case WM_EVENT_CYCLE_SNAP_PRIMARY:
       CycleTabletSnap(window_state, SplitViewController::LEFT);
       return;
-    case WM_EVENT_CYCLE_SNAP_RIGHT:
+    case WM_EVENT_CYCLE_SNAP_SECONDARY:
       CycleTabletSnap(window_state, SplitViewController::RIGHT);
       return;
     case WM_EVENT_MINIMIZE:
@@ -322,8 +330,8 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
                  current_state_type_ != WindowStateType::kFullscreen &&
                  current_state_type_ != WindowStateType::kPinned &&
                  current_state_type_ != WindowStateType::kTrustedPinned &&
-                 current_state_type_ != WindowStateType::kLeftSnapped &&
-                 current_state_type_ != WindowStateType::kRightSnapped) {
+                 current_state_type_ != WindowStateType::kPrimarySnapped &&
+                 current_state_type_ != WindowStateType::kSecondarySnapped) {
         // In all other cases (except for minimized windows) we respect the
         // requested bounds and center it to a fully visible area on the screen.
         bounds_in_parent = GetCenteredBounds(bounds_in_parent, window_state);
@@ -406,8 +414,8 @@ void TabletModeWindowState::UpdateWindow(WindowState* window_state,
           (!window_state->CanMaximize() ||
            !!::wm::GetTransientParent(window_state->window()))) ||
          target_state == WindowStateType::kFullscreen ||
-         target_state == WindowStateType::kLeftSnapped ||
-         target_state == WindowStateType::kRightSnapped);
+         target_state == WindowStateType::kPrimarySnapped ||
+         target_state == WindowStateType::kSecondarySnapped);
 
   if (current_state_type_ == target_state) {
     if (target_state == WindowStateType::kMinimized)
@@ -462,8 +470,8 @@ WindowStateType TabletModeWindowState::GetMaximizedOrCenteredWindowType(
 WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
     WindowState* window_state,
     WindowStateType target_state) {
-  DCHECK(target_state == WindowStateType::kLeftSnapped ||
-         target_state == WindowStateType::kRightSnapped);
+  DCHECK(target_state == WindowStateType::kPrimarySnapped ||
+         target_state == WindowStateType::kSecondarySnapped);
   return SplitViewController::Get(Shell::GetPrimaryRootWindow())
                  ->CanSnapWindow(window_state->window())
              ? target_state
@@ -494,9 +502,8 @@ void TabletModeWindowState::UpdateBounds(WindowState* window_state,
         // Just use the normal bounds animation with ZERO tween with long enough
         // duration for STEP_END. The animation will be stopped when the to
         // window's animation ends.
-        window_state->SetBoundsDirectAnimated(bounds_in_parent,
-                                              base::TimeDelta::FromSeconds(1),
-                                              gfx::Tween::ZERO);
+        window_state->SetBoundsDirectAnimated(
+            bounds_in_parent, base::Seconds(1), gfx::Tween::ZERO);
         return;
       }
       // If we animate (to) tablet mode, we want to use the cross fade to
@@ -531,8 +538,8 @@ void TabletModeWindowState::CycleTabletSnap(
 
 void TabletModeWindowState::DoTabletSnap(WindowState* window_state,
                                          WMEventType snap_event_type) {
-  DCHECK(snap_event_type == WM_EVENT_SNAP_LEFT ||
-         snap_event_type == WM_EVENT_SNAP_RIGHT);
+  DCHECK(snap_event_type == WM_EVENT_SNAP_PRIMARY ||
+         snap_event_type == WM_EVENT_SNAP_SECONDARY);
 
   aura::Window* window = window_state->window();
   SplitViewController* split_view_controller = SplitViewController::Get(window);
@@ -547,9 +554,9 @@ void TabletModeWindowState::DoTabletSnap(WindowState* window_state,
 
   // Change window state and bounds to the snapped window state and bounds.
   UpdateWindow(window_state,
-               snap_event_type == WM_EVENT_SNAP_LEFT
-                   ? WindowStateType::kLeftSnapped
-                   : WindowStateType::kRightSnapped,
+               snap_event_type == WM_EVENT_SNAP_PRIMARY
+                   ? WindowStateType::kPrimarySnapped
+                   : WindowStateType::kSecondarySnapped,
                /*animated=*/false);
 }
 

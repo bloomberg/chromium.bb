@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
@@ -26,7 +26,7 @@
 #include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "base/win/windows_types.h"
 #elif defined(OS_FUCHSIA)
 #include <lib/fdio/spawn.h>
 #include <zircon/types.h>
@@ -68,15 +68,16 @@ struct BASE_EXPORT LaunchOptions {
   class BASE_EXPORT PreExecDelegate {
    public:
     PreExecDelegate() = default;
+
+    PreExecDelegate(const PreExecDelegate&) = delete;
+    PreExecDelegate& operator=(const PreExecDelegate&) = delete;
+
     virtual ~PreExecDelegate() = default;
 
     // Since this is to be run between fork and exec, and fork may have happened
     // while multiple threads were running, this function needs to be async
     // safe.
     virtual void RunAsyncSafe() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(PreExecDelegate);
   };
 #endif  // defined(OS_POSIX)
 
@@ -287,13 +288,13 @@ struct BASE_EXPORT LaunchOptions {
   // WARNING: If LaunchProcess is called in the presence of multiple threads,
   // code running in this delegate essentially needs to be async-signal safe
   // (see man 7 signal for a list of allowed functions).
-  PreExecDelegate* pre_exec_delegate = nullptr;
+  raw_ptr<PreExecDelegate> pre_exec_delegate = nullptr;
 #endif  // !defined(OS_APPLE)
 
   // Each element is an RLIMIT_* constant that should be raised to its
   // rlim_max.  This pointer is owned by the caller and must live through
   // the call to LaunchProcess().
-  const std::vector<int>* maximize_rlimits = nullptr;
+  raw_ptr<const std::vector<int>> maximize_rlimits = nullptr;
 
   // If true, start the process in a new process group, instead of
   // inheriting the parent's process group.  The pgid of the child process
@@ -416,7 +417,7 @@ BASE_EXPORT void RaiseProcessToHighPriority();
 // binary. This should not be called in production/released code.
 BASE_EXPORT LaunchOptions LaunchOptionsForTest();
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_NACL_NONSFI)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // A wrapper for clone with fork-like behavior, meaning that it returns the
 // child's pid in the parent and 0 in the child. |flags|, |ptid|, and |ctid| are
 // as in the clone system call (the CLONE_VM flag is not supported).

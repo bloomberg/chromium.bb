@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -22,13 +23,15 @@
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_manager.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_observer.h"
+#include "chromeos/services/multidevice_setup/fake_global_state_feature_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_device_timestamp_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
-#include "chromeos/services/multidevice_setup/fake_wifi_sync_feature_manager.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
+#include "chromeos/services/multidevice_setup/global_state_feature_manager.h"
+#include "chromeos/services/multidevice_setup/global_state_feature_manager_impl.h"
 #include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
@@ -40,7 +43,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/multidevice_setup/wifi_sync_feature_manager_impl.h"
+#include "chromeos/services/multidevice_setup/wifi_sync_notification_controller.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,6 +82,11 @@ class FakeEligibleHostDevicesProviderFactory
       device_sync::FakeDeviceSyncClient* expected_device_sync_client)
       : expected_device_sync_client_(expected_device_sync_client) {}
 
+  FakeEligibleHostDevicesProviderFactory(
+      const FakeEligibleHostDevicesProviderFactory&) = delete;
+  FakeEligibleHostDevicesProviderFactory& operator=(
+      const FakeEligibleHostDevicesProviderFactory&) = delete;
+
   ~FakeEligibleHostDevicesProviderFactory() override = default;
 
   FakeEligibleHostDevicesProvider* instance() { return instance_; }
@@ -98,8 +106,6 @@ class FakeEligibleHostDevicesProviderFactory
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
 
   FakeEligibleHostDevicesProvider* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeEligibleHostDevicesProviderFactory);
 };
 
 class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
@@ -114,6 +120,11 @@ class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
             fake_eligible_host_devices_provider_factory),
         expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client) {}
+
+  FakeHostBackendDelegateFactory(const FakeHostBackendDelegateFactory&) =
+      delete;
+  FakeHostBackendDelegateFactory& operator=(
+      const FakeHostBackendDelegateFactory&) = delete;
 
   ~FakeHostBackendDelegateFactory() override = default;
 
@@ -143,8 +154,6 @@ class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
 
   FakeHostBackendDelegate* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHostBackendDelegateFactory);
 };
 
 class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
@@ -157,6 +166,9 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
       : fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
         expected_device_sync_client_(expected_device_sync_client),
         expected_testing_pref_service_(expected_testing_pref_service) {}
+
+  FakeHostVerifierFactory(const FakeHostVerifierFactory&) = delete;
+  FakeHostVerifierFactory& operator=(const FakeHostVerifierFactory&) = delete;
 
   ~FakeHostVerifierFactory() override = default;
 
@@ -187,8 +199,6 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
 
   FakeHostVerifier* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHostVerifierFactory);
 };
 
 class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
@@ -204,6 +214,10 @@ class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
         fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
         fake_host_verifier_factory_(fake_host_verifier_factory),
         expected_device_sync_client_(expected_device_sync_client) {}
+
+  FakeHostStatusProviderFactory(const FakeHostStatusProviderFactory&) = delete;
+  FakeHostStatusProviderFactory& operator=(
+      const FakeHostStatusProviderFactory&) = delete;
 
   ~FakeHostStatusProviderFactory() override = default;
 
@@ -236,14 +250,12 @@ class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
 
   FakeHostStatusProvider* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHostStatusProviderFactory);
 };
 
-class FakeWifiSyncFeatureManagerFactory
-    : public WifiSyncFeatureManagerImpl::Factory {
+class FakeGlobalStateFeatureManagerFactory
+    : public GlobalStateFeatureManagerImpl::Factory {
  public:
-  FakeWifiSyncFeatureManagerFactory(
+  FakeGlobalStateFeatureManagerFactory(
       FakeHostStatusProviderFactory* fake_host_status_provider_factory,
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service,
@@ -252,36 +264,71 @@ class FakeWifiSyncFeatureManagerFactory
         expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client) {}
 
-  ~FakeWifiSyncFeatureManagerFactory() override = default;
-
-  FakeWifiSyncFeatureManager* instance() { return instance_; }
+  FakeGlobalStateFeatureManagerFactory(
+      const FakeGlobalStateFeatureManagerFactory&) = delete;
+  FakeGlobalStateFeatureManagerFactory& operator=(
+      const FakeGlobalStateFeatureManagerFactory&) = delete;
+  ~FakeGlobalStateFeatureManagerFactory() override = default;
 
  private:
-  // WifiSyncFeatureManagerImpl::Factory:
-  std::unique_ptr<WifiSyncFeatureManager> CreateInstance(
+  // GlobalStateFeatureManagerImpl::Factory:
+  std::unique_ptr<GlobalStateFeatureManager> CreateInstance(
+      GlobalStateFeatureManagerImpl::Factory::Option option,
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      AccountStatusChangeDelegateNotifier* delegate_notifier,
       std::unique_ptr<base::OneShotTimer> timer) override {
-    EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_host_status_provider_factory_->instance(),
               host_status_provider);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
 
-    auto instance = std::make_unique<FakeWifiSyncFeatureManager>();
-    instance_ = instance.get();
-    return instance;
+    return std::make_unique<FakeGlobalStateFeatureManager>();
   }
 
   FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+};
 
-  FakeWifiSyncFeatureManager* instance_ = nullptr;
+class FakeWifiSyncNotificationControllerFactory
+    : public WifiSyncNotificationController::Factory {
+ public:
+  FakeWifiSyncNotificationControllerFactory(
+      FakeHostStatusProviderFactory* fake_host_status_provider_factory,
+      sync_preferences::TestingPrefServiceSyncable*
+          expected_testing_pref_service,
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client)
+      : fake_host_status_provider_factory_(fake_host_status_provider_factory),
+        expected_testing_pref_service_(expected_testing_pref_service),
+        expected_device_sync_client_(expected_device_sync_client) {}
 
-  DISALLOW_COPY_AND_ASSIGN(FakeWifiSyncFeatureManagerFactory);
+  FakeWifiSyncNotificationControllerFactory(
+      const FakeWifiSyncNotificationControllerFactory&) = delete;
+  FakeWifiSyncNotificationControllerFactory& operator=(
+      const FakeWifiSyncNotificationControllerFactory&) = delete;
+  ~FakeWifiSyncNotificationControllerFactory() override = default;
+
+ private:
+  // WifiSyncNotificationController::Factory:
+  std::unique_ptr<WifiSyncNotificationController> CreateInstance(
+      GlobalStateFeatureManager* wifi_sync_feature_manager,
+      HostStatusProvider* host_status_provider,
+      PrefService* pref_service,
+      device_sync::DeviceSyncClient* device_sync_client,
+      AccountStatusChangeDelegateNotifier* delegate_notifier) override {
+    EXPECT_EQ(fake_host_status_provider_factory_->instance(),
+              host_status_provider);
+    EXPECT_EQ(expected_testing_pref_service_, pref_service);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+    // Only check inputs and return nullptr. We do not want to trigger any logic
+    // in these unit tests.
+    return nullptr;
+  }
+
+  FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
+  sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
 };
 
 class FakeGrandfatheredEasyUnlockHostDisablerFactory
@@ -295,6 +342,11 @@ class FakeGrandfatheredEasyUnlockHostDisablerFactory
       : fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
         expected_device_sync_client_(expected_device_sync_client),
         expected_testing_pref_service_(expected_testing_pref_service) {}
+
+  FakeGrandfatheredEasyUnlockHostDisablerFactory(
+      const FakeGrandfatheredEasyUnlockHostDisablerFactory&) = delete;
+  FakeGrandfatheredEasyUnlockHostDisablerFactory& operator=(
+      const FakeGrandfatheredEasyUnlockHostDisablerFactory&) = delete;
 
   ~FakeGrandfatheredEasyUnlockHostDisablerFactory() override = default;
 
@@ -317,8 +369,6 @@ class FakeGrandfatheredEasyUnlockHostDisablerFactory
   FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory_;
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeGrandfatheredEasyUnlockHostDisablerFactory);
 };
 
 class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
@@ -338,6 +388,11 @@ class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
             expected_android_sms_pairing_state_tracker),
         expected_is_secondary_user_(expected_is_secondary_user) {}
 
+  FakeFeatureStateManagerFactory(const FakeFeatureStateManagerFactory&) =
+      delete;
+  FakeFeatureStateManagerFactory& operator=(
+      const FakeFeatureStateManagerFactory&) = delete;
+
   ~FakeFeatureStateManagerFactory() override = default;
 
   FakeFeatureStateManager* instance() { return instance_; }
@@ -349,7 +404,8 @@ class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
       HostStatusProvider* host_status_provider,
       device_sync::DeviceSyncClient* device_sync_client,
       AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-      WifiSyncFeatureManager* wifi_sync_feature_manager,
+      const base::flat_map<mojom::Feature, GlobalStateFeatureManager*>&
+          global_state_feature_managers,
       bool is_secondary_user) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
@@ -373,8 +429,6 @@ class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
   bool expected_is_secondary_user_;
 
   FakeFeatureStateManager* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFeatureStateManagerFactory);
 };
 
 class FakeHostDeviceTimestampManagerFactory
@@ -386,6 +440,11 @@ class FakeHostDeviceTimestampManagerFactory
           expected_testing_pref_service)
       : fake_host_status_provider_factory_(fake_host_status_provider_factory),
         expected_testing_pref_service_(expected_testing_pref_service) {}
+
+  FakeHostDeviceTimestampManagerFactory(
+      const FakeHostDeviceTimestampManagerFactory&) = delete;
+  FakeHostDeviceTimestampManagerFactory& operator=(
+      const FakeHostDeviceTimestampManagerFactory&) = delete;
 
   ~FakeHostDeviceTimestampManagerFactory() override = default;
 
@@ -411,8 +470,6 @@ class FakeHostDeviceTimestampManagerFactory
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
 
   FakeHostDeviceTimestampManager* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHostDeviceTimestampManagerFactory);
 };
 
 class FakeAccountStatusChangeDelegateNotifierFactory
@@ -430,6 +487,11 @@ class FakeAccountStatusChangeDelegateNotifierFactory
         fake_host_device_timestamp_manager_factory_(
             fake_host_device_timestamp_manager_factory),
         expected_oobe_completion_tracker_(expected_oobe_completion_tracker) {}
+
+  FakeAccountStatusChangeDelegateNotifierFactory(
+      const FakeAccountStatusChangeDelegateNotifierFactory&) = delete;
+  FakeAccountStatusChangeDelegateNotifierFactory& operator=(
+      const FakeAccountStatusChangeDelegateNotifierFactory&) = delete;
 
   ~FakeAccountStatusChangeDelegateNotifierFactory() override = default;
 
@@ -463,8 +525,6 @@ class FakeAccountStatusChangeDelegateNotifierFactory
   OobeCompletionTracker* expected_oobe_completion_tracker_;
 
   FakeAccountStatusChangeDelegateNotifier* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAccountStatusChangeDelegateNotifierFactory);
 };
 
 class FakeAndroidSmsAppInstallingStatusObserverFactory
@@ -478,6 +538,11 @@ class FakeAndroidSmsAppInstallingStatusObserverFactory
         fake_feature_state_manager_factory_(fake_feature_state_manager_factory),
         expected_android_sms_app_helper_delegate_(
             expected_android_sms_app_helper_delegate) {}
+
+  FakeAndroidSmsAppInstallingStatusObserverFactory(
+      const FakeAndroidSmsAppInstallingStatusObserverFactory&) = delete;
+  FakeAndroidSmsAppInstallingStatusObserverFactory& operator=(
+      const FakeAndroidSmsAppInstallingStatusObserverFactory&) = delete;
 
   ~FakeAndroidSmsAppInstallingStatusObserverFactory() override = default;
 
@@ -501,13 +566,15 @@ class FakeAndroidSmsAppInstallingStatusObserverFactory
   FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
   FakeFeatureStateManagerFactory* fake_feature_state_manager_factory_;
   AndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAndroidSmsAppInstallingStatusObserverFactory);
 };
 
 }  // namespace
 
 class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
+ public:
+  MultiDeviceSetupImplTest(const MultiDeviceSetupImplTest&) = delete;
+  MultiDeviceSetupImplTest& operator=(const MultiDeviceSetupImplTest&) = delete;
+
  protected:
   MultiDeviceSetupImplTest()
       : test_devices_(
@@ -564,12 +631,19 @@ class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
     HostStatusProviderImpl::Factory::SetFactoryForTesting(
         fake_host_status_provider_factory_.get());
 
-    fake_wifi_sync_feature_manager_factory_ =
-        std::make_unique<FakeWifiSyncFeatureManagerFactory>(
+    fake_global_state_feature_manager_factory_ =
+        std::make_unique<FakeGlobalStateFeatureManagerFactory>(
             fake_host_status_provider_factory_.get(), test_pref_service_.get(),
             fake_device_sync_client_.get());
-    WifiSyncFeatureManagerImpl::Factory::SetFactoryForTesting(
-        fake_wifi_sync_feature_manager_factory_.get());
+    GlobalStateFeatureManagerImpl::Factory::SetFactoryForTesting(
+        fake_global_state_feature_manager_factory_.get());
+
+    fake_wifi_sync_notification_controller_factory_ =
+        std::make_unique<FakeWifiSyncNotificationControllerFactory>(
+            fake_host_status_provider_factory_.get(), test_pref_service_.get(),
+            fake_device_sync_client_.get());
+    WifiSyncNotificationController::Factory::SetFactoryForTesting(
+        fake_wifi_sync_notification_controller_factory_.get());
 
     fake_grandfathered_easy_unlock_host_disabler_factory_ =
         std::make_unique<FakeGrandfatheredEasyUnlockHostDisablerFactory>(
@@ -628,7 +702,8 @@ class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
         nullptr);
     AndroidSmsAppInstallingStatusObserver::Factory::SetFactoryForTesting(
         nullptr);
-    WifiSyncFeatureManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    GlobalStateFeatureManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    WifiSyncNotificationController::Factory::SetFactoryForTesting(nullptr);
   }
 
   bool IsV1DeviceSyncEnabled() { return GetParam(); }
@@ -950,8 +1025,10 @@ class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
   std::unique_ptr<FakeHostVerifierFactory> fake_host_verifier_factory_;
   std::unique_ptr<FakeHostStatusProviderFactory>
       fake_host_status_provider_factory_;
-  std::unique_ptr<FakeWifiSyncFeatureManagerFactory>
-      fake_wifi_sync_feature_manager_factory_;
+  std::unique_ptr<FakeGlobalStateFeatureManagerFactory>
+      fake_global_state_feature_manager_factory_;
+  std::unique_ptr<FakeWifiSyncNotificationControllerFactory>
+      fake_wifi_sync_notification_controller_factory_;
   std::unique_ptr<FakeGrandfatheredEasyUnlockHostDisablerFactory>
       fake_grandfathered_easy_unlock_host_disabler_factory_;
   std::unique_ptr<FakeFeatureStateManagerFactory>
@@ -987,8 +1064,6 @@ class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
   absl::optional<bool> last_retry_success_;
 
   std::unique_ptr<MultiDeviceSetupBase> multidevice_setup_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImplTest);
 };
 
 TEST_P(MultiDeviceSetupImplTest, AccountStatusChangeDelegate) {

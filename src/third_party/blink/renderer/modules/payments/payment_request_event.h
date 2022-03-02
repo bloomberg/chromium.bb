@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -49,6 +48,10 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
       RespondWithObserver*,
       WaitUntilObserver*,
       ExecutionContext* execution_context);
+
+  PaymentRequestEvent(const PaymentRequestEvent&) = delete;
+  PaymentRequestEvent& operator=(const PaymentRequestEvent&) = delete;
+
   ~PaymentRequestEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -101,8 +104,6 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   Member<RespondWithObserver> observer_;
   HeapMojoRemote<payments::mojom::blink::PaymentHandlerHost>
       payment_handler_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestEvent);
 };
 
 }  // namespace blink

@@ -5,7 +5,6 @@
 #ifndef SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_FACTORY_H_
 #define SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_FACTORY_H_
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
@@ -18,15 +17,16 @@ class BluetoothSystemFactory : public mojom::BluetoothSystemFactory {
       mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver);
 
   BluetoothSystemFactory();
+
+  BluetoothSystemFactory(const BluetoothSystemFactory&) = delete;
+  BluetoothSystemFactory& operator=(const BluetoothSystemFactory&) = delete;
+
   ~BluetoothSystemFactory() override;
 
   // mojom::BluetoothSystemFactory
   void Create(
       mojo::PendingReceiver<mojom::BluetoothSystem> system_receiver,
       mojo::PendingRemote<mojom::BluetoothSystemClient> system_client) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSystemFactory);
 };
 
 }  // namespace device

@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Test configs for concat."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow.compat.v1 as tf
 from tensorflow.lite.testing.zip_test_utils import create_tensor_data
 from tensorflow.lite.testing.zip_test_utils import make_zip_of_tests
@@ -33,6 +29,7 @@ def make_concat_tests(options):
       "axis": [0, 1, 2, 3, -3, -2, -1],
       "type": [tf.float32, tf.uint8, tf.int32, tf.int64],
       "fully_quantize": [False],
+      "quant_16x8": [False],
       "dynamic_range_quantize": [False],
   }, {
       "base_shape": [[1, 3, 4, 3], [3, 4], [2, 3, 4, 3]],
@@ -40,6 +37,15 @@ def make_concat_tests(options):
       "axis": [1, 2, 3, -3, -2, -1],
       "type": [tf.float32],
       "fully_quantize": [True],
+      "quant_16x8": [False],
+      "dynamic_range_quantize": [False],
+  }, {
+      "base_shape": [[1, 3, 4, 3]],
+      "num_tensors": [6],
+      "axis": [-1],
+      "type": [tf.float32],
+      "fully_quantize": [True],
+      "quant_16x8": [True],
       "dynamic_range_quantize": [False],
   }, {
       "base_shape": [[1, 3, 4, 3]],
@@ -47,6 +53,15 @@ def make_concat_tests(options):
       "axis": [1],
       "type": [tf.float32],
       "fully_quantize": [False],
+      "quant_16x8": [False],
+      "dynamic_range_quantize": [True],
+  }, {
+      "base_shape": [[1, 3, 4, 3]],
+      "num_tensors": [6],
+      "axis": [1],
+      "type": [tf.bool],
+      "fully_quantize": [False],
+      "quant_16x8": [False],
       "dynamic_range_quantize": [True],
   }]
 

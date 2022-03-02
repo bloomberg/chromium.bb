@@ -9,7 +9,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -34,6 +36,18 @@ class BookmarkEditor {
   // Describes what the user is editing.
   class EditDetails {
    public:
+    struct BookmarkData {
+      BookmarkData();
+      BookmarkData(BookmarkData const& other);
+      ~BookmarkData();
+
+      std::u16string title;
+
+      // Exactly one of the following should be non-empty.
+      absl::optional<GURL> url;
+      std::vector<BookmarkData> children;
+    };
+
     // Returns the type of the existing or new node.
     bookmarks::BookmarkNode::Type GetNodeType() const;
 
@@ -79,23 +93,20 @@ class BookmarkEditor {
     const Type type;
 
     // If type == EXISTING_NODE this gives the existing node.
-    const bookmarks::BookmarkNode* existing_node = nullptr;
+    raw_ptr<const bookmarks::BookmarkNode> existing_node = nullptr;
 
     // If type == NEW_URL or type == NEW_FOLDER this gives the initial parent
     // node to place the new node in.
-    const bookmarks::BookmarkNode* parent_node = nullptr;
+    raw_ptr<const bookmarks::BookmarkNode> parent_node = nullptr;
 
     // If type == NEW_URL or type == NEW_FOLDER this gives the index to insert
     // the new node at.
     absl::optional<size_t> index;
 
-    // If type == NEW_URL this gives the URL/title.
-    GURL url;
-    std::u16string title;
-
-    // If type == NEW_FOLDER, this is the urls/title pairs to add to the
-    // folder.
-    std::vector<std::pair<GURL, std::u16string>> urls;
+    // If type == NEW_URL this contains the URL/title. If type == NEW_FOLDER,
+    // this contains the folder title and any urls/title pairs or nested
+    // folders it should contain.
+    BookmarkData bookmark_data;
 
    private:
     explicit EditDetails(Type node_type);

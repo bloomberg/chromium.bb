@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "dbus/exported_object.h"
@@ -108,6 +107,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+
+  BluetoothAgentServiceProviderImpl(const BluetoothAgentServiceProviderImpl&) =
+      delete;
+  BluetoothAgentServiceProviderImpl& operator=(
+      const BluetoothAgentServiceProviderImpl&) = delete;
 
   ~BluetoothAgentServiceProviderImpl() override {
     DVLOG(1) << "Cleaning up Bluetooth Agent: " << object_path_.value();
@@ -441,8 +445,6 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAgentServiceProviderImpl> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAgentServiceProviderImpl);
 };
 
 BluetoothAgentServiceProvider::BluetoothAgentServiceProvider() = default;

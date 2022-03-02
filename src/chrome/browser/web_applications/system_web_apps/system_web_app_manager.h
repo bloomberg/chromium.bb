@@ -13,21 +13,21 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/components/web_app_url_loader.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-class Browser;
 
 namespace base {
 class Version;
@@ -47,96 +47,11 @@ class Profile;
 namespace web_app {
 
 class WebAppUiManager;
-class OsIntegrationManager;
-class AppRegistryController;
+class WebAppSyncBridge;
 class WebAppPolicyManager;
 
-using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
-using WebApplicationInfoFactory =
-    base::RepeatingCallback<std::unique_ptr<WebApplicationInfo>()>;
-
-// The configuration options for a System App.
-struct SystemAppInfo {
-  // When installing via a WebApplicationInfo, the url is never loaded. It's
-  // needed only for various legacy reasons, maps for tracking state, and
-  // generating the AppId and things of that nature.
-  SystemAppInfo(const std::string& internal_name,
-                const GURL& install_url,
-                const WebApplicationInfoFactory& info_factory);
-  SystemAppInfo(const SystemAppInfo& other);
-  ~SystemAppInfo();
-
-  // A developer-friendly name for, among other things, reporting metrics and
-  // interacting with tast tests. It should follow PascalCase convention, and
-  // have a corresponding entry in WebAppSystemAppInternalName histogram
-  // suffixes. The internal name shouldn't be changed afterwards.
-  std::string internal_name;
-
-  // The URL that the System App will be installed from.
-  GURL install_url;
-
-  // If specified, the apps in |uninstall_and_replace| will have their data
-  // migrated to this System App.
-  std::vector<AppId> uninstall_and_replace;
-
-  // Minimum window size in DIPs. Empty if the app does not have a minimum.
-  // TODO(https://github.com/w3c/manifest/issues/436): Replace with PWA manifest
-  // properties for window size.
-  gfx::Size minimum_window_size;
-
-  // If set, we allow only a single window for this app.
-  bool single_window = true;
-
-  // If set, when the app is launched through the File Handling Web API, we will
-  // include the file's directory in window.launchQueue as the first value.
-  bool include_launch_directory = false;
-
-  // Map from origin to enabled origin trial names for this app. For example,
-  // "chrome://sample-web-app/" to ["Frobulate"]. If set, we will enable the
-  // given origin trials when the corresponding origin is loaded in the app.
-  OriginTrialsMap enabled_origin_trials;
-
-  // Resource Ids for additional search terms.
-  std::vector<int> additional_search_terms;
-
-  // If set to false, this app will be hidden from the Chrome OS app launcher.
-  bool show_in_launcher = true;
-
-  // If set to false, this app will be hidden from the Chrome OS search.
-  bool show_in_search = true;
-
-  // If set to true, navigations (e.g. Omnibox URL, anchor link) to this app
-  // will open in the app's window instead of the navigation's context (e.g.
-  // browser tab).
-  bool capture_navigations = false;
-
-  // If set to false, the app will non-resizeable.
-  bool is_resizeable = true;
-
-  // If set to false, the surface of app will can be non-maximizable.
-  bool is_maximizable = true;
-
-  // If set to true, the App's window will have a tab-strip.
-  bool has_tab_strip = false;
-
-  // If set to false, the app will not have the reload button in minimal ui
-  // mode.
-  bool should_have_reload_button_in_minimal_ui = true;
-
-  // If set, allows the app to close the window through scripts, for example
-  // using `window.close()`.
-  bool allow_scripts_to_close_windows = false;
-
-  // If set, this function will be called to determine the default bounds
-  // (window location and size) when the app's window is created.
-  base::RepeatingCallback<gfx::Rect(Browser*)> get_default_bounds =
-      base::NullCallback();
-
-  WebApplicationInfoFactory app_info_factory;
-
-  // Setup information to drive a background task.
-  absl::optional<SystemAppBackgroundTaskInfo> timer_info;
-};
+using SystemAppDelegateMap =
+    base::flat_map<SystemAppType, std::unique_ptr<SystemWebAppDelegate>>;
 
 // Installs, uninstalls, and updates System Web Apps.
 // System Web Apps are built-in, highly-privileged Web Apps for Chrome OS. They
@@ -157,7 +72,7 @@ class SystemWebAppManager {
       "Webapp.SystemApps.FreshInstallDuration";
 
   // Returns whether the given app type is enabled.
-  static bool IsAppEnabled(SystemAppType type);
+  bool IsAppEnabled(SystemAppType type);
 
   explicit SystemWebAppManager(Profile* profile);
   SystemWebAppManager(const SystemWebAppManager&) = delete;
@@ -166,10 +81,9 @@ class SystemWebAppManager {
 
   void SetSubsystems(
       ExternallyManagedAppManager* externally_managed_app_manager,
-      AppRegistrar* registrar,
-      AppRegistryController* registry_controller,
+      WebAppRegistrar* registrar,
+      WebAppSyncBridge* sync_bridge,
       WebAppUiManager* ui_manager,
-      OsIntegrationManager* os_integration_manager,
       WebAppPolicyManager* web_app_policy_manager);
 
   void Start();
@@ -193,63 +107,27 @@ class SystemWebAppManager {
   // Returns the System App Type for the given |app_id|.
   absl::optional<SystemAppType> GetSystemAppTypeForAppId(AppId app_id) const;
 
+  // Returns the System App Delegate for the given App |type|.
+  const SystemWebAppDelegate* GetSystemApp(SystemAppType type) const;
+
   // Returns the App Ids for all installed System Web Apps.
   std::vector<AppId> GetAppIds() const;
 
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
 
-  // Returns whether the given System App |type| should use a single window.
-  bool IsSingleWindow(SystemAppType type) const;
-
-  // Returns whether the given System App |type| should get launch directory in
-  // launch parameter.
-  bool AppShouldReceiveLaunchDirectory(SystemAppType type) const;
-
   // Perform tab-specific setup when a navigation in a System Web App is about
   // to be committed.
   void OnReadyToCommitNavigation(const AppId& app_id,
                                  content::NavigationHandle* navigation_handle);
 
-  // Returns terms to be used when searching for the app.
-  std::vector<std::string> GetAdditionalSearchTerms(SystemAppType type) const;
-
-  // Returns whether the app should be shown in the launcher.
-  bool ShouldShowInLauncher(SystemAppType type) const;
-
-  // Returns whether the app should be shown in search.
-  bool ShouldShowInSearch(SystemAppType type) const;
-
-  // Returns whether the app should be resizeable.
-  bool IsResizeableWindow(SystemAppType type) const;
-
-  // Returns whether the surface of app can be maximizable.
-  bool IsMaximizableWindow(SystemAppType type) const;
-
-  // Returns whether the app should have the reload button in minimal ui mode.
-  bool ShouldHaveReloadButtonInMinimalUi(SystemAppType type) const;
-
-  // Returns whether the app is allowed to close the window through scripts.
-  bool AllowScriptsToCloseWindows(SystemAppType type) const;
-
-  // Returns whether the app window should have the tab-strip.
-  bool ShouldHaveTabStrip(SystemAppType type) const;
-
   // Returns the SystemAppType that should capture the navigation to |url|.
   absl::optional<SystemAppType> GetCapturingSystemAppForURL(
       const GURL& url) const;
 
-  // Return the default bound of App's window.
-  gfx::Rect GetDefaultBounds(SystemAppType type, Browser* browser) const;
-
-  // Returns the minimum window size for |app_id| or an empty size if the app
-  // doesn't specify a minimum.
-  gfx::Size GetMinimumWindowSize(const AppId& app_id) const;
-
   // Returns a map of registered system app types and infos, these apps will be
   // installed on the system.
-  const base::flat_map<SystemAppType, SystemAppInfo>&
-  GetRegisteredSystemAppsForTesting() const;
+  const SystemAppDelegateMap& GetRegisteredSystemAppsForTesting() const;
 
   const base::OneShotEvent& on_apps_synchronized() const {
     return *on_apps_synchronized_;
@@ -263,8 +141,7 @@ class SystemWebAppManager {
 
   // This call will override default System Apps configuration. You should call
   // Start() after this call to install |system_apps|.
-  void SetSystemAppsForTesting(
-      base::flat_map<SystemAppType, SystemAppInfo> system_apps);
+  void SetSystemAppsForTesting(SystemAppDelegateMap system_apps);
 
   // Overrides the update policy. If AlwaysReinstallSystemWebApps feature is
   // enabled, this method does nothing, and system apps will be reinstalled.
@@ -278,18 +155,19 @@ class SystemWebAppManager {
   const std::vector<std::unique_ptr<SystemAppBackgroundTask>>&
   GetBackgroundTasksForTesting();
 
+  const Profile* profile() const { return profile_; }
+
  protected:
   virtual const base::Version& CurrentVersion() const;
   virtual const std::string& CurrentLocale() const;
 
  private:
-  // Returns the list of origin trials to enable for |url| loaded in System App
-  // |type|. Returns nullptr if the App does not specify origin trials for
-  // |url|.
-  const std::vector<std::string>* GetEnabledOriginTrials(SystemAppType type,
-                                                         const GURL& url);
-
-  bool AppHasFileHandlingOriginTrial(SystemAppType type);
+  // Returns the list of origin trials to enable for |url| loaded in System
+  // App |type|. Returns an empty vector if the App does not specify origin
+  // trials for |url|.
+  const std::vector<std::string>* GetEnabledOriginTrials(
+      const SystemWebAppDelegate* system_app,
+      const GURL& url) const;
 
   void StopBackgroundTasks();
 
@@ -314,7 +192,7 @@ class SystemWebAppManager {
 
   void StartBackgroundTasks() const;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
   std::unique_ptr<base::OneShotEvent> on_tasks_started_;
@@ -325,22 +203,21 @@ class SystemWebAppManager {
 
   UpdatePolicy update_policy_;
 
-  base::flat_map<SystemAppType, SystemAppInfo> system_app_infos_;
+  SystemAppDelegateMap system_app_delegates_;
 
-  PrefService* const pref_service_;
+  const raw_ptr<PrefService> pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
-  ExternallyManagedAppManager* externally_managed_app_manager_ = nullptr;
+  raw_ptr<ExternallyManagedAppManager> externally_managed_app_manager_ =
+      nullptr;
 
-  AppRegistrar* registrar_ = nullptr;
+  raw_ptr<WebAppRegistrar> registrar_ = nullptr;
 
-  AppRegistryController* registry_controller_ = nullptr;
+  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
 
-  WebAppUiManager* ui_manager_ = nullptr;
+  raw_ptr<WebAppUiManager> ui_manager_ = nullptr;
 
-  OsIntegrationManager* os_integration_manager_ = nullptr;
-
-  WebAppPolicyManager* web_app_policy_manager_ = nullptr;
+  raw_ptr<WebAppPolicyManager> web_app_policy_manager_ = nullptr;
 
   std::vector<std::unique_ptr<SystemAppBackgroundTask>> tasks_;
 

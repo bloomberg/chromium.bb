@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "ash/content/scanning/url_constants.h"
 #include "ash/grit/ash_scanning_app_resources.h"
+#include "ash/webui/scanning/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,10 +33,37 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForScanningSystemWebApp() {
           {"scanning_app_icon_256.png", 256, IDR_SCANNING_APP_ICON_256},
       },
       *info);
-  info->theme_color = 0xFFFFFFFF;
-  info->background_color = 0xFFFFFFFF;
+  info->theme_color =
+      web_app::GetDefaultBackgroundColor(/*use_dark_mode=*/false);
+  info->dark_mode_theme_color =
+      web_app::GetDefaultBackgroundColor(/*use_dark_mode=*/true);
+  info->background_color = info->theme_color;
+  info->dark_mode_background_color = info->dark_mode_theme_color;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->open_as_window = true;
+  info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
 
   return info;
+}
+
+ScanningSystemAppDelegate::ScanningSystemAppDelegate(Profile* profile)
+    : web_app::SystemWebAppDelegate(web_app::SystemAppType::SCANNING,
+                                    "Scanning",
+                                    GURL("chrome://scanning"),
+                                    profile) {}
+
+std::unique_ptr<WebApplicationInfo> ScanningSystemAppDelegate::GetWebAppInfo()
+    const {
+  return CreateWebAppInfoForScanningSystemWebApp();
+}
+
+bool ScanningSystemAppDelegate::ShouldShowInLauncher() const {
+  return false;
+}
+
+bool ScanningSystemAppDelegate::ShouldCaptureNavigations() const {
+  return true;
+}
+
+gfx::Size ScanningSystemAppDelegate::GetMinimumWindowSize() const {
+  return {600, 420};
 }

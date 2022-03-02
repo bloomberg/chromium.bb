@@ -92,6 +92,9 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // Launches guest mode.
   virtual void LoginAsGuest() = 0;
 
+  // Show guest terms of service screen.
+  virtual void ShowGuestTosScreen() = 0;
+
   // User with |account_id| has reached maximum incorrect password attempts.
   virtual void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) = 0;
 
@@ -110,6 +113,9 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // The value in |prefilled_account| will be used to prefill the sign-in dialog
   // so the user does not need to type the account email.
   virtual void ShowGaiaSignin(const AccountId& prefilled_account) = 0;
+
+  // Show OS-Install screen.
+  virtual void ShowOsInstallScreen() = 0;
 
   // Notification that the remove user warning was shown.
   virtual void OnRemoveUserWarningShown() = 0;
@@ -143,7 +149,7 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   virtual void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window) = 0;
 
   // Shows help app for users that have trouble using parent access code.
-  virtual void ShowParentAccessHelpApp(gfx::NativeWindow parent_window) = 0;
+  virtual void ShowParentAccessHelpApp() = 0;
 
   // Show the lockscreen notification settings page.
   virtual void ShowLockScreenNotificationSettings() = 0;

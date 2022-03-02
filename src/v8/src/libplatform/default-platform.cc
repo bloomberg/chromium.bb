@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <queue>
 
+#include "src/base/bounded-page-allocator.h"
 #include "src/base/debug/stack_trace.h"
 #include "src/base/logging.h"
 #include "src/base/page-allocator.h"

@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_GPU_GPU_INTERNALS_UI_H_
 #define CONTENT_BROWSER_GPU_GPU_INTERNALS_UI_H_
 
-#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "base/values.h"
 
@@ -15,10 +14,10 @@ class GpuInternalsUI : public WebUIController {
  public:
   explicit GpuInternalsUI(WebUI* web_ui);
 
+  GpuInternalsUI(const GpuInternalsUI&) = delete;
+  GpuInternalsUI& operator=(const GpuInternalsUI&) = delete;
   CONTENT_EXPORT static base::Value GetGpuMemoryBufferInfo();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(GpuInternalsUI);
 };
 
 }  // namespace content

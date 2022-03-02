@@ -32,13 +32,24 @@ DownloadShelfPageHandler::DownloadShelfPageHandler(
 
 DownloadShelfPageHandler::~DownloadShelfPageHandler() = default;
 
+void DownloadShelfPageHandler::DoShowAll() {
+  download_shelf_ui_->DoShowAll();
+}
+
 void DownloadShelfPageHandler::DoClose() {
   download_shelf_ui_->DoClose();
 }
 
+void DownloadShelfPageHandler::DiscardDownload(uint32_t download_id) {
+  download_shelf_ui_->DiscardDownload(download_id);
+}
+
+void DownloadShelfPageHandler::KeepDownload(uint32_t download_id) {
+  download_shelf_ui_->KeepDownload(download_id);
+}
+
 void DownloadShelfPageHandler::GetDownloads(GetDownloadsCallback callback) {
-  TRACE_EVENT0("browser",
-               "custom_metric:DownloadShelfPageHandler:GetDownloads");
+  TRACE_EVENT0("browser", "DownloadShelfPageHandler:GetDownloads");
   std::vector<download_shelf::mojom::DownloadItemPtr> download_items;
   for (DownloadUIModel* download_model : download_shelf_ui_->GetDownloads())
     download_items.push_back(GetDownloadItemFromUIModel(download_model));
@@ -56,7 +67,7 @@ void DownloadShelfPageHandler::ShowContextMenu(uint32_t download_id,
       base::BindOnce(
           [](base::Time start_time) {
             const base::TimeDelta elapsed_time = base::Time::Now() - start_time;
-            if (elapsed_time > base::TimeDelta()) {
+            if (elapsed_time.is_positive()) {
               base::UmaHistogramTimes(
                   "Download.Shelf.WebUI.ShowContextMenuTime", elapsed_time);
             }
@@ -64,8 +75,16 @@ void DownloadShelfPageHandler::ShowContextMenu(uint32_t download_id,
           start_time));
 }
 
+void DownloadShelfPageHandler::OpenDownload(uint32_t download_id) {
+  download_shelf_ui_->OpenDownload(download_id);
+}
+
 void DownloadShelfPageHandler::DoShowDownload(DownloadUIModel* download_model) {
   page_->OnNewDownload(GetDownloadItemFromUIModel(download_model));
+}
+
+void DownloadShelfPageHandler::OnDownloadOpened(uint32_t download_id) {
+  page_->OnDownloadOpened(download_id);
 }
 
 void DownloadShelfPageHandler::OnDownloadUpdated(
@@ -100,7 +119,7 @@ DownloadShelfPageHandler::GetDownloadItemFromUIModel(
   download_item->should_promote_origin = download_model->ShouldPromoteOrigin();
   download_item->show_download_start_time =
       (download_shelf_ui_->GetShowDownloadTime(download->GetId()) -
-       base::TimeTicks::UnixEpoch())
+       base::Time::UnixEpoch())
           .InMilliseconds();
   download_item->state = download->GetState();
   download_item->status_text =

@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.metrics.FeatureModuleInstallation;
-import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.autofill_assistant.strings.IntentStrings;
 import org.chromium.content_public.browser.WebContents;
 
@@ -35,20 +34,6 @@ public class AutofillAssistantMetrics {
     }
 
     /**
-     * Records the onboarding related action.
-     */
-    public static void recordOnBoarding(@OnBoarding int metric, String intent) {
-        String histogramSuffix = getHistogramSuffixForIntent(intent);
-
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.AutofillAssistant.OnBoarding." + histogramSuffix, metric,
-                OnBoarding.MAX_VALUE + 1);
-
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.AutofillAssistant.OnBoarding", metric, OnBoarding.MAX_VALUE + 1);
-    }
-
-    /**
      * Records the feature module installation action.
      */
     public static void recordFeatureModuleInstallation(@FeatureModuleInstallation int metric) {
@@ -68,7 +53,7 @@ public class AutofillAssistantMetrics {
     /**
      * Returns histogram suffix for given intent.
      */
-    private static String getHistogramSuffixForIntent(String intent) {
+    private static String getHistogramSuffixForIntent(@Nullable String intent) {
         if (intent == null) {
             // Intent is not set.
             return "NotSet";

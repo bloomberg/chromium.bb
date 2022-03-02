@@ -875,10 +875,10 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
 
 // TODO(yosin): Maybe baseline would be better?
 static bool AbsoluteCaretY(const PositionInFlatTreeWithAffinity& c, int& y) {
-  IntRect rect = AbsoluteCaretBoundsOf(c);
+  gfx::Rect rect = AbsoluteCaretBoundsOf(c);
   if (rect.IsEmpty())
     return false;
-  y = rect.Y() + rect.Height() / 2;
+  y = rect.y() + rect.height() / 2;
   return true;
 }
 

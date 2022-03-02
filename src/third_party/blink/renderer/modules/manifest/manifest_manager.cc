@@ -19,9 +19,8 @@
 #include "third_party/blink/renderer/modules/manifest/manifest_change_notifier.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_fetcher.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_parser.h"
-#include "third_party/blink/renderer/modules/manifest/manifest_type_converters.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
@@ -96,7 +95,7 @@ void ManifestManager::RequestManifestForTesting(
       [](WebManifestManager::Callback callback, const KURL& manifest_url,
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
-        std::move(callback).Run(manifest_url, manifest.To<Manifest>());
+        std::move(callback).Run(manifest_url);
       },
       std::move(callback)));
 }
@@ -145,14 +144,14 @@ void ManifestManager::DidChangeManifest() {
 void ManifestManager::FetchManifest() {
   if (!CanFetchManifest()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_FROM_OPAQUE_ORIGIN);
-    ResolveCallbacks(ResolveStateFailure);
+    ResolveCallbacks(ResolveState::kFailure);
     return;
   }
 
   manifest_url_ = ManifestURL();
   if (manifest_url_.IsEmpty()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_EMPTY_URL);
-    ResolveCallbacks(ResolveStateFailure);
+    ResolveCallbacks(ResolveState::kFailure);
     return;
   }
 
@@ -171,7 +170,7 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
   if (response.IsNull() && data.IsEmpty()) {
     manifest_debug_info_ = nullptr;
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_UNSPECIFIED_REASON);
-    ResolveCallbacks(ResolveStateFailure);
+    ResolveCallbacks(ResolveState::kFailure);
     return;
   }
 
@@ -182,7 +181,15 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
   const FeatureContext* feature_context = GetExecutionContext();
   ManifestParser parser(data, response.CurrentRequestUrl(), document_url,
                         feature_context);
-  parser.Parse();
+
+  // Monitoring whether the manifest has comments is temporary. Once
+  // warning/deprecation period is over, we should remove this as it's
+  // technically incorrect JSON syntax anyway. See crbug.com/1264024
+  bool has_comments = parser.Parse();
+  if (has_comments) {
+    UseCounter::Count(GetSupplementable(),
+                      WebFeature::kWebAppManifestHasComments);
+  }
 
   manifest_debug_info_ = mojom::blink::ManifestDebugInfo::New();
   manifest_debug_info_->raw_manifest = data;
@@ -202,20 +209,25 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
   // Having errors while parsing the manifest doesn't mean the manifest parsing
   // failed. Some properties might have been ignored but some others kept.
   if (parser.failed()) {
-    ResolveCallbacks(ResolveStateFailure);
+    ResolveCallbacks(ResolveState::kFailure);
     return;
   }
 
   manifest_url_ = response.CurrentRequestUrl();
   manifest_ = parser.manifest().Clone();
   RecordMetrics(*manifest_);
-  ResolveCallbacks(ResolveStateSuccess);
+  ResolveCallbacks(ResolveState::kSuccess);
 }
 
 void ManifestManager::RecordMetrics(const mojom::blink::Manifest& manifest) {
   if (manifest.capture_links != mojom::blink::CaptureLinks::kUndefined) {
     UseCounter::Count(GetSupplementable(),
                       WebFeature::kWebAppManifestCaptureLinks);
+  }
+
+  if (!manifest.launch_handler.is_null()) {
+    UseCounter::Count(GetSupplementable(),
+                      WebFeature::kWebAppManifestLaunchHandler);
   }
 
   if (!manifest.url_handlers.IsEmpty()) {
@@ -244,10 +256,10 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
   // preserve that information in the URL for the callbacks.
   // |manifest_url| will be reset on navigation or if we receive a didchange
   // event.
-  if (state == ResolveStateFailure)
+  if (state == ResolveState::kFailure)
     manifest_ = mojom::blink::ManifestPtr();
 
-  manifest_dirty_ = state != ResolveStateSuccess;
+  manifest_dirty_ = state != ResolveState::kSuccess;
 
   Vector<InternalRequestManifestCallback> callbacks;
   callbacks.swap(pending_callbacks_);
@@ -289,7 +301,7 @@ void ManifestManager::ContextDestroyed() {
   // Consumers in the browser process will not receive this message but they
   // will be aware of the RenderFrame dying and should act on that. Consumers
   // in the renderer process should be correctly notified.
-  ResolveCallbacks(ResolveStateFailure);
+  ResolveCallbacks(ResolveState::kFailure);
 }
 
 void ManifestManager::Trace(Visitor* visitor) const {

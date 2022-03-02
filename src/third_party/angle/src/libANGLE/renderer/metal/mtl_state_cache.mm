@@ -17,6 +17,7 @@
 #include "libANGLE/renderer/metal/ContextMtl.h"
 #include "libANGLE/renderer/metal/mtl_resources.h"
 #include "libANGLE/renderer/metal/mtl_utils.h"
+#include "platform/FeaturesMtl.h"
 
 #define ANGLE_OBJC_CP_PROPERTY(DST, SRC, PROPERTY) \
     (DST).PROPERTY = static_cast<__typeof__((DST).PROPERTY)>(ToObjC((SRC).PROPERTY))
@@ -699,7 +700,8 @@ bool RenderPassAttachmentDesc::equalIgnoreLoadStoreOptions(
     const RenderPassAttachmentDesc &other) const
 {
     return texture == other.texture && implicitMSTexture == other.implicitMSTexture &&
-           level == other.level && sliceOrDepth == other.sliceOrDepth;
+           level == other.level && sliceOrDepth == other.sliceOrDepth &&
+           blendable == other.blendable;
 }
 
 bool RenderPassAttachmentDesc::operator==(const RenderPassAttachmentDesc &other) const
@@ -1058,8 +1060,172 @@ void RenderPipelineCache::clearPipelineStates()
     mRenderPipelineStates[1].clear();
 }
 
+// ProvokingVertexPipelineDesc
+ProvokingVertexComputePipelineDesc::ProvokingVertexComputePipelineDesc()
+{
+    memset(this, 0, sizeof(*this));
+}
+ProvokingVertexComputePipelineDesc::ProvokingVertexComputePipelineDesc(
+    const ProvokingVertexComputePipelineDesc &src)
+{
+    memcpy(this, &src, sizeof(*this));
+}
+ProvokingVertexComputePipelineDesc::ProvokingVertexComputePipelineDesc(
+    const ProvokingVertexComputePipelineDesc &&src)
+{
+    memcpy(this, &src, sizeof(*this));
+}
+ProvokingVertexComputePipelineDesc &ProvokingVertexComputePipelineDesc::operator=(
+    const ProvokingVertexComputePipelineDesc &src)
+{
+    memcpy(this, &src, sizeof(*this));
+    return *this;
+}
+bool ProvokingVertexComputePipelineDesc::operator==(
+    const ProvokingVertexComputePipelineDesc &rhs) const
+{
+    return memcmp(this, &rhs, sizeof(*this)) == 0;
+}
+bool ProvokingVertexComputePipelineDesc::operator!=(
+    const ProvokingVertexComputePipelineDesc &rhs) const
+{
+    return !(*this == rhs);
+}
+size_t ProvokingVertexComputePipelineDesc::hash() const
+{
+    return angle::ComputeGenericHash(*this);
+}
+
+ProvokingVertexComputePipelineCache::ProvokingVertexComputePipelineCache() : mComputeShader(nullptr)
+{}
+
+ProvokingVertexComputePipelineCache::ProvokingVertexComputePipelineCache(
+    ProvokingVertexCacheSpecializeShaderFactory *specializedShaderFactory)
+    : mComputeShader(nullptr), mSpecializedShaderFactory(specializedShaderFactory)
+{}
+
+void ProvokingVertexComputePipelineCache::setComputeShader(Context *context, id<MTLFunction> shader)
+{
+    mComputeShader.retainAssign(shader);
+    if (!shader)
+    {
+        clearPipelineStates();
+        return;
+    }
+
+    recreatePipelineStates(context);
+}
+
+void ProvokingVertexComputePipelineCache::clearPipelineStates()
+{
+    mComputePipelineStates.clear();
+}
+
+void ProvokingVertexComputePipelineCache::clear()
+{
+    clearPipelineStates();
+}
+
+AutoObjCPtr<id<MTLComputePipelineState>>
+ProvokingVertexComputePipelineCache::getComputePipelineState(
+    ContextMtl *context,
+    const ProvokingVertexComputePipelineDesc &desc)
+{
+    auto &table = mComputePipelineStates;
+    auto ite    = table.find(desc);
+    if (ite == table.end())
+    {
+        return insertComputePipelineState(context, desc);
+    }
+
+    return ite->second;
+}
+
+AutoObjCPtr<id<MTLComputePipelineState>>
+ProvokingVertexComputePipelineCache::insertComputePipelineState(
+    Context *context,
+    const ProvokingVertexComputePipelineDesc &desc)
+{
+    AutoObjCPtr<id<MTLComputePipelineState>> newState = createComputePipelineState(context, desc);
+
+    auto re = mComputePipelineStates.insert(std::make_pair(desc, newState));
+    if (!re.second)
+    {
+        return nil;
+    }
+
+    return re.first->second;
+}
+
+void ProvokingVertexComputePipelineCache::recreatePipelineStates(Context *context)
+{
+
+    for (auto &ite : mComputePipelineStates)
+    {
+        if (ite.second == nil)
+        {
+            continue;
+        }
+
+        ite.second = createComputePipelineState(context, ite.first);
+    }
+}
+
+AutoObjCPtr<id<MTLComputePipelineState>>
+ProvokingVertexComputePipelineCache::createComputePipelineState(
+    Context *context,
+    const ProvokingVertexComputePipelineDesc &originalDesc)
+{
+    ANGLE_MTL_OBJC_SCOPE
+    {
+        // Disable coverage if the render pipeline's sample count is only 1.
+        ProvokingVertexComputePipelineDesc desc = originalDesc;
+
+        id<MTLFunction> computeFunction = nil;
+        // Special case for transform feedback shader, we've already created it! See
+        // getTransformFeedbackRenderPipeline
+        if (mSpecializedShaderFactory &&
+            mSpecializedShaderFactory->hasSpecializedShader(gl::ShaderType::Compute, desc))
+        {
+            if (IsError(mSpecializedShaderFactory->getSpecializedShader(
+                    context, gl::ShaderType::Compute, desc, &computeFunction)))
+            {
+                return nil;
+            }
+        }
+        else
+        {
+            // Non-specialized version
+            computeFunction = mComputeShader;
+        }
+
+        if (!computeFunction)
+        {
+            // Render pipeline without vertex shader is invalid.
+            context->handleError(GL_INVALID_OPERATION, __FILE__, ANGLE_FUNCTION, __LINE__);
+            return nil;
+        }
+
+        id<MTLDevice> metalDevice = context->getMetalDevice();
+
+        // Convert to Objective-C desc:
+        NSError *err = nil;
+        id<MTLComputePipelineState> newState =
+            [metalDevice newComputePipelineStateWithFunction:computeFunction error:&err];
+        if (err)
+        {
+            context->handleError(err, __FILE__, ANGLE_FUNCTION, __LINE__);
+            return nil;
+        }
+
+        return [newState ANGLE_MTL_AUTORELEASE];
+    }
+}
+
+ProvokingVertexComputePipelineCache::~ProvokingVertexComputePipelineCache() {}
+
 // StateCache implementation
-StateCache::StateCache() {}
+StateCache::StateCache(const angle::FeaturesMtl &features) : mFeatures(features) {}
 
 StateCache::~StateCache() {}
 
@@ -1110,6 +1276,11 @@ AutoObjCPtr<id<MTLSamplerState>> StateCache::getSamplerState(id<MTLDevice> metal
         if (ite == mSamplerStates.end())
         {
             AutoObjCObj<MTLSamplerDescriptor> objCDesc = ToObjC(desc);
+            if (!mFeatures.allowRuntimeSamplerCompareMode.enabled)
+            {
+                // Runtime sampler compare mode is not supported, fallback to never.
+                objCDesc.get().compareFunction = MTLCompareFunctionNever;
+            }
             AutoObjCPtr<id<MTLSamplerState>> newState =
                 [[metalDevice newSamplerStateWithDescriptor:objCDesc] ANGLE_MTL_AUTORELEASE];
 
@@ -1143,5 +1314,6 @@ void StateCache::clear()
     mDepthStencilStates.clear();
     mSamplerStates.clear();
 }
+
 }  // namespace mtl
 }  // namespace rx

@@ -221,7 +221,7 @@ begin a new CL:
 ----
 
 This will create and checkout a new branch named `branch_name` which will track
-the default upstream branch (`origin/master`). See
+the default upstream branch (`origin/main`). See
 linkgit:git-new-branch[1] for more features.
 
 Commit as many changes as you like to this branch. When you want to upload it
@@ -233,7 +233,7 @@ for review, run:
 ----
 
 This will take the diff of your branch against its upstream branch (in that
-case origin/master), and will post it to the
+case origin/main), and will post it to the
 link:https://chromium-review.googlesource.com[Chromium code review site].
 
 
@@ -302,9 +302,9 @@ bearings. Fortunately, 'depot_tools' has two tools to help you out:
 [white blue-background]##*##{zwsp}[blue-background red]** 7dcfe47       ** [green]##(##{zwsp}[aqua]**frozen_changes**{zwsp}[green]##)## [yellow]##2014-03-12## \~ FREEZE.unindexed
 * [red]**4b0c180**        [yellow]##2014-03-12## \~ modfile
 * [red]**59a7cca**        [yellow]##2014-03-12## \~ a deleted file
-* [red]**6bec695**        [green]##(##{zwsp}[red]##origin/master##{zwsp}[green]##)## [yellow]##2014-03-11## \~ Add neat feature    [white]**<(frozen_changes)**
+* [red]**6bec695**        [green]##(##{zwsp}[red]##origin/main##{zwsp}[green]##)## [yellow]##2014-03-11## \~ Add neat feature    [white]**<(frozen_changes)**
 * [red]**d15a38a**        [yellow]##2014-03-11## \~ Epic README update
-* [red]**d559894**        [green]##(##{zwsp}[lime]**master**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Important upstream change
+* [red]**d559894**        [green]##(##{zwsp}[lime]**main**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Important upstream change
 [red]##|## * [red]**9c311fd**      [green]##(##{zwsp}[lime]**cool_feature**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Respond to CL comments
 [red]##|## [green]##|## * [red]**2a1eeb2**    [green]##(##{zwsp}[lime]**subfeature**{zwsp}[green]##)## [yellow]##2014-03-11## \~ integrate with CoolService
 [red]##|## [green]##|## * [red]**d777af6**    [yellow]##2014-03-11## \~ slick commenting action
@@ -320,11 +320,11 @@ Note that this example repo is in dire need of a linkgit:git-rebase-update[1]!
 [subs="quotes"]
 ----
 [white]**$ git map-branches**
-[red]#origin/master#
+[red]#origin/main#
   [green]#cool_feature#
     [green]#subfeature#
   [aqua]#frozen_changes *#
-  [green]#master#
+  [green]#main#
 ----
 
 linkgit:git-map[1]::
@@ -375,7 +375,7 @@ you want to base the new one on (i.e. CL 1), and then run:
 ----
 
 This will make a new branch which tracks the 'current' branch as its upstream
-(as opposed to 'origin/master'). All changes you commit to this branch will be
+(as opposed to 'origin/main'). All changes you commit to this branch will be
 in addition to the previous branch, but when you `git cl upload`, you will only
 upload the diff for the dependent (child) branch. You may have as many branches
 nested in this fashion as you like.
@@ -391,7 +391,7 @@ it, or even based 'another' branch off of that one. Or you discover that you
 have two independent CLs that would actually be much better off as dependent
 CLs. In instances like these, you can check out the offending branch and use
 linkgit:git-reparent-branch[1] to move it to track a different parent. Note that
-this can also be used to move a branch from tracking `origin/master` to `lkgr`
+this can also be used to move a branch from tracking `origin/main` to `lkgr`
 or vice versa.
 
 
@@ -428,7 +428,7 @@ DEPS::
 
 LKGR::
   Last Known Good Revision. This is a linkgit:git-tag[1] which tracks the last
-  version of `origin/master` which has passed the full set of testing on the
+  version of `origin/main` which has passed the full set of testing on the
   link:http://build.chromium.org[main Chromium waterfall].
 
 include::_footer.txt[]

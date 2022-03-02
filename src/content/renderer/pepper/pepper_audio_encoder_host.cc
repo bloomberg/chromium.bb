@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/unsafe_shared_memory_region.h"
-#include "base/stl_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/render_thread_impl.h"
@@ -56,6 +56,10 @@ class PepperAudioEncoderHost::AudioEncoderImpl {
   using BitstreamBufferReadyCB = base::OnceCallback<void(int32_t size)>;
 
   AudioEncoderImpl();
+
+  AudioEncoderImpl(const AudioEncoderImpl&) = delete;
+  AudioEncoderImpl& operator=(const AudioEncoderImpl&) = delete;
+
   ~AudioEncoderImpl();
 
   // Used on the renderer thread.
@@ -78,8 +82,6 @@ class PepperAudioEncoderHost::AudioEncoderImpl {
   // Initialization parameters, only valid if |encoder_memory_| is not
   // nullptr.
   ppapi::proxy::PPB_AudioEncodeParameters parameters_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioEncoderImpl);
 };
 
 PepperAudioEncoderHost::AudioEncoderImpl::AudioEncoderImpl()

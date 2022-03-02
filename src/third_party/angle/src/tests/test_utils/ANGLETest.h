@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 
+#include "RenderDoc.h"
 #include "angle_test_configs.h"
 #include "angle_test_platform.h"
 #include "common/angleutils.h"
@@ -64,10 +65,17 @@ class RNG;
 #define EXPECT_GLENUM_NE(expected, actual) \
     EXPECT_NE(static_cast<GLenum>(expected), static_cast<GLenum>(actual))
 
-#define ASSERT_EGLENUM_EQ(expected, actual) \
-    ASSERT_EQ(static_cast<EGLenum>(expected), static_cast<EGLenum>(actual))
-#define EXPECT_EGLENUM_EQ(expected, actual) \
-    EXPECT_EQ(static_cast<EGLenum>(expected), static_cast<EGLenum>(actual))
+testing::AssertionResult AssertEGLEnumsEqual(const char *lhsExpr,
+                                             const char *rhsExpr,
+                                             EGLenum lhs,
+                                             EGLenum rhs);
+
+#define ASSERT_EGLENUM_EQ(expected, actual)                                  \
+    ASSERT_PRED_FORMAT2(AssertEGLEnumsEqual, static_cast<EGLenum>(expected), \
+                        static_cast<EGLenum>(actual))
+#define EXPECT_EGLENUM_EQ(expected, actual)                                  \
+    EXPECT_PRED_FORMAT2(AssertEGLEnumsEqual, static_cast<EGLenum>(expected), \
+                        static_cast<EGLenum>(actual))
 
 #define ASSERT_GL_FRAMEBUFFER_COMPLETE(framebuffer) \
     ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(framebuffer))
@@ -134,6 +142,8 @@ struct GLColor
     const GLubyte *data() const { return &R; }
     GLubyte *data() { return &R; }
 
+    GLuint asUint() const;
+
     testing::AssertionResult ExpectNear(const GLColor &expected, const GLColor &err) const;
 
     GLubyte R, G, B, A;
@@ -193,6 +203,10 @@ bool operator==(const GLColor &a, const GLColor &b);
 bool operator!=(const GLColor &a, const GLColor &b);
 std::ostream &operator<<(std::ostream &ostream, const GLColor &color);
 GLColor ReadColor(GLint x, GLint y);
+
+bool operator==(const GLColorRGB &a, const GLColorRGB &b);
+bool operator!=(const GLColorRGB &a, const GLColorRGB &b);
+std::ostream &operator<<(std::ostream &ostream, const GLColorRGB &color);
 
 // Useful to cast any type to GLfloat.
 template <typename TR, typename TG, typename TB, typename TA>
@@ -316,6 +330,15 @@ void LoadEntryPointsWithUtilLoader(angle::GLESDriverType driver);
 #define EXPECT_PIXEL_COLOR32F_NEAR(x, y, angleColor, abs_error) \
     EXPECT_PIXEL32F_NEAR(x, y, angleColor.R, angleColor.G, angleColor.B, angleColor.A, abs_error)
 
+#define EXPECT_PIXEL_STENCIL_EQ(x, y, expected)                                    \
+    do                                                                             \
+    {                                                                              \
+        GLubyte actual;                                                            \
+        glReadPixels((x), (y), 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, &actual); \
+        EXPECT_GL_NO_ERROR();                                                      \
+        EXPECT_EQ((expected), actual);                                             \
+    } while (0)
+
 class ANGLETestBase;
 class EGLWindow;
 class GLWindowBase;
@@ -356,6 +379,7 @@ class ANGLETestBase
 
   protected:
     void ANGLETestSetUp();
+    void ANGLETestPreTearDown();
     void ANGLETestTearDown();
 
     virtual void swapBuffers();
@@ -520,6 +544,8 @@ class ANGLETestBase
         return mCurrentParams->getAllocateNonZeroMemoryFeature() == EGL_TRUE;
     }
 
+    bool mIsSetUp = false;
+
   private:
     void checkD3D11SDKLayersMessages();
 
@@ -580,6 +606,8 @@ class ANGLETestBase
     const angle::PlatformParameters *mCurrentParams;
     TestFixture *mFixture;
 
+    RenderDoc mRenderDoc;
+
     // Workaround for NVIDIA not being able to share a window with OpenGL and Vulkan.
     static Optional<EGLint> mLastRendererType;
     static Optional<angle::GLESDriverType> mLastLoadedDriver;
@@ -604,12 +632,19 @@ class ANGLETestWithParam : public ANGLETestBase, public ::testing::TestWithParam
     void SetUp() final
     {
         ANGLETestBase::ANGLETestSetUp();
-        testSetUp();
+        if (mIsSetUp)
+        {
+            testSetUp();
+        }
     }
 
     void TearDown() final
     {
-        testTearDown();
+        ANGLETestBase::ANGLETestPreTearDown();
+        if (mIsSetUp)
+        {
+            testTearDown();
+        }
         ANGLETestBase::ANGLETestTearDown();
     }
 };

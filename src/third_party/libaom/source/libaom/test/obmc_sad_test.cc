@@ -55,7 +55,7 @@ TEST_P(ObmcSadTest, RandomValues) {
 
     const unsigned int ref_res = params_.ref_func(pre, pre_stride, wsrc, mask);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(tst_res =
+    API_REGISTER_STATE_CHECK(tst_res =
                                  params_.tst_func(pre, pre_stride, wsrc, mask));
 
     ASSERT_EQ(ref_res, tst_res);
@@ -78,7 +78,7 @@ TEST_P(ObmcSadTest, ExtremeValues) {
 
     const unsigned int ref_res = params_.ref_func(pre, pre_stride, wsrc, mask);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(tst_res =
+    API_REGISTER_STATE_CHECK(tst_res =
                                  params_.tst_func(pre, pre_stride, wsrc, mask));
 
     ASSERT_EQ(ref_res, tst_res);
@@ -172,7 +172,7 @@ TEST_P(ObmcSadHBDTest, RandomValues) {
     const unsigned int ref_res =
         params_.ref_func(CONVERT_TO_BYTEPTR(pre), pre_stride, wsrc, mask);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         tst_res =
             params_.tst_func(CONVERT_TO_BYTEPTR(pre), pre_stride, wsrc, mask));
 
@@ -197,7 +197,7 @@ TEST_P(ObmcSadHBDTest, ExtremeValues) {
     const unsigned int ref_res =
         params_.ref_func(CONVERT_TO_BYTEPTR(pre), pre_stride, wsrc, mask);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         tst_res =
             params_.tst_func(CONVERT_TO_BYTEPTR(pre), pre_stride, wsrc, mask));
 

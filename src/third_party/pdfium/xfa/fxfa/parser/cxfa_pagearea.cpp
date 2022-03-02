@@ -12,10 +12,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kPageAreaPropertyData[] = {
-    {XFA_Element::Medium, 1, 0},
-    {XFA_Element::Desc, 1, 0},
-    {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Occur, 1, 0},
+    {XFA_Element::Medium, 1, {}},
+    {XFA_Element::Desc, 1, {}},
+    {XFA_Element::Extras, 1, {}},
+    {XFA_Element::Occur, 1, {}},
 };
 
 const CXFA_Node::AttributeData kPageAreaAttributeData[] = {
@@ -39,7 +39,7 @@ const CXFA_Node::AttributeData kPageAreaAttributeData[] = {
 CXFA_PageArea::CXFA_PageArea(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::ContainerNode,
                 XFA_Element::PageArea,
                 kPageAreaPropertyData,

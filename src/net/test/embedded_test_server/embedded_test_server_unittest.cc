@@ -9,21 +9,20 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_source.h"
-#include "net/log/test_net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
@@ -53,6 +52,9 @@ class TestConnectionListener
         did_read_from_socket_(false),
         did_get_socket_on_complete_(false),
         task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+
+  TestConnectionListener(const TestConnectionListener&) = delete;
+  TestConnectionListener& operator=(const TestConnectionListener&) = delete;
 
   ~TestConnectionListener() override = default;
 
@@ -109,18 +111,31 @@ class TestConnectionListener
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   mutable base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnectionListener);
 };
 
+struct EmbeddedTestServerConfig {
+  EmbeddedTestServer::Type type;
+  HttpConnection::Protocol protocol;
+};
+
+std::vector<EmbeddedTestServerConfig> EmbeddedTestServerConfigs() {
+  return {
+      {EmbeddedTestServer::TYPE_HTTP, HttpConnection::Protocol::kHttp1},
+      {EmbeddedTestServer::TYPE_HTTPS, HttpConnection::Protocol::kHttp1},
+      {EmbeddedTestServer::TYPE_HTTPS, HttpConnection::Protocol::kHttp2},
+  };
+}
+
 class EmbeddedTestServerTest
-    : public testing::TestWithParam<EmbeddedTestServer::Type>,
+    : public testing::TestWithParam<EmbeddedTestServerConfig>,
       public WithTaskEnvironment {
  public:
   EmbeddedTestServerTest() {}
 
   void SetUp() override {
-    server_ = std::make_unique<EmbeddedTestServer>(GetParam());
+    server_ = std::make_unique<EmbeddedTestServer>(GetParam().type,
+                                                   GetParam().protocol);
+    server_->AddDefaultHandlers();
     server_->SetConnectionListener(&connection_listener_);
   }
 
@@ -161,7 +176,7 @@ class EmbeddedTestServerTest
 
 TEST_P(EmbeddedTestServerTest, GetBaseURL) {
   ASSERT_TRUE(server_->Start());
-  if (GetParam() == EmbeddedTestServer::TYPE_HTTPS) {
+  if (GetParam().type == EmbeddedTestServer::TYPE_HTTPS) {
     EXPECT_EQ(base::StringPrintf("https://127.0.0.1:%u/", server_->port()),
               server_->base_url().spec());
   } else {
@@ -172,7 +187,7 @@ TEST_P(EmbeddedTestServerTest, GetBaseURL) {
 
 TEST_P(EmbeddedTestServerTest, GetURL) {
   ASSERT_TRUE(server_->Start());
-  if (GetParam() == EmbeddedTestServer::TYPE_HTTPS) {
+  if (GetParam().type == EmbeddedTestServer::TYPE_HTTPS) {
     EXPECT_EQ(base::StringPrintf("https://127.0.0.1:%u/path?query=foo",
                                  server_->port()),
               server_->GetURL("/path?query=foo").spec());
@@ -185,7 +200,7 @@ TEST_P(EmbeddedTestServerTest, GetURL) {
 
 TEST_P(EmbeddedTestServerTest, GetURLWithHostname) {
   ASSERT_TRUE(server_->Start());
-  if (GetParam() == EmbeddedTestServer::TYPE_HTTPS) {
+  if (GetParam().type == EmbeddedTestServer::TYPE_HTTPS) {
     EXPECT_EQ(base::StringPrintf("https://foo.com:%d/path?query=foo",
                                  server_->port()),
               server_->GetURL("foo.com", "/path?query=foo").spec());
@@ -249,6 +264,10 @@ TEST_P(EmbeddedTestServerTest, ServeFilesFromDirectory) {
 }
 
 TEST_P(EmbeddedTestServerTest, MockHeadersWithoutCRLF) {
+  // Messing with raw headers isn't compatible with HTTP/2
+  if (GetParam().protocol == HttpConnection::Protocol::kHttp2)
+    return;
+
   base::FilePath src_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
   server_->ServeFilesFromDirectory(
@@ -293,13 +312,12 @@ TEST_P(EmbeddedTestServerTest, DefaultNotFoundResponse) {
 TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
   ASSERT_TRUE(server_->Start());
 
-  RecordingTestNetLog net_log;
   net::AddressList address_list;
   EXPECT_TRUE(server_->GetAddressList(&address_list));
 
   std::unique_ptr<StreamSocket> socket =
       ClientSocketFactory::GetDefaultFactory()->CreateTransportClientSocket(
-          address_list, nullptr, nullptr, &net_log, NetLogSource());
+          address_list, nullptr, nullptr, NetLog::Get(), NetLogSource());
   TestCompletionCallback callback;
   ASSERT_THAT(callback.GetResult(socket->Connect(callback.callback())), IsOk());
 
@@ -325,13 +343,30 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
   EXPECT_TRUE(connection_listener_.DidReadFromSocket());
 }
 
-TEST_P(EmbeddedTestServerTest, ConnectionListenerComplete) {
+// TODO(http://crbug.com/1166868): Flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ConnectionListenerComplete DISABLED_ConnectionListenerComplete
+#else
+#define MAYBE_ConnectionListenerComplete ConnectionListenerComplete
+#endif
+TEST_P(EmbeddedTestServerTest, MAYBE_ConnectionListenerComplete) {
+  // OnResponseCompletedSuccessfully() makes the assumption that a connection is
+  // "finished" before the socket is closed, and in the case of HTTP/2 this is
+  // not supported
+  if (GetParam().protocol == HttpConnection::Protocol::kHttp2)
+    return;
+
   ASSERT_TRUE(server_->Start());
 
   TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(
-      context_.CreateRequest(server_->GetURL("/non-existent"), DEFAULT_PRIORITY,
-                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+  // Need to send a Keep-Alive response header since the EmbeddedTestServer only
+  // invokes OnResponseCompletedSuccessfully() if the socket is still open, and
+  // the network stack will close the socket if not reuable, resulting in
+  // potentially racilly closing the socket before
+  // OnResponseCompletedSuccessfully() is invoked.
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
+      server_->GetURL("/set-header?Connection: Keep-Alive"), DEFAULT_PRIORITY,
+      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   request->Start();
   delegate.RunUntilComplete();
@@ -417,45 +452,46 @@ namespace {
 class CancelRequestDelegate : public TestDelegate {
  public:
   CancelRequestDelegate() { set_on_complete(base::DoNothing()); }
+
+  CancelRequestDelegate(const CancelRequestDelegate&) = delete;
+  CancelRequestDelegate& operator=(const CancelRequestDelegate&) = delete;
+
   ~CancelRequestDelegate() override = default;
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
     TestDelegate::OnResponseStarted(request, net_error);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop_.QuitClosure(), base::TimeDelta::FromSeconds(1));
+        FROM_HERE, run_loop_.QuitClosure(), base::Seconds(1));
   }
 
   void WaitUntilDone() { run_loop_.Run(); }
 
  private:
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CancelRequestDelegate);
 };
 
 class InfiniteResponse : public BasicHttpResponse {
  public:
-  InfiniteResponse() {}
+  InfiniteResponse() = default;
 
-  void SendResponse(const SendBytesCallback& send,
-                    SendCompleteCallback done) override {
-    send.Run(ToResponseString(),
-             base::BindOnce(&InfiniteResponse::SendInfinite,
-                            weak_ptr_factory_.GetWeakPtr(), send));
+  InfiniteResponse(const InfiniteResponse&) = delete;
+  InfiniteResponse& operator=(const InfiniteResponse&) = delete;
+
+  void SendResponse(base::WeakPtr<HttpResponseDelegate> delegate) override {
+    delegate->SendResponseHeaders(code(), GetHttpReasonPhrase(code()),
+                                  BuildHeaders());
+    SendInfinite(delegate);
   }
 
  private:
-  void SendInfinite(const SendBytesCallback& send) {
+  void SendInfinite(base::WeakPtr<HttpResponseDelegate> delegate) {
+    delegate->SendContents("echo", base::DoNothing());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(send, "echo",
-                       base::BindOnce(&InfiniteResponse::SendInfinite,
-                                      weak_ptr_factory_.GetWeakPtr(), send)));
+        FROM_HERE, base::BindOnce(&InfiniteResponse::SendInfinite,
+                                  weak_ptr_factory_.GetWeakPtr(), delegate));
   }
 
   base::WeakPtrFactory<InfiniteResponse> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InfiniteResponse);
 };
 
 std::unique_ptr<HttpResponse> HandleInfiniteRequest(
@@ -502,7 +538,7 @@ const struct CertificateValuesEntry {
 };
 
 TEST_P(EmbeddedTestServerTest, GetCertificate) {
-  if (GetParam() != EmbeddedTestServer::TYPE_HTTPS)
+  if (GetParam().type != EmbeddedTestServer::TYPE_HTTPS)
     return;
 
   for (const auto& cert_entry : kCertificateValuesEntry) {
@@ -517,15 +553,84 @@ TEST_P(EmbeddedTestServerTest, GetCertificate) {
   }
 }
 
+TEST_P(EmbeddedTestServerTest, AcceptCHFrame) {
+  // The ACCEPT_CH frame is only supported for HTTP/2 connections
+  if (GetParam().protocol == HttpConnection::Protocol::kHttp1)
+    return;
+
+  server_->SetAlpsAcceptCH("", "foo");
+  server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+
+  ASSERT_TRUE(server_->Start());
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request_a(
+      context_.CreateRequest(server_->GetURL("/non-existent"), DEFAULT_PRIORITY,
+                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request_a->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(1u, delegate.transports().size());
+  EXPECT_EQ("foo", delegate.transports().back().accept_ch_frame);
+}
+
+TEST_P(EmbeddedTestServerTest, AcceptCHFrameDifferentOrigins) {
+  // The ACCEPT_CH frame is only supported for HTTP/2 connections
+  if (GetParam().protocol == HttpConnection::Protocol::kHttp1)
+    return;
+
+  server_->SetAlpsAcceptCH("a.test", "a");
+  server_->SetAlpsAcceptCH("b.test", "b");
+  server_->SetAlpsAcceptCH("c.b.test", "c");
+  server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+
+  ASSERT_TRUE(server_->Start());
+
+  {
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request_a(context_.CreateRequest(
+        server_->GetURL("a.test", "/non-existent"), DEFAULT_PRIORITY, &delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    request_a->Start();
+    delegate.RunUntilComplete();
+
+    EXPECT_EQ(1u, delegate.transports().size());
+    EXPECT_EQ("a", delegate.transports().back().accept_ch_frame);
+  }
+
+  {
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request_a(context_.CreateRequest(
+        server_->GetURL("b.test", "/non-existent"), DEFAULT_PRIORITY, &delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    request_a->Start();
+    delegate.RunUntilComplete();
+
+    EXPECT_EQ(1u, delegate.transports().size());
+    EXPECT_EQ("b", delegate.transports().back().accept_ch_frame);
+  }
+
+  {
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request_a(context_.CreateRequest(
+        server_->GetURL("c.b.test", "/non-existent"), DEFAULT_PRIORITY,
+        &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    request_a->Start();
+    delegate.RunUntilComplete();
+
+    EXPECT_EQ(1u, delegate.transports().size());
+    EXPECT_EQ("c", delegate.transports().back().accept_ch_frame);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(EmbeddedTestServerTestInstantiation,
                          EmbeddedTestServerTest,
-                         testing::Values(EmbeddedTestServer::TYPE_HTTP,
-                                         EmbeddedTestServer::TYPE_HTTPS));
+                         testing::ValuesIn(EmbeddedTestServerConfigs()));
 // Below test exercises EmbeddedTestServer's ability to cope with the situation
 // where there is no MessageLoop available on the thread at EmbeddedTestServer
 // initialization and/or destruction.
 
-typedef std::tuple<bool, bool, EmbeddedTestServer::Type> ThreadingTestParams;
+typedef std::tuple<bool, bool, EmbeddedTestServerConfig> ThreadingTestParams;
 
 class EmbeddedTestServerThreadingTest
     : public testing::TestWithParam<ThreadingTestParams>,
@@ -537,10 +642,16 @@ class EmbeddedTestServerThreadingTestDelegate
   EmbeddedTestServerThreadingTestDelegate(
       bool message_loop_present_on_initialize,
       bool message_loop_present_on_shutdown,
-      EmbeddedTestServer::Type type)
+      EmbeddedTestServerConfig config)
       : message_loop_present_on_initialize_(message_loop_present_on_initialize),
         message_loop_present_on_shutdown_(message_loop_present_on_shutdown),
-        type_(type) {}
+        type_(config.type),
+        protocol_(config.protocol) {}
+
+  EmbeddedTestServerThreadingTestDelegate(
+      const EmbeddedTestServerThreadingTestDelegate&) = delete;
+  EmbeddedTestServerThreadingTestDelegate& operator=(
+      const EmbeddedTestServerThreadingTestDelegate&) = delete;
 
   // base::PlatformThread::Delegate:
   void ThreadMain() override {
@@ -551,7 +662,7 @@ class EmbeddedTestServerThreadingTestDelegate
     }
 
     // Create the test server instance.
-    EmbeddedTestServer server(type_);
+    EmbeddedTestServer server(type_, protocol_);
     base::FilePath src_dir;
     ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
     ASSERT_TRUE(server.Start());
@@ -562,15 +673,17 @@ class EmbeddedTestServerThreadingTestDelegate
           base::MessagePumpType::IO);
     }
 
-    TestURLRequestContext context;
+    auto context = std::make_unique<TestURLRequestContext>();
     TestDelegate delegate;
     std::unique_ptr<URLRequest> request(
-        context.CreateRequest(server.GetURL("/test?q=foo"), DEFAULT_PRIORITY,
-                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+        context->CreateRequest(server.GetURL("/test?q=foo"), DEFAULT_PRIORITY,
+                               &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     request->Start();
     delegate.RunUntilComplete();
     request.reset();
+    // Flush the socket pool on the same thread by destroying the context.
+    context.reset();
 
     // Shut down.
     if (message_loop_present_on_shutdown_)
@@ -583,8 +696,7 @@ class EmbeddedTestServerThreadingTestDelegate
   const bool message_loop_present_on_initialize_;
   const bool message_loop_present_on_shutdown_;
   const EmbeddedTestServer::Type type_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServerThreadingTestDelegate);
+  const HttpConnection::Protocol protocol_;
 };
 
 TEST_P(EmbeddedTestServerThreadingTest, RunTest) {
@@ -604,8 +716,7 @@ INSTANTIATE_TEST_SUITE_P(
     EmbeddedTestServerThreadingTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
-                     testing::Values(EmbeddedTestServer::TYPE_HTTP,
-                                     EmbeddedTestServer::TYPE_HTTPS)));
+                     testing::ValuesIn(EmbeddedTestServerConfigs())));
 
 }  // namespace test_server
 }  // namespace net

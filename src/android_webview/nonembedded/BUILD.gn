@@ -21,9 +21,11 @@ android_library("nonembedded_java") {
   sources = [
     "java/src/org/chromium/android_webview/nonembedded/AwComponentUpdateService.java",
     "java/src/org/chromium/android_webview/nonembedded/AwNonembeddedUmaRecorder.java",
+    "java/src/org/chromium/android_webview/nonembedded/ComponentUpdaterResetSafeModeAction.java",
     "java/src/org/chromium/android_webview/nonembedded/LicenseActivity.java",
     "java/src/org/chromium/android_webview/nonembedded/LicenseContentProvider.java",
     "java/src/org/chromium/android_webview/nonembedded/NetworkFetcherTask.java",
+    "java/src/org/chromium/android_webview/nonembedded/NonembeddedSafeModeActionsList.java",
     "java/src/org/chromium/android_webview/nonembedded/WebViewApkApplication.java",
   ]
   deps = [
@@ -49,6 +51,7 @@ android_library("nonembedded_java") {
 
 android_library("devui_java") {
   sources = [
+    "java/src/org/chromium/android_webview/devui/ComponentsListFragment.java",
     "java/src/org/chromium/android_webview/devui/CrashesListFragment.java",
     "java/src/org/chromium/android_webview/devui/DevUiBaseFragment.java",
     "java/src/org/chromium/android_webview/devui/FlagsFragment.java",
@@ -56,6 +59,8 @@ android_library("devui_java") {
     "java/src/org/chromium/android_webview/devui/MainActivity.java",
     "java/src/org/chromium/android_webview/devui/PersistentErrorView.java",
     "java/src/org/chromium/android_webview/devui/WebViewPackageError.java",
+    "java/src/org/chromium/android_webview/devui/util/ComponentInfo.java",
+    "java/src/org/chromium/android_webview/devui/util/ComponentsInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/CrashBugUrlFactory.java",
     "java/src/org/chromium/android_webview/devui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/UnuploadedFilesStateLoader.java",
@@ -66,6 +71,7 @@ android_library("devui_java") {
   ]
   deps = [
     ":devui_resources",
+    ":services_java",
     ":system_webview_manifest",
     "//android_webview:common_aidl_java",
     "//android_webview:common_crash_java",
@@ -91,12 +97,14 @@ android_library("services_java") {
     "java/src/org/chromium/android_webview/services/AwMinidumpUploadJobService.java",
     "java/src/org/chromium/android_webview/services/AwMinidumpUploaderDelegate.java",
     "java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java",
+    "java/src/org/chromium/android_webview/services/ComponentUpdaterSafeModeUtils.java",
     "java/src/org/chromium/android_webview/services/ComponentsProviderPathUtil.java",
     "java/src/org/chromium/android_webview/services/ComponentsProviderService.java",
     "java/src/org/chromium/android_webview/services/CrashReceiverService.java",
     "java/src/org/chromium/android_webview/services/DeveloperModeContentProvider.java",
     "java/src/org/chromium/android_webview/services/DeveloperUiService.java",
     "java/src/org/chromium/android_webview/services/MetricsBridgeService.java",
+    "java/src/org/chromium/android_webview/services/MetricsUploadService.java",
     "java/src/org/chromium/android_webview/services/SafeModeContentProvider.java",
     "java/src/org/chromium/android_webview/services/SafeModeService.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedHolder.java",
@@ -124,16 +132,16 @@ android_library("services_java") {
 
 source_set("nonembedded") {
   sources = [
-    "component_updater/aw_component_installer_policy_delegate.cc",
-    "component_updater/aw_component_installer_policy_delegate.h",
+    "component_updater/aw_component_installer_policy.cc",
+    "component_updater/aw_component_installer_policy.h",
+    "component_updater/aw_component_installer_policy_shim.cc",
+    "component_updater/aw_component_installer_policy_shim.h",
     "component_updater/aw_component_update_service.cc",
     "component_updater/aw_component_update_service.h",
     "component_updater/aw_component_updater_configurator.cc",
     "component_updater/aw_component_updater_configurator.h",
-    "component_updater/installer_policies/aw_origin_trials_component_installer.cc",
-    "component_updater/installer_policies/aw_origin_trials_component_installer.h",
-    "component_updater/installer_policies/aw_trust_token_key_commitments_component_installer_policy.cc",
-    "component_updater/installer_policies/aw_trust_token_key_commitments_component_installer_policy.h",
+    "component_updater/installer_policies/aw_package_names_allowlist_component_installer_policy.cc",
+    "component_updater/installer_policies/aw_package_names_allowlist_component_installer_policy.h",
     "component_updater/registration.cc",
     "component_updater/registration.h",
     "net/network_fetcher_task.cc",
@@ -184,10 +192,12 @@ android_resources("devui_resources") {
     "java/res_devui/drawable/ic_devui_search.xml",
     "java/res_devui/drawable/ic_flag.xml",
     "java/res_devui/layout/activity_main.xml",
+    "java/res_devui/layout/components_list_item.xml",
     "java/res_devui/layout/crashes_list_item_body.xml",
     "java/res_devui/layout/crashes_list_item_header.xml",
     "java/res_devui/layout/flag_states.xml",
     "java/res_devui/layout/flag_ui_warning.xml",
+    "java/res_devui/layout/fragment_components_list.xml",
     "java/res_devui/layout/fragment_crashes_list.xml",
     "java/res_devui/layout/fragment_flags.xml",
     "java/res_devui/layout/fragment_home.xml",
@@ -195,6 +205,7 @@ android_resources("devui_resources") {
     "java/res_devui/layout/toggleable_flag.xml",
     "java/res_devui/layout/two_line_list_item.xml",
     "java/res_devui/layout/two_line_sublist_item.xml",
+    "java/res_devui/menu/components_options_menu.xml",
     "java/res_devui/menu/crashes_options_menu.xml",
     "java/res_devui/menu/options_menu.xml",
     "java/res_devui/values-night/colors.xml",
@@ -234,6 +245,22 @@ jinja_template("trichrome_webview_manifest") {
 }
 
 if (android_64bit_target_cpu) {
+  jinja_template("system_webview_64_manifest") {
+    input = "java/AndroidManifest.xml"
+    output = system_webview_64_android_manifest
+    variables = _webview_jinja_variables + [ "use32bitAbi=" ]
+  }
+
+  jinja_template("trichrome_webview_64_manifest") {
+    input = "java/AndroidManifest.xml"
+    output = trichrome_webview_64_android_manifest
+    variables = trichrome_jinja_variables + _webview_jinja_variables + [
+                  "use32bitAbi=",
+                  "trichrome_version=$trichrome_64_version_code",
+                  "library=libmonochrome_64.so",
+                ]
+  }
+
   jinja_template("trichrome_webview_64_32_manifest") {
     input = "java/AndroidManifest.xml"
     output = trichrome_webview_64_32_android_manifest

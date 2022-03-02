@@ -4,7 +4,8 @@
 
 #include "ash/drag_drop/tab_drag_drop_delegate.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -124,19 +125,26 @@ void TabDragDropDelegate::DragUpdate(const gfx::Point& location_in_screen) {
           true, SplitViewDragIndicators::WindowDraggingState::kFromTop,
           snap_position));
 
-  UpdateSourceWindowBoundsIfNecessary(snap_position);
+  UpdateSourceWindowBoundsIfNecessary(snap_position, location_in_screen);
 
   tab_dragging_recorder_->RequestNext();
 }
 
-void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
-                               const ui::OSExchangeData& drop_data) {
+void TabDragDropDelegate::DropAndDeleteSelf(
+    const gfx::Point& location_in_screen,
+    const ui::OSExchangeData& drop_data) {
   tab_dragging_recorder_.reset();
 
-  aura::Window* const new_window =
-      Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(source_window_,
-                                                              drop_data);
-  DCHECK(new_window);
+  auto closure = base::BindOnce(&TabDragDropDelegate::OnNewBrowserWindowCreated,
+                                base::Owned(this), location_in_screen);
+  NewWindowDelegate::GetPrimary()->NewWindowForDetachingTab(
+      source_window_, drop_data, std::move(closure));
+}
+
+void TabDragDropDelegate::OnNewBrowserWindowCreated(
+    const gfx::Point& location_in_screen,
+    aura::Window* new_window) {
+  DCHECK(new_window) << "New browser window creation for tab detaching failed.";
 
   const gfx::Rect area =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
@@ -159,13 +167,26 @@ void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
   // otherwise the SetBounds() call may have no effect.
   source_window_->ClearProperty(kIsSourceWindowForDrag);
 
+  SplitViewController* const split_view_controller =
+      SplitViewController::Get(new_window);
+
+  // If it's already in split view mode, either snap the new window
+  // to the left or the right depending on the drop location.
+  const bool in_split_view_mode = split_view_controller->InSplitViewMode();
+  if (in_split_view_mode) {
+    snap_position =
+        split_view_controller->ComputeSnapPosition(location_in_screen);
+  }
+
   if (snap_position == SplitViewController::SnapPosition::NONE)
     return;
 
-  SplitViewController* const split_view_controller =
-      SplitViewController::Get(new_window);
   split_view_controller->SnapWindow(new_window, snap_position,
                                     /*activate_window=*/true);
+
+  // Do not snap the source window if already in split view mode.
+  if (in_split_view_mode)
+    return;
 
   // The tab drag source window is the last window the user was
   // interacting with. When dropping into split view, it makes the most
@@ -182,7 +203,8 @@ void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
 }
 
 void TabDragDropDelegate::UpdateSourceWindowBoundsIfNecessary(
-    SplitViewController::SnapPosition candidate_snap_position) {
+    SplitViewController::SnapPosition candidate_snap_position,
+    const gfx::Point& location_in_screen) {
   SplitViewController* const split_view_controller =
       SplitViewController::Get(source_window_);
 
@@ -201,8 +223,14 @@ void TabDragDropDelegate::UpdateSourceWindowBoundsIfNecessary(
         screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
             root_window_);
     new_source_window_bounds = area;
-    new_source_window_bounds.ClampToCenteredSize(gfx::Size(
-        area.width() * kSourceWindowScale, area.height() * kSourceWindowScale));
+
+    // Only shrink the window when the tab is dragged out of WebUI tab strip.
+    if (location_in_screen.y() >
+        Shell::Get()->shell_delegate()->GetBrowserWebUITabStripHeight()) {
+      new_source_window_bounds.ClampToCenteredSize(
+          gfx::Size(area.width() * kSourceWindowScale,
+                    area.height() * kSourceWindowScale));
+    }
   } else {
     const SplitViewController::SnapPosition opposite_position =
         (candidate_snap_position == SplitViewController::SnapPosition::LEFT)

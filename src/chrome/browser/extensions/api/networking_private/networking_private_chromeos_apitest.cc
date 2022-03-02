@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -29,17 +28,15 @@
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_test_helper.h"
-#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -56,18 +53,14 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
 #include "extensions/browser/api/networking_private/networking_private_chromeos.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -117,49 +110,27 @@ class UIDelegateStub : public NetworkingPrivateDelegate::UIDelegate {
 // static
 int UIDelegateStub::s_show_account_details_called_ = 0;
 
-class TestListener : public content::NotificationObserver {
- public:
-  TestListener(const std::string& message,
-               const base::RepeatingClosure& callback)
-      : message_(message), callback_(callback) {
-    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
-                   content::NotificationService::AllSources());
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& /* source */,
-               const content::NotificationDetails& details) override {
-    const std::string& message =
-        content::Details<std::pair<std::string, bool*>>(details).ptr()->first;
-    if (message == message_)
-      callback_.Run();
-  }
-
- private:
-  std::string message_;
-  base::RepeatingClosure callback_;
-
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestListener);
-};
-
 class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
  public:
   NetworkingPrivateChromeOSApiTest() {}
 
+  NetworkingPrivateChromeOSApiTest(const NetworkingPrivateChromeOSApiTest&) =
+      delete;
+  NetworkingPrivateChromeOSApiTest& operator=(
+      const NetworkingPrivateChromeOSApiTest&) = delete;
+
   bool RunNetworkingSubtest(const std::string& test) {
     const std::string arg =
         base::StringPrintf("{\"test\": \"%s\"}", test.c_str());
-    return RunExtensionTest({.name = "networking_private/chromeos",
-                             .custom_arg = arg.c_str(),
-                             .launch_as_platform_app = true});
+    return RunExtensionTest(
+        "networking_private/chromeos",
+        {.custom_arg = arg.c_str(), .launch_as_platform_app = true});
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -239,6 +210,9 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     // Add the Cellular Service.
     AddService(kCellular1ServicePath, "cellular1", shill::kTypeCellular,
                shill::kStateIdle);
+    service_test()->SetServiceProperty(kCellular1ServicePath,
+                                       shill::kCellularAllowRoamingProperty,
+                                       base::Value(false));
     service_test()->SetServiceProperty(
         kCellular1ServicePath, shill::kAutoConnectProperty, base::Value(true));
     service_test()->SetServiceProperty(kCellular1ServicePath,
@@ -331,7 +305,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     device_test()->AddDevice(kWifiDevicePath, shill::kTypeWifi,
                              "stub_wifi_device1");
     base::ListValue wifi_ip_configs;
-    wifi_ip_configs.AppendString(kIPConfigPath);
+    wifi_ip_configs.Append(kIPConfigPath);
     SetDeviceProperty(kWifiDevicePath, shill::kIPConfigsProperty,
                       wifi_ip_configs);
     SetDeviceProperty(kWifiDevicePath, shill::kAddressProperty,
@@ -373,7 +347,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     service_test()->SetServiceProperty(
         kWifi1ServicePath, shill::kStaticIPConfigProperty, static_ipconfig);
     base::ListValue frequencies1;
-    frequencies1.AppendInteger(2400);
+    frequencies1.Append(2400);
     service_test()->SetServiceProperty(
         kWifi1ServicePath, shill::kWifiFrequencyListProperty, frequencies1);
     service_test()->SetServiceProperty(kWifi1ServicePath, shill::kWifiFrequency,
@@ -394,8 +368,8 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         base::Value(shill::kTetheringNotDetectedState));
 
     base::ListValue frequencies2;
-    frequencies2.AppendInteger(2400);
-    frequencies2.AppendInteger(5000);
+    frequencies2.Append(2400);
+    frequencies2.Append(5000);
     service_test()->SetServiceProperty(
         kWifi2ServicePath, shill::kWifiFrequencyListProperty, frequencies2);
     service_test()->SetServiceProperty(kWifi2ServicePath, shill::kWifiFrequency,
@@ -420,17 +394,13 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         base::Value("third_party_provider_extension_id"));
     profile_test()->AddService(kUser1ProfilePath, "stub_vpn2");
 
-    chromeos::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
-        local_state_.registry());
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
-    ::onc::RegisterProfilePrefs(user_prefs_.registry());
-    ::onc::RegisterPrefs(local_state_.registry());
-    chromeos::NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
-    chromeos::NetworkMetadataStore::RegisterPrefs(local_state_.registry());
+    network_handler_test_helper_->RegisterPrefs(user_prefs_.registry(),
+                                                local_state_.registry());
 
-    chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
-                                                            &local_state_);
+    network_handler_test_helper_->InitializePrefs(&user_prefs_, &local_state_);
+
     content::RunAllPendingInMessageLoop();
   }
 
@@ -456,9 +426,6 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
   TestingPrefServiceSimple local_state_;
   std::string userhash_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateChromeOSApiTest);
 };
 
 // Place each subtest into a separate browser test so that the stub networking
@@ -728,12 +695,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
-  TestListener listener(
-      "eventListenerReady", base::BindRepeating([]() {
-        chromeos::NetworkHandler::Get()
-            ->network_certificate_handler()
-            ->AddAuthorityCertificateForTest("authority_cert");
-      }));
+  ExtensionTestMessageListener listener("eventListenerReady", false);
+  listener.SetOnSatisfied(base::BindOnce([](const std::string& message) {
+    chromeos::NetworkHandler::Get()
+        ->network_certificate_handler()
+        ->AddAuthorityCertificateForTest("authority_cert");
+  }));
   EXPECT_TRUE(RunNetworkingSubtest("onCertificateListsChangedEvent"))
       << message_;
 }
@@ -757,12 +724,15 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   // occur for the default service.
   service_test()->RemoveService("stub_ethernet");
   service_test()->RemoveService("stub_vpn1");
-  TestListener listener("notifyPortalDetectorObservers",
-                        base::BindLambdaForTesting([&]() {
-                          service_test()->SetServiceProperty(
-                              kWifi1ServicePath, shill::kStateProperty,
-                              base::Value(shill::kStateRedirectFound));
-                        }));
+
+  ExtensionTestMessageListener listener("notifyPortalDetectorObservers", false);
+  listener.SetOnSatisfied(
+      base::BindLambdaForTesting([&](const std::string& message) {
+        service_test()->SetServiceProperty(
+            kWifi1ServicePath, shill::kStateProperty,
+            base::Value(shill::kStateRedirectFound));
+      }));
+
   EXPECT_TRUE(RunNetworkingSubtest("captivePortalNotification")) << message_;
 }
 
@@ -813,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetGlobalPolicy) {
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
       base::Value(true));
   global_config.SetKey(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+      ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect,
       base::Value(false));
   global_config.SetKey("SomeNewGlobalPolicy", base::Value(false));
   chromeos::NetworkHandler::Get()
@@ -863,8 +833,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetCertificateLists) {
 // missing permissions).
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, Alias) {
   SetupCellular();
-  EXPECT_TRUE(RunExtensionTest(
-      {.name = "networking_private/alias", .launch_as_platform_app = true}))
+  EXPECT_TRUE(RunExtensionTest("networking_private/alias",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 

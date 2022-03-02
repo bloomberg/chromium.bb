@@ -11,7 +11,6 @@
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/effects/GrMatrixEffect.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-#include "src/sksl/SkSLCPP.h"
 #include "src/sksl/SkSLUtil.h"
 
 using Wrap = GrSamplerState::WrapMode;
@@ -717,11 +716,11 @@ void GrTextureEffect::Impl::onSetData(const GrGLSLProgramDataManager& pdm,
     }
 }
 
-std::unique_ptr<GrGLSLFragmentProcessor> GrTextureEffect::onMakeProgramImpl() const {
+std::unique_ptr<GrFragmentProcessor::ProgramImpl> GrTextureEffect::onMakeProgramImpl() const {
     return std::make_unique<Impl>();
 }
 
-void GrTextureEffect::onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const {
+void GrTextureEffect::onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const {
     auto m0 = static_cast<uint32_t>(fShaderModes[0]);
     b->addBits(8, m0, "shaderMode0");
 

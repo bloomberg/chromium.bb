@@ -6,11 +6,11 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PROTOCOL_UTILS_H_
 
 #include <deque>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_parameters.h"
@@ -92,7 +92,7 @@ class ProtocolUtils {
       std::vector<std::unique_ptr<TriggerScript>>* trigger_scripts,
       std::vector<std::string>* additional_allowed_domains,
       int* trigger_condition_check_interval_ms,
-      absl::optional<int>* timeout_ms,
+      absl::optional<int>* trigger_condition_timeout_ms,
       absl::optional<std::unique_ptr<ScriptParameters>>* script_parameters);
 
  private:

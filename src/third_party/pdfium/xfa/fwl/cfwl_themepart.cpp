@@ -9,3 +9,13 @@
 CFWL_ThemePart::CFWL_ThemePart(CFWL_Widget* pWidget) : m_pWidget(pWidget) {}
 
 CFWL_ThemePart::~CFWL_ThemePart() = default;
+
+FWLTHEME_STATE CFWL_ThemePart::GetThemeState() const {
+  if (m_dwStates & CFWL_PartState::kDisabled)
+    return FWLTHEME_STATE::kDisable;
+  if (m_dwStates & CFWL_PartState::kPressed)
+    return FWLTHEME_STATE::kPressed;
+  if (m_dwStates & CFWL_PartState::kHovered)
+    return FWLTHEME_STATE::kHover;
+  return FWLTHEME_STATE::kNormal;
+}

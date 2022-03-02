@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/translate_page_load_metrics_observer.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/translate/core/browser/mock_translate_metrics_logger.h"
@@ -112,8 +113,10 @@ class MockTranslateMetricsLoggerContainer
     mock_translate_metrics_logger_->LogUIInteraction(ui_interaction);
   }
 
-  translate::TranslationType GetNextManualTranslationType() override {
-    return mock_translate_metrics_logger_->GetNextManualTranslationType();
+  translate::TranslationType GetNextManualTranslationType(
+      bool is_context_menu_initiated_translation) override {
+    return mock_translate_metrics_logger_->GetNextManualTranslationType(
+        is_context_menu_initiated_translation);
   }
 
   void SetHasHrefTranslateTarget(bool has_href_translate_target) override {
@@ -146,7 +149,7 @@ class MockTranslateMetricsLoggerContainer
   }
 
  private:
-  translate::testing::MockTranslateMetricsLogger*
+  raw_ptr<translate::testing::MockTranslateMetricsLogger>
       mock_translate_metrics_logger_;  // Weak.
 };
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 
 namespace logging {
@@ -45,7 +46,7 @@ class BASE_EXPORT VlogInfo {
 
   // Returns the vlog level for a given file (usually taken from
   // __FILE__).
-  int GetVlogLevel(const base::StringPiece& file) const;
+  int GetVlogLevel(base::StringPiece file) const;
 
  private:
   void SetMaxVlogLevel(int level);
@@ -55,7 +56,7 @@ class BASE_EXPORT VlogInfo {
   // from |vmodule_switch|.
   struct VmodulePattern;
   std::vector<VmodulePattern> vmodule_levels_;
-  int* min_log_level_;
+  raw_ptr<int> min_log_level_;
 };
 
 // Returns true if the string passed in matches the vlog pattern.  The
@@ -68,8 +69,8 @@ class BASE_EXPORT VlogInfo {
 //   "kh*n" matches "khn", "khan", or even "khaaaaan"
 //   "/foo\bar" matches "/foo/bar", "\foo\bar", or "/foo\bar"
 //     (disregarding C escaping rules)
-BASE_EXPORT bool MatchVlogPattern(const base::StringPiece& string,
-                                  const base::StringPiece& vlog_pattern);
+BASE_EXPORT bool MatchVlogPattern(base::StringPiece string,
+                                  base::StringPiece vlog_pattern);
 
 }  // namespace logging
 

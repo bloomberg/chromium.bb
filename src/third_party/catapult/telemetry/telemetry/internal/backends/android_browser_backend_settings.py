@@ -9,6 +9,7 @@ import os
 
 from telemetry.core import util
 
+from devil.android import apk_helper
 from devil.android.sdk import version_codes
 
 import py_utils
@@ -64,8 +65,8 @@ class AndroidBrowserBackendSettings(_BackendSettingsTuple):
   def has_additional_apk(self):
     return self.additional_apk_name is not None
 
-  def GetDevtoolsRemotePort(self, device):
-    del device
+  def GetDevtoolsRemotePort(self, device, package=None):
+    del device, package
     # By default return the devtools_port defined in the constructor.
     return self.devtools_port
 
@@ -81,8 +82,7 @@ class AndroidBrowserBackendSettings(_BackendSettingsTuple):
                  apk_name, self.browser_type)
     if apk_name is None:
       return None
-    else:
-      return util.FindLatestApkOnHost(chrome_root, apk_name)
+    return util.FindLatestApkOnHost(chrome_root, apk_name)
 
   # returns True if this is a WebView browser and WebView-specific
   # field trial configurations should apply.
@@ -130,8 +130,7 @@ class ChromeBackendSettings(GenericChromeBackendSettings):
     # The APK to install depends on the OS version of the deivce.
     if device.build_version_sdk >= version_codes.NOUGAT:
       return 'Monochrome.apk'
-    else:
-      return 'Chrome.apk'
+    return 'Chrome.apk'
 
 
 class WebViewBasedBackendSettings(AndroidBrowserBackendSettings):
@@ -148,13 +147,31 @@ class WebViewBasedBackendSettings(AndroidBrowserBackendSettings):
     kwargs.setdefault('additional_apk_name', None)
     return super(WebViewBasedBackendSettings, cls).__new__(cls, **kwargs)
 
-  def GetDevtoolsRemotePort(self, device):
+  def GetDevtoolsRemotePort(self, device, package=None):
     # The DevTools port for WebView based backends depends on the browser PID.
     def get_activity_pid():
-      return device.GetApplicationPids(self.package, at_most_one=True)
+      return device.GetApplicationPids(package or self.package,
+                                       at_most_one=True)
 
     pid = py_utils.WaitFor(get_activity_pid, timeout=30)
     return self.devtools_port.format(pid=pid)
+
+  def GetEmbedderPackageName(self, finder_options):
+    """Get the embedder's package name from it's apk.
+
+    Args:
+      finder_options: Telemetry options.
+      device: DeviceUtils instance.
+
+    Returns:
+      WebView embedder package name."""
+    apk_path = util.FindLatestApkOnHost(finder_options.chrome_root,
+                                        self.embedder_apk_name)
+    if not apk_path:
+      # If an apk cannot be found then return
+      # the hard coded package name.
+      return self.package
+    return apk_helper.GetPackageName(apk_path)
 
 
 class WebViewBackendSettings(WebViewBasedBackendSettings):
@@ -176,8 +193,7 @@ class WebViewBackendSettings(WebViewBasedBackendSettings):
     # explicitly overridden.
     if device.build_version_sdk >= version_codes.NOUGAT:
       return 'MonochromePublic.apk'
-    else:
-      return 'SystemWebView.apk'
+    return 'SystemWebView.apk'
 
   def FindSupportApks(self, apk_path, chrome_root):
     del chrome_root
@@ -205,8 +221,7 @@ class WebViewGoogleBackendSettings(WebViewBackendSettings):
     # The APK to install depends on the OS version of the deivce.
     if device.build_version_sdk >= version_codes.NOUGAT:
       return 'Monochrome.apk'
-    else:
-      return 'SystemWebViewGoogle.apk'
+    return 'SystemWebViewGoogle.apk'
 
 
 class WebViewBundleBackendSettings(WebViewBackendSettings):
@@ -328,6 +343,10 @@ ANDROID_WEBVIEW_TRICHROME = WebViewBackendSettings(
     additional_apk_name='TrichromeLibrary.apk',
     browser_type='android-webview-trichrome')
 
+ANDROID_WEBVIEW_MONOCHROME = WebViewBackendSettings(
+    apk_name='MonochromePublic.apk',
+    browser_type='android-webview-monochrome')
+
 ANDROID_WEBVIEW_TRICHROME_BUNDLE = WebViewBackendSettings(
     apk_name='trichrome_webview_bundle',
     additional_apk_name='TrichromeLibrary.apk',
@@ -433,6 +452,7 @@ ANDROID_BACKEND_SETTINGS = (
     ANDROID_WEBVIEW_GOOGLE,
     ANDROID_WEBVIEW_GOOGLE_BUNDLE,
     ANDROID_WEBVIEW_INSTRUMENTATION,
+    ANDROID_WEBVIEW_MONOCHROME,
     ANDROID_WEBVIEW_STANDALONE,
     ANDROID_WEBVIEW_STANDALONE_BUNDLE,
     ANDROID_WEBVIEW_STANDALONE_GOOGLE,

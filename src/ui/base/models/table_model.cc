@@ -8,7 +8,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/notreached.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/base/models/image_model.h"
 
 namespace ui {
 
@@ -38,13 +38,15 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
 
 TableColumn::TableColumn(const TableColumn& other) = default;
 
+TableColumn& TableColumn::operator=(const TableColumn& other) = default;
+
 // TableModel -----------------------------------------------------------------
 
 // Used for sorting.
-static icu::Collator* collator = NULL;
+static icu::Collator* g_collator = NULL;
 
-gfx::ImageSkia TableModel::GetIcon(int row) {
-  return gfx::ImageSkia();
+ui::ImageModel TableModel::GetIcon(int row) {
+  return ui::ImageModel();
 }
 
 std::u16string TableModel::GetTooltip(int row) {
@@ -66,20 +68,20 @@ int TableModel::CompareValues(int row1, int row2, int column_id) {
 }
 
 void TableModel::ClearCollator() {
-  delete collator;
-  collator = NULL;
+  delete g_collator;
+  g_collator = NULL;
 }
 
 icu::Collator* TableModel::GetCollator() {
-  if (!collator) {
+  if (!g_collator) {
     UErrorCode create_status = U_ZERO_ERROR;
-    collator = icu::Collator::createInstance(create_status);
+    g_collator = icu::Collator::createInstance(create_status);
     if (!U_SUCCESS(create_status)) {
-      collator = NULL;
+      g_collator = NULL;
       NOTREACHED();
     }
   }
-  return collator;
+  return g_collator;
 }
 
 }  // namespace ui

@@ -132,7 +132,6 @@ double getEps(deUint32 internalFormat)
 		break;
 	default:
 		TCU_FAIL("Invalid internal format");
-		break;
 	}
 
 	return std::max(0.01, eps);
@@ -213,7 +212,10 @@ TexImageUtils::TexImageUtils (deUint32 internalFormat,
 							  int subcuboid_h,
 							  int subcuboid_d,
 							  glu::GLSLVersion glsl_version)
-	: m_internalFormat(internalFormat)
+	: m_src_data(0)
+	, tex(0)
+	, prog(0)
+	, m_internalFormat(internalFormat)
 	, m_format(glu::getTransferFormat(glu::mapGLInternalFormat(internalFormat)).format)
 	, m_type(glu::getTransferFormat(glu::mapGLInternalFormat(internalFormat)).dataType)
 	, m_pixelsize(tcu::getPixelSize(glu::mapGLInternalFormat(internalFormat)))
@@ -286,7 +288,6 @@ void TexImageUtils::writeChannel(glw::GLubyte *p, int channel, glw::GLdouble col
 		break;
 	default:
 		TCU_FAIL("Invalid type");
-		break;
 	}
 }
 
@@ -468,7 +469,6 @@ void TexImageUtils::write11F_11F_10F_Channel(glw::GLubyte *p, int channel, glw::
 	break;
 	default:
 		TCU_FAIL("Invalid channel");
-		break;
 	}
 }
 
@@ -515,7 +515,6 @@ void TexImageUtils::setRefcolour (glu::CallLogWrapper gl, glw::GLdouble col)
 			break;
 		default:
 			TCU_FAIL("Invalid type");
-			break;
 		}
 	}
 }
@@ -1338,6 +1337,14 @@ CompressedTexImage2DCase::IterateResult CompressedTexImage2DCase::iterate (void)
 
 	setContext((sglr::Context*)&gl_ctx);
 
+	if (!glu::contextSupports(renderCtx.getType(), glu::ApiType::core(4, 2)) &&
+		!ctxInfo.isExtensionSupported("GL_ARB_compressed_texture_pixel_storage"))
+	{
+		m_testCtx.setTestResult(QP_TEST_RESULT_NOT_SUPPORTED,
+								"GL_ARB_compressed_texture_pixel_storage extension is not supported");
+		return STOP;
+	}
+
 	switch (m_internalFormat)
 	{
 	case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -1371,7 +1378,6 @@ CompressedTexImage2DCase::IterateResult CompressedTexImage2DCase::iterate (void)
 		break;
 	default:
 		TCU_FAIL("Invalid internal format");
-		break;
 	}
 
 	createTexture();
@@ -1679,6 +1685,14 @@ CompressedTexImage3DCase::IterateResult CompressedTexImage3DCase::iterate (void)
 
 	setContext((sglr::Context*)&gl_ctx);
 
+	if (!glu::contextSupports(renderCtx.getType(), glu::ApiType::core(4, 2)) &&
+		!ctxInfo.isExtensionSupported("GL_ARB_compressed_texture_pixel_storage"))
+	{
+		m_testCtx.setTestResult(QP_TEST_RESULT_NOT_SUPPORTED,
+								"GL_ARB_compressed_texture_pixel_storage extension is not supported");
+		return STOP;
+	}
+
 	switch (m_internalFormat)
 	{
 	case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -1712,7 +1726,6 @@ CompressedTexImage3DCase::IterateResult CompressedTexImage3DCase::iterate (void)
 		break;
 	default:
 		TCU_FAIL("Invalid internal format");
-		break;
 	}
 
 	createTexture();

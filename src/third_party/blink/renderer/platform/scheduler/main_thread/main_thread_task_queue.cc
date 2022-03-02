@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/task/common/scoped_defer_task_posting.h"
+#include "base/trace_event/base_tracing.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -20,6 +22,9 @@ namespace scheduler {
 namespace internal {
 using base::sequence_manager::internal::TaskQueueImpl;
 }
+
+using perfetto::protos::pbzero::ChromeTrackEvent;
+using perfetto::protos::pbzero::RendererMainThreadTaskExecution;
 
 // static
 const char* MainThreadTaskQueue::NameForQueueType(
@@ -109,13 +114,19 @@ MainThreadTaskQueue::MainThreadTaskQueue(
     MainThreadSchedulerImpl* main_thread_scheduler)
     : queue_type_(params.queue_type),
       queue_traits_(params.queue_traits),
-      freeze_when_keep_active_(params.freeze_when_keep_active),
       web_scheduling_priority_(params.web_scheduling_priority),
       main_thread_scheduler_(main_thread_scheduler),
       agent_group_scheduler_(params.agent_group_scheduler),
       frame_scheduler_(params.frame_scheduler) {
   task_queue_ = base::MakeRefCounted<TaskQueue>(std::move(impl), spec);
+  // Throttling needs |should_notify_observers| to get task timing.
+  DCHECK(!params.queue_traits.can_be_throttled || spec.should_notify_observers)
+      << "Throttled queue is not supported with |!should_notify_observers|";
   if (task_queue_->HasImpl() && spec.should_notify_observers) {
+    if (params.queue_traits.can_be_throttled) {
+      throttler_.emplace(task_queue_.get(),
+                         main_thread_scheduler_->GetTickClock());
+    }
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to
     // MainThreadSchedulerImpl::OnTaskStarted/Completed. At the moment this
@@ -125,10 +136,14 @@ MainThreadTaskQueue::MainThreadTaskQueue(
         &MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
     task_queue_->SetOnTaskCompletedHandler(base::BindRepeating(
         &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
+    task_queue_->SetTaskExecutionTraceLogger(base::BindRepeating(
+        &MainThreadTaskQueue::LogTaskExecution, base::Unretained(this)));
   }
 }
 
-MainThreadTaskQueue::~MainThreadTaskQueue() = default;
+MainThreadTaskQueue::~MainThreadTaskQueue() {
+  DCHECK(!wake_up_budget_pool_);
+}
 
 void MainThreadTaskQueue::OnTaskStarted(
     const base::sequence_manager::Task& task,
@@ -147,10 +162,28 @@ void MainThreadTaskQueue::OnTaskCompleted(
   }
 }
 
+void MainThreadTaskQueue::LogTaskExecution(
+    perfetto::EventContext& ctx,
+    const base::sequence_manager::Task& task) {
+  static const uint8_t* enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("scheduler");
+  if (!*enabled)
+    return;
+  RendererMainThreadTaskExecution* execution =
+      ctx.event<ChromeTrackEvent>()->set_renderer_main_thread_task_execution();
+  execution->set_task_type(
+      TaskTypeToProto(static_cast<blink::TaskType>(task.task_type)));
+  if (frame_scheduler_) {
+    frame_scheduler_->WriteIntoTrace(ctx.Wrap(execution));
+  }
+}
+
 void MainThreadTaskQueue::OnTaskRunTimeReported(
     TaskQueue::TaskTiming* task_timing) {
-  main_thread_scheduler_->task_queue_throttler()->OnTaskRunTimeReported(
-      task_queue_.get(), task_timing->start_time(), task_timing->end_time());
+  if (throttler_) {
+    throttler_->OnTaskRunTimeReported(task_timing->start_time(),
+                                      task_timing->end_time());
+  }
 }
 
 void MainThreadTaskQueue::DetachFromMainThreadScheduler() {
@@ -168,6 +201,8 @@ void MainThreadTaskQueue::DetachFromMainThreadScheduler() {
                           main_thread_scheduler_->GetWeakPtr(), nullptr));
   task_queue_->SetOnTaskPostedHandler(
       internal::TaskQueueImpl::OnTaskPostedHandler());
+  task_queue_->SetTaskExecutionTraceLogger(
+      internal::TaskQueueImpl::TaskExecutionTraceLogger());
 
   ClearReferencesToSchedulers();
 }
@@ -191,6 +226,7 @@ void MainThreadTaskQueue::DetachOnIPCTaskPostedWhileInBackForwardCache() {
 
 void MainThreadTaskQueue::ShutdownTaskQueue() {
   ClearReferencesToSchedulers();
+  throttler_.reset();
   task_queue_->ShutdownTaskQueue();
 }
 
@@ -212,11 +248,6 @@ WebAgentGroupScheduler* MainThreadTaskQueue::GetAgentGroupScheduler() {
 void MainThreadTaskQueue::ClearReferencesToSchedulers() {
   if (main_thread_scheduler_) {
     main_thread_scheduler_->OnShutdownTaskQueue(this);
-
-    if (main_thread_scheduler_->task_queue_throttler()) {
-      main_thread_scheduler_->task_queue_throttler()->ShutdownTaskQueue(
-          task_queue_.get());
-    }
   }
   main_thread_scheduler_ = nullptr;
   agent_group_scheduler_ = nullptr;
@@ -251,6 +282,10 @@ void MainThreadTaskQueue::SetWebSchedulingPriority(
   frame_scheduler_->OnWebSchedulingTaskQueuePriorityChanged(this);
 }
 
+void MainThreadTaskQueue::OnWebSchedulingTaskQueueDestroyed() {
+  frame_scheduler_->OnWebSchedulingTaskQueueDestroyed(this);
+}
+
 absl::optional<WebSchedulingPriority>
 MainThreadTaskQueue::web_scheduling_priority() const {
   return web_scheduling_priority_;
@@ -258,8 +293,7 @@ MainThreadTaskQueue::web_scheduling_priority() const {
 
 bool MainThreadTaskQueue::IsThrottled() const {
   if (main_thread_scheduler_) {
-    return main_thread_scheduler_->task_queue_throttler()->IsThrottled(
-        task_queue_.get());
+    return throttler_.has_value() && throttler_->IsThrottled();
   } else {
     // When the frame detaches the task queue is removed from the throttler.
     return false;
@@ -268,32 +302,29 @@ bool MainThreadTaskQueue::IsThrottled() const {
 
 MainThreadTaskQueue::ThrottleHandle MainThreadTaskQueue::Throttle() {
   DCHECK(CanBeThrottled());
-  return ThrottleHandle(
-      task_queue_.get()->AsWeakPtr(),
-      main_thread_scheduler_->task_queue_throttler()->AsWeakPtr());
+  return ThrottleHandle(AsWeakPtr());
 }
 
 void MainThreadTaskQueue::AddToBudgetPool(base::TimeTicks now,
                                           BudgetPool* pool) {
-  pool->AddQueue(now, task_queue_.get());
+  pool->AddThrottler(now, &throttler_.value());
 }
 
 void MainThreadTaskQueue::RemoveFromBudgetPool(base::TimeTicks now,
                                                BudgetPool* pool) {
-  pool->RemoveQueue(now, task_queue_.get());
+  pool->RemoveThrottler(now, &throttler_.value());
 }
 
-void MainThreadTaskQueue::SetImmediateWakeUpForTest() {
-  if (main_thread_scheduler_) {
-    main_thread_scheduler_->task_queue_throttler()->OnQueueNextWakeUpChanged(
-        task_queue_.get(), base::TimeTicks());
-  }
+void MainThreadTaskQueue::SetWakeUpBudgetPool(
+    WakeUpBudgetPool* wake_up_budget_pool) {
+  wake_up_budget_pool_ = wake_up_budget_pool;
 }
 
 void MainThreadTaskQueue::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("type", queue_type_);
   dict.Add("traits", queue_traits_);
+  dict.Add("throttler", throttler_);
 }
 
 void MainThreadTaskQueue::QueueTraits::WriteIntoTrace(

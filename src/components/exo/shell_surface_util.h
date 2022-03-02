@@ -26,7 +26,7 @@ class TimeDelta;
 namespace ui {
 class LocatedEvent;
 class KeyEvent;
-}
+}  // namespace ui
 
 namespace exo {
 
@@ -51,6 +51,7 @@ const std::string* GetShellStartupId(const aura::Window* window);
 // the titlebar and shelf are always hidden.
 void SetShellUseImmersiveForFullscreen(aura::Window* window, bool value);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Sets the client accessibility ID for the window. The accessibility ID
 // identifies the accessibility tree provided by client.
 void SetShellClientAccessibilityId(aura::Window* window,
@@ -58,13 +59,17 @@ void SetShellClientAccessibilityId(aura::Window* window,
 const absl::optional<int32_t> GetShellClientAccessibilityId(
     aura::Window* window);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Sets the ClientControlledShellSurface to the property handler.
 void SetShellClientControlledShellSurface(
     ui::PropertyHandler* property_handler,
     const absl::optional<ClientControlledShellSurface*>& shell_surface);
 ClientControlledShellSurface* GetShellClientControlledShellSurface(
     ui::PropertyHandler* property_handler);
+
+// Returns |index| for the window.
+// Returns -1 for |index| when window is visible on all workspaces,
+// otherwise, 0-based indexing for desk index.
+int GetWindowDeskStateChanged(const aura::Window* window);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Sets the root surface to the property handler.
@@ -95,6 +100,10 @@ Surface* GetTargetSurfaceForKeyboardFocus(aura::Window* focused_window);
 // any existing permission.
 void GrantPermissionToActivate(aura::Window* window, base::TimeDelta timeout);
 
+// Allows the |window| to activate itself indefinitely. Revokes any existing
+// permission.
+void GrantPermissionToActivateIndefinitely(aura::Window* window);
+
 // Revokes the permission for |window| to activate itself.
 void RevokePermissionToActivate(aura::Window* window);
 
@@ -103,6 +112,9 @@ bool HasPermissionToActivate(aura::Window* window);
 
 // Returns true if event is/will be consumed by IME.
 bool ConsumedByIme(aura::Window* window, const ui::KeyEvent& event);
+
+// Set aura::client::kSkipImeProcessing to all Surface descendants.
+void SetSkipImeProcessingToDescendentSurfaces(aura::Window* window, bool value);
 
 }  // namespace exo
 
