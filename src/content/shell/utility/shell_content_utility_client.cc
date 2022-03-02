@@ -37,11 +37,6 @@
 #include "content/test/sandbox_status_service.h"
 #endif
 
-#include <chrome/common/chrome_paths.h>
-#include <content/public/utility/content_utility_client.h>
-#include <content/public/utility/utility_thread.h>
-#include <ipc/ipc_message_macros.h>
-
 namespace content {
 
 namespace {
@@ -167,10 +162,6 @@ void ShellContentUtilityClient::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   if (network_service_test_helper_)
     network_service_test_helper_->RegisterNetworkBinders(registry);
-}
-
-bool ShellContentUtilityClient::OnMessageReceived(const IPC::Message& message) {
-  return false;
 }
 
 }  // namespace content

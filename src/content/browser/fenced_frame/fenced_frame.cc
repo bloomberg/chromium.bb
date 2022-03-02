@@ -29,7 +29,8 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame)) {
+                                      FrameTree::Type::kFencedFrame,
+                                      web_contents_->GetPrimaryFrameTree().RenderProcessAffinity())) {
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::Create(web_contents_->GetBrowserContext());
   // Note that even though this is happening in response to an event in the

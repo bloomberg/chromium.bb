@@ -31,8 +31,6 @@ class ShellContentUtilityClient : public ContentUtilityClient {
   std::unique_ptr<NetworkServiceTestHelper> network_service_test_helper_;
   std::unique_ptr<AudioServiceTestHelper> audio_service_test_helper_;
   bool register_sandbox_status_helper_ = false;
-
-  bool OnMessageReceived(const IPC::Message& message) override;  
 };
 
 }  // namespace content

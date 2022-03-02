@@ -622,8 +622,8 @@ void AuctionV8Helper::ConnectDevToolsAgent(
   if (!devtools_agent_) {
     devtools_agent_ = std::make_unique<AuctionV8DevToolsAgent>(
         this, debug_command_queue_.get(), std::move(mojo_sequence));
-    v8_inspector_ =
-        v8_inspector::V8Inspector::create(isolate(), devtools_agent_.get());
+    v8_inspector_.reset(
+        v8_inspector::V8Inspector::create(isolate(), devtools_agent_.get()));
   }
   devtools_agent_->Connect(std::move(agent), debug_id.context_group_id());
 }
