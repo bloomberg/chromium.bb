@@ -317,7 +317,7 @@ void OSExchangeDataProviderWin::SetString(const std::u16string& data) {
 }
 
 void OSExchangeDataProviderWin::SetCustomData(const FORMATETC& format,
-                                              const base::string16& data) {
+                                              const std::u16string& data) {
   STGMEDIUM storage = CreateStorageForString(base::UTF16ToUTF8(data));
   data_->contents_.push_back(DataObjectImpl::StoredDataInfo::TakeStorageMedium(
         format, storage));
@@ -653,7 +653,7 @@ void OSExchangeDataProviderWin::EnumerateCustomData(
 
 bool OSExchangeDataProviderWin::GetCustomData(
     const FORMATETC& format,
-    base::string16* data) const {
+    std::u16string* data) const {
   DCHECK(data);
   bool success = false;
   STGMEDIUM medium;
