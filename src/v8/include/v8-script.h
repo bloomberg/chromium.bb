@@ -460,7 +460,7 @@ class V8_EXPORT ScriptCompiler {
     // Cached data from previous compilation (if a kConsume*Cache flag is
     // set), or hold newly generated cache data (kProduce*Cache flags) are
     // set when calling a compile method.
-    std::unique_ptr<CachedData> cached_data;
+    CachedData* cached_data;
     std::unique_ptr<ConsumeCodeCacheTask> consume_cache_task;
   };
 
@@ -789,7 +789,7 @@ ScriptCompiler::Source::~Source() {
 
 const ScriptCompiler::CachedData* ScriptCompiler::Source::GetCachedData()
     const {
-  return cached_data.get();
+  return cached_data;
 }
 
 const ScriptOriginOptions& ScriptCompiler::Source::GetResourceOptions() const {

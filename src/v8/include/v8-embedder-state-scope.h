@@ -27,7 +27,7 @@ enum class EmbedderStateTag : uint8_t {
 // A stack-allocated class that manages an embedder state on the isolate.
 // After an EmbedderState scope has been created, a new embedder state will be
 // pushed on the isolate stack.
-class V8_EXPORT EmbedderStateScope {
+class EmbedderStateScope {
  public:
   EmbedderStateScope(Isolate* isolate, Local<v8::Context> context,
                      EmbedderStateTag tag);
