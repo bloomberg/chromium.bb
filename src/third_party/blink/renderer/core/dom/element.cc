@@ -1927,7 +1927,7 @@ int Element::bbScrollLeftNoZoomAdjust() const {
     // In order to keep the behavior of element scroll consistent with document
     // scroll, and consistent with the behavior of other vendors, the scrollLeft
     // of a box is changed to the offset from |ScrollOrigin()|.
-    return scrollable_area->GetScrollOffset().Width();
+    return scrollable_area->GetScrollOffset().x();
   }
 
   return 0;
@@ -1965,7 +1965,7 @@ int Element::bbScrollTopNoZoomAdjust() const {
     // In order to keep the behavior of element scroll consistent with document
     // scroll, and consistent with the behavior of other vendors, the scrollTop
     // of a box is changed to the offset from |ScrollOrigin()|.
-    return scrollable_area->GetScrollOffset().Height();
+    return scrollable_area->GetScrollOffset().y();
   }
 
   return 0;
@@ -2010,13 +2010,12 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
     }
 
     ScrollOffset end_offset(new_left,
-                            scrollable_area->GetScrollOffset().Height());
+                            scrollable_area->GetScrollOffset().y());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::ScrollOffset(
-                scrollable_area->ScrollOffsetToPosition(end_offset)),
+            scrollable_area->ScrollOffsetToPosition(end_offset),
             true, false);
-    base::Optional<FloatPoint> snap_point =
+    absl::optional<gfx::PointF> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -2065,14 +2064,13 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
       }
     }
 
-    ScrollOffset end_offset(scrollable_area->GetScrollOffset().Width(),
+    ScrollOffset end_offset(scrollable_area->GetScrollOffset().x(),
                             new_top);
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::ScrollOffset(
-                scrollable_area->ScrollOffsetToPosition(end_offset)),
+            scrollable_area->ScrollOffsetToPosition(end_offset),
             false, true);
-    base::Optional<FloatPoint> snap_point =
+    absl::optional<gfx::PointF> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -2095,7 +2093,7 @@ int Element::bbScrollWidthNoZoomAdjust() const {
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
-      return GetDocument().View()->LayoutViewport()->ContentsSize().Width();
+      return GetDocument().View()->LayoutViewport()->ContentsSize().width();
     }
     return 0;
   }
@@ -2117,7 +2115,7 @@ int Element::bbScrollHeightNoZoomAdjust() const {
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
-      return GetDocument().View()->LayoutViewport()->ContentsSize().Height();
+      return GetDocument().View()->LayoutViewport()->ContentsSize().height();
     }
     return 0;
   }
