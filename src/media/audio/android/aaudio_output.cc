@@ -4,8 +4,9 @@
 
 #include "media/audio/android/aaudio_output.h"
 
-#include "base/callback_helpers.h"
+#include "base/android/build_info.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -30,7 +31,7 @@ class LOCKABLE AAudioDestructionHelper {
 
   AAudioOutputStream* GetAndLockStream() EXCLUSIVE_LOCK_FUNCTION() {
     lock_.Acquire();
-    return is_closing_ ? nullptr : output_stream_;
+    return is_closing_ ? nullptr : output_stream_.get();
   }
 
   void UnlockStream() UNLOCK_FUNCTION() { lock_.Release(); }
@@ -45,8 +46,8 @@ class LOCKABLE AAudioDestructionHelper {
 
  private:
   base::Lock lock_;
-  AAudioOutputStream* output_stream_ GUARDED_BY(lock_) = nullptr;
-  AAudioStream* aaudio_stream_ GUARDED_BY(lock_) = nullptr;
+  raw_ptr<AAudioOutputStream> output_stream_ GUARDED_BY(lock_) = nullptr;
+  raw_ptr<AAudioStream> aaudio_stream_ GUARDED_BY(lock_) = nullptr;
   bool is_closing_ GUARDED_BY(lock_) = false;
 };
 
@@ -72,9 +73,15 @@ static aaudio_data_callback_result_t OnAudioDataRequestedCallback(
 static void OnStreamErrorCallback(AAudioStream* stream,
                                   void* user_data,
                                   aaudio_result_t error) {
-  AAudioOutputStream* output_stream =
-      reinterpret_cast<AAudioOutputStream*>(user_data);
-  output_stream->OnStreamError(error);
+  AAudioDestructionHelper* destruction_helper =
+      reinterpret_cast<AAudioDestructionHelper*>(user_data);
+
+  AAudioOutputStream* output_stream = destruction_helper->GetAndLockStream();
+
+  if (output_stream)
+    output_stream->OnStreamError(error);
+
+  destruction_helper->UnlockStream();
 }
 
 AAudioOutputStream::AAudioOutputStream(AudioManagerAndroid* manager,
@@ -114,18 +121,25 @@ AAudioOutputStream::AAudioOutputStream(AudioManagerAndroid* manager,
 
 AAudioOutputStream::~AAudioOutputStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (base::android::SdkVersion::SDK_VERSION_S >=
+      base::android::BuildInfo::GetInstance()->sdk_int()) {
+    // On Android S+, |destruction_helper_| can be destroyed as part of the
+    // normal class teardown.
+    return;
+  }
+
   // In R and earlier, it is possible for callbacks to still be running even
   // after calling AAudioStream_close(). The code below is a mitigation to work
   // around this issue. See crbug.com/1183255.
 
   // Keep |destruction_helper_| alive longer than |this|, so the |user_data|
-  // bound to the callback stays valid until the callbacks stop.
+  // bound to the callback stays valid, until the callbacks stop.
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          base::DoNothing::Once<std::unique_ptr<AAudioDestructionHelper>>(),
-          std::move(destruction_helper_)),
-      base::TimeDelta::FromMilliseconds(250));
+      base::BindOnce([](std::unique_ptr<AAudioDestructionHelper>) {},
+                     std::move(destruction_helper_)),
+      base::Seconds(1));
 }
 
 void AAudioOutputStream::Flush() {}
@@ -151,7 +165,8 @@ bool AAudioOutputStream::Open() {
   // Callbacks
   AAudioStreamBuilder_setDataCallback(builder, OnAudioDataRequestedCallback,
                                       destruction_helper_.get());
-  AAudioStreamBuilder_setErrorCallback(builder, OnStreamErrorCallback, this);
+  AAudioStreamBuilder_setErrorCallback(builder, OnStreamErrorCallback,
+                                       destruction_helper_.get());
 
   result = AAudioStreamBuilder_openStream(builder, &aaudio_stream_);
 
@@ -274,8 +289,8 @@ base::TimeDelta AAudioOutputStream::GetDelay(base::TimeTicks delay_timestamp) {
       AAudioStream_getFramesWritten(aaudio_stream_) - existing_frame_index;
 
   // Calculate the time which the next frame will be presented.
-  const base::TimeDelta next_frame_pts = base::TimeDelta::FromNanosecondsD(
-      existing_frame_pts + frame_index_delta * ns_per_frame_);
+  const base::TimeDelta next_frame_pts =
+      base::Nanoseconds(existing_frame_pts + frame_index_delta * ns_per_frame_);
 
   // Calculate the latency between write time and presentation time. At startup
   // we may end up with negative values here.

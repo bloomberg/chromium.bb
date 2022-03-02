@@ -14,12 +14,11 @@
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
-#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
-#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
-#include "third_party/blink/public/platform/input/input_handler_proxy.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
+#include "third_party/blink/renderer/platform/widget/input/input_handler_proxy.h"
+#include "ui/display/mojom/screen_orientation.mojom-blink.h"
 
 namespace cc {
 class LayerTreeFrameSink;
@@ -91,7 +90,8 @@ class WidgetBaseClient {
   // UMA and UKM. That is, when RecordStartOfFrameMetrics has been called, and
   // before RecordEndOfFrameMetrics has been called.
   virtual void BeginCommitCompositorFrame() {}
-  virtual void EndCommitCompositorFrame(base::TimeTicks commit_start_time) {}
+  virtual void EndCommitCompositorFrame(base::TimeTicks commit_start_time,
+                                        base::TimeTicks commit_finish_time) {}
 
   // Applies viewport related properties during a commit from the compositor
   // thread.
@@ -127,7 +127,8 @@ class WidgetBaseClient {
   virtual bool SupportsBufferedTouchEvents() = 0;
 
   virtual void DidHandleKeyEvent() {}
-  virtual bool WillHandleGestureEvent(const WebGestureEvent& event) = 0;
+  virtual void WillHandleGestureEvent(const WebGestureEvent& event,
+                                      bool* suppress) = 0;
   virtual void WillHandleMouseEvent(const WebMouseEvent& event) = 0;
   virtual void ObserveGestureEventAndResult(
       const WebGestureEvent& gesture_event,
@@ -176,18 +177,18 @@ class WidgetBaseClient {
   // Signal the orientation has changed.
   virtual void OrientationChanged() {}
 
-  // Return the original (non-emulated) screen info.
-  virtual const ScreenInfo& GetOriginalScreenInfo() = 0;
+  // Return the original (non-emulated) screen infos.
+  virtual const display::ScreenInfos& GetOriginalScreenInfos() = 0;
 
   // Indication that the surface and screen were updated.
   virtual void DidUpdateSurfaceAndScreen(
-      const ScreenInfo& previous_original_screen_info) {}
+      const display::ScreenInfos& previous_original_screen_infos) {}
 
   // Return the viewport visible rect.
   virtual gfx::Rect ViewportVisibleRect() = 0;
 
   // The screen orientation override.
-  virtual absl::optional<mojom::blink::ScreenOrientation>
+  virtual absl::optional<display::mojom::blink::ScreenOrientation>
   ScreenOrientationOverride() {
     return absl::nullopt;
   }

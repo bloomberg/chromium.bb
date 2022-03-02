@@ -14,10 +14,6 @@
 # ==============================================================================
 """Keyword args tests."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.platform import test
 from tensorflow.python.util import keyword_args
 
@@ -38,13 +34,13 @@ class KeywordArgsTest(test.TestCase):
     self.assertEqual(3, func_with_decorator(a=1, b=2))
 
     # Providing non-keyword args should fail.
-    with self.assertRaisesRegexp(
-        ValueError, "Must use keyword args to call func_with_decorator."):
+    with self.assertRaisesRegex(
+        ValueError, "only accepts keyword arguments"):
       self.assertEqual(3, func_with_decorator(1, 2))
 
     # Partially providing keyword args should fail.
-    with self.assertRaisesRegexp(
-        ValueError, "Must use keyword args to call func_with_decorator."):
+    with self.assertRaisesRegex(
+        ValueError, "only accepts keyword arguments"):
       self.assertEqual(3, func_with_decorator(1, b=2))
 
 

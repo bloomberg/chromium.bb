@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_HANDWRITING_HANDWRITING_STROKE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HANDWRITING_HANDWRITING_STROKE_H_
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -21,6 +20,10 @@ class MODULES_EXPORT HandwritingStroke final : public ScriptWrappable {
 
  public:
   HandwritingStroke();
+
+  HandwritingStroke(const HandwritingStroke&) = delete;
+  HandwritingStroke& operator=(const HandwritingStroke&) = delete;
+
   ~HandwritingStroke() override;
 
   static HandwritingStroke* Create();
@@ -34,8 +37,6 @@ class MODULES_EXPORT HandwritingStroke final : public ScriptWrappable {
 
  private:
   HeapVector<Member<const HandwritingPoint>> points_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandwritingStroke);
 };
 
 }  // namespace blink

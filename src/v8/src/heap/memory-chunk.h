@@ -162,22 +162,10 @@ class MemoryChunk : public BasicMemoryChunk {
   // Approximate amount of physical memory committed for this chunk.
   V8_EXPORT_PRIVATE size_t CommittedPhysicalMemory();
 
-  size_t ProgressBar() {
-    DCHECK(IsFlagSet<AccessMode::ATOMIC>(HAS_PROGRESS_BAR));
-    return progress_bar_.load(std::memory_order_acquire);
+  class ProgressBar& ProgressBar() {
+    return progress_bar_;
   }
-
-  bool TrySetProgressBar(size_t old_value, size_t new_value) {
-    DCHECK(IsFlagSet<AccessMode::ATOMIC>(HAS_PROGRESS_BAR));
-    return progress_bar_.compare_exchange_strong(old_value, new_value,
-                                                 std::memory_order_acq_rel);
-  }
-
-  void ResetProgressBar() {
-    if (IsFlagSet(MemoryChunk::HAS_PROGRESS_BAR)) {
-      progress_bar_.store(0, std::memory_order_release);
-    }
-  }
+  const class ProgressBar& ProgressBar() const { return progress_bar_; }
 
   inline void IncrementExternalBackingStoreBytes(ExternalBackingStoreType type,
                                                  size_t amount);
@@ -201,17 +189,16 @@ class MemoryChunk : public BasicMemoryChunk {
   // MemoryChunk::synchronized_heap() to simulate the barrier.
   void InitializationMemoryFence();
 
+  static PageAllocator::Permission GetCodeModificationPermission() {
+    return FLAG_write_code_using_rwx ? PageAllocator::kReadWriteExecute
+                                     : PageAllocator::kReadWrite;
+  }
+
   V8_EXPORT_PRIVATE void SetReadable();
   V8_EXPORT_PRIVATE void SetReadAndExecutable();
-  V8_EXPORT_PRIVATE void SetReadAndWritable();
 
-  void SetDefaultCodePermissions() {
-    if (FLAG_jitless) {
-      SetReadable();
-    } else {
-      SetReadAndExecutable();
-    }
-  }
+  V8_EXPORT_PRIVATE void SetCodeModificationPermissions();
+  V8_EXPORT_PRIVATE void SetDefaultCodePermissions();
 
   heap::ListNode<MemoryChunk>& list_node() { return list_node_; }
   const heap::ListNode<MemoryChunk>& list_node() const { return list_node_; }
@@ -256,9 +243,9 @@ class MemoryChunk : public BasicMemoryChunk {
   // is ceil(size() / kPageSize).
   SlotSet* slot_set_[NUMBER_OF_REMEMBERED_SET_TYPES];
 
-  // Used by the incremental marker to keep track of the scanning progress in
-  // large objects that have a progress bar and are scanned in increments.
-  std::atomic<size_t> progress_bar_;
+  // Used by the marker to keep track of the scanning progress in large objects
+  // that have a progress bar and are scanned in increments.
+  class ProgressBar progress_bar_;
 
   // Count of bytes marked black on page.
   std::atomic<intptr_t> live_byte_count_;

@@ -13,10 +13,11 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -24,8 +25,10 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/metrics/dropped_frame_counter.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/image_provider.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -55,12 +58,13 @@
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gl/trace_util.h"
 
 namespace cc {
@@ -162,7 +166,7 @@ class HudGpuBacking : public ResourcePool::GpuBacking {
     pmd->AddOwnershipEdge(buffer_dump_guid, tracing_guid, importance);
   }
 
-  gpu::SharedImageInterface* shared_image_interface = nullptr;
+  raw_ptr<gpu::SharedImageInterface> shared_image_interface = nullptr;
 };
 
 class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
@@ -180,7 +184,7 @@ class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
                                          shared_mapping.guid(), importance);
   }
 
-  LayerTreeFrameSink* layer_tree_frame_sink;
+  raw_ptr<LayerTreeFrameSink> layer_tree_frame_sink;
   base::WritableSharedMemoryMapping shared_mapping;
 };
 
@@ -306,6 +310,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       } else if (gpu_raster) {
         flags |= gpu::SHARED_IMAGE_USAGE_GLES2 |
                  gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+      } else {
+        flags |= gpu::SHARED_IMAGE_USAGE_GLES2;
       }
       if (backing->overlay_candidate)
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -379,7 +385,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       constexpr GLuint msaa_sample_count = -1;
       constexpr bool can_use_lcd_text = true;
       ri->BeginRasterCHROMIUM(background_color, needs_clear, msaa_sample_count,
-                              can_use_lcd_text, gfx::ColorSpace::CreateSRGB(),
+                              gpu::raster::kNoMSAA, can_use_lcd_text,
+                              gfx::ColorSpace::CreateSRGB(),
                               backing->mailbox.name);
       gfx::Vector2dF post_translate(0.f, 0.f);
       gfx::Vector2dF post_scale(1.f, 1.f);
@@ -510,11 +517,23 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
           render_pass->quad_list.ReplaceExistingElement<viz::TextureDrawQuad>(
               it);
 
+      // The acquired resource's size could be bigger than actually needed due
+      // to reuse. In this case, only use the part of the texture that is within
+      // the bounds.
+      gfx::PointF uv_bottom_right(1.f, 1.f);
+      if (in_flight_resource_.size() != internal_content_bounds_) {
+        uv_bottom_right.set_x(
+            static_cast<double>(internal_content_bounds_.width()) /
+            static_cast<double>(in_flight_resource_.size().width()));
+        uv_bottom_right.set_y(
+            static_cast<double>(internal_content_bounds_.height()) /
+            static_cast<double>(in_flight_resource_.size().height()));
+      }
       const float vertex_opacity[] = {1.f, 1.f, 1.f, 1.f};
       quad->SetNew(sqs, quad_rect, visible_rect, /*needs_blending=*/true,
                    resource_id, /*premultiplied_alpha=*/true,
                    /*uv_top_left=*/gfx::PointF(),
-                   /*uv_bottom_right=*/gfx::PointF(1.f, 1.f),
+                   /*uv_bottom_right=*/uv_bottom_right,
                    /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
                    /*flipped=*/false,
                    /*nearest_neighbor=*/false, /*secure_output_only=*/false,
@@ -614,7 +633,7 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
   TRACE_EVENT0("cc", "DrawHudContents");
   canvas->clear(SkColorSetARGB(0, 0, 0, 0));
   canvas->save();
-  canvas->scale(internal_contents_scale_, internal_contents_scale_);
+  canvas->scale(internal_contents_scale_);
 
   if (debug_state.ShowDebugRects()) {
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
@@ -627,6 +646,11 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
     canvas->restore();
     return;
   }
+
+  // Our output should be in layout space, but all of the draw commands for the
+  // HUD overlays here are in dips. Scale the canvas to account for this
+  // difference.
+  canvas->scale(layer_tree_impl()->painted_device_scale_factor());
 
   SkRect area = SkRect::MakeXYWH(0, 0, 0, 0);
 
@@ -644,13 +668,13 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
 
   // For the web vital and smoothness HUD on the top right corner, if the width
   // of the screen is smaller than the default width of the HUD, scale it down.
-  if (bounds().width() < metrics_sizes.kWidth) {
-    double scale_to_bounds = static_cast<double>(bounds().width()) /
+  if (bounds_width_in_dips() < metrics_sizes.kWidth) {
+    double scale_to_bounds = static_cast<double>(bounds_width_in_dips()) /
                              static_cast<double>(metrics_sizes.kWidth);
     canvas->scale(scale_to_bounds, scale_to_bounds);
   }
   SkRect metrics_area = SkRect::MakeXYWH(
-      std::max<SkScalar>(0, bounds().width() - metrics_sizes.kWidth), 0,
+      std::max<SkScalar>(0, bounds_width_in_dips() - metrics_sizes.kWidth), 0,
       metrics_sizes.kWidth, 0);
   if (debug_state.show_web_vital_metrics) {
     metrics_area = DrawWebVitalMetrics(

@@ -88,16 +88,14 @@ OfflineInternalsUIMessageHandler::~OfflineInternalsUIMessageHandler() {}
 
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-
-  const base::ListValue* offline_ids_from_arg;
-  args->GetList(1, &offline_ids_from_arg);
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(2u, args_list.size());
+  std::string callback_id = args_list[0].GetString();
 
   std::vector<int64_t> offline_ids;
-  for (size_t i = 0; i < offline_ids_from_arg->GetSize(); i++) {
-    std::string value;
-    offline_ids_from_arg->GetString(i, &value);
+  base::Value::ConstListView offline_ids_from_arg = args_list[1].GetList();
+  for (size_t i = 0; i < offline_ids_from_arg.size(); i++) {
+    std::string value = offline_ids_from_arg[i].GetString();
     int64_t int_value;
     base::StringToInt64(value, &int_value);
     offline_ids.push_back(int_value);
@@ -114,16 +112,14 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
 
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(2u, args_list.size());
+  std::string callback_id = args_list[0].GetString();
 
   std::vector<int64_t> offline_ids;
-  const base::ListValue* offline_ids_from_arg = nullptr;
-  args->GetList(1, &offline_ids_from_arg);
-
-  for (size_t i = 0; i < offline_ids_from_arg->GetSize(); i++) {
-    std::string value;
-    offline_ids_from_arg->GetString(i, &value);
+  base::Value::ConstListView offline_ids_from_arg = args_list[1].GetList();
+  for (size_t i = 0; i < offline_ids_from_arg.size(); i++) {
+    std::string value = offline_ids_from_arg[i].GetString();
     int64_t int_value;
     base::StringToInt64(value, &int_value);
     offline_ids.push_back(int_value);
@@ -191,12 +187,12 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
   for (const auto& request : requests) {
     auto save_page_request = std::make_unique<base::DictionaryValue>();
     save_page_request->SetString("onlineUrl", request->url().spec());
-    save_page_request->SetDouble("creationTime",
-                                 request->creation_time().ToJsTime());
+    save_page_request->SetDoubleKey("creationTime",
+                                    request->creation_time().ToJsTime());
     save_page_request->SetString("status", GetStringFromSavePageStatus());
     save_page_request->SetString("namespace", request->client_id().name_space);
-    save_page_request->SetDouble("lastAttemptTime",
-                                 request->last_attempt_time().ToJsTime());
+    save_page_request->SetDoubleKey("lastAttemptTime",
+                                    request->last_attempt_time().ToJsTime());
     save_page_request->SetString("id", std::to_string(request->request_id()));
     save_page_request->SetString("originalUrl", request->original_url().spec());
     save_page_request->SetString("requestOrigin", request->request_origin());
@@ -208,8 +204,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
 void OfflineInternalsUIMessageHandler::HandleGetRequestQueue(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   if (request_coordinator_) {
     request_coordinator_->GetAllRequests(base::BindOnce(
@@ -224,8 +219,7 @@ void OfflineInternalsUIMessageHandler::HandleGetRequestQueue(
 void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   if (offline_page_model_) {
     offline_page_model_->GetAllPages(base::BindOnce(
@@ -240,8 +234,9 @@ void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
 void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
     const base::ListValue* args) {
   AllowJavascript();
-  bool should_record;
-  CHECK(args->GetBoolean(0, &should_record));
+  const auto& list = args->GetList();
+  CHECK(!list.empty());
+  const bool should_record = list[0].GetBool();
   if (offline_page_model_)
     offline_page_model_->GetLogger()->SetIsLogging(should_record);
 }
@@ -249,11 +244,10 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
 void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
   ResolveJavascriptCallback(
-      *callback_id,
+      callback_id,
       base::Value(net::NetworkChangeNotifier::IsOffline() ? "Offline"
                                                           : "Online"));
 }
@@ -261,16 +255,15 @@ void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
 void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
   if (prefetch_service_) {
     prefetch_service_->ForceRefreshSuggestions();
     prefetch_service_->GetPrefetchBackgroundTaskHandler()
         ->EnsureTaskScheduled();
-    ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
+    ResolveJavascriptCallback(callback_id, base::Value("Scheduled."));
   } else {
-    RejectJavascriptCallback(*callback_id,
+    RejectJavascriptCallback(callback_id,
                              base::Value("No prefetch service available."));
   }
 }
@@ -278,15 +271,14 @@ void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
 void OfflineInternalsUIMessageHandler::HandleCancelNwake(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
   if (prefetch_service_) {
     prefetch_service_->GetPrefetchBackgroundTaskHandler()
         ->CancelBackgroundTask();
-    ResolveJavascriptCallback(*callback_id, base::Value("Cancelled."));
+    ResolveJavascriptCallback(callback_id, base::Value("Cancelled."));
   } else {
-    RejectJavascriptCallback(*callback_id,
+    RejectJavascriptCallback(callback_id,
                              base::Value("No prefetch service available."));
   }
 }
@@ -294,8 +286,7 @@ void OfflineInternalsUIMessageHandler::HandleCancelNwake(
 void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   if (!prefetch_service_) {
     RejectJavascriptCallback(base::Value(callback_id),
@@ -303,8 +294,7 @@ void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
     return;
   }
 
-  std::string data;
-  CHECK(args->GetString(1, &data));
+  const std::string& data = args->GetList()[1].GetString();
   std::vector<std::string> page_urls = base::SplitStringUsingSubstr(
       data, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::vector<offline_pages::PrefetchURL> prefetch_urls;
@@ -347,8 +337,7 @@ void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
 void OfflineInternalsUIMessageHandler::HandleGetOperation(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   if (!prefetch_service_) {
     RejectJavascriptCallback(base::Value(callback_id),
@@ -356,8 +345,7 @@ void OfflineInternalsUIMessageHandler::HandleGetOperation(
     return;
   }
 
-  std::string name;
-  CHECK(args->GetString(1, &name));
+  std::string name = args->GetList()[1].GetString();
   base::TrimWhitespaceASCII(name, base::TRIM_ALL, &name);
 
   prefetch_service_->GetPrefetchDispatcher()
@@ -369,8 +357,7 @@ void OfflineInternalsUIMessageHandler::HandleGetOperation(
 void OfflineInternalsUIMessageHandler::HandleDownloadArchive(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string name;
-  CHECK(args->GetString(0, &name));
+  std::string name = args->GetList()[0].GetString();
   base::TrimWhitespaceASCII(name, base::TRIM_ALL, &name);
 
   if (prefetch_service_) {
@@ -382,8 +369,9 @@ void OfflineInternalsUIMessageHandler::HandleDownloadArchive(
 void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
     const base::ListValue* args) {
   AllowJavascript();
-  bool should_record;
-  CHECK(args->GetBoolean(0, &should_record));
+  const auto& list = args->GetList();
+  CHECK(!list.empty());
+  const bool should_record = list[0].GetBool();
   if (request_coordinator_)
     request_coordinator_->GetLogger()->SetIsLogging(should_record);
 }
@@ -391,8 +379,9 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
 void OfflineInternalsUIMessageHandler::HandleSetRecordPrefetchService(
     const base::ListValue* args) {
   AllowJavascript();
-  bool should_record;
-  CHECK(args->GetBoolean(0, &should_record));
+  const auto& list = args->GetList();
+  CHECK(!list.empty());
+  const bool should_record = list[0].GetBool();
   if (prefetch_service_)
     prefetch_service_->GetLogger()->SetIsLogging(should_record);
 }
@@ -409,15 +398,13 @@ void OfflineInternalsUIMessageHandler::HandleSetLimitlessPrefetchingEnabled(
 void OfflineInternalsUIMessageHandler::HandleGetLimitlessPrefetchingEnabled(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  bool got_callback_id = args->Get(0, &callback_id);
-  DCHECK(got_callback_id);
+  const base::Value& callback_id = args->GetList()[0];
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   bool enabled =
       offline_pages::prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs);
 
-  ResolveJavascriptCallback(*callback_id, base::Value(enabled));
+  ResolveJavascriptCallback(callback_id, base::Value(enabled));
 }
 
 void OfflineInternalsUIMessageHandler::HandleSetPrefetchTestingHeader(
@@ -468,8 +455,7 @@ void OfflineInternalsUIMessageHandler::HandleGetPrefetchTestingHeader(
 void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
   base::DictionaryValue result;
   result.SetBoolean("modelIsLogging",
@@ -485,14 +471,13 @@ void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
     prefetch_logging = prefetch_service_->GetLogger()->GetIsLogging();
   }
   result.SetBoolean("prefetchIsLogging", prefetch_logging);
-  ResolveJavascriptCallback(*callback_id, result);
+  ResolveJavascriptCallback(callback_id, result);
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetEventLogs(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
   std::vector<std::string> logs;
   if (offline_page_model_)
@@ -508,17 +493,15 @@ void OfflineInternalsUIMessageHandler::HandleGetEventLogs(
     result.Append(log);
   }
 
-  ResolveJavascriptCallback(*callback_id, result);
+  ResolveJavascriptCallback(callback_id, result);
 }
 
 void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   if (request_coordinator_) {
-    std::string url;
-    CHECK(args->GetString(1, &url));
+    const std::string& url = args->GetList()[1].GetString();
 
     // To be visible in Downloads UI, these items need a well-formed GUID
     // and AsyncNamespace in their ClientId.
@@ -548,99 +531,99 @@ void OfflineInternalsUIMessageHandler::HandleSavePageLaterCallback(
 }
 
 void OfflineInternalsUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "deleteSelectedPages",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "deleteSelectedRequests",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getRequestQueue",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleGetRequestQueue,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getStoredPages",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleGetStoredPages,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getEventLogs",
       base::BindRepeating(&OfflineInternalsUIMessageHandler::HandleGetEventLogs,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setRecordRequestQueue",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setRecordPageModel",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleSetRecordPageModel,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setRecordPrefetchService",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleSetRecordPrefetchService,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setLimitlessPrefetchingEnabled",
       base::BindRepeating(&OfflineInternalsUIMessageHandler::
                               HandleSetLimitlessPrefetchingEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getLimitlessPrefetchingEnabled",
       base::BindRepeating(&OfflineInternalsUIMessageHandler::
                               HandleGetLimitlessPrefetchingEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setPrefetchTestingHeader",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleSetPrefetchTestingHeader,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPrefetchTestingHeader",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleGetPrefetchTestingHeader,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getLoggingState",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleGetLoggingState,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "addToRequestQueue",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleAddToRequestQueue,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getNetworkStatus",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleGetNetworkStatus,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "scheduleNwake",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleScheduleNwake,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "cancelNwake",
       base::BindRepeating(&OfflineInternalsUIMessageHandler::HandleCancelNwake,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "generatePageBundle",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleGeneratePageBundle,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getOperation",
       base::BindRepeating(&OfflineInternalsUIMessageHandler::HandleGetOperation,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "downloadArchive",
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleDownloadArchive,

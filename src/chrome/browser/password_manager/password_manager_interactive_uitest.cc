@@ -29,14 +29,14 @@
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/blink/public/common/switches.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/password_manager/password_manager_signin_intercept_test_helper.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
-#endif  // ENABLE_DICE_SUPPORT
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 namespace {
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Wait until |condition| returns true.
 void WaitForCondition(base::RepeatingCallback<bool()> condition) {
   while (!condition.Run()) {
@@ -46,7 +46,7 @@ void WaitForCondition(base::RepeatingCallback<bool()> condition) {
     run_loop.Run();
   }
 }
-#endif  // ENABLE_DICE_SUPPORT
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
@@ -251,8 +251,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
+// TODO(crbug.com/1241462):
+#if defined(OS_WIN)
+#define MAYBE_PromptForFetchWithNewPasswordsWithoutOnSubmit \
+  DISABLED_PromptForFetchWithNewPasswordsWithoutOnSubmit
+#else
+#define MAYBE_PromptForFetchWithNewPasswordsWithoutOnSubmit \
+  PromptForFetchWithNewPasswordsWithoutOnSubmit
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       PromptForFetchWithNewPasswordsWithoutOnSubmit) {
+                       MAYBE_PromptForFetchWithNewPasswordsWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,
@@ -486,9 +494,7 @@ IN_PROC_BROWSER_TEST_F(
   }
 }
 
-// TODO(crbug.com/1198490): Remove explicit !BUILDFLAG(IS_CHROMEOS_LACROS) when
-// DICE is not enabled on Lacros.
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // This test suite only applies to Gaia signin page, and checks that the
 // signin interception bubble and the password bubbles never conflict.
 class PasswordManagerInteractiveTestWithSigninInterception
@@ -572,6 +578,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTestWithSigninInterception,
   navigation_observer.Wait();
   EXPECT_TRUE(prompt_observer.IsUpdatePromptShownAutomatically());
 }
-#endif  // ENABLE_DICE_SUPPORT
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace password_manager

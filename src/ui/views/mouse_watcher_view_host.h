@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_MOUSE_WATCHER_VIEW_HOST_H_
 #define UI_VIEWS_MOUSE_WATCHER_VIEW_HOST_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/mouse_watcher.h"
 
 namespace views {
@@ -20,6 +20,10 @@ class VIEWS_EXPORT MouseWatcherViewHost : public MouseWatcherHost {
   // the y coordinate is between the origin of the view and height of the view
   // plus 10.
   MouseWatcherViewHost(View* view, const gfx::Insets& hot_zone_insets);
+
+  MouseWatcherViewHost(const MouseWatcherViewHost&) = delete;
+  MouseWatcherViewHost& operator=(const MouseWatcherViewHost&) = delete;
+
   ~MouseWatcherViewHost() override;
 
   // MouseWatcherHost.
@@ -30,11 +34,9 @@ class VIEWS_EXPORT MouseWatcherViewHost : public MouseWatcherHost {
   bool IsMouseOverWindow();
 
   // View we're listening for events over.
-  View* view_;
+  raw_ptr<View> view_;
   // Insets added to the bounds of the view.
   const gfx::Insets hot_zone_insets_;
-
-  DISALLOW_COPY_AND_ASSIGN(MouseWatcherViewHost);
 };
 
 }  // namespace views

@@ -23,9 +23,12 @@ class CookieJar : public GarbageCollected<CookieJar> {
   void SetCookie(const String& value);
   String Cookies();
   bool CookiesEnabled();
+  void SetCookieManager(
+      mojo::PendingRemote<network::mojom::blink::RestrictedCookieManager>
+          cookie_manager);
 
  private:
-  void RequestRestrictedCookieManagerIfNeeded();
+  bool RequestRestrictedCookieManagerIfNeeded();
 
   HeapMojoRemote<network::mojom::blink::RestrictedCookieManager> backend_;
   Member<blink::Document> document_;

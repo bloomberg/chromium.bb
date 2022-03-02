@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
@@ -27,10 +26,10 @@
 #include "ui/gfx/image/image_unittest_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -59,6 +58,9 @@ class TestAppIcon : public ChromeAppIconDelegate {
         ChromeAppIconService::Get(context)->CreateIcon(this, app_id, size);
     DCHECK(app_icon_);
   }
+
+  TestAppIcon(const TestAppIcon&) = delete;
+  TestAppIcon& operator=(const TestAppIcon&) = delete;
 
   ~TestAppIcon() override = default;
 
@@ -97,14 +99,16 @@ class TestAppIcon : public ChromeAppIconDelegate {
   size_t icon_update_count_expected_ = 0;
 
   base::OnceClosure icon_updated_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppIcon);
 };
 
 // Receives icon image updates from ChromeAppIconLoader.
 class TestAppIconLoader : public AppIconLoaderDelegate {
  public:
   TestAppIconLoader() = default;
+
+  TestAppIconLoader(const TestAppIconLoader&) = delete;
+  TestAppIconLoader& operator=(const TestAppIconLoader&) = delete;
+
   ~TestAppIconLoader() override = default;
 
   // AppIconLoaderDelegate:
@@ -118,8 +122,6 @@ class TestAppIconLoader : public AppIconLoaderDelegate {
 
  private:
   gfx::ImageSkia image_skia_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppIconLoader);
 };
 
 // Returns true if provided |image| consists from only empty pixels.
@@ -188,6 +190,10 @@ bool IsBadgeApplied(const gfx::ImageSkia& src,
 class ChromeAppIconTest : public ExtensionServiceTestBase {
  public:
   ChromeAppIconTest() = default;
+
+  ChromeAppIconTest(const ChromeAppIconTest&) = delete;
+  ChromeAppIconTest& operator=(const ChromeAppIconTest&) = delete;
+
   ~ChromeAppIconTest() override = default;
 
   // ExtensionServiceTestBase:
@@ -201,9 +207,6 @@ class ChromeAppIconTest : public ExtensionServiceTestBase {
     InitializeInstalledExtensionService(pref_path, source_install_dir);
     service_->Init();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppIconTest);
 };
 
 TEST_F(ChromeAppIconTest, IconLifeCycle) {

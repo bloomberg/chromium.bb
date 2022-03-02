@@ -28,7 +28,7 @@ namespace tensorflow {
       Name("Sum")                                                              \
           .Device(DEVICE_CPU)                                                  \
           .TypeConstraint<type>("T")                                           \
-          .TypeConstraint<int64>("Tidx"),                                      \
+          .TypeConstraint<int64_t>("Tidx"),                                    \
       ReductionOp<CPUDevice, type, int64, Eigen::internal::SumReducer<type>>);
 TF_CALL_NUMBER_TYPES(REGISTER_CPU_KERNELS);
 #undef REGISTER_CPU_KERNELS
@@ -47,7 +47,7 @@ TF_CALL_NUMBER_TYPES(REGISTER_CPU_KERNELS);
       Name("Sum")                                                              \
           .Device(DEVICE_GPU)                                                  \
           .TypeConstraint<type>("T")                                           \
-          .TypeConstraint<int64>("Tidx")                                       \
+          .TypeConstraint<int64_t>("Tidx")                                     \
           .HostMemory("reduction_indices"),                                    \
       ReductionOp<GPUDevice, type, int64, Eigen::internal::SumReducer<type>>);
 TF_CALL_int64(REGISTER_GPU_KERNELS);
@@ -73,7 +73,7 @@ REGISTER_KERNEL_BUILDER(
     Name("Sum")
         .Device(DEVICE_GPU)
         .TypeConstraint<int32>("T")
-        .TypeConstraint<int64>("Tidx")
+        .TypeConstraint<int64_t>("Tidx")
         .HostMemory("input")
         .HostMemory("output")
         .HostMemory("reduction_indices"),
@@ -81,44 +81,5 @@ REGISTER_KERNEL_BUILDER(
 
 #endif
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNELS(type)                                        \
-  REGISTER_KERNEL_BUILDER(Name("Sum")                                      \
-                              .Device(DEVICE_SYCL)                         \
-                              .TypeConstraint<type>("T")                   \
-                              .TypeConstraint<int32>("Tidx")               \
-                              .HostMemory("reduction_indices"),            \
-                          ReductionOp<SYCLDevice, type, int32,             \
-                                      Eigen::internal::SumReducer<type>>); \
-  REGISTER_KERNEL_BUILDER(Name("Sum")                                      \
-                              .Device(DEVICE_SYCL)                         \
-                              .TypeConstraint<type>("T")                   \
-                              .TypeConstraint<int64>("Tidx")               \
-                              .HostMemory("reduction_indices"),            \
-                          ReductionOp<SYCLDevice, type, int64,             \
-                                      Eigen::internal::SumReducer<type>>);
-REGISTER_SYCL_KERNELS(float);
-REGISTER_SYCL_KERNELS(double);
-
-REGISTER_KERNEL_BUILDER(
-    Name("Sum")
-        .Device(DEVICE_SYCL)
-        .TypeConstraint<int32>("T")
-        .TypeConstraint<int32>("Tidx")
-        .HostMemory("input")
-        .HostMemory("output")
-        .HostMemory("reduction_indices"),
-    ReductionOp<CPUDevice, int32, int32, Eigen::internal::SumReducer<int32>>);
-REGISTER_KERNEL_BUILDER(
-    Name("Sum")
-        .Device(DEVICE_SYCL)
-        .TypeConstraint<int32>("T")
-        .TypeConstraint<int64>("Tidx")
-        .HostMemory("input")
-        .HostMemory("output")
-        .HostMemory("reduction_indices"),
-    ReductionOp<CPUDevice, int32, int64, Eigen::internal::SumReducer<int32>>);
-#undef REGISTER_SYCL_KERNELS
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // namespace tensorflow

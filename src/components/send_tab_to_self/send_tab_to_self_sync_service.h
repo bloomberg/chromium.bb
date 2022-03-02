@@ -22,7 +22,6 @@ class ModelTypeControllerDelegate;
 }  // namespace syncer
 
 namespace send_tab_to_self {
-class FakeSendTabToSelfModel;
 class SendTabToSelfBridge;
 class SendTabToSelfModel;
 
@@ -34,23 +33,24 @@ class SendTabToSelfSyncService : public KeyedService {
       syncer::OnceModelTypeStoreFactory create_store_callback,
       history::HistoryService* history_service,
       syncer::DeviceInfoTracker* device_info_tracker);
+
+  SendTabToSelfSyncService(const SendTabToSelfSyncService&) = delete;
+  SendTabToSelfSyncService& operator=(const SendTabToSelfSyncService&) = delete;
+
   ~SendTabToSelfSyncService() override;
 
+  // Never returns null.
   virtual SendTabToSelfModel* GetSendTabToSelfModel();
 
-  // For ProfileSyncService to initialize the controller.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetControllerDelegate();
 
  protected:
-  // Default constructor for unit tests
+  // Default constructor for unit tests.
   SendTabToSelfSyncService();
 
  private:
-  std::unique_ptr<SendTabToSelfBridge> bridge_;
-  std::unique_ptr<FakeSendTabToSelfModel> fake_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfSyncService);
+  std::unique_ptr<SendTabToSelfBridge> const bridge_;
 };
 
 }  // namespace send_tab_to_self

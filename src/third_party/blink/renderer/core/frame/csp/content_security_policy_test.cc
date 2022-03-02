@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/crypto.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -1243,7 +1243,7 @@ TEST_F(ContentSecurityPolicyTest, WasmEvalCSPEnable) {
     csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
     csp->AddPolicies(ParseContentSecurityPolicies(
-        "script-src 'wasm-eval'", ContentSecurityPolicyType::kEnforce,
+        "script-src 'wasm-unsafe-eval'", ContentSecurityPolicyType::kEnforce,
         ContentSecurityPolicySource::kHTTP, *secure_origin));
 
     EXPECT_EQ(enabled, csp->AllowWasmCodeGeneration(
@@ -1254,6 +1254,29 @@ TEST_F(ContentSecurityPolicyTest, WasmEvalCSPEnable) {
 
   test_wasm_eval_enabled(true);
   test_wasm_eval_enabled(false);
+}
+
+// Tests that WasmCSP runtime feature properly governs support for
+// WasmUnsafeEval.
+TEST_F(ContentSecurityPolicyTest, WasmUnsafeEvalCSPEnable) {
+  auto test_wasm_unsafe_eval_enabled = [&](bool enabled) {
+    ScopedWebAssemblyCSPForTest enable_wasp(enabled);
+
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+
+    csp->AddPolicies(ParseContentSecurityPolicies(
+        "script-src 'wasm-unsafe-eval'", ContentSecurityPolicyType::kEnforce,
+        ContentSecurityPolicySource::kHTTP, *secure_origin));
+
+    EXPECT_EQ(enabled, csp->AllowWasmCodeGeneration(
+                           ReportingDisposition::kReport,
+                           ContentSecurityPolicy::kWillNotThrowException,
+                           g_empty_string));
+  };
+
+  test_wasm_unsafe_eval_enabled(true);
+  test_wasm_unsafe_eval_enabled(false);
 }
 
 TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {

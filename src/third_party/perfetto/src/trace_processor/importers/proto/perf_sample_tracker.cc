@@ -15,9 +15,11 @@
  */
 #include "src/trace_processor/importers/proto/perf_sample_tracker.h"
 
-#include <inttypes.h>
 #include <stdio.h>
 
+#include <cinttypes>
+
+#include "perfetto/ext/base/string_utils.h"
 #include "src/trace_processor/importers/common/track_tracker.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
@@ -45,6 +47,7 @@ const char* StringifyCounter(int32_t counter) {
     default:
       break;
   }
+  PERFETTO_DLOG("Unknown PerfEvents::Counter enum value");
   return "unknown";
 }
 
@@ -55,11 +58,29 @@ StringId InternTimebaseCounterName(
   PerfSampleDefaults::Decoder perf_defaults(defaults->perf_sample_defaults());
   PerfEvents::Timebase::Decoder timebase(perf_defaults.timebase());
 
-  if (timebase.counter() != PerfEvents::UNKNOWN_COUNTER) {
+  auto config_given_name = timebase.name();
+  if (config_given_name.size > 0) {
+    return context->storage->InternString(config_given_name);
+  }
+  if (timebase.has_counter()) {
     return context->storage->InternString(StringifyCounter(timebase.counter()));
   }
-  PerfEvents::Tracepoint::Decoder tracepoint(timebase.tracepoint());
-  return context->storage->InternString(tracepoint.name());
+  if (timebase.has_tracepoint()) {
+    PerfEvents::Tracepoint::Decoder tracepoint(timebase.tracepoint());
+    return context->storage->InternString(tracepoint.name());
+  }
+  if (timebase.has_raw_event()) {
+    PerfEvents::RawEvent::Decoder raw(timebase.raw_event());
+    // This doesn't follow any pre-existing naming scheme, but aims to be a
+    // short-enough default that is distinguishable.
+    base::StackString<128> name(
+        "raw.0x%" PRIx32 ".0x%" PRIx64 ".0x%" PRIx64 ".0x%" PRIx64, raw.type(),
+        raw.config(), raw.config1(), raw.config2());
+    return context->storage->InternString(name.string_view());
+  }
+
+  PERFETTO_DLOG("Could not name the perf timebase counter");
+  return context->storage->InternString("unknown");
 }
 }  // namespace
 

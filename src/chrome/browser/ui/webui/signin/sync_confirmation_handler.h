@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -37,6 +37,10 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
       Profile* profile,
       const std::unordered_map<std::string, int>& string_to_grd_id_map,
       Browser* browser = nullptr);
+
+  SyncConfirmationHandler(const SyncConfirmationHandler&) = delete;
+  SyncConfirmationHandler& operator=(const SyncConfirmationHandler&) = delete;
+
   ~SyncConfirmationHandler() override;
 
   // content::WebUIMessageHandler:
@@ -96,7 +100,7 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
       LoginUIService::SyncConfirmationUIClosedResult result);
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Records whether the user clicked on Undo, Ok, or Settings.
   bool did_user_explicitly_interact_ = false;
@@ -107,11 +111,9 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
 
   // Weak reference to the browser that showed the sync confirmation dialog (if
   // such a dialog exists).
-  Browser* browser_;
+  raw_ptr<Browser> browser_;
 
-  signin::IdentityManager* identity_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
+  raw_ptr<signin::IdentityManager> identity_manager_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_SYNC_CONFIRMATION_HANDLER_H_

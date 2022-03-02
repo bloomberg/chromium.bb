@@ -75,6 +75,7 @@ void PciguardClientImpl::BlockedThunderboltDevicedConnectedReceieved(
     return;
   }
 
+  VLOG(1) << "Pciguard: Received blocked device: " << device_name;
   NotifyOnBlockedThunderboltDeviceConnected(device_name);
 }
 
@@ -84,13 +85,18 @@ void PciguardClientImpl::OnSignalConnected(const std::string& interface_name,
   if (!success) {
     LOG(ERROR) << "Pciguard: Failed to connect to signal " << signal_name
                << ".";
+    return;
   }
+  VLOG(1) << "Pciguard: Successfully connected to signal " << signal_name
+          << ".";
 }
 
 void PciguardClientImpl::SendExternalPciDevicesPermissionState(bool permitted) {
   dbus::MethodCall method_call(
       pciguard::kPciguardServiceInterface,
       pciguard::kSetExternalPciDevicesPermissionMethod);
+  VLOG(1) << "Pciguard: Sending data access enabled state: " << permitted;
+
   dbus::MessageWriter writer(&method_call);
   writer.AppendBool(permitted);
 

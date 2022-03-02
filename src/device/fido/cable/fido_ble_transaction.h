@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "device/fido/cable/fido_ble_frames.h"
@@ -29,6 +28,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleTransaction {
 
   FidoBleTransaction(FidoBleConnection* connection,
                      uint16_t control_point_length);
+
+  FidoBleTransaction(const FidoBleTransaction&) = delete;
+  FidoBleTransaction& operator=(const FidoBleTransaction&) = delete;
+
   ~FidoBleTransaction();
 
   void WriteRequestFrame(FidoBleFrame request_frame, FrameCallback callback);
@@ -66,8 +69,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleTransaction {
   bool cancel_sent_ = false;
 
   base::WeakPtrFactory<FidoBleTransaction> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FidoBleTransaction);
 };
 
 }  // namespace device

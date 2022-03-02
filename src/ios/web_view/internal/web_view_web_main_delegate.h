@@ -5,8 +5,6 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_DELEGATE_H_
 #define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_DELEGATE_H_
 
-
-#include "base/macros.h"
 #include "ios/web/public/init/web_main_delegate.h"
 
 namespace ios_web_view {
@@ -15,13 +13,14 @@ namespace ios_web_view {
 class WebViewWebMainDelegate : public web::WebMainDelegate {
  public:
   WebViewWebMainDelegate();
+
+  WebViewWebMainDelegate(const WebViewWebMainDelegate&) = delete;
+  WebViewWebMainDelegate& operator=(const WebViewWebMainDelegate&) = delete;
+
   ~WebViewWebMainDelegate() override;
 
   // WebMainDelegate implementation.
   void BasicStartupComplete() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewWebMainDelegate);
 };
 
 }  // namespace ios_web_view

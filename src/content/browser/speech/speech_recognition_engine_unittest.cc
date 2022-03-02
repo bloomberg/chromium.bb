@@ -588,14 +588,14 @@ void SpeechRecognitionEngineTest::ProvideMockProtoResultDownstream(
   uint32_t written = 0;
   while (written < response_string.size()) {
     uint32_t write_bytes = response_string.size() - written;
-    MojoResult result = downstream_data_pipe_->WriteData(
+    MojoResult mojo_result = downstream_data_pipe_->WriteData(
         response_string.data() + written, &write_bytes,
         MOJO_WRITE_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_OK) {
+    if (mojo_result == MOJO_RESULT_OK) {
       written += write_bytes;
       continue;
     }
-    if (result == MOJO_RESULT_SHOULD_WAIT) {
+    if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {
       base::RunLoop().RunUntilIdle();
       continue;
     }
@@ -696,9 +696,9 @@ bool SpeechRecognitionEngineTest::ResultsAreEqual(
 void SpeechRecognitionEngineTest::ExpectFramedChunk(
     const std::string& chunk, uint32_t type) {
   uint32_t value;
-  base::ReadBigEndian(&chunk[0], &value);
+  base::ReadBigEndian(reinterpret_cast<const uint8_t*>(&chunk[0]), &value);
   EXPECT_EQ(chunk.size() - 8, value);
-  base::ReadBigEndian(&chunk[4], &value);
+  base::ReadBigEndian(reinterpret_cast<const uint8_t*>(&chunk[4]), &value);
   EXPECT_EQ(type, value);
 }
 
@@ -738,14 +738,14 @@ std::string SpeechRecognitionEngineTest::ConsumeChunkedUploadData() {
 
     const void* data;
     uint32_t num_bytes;
-    MojoResult result = upstream_data_pipe_->BeginReadData(
+    MojoResult mojo_result = upstream_data_pipe_->BeginReadData(
         &data, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_OK) {
+    if (mojo_result == MOJO_RESULT_OK) {
       out.append(static_cast<const char*>(data), num_bytes);
       upstream_data_pipe_->EndReadData(num_bytes);
       continue;
     }
-    if (result == MOJO_RESULT_SHOULD_WAIT)
+    if (mojo_result == MOJO_RESULT_SHOULD_WAIT)
       break;
 
     ADD_FAILURE() << "Mojo pipe unexpectedly closed";

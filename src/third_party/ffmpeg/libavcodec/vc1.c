@@ -672,6 +672,8 @@ int ff_vc1_parse_frame_header(VC1Context *v, GetBitContext* gb)
     if (v->s.pict_type == AV_PICTURE_TYPE_P)
         v->rnd ^= 1;
 
+    if (get_bits_left(gb) < 5)
+        return AVERROR_INVALIDDATA;
     /* Quantizer stuff */
     pqindex = get_bits(gb, 5);
     if (!pqindex)
@@ -763,6 +765,9 @@ int ff_vc1_parse_frame_header(VC1Context *v, GetBitContext* gb)
             return -1;
         av_log(v->s.avctx, AV_LOG_DEBUG, "MB Skip plane encoding: "
                "Imode: %i, Invert: %i\n", status>>1, status&1);
+
+        if (get_bits_left(gb) < 4)
+            return AVERROR_INVALIDDATA;
 
         /* Hopefully this is correct for P-frames */
         v->s.mv_table_index = get_bits(gb, 2); //but using ff_vc1_ tables
@@ -1695,11 +1700,9 @@ static av_cold void vc1_init_static(void)
  * @param v The VC1Context to initialize
  * @return Status
  */
-av_cold int ff_vc1_init_common(VC1Context *v)
+av_cold void ff_vc1_init_common(VC1Context *v)
 {
     static AVOnce init_static_once = AV_ONCE_INIT;
-
-    v->hrd_rate = v->hrd_buffer = NULL;
 
     /* defaults */
     v->pq      = -1;
@@ -1709,6 +1712,4 @@ av_cold int ff_vc1_init_common(VC1Context *v)
 
     /* VLC tables */
     ff_thread_once(&init_static_once, vc1_init_static);
-
-    return 0;
 }

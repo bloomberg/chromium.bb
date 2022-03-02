@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/components/login/session/session_termination_manager.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,17 +18,16 @@
 #include "chrome/browser/ash/crosapi/fake_browser_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
+#include "chrome/browser/ui/ash/assistant/assistant_browser_delegate_impl.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/login/session/session_termination_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -50,7 +49,7 @@ constexpr char kUserGaiaId[] = "0123456789";
 std::unique_ptr<KeyedService> CreateTestPolicyCertService(
     content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
-      kUser, user_manager::UserManager::Get());
+      Profile::FromBrowserContext(context));
 }
 
 // A user manager that does not set profiles as loaded and notifies observers
@@ -58,6 +57,10 @@ std::unique_ptr<KeyedService> CreateTestPolicyCertService(
 class TestChromeUserManager : public ash::FakeChromeUserManager {
  public:
   TestChromeUserManager() = default;
+
+  TestChromeUserManager(const TestChromeUserManager&) = delete;
+  TestChromeUserManager& operator=(const TestChromeUserManager&) = delete;
+
   ~TestChromeUserManager() override = default;
 
   // user_manager::UserManager:
@@ -90,14 +93,17 @@ class TestChromeUserManager : public ash::FakeChromeUserManager {
 
     return unlock_users;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestChromeUserManager);
 };
 
 }  // namespace
 
 class SessionControllerClientImplTest : public testing::Test {
+ public:
+  SessionControllerClientImplTest(const SessionControllerClientImplTest&) =
+      delete;
+  SessionControllerClientImplTest& operator=(
+      const SessionControllerClientImplTest&) = delete;
+
  protected:
   SessionControllerClientImplTest()
       : browser_manager_(std::make_unique<crosapi::FakeBrowserManager>()) {}
@@ -111,8 +117,8 @@ class SessionControllerClientImplTest : public testing::Test {
     user_manager_ = new TestChromeUserManager;
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager_));
-    // Initialize AssistantClientImpl singleton.
-    assistant_client_ = std::make_unique<AssistantClientImpl>();
+    // Initialize AssistantBrowserDelegate singleton.
+    assistant_delegate_ = std::make_unique<AssistantBrowserDelegateImpl>();
 
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
@@ -123,7 +129,7 @@ class SessionControllerClientImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    assistant_client_.reset();
+    assistant_delegate_.reset();
     user_manager_enabler_.reset();
     user_manager_ = nullptr;
     profile_manager_.reset();
@@ -141,13 +147,15 @@ class SessionControllerClientImplTest : public testing::Test {
   }
 
   // Add and log in a user to the session.
-  void UserAddedToSession(const AccountId& account_id) {
-    const user_manager::User* user = user_manager()->AddUser(account_id);
+  void UserAddedToSession(const AccountId& account_id, bool is_child = false) {
+    const user_manager::User* user =
+        is_child ? user_manager()->AddChildUser(account_id)
+                 : user_manager()->AddUser(account_id);
     session_manager_.CreateSession(
         account_id,
         chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
             account_id.GetUserEmail()),
-        false);
+        is_child);
 
     // Simulate that user profile is loaded.
     CreateTestingProfile(user);
@@ -190,9 +198,9 @@ class SessionControllerClientImplTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  std::unique_ptr<AssistantClientImpl> assistant_client_;
+  std::unique_ptr<AssistantBrowserDelegateImpl> assistant_delegate_;
   session_manager::SessionManager session_manager_;
-  chromeos::SessionTerminationManager session_termination_manager_;
+  ash::SessionTerminationManager session_termination_manager_;
 
  protected:
   std::unique_ptr<crosapi::FakeBrowserManager> browser_manager_;
@@ -205,8 +213,6 @@ class SessionControllerClientImplTest : public testing::Test {
 
   std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>
       cros_settings_test_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionControllerClientImplTest);
 };
 
 // Make sure that cycling one user does not cause any harm.
@@ -291,11 +297,26 @@ TEST_F(SessionControllerClientImplTest, MultiProfileDisallowedByUserPolicy) {
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
+// Make sure MultiProfile is disabled for Family Link users.
+TEST_F(SessionControllerClientImplTest,
+       MultiProfileDisallowedForFamilyLinkUsers) {
+  InitForMultiProfile();
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
+
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId("child@gmail.com", "12345678"));
+  UserAddedToSession(account_id, /*is_child=*/true);
+
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
+}
+
 // Make sure MultiProfile is allowed if the primary user has used
 // policy-provided trust anchors.
 TEST_F(SessionControllerClientImplTest,
        MultiProfileAllowedWithPolicyCertificates) {
-  InitForMultiProfile();
+  TestingProfile* user_profile = InitForMultiProfile();
   user_manager()->AddUser(
       AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
 
@@ -304,8 +325,13 @@ TEST_F(SessionControllerClientImplTest,
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
-  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(
-      account_id.GetUserEmail());
+
+  ASSERT_TRUE(
+      policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          user_profile, base::BindRepeating(&CreateTestPolicyCertService)));
+  policy::PolicyCertServiceFactory::GetForProfile(user_profile)
+      ->SetUsedPolicyCertificates();
+
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 
@@ -527,7 +553,7 @@ TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
   EXPECT_TRUE(session_controller.last_session_start_time().is_null());
 
   // Setting a session length limit in local state sends it to ash.
-  const base::TimeDelta length_limit = base::TimeDelta::FromHours(1);
+  const base::TimeDelta length_limit = base::Hours(1);
   const base::Time start_time = base::Time::Now();
   PrefService* local_state = TestingBrowserProcess::GetGlobal()->local_state();
   local_state->SetInteger(prefs::kSessionLengthLimit,

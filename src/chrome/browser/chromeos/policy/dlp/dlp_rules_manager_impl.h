@@ -34,6 +34,8 @@ class DlpRulesManagerImpl : public DlpRulesManager {
   // DlpRulesManager:
   Level IsRestricted(const GURL& source,
                      Restriction restriction) const override;
+  Level IsRestrictedByAnyRule(const GURL& source,
+                              Restriction restriction) const override;
   Level IsRestrictedDestination(
       const GURL& source,
       const GURL& destination,
@@ -49,6 +51,10 @@ class DlpRulesManagerImpl : public DlpRulesManager {
   std::string GetSourceUrlPattern(const GURL& source_url,
                                   Restriction restriction,
                                   Level level) const override;
+  size_t GetClipboardCheckSizeLimitInBytes() const override;
+  std::vector<uint64_t> GetDisallowedFileTransfers(
+      const std::vector<FileMetadata>& transferred_files,
+      const GURL& destination) const override;
 
  protected:
   friend class DlpRulesManagerFactory;

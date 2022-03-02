@@ -160,9 +160,6 @@ DownloadFileImpl::DownloadFileImpl(
       potential_file_length_(kUnknownContentLength),
       bytes_seen_(0),
       num_active_streams_(0),
-      record_stream_bandwidth_(false),
-      bytes_seen_with_parallel_streams_(0),
-      bytes_seen_without_parallel_streams_(0),
       is_paused_(false),
       download_id_(download_id),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -189,8 +186,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 void DownloadFileImpl::Initialize(
     InitializeCallback initialize_callback,
     CancelRequestCallback cancel_request_callback,
-    const DownloadItem::ReceivedSlices& received_slices,
-    bool is_parallelizable) {
+    const DownloadItem::ReceivedSlices& received_slices) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   update_timer_ = std::make_unique<base::RepeatingTimer>();
@@ -227,8 +223,6 @@ void DownloadFileImpl::Initialize(
     return;
   }
   download_start_ = base::TimeTicks::Now();
-  last_update_time_ = download_start_;
-  record_stream_bandwidth_ = is_parallelizable;
 
   // Primarily to make reset to zero in restart visible to owner.
   SendUpdate();
@@ -407,8 +401,7 @@ base::TimeDelta DownloadFileImpl::GetRetryDelayForFailedRename(
   // 2 at each subsequent retry. Assumes that |retries_left| starts at
   // kMaxRenameRetries. Also assumes that kMaxRenameRetries is less than the
   // number of bits in an int.
-  return base::TimeDelta::FromMilliseconds(kInitialRenameRetryDelayMs) *
-         (1 << attempt_number);
+  return base::Milliseconds(kInitialRenameRetryDelayMs) * (1 << attempt_number);
 }
 
 bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
@@ -545,9 +538,12 @@ bool DownloadFileImpl::InProgress() const {
 void DownloadFileImpl::Pause() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_paused_ = true;
-  record_stream_bandwidth_ = false;
   for (auto& stream : source_streams_)
     stream.second->ClearDataReadyCallback();
+
+  // Stop sending updates since meaningless after paused.
+  if (update_timer_ && update_timer_->IsRunning())
+    update_timer_->Stop();
 }
 
 void DownloadFileImpl::Resume() {
@@ -579,8 +575,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   bool should_terminate = false;
   InputStream::StreamState state(InputStream::EMPTY);
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
-  base::TimeDelta delta(
-      base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
+  base::TimeDelta delta(base::Milliseconds(kMaxTimeBlockingFileThreadMs));
   // Take care of any file local activity required.
   do {
     state = source_stream->Read(&incoming_data, &incoming_data_size);
@@ -706,12 +701,6 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
 
 void DownloadFileImpl::OnDownloadCompleted() {
   RecordFileBandwidth(bytes_seen_, base::TimeTicks::Now() - download_start_);
-  if (record_stream_bandwidth_) {
-    RecordParallelizableDownloadStats(
-        bytes_seen_with_parallel_streams_, download_time_with_parallel_streams_,
-        bytes_seen_without_parallel_streams_,
-        download_time_without_parallel_streams_, IsSparseFile());
-  }
   weak_factory_.InvalidateWeakPtrs();
   std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
   update_timer_.reset();
@@ -750,21 +739,10 @@ void DownloadFileImpl::SendUpdate() {
 
 void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
   if (!update_timer_->IsRunning()) {
-    update_timer_->Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
-                         this, &DownloadFileImpl::SendUpdate);
+    update_timer_->Start(FROM_HERE, base::Milliseconds(kUpdatePeriodMs), this,
+                         &DownloadFileImpl::SendUpdate);
   }
   rate_estimator_.Increment(data_len);
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta time_elapsed = (now - last_update_time_);
-  last_update_time_ = now;
-  if (num_active_streams_ > 1) {
-    download_time_with_parallel_streams_ += time_elapsed;
-    bytes_seen_with_parallel_streams_ += data_len;
-  } else {
-    download_time_without_parallel_streams_ += time_elapsed;
-    bytes_seen_without_parallel_streams_ += data_len;
-  }
 }
 
 void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/drag_drop/drag_drop_capture_delegate.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -28,7 +29,7 @@ class TabletModeBrowserWindowDragSessionWindowsHider;
 // Provides special handling for Chrome tab drags on behalf of
 // DragDropController. This must be created at the beginning of a tab drag and
 // destroyed at the end.
-class ASH_EXPORT TabDragDropDelegate {
+class ASH_EXPORT TabDragDropDelegate : public DragDropCaptureDelegate {
  public:
   // Determines whether |drag_data| indicates a tab drag from a WebUI tab strip
   // (or simply returns false if the integration is disabled).
@@ -56,18 +57,24 @@ class ASH_EXPORT TabDragDropDelegate {
 
   // Must be called on drop if it was not accepted by the drop target. After
   // calling this, this delegate must not be used.
-  void Drop(const gfx::Point& location_in_screen,
-            const ui::OSExchangeData& drop_data);
+  void DropAndDeleteSelf(const gfx::Point& location_in_screen,
+                         const ui::OSExchangeData& drop_data);
 
  private:
   // Scales or transforms the source window if appropriate for this drag.
   // |candidate_snap_position| is where the dragged tab will be snapped
   // if dropped immediately.
   void UpdateSourceWindowBoundsIfNecessary(
-      SplitViewController::SnapPosition candidate_snap_position);
+      SplitViewController::SnapPosition candidate_snap_position,
+      const gfx::Point& location_in_screen);
 
   // Puts the source window back into its original position.
   void RestoreSourceWindowBounds();
+
+  // Effectively handles the new window creation in DropAndDeleteSelf(). This
+  // method can be called asynchronously in case of Lacros.
+  void OnNewBrowserWindowCreated(const gfx::Point& location_in_screen,
+                                 aura::Window* new_window);
 
   aura::Window* const root_window_;
   aura::Window* const source_window_;

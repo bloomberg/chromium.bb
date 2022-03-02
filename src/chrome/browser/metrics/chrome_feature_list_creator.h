@@ -8,7 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
@@ -17,18 +18,25 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_service.h"
 
+namespace ash {
+class ChromeBrowserMainPartsAsh;
+}  // namespace ash
+
 class ChromeMetricsServicesManagerClient;
 
 // The ChromeFeatureListCreator creates the FeatureList and classes required for
 // setting up field trials, e.g. VariationsService, MetricsServicesManager etc.
 // before the full browser loop starts. The |local_state| is instantiated, and
 // its ownership will be taken by BrowserProcessImpl when the full browser
-// starts. Note: On Chrome OS, this class depends on
-// BrowserPolicyConnectorChromeOS whose behavior depends on DBusThreadManager
-// being initialized.
+// starts. Note: On Chrome OS, this class depends on BrowserPolicyConnectorAsh
+// whose behavior depends on DBusThreadManager being initialized.
 class ChromeFeatureListCreator {
  public:
   ChromeFeatureListCreator();
+
+  ChromeFeatureListCreator(const ChromeFeatureListCreator&) = delete;
+  ChromeFeatureListCreator& operator=(const ChromeFeatureListCreator&) = delete;
+
   ~ChromeFeatureListCreator();
 
   // Initializes all necessary parameters to create the feature list and calls
@@ -71,10 +79,19 @@ class ChromeFeatureListCreator {
     return browser_field_trials_.get();
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Get the FeatureList::Accessor, clearing immediately -- this must only be
+  // used by ChromeBrowserMainPartsAsh.
+  std::unique_ptr<base::FeatureList::Accessor> GetAndClearFeatureListAccessor(
+      base::PassKey<ash::ChromeBrowserMainPartsAsh> key) {
+    return std::move(cros_feature_list_accessor_);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
  private:
   void CreatePrefService();
   void ConvertFlagsToSwitches();
-  void SetupFieldTrials();
+  void SetUpFieldTrials();
   void CreateMetricsServices();
 
   // Imports variations initial preference any preferences (to local state)
@@ -95,7 +112,7 @@ class ChromeFeatureListCreator {
   std::string actual_locale_;
 
   // This is owned by |metrics_services_manager_| but we need to expose it.
-  ChromeMetricsServicesManagerClient* metrics_services_manager_client_;
+  raw_ptr<ChromeMetricsServicesManagerClient> metrics_services_manager_client_;
 
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
@@ -106,7 +123,11 @@ class ChromeFeatureListCreator {
   std::unique_ptr<installer::InitialPreferences> installer_initial_prefs_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeFeatureListCreator);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On Chrome OS, the platform needs to be able to access the
+  // FeatureList::Accessor. On other platforms, this API should not be used.
+  std::unique_ptr<base::FeatureList::Accessor> cros_feature_list_accessor_;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 #endif  // CHROME_BROWSER_METRICS_CHROME_FEATURE_LIST_CREATOR_H_

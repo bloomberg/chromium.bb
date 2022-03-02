@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/filter/filter_source_stream.h"
 #include "net/filter/gzip_header.h"
@@ -28,6 +27,9 @@ class IOBuffer;
 //
 class NET_EXPORT_PRIVATE GzipSourceStream : public FilterSourceStream {
  public:
+  GzipSourceStream(const GzipSourceStream&) = delete;
+  GzipSourceStream& operator=(const GzipSourceStream&) = delete;
+
   ~GzipSourceStream() override;
 
   // Creates a GzipSourceStream. Return nullptr if initialization fails.
@@ -107,8 +109,6 @@ class NET_EXPORT_PRIVATE GzipSourceStream : public FilterSourceStream {
 
   // Used when replaying data.
   InputState replay_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(GzipSourceStream);
 };
 
 }  // namespace net

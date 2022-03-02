@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//skia/features.gni")
+import("//third_party/dawn/scripts/dawn_features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/gl/features.gni")
 
@@ -54,6 +55,8 @@ target(link_target_type, "service_sources") {
     "memory_tracking.h",
     "scheduler.cc",
     "scheduler.h",
+    "scheduler_task_runner.cc",
+    "scheduler_task_runner.h",
     "sequence_id.h",
     "sync_point_manager.cc",
     "sync_point_manager.h",
@@ -64,15 +67,13 @@ target(link_target_type, "service_sources") {
   ]
 
   configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config:precompiled_headers",
     "//gpu:gpu_implementation",
     "//third_party/khronos:khronos_headers",
   ]
 
   public_deps = [
-    "//base/util/type_safety",
+    "//base",
     "//gpu/command_buffer/common:common_sources",
     "//url:url",
   ]
@@ -226,14 +227,24 @@ target(link_target_type, "gles2_sources") {
     "shared_image_backing.h",
     "shared_image_backing_factory.cc",
     "shared_image_backing_factory.h",
+    "shared_image_backing_factory_gl_common.cc",
+    "shared_image_backing_factory_gl_common.h",
+    "shared_image_backing_factory_gl_image.cc",
+    "shared_image_backing_factory_gl_image.h",
     "shared_image_backing_factory_gl_texture.cc",
     "shared_image_backing_factory_gl_texture.h",
+    "shared_image_backing_factory_raw_draw.cc",
+    "shared_image_backing_factory_raw_draw.h",
+    "shared_image_backing_factory_shared_memory.cc",
+    "shared_image_backing_factory_shared_memory.h",
     "shared_image_backing_gl_common.cc",
     "shared_image_backing_gl_common.h",
     "shared_image_backing_gl_image.cc",
     "shared_image_backing_gl_image.h",
     "shared_image_backing_gl_texture.cc",
     "shared_image_backing_gl_texture.h",
+    "shared_image_backing_shared_memory.cc",
+    "shared_image_backing_shared_memory.h",
     "shared_image_factory.cc",
     "shared_image_factory.h",
     "shared_image_manager.cc",
@@ -290,7 +301,7 @@ target(link_target_type, "gles2_sources") {
   include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
-    "//base/util/type_safety",
+    "//base",
     "//cc/paint",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
@@ -315,11 +326,12 @@ target(link_target_type, "gles2_sources") {
     "//gpu/vulkan:buildflags",
     "//skia:buildflags",
     "//third_party/angle:angle_image_util",
-    "//third_party/angle:commit_id",
+    "//third_party/angle:angle_version_info",
     "//third_party/libyuv",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
     "//third_party/zlib",
+    "//ui/base:features",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -345,6 +357,11 @@ target(link_target_type, "gles2_sources") {
     deps += [
       "//components/viz/common:vulkan_context_provider",
       "//gpu/vulkan",
+    ]
+
+    sources += [
+      "shared_image_backing_factory_angle_vulkan.cc",
+      "shared_image_backing_factory_angle_vulkan.h",
     ]
 
     if (is_linux || is_chromeos || is_fuchsia || is_android || is_win) {
@@ -390,16 +407,20 @@ target(link_target_type, "gles2_sources") {
         "shared_image_representation_dawn_ozone.h",
       ]
     }
-    if (use_x11) {
-      deps += [ "//ui/base:features" ]
-    }
   }
 
   if (use_dawn) {
     deps += [
+      "//third_party/dawn/src/dawn:dawn_proc",
       "//third_party/dawn/src/dawn_native",
       "//third_party/dawn/src/dawn_platform",
     ]
+    if (dawn_enable_opengles) {
+      sources += [
+        "shared_image_representation_dawn_egl_image.cc",
+        "shared_image_representation_dawn_egl_image.h",
+      ]
+    }
   }
 
   if (is_mac) {
@@ -437,12 +458,16 @@ target(link_target_type, "gles2_sources") {
       "ahardwarebuffer_utils.h",
       "image_reader_gl_owner.cc",
       "image_reader_gl_owner.h",
+      "ref_counted_lock.cc",
+      "ref_counted_lock.h",
       "shared_image_backing_android.cc",
       "shared_image_backing_android.h",
       "shared_image_backing_egl_image.cc",
       "shared_image_backing_egl_image.h",
       "shared_image_backing_factory_ahardwarebuffer.cc",
       "shared_image_backing_factory_ahardwarebuffer.h",
+      "shared_image_backing_factory_egl.cc",
+      "shared_image_backing_factory_egl.h",
       "shared_image_backing_scoped_hardware_buffer_fence_sync.cc",
       "shared_image_backing_scoped_hardware_buffer_fence_sync.h",
       "shared_image_batch_access_manager.cc",
@@ -455,6 +480,10 @@ target(link_target_type, "gles2_sources") {
       "shared_image_representation_skia_vk_android.h",
       "shared_image_video.cc",
       "shared_image_video.h",
+      "shared_image_video_image_reader.cc",
+      "shared_image_video_image_reader.h",
+      "shared_image_video_surface_texture.cc",
+      "shared_image_video_surface_texture.h",
       "stream_texture_shared_image_interface.h",
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
@@ -480,6 +509,8 @@ target(link_target_type, "gles2_sources") {
 
   if (is_win) {
     sources += [
+      "dxgi_shared_handle_manager.cc",
+      "dxgi_shared_handle_manager.h",
       "shared_image_backing_d3d.cc",
       "shared_image_backing_d3d.h",
       "shared_image_backing_factory_d3d.cc",
@@ -487,6 +518,7 @@ target(link_target_type, "gles2_sources") {
       "shared_image_representation_d3d.cc",
       "shared_image_representation_d3d.h",
     ]
+    libs = [ "dxguid.lib" ]
   }
 }
 

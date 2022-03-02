@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/base/theme_provider.h"
@@ -26,11 +26,9 @@ DownloadShelfWebView::DownloadShelfWebView(Browser* browser,
 
   LoadInitialURL(GURL(chrome::kChromeUIDownloadShelfURL));
 
-  shelf_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(
+  shelf_animation_.SetSlideDuration(base::Milliseconds(
       gfx::Animation::ShouldRenderRichAnimation() ? 120 : 0));
 
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents());
   task_manager::WebContentsTags::CreateForTabContents(web_contents());
 
   DownloadShelfUI* download_shelf_ui = GetDownloadShelfUI();
@@ -46,7 +44,7 @@ gfx::Size DownloadShelfWebView::CalculatePreferredSize() const {
 }
 
 bool DownloadShelfWebView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   // Suppress native context menu, since the web content shows one.
   return true;
@@ -62,11 +60,11 @@ void DownloadShelfWebView::OnThemeChanged() {
 
 void DownloadShelfWebView::DoShowDownload(
     DownloadUIModel::DownloadUIModelPtr download) {
-  const base::TimeTicks show_download_start_time_ticks = base::TimeTicks::Now();
+  const base::Time show_download_start_time = base::Time::Now();
   DownloadShelfUI* download_shelf_ui = GetDownloadShelfUI();
   if (download_shelf_ui) {
     download_shelf_ui->DoShowDownload(std::move(download),
-                                      show_download_start_time_ticks);
+                                      show_download_start_time);
   }
 }
 
@@ -109,14 +107,15 @@ void DownloadShelfWebView::AnimationEnded(const gfx::Animation* animation) {
   const bool shown = shelf_animation_.IsShowing();
   parent_->SetDownloadShelfVisible(shown);
 
-  // If the shelf was explicitly closed by the user, there are further steps to
-  // take to complete closing.
   if (shown || is_hidden())
     return;
 
+  // The shelf is explicitly closed by the user. First, remove the
+  // context menu before DownloadUIModels are removed from DownloadShelfUI.
+  context_menu_view_.reset();
+  // Then, remove all downloads that are not in progress.
   DownloadShelfUI* download_shelf_ui = GetDownloadShelfUI();
   if (download_shelf_ui) {
-    // Remove all downloads that are not in progress.
     for (DownloadUIModel* model : download_shelf_ui->GetDownloads()) {
       // Treat the item as opened when the shelf closes. This way if it gets
       // shown again the user need not open the item for the shelf to
@@ -135,13 +134,18 @@ views::View* DownloadShelfWebView::GetView() {
   return this;
 }
 
+void DownloadShelfWebView::DoShowAll() {
+  chrome::ShowDownloads(browser());
+}
+
 void DownloadShelfWebView::ShowDownloadContextMenu(
     DownloadUIModel* download,
     const gfx::Point& position,
     base::OnceClosure on_menu_will_show_callback) {
   gfx::Point screen_position = position;
   ConvertPointToScreen(this, &screen_position);
-  context_menu_view_ = std::make_unique<DownloadShelfContextMenuView>(download);
+  context_menu_view_ =
+      std::make_unique<DownloadShelfContextMenuView>(download->GetWeakPtr());
   context_menu_view_->SetOnMenuWillShowCallback(
       std::move(on_menu_will_show_callback));
   context_menu_view_->Run(

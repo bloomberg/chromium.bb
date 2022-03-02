@@ -4,9 +4,12 @@
 
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"
 
+#include "components/viz/common/quads/shared_element_draw_quad.h"
 #include "services/viz/public/cpp/compositing/compositor_render_pass_id_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/resource_id_mojom_traits.h"
 #include "services/viz/public/cpp/crash_keys.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 #include "ui/gfx/mojom/transform_mojom_traits.h"
 
@@ -52,6 +55,10 @@ viz::DrawQuad* AllocateAndConstruct(
     case viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::YUVVideoDrawQuad>();
       quad->material = viz::DrawQuad::Material::kYuvVideoContent;
+      return quad;
+    case viz::mojom::DrawQuadStateDataView::Tag::SHARED_ELEMENT_QUAD_STATE:
+      quad = list->AllocateAndConstruct<viz::SharedElementDrawQuad>();
+      quad->material = viz::DrawQuad::Material::kSharedElement;
       return quad;
   }
   NOTREACHED();
@@ -149,12 +156,15 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
   quad->premultiplied_alpha = data.premultiplied_alpha();
   gfx::ProtectedVideoType protected_video_type =
       gfx::ProtectedVideoType::kClear;
+  viz::OverlayPriority overlay_priority_hint = viz::OverlayPriority::kLow;
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
       !data.ReadUvBottomRight(&quad->uv_bottom_right) ||
-      !data.ReadProtectedVideoType(&protected_video_type)) {
+      !data.ReadProtectedVideoType(&protected_video_type) ||
+      !data.ReadOverlayPriorityHint(&overlay_priority_hint)) {
     return false;
   }
   quad->protected_video_type = protected_video_type;
+  quad->overlay_priority_hint = overlay_priority_hint;
   quad->background_color = data.background_color();
   base::span<float> vertex_opacity_array(quad->vertex_opacity);
   if (!data.ReadVertexOpacity(&vertex_opacity_array))
@@ -164,7 +174,10 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
   quad->nearest_neighbor = data.nearest_neighbor();
   quad->secure_output_only = data.secure_output_only();
   quad->is_video_frame = data.is_video_frame();
-  quad->hw_protected_validation_id = data.hw_protected_validation_id();
+
+  if (!data.ReadDamageRect(&quad->damage_rect))
+    return false;
+
   return true;
 }
 
@@ -185,6 +198,14 @@ bool StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad>::Read(
   quad->force_anti_aliasing_off = data.force_anti_aliasing_off();
   quad->resources.count = 1;
   return true;
+}
+
+// static
+bool StructTraits<viz::mojom::SharedElementQuadStateDataView, viz::DrawQuad>::
+    Read(viz::mojom::SharedElementQuadStateDataView data, viz::DrawQuad* out) {
+  viz::SharedElementDrawQuad* shared_element_quad =
+      static_cast<viz::SharedElementDrawQuad*>(out);
+  return data.ReadResourceId(&shared_element_quad->resource_id);
 }
 
 // static
@@ -240,6 +261,9 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
     viz::SetDeserializationCrashKeyString("Bits per channel too big");
     return false;
   }
+  if (!data.ReadDamageRect(&quad->damage_rect))
+    return false;
+
   return true;
 }
 

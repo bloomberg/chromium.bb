@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
@@ -58,6 +59,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void SetIsPlatformDecoder(bool is_platform_decoder);
   void SetIsDecryptingDemuxerStream(bool is_dds);
+  void SetEncryptionType(EncryptionType decryption_type);
   void InitializeDecoder(DecoderType* decoder,
                          const DecoderConfigType& config,
                          bool low_delay,
@@ -79,7 +81,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   // if timestamp gaps are detected. Sufficiently large gaps can lead to AV sync
   // drift.
   std::unique_ptr<AudioTimestampValidator> audio_ts_validator_;
-  MediaLog* media_log_;
+  raw_ptr<MediaLog> media_log_;
   // HW layout at the time pipeline was started. Will not reflect possible
   // device changes.
   ChannelLayout initial_hw_layout_;
@@ -116,6 +118,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void SetIsPlatformDecoder(bool is_platform_decoder);
   void SetIsDecryptingDemuxerStream(bool is_dds);
+  void SetEncryptionType(EncryptionType decryption_type);
   void InitializeDecoder(DecoderType* decoder,
                          const DecoderConfigType& config,
                          bool low_delay,
@@ -128,6 +131,10 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   PostDecodeAction OnDecodeDone(OutputType* buffer);
   void OnStreamReset(DemuxerStream* stream);
   void OnOutputReady(OutputType* output);
+
+  // Set whether or not software decoder implementations will be preferred.
+  void SetPreferNonPlatformDecoders(bool);
+  bool GetPreferNonPlatformDecoders() const;
 
  private:
   base::TimeDelta last_keyframe_timestamp_;
@@ -144,6 +151,8 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   PipelineStatistics stats_;
 
   VideoTransformation transform_ = kNoTransformation;
+
+  bool prefer_non_platform_decoders_ = false;
 
   base::WeakPtr<DecoderStreamTraits<DemuxerStream::VIDEO>> weak_this_;
   base::WeakPtrFactory<DecoderStreamTraits<DemuxerStream::VIDEO>> weak_factory_{

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_once_callback.h"
@@ -55,6 +55,10 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
       std::vector<std::string> requested_extensions,
       WebSocketStreamRequestAPI* request,
       std::vector<std::string> dns_aliases);
+
+  WebSocketHttp2HandshakeStream(const WebSocketHttp2HandshakeStream&) = delete;
+  WebSocketHttp2HandshakeStream& operator=(
+      const WebSocketHttp2HandshakeStream&) = delete;
 
   ~WebSocketHttp2HandshakeStream() override;
 
@@ -129,9 +133,9 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
 
   // Owned by another object.
   // |connect_delegate| will live during the lifetime of this object.
-  WebSocketStream::ConnectDelegate* const connect_delegate_;
+  const raw_ptr<WebSocketStream::ConnectDelegate> connect_delegate_;
 
-  HttpResponseInfo* http_response_info_;
+  raw_ptr<HttpResponseInfo> http_response_info_;
 
   spdy::Http2HeaderBlock http2_request_headers_;
 
@@ -141,9 +145,9 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // The extensions we requested.
   std::vector<std::string> requested_extensions_;
 
-  WebSocketStreamRequestAPI* const stream_request_;
+  const raw_ptr<WebSocketStreamRequestAPI> stream_request_;
 
-  const HttpRequestInfo* request_info_;
+  raw_ptr<const HttpRequestInfo> request_info_;
 
   RequestPriority priority_;
 
@@ -158,6 +162,13 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // WebSocketSpdyStreamAdapter holding a WeakPtr to |stream_|.
   // This can be passed on to WebSocketBasicStream when created.
   std::unique_ptr<WebSocketSpdyStreamAdapter> stream_adapter_;
+
+  // Temporary variables to track where stream_adapter_ was reset.
+  // TODO(ricea): Remove these once the cause of https://crbug.com/1215989
+  // is established.
+  bool stream_adapter_reset_by_onclose_ = false;
+  bool stream_adapter_reset_by_close_ = false;
+  bool stream_adapter_moved_by_upgrade_ = false;
 
   // True if |stream_| has been created then closed.
   bool stream_closed_;
@@ -189,8 +200,6 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   std::vector<std::string> dns_aliases_;
 
   base::WeakPtrFactory<WebSocketHttp2HandshakeStream> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketHttp2HandshakeStream);
 };
 
 }  // namespace net

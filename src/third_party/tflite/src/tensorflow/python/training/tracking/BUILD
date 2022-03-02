@@ -11,15 +11,13 @@ package(
     default_visibility = [
         "//tensorflow:internal",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
-
-exports_files(["LICENSE"])
 
 py_library(
     name = "base",
     srcs = ["base.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorflow/python:array_ops",
         "//tensorflow/python:constant_op",
@@ -30,6 +28,7 @@ py_library(
         "//tensorflow/python:platform",
         "//tensorflow/python:util",
         "//tensorflow/python/eager:context",
+        "//tensorflow/python/saved_model:registration",
         "//tensorflow/python/training/saving:saveable_object",
         "@six_archive//:six",
     ],
@@ -45,9 +44,60 @@ tf_py_test(
 )
 
 py_library(
-    name = "tracking",
-    srcs = ["tracking.py"],
-    srcs_version = "PY2AND3",
+    name = "trackable_utils",
+    srcs = ["trackable_utils.py"],
+    srcs_version = "PY3",
+)
+
+tf_py_test(
+    name = "trackable_utils_test",
+    srcs = ["trackable_utils_test.py"],
+    deps = [
+        ":trackable_utils",
+        "//tensorflow/python/eager:test",
+    ],
+)
+
+py_library(
+    name = "base_delegate",
+    srcs = ["base_delegate.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorflow/python/util:tf_export",
+    ],
+)
+
+tf_py_test(
+    name = "base_delegate_test",
+    srcs = ["base_delegate_test.py"],
+    deps = [
+        ":base",
+        ":base_delegate",
+        ":util",
+        "//tensorflow/python:extra_py_tests_deps",
+        "//tensorflow/python:framework_test_lib",
+        "//tensorflow/python:variables",
+        "//tensorflow/python/eager:test",
+        "//tensorflow/python/saved_model:load",
+        "//tensorflow/python/saved_model:save",
+    ],
+)
+
+py_library(
+    name = "asset",
+    srcs = ["asset.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":base",
+        "//tensorflow/python:lib",
+        "//tensorflow/python/eager:context",
+    ],
+)
+
+py_library(
+    name = "autotrackable",
+    srcs = ["autotrackable.py"],
+    srcs_version = "PY3",
     deps = [
         ":base",
         ":data_structures",
@@ -55,25 +105,55 @@ py_library(
 )
 
 tf_py_test(
-    name = "tracking_test",
-    srcs = ["tracking_test.py"],
+    name = "autotrackable_test",
+    srcs = ["autotrackable_test.py"],
+    deps = [
+        ":autotrackable",
+        ":data_structures",
+        "//tensorflow/python:client_testlib",
+    ],
+)
+
+py_library(
+    name = "resource",
+    srcs = ["resource.py"],
+    srcs_version = "PY3",
     deps = [
         ":base",
-        ":tracking",
+    ],
+)
+
+tf_py_test(
+    name = "resource_test",
+    srcs = ["resource_test.py"],
+    deps = [
+        ":base",
         "//tensorflow/python:client_testlib",
+    ],
+)
+
+py_library(
+    name = "tracking",
+    srcs = ["tracking.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":asset",
+        ":autotrackable",
+        ":data_structures",
+        ":resource",
     ],
 )
 
 py_library(
     name = "layer_utils",
     srcs = ["layer_utils.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_library(
     name = "data_structures",
     srcs = ["data_structures.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":base",
         ":layer_utils",
@@ -103,7 +183,7 @@ tf_py_test(
 py_library(
     name = "graph_view",
     srcs = ["graph_view.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":base",
         ":tracking",
@@ -111,6 +191,7 @@ py_library(
         "//tensorflow/python:constant_op",
         "//tensorflow/python:dtypes",
         "//tensorflow/python:framework_ops",
+        "//tensorflow/python/training:optimizer",
         "//tensorflow/python/training/saving:saveable_object",
         "//tensorflow/python/training/saving:saveable_object_util",
     ],
@@ -119,7 +200,7 @@ py_library(
 py_library(
     name = "util",
     srcs = ["util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":base",
         ":data_structures",
@@ -146,6 +227,7 @@ py_library(
         "//tensorflow/python:variables",
         "//tensorflow/python/eager:context",
         "//tensorflow/python/eager:def_function",
+        "//tensorflow/python/saved_model:utils",
         "//tensorflow/python/training/saving:checkpoint_options",
         "//tensorflow/python/training/saving:functional_saver",
         "//tensorflow/python/training/saving:saveable_object_util",
@@ -156,7 +238,10 @@ py_library(
 tf_py_test(
     name = "util_test",
     srcs = ["util_test.py"],
-    tags = ["notsan"],  # b/74395663
+    tags = [
+        "no_windows",  # TODO(b/201457117)
+        "notsan",  # TODO(b/74395663)
+    ],
     deps = [
         ":base",
         ":graph_view",
@@ -184,6 +269,7 @@ tf_py_test(
         "//tensorflow/python/eager:context",
         "//tensorflow/python/eager:def_function",
         "//tensorflow/python/eager:test",
+        "//tensorflow/python/saved_model:save",
         "//tensorflow/python/training/saving:checkpoint_options",
         "@absl_py//absl/testing:parameterized",
         "@six_archive//:six",
@@ -217,7 +303,7 @@ tf_py_test(
 py_library(
     name = "python_state",
     srcs = ["python_state.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":base",
     ],
@@ -248,4 +334,13 @@ tf_py_test(
 tf_py_logged_benchmark(
     name = "benchmarks",
     target = "//tensorflow/python/training/tracking:benchmarks_test",
+)
+
+tf_py_test(
+    name = "checkpoint_metrics_test",
+    srcs = ["checkpoint_metrics_test.py"],
+    deps = [
+        ":util",
+        "//tensorflow/python:platform_test",
+    ],
 )

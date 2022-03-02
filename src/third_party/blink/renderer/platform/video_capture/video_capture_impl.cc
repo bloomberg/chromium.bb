@@ -16,15 +16,17 @@
 #include <memory>
 #include <utility>
 
+#include <GLES2/gl2extchromium.h>
+
 #include "base/bind.h"
-#include "base/bind_post_task.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/token.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -32,8 +34,11 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/video_capture_buffer.mojom-blink.h"
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
+#include "media/capture/video_capture_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -48,9 +53,6 @@ constexpr int kMaxFirstFrameLogs = 5;
 
 const base::Feature kTimeoutHangingVideoCaptureStarts{
     "TimeoutHangingVideoCaptureStarts", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kMultiPlaneSharedImageCapture{
-    "MultiPlaneSharedImageCapture", base::FEATURE_DISABLED_BY_DEFAULT};
 
 using VideoFrameBufferHandleType = media::mojom::blink::VideoBufferHandle::Tag;
 
@@ -105,6 +107,8 @@ struct VideoCaptureImpl::BufferContext
         break;
     }
   }
+  BufferContext(const BufferContext&) = delete;
+  BufferContext& operator=(const BufferContext&) = delete;
 
   VideoFrameBufferHandleType buffer_type() const { return buffer_type_; }
   const uint8_t* data() const { return data_; }
@@ -142,15 +146,19 @@ struct VideoCaptureImpl::BufferContext
     return gmb_resources_->gpu_memory_buffer.get();
   }
 
-  static void MailboxHolderReleased(scoped_refptr<BufferContext> buffer_context,
-                                    const gpu::SyncToken& release_sync_token) {
+  static void MailboxHolderReleased(
+      scoped_refptr<BufferContext> buffer_context,
+      const gpu::SyncToken& release_sync_token,
+      std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer) {
     if (!buffer_context->media_task_runner_->RunsTasksInCurrentSequence()) {
       buffer_context->media_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&BufferContext::MailboxHolderReleased,
-                                    buffer_context, release_sync_token));
+          FROM_HERE,
+          base::BindOnce(&BufferContext::MailboxHolderReleased, buffer_context,
+                         release_sync_token, std::move(gpu_memory_buffer)));
       return;
     }
     buffer_context->gmb_resources_->release_sync_token = release_sync_token;
+    // Free |gpu_memory_buffer|.
   }
 
   static void DestroyTextureOnMediaThread(
@@ -244,8 +252,6 @@ struct VideoCaptureImpl::BufferContext
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
   std::unique_ptr<GpuMemoryBufferResources> gmb_resources_;
-
-  DISALLOW_COPY_AND_ASSIGN(BufferContext);
 };
 
 VideoCaptureImpl::VideoFrameBufferPreparer::VideoFrameBufferPreparer(
@@ -408,6 +414,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
                   gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing(),
                   video_capture_impl_.gpu_factories_->GpuMemoryBufferManager(),
                   video_capture_impl_.pool_);
+      if (!gpu_memory_buffer_) {
+        LOG(ERROR) << "Failed to open GpuMemoryBuffer handle";
+        return false;
+      }
     }
   }
   // After initializing, either |frame_| or |gpu_memory_buffer_| has been set.
@@ -462,11 +472,21 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
   usage |= gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX;
 #endif
 
+  unsigned texture_target =
+      buffer_context_->gpu_factories()->ImageTextureTarget(
+          gpu_memory_buffer_->GetFormat());
+
 #if defined(OS_WIN)
   if (output_format ==
       media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB) {
     planes.push_back(gfx::BufferPlane::Y);
     planes.push_back(gfx::BufferPlane::UV);
+
+    // Explicitly set GL_TEXTURE_EXTERNAL_OES since ImageTextureTarget() will
+    // return GL_TEXTURE_2D due to GMB factory not supporting NV12 DXGI GMBs.
+    // See https://crbug.com/1253791#c17
+    texture_target = GL_TEXTURE_EXTERNAL_OES;
+
     if (should_recreate_shared_image ||
         buffer_context_->gmb_resources()->mailboxes[0].IsZero()) {
       auto plane_mailboxes = sii->CreateSharedImageVideoPlanes(
@@ -481,7 +501,8 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
   }
 #endif  // defined(OS_WIN)
   if (planes.empty()) {
-    if (base::FeatureList::IsEnabled(kMultiPlaneSharedImageCapture)) {
+    if (base::FeatureList::IsEnabled(
+            media::kMultiPlaneVideoCaptureSharedImages)) {
       planes.push_back(gfx::BufferPlane::Y);
       planes.push_back(gfx::BufferPlane::UV);
     } else {
@@ -506,10 +527,6 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
 
   const gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
-  const unsigned texture_target =
-      buffer_context_->gpu_factories()->ImageTextureTarget(
-          gpu_memory_buffer_->GetFormat());
-
   gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
   for (size_t plane = 0; plane < planes.size(); ++plane) {
     DCHECK(!buffer_context_->gmb_resources()->mailboxes[plane].IsZero());
@@ -525,6 +542,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
       std::move(gpu_memory_buffer_), mailbox_holder_array,
       base::BindOnce(&BufferContext::MailboxHolderReleased, buffer_context_),
       frame_info_->timestamp);
+  if (!frame_) {
+    LOG(ERROR) << "Can't wrap GpuMemoryBuffer as VideoFrame";
+    return false;
+  }
   frame_->metadata().allow_overlay = true;
   frame_->metadata().read_lock_fences_enabled = true;
   return true;
@@ -666,6 +687,11 @@ void VideoCaptureImpl::StartCapture(
       OnLog("VideoCaptureImpl is in error state.");
       state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
       return;
+    case VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED:
+      OnLog("VideoCaptureImpl is in system permissions error state.");
+      state_update_cb.Run(
+          blink::VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED);
+      return;
     case VIDEO_CAPTURE_STATE_PAUSED:
     case VIDEO_CAPTURE_STATE_RESUMED:
       // The internal |state_| is never set to PAUSED/RESUMED since
@@ -729,13 +755,36 @@ void VideoCaptureImpl::SetGpuMemoryBufferSupportForTesting(
   gpu_memory_buffer_support_ = std::move(gpu_memory_buffer_support);
 }
 
-void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
-  DVLOG(1) << __func__ << " state: " << state;
+void VideoCaptureImpl::OnStateChanged(
+    media::mojom::blink::VideoCaptureResultPtr result) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   // Stop the startup deadline timer as something has happened.
   startup_timeout_.Stop();
 
+  if (result->which() ==
+      media::mojom::blink::VideoCaptureResult::Tag::ERROR_CODE) {
+    DVLOG(1) << __func__ << " Failed with an error.";
+    if (result->get_error_code() ==
+        media::VideoCaptureError::kWinMediaFoundationSystemPermissionDenied) {
+      state_ = VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED;
+      OnLog(
+          "VideoCaptureImpl changing state to "
+          "VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED");
+    } else {
+      state_ = VIDEO_CAPTURE_STATE_ERROR;
+      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ERROR");
+    }
+    for (const auto& client : clients_)
+      client.second.state_update_cb.Run(state_);
+    clients_.clear();
+    RecordStartOutcomeUMA(start_timedout_ ? VideoCaptureStartOutcome::kTimedout
+                                          : VideoCaptureStartOutcome::kFailed);
+    return;
+  }
+
+  media::mojom::VideoCaptureState state = result->get_state();
+  DVLOG(1) << __func__ << " state: " << state;
   switch (state) {
     case media::mojom::VideoCaptureState::STARTED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTED");
@@ -765,17 +814,6 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
     case media::mojom::VideoCaptureState::RESUMED:
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_RESUMED);
-      break;
-    case media::mojom::VideoCaptureState::FAILED:
-      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ERROR");
-      for (const auto& client : clients_)
-        client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
-      clients_.clear();
-      state_ = VIDEO_CAPTURE_STATE_ERROR;
-
-      RecordStartOutcomeUMA(start_timedout_
-                                ? VideoCaptureStartOutcome::kTimedout
-                                : VideoCaptureStartOutcome::kFailed);
       break;
     case media::mojom::VideoCaptureState::ENDED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ENDED");
@@ -1076,7 +1114,8 @@ void VideoCaptureImpl::OnStartTimedout() {
 
   start_timedout_ = true;
 
-  OnStateChanged(media::mojom::VideoCaptureState::FAILED);
+  OnStateChanged(media::mojom::blink::VideoCaptureResult::NewErrorCode(
+      media::VideoCaptureError::kVideoCaptureImplTimedOutOnStart));
 }
 
 void VideoCaptureImpl::OnDeviceSupportedFormats(

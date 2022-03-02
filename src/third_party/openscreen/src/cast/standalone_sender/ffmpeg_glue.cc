@@ -4,6 +4,8 @@
 
 #include "cast/standalone_sender/ffmpeg_glue.h"
 
+#include <libavcodec/version.h>
+
 #include "util/osp_logging.h"
 
 namespace openscreen {
@@ -12,6 +14,13 @@ namespace internal {
 
 AVFormatContext* CreateAVFormatContextForFile(const char* path) {
   AVFormatContext* format_context = nullptr;
+#if LIBAVCODEC_VERSION_MAJOR < 59
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  av_register_all();
+#pragma GCC diagnostic pop
+#endif  // LIBAVCODEC_VERSION_MAJOR < 59
+
   int result = avformat_open_input(&format_context, path, nullptr, nullptr);
   if (result < 0) {
     OSP_LOG_ERROR << "Cannot open " << path << ": " << av_err2str(result);

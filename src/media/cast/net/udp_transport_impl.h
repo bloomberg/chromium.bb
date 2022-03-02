@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -46,6 +46,10 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       CastTransportStatusCallback status_callback);
+
+  UdpTransportImpl(const UdpTransportImpl&) = delete;
+  UdpTransportImpl& operator=(const UdpTransportImpl&) = delete;
+
   ~UdpTransportImpl() final;
 
   // PacketTransport implementations.
@@ -128,7 +132,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
   int bytes_sent_;
 
   // TODO(xjz): Replace this with a mojo ptr.
-  UdpTransportReceiver* mojo_packet_receiver_ = nullptr;
+  raw_ptr<UdpTransportReceiver> mojo_packet_receiver_ = nullptr;
 
   // Used to read packets from the data pipe. Created when StartSending() is
   // called.
@@ -136,8 +140,6 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<UdpTransportImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UdpTransportImpl);
 };
 
 }  // namespace cast

@@ -14,17 +14,16 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -61,7 +60,7 @@ float DbFsToScale(float db) {
 }
 #endif
 
-std::string ContentTypeToDbFSKey(AudioContentType type) {
+std::string ContentTypeToDbFSPath(AudioContentType type) {
   switch (type) {
     case AudioContentType::kAlarm:
       return kKeyAlarmDbFS;
@@ -87,7 +86,8 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
         LoadSavedVolumes(storage_path_);
     for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
                       AudioContentType::kCommunication}) {
-      stored_values_.SetDouble(ContentTypeToDbFSKey(type), saved_volumes[type]);
+      stored_values_.SetDoublePath(ContentTypeToDbFSPath(type),
+                                   saved_volumes[type]);
     }
 
     base::Thread::Options options;
@@ -99,6 +99,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
                                   base::Unretained(this)));
     initialize_complete_event_.Wait();
   }
+
+  VolumeControlInternal(const VolumeControlInternal&) = delete;
+  VolumeControlInternal& operator=(const VolumeControlInternal&) = delete;
 
   ~VolumeControlInternal() override = default;
 
@@ -127,7 +130,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       return;
     }
 
-    level = base::ClampToRange(level, 0.0f, 1.0f);
+    level = base::clamp(level, 0.0f, 1.0f);
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::SetVolumeOnThread,
                                   base::Unretained(this), source, type, level,
@@ -195,13 +198,14 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     mixer_->Connect();
 
     saved_volumes_writer_ = std::make_unique<base::ImportantFileWriter>(
-        storage_path_, thread_.task_runner(), base::TimeDelta::FromSeconds(1));
+        storage_path_, thread_.task_runner(), base::Seconds(1));
 
-    double dbfs;
     for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
                       AudioContentType::kCommunication}) {
-      CHECK(stored_values_.GetDouble(ContentTypeToDbFSKey(type), &dbfs));
-      volumes_[type] = VolumeControl::DbFSToVolume(dbfs);
+      absl::optional<double> dbfs =
+          stored_values_.FindDoubleKey(ContentTypeToDbFSPath(type));
+      CHECK(dbfs);
+      volumes_[type] = VolumeControl::DbFSToVolume(*dbfs);
       volume_multipliers_[type] = 1.0f;
 
 #if BUILDFLAG(SYSTEM_OWNS_VOLUME)
@@ -209,7 +213,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       // multiplier.
       mixer_->SetVolume(type, 1.0f);
 #else
-      mixer_->SetVolume(type, DbFsToScale(dbfs));
+      mixer_->SetVolume(type, DbFsToScale(*dbfs));
 #endif
 
       // Note that mute state is not persisted across reboots.
@@ -271,7 +275,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       }
     }
 
-    stored_values_.SetDouble(ContentTypeToDbFSKey(type), dbfs);
+    stored_values_.SetDoublePath(ContentTypeToDbFSPath(type), dbfs);
     std::string output_js;
     base::JSONWriter::Write(stored_values_, &output_js);
     saved_volumes_writer_->WriteNow(std::make_unique<std::string>(output_js));
@@ -328,7 +332,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     }
 
 #if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
-    limit = base::ClampToRange(limit, 0.0f, 1.0f);
+    limit = base::clamp(limit, 0.0f, 1.0f);
     mixer_->SetVolumeLimit(type,
                            DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
 
@@ -371,8 +375,6 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   std::unique_ptr<SystemVolumeControl> system_volume_control_;
   std::unique_ptr<mixer_service::ControlConnection> mixer_;
   std::unique_ptr<base::ImportantFileWriter> saved_volumes_writer_;
-
-  DISALLOW_COPY_AND_ASSIGN(VolumeControlInternal);
 };
 
 VolumeControlInternal& GetVolumeControl() {

@@ -66,15 +66,15 @@ Restrictions ParseRestrictionsFromValue(const base::Value& value) {
   auto max_as_double = value.FindDoubleKey("maxMilestone");
 
   if (min_as_double.has_value()) {
-    base::Version min_milestone =
-        base::Version(base::NumberToString(int{min_as_double.value()}));
+    base::Version min_milestone = base::Version(
+        base::NumberToString(static_cast<int>(min_as_double.value())));
     if (min_milestone.IsValid()) {
       restrictions.min_milestone = min_milestone;
     }
   }
   if (max_as_double.has_value()) {
-    base::Version max_milestone =
-        base::Version(base::NumberToString(int{max_as_double.value()}));
+    base::Version max_milestone = base::Version(
+        base::NumberToString(static_cast<int>(max_as_double.value())));
     if (max_milestone.IsValid()) {
       restrictions.max_milestone = max_milestone;
     }
@@ -189,11 +189,9 @@ absl::optional<std::vector<std::string>> ParseLocales(
 
   std::vector<std::string> locales;
   for (const auto& iter : as_value.value().GetList()) {
-    std::string locale;
-    if (!iter.GetAsString(&locale)) {
+    if (!iter.is_string())
       continue;
-    }
-    locales.push_back(locale);
+    locales.push_back(iter.GetString());
   }
 
   if (locales.empty()) {
@@ -210,17 +208,13 @@ absl::optional<ParsedManufacturers> ParseManufacturers(
     return absl::nullopt;
   }
   ParsedManufacturers manufacturers;
-  for (const auto& iter : as_value.value().DictItems()) {
-    std::string printers_metadata_basename;
-    if (!iter.second.GetAsString(&printers_metadata_basename)) {
+  for (const auto iter : as_value.value().DictItems()) {
+    if (!iter.second.is_string())
       continue;
-    }
-    manufacturers[iter.first] = printers_metadata_basename;
+    manufacturers[iter.first] = iter.second.GetString();
   }
-  if (manufacturers.empty()) {
-    return absl::nullopt;
-  }
-  return manufacturers;
+  return manufacturers.empty() ? absl::nullopt
+                               : absl::make_optional(manufacturers);
 }
 
 absl::optional<ParsedIndex> ParseForwardIndex(
@@ -236,7 +230,7 @@ absl::optional<ParsedIndex> ParseForwardIndex(
 
   // Secondly, we iterate on the key-value pairs of the ppdIndex.
   // This yields a list of leaf values (dictionaries).
-  for (const auto& kv : ppd_index->DictItems()) {
+  for (const auto kv : ppd_index->DictItems()) {
     absl::optional<ParsedIndexValues> values = UnnestPpdMetadata(kv.second);
     if (values.has_value()) {
       parsed_index.insert_or_assign(kv.first, values.value());
@@ -257,7 +251,7 @@ absl::optional<ParsedUsbIndex> ParseUsbIndex(base::StringPiece usb_index_json) {
   }
 
   ParsedUsbIndex parsed_usb_index;
-  for (const auto& kv : usb_index->DictItems()) {
+  for (const auto kv : usb_index->DictItems()) {
     int product_id;
     if (!base::StringToInt(kv.first, &product_id)) {
       continue;
@@ -341,7 +335,7 @@ absl::optional<ParsedReverseIndex> ParseReverseIndex(
   }
 
   ParsedReverseIndex parsed;
-  for (const auto& kv : makes_and_models->DictItems()) {
+  for (const auto kv : makes_and_models->DictItems()) {
     if (!kv.second.is_dict()) {
       continue;
     }

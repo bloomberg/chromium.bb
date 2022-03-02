@@ -5,6 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_METADATA_ALLOCATOR_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_METADATA_ALLOCATOR_H_
 
+#include <utility>
+
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 
@@ -27,11 +29,18 @@ class MetadataAllocator {
   MetadataAllocator(const MetadataAllocator<U>&) {}  // NOLINT
 
   template <typename U>
-  MetadataAllocator& operator=(const MetadataAllocator<U>&) {}
+  MetadataAllocator& operator=(const MetadataAllocator<U>&) {
+    return *this;
+  }
 
   template <typename U>
   bool operator==(const MetadataAllocator<U>&) {
     return true;
+  }
+
+  template <typename U>
+  bool operator!=(const MetadataAllocator<U>& o) {
+    return !operator==(o);
   }
 
   value_type* allocate(size_t size) {

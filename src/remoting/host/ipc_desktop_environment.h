@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel_handle.h"
@@ -45,8 +45,13 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<ClientSessionEvents> client_session_events,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
       const DesktopEnvironmentOptions& options);
+
+  IpcDesktopEnvironment(const IpcDesktopEnvironment&) = delete;
+  IpcDesktopEnvironment& operator=(const IpcDesktopEnvironment&) = delete;
+
   ~IpcDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
@@ -61,6 +66,8 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback)
       override;
   std::unique_ptr<FileOperations> CreateFileOperations() override;
+  std::unique_ptr<UrlForwarderConfigurator> CreateUrlForwarderConfigurator()
+      override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;
@@ -69,8 +76,6 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
 
  private:
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(IpcDesktopEnvironment);
 };
 
 // Used to create IpcDesktopEnvironment objects integrating with the desktop via
@@ -86,11 +91,17 @@ class IpcDesktopEnvironmentFactory
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       IPC::Sender* daemon_channel);
+
+  IpcDesktopEnvironmentFactory(const IpcDesktopEnvironmentFactory&) = delete;
+  IpcDesktopEnvironmentFactory& operator=(const IpcDesktopEnvironmentFactory&) =
+      delete;
+
   ~IpcDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory implementation.
   std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<ClientSessionEvents> client_session_events,
       const DesktopEnvironmentOptions& options) override;
   bool SupportsAudioCapture() const override;
 
@@ -119,7 +130,7 @@ class IpcDesktopEnvironmentFactory
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // IPC channel connected to the daemon process.
-  IPC::Sender* daemon_channel_;
+  raw_ptr<IPC::Sender> daemon_channel_;
 
   // List of DesktopEnvironment instances we've told the daemon process about.
   typedef std::map<int, DesktopSessionProxy*> ActiveConnectionsList;
@@ -132,8 +143,6 @@ class IpcDesktopEnvironmentFactory
 
   // Factory for weak pointers to DesktopSessionConnector interface.
   base::WeakPtrFactory<DesktopSessionConnector> connector_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(IpcDesktopEnvironmentFactory);
 };
 
 }  // namespace remoting

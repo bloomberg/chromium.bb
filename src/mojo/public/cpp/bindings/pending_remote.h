@@ -11,7 +11,6 @@
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
@@ -81,6 +80,9 @@ class PendingRemote {
             std::move(other))) {}
 #endif  // !defined(OS_NACL)
 
+  PendingRemote(const PendingRemote&) = delete;
+  PendingRemote& operator=(const PendingRemote&) = delete;
+
   ~PendingRemote() = default;
 
   PendingRemote& operator=(PendingRemote&&) noexcept = default;
@@ -129,8 +131,6 @@ class PendingRemote {
 
  private:
   internal::PendingRemoteState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingRemote);
 };
 
 class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) NullRemote {

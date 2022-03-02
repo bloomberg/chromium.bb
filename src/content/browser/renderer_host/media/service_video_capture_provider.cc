@@ -66,6 +66,9 @@ class ServiceVideoCaptureProvider::ServiceProcessObserver
     ServiceProcessHost::AddObserver(this);
   }
 
+  ServiceProcessObserver(const ServiceProcessObserver&) = delete;
+  ServiceProcessObserver& operator=(const ServiceProcessObserver&) = delete;
+
   ~ServiceProcessObserver() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ServiceProcessHost::RemoveObserver(this);
@@ -92,8 +95,6 @@ class ServiceVideoCaptureProvider::ServiceProcessObserver
   const scoped_refptr<base::TaskRunner> io_task_runner_;
   const base::RepeatingClosure start_callback_;
   const base::RepeatingClosure stop_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceProcessObserver);
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -310,6 +311,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
     scoped_refptr<RefCountedVideoSourceProvider> service_connection,
     GetDeviceInfosCallback result_callback,
     int retry_count) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 #if defined(OS_MAC)
   std::string model = base::mac::GetModelIdentifier();
   if (base::FeatureList::IsEnabled(

@@ -17,7 +17,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -152,11 +151,11 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
     index = parent->children().size();
   } else {
     if (*details.index < 0 ||
-        size_t{*details.index} > parent->children().size()) {
+        static_cast<size_t>(*details.index) > parent->children().size()) {
       *error = bookmark_api_constants::kInvalidIndexError;
       return nullptr;
     }
-    index = size_t{*details.index};
+    index = static_cast<size_t>(*details.index);
   }
 
   std::u16string title;  // Optional.
@@ -279,9 +278,9 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
   const BookmarkNode* node = new_parent->children()[new_index].get();
   api::bookmarks::OnMoved::MoveInfo move_info;
   move_info.parent_id = base::NumberToString(new_parent->id());
-  move_info.index = int{new_index};
+  move_info.index = static_cast<int>(new_index);
   move_info.old_parent_id = base::NumberToString(old_parent->id());
-  move_info.old_index = int{old_index};
+  move_info.old_index = static_cast<int>(old_index);
 
   DispatchEvent(events::BOOKMARKS_ON_MOVED, api::bookmarks::OnMoved::kEventName,
                 api::bookmarks::OnMoved::Create(
@@ -308,7 +307,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
     const std::set<GURL>& removed_urls) {
   api::bookmarks::OnRemoved::RemoveInfo remove_info;
   remove_info.parent_id = base::NumberToString(parent->id());
-  remove_info.index = int{index};
+  remove_info.index = static_cast<int>(index);
   bookmark_api_helpers::PopulateBookmarkTreeNode(managed_, node, true, false,
                                                  &remove_info.node);
 
@@ -415,7 +414,7 @@ void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
 
 ExtensionFunction::ResponseValue BookmarksGetFunction::RunOnReady() {
   std::unique_ptr<api::bookmarks::Get::Params> params(
-      api::bookmarks::Get::Params::Create(*args_));
+      api::bookmarks::Get::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -447,7 +446,7 @@ ExtensionFunction::ResponseValue BookmarksGetFunction::RunOnReady() {
 
 ExtensionFunction::ResponseValue BookmarksGetChildrenFunction::RunOnReady() {
   std::unique_ptr<api::bookmarks::GetChildren::Params> params(
-      api::bookmarks::GetChildren::Params::Create(*args_));
+      api::bookmarks::GetChildren::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -467,7 +466,7 @@ ExtensionFunction::ResponseValue BookmarksGetChildrenFunction::RunOnReady() {
 
 ExtensionFunction::ResponseValue BookmarksGetRecentFunction::RunOnReady() {
   std::unique_ptr<api::bookmarks::GetRecent::Params> params(
-      api::bookmarks::GetRecent::Params::Create(*args_));
+      api::bookmarks::GetRecent::Params::Create(args()));
   if (!params)
     return BadMessage();
   if (params->number_of_items < 1) {
@@ -501,7 +500,7 @@ ExtensionFunction::ResponseValue BookmarksGetTreeFunction::RunOnReady() {
 
 ExtensionFunction::ResponseValue BookmarksGetSubTreeFunction::RunOnReady() {
   std::unique_ptr<api::bookmarks::GetSubTree::Params> params(
-      api::bookmarks::GetSubTree::Params::Create(*args_));
+      api::bookmarks::GetSubTree::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -518,7 +517,7 @@ ExtensionFunction::ResponseValue BookmarksGetSubTreeFunction::RunOnReady() {
 
 ExtensionFunction::ResponseValue BookmarksSearchFunction::RunOnReady() {
   std::unique_ptr<api::bookmarks::Search::Params> params(
-      api::bookmarks::Search::Params::Create(*args_));
+      api::bookmarks::Search::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -563,7 +562,7 @@ ExtensionFunction::ResponseValue BookmarksRemoveFunctionBase::RunOnReady() {
     return Error(bookmark_api_constants::kEditBookmarksDisabled);
 
   std::unique_ptr<api::bookmarks::Remove::Params> params(
-      api::bookmarks::Remove::Params::Create(*args_));
+      api::bookmarks::Remove::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -595,7 +594,7 @@ ExtensionFunction::ResponseValue BookmarksCreateFunction::RunOnReady() {
     return Error(bookmark_api_constants::kEditBookmarksDisabled);
 
   std::unique_ptr<api::bookmarks::Create::Params> params(
-      api::bookmarks::Create::Params::Create(*args_));
+      api::bookmarks::Create::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -617,7 +616,7 @@ ExtensionFunction::ResponseValue BookmarksMoveFunction::RunOnReady() {
     return Error(bookmark_api_constants::kEditBookmarksDisabled);
 
   std::unique_ptr<api::bookmarks::Move::Params> params(
-      api::bookmarks::Move::Params::Create(*args_));
+      api::bookmarks::Move::Params::Create(args()));
   if (!params)
     return BadMessage();
 
@@ -648,10 +647,11 @@ ExtensionFunction::ResponseValue BookmarksMoveFunction::RunOnReady() {
   size_t index;
   if (params->destination.index.get()) {  // Optional (defaults to end).
     if (*params->destination.index < 0 ||
-        size_t{*params->destination.index} > parent->children().size()) {
+        static_cast<size_t>(*params->destination.index) >
+            parent->children().size()) {
       return Error(bookmark_api_constants::kInvalidIndexError);
     }
-    index = size_t{*params->destination.index};
+    index = static_cast<size_t>(*params->destination.index);
   } else {
     index = parent->children().size();
   }
@@ -668,7 +668,7 @@ ExtensionFunction::ResponseValue BookmarksUpdateFunction::RunOnReady() {
     return Error(bookmark_api_constants::kEditBookmarksDisabled);
 
   std::unique_ptr<api::bookmarks::Update::Params> params(
-      api::bookmarks::Update::Params::Create(*args_));
+      api::bookmarks::Update::Params::Create(args()));
   if (!params)
     return BadMessage();
 

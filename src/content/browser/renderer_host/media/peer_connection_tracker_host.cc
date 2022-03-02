@@ -71,7 +71,8 @@ PeerConnectionTrackerHost::GetAllHosts() {
 }
 
 PeerConnectionTrackerHost::PeerConnectionTrackerHost(RenderFrameHost* frame)
-    : frame_id_(frame->GetGlobalFrameRoutingId()),
+    : DocumentUserData<PeerConnectionTrackerHost>(frame),
+      frame_id_(frame->GetGlobalId()),
       peer_pid_(frame->GetProcess()->GetProcess().Pid()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RegisterHost(this);
@@ -99,8 +100,11 @@ void PeerConnectionTrackerHost::AddPeerConnection(
     blink::mojom::PeerConnectionInfoPtr info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  const std::string& url =
+      (info->url == absl::nullopt) ? std::string() : *info->url;
+
   for (auto& observer : GetObserverList()) {
-    observer.OnPeerConnectionAdded(frame_id_, info->lid, peer_pid_, info->url,
+    observer.OnPeerConnectionAdded(frame_id_, info->lid, peer_pid_, url,
                                    info->rtc_configuration, info->constraints);
   }
 }
@@ -150,7 +154,7 @@ void PeerConnectionTrackerHost::AddLegacyStats(int lid, base::Value value) {
 }
 
 void PeerConnectionTrackerHost::GetUserMedia(
-    const std::string& origin,
+    int request_id,
     bool audio,
     bool video,
     const std::string& audio_constraints,
@@ -158,8 +162,33 @@ void PeerConnectionTrackerHost::GetUserMedia(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (auto& observer : GetObserverList()) {
-    observer.OnGetUserMedia(frame_id_, peer_pid_, origin, audio, video,
+    observer.OnGetUserMedia(frame_id_, peer_pid_, request_id, audio, video,
                             audio_constraints, video_constraints);
+  }
+}
+
+void PeerConnectionTrackerHost::GetUserMediaSuccess(
+    int request_id,
+    const std::string& stream_id,
+    const std::string& audio_track_info,
+    const std::string& video_track_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : GetObserverList()) {
+    observer.OnGetUserMediaSuccess(frame_id_, peer_pid_, request_id, stream_id,
+                                   audio_track_info, video_track_info);
+  }
+}
+
+void PeerConnectionTrackerHost::GetUserMediaFailure(
+    int request_id,
+    const std::string& error,
+    const std::string& error_message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : GetObserverList()) {
+    observer.OnGetUserMediaFailure(frame_id_, peer_pid_, request_id, error,
+                                   error_message);
   }
 }
 
@@ -184,6 +213,11 @@ void PeerConnectionTrackerHost::OnThermalStateChange(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_->OnThermalStateChange(
       static_cast<blink::mojom::DeviceThermalState>(new_state));
+}
+
+void PeerConnectionTrackerHost::OnSpeedLimitChange(int new_limit) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  tracker_->OnSpeedLimitChange(new_limit);
 }
 
 void PeerConnectionTrackerHost::StartEventLog(int lid, int output_period_ms) {
@@ -214,5 +248,5 @@ void PeerConnectionTrackerHost::BindReceiver(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(PeerConnectionTrackerHost)
+DOCUMENT_USER_DATA_KEY_IMPL(PeerConnectionTrackerHost);
 }  // namespace content

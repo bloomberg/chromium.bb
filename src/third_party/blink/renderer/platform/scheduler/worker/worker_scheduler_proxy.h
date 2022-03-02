@@ -5,10 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_SCHEDULER_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_SCHEDULER_PROXY_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -30,17 +29,17 @@ class WorkerScheduler;
 // on the parent thread. It's passed to WorkerScheduler during its
 // construction. Given that DedicatedWorkerThread object outlives worker thread,
 // this class outlives worker thread too.
-class PLATFORM_EXPORT WorkerSchedulerProxy
-    : public FrameOrWorkerScheduler::Observer {
+class PLATFORM_EXPORT WorkerSchedulerProxy {
  public:
   explicit WorkerSchedulerProxy(FrameOrWorkerScheduler* scheduler);
-  ~WorkerSchedulerProxy() override;
+  WorkerSchedulerProxy(const WorkerSchedulerProxy&) = delete;
+  WorkerSchedulerProxy& operator=(const WorkerSchedulerProxy&) = delete;
+  ~WorkerSchedulerProxy();
 
   void OnWorkerSchedulerCreated(
       base::WeakPtr<WorkerScheduler> worker_scheduler);
 
-  void OnLifecycleStateChanged(
-      SchedulingLifecycleState lifecycle_state) override;
+  void OnLifecycleStateChanged(SchedulingLifecycleState lifecycle_state);
 
   // Accessed only during init.
   SchedulingLifecycleState lifecycle_state() const {
@@ -85,8 +84,6 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   THREAD_CHECKER(parent_thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerProxy);
 };
 
 }  // namespace scheduler

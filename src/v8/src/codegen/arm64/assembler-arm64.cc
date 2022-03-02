@@ -314,7 +314,7 @@ bool Operand::NeedsRelocation(const Assembler* assembler) const {
     return assembler->options().record_reloc_info_for_serialization;
   }
 
-  return !RelocInfo::IsNone(rmode);
+  return !RelocInfo::IsNoInfo(rmode);
 }
 
 // Assembler
@@ -582,7 +582,7 @@ void Assembler::bind(Label* label) {
       // Internal references do not get patched to an instruction but directly
       // to an address.
       internal_reference_positions_.push_back(linkoffset);
-      base::Memcpy(link, &pc_, kSystemPointerSize);
+      memcpy(link, &pc_, kSystemPointerSize);
     } else {
       link->SetImmPCOffsetTarget(options(),
                                  reinterpret_cast<Instruction*>(pc_));
@@ -2627,7 +2627,7 @@ void Assembler::fmov(const VRegister& vd, float imm) {
     DCHECK(vd.Is1S());
     Emit(FMOV_s_imm | Rd(vd) | ImmFP(imm));
   } else {
-    DCHECK(vd.Is2S() | vd.Is4S());
+    DCHECK(vd.Is2S() || vd.Is4S());
     Instr op = NEONModifiedImmediate_MOVI;
     Instr q = vd.Is4S() ? NEON_Q : 0;
     Emit(q | op | ImmNEONFP(imm) | NEONCmode(0xF) | Rd(vd));
@@ -4328,12 +4328,16 @@ void Assembler::RecordRelocInfo(RelocInfo::Mode rmode, intptr_t data,
       (rmode == RelocInfo::CONST_POOL) || (rmode == RelocInfo::VENEER_POOL) ||
       (rmode == RelocInfo::DEOPT_SCRIPT_OFFSET) ||
       (rmode == RelocInfo::DEOPT_INLINING_ID) ||
-      (rmode == RelocInfo::DEOPT_REASON) || (rmode == RelocInfo::DEOPT_ID)) {
+      (rmode == RelocInfo::DEOPT_REASON) || (rmode == RelocInfo::DEOPT_ID) ||
+      (rmode == RelocInfo::LITERAL_CONSTANT) ||
+      (rmode == RelocInfo::DEOPT_NODE_ID)) {
     // Adjust code for new modes.
     DCHECK(RelocInfo::IsDeoptReason(rmode) || RelocInfo::IsDeoptId(rmode) ||
+           RelocInfo::IsDeoptNodeId(rmode) ||
            RelocInfo::IsDeoptPosition(rmode) ||
            RelocInfo::IsInternalReference(rmode) ||
            RelocInfo::IsDataEmbeddedObject(rmode) ||
+           RelocInfo::IsLiteralConstant(rmode) ||
            RelocInfo::IsConstPool(rmode) || RelocInfo::IsVeneerPool(rmode));
     // These modes do not need an entry in the constant pool.
   } else if (constant_pool_mode == NEEDS_POOL_ENTRY) {
@@ -4371,13 +4375,15 @@ void Assembler::RecordRelocInfo(RelocInfo::Mode rmode, intptr_t data,
 
 void Assembler::near_jump(int offset, RelocInfo::Mode rmode) {
   BlockPoolsScope no_pool_before_b_instr(this);
-  if (!RelocInfo::IsNone(rmode)) RecordRelocInfo(rmode, offset, NO_POOL_ENTRY);
+  if (!RelocInfo::IsNoInfo(rmode))
+    RecordRelocInfo(rmode, offset, NO_POOL_ENTRY);
   b(offset);
 }
 
 void Assembler::near_call(int offset, RelocInfo::Mode rmode) {
   BlockPoolsScope no_pool_before_bl_instr(this);
-  if (!RelocInfo::IsNone(rmode)) RecordRelocInfo(rmode, offset, NO_POOL_ENTRY);
+  if (!RelocInfo::IsNoInfo(rmode))
+    RecordRelocInfo(rmode, offset, NO_POOL_ENTRY);
   bl(offset);
 }
 
@@ -4493,8 +4499,8 @@ void Assembler::RecordVeneerPool(int location_offset, int size) {
 
 void Assembler::EmitVeneers(bool force_emit, bool need_protection,
                             size_t margin) {
+  ASM_CODE_COMMENT(this);
   BlockPoolsScope scope(this, PoolEmissionCheck::kSkip);
-  RecordComment("[ Veneers");
 
   // The exact size of the veneer pool must be recorded (see the comment at the
   // declaration site of RecordConstPool()), but computing the number of
@@ -4587,8 +4593,6 @@ void Assembler::EmitVeneers(bool force_emit, bool need_protection,
   RecordVeneerPool(veneer_pool_relocinfo_loc, pool_size);
 
   bind(&end);
-
-  RecordComment("]");
 }
 
 void Assembler::CheckVeneerPool(bool force_emit, bool require_jump,

@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {metrics} from '../../common/js/metrics.m.js';
-// #import {AsyncUtil} from '../../common/js/async_util.m.js';
-// #import {importer} from '../../common/js/importer_common.m.js';
-// #import {volumeManagerFactory} from './volume_manager_factory.m.js';
-// #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
-// #import {util, strf, str} from '../../common/js/util.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-// clang-format on
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+
+import {AsyncUtil} from '../../common/js/async_util.js';
+import {importer} from '../../common/js/importer_common.js';
+import {metrics} from '../../common/js/metrics.js';
+import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
+import {getFilesAppIconURL} from '../../common/js/url_constants.js';
+import {str, strf, util} from '../../common/js/util.js';
+import {xfm} from '../../common/js/xfm.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {volumeManagerFactory} from './volume_manager_factory.js';
+
 
 /** Handler of device event. */
-/* #export */ class DeviceHandler extends cr.EventTarget {
+export class DeviceHandler extends EventTarget {
   /** @param {!ProgressCenter} progressCenter */
   constructor(progressCenter) {
     super();
@@ -35,14 +38,19 @@
      */
     this.mountStatus_ = {};
 
-    chrome.fileManagerPrivate.onDeviceChanged.addListener(
-        this.onDeviceChanged_.bind(this));
-    chrome.fileManagerPrivate.onMountCompleted.addListener(
-        this.onMountCompleted_.bind(this));
-    chrome.notifications.onClicked.addListener(
-        this.onNotificationClicked_.bind(this));
-    chrome.notifications.onButtonClicked.addListener(
-        this.onNotificationButtonClicked_.bind(this));
+    // Notifications in a SWA context are handled by the
+    // system_notification_manager.cc and thus we don't want this code
+    // duplicated in the background page.
+    if (!window.isSWA) {
+      chrome.fileManagerPrivate.onDeviceChanged.addListener(
+          this.onDeviceChanged_.bind(this));
+      chrome.fileManagerPrivate.onMountCompleted.addListener(
+          this.onMountCompleted_.bind(this));
+      xfm.notifications.onClicked.addListener(
+          this.onNotificationClicked_.bind(this));
+      xfm.notifications.onButtonClicked.addListener(
+          this.onNotificationButtonClicked_.bind(this));
+    }
   }
 
   /**
@@ -51,6 +59,9 @@
    * @private
    */
   onDeviceChanged_(event) {
+    if (util.isSwaEnabled()) {
+      return;
+    }
     util.doIfPrimaryContext(() => {
       this.onDeviceChangedInternal_(event);
     });
@@ -186,6 +197,9 @@
    * @private
    */
   onMountCompleted_(event) {
+    if (util.isSwaEnabled()) {
+      return;
+    }
     util.doIfPrimaryContext(() => {
       this.onMountCompletedInternal_(event);
     });
@@ -339,19 +353,8 @@
                * @param {!DirectoryEntry} directory
                */
               directory => {
-                return importer.isPhotosAppImportEnabled().then(
-                    /**
-                     * @param {boolean} appEnabled
-                     */
-                    appEnabled => {
-                      // We don't want to auto-open two windows when a user
-                      // inserts a removable device.  Only open Files app if
-                      // auto-import is disabled in Photos app.
-                      if (!appEnabled) {
-                        this.openMediaDirectory_(
-                            metadata.volumeId, null, directory.fullPath);
-                      }
-                    });
+                this.openMediaDirectory_(
+                    metadata.volumeId, null, directory.fullPath);
               })
         .catch(error => {
           if (metadata.deviceType && metadata.devicePath) {
@@ -389,6 +392,9 @@
    * @private
    */
   onNotificationClicked_(id) {
+    if (util.isSwaEnabled()) {
+      return;
+    }
     util.doIfPrimaryContext(() => {
       this.onNotificationClickedInternal_(id, -1 /* index */);
     });
@@ -401,6 +407,9 @@
    * @private
    */
   onNotificationButtonClicked_(id, index) {
+    if (util.isSwaEnabled()) {
+      return;
+    }
     util.doIfPrimaryContext(() => {
       this.onNotificationClickedInternal_(id, index);
     });
@@ -416,7 +425,7 @@
     const prefix = id.substr(0, pos);
     const devicePath = id.substr(pos + 1);
     if (prefix === 'deviceNavigation' || prefix === 'deviceFail') {
-      chrome.notifications.clear(id, () => {});
+      xfm.notifications.clear(id, () => {});
       this.openMediaDirectory_(null, devicePath, null);
       metrics.recordEnum(
           'Notification.UserAction',
@@ -428,7 +437,7 @@
       return;
     }
     if (prefix === 'deviceImport') {
-      chrome.notifications.clear(id, () => {});
+      xfm.notifications.clear(id, () => {});
       this.openMediaDirectory_(null, devicePath, 'DCIM');
       metrics.recordEnum(
           'Notification.UserAction',
@@ -437,7 +446,7 @@
       return;
     }
     if (prefix === 'deviceNavigationAppAccess') {
-      chrome.notifications.clear(id, () => {});
+      xfm.notifications.clear(id, () => {});
       const secondButtonIndex = 1;
       if (index === secondButtonIndex) {
         chrome.fileManagerPrivate.openSettingsSubpage(
@@ -609,7 +618,7 @@ DeviceHandler.Notification = class {
   showOnce(devicePath) {
     const notificationId = this.makeId_(devicePath);
     this.queue_.run(function(callback) {
-      chrome.notifications.getAll(idList => {
+      xfm.notifications.getAll(idList => {
         if (idList.indexOf(notificationId) !== -1) {
           callback();
           return;
@@ -635,12 +644,12 @@ DeviceHandler.Notification = class {
     }
     const additionalMessage =
         this.additionalMessage ? (' ' + str(this.additionalMessage)) : '';
-    chrome.notifications.create(
+    xfm.notifications.create(
         notificationId, {
           type: 'basic',
           title: str(this.title),
           message: message || (str(this.message) + additionalMessage),
-          iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
+          iconUrl: getFilesAppIconURL().toString(),
           buttons: buttons,
           isClickable: this.isClickable
         },
@@ -655,7 +664,7 @@ DeviceHandler.Notification = class {
    */
   hide(devicePath) {
     this.queue_.run(callback => {
-      chrome.notifications.clear(this.makeId_(devicePath), callback);
+      xfm.notifications.clear(this.makeId_(devicePath), callback);
     });
   }
 

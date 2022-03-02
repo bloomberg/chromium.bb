@@ -9,41 +9,89 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/android/webid/jni_headers/AccountSelectionBridge_jni.h"
+#include "chrome/browser/ui/android/webid/jni_headers/Account_jni.h"
+#include "chrome/browser/ui/android/webid/jni_headers/ClientIdMetadata_jni.h"
+#include "chrome/browser/ui/android/webid/jni_headers/IdentityProviderMetadata_jni.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
+#include "ui/android/color_utils_android.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "url/android/gurl_android.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-std::vector<std::string> ConvertAccountToFields(const Account& account,
-                                                const GURL& idp_url) {
-  return {account.sub,        account.email,   account.name,
-          account.given_name, account.picture, idp_url.spec()};
+ScopedJavaLocalRef<jobject> ConvertToJavaAccount(JNIEnv* env,
+                                                 const Account& account) {
+  return Java_Account_Constructor(
+      env, ConvertUTF8ToJavaString(env, account.sub),
+      ConvertUTF8ToJavaString(env, account.email),
+      ConvertUTF8ToJavaString(env, account.name),
+      ConvertUTF8ToJavaString(env, account.given_name),
+      url::GURLAndroid::FromNativeGURL(env, account.picture),
+      account.login_state == Account::LoginState::kSignIn);
 }
 
-Account ConvertFieldsToAccount(JNIEnv* env,
-                               const JavaParamRef<jobjectArray>& fields_obj) {
-  std::vector<std::string> fields;
-  AppendJavaStringArrayToStringVector(env, fields_obj, &fields);
-  auto sub = fields[0];
-  auto email = fields[1];
-  auto name = fields[2];
-  auto given_name = fields[3];
-  auto picture = fields[4];
-  return Account(sub, email, name, given_name, picture);
+ScopedJavaLocalRef<jobject> ConvertToJavaIdentityProviderMetadata(
+    JNIEnv* env,
+    const content::IdentityProviderMetadata& metadata) {
+  return Java_IdentityProviderMetadata_Constructor(
+      env, ui::OptionalSkColorToJavaColor(metadata.brand_text_color),
+      ui::OptionalSkColorToJavaColor(metadata.brand_background_color));
+}
+
+ScopedJavaLocalRef<jobject> ConvertToJavaClientIdMetadata(
+    JNIEnv* env,
+    const content::ClientIdData& data) {
+  return Java_ClientIdMetadata_Constructor(
+      env, url::GURLAndroid::FromNativeGURL(env, data.terms_of_service_url),
+      url::GURLAndroid::FromNativeGURL(env, data.privacy_policy_url));
+}
+
+ScopedJavaLocalRef<jobjectArray> ConvertToJavaAccounts(
+    JNIEnv* env,
+    base::span<const Account> accounts) {
+  ScopedJavaLocalRef<jclass> account_clazz = base::android::GetClass(
+      env, "org/chromium/chrome/browser/ui/android/webid/data/Account");
+  ScopedJavaLocalRef<jobjectArray> array(
+      env, env->NewObjectArray(accounts.size(), account_clazz.obj(), nullptr));
+
+  base::android::CheckException(env);
+
+  for (size_t i = 0; i < accounts.size(); ++i) {
+    ScopedJavaLocalRef<jobject> item = ConvertToJavaAccount(env, accounts[i]);
+    env->SetObjectArrayElement(array.obj(), i, item.obj());
+  }
+  return array;
+}
+
+Account ConvertFieldsToAccount(
+    JNIEnv* env,
+    const JavaParamRef<jobjectArray>& string_fields_obj,
+    const JavaParamRef<jobject>& picture_url_obj,
+    bool is_sign_in) {
+  std::vector<std::string> string_fields;
+  AppendJavaStringArrayToStringVector(env, string_fields_obj, &string_fields);
+  auto sub = string_fields[0];
+  auto email = string_fields[1];
+  auto name = string_fields[2];
+  auto given_name = string_fields[3];
+
+  Account::LoginState login_state =
+      is_sign_in ? Account::LoginState::kSignIn : Account::LoginState::kSignUp;
+
+  GURL picture_url = *url::GURLAndroid::ToNativeGURL(env, picture_url_obj);
+  return Account(sub, email, name, given_name, picture_url, login_state);
 }
 
 }  // namespace
@@ -60,41 +108,52 @@ AccountSelectionViewAndroid::~AccountSelectionViewAndroid() {
   }
 }
 
-void AccountSelectionViewAndroid::Show(const GURL& rp_url,
-                                       const GURL& idp_url,
-                                       base::span<const Account> accounts) {
+void AccountSelectionViewAndroid::Show(
+    const GURL& rp_url,
+    const GURL& idp_url,
+    base::span<const Account> accounts,
+    const content::IdentityProviderMetadata& idp_metadata,
+    const content::ClientIdData& client_data,
+    Account::SignInMode sign_in_mode) {
   if (!RecreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
-    // component. That case may be temporary but we can't let users in a waiting
-    // state so report that AccountSelectionView is dismissed instead.
+    // component. That case may be temporary but we can't let users in a
+    // waiting state so report that AccountSelectionView is dismissed instead.
     delegate_->OnDismiss();
     return;
   }
 
   // Serialize the |accounts| span into a Java array and instruct the bridge
   // to show it together with |url| to the user.
-  std::vector<std::vector<std::string>> accounts_fields(accounts.size());
-  for (size_t i = 0; i < accounts.size(); ++i) {
-    accounts_fields[i] = ConvertAccountToFields(accounts[i], idp_url);
-  }
-
   JNIEnv* env = AttachCurrentThread();
-
-  base::android::ScopedJavaLocalRef<jobjectArray> accounts_fields_obj =
-      base::android::ToJavaArrayOfStringArray(env, accounts_fields);
-
+  ScopedJavaLocalRef<jobjectArray> accounts_obj =
+      ConvertToJavaAccounts(env, accounts);
+  ScopedJavaLocalRef<jobject> idp_metadata_obj =
+      ConvertToJavaIdentityProviderMetadata(env, idp_metadata);
+  ScopedJavaLocalRef<jobject> client_id_metadata_obj =
+      ConvertToJavaClientIdMetadata(env, client_data);
   Java_AccountSelectionBridge_showAccounts(
-      env, java_object_internal_, ConvertUTF8ToJavaString(env, rp_url.spec()),
-      accounts_fields_obj);
+      env, java_object_internal_, url::GURLAndroid::FromNativeGURL(env, rp_url),
+      url::GURLAndroid::FromNativeGURL(env, idp_url), accounts_obj,
+      idp_metadata_obj, client_id_metadata_obj,
+      sign_in_mode == Account::SignInMode::kAuto);
 }
 
 void AccountSelectionViewAndroid::OnAccountSelected(
     JNIEnv* env,
-    const JavaParamRef<jobjectArray>& account_fields_obj) {
-  delegate_->OnAccountSelected(ConvertFieldsToAccount(env, account_fields_obj));
+    const JavaParamRef<jobjectArray>& account_string_fields,
+    const JavaParamRef<jobject>& account_picture_url,
+    bool is_sign_in) {
+  delegate_->OnAccountSelected(ConvertFieldsToAccount(
+      env, account_string_fields, account_picture_url, is_sign_in));
 }
 
 void AccountSelectionViewAndroid::OnDismiss(JNIEnv* env) {
+  delegate_->OnDismiss();
+}
+
+void AccountSelectionViewAndroid::OnAutoSignInCancelled(JNIEnv* env) {
+  // TODO(yigu): Alternatively we could fall back to manual sign in flow.
   delegate_->OnDismiss();
 }
 

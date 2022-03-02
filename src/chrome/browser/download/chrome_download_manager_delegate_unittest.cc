@@ -18,9 +18,10 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -294,7 +295,7 @@ class ChromeDownloadManagerDelegateTest
 
  private:
   base::FilePath test_download_dir_;
-  sync_preferences::TestingPrefServiceSyncable* pref_service_;
+  raw_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   std::unique_ptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
@@ -492,9 +493,10 @@ void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
       kInsecureDownloadHistogramTargetInsecure};
 
   std::vector<const std::string> histograms;
-  for (auto* initiator : initiator_types) {
-    for (auto* download : download_types) {
-      histograms.push_back(GetDLBlockingHistogramName(initiator, download));
+  for (auto* initiator_init : initiator_types) {
+    for (auto* download_init : download_types) {
+      histograms.push_back(
+          GetDLBlockingHistogramName(initiator_init, download_init));
     }
   }
 
@@ -1702,13 +1704,16 @@ class AndroidDownloadInfobarCounter
     infobar->RemoveSelf();
   }
 
-  infobars::ContentInfoBarManager* infobar_manager_;
+  raw_ptr<infobars::ContentInfoBarManager> infobar_manager_;
   int infobar_count_ = 0;
 };
 
 class TestDownloadDialogBridge : public DownloadDialogBridge {
  public:
   TestDownloadDialogBridge() = default;
+
+  TestDownloadDialogBridge(const TestDownloadDialogBridge&) = delete;
+  TestDownloadDialogBridge& operator=(const TestDownloadDialogBridge&) = delete;
 
   // DownloadDialogBridge implementation.
   void ShowDialog(gfx::NativeWindow native_window,
@@ -1718,6 +1723,7 @@ class TestDownloadDialogBridge : public DownloadDialogBridge {
                   const base::FilePath& suggested_path,
                   bool supports_later_dialog,
                   bool show_date_time_picker,
+                  bool is_incognito,
                   DownloadDialogBridge::DialogCallback callback) override {
     dialog_shown_count_++;
     dialog_type_ = dialog_type;
@@ -1745,8 +1751,6 @@ class TestDownloadDialogBridge : public DownloadDialogBridge {
   DownloadLocationDialogType dialog_type_;
   DownloadTargetDeterminerDelegate::ConfirmationCallback
       dialog_complete_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadDialogBridge);
 };
 
 }  // namespace
@@ -1756,9 +1760,6 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
   SetContents(CreateTestWebContents());
 
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kDownloadsLocationChange);
-  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
-
   profile()->GetTestingPrefService()->SetInteger(
       prefs::kPromptForDownloadAndroid,
       static_cast<int>(DownloadPromptStatus::SHOW_PREFERENCE));
@@ -1899,19 +1900,27 @@ class DownloadLaterTriggerTest : public ChromeDownloadManagerDelegateTest {
     // correctly.
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         download::features::kDownloadLater,
-        {{download::features::kDownloadLaterMinFileSizeKb, "204800"}});
+        {{download::features::kDownloadLaterMinFileSizeKb, "204800"},
+         {download::features::kDownloadLaterShowDateTimePicker, "false"}});
     ChromeDownloadManagerDelegateTest::SetUp();
   }
 
+  void SetConnectionType(ConnectionType connection_type) {
+    ResetNetworkNotifier();
+    mock_network_notifier_ =
+        std::make_unique<MockNetworkChangeNotifier>(connection_type);
+  }
+
+  void ResetNetworkNotifier() { mock_network_notifier_.reset(); }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockNetworkChangeNotifier> mock_network_notifier_;
 };
 
 TEST_F(DownloadLaterTriggerTest, DownloadLaterTrigger) {
   net::NetworkChangeNotifier::DisableForTest disable_for_test;
-  std::unique_ptr<net::NetworkChangeNotifier> mock_network_notifier =
-      std::make_unique<MockNetworkChangeNotifier>(
-          ConnectionType::CONNECTION_2G);
+  SetConnectionType(ConnectionType::CONNECTION_2G);
 
   std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(1);
@@ -1925,25 +1934,28 @@ TEST_F(DownloadLaterTriggerTest, DownloadLaterTrigger) {
             net::NetworkChangeNotifier::GetConnectionType());
   EXPECT_TRUE(delegate()->ShouldShowDownloadLaterDialog(download_item.get()));
 
-  mock_network_notifier.reset();
-  mock_network_notifier = std::make_unique<MockNetworkChangeNotifier>(
-      ConnectionType::CONNECTION_4G);
+  SetConnectionType(ConnectionType::CONNECTION_4G);
   EXPECT_FALSE(delegate()->ShouldShowDownloadLaterDialog(download_item.get()));
 
   // Large file.
   ON_CALL(*download_item, GetTotalBytes())
       .WillByDefault(Return(400 * 1024 * 1024));
   EXPECT_TRUE(delegate()->ShouldShowDownloadLaterDialog(download_item.get()));
+  SetConnectionType(ConnectionType::CONNECTION_WIFI);
+  EXPECT_FALSE(delegate()->ShouldShowDownloadLaterDialog(download_item.get()));
 
   // Small file.
+  SetConnectionType(ConnectionType::CONNECTION_4G);
   ON_CALL(*download_item, GetTotalBytes())
       .WillByDefault(Return(190 * 1024 * 1024));
   EXPECT_FALSE(delegate()->ShouldShowDownloadLaterDialog(download_item.get()));
 
   // Pref turn off.
+  SetConnectionType(ConnectionType::CONNECTION_2G);
   pref_service()->SetInteger(
       prefs::kDownloadLaterPromptStatus,
       static_cast<int>(DownloadLaterPromptStatus::kDontShow));
   EXPECT_FALSE(delegate()->ShouldShowDownloadLaterDialog(download_item.get()));
+  ResetNetworkNotifier();
 }
 #endif  // OS_ANDROID

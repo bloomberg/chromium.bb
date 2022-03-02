@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/download/download_test_util.h"
-#include "ios/chrome/browser/download/pass_kit_mime_type.h"
+#include "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -112,11 +112,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];
   XCUIElement* title = nil;
-  if (@available(iOS 13, *)) {
-    title = app.staticTexts[@"Toy Town Membership"];
-  } else {
-    title = app.otherElements[@"Toy Town Membership"];
-  }
+  title = app.staticTexts[@"Toy Town Membership"];
   GREYAssert([title waitForExistenceWithTimeout:kWaitForDownloadTimeout],
              @"PassKit dialog UI was not presented");
 }

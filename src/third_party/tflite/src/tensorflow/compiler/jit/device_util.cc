@@ -21,13 +21,12 @@ limitations under the License.
 
 namespace tensorflow {
 namespace jit {
-using xla::StatusOr;
 
 void DeviceSet::Insert(DeviceId device_id) {
   int word_index = device_id.id() / kWordSize;
   int bit_index = device_id.id() % kWordSize;
-
-  if (word_index >= storage_.size()) {
+  const int storage_size = storage_.size();
+  if (word_index >= storage_size) {
     storage_.resize(word_index + 1, 0);
   }
 
@@ -39,7 +38,7 @@ void DeviceSet::UnionWith(const DeviceSet& other) {
     storage_.resize(other.storage_.size(), 0);
   }
 
-  for (int i = 0; i < other.storage_.size(); i++) {
+  for (int i = 0, end = other.storage_.size(); i < end; i++) {
     storage_[i] |= other.storage_[i];
   }
 }
@@ -48,7 +47,7 @@ bool DeviceSet::IsEmpty() const {
   return absl::c_all_of(storage_, [&](uint64 val) { return val == 0; });
 }
 
-xla::StatusOr<DeviceId> DeviceInfoCache::GetIdFor(absl::string_view name) {
+StatusOr<DeviceId> DeviceInfoCache::GetIdFor(absl::string_view name) {
   TF_RET_CHECK(!name.empty());
 
   auto it = name_to_id_.find(name);
@@ -97,7 +96,7 @@ Status DeviceNameToDeviceType(const string& device, DeviceType* device_type) {
   return Status::OK();
 }
 
-xla::StatusOr<absl::optional<jit::DeviceId>> PickDeviceForXlaImpl(
+StatusOr<absl::optional<jit::DeviceId>> PickDeviceForXlaImpl(
     const jit::DeviceInfoCache& device_info_cache,
     const jit::DeviceSet& devices, bool allow_mixing_unknown_and_cpu,
     bool failure_to_pick_is_error) {
@@ -215,7 +214,7 @@ xla::StatusOr<absl::optional<jit::DeviceId>> PickDeviceForXlaImpl(
 #undef FAILED_TO_PICK_DEVICE
 }
 
-xla::StatusOr<jit::DeviceId> PickDeviceForXla(
+StatusOr<jit::DeviceId> PickDeviceForXla(
     const jit::DeviceInfoCache& device_info_cache,
     const jit::DeviceSet& devices, bool allow_mixing_unknown_and_cpu) {
   TF_ASSIGN_OR_RETURN(absl::optional<jit::DeviceId> device_id,
@@ -225,7 +224,7 @@ xla::StatusOr<jit::DeviceId> PickDeviceForXla(
   return *device_id;
 }
 
-xla::StatusOr<absl::optional<jit::DeviceId>> MaybePickDeviceForXla(
+StatusOr<absl::optional<jit::DeviceId>> MaybePickDeviceForXla(
     const jit::DeviceInfoCache& device_info_cache,
     const jit::DeviceSet& devices, bool allow_mixing_unknown_and_cpu) {
   return PickDeviceForXlaImpl(device_info_cache, devices,

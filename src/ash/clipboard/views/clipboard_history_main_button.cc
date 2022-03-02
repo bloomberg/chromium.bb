@@ -5,12 +5,14 @@
 #include "ash/clipboard/views/clipboard_history_main_button.h"
 
 #include "ash/clipboard/views/clipboard_history_item_view.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/scoped_light_mode_as_default.h"
+#include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/focus_ring.h"
 
 namespace ash {
 namespace {
@@ -30,7 +32,7 @@ ClipboardHistoryMainButton::ClipboardHistoryMainButton(
           base::Unretained(container))),
       container_(container) {
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetID(ClipboardHistoryUtil::kMainButtonViewID);
 
   // Let the parent handle accessibility features.
@@ -50,8 +52,8 @@ ClipboardHistoryMainButton::ClipboardHistoryMainButton(
   // Hence, highlighted background is implemented by customizing in
   // `PaintButtonContents()`.
   views::InkDrop::UseInkDropForFloodFillRipple(
-      ink_drop(), /*highlight_on_hover=*/false,
-      /*highlight_on_focus=*/!focus_ring());
+      views::InkDrop::Get(this), /*highlight_on_hover=*/false,
+      /*highlight_on_focus=*/!views::FocusRing::Get(this));
 }
 
 ClipboardHistoryMainButton::~ClipboardHistoryMainButton() = default;
@@ -87,11 +89,8 @@ void ClipboardHistoryMainButton::OnThemeChanged() {
   // TODO(andrewxu): remove this line after https://crbug.com/1143009 is
   // fixed.
   ScopedLightModeAsDefault scoped_light_mode_as_default;
-
-  const AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes();
-  ink_drop()->SetBaseColor(ripple_attributes.base_color);
-  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
+  StyleUtil::ConfigureInkDropAttributes(
+      this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
 }
 
 void ClipboardHistoryMainButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -121,12 +120,12 @@ void ClipboardHistoryMainButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
 
-  const auto* color_provider = AshColorProvider::Get();
-  const AshColorProvider::RippleAttributes ripple_attributes =
-      color_provider->GetRippleAttributes(
+  auto* color_provider = AshColorProvider::Get();
+  const std::pair<SkColor, float> base_color_and_opacity =
+      color_provider->GetInkDropBaseColorAndOpacity(
           color_provider->GetBaseLayerColor(kMenuBackgroundColorType));
-  flags.setColor(SkColorSetA(ripple_attributes.base_color,
-                             ripple_attributes.highlight_opacity * 0xFF));
+  flags.setColor(SkColorSetA(base_color_and_opacity.first,
+                             base_color_and_opacity.second * 0xFF));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawRect(GetLocalBounds(), flags);
 }

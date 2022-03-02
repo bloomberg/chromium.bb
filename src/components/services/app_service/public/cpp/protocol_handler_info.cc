@@ -4,8 +4,6 @@
 
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 
-#include <ostream>
-
 namespace apps {
 
 ProtocolHandlerInfo::ProtocolHandlerInfo() = default;
@@ -20,9 +18,16 @@ bool operator==(const ProtocolHandlerInfo& handler1,
   return handler1.protocol == handler2.protocol && handler1.url == handler2.url;
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const ProtocolHandlerInfo& handler) {
-  return out << "protocol: " << handler.protocol << " url: " << handler.url;
+bool operator!=(const ProtocolHandlerInfo& handler1,
+                const ProtocolHandlerInfo& handler2) {
+  return !(handler1 == handler2);
+}
+
+base::Value ProtocolHandlerInfo::AsDebugValue() const {
+  base::Value root(base::Value::Type::DICTIONARY);
+  root.SetStringKey("protocol", protocol);
+  root.SetStringKey("url", url.spec());
+  return root;
 }
 
 }  // namespace apps

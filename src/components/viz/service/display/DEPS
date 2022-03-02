@@ -7,6 +7,7 @@ include_rules = [
   "+cc/output",
   "+cc/resources",
   "+cc/scheduler",
+  "+components/viz/service/performance_hint",
   "+components/viz/service/surfaces",
   "+components/viz/service/display_embedder/overlay_candidate_validator_android.h",
   "+components/viz/service/display_embedder/overlay_candidate_validator_mac.h",
@@ -34,6 +35,7 @@ include_rules = [
   "+ui/gfx/video_types.h",
   "+ui/gl/ca_renderer_layer_params.h",
   "+ui/gl/dc_renderer_layer_params.h",
+  "+ui/gl/gl_fence.h",
   "+ui/gl/gl_utils.h",
   "+ui/gl/gpu_switching_manager.h",
   "+ui/gl/gpu_switching_observer.h",
@@ -68,16 +70,13 @@ specific_include_rules = {
     "+media",
     "+third_party/libyuv",
     "+ui/gl/gl_implementation.h",
+    "+third_party/zlib/google",
   ],
   "delegated_ink_point_renderer\.*" : [
     "+mojo/public/cpp/bindings",
   ],
   "viz_pixel_test\.(cc|h)": [
     "+components/viz/test",
-  ],
-  "overlay_processor_using_strategy\.(cc|h)": [
-    "+media/gpu/buildflags.h",
-    "+media/gpu/vaapi/vaapi_wrapper.h",
   ],
   "output_surface\.h": [
     "+mojo/public/cpp/bindings/pending_receiver.h",

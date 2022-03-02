@@ -8,8 +8,7 @@
 #include "chrome/browser/ash/login/helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace login {
 
 class MockNetworkStateHelper : public NetworkStateHelper {
@@ -18,11 +17,11 @@ class MockNetworkStateHelper : public NetworkStateHelper {
   ~MockNetworkStateHelper() override;
   MOCK_CONST_METHOD0(GetCurrentNetworkName, std::u16string(void));
   MOCK_CONST_METHOD0(IsConnected, bool(void));
+  MOCK_CONST_METHOD0(IsConnectedToEthernet, bool(void));
   MOCK_CONST_METHOD0(IsConnecting, bool(void));
 };
 
 }  // namespace login
-
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_MOCK_NETWORK_STATE_HELPER_H_

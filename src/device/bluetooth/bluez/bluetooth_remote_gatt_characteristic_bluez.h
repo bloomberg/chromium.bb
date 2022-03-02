@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "dbus/object_path.h"
@@ -45,6 +44,11 @@ class BluetoothRemoteGattCharacteristicBlueZ
       public BluetoothGattDescriptorClient::Observer,
       public device::BluetoothRemoteGattCharacteristic {
  public:
+  BluetoothRemoteGattCharacteristicBlueZ(
+      const BluetoothRemoteGattCharacteristicBlueZ&) = delete;
+  BluetoothRemoteGattCharacteristicBlueZ& operator=(
+      const BluetoothRemoteGattCharacteristicBlueZ&) = delete;
+
   // device::BluetoothGattCharacteristic overrides.
   ~BluetoothRemoteGattCharacteristicBlueZ() override;
   device::BluetoothUUID GetUUID() const override;
@@ -64,14 +68,14 @@ class BluetoothRemoteGattCharacteristicBlueZ
       const std::vector<uint8_t>& value,
       base::OnceClosure callback,
       ErrorCallback error_callback) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void PrepareWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                         base::OnceClosure callback,
                                         ErrorCallback error_callback) override;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
  protected:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
@@ -82,7 +86,7 @@ class BluetoothRemoteGattCharacteristicBlueZ
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       base::OnceClosure callback,
       ErrorCallback error_callback) override;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       base::OnceClosure callback,
@@ -146,8 +150,6 @@ class BluetoothRemoteGattCharacteristicBlueZ
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicBlueZ>
       weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicBlueZ);
 };
 
 }  // namespace bluez

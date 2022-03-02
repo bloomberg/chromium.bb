@@ -27,10 +27,14 @@ class CONTENT_EXPORT ContentMainRunner {
   static void SetCRTErrorHandlerFunctions(_invalid_parameter_handler ivph, _purecall_handler pch);
 
   // Initialize all necessary content state.
-  virtual int Initialize(const ContentMainParams& params) = 0;
+  virtual int Initialize(ContentMainParams params) = 0;
+
+  // Some platforms (Android) can call Run() multiple times in different modes,
+  // use this method to reset the ContentMainParams it will use between runs.
+  virtual void ReInitializeParams(ContentMainParams new_params) = 0;
 
   // Perform the default run logic.
-  virtual int Run(bool start_minimal_browser) = 0;
+  virtual int Run() = 0;
 
   // Shut down the content state.
   virtual void Shutdown() = 0;
