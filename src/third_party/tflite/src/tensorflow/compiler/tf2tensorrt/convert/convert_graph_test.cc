@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/cc/framework/scope.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/compiler/tf2tensorrt/convert/convert_nodes.h"
+#include "tensorflow/compiler/tf2tensorrt/utils/trt_testutils.h"
 #include "tensorflow/core/common_runtime/device_mgr.h"
 #include "tensorflow/core/common_runtime/device_set.h"
 #include "tensorflow/core/framework/tensor_shape.h"
@@ -34,23 +35,11 @@ limitations under the License.
 #include "tensorflow/core/protobuf/config.pb.h"  // NOLINT
 #include "tensorflow/core/public/session.h"
 
-#if GOOGLE_CUDA
-#if GOOGLE_TENSORRT
+#if GOOGLE_CUDA && GOOGLE_TENSORRT
 
 namespace tensorflow {
 namespace tensorrt {
 namespace convert {
-
-// TODO(laigd): put this into some test utils file.
-void ExpectStatus(Status status, error::Code code = error::OK,
-                  const char* substr = nullptr) {
-  EXPECT_EQ(code, status.code())
-      << status << " vs expected error code \"" << error::Code_Name(code)
-      << "\" and message \"" << substr << "\"";
-  if (substr) {
-    EXPECT_THAT(status.error_message(), ::testing::HasSubstr(substr)) << status;
-  }
-}
 
 class FakeCluster : public grappler::Cluster {
  public:
@@ -72,7 +61,7 @@ class FakeCluster : public grappler::Cluster {
   }
 
  private:
-  const DeviceSet* device_set_;
+  const DeviceSet* device_set_ = nullptr;
 };
 
 TEST(ConvertGraphTest, GetDeviceAndAllocator) {
@@ -152,7 +141,8 @@ TEST(ConvertGraphTest, GetDeviceAndAllocator) {
 
 class ConvertAfterShapesTest : public ::testing::Test {
  public:
-  Status RunConvertAfterShape(Scope s, GraphDef* output_graph_def) {
+  Status RunConvertAfterShape(Scope s, GraphDef* output_graph_def,
+                              int maximum_batch_size = 1000) {
     // Create GraphProperties.
     grappler::GrapplerItem item;
     TF_EXPECT_OK(s.ToGraphDef(&item.graph));
@@ -160,9 +150,10 @@ class ConvertAfterShapesTest : public ::testing::Test {
     TF_EXPECT_OK(graph_properties.InferStatically(true));
 
     // Construct ConversionParams.
-    const std::vector<string> output_names{"output"};
+    const std::vector<string> input_output_names{"output"};
     ConversionParams params;
-    params.output_names = &output_names;
+    params.input_output_names = &input_output_names;
+    params.max_batch_size = maximum_batch_size;
     params.max_workspace_size_bytes = 8 << 20;
     params.output_graph_def = output_graph_def;
     params.minimum_segment_size = 1;
@@ -231,5 +222,4 @@ TEST_F(ConvertAfterShapesTest, DirectlyConnectedEngines) {
 }  // namespace tensorrt
 }  // namespace tensorflow
 
-#endif  // GOOGLE_TENSORRT
-#endif  // GOOGLE_CUDA
+#endif  // GOOGLE_CUDA && GOOGLE_TENSORRT

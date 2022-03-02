@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/status.h"
@@ -95,8 +95,8 @@ class ScopedConverterInputProvider : public AudioConverter::InputCallback {
   }
 
  private:
-  AudioConverter* const converter_;
-  const AudioBus* const audio_bus_;
+  const raw_ptr<AudioConverter> converter_;
+  const raw_ptr<const AudioBus> audio_bus_;
 };
 
 }  // namespace
@@ -280,9 +280,15 @@ void AudioOpusEncoder::OnFifoOutput(const AudioBus& output_bus,
       desc = PrepareExtraData();
       need_to_emit_extra_data_ = false;
     }
+
     auto ts = base::TimeTicks() + timestamp_tracker_->GetTimestamp();
-    EncodedAudioBuffer encoded_buffer(
-        converted_params_, std::move(encoded_data), encoded_data_size, ts);
+
+    auto duration = timestamp_tracker_->GetFrameDuration(
+        converted_params_.frames_per_buffer());
+
+    EncodedAudioBuffer encoded_buffer(converted_params_,
+                                      std::move(encoded_data),
+                                      encoded_data_size, ts, duration);
     output_cb_.Run(std::move(encoded_buffer), desc);
   }
   timestamp_tracker_->AddFrames(converted_params_.frames_per_buffer());

@@ -32,10 +32,8 @@ void WidgetFadeAnimator::FadeIn() {
 }
 
 void WidgetFadeAnimator::FadeOut() {
-  if (IsFadingOut())
+  if (IsFadingOut() || !widget_)
     return;
-
-  DCHECK(widget_);
 
   // If the widget is already hidden, then there is no current animation and
   // nothing to do. If the animation is close-on-hide, however, we should still
@@ -94,7 +92,7 @@ void WidgetFadeAnimator::AnimationEnded(const gfx::Animation* animation) {
   fade_complete_callbacks_.Notify(this, animation_type);
 }
 
-void WidgetFadeAnimator::OnWidgetClosing(Widget* widget) {
+void WidgetFadeAnimator::OnWidgetDestroying(Widget* widget) {
   widget_observation_.Reset();
   fade_animation_.End();
   animation_type_ = FadeType::kNone;

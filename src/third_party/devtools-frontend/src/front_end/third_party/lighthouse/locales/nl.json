@@ -1,4 +1,136 @@
 {
+  "flow-report/src/i18n/ui-strings.js | allReports": {
+    "message": "Alle rapporten"
+  },
+  "flow-report/src/i18n/ui-strings.js | categories": {
+    "message": "Categorieën"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryAccessibility": {
+    "message": "Toegankelijkheid"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryBestPractices": {
+    "message": "Praktische tips"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryPerformance": {
+    "message": "Prestaties"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryProgressiveWebApp": {
+    "message": "Progressive web-app"
+  },
+  "flow-report/src/i18n/ui-strings.js | categorySeo": {
+    "message": "SEO"
+  },
+  "flow-report/src/i18n/ui-strings.js | desktop": {
+    "message": "Desktop"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpDialogTitle": {
+    "message": "Het rapport van de Lighthouse-stroom begrijpen"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpLabel": {
+    "message": "Begrijpen hoe stromen werken"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionNavigation": {
+    "message": "Navigatierapporten gebruiken…"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionSnapshot": {
+    "message": "Momentopnamerapporten gebruiken…"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionTimespan": {
+    "message": "Tijdsduurrapporten gebruiken…"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation1": {
+    "message": "Lighthouse-prestatiescore ophalen."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation2": {
+    "message": "Prestatiestatistieken voor het laden van de pagina meten, zoals de Grootste weergave met content (LCP) en de snelheidsindex."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation3": {
+    "message": "Mogelijkheden van progressive web-apps evalueren."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseSnapshot1": {
+    "message": "Toegankelijkheidsproblemen opsporen in apps met één pagina of in complexe formulieren."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseSnapshot2": {
+    "message": "Praktische tips evalueren voor menu's en UI-elementen die achter interactie verborgen zijn."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseTimespan1": {
+    "message": "Indelingsverschuivingen en de JavaScript-uitvoeringstijd meten voor verschillende interacties."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseTimespan2": {
+    "message": "Ontdek mogelijkheden om de functionaliteit van langdurige pagina's en apps met één pagina te verbeteren."
+  },
+  "flow-report/src/i18n/ui-strings.js | highestImpact": {
+    "message": "Hoogste impact"
+  },
+  "flow-report/src/i18n/ui-strings.js | informativeAuditCount": {
+    "message": "{numInformative,plural, =1{{numInformative} informatieve controle}other{{numInformative} informatieve controles}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | mobile": {
+    "message": "Mobiel"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationDescription": {
+    "message": "Laden van pagina"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationLongDescription": {
+    "message": "In navigatierapporten wordt het laden van één pagina geanalyseerd, net als in de oorspronkelijke Lighthouse-rapporten."
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationReport": {
+    "message": "Navigatierapport"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationReportCount": {
+    "message": "{numNavigation,plural, =1{{numNavigation} navigatierapport}other{{numNavigation} navigatierapporten}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | passableAuditCount": {
+    "message": "{numPassableAudits,plural, =1{{numPassableAudits} controle die kan worden doorstaan}other{{numPassableAudits} controles die kunnen worden doorstaan}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | passedAuditCount": {
+    "message": "{numPassed,plural, =1{{numPassed} controle doorstaan}other{{numPassed} controles doorstaan}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingAverage": {
+    "message": "Gemiddeld"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingError": {
+    "message": "Fout"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingFail": {
+    "message": "Slecht"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingPass": {
+    "message": "Goed"
+  },
+  "flow-report/src/i18n/ui-strings.js | save": {
+    "message": "Opslaan"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotDescription": {
+    "message": "Vastgelegde staat van pagina"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotLongDescription": {
+    "message": "In momentopnamerapporten worden pagina's in een bepaalde situatie geanalyseerd, doorgaans na interactie van de gebruiker."
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotReport": {
+    "message": "Momentopnamerapport"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotReportCount": {
+    "message": "{numSnapshot,plural, =1{{numSnapshot} momentopnamerapport}other{{numSnapshot} momentopnamerapporten}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | summary": {
+    "message": "Overzicht"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanDescription": {
+    "message": "Gebruikersinteracties"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanLongDescription": {
+    "message": "In tijdsduurrapporten wordt een bepaalde tijdsduur geanalyseerd die meestal gebruikersinteracties omvat."
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanReport": {
+    "message": "Perioderapport"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanReportCount": {
+    "message": "{numTimespan,plural, =1{{numTimespan} perioderapport}other{{numTimespan} perioderapporten}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | title": {
+    "message": "Lighthouse-rapport over gebruikersstroom"
+  },
   "lighthouse-core/audits/accessibility/accesskeys.js | description": {
     "message": "Met toegangstoetsen kunnen gebruikers snel de focus op een gedeelte van de pagina plaatsen. Voor correcte navigatie moet elke toegangstoets uniek zijn. [Meer informatie](https://web.dev/accesskeys/)"
   },
@@ -63,7 +195,7 @@
     "message": "ARIA `meter`-elementen hebben toegankelijke namen"
   },
   "lighthouse-core/audits/accessibility/aria-progressbar-name.js | description": {
-    "message": "Als een element geen toegankelijke naam heeft, kondigen schermlezers dit aan met een generieke naam, waardoor het veld onbruikbaar wordt voor gebruikers die afhankelijk zijn van schermlezers. [Meer informatie](https://web.dev/aria-name/)"
+    "message": "Als een `progressbar`-element geen toegankelijke naam heeft, kondigen schermlezers dit aan met een generieke naam, waardoor het veld onbruikbaar wordt voor gebruikers die afhankelijk zijn van schermlezers. [Meer informatie](https://web.dev/aria-name/)"
   },
   "lighthouse-core/audits/accessibility/aria-progressbar-name.js | failureTitle": {
     "message": "ARIA `progressbar`-elementen hebben geen toegankelijke namen."
@@ -476,6 +608,12 @@
   "lighthouse-core/audits/byte-efficiency/legacy-javascript.js | title": {
     "message": "Voorkomen dat verouderde JavaScript wordt geleverd aan moderne browsers"
   },
+  "lighthouse-core/audits/byte-efficiency/modern-image-formats.js | description": {
+    "message": "Afbeeldingsindelingen zoals webp en avif bieden vaak betere compressie dan png of jpeg. Dit zorgt voor snellere downloads en minder dataverbruik. [Meer informatie](https://web.dev/uses-webp-images/)"
+  },
+  "lighthouse-core/audits/byte-efficiency/modern-image-formats.js | title": {
+    "message": "Lever afbeeldingen in moderne indelingen"
+  },
   "lighthouse-core/audits/byte-efficiency/offscreen-images.js | description": {
     "message": "Overweeg afbeeldingen die niet in beeld zijn en verborgen afbeeldingen via 'lazy loading' te laden nadat alle kritieke bronnen zijn geladen om zo de tijd tot interactief te verlagen. [Meer informatie](https://web.dev/offscreen-images/)"
   },
@@ -542,6 +680,18 @@
   "lighthouse-core/audits/byte-efficiency/uses-optimized-images.js | title": {
     "message": "Codeer afbeeldingen op een efficiënte manier"
   },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | columnActualDimensions": {
+    "message": "Werkelijke afmetingen"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | columnDisplayedDimensions": {
+    "message": "Getoonde afmetingen"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | failureTitle": {
+    "message": "De afbeeldingen waren groter dan het weergegeven formaat"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | title": {
+    "message": "De afbeeldingen waren geschikt voor het weergegeven formaat"
+  },
   "lighthouse-core/audits/byte-efficiency/uses-responsive-images.js | description": {
     "message": "Lever afbeeldingen met het juiste formaat om mobiele data te besparen en de laadtijd te verbeteren. [Meer informatie](https://web.dev/uses-responsive-images/)"
   },
@@ -553,12 +703,6 @@
   },
   "lighthouse-core/audits/byte-efficiency/uses-text-compression.js | title": {
     "message": "Zet tekstcompressie aan"
-  },
-  "lighthouse-core/audits/byte-efficiency/uses-webp-images.js | description": {
-    "message": "Afbeeldingsindelingen zoals JPEG 2000, JPEG XR en WebP bieden vaak betere compressie dan PNG of JPEG. Dit resulteert in snellere downloads en minder dataverbruik. [Meer informatie](https://web.dev/uses-webp-images/)"
-  },
-  "lighthouse-core/audits/byte-efficiency/uses-webp-images.js | title": {
-    "message": "Lever afbeeldingen in moderne indelingen"
   },
   "lighthouse-core/audits/content-width.js | description": {
     "message": "Als de breedte van de content van je app niet overeenkomt met de breedte van het kijkvenster, is je app mogelijk niet geoptimaliseerd voor mobiele schermen. [Meer informatie](https://web.dev/content-width/)"
@@ -584,8 +728,14 @@
   "lighthouse-core/audits/csp-xss.js | columnDirective": {
     "message": "Instructie"
   },
+  "lighthouse-core/audits/csp-xss.js | columnSeverity": {
+    "message": "Ernst"
+  },
   "lighthouse-core/audits/csp-xss.js | description": {
-    "message": "Een sterk Content Security Policy (CSP) verkleint het risico op XSS-aanvallen aanzienlijk. [Meer informatie](https://csp.withgoogle.com/docs/index.html)"
+    "message": "Een sterke Content Security Policy (CSP) verlaagt het risico op aanvallen met cross-site scripting (XSS) aanzienlijk. [Meer informatie](https://web.dev/csp-xss/)"
+  },
+  "lighthouse-core/audits/csp-xss.js | itemSeveritySyntax": {
+    "message": "Syntaxis"
   },
   "lighthouse-core/audits/csp-xss.js | metaTagMessage": {
     "message": "De pagina bevat een CSP dat is gedefinieerd in een <meta>-tag. Overweeg het CSP te definiëren in een HTTP-header als dat mogelijk is."
@@ -613,18 +763,6 @@
   },
   "lighthouse-core/audits/deprecations.js | title": {
     "message": "Vermijdt beëindigde API's"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | description": {
-    "message": "Application Cache is beëindigd. [Meer informatie](https://web.dev/appcache-manifest/)"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | displayValue": {
-    "message": "'{AppCacheManifest}' gevonden"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | failureTitle": {
-    "message": "Gebruikt Application Cache"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | title": {
-    "message": "Vermijdt Application Cache"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | description": {
     "message": "Een declaratie voor tekencodering is vereist. Dit kan worden gedaan met een `<meta>`-tag in de eerste 1024 bytes van de HTML of in de HTTP-reactiekop voor het contenttype. [Meer informatie](https://web.dev/charset/)"
@@ -682,21 +820,6 @@
   },
   "lighthouse-core/audits/dobetterweb/dom-size.js | title": {
     "message": "Vermijdt een overmatige grote DOM"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | columnFailingAnchors": {
-    "message": "Mislukte ankers"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | description": {
-    "message": "Voeg `rel=\"noopener\"` of `rel=\"noreferrer\"` toe aan eventuele externe links om de prestaties te verbeteren en kwetsbaarheden in de beveiliging te voorkomen. [Meer informatie](https://web.dev/external-anchors-use-rel-noopener/)"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | failureTitle": {
-    "message": "Links naar cross-originbestemmingen zijn onveilig"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | title": {
-    "message": "Links naar cross-origin-bestemmingen zijn veilig"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | warning": {
-    "message": "Kan geen bestemming bepalen voor ankeradvertentie ({anchorHTML}). Als deze niet wordt gebruikt als hyperlink, overweeg dan om target=_blank te verwijderen."
   },
   "lighthouse-core/audits/dobetterweb/geolocation-on-start.js | description": {
     "message": "Gebruikers wantrouwen of raken in de war van sites die vragen om hun locatie zonder context. Overweeg het verzoek in plaats daarvan te koppelen aan gebruikershandelingen. [Meer informatie](https://web.dev/geolocation-on-start/)"
@@ -760,15 +883,6 @@
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | failureTitle": {
     "message": "Omvat front end JavaScript-bibliotheken met bekende beveiligingskwetsbaarheden"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityHigh": {
-    "message": "Hoog"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityLow": {
-    "message": "Laag"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityMedium": {
-    "message": "Normaal"
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | title": {
     "message": "Vermijdt front end JavaScript-bibliotheken met bekende beveiligingskwetsbaarheden"
@@ -906,10 +1020,10 @@
     "message": "Het manifest bevat geen veld 'name' of 'short_name'"
   },
   "lighthouse-core/audits/installable-manifest.js | manifest-missing-suitable-icon": {
-    "message": "Het manifest bevat geen geschikt icoon. Een png-, svg- of webp-indeling van ten minste {value0} pixels is vereist, het kenmerk voor de afmetingen moet zijn ingesteld en het doelkenmerk (indien ingesteld) moet 'any' of 'maskable' bevatten."
+    "message": "Het manifest bevat geen geschikt icoon. Een png-, svg- of webp-indeling van ten minste {value0} pixels is vereist, het formaatkenmerk moet zijn ingesteld en het doelkenmerk (indien ingesteld) moet 'any' bevatten."
   },
   "lighthouse-core/audits/installable-manifest.js | no-acceptable-icon": {
-    "message": "Geen van de opgegeven iconen is een vierkant van ten minste {value0} pixels in png-, svg- of webp-indeling"
+    "message": "Geen enkel geleverd icoon is een vierkant van minstens {value0} pixels in png-, svg- of webp-indeling met het doelkenmerk niet ingesteld of ingesteld op 'any'."
   },
   "lighthouse-core/audits/installable-manifest.js | no-icon-available": {
     "message": "Het gedownloade icoon is leeg of beschadigd"
@@ -989,21 +1103,6 @@
   "lighthouse-core/audits/is-on-https.js | warning": {
     "message": "Toegestaan met waarschuwing"
   },
-  "lighthouse-core/audits/large-javascript-libraries.js | columnLibraryName": {
-    "message": "Bibliotheek"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | description": {
-    "message": "Grote JavaScript-bibliotheken kunnen slechte prestaties tot gevolg hebben. Geef de voorkeur aan kleinere, functioneel gelijke bibliotheken om de bundelgrootte te beperken. [Meer informatie](https://developers.google.com/web/fundamentals/performance/webpack/decrease-frontend-size#optimize_dependencies)"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | displayValue": {
-    "message": "{libraryCount,plural, =1{1 grote bibliotheek gevonden}other{# grote bibliotheken gevonden}}"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | failureTitle": {
-    "message": "Onnodig grote JavaScript-bibliotheken vervangen"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | title": {
-    "message": "Vermijdt grote JavaScript-bibliotheken door kleinere alternatieven te gebruiken"
-  },
   "lighthouse-core/audits/largest-contentful-paint-element.js | description": {
     "message": "Dit is het grootste element met content dat is weergegeven in het kijkvenster. [Meer informatie](https://web.dev/lighthouse-largest-contentful-paint/)"
   },
@@ -1018,6 +1117,15 @@
   },
   "lighthouse-core/audits/layout-shift-elements.js | title": {
     "message": "Grote indelingsverschuivingen vermijden"
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | description": {
+    "message": "Afbeeldingen boven de vouw die worden geladen met lazy loading, worden later tijdens de levensduur van de pagina weergegeven. Hierdoor kan de Grootste weergave met content (LCP) worden vertraagd. [Meer informatie](https://web.dev/lcp-lazy-loading/)"
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | failureTitle": {
+    "message": "Afbeelding voor Grootste weergave met content (LCP) is geladen met lazy loading"
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | title": {
+    "message": "Afbeelding voor Grootste weergave met content (LCP) is niet geladen met lazy loading"
   },
   "lighthouse-core/audits/long-tasks.js | description": {
     "message": "Vermeldt de langste taken in de primaire thread (dit is handig om de bijdragers te identificeren die zorgen voor de meeste invoervertraging). [Meer informatie](https://web.dev/long-tasks-devtools/)"
@@ -1070,14 +1178,8 @@
   "lighthouse-core/audits/metrics/cumulative-layout-shift.js | description": {
     "message": "Cumulatieve indelingsverschuiving (CLS) meet de beweging van zichtbare elementen binnen het kijkvenster. [Meer informatie](https://web.dev/cls/)"
   },
-  "lighthouse-core/audits/metrics/estimated-input-latency.js | description": {
-    "message": "Geschatte invoerlatentie is een schatting van de tijd die je app nodig heeft om te reageren op gebruikersinvoer (in milliseconden), gemeten voor de drukste periode van 5 seconden tijdens het laden van de pagina. Als de latentie langer dan 50 ms is, kunnen gebruikers je app als traag beschouwen. [Meer informatie](https://web.dev/estimated-input-latency/)"
-  },
   "lighthouse-core/audits/metrics/first-contentful-paint.js | description": {
     "message": "'Eerste tekenbewerking met content' (FCP) geeft het tijdstip aan waarop de eerste tekst of afbeelding wordt getoond. [Meer informatie](https://web.dev/first-contentful-paint/)"
-  },
-  "lighthouse-core/audits/metrics/first-cpu-idle.js | description": {
-    "message": "'Eerste keer dat CPU inactief was' geeft de eerste keer aan dat de primaire thread van de pagina rustig genoeg was om invoer te verwerken.  [Meer informatie](https://web.dev/first-cpu-idle/)."
   },
   "lighthouse-core/audits/metrics/first-meaningful-paint.js | description": {
     "message": "'Eerste nuttige weergave' (FMP) meet wanneer de primaire content van een pagina zichtbaar is. [Meer informatie](https://web.dev/first-meaningful-paint/)"
@@ -1169,15 +1271,6 @@
   "lighthouse-core/audits/preload-lcp-image.js | title": {
     "message": "Afbeelding voor Grootste weergave met content (LCP) vooraf laden"
   },
-  "lighthouse-core/audits/redirects-http.js | description": {
-    "message": "Als je HTTPS al hebt ingesteld, zorg je ervoor dat je al het HTTP-verkeer omleidt naar HTTPS om beveiligde webfuncties voor alle gebruikers te activeren. [Meer informatie](https://web.dev/redirects-http/)"
-  },
-  "lighthouse-core/audits/redirects-http.js | failureTitle": {
-    "message": "Hiermee wordt HTTP-verkeer niet omgeleid naar HTTPS"
-  },
-  "lighthouse-core/audits/redirects-http.js | title": {
-    "message": "Hiermee wordt HTTP-verkeer omgeleid naar HTTPS"
-  },
   "lighthouse-core/audits/redirects.js | description": {
     "message": "Omleidingen zorgen voor extra vertraging voordat de pagina kan worden geladen. [Meer informatie](https://web.dev/redirects/)"
   },
@@ -1199,9 +1292,6 @@
   "lighthouse-core/audits/seo/canonical.js | explanationConflict": {
     "message": "Meerdere conflicterende URL's ({urlList})"
   },
-  "lighthouse-core/audits/seo/canonical.js | explanationDifferentDomain": {
-    "message": "Wijst naar een ander domein ({url})"
-  },
   "lighthouse-core/audits/seo/canonical.js | explanationInvalid": {
     "message": "Ongeldige URL ({url})"
   },
@@ -1209,7 +1299,7 @@
     "message": "Wijst naar een andere `hreflang`-locatie ({url})"
   },
   "lighthouse-core/audits/seo/canonical.js | explanationRelative": {
-    "message": "Relatieve URL ({url})"
+    "message": "Is geen absolute URL ({url})"
   },
   "lighthouse-core/audits/seo/canonical.js | explanationRoot": {
     "message": "Verwijst naar de root-URL van het domein (de homepage), in plaats van een equivalente pagina van de content"
@@ -1542,7 +1632,7 @@
     "message": "De pagina heeft geldige bronkaarten"
   },
   "lighthouse-core/audits/viewport.js | description": {
-    "message": "Voeg een `<meta name=\"viewport\">`-tag toe om je app te optimaliseren voor mobiele schermen. [Meer informatie](https://web.dev/viewport/)"
+    "message": "Met een `<meta name=\"viewport\">` wordt je app niet alleen geoptimaliseerd voor formaten van mobiele schermen, maar wordt ook [een vertraging van 300 milliseconden voor gebruikersinvoer](https://developers.google.com/web/updates/2013/12/300ms-tap-delay-gone-away) voorkomen. [Meer informatie](https://web.dev/viewport/)"
   },
   "lighthouse-core/audits/viewport.js | explanationNoTag": {
     "message": "Geen `<meta name=\"viewport\">`-tag gevonden"
@@ -1668,7 +1758,7 @@
     "message": "Deze controles worden vereist door de baseline [PWA-checklist](https://developers.google.com/web/progressive-web-apps/checklist) maar worden niet automatisch gecontroleerd door Lighthouse. Ze zijn niet van invloed op je score, maar het is wel belangrijk dat je ze handmatig verifieert."
   },
   "lighthouse-core/config/default-config.js | pwaCategoryTitle": {
-    "message": "Progressive web-app"
+    "message": "PWA"
   },
   "lighthouse-core/config/default-config.js | pwaInstallableGroupTitle": {
     "message": "Installeerbaar"
@@ -1677,7 +1767,7 @@
     "message": "Geoptimaliseerd voor PWA"
   },
   "lighthouse-core/config/default-config.js | seoCategoryDescription": {
-    "message": "Deze controles zorgen ervoor dat je pagina is geoptimaliseerd voor positionering in zoekmachineresultaten. Er zijn aanvullende factoren die Lighthouse niet controleert en die je positie in de zoekresultaten kunnen beïnvloeden. [Meer informatie](https://support.google.com/webmasters/answer/35769)"
+    "message": "Deze checks zorgen ervoor dat je pagina het algemene advies voor zoekmachineoptimalisatie volgt. Er zijn veel aanvullende factoren waarvoor Lighthouse hier geen score geeft, maar die wel van invloed kunnen zijn op je zoekpositie, waaronder de prestaties voor [Site-vitaliteit](https://web.dev/learn-web-vitals/). [Meer informatie](https://support.google.com/webmasters/answer/35769)"
   },
   "lighthouse-core/config/default-config.js | seoCategoryManualDescription": {
     "message": "Voer deze extra validators op je site uit om aanvullende praktische tips voor SEO te controleren."
@@ -1703,6 +1793,15 @@
   "lighthouse-core/config/default-config.js | seoMobileGroupTitle": {
     "message": "Geschikt voor mobiele apparaten"
   },
+  "lighthouse-core/gather/driver/environment.js | warningSlowHostCpu": {
+    "message": "Zo te zien heeft het geteste apparaat een langzamere CPU dan Lighthouse verwachtte. Dit kan je prestatiescore negatief beïnvloeden. Meer informatie over hoe je [de juiste vertragingsvermenigvuldiger voor de CPU kalibreert](https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#cpu-throttling)"
+  },
+  "lighthouse-core/gather/driver/navigation.js | warningRedirected": {
+    "message": "De pagina wordt mogelijk niet geladen zoals verwacht omdat je test-URL ({requested}) is omgeleid naar {final}. Probeer de tweede URL rechtstreeks te testen."
+  },
+  "lighthouse-core/gather/driver/navigation.js | warningTimeout": {
+    "message": "De pagina is te langzaam geladen om binnen de tijdslimiet te voltooien. De resultaten kunnen onvolledig zijn."
+  },
   "lighthouse-core/gather/driver/storage.js | warningData": {
     "message": "{locationCount,plural, =1{Er kunnen op de volgende locatie gegevens zijn opgeslagen die van invloed zijn op de laadprestaties: {locations}. Controleer deze pagina in een incognitovenster om te voorkomen dat die bronnen van invloed zijn op je scores.}other{Er kunnen op de volgende locaties gegevens zijn opgeslagen die van invloed zijn op de laadprestaties: {locations}. Controleer deze pagina in een incognitovenster om te voorkomen dat die bronnen van invloed zijn op je scores.}}"
   },
@@ -1722,7 +1821,7 @@
     "message": "Zonder base-uri kunnen ingevoegde <base>-tags de basis-URL instellen voor alle relatieve URL's (bijv. scripts) naar een door de aanvaller beheerd domein. Overweeg base-uri in te stellen op 'none' of 'self'."
   },
   "lighthouse-core/lib/csp-evaluator.js | missingObjectSrc": {
-    "message": "Elementen die worden beheerd door object-src, worden gezien als verouderde functies. Overweeg object-src in te stellen op 'none' om te voorkomen dat er plug-ins worden ingevoegd die onveilige scripts uitvoeren."
+    "message": "Als object-src ontbreekt, kunnen plug-ins worden geïnjecteerd die onveilige scripts uitvoeren. Overweeg object-src in te stellen op 'none' als dat kan."
   },
   "lighthouse-core/lib/csp-evaluator.js | missingScriptSrc": {
     "message": "De instructie script-src ontbreekt. Dit kan tot gevolg hebben dat onveilige scripts kunnen worden uitgevoerd."
@@ -1736,6 +1835,12 @@
   "lighthouse-core/lib/csp-evaluator.js | nonceLength": {
     "message": "Nonces moeten ten minste 8 tekens lang zijn."
   },
+  "lighthouse-core/lib/csp-evaluator.js | plainUrlScheme": {
+    "message": "Vermijd het gebruik van plattetekst-URL-schema's ({keyword}) in deze instructie. Bij plattetekst-URL-schema's kunnen scripts afkomstig zijn van een onveilig domein."
+  },
+  "lighthouse-core/lib/csp-evaluator.js | plainWildcards": {
+    "message": "Vermijd het gebruik van plattetekst-jokertekens ({keyword}) in deze instructie. Bij plattetekst-jokertekens kunnen scripts afkomstig zijn van een onveilig domein."
+  },
   "lighthouse-core/lib/csp-evaluator.js | reportToOnly": {
     "message": "De rapportagebestemming is alleen ingesteld via de instructie report-to. Deze instructie wordt alleen ondersteund in op Chromium gebaseerde browsers, dus het wordt aanbevolen ook een instructie report-uri te gebruiken."
   },
@@ -1743,7 +1848,7 @@
     "message": "Er is geen CSP waarmee een rapportagebestemming wordt ingesteld. Hierdoor is het moeilijk om het CSP na verloop van tijd te onderhouden en te monitoren op kwetsbaarheden."
   },
   "lighthouse-core/lib/csp-evaluator.js | strictDynamic": {
-    "message": "Toelatingslijsten van hosts kunnen vaak worden omzeild. Overweeg 'strict-dynamic' te gebruiken in combinatie met CSP-nonces of -hashes."
+    "message": "Toelatingslijsten van hosts kunnen vaak worden omzeild. Overweeg CSP-nonces of -hashes te gebruiken, zo nodig samen met 'strict-dynamic'."
   },
   "lighthouse-core/lib/csp-evaluator.js | unknownDirective": {
     "message": "Onbekende CSP-instructie."
@@ -1832,12 +1937,6 @@
   "lighthouse-core/lib/i18n/i18n.js | documentResourceType": {
     "message": "Document"
   },
-  "lighthouse-core/lib/i18n/i18n.js | estimatedInputLatencyMetric": {
-    "message": "Geschatte invoerlatentie"
-  },
-  "lighthouse-core/lib/i18n/i18n.js | firstCPUIdleMetric": {
-    "message": "Eerste keer dat CPU inactief was"
-  },
   "lighthouse-core/lib/i18n/i18n.js | firstContentfulPaintMetric": {
     "message": "First Contentful Paint"
   },
@@ -1852,6 +1951,15 @@
   },
   "lighthouse-core/lib/i18n/i18n.js | interactiveMetric": {
     "message": "Time to Interactive"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityHigh": {
+    "message": "Hoog"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityLow": {
+    "message": "Laag"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityMedium": {
+    "message": "Normaal"
   },
   "lighthouse-core/lib/i18n/i18n.js | largestContentfulPaintMetric": {
     "message": "Largest Contentful Paint"
@@ -1952,143 +2060,11 @@
   "lighthouse-core/lib/lh-error.js | urlInvalid": {
     "message": "Het lijkt erop dat je een ongeldige URL hebt opgegeven."
   },
-  "lighthouse-core/report/html/renderer/util.js | calculatorLink": {
-    "message": "Rekenmachine bekijken"
-  },
-  "lighthouse-core/report/html/renderer/util.js | crcInitialNavigation": {
-    "message": "Beginnavigatie"
-  },
-  "lighthouse-core/report/html/renderer/util.js | crcLongestDurationLabel": {
-    "message": "Maximum latentie voor kritiek pad:"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownCopyJSON": {
-    "message": "Json kopiëren"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownDarkTheme": {
-    "message": "Donker thema aan-/uitzetten"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownPrintExpanded": {
-    "message": "Afdrukvenster uitvouwen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownPrintSummary": {
-    "message": "Afdrukoverzicht"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveGist": {
-    "message": "Opslaan als gist"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveHTML": {
-    "message": "Opslaan als HTML"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveJSON": {
-    "message": "Opslaan als json"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownViewer": {
-    "message": "Openen in viewer"
-  },
-  "lighthouse-core/report/html/renderer/util.js | errorLabel": {
-    "message": "Fout"
-  },
-  "lighthouse-core/report/html/renderer/util.js | errorMissingAuditInfo": {
-    "message": "Rapportfout: geen controlegegevens"
-  },
-  "lighthouse-core/report/html/renderer/util.js | footerIssue": {
-    "message": "Een probleem melden"
-  },
-  "lighthouse-core/report/html/renderer/util.js | labDataTitle": {
-    "message": "Labgegevens"
-  },
-  "lighthouse-core/report/html/renderer/util.js | lsPerformanceCategoryDescription": {
-    "message": "Analyse met [Lighthouse](https://developers.google.com/web/tools/lighthouse/) van de huidige pagina via een geëmuleerd mobiel netwerk. Waarden worden geschat en kunnen variëren."
-  },
-  "lighthouse-core/report/html/renderer/util.js | manualAuditsGroupTitle": {
-    "message": "Aanvullende items om handmatig te controleren"
-  },
-  "lighthouse-core/report/html/renderer/util.js | notApplicableAuditsGroupTitle": {
-    "message": "N.v.t."
-  },
-  "lighthouse-core/report/html/renderer/util.js | opportunityResourceColumnLabel": {
-    "message": "Aanbeveling"
-  },
-  "lighthouse-core/report/html/renderer/util.js | opportunitySavingsColumnLabel": {
-    "message": "Geschatte besparing"
-  },
-  "lighthouse-core/report/html/renderer/util.js | passedAuditsGroupTitle": {
-    "message": "Geslaagde controles"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeDesktopEmulation": {
-    "message": "Desktopemulatie"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeMobileEmulation": {
-    "message": "Emulatie van Moto G4"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeNoEmulation": {
-    "message": "Geen emulatie"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsAxeVersion": {
-    "message": "Axe-versie"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsBenchmark": {
-    "message": "CPU/geheugen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsCPUThrottling": {
-    "message": "CPU-throttling"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsChannel": {
-    "message": "Kanaal"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsDevice": {
-    "message": "Apparaat"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsFetchTime": {
-    "message": "Ophaaltijd"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsNetworkThrottling": {
-    "message": "Netwerkbeperking"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsTitle": {
-    "message": "Runtime-instellingen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUA": {
-    "message": "User-agent (host)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUANetwork": {
-    "message": "User-agent (netwerk)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUrl": {
-    "message": "URL"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeUnknown": {
-    "message": "Onbekend"
-  },
-  "lighthouse-core/report/html/renderer/util.js | snippetCollapseButtonLabel": {
-    "message": "Fragment samenvouwen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | snippetExpandButtonLabel": {
-    "message": "Fragment uitvouwen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | thirdPartyResourcesLabel": {
-    "message": "Bronnen van derden tonen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | throttlingProvided": {
-    "message": "Bepaald door omgeving"
-  },
-  "lighthouse-core/report/html/renderer/util.js | toplevelWarningsMessage": {
-    "message": "Er zijn problemen opgetreden bij deze uitvoering van Lighthouse:"
-  },
-  "lighthouse-core/report/html/renderer/util.js | varianceDisclaimer": {
-    "message": "Waarden worden geschat en kunnen variëren. De [prestatiescore wordt rechtstreeks berekend](https://web.dev/performance-scoring/) op basis van deze statistieken."
-  },
-  "lighthouse-core/report/html/renderer/util.js | viewTreemapLabel": {
-    "message": "Treemap bekijken"
-  },
-  "lighthouse-core/report/html/renderer/util.js | warningAuditsGroupTitle": {
-    "message": "Geslaagd voor controles maar met waarschuwingen"
-  },
-  "lighthouse-core/report/html/renderer/util.js | warningHeader": {
-    "message": "Waarschuwingen: "
-  },
   "node_modules/lighthouse-stack-packs/packs/amp.js | efficient-animated-content": {
     "message": "Gebruik in het geval van content met animatie [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) om het CPU-gebruik te minimaliseren als de content niet in beeld is."
+  },
+  "node_modules/lighthouse-stack-packs/packs/amp.js | modern-image-formats": {
+    "message": "Overweeg alle [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites)-componenten weer te geven in WebP-indelingen, terwijl je een geschikte reserve specificeert voor andere browsers. [Meer informatie](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | offscreen-images": {
     "message": "Zorg dat je [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) gebruikt voor afbeeldingen die automatisch worden geladen via lazy loading. [Meer informatie](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)"
@@ -2101,9 +2077,6 @@
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-responsive-images": {
     "message": "De component [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) ondersteunt het kenmerk [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) om te specificeren welke afbeeldingsitems moeten worden gebruikt op basis van het schermformaat. [Meer informatie](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)"
-  },
-  "node_modules/lighthouse-stack-packs/packs/amp.js | uses-webp-images": {
-    "message": "Overweeg alle [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites)-componenten weer te geven in WebP-indelingen, terwijl je een geschikte reserve specificeert voor andere browsers. [Meer informatie](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | dom-size": {
     "message": "Overweeg virtueel scrollen met de Component Dev Kit (CDK) als er zeer grote lijsten worden weergegeven. [Meer informatie](https://web.dev/virtualize-lists-with-angular-cdk/)"
@@ -2129,13 +2102,16 @@
   "node_modules/lighthouse-stack-packs/packs/drupal.js | font-display": {
     "message": "Geef `@font-display` op als je aangepaste lettertypen definieert in je thema."
   },
+  "node_modules/lighthouse-stack-packs/packs/drupal.js | modern-image-formats": {
+    "message": "Overweeg [een module te installeren en te configureren om gebruik te maken van WebP-afbeeldingsindelingen](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) op je site. Dergelijke modules genereren automatisch een WebP-versie van je geüploade afbeeldingen om de laadtijden te optimaliseren."
+  },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | offscreen-images": {
     "message": "Installeer [een Drupal-module](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) voor lazy loading van afbeeldingen. Met dergelijke modules kunnen afbeeldingen die niet in beeld zijn, worden uitgesteld om de prestaties te verbeteren."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | render-blocking-resources": {
     "message": "Overweeg een module te gebruiken om kritieke css en JavaScript inline te plaatsen of items potentieel asynchroon te laden via JavaScript, zoals de module [Advanced CSS/JS Aggregation](https://www.drupal.org/project/advagg). Bedenk wel dat de optimalisatie die deze module biedt, de werking van je site kan verstoren. Het is daarom goed mogelijk dat je de code moet wijzigen."
   },
-  "node_modules/lighthouse-stack-packs/packs/drupal.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/drupal.js | server-response-time": {
     "message": "Thema's, modules en serverspecificaties zijn allemaal van invloed op de reactietijd van de server. Overweeg een thema te gebruiken dat beter is geoptimaliseerd, kies met zorg een optimalisatiemodule en/of upgrade je server. Je hostingservers moeten gebruikmaken van PHP-opcode-caching, geheugencaching (zoals Redis of Memcached) om de databasequerytijden te beperken en geoptimaliseerde app-logica om pagina's sneller voor te bereiden."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | total-byte-weight": {
@@ -2165,11 +2141,11 @@
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-responsive-images": {
     "message": "Zorg ervoor dat je de eigen [stijlen voor responsieve afbeeldingen](https://www.drupal.org/docs/8/mobile-guide/responsive-images-in-drupal-8) gebruikt die bij Drupal worden geleverd (beschikbaar in Drupal 8 en hoger). Gebruik de stijlen voor responsieve afbeeldingen voor het renderen van afbeeldingsvelden via weergavemodi, weergaven of afbeeldingen die worden geüpload via de WYSIWYG-editor."
   },
-  "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-webp-images": {
-    "message": "Overweeg [een module te installeren en te configureren om gebruik te maken van WebP-afbeeldingsindelingen](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) op je site. Dergelijke modules genereren automatisch een WebP-versie van je geüploade afbeeldingen om de laadtijden te optimaliseren."
-  },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | efficient-animated-content": {
     "message": "Overweeg je gif te uploaden naar een service waarmee het mogelijk is de gif in te sluiten als html5-video."
+  },
+  "node_modules/lighthouse-stack-packs/packs/joomla.js | modern-image-formats": {
+    "message": "Overweeg een [plug-in](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=webp) of service te gebruiken die je geüploade afbeeldingen automatisch converteert naar de optimale indelingen."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | offscreen-images": {
     "message": "Installeer een [Joomla-plug-in voor lazy loading](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) waarmee afbeeldingen die niet in beeld zijn, kunnen worden uitgesteld, of schakel over naar een template met deze functionaliteit. Vanaf Joomla 4.0 krijgen alle nieuwe afbeeldingen [automatisch](https://github.com/joomla/joomla-cms/pull/30748) het kenmerk `loading` vanuit de kern."
@@ -2207,9 +2183,6 @@
   "node_modules/lighthouse-stack-packs/packs/joomla.js | uses-text-compression": {
     "message": "Je kunt tekstcompressie aanzetten door Gzip-paginacompressie in Joomla aan te zetten via System > Global configuration > Server (Systeem > Algemene configuratie > Server)."
   },
-  "node_modules/lighthouse-stack-packs/packs/joomla.js | uses-webp-images": {
-    "message": "Overweeg een [plug-in](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=webp) of service te gebruiken die je geüploade afbeeldingen automatisch converteert naar de optimale indelingen."
-  },
   "node_modules/lighthouse-stack-packs/packs/magento.js | critical-request-chains": {
     "message": "Als je je JavaScript-items niet bundelt, kun je [baler](https://github.com/magento/baler) gebruiken."
   },
@@ -2219,10 +2192,13 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | font-display": {
     "message": "Specificeer `@font-display` als je [aangepaste lettertypen definieert](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/css-topics/using-fonts.html)."
   },
+  "node_modules/lighthouse-stack-packs/packs/magento.js | modern-image-formats": {
+    "message": "Overweeg te zoeken in de [Magento-marktplaats](https://marketplace.magento.com/catalogsearch/result/?q=webp) voor verschillende extensies van derden om nieuwere afbeeldingsindelingen te gebruiken."
+  },
   "node_modules/lighthouse-stack-packs/packs/magento.js | offscreen-images": {
     "message": "Overweeg om je product- en catalogustemplates te wijzigen voor gebruik van de functie van het webplatform voor [lazy loading](https://web.dev/native-lazy-loading)."
   },
-  "node_modules/lighthouse-stack-packs/packs/magento.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/magento.js | server-response-time": {
     "message": "Gebruik de [Varnish-integratie](https://devdocs.magento.com/guides/v2.3/config-guide/varnish/config-varnish.html) van Magento."
   },
   "node_modules/lighthouse-stack-packs/packs/magento.js | unminified-css": {
@@ -2243,11 +2219,11 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | uses-rel-preload": {
     "message": "`<link rel=preload>`-tags kunnen worden toegevoegd door [de lay-out van een thema te wijzigen](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/layouts/xml-manage.html)."
   },
-  "node_modules/lighthouse-stack-packs/packs/magento.js | uses-webp-images": {
-    "message": "Overweeg te zoeken in de [Magento-marktplaats](https://marketplace.magento.com/catalogsearch/result/?q=webp) voor verschillende extensies van derden om nieuwere afbeeldingsindelingen te gebruiken."
-  },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | efficient-animated-content": {
     "message": "[Vervang geanimeerde gif's door video](https://web.dev/replace-gifs-with-videos/) zodat de webpagina sneller laadt en overweeg moderne bestandsindelingen zoals [webm](https://web.dev/replace-gifs-with-videos/#create-webm-videos) of [av1](https://developers.google.com/web/updates/2018/09/chrome-70-media-updates#av1-decoder) te gebruiken voor een tot 30% efficiëntere compressie vergeleken met de huidige geavanceerde videocodec, vp9."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | modern-image-formats": {
+    "message": "Overweeg een [plug-in](https://octobercms.com/plugins?search=image) of service te gebruiken die de geüploade afbeeldingen automatisch converteert naar de optimale indelingen. [Webp-afbeeldingen zonder verlies](https://developers.google.com/speed/webp) zijn 26% kleiner vergeleken met png-afbeeldingen en zijn 25-34% kleiner dan vergelijkbare jpeg-afbeeldingen met dezelfde SSIM-kwaliteitsindex. Je kunt ook de moderne bestandsindeling [avif](https://jakearchibald.com/2020/avif-has-landed/) overwegen."
   },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | offscreen-images": {
     "message": "Overweeg een [plug-in voor lazy loading van afbeeldingen](https://octobercms.com/plugins?search=lazy) te installeren waarmee je afbeeldingen die niet in beeld zijn, kunt uitstellen of kunt overschakelen naar een thema met deze functionaliteit. Je kunt ook overwegen [de AMP-plug-in](https://octobercms.com/plugins?search=Accelerated+Mobile+Pages) te gebruiken."
@@ -2255,7 +2231,7 @@
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | render-blocking-resources": {
     "message": "Er zijn veel plug-ins waarmee [essentiële inline items](https://octobercms.com/plugins?search=css) beter werken. Deze plug-ins kunnen andere plug-ins verstoren. Je moet ze daarom grondig testen."
   },
-  "node_modules/lighthouse-stack-packs/packs/octobercms.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | server-response-time": {
     "message": "Thema's, plug-ins en serverspecificaties zijn allemaal van invloed op de reactietijd van de server. Overweeg een thema te gebruiken dat beter is geoptimaliseerd, kies met zorg een optimalisatieplug-in en/of upgrade de server. Met de CMS van oktober kunnen ontwikkelaars ook [`Queues`](https://octobercms.com/docs/services/queues) gebruiken om de verwerking van tijdrovende taken uit te stellen, zoals het sturen van een e-mail. Dit kan webverzoeken drastisch versnellen."
   },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | total-byte-weight": {
@@ -2285,16 +2261,13 @@
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-text-compression": {
     "message": "Hiermee kun je tekstcompressie aanzetten in de webserverinstellingen."
   },
-  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-webp-images": {
-    "message": "Overweeg een [plug-in](https://octobercms.com/plugins?search=image) of service te gebruiken die de geüploade afbeeldingen automatisch converteert naar de optimale indelingen. [Webp-afbeeldingen zonder verlies](https://developers.google.com/speed/webp) zijn 26% kleiner vergeleken met png-afbeeldingen en zijn 25-34% kleiner dan vergelijkbare jpeg-afbeeldingen met dezelfde SSIM-kwaliteitsindex. Je kunt ook de moderne bestandsindeling [avif](https://jakearchibald.com/2020/avif-has-landed/) overwegen."
-  },
   "node_modules/lighthouse-stack-packs/packs/react.js | dom-size": {
     "message": "Overweeg een vensterbibliotheek zoals `react-window` te gebruiken om het aantal gemaakte DOM-nodes te minimaliseren als je veel herhaalde elementen op de pagina weergeeft. [Meer informatie](https://web.dev/virtualize-long-lists-react-window/) Minimaliseer daarnaast onnodige nieuwe weergaven met [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent) of [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) en [sla effecten alleen over](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) totdat bepaalde afhankelijkheden zijn gewijzigd als je de `Effect`-hook gebruikt om de runtime-prestaties te verbeteren."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | redirects": {
     "message": "Als je React Router gebruikt, moet je het gebruik van de `<Redirect>`-component voor [routenavigatie](https://reacttraining.com/react-router/web/api/Redirect) minimaliseren."
   },
-  "node_modules/lighthouse-stack-packs/packs/react.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/react.js | server-response-time": {
     "message": "Als je React-componenten aan de serverzijde rendert, kun je `renderToNodeStream()` of `renderToStaticNodeStream()` gebruiken om de client toestemming te geven verschillende onderdelen van de opmaak te ontvangen en verwerken, in plaats van alles tegelijk. [Meer informatie](https://reactjs.org/docs/react-dom-server.html#rendertonodestream)"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-css": {
@@ -2312,13 +2285,16 @@
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | efficient-animated-content": {
     "message": "Overweeg je gif te uploaden naar een service waarmee het mogelijk is de gif in te sluiten als html5-video."
   },
+  "node_modules/lighthouse-stack-packs/packs/wordpress.js | modern-image-formats": {
+    "message": "Overweeg een [plug-in](https://wordpress.org/plugins/search/convert+webp/) of service te gebruiken die je geüploade afbeeldingen automatisch converteert naar de optimale indelingen."
+  },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | offscreen-images": {
     "message": "Installeer een [WordPress-plug-in voor lazy loading](https://wordpress.org/plugins/search/lazy+load/) waarmee afbeeldingen die niet in beeld zijn, kunnen worden uitgesteld, of schakel over naar een thema met deze functionaliteit. Je kunt ook overwegen [de AMP-plug-in](https://wordpress.org/plugins/amp/) te gebruiken."
   },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | render-blocking-resources": {
     "message": "Er zijn een aantal WordPress-plug-ins om [kritieke items inline te plaatsen](https://wordpress.org/plugins/search/critical+css/) of [minder belangrijke bronnen uit te stellen](https://wordpress.org/plugins/search/defer+css+javascript/). Bedenk wel dat de optimalisatie die deze plug-ins bieden, bepaalde functies van je thema of plug-ins kunnen verstoren. Het is daarom goed mogelijk dat je de code moet wijzigen."
   },
-  "node_modules/lighthouse-stack-packs/packs/wordpress.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/wordpress.js | server-response-time": {
     "message": "Thema's, plug-ins en serverspecificaties zijn allemaal van invloed op de reactietijd van de server. Overweeg een thema te gebruiken dat beter is geoptimaliseerd, kies met zorg een optimalisatieplug-in en/of upgrade je server."
   },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | total-byte-weight": {
@@ -2348,7 +2324,178 @@
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | uses-text-compression": {
     "message": "Je kunt tekstcompressie in de webserverinstellingen aanzetten."
   },
-  "node_modules/lighthouse-stack-packs/packs/wordpress.js | uses-webp-images": {
-    "message": "Overweeg een [plug-in](https://wordpress.org/plugins/search/convert+webp/) of service te gebruiken die je geüploade afbeeldingen automatisch converteert naar de optimale indelingen."
+  "report/renderer/util.js | calculatorLink": {
+    "message": "Rekenmachine bekijken"
+  },
+  "report/renderer/util.js | collapseView": {
+    "message": "Weergave samenvouwen"
+  },
+  "report/renderer/util.js | crcInitialNavigation": {
+    "message": "Beginnavigatie"
+  },
+  "report/renderer/util.js | crcLongestDurationLabel": {
+    "message": "Maximum latentie voor kritiek pad:"
+  },
+  "report/renderer/util.js | dropdownCopyJSON": {
+    "message": "Json kopiëren"
+  },
+  "report/renderer/util.js | dropdownDarkTheme": {
+    "message": "Donker thema aan-/uitzetten"
+  },
+  "report/renderer/util.js | dropdownPrintExpanded": {
+    "message": "Afdrukvenster uitvouwen"
+  },
+  "report/renderer/util.js | dropdownPrintSummary": {
+    "message": "Afdrukoverzicht"
+  },
+  "report/renderer/util.js | dropdownSaveGist": {
+    "message": "Opslaan als gist"
+  },
+  "report/renderer/util.js | dropdownSaveHTML": {
+    "message": "Opslaan als HTML"
+  },
+  "report/renderer/util.js | dropdownSaveJSON": {
+    "message": "Opslaan als json"
+  },
+  "report/renderer/util.js | dropdownViewer": {
+    "message": "Openen in viewer"
+  },
+  "report/renderer/util.js | errorLabel": {
+    "message": "Fout"
+  },
+  "report/renderer/util.js | errorMissingAuditInfo": {
+    "message": "Rapportfout: geen controlegegevens"
+  },
+  "report/renderer/util.js | expandView": {
+    "message": "Weergave uitvouwen"
+  },
+  "report/renderer/util.js | footerIssue": {
+    "message": "Een probleem melden"
+  },
+  "report/renderer/util.js | hide": {
+    "message": "Verbergen"
+  },
+  "report/renderer/util.js | labDataTitle": {
+    "message": "Labgegevens"
+  },
+  "report/renderer/util.js | lsPerformanceCategoryDescription": {
+    "message": "Analyse met [Lighthouse](https://developers.google.com/web/tools/lighthouse/) van de huidige pagina via een geëmuleerd mobiel netwerk. Waarden worden geschat en kunnen variëren."
+  },
+  "report/renderer/util.js | manualAuditsGroupTitle": {
+    "message": "Aanvullende items om handmatig te controleren"
+  },
+  "report/renderer/util.js | notApplicableAuditsGroupTitle": {
+    "message": "N.v.t."
+  },
+  "report/renderer/util.js | opportunityResourceColumnLabel": {
+    "message": "Aanbeveling"
+  },
+  "report/renderer/util.js | opportunitySavingsColumnLabel": {
+    "message": "Geschatte besparing"
+  },
+  "report/renderer/util.js | passedAuditsGroupTitle": {
+    "message": "Geslaagde controles"
+  },
+  "report/renderer/util.js | runtimeAnalysisWindow": {
+    "message": "Eerste keer laden van de pagina"
+  },
+  "report/renderer/util.js | runtimeCustom": {
+    "message": "Aangepaste throttling"
+  },
+  "report/renderer/util.js | runtimeDesktopEmulation": {
+    "message": "Desktopemulatie"
+  },
+  "report/renderer/util.js | runtimeMobileEmulation": {
+    "message": "Emulatie van Moto G4"
+  },
+  "report/renderer/util.js | runtimeNoEmulation": {
+    "message": "Geen emulatie"
+  },
+  "report/renderer/util.js | runtimeSettingsAxeVersion": {
+    "message": "Axe-versie"
+  },
+  "report/renderer/util.js | runtimeSettingsBenchmark": {
+    "message": "CPU/geheugen"
+  },
+  "report/renderer/util.js | runtimeSettingsCPUThrottling": {
+    "message": "CPU-throttling"
+  },
+  "report/renderer/util.js | runtimeSettingsDevice": {
+    "message": "Apparaat"
+  },
+  "report/renderer/util.js | runtimeSettingsNetworkThrottling": {
+    "message": "Netwerkbeperking"
+  },
+  "report/renderer/util.js | runtimeSettingsUANetwork": {
+    "message": "User-agent (netwerk)"
+  },
+  "report/renderer/util.js | runtimeSingleLoad": {
+    "message": "Laden van één pagina"
+  },
+  "report/renderer/util.js | runtimeSingleLoadTooltip": {
+    "message": "Deze gegevens zijn afkomstig van het laden van één pagina, in tegenstelling tot veldgegevens die veel sessies samenvatten."
+  },
+  "report/renderer/util.js | runtimeSlow4g": {
+    "message": "Langzame 4G-throttling"
+  },
+  "report/renderer/util.js | runtimeUnknown": {
+    "message": "Onbekend"
+  },
+  "report/renderer/util.js | show": {
+    "message": "Tonen"
+  },
+  "report/renderer/util.js | showRelevantAudits": {
+    "message": "Audits laten zien die relevant zijn voor:"
+  },
+  "report/renderer/util.js | snippetCollapseButtonLabel": {
+    "message": "Fragment samenvouwen"
+  },
+  "report/renderer/util.js | snippetExpandButtonLabel": {
+    "message": "Fragment uitvouwen"
+  },
+  "report/renderer/util.js | thirdPartyResourcesLabel": {
+    "message": "Bronnen van derden tonen"
+  },
+  "report/renderer/util.js | throttlingProvided": {
+    "message": "Bepaald door omgeving"
+  },
+  "report/renderer/util.js | toplevelWarningsMessage": {
+    "message": "Er zijn problemen opgetreden bij deze uitvoering van Lighthouse:"
+  },
+  "report/renderer/util.js | varianceDisclaimer": {
+    "message": "Waarden worden geschat en kunnen variëren. De [prestatiescore wordt rechtstreeks berekend](https://web.dev/performance-scoring/) op basis van deze statistieken."
+  },
+  "report/renderer/util.js | viewTreemapLabel": {
+    "message": "Treemap bekijken"
+  },
+  "report/renderer/util.js | warningAuditsGroupTitle": {
+    "message": "Geslaagd voor controles maar met waarschuwingen"
+  },
+  "report/renderer/util.js | warningHeader": {
+    "message": "Waarschuwingen: "
+  },
+  "treemap/app/src/util.js | allLabel": {
+    "message": "Alle"
+  },
+  "treemap/app/src/util.js | allScriptsDropdownLabel": {
+    "message": "Alle scripts"
+  },
+  "treemap/app/src/util.js | coverageColumnName": {
+    "message": "Dekking"
+  },
+  "treemap/app/src/util.js | duplicateModulesLabel": {
+    "message": "Dubbele modules"
+  },
+  "treemap/app/src/util.js | resourceBytesLabel": {
+    "message": "Resourcebytes"
+  },
+  "treemap/app/src/util.js | tableColumnName": {
+    "message": "Naam"
+  },
+  "treemap/app/src/util.js | toggleTableButtonLabel": {
+    "message": "Tabel schakelen"
+  },
+  "treemap/app/src/util.js | unusedBytesLabel": {
+    "message": "Ongebruikte bytes"
   }
 }

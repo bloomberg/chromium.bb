@@ -150,9 +150,10 @@ public class TabModelUtils {
      * type to {@link TabModel#setIndex(int, TabSelectionType)}.
      * @param model The {@link TabModel} to act on.
      * @param index The index of the {@link Tab} to select.
+     * @param skipLoadingTab Whether to skip loading the Tab.
      */
-    public static void setIndex(TabModel model, int index) {
-        model.setIndex(index, TabSelectionType.FROM_USER);
+    public static void setIndex(TabModel model, int index, boolean skipLoadingTab) {
+        model.setIndex(index, TabSelectionType.FROM_USER, skipLoadingTab);
     }
 
     /**
@@ -172,5 +173,17 @@ public class TabModelUtils {
         }
 
         return childTabs;
+    }
+
+    /**
+     * @return all regular {@link Tab} ids from a {@link TabModelSelectoor}
+     */
+    public static List<Integer> getRegularTabIds(TabModelSelector tabModelSelector) {
+        List<Integer> tabIds = new ArrayList<>();
+        int numTabs = tabModelSelector.getModel(false).getCount();
+        for (int i = 0; i < numTabs; i++) {
+            tabIds.add(tabModelSelector.getModel(false).getTabAt(i).getId());
+        }
+        return tabIds;
     }
 }

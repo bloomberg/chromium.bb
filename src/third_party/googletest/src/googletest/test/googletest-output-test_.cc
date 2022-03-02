@@ -1060,13 +1060,21 @@ class BarEnvironment : public testing::Environment {
   }
 };
 
+class TestSuiteThatFailsToSetUp : public testing::Test {
+ public:
+  static void SetUpTestSuite() { EXPECT_TRUE(false); }
+};
+TEST_F(TestSuiteThatFailsToSetUp, ShouldNotRun) {
+  std::abort();
+}
+
 // The main function.
 //
 // The idea is to use Google Test to run all the tests we have defined (some
 // of them are intended to fail), and then compare the test results
 // with the "golden" file.
 int main(int argc, char **argv) {
-  testing::GTEST_FLAG(print_time) = false;
+  GTEST_FLAG_SET(print_time, false);
 
   // We just run the tests, knowing some of them are intended to fail.
   // We will use a separate Python script to compare the output of
@@ -1081,7 +1089,7 @@ int main(int argc, char **argv) {
                  std::string("internal_skip_environment_and_ad_hoc_tests")) > 0;
 
 #if GTEST_HAS_DEATH_TEST
-  if (testing::internal::GTEST_FLAG(internal_run_death_test) != "") {
+  if (GTEST_FLAG_GET(internal_run_death_test) != "") {
     // Skip the usual output capturing if we're running as the child
     // process of an threadsafe-style death test.
 # if GTEST_OS_WINDOWS

@@ -45,7 +45,10 @@ enum PageTransition {
   // loaded in a non-toplevel frame. For example, if a page consists of
   // several frames containing ads, those ad URLs will have this transition
   // type. The user may not even realize the content in these pages is a
-  // separate frame, so may not care about the URL (see MANUAL below).
+  // separate frame, so may not care about the URL (see MANUAL below). All
+  // Fenced Frame navigations will be of this type because they are considered
+  // a non-toplevel navigation that does not generate new navigation entries
+  // in the back/forward list.
   PAGE_TRANSITION_AUTO_SUBFRAME = 3,
 
   // For subframe navigations that are explicitly requested by the user and
@@ -111,14 +114,11 @@ enum PageTransition {
   // Any of the core values above can be augmented by one or more qualifiers.
   // These qualifiers further define the transition.
 
-  // TODO(https://crbug.com/1141501): these are for an experiment, and will be
-  // removed once data is collected from experiment.
-  // Both of these transition types are for experiments to exclude visits from
-  // appearing in the omnibox. PAGE_TRANSITION_FROM_API_3 also makes it so
-  // the visit does not surface in the history page. Neither transition type
-  // is used with TYPED.
-  PAGE_TRANSITION_FROM_API_3 = 0x00200000,
-  PAGE_TRANSITION_FROM_API_2 = 0x00400000,
+  // The values 0x00200000 (PAGE_TRANSITION_FROM_API_3) and 0x00400000
+  // (PAGE_TRANSITION_FROM_API_2) were used for experiments and were removed
+  // around 6/2021. The experiments ended well before 6/2021, but it's possible
+  // some databases still have the values. See https://crbug.com/1141501 for
+  // more.
 
   // A managed user attempted to visit a URL but was blocked.
   PAGE_TRANSITION_BLOCKED = 0x00800000,

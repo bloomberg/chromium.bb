@@ -12,7 +12,6 @@ bitfield struct FeedbackVectorFlags extends uint32 {
 }
 
 @generateBodyDescriptor
-@generateCppClass
 extern class FeedbackVector extends HeapObject {
   const length: int32;
   invocation_count: int32;
@@ -22,8 +21,9 @@ extern class FeedbackVector extends HeapObject {
   // Padding was necessary for GCMole.
   flags: FeedbackVectorFlags;
   shared_function_info: SharedFunctionInfo;
-  maybe_optimized_code: Weak<Code>;
   closure_feedback_cell_array: ClosureFeedbackCellArray;
+  @if(V8_EXTERNAL_CODE_SPACE) maybe_optimized_code: Weak<CodeDataContainer>;
+  @ifnot(V8_EXTERNAL_CODE_SPACE) maybe_optimized_code: Weak<Code>;
   @cppRelaxedLoad raw_feedback_slots[length]: MaybeObject;
 }
 

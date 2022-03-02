@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Module contains the implementation of RNN cell wrappers."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import hashlib
 import numbers
 import sys
@@ -113,10 +109,10 @@ class DropoutWrapperBase(object):
       raise TypeError("dropout_state_filter_visitor must be callable")
     self._dropout_state_filter = (
         dropout_state_filter_visitor or _default_dropout_state_filter_visitor)
-    with ops.name_scope("DropoutWrapperInit"):
+    with ops.name_scope_v2("DropoutWrapperInit"):
 
       def tensor_and_const_value(v):
-        tensor_value = ops.convert_to_tensor(v)
+        tensor_value = ops.convert_to_tensor_v2_with_dispatch(v)
         const_value = tensor_util.constant_value(tensor_value)
         return (tensor_value, const_value)
 
@@ -199,7 +195,7 @@ class DropoutWrapperBase(object):
     self.built = True
 
   def zero_state(self, batch_size, dtype):
-    with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+    with ops.name_scope_v2(type(self).__name__ + "ZeroState"):
       return self.cell.zero_state(batch_size, dtype)
 
   def _variational_recurrent_dropout_value(
@@ -346,7 +342,7 @@ class ResidualWrapperBase(object):
     return self.cell.output_size
 
   def zero_state(self, batch_size, dtype):
-    with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+    with ops.name_scope_v2(type(self).__name__ + "ZeroState"):
       return self.cell.zero_state(batch_size, dtype)
 
   def _call_wrapped_cell(self, inputs, state, cell_call_fn, **kwargs):
@@ -433,7 +429,7 @@ class DeviceWrapperBase(object):
     return self.cell.output_size
 
   def zero_state(self, batch_size, dtype):
-    with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+    with ops.name_scope_v2(type(self).__name__ + "ZeroState"):
       with ops.device(self._device):
         return self.cell.zero_state(batch_size, dtype)
 

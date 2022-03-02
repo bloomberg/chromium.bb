@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.test.filters.SmallTest;
@@ -34,7 +35,10 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -119,6 +123,8 @@ public class TabPersistentStoreUnitTest {
 
     @Test
     @SmallTest
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "https://crbug.com/1278039")
     @Feature("TabPersistentStore")
     public void testNtpSaveBehavior() {
         when(mNormalTabModel.index()).thenReturn(TabList.INVALID_TAB_INDEX);
@@ -339,6 +345,13 @@ public class TabPersistentStoreUnitTest {
                 metadata.incognitoModelMetadata.urls.get(0));
         Assert.assertEquals("Incorrect URL for second incognito tab.", INCOGNITO_TAB_STRING_2,
                 metadata.incognitoModelMetadata.urls.get(1));
+
+        Assert.assertEquals("Incorrect number of cached normal tab count.", 1,
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.REGULAR_TAB_COUNT));
+        Assert.assertEquals("Incorrect number of cached incognito tab count.", 2,
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.INCOGNITO_TAB_COUNT));
     }
 
     @Test
@@ -405,6 +418,8 @@ public class TabPersistentStoreUnitTest {
         when(incognitoTab2.getUrl()).thenReturn(gurl);
         when(incognitoTab2.isIncognito()).thenReturn(true);
         when(mIncognitoTabModel.getTabAt(1)).thenReturn(incognitoTab2);
+
+        when(mTabModelSelector.getTotalTabCount()).thenReturn(3);
     }
 
     private static class LoadUrlParamsUrlMatcher implements ArgumentMatcher<LoadUrlParams> {

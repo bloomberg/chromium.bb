@@ -8,13 +8,13 @@
 #include <limits>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
-#include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/test/property_tree_test_utils.h"
 #include "cc/trees/effect_node.h"
@@ -301,12 +301,12 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
   std::vector<TestLayerImpl*> child_layers_;
 
   // Store result of CreateTestTreeWithTwoSurfaces().
-  TestLayerImpl* child1_ = nullptr;
-  TestLayerImpl* child2_ = nullptr;
-  TestLayerImpl* grand_child1_ = nullptr;
-  TestLayerImpl* grand_child2_ = nullptr;
-  TestLayerImpl* grand_child3_ = nullptr;
-  TestLayerImpl* grand_child4_ = nullptr;
+  raw_ptr<TestLayerImpl> child1_ = nullptr;
+  raw_ptr<TestLayerImpl> child2_ = nullptr;
+  raw_ptr<TestLayerImpl> grand_child1_ = nullptr;
+  raw_ptr<TestLayerImpl> grand_child2_ = nullptr;
+  raw_ptr<TestLayerImpl> grand_child3_ = nullptr;
+  raw_ptr<TestLayerImpl> grand_child4_ = nullptr;
 };
 
 TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
@@ -563,7 +563,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   expected_rect.Union(gfx::Rect(200, 230, 30, 30));
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
-  EXPECT_FLOAT_RECT_EQ(expected_rect, root_damage_rect);
+  EXPECT_EQ(expected_rect, root_damage_rect);
   EXPECT_TRUE(GetRenderSurface(root)
                   ->damage_tracker()
                   ->has_damage_from_contributing_content());
@@ -1334,7 +1334,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantSurface) {
   gfx::Rect root_damage_rect;
 
   ClearDamageForAllSurfaces(root);
-  SetPostTranslation(child1_, gfx::Vector2dF(105.f, 107.f));
+  SetPostTranslation(child1_.get(), gfx::Vector2dF(105.f, 107.f));
   child1_->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(GetRenderSurface(child1_)->damage_tracker()->GetDamageRectIfValid(
@@ -1413,7 +1413,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   // CASE 1: If a descendant surface disappears, its entire old area becomes
   //         exposed.
   ClearDamageForAllSurfaces(root);
-  SetRenderSurfaceReason(child1_, RenderSurfaceReason::kNone);
+  SetRenderSurfaceReason(child1_.get(), RenderSurfaceReason::kNone);
   EmulateDrawingOneFrame(root);
 
   // Sanity check that there is only one surface now.
@@ -1442,7 +1442,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
 
   // Then change the tree so that the render surface is added back.
   ClearDamageForAllSurfaces(root);
-  SetRenderSurfaceReason(child1_, RenderSurfaceReason::kTest);
+  SetRenderSurfaceReason(child1_.get(), RenderSurfaceReason::kTest);
 
   EmulateDrawingOneFrame(root);
 
@@ -1687,7 +1687,7 @@ TEST_F(DamageTrackerTest, VerifyDamageWithNoContributingLayers) {
   EmulateDrawingOneFrame(root);
 
   DCHECK_EQ(GetRenderSurface(empty_surface), empty_surface->render_target());
-  RenderSurfaceImpl* target_surface = GetRenderSurface(empty_surface);
+  const RenderSurfaceImpl* target_surface = GetRenderSurface(empty_surface);
   gfx::Rect damage_rect;
   EXPECT_TRUE(
       target_surface->damage_tracker()->GetDamageRectIfValid(&damage_rect));
@@ -1801,13 +1801,13 @@ TEST_F(DamageTrackerTest, DamageRectTooBig) {
   SetCopyRequest(root);
 
   // Really far left.
-  child1->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::min() + 100, 0));
+  child1->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::min() + 100), 0));
   child1->SetBounds(gfx::Size(1, 1));
 
   // Really far right.
-  child2->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::max() - 100, 0));
+  child2->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::max() - 100), 0));
   child2->SetBounds(gfx::Size(1, 1));
 
   EmulateDrawingOneFrame(root, 1.f);
@@ -1838,13 +1838,13 @@ TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
   SetBackdropFilter(root, filters);
 
   // Really far left.
-  child1->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::min() + 100, 0));
+  child1->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::min() + 100), 0));
   child1->SetBounds(gfx::Size(1, 1));
 
   // Really far right.
-  child2->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::max() - 100, 0));
+  child2->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::max() - 100), 0));
   child2->SetBounds(gfx::Size(1, 1));
 
   float device_scale_factor = 1.f;
@@ -1869,14 +1869,14 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   SetCopyRequest(root);
 
   // Really far left.
-  grand_child1_->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::min() + 500, 0));
+  grand_child1_->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::min() + 500), 0));
   grand_child1_->SetBounds(gfx::Size(1, 1));
   grand_child1_->SetDrawsContent(true);
 
   // Really far right.
-  grand_child2_->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::max() - 500, 0));
+  grand_child2_->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::max() - 500), 0));
   grand_child2_->SetBounds(gfx::Size(1, 1));
   grand_child2_->SetDrawsContent(true);
 
@@ -1956,17 +1956,17 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(5.f));
   child1_->SetDrawsContent(true);
-  SetBackdropFilter(child1_, filters);
+  SetBackdropFilter(child1_.get(), filters);
 
   // Really far left.
-  grand_child1_->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::min() + 500, 0));
+  grand_child1_->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::min() + 500), 0));
   grand_child1_->SetBounds(gfx::Size(1, 1));
   grand_child1_->SetDrawsContent(true);
 
   // Really far right.
-  grand_child2_->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::max() - 500, 0));
+  grand_child2_->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::max() - 500), 0));
   grand_child2_->SetBounds(gfx::Size(1, 1));
   grand_child2_->SetDrawsContent(true);
 
@@ -2051,7 +2051,7 @@ TEST_F(DamageTrackerTest, CanUseCachedBackdropFilterResultTest) {
   // Add a backdrop blur filter onto child1_
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(2.f));
-  SetBackdropFilter(child1_, filters);
+  SetBackdropFilter(child1_.get(), filters);
   child1_->NoteLayerPropertyChanged();
   // intersects_damage_under_ is false by default.
   EXPECT_TRUE(GetRenderSurface(child1_)->intersects_damage_under());
@@ -2091,10 +2091,10 @@ TEST_F(DamageTrackerTest, CanUseCachedBackdropFilterResultTest) {
   // backdrop-filtered result of the corresponding render surfaces.
   ClearDamageForAllSurfaces(root);
   // Remove the backdrop filter on child1_
-  SetBackdropFilter(child1_, FilterOperations());
+  SetBackdropFilter(child1_.get(), FilterOperations());
   grand_child1_->NoteLayerPropertyChanged();
   // Add a backdrop blur filtre to grand_child4_
-  SetBackdropFilter(grand_child4_, filters);
+  SetBackdropFilter(grand_child4_.get(), filters);
   grand_child4_->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(GetRenderSurface(grand_child4_)->intersects_damage_under());
@@ -2201,7 +2201,7 @@ TEST_F(DamageTrackerTest, CanUseCachedBackdropFilterResultTest) {
   // surface with the backdrop filter invalidate cached backdrop-filtered
   // result.
   ClearDamageForAllSurfaces(root);
-  SetRenderSurfaceReason(grand_child3_, RenderSurfaceReason::kNone);
+  SetRenderSurfaceReason(grand_child3_.get(), RenderSurfaceReason::kNone);
   grand_child3_->SetDrawsContent(false);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(GetRenderSurface(grand_child4_)->intersects_damage_under());
@@ -2217,13 +2217,13 @@ TEST_F(DamageTrackerTest, DamageRectOnlyVisibleContentsMoveToOutside) {
   origin_damage.Union(child2->visible_drawable_content_rect());
 
   // Really far left.
-  child1->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::min() + 100, 0));
+  child1->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::min() + 100), 0));
   child1->SetBounds(gfx::Size(1, 1));
 
   // Really far right.
-  child2->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::max() - 100, 0));
+  child2->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::max() - 100), 0));
   child2->SetBounds(gfx::Size(1, 1));
   EmulateDrawingOneFrame(root, 1.f);
 
@@ -2252,8 +2252,8 @@ TEST_F(DamageTrackerTest, DamageRectOnlyVisibleContentsLargeTwoContents) {
   expected_damage.set_width(GetRenderSurface(root)->content_rect().width());
 
   // Really far left.
-  child1->SetOffsetToTransformParent(
-      gfx::Vector2dF(std::numeric_limits<int>::min() + 100, 100));
+  child1->SetOffsetToTransformParent(gfx::Vector2dF(
+      static_cast<float>(std::numeric_limits<int>::min() + 100), 100));
   child1->SetBounds(
       gfx::Size(std::numeric_limits<int>::max(), child1->bounds().height()));
 
@@ -2263,7 +2263,7 @@ TEST_F(DamageTrackerTest, DamageRectOnlyVisibleContentsLargeTwoContents) {
       gfx::Size(std::numeric_limits<int>::max(), child2->bounds().height()));
   EmulateDrawingOneFrame(root, 1.f);
 
-  // Above damages should be excludebe because they're outside of
+  // Above damages should be excluded because they're outside of
   // the root surface.
   gfx::Rect damage_rect;
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
@@ -2337,7 +2337,7 @@ TEST_F(DamageTrackerTest, VerifyDamageExpansionWithBackdropBlurFilters) {
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root);
-  SetBackdropFilter(child1_, filters);
+  SetBackdropFilter(child1_.get(), filters);
   child1_->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root);
 

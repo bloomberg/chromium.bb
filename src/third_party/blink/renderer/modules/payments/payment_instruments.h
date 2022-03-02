@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_INSTRUMENTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_INSTRUMENTS_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -30,6 +29,9 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   explicit PaymentInstruments(
       const HeapMojoRemote<payments::mojom::blink::PaymentManager>&,
       ExecutionContext*);
+
+  PaymentInstruments(const PaymentInstruments&) = delete;
+  PaymentInstruments& operator=(const PaymentInstruments&) = delete;
 
   ScriptPromise deleteInstrument(ScriptState*,
                                  const String& instrument_key,
@@ -74,8 +76,6 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   const HeapMojoRemote<payments::mojom::blink::PaymentManager>& manager_;
 
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentInstruments);
 };
 
 }  // namespace blink

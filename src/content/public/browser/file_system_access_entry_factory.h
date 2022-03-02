@@ -12,9 +12,9 @@
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "content/public/browser/global_routing_id.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_directory_handle.mojom-forward.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -32,19 +32,19 @@ class CONTENT_EXPORT FileSystemAccessEntryFactory
   // parameter. This url will be used for verifications later for SafeBrowsing
   // and Quarantine Service if used for writes.
   struct CONTENT_EXPORT BindingContext {
-    BindingContext(const url::Origin& origin,
+    BindingContext(const blink::StorageKey& storage_key,
                    const GURL& url,
-                   GlobalFrameRoutingId frame_id)
-        : origin(origin), url(url), frame_id(frame_id) {}
-    BindingContext(const url::Origin& origin,
+                   GlobalRenderFrameHostId frame_id)
+        : storage_key(storage_key), url(url), frame_id(frame_id) {}
+    BindingContext(const blink::StorageKey& storage_key,
                    const GURL& url,
                    int worker_process_id)
-        : origin(origin),
+        : storage_key(storage_key),
           url(url),
           frame_id(worker_process_id, MSG_ROUTING_NONE) {}
-    url::Origin origin;
+    blink::StorageKey storage_key;
     GURL url;
-    GlobalFrameRoutingId frame_id;
+    GlobalRenderFrameHostId frame_id;
     bool is_worker() const { return !frame_id; }
     int process_id() const { return frame_id.child_id; }
   };

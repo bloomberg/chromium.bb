@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
@@ -33,6 +32,9 @@ class NET_EXPORT UnixDomainClientSocket : public StreamSocket {
   // Builds a client socket with SocketPosix which is already connected.
   // UnixDomainServerSocket uses this after it accepts a connection.
   explicit UnixDomainClientSocket(std::unique_ptr<SocketPosix> socket);
+
+  UnixDomainClientSocket(const UnixDomainClientSocket&) = delete;
+  UnixDomainClientSocket& operator=(const UnixDomainClientSocket&) = delete;
 
   ~UnixDomainClientSocket() override;
 
@@ -83,8 +85,6 @@ class NET_EXPORT UnixDomainClientSocket : public StreamSocket {
   // This net log is just to comply StreamSocket::NetLog(). It throws away
   // everything.
   NetLogWithSource net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnixDomainClientSocket);
 };
 
 }  // namespace net

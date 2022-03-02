@@ -24,7 +24,6 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/temporal_filter.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "test/function_equivalence_test.h"
@@ -72,7 +71,6 @@ class TemporalFilterTest
   }
 
   virtual void TearDown() {
-    libaom_test::ClearSystemState();
     aom_free(src1_);
     aom_free(src2_);
   }
@@ -325,7 +323,6 @@ class HBDTemporalFilterTest
   }
 
   virtual void TearDown() {
-    libaom_test::ClearSystemState();
     aom_free(src1_);
     aom_free(src2_);
   }

@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +36,6 @@ namespace {
 const char kCurrentURL[] = "http://example.com/current";
 const char kClipboardURL[] = "http://example.com/clipboard";
 const char16_t kClipboardText[] = u"Search for me";
-const char16_t kClipboardTitleText[] = u"\"Search for me\"";
 
 class CreateMatchWithContentCallbackWaiter {
  public:
@@ -92,16 +90,15 @@ class ClipboardProviderTest : public testing::Test,
   void ClearClipboard() { clipboard_content_.SuppressClipboardContent(); }
 
   void SetClipboardUrl(const GURL& url) {
-    clipboard_content_.SetClipboardURL(url, base::TimeDelta::FromMinutes(9));
+    clipboard_content_.SetClipboardURL(url, base::Minutes(9));
   }
 
   void SetClipboardText(const std::u16string& text) {
-    clipboard_content_.SetClipboardText(text, base::TimeDelta::FromMinutes(9));
+    clipboard_content_.SetClipboardText(text, base::Minutes(9));
   }
 
   void SetClipboardImage(const gfx::Image& image) {
-    clipboard_content_.SetClipboardImage(image,
-                                         base::TimeDelta::FromMinutes(9));
+    clipboard_content_.SetClipboardImage(image, base::Minutes(9));
   }
 
   bool IsClipboardEmpty() {
@@ -193,7 +190,7 @@ TEST_F(ClipboardProviderTest, MatchesText) {
   SetClipboardText(kClipboardText);
   provider_->Start(CreateAutocompleteInput(OmniboxFocusType::ON_FOCUS), false);
   ASSERT_GE(provider_->matches().size(), 1U);
-  EXPECT_EQ(kClipboardTitleText, provider_->matches().back().contents);
+  EXPECT_EQ(kClipboardText, provider_->matches().back().contents);
   EXPECT_EQ(kClipboardText, provider_->matches().back().fill_into_edit);
   EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_TEXT,
             provider_->matches().back().type);
@@ -311,7 +308,7 @@ TEST_F(ClipboardProviderTest, CreateTextMatchWithContent) {
   CreateMatchWithContentCallbackWaiter waiter(provider_, &match);
   waiter.WaitForMatchUpdated();
 
-  EXPECT_EQ(kClipboardTitleText, match.contents);
+  EXPECT_EQ(kClipboardText, match.contents);
   EXPECT_EQ(kClipboardText, match.fill_into_edit);
   EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_TEXT, match.type);
 }

@@ -60,6 +60,10 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+#include "chrome/installer/setup/channel_override_work_item.h"
+#endif
+
 using base::ASCIIToWide;
 using base::win::RegKey;
 
@@ -314,11 +318,10 @@ void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
   list->AddWorkItem(install_service_work_item);
 }
 
-// Adds work items to add or remove the "store-dmtoken" command to Chrome's
-// version key. This method is a no-op if this is anything other than
-// system-level Chrome. The command is used when enrolling Chrome browser
-// instances into enterprise management. |new_version| is the version currently
-// being installed -- can be empty on uninstall.
+// Adds work items to add the "store-dmtoken" command to Chrome's version key.
+// This method is a no-op if this is anything other than system-level Chrome.
+// The command is used when enrolling Chrome browser instances into enterprise
+// management.
 void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
                                       const base::FilePath& setup_path,
                                       const base::Version& new_version,
@@ -329,34 +332,67 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
   const HKEY root_key = installer_state.root_key();
   const std::wstring cmd_key(GetCommandKey(kCmdStoreDMToken));
 
-  if (installer_state.operation() == InstallerState::UNINSTALL) {
-    install_list->AddDeleteRegKeyWorkItem(root_key, cmd_key, KEY_WOW64_32KEY)
-        ->set_log_message("Removing store DM token command");
-  } else {
-    // Register a command to allow Chrome to request Google Update to run
-    // setup.exe --store-dmtoken=<token>, which will store the specified token
-    // in the registry.
-    base::CommandLine cmd_line(
-        installer_state.GetInstallerDirectory(new_version)
-            .Append(setup_path.BaseName()));
-    cmd_line.AppendSwitchASCII(switches::kStoreDMToken, "%1");
-    cmd_line.AppendSwitch(switches::kSystemLevel);
-    cmd_line.AppendSwitch(switches::kVerboseLogging);
-    InstallUtil::AppendModeAndChannelSwitches(&cmd_line);
+  // Register a command to allow Chrome to request Google Update to run
+  // setup.exe --store-dmtoken=<token>, which will store the specified token
+  // in the registry.
+  base::CommandLine cmd_line(installer_state.GetInstallerDirectory(new_version)
+                                 .Append(setup_path.BaseName()));
+  cmd_line.AppendSwitchASCII(switches::kStoreDMToken, "%1");
+  cmd_line.AppendSwitch(switches::kSystemLevel);
+  cmd_line.AppendSwitch(switches::kVerboseLogging);
+  InstallUtil::AppendModeAndChannelSwitches(&cmd_line);
 
-    // The substitution for the insert sequence "%1" here is performed safely by
-    // Google Update rather than insecurely by the Windows shell. Disable the
-    // safety check for unsafe insert sequences since the right thing is
-    // happening. Do not blindly copy this pattern in new code. Check with a
-    // member of base/win/OWNERS if in doubt.
-    AppCommand cmd(cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
+  // The substitution for the insert sequence "%1" here is performed safely by
+  // Google Update rather than insecurely by the Windows shell. Disable the
+  // safety check for unsafe insert sequences since the right thing is
+  // happening. Do not blindly copy this pattern in new code. Check with a
+  // member of base/win/OWNERS if in doubt.
+  AppCommand cmd(cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
 
-    // TODO(alito): For now setting this command as web accessible is required
-    // by Google Update.  Could revisit this should Google Update change the
-    // way permissions are handled for commands.
-    cmd.set_is_web_accessible(true);
-    cmd.AddWorkItems(root_key, cmd_key, install_list);
-  }
+  // TODO(rogerta): For now setting this command as web accessible is required
+  // by Google Update.  Could revisit this should Google Update change the
+  // way permissions are handled for commands.
+  cmd.set_is_web_accessible(true);
+  cmd.AddWorkItems(root_key, cmd_key, install_list);
+}
+
+// Adds work items to add the "rotate-dtkey" command to Chrome's version key.
+// This method is a no-op if this is anything other than system-level Chrome.
+// The command is used to rotate the device signing key stored in HKLM.
+void AddEnterpriseDeviceTrustWorkItems(const InstallerState& installer_state,
+                                       const base::FilePath& setup_path,
+                                       const base::Version& new_version,
+                                       WorkItemList* install_list) {
+  if (!installer_state.system_install())
+    return;
+
+  const HKEY root_key = installer_state.root_key();
+  const std::wstring cmd_key(GetCommandKey(kCmdRotateDeviceTrustKey));
+
+  // Register a command to allow Chrome to request Google Update to run
+  // setup.exe --rotate-dtkey=<dm-token>, which will rotate the key and store
+  // it in the registry.
+  base::CommandLine cmd_line(installer_state.GetInstallerDirectory(new_version)
+                                 .Append(setup_path.BaseName()));
+  cmd_line.AppendSwitchASCII(switches::kRotateDeviceTrustKey, "%1");
+  cmd_line.AppendSwitchASCII(switches::kDmServerUrl, "%2");
+  cmd_line.AppendSwitchASCII(switches::kNonce, "%3");
+  cmd_line.AppendSwitch(switches::kSystemLevel);
+  cmd_line.AppendSwitch(switches::kVerboseLogging);
+  InstallUtil::AppendModeAndChannelSwitches(&cmd_line);
+
+  // The substitution for the insert sequence "%1" here is performed safely by
+  // Google Update rather than insecurely by the Windows shell. Disable the
+  // safety check for unsafe insert sequences since the right thing is
+  // happening. Do not blindly copy this pattern in new code. Check with a
+  // member of base/win/OWNERS if in doubt.
+  AppCommand cmd(cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
+
+  // TODO(rogerta): For now setting this command as web accessible is required
+  // by Google Update.  Could revisit this should Google Update change the
+  // way permissions are handled for commands.
+  cmd.set_is_web_accessible(true);
+  cmd.AddWorkItems(root_key, cmd_key, install_list);
 }
 
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -667,18 +703,22 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
                                            post_install_task_list);
   }
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
   // Add a best-effort item to create the ClientStateMedium key for system-level
   // installs. This is ordinarily done by Google Update prior to running
   // Chrome's installer. Do it here as well so that the key exists for manual
   // installs.
-#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
   if (installer_state.system_install()) {
     const std::wstring path = install_static::GetClientStateMediumKeyPath();
     post_install_task_list
         ->AddCreateRegKeyWorkItem(HKEY_LOCAL_MACHINE, path, KEY_WOW64_32KEY)
         ->set_best_effort(true);
   }
-#endif
+
+  // Apply policy-driven channel selection to the "ap" value for subsequent
+  // update checks even if the policy is cleared.
+  AddChannelSelectionWorkItems(installer_state, post_install_task_list);
+#endif  // BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 
   return true;
 }
@@ -773,6 +813,8 @@ void AddInstallWorkItems(const InstallParams& install_params,
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
                                    install_list);
+  AddEnterpriseDeviceTrustWorkItems(installer_state, setup_path, new_version,
+                                    install_list);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING
   AddFirewallRulesWorkItems(installer_state, !current_version.IsValid(),
                             install_list);
@@ -983,6 +1025,23 @@ void AddChannelWorkItems(HKEY root,
                                     google_update::kRegChannelField);
   }
 }
+
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+void AddChannelSelectionWorkItems(const InstallerState& installer_state,
+                                  WorkItemList* list) {
+  const auto& install_details = install_static::InstallDetails::Get();
+
+  // Nothing to do if the channel wasn't selected via the command line switch.
+  if (install_details.channel_origin() !=
+      install_static::ChannelOrigin::kPolicy) {
+    return;
+  }
+
+  auto item = std::make_unique<ChannelOverrideWorkItem>();
+  item->set_best_effort(true);
+  list->AddWorkItem(item.release());
+}
+#endif  // BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 
 void AddFinalizeUpdateWorkItems(const base::Version& new_version,
                                 const InstallerState& installer_state,

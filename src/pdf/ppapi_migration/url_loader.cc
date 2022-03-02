@@ -20,7 +20,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_util.h"
 #include "pdf/ppapi_migration/callback.h"
-#include "ppapi/c/pp_errors.h"
+#include "pdf/ppapi_migration/result_codes.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance_handle.h"
@@ -103,7 +103,7 @@ void BlinkUrlLoader::Open(const UrlRequest& request, ResultCallback callback) {
   open_callback_ = std::move(callback);
 
   if (!client_ || !client_->IsValid()) {
-    AbortLoad(PP_ERROR_FAILED);
+    AbortLoad(Result::kErrorFailed);
     return;
   }
 
@@ -166,7 +166,7 @@ void BlinkUrlLoader::ReadResponseBody(base::span<char> buffer,
       << static_cast<int>(state_);
 
   if (buffer.empty()) {
-    std::move(callback).Run(PP_ERROR_BADARGUMENT);
+    std::move(callback).Run(Result::kErrorBadArgument);
     return;
   }
 
@@ -182,7 +182,7 @@ void BlinkUrlLoader::ReadResponseBody(base::span<char> buffer,
 // Modeled on `ppapi::proxy::URLLoadResource::Close()`.
 void BlinkUrlLoader::Close() {
   if (state_ != LoadingState::kLoadComplete)
-    AbortLoad(PP_ERROR_ABORTED);
+    AbortLoad(Result::kErrorAborted);
 }
 
 // Modeled on `content::PepperURLLoaderHost::WillFollowRedirect()`.
@@ -216,7 +216,7 @@ void BlinkUrlLoader::DidReceiveResponse(const blink::WebURLResponse& response) {
   response.VisitHttpHeaderFields(&headers_to_string);
 
   state_ = LoadingState::kStreamingData;
-  std::move(open_callback_).Run(PP_OK);
+  std::move(open_callback_).Run(Result::kSuccess);
 }
 
 void BlinkUrlLoader::DidDownloadData(uint64_t data_length) {
@@ -247,7 +247,7 @@ void BlinkUrlLoader::DidReceiveData(const char* data, int data_length) {
 void BlinkUrlLoader::DidFinishLoading() {
   DCHECK_EQ(state_, LoadingState::kStreamingData);
 
-  SetLoadComplete(PP_OK);
+  SetLoadComplete(Result::kSuccess);
   RunReadCallback();
 }
 
@@ -257,16 +257,16 @@ void BlinkUrlLoader::DidFail(const blink::WebURLError& error) {
          state_ == LoadingState::kStreamingData)
       << static_cast<int>(state_);
 
-  int32_t pp_error = PP_ERROR_FAILED;
+  int32_t pp_error = Result::kErrorFailed;
   switch (error.reason()) {
     case net::ERR_ACCESS_DENIED:
     case net::ERR_NETWORK_ACCESS_DENIED:
-      pp_error = PP_ERROR_NOACCESS;
+      pp_error = Result::kErrorNoAccess;
       break;
 
     default:
       if (error.is_web_security_violation())
-        pp_error = PP_ERROR_NOACCESS;
+        pp_error = Result::kErrorNoAccess;
       break;
   }
 
@@ -310,7 +310,8 @@ void BlinkUrlLoader::RunReadCallback() {
     DCHECK_EQ(state_, LoadingState::kLoadComplete);
     num_bytes = complete_result_;
     DCHECK_LE(num_bytes, 0);
-    static_assert(PP_OK == 0, "PP_OK should be equivalent to 0 bytes");
+    static_assert(Result::kSuccess == 0,
+                  "Result::kSuccess should be equivalent to 0 bytes");
   }
 
   client_buffer_ = {};
@@ -344,6 +345,7 @@ void PepperUrlLoader::Open(const UrlRequest& request, ResultCallback callback) {
   pp::URLRequestInfo pp_request(plugin_instance_);
   pp_request.SetURL(request.url);
   pp_request.SetMethod(request.method);
+  pp_request.SetCustomReferrerURL(request.url);
 
   if (request.ignore_redirects)
     pp_request.SetFollowRedirects(false);
@@ -381,13 +383,17 @@ void PepperUrlLoader::Close() {
 
 void PepperUrlLoader::DidOpen(ResultCallback callback, int32_t result) {
   pp::URLResponseInfo pp_response = pepper_loader_.GetResponseInfo();
-  mutable_response().status_code = pp_response.GetStatusCode();
-
-  pp::Var headers_var = pp_response.GetHeaders();
-  if (headers_var.is_string()) {
-    mutable_response().headers = headers_var.AsString();
+  if (pp_response.is_null()) {
+    DCHECK_NE(result, kSuccess);
   } else {
-    mutable_response().headers.clear();
+    mutable_response().status_code = pp_response.GetStatusCode();
+
+    pp::Var headers_var = pp_response.GetHeaders();
+    if (headers_var.is_string()) {
+      mutable_response().headers = headers_var.AsString();
+    } else {
+      mutable_response().headers.clear();
+    }
   }
 
   std::move(callback).Run(result);

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/kill.h"
 
 class PrefRegistrySimple;
@@ -18,6 +18,7 @@ namespace metrics {
 // The values here correspond to values in the Stability message in
 // system_profile.proto.
 // This must stay 1-1 with the StabilityEventType enum in enums.xml.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.metrics
 enum class StabilityEventType {
   kPageLoad = 2,
   kRendererCrash = 3,
@@ -26,7 +27,7 @@ enum class StabilityEventType {
   kChildProcessCrash = 6,
   kLaunch = 15,
   kBrowserCrash = 16,
-  kIncompleteShutdown = 17,
+  // kIncompleteShutdown = 17,  // Removed due to disuse and correctness issues.
   kRendererFailedLaunch = 24,
   kExtensionRendererFailedLaunch = 25,
   kRendererLaunch = 26,
@@ -37,11 +38,15 @@ enum class StabilityEventType {
 
 class SystemProfileProto;
 
-// StabilityMetricsHelper is a class that providers functionality common to
-// different embedders' stability metrics providers.
+// Responsible for providing functionality common to different embedders'
+// stability metrics providers.
 class StabilityMetricsHelper {
  public:
   explicit StabilityMetricsHelper(PrefService* local_state);
+
+  StabilityMetricsHelper(const StabilityMetricsHelper&) = delete;
+  StabilityMetricsHelper& operator=(const StabilityMetricsHelper&) = delete;
+
   ~StabilityMetricsHelper();
 
   // Provides stability metrics.
@@ -96,9 +101,7 @@ class StabilityMetricsHelper {
   // Records that a renderer launch failed.
   void LogRendererLaunchFailed(bool was_extension_process);
 
-  PrefService* local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(StabilityMetricsHelper);
+  raw_ptr<PrefService> local_state_;
 };
 
 }  // namespace metrics

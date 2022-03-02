@@ -20,6 +20,10 @@
 #include <atomic>
 #include <string>
 
+namespace skstd {
+    class string_view;
+}
+
 /*  Some helper functions for C strings */
 static inline bool SkStrStartsWith(const char string[], const char prefixStr[]) {
     SkASSERT(string);
@@ -122,6 +126,7 @@ public:
                 SkString(const SkString&);
                 SkString(SkString&&);
     explicit    SkString(const std::string&);
+    explicit    SkString(skstd::string_view);
                 ~SkString();
 
     bool        isEmpty() const { return 0 == fRec->fLength; }
@@ -238,17 +243,20 @@ private:
     public:
         constexpr Rec(uint32_t len, int32_t refCnt) : fLength(len), fRefCnt(refCnt) {}
         static sk_sp<Rec> Make(const char text[], size_t len);
-        char* data() { return &fBeginningOfData; }
-        const char* data() const { return &fBeginningOfData; }
+        char* data() { return fBeginningOfData; }
+        const char* data() const { return fBeginningOfData; }
         void ref() const;
         void unref() const;
         bool unique() const;
-
+#ifdef SK_DEBUG
+        int32_t getRefCnt() const;
+#endif
         uint32_t fLength; // logically size_t, but we want it to stay 32 bits
-        mutable std::atomic<int32_t> fRefCnt;
-        char fBeginningOfData = '\0';
 
     private:
+        mutable std::atomic<int32_t> fRefCnt;
+        char fBeginningOfData[1] = {'\0'};
+
         // Ensure the unsized delete is called.
         void operator delete(void* p) { ::operator delete(p); }
     };

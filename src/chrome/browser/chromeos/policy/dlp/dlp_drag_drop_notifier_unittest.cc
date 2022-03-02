@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_drag_drop_notifier.h"
 
+#include "base/stl_util.h"
+#include "base/test/mock_callback.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +34,15 @@ class MockDlpDragDropNotifier : public DlpDragDropNotifier {
 
   // DlpDataTransferNotifier:
   MOCK_METHOD1(ShowBlockBubble, void(const std::u16string& text));
+  MOCK_METHOD3(ShowWarningBubble,
+               void(const std::u16string& text,
+                    base::RepeatingCallback<void(views::Widget*)> proceed_cb,
+                    base::RepeatingCallback<void(views::Widget*)> cancel_cb));
+  MOCK_METHOD2(CloseWidget,
+               void(views::Widget* widget, views::Widget::ClosedReason reason));
+
+  using DlpDragDropNotifier::CancelPressed;
+  using DlpDragDropNotifier::ProceedPressed;
 };
 
 }  // namespace
@@ -58,15 +70,64 @@ TEST_P(DragDropBubbleTestWithParam, NotifyBlocked) {
   notifier.NotifyBlockedAction(&data_src, base::OptionalOrNullptr(data_dst));
 }
 
+TEST_P(DragDropBubbleTestWithParam, ProceedWarnOnDrop) {
+  ::testing::StrictMock<MockDlpDragDropNotifier> notifier;
+  ui::DataTransferEndpoint data_src(url::Origin::Create(GURL(kExampleUrl)));
+  absl::optional<ui::DataTransferEndpoint> data_dst;
+  auto param = GetParam();
+  if (param.has_value())
+    data_dst.emplace(CreateEndpoint(param.value()));
+
+  EXPECT_CALL(notifier, CloseWidget(testing::_,
+                                    views::Widget::ClosedReason::kUnspecified));
+  EXPECT_CALL(notifier, ShowWarningBubble);
+
+  ::testing::StrictMock<base::MockOnceClosure> callback;
+  notifier.WarnOnDrop(&data_src, base::OptionalOrNullptr(data_dst),
+                      callback.Get());
+
+  EXPECT_CALL(notifier,
+              CloseWidget(testing::_,
+                          views::Widget::ClosedReason::kAcceptButtonClicked));
+
+  EXPECT_CALL(callback, Run());
+  notifier.ProceedPressed(nullptr);
+}
+
+TEST_P(DragDropBubbleTestWithParam, CancelWarnOnDrop) {
+  ::testing::StrictMock<MockDlpDragDropNotifier> notifier;
+  ui::DataTransferEndpoint data_src(url::Origin::Create(GURL(kExampleUrl)));
+  absl::optional<ui::DataTransferEndpoint> data_dst;
+  auto param = GetParam();
+  if (param.has_value())
+    data_dst.emplace(CreateEndpoint(param.value()));
+
+  EXPECT_CALL(notifier, CloseWidget(testing::_,
+                                    views::Widget::ClosedReason::kUnspecified));
+  EXPECT_CALL(notifier, ShowWarningBubble);
+
+  ::testing::StrictMock<base::MockOnceClosure> callback;
+  notifier.WarnOnDrop(&data_src, base::OptionalOrNullptr(data_dst),
+                      callback.Get());
+
+  EXPECT_CALL(notifier,
+              CloseWidget(testing::_,
+                          views::Widget::ClosedReason::kCancelButtonClicked));
+
+  notifier.CancelPressed(nullptr);
+}
+
 INSTANTIATE_TEST_SUITE_P(DlpDragDropNotifierTest,
                          DragDropBubbleTestWithParam,
                          ::testing::Values(absl::nullopt,
-                                           ui::EndpointType::kDefault,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
                                            ui::EndpointType::kUnknownVm,
                                            ui::EndpointType::kBorealis,
-                                           ui::EndpointType::kUrl,
                                            ui::EndpointType::kCrostini,
                                            ui::EndpointType::kPluginVm,
-                                           ui::EndpointType::kArc));
+                                           ui::EndpointType::kArc,
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+                                           ui::EndpointType::kDefault,
+                                           ui::EndpointType::kUrl));
 
 }  // namespace policy

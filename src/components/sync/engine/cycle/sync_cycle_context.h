@@ -11,9 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/sync/engine/active_devices_invalidation_info.h"
 #include "components/sync/engine/cycle/debug_info_getter.h"
 #include "components/sync/engine/model_type_registry.h"
 #include "components/sync/engine/sync_engine_event_listener.h"
@@ -49,11 +50,16 @@ class SyncCycleContext {
                    const std::string& bag_of_chips,
                    base::TimeDelta poll_interval);
 
+  SyncCycleContext(const SyncCycleContext&) = delete;
+  SyncCycleContext& operator=(const SyncCycleContext&) = delete;
+
   ~SyncCycleContext();
 
   ServerConnectionManager* connection_manager() { return connection_manager_; }
 
-  ModelTypeSet GetEnabledTypes() const;
+  ModelTypeSet GetConnectedTypes() const;
+
+  bool proxy_tabs_datatype_enabled() const;
 
   ExtensionsActivity* extensions_activity() {
     return extensions_activity_.get();
@@ -113,28 +119,26 @@ class SyncCycleContext {
     cookie_jar_mismatch_ = cookie_jar_mismatch;
   }
 
-  bool single_client() const { return single_client_; }
-  void set_single_client(bool single_client) { single_client_ = single_client; }
-
   base::TimeDelta poll_interval() const { return poll_interval_; }
   void set_poll_interval(base::TimeDelta interval) {
     DCHECK(!interval.is_zero());
     poll_interval_ = interval;
   }
 
-  const std::vector<std::string>& active_device_fcm_registration_tokens()
-      const {
-    return active_device_fcm_registration_tokens_;
+  const ActiveDevicesInvalidationInfo& active_devices_invalidation_info() {
+    return active_devices_invalidation_info_;
   }
-  void set_active_device_fcm_registration_tokens(
-      std::vector<std::string> fcm_registration_tokens) {
-    active_device_fcm_registration_tokens_ = std::move(fcm_registration_tokens);
+
+  void set_active_devices_invalidation_info(
+      ActiveDevicesInvalidationInfo active_devices_invalidation_info) {
+    active_devices_invalidation_info_ =
+        std::move(active_devices_invalidation_info);
   }
 
  private:
   base::ObserverList<SyncEngineEventListener>::Unchecked listeners_;
 
-  ServerConnectionManager* const connection_manager_;
+  const raw_ptr<ServerConnectionManager> connection_manager_;
 
   // We use this to stuff extensions activity into CommitMessages so the server
   // can correlate commit traffic with extension-related bookmark mutations.
@@ -158,9 +162,9 @@ class SyncCycleContext {
 
   // We use this to get debug info to send to the server for debugging
   // client behavior on server side.
-  DebugInfoGetter* const debug_info_getter_;
+  const raw_ptr<DebugInfoGetter> debug_info_getter_;
 
-  ModelTypeRegistry* model_type_registry_;
+  raw_ptr<ModelTypeRegistry> model_type_registry_;
 
   // Satus information to be sent up to the server.
   sync_pb::ClientStatus client_status_;
@@ -176,15 +180,9 @@ class SyncCycleContext {
   // mismatch implies all of them are different from the chrome account.
   bool cookie_jar_mismatch_;
 
-  // If there are no other known active devices.
-  bool single_client_;
-
-  // A list of FCM registration tokens to send invalidations.
-  std::vector<std::string> active_device_fcm_registration_tokens_;
+  ActiveDevicesInvalidationInfo active_devices_invalidation_info_;
 
   base::TimeDelta poll_interval_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncCycleContext);
 };
 
 }  // namespace syncer

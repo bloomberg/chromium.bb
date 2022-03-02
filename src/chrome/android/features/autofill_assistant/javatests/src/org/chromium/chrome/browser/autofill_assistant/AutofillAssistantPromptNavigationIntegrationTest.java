@@ -12,13 +12,14 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.support.test.InstrumentationRegistry;
+import android.os.Build;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -29,7 +30,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -43,23 +43,13 @@ import java.util.Collections;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantPromptNavigationIntegrationTest {
+    private static final String TEST_PAGE = "autofill_assistant_target_website.html";
+
+    private final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
     @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
-
-    private static final String TEST_PAGE = "/components/test/data/autofill_assistant/html/"
-            + "autofill_assistant_target_website.html";
-
-    @Before
-    public void setUp() throws Exception {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mTestRule.getActivity()
-                .getRootUiCoordinatorForTesting()
-                .getScrimCoordinator()
-                .disableAnimationForTesting(true);
-    }
+    public final TestRule mRulesChain = RuleChain.outerRule(mTestRule).around(
+            new AutofillAssistantCustomTabTestRule(mTestRule, TEST_PAGE));
 
     /**
      * Integration test for ending a prompt action when a render side navigation occurs.
@@ -67,24 +57,26 @@ public class AutofillAssistantPromptNavigationIntegrationTest {
     @Test
     @MediumTest
     @DisableIf.Build(sdk_is_less_than = 21)
-    public void reloadEndsPrompt() throws Exception {
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1,
+            supported_abis_includes = "x86", message = "Flaky, see https://crbug.com/1270760")
+    public void
+    reloadEndsPrompt() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setEndOnNavigation(true).addChoices(
                                  PromptProto.Choice.newBuilder().setChip(
                                          ChipProto.newBuilder().setText("Prompt 1"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().addChoices(
                                  PromptProto.Choice.newBuilder().setChip(
                                          ChipProto.newBuilder().setText("Prompt 2"))))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath(TEST_PAGE)
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 

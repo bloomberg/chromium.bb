@@ -20,7 +20,10 @@ class CORE_EXPORT HTMLMediaElementControlsList final : public DOMTokenList {
   // Whether the list dictates to hide a certain control.
   bool ShouldHideDownload() const;
   bool ShouldHideFullscreen() const;
+  bool ShouldHidePlaybackRate() const;
   bool ShouldHideRemotePlayback() const;
+
+  bool CanShowAllControls() const;
 
  private:
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_HANDWRITING_HANDWRITING_DRAWING_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HANDWRITING_HANDWRITING_DRAWING_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/handwriting/handwriting.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -27,6 +26,10 @@ class HandwritingDrawing final : public ScriptWrappable {
   explicit HandwritingDrawing(ExecutionContext* context,
                               HandwritingRecognizer* recognizer,
                               const HandwritingHints* hints);
+
+  HandwritingDrawing(const HandwritingDrawing&) = delete;
+  HandwritingDrawing& operator=(const HandwritingDrawing&) = delete;
+
   ~HandwritingDrawing() override;
 
   // IDL Interface:
@@ -46,8 +49,6 @@ class HandwritingDrawing final : public ScriptWrappable {
   HeapVector<Member<HandwritingStroke>> strokes_;
 
   WeakMember<HandwritingRecognizer> recognizer_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandwritingDrawing);
 };
 
 }  // namespace blink

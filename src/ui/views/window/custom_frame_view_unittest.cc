@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
@@ -20,6 +20,10 @@ namespace views {
 class CustomFrameViewTest : public ViewsTestBase {
  public:
   CustomFrameViewTest() = default;
+
+  CustomFrameViewTest(const CustomFrameViewTest&) = delete;
+  CustomFrameViewTest& operator=(const CustomFrameViewTest&) = delete;
+
   ~CustomFrameViewTest() override = default;
 
   CustomFrameView* custom_frame_view() { return custom_frame_view_; }
@@ -61,12 +65,10 @@ class CustomFrameViewTest : public ViewsTestBase {
   std::unique_ptr<WidgetDelegate> widget_delegate_;
 
   // Parent container for |custom_frame_view_|
-  Widget* widget_;
+  raw_ptr<Widget> widget_;
 
   // Owned by |widget_|
-  CustomFrameView* custom_frame_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewTest);
+  raw_ptr<CustomFrameView> custom_frame_view_;
 };
 
 void CustomFrameViewTest::SetUp() {

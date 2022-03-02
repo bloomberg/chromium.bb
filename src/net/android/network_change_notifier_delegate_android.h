@@ -6,9 +6,9 @@
 #define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_DELEGATE_ANDROID_H_
 
 #include <map>
-#include <string>
 
 #include "base/android/jni_android.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
@@ -128,9 +128,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   // Can only be called from the main (Java) thread.
   NetworkChangeNotifier::ConnectionSubtype GetCurrentConnectionSubtype() const;
 
-  // Is the current process bound to a specific network?
-  bool IsProcessBoundToNetwork();
-
   // Returns true if NetworkCallback failed to register, indicating that
   // network-specific callbacks will not be issued.
   bool RegisterNetworkCallbackFailed() const {
@@ -169,7 +166,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   THREAD_CHECKER(thread_checker_);
 
   base::Lock observer_lock_;
-  Observer* observer_ GUARDED_BY(observer_lock_) = nullptr;
+  raw_ptr<Observer> observer_ GUARDED_BY(observer_lock_) = nullptr;
 
   const base::android::ScopedJavaGlobalRef<jobject>
       java_network_change_notifier_;

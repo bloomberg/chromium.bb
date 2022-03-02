@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 
@@ -46,6 +47,24 @@ void RetrieveGpuFactoriesWithKnownEncoderSupport(OutputCB callback) {
           std::move(result_cb).Run(factories);
         } else {
           factories->NotifyEncoderSupportKnown(ConvertToBaseOnceCallback(
+              CrossThreadBindOnce(OnSupportKnown, std::move(result_cb),
+                                  CrossThreadUnretained(factories))));
+        }
+      };
+
+  auto factories_callback =
+      CrossThreadBindOnce(on_factories_received, std::move(callback));
+
+  RetrieveGpuFactories(std::move(factories_callback));
+}
+
+void RetrieveGpuFactoriesWithKnownDecoderSupport(OutputCB callback) {
+  auto on_factories_received =
+      [](OutputCB result_cb, media::GpuVideoAcceleratorFactories* factories) {
+        if (!factories || factories->IsDecoderSupportKnown()) {
+          std::move(result_cb).Run(factories);
+        } else {
+          factories->NotifyDecoderSupportKnown(ConvertToBaseOnceCallback(
               CrossThreadBindOnce(OnSupportKnown, std::move(result_cb),
                                   CrossThreadUnretained(factories))));
         }

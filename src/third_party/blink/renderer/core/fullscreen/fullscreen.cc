@@ -29,7 +29,6 @@
 
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -56,7 +55,7 @@
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -102,11 +101,17 @@ void FullscreenElementChanged(Document& document,
         true);
   }
 
-  if (document.GetFrame()) {
-    // SetIsInert recurses through subframes to propagate the inert bit as
-    // needed.
-    document.GetFrame()->SetIsInert(document.LocalOwner() &&
-                                    document.LocalOwner()->IsInert());
+  // Update IsInert() flags.
+  auto SetNeedsStyleRecalc = [](Element& element) {
+    element.SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kFullscreen));
+  };
+  if (old_element && new_element) {
+    SetNeedsStyleRecalc(*old_element);
+    SetNeedsStyleRecalc(*new_element);
+  } else if (Element* root = document.documentElement()) {
+    SetNeedsStyleRecalc(*root);
   }
 
   // Any element not contained by the fullscreen element is inert (see
@@ -134,10 +139,10 @@ class MetaParams : public GarbageCollected<MetaParams> {
   MetaParams(FullscreenRequestType request_type,
              const FullscreenOptions* options)
       : request_type_(request_type), options_(options) {}
-  virtual ~MetaParams() = default;
-
   MetaParams(const MetaParams&) = delete;
   MetaParams& operator=(const MetaParams&) = delete;
+
+  virtual ~MetaParams() = default;
 
   virtual void Trace(Visitor* visitor) const { visitor->Trace(options_); }
 
@@ -407,6 +412,8 @@ class RequestFullscreenScope {
     DCHECK(!running_request_fullscreen_);
     running_request_fullscreen_ = true;
   }
+  RequestFullscreenScope(const RequestFullscreenScope&) = delete;
+  RequestFullscreenScope& operator=(const RequestFullscreenScope&) = delete;
 
   ~RequestFullscreenScope() {
     DCHECK(running_request_fullscreen_);
@@ -417,7 +424,6 @@ class RequestFullscreenScope {
 
  private:
   static bool running_request_fullscreen_;
-  DISALLOW_COPY_AND_ASSIGN(RequestFullscreenScope);
 };
 
 bool RequestFullscreenScope::running_request_fullscreen_ = false;

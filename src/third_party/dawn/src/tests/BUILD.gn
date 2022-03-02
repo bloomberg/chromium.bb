@@ -126,17 +126,51 @@ dawn_json_generator("mock_webgpu_gen") {
   ]
 }
 
+# Source code for mocks used for unit testing are separated from the rest of
+# sources so that they aren't included in non-test builds.
+source_set("dawn_native_mocks_sources") {
+  testonly = true
+
+  deps = [
+    ":gmock_and_gtest",
+    "${dawn_root}/src/dawn_native:dawn_native_sources",
+    "${dawn_root}/src/dawn_native:dawn_native_static",
+    "${dawn_root}/src/utils:dawn_utils",
+  ]
+
+  # Add internal dawn_native config for internal unittests.
+  configs += [ "${dawn_root}/src/dawn_native:dawn_native_internal" ]
+
+  sources = [
+    "unittests/native/mocks/BindGroupLayoutMock.h",
+    "unittests/native/mocks/BindGroupMock.h",
+    "unittests/native/mocks/CommandBufferMock.h",
+    "unittests/native/mocks/ComputePipelineMock.h",
+    "unittests/native/mocks/DeviceMock.h",
+    "unittests/native/mocks/ExternalTextureMock.h",
+    "unittests/native/mocks/PipelineLayoutMock.h",
+    "unittests/native/mocks/QuerySetMock.h",
+    "unittests/native/mocks/RenderPipelineMock.h",
+    "unittests/native/mocks/SamplerMock.h",
+    "unittests/native/mocks/ShaderModuleMock.cpp",
+    "unittests/native/mocks/ShaderModuleMock.h",
+    "unittests/native/mocks/SwapChainMock.h",
+    "unittests/native/mocks/TextureMock.h",
+  ]
+}
+
 test("dawn_unittests") {
   configs += [ "${dawn_root}/src/common:dawn_internal" ]
 
   deps = [
+    ":dawn_native_mocks_sources",
     ":gmock_and_gtest",
     ":mock_webgpu_gen",
     "${dawn_root}/src/common",
     "${dawn_root}/src/dawn:dawn_proc",
     "${dawn_root}/src/dawn:dawncpp",
-    "${dawn_root}/src/dawn_native",
     "${dawn_root}/src/dawn_native:dawn_native_sources",
+    "${dawn_root}/src/dawn_native:dawn_native_static",
     "${dawn_root}/src/dawn_wire",
     "${dawn_root}/src/utils:dawn_utils",
   ]
@@ -150,29 +184,36 @@ test("dawn_unittests") {
     "${dawn_root}/src/dawn_wire/client/ClientMemoryTransferService_mock.h",
     "${dawn_root}/src/dawn_wire/server/ServerMemoryTransferService_mock.cpp",
     "${dawn_root}/src/dawn_wire/server/ServerMemoryTransferService_mock.h",
+    "DawnNativeTest.cpp",
+    "DawnNativeTest.h",
     "MockCallback.h",
     "ToggleParser.cpp",
     "ToggleParser.h",
+    "unittests/AsyncTaskTests.cpp",
     "unittests/BitSetIteratorTests.cpp",
     "unittests/BuddyAllocatorTests.cpp",
     "unittests/BuddyMemoryAllocatorTests.cpp",
     "unittests/ChainUtilsTests.cpp",
     "unittests/CommandAllocatorTests.cpp",
+    "unittests/ConcurrentCacheTests.cpp",
     "unittests/EnumClassBitmasksTests.cpp",
     "unittests/EnumMaskIteratorTests.cpp",
     "unittests/ErrorTests.cpp",
-    "unittests/ExtensionTests.cpp",
+    "unittests/FeatureTests.cpp",
+    "unittests/GPUInfoTests.cpp",
     "unittests/GetProcAddressTests.cpp",
     "unittests/ITypArrayTests.cpp",
     "unittests/ITypBitsetTests.cpp",
     "unittests/ITypSpanTests.cpp",
     "unittests/ITypVectorTests.cpp",
+    "unittests/LimitsTests.cpp",
     "unittests/LinkedListTests.cpp",
     "unittests/MathTests.cpp",
     "unittests/ObjectBaseTests.cpp",
     "unittests/PerStageTests.cpp",
     "unittests/PerThreadProcTests.cpp",
     "unittests/PlacementAllocatedTests.cpp",
+    "unittests/RefBaseTests.cpp",
     "unittests/RefCountedTests.cpp",
     "unittests/ResultTests.cpp",
     "unittests/RingBufferAllocatorTests.cpp",
@@ -184,7 +225,8 @@ test("dawn_unittests") {
     "unittests/SystemUtilsTests.cpp",
     "unittests/ToBackendTests.cpp",
     "unittests/TypedIntegerTests.cpp",
-    "unittests/WorkerThreadTests.cpp",
+    "unittests/native/CommandBufferEncodingTests.cpp",
+    "unittests/native/DestroyObjectTests.cpp",
     "unittests/validation/BindGroupValidationTests.cpp",
     "unittests/validation/BufferValidationTests.cpp",
     "unittests/validation/CommandBufferValidationTests.cpp",
@@ -194,14 +236,18 @@ test("dawn_unittests") {
     "unittests/validation/CopyTextureForBrowserTests.cpp",
     "unittests/validation/DebugMarkerValidationTests.cpp",
     "unittests/validation/DrawIndirectValidationTests.cpp",
+    "unittests/validation/DrawVertexAndIndexBufferOOBValidationTests.cpp",
     "unittests/validation/DynamicStateCommandValidationTests.cpp",
     "unittests/validation/ErrorScopeValidationTests.cpp",
     "unittests/validation/ExternalTextureTests.cpp",
-    "unittests/validation/FenceValidationTests.cpp",
     "unittests/validation/GetBindGroupLayoutValidationTests.cpp",
     "unittests/validation/IndexBufferValidationTests.cpp",
+    "unittests/validation/InternalUsageValidationTests.cpp",
+    "unittests/validation/LabelTests.cpp",
     "unittests/validation/MinimumBufferSizeValidationTests.cpp",
     "unittests/validation/MultipleDeviceTests.cpp",
+    "unittests/validation/OverridableConstantsValidationTests.cpp",
+    "unittests/validation/PipelineAndPassCompatibilityTests.cpp",
     "unittests/validation/QueryValidationTests.cpp",
     "unittests/validation/QueueOnSubmittedWorkDoneValidationTests.cpp",
     "unittests/validation/QueueSubmitValidationTests.cpp",
@@ -210,6 +256,7 @@ test("dawn_unittests") {
     "unittests/validation/RenderBundleValidationTests.cpp",
     "unittests/validation/RenderPassDescriptorValidationTests.cpp",
     "unittests/validation/RenderPipelineValidationTests.cpp",
+    "unittests/validation/RequestDeviceValidationTests.cpp",
     "unittests/validation/ResourceUsageTrackingTests.cpp",
     "unittests/validation/SamplerValidationTests.cpp",
     "unittests/validation/ShaderModuleValidationTests.cpp",
@@ -224,6 +271,7 @@ test("dawn_unittests") {
     "unittests/validation/VertexBufferValidationTests.cpp",
     "unittests/validation/VertexStateValidationTests.cpp",
     "unittests/validation/VideoViewsValidationTests.cpp",
+    "unittests/validation/WriteBufferTests.cpp",
     "unittests/wire/WireArgumentTests.cpp",
     "unittests/wire/WireBasicTests.cpp",
     "unittests/wire/WireBufferMappingTests.cpp",
@@ -232,13 +280,13 @@ test("dawn_unittests") {
     "unittests/wire/WireDisconnectTests.cpp",
     "unittests/wire/WireErrorCallbackTests.cpp",
     "unittests/wire/WireExtensionTests.cpp",
-    "unittests/wire/WireFenceTests.cpp",
     "unittests/wire/WireInjectDeviceTests.cpp",
     "unittests/wire/WireInjectSwapChainTests.cpp",
     "unittests/wire/WireInjectTextureTests.cpp",
     "unittests/wire/WireMemoryTransferServiceTests.cpp",
     "unittests/wire/WireOptionalTests.cpp",
     "unittests/wire/WireQueueTests.cpp",
+    "unittests/wire/WireShaderModuleTests.cpp",
     "unittests/wire/WireTest.cpp",
     "unittests/wire/WireTest.h",
     "unittests/wire/WireWGPUDevicePropertiesTests.cpp",
@@ -287,15 +335,18 @@ source_set("dawn_end2end_tests_sources") {
     "ParamGenerator.h",
     "ToggleParser.cpp",
     "ToggleParser.h",
+    "end2end/AdapterDiscoveryTests.cpp",
     "end2end/BasicTests.cpp",
     "end2end/BindGroupTests.cpp",
     "end2end/BufferTests.cpp",
     "end2end/BufferZeroInitTests.cpp",
     "end2end/ClipSpaceTests.cpp",
     "end2end/ColorStateTests.cpp",
+    "end2end/CommandEncoderTests.cpp",
     "end2end/CompressedTextureFormatTests.cpp",
     "end2end/ComputeCopyStorageBufferTests.cpp",
     "end2end/ComputeDispatchTests.cpp",
+    "end2end/ComputeLayoutMemoryBufferTests.cpp",
     "end2end/ComputeSharedMemoryTests.cpp",
     "end2end/ComputeStorageBufferBarrierTests.cpp",
     "end2end/CopyTests.cpp",
@@ -306,6 +357,7 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/DeprecatedAPITests.cpp",
     "end2end/DepthBiasTests.cpp",
     "end2end/DepthStencilCopyTests.cpp",
+    "end2end/DepthStencilLoadOpTests.cpp",
     "end2end/DepthStencilSamplingTests.cpp",
     "end2end/DepthStencilStateTests.cpp",
     "end2end/DestroyTests.cpp",
@@ -318,10 +370,11 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/DynamicBufferOffsetTests.cpp",
     "end2end/EntryPointTests.cpp",
     "end2end/ExternalTextureTests.cpp",
-    "end2end/FenceTests.cpp",
     "end2end/FirstIndexOffsetTests.cpp",
     "end2end/GpuMemorySynchronizationTests.cpp",
     "end2end/IndexFormatTests.cpp",
+    "end2end/MaxLimitTests.cpp",
+    "end2end/MemoryAllocationStressTests.cpp",
     "end2end/MultisampledRenderingTests.cpp",
     "end2end/MultisampledSamplingTests.cpp",
     "end2end/NonzeroBufferCreationTests.cpp",
@@ -334,6 +387,8 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/QueryTests.cpp",
     "end2end/QueueTests.cpp",
     "end2end/QueueTimelineTests.cpp",
+    "end2end/ReadOnlyDepthStencilAttachmentTests.cpp",
+    "end2end/RenderAttachmentTests.cpp",
     "end2end/RenderBundleTests.cpp",
     "end2end/RenderPassLoadOpTests.cpp",
     "end2end/RenderPassTests.cpp",
@@ -344,12 +399,13 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/ShaderTests.cpp",
     "end2end/StorageTextureTests.cpp",
     "end2end/SubresourceRenderAttachmentTests.cpp",
+    "end2end/Texture3DTests.cpp",
     "end2end/TextureFormatTests.cpp",
     "end2end/TextureSubresourceTests.cpp",
     "end2end/TextureViewTests.cpp",
     "end2end/TextureZeroInitTests.cpp",
-    "end2end/VertexBufferRobustnessTests.cpp",
     "end2end/VertexFormatTests.cpp",
+    "end2end/VertexOnlyRenderPipelineTests.cpp",
     "end2end/VertexStateTests.cpp",
     "end2end/ViewportOrientationTests.cpp",
     "end2end/ViewportTests.cpp",
@@ -432,7 +488,9 @@ source_set("dawn_white_box_tests_sources") {
   }
 
   sources += [
+    "white_box/BufferAllocatedSizeTests.cpp",
     "white_box/InternalResourceUsageTests.cpp",
+    "white_box/InternalStorageBufferBindingTests.cpp",
     "white_box/QueryInternalShaderTests.cpp",
   ]
 
@@ -450,6 +508,11 @@ source_set("dawn_white_box_tests_sources") {
 
   if (dawn_enable_opengl) {
     deps += [ "${dawn_root}/src/utils:dawn_glfw" ]
+  }
+
+  if (dawn_enable_opengles) {
+    sources += [ "white_box/EGLImageWrappingTests.cpp" ]
+    deps += [ "//third_party/angle:libEGL" ]
   }
 
   libs = []

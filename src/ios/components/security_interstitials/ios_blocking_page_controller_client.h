@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "ios/web/public/web_state_observer.h"
@@ -30,6 +29,12 @@ class IOSBlockingPageControllerClient
       web::WebState* web_state,
       std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper,
       const std::string& app_locale);
+
+  IOSBlockingPageControllerClient(const IOSBlockingPageControllerClient&) =
+      delete;
+  IOSBlockingPageControllerClient& operator=(
+      const IOSBlockingPageControllerClient&) = delete;
+
   ~IOSBlockingPageControllerClient() override;
 
   // security_interstitials::ControllerClient implementation.
@@ -67,8 +72,6 @@ class IOSBlockingPageControllerClient
   const std::string app_locale_;
 
   base::WeakPtrFactory<IOSBlockingPageControllerClient> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSBlockingPageControllerClient);
 };
 
 }  // namespace security_interstitials

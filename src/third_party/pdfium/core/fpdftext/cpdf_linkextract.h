@@ -7,12 +7,14 @@
 #ifndef CORE_FPDFTEXT_CPDF_LINKEXTRACT_H_
 #define CORE_FPDFTEXT_CPDF_LINKEXTRACT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/widestring.h"
 
 class CPDF_TextPage;
 

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -153,6 +153,10 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
           error_console_(error_console) {
       error_console_->AddObserver(this);
     }
+
+    ErrorObserver(const ErrorObserver&) = delete;
+    ErrorObserver& operator=(const ErrorObserver&) = delete;
+
     virtual ~ErrorObserver() {
       if (error_console_)
         error_console_->RemoveObserver(this);
@@ -183,9 +187,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
     size_t errors_expected_;
     bool waiting_;
 
-    ErrorConsole* error_console_;
-
-    DISALLOW_COPY_AND_ASSIGN(ErrorObserver);
+    raw_ptr<ErrorConsole> error_console_;
   };
 
   // The type of action which we take after we load an extension in order to
@@ -236,7 +238,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
 
     switch (action) {
       case ACTION_NAVIGATE: {
-        ui_test_utils::NavigateToURL(browser(), GetTestURL());
+        ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestURL()));
         break;
       }
       case ACTION_BROWSER_ACTION: {
@@ -246,8 +248,8 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
         break;
       }
       case ACTION_NEW_TAB: {
-        ui_test_utils::NavigateToURL(browser(),
-                                     GURL(chrome::kChromeUINewTabURL));
+        ASSERT_TRUE(ui_test_utils::NavigateToURL(
+            browser(), GURL(chrome::kChromeUINewTabURL)));
         break;
       }
       case ACTION_NONE:
@@ -274,7 +276,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
   GURL test_url_;
 
   // Weak reference to the ErrorConsole.
-  ErrorConsole* error_console_;
+  raw_ptr<ErrorConsole> error_console_;
 };
 
 // Test to ensure that we are successfully reporting manifest errors as an
@@ -396,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
   CheckRuntimeError(errors[1].get(), extension->id(), script_url,
                     false,  // not from incognito
                     "Uncaught TypeError: "
-                    "Cannot set property 'foo' of undefined",
+                    "Cannot set properties of undefined (setting 'foo')",
                     logging::LOG_ERROR,  // JS errors are always ERROR level.
                     GetTestURL(), 1u);
 
@@ -479,11 +481,12 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
   const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
-  CheckRuntimeError(
-      errors[0].get(), extension->id(), script_url,
-      false,  // not incognito
-      "Uncaught TypeError: Cannot read property 'addUrl' of undefined",
-      logging::LOG_ERROR, extension->GetResourceURL(kBackgroundPageName), 1u);
+  CheckRuntimeError(errors[0].get(), extension->id(), script_url,
+                    false,  // not incognito
+                    "Uncaught TypeError: Cannot read properties of undefined "
+                    "(reading 'addUrl')",
+                    logging::LOG_ERROR,
+                    extension->GetResourceURL(kBackgroundPageName), 1u);
 
   const StackTrace& stack_trace = GetStackTraceFromError(errors[0].get());
   ASSERT_EQ(1u, stack_trace.size());

@@ -6,9 +6,9 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 
 import {isChromeOS} from '//resources/js/cr.m.js';
+import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -67,18 +67,6 @@ Polymer({
     },
 
     // <if expr="chromeos">
-    /**
-     * True if redesign of account management flows is enabled.
-     * @private
-     */
-    isAccountManagementFlowsV2Enabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
-      },
-      readOnly: true,
-    },
-
     /*
      * True if welcome page should not be shown.
      * @private
@@ -190,11 +178,9 @@ Polymer({
     window.open(e.detail.targetUrl, '_blank');
     e.detail.window.discard();
     // <if expr="chromeos">
-    if (this.isAccountManagementFlowsV2Enabled_) {
-      // On Chrome OS this dialog is always-on-top, so we have to close it if
-      // user opens a link in a new window.
-      this.closeDialog_();
-    }
+    // On Chrome OS this dialog is always-on-top, so we have to close it if
+    // user opens a link in a new window.
+    this.closeDialog_();
     // </if>
   },
 
@@ -348,8 +334,7 @@ Polymer({
     if (!isChromeOS) {
       return false;
     }
-    return this.isAccountManagementFlowsV2Enabled_ &&
-        !this.shouldSkipWelcomePage_ && !this.isReauthentication_;
+    return !this.shouldSkipWelcomePage_ && !this.isReauthentication_;
   },
 
   // <if expr="chromeos">

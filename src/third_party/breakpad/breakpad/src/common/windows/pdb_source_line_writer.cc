@@ -725,10 +725,8 @@ bool PDBSourceLineWriter::PrintFrameData() {
   PDBModuleInfo info;
   if (GetModuleInfo(&info) && info.cpu == L"x86_64") {
     return PrintFrameDataUsingEXE();
-  } else {
-    return PrintFrameDataUsingPDB();
   }
-  return false;
+  return PrintFrameDataUsingPDB();
 }
 
 bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol* symbol,

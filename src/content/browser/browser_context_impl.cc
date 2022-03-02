@@ -8,6 +8,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/background_sync/background_sync_scheduler.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
@@ -86,10 +87,8 @@ BrowserContext::Impl::~Impl() {
   if (!rph_crash_key_value.empty()) {
     NOTREACHED() << "rph_with_bc_reference : " << rph_crash_key_value;
 
-    static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "rph_with_bc_reference", base::debug::CrashKeySize::Size256);
-    base::debug::ScopedCrashKeyString auto_clear(crash_key,
-                                                 rph_crash_key_value);
+    SCOPED_CRASH_KEY_STRING256("BrowserContext", "dangling_rph",
+                               rph_crash_key_value);
     base::debug::DumpWithoutCrashing();
   }
 
@@ -140,7 +139,7 @@ void BrowserContext::Impl::NotifyWillBeDestroyed() {
     RenderProcessHost* host = host_iterator.GetCurrentValue();
     if (host->GetBrowserContext() == self_) {
       // This will also clean up spare RPH references.
-      host->DisableKeepAliveRefCount();
+      host->DisableRefCounts();
     }
   }
 }
@@ -227,6 +226,8 @@ DownloadManager* BrowserContext::Impl::GetDownloadManager() {
 void BrowserContext::Impl::SetDownloadManagerForTesting(
     std::unique_ptr<DownloadManager> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (download_manager_)
+    download_manager_->Shutdown();
   download_manager_ = std::move(download_manager);
 }
 

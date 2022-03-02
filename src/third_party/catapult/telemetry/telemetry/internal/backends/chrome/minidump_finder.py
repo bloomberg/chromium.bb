@@ -10,6 +10,8 @@ import os
 import subprocess
 import time
 
+import six
+
 import dependency_manager  # pylint: disable=import-error
 
 from telemetry.internal.util import local_first_binary_manager
@@ -133,6 +135,10 @@ class MinidumpFinder(object):
         crashpad_database_util, '--database=' + minidump_dir,
         '--show-pending-reports', '--show-completed-reports',
         '--show-all-report-info'])
+    # This can be removed once fully switched to Python 3 by setting text=True
+    # when calling check_output above.
+    if not isinstance(report_output, six.string_types):
+      report_output = report_output.decode('utf-8')  # pylint: disable=redefined-variable-type
 
     last_indentation = -1
     reports_list = []
@@ -183,19 +189,18 @@ class MinidumpFinder(object):
       for report in reports_list:
         self._minidump_path_crashpad_retrieval[report[1]] = True
       return [report[1] for report in reports_list]
-    else:
-      self._explanation.append('No minidumps found via crashpad_database_util, '
-                               'falling back to globbing for Breakpad '
-                               'minidumps.')
-      dumps = self._GetBreakpadMinidumpPaths(minidump_dir)
-      if dumps:
-        self._explanation.append('Found Breakpad minidump via globbing.')
-        for dump in dumps:
-          self._minidump_path_crashpad_retrieval[dump] = False
-        return dumps
-      self._explanation.append(
-          'Failed to find any Breakpad minidumps via globbing.')
-      return []
+    self._explanation.append('No minidumps found via crashpad_database_util, '
+                             'falling back to globbing for Breakpad '
+                             'minidumps.')
+    dumps = self._GetBreakpadMinidumpPaths(minidump_dir)
+    if dumps:
+      self._explanation.append('Found Breakpad minidump via globbing.')
+      for dump in dumps:
+        self._minidump_path_crashpad_retrieval[dump] = False
+      return dumps
+    self._explanation.append(
+        'Failed to find any Breakpad minidumps via globbing.')
+    return []
 
   def _GetMostRecentCrashpadMinidump(self, minidump_dir):
     reports_list = self._GetAllCrashpadMinidumps(minidump_dir)

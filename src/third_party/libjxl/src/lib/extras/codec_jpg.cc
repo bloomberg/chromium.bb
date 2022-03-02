@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/extras/codec_jpg.h"
 
@@ -30,9 +21,9 @@
 #include <utility>
 #include <vector>
 
+#include "lib/extras/time.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/status.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/common.h"
@@ -43,15 +34,13 @@
 #include "lib/jxl/jpeg/enc_jpeg_data.h"
 #include "lib/jxl/jpeg/enc_jpeg_data_reader.h"
 #include "lib/jxl/luminance.h"
+#include "lib/jxl/sanitizers.h"
 #if JPEGXL_ENABLE_SJPEG
 #include "sjpeg.h"
 #endif
 
-#ifdef MEMORY_SANITIZER
-#include "sanitizer/msan_interface.h"
-#endif
-
 namespace jxl {
+namespace extras {
 
 #if JPEGXL_ENABLE_JPEG
 namespace {
@@ -95,12 +84,10 @@ Status ReadICCProfile(jpeg_decompress_struct* const cinfo,
   bool has_num_markers = false;
   for (jpeg_saved_marker_ptr marker = cinfo->marker_list; marker != nullptr;
        marker = marker->next) {
-#ifdef MEMORY_SANITIZER
     // marker is initialized by libjpeg, which we are not instrumenting with
     // msan.
-    __msan_unpoison(marker, sizeof(*marker));
-    __msan_unpoison(marker->data, marker->data_length);
-#endif
+    msan::UnpoisonMemory(marker, sizeof(*marker));
+    msan::UnpoisonMemory(marker->data, marker->data_length);
     if (!MarkerIsICC(marker)) continue;
 
     const int current_marker = marker->data[kICCSignatureSize];
@@ -166,12 +153,10 @@ void ReadExif(jpeg_decompress_struct* const cinfo, PaddedBytes* const exif) {
   constexpr size_t kExifSignatureSize = sizeof kExifSignature;
   for (jpeg_saved_marker_ptr marker = cinfo->marker_list; marker != nullptr;
        marker = marker->next) {
-#ifdef MEMORY_SANITIZER
     // marker is initialized by libjpeg, which we are not instrumenting with
     // msan.
-    __msan_unpoison(marker, sizeof(*marker));
-    __msan_unpoison(marker->data, marker->data_length);
-#endif
+    msan::UnpoisonMemory(marker, sizeof(*marker));
+    msan::UnpoisonMemory(marker->data, marker->data_length);
     if (!MarkerIsExif(marker)) continue;
     size_t marker_length = marker->data_length - kExifSignatureSize;
     exif->resize(marker_length);
@@ -251,17 +236,21 @@ void MyOutputMessage(j_common_ptr cinfo) {
 }  // namespace
 #endif  // JPEGXL_ENABLE_JPEG
 
-Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
+Status DecodeImageJPGCoefficients(Span<const uint8_t> bytes, CodecInOut* io) {
+  // Use brunsli JPEG decoder to read quantized coefficients.
+  if (!jpeg::DecodeImageJPG(bytes, io)) {
+    fprintf(stderr, "Corrupt or CMYK JPEG.\n");
+    return false;
+  }
+  return true;
+}
+
+Status DecodeImageJPG(const Span<const uint8_t> bytes,
+                      const ColorHints& color_hints, ThreadPool* pool,
                       CodecInOut* io, double* const elapsed_deinterleave) {
   if (elapsed_deinterleave != nullptr) *elapsed_deinterleave = 0;
   // Don't do anything for non-JPEG files (no need to report an error)
   if (!IsJPG(bytes)) return false;
-  const DecodeTarget target = io->dec_target;
-
-  // Use brunsli JPEG decoder to read quantized coefficients.
-  if (target == DecodeTarget::kQuantizedCoeffs) {
-    return jxl::jpeg::DecodeImageJPG(bytes, io);
-  }
 
 #if JPEGXL_ENABLE_JPEG
   // TODO(veluca): use JPEGData also for pixels?
@@ -276,11 +265,9 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
 
   const auto try_catch_block = [&]() -> bool {
     jpeg_decompress_struct cinfo;
-#ifdef MEMORY_SANITIZER
     // cinfo is initialized by libjpeg, which we are not instrumenting with
     // msan, therefore we need to initialize cinfo here.
-    memset(&cinfo, 0, sizeof(cinfo));
-#endif
+    msan::UnpoisonMemory(&cinfo, sizeof(cinfo));
     // Setup error handling in jpeg library so we can deal with broken jpegs in
     // the fuzzer.
     jpeg_error_mgr jerr;
@@ -299,17 +286,22 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
     jpeg_save_markers(&cinfo, kICCMarker, 0xFFFF);
     jpeg_save_markers(&cinfo, kExifMarker, 0xFFFF);
     jpeg_read_header(&cinfo, TRUE);
-    if (!VerifyDimensions(&io->constraints, cinfo.image_width,
-                          cinfo.image_height)) {
+    const auto failure = [&cinfo](const char* str) -> Status {
       jpeg_abort_decompress(&cinfo);
       jpeg_destroy_decompress(&cinfo);
-      return JXL_FAILURE("image too big");
+      return JXL_FAILURE("%s", str);
+    };
+    if (!VerifyDimensions(&io->constraints, cinfo.image_width,
+                          cinfo.image_height)) {
+      return failure("image too big");
+    }
+    // Might cause CPU-zip bomb.
+    if (cinfo.arith_code) {
+      return failure("arithmetic code JPEGs are not supported");
     }
     if (ReadICCProfile(&cinfo, &icc)) {
       if (!color_encoding.SetICC(std::move(icc))) {
-        jpeg_abort_decompress(&cinfo);
-        jpeg_destroy_decompress(&cinfo);
-        return JXL_FAILURE("read an invalid ICC profile");
+        return failure("read an invalid ICC profile");
       }
     } else {
       color_encoding = ColorEncoding::SRGB(cinfo.output_components == 1);
@@ -319,16 +311,11 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
     io->metadata.m.color_encoding = color_encoding;
     int nbcomp = cinfo.num_components;
     if (nbcomp != 1 && nbcomp != 3) {
-      jpeg_abort_decompress(&cinfo);
-      jpeg_destroy_decompress(&cinfo);
-      return JXL_FAILURE("unsupported number of components (%d) in JPEG",
-                         cinfo.output_components);
+      return failure("unsupported number of components in JPEG");
     }
-    (void)io->dec_hints.Foreach(
-        [](const std::string& key, const std::string& /*value*/) {
-          JXL_WARNING("JPEG decoder ignoring %s hint", key.c_str());
-          return true;
-        });
+    if (!ApplyColorHints(color_hints, /*color_already_set=*/true, false, io)) {
+      return failure("ApplyColorHints failed");
+    }
 
     jpeg_start_decompress(&cinfo);
     JXL_ASSERT(cinfo.output_components == nbcomp);
@@ -337,10 +324,9 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
     for (size_t y = 0; y < image.ysize(); ++y) {
       JSAMPROW rows[] = {row.get()};
       jpeg_read_scanlines(&cinfo, rows, 1);
-#ifdef MEMORY_SANITIZER
-      __msan_unpoison(row.get(), sizeof(JSAMPLE) * cinfo.output_components *
-                                     cinfo.image_width);
-#endif
+      msan::UnpoisonMemory(
+          row.get(),
+          sizeof(JSAMPLE) * cinfo.output_components * cinfo.image_width);
       auto start = Now();
       float* const JXL_RESTRICT output_row[] = {
           image.PlaneRow(0, y), image.PlaneRow(1, y), image.PlaneRow(2, y)};
@@ -370,7 +356,7 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
   };
 
   return try_catch_block();
-#else  // JPEGXL_ENABLE_JPEG
+#else   // JPEGXL_ENABLE_JPEG
   return JXL_FAILURE("JPEG decoding not enabled at build time.");
 #endif  // JPEGXL_ENABLE_JPEG
 }
@@ -381,11 +367,9 @@ Status EncodeWithLibJpeg(const ImageBundle* ib, const CodecInOut* io,
                          const YCbCrChromaSubsampling& chroma_subsampling,
                          PaddedBytes* bytes) {
   jpeg_compress_struct cinfo;
-#ifdef MEMORY_SANITIZER
   // cinfo is initialized by libjpeg, which we are not instrumenting with
   // msan.
-  __msan_unpoison(&cinfo, sizeof(cinfo));
-#endif
+  msan::UnpoisonMemory(&cinfo, sizeof(cinfo));
   jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
@@ -436,11 +420,9 @@ Status EncodeWithLibJpeg(const ImageBundle* ib, const CodecInOut* io,
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
   bytes->resize(size);
-#ifdef MEMORY_SANITIZER
   // Compressed image data is initialized by libjpeg, which we are not
   // instrumenting with msan.
-  __msan_unpoison(buffer, size);
-#endif
+  msan::UnpoisonMemory(buffer, size);
   std::copy_n(buffer, size, bytes->data());
   std::free(buffer);
   return true;
@@ -490,23 +472,22 @@ Status EncodeWithSJpeg(const ImageBundle* ib, size_t quality,
 }
 #endif  // JPEGXL_ENABLE_JPEG
 
+Status EncodeImageJPGCoefficients(const CodecInOut* io, PaddedBytes* bytes) {
+  auto write = [&bytes](const uint8_t* buf, size_t len) {
+    bytes->append(buf, buf + len);
+    return len;
+  };
+  return jpeg::WriteJpeg(*io->Main().jpeg_data, write);
+}
+
 Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
                       YCbCrChromaSubsampling chroma_subsampling,
-                      ThreadPool* pool, PaddedBytes* bytes,
-                      const DecodeTarget target) {
+                      ThreadPool* pool, PaddedBytes* bytes) {
   if (io->Main().HasAlpha()) {
     return JXL_FAILURE("alpha is not supported");
   }
   if (quality > 100) {
     return JXL_FAILURE("please specify a 0-100 JPEG quality");
-  }
-
-  if (target == DecodeTarget::kQuantizedCoeffs) {
-    auto write = [&bytes](const uint8_t* buf, size_t len) {
-      bytes->append(buf, buf + len);
-      return len;
-    };
-    return jpeg::WriteJpeg(*io->Main().jpeg_data, write);
   }
 
 #if JPEGXL_ENABLE_JPEG
@@ -530,9 +511,10 @@ Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
   }
 
   return true;
-#else  // JPEGXL_ENABLE_JPEG
+#else   // JPEGXL_ENABLE_JPEG
   return JXL_FAILURE("JPEG pixel encoding not enabled at build time");
 #endif  // JPEGXL_ENABLE_JPEG
 }
 
+}  // namespace extras
 }  // namespace jxl

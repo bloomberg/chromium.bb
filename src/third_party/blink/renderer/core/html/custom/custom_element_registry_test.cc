@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 
-#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -27,15 +26,15 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
 class CustomElementRegistryTest : public PageTestBase {
  protected:
-  void SetUp() override { PageTestBase::SetUp(IntSize(1, 1)); }
+  void SetUp() override { PageTestBase::SetUp(gfx::Size(1, 1)); }
 
   CustomElementRegistry& Registry() {
     return *GetFrame().DomWindow()->customElements();
@@ -173,6 +172,8 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
                 "attr1", "attr2", html_names::kContenteditableAttr.LocalName(),
             },
             {}) {}
+  LogUpgradeDefinition(const LogUpgradeDefinition&) = delete;
+  LogUpgradeDefinition& operator=(const LogUpgradeDefinition&) = delete;
 
   void Trace(Visitor* visitor) const override {
     TestCustomElementDefinition::Trace(visitor);
@@ -254,8 +255,6 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
     EXPECT_EQ(&element, element_);
     attribute_changed_.push_back(AttributeChanged{name, old_value, new_value});
   }
-
-  DISALLOW_COPY_AND_ASSIGN(LogUpgradeDefinition);
 };
 
 class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
@@ -263,13 +262,13 @@ class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
 
  public:
   LogUpgradeBuilder() = default;
+  LogUpgradeBuilder(const LogUpgradeBuilder&) = delete;
+  LogUpgradeBuilder& operator=(const LogUpgradeBuilder&) = delete;
 
   CustomElementDefinition* Build(const CustomElementDescriptor& descriptor,
                                  CustomElementDefinition::Id) override {
     return MakeGarbageCollected<LogUpgradeDefinition>(descriptor);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(LogUpgradeBuilder);
 };
 
 TEST_F(CustomElementRegistryTest, define_upgradesInDocumentElements) {

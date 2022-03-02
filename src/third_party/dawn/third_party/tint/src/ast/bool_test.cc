@@ -13,30 +13,14 @@
 // limitations under the License.
 
 #include "src/ast/bool.h"
-#include "src/ast/access_control.h"
-#include "src/ast/alias.h"
-#include "src/ast/array.h"
-#include "src/ast/f32.h"
-#include "src/ast/i32.h"
-#include "src/ast/matrix.h"
-#include "src/ast/pointer.h"
-#include "src/ast/sampler.h"
-#include "src/ast/struct.h"
+
 #include "src/ast/test_helper.h"
-#include "src/ast/texture.h"
-#include "src/ast/u32.h"
-#include "src/ast/vector.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
 using AstBoolTest = TestHelper;
-
-TEST_F(AstBoolTest, TypeName) {
-  auto* b = create<Bool>();
-  EXPECT_EQ(b->type_name(), "__bool");
-}
 
 TEST_F(AstBoolTest, FriendlyName) {
   auto* b = create<Bool>();

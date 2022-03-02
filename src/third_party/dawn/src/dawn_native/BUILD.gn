@@ -53,6 +53,17 @@ if (dawn_enable_vulkan) {
       dawn_enable_vulkan_loader && dawn_vulkan_loader_dir != ""
 }
 
+group("dawn_abseil") {
+  # When build_with_chromium=true we need to include "//third_party/abseil-cpp:absl" while
+  # it's beneficial to be more specific with standalone Dawn, especially when it comes to
+  # including it as a dependency in other projects (such as Skia).
+  if (build_with_chromium) {
+    public_deps = [ "$dawn_abseil_dir:absl" ]
+  } else {
+    public_deps = [ "${dawn_root}/third_party/gn/abseil-cpp:str_format" ]
+  }
+}
+
 config("dawn_native_internal") {
   configs = [ "${dawn_root}/src/common:dawn_internal" ]
 
@@ -63,7 +74,7 @@ config("dawn_native_internal") {
   # aren't on 10.11 it means we are on 10.11 and above, and Metal is available.
   # Skipping this check on 10.11 and above is important as it allows getting
   # proper compilation warning when using 10.12 and above feature for example.
-  # TODO(cwallez@chromium.org): Consider using API_AVAILABLE annotations on all
+  # TODO(crbug.com/1004024): Consider using API_AVAILABLE annotations on all
   # metal code in dawn once crbug.com/1004024 is sorted out if Chromium still
   # supports 10.10 then.
   if (is_mac && mac_deployment_target == "10.10.0") {
@@ -94,10 +105,15 @@ dawn_json_generator("dawn_native_utils_gen") {
     "src/dawn_native/ChainUtils_autogen.h",
     "src/dawn_native/ChainUtils_autogen.cpp",
     "src/dawn_native/ProcTable.cpp",
+    "src/dawn_native/dawn_platform_autogen.h",
     "src/dawn_native/wgpu_structs_autogen.h",
     "src/dawn_native/wgpu_structs_autogen.cpp",
     "src/dawn_native/ValidationUtils_autogen.h",
     "src/dawn_native/ValidationUtils_autogen.cpp",
+    "src/dawn_native/webgpu_absl_format_autogen.h",
+    "src/dawn_native/webgpu_absl_format_autogen.cpp",
+    "src/dawn_native/ObjectType_autogen.h",
+    "src/dawn_native/ObjectType_autogen.cpp",
   ]
 }
 
@@ -145,11 +161,13 @@ source_set("dawn_native_sources") {
     ":dawn_native_headers",
     ":dawn_native_utils_gen",
     "${dawn_root}/src/common",
-    "${dawn_root}/third_party/gn/spirv_cross:spirv_cross",
     "${dawn_spirv_tools_dir}:spvtools_opt",
     "${dawn_spirv_tools_dir}:spvtools_val",
     "${dawn_tint_dir}/src:libtint",
   ]
+  if (dawn_use_spirv_cross) {
+    deps += [ "${dawn_root}/third_party/gn/spirv_cross:spirv_cross" ]
+  }
   defines = []
   libs = []
   data_deps = []
@@ -159,12 +177,17 @@ source_set("dawn_native_sources") {
   # Dependencies that are needed to compile dawn_native entry points in
   # FooBackend.cpp need to be public deps so they are propagated to the
   # dawn_native target
-  public_deps = [ "${dawn_root}/src/dawn_platform" ]
+  public_deps = [
+    ":dawn_abseil",
+    "${dawn_root}/src/dawn_platform",
+  ]
 
   sources = get_target_outputs(":dawn_native_utils_gen")
   sources += [
     "Adapter.cpp",
     "Adapter.h",
+    "AsyncTask.cpp",
+    "AsyncTask.h",
     "AttachmentState.cpp",
     "AttachmentState.h",
     "BackendConnection.cpp",
@@ -224,19 +247,24 @@ source_set("dawn_native_sources") {
     "ErrorInjector.h",
     "ErrorScope.cpp",
     "ErrorScope.h",
-    "Extensions.cpp",
-    "Extensions.h",
     "ExternalTexture.cpp",
     "ExternalTexture.h",
-    "Fence.cpp",
-    "Fence.h",
+    "Features.cpp",
+    "Features.h",
     "Format.cpp",
     "Format.h",
     "Forward.h",
+    "IndirectDrawMetadata.cpp",
+    "IndirectDrawMetadata.h",
+    "IndirectDrawValidationEncoder.cpp",
+    "IndirectDrawValidationEncoder.h",
     "Instance.cpp",
     "Instance.h",
     "IntegerTypes.h",
+    "InternalPipelineStore.cpp",
     "InternalPipelineStore.h",
+    "Limits.cpp",
+    "Limits.h",
     "ObjectBase.cpp",
     "ObjectBase.h",
     "ObjectContentHasher.cpp",
@@ -254,8 +282,8 @@ source_set("dawn_native_sources") {
     "PipelineLayout.h",
     "PooledResourceMemoryAllocator.cpp",
     "PooledResourceMemoryAllocator.h",
-    "ProgrammablePassEncoder.cpp",
-    "ProgrammablePassEncoder.h",
+    "ProgrammableEncoder.cpp",
+    "ProgrammableEncoder.h",
     "QueryHelper.cpp",
     "QueryHelper.h",
     "QuerySet.cpp",
@@ -280,10 +308,10 @@ source_set("dawn_native_sources") {
     "RingBufferAllocator.h",
     "Sampler.cpp",
     "Sampler.h",
+    "ScratchBuffer.cpp",
+    "ScratchBuffer.h",
     "ShaderModule.cpp",
     "ShaderModule.h",
-    "SpirvUtils.cpp",
-    "SpirvUtils.h",
     "StagingBuffer.cpp",
     "StagingBuffer.h",
     "Subresource.cpp",
@@ -300,7 +328,11 @@ source_set("dawn_native_sources") {
     "ToBackend.h",
     "Toggles.cpp",
     "Toggles.h",
+    "VertexFormat.cpp",
+    "VertexFormat.h",
     "dawn_platform.h",
+    "utils/WGPUHelpers.cpp",
+    "utils/WGPUHelpers.h",
   ]
 
   if (dawn_use_x11) {
@@ -356,6 +388,8 @@ source_set("dawn_native_sources") {
       "d3d12/CommandRecordingContext.h",
       "d3d12/ComputePipelineD3D12.cpp",
       "d3d12/ComputePipelineD3D12.h",
+      "d3d12/D3D11on12Util.cpp",
+      "d3d12/D3D11on12Util.h",
       "d3d12/D3D12Error.cpp",
       "d3d12/D3D12Error.h",
       "d3d12/D3D12Info.cpp",
@@ -472,6 +506,13 @@ source_set("dawn_native_sources") {
     ]
   }
 
+  if (dawn_enable_opengl || dawn_enable_vulkan) {
+    sources += [
+      "SpirvValidation.cpp",
+      "SpirvValidation.h",
+    ]
+  }
+
   if (dawn_enable_opengl) {
     public_deps += [
       ":dawn_native_opengl_loader_gen",
@@ -518,6 +559,8 @@ source_set("dawn_native_sources") {
       "opengl/SamplerGL.h",
       "opengl/ShaderModuleGL.cpp",
       "opengl/ShaderModuleGL.h",
+      "opengl/SpirvUtils.cpp",
+      "opengl/SpirvUtils.h",
       "opengl/SwapChainGL.cpp",
       "opengl/SwapChainGL.h",
       "opengl/TextureGL.cpp",
@@ -598,12 +641,13 @@ source_set("dawn_native_sources") {
     if (is_chromeos) {
       sources += [
         "vulkan/external_memory/MemoryServiceDmaBuf.cpp",
-        "vulkan/external_semaphore/SemaphoreServiceOpaqueFD.cpp",
+        "vulkan/external_semaphore/SemaphoreServiceFD.cpp",
       ]
+      defines += [ "DAWN_USE_SYNC_FDS" ]
     } else if (is_linux) {
       sources += [
         "vulkan/external_memory/MemoryServiceOpaqueFD.cpp",
-        "vulkan/external_semaphore/SemaphoreServiceOpaqueFD.cpp",
+        "vulkan/external_semaphore/SemaphoreServiceFD.cpp",
       ]
     } else if (is_fuchsia) {
       sources += [
@@ -635,6 +679,7 @@ source_set("dawn_native_sources") {
     }
     if (enable_vulkan_loader) {
       data_deps += [ "${dawn_vulkan_loader_dir}:libvulkan" ]
+      defines += [ "DAWN_ENABLE_VULKAN_LOADER" ]
     }
     if (use_swiftshader) {
       data_deps += [
@@ -700,4 +745,33 @@ dawn_component("dawn_native") {
       }
     }
   }
+}
+
+dawn_json_generator("webgpu_dawn_native_proc_gen") {
+  target = "webgpu_dawn_native_proc"
+  outputs = [ "src/dawn_native/webgpu_dawn_native_proc.cpp" ]
+}
+
+dawn_component("webgpu_dawn") {
+  # For a single library - build `webgpu_dawn_shared` with GN args:
+  #   dawn_complete_static_libs = true - to package a single lib
+  #
+  #   is_debug = false
+  #    - setting this to true makes library over 50Mb
+  #
+  #   use_custom_libcxx = false
+  #    - Otherwise, libc++ symbols may conflict if the
+  #      library is used outside of Chromium.
+  #
+  #   dawn_use_swiftshader = false
+  #   angle_enable_swiftshader = false
+  #    - SwiftShader can't be built without use_custom_libcxx.
+  #      It should be built separately.
+  DEFINE_PREFIX = "WGPU"
+
+  sources = get_target_outputs(":webgpu_dawn_native_proc_gen")
+  deps = [
+    ":dawn_native_static",
+    ":webgpu_dawn_native_proc_gen",
+  ]
 }

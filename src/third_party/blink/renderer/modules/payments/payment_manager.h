@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_MANAGER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_delegation.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -27,6 +26,9 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
 
  public:
   explicit PaymentManager(ServiceWorkerRegistration*);
+
+  PaymentManager(const PaymentManager&) = delete;
+  PaymentManager& operator=(const PaymentManager&) = delete;
 
   PaymentInstruments* instruments();
 
@@ -51,8 +53,6 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   Member<PaymentInstruments> instruments_;
   String user_hint_;
   Member<ScriptPromiseResolver> enable_delegations_resolver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentManager);
 };
 
 }  // namespace blink

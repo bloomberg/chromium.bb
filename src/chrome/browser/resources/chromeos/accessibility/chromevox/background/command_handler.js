@@ -58,7 +58,7 @@ CommandHandler.onCommand = function(command) {
   }
 
   // Check for loss of focus which results in us invalidating our current
-  // range. Note this call is synchronis.
+  // range. Note this call is synchronous.
   chrome.automation.getFocus(function(focusedNode) {
     const cur = ChromeVoxState.instance.currentRange;
     if (cur && !cur.isValid()) {
@@ -66,7 +66,17 @@ CommandHandler.onCommand = function(command) {
           cursors.Range.fromNode(focusedNode));
     }
 
-    if (!focusedNode) {
+    if (!focusedNode ||
+
+        // This case detects when TalkBack (in ARC++) is enabled (which also
+        // covers when the ARC++ window is active). Clear the ChromeVox range so
+        // keys get passed through for ChromeVox commands.
+        (ChromeVoxState.instance.talkBackEnabled &&
+
+         // This additional check is not strictly necessary, but we use it to
+         // ensure we are never inadvertently losing focus. ARC++ windows set
+         // "focus" on a root view.
+         focusedNode.role === RoleType.CLIENT)) {
       ChromeVoxState.instance.setCurrentRange(null);
     }
   });
@@ -366,6 +376,7 @@ CommandHandler.onCommand = function(command) {
   }
 
   let current = ChromeVoxState.instance.currentRange;
+  let node = current.start.node;
 
   // If true, will check if the predicate matches the current node.
   let matchCurrent = false;
@@ -395,6 +406,16 @@ CommandHandler.onCommand = function(command) {
       speechProps['phoneticCharacters'] = true;
       current = current.move(cursors.Unit.CHARACTER, dir);
       break;
+    case 'nativeNextCharacter':
+    case 'nativePreviousCharacter':
+      if (DesktopAutomationHandler.instance.textEditHandler) {
+        DesktopAutomationHandler.instance.textEditHandler.injectInferredIntents(
+            [{
+              command: chrome.automation.IntentCommandType.MOVE_SELECTION,
+              textBoundary: chrome.automation.IntentTextBoundaryType.CHARACTER
+            }]);
+      }
+      return true;
     case 'nextWord':
       shouldSetSelection = true;
       didNavigate = true;
@@ -406,6 +427,16 @@ CommandHandler.onCommand = function(command) {
       didNavigate = true;
       current = current.move(cursors.Unit.WORD, dir);
       break;
+    case 'nativeNextWord':
+    case 'nativePreviousWord':
+      if (DesktopAutomationHandler.instance.textEditHandler) {
+        DesktopAutomationHandler.instance.textEditHandler.injectInferredIntents(
+            [{
+              command: chrome.automation.IntentCommandType.MOVE_SELECTION,
+              textBoundary: chrome.automation.IntentTextBoundaryType.WORD_END
+            }]);
+      }
+      return true;
     case 'forward':
     case 'nextLine':
       didNavigate = true;
@@ -575,16 +606,15 @@ CommandHandler.onCommand = function(command) {
       pred = AutomationPredicate.landmark;
       predErrorMsg = 'no_previous_landmark';
       break;
-    case 'right':
-    case 'nextObject':
-      didNavigate = true;
-      current = current.move(cursors.Unit.NODE, Dir.FORWARD);
-      break;
     case 'left':
     case 'previousObject':
       dir = Dir.BACKWARD;
+      // Falls through.
+    case 'right':
+    case 'nextObject':
       didNavigate = true;
       current = current.move(cursors.Unit.NODE, dir);
+      current = CommandHandler.skipLabelOrDescriptionFor_(current, dir);
       break;
     case 'previousGroup':
       skipSync = true;
@@ -610,7 +640,6 @@ CommandHandler.onCommand = function(command) {
       // Falls through.
     case 'nextSimilarItem': {
       skipSync = true;
-      let node = current.start.node;
       const originalNode = node;
 
       // Scan upwards until we get a role we don't want to ignore.
@@ -620,6 +649,17 @@ CommandHandler.onCommand = function(command) {
 
       const useNode = node || originalNode;
       pred = AutomationPredicate.roles([node.role]);
+    } break;
+    case 'previousInvalidItem': {
+      dir = Dir.BACKWARD;
+      rootPred = AutomationPredicate.root;
+      pred = AutomationPredicate.isInvalid;
+      predErrorMsg = 'no_invalid_item';
+    } break;
+    case 'nextInvalidItem': {
+      pred = AutomationPredicate.isInvalid;
+      rootPred = AutomationPredicate.root;
+      predErrorMsg = 'no_invalid_item';
     } break;
     case 'nextList':
       pred = AutomationPredicate.makeListPredicate(current.start.node);
@@ -686,7 +726,6 @@ CommandHandler.onCommand = function(command) {
       // for that.
       return false;
     case 'jumpToDetails': {
-      let node = current.start.node;
       while (node && !node.details) {
         node = node.parent;
       }
@@ -750,14 +789,7 @@ CommandHandler.onCommand = function(command) {
       }
       return false;
     case 'contextMenu':
-      if (ChromeVoxState.instance.currentRange) {
-        let actionNode = ChromeVoxState.instance.currentRange.start.node;
-        if (actionNode.role === RoleType.INLINE_TEXT_BOX) {
-          actionNode = actionNode.parent;
-        }
-        actionNode.showContextMenu();
-        return false;
-      }
+      EventGenerator.sendKeyPress(KeyCode.APPS);
       break;
     case 'showHeadingsList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
@@ -791,17 +823,33 @@ CommandHandler.onCommand = function(command) {
         return false;
       }
 
+      let firstWindow;
+      let rootViewWindow;
       if (target.root && target.root.role === RoleType.DESKTOP) {
         // Search for the first container with a name.
         while (target && (!target.name || !AutomationPredicate.root(target))) {
           target = target.parent;
         }
       } else {
-        // Search for a window with a title.
-        while (target && (!target.name || target.role !== RoleType.WINDOW)) {
+        // Search for a root window with a title.
+        while (target) {
+          const isNamedWindow =
+              !!target.name && target.role === RoleType.WINDOW;
+          const isRootView = target.className === 'RootView';
+          if (isNamedWindow && !firstWindow) {
+            firstWindow = target;
+          }
+
+          if (isNamedWindow && isRootView) {
+            rootViewWindow = target;
+            break;
+          }
           target = target.parent;
         }
       }
+
+      // Re-target with preference for the root.
+      target = rootViewWindow || firstWindow || target;
 
       if (!target) {
         output.format('@no_title');
@@ -854,6 +902,8 @@ CommandHandler.onCommand = function(command) {
       return false;
     // Table commands.
     case 'previousRow': {
+      skipSync = true;
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       const tableOpts = {row: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
@@ -863,6 +913,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'previousCol': {
+      skipSync = true;
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       const tableOpts = {col: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
@@ -872,6 +924,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'nextRow': {
+      skipSync = true;
+      shouldSetSelection = true;
       const tableOpts = {row: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
@@ -880,6 +934,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'nextCol': {
+      skipSync = true;
+      shouldSetSelection = true;
       const tableOpts = {col: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
@@ -889,7 +945,8 @@ CommandHandler.onCommand = function(command) {
     } break;
     case 'goToRowFirstCell':
     case 'goToRowLastCell': {
-      let node = current.start.node;
+      skipSync = true;
+      shouldSetSelection = true;
       while (node && node.role !== RoleType.ROW) {
         node = node.parent;
       }
@@ -904,7 +961,8 @@ CommandHandler.onCommand = function(command) {
       }
     } break;
     case 'goToColFirstCell': {
-      let node = current.start.node;
+      skipSync = true;
+      shouldSetSelection = true;
       while (node && node.role !== RoleType.TABLE) {
         node = node.parent;
       }
@@ -921,8 +979,9 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'goToColLastCell': {
+      skipSync = true;
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
-      let node = current.start.node;
       while (node && node.role !== RoleType.TABLE) {
         node = node.parent;
       }
@@ -950,7 +1009,8 @@ CommandHandler.onCommand = function(command) {
     } break;
     case 'goToFirstCell':
     case 'goToLastCell': {
-      let node = current.start.node;
+      skipSync = true;
+      shouldSetSelection = true;
       while (node && node.role !== RoleType.TABLE) {
         node = node.parent;
       }
@@ -992,7 +1052,6 @@ CommandHandler.onCommand = function(command) {
       CommandHandler.onCommand(command);
       return false;
     case 'announceRichTextDescription': {
-      const node = ChromeVoxState.instance.currentRange.start.node;
       const optSubs = [];
       node.fontSize ? optSubs.push('font size: ' + node.fontSize) :
                       optSubs.push('');
@@ -1016,7 +1075,6 @@ CommandHandler.onCommand = function(command) {
       return false;
     case 'readPhoneticPronunciation': {
       // Get node info.
-      const node = ChromeVoxState.instance.currentRange.start.node;
       let index = ChromeVoxState.instance.currentRange.start.index;
       const text = node.name;
       // If there is no text to speak, inform the user and return early.
@@ -1062,7 +1120,6 @@ CommandHandler.onCommand = function(command) {
     }
       return false;
     case 'readLinkURL': {
-      let node = ChromeVoxState.instance.currentRange.start.node;
       const rootNode = node.root;
       while (node && !node.url) {
         // URL could be an ancestor of current range.
@@ -1084,7 +1141,6 @@ CommandHandler.onCommand = function(command) {
         return false;
       }
 
-      const node = ChromeVoxState.instance.currentRange.start.node;
       const outString = `
       Language information for node
       Name: ${node.name}
@@ -1257,6 +1313,10 @@ CommandHandler.onCommand = function(command) {
   }
 
   if (current) {
+    if (current.wrapped) {
+      ChromeVox.earcons.playEarcon(Earcon.WRAP);
+    }
+
     ChromeVoxState.instance.navigateToRange(
         current, undefined, speechProps, shouldSetSelection);
   }
@@ -1456,32 +1516,44 @@ CommandHandler.onEditCommand_ = function(command) {
 };
 
 /**
+ * A helper to object navigation to skip all static text nodes who have
+ * label/description for on ancestor nodes.
+ * @param {cursors.Range} current
+ * @param {Dir} dir
+ * @return {cursors.Range} The resulting range.
+ */
+CommandHandler.skipLabelOrDescriptionFor_ = function(current, dir) {
+  if (!current) {
+    return null;
+  }
+
+  // Keep moving past all nodes acting as labels or descriptions.
+  while (current && current.start && current.start.node &&
+         current.start.node.role === RoleType.STATIC_TEXT) {
+    // We must scan upwards as any ancestor might have a label or description.
+    let ancestor = current.start.node;
+    while (ancestor) {
+      if ((ancestor.labelFor && ancestor.labelFor.length > 0) ||
+          (ancestor.descriptionFor && ancestor.descriptionFor.length > 0)) {
+        break;
+      }
+      ancestor = ancestor.parent;
+    }
+    if (ancestor) {
+      current = current.move(cursors.Unit.NODE, dir);
+    } else {
+      break;
+    }
+  }
+
+  return current;
+};
+
+/**
  * Performs global initialization.
  */
 CommandHandler.init = function() {
   ChromeVoxKbHandler.commandHandler = CommandHandler.onCommand;
-  const firstRunOrigin = 'chrome-extension://jdgcneonijmofocbhmijhacgchbihela';
-  chrome.runtime.onMessageExternal.addListener(function(
-      request, sender, sendResponse) {
-    if (sender.origin !== firstRunOrigin) {
-      return;
-    }
-
-    if (request.openTutorial) {
-      let launchTutorial = function(desktop, evt) {
-        desktop.removeEventListener(EventType.FOCUS, launchTutorial, true);
-        CommandHandler.onCommand('help');
-      };
-
-      // Since we get this command early on ChromeVox launch, the first run
-      // UI is not yet shown. Monitor for when first run gets focused, and
-      // show our tutorial.
-      chrome.automation.getDesktop(function(desktop) {
-        launchTutorial = launchTutorial.bind(this, desktop);
-        desktop.addEventListener(EventType.FOCUS, launchTutorial, true);
-      });
-    }
-  });
 
   chrome.commandLinePrivate.hasSwitch(
       'enable-experimental-accessibility-language-detection', (enabled) => {

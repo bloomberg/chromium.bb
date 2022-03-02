@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision_api.h"
@@ -34,6 +33,11 @@ class API_AVAILABLE(macos(10.13)) BarcodeDetectionImplMacVision
 
   explicit BarcodeDetectionImplMacVision(
       mojom::BarcodeDetectorOptionsPtr options);
+
+  BarcodeDetectionImplMacVision(const BarcodeDetectionImplMacVision&) = delete;
+  BarcodeDetectionImplMacVision& operator=(
+      const BarcodeDetectionImplMacVision&) = delete;
+
   ~BarcodeDetectionImplMacVision() override;
 
   void Detect(const SkBitmap& bitmap,
@@ -58,8 +62,6 @@ class API_AVAILABLE(macos(10.13)) BarcodeDetectionImplMacVision
   DetectCallback detected_callback_;
   mojo::SelfOwnedReceiverRef<mojom::BarcodeDetection> receiver_;
   base::WeakPtrFactory<BarcodeDetectionImplMacVision> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(BarcodeDetectionImplMacVision);
 };
 
 }  // namespace shape_detection

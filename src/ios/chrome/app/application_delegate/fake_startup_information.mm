@@ -14,7 +14,9 @@
 @implementation FakeStartupInformation
 
 @synthesize appLaunchTime = _appLaunchTime;
-@synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
+@synthesize didFinishLaunchingTime = _didFinishLaunchingTime;
+@synthesize firstSceneConnectionTime = _firstSceneConnectionTime;
+@synthesize isFirstRun = _isFirstRun;
 @synthesize isColdStart = _isColdStart;
 @synthesize restoreHelper = _restoreHelper;
 

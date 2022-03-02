@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
 #include "ios/web/public/download/download_task_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -44,6 +43,9 @@ enum class DownloadPassKitResult {
 class PassKitTabHelper : public web::WebStateUserData<PassKitTabHelper>,
                          public web::DownloadTaskObserver {
  public:
+  PassKitTabHelper(const PassKitTabHelper&) = delete;
+  PassKitTabHelper& operator=(const PassKitTabHelper&) = delete;
+
   ~PassKitTabHelper() override;
 
   // Creates TabHelper. |delegate| is not retained by TabHelper. |web_state|
@@ -73,8 +75,6 @@ class PassKitTabHelper : public web::WebStateUserData<PassKitTabHelper>,
       tasks_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PassKitTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_DOWNLOAD_PASS_KIT_TAB_HELPER_H_

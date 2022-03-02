@@ -11,8 +11,6 @@
 
 #include "config/aom_config.h"
 
-#include "aom_ports/system_state.h"
-
 #include "av1/encoder/encodemv.h"
 #if !CONFIG_REALTIME_ONLY
 #include "av1/encoder/misc_model_weights.h"
@@ -139,7 +137,6 @@ static AOM_INLINE void keep_one_mv_stat(MV_STATS *mv_stats, const MV *ref_mv,
   const MV lp_diff = use_hp ? truncated_diff : diff;
   const int lp_mv_joint = av1_get_mv_joint(&lp_diff);
 
-  aom_clear_system_state();
   const int mv_joint_rate = get_symbol_cost(joint_cdf, mv_joint);
   const int hp_mv_joint_rate = get_symbol_cost(joint_cdf, hp_mv_joint);
   const int lp_mv_joint_rate = get_symbol_cost(joint_cdf, lp_mv_joint);
@@ -349,7 +346,12 @@ static AOM_INLINE void collect_mv_stats_tile(MV_STATS *mv_stats,
 }
 
 void av1_collect_mv_stats(AV1_COMP *cpi, int current_q) {
-  MV_STATS *mv_stats = &cpi->mv_stats;
+  MV_STATS *mv_stats;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  mv_stats = &cpi->mv_stats;
+#else
+  mv_stats = &cpi->ppi->mv_stats;
+#endif
   const AV1_COMMON *cm = &cpi->common;
   const int tile_cols = cm->tiles.cols;
   const int tile_rows = cm->tiles.rows;
@@ -376,7 +378,6 @@ static AOM_INLINE int get_smart_mv_prec(AV1_COMP *cpi, const MV_STATS *mv_stats,
   const AV1_COMMON *cm = &cpi->common;
   const int order_hint = cpi->common.current_frame.order_hint;
   const int order_diff = order_hint - mv_stats->order;
-  aom_clear_system_state();
   const float area = (float)(cm->width * cm->height);
   float features[MV_PREC_FEATURE_SIZE] = {
     (float)current_q,
@@ -420,8 +421,12 @@ void av1_pick_and_set_high_precision_mv(AV1_COMP *cpi, int qindex) {
   }
 #if !CONFIG_REALTIME_ONLY
   else if (cpi->sf.hl_sf.high_precision_mv_usage == LAST_MV_DATA &&
-           av1_frame_allows_smart_mv(cpi) && cpi->mv_stats.valid) {
+           av1_frame_allows_smart_mv(cpi) && cpi->ppi->mv_stats.valid) {
+#if CONFIG_FRAME_PARALLEL_ENCODE
     use_hp = get_smart_mv_prec(cpi, &cpi->mv_stats, qindex);
+#else
+    use_hp = get_smart_mv_prec(cpi, &cpi->ppi->mv_stats, qindex);
+#endif
   }
 #endif  // !CONFIG_REALTIME_ONLY
 

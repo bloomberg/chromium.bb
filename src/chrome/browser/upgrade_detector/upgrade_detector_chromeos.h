@@ -5,21 +5,17 @@
 #ifndef CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_CHROMEOS_H_
 #define CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_CHROMEOS_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "chrome/browser/upgrade_detector/installed_version_updater_chromeos.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 
 class PrefRegistrySimple;
 namespace base {
 class Clock;
-template <typename T>
-class NoDestructor;
 class TickClock;
 }  // namespace base
 
@@ -27,6 +23,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
                                 public BuildStateObserver,
                                 public chromeos::UpdateEngineClient::Observer {
  public:
+  UpgradeDetectorChromeos(const UpgradeDetectorChromeos&) = delete;
+  UpgradeDetectorChromeos& operator=(const UpgradeDetectorChromeos&) = delete;
+
   ~UpgradeDetectorChromeos() override;
 
   // Register ChromeOS specific Prefs.
@@ -37,8 +36,8 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // UpgradeDetector:
   void Init() override;
   void Shutdown() override;
-  base::TimeDelta GetHighAnnoyanceLevelDelta() override;
-  base::Time GetHighAnnoyanceDeadline() override;
+  base::Time GetAnnoyanceLevelDeadline(
+      UpgradeNotificationAnnoyanceLevel level) override;
   void OverrideHighAnnoyanceDeadline(base::Time deadline) override;
   void ResetOverriddenDeadline() override;
 
@@ -59,24 +58,16 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // Calculates |elevated_deadline_| and |high_deadline_| using either
   // |high_deadline_override_| if it is not null or the threshold values
-  // computed based on the RelaunchNotificationPeriod and RelaunchHeadsUpPeriod
-  // policy settings.
+  // computed based on the RelaunchNotificationPeriod, RelaunchHeadsUpPeriod and
+  // RelaunchWindow policy settings.
   void CalculateDeadlines();
 
-  // Handles a change to the browser.relaunch_heads_up_period or
-  // browser.relaunch_notification Local State preferences. Calls
-  // NotifyUpgrade() if an upgrade is available.
-  void OnRelaunchPrefChanged();
-
   // UpgradeDetector:
-  void OnRelaunchNotificationPeriodPrefChanged() override;
+  void OnMonitoredPrefsChanged() override;
 
   // chromeos::UpdateEngineClient::Observer implementation.
   void UpdateStatusChanged(const update_engine::StatusResult& status) override;
   void OnUpdateOverCellularOneTimePermissionGranted() override;
-
-  // Triggers NotifyOnUpgrade if thresholds have been changed.
-  void OnThresholdPrefChanged();
 
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the
@@ -90,6 +81,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // The time when high annoyance deadline is reached.
   base::Time high_deadline_;
+
+  // The time when grace annoyance deadline is reached.
+  base::Time grace_deadline_;
 
   // The overridden high annoyance deadline which takes priority over
   // |high_deadline_| for showing relaunch notifications.
@@ -109,10 +103,6 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // Indicates whether there is an update in progress.
   bool update_in_progress_;
-
-  base::WeakPtrFactory<UpgradeDetectorChromeos> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorChromeos);
 };
 
 #endif  // CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_CHROMEOS_H_

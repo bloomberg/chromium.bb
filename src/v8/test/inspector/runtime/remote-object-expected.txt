@@ -497,6 +497,18 @@ Running test: testRegExp
         type : object
     }
 }
+'var re = /./dgimsuy;
+        re.toString = () => 'foo';
+        re', returnByValue: false, generatePreview: false
+{
+    result : {
+        className : RegExp
+        description : /./dgimsuy
+        objectId : <objectId>
+        subtype : regexp
+        type : object
+    }
+}
 'var re = new RegExp('\w+', 'g');
         re.prop = 32;
         re', returnByValue: false, generatePreview: true
@@ -507,7 +519,7 @@ Running test: testRegExp
         objectId : <objectId>
         preview : {
             description : /w+/g
-            overflow : false
+            overflow : true
             properties : [
                 [0] : {
                     name : prop
@@ -518,6 +530,21 @@ Running test: testRegExp
                     name : lastIndex
                     type : number
                     value : 0
+                }
+                [2] : {
+                    name : dotAll
+                    type : boolean
+                    value : false
+                }
+                [3] : {
+                    name : flags
+                    type : string
+                    value : g
+                }
+                [4] : {
+                    name : global
+                    type : boolean
+                    value : true
                 }
             ]
             subtype : regexp
@@ -611,6 +638,11 @@ Running test: testMap
             description : Map(0)
             overflow : false
             properties : [
+                [0] : {
+                    name : size
+                    type : number
+                    value : 0
+                }
             ]
             subtype : map
             type : object
@@ -647,6 +679,11 @@ Running test: testMap
             ]
             overflow : false
             properties : [
+                [0] : {
+                    name : size
+                    type : number
+                    value : 1
+                }
             ]
             subtype : map
             type : object
@@ -669,6 +706,11 @@ Running test: testMap
                         description : Map(1)
                         overflow : true
                         properties : [
+                            [0] : {
+                                name : size
+                                type : number
+                                value : 1
+                            }
                         ]
                         subtype : map
                         type : object
@@ -677,6 +719,11 @@ Running test: testMap
                         description : Map(1)
                         overflow : true
                         properties : [
+                            [0] : {
+                                name : size
+                                type : number
+                                value : 1
+                            }
                         ]
                         subtype : map
                         type : object
@@ -685,6 +732,11 @@ Running test: testMap
             ]
             overflow : false
             properties : [
+                [0] : {
+                    name : size
+                    type : number
+                    value : 1
+                }
             ]
             subtype : map
             type : object
@@ -764,6 +816,11 @@ Running test: testMap
                     name : d
                     type : number
                     value : 42
+                }
+                [1] : {
+                    name : size
+                    type : number
+                    value : 1
                 }
             ]
             subtype : map
@@ -954,6 +1011,11 @@ Running test: testSet
             ]
             overflow : false
             properties : [
+                [0] : {
+                    name : size
+                    type : number
+                    value : 1
+                }
             ]
             subtype : set
             type : object
@@ -1027,6 +1089,11 @@ Running test: testSet
             ]
             overflow : true
             properties : [
+                [0] : {
+                    name : size
+                    type : number
+                    value : 7
+                }
             ]
             subtype : set
             type : object
@@ -1157,7 +1224,7 @@ Running test: testWeakMap
                             [0] : {
                                 name : setTimeout
                                 type : function
-                                value : 
+                                value :
                             }
                             [1] : {
                                 name : inspector
@@ -1241,7 +1308,7 @@ Running test: testWeakSet
                             [0] : {
                                 name : setTimeout
                                 type : function
-                                value : 
+                                value :
                             }
                             [1] : {
                                 name : inspector
@@ -1699,7 +1766,7 @@ Running test: testTypedArray
         objectId : <objectId>
         preview : {
             description : Uint8Array(2)
-            overflow : false
+            overflow : true
             properties : [
                 [0] : {
                     name : 0
@@ -1713,6 +1780,27 @@ Running test: testTypedArray
                 }
                 [2] : {
                     name : b
+                    type : number
+                    value : 2
+                }
+                [3] : {
+                    name : buffer
+                    subtype : arraybuffer
+                    type : object
+                    value : ArrayBuffer(2)
+                }
+                [4] : {
+                    name : byteLength
+                    type : number
+                    value : 2
+                }
+                [5] : {
+                    name : byteOffset
+                    type : number
+                    value : 0
+                }
+                [6] : {
+                    name : length
                     type : number
                     value : 2
                 }
@@ -2254,6 +2342,11 @@ Running test: testArrayBuffer
             description : ArrayBuffer(0)
             overflow : false
             properties : [
+                [0] : {
+                    name : byteLength
+                    type : number
+                    value : 0
+                }
             ]
             subtype : arraybuffer
             type : object
@@ -2272,6 +2365,11 @@ Running test: testArrayBuffer
             description : ArrayBuffer(400)
             overflow : false
             properties : [
+                [0] : {
+                    name : byteLength
+                    type : number
+                    value : 400
+                }
             ]
             subtype : arraybuffer
             type : object
@@ -2292,6 +2390,22 @@ Running test: testDataView
             description : DataView(16)
             overflow : false
             properties : [
+                [0] : {
+                    name : buffer
+                    subtype : arraybuffer
+                    type : object
+                    value : ArrayBuffer(16)
+                }
+                [1] : {
+                    name : byteLength
+                    type : number
+                    value : 16
+                }
+                [2] : {
+                    name : byteOffset
+                    type : number
+                    value : 0
+                }
             ]
             subtype : dataview
             type : object
@@ -2310,6 +2424,22 @@ Running test: testDataView
             description : DataView(4)
             overflow : false
             properties : [
+                [0] : {
+                    name : buffer
+                    subtype : arraybuffer
+                    type : object
+                    value : ArrayBuffer(16)
+                }
+                [1] : {
+                    name : byteLength
+                    type : number
+                    value : 4
+                }
+                [2] : {
+                    name : byteOffset
+                    type : number
+                    value : 12
+                }
             ]
             subtype : dataview
             type : object
@@ -2563,7 +2693,7 @@ Running test: testOtherObjects
                     [0] : {
                         name : a
                         type : function
-                        value : 
+                        value :
                     }
                 ]
                 type : object
@@ -2753,12 +2883,12 @@ Running test: testOtherObjects
                     [0] : {
                         name : a1
                         type : function
-                        value : 
+                        value :
                     }
                     [1] : {
                         name : a2
                         type : function
-                        value : 
+                        value :
                     }
                 ]
                 type : object

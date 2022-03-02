@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_WEB_SUB_THREAD_H_
 #define IOS_WEB_WEB_SUB_THREAD_H_
 
-#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -21,6 +20,10 @@ class WebSubThread : public base::Thread {
  public:
   // Constructs a WebSubThread for |identifier|.
   explicit WebSubThread(WebThread::ID identifier);
+
+  WebSubThread(const WebSubThread&) = delete;
+  WebSubThread& operator=(const WebSubThread&) = delete;
+
   ~WebSubThread() override;
 
   // Registers this thread to represent |identifier_| in the web_thread.h
@@ -65,8 +68,6 @@ class WebSubThread : public base::Thread {
   std::unique_ptr<WebThreadImpl> web_thread_;
 
   THREAD_CHECKER(web_thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(WebSubThread);
 };
 
 }  // namespace web

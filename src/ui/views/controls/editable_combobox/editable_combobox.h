@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -76,6 +76,9 @@ class VIEWS_EXPORT EditableCombobox
                             int text_context = kDefaultTextContext,
                             int text_style = kDefaultTextStyle,
                             bool display_arrow = true);
+
+  EditableCombobox(const EditableCombobox&) = delete;
+  EditableCombobox& operator=(const EditableCombobox&) = delete;
 
   ~EditableCombobox() override;
 
@@ -151,8 +154,8 @@ class VIEWS_EXPORT EditableCombobox
   void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
                                   bool is_animating) override;
 
-  Textfield* textfield_;
-  Button* arrow_ = nullptr;
+  raw_ptr<Textfield> textfield_;
+  raw_ptr<Button> arrow_ = nullptr;
   std::unique_ptr<ui::ComboboxModel> combobox_model_;
 
   // The EditableComboboxMenuModel used by |menu_runner_|.
@@ -191,8 +194,6 @@ class VIEWS_EXPORT EditableCombobox
   bool dropdown_blocked_for_animation_ = false;
 
   base::ScopedObservation<View, ViewObserver> observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EditableCombobox);
 };
 
 }  // namespace views

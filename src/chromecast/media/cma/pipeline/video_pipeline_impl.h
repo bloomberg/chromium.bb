@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
@@ -29,6 +28,10 @@ class VideoPipelineImpl : public AvPipelineImpl {
  public:
   VideoPipelineImpl(CmaBackend::VideoDecoder* decoder,
                     VideoPipelineClient client);
+
+  VideoPipelineImpl(const VideoPipelineImpl&) = delete;
+  VideoPipelineImpl& operator=(const VideoPipelineImpl&) = delete;
+
   ~VideoPipelineImpl() override;
 
   ::media::PipelineStatus Initialize(
@@ -50,8 +53,6 @@ class VideoPipelineImpl : public AvPipelineImpl {
   CmaBackend::VideoDecoder* const video_decoder_;
   const VideoPipelineClient::NaturalSizeChangedCB natural_size_changed_cb_;
   std::vector<EncryptionScheme> encryption_schemes_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoPipelineImpl);
 };
 
 }  // namespace media

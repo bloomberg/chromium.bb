@@ -4,7 +4,7 @@ This directory contains chromium project documentation in
 [Gitiles-flavored Markdown].  It is automatically [rendered by Gitiles].
 
 [Gitiles-flavored Markdown]: https://gerrit.googlesource.com/gitiles/+/master/Documentation/markdown.md
-[rendered by Gitiles]: https://chromium.googlesource.com/chromium/src/+/master/docs/
+[rendered by Gitiles]: https://chromium.googlesource.com/chromium/src/+/main/docs/
 
 If you add new documents, please also add a link to them in the Document Index
 below.
@@ -134,7 +134,6 @@ used when committed.
     Visualizing view trees during debugging
 *   [Bitmap Pipeline](bitmap_pipeline.md) - How bitmaps are moved from the
     renderer to the screen.
-*   [base::Optional](optional.md) - How to use `base::Optional` in C++ code.
 *   [Using the Origin Trials Framework](origin_trials_integration.md) - A
     framework for conditionally enabling experimental APIs for testing.
 *   [`ClientTagBasedModelTypeProcessor` in Unified Sync and Storage](sync/uss/client_tag_based_model_type_processor.md) -
@@ -181,7 +180,7 @@ used when committed.
 *   [Using Crashpad with `content_shell`](testing/using_crashpad_with_content_shell.md) -
     Capture stack traces on layout test crashes without an attached debugger
 *   [Test Descriptions](testing/test_descriptions.md) - Unit test targets that can be
-    built, with associated desciptions.
+    built, with associated descriptions.
 *   [Fuzz Testing](../testing/libfuzzer/README.md) - Fuzz testing in Chromium.
 *   [IPC Fuzzer](testing/ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
 *   [Running Chrome tests with AddressSanitizer (asan) and LeakSanitizer (lsan)](testing/linux_running_asan_tests.md) -
@@ -204,7 +203,7 @@ used when committed.
 *   [Linux Proxy Config](linux/proxy_config.md) - Network proxy sources on Linux
 *   [Debugging SSL on Linux](linux/debugging_ssl.md) - Tips on debugging SSL
     code in Linux
-*   [Linux Cert Managment](linux/cert_management.md) - Managing X.509
+*   [Linux Cert Management](linux/cert_management.md) - Managing X.509
     Certificates in Linux
 *   [Tips for Debugging on Linux](linux/debugging.md)
 *   [Linux GTK Theme Integration](linux/gtk_theme_integration.md) - Having
@@ -279,18 +278,13 @@ used when committed.
     how to debug Java and/or C/C++ code running on Android.
 *   [Android Logging](android_logging.md) - How Chrome's logging API works with
     `android.util.Log` on Android, and usage guidelines.
-*   [Chromoting Android Hacking](chromoting_android_hacking.md) - Viewing the
-    logs and debugging the Chrome Remote Desktop Android client.
 *   [Android Java Static Analysis](../build/android/docs/lint.md) - Catching
     Java related issues at compile time with the 'lint' tool.
 *   [Java Code Coverage](../build/android/docs/coverage.md) - Collecting code
     coverage data with the EMMA tool.
-*   [Android BuildConfig files](../build/android/docs/build_config.md) -
-    What are .build_config files and how they are used.
-*   [Android App Bundles](../build/android/docs/android_app_bundles.md) -
-    How to build Android app bundles for Chrome.
-*   [Dynamic Feature Modules (DFMs)](android_dynamic_feature_modules.md) - How
-    to create dynamic feature modules.
+*   [Dynamic Feature Modules (DFMs)](android_dynamic_feature_modules.md) - What
+    are they and how to create new ones.
+*   [Other build-related Android docs](../build/android/docs/index.md)
 *   [Chrome for Android UI](ui/android/overview.md) - Resources and best practices for
     developing UI
 
@@ -347,7 +341,7 @@ used when committed.
 *   [BRLTTY in Chrome OS](accessibility/brltty.md) - Chrome OS integration with
     BRLTTY to support refreshable braille displays
 *   [PATTS on Chrome OS](accessibility/patts.md) - Notes on the PATTS speech
-    sythesis engine used on Chrome OS
+    synthesis engine used on Chrome OS
 *   [VoiceOver](ios/voiceover.md) - Using Apple's VoiceOver feature with
     Chromium on iOS.
 
@@ -422,6 +416,5 @@ used when committed.
 *   [Linux PID Namespace Support](linux/pid_namespace_support.md)
 *   [Vanilla msysgit workflow](vanilla_msysgit_workflow.md) - A workflow for
     using mostly vanilla git on Windows.
-*   [Old Chromoting Build Instructions](old_chromoting_build_instructions.md)
 *   [Old Options](chrome_settings.md) - Pre-Material Design chrome://settings
     notes.

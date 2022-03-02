@@ -91,7 +91,7 @@ void ThemeSource::StartDataRequest(
   if (IsNewTabCssPath(parsed_path)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     NTPResourceCache::WindowType type =
-        NTPResourceCache::GetWindowType(profile_, /*render_host=*/nullptr);
+        NTPResourceCache::GetWindowType(profile_);
     NTPResourceCache* cache = NTPResourceCacheFactory::GetForProfile(profile_);
     std::move(callback).Run(cache->GetNewTabCSS(type, wc_getter));
     return;
@@ -134,8 +134,8 @@ void ThemeSource::StartDataRequest(
   // We don't want to clamp to the max scale factor, though, for devices that
   // use 2x scale without 2x data packs, as well as omnibox requests for larger
   // (but still reasonable) scales (see below).
-  const float max_scale = ui::GetScaleForScaleFactor(
-      ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
+  const float max_scale = ui::GetScaleForResourceScaleFactor(
+      ui::ResourceBundle::GetSharedInstance().GetMaxResourceScaleFactor());
   const float unreasonable_scale = max_scale * 32;
   // TODO(reveman): Add support frames beyond 0 (crbug.com/750064).
   if ((resource_id == -1) || (scale >= unreasonable_scale) || (frame > 0)) {
@@ -184,7 +184,8 @@ void ThemeSource::SendThemeBitmap(
     content::URLDataSource::GotDataCallback callback,
     int resource_id,
     float scale) {
-  ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
+  ui::ResourceScaleFactor scale_factor =
+      ui::GetSupportedResourceScaleFactor(scale);
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
     scoped_refptr<base::RefCountedMemory> image_data(
         ThemeService::GetThemeProviderForProfile(profile_->GetOriginalProfile())

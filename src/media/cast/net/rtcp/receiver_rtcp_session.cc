@@ -43,7 +43,7 @@ bool ReceiverRtcpSession::IncomingRtcpPacket(const uint8_t* data,
   }
 
   // Parse this packet.
-  base::BigEndianReader reader(reinterpret_cast<const char*>(data), length);
+  base::BigEndianReader reader(data, length);
   if (parser_.Parse(&reader)) {
     if (parser_.has_sender_report()) {
       OnReceivedNtp(parser_.sender_report().ntp_seconds,
@@ -109,8 +109,7 @@ bool ReceiverRtcpSession::GetLatestLipSyncTimes(
       local_clock_ahead_by_.Current();
 
   // Sanity-check: Getting regular lip sync updates?
-  DCHECK((clock_->NowTicks() - local_reference_time) <
-         base::TimeDelta::FromMinutes(1));
+  DCHECK((clock_->NowTicks() - local_reference_time) < base::Minutes(1));
 
   *rtp_timestamp = lip_sync_rtp_timestamp_;
   *reference_time = local_reference_time;

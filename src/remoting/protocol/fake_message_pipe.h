@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/queue.h"
+#include "base/memory/raw_ptr.h"
 #include "remoting/protocol/message_pipe.h"
 
 namespace google {
@@ -53,6 +54,8 @@ class FakeMessagePipe final : public MessagePipe {
   // Returns all messages sent using Send().
   const base::queue<std::string>& sent_messages() { return sent_messages_; }
 
+  bool pipe_opened() const { return pipe_opened_; }
+
  private:
   void SendImpl(google::protobuf::MessageLite* message, base::OnceClosure done);
   void ReceiveImpl(std::unique_ptr<CompoundBuffer> message);
@@ -61,7 +64,7 @@ class FakeMessagePipe final : public MessagePipe {
 
   const bool asynchronous_;
   bool pipe_opened_ = false;
-  EventHandler* event_handler_ = nullptr;
+  raw_ptr<EventHandler> event_handler_ = nullptr;
   base::queue<std::string> sent_messages_;
 };
 

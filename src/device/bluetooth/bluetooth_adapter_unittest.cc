@@ -48,6 +48,11 @@
 #include "device/bluetooth/test/bluetooth_test_fuchsia.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
+#include "device/bluetooth/bluetooth_low_energy_scan_session.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
 using device::BluetoothDevice;
 
 namespace device {
@@ -133,11 +138,23 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
     return nullptr;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetServiceAllowList(const UUIDList& uuids,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) override {}
-#endif
+
+  LowEnergyScanSessionHardwareOffloadingStatus
+  GetLowEnergyScanSessionHardwareOffloadingStatus() override {
+    return LowEnergyScanSessionHardwareOffloadingStatus::kNotSupported;
+  }
+
+  std::unique_ptr<BluetoothLowEnergyScanSession> StartLowEnergyScanSession(
+      std::unique_ptr<BluetoothLowEnergyScanFilter> filter,
+      base::WeakPtr<BluetoothLowEnergyScanSession::Delegate> delegate)
+      override {
+    return nullptr;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   void OnStartDiscoverySessionQuitLoop(
       base::OnceClosure run_loop_quit,
@@ -198,6 +215,7 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
         base::BarrierClosure(num_requests, std::move(run_loop_quit));
     for (int i = 0; i < num_requests; ++i) {
       StartDiscoverySession(
+          /*client_name=*/std::string(),
           base::BindLambdaForTesting(
               [closure, this](std::unique_ptr<device::BluetoothDiscoverySession>
                                   discovery_session) {
@@ -214,6 +232,7 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
       base::OnceClosure run_loop_quit) {
     StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
+        /*client_name=*/std::string(),
         base::BindOnce(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop,
                        this, std::move(run_loop_quit)),
         base::DoNothing());
@@ -661,6 +680,7 @@ TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
 TEST_F(BluetoothAdapterTest, StartDiscoverySession_Destroy) {
   base::RunLoop loop;
   adapter_->StartDiscoverySession(
+      /*client_name=*/std::string(),
       base::BindLambdaForTesting(
           [&](std::unique_ptr<BluetoothDiscoverySession> session) {
             adapter_.reset();
@@ -674,7 +694,8 @@ TEST_F(BluetoothAdapterTest, StartDiscoverySessionError_Destroy) {
   base::RunLoop loop;
   adapter_->set_discovery_session_outcome(
       UMABluetoothDiscoverySessionOutcome::FAILED);
-  adapter_->StartDiscoverySession(base::DoNothing(),
+  adapter_->StartDiscoverySession(/*client_name=*/std::string(),
+                                  base::DoNothing(),
                                   base::BindLambdaForTesting([&]() {
                                     adapter_.reset();
                                     loop.Quit();
@@ -1460,8 +1481,8 @@ TEST_F(BluetoothTest, MAYBE_TurnOffAdapterWithConnectedDevice) {
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
 
-  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
-                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  device->CreateGattConnection(
+      GetGattConnectionCallback(Call::EXPECTED, Result::SUCCESS));
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
 
@@ -1913,8 +1934,8 @@ TEST_F(BluetoothTest, MAYBE_RemoveOutdatedDeviceGattConnect) {
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
   device->SetAsExpiredForTesting();
-  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
-                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  device->CreateGattConnection(
+      GetGattConnectionCallback(Call::EXPECTED, Result::SUCCESS));
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, adapter_->GetDevices().size());

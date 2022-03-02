@@ -66,11 +66,20 @@ struct RefreshResponseData {
   // Server-defined request schedule, if provided.
   absl::optional<RequestSchedule> request_schedule;
 
+  // Server-defined content lifetime, if provided.
+  absl::optional<feedstore::Metadata::StreamMetadata::ContentLifetime>
+      content_lifetime;
+
   // Server-defined session id token, if provided.
   absl::optional<std::string> session_id;
 
   // List of experiments from the server, if provided.
   absl::optional<Experiments> experiments;
+
+  // Server-reported network timestamps (nanoseconds). They can be compared to
+  // each other but not to client timestamps.
+  int64_t server_request_received_timestamp_ns;
+  int64_t server_response_sent_timestamp_ns;
 };
 
 absl::optional<feedstore::DataOperation> TranslateDataOperation(

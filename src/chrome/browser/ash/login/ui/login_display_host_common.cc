@@ -5,12 +5,15 @@
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
@@ -21,15 +24,13 @@
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/login_feedback.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
-#include "chrome/browser/ash/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
@@ -37,7 +38,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/locale_switch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/management_transition_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -45,12 +48,12 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/mojom/feature_session_type.mojom.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 // The delay of triggering initialization of the device policy subsystem
@@ -68,13 +71,13 @@ void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
   }
 }
 
-void PushFrontImIfNotExists(const std::string& input_method,
-                            std::vector<std::string>* input_methods) {
-  if (input_method.empty())
+void PushFrontImIfNotExists(const std::string& input_method_id,
+                            std::vector<std::string>* input_method_ids) {
+  if (input_method_id.empty())
     return;
 
-  if (!base::Contains(*input_methods, input_method))
-    input_methods->insert(input_methods->begin(), input_method);
+  if (!base::Contains(*input_method_ids, input_method_id))
+    input_method_ids->insert(input_method_ids->begin(), input_method_id);
 }
 
 void SetGaiaInputMethods(const AccountId& account_id) {
@@ -92,28 +95,32 @@ void SetGaiaInputMethods(const AccountId& account_id) {
                                           true /*honor_device_policy*/);
   } else {
     lock_screen_utils::EnforceDevicePolicyInputMethods(std::string());
-    std::vector<std::string> input_methods;
-    if (gaia_ime_state->GetAllowedInputMethods().empty()) {
-      input_methods =
+    std::vector<std::string> input_method_ids;
+    if (gaia_ime_state->GetAllowedInputMethodIds().empty()) {
+      input_method_ids =
           imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
     } else {
-      input_methods = gaia_ime_state->GetAllowedInputMethods();
+      input_method_ids = gaia_ime_state->GetAllowedInputMethodIds();
     }
-    const std::string owner_im = lock_screen_utils::GetUserLastInputMethod(
-        user_manager::UserManager::Get()->GetOwnerAccountId());
-    const std::string system_im = g_browser_process->local_state()->GetString(
-        language_prefs::kPreferredKeyboardLayout);
+    const std::string owner_input_method_id =
+        lock_screen_utils::GetUserLastInputMethodId(
+            user_manager::UserManager::Get()->GetOwnerAccountId());
+    const std::string system_input_method_id =
+        g_browser_process->local_state()->GetString(
+            language_prefs::kPreferredKeyboardLayout);
 
-    PushFrontImIfNotExists(owner_im, &input_methods);
-    PushFrontImIfNotExists(system_im, &input_methods);
+    PushFrontImIfNotExists(owner_input_method_id, &input_method_ids);
+    PushFrontImIfNotExists(system_input_method_id, &input_method_ids);
 
     gaia_ime_state->EnableLoginLayouts(
-        g_browser_process->GetApplicationLocale(), input_methods);
+        g_browser_process->GetApplicationLocale(), input_method_ids);
 
-    if (!system_im.empty()) {
-      gaia_ime_state->ChangeInputMethod(system_im, false /* show_message */);
-    } else if (!owner_im.empty()) {
-      gaia_ime_state->ChangeInputMethod(owner_im, false /* show_message */);
+    if (!system_input_method_id.empty()) {
+      gaia_ime_state->ChangeInputMethod(system_input_method_id,
+                                        false /* show_message */);
+    } else if (!owner_input_method_id.empty()) {
+      gaia_ime_state->ChangeInputMethod(owner_input_method_id,
+                                        false /* show_message */);
     }
   }
 }
@@ -129,13 +136,13 @@ int ErrorToMessageId(SigninError error) {
       return IDS_LOGIN_ERROR_OWNER_REQUIRED;
     case SigninError::kTpmUpdateRequired:
       return IDS_LOGIN_ERROR_TPM_UPDATE_REQUIRED;
-    case SigninError::kAuthenticationError:
+    case SigninError::kKnownUserFailedNetworkNotConnected:
       return IDS_LOGIN_ERROR_AUTHENTICATING;
-    case SigninError::kOfflineFailedNetworkNotConnected:
+    case SigninError::kNewUserFailedNetworkNotConnected:
       return IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED;
-    case SigninError::kAuthenticatingNew:
+    case SigninError::kNewUserFailedNetworkConnected:
       return IDS_LOGIN_ERROR_AUTHENTICATING_NEW;
-    case SigninError::kAuthenticating:
+    case SigninError::kKnownUserFailedNetworkConnected:
       return IDS_LOGIN_ERROR_AUTHENTICATING;
     case SigninError::kOwnerKeyLost:
       return IDS_LOGIN_ERROR_OWNER_KEY_LOST;
@@ -158,17 +165,18 @@ int ErrorToMessageId(SigninError error) {
 
 bool IsAuthError(SigninError error) {
   return error == SigninError::kCaptivePortalError ||
-         error == SigninError::kAuthenticationError ||
-         error == SigninError::kOfflineFailedNetworkNotConnected ||
-         error == SigninError::kAuthenticatingNew ||
-         error == SigninError::kAuthenticating;
+         error == SigninError::kKnownUserFailedNetworkNotConnected ||
+         error == SigninError::kNewUserFailedNetworkNotConnected ||
+         error == SigninError::kNewUserFailedNetworkConnected ||
+         error == SigninError::kKnownUserFailedNetworkConnected;
 }
 
 }  // namespace
 
 LoginDisplayHostCommon::LoginDisplayHostCommon()
     : keep_alive_(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
-                  KeepAliveRestartOption::DISABLED) {
+                  KeepAliveRestartOption::DISABLED),
+      wizard_context_(std::make_unique<WizardContext>()) {
   // Close the login screen on NOTIFICATION_APP_TERMINATING (for the case where
   // shutdown occurs before login completes).
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
@@ -229,8 +237,8 @@ void LoginDisplayHostCommon::StartSignInScreen() {
   }
 
   // Initiate device policy fetching.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   connector->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
 
@@ -295,9 +303,9 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
 }
 
 void LoginDisplayHostCommon::AttemptShowEnableConsumerKioskScreen() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged() &&
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  if (!connector->IsDeviceEnterpriseManaged() &&
       KioskAppManager::IsConsumerKioskEnabled()) {
     ShowEnableConsumerKioskScreen();
   }
@@ -367,10 +375,8 @@ void LoginDisplayHostCommon::ResyncUserData() {
     GetExistingUserController()->ResyncUserData();
 }
 
-bool LoginDisplayHostCommon::HandleAccelerator(
-    ash::LoginAcceleratorAction action) {
-  DCHECK(GetOobeUI());
-  if (action == ash::LoginAcceleratorAction::kShowFeedback) {
+bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
+  if (action == LoginAcceleratorAction::kShowFeedback) {
     login_feedback_ = std::make_unique<LoginFeedback>(
         ProfileHelper::Get()->GetSigninProfile());
     login_feedback_->Request(
@@ -380,8 +386,8 @@ bool LoginDisplayHostCommon::HandleAccelerator(
     return true;
   }
 
-  if (action == ash::LoginAcceleratorAction::kLaunchDiagnostics &&
-      base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp)) {
+  if (action == LoginAcceleratorAction::kLaunchDiagnostics &&
+      base::FeatureList::IsEnabled(features::kDiagnosticsApp)) {
     // Don't handle this action if device is disabled.
     if (system::DeviceDisablingManager::
             IsDeviceDisabledDuringNormalOperation()) {
@@ -391,37 +397,64 @@ bool LoginDisplayHostCommon::HandleAccelerator(
     return true;
   }
 
-  if (GetWizardController() && GetWizardController()->is_initialized()) {
-    if (GetWizardController()->HandleAccelerator(action))
-      return true;
+  // This path should only handle screen-specific acceletators, so we do not
+  // need to create WebUI here.
+  if (IsWizardControllerCreated() &&
+      GetWizardController()->HandleAccelerator(action)) {
+    return true;
   }
-  // TODO(crbug.com/1102393): Remove once all accelerators handling is migrated
-  // to browser side.
-  GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
+  // There are currently no global accelerators for the lock screen that
+  // require WebUI. So we do not need to specifically load it when user is
+  // logged in.
+  if (GetOobeUI() || (!MapToWebUIAccelerator(action).empty() &&
+                      !user_manager::UserManager::Get()->IsUserLoggedIn())) {
+    // Ensure WebUI is loaded.
+    GetWizardController();
+    // TODO(crbug.com/1102393): Remove once all accelerators handling is
+    // migrated to browser side.
+    GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
+  }
   return true;
 }
 
-SigninUI* LoginDisplayHostCommon::GetSigninUI() {
-  if (!GetWizardController())
-    return nullptr;
-  return this;
+void LoginDisplayHostCommon::SetScreenAfterManagedTos(OobeScreenId screen_id) {
+  // If user stopped onboarding flow on TermsOfServiceScreen make sure that
+  // next screen will be FamilyLinkNoticeView::kScreenId.
+  if (screen_id == TermsOfServiceScreenView::kScreenId)
+    screen_id = FamilyLinkNoticeView::kScreenId;
+  wizard_context_->screen_after_managed_tos = screen_id;
 }
 
 void LoginDisplayHostCommon::StartUserOnboarding() {
   StartWizard(LocaleSwitchView::kScreenId);
 }
 
+void LoginDisplayHostCommon::ResumeUserOnboarding(OobeScreenId screen_id) {
+  SetScreenAfterManagedTos(screen_id);
+  // Try to show TermsOfServiceScreen first
+  StartWizard(TermsOfServiceScreenView::kScreenId);
+}
+
 void LoginDisplayHostCommon::StartManagementTransition() {
   StartWizard(ManagementTransitionScreenView::kScreenId);
+}
+
+void LoginDisplayHostCommon::ShowTosForExistingUser() {
+  SetScreenAfterManagedTos(OobeScreen::SCREEN_UNKNOWN);
+  StartUserOnboarding();
 }
 
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
   if (PinSetupScreen::ShouldSkipBecauseOfPolicy())
     return;
-  // WizardController may not be initialized in the WebUI login display host.
-  if (GetWizardController())
-    GetWizardController()->SetAuthSessionForOnboarding(user_context);
+
+  wizard_context_->extra_factors_auth_session =
+      std::make_unique<UserContext>(user_context);
+}
+
+void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
+  wizard_context_->extra_factors_auth_session.reset();
 }
 
 void LoginDisplayHostCommon::StartEncryptionMigration(
@@ -441,10 +474,15 @@ void LoginDisplayHostCommon::StartEncryptionMigration(
 }
 
 void LoginDisplayHostCommon::ShowSigninError(SigninError error,
-                                             const std::string& details,
-                                             int login_attempts) {
-  VLOG(1) << "Show error, error_id: " << static_cast<int>(error)
-          << ", attempts:" << login_attempts;
+                                             const std::string& details) {
+  VLOG(1) << "Show error, error_id: " << static_cast<int>(error);
+
+  if (error == SigninError::kKnownUserFailedNetworkNotConnected ||
+      error == SigninError::kKnownUserFailedNetworkConnected) {
+    if (!IsOobeUIDialogVisible())
+      // Handled by Views UI.
+      return;
+  }
 
   std::string error_text;
   switch (error) {
@@ -465,21 +503,23 @@ void LoginDisplayHostCommon::ShowSigninError(SigninError error,
   if (IsAuthError(error)) {
     input_method::InputMethodManager* ime_manager =
         input_method::InputMethodManager::Get();
-    // Display a hint to switch keyboards if there are other active input
+    // Display a hint to switch keyboards if there are other enabled input
     // methods.
-    if (ime_manager->GetActiveIMEState()->GetNumActiveInputMethods() > 1) {
+    if (ime_manager->GetActiveIMEState()->GetNumEnabledInputMethods() > 1) {
       keyboard_hint =
           l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
     }
   }
 
-  std::string help_link_text;
-  if (login_attempts > 1)
-    help_link_text = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
+  std::string help_link_text = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
 
   GetWizardController()->GetScreen<SignInFatalErrorScreen>()->SetCustomError(
       error_text, keyboard_hint, details, help_link_text);
-  GetWizardController()->AdvanceToScreen(SignInFatalErrorView::kScreenId);
+  StartWizard(SignInFatalErrorView::kScreenId);
+}
+
+WizardContext* LoginDisplayHostCommon::GetWizardContextForTesting() {
+  return GetWizardContext();
 }
 
 void LoginDisplayHostCommon::OnBrowserAdded(Browser* browser) {
@@ -502,6 +542,10 @@ void LoginDisplayHostCommon::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_TERMINATING)
     ShutdownDisplayHost();
+}
+
+WizardContext* LoginDisplayHostCommon::GetWizardContext() {
+  return wizard_context_.get();
 }
 
 void LoginDisplayHostCommon::OnCancelPasswordChangedFlow() {
@@ -532,8 +576,6 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     LoadSigninWallpaper();
   }
 
-  DCHECK(GetWizardController());
-
   SetGaiaInputMethods(prefilled_account);
 
   if (!prefilled_account.is_valid()) {
@@ -543,6 +585,17 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     gaia_screen->LoadOnline(prefilled_account);
     StartWizard(GaiaView::kScreenId);
   }
+}
+
+void LoginDisplayHostCommon::AddWizardCreatedObserverForTests(
+    base::RepeatingClosure on_created) {
+  DCHECK(!on_wizard_controller_created_for_tests_);
+  on_wizard_controller_created_for_tests_ = std::move(on_created);
+}
+
+void LoginDisplayHostCommon::NotifyWizardCreated() {
+  if (on_wizard_controller_created_for_tests_)
+    on_wizard_controller_created_for_tests_.Run();
 }
 
 void LoginDisplayHostCommon::Cleanup() {
@@ -555,4 +608,4 @@ void LoginDisplayHostCommon::OnFeedbackFinished() {
   login_feedback_.reset();
 }
 
-}  // namespace chromeos
+}  // namespace ash

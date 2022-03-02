@@ -5,9 +5,7 @@
 #include "chrome/browser/metrics/family_user_metrics_provider.h"
 
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/child_accounts/family_features.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/guest_session_mixin.h"
@@ -34,16 +32,16 @@ namespace {
 constexpr char kSecondaryEDUEmail[] = "testuser1@managedchrome.com";
 
 // Returns the user type for the primary test account for logging in.
-chromeos::LoggedInUserMixin::LogInType GetPrimaryLogInType(
+ash::LoggedInUserMixin::LogInType GetPrimaryLogInType(
     FamilyUserMetricsProvider::FamilyUserLogSegment log_segment) {
   switch (log_segment) {
     case FamilyUserMetricsProvider::FamilyUserLogSegment::kSupervisedUser:
     case FamilyUserMetricsProvider::FamilyUserLogSegment::kSupervisedStudent:
-      return chromeos::LoggedInUserMixin::LogInType::kChild;
+      return ash::LoggedInUserMixin::LogInType::kChild;
     case FamilyUserMetricsProvider::FamilyUserLogSegment::kStudentAtHome:
     case FamilyUserMetricsProvider::FamilyUserLogSegment::kRegularUser:
     case FamilyUserMetricsProvider::FamilyUserLogSegment::kOther:
-      return chromeos::LoggedInUserMixin::LogInType::kRegular;
+      return ash::LoggedInUserMixin::LogInType::kRegular;
   }
 }
 
@@ -60,8 +58,8 @@ absl::optional<AccountId> GetPrimaryAccountId(
     // kStudentAtHome is the only one with an enterprise managed primary
     // account.
     return AccountId::FromUserEmailGaiaId(
-        chromeos::FakeGaiaMixin::kEnterpriseUser1,
-        chromeos::FakeGaiaMixin::kEnterpriseUser1GaiaId);
+        ash::FakeGaiaMixin::kEnterpriseUser1,
+        ash::FakeGaiaMixin::kEnterpriseUser1GaiaId);
   }
   // Use the default FakeGaiaMixin::kFakeUserEmail consumer test account id.
   return absl::nullopt;
@@ -88,10 +86,6 @@ class FamilyUserMetricsProviderTest
       public testing::WithParamInterface<
           FamilyUserMetricsProvider::FamilyUserLogSegment> {
  public:
-  FamilyUserMetricsProviderTest() {
-    scoped_feature_list_.InitAndEnableFeature(ash::kFamilyUserMetricsProvider);
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
@@ -110,7 +104,7 @@ class FamilyUserMetricsProviderTest
     return GetParam();
   }
 
-  chromeos::LoggedInUserMixin logged_in_user_mixin_{
+  ash::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, GetPrimaryLogInType(GetFamilyUserLogSegment()),
       embedded_test_server(), this,
       /*should_launch_browser=*/true,
@@ -120,9 +114,6 @@ class FamilyUserMetricsProviderTest
       // PolicyData.
       // TODO(crbug/1112885): Use LocalPolicyTestServer when this is fixed.
       /*use_local_policy_server=*/false};
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(FamilyUserMetricsProviderTest, UserCategory) {
@@ -188,15 +179,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 class FamilyUserMetricsProviderGuestModeTest
     : public MixinBasedInProcessBrowserTest {
- public:
-  FamilyUserMetricsProviderGuestModeTest() {
-    scoped_feature_list_.InitAndEnableFeature(ash::kFamilyUserMetricsProvider);
-  }
-
  private:
-  chromeos::GuestSessionMixin guest_session_mixin_{&mixin_host_};
-
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ash::GuestSessionMixin guest_session_mixin_{&mixin_host_};
 };
 
 // Prevents a regression to crbug/1137352. Also tests secondary account metrics
@@ -221,14 +205,10 @@ IN_PROC_BROWSER_TEST_F(FamilyUserMetricsProviderGuestModeTest,
 class FamilyUserMetricsProviderEphemeralUserTest
     : public MixinBasedInProcessBrowserTest {
  protected:
-  FamilyUserMetricsProviderEphemeralUserTest() {
-    scoped_feature_list_.InitAndEnableFeature(ash::kFamilyUserMetricsProvider);
-  }
-
   // MixinBasedInProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    std::unique_ptr<chromeos::ScopedDevicePolicyUpdate> device_policy_update =
+    std::unique_ptr<ash::ScopedDevicePolicyUpdate> device_policy_update =
         device_state_.RequestDevicePolicyUpdate();
     device_policy_update->policy_payload()
         ->mutable_ephemeral_users_enabled()
@@ -245,13 +225,12 @@ class FamilyUserMetricsProviderEphemeralUserTest
         IdentityManagerFactory::GetForProfile(browser()->profile()));
   }
 
-  chromeos::DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+  ash::DeviceStateMixin device_state_{
+      &mixin_host_,
+      ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  chromeos::LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kRegular,
+  ash::LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_, ash::LoggedInUserMixin::LogInType::kRegular,
       embedded_test_server(), this};
 };
 

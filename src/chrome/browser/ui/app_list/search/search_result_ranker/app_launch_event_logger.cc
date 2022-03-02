@@ -7,24 +7,24 @@
 #include <cmath>
 #include <utility>
 
+#include "ash/components/arc/arc_prefs.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
+#include "chrome/browser/ash/power/ml/recent_events_counter.h"
+#include "chrome/browser/ash/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_helper.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "components/arc/arc_prefs.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/app_source_url_recorder.h"
 #include "extensions/common/extension.h"
@@ -49,8 +49,8 @@ namespace {
 
 constexpr unsigned int kNumRandomAppsToLog = 25;
 
-constexpr base::TimeDelta kHourDuration = base::TimeDelta::FromHours(1);
-constexpr base::TimeDelta kDayDuration = base::TimeDelta::FromDays(1);
+constexpr base::TimeDelta kHourDuration = base::Hours(1);
+constexpr base::TimeDelta kDayDuration = base::Days(1);
 constexpr int kMinutesInAnHour = 60;
 constexpr int kQuarterHoursInADay = 24 * 4;
 
@@ -76,17 +76,19 @@ std::vector<std::string> Sample(const std::vector<std::string>& population,
 
 }  // namespace
 
-AppLaunchEventLogger::AppLaunchEventLogger()
+AppLaunchEventLogger::AppLaunchEventLogger(Profile* profile)
     : start_time_(base::Time::Now()),
       all_clicks_last_hour_(
-          std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+          std::make_unique<ash::power::ml::RecentEventsCounter>(
               kHourDuration,
               kMinutesInAnHour)),
       all_clicks_last_24_hours_(
-          std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+          std::make_unique<ash::power::ml::RecentEventsCounter>(
               kDayDuration,
               kQuarterHoursInADay)),
+      profile_(profile),
       weak_factory_(this) {
+  DCHECK(profile_);
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
@@ -149,11 +151,6 @@ std::string AppLaunchEventLogger::RemoveScheme(const std::string& id) {
   return app_id;
 }
 
-const GURL& AppLaunchEventLogger::GetLaunchWebURL(
-    const extensions::Extension* extension) {
-  return extensions::AppLaunchInfo::GetLaunchWebURL(extension);
-}
-
 void AppLaunchEventLogger::EnforceLoggingPolicy() {
   SetRegistryAndArcInfo();
 
@@ -161,7 +158,7 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
     app.second.set_is_policy_compliant(false);
   }
 
-  // Store all Chrome, PWA and bookmark apps.
+  // Store all Chrome apps.
   // registry_ can be nullptr in tests.
   if (registry_) {
     std::unique_ptr<extensions::ExtensionSet> extensions =
@@ -171,12 +168,6 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
       if (extension->from_webstore()) {
         AddAppIfMissing(AppLaunchEvent_AppType_CHROME, extension->id(),
                         base::EmptyString(), base::EmptyString(), true);
-        // PWA apps have from_bookmark() true. This will also categorize
-        // bookmark apps as AppLaunchEvent_AppType_PWA.
-      } else if (extension->from_bookmark()) {
-        AddAppIfMissing(AppLaunchEvent_AppType_PWA, extension->id(),
-                        base::EmptyString(),
-                        GetLaunchWebURL(extension.get()).spec(), true);
         // Other extensions are not to be logged to UKM.
       } else {
         AddAppIfMissing(AppLaunchEvent_AppType_OTHER, extension->id(),
@@ -185,10 +176,20 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
     }
   }
 
+  const web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_);
+  // Store all PWAs.
+  if (provider) {
+    for (const web_app::WebApp& web_app : provider->registrar().GetApps()) {
+      AddAppIfMissing(AppLaunchEvent_AppType_PWA, web_app.app_id(),
+                      base::EmptyString(), web_app.start_url().spec(), true);
+    }
+  }
+
   // Store all Arc apps.
   // arc_apps_ and arc_packages_ can be nullptr in tests.
   if (arc_apps_ && arc_packages_) {
-    for (const auto& app : arc_apps_->DictItems()) {
+    for (const auto app : arc_apps_->DictItems()) {
       const base::Value* package_name_value = app.second.FindKey(kPackageName);
       if (!package_name_value) {
         continue;
@@ -286,10 +287,10 @@ void AppLaunchEventLogger::ProcessClick(const AppLaunchEvent& event,
   if (!app_launch_features->has_most_recently_used_index()) {
     // Handle first click on an id.
     app_clicks_last_hour_[event.app_id()] =
-        std::make_unique<chromeos::power::ml::RecentEventsCounter>(
-            kHourDuration, kMinutesInAnHour);
+        std::make_unique<ash::power::ml::RecentEventsCounter>(kHourDuration,
+                                                              kMinutesInAnHour);
     app_clicks_last_24_hours_[event.app_id()] =
-        std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+        std::make_unique<ash::power::ml::RecentEventsCounter>(
             kDayDuration, kQuarterHoursInADay);
     for (int hour = 0; hour < 24; hour++) {
       app_launch_features->add_clicks_each_hour(0);
@@ -502,6 +503,7 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
         app_click_data.SetAppType(app->second.app_type())
             .SetAppLaunchId(launch_source_id)
             .Record(ukm::UkmRecorder::Get());
+        ukm::AppSourceUrlRecorder::MarkSourceForDeletion(click_data_source_id);
         continue;
       }
       app->second.set_time_since_last_click_sec(
@@ -524,8 +526,12 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
           .SetClickRank(app->second.click_rank())
           .SetLastLaunchedFrom(app->second.last_launched_from())
           .Record(ukm::UkmRecorder::Get());
+      ukm::AppSourceUrlRecorder::MarkSourceForDeletion(click_data_source_id);
     }
   }
+  if (launch_source_id != ukm::kInvalidSourceId)
+    ukm::AppSourceUrlRecorder::MarkSourceForDeletion(launch_source_id);
+
   ProcessClick(app_launch_event, now);
 }
 

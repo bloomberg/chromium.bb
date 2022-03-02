@@ -7,8 +7,8 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "components/web_modal/test_web_contents_modal_dialog_manager_delegate.h"
@@ -56,6 +56,11 @@ class TestNativeWebContentsModalDialogManager
       tracker_->SetState(NativeManagerTracker::NOT_SHOWN);
   }
 
+  TestNativeWebContentsModalDialogManager(
+      const TestNativeWebContentsModalDialogManager&) = delete;
+  TestNativeWebContentsModalDialogManager& operator=(
+      const TestNativeWebContentsModalDialogManager&) = delete;
+
   void Show() override {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::SHOWN);
@@ -77,17 +82,20 @@ class TestNativeWebContentsModalDialogManager
   void StopTracking() { tracker_ = nullptr; }
 
  private:
-  SingleWebContentsDialogManagerDelegate* delegate_;
+  raw_ptr<SingleWebContentsDialogManagerDelegate> delegate_;
   gfx::NativeWindow dialog_;
-  NativeManagerTracker* tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNativeWebContentsModalDialogManager);
+  raw_ptr<NativeManagerTracker> tracker_;
 };
 
 class WebContentsModalDialogManagerTest
     : public content::RenderViewHostTestHarness {
  public:
   WebContentsModalDialogManagerTest() : next_dialog_id(1), manager(nullptr) {}
+
+  WebContentsModalDialogManagerTest(const WebContentsModalDialogManagerTest&) =
+      delete;
+  WebContentsModalDialogManagerTest& operator=(
+      const WebContentsModalDialogManagerTest&) = delete;
 
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
@@ -119,10 +127,8 @@ class WebContentsModalDialogManagerTest
 
   int next_dialog_id;
   std::unique_ptr<TestWebContentsModalDialogManagerDelegate> delegate;
-  WebContentsModalDialogManager* manager;
+  raw_ptr<WebContentsModalDialogManager> manager;
   std::unique_ptr<WebContentsModalDialogManager::TestApi> test_api;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManagerTest);
 };
 
 // Test that the dialog is shown immediately when the delegate indicates the web

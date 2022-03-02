@@ -39,6 +39,8 @@
 
 @property(nonatomic, strong, readonly) FakeSceneSession* session;
 
+@property(nonatomic, strong, readonly) NSArray<UIWindow*>* windows;
+
 @end
 
 @implementation FakeScene {
@@ -56,14 +58,13 @@
   return _session;
 }
 
+- (NSArray<UIWindow*>*)windows {
+  return nil;
+}
+
 @end
 
 id FakeSceneWithIdentifier(NSString* identifier) {
-  if (@available(ios 13, *)) {
-    return
-        [[FakeScene alloc] initWithSession:[[FakeSceneSession alloc]
-                                               initWithIdentifier:identifier]];
-  }
-
-  return nil;
+  return [[FakeScene alloc]
+      initWithSession:[[FakeSceneSession alloc] initWithIdentifier:identifier]];
 }

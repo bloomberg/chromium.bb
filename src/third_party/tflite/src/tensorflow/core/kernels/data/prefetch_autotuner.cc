@@ -20,11 +20,12 @@ limitations under the License.
 namespace tensorflow {
 namespace data {
 
-PrefetchAutotuner::PrefetchAutotuner(int64 initial_buffer_size)
+PrefetchAutotuner::PrefetchAutotuner(int64_t initial_buffer_size,
+                                     int64_t buffer_size_min)
     : buffer_limit_(initial_buffer_size) {
   if (initial_buffer_size == model::kAutotune) {
     mode_ = Mode::kUpswing;
-    buffer_limit_ = 1;
+    buffer_limit_ = std::max(int64_t{1}, buffer_size_min);
   }
 }
 
@@ -40,13 +41,13 @@ void PrefetchAutotuner::RecordConsumption(size_t current_buffer_size) {
     case Mode::kDisabled:
       return;
     case Mode::kUpswing:
-      if (current_buffer_size == buffer_limit_) {
+      if (static_cast<int64_t>(current_buffer_size) == buffer_limit_) {
         mode_ = Mode::kDownswing;
       }
       return;
     case Mode::kDownswing:
       if (current_buffer_size == 0) {
-        if (buffer_limit_ >= kBufferLimitThreshold) {
+        if (buffer_limit_ >= static_cast<int64_t>(kBufferLimitThreshold)) {
           buffer_limit_ += kBufferLimitThreshold;
         } else {
           buffer_limit_ *= 2;

@@ -7,51 +7,10 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "ui/gl/gl_bindings.h"
 
-#define GL_LAYOUT_GENERAL_EXT 0x958D
-#define GL_LAYOUT_COLOR_ATTACHMENT_EXT 0x958E
-#define GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT 0x958F
-#define GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT 0x9590
-#define GL_LAYOUT_SHADER_READ_ONLY_EXT 0x9591
-#define GL_LAYOUT_TRANSFER_SRC_EXT 0x9592
-#define GL_LAYOUT_TRANSFER_DST_EXT 0x9593
-#define GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT 0x9530
-#define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
-
 namespace gpu {
-
-namespace {
-
-GLenum ToGLImageLayout(VkImageLayout layout) {
-  switch (layout) {
-    case VK_IMAGE_LAYOUT_UNDEFINED:
-      return GL_NONE;
-    case VK_IMAGE_LAYOUT_GENERAL:
-      return GL_LAYOUT_GENERAL_EXT;
-    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-      return GL_LAYOUT_COLOR_ATTACHMENT_EXT;
-    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-      return GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT;
-    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-      return GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT;
-    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-      return GL_LAYOUT_SHADER_READ_ONLY_EXT;
-    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-      return GL_LAYOUT_TRANSFER_SRC_EXT;
-    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-      return GL_LAYOUT_TRANSFER_DST_EXT;
-    case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
-      return GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT;
-    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
-      return GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT;
-    default:
-      NOTREACHED() << "Invalid image layout " << layout;
-      return GL_NONE;
-  }
-}
-
-}  // namespace
 
 // static
 void ExternalVkImageGLRepresentationShared::AcquireTexture(
@@ -60,7 +19,7 @@ void ExternalVkImageGLRepresentationShared::AcquireTexture(
     VkImageLayout src_layout) {
   GLuint gl_semaphore = semaphore->GetGLSemaphore();
   if (gl_semaphore) {
-    GLenum gl_layout = ToGLImageLayout(src_layout);
+    GLenum gl_layout = VkImageLayoutToGLImageLayout(src_layout);
     auto* api = gl::g_current_gl_context;
     api->glWaitSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1, &texture_id,
                               &gl_layout);
@@ -76,7 +35,7 @@ ExternalSemaphore ExternalVkImageGLRepresentationShared::ReleaseTexture(
   if (!semaphore) {
     // TODO(crbug.com/933452): We should be able to handle this failure more
     // gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "Unable to create an ExternalSemaphore in "
+    LOG(ERROR) << "Unable to create an ExternalSemaphore in "
                << "ExternalVkImageGLRepresentation for synchronization with "
                << "Vulkan";
     return {};
@@ -86,13 +45,13 @@ ExternalSemaphore ExternalVkImageGLRepresentationShared::ReleaseTexture(
   if (!gl_semaphore) {
     // TODO(crbug.com/933452): We should be able to semaphore_handle this
     // failure more gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "Unable to export VkSemaphore into GL in "
+    LOG(ERROR) << "Unable to export VkSemaphore into GL in "
                << "ExternalVkImageGLRepresentation for synchronization with "
                << "Vulkan";
     return {};
   }
 
-  GLenum gl_layout = ToGLImageLayout(dst_layout);
+  GLenum gl_layout = VkImageLayoutToGLImageLayout(dst_layout);
   auto* api = gl::g_current_gl_context;
   api->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1, &texture_id,
                               &gl_layout);
@@ -178,6 +137,10 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
     external_semaphore =
         ReleaseTexture(backing_impl()->external_semaphore_pool(),
                        texture_service_id_, info.fImageLayout);
+    if (!external_semaphore) {
+      backing_impl()->context_state()->MarkContextLost();
+      return;
+    }
   }
   backing_impl()->EndAccess(readonly, std::move(external_semaphore),
                             true /* is_gl */);

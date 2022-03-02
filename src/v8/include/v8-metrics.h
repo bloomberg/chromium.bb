@@ -5,10 +5,19 @@
 #ifndef V8_METRICS_H_
 #define V8_METRICS_H_
 
-#include "v8-internal.h"  // NOLINT(build/include_directory)
-#include "v8.h"           // NOLINT(build/include_directory)
+#include <stddef.h>
+#include <stdint.h>
+
+#include <vector>
+
+#include "v8-internal.h"      // NOLINT(build/include_directory)
+#include "v8-local-handle.h"  // NOLINT(build/include_directory)
 
 namespace v8 {
+
+class Context;
+class Isolate;
+
 namespace metrics {
 
 struct GarbageCollectionPhases {
@@ -37,12 +46,12 @@ struct GarbageCollectionFullCycle {
   GarbageCollectionSizes objects_cpp;
   GarbageCollectionSizes memory;
   GarbageCollectionSizes memory_cpp;
-  double collection_rate_in_percent;
-  double collection_rate_cpp_in_percent;
-  double efficiency_in_bytes_per_us;
-  double efficiency_cpp_in_bytes_per_us;
-  double main_thread_efficiency_in_bytes_per_us;
-  double main_thread_efficiency_cpp_in_bytes_per_us;
+  double collection_rate_in_percent = -1.0;
+  double collection_rate_cpp_in_percent = -1.0;
+  double efficiency_in_bytes_per_us = -1.0;
+  double efficiency_cpp_in_bytes_per_us = -1.0;
+  double main_thread_efficiency_in_bytes_per_us = -1.0;
+  double main_thread_efficiency_cpp_in_bytes_per_us = -1.0;
 };
 
 struct GarbageCollectionFullMainThreadIncrementalMark {
@@ -50,9 +59,17 @@ struct GarbageCollectionFullMainThreadIncrementalMark {
   int64_t cpp_wall_clock_duration_in_us = -1;
 };
 
+struct GarbageCollectionFullMainThreadBatchedIncrementalMark {
+  std::vector<GarbageCollectionFullMainThreadIncrementalMark> events;
+};
+
 struct GarbageCollectionFullMainThreadIncrementalSweep {
   int64_t wall_clock_duration_in_us = -1;
   int64_t cpp_wall_clock_duration_in_us = -1;
+};
+
+struct GarbageCollectionFullMainThreadBatchedIncrementalSweep {
+  std::vector<GarbageCollectionFullMainThreadIncrementalSweep> events;
 };
 
 struct GarbageCollectionYoungCycle {
@@ -70,6 +87,7 @@ struct WasmModuleDecoded {
   size_t module_size_in_bytes = 0;
   size_t function_count = 0;
   int64_t wall_clock_duration_in_us = -1;
+  int64_t cpu_duration_in_us = -1;
 };
 
 struct WasmModuleCompiled {
@@ -82,6 +100,7 @@ struct WasmModuleCompiled {
   size_t code_size_in_bytes = 0;
   size_t liftoff_bailout_count = 0;
   int64_t wall_clock_duration_in_us = -1;
+  int64_t cpu_duration_in_us = -1;
 };
 
 struct WasmModuleInstantiated {
@@ -95,20 +114,23 @@ struct WasmModuleTieredUp {
   bool lazy = false;
   size_t code_size_in_bytes = 0;
   int64_t wall_clock_duration_in_us = -1;
+  int64_t cpu_duration_in_us = -1;
 };
 
 struct WasmModulesPerIsolate {
   size_t count = 0;
 };
 
-#define V8_MAIN_THREAD_METRICS_EVENTS(V)             \
-  V(GarbageCollectionFullCycle)                      \
-  V(GarbageCollectionFullMainThreadIncrementalMark)  \
-  V(GarbageCollectionFullMainThreadIncrementalSweep) \
-  V(GarbageCollectionYoungCycle)                     \
-  V(WasmModuleDecoded)                               \
-  V(WasmModuleCompiled)                              \
-  V(WasmModuleInstantiated)                          \
+#define V8_MAIN_THREAD_METRICS_EVENTS(V)                    \
+  V(GarbageCollectionFullCycle)                             \
+  V(GarbageCollectionFullMainThreadIncrementalMark)         \
+  V(GarbageCollectionFullMainThreadBatchedIncrementalMark)  \
+  V(GarbageCollectionFullMainThreadIncrementalSweep)        \
+  V(GarbageCollectionFullMainThreadBatchedIncrementalSweep) \
+  V(GarbageCollectionYoungCycle)                            \
+  V(WasmModuleDecoded)                                      \
+  V(WasmModuleCompiled)                                     \
+  V(WasmModuleInstantiated)                                 \
   V(WasmModuleTieredUp)
 
 #define V8_THREAD_SAFE_METRICS_EVENTS(V) V(WasmModulesPerIsolate)

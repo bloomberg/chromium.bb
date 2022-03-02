@@ -9,8 +9,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
@@ -25,7 +26,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
-#include "net/log/test_net_log.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -79,6 +79,10 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   explicit ReadErrorUploadDataStream(FailureMode mode)
       : UploadDataStream(true, 0), async_(mode) {}
 
+  ReadErrorUploadDataStream(const ReadErrorUploadDataStream&) = delete;
+  ReadErrorUploadDataStream& operator=(const ReadErrorUploadDataStream&) =
+      delete;
+
  private:
   void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
 
@@ -100,8 +104,6 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   const FailureMode async_;
 
   base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
 };
 
 class CancelStreamCallback : public TestCompletionCallbackBase {
@@ -119,7 +121,7 @@ class CancelStreamCallback : public TestCompletionCallbackBase {
     SetResult(result);
   }
 
-  SpdyHttpStream* stream_;
+  raw_ptr<SpdyHttpStream> stream_;
 };
 
 }  // namespace
@@ -137,14 +139,13 @@ class SpdyHttpStreamTest : public TestWithTaskEnvironment {
              NetworkIsolationKey(),
              SecureDnsPolicy::kAllow),
         ssl_(SYNCHRONOUS, OK) {
-    session_deps_.net_log = &net_log_;
+    session_deps_.net_log = NetLog::Get();
   }
 
   ~SpdyHttpStreamTest() override = default;
 
  protected:
   void TearDown() override {
-    crypto::ECSignatureCreator::SetFactoryForTesting(nullptr);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sequenced_data_->AllReadDataConsumed());
     EXPECT_TRUE(sequenced_data_->AllWriteDataConsumed());
@@ -166,7 +167,6 @@ class SpdyHttpStreamTest : public TestWithTaskEnvironment {
   }
 
   SpdyTestUtil spdy_util_;
-  RecordingTestNetLog net_log_;
   SpdySessionDependencies session_deps_;
   const GURL url_;
   const HostPortPair host_port_pair_;
@@ -176,7 +176,6 @@ class SpdyHttpStreamTest : public TestWithTaskEnvironment {
   base::WeakPtr<SpdySession> session_;
 
  private:
-  MockECSignatureCreatorFactory ec_signature_creator_factory_;
   SSLSocketDataProvider ssl_;
 };
 
