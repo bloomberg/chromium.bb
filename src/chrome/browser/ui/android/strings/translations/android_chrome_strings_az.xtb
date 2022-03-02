@@ -38,6 +38,7 @@
 <translation id="1201402288615127009">Növbəti</translation>
 <translation id="1202892408424955784">İzlənilən məhsullar</translation>
 <translation id="1204037785786432551">Linki endirin</translation>
+<translation id="1204692632633423444">Chrome əməliyyat düyməsi: <ph name="ACTION" /></translation>
 <translation id="1206892813135768548">Link mətnini kopyalayın</translation>
 <translation id="1208340532756947324">Cihazlar üzrə sinxronizasiya etmək və fərdiləşdirmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="1209206284964581585">Hələlik gizlədin</translation>
@@ -79,7 +80,6 @@
 <translation id="1406000523432664303">İzləməyin</translation>
 <translation id="1407069428457324124">Tünd tema</translation>
 <translation id="1407135791313364759">Hamısını açın</translation>
-<translation id="1409426117486808224">Açıq tablar üçün sadələşdirilmiş görünüş</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> fayl yüklənilmədi, çünki artıq mövcuddur.</translation>
 <translation id="1414981605391750300">Google ilə əlaqə yaradılır. Bir dəqiqə vaxt ala bilər...</translation>
 <translation id="1416550906796893042">Tətbiq versiyası</translation>
@@ -202,6 +202,7 @@ Axtarmaq üçün istənilən sözə toxunun. Axtarışı dəqiqləşdirmək üç
 <translation id="2172688499998841696">Şəkil təsvirləri deaktivdir</translation>
 <translation id="2172905120685242547">Pəncərə bağlansın?</translation>
 <translation id="2175927920773552910">QR Kod</translation>
+<translation id="2176767904800337188">Virtual kart sizi potensial dələduzluqdan qorumaq üçün faktiki kartınızı gizlədir. <ph name="BEGIN_LINK1" />Virtual kartlar haqqında ətraflı məlumat<ph name="END_LINK1" /></translation>
 <translation id="218608176142494674">Paylaşım</translation>
 <translation id="2194856509914051091">Nəzərə alınmalı amillər</translation>
 <translation id="2200113223741723867">İstifadə datasının paylaşılmasını idarə edin</translation>
@@ -214,13 +215,13 @@ Axtarmaq üçün istənilən sözə toxunun. Axtarışı dəqiqləşdirmək üç
 <translation id="2259659629660284697">Parolları eksport edin...</translation>
 <translation id="2276696007612801991">Parollarınızı yoxlamaq üçün Google hesabınıza daxil olun</translation>
 <translation id="2278052315791335171">Bu parolu sildikdə <ph name="SITE" /> saytında hesabınız silinməyəcək</translation>
+<translation id="2279146068164892489"><ph name="APPNAME" /> üçün tətbiq açılsın?</translation>
 <translation id="2286841657746966508">Faktura ünvanı</translation>
 <translation id="228704530595896923">Paylaşım seçimlərinin siyahısı.</translation>
 <translation id="230115972905494466">Uyğun cihaz tapılmadı</translation>
 <translation id="230155349749732438">Bu ayardan istifadə etmək üçün <ph name="BEGIN_LINK" />Axtarış və baxış təcrübəsinin yaxşılaşdırılması<ph name="END_LINK" /> aktiv olmalıdır</translation>
 <translation id="2318045970523081853">Zəng etmək üçün klikləyin</translation>
 <translation id="2321086116217818302">Parollar hazırlanır...</translation>
-<translation id="2321958826496381788">Rahat oxuya biləcəyinizə qədər slayderi dartın. Abzasa iki dəfə tıklayandan sonra mətn bu böyüklükdə olmalıdır.</translation>
 <translation id="2323763861024343754">Sayt yaddaşı</translation>
 <translation id="2328985652426384049">Daxil olmaq mümkün deyil</translation>
 <translation id="234265804618409743">Kameranı açmaq olmur. Xəta baş verdi.</translation>
@@ -230,7 +231,6 @@ Axtarmaq üçün istənilən sözə toxunun. Axtarışı dəqiqləşdirmək üç
 <translation id="2359808026110333948">Davam edin</translation>
 <translation id="2369533728426058518">panelləri açın</translation>
 <translation id="2386938421315164605">Mövzuları gizlədin və göstərin</translation>
-<translation id="2387895666653383613">Mətn miqyası</translation>
 <translation id="2390510615457643724"><ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) faylını yenidən endirmək istəyirsiniz?</translation>
 <translation id="2394602618534698961">Endirdiyiniz fayllar burada görünəcək</translation>
 <translation id="2407481962792080328">Google Hesabınıza daxil olduqda, bu xüsusiyyət aktivləşir</translation>
@@ -267,7 +267,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2536728043171574184">Bu səhifənin oflayn nüsxəsinə baxılır</translation>
 <translation id="2546283357679194313">Kukilər və sayt datası</translation>
 <translation id="2549516196460093976">Bu QR kodunu göstərən kompüterə daxil olmaq üçün bu planşetdən istifadə edə bilərsiniz.</translation>
-<translation id="2558692642259318568">Fəaliyyəti cihazınızda saxlamadan axtarış etmək üçün Anonim rejimi sınayın</translation>
 <translation id="2561519700418191927">Video önizləmələri</translation>
 <translation id="2567385386134582609">ŞƏKİL</translation>
 <translation id="2567545343356994513">Təhlükəli veb saytlar, endirmələr və artırmalara qarşı daha sürətli, fəal qoruma</translation>
@@ -334,6 +333,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2923908459366352541">Ad yanlışdır</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> yaddaşı</translation>
 <translation id="2932222164150889403">Klaviatura dəyişməyəcək</translation>
+<translation id="2936980480904111527">Chrome bildirişləri işləri asanlaşdırır</translation>
 <translation id="2942036813789421260">Önbaxış tabı bağlıdır</translation>
 <translation id="2946420957526726953">Digər cihazlara qoşulmaq üçün Chrome güncəllənir</translation>
 <translation id="2951071800649516099">Sonra üçün oxu siyahınıza səhifələr əlavə edin</translation>
@@ -371,6 +371,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3091010850649238832">Mübadilə buferindəki kontenti göstərin</translation>
 <translation id="3098745985164956033">Sizin üçün təsvirləri yaxşılaşdırmaq üçün bəzi şəkillər Google'a göndərilir</translation>
 <translation id="3114507951000454849">Bugünün <ph name="NEWS_ICON" /> xəbərlərini oxuyun</translation>
+<translation id="311958134571892113">bununla əlaqələndirildi:</translation>
 <translation id="3123734510202723619">Elanlar</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome’un əsas səhifəsi</translation>
@@ -488,7 +489,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3861633093716975811">Populyar videolar</translation>
 <translation id="3892148308691398805">Mətni kopyalayın</translation>
 <translation id="3894427358181296146">Qovluq əlavə edin</translation>
-<translation id="3895926599014793903">Zoom'a icazə verməyə məcbur edin</translation>
 <translation id="3899682235662194879">Bütün Anonim Tabları qapadın</translation>
 <translation id="3908308510347173149"><ph name="PRODUCT_NAME" /> məhsulunu güncəlləyin</translation>
 <translation id="3912508018559818924">Vebdən ən yaxşısını tapın…</translation>
@@ -529,7 +529,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4135200667068010335">Tabı paylaşa biləcəyiniz cihazların siyahısı bağlıdır.</translation>
 <translation id="4137746084635924146">Cari cihaz dili</translation>
 <translation id="4141536112466364990">Chrome'u öyrənin</translation>
-<translation id="4149994727733219643">İnternet səhifələr üçün sadələşdirilmiş görünüş</translation>
 <translation id="4162867837470729563">Paylaşım seçimlərinin siyahısı tam yüksəklikdədir.</translation>
 <translation id="4165986682804962316">Sayt ayarları</translation>
 <translation id="4170011742729630528">Xidmət əlçatmazdır. Yenidən cəhd edin.</translation>
@@ -676,6 +675,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4961107849584082341">Bu səhifəni istədiyiniz dilə tərcümə edin</translation>
 <translation id="4971735654804503942">Təhlükəli veb saytlar, endirmələr və artırmalara qarşı daha sürətli, fəal qoruma. Sizə parol aşkarlanmaları barədə xəbərdarlıq edir. Baxış datasının Google'a göndərilməsini tələb edir.</translation>
 <translation id="497421865427891073">İrəli</translation>
+<translation id="4987271110129728827">Həmin səhifəni tapmaq mümkün deyil. Orfoqrafiyanı yoxlayın və ya vebdə axtarış edin.</translation>
 <translation id="4988526792673242964">Səhifələr</translation>
 <translation id="5001388021414335527">Bu saytı burada izləyin</translation>
 <translation id="5004416275253351869">Google fəaliyyət nəzarətləri</translation>
@@ -733,6 +733,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5329858041417644019">Brauzer idarə edilmir</translation>
 <translation id="5342314432463739672">İcazə sorğuları</translation>
 <translation id="5355191726083956201">Qabaqcıl Qoruma aktivdir</translation>
+<translation id="5368227114232678694">Bu cihazda məxfi şəkildə axtarış etmək üçün Anonim rejimi sınayın</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> açıq tab, tabları dəyişmək üçün klikləyin}other{<ph name="OPEN_TABS_MANY" /> açıq tab, tabları dəyişmək üçün klikləyin}}</translation>
 <translation id="5375577065097716013">Google Linza ilə şəkil axtarın <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="5403644198645076998">Yalnız müəyyən saytlara icazə verin</translation>
@@ -781,7 +782,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5655963694829536461">Endirmələri axtarın</translation>
 <translation id="5659593005791499971">E-poçt</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> tətbiqində tədbir yaradın</translation>
-<translation id="5668404140385795438">Böyüdülmənin qarşısını almaq üçün saytın sorğusunu kənarlaşdırın</translation>
 <translation id="5683547024293500885">Chrome güncəlləmələri yoxlaya bilmir</translation>
 <translation id="5686790454216892815">Fayl adı çox uzundur</translation>
 <translation id="569536719314091526">Əlavə seçimlər düyməsində bu səhifəni istədiyiniz dilə tərcümə edin</translation>
@@ -881,6 +881,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="6162892189396105610">Chrome'un ziyarət edə biləcəyinizi düşündüyü səhifələri əvvəlcədən yükləyir.</translation>
 <translation id="6186394685773237175">Oğurlanmış parol tapılmadı</translation>
 <translation id="6192907950379606605">Şəkil təsvirləri əldə edin</translation>
+<translation id="620197886010707372"><ph name="APPNAME" /> üçün tətbiq Google Play ilə açılsın?</translation>
 <translation id="6203593061661911168">Endirmə Wi-Fi aktiv olduqda başlayacaq</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> deyil?</translation>
 <translation id="6211386937064921208">Bu səhifə önizlənir</translation>
@@ -1029,13 +1030,11 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="6963766334940102469">Əlfəcinləri silin</translation>
 <translation id="696447261358045621">Anonim rejimdən çıxın</translation>
 <translation id="6979737339423435258">Hər zaman</translation>
-<translation id="6981982820502123353">Giriş İmkanı</translation>
 <translation id="6987047470128880212">Anonim bu cihazda əlçatan deyil</translation>
 <translation id="6995899638241819463">Data pozulması halında parolların ələ keçirilib-keçirilmədiyi bildirilir</translation>
 <translation id="7001056293070445572">Bu fayl böyükdür (<ph name="FILE_SIZE" />)</translation>
 <translation id="7020741890149022655">Oxu siyahısına əlavə edin <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Brauzerdə açın</translation>
-<translation id="702463548815491781">TalkBack və ya Keçid Düyməsi aktiv olduqda tövsiyə olunur</translation>
 <translation id="7027549951530753705"><ph name="ITEM_TITLE" /> bərpa olunub</translation>
 <translation id="7029390216614421513">QR kodu və ya barkodu bu çərçivəyə yerləşdirin.</translation>
 <translation id="7029809446516969842">Parollar</translation>
@@ -1070,6 +1069,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="7191430249889272776">Panel arxa fonda açıldı.</translation>
 <translation id="7196215469483532480">Məxfilik bələdçisi izahı tam hündürlükdə açılıb</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 endirmə gözlənilir}other{# endirmə gözlənilir}}</translation>
+<translation id="7237045078887540010">Chrome'u istifadə etməklə, <ph name="BEGIN_TOS_LINK" />Google Xidmət Şərtləri<ph name="END_TOS_LINK" /> və <ph name="BEGIN_ATOS_LINK" />Google Chrome və Chrome ƏS Əlavə Xidmət Şərtləri<ph name="END_ATOS_LINK" /> ilə razılaşırsınız. <ph name="BEGIN_PRIVACY_LINK" />Məxfilik Siyasəti<ph name="END_PRIVACY_LINK" /> də tətbiq edilir.</translation>
 <translation id="7242755609445462077">Üslublaşdırılmış vurğulama <ph name="CURRENT_DATE" /></translation>
 <translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" /> adlı cihazının Chrome tətbiqində sinxronizasiyanın aktiv edildiyinə əmin olun</translation>
 <translation id="7252076891734325316">Telefonunuzu kompüterə yaxın yerləşdirin</translation>
@@ -1270,13 +1270,13 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="8274165955039650276">Endirilənlərə baxın</translation>
 <translation id="8281886186245836920">Keçin</translation>
 <translation id="8282297628636750033">Mümkün olduqda saytlara tünd tema tətbiq edin</translation>
-<translation id="8284326494547611709">Başlıqlar</translation>
 <translation id="829672787777123339">Cihazınıza qoşulur…</translation>
 <translation id="8310344678080805313">Standart panellər</translation>
 <translation id="831192587911042850">Cari veb saytı izlədiyiniz veb saytların siyahısına əlavə edir.</translation>
 <translation id="834313815369870491">Saytları heç vaxt tərcümə etməyin</translation>
 <translation id="8352996530981010042">Reaksiyaları endirmək olmur. Yenə cəhd edin.</translation>
 <translation id="8354977102499939946">Səsinizlə sürətlə axtarın. Bu qısayolu redaktə etmək üçün Ayarlara keçin.</translation>
+<translation id="8356078935982976590">Media nizamlayıcılarını, anonim sessiyaları, endirmələri və s. asanlıqla idarə edə biləcəksiniz</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> endirmə bərpa edilib</translation>
 <translation id="8364299278605033898">Populyar veb saytlara baxın</translation>
 <translation id="8368001212524806591">Qiyməti izləyin</translation>
@@ -1433,6 +1433,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="9169507124922466868">Naviqasiya tarixçəsi yarı açıqdır</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 dəqiqə əvvəl yoxlanılıb}other{# dəqiqə əvvəl yoxlanılıb}}</translation>
 <translation id="9204836675896933765">1 fayl qaldı</translation>
+<translation id="9205933215779845960">Həmin səhifəni tapmaq mümkün deyil. Orfoqrafiyanı yoxlayın və ya <ph name="SEARCH_ENGINE" /> sistemində axtarış edin.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Zəng etmək mümkün deyil</translation>
 <translation id="9212845824145208577">Aşağıya keçmək olmur. Səhifənin aşağısından başlamağı sınayın.</translation>

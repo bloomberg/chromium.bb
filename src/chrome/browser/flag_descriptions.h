@@ -639,6 +639,9 @@ extern const char kQuickActionSearchWidgetAndroidDinoVariantDescription[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
+extern const char kDownloadBubbleName[];
+extern const char kDownloadBubbleDescription[];
+
 extern const char kDownloadLaterName[];
 extern const char kDownloadLaterDescription[];
 
@@ -2154,6 +2157,9 @@ extern const char kNtpPhotosModuleDescription[];
 
 extern const char kNtpPhotosModuleOptInTitleName[];
 extern const char kNtpPhotosModuleOptInTitleDescription[];
+
+extern const char kNtpPhotosModuleOptInArtWorkName[];
+extern const char kNtpPhotosModuleOptInArtWorkDescription[];
 
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];

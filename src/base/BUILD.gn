@@ -1995,6 +1995,7 @@ mixed_component("base") {
         "allocator/partition_allocator/address_pool_manager_types.h",
         "allocator/partition_allocator/address_space_randomization.cc",
         "allocator/partition_allocator/address_space_randomization.h",
+        "allocator/partition_allocator/address_space_stats.h",
         "allocator/partition_allocator/allocation_guard.cc",
         "allocator/partition_allocator/allocation_guard.h",
         "allocator/partition_allocator/dangling_raw_ptr_checks.cc",
@@ -2519,6 +2520,13 @@ mixed_component("base") {
         "trace_event/java_heap_dump_provider_android.cc",
         "trace_event/java_heap_dump_provider_android.h",
         "trace_event/trace_event_android.cc",
+      ]
+    }
+
+    if (use_allocator == "partition") {
+      sources += [
+        "trace_event/address_space_dump_provider.cc",
+        "trace_event/address_space_dump_provider.h",
       ]
     }
   } else {

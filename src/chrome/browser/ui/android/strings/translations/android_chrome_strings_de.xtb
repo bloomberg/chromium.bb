@@ -38,6 +38,7 @@
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1202892408424955784">Beobachtete Produkte</translation>
 <translation id="1204037785786432551">Link herunterladen</translation>
+<translation id="1204692632633423444">Chrome-Aktionsschaltfläche: <ph name="ACTION" /></translation>
 <translation id="1206892813135768548">Linktext kopieren</translation>
 <translation id="1208340532756947324">Aktivieren Sie die Synchronisierung, um geräteübergreifend zu synchronisieren und zu personalisieren</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
@@ -79,7 +80,6 @@
 <translation id="1406000523432664303">„Do Not Track“</translation>
 <translation id="1407069428457324124">Dunkles Design</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
-<translation id="1409426117486808224">Vereinfachte Ansicht für geöffnete Tabs</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, da die Datei bereits vorhanden ist.</translation>
 <translation id="1414981605391750300">Google wird kontaktiert. Das kann einen Moment dauern.</translation>
 <translation id="1416550906796893042">App-Version</translation>
@@ -202,6 +202,7 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2172688499998841696">Bildbeschreibungen sind deaktiviert</translation>
 <translation id="2172905120685242547">Fenster schließen?</translation>
 <translation id="2175927920773552910">QR-Code</translation>
+<translation id="2176767904800337188">Wenn Sie eine virtuelle Karte verwenden, werden Ihre tatsächlichen Kartendetails nicht preisgegeben – dadurch sind Sie besser vor Betrugsversuchen geschützt. <ph name="BEGIN_LINK1" />Weitere Informationen zu virtuellen Karten<ph name="END_LINK1" /></translation>
 <translation id="218608176142494674">Freigabe</translation>
 <translation id="2194856509914051091">Wichtige Punkte</translation>
 <translation id="2200113223741723867">Freigabe von Nutzungsdaten verwalten</translation>
@@ -214,13 +215,13 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2259659629660284697">Passwörter exportieren…</translation>
 <translation id="2276696007612801991">Melden Sie sich in Ihrem Google-Konto an, um Ihre Passwörter zu prüfen</translation>
 <translation id="2278052315791335171">Durch das Entfernen dieses Passworts wird Ihr Konto auf <ph name="SITE" /> nicht gelöscht</translation>
+<translation id="2279146068164892489">App für <ph name="APPNAME" /> öffnen?</translation>
 <translation id="2286841657746966508">Rechnungsadresse</translation>
 <translation id="228704530595896923">Liste der Freigabeoptionen.</translation>
 <translation id="230115972905494466">Keine kompatiblen Geräte gefunden</translation>
 <translation id="230155349749732438">Für diese Einstellung muss <ph name="BEGIN_LINK" />Suchanfragen und das Surfen verbessern<ph name="END_LINK" /> aktiviert sein</translation>
 <translation id="2318045970523081853">Zum Anrufen tippen</translation>
 <translation id="2321086116217818302">Passwörter werden zum Exportieren vorbereitet…</translation>
-<translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="2323763861024343754">Websitespeicher</translation>
 <translation id="2328985652426384049">Anmeldung nicht möglich</translation>
 <translation id="234265804618409743">Die Kamera kann nicht geöffnet werden. Ein Fehler ist aufgetreten.</translation>
@@ -230,7 +231,6 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2369533728426058518">Tabs öffnen</translation>
 <translation id="2386938421315164605">Themen ein- und ausblenden</translation>
-<translation id="2387895666653383613">Text-Skalierung</translation>
 <translation id="2390510615457643724">Möchten Sie <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) noch einmal herunterladen?</translation>
 <translation id="2394602618534698961">Dateien, die Sie herunterladen, werden hier angezeigt</translation>
 <translation id="2407481962792080328">Wenn Sie sich in Ihrem Google-Konto anmelden, ist diese Funktion eingeschaltet</translation>
@@ -267,7 +267,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="2536728043171574184">Eine Offline-Kopie dieser Seite wird angezeigt.</translation>
 <translation id="2546283357679194313">Cookies und Websitedaten</translation>
 <translation id="2549516196460093976">Sie können sich über dieses Tablet auf dem Computer anmelden, auf dem dieser QR-Code angezeigt wird.</translation>
-<translation id="2558692642259318568">Mit dem Inkognitomodus können Sie surfen, ohne dass Ihre Aktivitäten auf Ihrem Gerät gespeichert werden</translation>
 <translation id="2561519700418191927">Videovorschauen</translation>
 <translation id="2567385386134582609">BILD</translation>
 <translation id="2567545343356994513">Schnellerer und dynamischerer Schutz gegen schädliche Websites, Downloads und Erweiterungen</translation>
@@ -334,6 +333,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="2923908459366352541">Der Name ist ungültig</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-Speicher</translation>
 <translation id="2932222164150889403">Deine Tastaturbelegung ändert sich nicht</translation>
+<translation id="2936980480904111527">Chrome-Benachrichtigungen machen Ihnen das Leben leichter</translation>
 <translation id="2942036813789421260">Vorschau-Tab ist geschlossen</translation>
 <translation id="2946420957526726953">Chrome wird aktualisiert, um eine Verbindung mit anderen Geräten herzustellen</translation>
 <translation id="2951071800649516099">Sie können Ihrer Leseliste Seiten hinzufügen, um sie später zu lesen</translation>
@@ -371,6 +371,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3091010850649238832">Inhalte der Zwischenablage anzeigen</translation>
 <translation id="3098745985164956033">Einige Bilder werden an Google gesendet, um die Beschreibungen zu verbessern</translation>
 <translation id="3114507951000454849">Nachrichten von heute lesen <ph name="NEWS_ICON" /></translation>
+<translation id="311958134571892113">verknüpft mit</translation>
 <translation id="3123734510202723619">Ankündigungen</translation>
 <translation id="3134784203083076891">“</translation>
 <translation id="314939179385989105">Chrome-Startseite</translation>
@@ -488,7 +489,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3861633093716975811">Beliebte Videos</translation>
 <translation id="3892148308691398805">Text kopieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
-<translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
 <translation id="3899682235662194879">Alle Inkognitotabs schließen</translation>
 <translation id="3908308510347173149"><ph name="PRODUCT_NAME" /> aktualisieren</translation>
 <translation id="3912508018559818924">Das Beste aus dem Web wird gesucht…</translation>
@@ -529,7 +529,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="4135200667068010335">Die Liste von Geräten, mit denen ein Tab geteilt werden kann, ist geschlossen.</translation>
 <translation id="4137746084635924146">Aktuelle Gerätesprache</translation>
 <translation id="4141536112466364990">Informationen zu Chrome</translation>
-<translation id="4149994727733219643">Vereinfachte Ansicht für Webseiten</translation>
 <translation id="4162867837470729563">Die Liste der Freigabeoptionen ist vollständig geöffnet.</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
@@ -676,6 +675,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4961107849584082341">Lassen Sie sich diese Seite in eine beliebige Sprache übersetzen</translation>
 <translation id="4971735654804503942">Schnellerer und dynamischerer Schutz gegen schädliche Websites, Downloads und Erweiterungen. Warnt Sie im Fall von Datenpannen, bei denen Passwörter preisgegeben werden. Hierfür müssen Browserdaten an Google gesendet werden.</translation>
 <translation id="497421865427891073">Weiter</translation>
+<translation id="4987271110129728827">Diese Seite konnte nicht gefunden werden. Prüfen Sie die Schreibweise oder versuchen Sie es mit einer Internetsuche.</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="5001388021414335527">Dieser Website folgen</translation>
 <translation id="5004416275253351869">Google-Aktivitätseinstellungen</translation>
@@ -733,6 +733,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5329858041417644019">Ihr Browser wird nicht verwaltet</translation>
 <translation id="5342314432463739672">Berechtigungsanfragen</translation>
 <translation id="5355191726083956201">Erweitertes Safe Browsing ist aktiviert</translation>
+<translation id="5368227114232678694">Wenn Sie auf diesem Gerät privat surfen möchten, probieren Sie den Inkognitomodus aus</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geöffneter Tab, zum Wechseln der Tabs tippen}other{<ph name="OPEN_TABS_MANY" /> geöffnete Tabs, zum Wechseln der Tabs tippen}}</translation>
 <translation id="5375577065097716013">Bild an Google Lens senden <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="5403644198645076998">Nur bestimmte Websites zulassen</translation>
@@ -781,7 +782,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5655963694829536461">In Downloads suchen</translation>
 <translation id="5659593005791499971">E-Mail</translation>
 <translation id="5665379678064389456">Termin in <ph name="APP_NAME" /> erstellen</translation>
-<translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
 <translation id="5683547024293500885">Chrome kann nicht nach Aktualisierungen suchen</translation>
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
@@ -881,6 +881,7 @@ Privacy Sandbox befindet sich noch in der Entwicklung und Testversionen sind nur
 <translation id="6162892189396105610">In Chrome werden Seiten vorab geladen, die Sie wahrscheinlich aufrufen werden.</translation>
 <translation id="6186394685773237175">Keine gehackten Passwörter gefunden</translation>
 <translation id="6192907950379606605">Bildbeschreibungen abrufen</translation>
+<translation id="620197886010707372">App für <ph name="APPNAME" /> mit Google Play öffnen?</translation>
 <translation id="6203593061661911168">Der Download beginnt bei Verbindung mit einem WLAN</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ist nicht Ihre E-Mail-Adresse?</translation>
 <translation id="6211386937064921208">Vorschau für diese Seite</translation>
@@ -1031,13 +1032,11 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="696447261358045621">Inkognitomodus deaktivieren</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
-<translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6987047470128880212">Der Inkognitomodus ist auf diesem Gerät nicht verfügbar</translation>
 <translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
 <translation id="7001056293070445572">Diese Datei ist groß (<ph name="FILE_SIZE" />)</translation>
 <translation id="7020741890149022655">Zur Leseliste hinzufügen <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Im Browser öffnen</translation>
-<translation id="702463548815491781">Empfohlen, wenn TalkBack oder der Schalterzugriff aktiviert ist</translation>
 <translation id="7027549951530753705">Wiederhergestellt: <ph name="ITEM_TITLE" /></translation>
 <translation id="7029390216614421513">Positionieren Sie den QR- oder Barcode in diesem Bereich.</translation>
 <translation id="7029809446516969842">Passwörter</translation>
@@ -1072,6 +1071,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7196215469483532480">Erläuterungen zum Datenschutz sind vollständig geöffnet</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 Download ausstehend}other{# Downloads ausstehend}}</translation>
+<translation id="7237045078887540010">Wenn Sie Chrome verwenden, stimmen Sie den <ph name="BEGIN_TOS_LINK" />Nutzungsbedingungen von Google<ph name="END_TOS_LINK" /> und den <ph name="BEGIN_ATOS_LINK" />zusätzlichen Nutzungsbedingungen für Google Chrome und Chrome OS<ph name="END_ATOS_LINK" /> zu. Außerdem gilt die <ph name="BEGIN_PRIVACY_LINK" />Datenschutzerklärung<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="7242755609445462077">Stilisierte Markierung <ph name="CURRENT_DATE" /></translation>
 <translation id="7248069434667874558">Prüfen Sie, ob auf <ph name="TARGET_DEVICE_NAME" /> die Synchronisierung in Chrome aktiviert ist</translation>
 <translation id="7252076891734325316">Platzieren Sie Ihr Smartphone möglichst nah am Computer</translation>
@@ -1272,13 +1272,13 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8274165955039650276">Downloads aufrufen</translation>
 <translation id="8281886186245836920">Überspringen</translation>
 <translation id="8282297628636750033">Dunkles Design auf Websites anwenden</translation>
-<translation id="8284326494547611709">Untertitel</translation>
 <translation id="829672787777123339">Verbindung zu Ihrem Gerät wird hergestellt…</translation>
 <translation id="8310344678080805313">Standard-Tabs</translation>
 <translation id="831192587911042850">Fügt die aktuell geöffnete Website der Liste mit Websites hinzu, denen Sie folgen.</translation>
 <translation id="834313815369870491">Websites nie übersetzen</translation>
 <translation id="8352996530981010042">Reaktionen konnten nicht heruntergeladen werden. Versuchen Sie es noch einmal.</translation>
 <translation id="8354977102499939946">Schnelle Sprachsuche verwenden. Wenn Sie diese Verknüpfung bearbeiten möchten, rufen Sie die Einstellungen auf.</translation>
+<translation id="8356078935982976590">Sie können ganz einfach Dinge wie Mediensteuerelemente, Inkognitositzungen und Downloads verwalten</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads wurden wiederhergestellt</translation>
 <translation id="8364299278605033898">Beliebte Websites ansehen</translation>
 <translation id="8368001212524806591">Preis beobachten</translation>
@@ -1435,6 +1435,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9169507124922466868">Navigationsverlauf ist halb geöffnet</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Zuletzt geprüft: vor 1 Minute}other{Zuletzt geprüft: vor # Minuten}}</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
+<translation id="9205933215779845960">Diese Seite konnte nicht gefunden werden. Prüfen Sie die Schreibweise oder versuchen Sie es mit einer Suchanfrage bei <ph name="SEARCH_ENGINE" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Anrufe nicht möglich</translation>
 <translation id="9212845824145208577">Screenshot kann nicht nach unten erweitert werden. Beginnen Sie weiter unten auf der Seite.</translation>

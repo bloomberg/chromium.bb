@@ -124,6 +124,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Otp" summary="OTP auth only"/>
   <variant name="OtpFallbackFromFido"
       summary="OTP fallback from FIDO authentication"/>
+  <variant name="UnspecifiedFlowType" summary="No authentication specified"/>
 </variants>
 
 <variants name="AutofillCreditCardWebauthnOptInOrigin">
@@ -1550,6 +1551,20 @@ chromium-metrics-reviews@google.com.
 
     Note that histogram samples for clients without high-resolution clocks are
     dropped.
+  </summary>
+</histogram>
+
+<histogram
+    name="Autofill.IsValueNotAutofilledOverExistingValueSameAsSubmittedValue"
+    units="bool" expires_after="M104">
+  <owner>vidhanj@google.com</owner>
+  <owner>koerber@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records, for each field, that did not get autofilled due to a prefilled
+    value, whether the submitted field value is the same as the non-empty value
+    that could have been autofilled in the field. This metric is recorded on
+    form submission.
   </summary>
 </histogram>
 

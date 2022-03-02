@@ -1029,6 +1029,10 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
+const char kDownloadBubbleName[] = "Enable download bubble";
+const char kDownloadBubbleDescription[] =
+    "Enables the download bubble instead of the download shelf.";
+
 const char kDownloadLaterName[] = "Enable download later";
 const char kDownloadLaterDescription[] = "Enables download later feature.";
 
@@ -3758,6 +3762,11 @@ const char kNtpPhotosModuleDescription[] =
 const char kNtpPhotosModuleOptInTitleName[] = "NTP Photos Module Opt In Title";
 const char kNtpPhotosModuleOptInTitleDescription[] =
     "Determines the title of the NTP Photos Opt-In card";
+
+const char kNtpPhotosModuleOptInArtWorkName[] =
+    "NTP Photos Module Opt In ArtWork";
+const char kNtpPhotosModuleOptInArtWorkDescription[] =
+    "Determines the art work in the NTP Photos Opt-In card";
 
 const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =

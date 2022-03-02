@@ -1450,6 +1450,22 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
      base::size(kNtpChromeCartModuleRBDAndCouponDiscount), nullptr},
 };
 
+// The following are consent v2 variations in the Chrome Cart module.
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpStringChange[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "1"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpInline[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "2"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpDialog[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"}};
+const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
+    {"Changing string", kDiscountConsentNtpStringChange,
+     base::size(kDiscountConsentNtpStringChange), nullptr},
+    {"Inline Consent", kDiscountConsentNtpInline,
+     base::size(kDiscountConsentNtpInline), nullptr},
+    {"Dialog Consent", kDiscountConsentNtpDialog,
+     base::size(kDiscountConsentNtpDialog), nullptr},
+};
+
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpRecipeTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
@@ -1504,6 +1520,8 @@ const FeatureEntry::FeatureParam kNtpPhotosModuleOptInFavoriteTitle[] = {
     {ntp_features::kNtpPhotosModuleOptInTitleParam, "1"}};
 const FeatureEntry::FeatureParam kNtpPhotosModuleOptInPersonalizedTitle[] = {
     {ntp_features::kNtpPhotosModuleOptInTitleParam, "2"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleOptInTripsTitle[] = {
+    {ntp_features::kNtpPhotosModuleOptInTitleParam, "3"}};
 
 const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Recent Highlights", kNtpPhotosModuleOptInRHTitle,
@@ -1511,7 +1529,28 @@ const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Favorite people", kNtpPhotosModuleOptInFavoriteTitle,
      base::size(kNtpPhotosModuleOptInFavoriteTitle), nullptr},
     {" - Personalized title", kNtpPhotosModuleOptInPersonalizedTitle,
-     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr}};
+     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr},
+    {" - Trips title", kNtpPhotosModuleOptInTripsTitle,
+     base::size(kNtpPhotosModuleOptInTripsTitle), nullptr}};
+
+const FeatureEntry::FeatureParam kNtpPhotosModuleLogo1ArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "1"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleLogo2ArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "2"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleIllustrationsArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "3"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleStockpileArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "4"}};
+
+const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInArtWorkVariations[] =
+    {{" - Artwork with Logo - 1", kNtpPhotosModuleLogo1ArtWork,
+      base::size(kNtpPhotosModuleLogo1ArtWork), nullptr},
+     {" - Artwork with Logo - 2", kNtpPhotosModuleLogo2ArtWork,
+      base::size(kNtpPhotosModuleLogo2ArtWork), nullptr},
+     {" - Artwork with Illustrations", kNtpPhotosModuleIllustrationsArtWork,
+      base::size(kNtpPhotosModuleIllustrationsArtWork), nullptr},
+     {" - Artwork with Stockpile", kNtpPhotosModuleStockpileArtWork,
+      base::size(kNtpPhotosModuleStockpileArtWork), nullptr}};
 
 const FeatureEntry::FeatureParam kRealboxMatchOmniboxThemeVar1[] = {
     {ntp_features::kRealboxMatchOmniboxThemeVariantParam, "1"}};
@@ -1809,7 +1848,6 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
-    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -5153,6 +5191,14 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpPhotosModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"ntp-photos-opt-in-art-work",
+     flag_descriptions::kNtpPhotosModuleOptInArtWorkName,
+     flag_descriptions::kNtpPhotosModuleOptInArtWorkDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ntp_features::kNtpPhotosModuleCustomizedOptInArtWork,
+         kNtpPhotosModuleOptInArtWorkVariations,
+         "DesktopNtpModules")},
+
     {"ntp-photos-opt-in-title",
      flag_descriptions::kNtpPhotosModuleOptInTitleName,
      flag_descriptions::kNtpPhotosModuleOptInTitleDescription, kOsDesktop,
@@ -8069,7 +8115,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(IS_ANDROID)
     {"enable-discount-consent-v2", flag_descriptions::kDiscountConsentV2Name,
      flag_descriptions::kDiscountConsentV2Description, kOsDesktop,
-     FEATURE_VALUE_TYPE(commerce::kDiscountConsentV2)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kDiscountConsentV2,
+                                    kDiscountConsentV2Variations,
+                                    "DiscountConsentV2")},
 #endif
 
     {"autofill-enable-unmask-card-request-set-instrument-id",
@@ -8098,6 +8146,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIsolatedSandboxedIframesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kIsolateSandboxedIframes)},
 #endif
+
+    {"download-bubble", flag_descriptions::kDownloadBubbleName,
+     flag_descriptions::kDownloadBubbleDescription, kOsLinux | kOsMac | kOsWin,
+     FEATURE_VALUE_TYPE(safe_browsing::kDownloadBubble)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
