@@ -15,7 +15,6 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 
 #include "av1/encoder/corner_match.h"
@@ -54,7 +53,7 @@ void AV1CornerMatchTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
   target_func = GET_PARAM(1);
 }
-void AV1CornerMatchTest::TearDown() { libaom_test::ClearSystemState(); }
+void AV1CornerMatchTest::TearDown() {}
 
 void AV1CornerMatchTest::RunCheckOutput(int run_times) {
   const int w = 128, h = 128;

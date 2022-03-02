@@ -14,10 +14,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {BlockingRequestManager} from 'chrome://settings/lazy_load.js';
 import {MultiStorePasswordUiEntry, PasswordManagerImpl} from 'chrome://settings/settings.js';
-import {MockTimer} from 'chrome://test/mock_timer.m.js';
-import {createPasswordEntry, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from 'chrome://test/settings/passwords_export_test.js';
-import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {MockTimer} from 'chrome://test/mock_timer.js';
+import {createPasswordEntry, PasswordSectionElementFactory} from './passwords_and_autofill_fake_data.js';
+import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from './passwords_export_test.js';
+import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 
 // clang-format on
 
@@ -114,7 +114,7 @@ suite('PasswordsSection_Cros', function() {
     PolymerTest.clearBody();
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
-    PasswordManagerImpl.instance_ = passwordManager;
+    PasswordManagerImpl.setInstance(passwordManager);
 
     // Define a fake BlockingRequestManager to track when a token request
     // comes in by resolving requestPromise.
@@ -155,7 +155,7 @@ suite('PasswordsSection_Cros', function() {
     passwordPromise.then(fail);
     const exportDialog =
         elementFactory.createExportPasswordsDialog(passwordManager, true);
-    exportDialog.$$('#exportPasswordsButton').click();
+    exportDialog.shadowRoot.querySelector('#exportPasswordsButton').click();
     return requestPromise;
   });
 
@@ -167,7 +167,8 @@ suite('PasswordsSection_Cros', function() {
         requestPromise.then(fail);
         const passwordListItem = elementFactory.createPasswordListItem();
         passwordManager.setPlaintextPassword('password');
-        passwordListItem.$$('#showPasswordButton').click();
+        passwordListItem.shadowRoot.querySelector('#showPasswordButton')
+            .click();
         return passwordPromise;
       });
 
@@ -178,9 +179,13 @@ suite('PasswordsSection_Cros', function() {
         passwordPromise.then(fail);
         const passwordListItem = elementFactory.createPasswordListItem();
         passwordManager.setPlaintextPassword('');
-        passwordListItem.$$('#showPasswordButton').click();
+        passwordListItem.shadowRoot.querySelector('#showPasswordButton')
+            .click();
         return requestPromise;
       });
+
+  // TODO(crbug.com/1274569): add test for edit-dialog requesting token when
+  // switching from ADD to EDIT mode when other tests are fixed.
 
   // Note (rbpotter): this passes locally, but may still be flaky (see
   // https://www.crbug.com/1021474)
@@ -190,7 +195,8 @@ suite('PasswordsSection_Cros', function() {
         requestPromise.then(fail);
         const passwordEditDialog = elementFactory.createPasswordEditDialog();
         passwordManager.setPlaintextPassword('password');
-        passwordEditDialog.$$('#showPasswordButton').click();
+        passwordEditDialog.shadowRoot.querySelector('#showPasswordButton')
+            .click();
         return passwordPromise;
       });
 
@@ -201,7 +207,8 @@ suite('PasswordsSection_Cros', function() {
         passwordPromise.then(fail);
         const passwordEditDialog = elementFactory.createPasswordEditDialog();
         passwordManager.setPlaintextPassword('');
-        passwordEditDialog.$$('#showPasswordButton').click();
+        passwordEditDialog.shadowRoot.querySelector('#showPasswordButton')
+            .click();
         return requestPromise;
       });
 
@@ -210,10 +217,12 @@ suite('PasswordsSection_Cros', function() {
   test.skip('password-prompt-dialog appears on auth token request', function() {
     const passwordsSection =
         elementFactory.createPasswordsSection(passwordManager);
-    assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
+    assertTrue(!passwordsSection.shadowRoot.querySelector(
+        'settings-password-prompt-dialog'));
     passwordsSection.tokenRequestManager_.request(fail);
     flush();
-    assertTrue(!!passwordsSection.$$('settings-password-prompt-dialog'));
+    assertTrue(!!passwordsSection.shadowRoot.querySelector(
+        'settings-password-prompt-dialog'));
   });
 
   // Note (rbpotter): this fails locally, possibly out of date
@@ -247,10 +256,12 @@ suite('PasswordsSection_Cros', function() {
         const passwordsSection = document.createElement('passwords-section');
         document.body.appendChild(passwordsSection);
         flush();
-        assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
+        assertTrue(!passwordsSection.shadowRoot.querySelector(
+            'settings-password-prompt-dialog'));
         passwordsSection.tokenRequestManager_.request(() => {
           flush();
-          assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
+          assertTrue(!passwordsSection.shadowRoot.querySelector(
+              'settings-password-prompt-dialog'));
           done();
         });
       });

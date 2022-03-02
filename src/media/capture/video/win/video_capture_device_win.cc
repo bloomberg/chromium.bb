@@ -13,7 +13,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/stl_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
@@ -128,15 +128,15 @@ void VideoCaptureDeviceWin::GetPinCapabilityList(
   ComPtr<IAMVideoControl> video_control;
   hr = capture_filter.As(&video_control);
 
-  int count = 0, size = 0;
-  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  int count = 0, byte_size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &byte_size);
   if (FAILED(hr)) {
     DLOG(ERROR) << "GetNumberOfCapabilities failed: "
                 << logging::SystemErrorCodeToString(hr);
     return;
   }
 
-  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
+  std::unique_ptr<BYTE[]> caps(new BYTE[byte_size]);
   for (int i = 0; i < count; ++i) {
     VideoCaptureDeviceWin::ScopedMediaType media_type;
     hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
@@ -522,6 +522,17 @@ void VideoCaptureDeviceWin::AllocateAndStart(
         FROM_HERE, "Failed to start the Capture device.", hr);
     return;
   }
+
+  base::UmaHistogramEnumeration(
+      "Media.VideoCapture.Win.Device.InternalPixelFormat",
+      capture_format_.pixel_format, media::VideoPixelFormat::PIXEL_FORMAT_MAX);
+  base::UmaHistogramEnumeration(
+      "Media.VideoCapture.Win.Device.CapturePixelFormat",
+      capture_format_.pixel_format, media::VideoPixelFormat::PIXEL_FORMAT_MAX);
+  base::UmaHistogramEnumeration(
+      "Media.VideoCapture.Win.Device.RequestedPixelFormat",
+      params.requested_format.pixel_format,
+      media::VideoPixelFormat::PIXEL_FORMAT_MAX);
 
   client_->OnStarted();
   state_ = kCapturing;

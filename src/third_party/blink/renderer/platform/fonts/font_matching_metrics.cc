@@ -291,10 +291,10 @@ void FontMatchingMetrics::PublishIdentifiabilityMetrics() {
 
   for (const auto& surface_entry : hash_maps_with_corresponding_surface_types) {
     TokenToTokenHashMap* hash_map = surface_entry.first;
-    const IdentifiableSurface::Type& surface_type = surface_entry.second;
-    for (const auto& individual_lookup : *hash_map) {
-      if (IdentifiabilityStudySettings::Get()->ShouldSample(surface_type)) {
-        builder.Set(IdentifiableSurface::FromTypeAndToken(
+    const IdentifiableSurface::Type surface_type = surface_entry.second;
+    if (IdentifiabilityStudySettings::Get()->ShouldSample(surface_type)) {
+      for (const auto& individual_lookup : *hash_map) {
+        builder.Add(IdentifiableSurface::FromTypeAndToken(
                         surface_type, individual_lookup.key.token),
                     individual_lookup.value);
       }
@@ -353,8 +353,7 @@ void FontMatchingMetrics::PublishEmojiGlyphMetrics() {
 void FontMatchingMetrics::OnFontLookup() {
   DCHECK(IdentifiabilityStudySettings::Get()->IsActive());
   if (!identifiability_metrics_timer_.IsActive()) {
-    identifiability_metrics_timer_.StartOneShot(base::TimeDelta::FromMinutes(1),
-                                                FROM_HERE);
+    identifiability_metrics_timer_.StartOneShot(base::Minutes(1), FROM_HERE);
   }
 }
 

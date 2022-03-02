@@ -8,10 +8,11 @@
 #include <deque>
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
 #include "cc/scheduler/scheduler.h"
@@ -140,12 +141,12 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   // viz::ContextLostObserver:
   void OnContextLost() override;
 
-  LayerTreeFrameSinkClient* client_ = nullptr;
+  raw_ptr<LayerTreeFrameSinkClient> client_ = nullptr;
 
   scoped_refptr<viz::ContextProvider> context_provider_;
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  raw_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   std::unique_ptr<ContextLostForwarder> worker_context_lost_forwarder_;
 

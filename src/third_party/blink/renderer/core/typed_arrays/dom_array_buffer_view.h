@@ -9,11 +9,13 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
 class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
+  static const WrapperTypeInfo wrapper_type_info_body_;
 
  public:
   enum ViewType {

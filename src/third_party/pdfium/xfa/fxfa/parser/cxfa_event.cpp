@@ -14,11 +14,11 @@
 namespace {
 
 const CXFA_Node::PropertyData kEventPropertyData[] = {
-    {XFA_Element::Execute, 1, XFA_PROPERTYFLAG_OneOf},
-    {XFA_Element::Script, 1, XFA_PROPERTYFLAG_OneOf},
-    {XFA_Element::SignData, 1, XFA_PROPERTYFLAG_OneOf},
-    {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Submit, 1, XFA_PROPERTYFLAG_OneOf},
+    {XFA_Element::Execute, 1, XFA_PropertyFlag::kOneOf},
+    {XFA_Element::Script, 1, XFA_PropertyFlag::kOneOf},
+    {XFA_Element::SignData, 1, XFA_PropertyFlag::kOneOf},
+    {XFA_Element::Extras, 1, {}},
+    {XFA_Element::Submit, 1, XFA_PropertyFlag::kOneOf},
 };
 
 const CXFA_Node::AttributeData kEventAttributeData[] = {
@@ -38,7 +38,7 @@ const CXFA_Node::AttributeData kEventAttributeData[] = {
 CXFA_Event::CXFA_Event(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Event,
                 kEventPropertyData,

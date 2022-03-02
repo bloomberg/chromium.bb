@@ -30,7 +30,8 @@ class IntentionalException(Exception):
 
 class BrowserTest(browser_test_case.BrowserTestCase):
   def testBrowserCreation(self):
-    self.assertEquals(1, len(self._browser.tabs))
+    self.assertLess(0, len(self._browser.tabs))
+    self.assertGreater(3, len(self._browser.tabs))
 
     # Different browsers boot up to different things.
     assert self._browser.tabs[0].url
@@ -43,17 +44,19 @@ class BrowserTest(browser_test_case.BrowserTestCase):
   @decorators.Enabled('has tabs')
   def testNewCloseTab(self):
     existing_tab = self._browser.tabs[0]
-    self.assertEquals(1, len(self._browser.tabs))
+    num_tabs = len(self._browser.tabs)
+    self.assertLess(0, num_tabs)
+    self.assertGreater(3, num_tabs)
     existing_tab_url = existing_tab.url
 
     new_tab = self._browser.tabs.New()
-    self.assertEquals(2, len(self._browser.tabs))
-    self.assertEquals(existing_tab.url, existing_tab_url)
-    self.assertEquals(new_tab.url, 'about:blank')
+    self.assertEqual(num_tabs + 1, len(self._browser.tabs))
+    self.assertEqual(existing_tab.url, existing_tab_url)
+    self.assertEqual(new_tab.url, 'about:blank')
 
     new_tab.Close()
-    self.assertEquals(1, len(self._browser.tabs))
-    self.assertEquals(existing_tab.url, existing_tab_url)
+    self.assertEqual(num_tabs, len(self._browser.tabs))
+    self.assertEqual(existing_tab.url, existing_tab_url)
 
   def testMultipleTabCalls(self):
     self._browser.tabs[0].Navigate(self.UrlOfUnittestFile('blank.html'))
@@ -66,18 +69,26 @@ class BrowserTest(browser_test_case.BrowserTestCase):
 
   @decorators.Enabled('has tabs')
   def testCloseReferencedTab(self):
+    num_initial_tabs = len(self._browser.tabs)
     self._browser.tabs.New()
     tab = self._browser.tabs[0]
     tab.Navigate(self.UrlOfUnittestFile('blank.html'))
     tab.Close()
-    self.assertEquals(1, len(self._browser.tabs))
+    self.assertEqual(num_initial_tabs, len(self._browser.tabs))
 
   @decorators.Enabled('has tabs')
-  @decorators.Disabled('android')  # http://crbug.com/905359
   def testForegroundTab(self):
-    # Should be only one tab at this stage, so that must be the foreground tab
+    num_tabs = len(self._browser.tabs)
+    self.assertLess(0, num_tabs)
+    self.assertGreater(3, num_tabs)
+    # The first tab is the foreground tab by default.
     original_tab = self._browser.tabs[0]
     self.assertEqual(self._browser.foreground_tab, original_tab)
+    # If there are 2 tabs open, close the inactive one before creating a new
+    # tab. This ensures the new tab will regain the foreground when we close
+    # the original tab after re-activating it.
+    if num_tabs == 2:
+      self._browser.tabs[1].Close()
     new_tab = self._browser.tabs.New()
     # New tab shouls be foreground tab
     self.assertEqual(self._browser.foreground_tab, new_tab)
@@ -158,8 +169,8 @@ class CommandLineBrowserTest(browser_test_case.BrowserTestCase):
     t = self._browser.tabs[0]
     t.Navigate(self.UrlOfUnittestFile('blank.html'))
     t.WaitForDocumentReadyStateToBeInteractiveOrBetter()
-    self.assertEquals(t.EvaluateJavaScript('navigator.userAgent'),
-                      'telemetry')
+    self.assertEqual(t.EvaluateJavaScript('navigator.userAgent'), 'telemetry')
+
 
 class DirtyProfileBrowserTest(browser_test_case.BrowserTestCase):
   @classmethod
@@ -168,7 +179,7 @@ class DirtyProfileBrowserTest(browser_test_case.BrowserTestCase):
 
   @decorators.Disabled('chromeos')  # crbug.com/243912
   def testDirtyProfileCreation(self):
-    self.assertEquals(1, len(self._browser.tabs))
+    self.assertEqual(1, len(self._browser.tabs))
 
 
 class BrowserLoggingTest(browser_test_case.BrowserTestCase):
@@ -206,7 +217,7 @@ class BrowserCreationTest(unittest.TestCase):
       browser_module.Browser(
           self.mock_browser_backend, self.mock_platform_backend,
           self.fake_startup_args)
-    self.assertIn('Boom!', context.exception.message)
+    self.assertIn('Boom!', repr(context.exception))
 
 
 class TestBrowserCreation(unittest.TestCase):
@@ -227,7 +238,7 @@ class TestBrowserCreation(unittest.TestCase):
     with self.browser_to_create.BrowserSession(self.browser_options) as browser:
       tab = browser.tabs.New()
       tab.Navigate('about:blank')
-      self.assertEquals(2, tab.EvaluateJavaScript('1 + 1'))
+      self.assertEqual(2, tab.EvaluateJavaScript('1 + 1'))
 
   def testCreateWithBadOptionsRaises(self):
     with self.assertRaises(AssertionError):
@@ -243,7 +254,7 @@ class TestBrowserCreation(unittest.TestCase):
         browser = self.browser_to_create.Create()
         tab = browser.tabs.New()
         tab.Navigate('about:blank')
-        self.assertEquals(2, tab.EvaluateJavaScript('1 + 1'))
+        self.assertEqual(2, tab.EvaluateJavaScript('1 + 1'))
         browser.Close()
     finally:
       self.browser_to_create.CleanUpEnvironment()
@@ -257,7 +268,7 @@ class TestBrowserCreation(unittest.TestCase):
     with self.browser_to_create.BrowserSession(self.browser_options) as browser:
       tab = browser.tabs.New()
       tab.Navigate('about:blank')
-      self.assertEquals(2, tab.EvaluateJavaScript('1 + 1'))
+      self.assertEqual(2, tab.EvaluateJavaScript('1 + 1'))
     after_browser_run_temp_dir_content = os.listdir(tempfile.tempdir)
     self.assertEqual(before_browser_run_temp_dir_content,
                      after_browser_run_temp_dir_content)

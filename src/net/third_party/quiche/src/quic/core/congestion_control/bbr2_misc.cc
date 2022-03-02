@@ -102,10 +102,13 @@ void Bbr2NetworkModel::OnCongestionEventStart(
                                            lost_packets, MaxBandwidth(),
                                            bandwidth_lo(), RoundTripCount());
 
+  if (sample.extra_acked == 0) {
+    cwnd_limited_before_aggregation_epoch_ =
+        congestion_event->prior_bytes_in_flight >= congestion_event->prior_cwnd;
+  }
+
   if (sample.last_packet_send_state.is_valid) {
     congestion_event->last_packet_send_state = sample.last_packet_send_state;
-    congestion_event->last_sample_is_app_limited =
-        sample.last_packet_send_state.is_app_limited;
   }
 
   // Avoid updating |max_bandwidth_filter_| if a) this is a loss-only event, or
@@ -159,6 +162,12 @@ void Bbr2NetworkModel::OnCongestionEventStart(
         congestion_event->last_packet_send_state.total_bytes_acked;
     max_bytes_delivered_in_round_ =
         std::max(max_bytes_delivered_in_round_, bytes_delivered);
+    // TODO(ianswett) Consider treating any bytes lost as decreasing inflight,
+    // because it's a sign of overutilization, not underutilization.
+    if (min_bytes_in_flight_in_round_ == 0 ||
+        congestion_event->bytes_in_flight < min_bytes_in_flight_in_round_) {
+      min_bytes_in_flight_in_round_ = congestion_event->bytes_in_flight;
+    }
   }
 
   // |bandwidth_latest_| and |inflight_latest_| only increased within a round.
@@ -264,9 +273,7 @@ void Bbr2NetworkModel::AdaptLowerBounds(
   // sample_max_bandwidth will be Zero() if the loss is triggered by a timer
   // expiring.  Ideally we'd use the most recent bandwidth sample,
   // but bandwidth_latest is safer than Zero().
-  if (GetQuicReloadableFlag(quic_bbr2_fix_bw_lo_mode2) &&
-      !congestion_event.sample_max_bandwidth.IsZero()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fix_bw_lo_mode2, 1, 2);
+  if (!congestion_event.sample_max_bandwidth.IsZero()) {
     // bandwidth_latest_ is the max bandwidth for the round, but to allow
     // fast, conservation style response to loss, use the last sample.
     last_bandwidth = congestion_event.sample_max_bandwidth;
@@ -286,9 +293,7 @@ void Bbr2NetworkModel::AdaptLowerBounds(
   }
   // If it's the end of the round, ensure bandwidth_lo doesn't decrease more
   // than beta.
-  if (GetQuicReloadableFlag(quic_bbr2_fix_bw_lo_mode) &&
-      congestion_event.end_of_round_trip) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fix_bw_lo_mode, 2, 2);
+  if (congestion_event.end_of_round_trip) {
     bandwidth_lo_ =
         std::max(bandwidth_lo_, prior_bandwidth_lo_ * (1.0 - Params().beta));
     prior_bandwidth_lo_ = QuicBandwidth::Zero();
@@ -327,14 +332,6 @@ bool Bbr2NetworkModel::MaybeExpireMinRtt(
   min_rtt_filter_.ForceUpdate(congestion_event.sample_min_rtt,
                               congestion_event.event_time);
   return true;
-}
-
-bool Bbr2NetworkModel::IsCongestionWindowLimited(
-    const Bbr2CongestionEvent& congestion_event) const {
-  QuicByteCount prior_bytes_in_flight = congestion_event.bytes_in_flight +
-                                        congestion_event.bytes_acked +
-                                        congestion_event.bytes_lost;
-  return prior_bytes_in_flight >= congestion_event.prior_cwnd;
 }
 
 bool Bbr2NetworkModel::IsInflightTooHigh(
@@ -383,6 +380,7 @@ void Bbr2NetworkModel::OnNewRound() {
   bytes_lost_in_round_ = 0;
   loss_events_in_round_ = 0;
   max_bytes_delivered_in_round_ = 0;
+  min_bytes_in_flight_in_round_ = 0;
 }
 
 void Bbr2NetworkModel::cap_inflight_lo(QuicByteCount cap) {
@@ -400,13 +398,10 @@ QuicByteCount Bbr2NetworkModel::inflight_hi_with_headroom() const {
   return inflight_hi_ > headroom ? inflight_hi_ - headroom : 0;
 }
 
-Bbr2NetworkModel::BandwidthGrowth Bbr2NetworkModel::CheckBandwidthGrowth(
+bool Bbr2NetworkModel::HasBandwidthGrowth(
     const Bbr2CongestionEvent& congestion_event) {
   QUICHE_DCHECK(!full_bandwidth_reached_);
   QUICHE_DCHECK(congestion_event.end_of_round_trip);
-  if (congestion_event.last_sample_is_app_limited) {
-    return APP_LIMITED;
-  }
 
   QuicBandwidth threshold =
       full_bandwidth_baseline_ * Params().startup_full_bw_threshold;
@@ -417,14 +412,15 @@ Bbr2NetworkModel::BandwidthGrowth Bbr2NetworkModel::CheckBandwidthGrowth(
                   << " (Still growing)  @ " << congestion_event.event_time;
     full_bandwidth_baseline_ = MaxBandwidth();
     rounds_without_bandwidth_growth_ = 0;
-    return GROWTH;
+    return true;
   }
-
   ++rounds_without_bandwidth_growth_;
-  BandwidthGrowth return_value = NO_GROWTH;
-  if (rounds_without_bandwidth_growth_ >= Params().startup_full_bw_rounds) {
+
+  // full_bandwidth_reached is only set to true when not app-limited, except
+  // when exit_startup_on_persistent_queue is true.
+  if (rounds_without_bandwidth_growth_ >= Params().startup_full_bw_rounds &&
+      !congestion_event.last_packet_send_state.is_app_limited) {
     full_bandwidth_reached_ = true;
-    return_value = EXIT;
   }
   QUIC_DVLOG(3) << " CheckBandwidthGrowth at end of round. max_bandwidth:"
                 << MaxBandwidth() << ", threshold:" << threshold
@@ -432,7 +428,27 @@ Bbr2NetworkModel::BandwidthGrowth Bbr2NetworkModel::CheckBandwidthGrowth(
                 << " full_bw_reached:" << full_bandwidth_reached_ << "  @ "
                 << congestion_event.event_time;
 
-  return return_value;
+  return false;
+}
+
+bool Bbr2NetworkModel::CheckPersistentQueue(
+    const Bbr2CongestionEvent& congestion_event, float bdp_gain) {
+  QUICHE_DCHECK(congestion_event.end_of_round_trip);
+  QuicByteCount target = bdp_gain * BDP();
+  if (bdp_gain >= 2) {
+    // Use a more conservative threshold for STARTUP because CWND gain is 2.
+    if (target <= QueueingThresholdExtraBytes()) {
+      return false;
+    }
+    target -= QueueingThresholdExtraBytes();
+  } else {
+    target += QueueingThresholdExtraBytes();
+  }
+  if (min_bytes_in_flight_in_round_ > target) {
+    full_bandwidth_reached_ = true;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace quic

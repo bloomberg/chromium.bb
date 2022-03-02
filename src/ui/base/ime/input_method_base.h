@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -35,15 +35,19 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
     : public InputMethod,
       public base::SupportsWeakPtr<InputMethodBase> {
  public:
+  InputMethodBase(const InputMethodBase&) = delete;
+  InputMethodBase& operator=(const InputMethodBase&) = delete;
+
   ~InputMethodBase() override;
 
   // Overriden from InputMethod.
   void SetDelegate(internal::InputMethodDelegate* delegate) override;
   void OnFocus() override;
+  void OnTouch(ui::EventPointerType pointerType) override;
   void OnBlur() override;
 
 #if defined(OS_WIN)
-  bool OnUntranslatedIMEMessage(const MSG event,
+  bool OnUntranslatedIMEMessage(const CHROME_MSG event,
                                 NativeEventResult* result) override;
   void OnInputLocaleChanged() override;
   bool IsInputLocaleCJK() const override;
@@ -58,11 +62,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // implementation.
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   TextInputType GetTextInputType() const override;
-  TextInputMode GetTextInputMode() const override;
-  int GetTextInputFlags() const override;
-  bool CanComposeInline() const override;
-  bool GetClientShouldDoLearning() override;
   void ShowVirtualKeyboardIfEnabled() override;
+  void SetVirtualKeyboardVisibilityIfEnabled(bool should_show) override;
 
   void AddObserver(InputMethodObserver* observer) override;
   void RemoveObserver(InputMethodObserver* observer) override;
@@ -112,11 +113,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   internal::InputMethodDelegate* delegate() const { return delegate_; }
 
  private:
-  internal::InputMethodDelegate* delegate_;
+  raw_ptr<internal::InputMethodDelegate> delegate_;
 
   void SetFocusedTextInputClientInternal(TextInputClient* client);
 
-  TextInputClient* text_input_client_ = nullptr;
+  raw_ptr<TextInputClient> text_input_client_ = nullptr;
 
   base::ObserverList<InputMethodObserver>::Unchecked observer_list_;
 
@@ -124,8 +125,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   gfx::Rect keyboard_bounds_;
 
   std::unique_ptr<VirtualKeyboardController> const keyboard_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodBase);
 };
 
 }  // namespace ui

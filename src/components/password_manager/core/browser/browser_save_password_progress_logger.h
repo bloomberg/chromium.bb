@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "url/gurl.h"
@@ -28,6 +29,10 @@ class BrowserSavePasswordProgressLogger
  public:
   explicit BrowserSavePasswordProgressLogger(
       const autofill::LogManager* log_manager);
+  BrowserSavePasswordProgressLogger(const BrowserSavePasswordProgressLogger&) =
+      delete;
+  BrowserSavePasswordProgressLogger& operator=(
+      const BrowserSavePasswordProgressLogger&) = delete;
   ~BrowserSavePasswordProgressLogger() override;
 
   // Browser-specific addition to the base class' Log* methods. The input is
@@ -50,6 +55,12 @@ class BrowserSavePasswordProgressLogger
 
   void LogPasswordForm(StringID label, const PasswordForm& form);
 
+  // Log password requirements.
+  void LogPasswordRequirements(const GURL& origin,
+                               autofill::FormSignature form_signature,
+                               autofill::FieldSignature field_signature,
+                               const autofill::PasswordRequirementsSpec& spec);
+
  protected:
   // autofill::SavePasswordProgressLogger:
   void SendLog(const std::string& log) override;
@@ -57,7 +68,7 @@ class BrowserSavePasswordProgressLogger
  private:
   // The LogManager to which logs can be sent for display. The log_manager must
   // outlive this logger.
-  const autofill::LogManager* const log_manager_;
+  const raw_ptr<const autofill::LogManager> log_manager_;
 
   // Returns string representation for |FormStructure|.
   std::string FormStructureToFieldsLogString(
@@ -74,8 +85,6 @@ class BrowserSavePasswordProgressLogger
   // Returns the string representation of a binary password attribute.
   std::string BinaryPasswordAttributeLogString(StringID string_id,
                                                bool attribute_value);
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSavePasswordProgressLogger);
 };
 
 }  // namespace password_manager

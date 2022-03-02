@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SHARING_HUB_SHARING_HUB_BUBBLE_VIEW_IMPL_H_
 #define CHROME_BROWSER_UI_VIEWS_SHARING_HUB_SHARING_HUB_BUBBLE_VIEW_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
@@ -33,6 +34,9 @@ class SharingHubBubbleViewImpl : public SharingHubBubbleView,
                            content::WebContents* web_contents,
                            SharingHubBubbleController* controller);
 
+  SharingHubBubbleViewImpl(const SharingHubBubbleViewImpl&) = delete;
+  SharingHubBubbleViewImpl& operator=(const SharingHubBubbleViewImpl&) = delete;
+
   ~SharingHubBubbleViewImpl() override;
 
   // SharingHubBubbleView:
@@ -40,11 +44,13 @@ class SharingHubBubbleViewImpl : public SharingHubBubbleView,
 
   // views::WidgetDelegateView:
   bool ShouldShowCloseButton() const override;
-  std::u16string GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
   void WindowClosing() override;
 
   // LocationBarBubbleDelegateView:
+  std::u16string GetAccessibleWindowTitle() const override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void OnThemeChanged() override;
 
   // Shows the bubble view.
   void Show(DisplayReason reason);
@@ -61,7 +67,9 @@ class SharingHubBubbleViewImpl : public SharingHubBubbleView,
   void CreateScrollView();
 
   // Populates the scroll view containing sharing actions.
-  void PopulateScrollView(const std::vector<SharingHubAction>& actions);
+  void PopulateScrollView(
+      const std::vector<SharingHubAction>& first_party_actions,
+      const std::vector<SharingHubAction>& third_party_actions);
 
   // Resizes and potentially moves the bubble to fit the content's preferred
   // size.
@@ -69,14 +77,16 @@ class SharingHubBubbleViewImpl : public SharingHubBubbleView,
 
   // A raw pointer is safe since our controller will outlive us (the bubble is
   // lazily created with the controller).
-  SharingHubBubbleController* controller_;
+  raw_ptr<SharingHubBubbleController> controller_;
 
   // ScrollView containing the list of share/save actions.
-  views::ScrollView* scroll_view_ = nullptr;
+  raw_ptr<views::ScrollView> scroll_view_ = nullptr;
+
+  // The "Share link to" annotation text, which indicates to the user what
+  // the 3P target options do.
+  raw_ptr<views::Label> share_link_label_ = nullptr;
 
   base::WeakPtrFactory<SharingHubBubbleViewImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SharingHubBubbleViewImpl);
 };
 
 }  // namespace sharing_hub

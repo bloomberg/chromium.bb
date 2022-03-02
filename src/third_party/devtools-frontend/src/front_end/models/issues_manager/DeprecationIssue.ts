@@ -2,40 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';
+import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {MarkdownIssueDescription} from './MarkdownIssueDescription.js';
-import {isCausedByThirdParty} from './SameSiteCookieIssue.js';
 
-
-const UIStrings = {
-  /**
-   * @description Label for the link for User-Agent String reduction issues, that is, issues that are related to an
-   * upcoming reduction of information content in the user-agent string.
-   */
-  userAgentReduction: 'User-Agent String Reduction',
-};
-const str_ = i18n.i18n.registerUIStrings('models/issues_manager/DeprecationIssue.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum IssueCode {
-  NavigatorUserAgentIssue = 'DeprecationIssue::NavigatorUserAgentIssue',
+export const enum IssueCode {
+  DeprecationIssue = 'DeprecationIssue',
 }
 
 export class DeprecationIssue extends Issue<IssueCode> {
-  // TODO(crbug.com/1072335) Update types once protocol rolls
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private issueDetails: any;
+  private issueDetails: Protocol.Audits.DeprecationIssueDetails;
 
-  // TODO(crbug.com/1072335) Update types once protocol rolls
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(issueDetails: any, issuesModel: SDK.IssuesModel.IssuesModel) {
-    super(IssueCode.NavigatorUserAgentIssue, issuesModel);
+  constructor(issueDetails: Protocol.Audits.DeprecationIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel) {
+    super(IssueCode.DeprecationIssue, issuesModel);
     this.issueDetails = issueDetails;
   }
 
@@ -43,22 +24,27 @@ export class DeprecationIssue extends Issue<IssueCode> {
     return IssueCategory.Other;
   }
 
-  details(): Protocol.Audits.CorsIssueDetails {
+  details(): Protocol.Audits.DeprecationIssueDetails {
     return this.issueDetails;
   }
 
   getDescription(): MarkdownIssueDescription|null {
     return {
-      file: 'deprecationNavigatorUserAgent.md',
-      links: [{
-        link: 'https://blog.chromium.org/2021/05/update-on-user-agent-string-reduction.html',
-        linkTitle: i18nString(UIStrings.userAgentReduction),
-      }],
+      file: 'deprecation.md',
+      substitutions: new Map([
+        // TODO(crbug.com/1264960): Re-work format to add i18n support per:
+        // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
+        ['PLACEHOLDER_message', String(this.issueDetails.message)],
+      ]),
+      links: [],
     };
   }
 
   sources(): Iterable<Protocol.Audits.SourceCodeLocation> {
-    return [this.issueDetails.location];
+    if (this.issueDetails.sourceCodeLocation) {
+      return [this.issueDetails.sourceCodeLocation];
+    }
+    return [];
   }
 
   primaryKey(): string {
@@ -66,24 +52,16 @@ export class DeprecationIssue extends Issue<IssueCode> {
   }
 
   getKind(): IssueKind {
-    return IssueKind.Improvement;
+    return IssueKind.BreakingChange;
   }
 
-  isCausedByThirdParty(): boolean {
-    const topFrame = SDK.FrameManager.FrameManager.instance().getTopFrame();
-    return isCausedByThirdParty(topFrame, this.issueDetails.url);
-  }
-
-  static fromInspectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorDetails: Protocol.Audits.InspectorIssueDetails): DeprecationIssue[] {
-    // TODO(crbug.com/1072335) Update types once protocol rolls
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const corsIssueDetails = (inspectorDetails as any)['navigatorUserAgentIssueDetails'];
-    if (!corsIssueDetails) {
-      console.warn('Cors issue without details received.');
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      DeprecationIssue[] {
+    const details = inspectorIssue.details.deprecationIssueDetails;
+    if (!details) {
+      console.warn('Deprecation issue without details received.');
       return [];
     }
-    return [new DeprecationIssue(corsIssueDetails, issuesModel)];
+    return [new DeprecationIssue(details, issuesModel)];
   }
 }

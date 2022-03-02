@@ -23,9 +23,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <iosfwd>
 #include <limits>
-#include <ostream>
 #include <string>
 #include <type_traits>
 

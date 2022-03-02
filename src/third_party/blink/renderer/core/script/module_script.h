@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -87,9 +87,6 @@ class CORE_EXPORT ModuleScript : public Script {
   Member<Modulator> settings_object_;
 
   // https://html.spec.whatwg.org/C/#concept-script-record
-  // TODO(keishi): Visitor only defines a trace method for v8::Value so this
-  // needs to be cast.
-  GC_PLUGIN_IGNORE("757708")
   TraceWrapperV8Reference<v8::Module> record_;
 
   // https://html.spec.whatwg.org/C/#concept-script-parse-error

@@ -14,10 +14,6 @@
 # ==============================================================================
 
 """Operations for automatic batching and unbatching."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.eager import function
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_spec
@@ -25,6 +21,7 @@ from tensorflow.python.ops import gen_batch_ops
 # pylint: disable=wildcard-import
 from tensorflow.python.ops.gen_batch_ops import *
 # pylint: enable=wildcard-import
+from tensorflow.python.util import nest
 from tensorflow.python.util.tf_export import tf_export
 
 
@@ -34,7 +31,8 @@ def batch_function(num_batch_threads,
                    batch_timeout_micros,
                    allowed_batch_sizes=None,
                    max_enqueued_batches=10,
-                   autograph=True):
+                   autograph=True,
+                   enable_large_batch_splitting=True):
   """Batches the computation done by the decorated function.
 
   So, for example, in the following code
@@ -71,6 +69,15 @@ def batch_function(num_batch_threads,
     max_enqueued_batches: The maximum depth of the batch queue. Defaults to 10.
     autograph: Whether to use autograph to compile python and eager style code
      for efficient graph-mode execution.
+    enable_large_batch_splitting: The value of this option doesn't affect
+     processing output given the same input; it affects implementation details
+     as stated below: 1. Improve batching efficiency by eliminating unnecessary
+     adding. 2.`max_batch_size` specifies the limit of input and
+     `allowed_batch_sizes` specifies the limit of a task to be processed. API
+     user can give an input of size 128 when 'max_execution_batch_size'
+     is 32 -> implementation can split input of 128 into 4 x 32, schedule
+     concurrent processing, and then return concatenated results corresponding
+     to 128.
 
   Returns:
     The decorated function will return the unbatched computation output Tensors.
@@ -93,18 +100,21 @@ def batch_function(num_batch_threads,
           if not isinstance(a, ops.Tensor):
             raise ValueError("All arguments to functions decorated with "
                              "`batch_function`  are supposed to be Tensors; "
-                             "found %s" % repr(a))
-        return gen_batch_ops.batch_function(
+                             f"found {a!r}.")
+        outputs = gen_batch_ops.batch_function(
             num_batch_threads=num_batch_threads,
             max_batch_size=max_batch_size,
             batch_timeout_micros=batch_timeout_micros,
             allowed_batch_sizes=allowed_batch_sizes,
             max_enqueued_batches=max_enqueued_batches,
             shared_name=name,
+            enable_large_batch_splitting=enable_large_batch_splitting,
             f=computation,
             in_tensors=list(args),
             captured_tensors=computation.captured_inputs,
             Tout=[o.dtype for o in computation.outputs])
+        return nest.pack_sequence_as(
+            computation.structured_outputs, outputs, expand_composites=True)
 
     return decorated
 

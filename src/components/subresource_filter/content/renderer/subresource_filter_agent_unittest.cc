@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
@@ -27,8 +26,6 @@
 namespace subresource_filter {
 
 namespace {
-
-using AdFrameType = blink::mojom::AdFrameType;
 
 // The SubresourceFilterAgent with its dependencies on Blink mocked out.
 //
@@ -55,6 +52,12 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
         is_provisional_(is_provisional),
         is_parent_ad_subframe_(is_parent_ad_subframe),
         is_subframe_created_by_ad_script_(is_subframe_created_by_ad_script) {}
+
+  SubresourceFilterAgentUnderTest(const SubresourceFilterAgentUnderTest&) =
+      delete;
+  SubresourceFilterAgentUnderTest& operator=(
+      const SubresourceFilterAgentUnderTest&) = delete;
+
   ~SubresourceFilterAgentUnderTest() override = default;
 
   MOCK_METHOD0(GetDocumentURL, GURL());
@@ -79,8 +82,7 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   }
 
   bool IsAdSubframe() override {
-    return ad_evidence_ && ad_evidence_->is_complete() &&
-           ad_evidence_->IndicatesAdSubframe();
+    return ad_evidence_ && ad_evidence_->IndicatesAdSubframe();
   }
 
   const absl::optional<blink::FrameAdEvidence>& AdEvidence() override {
@@ -122,8 +124,6 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   absl::optional<blink::FrameAdEvidence> ad_evidence_;
   std::unique_ptr<blink::WebDocumentSubresourceFilter> last_injected_filter_;
   mojom::ActivationState inherited_activation_state_for_new_document_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentUnderTest);
 };
 
 constexpr const char kTestFirstURL[] = "http://example.com/alpha";
@@ -145,6 +145,10 @@ constexpr const char kMainFrameLoadRulesetIsAvailableAnyActivationLevel[] =
 class SubresourceFilterAgentTest : public ::testing::Test {
  public:
   SubresourceFilterAgentTest() {}
+
+  SubresourceFilterAgentTest(const SubresourceFilterAgentTest&) = delete;
+  SubresourceFilterAgentTest& operator=(const SubresourceFilterAgentTest&) =
+      delete;
 
  protected:
   void SetUp() override {
@@ -216,31 +220,29 @@ class SubresourceFilterAgentTest : public ::testing::Test {
     // No DidFinishLoad is called in this case.
   }
 
-  void StartLoadAndSetActivationState(
-      mojom::ActivationLevel level,
-      AdFrameType ad_type = AdFrameType::kNonAd) {
+  void StartLoadAndSetActivationState(mojom::ActivationLevel level,
+                                      bool is_ad_subframe = false) {
     mojom::ActivationState state;
     state.activation_level = level;
-    StartLoadAndSetActivationState(state, ad_type);
+    StartLoadAndSetActivationState(state, is_ad_subframe);
   }
 
-  void StartLoadAndSetActivationState(
-      mojom::ActivationState state,
-      AdFrameType ad_type = AdFrameType::kNonAd) {
+  void StartLoadAndSetActivationState(mojom::ActivationState state,
+                                      bool is_ad_subframe = false) {
     agent_as_rfo()->DidStartNavigation(GURL(), absl::nullopt);
     agent_as_rfo()->ReadyToCommitNavigation(nullptr);
 
     absl::optional<blink::FrameAdEvidence> ad_evidence;
     if (!agent()->IsMainFrame()) {
       // Generate an evidence object matching the `ad_type`.
-      ad_evidence = blink::FrameAdEvidence(ad_type == AdFrameType::kChildAd);
-      if (ad_type == AdFrameType::kRootAd) {
+      ad_evidence = blink::FrameAdEvidence(false /* parent_is_ad */);
+      if (is_ad_subframe) {
         ad_evidence->set_created_by_ad_script(
             blink::mojom::FrameCreationStackEvidence::kCreatedByAdScript);
       }
       ad_evidence->set_is_complete();
     } else {
-      ASSERT_EQ(ad_type, AdFrameType::kNonAd);
+      ASSERT_FALSE(is_ad_subframe);
     }
 
     agent()->ActivateForNextCommittedLoad(state.Clone(), ad_evidence);
@@ -308,8 +310,6 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   UnverifiedRulesetDealer ruleset_dealer_;
 
   std::unique_ptr<SubresourceFilterAgentUnderTest> agent_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentTest);
 };
 
 TEST_F(SubresourceFilterAgentTest, RulesetUnset_RulesetNotAvailable) {
@@ -348,16 +348,14 @@ TEST_F(SubresourceFilterAgentTest, MmapFailure_FailsToInjectSubresourceFilter) {
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   MemoryMappedRuleset::SetMemoryMapFailuresForTesting(true);
   ExpectNoSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      mojom::ActivationLevel::kEnabled,
-      AdFrameType::kNonAd /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled,
+                                 false /* is_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   MemoryMappedRuleset::SetMemoryMapFailuresForTesting(false);
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      mojom::ActivationLevel::kEnabled,
-      AdFrameType::kNonAd /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled,
+                                 false /* is_ad_subframe */);
 }
 
 TEST_F(SubresourceFilterAgentTest, Disabled_NoFilterIsInjected) {
@@ -669,9 +667,8 @@ TEST_F(SubresourceFilterAgentTest,
              /*is_subframe_created_by_ad_script=*/false);
 
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      mojom::ActivationLevel::kDryRun,
-      AdFrameType::kRootAd /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDryRun,
+                                 true /* is_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   // Test the ad subframe value that is set at the filter.
@@ -692,9 +689,8 @@ TEST_F(SubresourceFilterAgentTest, DryRun_AdSubframeIsUntaggedByBrowser) {
 
   // Browser tags the frame as an ad subframe.
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      mojom::ActivationLevel::kDryRun,
-      AdFrameType::kRootAd /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDryRun,
+                                 true /* is_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   EXPECT_TRUE(agent()->IsAdSubframe());
@@ -703,9 +699,8 @@ TEST_F(SubresourceFilterAgentTest, DryRun_AdSubframeIsUntaggedByBrowser) {
 
   // Browser then untags the frame as an ad subframe.
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      mojom::ActivationLevel::kDryRun,
-      AdFrameType::kNonAd /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDryRun,
+                                 false /* is_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   EXPECT_FALSE(agent()->IsAdSubframe());

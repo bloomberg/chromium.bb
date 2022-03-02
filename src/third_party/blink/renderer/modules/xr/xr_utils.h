@@ -7,9 +7,9 @@
 
 #include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -31,13 +31,8 @@ DOMPointReadOnly* makeNormalizedQuaternion(double x,
                                            double z,
                                            double w);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 WebGLRenderingContextBase* webglRenderingContextBaseFromUnion(
     const V8XRWebGLRenderingContext* context);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-WebGLRenderingContextBase* webglRenderingContextBaseFromUnion(
-    const XRWebGLRenderingContext&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 constexpr char kUnableToNormalizeZeroLength[] =
     "Unable to normalize vector of length 0.";

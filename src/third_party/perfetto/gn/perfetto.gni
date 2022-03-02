@@ -144,9 +144,12 @@ declare_args() {
   # system backend in the client library.
   # This includes building things that rely on POSIX sockets, this places
   # limitations on the supported operating systems.
-  enable_perfetto_ipc = !is_win && !is_fuchsia && !is_nacl &&
-                        (perfetto_build_standalone ||
-                         perfetto_build_with_android || build_with_chromium)
+  # For now the IPC layer is conservatively not enabled on Chromium+Windows
+  # builds.
+  enable_perfetto_ipc =
+      !is_fuchsia && !is_nacl &&
+      (perfetto_build_standalone || perfetto_build_with_android ||
+       (build_with_chromium && !is_win))
 
   # Makes the heap profiling daemon target reachable. It works only on Android,
   # but is built on Linux as well for test/compiler coverage.
@@ -172,11 +175,13 @@ declare_args() {
         is_perfetto_build_generator
   }
 
-  # Enables base::Watchdog. Is supported only on Linux-based platforms.
+  # Enables base::Watchdog. Is supported only on Linux-based platforms in
+  # standalone GN builds (NOT in bazel/blaze).
   # gn/BUILD.gn further restricts this to OS_LINUX || OS_ANDROID when generating
   # the perfetto_build_flags.h header.
   enable_perfetto_watchdog =
-      perfetto_build_with_android || perfetto_build_standalone
+      perfetto_build_with_android ||
+      (perfetto_build_standalone && !is_perfetto_build_generator)
 
   # Misc host executable under tools/.
   enable_perfetto_tools =
@@ -186,7 +191,7 @@ declare_args() {
                               build_with_chromium || perfetto_build_with_android
 
   enable_perfetto_integration_tests =
-      (perfetto_build_standalone && !is_win) || perfetto_build_with_android
+      perfetto_build_standalone || perfetto_build_with_android
 
   enable_perfetto_benchmarks = perfetto_build_standalone && !is_win
 
@@ -214,15 +219,34 @@ declare_args() {
   # console.
   perfetto_force_dlog = perfetto_force_dlog_default
 
+  # Whether DCHECKs should be enabled or not. Values: "on" | "off" | "".
+  # By default ("") DCHECKs are enabled only:
+  # - If DCHECK_ALWAYS_ON is defined (which is mainly a Chromium-ism).
+  # - On debug builds (i.e. if NDEBUG is NOT defined) but only in Chromium,
+  #   Android and standalone builds.
+  # - On all other builds (e.g., SDK) it's off regardless of NDEBUG (unless
+  #   DCHECK_ALWAYS_ON is defined).
+  # See base/logging.h for the implementation of all this.
+  perfetto_force_dcheck = ""
+
   # Installs a signal handler for the most common crash signals which unwinds
   # the stack and prints the stack trace on stderr. Requires a dependency on
   # libbacktrace when enabled.
   enable_perfetto_stderr_crash_dump =
       is_debug && perfetto_build_standalone && !is_wasm && !is_win
+
+  # Enables more aggressive compiler flags that assume recent Intel CPUs.
+  # Runtime checks during initialization will print an error message and exit
+  # if the CPU doesn't support those flags.
+  enable_perfetto_x64_cpu_opt =
+      current_cpu == "x64" && (is_linux || is_mac) && !is_wasm &&
+      perfetto_build_standalone && !is_perfetto_build_generator
 }
 
 declare_args() {
-  perfetto_enable_git_rev_version_header = enable_perfetto_version_gen
+  perfetto_enable_git_rev_version_header =
+      enable_perfetto_version_gen && perfetto_build_standalone &&
+      !is_perfetto_build_generator
 
   # The traced_probes daemon is very Linux-specific, as it depends on ftrace and
   # various /proc interfaces. There is no point making its code platform-neutral
@@ -259,7 +283,8 @@ declare_args() {
   # Enables httpd RPC support in the trace processor.
   # Further per-OS conditionals are applied in gn/BUILD.gn.
   enable_perfetto_trace_processor_httpd =
-      enable_perfetto_trace_processor && perfetto_build_standalone
+      enable_perfetto_trace_processor &&
+      (perfetto_build_standalone || perfetto_build_with_android)
 
   # Enables Zlib support. This is used both by the "perfetto" cmdline client
   # (for compressing traces) and by trace processor (for compressed traces).
@@ -313,9 +338,6 @@ assert(!build_with_chromium || perfetto_build_with_embedder)
 # If |perfetto_build_with_android| is true then also
 # |is_perfetto_build_generator| must be true.
 assert(!perfetto_build_with_android || is_perfetto_build_generator)
-
-# The IPC layer based on UNIX sockets can't be built on Win.
-assert(!enable_perfetto_ipc || !is_win)
 
 # We should never end up in a state where is_perfetto_embedder=true but
 # perfetto_build_with_embedder=false.

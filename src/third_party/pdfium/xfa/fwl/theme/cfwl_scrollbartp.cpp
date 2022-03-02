@@ -7,6 +7,7 @@
 #include "xfa/fwl/theme/cfwl_scrollbartp.h"
 
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_scrollbar.h"
 #include "xfa/fwl/cfwl_themebackground.h"
@@ -21,42 +22,35 @@ CFWL_ScrollBarTP::~CFWL_ScrollBarTP() = default;
 
 void CFWL_ScrollBarTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   CFWL_Widget* pWidget = pParams.GetWidget();
-  FWLTHEME_STATE eState = FWLTHEME_STATE_Normal;
-  if (pParams.m_dwStates & CFWL_PartState_Hovered)
-    eState = FWLTHEME_STATE_Hover;
-  else if (pParams.m_dwStates & CFWL_PartState_Pressed)
-    eState = FWLTHEME_STATE_Pressed;
-  else if (pParams.m_dwStates & CFWL_PartState_Disabled)
-    eState = FWLTHEME_STATE_Disable;
-
   CFGAS_GEGraphics* pGraphics = pParams.GetGraphics();
-  bool bVert = !!pWidget->GetStylesEx();
+  bool bVert = !!pWidget->GetStyleExts();
   switch (pParams.m_iPart) {
-    case CFWL_Part::ForeArrow: {
+    case CFWL_ThemePart::Part::kForeArrow: {
       DrawMaxMinBtn(pGraphics, pParams.m_PartRect,
-                    bVert ? FWLTHEME_DIRECTION_Up : FWLTHEME_DIRECTION_Left,
-                    eState, pParams.m_matrix);
+                    bVert ? FWLTHEME_DIRECTION::kUp : FWLTHEME_DIRECTION::kLeft,
+                    pParams.GetThemeState(), pParams.m_matrix);
       break;
     }
-    case CFWL_Part::BackArrow: {
-      DrawMaxMinBtn(pGraphics, pParams.m_PartRect,
-                    bVert ? FWLTHEME_DIRECTION_Down : FWLTHEME_DIRECTION_Right,
-                    eState, pParams.m_matrix);
+    case CFWL_ThemePart::Part::kBackArrow: {
+      DrawMaxMinBtn(
+          pGraphics, pParams.m_PartRect,
+          bVert ? FWLTHEME_DIRECTION::kDown : FWLTHEME_DIRECTION::kRight,
+          pParams.GetThemeState(), pParams.m_matrix);
       break;
     }
-    case CFWL_Part::Thumb: {
-      DrawThumbBtn(pGraphics, pParams.m_PartRect, bVert, eState, true,
-                   pParams.m_matrix);
+    case CFWL_ThemePart::Part::kThumb: {
+      DrawThumbBtn(pGraphics, pParams.m_PartRect, bVert,
+                   pParams.GetThemeState(), pParams.m_matrix);
       break;
     }
-    case CFWL_Part::LowerTrack: {
-      DrawTrack(pGraphics, pParams.m_PartRect, bVert, eState, true,
-                pParams.m_matrix);
+    case CFWL_ThemePart::Part::kLowerTrack: {
+      DrawTrack(pGraphics, pParams.m_PartRect, bVert, pParams.GetThemeState(),
+                true, pParams.m_matrix);
       break;
     }
-    case CFWL_Part::UpperTrack: {
-      DrawTrack(pGraphics, pParams.m_PartRect, bVert, eState, false,
-                pParams.m_matrix);
+    case CFWL_ThemePart::Part::kUpperTrack: {
+      DrawTrack(pGraphics, pParams.m_PartRect, bVert, pParams.GetThemeState(),
+                false, pParams.m_matrix);
       break;
     }
     default:
@@ -68,9 +62,8 @@ void CFWL_ScrollBarTP::DrawThumbBtn(CFGAS_GEGraphics* pGraphics,
                                     const CFX_RectF& input_rect,
                                     bool bVert,
                                     FWLTHEME_STATE eState,
-                                    bool bPawButton,
                                     const CFX_Matrix& matrix) {
-  if (eState < FWLTHEME_STATE_Normal || eState > FWLTHEME_STATE_Disable)
+  if (eState < FWLTHEME_STATE::kNormal || eState > FWLTHEME_STATE::kDisable)
     return;
 
   CFX_RectF rect = input_rect;
@@ -82,14 +75,16 @@ void CFWL_ScrollBarTP::DrawThumbBtn(CFGAS_GEGraphics* pGraphics,
   if (rect.IsEmpty(0.1f))
     return;
 
-  FillSolidRect(pGraphics, m_pThemeData->clrBtnBK[eState - 1][1], rect, matrix);
+  FillSolidRect(pGraphics,
+                m_pThemeData->clrBtnBK[static_cast<size_t>(eState) - 1][1],
+                rect, matrix);
 
   pGraphics->SaveGraphState();
 
   CFGAS_GEPath path;
   path.AddRectangle(rect.left, rect.top, rect.width, rect.height);
-  pGraphics->SetStrokeColor(
-      CFGAS_GEColor(m_pThemeData->clrBtnBorder[eState - 1]));
+  pGraphics->SetStrokeColor(CFGAS_GEColor(
+      m_pThemeData->clrBtnBorder[static_cast<size_t>(eState) - 1]));
   pGraphics->StrokePath(path, matrix);
   pGraphics->RestoreGraphState();
 }
@@ -100,7 +95,7 @@ void CFWL_ScrollBarTP::DrawTrack(CFGAS_GEGraphics* pGraphics,
                                  FWLTHEME_STATE eState,
                                  bool bLowerTrack,
                                  const CFX_Matrix& matrix) {
-  if (eState < FWLTHEME_STATE_Normal || eState > FWLTHEME_STATE_Disable)
+  if (eState < FWLTHEME_STATE::kNormal || eState > FWLTHEME_STATE::kDisable)
     return;
 
   pGraphics->SaveGraphState();
@@ -127,35 +122,28 @@ void CFWL_ScrollBarTP::DrawMaxMinBtn(CFGAS_GEGraphics* pGraphics,
                                      FWLTHEME_DIRECTION eDict,
                                      FWLTHEME_STATE eState,
                                      const CFX_Matrix& matrix) {
-  DrawTrack(pGraphics, rect,
-            eDict == FWLTHEME_DIRECTION_Up || eDict == FWLTHEME_DIRECTION_Down,
-            eState, true, matrix);
+  DrawTrack(
+      pGraphics, rect,
+      eDict == FWLTHEME_DIRECTION::kUp || eDict == FWLTHEME_DIRECTION::kDown,
+      eState, true, matrix);
   CFX_RectF rtArrowBtn = rect;
   rtArrowBtn.Deflate(1, 1, 1, 1);
   DrawArrowBtn(pGraphics, rtArrowBtn, eDict, eState, matrix);
 }
 
 void CFWL_ScrollBarTP::SetThemeData() {
-  m_pThemeData->clrPawColorLight[3] = ArgbEncode(0xff, 208, 223, 172);
-  m_pThemeData->clrPawColorDark[3] = ArgbEncode(0xff, 140, 157, 115);
-  m_pThemeData->clrBtnBK[3][0] = ArgbEncode(0xff, 164, 180, 139);
-  m_pThemeData->clrBtnBK[3][1] = ArgbEncode(0xff, 141, 157, 115);
-  m_pThemeData->clrBtnBorder[3] = ArgbEncode(0xff, 236, 233, 216);
-  m_pThemeData->clrPawColorLight[0] = ArgbEncode(0xff, 238, 244, 254);
-  m_pThemeData->clrPawColorDark[0] = ArgbEncode(0xff, 140, 176, 248);
-  m_pThemeData->clrBtnBK[0][0] = ArgbEncode(0xff, 197, 213, 252);
-  m_pThemeData->clrBtnBK[0][1] = ArgbEncode(0xff, 182, 205, 251);
-  m_pThemeData->clrBtnBorder[0] = ArgbEncode(0xff, 148, 176, 221);
-  m_pThemeData->clrPawColorLight[1] = ArgbEncode(0xff, 252, 253, 255);
-  m_pThemeData->clrPawColorDark[1] = ArgbEncode(0xff, 156, 197, 255);
-  m_pThemeData->clrBtnBK[1][0] = ArgbEncode(0xff, 216, 232, 255);
-  m_pThemeData->clrBtnBK[1][1] = ArgbEncode(0xff, 204, 225, 255);
-  m_pThemeData->clrBtnBorder[1] = ArgbEncode(0xff, 218, 230, 254);
-  m_pThemeData->clrPawColorLight[2] = ArgbEncode(0xff, 207, 221, 253);
-  m_pThemeData->clrPawColorDark[2] = ArgbEncode(0xff, 131, 158, 216);
-  m_pThemeData->clrBtnBK[2][0] = ArgbEncode(0xff, 167, 190, 245);
-  m_pThemeData->clrBtnBK[2][1] = ArgbEncode(0xff, 146, 179, 249);
-  m_pThemeData->clrBtnBorder[2] = ArgbEncode(0xff, 124, 159, 211);
   m_pThemeData->clrTrackBKStart = ArgbEncode(0xff, 243, 241, 236);
   m_pThemeData->clrTrackBKEnd = ArgbEncode(0xff, 254, 254, 251);
+  m_pThemeData->clrBtnBK[0][0] = ArgbEncode(0xff, 197, 213, 252);
+  m_pThemeData->clrBtnBK[0][1] = ArgbEncode(0xff, 182, 205, 251);
+  m_pThemeData->clrBtnBK[1][0] = ArgbEncode(0xff, 216, 232, 255);
+  m_pThemeData->clrBtnBK[1][1] = ArgbEncode(0xff, 204, 225, 255);
+  m_pThemeData->clrBtnBK[2][0] = ArgbEncode(0xff, 167, 190, 245);
+  m_pThemeData->clrBtnBK[2][1] = ArgbEncode(0xff, 146, 179, 249);
+  m_pThemeData->clrBtnBK[3][0] = ArgbEncode(0xff, 164, 180, 139);
+  m_pThemeData->clrBtnBK[3][1] = ArgbEncode(0xff, 141, 157, 115);
+  m_pThemeData->clrBtnBorder[0] = ArgbEncode(0xff, 148, 176, 221);
+  m_pThemeData->clrBtnBorder[1] = ArgbEncode(0xff, 218, 230, 254);
+  m_pThemeData->clrBtnBorder[2] = ArgbEncode(0xff, 124, 159, 211);
+  m_pThemeData->clrBtnBorder[3] = ArgbEncode(0xff, 236, 233, 216);
 }

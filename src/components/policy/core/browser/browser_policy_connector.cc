@@ -9,12 +9,11 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -205,8 +204,6 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
       CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
   registry->RegisterBooleanPref(
       policy_prefs::kCloudManagementEnrollmentMandatory, false);
-  registry->RegisterBooleanPref(
-      policy_prefs::kCloudPolicyOverridesPlatformPolicy, false);
 }
 
 }  // namespace policy

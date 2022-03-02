@@ -65,11 +65,17 @@ std::string VkVersionString(VulkanVersion v) {
 
 enum class OutputType { text, html, json, vkconfig_output };
 
+struct PrinterCreateDetails {
+    OutputType output_type = OutputType::text;
+    bool print_to_file = false;
+    std::string file_name = "vulkaninfo.txt";
+    std::string start_string = "";
+};
+
 class Printer {
   public:
-    Printer(OutputType output_type, std::ostream &out, const uint32_t selected_gpu, const VulkanVersion vulkan_version,
-            std::string start_string = "")
-        : output_type(output_type), out(out) {
+    Printer(const PrinterCreateDetails &details, std::ostream &out, const uint32_t selected_gpu, const VulkanVersion vulkan_version)
+        : output_type(details.output_type), out(out) {
         switch (output_type) {
             case (OutputType::text):
                 out << "==========\n";
@@ -174,7 +180,7 @@ class Printer {
             case (OutputType::json):
                 /* fall through */
             case (OutputType::vkconfig_output):
-                out << start_string;
+                out << details.start_string;
                 indents++;
                 is_first_item.push(false);
                 is_array.push(false);
@@ -269,6 +275,16 @@ class Printer {
 
     Printer &SetAsType() {
         set_as_type = true;
+        return *this;
+    }
+
+    Printer &SetIgnoreMinWidth() {
+        ignore_min_width_parameter = true;
+        return *this;
+    }
+
+    Printer &UnsetIgnoreMinWidth() {
+        ignore_min_width_parameter = false;
         return *this;
     }
 
@@ -388,12 +404,12 @@ class Printer {
                 break;
         }
     }
-    void ArrayStart(std::string array_name, int32_t element_count = 0) {
+    void ArrayStart(std::string array_name, size_t element_count = 0) {
         switch (output_type) {
             case (OutputType::text): {
                 out << std::string(static_cast<size_t>(indents), '\t') << array_name << ":";
                 size_t underline_count = array_name.size() + 1;
-                if (element_count >= 0) {
+                if (element_count > 0) {
                     out << " count = " << element_count;
                     underline_count += 9 + std::to_string(element_count).size();
                 }
@@ -410,7 +426,7 @@ class Printer {
                     out << "<details>";
                 }
                 out << "<summary>" << array_name;
-                if (element_count >= 0) {
+                if (element_count > 0) {
                     out << ": count = <span class='val'>" << element_count << "</span>";
                 }
                 out << "</summary>\n";
@@ -462,10 +478,9 @@ class Printer {
     void PrintKeyValue(std::string key, T value, size_t min_key_width = 0, std::string value_description = "") {
         switch (output_type) {
             case (OutputType::text):
-                if (min_key_width > key.size()) {
-                    out << std::string(static_cast<size_t>(indents), '\t') << key << std::string(min_key_width - key.size(), ' ');
-                } else {
-                    out << std::string(static_cast<size_t>(indents), '\t') << key;
+                out << std::string(static_cast<size_t>(indents), '\t') << key;
+                if (min_key_width > key.size() && !ignore_min_width_parameter) {
+                    out << std::string(min_key_width - key.size(), ' ');
                 }
                 out << " = " << value;
                 if (value_description != "") {
@@ -674,6 +689,8 @@ class Printer {
     // make object titles the color of types
     bool set_object_name_as_type = false;
 
+    bool ignore_min_width_parameter = false;
+
     // objects which are in an array
     int element_index = -1;  // negative one is the sentinel value
 
@@ -724,9 +741,7 @@ class ObjectWrapper {
 
 class ArrayWrapper {
   public:
-    ArrayWrapper(Printer &p, std::string array_name, size_t element_count = 0) : p(p) {
-        p.ArrayStart(array_name, static_cast<int32_t>(element_count));
-    }
+    ArrayWrapper(Printer &p, std::string array_name, size_t element_count = 0) : p(p) { p.ArrayStart(array_name, element_count); }
     ~ArrayWrapper() { p.ArrayEnd(); }
 
   private:

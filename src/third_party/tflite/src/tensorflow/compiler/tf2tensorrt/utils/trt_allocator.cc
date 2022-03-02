@@ -17,11 +17,9 @@ limitations under the License.
 
 #include "tensorflow/core/platform/logging.h"
 
-#if GOOGLE_CUDA
-#if GOOGLE_TENSORRT
+#if GOOGLE_CUDA && GOOGLE_TENSORRT
 #include "third_party/gpus/cuda/include/cuda_runtime_api.h"
-#endif  // GOOGLE_TENSORRT
-#endif  // GOOGLE_CUDA
+#endif  // GOOGLE_CUDA && GOOGLE_TENSORRT
 
 namespace tensorflow {
 namespace tensorrt {
@@ -52,14 +50,13 @@ void* Align(uint64_t alignment, uint64_t size, void*& ptr, uint64_t& space) {
 }  // namespace tensorrt
 }  // namespace tensorflow
 
-#if GOOGLE_CUDA
-#if GOOGLE_TENSORRT
+#if GOOGLE_CUDA && GOOGLE_TENSORRT
 
 namespace tensorflow {
 namespace tensorrt {
 
 void* TRTDeviceAllocator::allocate(uint64_t size, uint64_t alignment,
-                                   uint32_t flags) {
+                                   uint32_t flags) noexcept {
   if (size == 0) return nullptr;
   // WAR for allocator alignment requirement. Certain cuda API calls require GPU
   // memory with alignment to cudaDeviceProp::textureAlignment.
@@ -77,12 +74,13 @@ void* TRTDeviceAllocator::allocate(uint64_t size, uint64_t alignment,
   // algorithm uses too much memory. If we don't fail immediately building the
   // engine can be *very* slow with TensorRT7 when GPU memory is limited.
   AllocationAttributes attributes;
-  attributes.no_retry_on_failure = true;
+  attributes.retry_on_failure = false;
   void* mem = allocator_->AllocateRaw(alignment, total_size, attributes);
   if (!mem) return nullptr;
 
   void* alloc_mem = mem;
   QCHECK(Align(alignment, size, mem, total_size));
+  mutex_lock lock(mu_);
   if (mem != alloc_mem) {
     QCHECK(mem_map_.insert({mem, alloc_mem}).second);
   }
@@ -97,7 +95,8 @@ TRTDeviceAllocator::TRTDeviceAllocator(Allocator* allocator)
   VLOG(1) << "Using " << allocator->Name() << " allocator from TensorFlow";
 }
 
-void TRTDeviceAllocator::free(void* memory) {
+void TRTDeviceAllocator::free(void* memory) noexcept {
+  mutex_lock lock(mu_);
   VLOG(2) << "Deallocating @ " << memory;
   // allocated memory adjusted for alignment, restore the original pointer
   if (memory) {
@@ -113,5 +112,4 @@ void TRTDeviceAllocator::free(void* memory) {
 }  // namespace tensorrt
 }  // namespace tensorflow
 
-#endif  // GOOGLE_TENSORRT
-#endif  // GOOGLE_CUDA
+#endif  // GOOGLE_CUDA && GOOGLE_TENSORRT

@@ -14,13 +14,12 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -32,14 +31,14 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/base/screen_resolution.h"
+#include "remoting/host/base/switches.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
-#include "remoting/host/screen_resolution.h"
-#include "remoting/host/switches.h"
 // MIDL-generated declarations and definitions.
 #include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/host_service.h"
@@ -49,11 +48,123 @@
 #include "remoting/host/win/wts_terminal_observer.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
+// These are Windows headers which would typically be listed first in the
+// include list however they conflict with ipc_message_macros.h if placed there.
+// TODO(joedow): Move these includes to the top of the file after
+// ipc_message_macros.h is no longer needed.
+#include <Softpub.h>
+#include <wintrust.h>
+
 using base::win::ScopedHandle;
 
 namespace remoting {
 
 namespace {
+
+// This function uses the WinVerifyTrust function to validate the signature for
+// the provided |binary_path|. More information on the structures and function
+// used here can be found at:
+// https://docs.microsoft.com/en-us/windows/win32/api/wintrust/nf-wintrust-winverifytrust
+bool IsBinaryTrusted(const base::FilePath& binary_path) {
+#if defined(OFFICIAL_BUILD)
+  WINTRUST_FILE_INFO file_info = {0};
+  file_info.cbStruct = sizeof(file_info);
+  file_info.pcwszFilePath = binary_path.value().c_str();
+  file_info.hFile = NULL;
+  file_info.pgKnownSubject = NULL;
+
+  WINTRUST_DATA wintrust_data = {0};
+  wintrust_data.cbStruct = sizeof(wintrust_data);
+  wintrust_data.pPolicyCallbackData = NULL;
+  wintrust_data.pSIPClientData = NULL;
+  wintrust_data.dwUIChoice = WTD_UI_NONE;
+  wintrust_data.fdwRevocationChecks = WTD_REVOKE_NONE;
+  wintrust_data.dwUnionChoice = WTD_CHOICE_FILE;
+  wintrust_data.dwStateAction = WTD_STATEACTION_VERIFY;
+  wintrust_data.hWVTStateData = NULL;
+  wintrust_data.pwszURLReference = NULL;
+  wintrust_data.dwUIContext = WTD_UICONTEXT_EXECUTE;
+  wintrust_data.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL;
+  wintrust_data.pFile = &file_info;
+
+  GUID policy_guid = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+
+  LONG trust_status = WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE),
+                                     &policy_guid, &wintrust_data);
+
+  DWORD dwLastError;
+  switch (trust_status) {
+    case ERROR_SUCCESS:
+      // Indicates that the binary is trusted:
+      //   - The hash that represents the subject is trusted
+      //   - The publisher is trusted
+      //   - No verification or time stamp chain errors
+      LOG(INFO) << "Signature verified for " << binary_path.value();
+      return true;
+
+    case TRUST_E_NOSIGNATURE:
+      // The file was not signed or had a signature that was not valid.
+      // The reason for this status is retrieved via GetLastError(). Note that
+      // the last error is a DWORD but the expected values set by this function
+      // are HRESULTS so we need to cast.
+      dwLastError = GetLastError();
+      switch (static_cast<HRESULT>(dwLastError)) {
+        case TRUST_E_NOSIGNATURE:
+          LOG(ERROR) << "No signature found for " << binary_path.value()
+                     << ". ErrorReason: 0x" << std::hex << dwLastError;
+          break;
+        case TRUST_E_SUBJECT_FORM_UNKNOWN:
+          LOG(ERROR) << "The trust provider does not support the form "
+                     << "specified for the subject for " << binary_path.value()
+                     << ". ErrorReason: 0x" << std::hex << dwLastError;
+          break;
+        case TRUST_E_PROVIDER_UNKNOWN:
+          LOG(ERROR) << "The trust provider is not recognized on this system "
+                     << "for " << binary_path.value() << ". ErrorReason: 0x"
+                     << std::hex << dwLastError;
+          break;
+        default:
+          // The signature was not valid or there was an error opening the file.
+          LOG(ERROR) << "Could not verify signature for " << binary_path.value()
+                     << ". ErrorReason: " << dwLastError << ", 0x" << std::hex
+                     << dwLastError;
+          break;
+      }
+      return false;
+
+    case TRUST_E_EXPLICIT_DISTRUST:
+      // The hash that represents the subject or the publisher is not allowed by
+      // the admin or user.
+      LOG(ERROR) << "Signature for " << binary_path.value() << " is present, "
+                 << "but is explicitly distrusted.";
+      return false;
+
+    case TRUST_E_SUBJECT_NOT_TRUSTED:
+      LOG(ERROR) << "Signature for " << binary_path.value() << " is present, "
+                 << "but not trusted.";
+      return false;
+
+    case CRYPT_E_SECURITY_SETTINGS:
+      LOG(ERROR) << "Verification failed for " << binary_path.value() << ". "
+                 << "The hash representing the subject or the publisher wasn't "
+                 << "explicitly trusted by the admin and admin policy has "
+                 << "disabled user trust. No signature, publisher or timestamp "
+                 << "errors.";
+      return false;
+
+    default:
+      LOG(ERROR) << "Signature verification error for " << binary_path.value()
+                 << ": 0x" << std::hex << trust_status;
+      return false;
+  }
+#else
+  // Binaries are only signed in official builds so running the code above for
+  // local builds won't work w/o setting up a test certificate and signing the
+  // binaries using it. To simplify local development, bypass the signature
+  // checks.
+  return true;
+#endif
+}
 
 // The security descriptor of the daemon IPC endpoint. It gives full access
 // to SYSTEM and denies access by anyone else.
@@ -72,13 +183,33 @@ const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
 const int kDefaultRdpScreenWidth = 1280;
 const int kDefaultRdpScreenHeight = 768;
 
-// RDC 6.1 (W2K8) supports dimensions of up to 4096x2048.
-const int kMaxRdpScreenWidth = 4096;
-const int kMaxRdpScreenHeight = 2048;
-
 // The minimum effective screen dimensions supported by Windows are 800x600.
 const int kMinRdpScreenWidth = 800;
 const int kMinRdpScreenHeight = 600;
+
+// Win7 SP1 (and Vista) supports dimensions up to 4096x2048.
+const int kMaxRdpScreenWidthForWin7 = 4096;
+const int kMaxRdpScreenHeightForWin7 = 2048;
+
+// Win8+ supports dimensions up to 8192x8192.
+const int kMaxRdpScreenWidthForWin8AndLater = 8192;
+const int kMaxRdpScreenHeightForWin8AndLater = 8192;
+
+int GetMaxRdpScreenWidth() {
+  static int max_rdp_screen_width =
+      base::win::GetVersion() >= base::win::Version::WIN8
+          ? kMaxRdpScreenWidthForWin8AndLater
+          : kMaxRdpScreenWidthForWin7;
+  return max_rdp_screen_width;
+}
+
+int GetMaxRdpScreenHeight() {
+  static int max_rdp_screen_height =
+      base::win::GetVersion() >= base::win::Version::WIN8
+          ? kMaxRdpScreenHeightForWin8AndLater
+          : kMaxRdpScreenHeightForWin7;
+  return max_rdp_screen_height;
+}
 
 // Default dots per inch used by RDP is 96 DPI.
 const int kDefaultRdpDpi = 96;
@@ -106,8 +237,8 @@ const wchar_t kSecurityLayerValueName[] = L"SecurityLayer";
 
 webrtc::DesktopSize GetBoundedRdpDesktopSize(int width, int height) {
   return webrtc::DesktopSize(
-      base::ClampToRange(width, kMinRdpScreenWidth, kMaxRdpScreenWidth),
-      base::ClampToRange(height, kMinRdpScreenHeight, kMaxRdpScreenHeight));
+      base::clamp(width, kMinRdpScreenWidth, GetMaxRdpScreenWidth()),
+      base::clamp(height, kMinRdpScreenHeight, GetMaxRdpScreenHeight()));
 }
 
 // DesktopSession implementation which attaches to the host's physical console.
@@ -123,6 +254,10 @@ class ConsoleSession : public DesktopSessionWin {
     DaemonProcess* daemon_process,
     int id,
     WtsTerminalMonitor* monitor);
+
+  ConsoleSession(const ConsoleSession&) = delete;
+  ConsoleSession& operator=(const ConsoleSession&) = delete;
+
   ~ConsoleSession() override;
 
  protected:
@@ -134,8 +269,6 @@ class ConsoleSession : public DesktopSessionWin {
 
  private:
   std::unique_ptr<SasInjector> sas_injector_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsoleSession);
 };
 
 // DesktopSession implementation which attaches to virtual RDP console.
@@ -151,6 +284,10 @@ class RdpSession : public DesktopSessionWin {
     DaemonProcess* daemon_process,
     int id,
     WtsTerminalMonitor* monitor);
+
+  RdpSession(const RdpSession&) = delete;
+  RdpSession& operator=(const RdpSession&) = delete;
+
   ~RdpSession() override;
 
   // Performs the part of initialization that can fail.
@@ -173,6 +310,10 @@ class RdpSession : public DesktopSessionWin {
   class EventHandler : public IRdpDesktopSessionEventHandler {
    public:
     explicit EventHandler(base::WeakPtr<RdpSession> desktop_session);
+
+    EventHandler(const EventHandler&) = delete;
+    EventHandler& operator=(const EventHandler&) = delete;
+
     virtual ~EventHandler();
 
     // IUnknown interface.
@@ -192,8 +333,6 @@ class RdpSession : public DesktopSessionWin {
 
     // This class must be used on a single thread.
     base::ThreadChecker thread_checker_;
-
-    DISALLOW_COPY_AND_ASSIGN(EventHandler);
   };
 
   // Examines the system settings required to establish an RDP session.
@@ -213,8 +352,6 @@ class RdpSession : public DesktopSessionWin {
   std::string terminal_id_;
 
   base::WeakPtrFactory<RdpSession> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RdpSession);
 };
 
 ConsoleSession::ConsoleSession(
@@ -421,13 +558,15 @@ RdpSession::EventHandler::~EventHandler() {
     desktop_session_->OnRdpClosed();
 }
 
-ULONG STDMETHODCALLTYPE RdpSession::EventHandler::AddRef() {
+ULONG COM_DECLSPEC_NOTHROW STDMETHODCALLTYPE
+RdpSession::EventHandler::AddRef() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return ++ref_count_;
 }
 
-ULONG STDMETHODCALLTYPE RdpSession::EventHandler::Release() {
+ULONG COM_DECLSPEC_NOTHROW STDMETHODCALLTYPE
+RdpSession::EventHandler::Release() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (--ref_count_ == 0) {
@@ -438,7 +577,8 @@ ULONG STDMETHODCALLTYPE RdpSession::EventHandler::Release() {
   return ref_count_;
 }
 
-STDMETHODIMP RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
+COM_DECLSPEC_NOTHROW STDMETHODIMP
+RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (riid == IID_IUnknown ||
@@ -452,7 +592,7 @@ STDMETHODIMP RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
   return E_NOINTERFACE;
 }
 
-STDMETHODIMP RdpSession::EventHandler::OnRdpConnected() {
+COM_DECLSPEC_NOTHROW STDMETHODIMP RdpSession::EventHandler::OnRdpConnected() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (desktop_session_)
@@ -461,7 +601,7 @@ STDMETHODIMP RdpSession::EventHandler::OnRdpConnected() {
   return S_OK;
 }
 
-STDMETHODIMP RdpSession::EventHandler::OnRdpClosed() {
+COM_DECLSPEC_NOTHROW STDMETHODIMP RdpSession::EventHandler::OnRdpClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!desktop_session_)
@@ -540,9 +680,9 @@ void DesktopSessionWin::StartMonitoring(const std::string& terminal_id) {
 
   ReportElapsedTime("started monitoring");
 
-  session_attach_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kSessionAttachTimeoutSeconds),
-      this, &DesktopSessionWin::OnSessionAttachTimeout);
+  session_attach_timer_.Start(FROM_HERE,
+                              base::Seconds(kSessionAttachTimeoutSeconds), this,
+                              &DesktopSessionWin::OnSessionAttachTimeout);
 
   monitoring_notifications_ = true;
   monitor_->AddWtsTerminalObserver(terminal_id, this);
@@ -582,21 +722,10 @@ void DesktopSessionWin::OnChannelConnected(int32_t peer_pid) {
 bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DesktopSessionWin, message)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_DesktopAttached,
-                        OnDesktopSessionAgentAttached)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_InjectSas,
-                        InjectSas)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+  LOG(ERROR) << "Received unexpected IPC type: " << message.type();
+  CrashDesktopProcess(FROM_HERE);
 
-  if (!handled) {
-    LOG(ERROR) << "Received unexpected IPC type: " << message.type();
-    CrashDesktopProcess(FROM_HERE);
-  }
-
-  return handled;
+  return false;
 }
 
 void DesktopSessionWin::OnPermanentError(int exit_code) {
@@ -606,6 +735,30 @@ void DesktopSessionWin::OnPermanentError(int exit_code) {
 }
 
 void DesktopSessionWin::OnWorkerProcessStopped() {}
+
+void DesktopSessionWin::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (interface_name == mojom::DesktopSessionRequestHandler::Name_) {
+    if (desktop_session_request_handler_.is_bound()) {
+      LOG(ERROR) << "Receiver already bound for associated interface: "
+                 << mojom::DesktopSessionRequestHandler::Name_;
+      CrashDesktopProcess(FROM_HERE);
+    }
+
+    mojo::PendingAssociatedReceiver<mojom::DesktopSessionRequestHandler>
+        pending_receiver(std::move(handle));
+    desktop_session_request_handler_.Bind(std::move(pending_receiver));
+
+    // Reset the receiver on disconnect so |desktop_session_request_handler_|
+    // can be re-bound if |launcher_| spawns a new desktop process.
+    desktop_session_request_handler_.reset_on_disconnect();
+  } else {
+    LOG(ERROR) << "Unknown associated interface requested: " << interface_name
+               << ", crashing the desktop process";
+    CrashDesktopProcess(FROM_HERE);
+  }
+}
 
 void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -618,12 +771,14 @@ void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   bool launch_elevated = base::win::GetVersion() >= base::win::Version::WIN8;
 
   // Get the name of the executable to run. |kDesktopBinaryName| specifies
-  // uiAccess="true" in its manifest.
+  // uiAccess="true" in its manifest.  Prefer kDesktopBinaryName for Win8+ but
+  // fall back to kHostBinaryName if there is a problem loading it.
   base::FilePath desktop_binary;
-  bool result;
+  bool result = false;
   if (launch_elevated) {
     result = GetInstalledBinaryPath(kDesktopBinaryName, &desktop_binary);
-  } else {
+  }
+  if (!result || !IsBinaryTrusted(desktop_binary)) {
     result = GetInstalledBinaryPath(kHostBinaryName, &desktop_binary);
   }
 
@@ -661,23 +816,34 @@ void DesktopSessionWin::OnSessionDetached() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   launcher_.reset();
+  desktop_session_request_handler_.reset();
   session_id_ = UINT32_MAX;
 
   if (monitoring_notifications_) {
     ReportElapsedTime("detached");
 
     session_attach_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kSessionAttachTimeoutSeconds),
-        this, &DesktopSessionWin::OnSessionAttachTimeout);
+        FROM_HERE, base::Seconds(kSessionAttachTimeoutSeconds), this,
+        &DesktopSessionWin::OnSessionAttachTimeout);
   }
 }
 
-void DesktopSessionWin::OnDesktopSessionAgentAttached(
-      const IPC::ChannelHandle& desktop_pipe) {
-  if (!daemon_process()->OnDesktopSessionAgentAttached(id(), session_id_,
-                                                       desktop_pipe)) {
+void DesktopSessionWin::ConnectDesktopChannel(
+    mojo::ScopedMessagePipeHandle desktop_pipe) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (!daemon_process()->OnDesktopSessionAgentAttached(
+          id(), session_id_, desktop_pipe.release())) {
     CrashDesktopProcess(FROM_HERE);
   }
+}
+
+void DesktopSessionWin::InjectSecureAttentionSequence() {
+  InjectSas();
+}
+
+void DesktopSessionWin::CrashNetworkProcess() {
+  daemon_process()->CrashNetworkProcess(FROM_HERE);
 }
 
 void DesktopSessionWin::CrashDesktopProcess(const base::Location& location) {

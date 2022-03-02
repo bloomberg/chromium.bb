@@ -141,11 +141,11 @@ WARN_UNUSED_RESULT ::testing::AssertionResult VerifyState(
   if (expected_log_capture_mode_known) {
     expected_state.SetString("captureMode", expected_log_capture_mode_string);
   } else {
-    state->Remove("captureMode", nullptr);
+    state->RemoveKey("captureMode");
   }
 
   // Remove "file" field which is only added in debug mode.
-  state->Remove("file", nullptr);
+  state->RemoveKey("file");
 
   std::string expected_state_json_string;
   JSONStringValueSerializer expected_state_serializer(
@@ -802,7 +802,7 @@ TEST_F(NetExportFileWriterTest, StartWithNetworkContextActive) {
   ASSERT_TRUE(root->GetList("events", &events));
 
   // Check there is at least one event as a result of the ongoing request.
-  ASSERT_GE(events->GetSize(), 1u);
+  ASSERT_GE(events->GetList().size(), 1u);
 
   // Check the URL in the params of the first event.
   base::DictionaryValue* event;

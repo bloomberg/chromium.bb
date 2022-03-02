@@ -14,12 +14,6 @@
 # ==============================================================================
 """Saves and restore variables inside traced @tf.functions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import uuid
-
 from tensorflow.core.protobuf import saver_pb2
 from tensorflow.python.eager import context
 from tensorflow.python.eager import def_function
@@ -27,10 +21,12 @@ from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_spec
+from tensorflow.python.framework import tensor_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gen_io_ops
 from tensorflow.python.ops import io_ops
 from tensorflow.python.ops import string_ops
+from tensorflow.python.saved_model import registration
 from tensorflow.python.training.saving import checkpoint_options
 from tensorflow.python.training.saving import saveable_hook
 from tensorflow.python.training.saving import saveable_object
@@ -41,6 +37,8 @@ from tensorflow.python.util import nest
 class _SingleDeviceSaver(object):
   """Saves and restores checkpoints from the current device."""
 
+  __slots__ = ["_saveable_objects"]
+
   def __init__(self, saveable_objects):
     """Specify a list of `SaveableObject`s to save and restore.
 
@@ -50,8 +48,7 @@ class _SingleDeviceSaver(object):
     saveable_objects = list(saveable_objects)
     for saveable in saveable_objects:
       if not isinstance(saveable, saveable_object.SaveableObject):
-        raise ValueError(
-            "Expected a list of SaveableObjects, got %s." % (saveable,))
+        raise ValueError(f"Expected a list of SaveableObjects, got {saveable}.")
     self._saveable_objects = saveable_objects
 
   def save(self, file_prefix, options=None):
@@ -70,9 +67,14 @@ class _SingleDeviceSaver(object):
     tensor_slices = []
     for saveable in self._saveable_objects:
       for spec in saveable.specs:
-        tensor_names.append(spec.name)
-        tensors.append(spec.tensor)
-        tensor_slices.append(spec.slice_spec)
+        tensor = spec.tensor
+        # A tensor value of `None` indicates that this SaveableObject gets
+        # recorded in the object graph, but that no value is saved in the
+        # checkpoint.
+        if tensor is not None:
+          tensor_names.append(spec.name)
+          tensors.append(tensor)
+          tensor_slices.append(spec.slice_spec)
     save_device = options.experimental_io_device or "cpu:0"
     with ops.device(save_device):
       return io_ops.save_v2(file_prefix, tensor_names, tensor_slices, tensors)
@@ -126,6 +128,44 @@ def sharded_filename(filename_tensor, shard, num_shards):
   return gen_io_ops.sharded_filename(filename_tensor, shard, num_shards)
 
 
+def registered_saver_filename(filename_tensor, saver_name):
+  return string_ops.string_join(
+      [filename_tensor, constant_op.constant(f"-{saver_name}")])
+
+
+def _get_mapped_registered_save_fn(fn, trackables, call_with_mapped_captures):
+  """Converts the function to a python or tf.function with a single file arg."""
+  if call_with_mapped_captures is None:
+    def mapped_fn(file_prefix):
+      return fn(trackables=trackables, file_prefix=file_prefix)
+    return mapped_fn
+  else:
+    tf_fn = def_function.function(fn, autograph=False)
+    concrete = tf_fn.get_concrete_function(
+        trackables=trackables,
+        file_prefix=tensor_spec.TensorSpec(shape=(), dtype=dtypes.string))
+    def mapped_fn(file_prefix):
+      return call_with_mapped_captures(concrete, [file_prefix])
+    return mapped_fn
+
+
+def _get_mapped_registered_restore_fn(fn, trackables,
+                                      call_with_mapped_captures):
+  """Converts the function to a python or tf.function with a single file arg."""
+  if call_with_mapped_captures is None:
+    def mapped_fn(merged_prefix):
+      return fn(trackables=trackables, merged_prefix=merged_prefix)
+    return mapped_fn
+  else:
+    tf_fn = def_function.function(fn, autograph=False)
+    concrete = tf_fn.get_concrete_function(
+        trackables=trackables,
+        merged_prefix=tensor_spec.TensorSpec(shape=(), dtype=dtypes.string))
+    def mapped_fn(merged_prefix):
+      return call_with_mapped_captures(concrete, [merged_prefix])
+    return mapped_fn
+
+
 class MultiDeviceSaver(object):
   """Saves checkpoints directly from multiple devices.
 
@@ -134,7 +174,10 @@ class MultiDeviceSaver(object):
   checkpointing are built on top of it.
   """
 
-  def __init__(self, saveable_objects):
+  def __init__(self,
+               saveable_objects,
+               registered_savers=None,
+               call_with_mapped_captures=None):
     """Specify a list of `SaveableObject`s to save and restore.
 
     Args:
@@ -142,6 +185,11 @@ class MultiDeviceSaver(object):
         Objects extending `SaveableObject` will be saved and restored, and
         objects extending `SaveableHook` will be called into at save and
         restore time.
+      registered_savers: A dictionary mapping `registration.RegisteredSaver`
+        namedtuples to a dictionary of named Trackables. The keys of the
+        Trackable dictionary are string names that uniquely identify the
+        Trackable in the checkpoint.
+      call_with_mapped_captures: TODO
     """
     self._before_save_callbacks = []
     self._after_restore_callbacks = []
@@ -154,8 +202,7 @@ class MultiDeviceSaver(object):
 
       if not is_saveable and not is_hook:
         raise ValueError(
-            "Expected a dictionary of SaveableObjects, got {}."
-            .format(saveable))
+            f"Expected a dictionary of SaveableObjects, got {saveable}.")
 
       if is_hook:
         self._before_save_callbacks.append(saveable.before_save)
@@ -168,6 +215,17 @@ class MultiDeviceSaver(object):
     self._single_device_savers = {
         device: _SingleDeviceSaver(saveables)
         for device, saveables in saveables_by_device.items()}
+
+    self._registered_savers = {}
+    if registered_savers:
+      for registered_name, trackables in registered_savers.items():
+        save_fn = _get_mapped_registered_save_fn(
+            registration.get_save_function(registered_name),
+            trackables, call_with_mapped_captures)
+        restore_fn = _get_mapped_registered_restore_fn(
+            registration.get_restore_function(registered_name),
+            trackables, call_with_mapped_captures)
+        self._registered_savers[registered_name] = (save_fn, restore_fn)
 
   def to_proto(self):
     """Serializes to a SaverDef referencing the current graph."""
@@ -245,14 +303,32 @@ class MultiDeviceSaver(object):
       sharded_suffix = array_ops.where(
           string_ops.regex_full_match(file_prefix, "^s3://.*"),
           constant_op.constant(".part"),
-          constant_op.constant("_temp_%s/part" % uuid.uuid4().hex))
+          constant_op.constant("_temp/part"))
       tmp_checkpoint_prefix = string_ops.string_join(
           [file_prefix, sharded_suffix])
+      registered_paths = {
+          saver_name: registered_saver_filename(file_prefix, saver_name)
+          for saver_name in self._registered_savers
+      }
 
     def save_fn():
+      saved_prefixes = []
+      # Save with the registered savers.
+      for saver_name, (save_fn, _) in self._registered_savers.items():
+        maybe_saved_prefixes = save_fn(registered_paths[saver_name])
+        if maybe_saved_prefixes is not None:
+          flattened_saved_prefixes = nest.flatten(maybe_saved_prefixes)
+          if not all(
+              tensor_util.is_tf_type(x) and x.dtype == dtypes.string
+              for x in flattened_saved_prefixes):
+            raise ValueError(
+                "Registered saver can only return `None` or "
+                f"string type tensors. Got {maybe_saved_prefixes}.")
+          saved_prefixes.extend(flattened_saved_prefixes)
+
+      # (Default saver) Save with single device savers.
       num_shards = len(self._single_device_savers)
       sharded_saves = []
-      sharded_prefixes = []
       num_shards_tensor = constant_op.constant(num_shards, name="num_shards")
       last_device = None
       for shard, (device, saver) in enumerate(
@@ -261,7 +337,7 @@ class MultiDeviceSaver(object):
         with ops.device(saveable_object_util.set_cpu0(device)):
           shard_prefix = sharded_filename(tmp_checkpoint_prefix, shard,
                                           num_shards_tensor)
-        sharded_prefixes.append(shard_prefix)
+        saved_prefixes.append(shard_prefix)
         with ops.device(device):
           # _SingleDeviceSaver will use the CPU device when necessary, but
           # initial read operations should be placed on the SaveableObject's
@@ -279,7 +355,7 @@ class MultiDeviceSaver(object):
           # merged, attempts to delete the temporary directory,
           # "<user-fed prefix>_temp".
           return gen_io_ops.merge_v2_checkpoints(
-              sharded_prefixes, file_prefix, delete_old_dirs=True)
+              saved_prefixes, file_prefix, delete_old_dirs=True)
 
     # Since this will causes a function re-trace on each save, limit this to the
     # cases where it is needed: eager and when there are multiple tasks/single
@@ -287,7 +363,7 @@ class MultiDeviceSaver(object):
     # latest values of options like experimental_io_device.
     if context.executing_eagerly() and len(self._single_device_savers) > 1:
       # Explicitly place the identity op on the first device.
-      @def_function.function(experimental_compile=False)
+      @def_function.function(jit_compile=False)
       def tf_function_save():
         save_fn()
       tf_function_save()
@@ -303,7 +379,9 @@ class MultiDeviceSaver(object):
       options: Optional `CheckpointOptions` object.
 
     Returns:
-      A dictionary mapping from SaveableObject names to restore operations.
+      When not run eagerly or when saving on a single device, returns a
+      dictionary mapping from SaveableObject names to restore operations;
+      otherwise, returns an empty dict.
     """
     options = options or checkpoint_options.CheckpointOptions()
 
@@ -314,26 +392,19 @@ class MultiDeviceSaver(object):
       for device, saver in sorted(self._single_device_savers.items()):
         with ops.device(device):
           restore_ops.update(saver.restore(file_prefix, options))
-
+      for _, (_, restore_fn) in self._registered_savers.items():
+        restore_fn(file_prefix)
       return restore_ops
 
-    # Since this will causes a function re-trace on each save, limit this to the
+    # Since this will causes a function re-trace on each restore, limit this to
     # cases where it is needed: eager and when there are multiple tasks/single
     # device savers. Note that the retrace is needed to ensure we pickup the
     # latest values of options like experimental_io_device.
     if context.executing_eagerly() and len(self._single_device_savers) > 1:
-      first_device, _ = list(self._single_device_savers.items())[0]
-      @def_function.function(experimental_compile=False)
+      @def_function.function(jit_compile=False)
       def tf_function_restore():
-        restore_ops = restore_fn()
-        restore_tensors = {}
-        # tf.functions must return tensors, thus we use control dependencies so
-        # that we can return a tensor which depends on the given op.
-        with ops.device(saveable_object_util.set_cpu0(first_device)):
-          for name, op in restore_ops.items():
-            with ops.control_dependencies([op]):
-              restore_tensors[name] = array_ops.identity(file_prefix)
-        return restore_tensors
+        restore_fn()
+        return {}
 
       restore_ops = tf_function_restore()
     else:

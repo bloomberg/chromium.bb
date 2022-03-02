@@ -68,7 +68,12 @@ struct NaClResourcePrefetchResult {
 // Parameters sent to the NaCl process when we start it.
 struct NaClStartParams {
   NaClStartParams();
+
+  NaClStartParams(const NaClStartParams&) = delete;
+  NaClStartParams& operator=(const NaClStartParams&) = delete;
+
   NaClStartParams(NaClStartParams&& other);
+
   ~NaClStartParams();
 
   IPC::PlatformFileForTransit nexe_file;
@@ -80,7 +85,7 @@ struct NaClStartParams {
   IPC::PlatformFileForTransit debug_stub_server_bound_socket;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_NACL_NONSFI)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // These are for Non-SFI mode IPC channels.
   // For security hardening, unlike in SFI mode, we cannot create socket pairs
   // in a NaCl loader process. Thus, the browser process creates the
@@ -109,9 +114,6 @@ struct NaClStartParams {
   // NOTE: Any new fields added here must also be added to the IPC
   // serialization in nacl_messages.h and (for POD fields) the constructor
   // in nacl_types.cc.
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NaClStartParams);
 };
 
 // Parameters sent to the browser process to have it launch a NaCl process.
@@ -126,7 +128,6 @@ struct NaClLaunchParams {
                    uint64_t nexe_token_hi,
                    const std::vector<NaClResourcePrefetchRequest>&
                        resource_prefetch_request_list,
-                   int render_view_id,
                    int render_frame_id,
                    uint32_t permission_bits,
                    bool uses_nonsfi_mode,
@@ -143,7 +144,6 @@ struct NaClLaunchParams {
   uint64_t nexe_token_hi = 0;
   std::vector<NaClResourcePrefetchRequest> resource_prefetch_request_list;
 
-  int render_view_id = 0;
   int render_frame_id = 0;
   uint32_t permission_bits = 0;
   bool uses_nonsfi_mode = false;
@@ -160,6 +160,10 @@ struct NaClLaunchResult {
       base::ProcessId plugin_pid,
       int plugin_child_id,
       base::ReadOnlySharedMemoryRegion crash_info_shmem_region);
+
+  NaClLaunchResult(const NaClLaunchResult&) = delete;
+  NaClLaunchResult& operator=(const NaClLaunchResult&) = delete;
+
   ~NaClLaunchResult();
 
   // For plugin <-> renderer PPAPI communication.
@@ -177,9 +181,6 @@ struct NaClLaunchResult {
 
   // For NaCl <-> renderer crash information reporting.
   base::ReadOnlySharedMemoryRegion crash_info_shmem_region;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NaClLaunchResult);
 };
 
 }  // namespace nacl

@@ -44,7 +44,7 @@ class InstanceUpdate {
   static bool Equals(const Instance* state, const Instance* delta);
 
   // At most one of |state| or |delta| may be nullptr.
-  InstanceUpdate(Instance* state, Instance* delta);
+  InstanceUpdate(const Instance* state, const Instance* delta);
 
   InstanceUpdate(const InstanceUpdate&) = delete;
   InstanceUpdate& operator=(const InstanceUpdate&) = delete;
@@ -62,9 +62,10 @@ class InstanceUpdate {
 
   const std::string& AppId() const;
 
-  aura::Window* Window() const;
+  const base::UnguessableToken& InstanceId() const;
 
-  const Instance::InstanceKey& InstanceKey() const;
+  aura::Window* Window() const;
+  bool WindowChanged() const;
 
   const std::string& LaunchId() const;
   bool LaunchIdChanged() const;
@@ -79,8 +80,8 @@ class InstanceUpdate {
   bool BrowserContextChanged() const;
 
  private:
-  Instance* state_;
-  Instance* delta_;
+  const Instance* state_;
+  const Instance* delta_;
 };
 
 }  // namespace apps

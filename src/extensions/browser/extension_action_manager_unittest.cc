@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
@@ -26,6 +27,10 @@ class ExtensionActionManagerTest
  public:
   ExtensionActionManagerTest();
 
+  ExtensionActionManagerTest(const ExtensionActionManagerTest&) = delete;
+  ExtensionActionManagerTest& operator=(const ExtensionActionManagerTest&) =
+      delete;
+
  protected:
   // ExtensionsTest:
   void SetUp() override;
@@ -34,10 +39,8 @@ class ExtensionActionManagerTest
   ExtensionRegistry* registry() { return registry_; }
 
  private:
-  ExtensionRegistry* registry_;
-  ExtensionActionManager* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActionManagerTest);
+  raw_ptr<ExtensionRegistry> registry_;
+  raw_ptr<ExtensionActionManager> manager_;
 };
 
 ExtensionActionManagerTest::ExtensionActionManagerTest() = default;

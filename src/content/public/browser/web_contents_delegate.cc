@@ -12,10 +12,10 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
@@ -32,7 +32,7 @@ WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
   return nullptr;
 }
 
-bool WebContentsDelegate::ShouldTransferNavigation(
+bool WebContentsDelegate::ShouldAllowRendererInitiatedCrossProcessNavigation(
     bool is_main_frame_navigation) {
   return true;
 }
@@ -86,7 +86,7 @@ void WebContentsDelegate::CanDownload(const GURL& url,
   std::move(callback).Run(true);
 }
 
-bool WebContentsDelegate::HandleContextMenu(RenderFrameHost* render_frame_host,
+bool WebContentsDelegate::HandleContextMenu(RenderFrameHost& render_frame_host,
                                             const ContextMenuParams& params) {
   return false;
 }
@@ -158,6 +158,12 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
   return false;
 }
 
+bool WebContentsDelegate::CanEnterFullscreenModeForTab(
+    RenderFrameHost* requesting_frame,
+    const blink::mojom::FullscreenOptions& options) {
+  return true;
+}
+
 blink::mojom::DisplayMode WebContentsDelegate::GetDisplayMode(
     const WebContents* web_contents) {
   return blink::mojom::DisplayMode::kBrowser;
@@ -180,12 +186,14 @@ void WebContentsDelegate::RequestKeyboardLock(WebContents* web_contents,
   web_contents->GotResponseToKeyboardLockRequest(false);
 }
 
-ColorChooser* WebContentsDelegate::OpenColorChooser(
+#if defined(OS_ANDROID)
+std::unique_ptr<ColorChooser> WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
   return nullptr;
 }
+#endif
 
 std::unique_ptr<EyeDropper> WebContentsDelegate::OpenEyeDropper(
     RenderFrameHost* frame,
@@ -231,6 +239,11 @@ std::string WebContentsDelegate::GetDefaultMediaDeviceID(
     WebContents* web_contents,
     blink::mojom::MediaStreamType type) {
   return std::string();
+}
+
+std::string WebContentsDelegate::GetTitleForMediaControls(
+    WebContents* web_contents) {
+  return {};
 }
 
 #if defined(OS_ANDROID)
@@ -284,12 +297,6 @@ bool WebContentsDelegate::SaveFrame(const GURL& url,
   return false;
 }
 
-blink::SecurityStyle WebContentsDelegate::GetSecurityStyle(
-    WebContents* web_contents,
-    SecurityStyleExplanations* security_style_explanations) {
-  return blink::SecurityStyle::kUnknown;
-}
-
 bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
     WebContents* web_contents,
     bool allowed_per_prefs,
@@ -339,6 +346,10 @@ bool WebContentsDelegate::ShouldAllowLazyLoad() {
 }
 
 bool WebContentsDelegate::IsBackForwardCacheSupported() {
+  return false;
+}
+
+bool WebContentsDelegate::IsPrerender2Supported() {
   return false;
 }
 

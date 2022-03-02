@@ -4,8 +4,8 @@
 
 #include "media/audio/android/opensles_input.h"
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/android/audio_manager_android.h"
 #include "media/base/audio_bus.h"
@@ -47,8 +47,8 @@ OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
   format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
 
   buffer_size_bytes_ = params.GetBytesPerBuffer(kSampleFormat);
-  hardware_delay_ = base::TimeDelta::FromSecondsD(
-      params.frames_per_buffer() / static_cast<double>(params.sample_rate()));
+  hardware_delay_ = base::Seconds(params.frames_per_buffer() /
+                                  static_cast<double>(params.sample_rate()));
 
   memset(&audio_data_, 0, sizeof(audio_data_));
 }

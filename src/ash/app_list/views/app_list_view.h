@@ -16,7 +16,7 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
@@ -38,17 +38,16 @@ class ImplicitAnimationObserver;
 }  // namespace ui
 
 namespace ash {
+class AppListA11yAnnouncer;
 class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListBackgroundShieldView;
-class AppListConfig;
 class AppListMainView;
-class AppListModel;
 class AppsGridView;
-class StateTransitionNotifier;
+class PagedAppsGridView;
 class PaginationModel;
 class SearchBoxView;
-class SearchModel;
+class StateTransitionNotifier;
 
 FORWARD_DECLARE_TEST(AppListControllerImplTest,
                      CheckAppListViewBoundsWhenVKeyboardEnabled);
@@ -71,13 +70,47 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   class TestApi {
    public:
     explicit TestApi(AppListView* view);
+
+    TestApi(const TestApi&) = delete;
+    TestApi& operator=(const TestApi&) = delete;
+
     ~TestApi();
 
-    AppsGridView* GetRootAppsGridView();
+    PagedAppsGridView* GetRootAppsGridView();
 
    private:
     AppListView* const view_;
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
+  class ASH_EXPORT ScopedAccessibilityAnnouncementLock {
+   public:
+    explicit ScopedAccessibilityAnnouncementLock(AppListView* view)
+        : view_(view) {
+      ++view_->accessibility_event_disablers_;
+    }
+
+    ~ScopedAccessibilityAnnouncementLock() {
+      --view_->accessibility_event_disablers_;
+    }
+
+   private:
+    AppListView* const view_;
+  };
+
+  // Used to prevent the app list contents from being reset when the app list
+  // shows. Only one instance can exist at a time. This class is useful when:
+  // (1) the app list close animation is reversed, and
+  // (2) the contents before the close animation starts should be kept.
+  class ScopedContentsResetDisabler {
+   public:
+    explicit ScopedContentsResetDisabler(AppListView* view);
+    ScopedContentsResetDisabler(const ScopedContentsResetDisabler&) = delete;
+    ScopedContentsResetDisabler& operator=(const ScopedContentsResetDisabler&) =
+        delete;
+    ~ScopedContentsResetDisabler();
+
+   private:
+    AppListView* const view_;
   };
 
   // Number of the size of shelf. Used to determine the opacity of items in the
@@ -123,14 +156,11 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
+
+  AppListView(const AppListView&) = delete;
+  AppListView& operator=(const AppListView&) = delete;
+
   ~AppListView() override;
-
-  // Prevents handling input events for the |window| in context of handling in
-  // app list.
-  static void ExcludeWindowFromEventHandling(aura::Window* window);
-
-  static void SetShortAnimationForTesting(bool enabled);
-  static bool ShortAnimationsForTesting();
 
   // Used for testing, allows the page reset timer to be fired immediately
   // after starting.
@@ -191,9 +221,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
   void OnThemeChanged() override;
-
-  // WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -296,6 +323,10 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   //     initial animation transform.
   float GetAppListTransitionProgress(int flags) const;
 
+  // Returns the expected app list view height (measured from the screen bottom)
+  // in the provided state.
+  int GetHeightForState(AppListViewState state) const;
+
   // Returns the height of app list in fullscreen state.
   int GetFullscreenStateHeight() const;
 
@@ -332,11 +363,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Moves the AppListView off screen and calls a layout if needed.
   void OnBoundsAnimationCompleted(AppListViewState target_state);
 
-  // Returns the expected tile bounds in screen coordinates the provided app
-  // grid item ID , if the item is in the first apps grid page. Otherwise, it
-  // returns 1x1 rectangle in the apps grid center.
-  gfx::Rect GetItemScreenBoundsInFirstGridPage(const std::string& id) const;
-
   gfx::NativeView parent_window() const { return parent_window_; }
 
   AppListViewState app_list_state() const { return app_list_state_; }
@@ -345,7 +371,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
 
   AppListMainView* app_list_main_view() const { return app_list_main_view_; }
 
-  views::View* announcement_view() const { return announcement_view_; }
+  AppListA11yAnnouncer* a11y_announcer() { return a11y_announcer_.get(); }
 
   bool is_fullscreen() const {
     return app_list_state_ == AppListViewState::kFullscreenAllApps ||
@@ -367,10 +393,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   }
 
   views::View* GetAppListBackgroundShieldForTest();
-
-  // Gets the current app list configuration. Should not be used before the app
-  // list content has been initialized.
-  const AppListConfig& GetAppListConfig() const;
 
   SkColor GetAppListBackgroundShieldColorForTest();
 
@@ -400,11 +422,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns insets that should be added to app list content to avoid overlap
   // with the shelf.
   gfx::Insets GetMainViewInsetsForShelf() const;
-
-  // Updates the app list configuration that should be used by this app list
-  // view.
-  // |parent_window|: The window that contains the app list widget.
-  void UpdateAppListConfig(aura::Window* parent_window);
 
   // Updates the widget to be shown.
   void UpdateWidget();
@@ -466,7 +483,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   AppsContainerView* GetAppsContainerView();
 
   // Gets the root apps grid view owned by this view.
-  AppsGridView* GetRootAppsGridView();
+  PagedAppsGridView* GetRootAppsGridView();
 
   // Gets the apps grid view within the folder view owned by this view.
   AppsGridView* GetFolderAppsGridView();
@@ -520,16 +537,16 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // is snapped.
   void ResetSubpixelPositionOffset(ui::Layer* layer);
 
-  AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
-  AppListModel* const model_;        // Not Owned.
-  SearchModel* const search_model_;  // Not Owned.
+  AppListViewDelegate* const delegate_;
 
+  // Keeps track of the number of locks that prevent the app list view
+  // from creating app list transition accessibility events. This is used to
+  // prevent A11Y announcements when showing the assistant UI.
+  int accessibility_event_disablers_ = 0;
   AppListMainView* app_list_main_view_ = nullptr;
   gfx::NativeView parent_window_ = nullptr;
 
-  views::Widget* search_box_widget_ =
-      nullptr;                                // Owned by the app list's widget.
-  SearchBoxView* search_box_view_ = nullptr;  // Owned by |search_box_widget_|.
+  SearchBoxView* search_box_view_ = nullptr;  // Owned by views hierarchy.
   // Owned by the app list's widget. Used to show the darkened AppList
   // background.
   AppListBackgroundShieldView* app_list_background_shield_ = nullptr;
@@ -590,18 +607,14 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // view header is visible when onscreen keyboard is shown.
   bool offset_to_show_folder_with_onscreen_keyboard_ = false;
 
-  // View used to announce:
-  // 1. state transition for peeking and fullscreen
-  // 2. folder opening and closing.
-  // 3. app dragging in AppsGridView.
-  views::View* announcement_view_ = nullptr;  // Owned by AppListView.
+  // Used for announcing accessibility alerts.
+  std::unique_ptr<AppListA11yAnnouncer> a11y_announcer_;
+
+  // If true, the contents view is not reset when showing the app list.
+  bool disable_contents_reset_when_showing_ = false;
 
   // Records the presentation time for app launcher dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
-
-  // If set, the app list config that should be used within the app list view
-  // instead of the default instance.
-  std::unique_ptr<AppListConfig> app_list_config_;
 
   // A timer which will reset the app list to the initial page. This timer only
   // goes off when the app list is not visible after a set amount of time.
@@ -617,8 +630,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // detects that `SetState()` got called again (in which case the weak ptr will
   // be invalidated).
   base::WeakPtrFactory<AppListView> set_state_weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
 
 }  // namespace ash

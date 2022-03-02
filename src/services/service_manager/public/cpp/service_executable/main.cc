@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -25,6 +24,10 @@
 
 #if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
+#endif
+
+#if defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace {

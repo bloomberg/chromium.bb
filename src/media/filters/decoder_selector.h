@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -79,9 +79,14 @@ class MEDIA_EXPORT DecoderSelector {
       base::OnceCallback<void(std::unique_ptr<Decoder>,
                               std::unique_ptr<DecryptingDemuxerStream>)>;
 
+  DecoderSelector() = delete;
+
   DecoderSelector(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   CreateDecodersCB create_decoders_cb,
                   MediaLog* media_log);
+
+  DecoderSelector(const DecoderSelector&) = delete;
+  DecoderSelector& operator=(const DecoderSelector&) = delete;
 
   // Aborts any pending decoder selection.
   ~DecoderSelector();
@@ -139,11 +144,11 @@ class MEDIA_EXPORT DecoderSelector {
 
   CreateDecodersCB create_decoders_cb_;
   DecoderPriorityCB decoder_priority_cb_;
-  MediaLog* media_log_;
+  raw_ptr<MediaLog> media_log_;
 
-  StreamTraits* traits_ = nullptr;
-  DemuxerStream* stream_ = nullptr;
-  CdmContext* cdm_context_ = nullptr;
+  raw_ptr<StreamTraits> traits_ = nullptr;
+  raw_ptr<DemuxerStream> stream_ = nullptr;
+  raw_ptr<CdmContext> cdm_context_ = nullptr;
   WaitingCB waiting_cb_;
 
   // Overall decoder selection state.
@@ -165,8 +170,6 @@ class MEDIA_EXPORT DecoderSelector {
   base::TimeTicks codec_change_start_;
 
   base::WeakPtrFactory<DecoderSelector> weak_this_factory_{this};
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DecoderSelector);
 };
 
 typedef DecoderSelector<DemuxerStream::VIDEO> VideoDecoderSelector;

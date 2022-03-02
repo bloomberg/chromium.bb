@@ -185,7 +185,8 @@ void ViewsAXTreeManager::UnserializeTreeUpdates(
   // AXEventGenerator to generate events based on the updates.
   for (const ui::AXEventGenerator::TargetedEvent& targeted_event :
        event_generator_) {
-    FireGeneratedEvent(targeted_event.event_params.event, *targeted_event.node);
+    if (ui::AXNode* node = ax_tree().GetFromId(targeted_event.node_id))
+      FireGeneratedEvent(targeted_event.event_params.event, *node);
   }
   event_generator_.ClearEvents();
 }
@@ -194,7 +195,7 @@ void ViewsAXTreeManager::FireGeneratedEvent(
     const ui::AXEventGenerator::Event& event,
     const ui::AXNode& node) const {
   if (!generated_event_callback_for_testing_.is_null())
-    generated_event_callback_for_testing_.Run(widget_, event, node.id());
+    generated_event_callback_for_testing_.Run(widget_.get(), event, node.id());
   // TODO(nektar): Implement this other than "for testing".
 }
 

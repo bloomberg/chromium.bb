@@ -99,6 +99,10 @@ blink::mojom::DisplayMode RenderWidgetHostDelegate::GetDisplayMode() const {
   return blink::mojom::DisplayMode::kBrowser;
 }
 
+gfx::Rect RenderWidgetHostDelegate::GetWindowsControlsOverlayRect() const {
+  return gfx::Rect();
+}
+
 bool RenderWidgetHostDelegate::HasMouseLock(
     RenderWidgetHostImpl* render_widget_host) {
   return false;
@@ -117,6 +121,12 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetKeyboardLockWidget() {
   return nullptr;
 }
 
+bool RenderWidgetHostDelegate::OnRenderFrameProxyVisibilityChanged(
+    RenderFrameProxyHost* render_frame_proxy_host,
+    blink::mojom::FrameVisibility visibility) {
+  return false;
+}
+
 TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
   return nullptr;
 }
@@ -125,25 +135,22 @@ RenderViewHostDelegateView* RenderWidgetHostDelegate::GetDelegateView() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::IsWidgetForMainFrame(RenderWidgetHostImpl*) {
+bool RenderWidgetHostDelegate::IsWidgetForPrimaryMainFrame(
+    RenderWidgetHostImpl*) {
   return false;
+}
+
+VisibleTimeRequestTrigger*
+RenderWidgetHostDelegate::GetVisibleTimeRequestTrigger() {
+  return nullptr;
 }
 
 ukm::SourceId RenderWidgetHostDelegate::GetCurrentPageUkmSourceId() {
   return ukm::kInvalidSourceId;
 }
 
-WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
-  return nullptr;
-}
-
 bool RenderWidgetHostDelegate::IsShowingContextMenuOnPage() const {
   return false;
-}
-
-RenderFrameHostImpl*
-RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
-  return nullptr;
 }
 
 bool RenderWidgetHostDelegate::IsPortal() {

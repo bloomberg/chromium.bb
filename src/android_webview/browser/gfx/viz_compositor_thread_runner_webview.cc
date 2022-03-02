@@ -69,7 +69,8 @@ void VizCompositorThreadRunnerWebView::InitFrameSinkManagerOnViz() {
   server_shared_bitmap_manager_ =
       std::make_unique<viz::ServerSharedBitmapManager>();
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
-      server_shared_bitmap_manager_.get());
+      viz::FrameSinkManagerImpl::InitParams(
+          server_shared_bitmap_manager_.get()));
 }
 
 viz::FrameSinkManagerImpl*
@@ -116,7 +117,7 @@ void VizCompositorThreadRunnerWebView::CreateFrameSinkManager(
     viz::mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
     viz::GpuServiceImpl* gpu_service,
-    gfx::RenderingPipeline* gpu_pipeline) {
+    viz::HintSessionFactory* hint_session_factory) {
   viz_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -137,13 +138,6 @@ void VizCompositorThreadRunnerWebView::BindFrameSinkManagerOnViz(
       std::move(params->frame_sink_manager), viz_task_runner_,
       std::move(params->frame_sink_manager_client));
 }
-
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-void VizCompositorThreadRunnerWebView::CreateVizDevTools(
-    viz::mojom::VizDevToolsParamsPtr params) {
-  NOTIMPLEMENTED();
-}
-#endif
 
 viz::GpuServiceImpl* VizCompositorThreadRunnerWebView::GetGpuService() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);

@@ -9,7 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,4 +26,31 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForCroshSystemWebApp() {
   info->background_color = 0xFF202124;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
   return info;
+}
+
+CroshSystemAppDelegate::CroshSystemAppDelegate(Profile* profile)
+    : web_app::SystemWebAppDelegate(web_app::SystemAppType::CROSH,
+                                    "Crosh",
+                                    GURL(chrome::kChromeUIUntrustedCroshURL),
+                                    profile) {}
+
+std::unique_ptr<WebApplicationInfo> CroshSystemAppDelegate::GetWebAppInfo()
+    const {
+  return CreateWebAppInfoForCroshSystemWebApp();
+}
+
+bool CroshSystemAppDelegate::ShouldShowInLauncher() const {
+  return false;
+}
+
+bool CroshSystemAppDelegate::ShouldReuseExistingWindow() const {
+  return false;
+}
+
+bool CroshSystemAppDelegate::ShouldShowInSearch() const {
+  return false;
+}
+
+bool CroshSystemAppDelegate::ShouldHaveTabStrip() const {
+  return true;
 }

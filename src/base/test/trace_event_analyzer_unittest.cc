@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_buffer.h"
@@ -101,7 +102,7 @@ TEST_F(TraceEventAnalyzerTest, TraceEvent) {
   event.arg_numbers["int"] = static_cast<double>(int_num);
   event.arg_numbers["double"] = double_num;
   event.arg_strings["string"] = str;
-  event.arg_values["dict"] = std::make_unique<base::DictionaryValue>();
+  event.arg_values["dict"] = base::Value(base::Value::Type::DICTIONARY);
 
   ASSERT_TRUE(event.HasNumberArg("false"));
   ASSERT_TRUE(event.HasNumberArg("true"));
@@ -119,9 +120,9 @@ TEST_F(TraceEventAnalyzerTest, TraceEvent) {
   EXPECT_EQ(double_num, event.GetKnownArgAsDouble("double"));
   EXPECT_STREQ(str, event.GetKnownArgAsString("string").c_str());
 
-  std::unique_ptr<base::Value> arg;
+  base::Value arg;
   EXPECT_TRUE(event.GetArgAsValue("dict", &arg));
-  EXPECT_EQ(base::Value::Type::DICTIONARY, arg->type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, arg.type());
 }
 
 TEST_F(TraceEventAnalyzerTest, QueryEventMember) {
@@ -412,7 +413,7 @@ TEST_F(TraceEventAnalyzerTest, StringPattern) {
 TEST_F(TraceEventAnalyzerTest, BeginEndDuration) {
   ManualSetUp();
 
-  const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(200);
+  const base::TimeDelta kSleepTime = base::Milliseconds(200);
   // We will search for events that have a duration of greater than 90% of the
   // sleep time, so that there is no flakiness.
   int64_t duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
@@ -459,7 +460,7 @@ TEST_F(TraceEventAnalyzerTest, BeginEndDuration) {
 TEST_F(TraceEventAnalyzerTest, CompleteDuration) {
   ManualSetUp();
 
-  const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(200);
+  const base::TimeDelta kSleepTime = base::Milliseconds(200);
   // We will search for events that have a duration of greater than 90% of the
   // sleep time, so that there is no flakiness.
   int64_t duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
@@ -954,13 +955,11 @@ TEST_F(TraceEventAnalyzerTest, ComplexArgument) {
   EXPECT_EQ("name", events[0]->name);
   EXPECT_TRUE(events[0]->HasArg("arg"));
 
-  std::unique_ptr<base::Value> arg;
+  base::Value arg;
   events[0]->GetArgAsValue("arg", &arg);
-  base::DictionaryValue* arg_dict;
-  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
-  std::string property;
-  EXPECT_TRUE(arg_dict->GetString("property", &property));
-  EXPECT_EQ("value", property);
+  ASSERT_TRUE(arg.is_dict());
+  EXPECT_EQ(absl::optional<std::string>("value"),
+            base::OptionalFromPtr(arg.FindStringKey("property")));
 }
 
 }  // namespace trace_analyzer

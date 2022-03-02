@@ -26,7 +26,7 @@
 #define PACKAGE_NAME  "libjpeg-turbo"
 
 /* Version number of package */
-#define VERSION  "2.1.0"
+#define VERSION  "2.1.2"
 
 /* The size of `size_t', as computed by sizeof. */
 #if __WORDSIZE==64 || defined(_WIN64)
@@ -51,4 +51,14 @@
 #elif (SIZEOF_SIZE_T == 4)
 #define HAVEBITSCANFORWARD
 #endif
+#endif
+
+#if defined(__has_attribute)
+#if __has_attribute(fallthrough)
+#define FALLTHROUGH __attribute__((fallthrough));
+#else
+#define FALLTHROUGH
+#endif
+#else
+#define FALLTHROUGH
 #endif

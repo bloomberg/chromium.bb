@@ -16,15 +16,15 @@
 
 #include "src/profiling/memory/heapprofd_producer.h"
 
-#include <algorithm>
-#include <functional>
-#include <string>
-
-#include <inttypes.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <algorithm>
+#include <cinttypes>
+#include <functional>
+#include <string>
 
 #include "perfetto/base/compiler.h"
 #include "perfetto/base/logging.h"
@@ -99,7 +99,6 @@ bool ConfigTargetsProcess(const HeapprofdConfig& cfg,
   return false;
 }
 
-
 bool IsFile(int fd, const char* fn) {
   struct stat fdstat;
   struct stat fnstat;
@@ -147,7 +146,8 @@ bool HeapprofdConfigToClientConfiguration(
   cli_config->adaptive_sampling_max_sampling_interval_bytes =
       heapprofd_config.adaptive_sampling_max_sampling_interval_bytes();
   size_t n = 0;
-  const std::vector<std::string>& exclude_heaps = heapprofd_config.exclude_heaps();
+  const std::vector<std::string>& exclude_heaps =
+      heapprofd_config.exclude_heaps();
   // heaps[i] and heaps_interval[i] represent that the heap named in heaps[i]
   // should be sampled with sampling interval of heap_interval[i].
   std::vector<std::string> heaps = heapprofd_config.heaps();
@@ -192,9 +192,8 @@ bool HeapprofdConfigToClientConfiguration(
                     HEAPPROFD_HEAP_NAME_SZ - 1);
       continue;
     }
-    strncpy(&cli_config->heaps[n].name[0], heap.c_str(),
-            sizeof(cli_config->heaps[0].name));
-    cli_config->heaps[n].name[sizeof(cli_config->heaps[0].name) - 1] = '\0';
+    base::StringCopy(&cli_config->heaps[n].name[0], heap.c_str(),
+                     sizeof(cli_config->heaps[n].name));
     cli_config->heaps[n].interval = interval;
     n++;
   }

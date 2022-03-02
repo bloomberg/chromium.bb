@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "device/vr/orientation/orientation_device.h"
 #include "device/vr/public/cpp/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -23,6 +22,11 @@ class COMPONENT_EXPORT(VR_ORIENTATION) VROrientationDeviceProvider
  public:
   explicit VROrientationDeviceProvider(
       mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider);
+
+  VROrientationDeviceProvider(const VROrientationDeviceProvider&) = delete;
+  VROrientationDeviceProvider& operator=(const VROrientationDeviceProvider&) =
+      delete;
+
   ~VROrientationDeviceProvider() override;
 
   void Initialize(
@@ -52,8 +56,6 @@ class COMPONENT_EXPORT(VR_ORIENTATION) VROrientationDeviceProvider
                                mojo::PendingRemote<mojom::XRRuntime>)>
       add_device_callback_;
   base::OnceClosure initialized_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(VROrientationDeviceProvider);
 };
 
 }  // namespace device

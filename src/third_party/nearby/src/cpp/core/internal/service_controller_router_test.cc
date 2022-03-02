@@ -18,7 +18,13 @@
 #include <cinttypes>
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/time/clock.h"
+#include "absl/types/span.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/mock_service_controller.h"
 #include "core/internal/service_controller.h"
@@ -29,11 +35,6 @@
 #include "platform/public/condition_variable.h"
 #include "platform/public/mutex.h"
 #include "platform/public/mutex_lock.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/time/clock.h"
-#include "absl/types/span.h"
 
 namespace location {
 namespace nearby {
@@ -50,6 +51,12 @@ const char kFakeInejctedEndpointId[] = "abcd";
 // friend class to work.
 class ServiceControllerRouterTest : public testing::Test {
  public:
+  void SetUp() override {
+    auto mock = std::make_unique<MockServiceController>();
+    mock_ = mock.get();
+    router_.SetServiceControllerForTesting(std::move(mock));
+  }
+
   void StartAdvertising(ClientProxy* client, std::string service_id,
                         ConnectionOptions options, ConnectionRequestInfo info,
                         ResultCallback callback) {
@@ -141,8 +148,9 @@ class ServiceControllerRouterTest : public testing::Test {
         .raw_authentication_token = ByteArray{"auth_token"},
         .is_incoming_connection = true,
     };
+    std::string connection_token{"conntokn"};
     client->OnConnectionInitiated(endpoint_id, response_info, options,
-                                  request_info.listener);
+                                  request_info.listener, connection_token);
     EXPECT_TRUE(client->HasPendingConnectionToEndpoint(endpoint_id));
   }
 
@@ -286,21 +294,13 @@ class ServiceControllerRouterTest : public testing::Test {
   ConditionVariable cond_{&mutex_};
   Status result_ ABSL_GUARDED_BY(mutex_) = {Status::kError};
   bool complete_ ABSL_GUARDED_BY(mutex_) = false;
-  // `router_` will take over ownership and delete the mock
-  MockServiceController* mock_ = new MockServiceController();
+  MockServiceController* mock_;
   ClientProxy client_;
 
-  ServiceControllerRouter router_{
-      [this]() -> ServiceController* { return mock_; }};
+  ServiceControllerRouter router_;
 };
 
 namespace {
-TEST_F(ServiceControllerRouterTest, CostructorDestructorWorks) {
-  // This test doesn't create `router_`, so we must clean up manually
-  delete mock_;
-  SUCCEED();
-}
-
 TEST_F(ServiceControllerRouterTest, StartAdvertisingCalled) {
   StartAdvertising(&client_, kServiceId, kConnectionOptions,
                    kConnectionRequestInfo, kCallback);

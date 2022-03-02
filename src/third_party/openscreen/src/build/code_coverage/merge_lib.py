@@ -1,4 +1,4 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -325,4 +325,3 @@ def get_shards_to_retry(bad_profiles):
     assert is_task_id(task_id)
     bad_shard_ids.add(task_id)
   return bad_shard_ids
-

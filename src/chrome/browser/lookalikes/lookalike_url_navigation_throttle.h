@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/lookalikes/digital_asset_links_cross_validator.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
@@ -47,6 +48,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   ~LookalikeUrlNavigationThrottle() override;
 
   // content::NavigationThrottle:
+  ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
@@ -68,7 +70,9 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
 
   // A void-returning variant, only used with deferred throttle results (e.g.
   // when we need to fetch engaged sites list or digital asset link manifests).
-  void PerformChecksDeferred(const std::vector<DomainInfo>& engaged_sites);
+  // |start| is the time at which the navigation was deferred, for metrics.
+  void PerformChecksDeferred(base::TimeTicks start,
+                             const std::vector<DomainInfo>& engaged_sites);
 
   // Returns whether |url| is a lookalike, setting |match_type| and
   // |suggested_url| appropriately. Used in PerformChecks() on a per-URL basis.
@@ -109,7 +113,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
                                   bool triggered_by_initial_url,
                                   bool validation_success);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   bool use_test_profile_ = false;
 
   std::unique_ptr<DigitalAssetLinkCrossValidator> digital_asset_link_validator_;

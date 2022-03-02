@@ -49,11 +49,14 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
     });
   }
 
-  assertActiveMenuItem(menuMsg, menuItemTitle) {
+  assertActiveMenuItem(menuMsg, menuItemTitle, opt_menuItemShortcut) {
     const menu = this.getPanel().activeMenu_;
     const menuItem = menu.items_[menu.activeIndex_];
     assertEquals(menuMsg, menu.menuMsg);
     assertEquals(menuItemTitle, menuItem.menuItemTitle);
+    if (opt_menuItemShortcut) {
+      assertEquals(opt_menuItemShortcut, menuItem.menuItemShortcut);
+    }
   }
 
   assertActiveSearchMenuItem(menuItemTitle) {
@@ -61,6 +64,11 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
     const activeIndex = searchMenu.activeIndex_;
     const activeItem = searchMenu.items_[activeIndex];
     assertEquals(menuItemTitle, activeItem.menuItemTitle);
+  }
+
+  isMenuTitleMessage(menuTitleMessage) {
+    const menu = this.getPanel().activeMenu_;
+    return menuTitleMessage === menu.menuMsg;
   }
 
   get linksDoc() {
@@ -202,3 +210,57 @@ TEST_F('ChromeVoxPanelTest', 'ActionsMenu', function() {
     this.assertActiveMenuItem('panel_menu_actions', 'Click On Current Item');
   });
 });
+
+TEST_F('ChromeVoxPanelTest', 'ShortcutsAreInternationalized', function() {
+  this.runWithLoadedTree(this.linksDoc, async function(root) {
+    new PanelCommand(PanelCommandType.OPEN_MENUS).send();
+    await this.waitForMenu('panel_search_menu');
+    this.fireMockEvent('ArrowRight')();
+    this.assertActiveMenuItem(
+        'panel_menu_jump', 'Go To Beginning Of Table',
+        'Search+Alt+Shift+ArrowLeft');
+    this.fireMockEvent('ArrowRight')();
+    this.assertActiveMenuItem(
+        'panel_menu_speech', 'Announce Current Battery Status',
+        'Search+O, then B');
+    // Skip the tabs menu.
+    this.fireMockEvent('ArrowRight')();
+    this.fireMockEvent('ArrowRight')();
+    this.assertActiveMenuItem(
+        'panel_menu_chromevox', 'Open keyboard shortcuts menu', 'Ctrl+Alt+/');
+  });
+});
+
+// Ensure 'Touch Gestures' is not in the panel menus by default.
+TEST_F(
+    'ChromeVoxPanelTest', 'TouchGesturesMenuNotAvailableWhenNotInTouchMode',
+    function() {
+      this.runWithLoadedTree(this.linksDoc, async function(root) {
+        new PanelCommand(PanelCommandType.OPEN_MENUS).send();
+        await this.waitForMenu('panel_search_menu');
+        do {
+          this.fireMockEvent('ArrowRight')();
+          assertFalse(this.isMenuTitleMessage('panel_menu_touchgestures'));
+        } while (!this.isMenuTitleMessage('panel_search_menu'));
+      });
+    });
+
+// Ensure 'Touch Gesture' is in the panel menus when touch mode is enabled.
+TEST_F(
+    'ChromeVoxPanelTest', 'TouchGesturesMenuAvailableWhenInTouchMode',
+    function() {
+      this.runWithLoadedTree(this.linksDoc, async function(root) {
+        this.getPanel().setTouchGestureSourceForTesting();
+        new PanelCommand(PanelCommandType.OPEN_MENUS).send();
+        await this.waitForMenu('panel_search_menu');
+
+        // Look for Touch Gestures menu, fail if getting back to start.
+        do {
+          this.fireMockEvent('ArrowRight')();
+          assertFalse(this.isMenuTitleMessage('panel_search_menu'));
+        } while (!this.isMenuTitleMessage('panel_menu_touchgestures'));
+
+        this.assertActiveMenuItem(
+            'panel_menu_touchgestures', 'Click on current item');
+      });
+    });

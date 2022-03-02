@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -30,6 +31,10 @@ class VideoSourceImpl : public mojom::VideoSource {
   VideoSourceImpl(mojom::DeviceFactory* device_factory,
                   const std::string& device_id,
                   base::RepeatingClosure on_last_binding_closed_cb);
+
+  VideoSourceImpl(const VideoSourceImpl&) = delete;
+  VideoSourceImpl& operator=(const VideoSourceImpl&) = delete;
+
   ~VideoSourceImpl() override;
 
   void AddToReceiverSet(mojo::PendingReceiver<VideoSource> receiver);
@@ -53,14 +58,14 @@ class VideoSourceImpl : public mojom::VideoSource {
   void OnClientDisconnected();
   void StartDeviceWithSettings(
       const media::VideoCaptureParams& requested_settings);
-  void OnCreateDeviceResponse(mojom::DeviceAccessResultCode result_code);
+  void OnCreateDeviceResponse(media::VideoCaptureError result_code);
   void OnPushSubscriptionClosedOrDisconnectedOrDiscarded(
       PushVideoStreamSubscriptionImpl* subscription,
       base::OnceClosure done_cb);
   void StopDeviceAsynchronously();
   void OnStopDeviceComplete();
 
-  mojom::DeviceFactory* const device_factory_;
+  const raw_ptr<mojom::DeviceFactory> device_factory_;
   const std::string device_id_;
   mojo::ReceiverSet<mojom::VideoSource> receivers_;
   base::RepeatingClosure on_last_binding_closed_cb_;
@@ -80,8 +85,6 @@ class VideoSourceImpl : public mojom::VideoSource {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<VideoSourceImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoSourceImpl);
 };
 
 }  // namespace video_capture

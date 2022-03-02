@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for ragged_util."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 import numpy as np
 
@@ -194,7 +190,7 @@ class RaggedUtilTest(test_util.TensorFlowTestCase,
           repeats=2,
           axis='foo',
           exception=TypeError,
-          error='axis must be an int'),
+          error='`axis` must be an int'),
   ])
   def testError(self,
                 descr,
@@ -220,7 +216,7 @@ class RaggedUtilTest(test_util.TensorFlowTestCase,
       data = array_ops.placeholder_with_default(data, None)
       repeats = array_ops.placeholder_with_default(repeats, None)
 
-    with self.assertRaisesRegexp(exception, error):
+    with self.assertRaisesRegex(exception, error):
       ragged_util.repeat(data, repeats, axis)
 
 

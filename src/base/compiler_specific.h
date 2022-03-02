@@ -51,7 +51,7 @@
 // Annotate a function indicating it should not be inlined.
 // Use like:
 //   NOINLINE void DoStuff() { ... }
-#if defined(COMPILER_GCC)
+#if defined(COMPILER_GCC) || defined(__clang__)
 #define NOINLINE __attribute__((noinline))
 #elif defined(COMPILER_MSVC)
 #define NOINLINE __declspec(noinline)
@@ -111,7 +111,8 @@
 // Annotate a function indicating the caller must examine the return value.
 // Use like:
 //   int foo() WARN_UNUSED_RESULT;
-// To explicitly ignore a result, see |ignore_result()| in base/macros.h.
+// To explicitly ignore a result, see |ignore_result()| in
+// base/ignore_result.h.
 #undef WARN_UNUSED_RESULT
 #if defined(COMPILER_GCC) || defined(__clang__)
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
@@ -308,6 +309,31 @@
 #define STACK_UNINITIALIZED
 #endif
 
+// Attribute "no_stack_protector" disables -fstack-protector for the specified
+// function.
+//
+// "stack_protector" is enabled on most POSIX builds. The flag adds a canary
+// to each stack frame, which on function return is checked against a reference
+// canary. If the canaries do not match, it's likely that a stack buffer
+// overflow has occurred, so immediately crashing will prevent exploitation in
+// many cases.
+//
+// In some cases it's desirable to remove this, e.g. on hot functions, or if
+// we have purposely changed the reference canary.
+#if defined(COMPILER_GCC) || defined(__clang__)
+#if defined(__has_attribute)
+#if __has_attribute(__no_stack_protector__)
+#define NO_STACK_PROTECTOR __attribute__((__no_stack_protector__))
+#else  // __has_attribute(__no_stack_protector__)
+#define NO_STACK_PROTECTOR __attribute__((__optimize__("-fno-stack-protector")))
+#endif
+#else  // defined(__has_attribute)
+#define NO_STACK_PROTECTOR __attribute__((__optimize__("-fno-stack-protector")))
+#endif
+#else
+#define NO_STACK_PROTECTOR
+#endif
+
 // The ANALYZER_ASSUME_TRUE(bool arg) macro adds compiler-specific hints
 // to Clang which control what code paths are statically analyzed,
 // and is meant to be used in conjunction with assert & assert-like functions.
@@ -388,9 +414,10 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 #if defined(__has_attribute)
 #if __has_attribute(require_constant_initialization)
 #define CONSTINIT __attribute__((require_constant_initialization))
-#else
-#define CONSTINIT
 #endif
+#endif
+#if !defined(CONSTINIT)
+#define CONSTINIT
 #endif
 
 #endif  // BASE_COMPILER_SPECIFIC_H_

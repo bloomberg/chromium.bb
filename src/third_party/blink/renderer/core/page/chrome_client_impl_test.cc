@@ -49,13 +49,19 @@
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/mock_file_chooser.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/language.h"
+
+// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+#undef CreateWindow
 
 namespace blink {
 
@@ -106,6 +112,58 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
                          consumed_user_gesture));
 }
 
+class NewWindowUrlCapturingChromeClient : public EmptyChromeClient {
+ public:
+  NewWindowUrlCapturingChromeClient() = default;
+
+  const KURL& GetLastUrl() { return last_url_; }
+
+ protected:
+  Page* CreateWindowDelegate(LocalFrame*,
+                             const FrameLoadRequest& frame_load_request,
+                             const AtomicString&,
+                             const WebWindowFeatures&,
+                             network::mojom::blink::WebSandboxFlags,
+                             const SessionStorageNamespaceId&,
+                             bool& consumed_user_gesture) override {
+    LOG(INFO) << "create window delegate called";
+    last_url_ = frame_load_request.GetResourceRequest().Url();
+    return nullptr;
+  }
+
+ private:
+  KURL last_url_;
+};
+
+class FormSubmissionTest : public PageTestBase {
+ public:
+  void SubmitForm(HTMLFormElement& form_elem) {
+    form_elem.submitFromJavaScript();
+  }
+
+ protected:
+  void SetUp() override {
+    chrome_client_ = MakeGarbageCollected<NewWindowUrlCapturingChromeClient>();
+    SetupPageWithClients(chrome_client_);
+  }
+
+  Persistent<NewWindowUrlCapturingChromeClient> chrome_client_;
+};
+
+TEST_F(FormSubmissionTest, FormGetSubmissionNewFrameUrlTest) {
+  SetHtmlInnerHTML(
+      "<!DOCTYPE HTML>"
+      "<form id='form' method='GET' action='https://internal.test/' "
+      "target='_blank'>"
+      "<input name='foo' value='bar'>"
+      "</form>");
+  auto* form_elem = To<HTMLFormElement>(GetElementById("form"));
+  ASSERT_TRUE(form_elem);
+
+  SubmitForm(*form_elem);
+  EXPECT_EQ("foo=bar", chrome_client_->GetLastUrl().Query());
+}
+
 class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
                                public ColorChooserClient {
  public:
@@ -122,7 +180,9 @@ class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
   void DidChooseColor(const Color& color) override {}
   void DidEndChooser() override {}
   Element& OwnerElement() const override { return *owner_element_; }
-  IntRect ElementRectRelativeToViewport() const override { return IntRect(); }
+  gfx::Rect ElementRectRelativeToViewport() const override {
+    return gfx::Rect();
+  }
   Color CurrentColor() override { return Color(); }
   bool ShouldShowSuggestions() const override { return false; }
   Vector<mojom::blink::ColorSuggestionPtr> Suggestions() const override {
@@ -178,8 +238,11 @@ class PagePopupSuppressionTest : public testing::Test {
     DateTimeChooserParameters params;
     params.locale = DefaultLanguage();
     params.type = input_type_names::kTime;
-    return !!chrome_client_impl_->OpenDateTimeChooser(
+    DateTimeChooser* chooser = chrome_client_impl_->OpenDateTimeChooser(
         frame, date_time_chooser_client_, params);
+    if (chooser)
+      chooser->EndChooser();
+    return !!chooser;
   }
 
   Settings* GetSettings() {
