@@ -90,15 +90,39 @@ class FreeStoreAllocationPolicy {
   }
 };
 
+using MallocFn = void* (*)(size_t);
+
 // Performs a malloc, with retry logic on failure. Returns nullptr on failure.
 // Call free to release memory allocated with this function.
-void* AllocWithRetry(size_t size);
+void* AllocWithRetry(size_t size, MallocFn = base::Malloc);
 
 V8_EXPORT_PRIVATE void* AlignedAlloc(size_t size, size_t alignment);
 V8_EXPORT_PRIVATE void AlignedFree(void* ptr);
 
 // Returns platfrom page allocator instance. Guaranteed to be a valid pointer.
 V8_EXPORT_PRIVATE v8::PageAllocator* GetPlatformPageAllocator();
+
+// Returns platfrom virtual memory space instance. Guaranteed to be a valid
+// pointer.
+V8_EXPORT_PRIVATE v8::VirtualAddressSpace* GetPlatformVirtualAddressSpace();
+
+#ifdef V8_VIRTUAL_MEMORY_CAGE
+// Returns the virtual memory cage page allocator instance for allocating pages
+// inside the virtual memory cage. Guaranteed to be a valid pointer.
+V8_EXPORT_PRIVATE v8::PageAllocator* GetVirtualMemoryCagePageAllocator();
+#endif
+
+// Returns the appropriate page allocator to use for ArrayBuffer backing stores.
+// If the virtual memory cage is enabled, these must be allocated inside the
+// cage and so this will be the CagePageAllocator. Otherwise it will be the
+// PlatformPageAllocator.
+inline v8::PageAllocator* GetArrayBufferPageAllocator() {
+#ifdef V8_VIRTUAL_MEMORY_CAGE
+  return GetVirtualMemoryCagePageAllocator();
+#else
+  return GetPlatformPageAllocator();
+#endif
+}
 
 // Sets the given page allocator as the platform page allocator and returns
 // the current one. This function *must* be used only for testing purposes.
@@ -310,6 +334,9 @@ class VirtualMemory final {
 //   and the base bias size must be AllocatePageSize-aligned.
 // - The base alignment may be kAnyBaseAlignment to denote any alignment is
 //   acceptable. In this case the base bias size does not need to be aligned.
+//
+// TODO(chromium:1218005) can we either combine this class and
+// v8::VirtualMemoryCage in v8-platform.h or rename one of the two?
 class VirtualMemoryCage {
  public:
   VirtualMemoryCage();
@@ -351,7 +378,12 @@ class VirtualMemoryCage {
   // A number of attempts is made to try to reserve a region that satisfies the
   // constraints in params, but this may fail. The base address may be different
   // than the one requested.
-  bool InitReservation(const ReservationParams& params);
+  // If an existing reservation is provided, it will be used for this cage
+  // instead. The caller retains ownership of the reservation and is responsible
+  // for keeping the memory reserved during the lifetime of this object.
+  bool InitReservation(
+      const ReservationParams& params,
+      base::AddressRegion existing_reservation = base::AddressRegion());
 
   void Free();
 

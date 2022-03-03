@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -58,6 +59,9 @@ public class ContextMenuCoordinator implements ContextMenuUi {
     }
 
     private static final int INVALID_ITEM_ID = -1;
+
+    /** Experiment params for {@link ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE}. */
+    static final String HIDE_HEADER_IMAGE_PARAM = "hide_header_image";
 
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
@@ -102,7 +106,9 @@ public class ContextMenuCoordinator implements ContextMenuUi {
             Callback<Integer> onItemClicked, final Runnable onMenuShown,
             final Runnable onMenuClosed, @Nullable ChipDelegate chipDelegate) {
         mOnMenuClosed = onMenuClosed;
-        final boolean isPopup = params.getSourceType() == MenuSourceType.MENU_SOURCE_MOUSE
+        final boolean isPopup =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE)
+                || params.getSourceType() == MenuSourceType.MENU_SOURCE_MOUSE
                 || params.getOpenedFromHighlight();
         Activity activity = window.getActivity().get();
         final float density = activity.getResources().getDisplayMetrics().density;
@@ -141,8 +147,8 @@ public class ContextMenuCoordinator implements ContextMenuUi {
                 ? activity.getResources().getDimensionPixelSize(R.dimen.context_menu_small_width)
                 : null;
         mDialog = createContextMenuDialog(activity, layout, menu, isPopup, touchPointXPx,
-                touchPointYPx, dialogTopMarginPx, dialogBottomMarginPx, popupMargin,
-                desiredPopupContentWidth);
+                touchPointYPx, mTopContentOffsetPx, dialogTopMarginPx, dialogBottomMarginPx,
+                popupMargin, desiredPopupContentWidth);
         mDialog.setOnShowListener(dialogInterface -> onMenuShown.run());
         mDialog.setOnDismissListener(dialogInterface -> mOnMenuClosed.run());
 
@@ -245,6 +251,7 @@ public class ContextMenuCoordinator implements ContextMenuUi {
      * @param isPopup Whether the context menu is being shown in a {@link AnchoredPopupWindow}.
      * @param touchPointXPx The x-coordinate of the touch that triggered the context menu.
      * @param touchPointYPx The y-coordinate of the touch that triggered the context menu.
+     * @param topContentOffsetPx The content offset from the top of the context menu.
      * @param topMarginPx An explicit top margin for the dialog, or -1 to use default
      *                    defined in XML.
      * @param bottomMarginPx An explicit bottom margin for the dialog, or -1 to use default
@@ -254,15 +261,18 @@ public class ContextMenuCoordinator implements ContextMenuUi {
      * @return Returns a final dialog that does not have a background can be displayed using
      *         {@link AlertDialog#show()}.
      */
-    private ContextMenuDialog createContextMenuDialog(Activity activity, View layout, View view,
-            boolean isPopup, float touchPointXPx, float touchPointYPx, int topMarginPx,
-            int bottomMarginPx, @Nullable Integer popupMargin,
+    @VisibleForTesting
+    static ContextMenuDialog createContextMenuDialog(Activity activity, View layout, View view,
+            boolean isPopup, float touchPointXPx, float touchPointYPx, float topContentOffsetPx,
+            int topMarginPx, int bottomMarginPx, @Nullable Integer popupMargin,
             @Nullable Integer desiredPopupContentWidth) {
         // TODO(sinansahin): Refactor ContextMenuDialog as well.
+        boolean shouldRemoveScrim =
+                isPopup && ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE);
         final ContextMenuDialog dialog =
                 new ContextMenuDialog(activity, R.style.Theme_Chromium_AlertDialog, touchPointXPx,
-                        touchPointYPx, mTopContentOffsetPx, topMarginPx, bottomMarginPx, layout,
-                        view, isPopup, popupMargin, desiredPopupContentWidth);
+                        touchPointYPx, topContentOffsetPx, topMarginPx, bottomMarginPx, layout,
+                        view, isPopup, shouldRemoveScrim, popupMargin, desiredPopupContentWidth);
         dialog.setContentView(layout);
 
         return dialog;

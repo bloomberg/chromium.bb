@@ -13,9 +13,11 @@
 #include "base/callback_list.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 
 namespace views {
+class ImageButton;
 class ImageView;
 class ToggleImageButton;
 }  // namespace views
@@ -23,7 +25,7 @@ class ToggleImageButton;
 namespace ash {
 
 class HoldingSpaceItem;
-class HoldingSpaceItemViewDelegate;
+class HoldingSpaceViewDelegate;
 
 // Base class for `HoldingSpaceItemChipView` and
 // `HoldingSpaceItemScreenCaptureView`. Note that `HoldingSpaceItemView` may
@@ -34,7 +36,7 @@ class ASH_EXPORT HoldingSpaceItemView : public views::View,
  public:
   METADATA_HEADER(HoldingSpaceItemView);
 
-  HoldingSpaceItemView(HoldingSpaceItemViewDelegate*, const HoldingSpaceItem*);
+  HoldingSpaceItemView(HoldingSpaceViewDelegate*, const HoldingSpaceItem*);
   HoldingSpaceItemView(const HoldingSpaceItemView&) = delete;
   HoldingSpaceItemView& operator=(const HoldingSpaceItemView&) = delete;
   ~HoldingSpaceItemView() override;
@@ -64,7 +66,8 @@ class ASH_EXPORT HoldingSpaceItemView : public views::View,
   void OnThemeChanged() override;
 
   // HoldingSpaceModelObserver:
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override;
+  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
+                                 uint32_t updated_fields) override;
 
   // Starts a drag from this view at the location specified by the given `event`
   // and with the specified `source`. Note that this method copies the logic of
@@ -79,25 +82,27 @@ class ASH_EXPORT HoldingSpaceItemView : public views::View,
   bool selected() const { return selected_; }
 
  protected:
-  views::ImageView* AddCheckmark(views::View* parent);
-  views::ToggleImageButton* AddPin(views::View* parent);
-  virtual void OnPinVisibilityChanged(bool pin_visible) {}
+  views::Builder<views::ImageView> CreateCheckmarkBuilder();
+  views::Builder<views::View> CreatePrimaryActionBuilder(
+      const gfx::Size& min_size);
+
+  virtual void OnPrimaryActionVisibilityChanged(bool visible) {}
   virtual void OnSelectionUiChanged();
 
-  HoldingSpaceItemViewDelegate* delegate() { return delegate_; }
+  HoldingSpaceViewDelegate* delegate() { return delegate_; }
   views::ImageView* checkmark() { return checkmark_; }
-  views::ToggleImageButton* pin() { return pin_; }
+  views::View* primary_action_container() { return primary_action_container_; }
 
  private:
   void OnPaintFocus(gfx::Canvas* canvas, gfx::Size size);
   void OnPaintSelect(gfx::Canvas* canvas, gfx::Size size);
-  void OnPinPressed();
-  void UpdatePin();
+  void OnPrimaryActionPressed();
+  void UpdatePrimaryAction();
 
   // NOTE: This view may outlive `delegate_` and/or `item_` during destruction
   // since the widget is closed asynchronously and the model is updated prior
   // to animation completion.
-  HoldingSpaceItemViewDelegate* delegate_ = nullptr;
+  HoldingSpaceViewDelegate* delegate_ = nullptr;
   const HoldingSpaceItem* item_ = nullptr;
 
   // Cache the id of the associated holding space item so that it can be
@@ -107,7 +112,9 @@ class ASH_EXPORT HoldingSpaceItemView : public views::View,
 
   // Owned by view hierarchy.
   views::ImageView* checkmark_ = nullptr;
-  views::ToggleImageButton* pin_ = nullptr;
+  views::View* primary_action_container_ = nullptr;
+  views::ImageButton* primary_action_cancel_ = nullptr;
+  views::ToggleImageButton* primary_action_pin_ = nullptr;
 
   // Owners for the layers used to paint focused and selected states.
   std::unique_ptr<ui::LayerOwner> selected_layer_owner_;
@@ -128,6 +135,11 @@ class ASH_EXPORT HoldingSpaceItemView : public views::View,
   base::WeakPtrFactory<HoldingSpaceItemView> weak_factory_{this};
 };
 
+BEGIN_VIEW_BUILDER(/* no export */, HoldingSpaceItemView, views::View)
+END_VIEW_BUILDER
+
 }  // namespace ash
+
+DEFINE_VIEW_BUILDER(/* no export */, ash::HoldingSpaceItemView)
 
 #endif  // ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_ITEM_VIEW_H_

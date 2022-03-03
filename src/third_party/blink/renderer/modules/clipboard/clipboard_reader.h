@@ -7,7 +7,7 @@
 
 #include "base/sequence_checker.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -43,7 +43,8 @@ class ClipboardReader : public GarbageCollected<ClipboardReader> {
   // ClipboardWriter::IsValidType() must return true for `mime_type`.
   static ClipboardReader* Create(SystemClipboard* system_clipboard,
                                  const String& mime_type,
-                                 ClipboardPromise* promise);
+                                 ClipboardPromise* promise,
+                                 bool is_custom_format_type);
   virtual ~ClipboardReader();
 
   // Reads from the system clipboard and encodes on a background thread.

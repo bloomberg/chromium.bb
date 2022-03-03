@@ -41,16 +41,24 @@ void HloModuleConfig::SetDefaultComputationLayout(
   entry_computation_layout_ = ComputationLayout(program_shape);
 }
 
+void HloModuleConfig::SetComputationLayoutIfExists(
+    const ProgramShape& program_shape) {
+  entry_computation_layout_ = ComputationLayout(program_shape,
+                                                /*ignore_layouts=*/false);
+}
+
 string HloModuleConfig::compilation_cache_key() const {
   string key = absl::StrCat("profiling=", hlo_profiling_enabled());
   StrAppend(&key, "::(");
   std::vector<string> params;
-  for (const ShapeLayout& param_layout :
-       entry_computation_layout_->parameter_layouts()) {
-    params.push_back(param_layout.shape().DebugString());
+  if (entry_computation_layout_.has_value()) {
+    for (const ShapeLayout& param_layout :
+         entry_computation_layout_->parameter_layouts()) {
+      params.push_back(param_layout.shape().DebugString());
+    }
+    StrAppend(&key, absl::StrJoin(params, ", "), ") => ",
+              entry_computation_layout_->result_shape().SerializeAsString());
   }
-  StrAppend(&key, absl::StrJoin(params, ", "), ") => ",
-            entry_computation_layout_->result_shape().SerializeAsString());
   if (seed() != 0) {
     // TODO(b/32083678): force recompilation to reset global state.
     static std::atomic<int> counter{0};
@@ -64,7 +72,12 @@ string HloModuleConfig::compilation_cache_key() const {
     StrAppend(&key, "::intra_op_parallelism_threads=",
               intra_op_parallelism_threads());
   }
+  if (!device_type().empty()) {
+    StrAppend(&key, device_type());
+  }
   StrAppend(&key, "::alias_passthrough_params=", alias_passthrough_params_);
+  StrAppend(&key, "::allow_spmd_sharding_propagation_to_output=",
+            allow_spmd_sharding_propagation_to_output_);
   return key;
 }
 

@@ -78,13 +78,11 @@ source_set("filters") {
   ]
 
   configs += [
-    # TODO(crbug.com/167187): Fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//media:subcomponent_config",
   ]
 
   deps = [
-    "//base/util/type_safety:type_safety",
+    "//base",
     "//build:chromeos_buildflags",
     "//cc/base",  # For MathUtil.
     "//media:media_buildflags",
@@ -215,6 +213,7 @@ source_set("filters") {
       "fuchsia/fuchsia_video_decoder.cc",
       "fuchsia/fuchsia_video_decoder.h",
     ]
+    public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media" ]
     deps += [
       "//components/viz/common",
       "//gpu/command_buffer/client",
@@ -222,7 +221,6 @@ source_set("filters") {
       "//gpu/ipc/common",
       "//media/fuchsia/cdm",
       "//media/fuchsia/common",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
@@ -259,11 +257,6 @@ static_library("test_support") {
     "fake_video_decoder.h",
     "ivf_parser.cc",
     "ivf_parser.h",
-  ]
-
-  configs += [
-    # TODO(crbug.com/167187): Fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   deps = [
@@ -310,11 +303,6 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
-  ]
-
-  configs += [
-    # TODO(crbug.com/167187): Fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   if (is_android) {

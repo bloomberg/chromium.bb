@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -59,9 +58,11 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
 // The handler for Javascript messages for the about:flags page.
 class FlagsDOMHandler : public web::WebUIIOSMessageHandler {
  public:
-  FlagsDOMHandler()
-      : access_(flags_ui::kGeneralAccessFlagsOnly),
-        experimental_features_requested_(false) {}
+  FlagsDOMHandler() : access_(flags_ui::kGeneralAccessFlagsOnly) {}
+
+  FlagsDOMHandler(const FlagsDOMHandler&) = delete;
+  FlagsDOMHandler& operator=(const FlagsDOMHandler&) = delete;
+
   ~FlagsDOMHandler() override {}
 
   // Initializes the DOM handler with the provided flags storage and flags
@@ -88,26 +89,23 @@ class FlagsDOMHandler : public web::WebUIIOSMessageHandler {
  private:
   std::unique_ptr<flags_ui::FlagsStorage> flags_storage_;
   flags_ui::FlagAccess access_;
-  bool experimental_features_requested_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
 
 void FlagsDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kRequestExperimentalFeatures,
       base::BindRepeating(&FlagsDOMHandler::HandleRequestExperimentalFeatures,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kEnableExperimentalFeature,
       base::BindRepeating(
           &FlagsDOMHandler::HandleEnableExperimentalFeatureMessage,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kRestartBrowser,
       base::BindRepeating(&FlagsDOMHandler::HandleRestartBrowser,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       flags_ui::kResetAllFlags,
       base::BindRepeating(&FlagsDOMHandler::HandleResetAllFlags,
                           base::Unretained(this)));
@@ -118,56 +116,51 @@ void FlagsDOMHandler::Init(
     flags_ui::FlagAccess access) {
   flags_storage_ = std::move(flags_storage);
   access_ = access;
-
-  if (experimental_features_requested_)
-    HandleRequestExperimentalFeatures(NULL);
 }
 
 void FlagsDOMHandler::HandleRequestExperimentalFeatures(
     const base::ListValue* args) {
+  DCHECK(flags_storage_);
+  DCHECK(!args->GetList().empty());
   const base::Value& callback_id = args->GetList()[0];
-  experimental_features_requested_ = true;
-  // Bail out if the handler hasn't been initialized yet. The request will be
-  // handled after the initialization.
-  if (!flags_storage_) {
-    web_ui()->ResolveJavascriptCallback(callback_id, base::Value());
-    return;
-  }
 
-  base::DictionaryValue results;
+  std::vector<base::Value> supported_features;
+  std::vector<base::Value> unsupported_features;
+  GetFlagFeatureEntries(flags_storage_.get(), access_, supported_features,
+                        unsupported_features);
 
-  auto supported_features = std::make_unique<base::ListValue>();
-  auto unsupported_features = std::make_unique<base::ListValue>();
-  GetFlagFeatureEntries(flags_storage_.get(), access_, supported_features.get(),
-                        unsupported_features.get());
-  results.Set(flags_ui::kSupportedFeatures, std::move(supported_features));
-  results.Set(flags_ui::kUnsupportedFeatures, std::move(unsupported_features));
+  base::Value results(base::Value::Type::DICTIONARY);
+  results.SetKey(flags_ui::kSupportedFeatures,
+                 base::Value(std::move(supported_features)));
+  results.SetKey(flags_ui::kUnsupportedFeatures,
+                 base::Value(std::move(unsupported_features)));
+
   // Cannot restart the browser on iOS.
-  results.SetBoolean(flags_ui::kNeedsRestart, false);
-  results.SetBoolean(flags_ui::kShowOwnerWarning,
+  results.SetBoolKey(flags_ui::kNeedsRestart, false);
+  results.SetBoolKey(flags_ui::kShowOwnerWarning,
                      access_ == flags_ui::kGeneralAccessFlagsOnly);
 
-  results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
-  results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
+  results.SetBoolKey(flags_ui::kShowBetaChannelPromotion, false);
+  results.SetBoolKey(flags_ui::kShowDevChannelPromotion, false);
 
   web_ui()->ResolveJavascriptCallback(callback_id, results);
 }
 
 void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
     const base::ListValue* args) {
+  base::Value::ConstListView args_list = args->GetList();
   DCHECK(flags_storage_);
-  DCHECK_EQ(2u, args->GetSize());
-  if (args->GetSize() != 2)
+  DCHECK_EQ(2u, args_list.size());
+  if (args_list.size() != 2)
     return;
 
-  std::string entry_internal_name;
-  std::string enable_str;
-  if (!args->GetString(0, &entry_internal_name) ||
-      !args->GetString(1, &enable_str))
+  const std::string* entry_internal_name = args_list[0].GetIfString();
+  const std::string* enable_str = args_list[1].GetIfString();
+  if (!entry_internal_name || !enable_str)
     return;
 
-  SetFeatureEntryEnabled(flags_storage_.get(), entry_internal_name,
-                         enable_str == "true");
+  SetFeatureEntryEnabled(flags_storage_.get(), *entry_internal_name,
+                         *enable_str == "true");
   flags_storage_->CommitPendingWrites();
 }
 

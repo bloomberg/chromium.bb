@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,6 +61,10 @@ const char kInvalidKeySystem[] = "invalid.key.system";
 class MockRendererClient : public mojom::RendererClient {
  public:
   MockRendererClient() = default;
+
+  MockRendererClient(const MockRendererClient&) = delete;
+  MockRendererClient& operator=(const MockRendererClient&) = delete;
+
   ~MockRendererClient() override = default;
 
   // mojom::RendererClient implementation.
@@ -81,9 +85,6 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDurationChange, void(base::TimeDelta duration));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
 };
 
 ACTION_P(QuitLoop, run_loop) {
@@ -99,6 +100,10 @@ class MediaServiceTest : public testing::Test {
   MediaServiceTest()
       : renderer_client_receiver_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
+
+  MediaServiceTest(const MediaServiceTest&) = delete;
+  MediaServiceTest& operator=(const MediaServiceTest&) = delete;
+
   ~MediaServiceTest() override = default;
 
   void SetUp() override {
@@ -120,7 +125,7 @@ class MediaServiceTest : public testing::Test {
 
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     interface_factory_->CreateCdm(
-        key_system, CdmConfig(),
+        {key_system, false, false, false},
         base::BindOnce(&MediaServiceTest::OnCdmCreated, base::Unretained(this),
                        expected_result));
     // Run this to idle to complete the CreateCdm call.
@@ -190,9 +195,6 @@ class MediaServiceTest : public testing::Test {
 
   StrictMock<MockDemuxerStream> video_stream_;
   std::unique_ptr<MojoDemuxerStreamImpl> mojo_video_stream_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaServiceTest);
 };
 
 }  // namespace

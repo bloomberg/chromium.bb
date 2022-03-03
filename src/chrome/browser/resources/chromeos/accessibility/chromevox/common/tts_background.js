@@ -415,9 +415,9 @@ TtsBackground = class extends ChromeTtsBase {
     const utterance = this.currentUtterance_;
     const utteranceId = utterance.id;
 
-    utterance.properties['onEvent'] = goog.bind(function(event) {
+    utterance.properties['onEvent'] = (event) => {
       this.onTtsEvent_(event, utteranceId);
-    }, this);
+    };
 
     const validatedProperties = /** @type {!chrome.tts.TtsOptions} */ ({});
     for (let i = 0; i < TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
@@ -677,13 +677,14 @@ TtsBackground = class extends ChromeTtsBase {
   /** @override */
   toggleSpeechOnOrOff() {
     const previousValue = this.ttsProperties[AbstractTts.VOLUME];
-    const toggle = function() {
+    const toggle = () => {
       if (previousValue === 0) {
         this.ttsProperties[AbstractTts.VOLUME] = 1;
       } else {
         this.ttsProperties[AbstractTts.VOLUME] = 0;
+        this.stop();
       }
-    }.bind(this);
+    };
 
     if (previousValue === 0) {
       toggle();
@@ -728,7 +729,7 @@ TtsBackground = class extends ChromeTtsBase {
    * @private
    */
   getNumberAsDigits_(text) {
-    return text.replace(/\d+/g, function(num) {
+    return text.replace(/[0-9０-９]+/g, function(num) {
       return num.split('').join(' ');
     });
   }
@@ -741,7 +742,7 @@ TtsBackground = class extends ChromeTtsBase {
    * @private
    */
   createPunctuationReplace_(clear) {
-    return goog.bind(function(match) {
+    return (match) => {
       const retain =
           this.retainPunctuation_.indexOf(match) !== -1 ? match : ' ';
       return clear ? retain :
@@ -750,7 +751,7 @@ TtsBackground = class extends ChromeTtsBase {
                    Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[match])))
                   .format({'COUNT': 1}) +
               retain + ' ';
-    }, this);
+    };
   }
 
   /**
@@ -773,7 +774,6 @@ TtsBackground = class extends ChromeTtsBase {
     // Remove this property so we don't trap ourselves in a loop.
     delete properties[AbstractTts.PHONETIC_CHARACTERS];
 
-    text = text.toLowerCase();
     // If undefined language, use the UI language of the browser as a best
     // guess.
     if (!properties['lang']) {
@@ -807,21 +807,22 @@ TtsBackground = class extends ChromeTtsBase {
    * @private
    */
   updateVoice_(voiceName, opt_callback) {
-    chrome.tts.getVoices(goog.bind(function(voices) {
+    chrome.tts.getVoices((voices) => {
+      console.log('get!' + JSON.stringify(voices));
       const systemVoice = {voiceName: constants.SYSTEM_VOICE};
       voices.unshift(systemVoice);
       const newVoice = voices.find((v) => {
         return v.voiceName === voiceName;
       }) ||
           systemVoice;
-      if (newVoice) {
+      if (newVoice && newVoice.voiceName) {
         this.currentVoice = newVoice.voiceName;
         this.startSpeakingNextItemInQueue_();
       }
       if (opt_callback) {
         opt_callback(this.currentVoice);
       }
-    }, this));
+    });
   }
 
   /**
@@ -875,21 +876,23 @@ TtsBackground = class extends ChromeTtsBase {
     chrome.settingsPrivate.setPref('settings.tts.speech_rate', rate);
     chrome.settingsPrivate.setPref('settings.tts.speech_pitch', pitch);
     chrome.settingsPrivate.setPref('settings.tts.speech_volume', volume);
+    chrome.storage.local.remove('voiceName');
+    this.updateVoice_('', () => {
+      // Ensure this announcement doesn't get cut off by speech triggered by
+      // updateFromPrefs_().
+      // Copy properties from AbstractTts.PERSONALITY_ANNOTATION and add the
+      // doNotInterrupt property.
+      const speechProperties = {};
+      const sourceProperties = AbstractTts.PERSONALITY_ANNOTATION || {};
+      for (const [key, value] of Object.entries(sourceProperties)) {
+        speechProperties[key] = value;
+      }
+      speechProperties['doNotInterrupt'] = true;
 
-    // Ensure this announcement doesn't get cut off by speech triggered by
-    // updateFromPrefs_().
-    // Copy properties from AbstractTts.PERSONALITY_ANNOTATION and add the
-    // doNotInterrupt property.
-    const speechProperties = {};
-    const sourceProperties = AbstractTts.PERSONALITY_ANNOTATION || {};
-    for (const [key, value] of Object.entries(sourceProperties)) {
-      speechProperties[key] = value;
-    }
-    speechProperties['doNotInterrupt'] = true;
-
-    ChromeVox.tts.speak(
-        Msgs.getMsg('announce_tts_default_settings'), QueueMode.FLUSH,
-        speechProperties);
+      ChromeVox.tts.speak(
+          Msgs.getMsg('announce_tts_default_settings'), QueueMode.FLUSH,
+          speechProperties);
+    });
   }
 
   /**

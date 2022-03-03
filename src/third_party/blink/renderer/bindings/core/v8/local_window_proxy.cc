@@ -31,7 +31,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/ignore_result.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/single_sample_metrics.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -48,18 +50,22 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/document_name_collection.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/extensions_registry.h"
 #include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -67,6 +73,14 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+namespace {
+
+base::SingleSampleMetric* g_v8_context_count_logger = nullptr;
+
+}  // namespace
+
+// static
+int LocalWindowProxy::v8_context_count_ = 0;
 
 void LocalWindowProxy::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
@@ -100,16 +114,29 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
-  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_);
+
+  // We don't notify context destruction during frame detachment that happens
+  // when we remove the frame from the DOM tree. This allows debug code evaled
+  // from those frames. However, we still want to notify that the context was
+  // destroyed when navigating between documents, because DevTools is designed
+  // to only show what's going on "currently".
+  // Also, delaying such message won't leak memory because
+  // `V8InspectorImpl::contextCollected` is also called when the context for
+  // detached iframe is collected by GC.
+  if (next_status != Lifecycle::kFrameIsDetached &&
+      next_status != Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged) {
+    MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_);
+  }
+
   if (next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
       next_status == Lifecycle::kGlobalObjectIsDetached) {
     // Clean up state on the global proxy, which will be reused.
     if (!global_proxy_.IsEmpty()) {
-      CHECK(global_proxy_.Get() == context->Global());
+      CHECK(global_proxy_ == context->Global());
       CHECK_EQ(ToScriptWrappable(context->Global()),
                ToScriptWrappable(
                    context->Global()->GetPrototype().As<v8::Object>()));
-      global_proxy_.Get().SetWrapperClassId(0);
+      global_proxy_.SetWrapperClassId(0);
     }
     V8DOMWrapper::ClearNativeInfo(GetIsolate(), context->Global());
     script_state_->DetachGlobalObject();
@@ -143,7 +170,7 @@ void LocalWindowProxy::Initialize() {
   ScriptState::Scope scope(script_state_);
   v8::Local<v8::Context> context = script_state_->GetContext();
   if (global_proxy_.IsEmpty()) {
-    global_proxy_.Set(GetIsolate(), context->Global());
+    global_proxy_.Reset(GetIsolate(), context->Global());
     CHECK(!global_proxy_.IsEmpty());
   }
 
@@ -203,14 +230,32 @@ void LocalWindowProxy::CreateContext() {
   v8::ExtensionConfiguration extension_configuration =
       ScriptController::ExtensionsFor(GetFrame()->DomWindow());
 
+  ++v8_context_count_;
+  if (!g_v8_context_count_logger) {
+    g_v8_context_count_logger =
+        base::SingleSampleMetricsFactory::Get()
+            ->CreateCustomCountsMetric("Blink.V8.NumberContextsCreatedOfWindow",
+                                       1, 100, 50)
+            .release();
+  }
+  g_v8_context_count_logger->SetSample(v8_context_count_);
+
   v8::Local<v8::Context> context;
   {
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, main_frame_hist,
+        ("Blink.Binding.CreateV8ContextForMainFrame", 0, 10000000, 50));
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, non_main_frame_hist,
+        ("Blink.Binding.CreateV8ContextForNonMainFrame", 0, 10000000, 50));
+    ScopedUsHistogramTimer timer(
+        GetFrame()->IsMainFrame() ? main_frame_hist : non_main_frame_hist);
     v8::Isolate* isolate = GetIsolate();
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate));
     Document* document = GetFrame()->GetDocument();
 
-    v8::Local<v8::Object> global_proxy = global_proxy_.NewLocal(isolate);
+    v8::Local<v8::Object> global_proxy = global_proxy_.Get(isolate);
     context = V8ContextSnapshot::CreateContextFromSnapshot(
         isolate, World(), &extension_configuration, global_proxy, document);
     context_was_created_from_snapshot_ = !context.IsEmpty();
@@ -249,7 +294,6 @@ void LocalWindowProxy::InstallConditionalFeatures() {
   TRACE_EVENT1("v8", "InstallConditionalFeatures", "IsMainFrame",
                GetFrame()->IsMainFrame());
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   if (context_was_created_from_snapshot_) {
     V8ContextSnapshot::InstallContextIndependentProps(script_state_);
   }
@@ -261,38 +305,7 @@ void LocalWindowProxy::InstallConditionalFeatures() {
   // and V8 can extend the context with origin trial features.
   script_state_->GetIsolate()->InstallConditionalFeatures(
       script_state_->GetContext());
-#else   // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
-  v8::Local<v8::Context> context = script_state_->GetContext();
-
-  // If the context was created from snapshot, all conditionally
-  // enabled features are installed in
-  // V8ContextSnapshot::InstallConditionalFeatures().
-  if (V8ContextSnapshot::InstallConditionalFeatures(
-          context, GetFrame()->GetDocument())) {
-    return;
-  }
-
-  v8::Local<v8::Object> global_proxy = context->Global();
-  const WrapperTypeInfo* wrapper_type_info =
-      GetFrame()->DomWindow()->GetWrapperTypeInfo();
-
-  v8::Local<v8::Object> unused_prototype_object;
-  v8::Local<v8::Function> unused_interface_object;
-  wrapper_type_info->InstallConditionalFeatures(
-      context, World(), global_proxy, unused_prototype_object,
-      unused_interface_object,
-      wrapper_type_info->DomTemplate(GetIsolate(), World()));
-
-  if (World().IsMainWorld()) {
-    // For the main world, install any remaining conditional bindings (i.e.
-    // for origin trials, which do not apply to extensions). Some conditional
-    // bindings cannot be enabled until the execution context is available
-    // (e.g. parsing the document, inspecting HTTP headers).
-    InstallOriginTrialFeatures(wrapper_type_info, script_state_,
-                               v8::Local<v8::Object>(),
-                               v8::Local<v8::Function>());
-  }
-#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
+  ExtensionsRegistry::GetInstance().InstallExtensions(script_state_);
 }
 
 void LocalWindowProxy::SetupWindowPrototypeChain() {
@@ -307,12 +320,12 @@ void LocalWindowProxy::SetupWindowPrototypeChain() {
 
   // The global proxy object.  Note this is not the global object.
   v8::Local<v8::Object> global_proxy = context->Global();
-  CHECK(global_proxy_.Get() == global_proxy);
+  CHECK(global_proxy_ == global_proxy);
   V8DOMWrapper::SetNativeInfo(GetIsolate(), global_proxy, wrapper_type_info,
                               window);
   // Mark the handle to be traced by Oilpan, since the global proxy has a
   // reference to the DOMWindow.
-  global_proxy_.Get().SetWrapperClassId(wrapper_type_info->wrapper_class_id);
+  global_proxy_.SetWrapperClassId(wrapper_type_info->wrapper_class_id);
 
   // The global object, aka window wrapper object.
   v8::Local<v8::Object> window_wrapper =
@@ -324,10 +337,6 @@ void LocalWindowProxy::SetupWindowPrototypeChain() {
   v8::Local<v8::Object> window_prototype =
       window_wrapper->GetPrototype().As<v8::Object>();
   CHECK(!window_prototype.IsEmpty());
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
-  V8DOMWrapper::SetNativeInfo(GetIsolate(), window_prototype, wrapper_type_info,
-                              window);
-#endif
 
   // The named properties object of Window interface.
   v8::Local<v8::Object> window_properties =
@@ -336,14 +345,12 @@ void LocalWindowProxy::SetupWindowPrototypeChain() {
   V8DOMWrapper::SetNativeInfo(GetIsolate(), window_properties,
                               wrapper_type_info, window);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   // [CachedAccessor=kWindowProxy]
   V8PrivateProperty::GetCachedAccessor(
       GetIsolate(), V8PrivateProperty::CachedAccessor::kWindowProxy)
       .Set(window_wrapper, global_proxy);
-#endif
 
-  // TODO(keishi): Remove installPagePopupController and implement
+  // TODO(yukishiino): Remove installPagePopupController and implement
   // PagePopupController in another way.
   V8PagePopupControllerBinding::InstallPagePopupController(context,
                                                            window_wrapper);

@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/language_detection/public/cpp/language_detection_service.h"
 #include "components/translate/content/browser/content_translate_driver.h"
@@ -23,7 +22,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
-class NavigationController;
 class WebContents;
 }  // namespace content
 
@@ -40,8 +38,14 @@ struct LanguageDetectionDetails;
 class PerFrameContentTranslateDriver : public ContentTranslateDriver {
  public:
   PerFrameContentTranslateDriver(
-      content::NavigationController* nav_controller,
+      content::WebContents& web_contents,
       language::UrlLanguageHistogram* url_language_histogram);
+
+  PerFrameContentTranslateDriver(const PerFrameContentTranslateDriver&) =
+      delete;
+  PerFrameContentTranslateDriver& operator=(
+      const PerFrameContentTranslateDriver&) = delete;
+
   ~PerFrameContentTranslateDriver() override;
 
   // TranslateDriver methods.
@@ -154,8 +158,6 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
 
   base::WeakPtrFactory<PerFrameContentTranslateDriver> weak_pointer_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(PerFrameContentTranslateDriver);
 };
 
 }  // namespace translate

@@ -14,16 +14,13 @@
 # ==============================================================================
 """Operations for linear algebra."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
+from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import gen_linalg_ops
 from tensorflow.python.ops import linalg_ops_impl
 from tensorflow.python.ops import map_fn
@@ -149,6 +146,9 @@ def matrix_triangular_solve(matrix, rhs, lower=True, adjoint=False, name=None):
 @deprecation.deprecated_endpoints('cholesky_solve')
 def cholesky_solve(chol, rhs, name=None):
   """Solves systems of linear eqns `A X = RHS`, given Cholesky factorizations.
+
+  Specifically, returns `X` from `A X = RHS`, where `A = L L^T`, `L` is the
+  `chol` arg and `RHS` is the `rhs` arg.
 
   ```python
   # Solve 10 separate 2x2 linear systems:
@@ -705,19 +705,21 @@ def norm(tensor,
     if (not isinstance(axis[0], int) or not isinstance(axis[1], int) or
         axis[0] == axis[1]):
       raise ValueError(
-          "'axis' must be None, an integer, or a tuple of 2 unique integers")
+          "'axis' must be None, an integer, or a tuple of 2 "
+          f"unique integers, got {axis}")
     supported_matrix_norms = ['euclidean', 'fro', 1, 2, np.inf]
     if ord not in supported_matrix_norms:
-      raise ValueError("'ord' must be a supported matrix norm in %s, got %s" %
-                       (supported_matrix_norms, ord))
+      raise ValueError(f"'ord' must be a supported matrix norm in "
+                       f"{supported_matrix_norms}, got {ord}")
   else:
     if not (isinstance(axis, int) or axis is None):
       raise ValueError(
-          "'axis' must be None, an integer, or a tuple of 2 unique integers")
+          "'axis' must be None, an integer, or a "
+          f"tuple of 2 unique integers, got {axis}")
 
     supported_vector_norms = ['euclidean', 1, 2, np.inf]
     if (not np.isreal(ord) or ord <= 0) and ord not in supported_vector_norms:
-      raise ValueError("'ord' must be a supported vector norm, got %s" % ord)
+      raise ValueError(f"'ord' must be a supported vector norm, got {ord}")
     if axis is not None:
       axis = (axis,)
 
@@ -728,12 +730,14 @@ def norm(tensor,
       if is_matrix_norm and ord in [2, 2.0]:
         rank = array_ops.rank(tensor)
         positive_axis = map_fn.map_fn(
-            lambda i: control_flow_ops.cond(i >= 0, lambda: i, lambda: i + rank),
-            ops.convert_to_tensor(axis))
+            lambda i: control_flow_ops.cond(i >= 0, lambda: i, lambda: i + rank
+                                           ), ops.convert_to_tensor(axis))
         axes = math_ops.range(rank)
-        perm_before = array_ops.concat(
-            [array_ops.setdiff1d(axes, positive_axis)[0], positive_axis],
-            axis=0)
+        perm_before = array_ops.concat([
+            gen_array_ops.list_diff(axes, positive_axis, dtypes.int32)[0],
+            positive_axis
+        ],
+                                       axis=0)
         perm_after = map_fn.map_fn(
             lambda i: math_ops.cast(
                 array_ops.squeeze(

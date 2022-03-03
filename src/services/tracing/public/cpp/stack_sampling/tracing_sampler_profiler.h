@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/debug/debugging_buildflags.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -58,6 +58,36 @@ class LoaderLockSamplingThread;
 // field |profiler_| to be thread-safe.
 class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
  public:
+  class COMPONENT_EXPORT(TRACING_CPP) StackProfileWriter {
+   public:
+    explicit StackProfileWriter(bool should_enable_filtering);
+    ~StackProfileWriter();
+
+    StackProfileWriter(const StackProfileWriter&) = delete;
+    StackProfileWriter& operator=(const StackProfileWriter&) = delete;
+
+    InterningID GetCallstackIDAndMaybeEmit(
+        const std::vector<base::Frame>& frames,
+        perfetto::TraceWriter::TracePacketHandle* trace_packet);
+
+    void ResetEmittedState();
+
+   private:
+    const bool should_enable_filtering_;
+    InterningIndex<TypeList<size_t>, SizeList<1024>> interned_callstacks_{};
+    InterningIndex<TypeList<std::pair<std::string, std::string>,
+                            std::pair<uintptr_t, std::string>>,
+                   SizeList<1024, 1024>>
+        interned_frames_{};
+    InterningIndex<TypeList<std::string>, SizeList<1024>>
+        interned_frame_names_{};
+    InterningIndex<TypeList<std::string>, SizeList<1024>>
+        interned_module_names_{};
+    InterningIndex<TypeList<std::string>, SizeList<1024>>
+        interned_module_ids_{};
+    InterningIndex<TypeList<uintptr_t>, SizeList<1024>> interned_modules_{};
+  };
+
   // This class will receive the sampling profiler stackframes and output them
   // to the chrome trace via an event. Exposed for testing.
   class COMPONENT_EXPORT(TRACING_CPP) TracingProfileBuilder
@@ -83,51 +113,51 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
    private:
     struct BufferedSample {
       BufferedSample(base::TimeTicks, std::vector<base::Frame>&&);
+
+      BufferedSample(const BufferedSample&) = delete;
+      BufferedSample& operator=(const BufferedSample&) = delete;
+
       BufferedSample(BufferedSample&& other);
+
       ~BufferedSample();
 
       base::TimeTicks timestamp;
       std::vector<base::Frame> sample;
-
-      DISALLOW_COPY_AND_ASSIGN(BufferedSample);
     };
 
-    InterningID GetCallstackIDAndMaybeEmit(
-        const std::vector<base::Frame>& frames,
-        perfetto::TraceWriter::TracePacketHandle* trace_packet);
     void WriteSampleToTrace(const BufferedSample& sample);
 
+    // TODO(ssid): Consider using an interning scheme to reduce memory usage
+    // and increase the sample size.
+#if defined(OS_ANDROID) || defined(OS_IOS)
     // We usually sample at 50ms, and expect that tracing should have started in
-    // 10s.
+    // 10s (5s for 2 threads). Approximately 100 frames and 200 samples would use
+    // 300KiB.
     constexpr static size_t kMaxBufferedSamples = 200;
+#else
+    // 2000 samples are enough to store samples for 100 seconds (50s for 2
+    // threads), and consumes about 3MiB of memory.
+    constexpr static size_t kMaxBufferedSamples = 2000;
+#endif
     std::vector<BufferedSample> buffered_samples_;
 
     base::ModuleCache module_cache_;
     const base::PlatformThreadId sampled_thread_id_;
     base::Lock trace_writer_lock_;
     std::unique_ptr<perfetto::TraceWriter> trace_writer_;
-    InterningIndex<TypeList<size_t>, SizeList<1024>> interned_callstacks_{};
-    InterningIndex<TypeList<std::pair<std::string, std::string>,
-                            std::pair<uintptr_t, std::string>>,
-                   SizeList<1024, 1024>>
-        interned_frames_{};
-    InterningIndex<TypeList<std::string>, SizeList<1024>>
-        interned_frame_names_{};
-    InterningIndex<TypeList<std::string>, SizeList<1024>>
-        interned_module_names_{};
-    InterningIndex<TypeList<std::string>, SizeList<1024>>
-        interned_module_ids_{};
-    InterningIndex<TypeList<uintptr_t>, SizeList<1024>> interned_modules_{};
+    StackProfileWriter stack_profile_writer_;
     bool reset_incremental_state_ = true;
     uint32_t last_incremental_state_reset_id_ = 0;
     base::TimeTicks last_timestamp_;
-    const bool should_enable_filtering_;
     base::RepeatingClosure sample_callback_for_testing_;
   };
 
   // Creates sampling profiler on main thread. The profiler *must* be
   // destroyed prior to process shutdown.
   static std::unique_ptr<TracingSamplerProfiler> CreateOnMainThread();
+
+  TracingSamplerProfiler(const TracingSamplerProfiler&) = delete;
+  TracingSamplerProfiler& operator=(const TracingSamplerProfiler&) = delete;
 
   // Sets up tracing sampling profiler on a child thread. The profiler will be
   // stored in SequencedLocalStorageSlot and will be destroyed with the thread
@@ -189,7 +219,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
 
   base::Lock lock_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|
-  TracingProfileBuilder* profile_builder_ = nullptr;
+  raw_ptr<TracingProfileBuilder> profile_builder_ = nullptr;
   base::RepeatingClosure sample_callback_for_testing_;
 
 #if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
@@ -197,8 +227,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // and stop at the same time that stack sampling does.
   std::unique_ptr<LoaderLockSamplingThread> loader_lock_sampling_thread_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(TracingSamplerProfiler);
 };
 
 }  // namespace tracing

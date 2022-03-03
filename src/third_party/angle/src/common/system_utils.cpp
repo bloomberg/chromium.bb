@@ -70,9 +70,16 @@ std::string GetEnvironmentVarOrUnCachedAndroidProperty(const char *variableName,
     // Set the environment variable with the value.
     SetEnvironmentVar(variableName, propertyValue.c_str());
     return propertyValue;
-#endif  // ANGLE_PLATFORM_ANDROID
+#else
     // Return the environment variable's value.
     return GetEnvironmentVar(variableName);
+#endif  // ANGLE_PLATFORM_ANDROID
+}
+
+bool GetBoolEnvironmentVar(const char *variableName)
+{
+    std::string envVarString = GetEnvironmentVar(variableName);
+    return (!envVarString.empty() && envVarString == "1");
 }
 
 bool PrependPathToEnvironmentVar(const char *variableName, const char *path)
@@ -92,5 +99,41 @@ bool PrependPathToEnvironmentVar(const char *variableName, const char *path)
         newValue = buf.c_str();
     }
     return SetEnvironmentVar(variableName, newValue);
+}
+
+bool IsFullPath(std::string dirName)
+{
+    if (dirName.find(GetRootDirectory()) == 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+std::string ConcatenatePath(std::string first, std::string second)
+{
+    if (first.empty())
+    {
+        return second;
+    }
+    if (second.empty())
+    {
+        return first;
+    }
+    if (IsFullPath(second))
+    {
+        return second;
+    }
+    bool firstRedundantPathSeparator = first.find_last_of(GetPathSeparator()) == first.length() - 1;
+    bool secondRedundantPathSeparator = second.find(GetPathSeparator()) == 0;
+    if (firstRedundantPathSeparator && secondRedundantPathSeparator)
+    {
+        return first + second.substr(1);
+    }
+    else if (firstRedundantPathSeparator || secondRedundantPathSeparator)
+    {
+        return first + second;
+    }
+    return first + GetPathSeparator() + second;
 }
 }  // namespace angle

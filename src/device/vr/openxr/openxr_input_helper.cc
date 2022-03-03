@@ -4,7 +4,6 @@
 
 #include "device/vr/openxr/openxr_input_helper.h"
 
-#include "base/stl_util.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/util/xr_standard_gamepad_builder.h"
@@ -245,7 +244,7 @@ XrResult OpenXRInputHelper::OnInteractionProfileChanged() {
 absl::optional<Gamepad> OpenXRInputHelper ::GetWebXRGamepad(
     const OpenXrController& controller) {
   OpenXrInteractionProfileType cur_type = controller.interaction_profile();
-  for (auto& it : kOpenXrControllerInteractionProfiles) {
+  for (auto& it : GetOpenXrControllerInteractionProfiles()) {
     if (it.type == cur_type) {
       if (it.mapping == GamepadMapping::kXrStandard) {
         return GetXrStandardGamepad(controller);

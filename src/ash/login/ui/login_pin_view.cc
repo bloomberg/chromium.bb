@@ -8,13 +8,11 @@
 
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -26,10 +24,12 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -106,8 +106,11 @@ class BasePinButton : public views::View {
     // focus painter to paint.
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+
+    views::InkDrop::Install(this, std::make_unique<views::InkDropHost>(this));
+    views::InkDrop::Get(this)->SetMode(
+        views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](BasePinButton* host) {
           auto highlight = std::make_unique<views::InkDropHighlight>(
               gfx::SizeF(host->size()),
@@ -116,7 +119,7 @@ class BasePinButton : public views::View {
           return highlight;
         },
         this));
-    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
         [](BasePinButton* host) -> std::unique_ptr<views::InkDropRipple> {
           const gfx::Point center = host->GetLocalBounds().CenterPoint();
           const gfx::Rect bounds(center.x() - kInkDropCornerRadiusDp,
@@ -126,24 +129,25 @@ class BasePinButton : public views::View {
 
           return std::make_unique<views::FloodFillInkDropRipple>(
               host->size(), host->GetLocalBounds().InsetsFrom(bounds),
-              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               host->palette_.pin_ink_drop_ripple_color,
               /*visible_opacity=*/1.f);
         },
         this));
 
-    views::FocusRing* focus_ring = views::FocusRing::Install(this);
+    views::FocusRing::Install(this);
     login_views_utils::ConfigureRectFocusRingCircleInkDrop(
-        this, focus_ring, kInkDropCornerRadiusDp);
+        this, views::FocusRing::Get(this), kInkDropCornerRadiusDp);
   }
+
+  BasePinButton(const BasePinButton&) = delete;
+  BasePinButton& operator=(const BasePinButton&) = delete;
 
   ~BasePinButton() override = default;
 
   virtual void UpdatePalette(const LoginPalette& palette) {
     palette_ = palette;
   }
-
-  views::InkDropHost* ink_drop() { return &ink_drop_; }
 
   // views::View:
   void OnFocus() override {
@@ -179,8 +183,9 @@ class BasePinButton : public views::View {
     if (event)
       event->SetHandled();
 
-    ink_drop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED,
-                               ui::LocatedEvent::FromIfValid(event));
+    views::InkDrop::Get(this)->AnimateToState(
+        views::InkDropState::ACTION_TRIGGERED,
+        ui::LocatedEvent::FromIfValid(event));
     SchedulePaint();
 
     // |on_press_| may delete us.
@@ -194,11 +199,7 @@ class BasePinButton : public views::View {
   LoginPalette palette_;
 
  private:
-  views::InkDropHost ink_drop_{this};
-
   const std::u16string accessible_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasePinButton);
 };
 
 }  // namespace
@@ -240,6 +241,9 @@ class LoginPinView::DigitPinButton : public BasePinButton {
     UpdatePalette(palette);
   }
 
+  DigitPinButton(const DigitPinButton&) = delete;
+  DigitPinButton& operator=(const DigitPinButton&) = delete;
+
   ~DigitPinButton() override = default;
 
   void UpdatePalette(const LoginPalette& palette) override {
@@ -252,8 +256,6 @@ class LoginPinView::DigitPinButton : public BasePinButton {
  private:
   views::Label* label_ = nullptr;
   views::Label* sub_label_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DigitPinButton);
 };
 
 // A PIN button that displays backspace icon.
@@ -272,6 +274,9 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
     SetEnabled(false);
   }
 
+  BackspacePinButton(const BackspacePinButton&) = delete;
+  BackspacePinButton& operator=(const BackspacePinButton&) = delete;
+
   ~BackspacePinButton() override = default;
 
   void SetTimersForTesting(std::unique_ptr<base::OneShotTimer> delay_timer,
@@ -282,7 +287,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
 
   void OnEnabledChanged() {
     if (!GetEnabled()) {
-      ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
+      views::InkDrop::Get(this)->AnimateToState(
+          views::InkDropState::DEACTIVATED, nullptr);
       CancelRepeat();
     }
     UpdateImage();
@@ -320,17 +326,16 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
       is_held_ = true;
       DCHECK(!delay_timer_->IsRunning());
       DCHECK(!repeat_timer_->IsRunning());
-      delay_timer_->Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kInitialBackspaceDelayMs),
-          base::BindOnce(&BackspacePinButton::DispatchPress,
-                         base::Unretained(this), nullptr));
+      delay_timer_->Start(FROM_HERE,
+                          base::Milliseconds(kInitialBackspaceDelayMs),
+                          base::BindOnce(&BackspacePinButton::DispatchPress,
+                                         base::Unretained(this), nullptr));
 
       if (event)
         event->SetHandled();
 
-      ink_drop()->AnimateToState(views::InkDropState::ACTIVATED,
-                                 ui::LocatedEvent::FromIfValid(event));
+      views::InkDrop::Get(this)->AnimateToState(
+          views::InkDropState::ACTIVATED, ui::LocatedEvent::FromIfValid(event));
       SchedulePaint();
 
       return;
@@ -340,8 +345,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
     // make sure the repeat_timer_ is running so the function will fire again.
     if (!repeat_timer_->IsRunning()) {
       repeat_timer_->Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kRepeatingBackspaceDelayMs),
+          FROM_HERE, base::Milliseconds(kRepeatingBackspaceDelayMs),
           base::BindRepeating(&BackspacePinButton::DispatchPress,
                               base::Unretained(this), nullptr));
     }
@@ -366,7 +370,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
     if (!did_submit && on_press_)
       on_press_.Run();
 
-    ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
+    views::InkDrop::Get(this)->AnimateToState(views::InkDropState::DEACTIVATED,
+                                              nullptr);
     SchedulePaint();
   }
 
@@ -390,8 +395,6 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
           base::Unretained(this)));
 
   LoginPalette palette_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackspacePinButton);
 };
 
 // A PIN button to press to submit the PIN / password.

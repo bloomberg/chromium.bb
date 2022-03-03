@@ -12,8 +12,8 @@ Are you a Google employee? See
 
 ## System requirements
 
-* A 64-bit Mac running 10.15.4 or later.
-* [Xcode](https://developer.apple.com/xcode) 12.2 or higher.
+* A 64-bit Mac running 11.3 or later.
+* [Xcode](https://developer.apple.com/xcode) 13.0 or higher.
 * The current version of the JDK (required for the Closure compiler).
 
 ## Install `depot_tools`
@@ -171,6 +171,7 @@ application extensions:
 -   `${prefix}.chrome.ios.dev`
 -   `${prefix}.chrome.ios.dev.ContentTodayExtension`
 -   `${prefix}.chrome.ios.dev.CredentialProviderExtension`
+-   `${prefix}.chrome.ios.dev.IntentsExtension`
 -   `${prefix}.chrome.ios.dev.SearchTodayExtension`
 -   `${prefix}.chrome.ios.dev.ShareExtension`
 -   `${prefix}.chrome.ios.dev.TodayExtension`
@@ -237,7 +238,7 @@ installed that could sign the `ios_web_shell.app` bundle with the identity
 request such a mobile provisioning profile from Apple.
 
 You can inspect the file passed via the `-e` flag to the `codesign.py` script
-to check which capabilites are required for the mobile provisioning profile
+to check which capabilities are required for the mobile provisioning profile
 (e.g. `src/build/config/ios/entitlements.plist` for the above build error,
 remember that the paths are relative to the build directory, not to the source
 directory).
@@ -318,7 +319,7 @@ $ gclient sync
 
 The first command updates the primary Chromium source repository and rebases
 any of your local branches on top of tip-of-tree (aka the Git branch
-`origin/master`). If you don't want to use this script, you can also just use
+`origin/main`). If you don't want to use this script, you can also just use
 `git pull` or other common Git commands to update the repo.
 
 The second command syncs dependencies to the appropriate versions and re-runs

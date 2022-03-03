@@ -16,10 +16,6 @@
 # RUN: %p/multi_arguments_results_v1 | FileCheck %s
 
 # pylint: disable=missing-docstring,line-too-long
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow.compat.v1 as tf
 from tensorflow.compiler.mlir.tensorflow.tests.tf_saved_model import common_v1
 from tensorflow.python.ops import array_ops
@@ -84,9 +80,9 @@ def Test():
               'd': tensor_info_s,
           },
           method_name='reverse_arguments'))
-  }
+  }, None, None
 
 
 if __name__ == '__main__':
   common_v1.set_tf_options()
-  common_v1.do_test(Test())
+  common_v1.do_test(Test)

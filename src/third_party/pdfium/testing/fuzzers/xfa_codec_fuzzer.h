@@ -10,6 +10,7 @@
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxcodec/progressive_decoder.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "third_party/base/span.h"
@@ -26,7 +27,7 @@ class XFACodecFuzzer {
         pdfium::make_span(data, size));
     CFX_DIBAttribute attr;
     FXCODEC_STATUS status = decoder->LoadImageInfo(source, type, &attr, true);
-    if (status != FXCODEC_STATUS_FRAME_READY)
+    if (status != FXCODEC_STATUS::kFrameReady)
       return 0;
 
     // Skipping very large images, since they will take a long time and may lead
@@ -45,12 +46,12 @@ class XFACodecFuzzer {
 
     size_t frames;
     std::tie(status, frames) = decoder->GetFrames();
-    if (status != FXCODEC_STATUS_DECODE_READY || frames == 0)
+    if (status != FXCODEC_STATUS::kDecodeReady || frames == 0)
       return 0;
 
     status = decoder->StartDecode(bitmap, 0, 0, bitmap->GetWidth(),
                                   bitmap->GetHeight());
-    while (status == FXCODEC_STATUS_DECODE_TOBECONTINUE)
+    while (status == FXCODEC_STATUS::kDecodeToBeContinued)
       status = decoder->ContinueDecode();
 
     return 0;

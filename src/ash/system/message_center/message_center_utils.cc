@@ -4,9 +4,11 @@
 
 #include "ash/system/message_center/message_center_utils.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
+#include "ui/compositor/layer.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/animation/animation_builder.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -21,12 +23,15 @@ bool CompareNotifications(message_center::Notification* n1,
   return message_center::CompareTimestampSerial()(n1, n2);
 }
 
-std::vector<message_center::Notification*> GetSortedVisibleNotifications() {
+std::vector<message_center::Notification*> GetSortedNotificationsWithOwnView() {
   auto visible_notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
   std::vector<message_center::Notification*> sorted_notifications;
-  std::copy(visible_notifications.begin(), visible_notifications.end(),
-            std::back_inserter(sorted_notifications));
+  std::copy_if(visible_notifications.begin(), visible_notifications.end(),
+               std::back_inserter(sorted_notifications),
+               [](message_center::Notification* notification) {
+                 return !notification->group_child();
+               });
   std::sort(sorted_notifications.begin(), sorted_notifications.end(),
             CompareNotifications);
   return sorted_notifications;
@@ -42,9 +47,55 @@ size_t GetNotificationCount() {
     if (notifier == kVmCameraMicNotifierId)
       continue;
 
+    // Don't count group child notifications since they're contained in a single
+    // parent view.
+    if (notification->group_child())
+      continue;
+
     ++count;
   }
   return count;
+}
+
+void InitLayerForAnimations(views::View* view) {
+  view->SetPaintToLayer();
+  view->layer()->SetFillsBoundsOpaquely(false);
+}
+
+void FadeInView(views::View* view,
+                int delay_in_ms,
+                int duration_in_ms,
+                gfx::Tween::Type tween_type) {
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetOpacity(view, 0.0f)
+      .At(base::Milliseconds(delay_in_ms))
+      .SetDuration(base::Milliseconds(duration_in_ms))
+      .SetOpacity(view, 1.0f, tween_type);
+}
+
+void FadeOutView(views::View* view,
+                 base::OnceClosure on_animation_ended,
+                 int delay_in_ms,
+                 int duration_in_ms,
+                 gfx::Tween::Type tween_type) {
+  std::pair<base::OnceClosure, base::OnceClosure> split =
+      base::SplitOnceCallback(std::move(on_animation_ended));
+
+  view->SetVisible(true);
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(std::move(split.first))
+      .OnAborted(std::move(split.second))
+      .Once()
+      .At(base::Milliseconds(delay_in_ms))
+      .SetDuration(base::Milliseconds(duration_in_ms))
+      .SetVisibility(view, false)
+      .SetOpacity(view, 0.0f, tween_type);
 }
 
 }  // namespace message_center_utils

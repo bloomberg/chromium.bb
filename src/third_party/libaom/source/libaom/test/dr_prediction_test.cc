@@ -22,7 +22,6 @@
 #include "av1/common/pred_common.h"
 #include "av1/common/reconintra.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -199,7 +198,7 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
     if (params_.tst_fn) {
       aom_usec_timer_start(&timer);
       for (int k = 0; k < kNumTests; ++k) {
-        ASM_REGISTER_STATE_CHECK(params_.tst_fn(dst_tst_, dst_stride_, bw_, bh_,
+        API_REGISTER_STATE_CHECK(params_.tst_fn(dst_tst_, dst_stride_, bw_, bh_,
                                                 above_, left_, upsample_above_,
                                                 upsample_left_, dx_, dy_, bd_));
       }

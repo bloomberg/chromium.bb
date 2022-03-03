@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_TEST_PLATFORM_EVENT_SOURCE_TEST_API_H_
 #define UI_EVENTS_TEST_PLATFORM_EVENT_SOURCE_TEST_API_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/events/platform_event.h"
 
 namespace ui {
@@ -17,14 +17,17 @@ namespace test {
 class PlatformEventSourceTestAPI {
  public:
   explicit PlatformEventSourceTestAPI(PlatformEventSource* event_source);
+
+  PlatformEventSourceTestAPI(const PlatformEventSourceTestAPI&) = delete;
+  PlatformEventSourceTestAPI& operator=(const PlatformEventSourceTestAPI&) =
+      delete;
+
   ~PlatformEventSourceTestAPI();
 
   void Dispatch(PlatformEvent platform_event);
 
  private:
-  PlatformEventSource* event_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformEventSourceTestAPI);
+  raw_ptr<PlatformEventSource> event_source_;
 };
 
 }  // namespace test

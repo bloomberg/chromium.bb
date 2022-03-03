@@ -91,6 +91,7 @@ void LoseContextCHROMIUM(GLenum current, GLenum other) {
 void BeginRasterCHROMIUMImmediate(GLuint sk_color,
                                   GLboolean needs_clear,
                                   GLuint msaa_sample_count,
+                                  gpu::raster::MsaaMode msaa_mode,
                                   GLboolean can_use_lcd_text,
                                   const GLbyte* mailbox) {
   const uint32_t size =
@@ -99,8 +100,8 @@ void BeginRasterCHROMIUMImmediate(GLuint sk_color,
       GetImmediateCmdSpaceTotalSize<raster::cmds::BeginRasterCHROMIUMImmediate>(
           size);
   if (c) {
-    c->Init(sk_color, needs_clear, msaa_sample_count, can_use_lcd_text,
-            mailbox);
+    c->Init(sk_color, needs_clear, msaa_sample_count, msaa_mode,
+            can_use_lcd_text, mailbox);
   }
 }
 
@@ -282,6 +283,20 @@ void ConvertYUVAMailboxesToRGBINTERNALImmediate(GLenum planes_yuv_color_space,
   raster::cmds::ConvertYUVAMailboxesToRGBINTERNALImmediate* c =
       GetImmediateCmdSpaceTotalSize<
           raster::cmds::ConvertYUVAMailboxesToRGBINTERNALImmediate>(size);
+  if (c) {
+    c->Init(planes_yuv_color_space, plane_config, subsampling, mailboxes);
+  }
+}
+
+void ConvertRGBAToYUVAMailboxesINTERNALImmediate(GLenum planes_yuv_color_space,
+                                                 GLenum plane_config,
+                                                 GLenum subsampling,
+                                                 const GLbyte* mailboxes) {
+  const uint32_t size =
+      raster::cmds::ConvertRGBAToYUVAMailboxesINTERNALImmediate::ComputeSize();
+  raster::cmds::ConvertRGBAToYUVAMailboxesINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::ConvertRGBAToYUVAMailboxesINTERNALImmediate>(size);
   if (c) {
     c->Init(planes_yuv_color_space, plane_config, subsampling, mailboxes);
   }

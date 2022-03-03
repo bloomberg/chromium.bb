@@ -6,7 +6,7 @@
 #define UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/input_event_activation_protector.h"
 #include "ui/views/window/client_view.h"
@@ -37,6 +37,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView, public DialogObserver {
   METADATA_HEADER(DialogClientView);
 
   DialogClientView(Widget* widget, View* contents_view);
+
+  DialogClientView(const DialogClientView&) = delete;
+  DialogClientView& operator=(const DialogClientView&) = delete;
+
   ~DialogClientView() override;
 
   // Accessors in case the user wishes to adjust these buttons.
@@ -119,18 +123,16 @@ class VIEWS_EXPORT DialogClientView : public ClientView, public DialogObserver {
   LabelButton* cancel_button_ = nullptr;
 
   // The extra view shown in the row of buttons; may be NULL.
-  View* extra_view_ = nullptr;
+  raw_ptr<View> extra_view_ = nullptr;
 
   // Container view for the button row.
-  ButtonRowContainer* button_row_container_ = nullptr;
+  raw_ptr<ButtonRowContainer> button_row_container_ = nullptr;
 
   // Used to prevent unnecessary or potentially harmful changes during
   // SetupLayout(). Everything will be manually updated afterwards.
   bool adding_or_removing_views_ = false;
 
   InputEventActivationProtector input_protector_;
-
-  DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };
 
 }  // namespace views

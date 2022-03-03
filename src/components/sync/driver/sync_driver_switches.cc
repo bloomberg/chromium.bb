@@ -14,6 +14,15 @@ bool IsSyncAllowedByFlag() {
       switches::kDisableSync);
 }
 
+#if defined(OS_IOS)
+bool IsSyncTrustedVaultPassphraseiOSRPCEnabled() {
+  return base::FeatureList::IsEnabled(
+             switches::kSyncTrustedVaultPassphraseRecovery) &&
+         base::FeatureList::IsEnabled(
+             switches::kSyncTrustedVaultPassphraseiOSRPC);
+}
+#endif  // defined(OS_IOS)
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[] = "disable-sync";
 
@@ -54,26 +63,42 @@ const base::Feature kSyncAutofillWalletOfferData{
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Stops honoring the Android master sync toggle.
-const base::Feature kDecoupleSyncFromAndroidMasterSync{
-    "DecoupleSyncFromAndroidMasterSync", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Sync requires policies to be loaded before starting.
 const base::Feature kSyncRequiresPoliciesLoaded{
     "SyncRequiresPoliciesLoaded", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Max time to delay the sync startup while waiting for policies to load.
 const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout{
-    &kSyncRequiresPoliciesLoaded, "SyncPolicyLoadTimeout",
-    base::TimeDelta::FromSeconds(10)};
+    &kSyncRequiresPoliciesLoaded, "SyncPolicyLoadTimeout", base::Seconds(10)};
 
-const base::Feature kSyncSupportTrustedVaultPassphraseRecovery{
-    "SyncSupportTrustedVaultPassphraseRecovery",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_IOS)
+// Whether RPC is enabled.
+const base::Feature kSyncTrustedVaultPassphraseiOSRPC{
+    "SyncTrustedVaultPassphraseiOSRPC", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_IOS)
+
+// Keep this entry in sync with the equivalent name in
+// ChromeFeatureList.java.
+const base::Feature kSyncTrustedVaultPassphraseRecovery{
+  "SyncTrustedVaultPassphraseRecovery",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Whether the entry point to opt in to trusted vault in settings should be
 // shown.
-const base::Feature kSyncOfferTrustedVaultOptIn{
-    "SyncOfferTrustedVaultOptIn", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncTrustedVaultPassphrasePromo{
+    "SyncTrustedVaultPassphrasePromo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+// Whether warning should be shown in sync settings page when lacros
+// side-by-side mode is enabled.
+const base::Feature kSyncSettingsShowLacrosSideBySideWarning{
+    "SyncSettingsShowLacrosSideBySideWarning",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace switches

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "components/embedder_support/android/metrics/memory_metrics_logger.h"
@@ -27,14 +27,17 @@ struct MainParams;
 class BrowserMainPartsImpl : public content::BrowserMainParts {
  public:
   BrowserMainPartsImpl(MainParams* params,
-                       const content::MainFunctionParams& main_function_params,
+                       content::MainFunctionParams main_function_params,
                        std::unique_ptr<PrefService> local_state);
+
+  BrowserMainPartsImpl(const BrowserMainPartsImpl&) = delete;
+  BrowserMainPartsImpl& operator=(const BrowserMainPartsImpl&) = delete;
+
   ~BrowserMainPartsImpl() override;
 
   // BrowserMainParts overrides.
   int PreCreateThreads() override;
   int PreEarlyInitialization() override;
-  void PreCreateMainMessageLoop() override;
   void PostCreateThreads() override;
   int PreMainMessageLoopRun() override;
   void WillRunMainMessageLoop(
@@ -43,7 +46,7 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
   void PostMainMessageLoopRun() override;
 
  private:
-  MainParams* params_;
+  raw_ptr<MainParams> params_;
 
   std::unique_ptr<BrowserProcess> browser_process_;
   std::unique_ptr<performance_manager::PerformanceManagerLifetime>
@@ -53,14 +56,11 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
 #endif  // defined(OS_ANDROID)
 
   // For running weblayer_browsertests.
-  const content::MainFunctionParams main_function_params_;
-  bool run_message_loop_ = true;
+  content::MainFunctionParams main_function_params_;
 
   // Ownership of this moves to BrowserProcess. See
   // ContentBrowserClientImpl::local_state_ for details.
   std::unique_ptr<PrefService> local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsImpl);
 };
 
 }  // namespace weblayer

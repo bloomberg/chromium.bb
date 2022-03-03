@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/policy/android/test_jni_headers/PolicyCacheUpdaterTestSupporter_jni.h"
@@ -62,10 +63,9 @@ class StubPolicyHandler : public ConfigurationPolicyHandler {
 class PolicyCacheUpdaterAndroidTest : public ::testing::Test {
  public:
   PolicyCacheUpdaterAndroidTest() {
-    ON_CALL(policy_provider_, IsInitializationComplete(_))
-        .WillByDefault(Return(true));
-    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    policy_provider_.SetDefaultReturns(
+        true /* is_initialization_complete_return */,
+        true /* is_first_policy_load_complete_return */);
     j_support_ = Java_PolicyCacheUpdaterTestSupporter_Constructor(env_);
     policy_service_ = std::make_unique<policy::PolicyServiceImpl>(
         std::vector<ConfigurationPolicyProvider*>({&policy_provider_}));
@@ -104,10 +104,10 @@ class PolicyCacheUpdaterAndroidTest : public ::testing::Test {
   PolicyMap* policy_map() { return &policy_map_; }
 
  private:
-  JNIEnv* env_ = base::android::AttachCurrentThread();
+  raw_ptr<JNIEnv> env_ = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_support_;
   PolicyMap policy_map_;
-  MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<MockConfigurationPolicyProvider> policy_provider_;
   std::unique_ptr<PolicyService> policy_service_;
   std::unique_ptr<ConfigurationPolicyHandlerList> policy_handler_list_;
   base::test::SingleThreadTaskEnvironment task_environment_;

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -22,7 +21,9 @@
 #include "storage/browser/file_system/file_system_file_util.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
+#include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/file_system/local_file_util.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_blob_util.h"
 #include "storage/browser/test/mock_file_change_observer.h"
 #include "storage/browser/test/mock_quota_manager.h"
@@ -30,6 +31,7 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -56,6 +58,11 @@ class FileSystemOperationImplWriteTest : public testing::Test {
         complete_(false) {
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
+
+  FileSystemOperationImplWriteTest(const FileSystemOperationImplWriteTest&) =
+      delete;
+  FileSystemOperationImplWriteTest& operator=(
+      const FileSystemOperationImplWriteTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -104,7 +111,8 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
   FileSystemURL URLForPath(const base::FilePath& path) const {
     return file_system_context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL(kOrigin)), kFileSystemType, path);
+        blink::StorageKey::CreateFromStringForTesting(kOrigin), kFileSystemType,
+        path);
   }
 
   // Callback function for recording test results.
@@ -159,8 +167,6 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   ChangeObserverList change_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplWriteTest);
 };
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
@@ -248,9 +254,9 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   ScopedTextBlob blob(blob_storage_context(), "blob:success",
                       "Hello, world!\n");
-  quota_manager_->SetQuota(url::Origin::Create(GURL(kOrigin)),
-                           FileSystemTypeToQuotaStorageType(kFileSystemType),
-                           10);
+  quota_manager_->SetQuota(
+      blink::StorageKey::CreateFromStringForTesting(kOrigin),
+      FileSystemTypeToQuotaStorageType(kFileSystemType), 10);
   file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
                                                   blob.GetBlobDataHandle(), 0,
                                                   RecordWriteCallback());

@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -18,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/icon_button.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/palette/palette_utils.h"
@@ -28,7 +29,6 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/system/unified/top_shortcut_button.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -41,11 +41,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -73,22 +75,14 @@ constexpr gfx::Insets kTitleViewPadding(8, 16, 8, 16);
 // Spacing between buttons in the title view (dp).
 constexpr int kTitleViewChildSpacing = 16;
 
-// Returns true if the |palette_tray| is on an internal display or on every
-// display if requested from the command line.
-bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
-  if (stylus_utils::IsPaletteEnabledOnEveryDisplay())
-    return true;
-
-  // |widget| is null when this function is called from PaletteTray constructor
-  // before it is added to a widget.
-  views::Widget* const widget = palette_tray->GetWidget();
-  if (!widget)
-    return false;
-
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          widget->GetNativeWindow());
-  return display.IsInternal();
+bool HasSomeStylusDisplay() {
+  for (const ui::TouchscreenDevice& device :
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.has_stylus) {
+      return true;
+    }
+  }
+  return false;
 }
 
 class BatteryView : public views::View {
@@ -133,6 +127,7 @@ class BatteryView : public views::View {
 
     icon_->SetImage(stylus_battery_delegate_.GetBatteryImage());
     label_->SetVisible(stylus_battery_delegate_.IsBatteryLevelLow() &&
+                       stylus_battery_delegate_.IsBatteryStatusEligible() &&
                        !stylus_battery_delegate_.IsBatteryStatusStale() &&
                        !stylus_battery_delegate_.IsBatteryCharging());
   }
@@ -173,23 +168,28 @@ class TitleView : public views::View {
           AshColorProvider::ContentLayerType::kSeparatorColor));
     }
 
-    help_button_ = AddChildView(std::make_unique<TopShortcutButton>(
+    help_button_ = AddChildView(std::make_unique<IconButton>(
         base::BindRepeating(
             &TitleView::ButtonPressed, base::Unretained(this),
             PaletteTrayOptions::PALETTE_HELP_BUTTON,
             base::BindRepeating(
                 &SystemTrayClient::ShowPaletteHelp,
                 base::Unretained(Shell::Get()->system_tray_model()->client()))),
-        kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP));
-    settings_button_ = AddChildView(std::make_unique<TopShortcutButton>(
+        IconButton::Type::kSmall, &kSystemMenuHelpIcon,
+        IDS_ASH_STATUS_TRAY_HELP));
+    settings_button_ = AddChildView(std::make_unique<IconButton>(
         base::BindRepeating(
             &TitleView::ButtonPressed, base::Unretained(this),
             PaletteTrayOptions::PALETTE_SETTINGS_BUTTON,
             base::BindRepeating(
                 &SystemTrayClient::ShowPaletteSettings,
                 base::Unretained(Shell::Get()->system_tray_model()->client()))),
-        kSystemMenuSettingsIcon, IDS_ASH_PALETTE_SETTINGS));
+        IconButton::Type::kSmall, &kSystemMenuSettingsIcon,
+        IDS_ASH_PALETTE_SETTINGS));
   }
+
+  TitleView(const TitleView&) = delete;
+  TitleView& operator=(const TitleView&) = delete;
 
   ~TitleView() override = default;
 
@@ -210,8 +210,6 @@ class TitleView : public views::View {
   views::View* settings_button_;
   views::View* help_button_;
   PaletteTray* palette_tray_;
-
-  DISALLOW_COPY_AND_ASSIGN(TitleView);
 };
 
 // Used as a Shell pre-target handler to notify PaletteTray of stylus events.
@@ -220,6 +218,9 @@ class StylusEventHandler : public ui::EventHandler {
   explicit StylusEventHandler(PaletteTray* tray) : palette_tray_(tray) {
     Shell::Get()->AddPreTargetHandler(this);
   }
+
+  StylusEventHandler(const StylusEventHandler&) = delete;
+  StylusEventHandler& operator=(const StylusEventHandler&) = delete;
 
   ~StylusEventHandler() override { Shell::Get()->RemovePreTargetHandler(this); }
 
@@ -232,7 +233,6 @@ class StylusEventHandler : public ui::EventHandler {
 
  private:
   PaletteTray* palette_tray_;
-  DISALLOW_COPY_AND_ASSIGN(StylusEventHandler);
 };
 
 }  // namespace
@@ -254,6 +254,7 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 PaletteTray::~PaletteTray() {
@@ -262,6 +263,7 @@ PaletteTray::~PaletteTray() {
 
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 // static
@@ -288,8 +290,59 @@ bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
 
 bool PaletteTray::ShouldShowPalette() const {
   return is_palette_enabled_ && stylus_utils::HasStylusInput() &&
-         (display::Display::HasInternalDisplay() ||
+         (HasSomeStylusDisplay() ||
           stylus_utils::IsPaletteEnabledOnEveryDisplay());
+}
+
+bool PaletteTray::ShouldShowOnDisplay() {
+  if (stylus_utils::IsPaletteEnabledOnEveryDisplay() ||
+      display_has_stylus_for_testing_)
+    return true;
+
+  // |widget| is null when this function is called from PaletteTray constructor
+  // before it is added to a widget.
+  views::Widget* const widget = GetWidget();
+  if (!widget)
+    return false;
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  // Is there a TouchscreenDevice which targets this display or one of
+  // the active mirrors?
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::DisplayIdList ids;
+  ids.push_back(display.id());
+  if (display_manager->IsInMirrorMode()) {
+    display::DisplayIdList mirrors =
+        display_manager->GetMirroringDestinationDisplayIdList();
+    ids.insert(ids.end(), mirrors.begin(), mirrors.end());
+    ids.push_back(display_manager->mirroring_source_id());
+  }
+  for (const ui::TouchscreenDevice& device :
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.has_stylus && std::find(ids.begin(), ids.end(),
+                                       device.target_display_id) != ids.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool PaletteTray::IsWidgetOnInternalDisplay() {
+  // |widget| is null when this function is called from PaletteTray constructor
+  // before it is added to a widget.
+  views::Widget* const widget = GetWidget();
+  if (!widget)
+    return false;
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  return display.IsInternal();
 }
 
 void PaletteTray::OnStylusEvent(const ui::TouchEvent& event) {
@@ -357,6 +410,10 @@ void PaletteTray::OnLockStateChanged(bool locked) {
   }
 }
 
+void PaletteTray::OnDisplayConfigurationChanged() {
+  UpdateIconVisibility();
+}
+
 void PaletteTray::ClickedOutsideBubble() {
   if (num_actions_in_bubble_ == 0) {
     RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION,
@@ -390,6 +447,10 @@ void PaletteTray::OnInputDeviceConfigurationChanged(
   }
 }
 
+void PaletteTray::OnTouchDeviceAssociationChanged() {
+  UpdateIconVisibility();
+}
+
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   // Device may have a stylus but it has been forcibly disabled.
   if (!stylus_utils::HasStylusInput())
@@ -397,6 +458,10 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
 
   // Don't do anything if the palette tray is not shown.
   if (!GetVisible())
+    return;
+
+  // Only respond on the internal display.
+  if (!IsWidgetOnInternalDisplay())
     return;
 
   // Auto show/hide the palette if allowed by the user.
@@ -686,10 +751,15 @@ bool PaletteTray::HasSeenStylus() {
   return local_state_ && local_state_->GetBoolean(prefs::kHasSeenStylus);
 }
 
+void PaletteTray::SetDisplayHasStylusForTesting() {
+  display_has_stylus_for_testing_ = true;
+  UpdateIconVisibility();
+}
+
 void PaletteTray::UpdateIconVisibility() {
   bool visible_preferred =
       is_palette_enabled_ && stylus_utils::HasStylusInput() &&
-      ShouldShowOnDisplay(this) && palette_utils::IsInUserSession();
+      ShouldShowOnDisplay() && palette_utils::IsInUserSession();
   SetVisiblePreferred(visible_preferred);
   if (visible_preferred)
     UpdateLayout();

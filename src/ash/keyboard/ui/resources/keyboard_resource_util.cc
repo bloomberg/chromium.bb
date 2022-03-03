@@ -6,9 +6,9 @@
 
 #include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "ash/keyboard/ui/grit/keyboard_resources_map.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace keyboard {
@@ -104,11 +104,11 @@ void InitializeKeyboardResources() {
   initialized = true;
 
   base::FilePath pak_dir;
-  base::PathService::Get(base::DIR_MODULE, &pak_dir);
+  base::PathService::Get(base::DIR_ASSETS, &pak_dir);
   base::FilePath pak_file =
       pak_dir.Append(FILE_PATH_LITERAL("keyboard_resources.pak"));
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_file, ui::SCALE_FACTOR_100P);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(pak_file,
+                                                              ui::k100Percent);
 }
 
 }  // namespace keyboard

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
@@ -21,7 +22,12 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
+import org.chromium.chrome.browser.power_bookmarks.ShoppingSpecifics;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;
@@ -40,12 +46,12 @@ import java.util.List;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
-@Batch.SplitByFeature
 public class BookmarkBridgeTest {
     @Rule
     public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     private BookmarkBridge mBookmarkBridge;
+    private BookmarkBridge mDestroyedBookmarkBridge;
     private BookmarkId mMobileNode;
     private BookmarkId mOtherNode;
     private BookmarkId mDesktopNode;
@@ -56,6 +62,10 @@ public class BookmarkBridgeTest {
             Profile profile = Profile.getLastUsedRegularProfile();
             mBookmarkBridge = new BookmarkBridge(profile);
             mBookmarkBridge.loadFakePartnerBookmarkShimForTesting();
+
+            mDestroyedBookmarkBridge = new BookmarkBridge(profile);
+            mDestroyedBookmarkBridge.loadFakePartnerBookmarkShimForTesting();
+            mDestroyedBookmarkBridge.destroy();
         });
 
         BookmarkTestUtil.waitForBookmarkModelLoaded();
@@ -333,6 +343,16 @@ public class BookmarkBridgeTest {
     @Test
     @SmallTest
     @UiThreadTest
+    @Feature({"Bookmark"})
+    public void testGetUserBookmarkIdForTab() {
+        Assert.assertNull(mBookmarkBridge.getUserBookmarkIdForTab(null));
+        Assert.assertNull(
+                mDestroyedBookmarkBridge.getUserBookmarkIdForTab(Mockito.mock(Tab.class)));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
     @RequiresRestart
     @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
     @DisabledTest(message = "Broken on official bot, crbug.com/1165869")
@@ -351,5 +371,40 @@ public class BookmarkBridgeTest {
         Assert.assertEquals(
                 "https://www.google.com/", readingListItem.getUrl().getValidSpecOrEmpty());
         Assert.assertEquals("a", readingListItem.getTitle());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
+    @Features.EnableFeatures({ChromeFeatureList.SHOPPING_LIST})
+    public void testProductUnsubscribeUpdatesBookmark() {
+        BookmarkId bookmark =
+                mBookmarkBridge.addBookmark(mMobileNode, 0, "a", new GURL("http://a.com"));
+        verifyBookmark(bookmark, "a", "http://a.com/", false, mMobileNode);
+
+        long offerId = 12345L;
+        ShoppingSpecifics specifics =
+                ShoppingSpecifics.newBuilder().setIsPriceTracked(true).setOfferId(offerId).build();
+        PowerBookmarkMeta meta = PowerBookmarkMeta.newBuilder()
+                                         .setType(PowerBookmarkType.SHOPPING)
+                                         .setShoppingSpecifics(specifics)
+                                         .build();
+        mBookmarkBridge.setPowerBookmarkMeta(bookmark, meta);
+
+        // Check that the price is tracked prior to sending an unsubscribe event.
+        PowerBookmarkMeta originalMeta = mBookmarkBridge.getPowerBookmarkMeta(bookmark);
+        Assert.assertTrue(originalMeta.getShoppingSpecifics().getIsPriceTracked());
+
+        ArrayList<CommerceSubscription> subscriptions = new ArrayList<>();
+        subscriptions.add(new CommerceSubscription(
+                CommerceSubscription.CommerceSubscriptionType.PRICE_TRACK, Long.toString(offerId),
+                CommerceSubscription.SubscriptionManagementType.USER_MANAGED,
+                CommerceSubscription.TrackingIdType.OFFER_ID));
+        mBookmarkBridge.getSubscriptionObserver().onUnsubscribe(subscriptions);
+
+        // The product with the unsubscribed ID should no longer be price tracked.
+        PowerBookmarkMeta updatedMeta = mBookmarkBridge.getPowerBookmarkMeta(bookmark);
+        Assert.assertFalse(updatedMeta.getShoppingSpecifics().getIsPriceTracked());
     }
 }

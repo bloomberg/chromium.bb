@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
@@ -19,6 +18,10 @@ namespace notifier {
 class FakePushClient : public PushClient {
  public:
   FakePushClient();
+
+  FakePushClient(const FakePushClient&) = delete;
+  FakePushClient& operator=(const FakePushClient&) = delete;
+
   ~FakePushClient() override;
 
   // PushClient implementation.
@@ -54,8 +57,6 @@ class FakePushClient : public PushClient {
   std::string token_;
   std::vector<Notification> sent_notifications_;
   int sent_pings_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePushClient);
 };
 
 }  // namespace notifier

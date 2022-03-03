@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -46,6 +45,10 @@ class VideoTextureBacking;
 class MEDIA_EXPORT PaintCanvasVideoRenderer {
  public:
   PaintCanvasVideoRenderer();
+
+  PaintCanvasVideoRenderer(const PaintCanvasVideoRenderer&) = delete;
+  PaintCanvasVideoRenderer& operator=(const PaintCanvasVideoRenderer&) = delete;
+
   ~PaintCanvasVideoRenderer();
 
   // Paints |video_frame| translated and scaled to |dest_rect| on |canvas|.
@@ -87,22 +90,6 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
                                            size_t row_bytes,
                                            bool premultiply_alpha = true);
 
-  // Copy the visible rect size contents of texture of |video_frame| to
-  // texture |texture|. |level|, |internal_format|, |type| specify target
-  // texture |texture|. The format of |video_frame| must be
-  // VideoFrame::NATIVE_TEXTURE.
-  static void CopyVideoFrameSingleTextureToGLTexture(
-      gpu::gles2::GLES2Interface* gl,
-      VideoFrame* video_frame,
-      unsigned int target,
-      unsigned int texture,
-      unsigned int internal_format,
-      unsigned int format,
-      unsigned int type,
-      int level,
-      bool premultiply_alpha,
-      bool flip_y);
-
   // Copy the contents of |video_frame| to |texture| of |destination_gl|.
   //
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
@@ -119,7 +106,8 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
-  bool PrepareVideoFrameForWebGL(
+  // TODO(776222): Remove this function from PaintCanvasVideoRenderer.
+  static bool PrepareVideoFrameForWebGL(
       viz::RasterContextProvider* raster_context_provider,
       gpu::gles2::GLES2Interface* gl,
       scoped_refptr<VideoFrame> video_frame,
@@ -228,6 +216,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // This is only set if the VideoFrame was texture-backed.
     gfx::Rect visible_rect;
 
+    // True if the underlying resource was created with a top left origin.
+    bool texture_origin_is_top_left = true;
+
     // Used to allow recycling of the previous shared image. This requires that
     // no external users have access to this resource via SkImage. Returns true
     // if the existing resource can be recycled.
@@ -290,8 +281,6 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     gpu::SyncToken sync_token;
   };
   YUVTextureCache yuv_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRenderer);
 };
 
 }  // namespace media

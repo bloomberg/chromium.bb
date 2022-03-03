@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,11 +26,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_strike_database.h"
@@ -62,6 +62,7 @@
 using base::ASCIIToUTF16;
 using testing::_;
 using testing::AtLeast;
+using testing::NiceMock;
 using testing::Return;
 using testing::SaveArg;
 using testing::UnorderedElementsAre;
@@ -115,7 +116,7 @@ class MockPersonalDataManager : public TestPersonalDataManager {
  public:
   MockPersonalDataManager() = default;
   ~MockPersonalDataManager() override = default;
-  MOCK_METHOD0(OnUserAcceptedUpstreamOffer, void());
+  MOCK_METHOD(void, OnUserAcceptedUpstreamOffer, (), (override));
 };
 
 class CreditCardSaveManagerTest : public testing::Test {
@@ -134,11 +135,9 @@ class CreditCardSaveManagerTest : public testing::Test {
                         /*client_profile_validator=*/nullptr,
                         /*history_service=*/nullptr,
                         /*strike_database=*/nullptr,
+                        /*image_fetcher=*/nullptr,
                         /*is_off_the_record=*/false);
-    personal_data_.SetSyncServiceForTest(&sync_service_);
-    autocomplete_history_manager_.Init(
-        /*profile_database=*/database_,
-        /*is_off_the_record=*/false);
+    personal_data_.OnSyncServiceInitialized(&sync_service_);
     autofill_driver_ = std::make_unique<TestAutofillDriver>();
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(),
@@ -158,8 +157,7 @@ class CreditCardSaveManagerTest : public testing::Test {
         std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
     autofill_client_.GetStrikeDatabase();
     browser_autofill_manager_ = std::make_unique<TestBrowserAutofillManager>(
-        autofill_driver_.get(), &autofill_client_, &personal_data_,
-        &autocomplete_history_manager_);
+        autofill_driver_.get(), &autofill_client_, &personal_data_);
     browser_autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
@@ -174,7 +172,8 @@ class CreditCardSaveManagerTest : public testing::Test {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    browser_autofill_manager_->OnFormsSeen(forms);
+    browser_autofill_manager_->OnFormsSeen(/*updated_forms=*/forms,
+                                           /*removed_forms=*/{});
   }
 
   void FormSubmitted(const FormData& form) {
@@ -185,7 +184,8 @@ class CreditCardSaveManagerTest : public testing::Test {
   void UserHasAcceptedUpload(
       AutofillClient::UserProvidedCardDetails user_provided_card_details) {
     credit_card_save_manager_->OnUserDidDecideOnUploadSave(
-        AutofillClient::ACCEPTED, user_provided_card_details);
+        AutofillClient::SaveCardOfferUserDecision::kAccepted,
+        user_provided_card_details);
   }
 
   // Populates |form| with data corresponding to a simple credit card form.
@@ -343,14 +343,13 @@ class CreditCardSaveManagerTest : public testing::Test {
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
   scoped_refptr<AutofillWebDataService> database_;
   MockPersonalDataManager personal_data_;
-  MockAutocompleteHistoryManager autocomplete_history_manager_;
   syncer::TestSyncService sync_service_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
-  TestCreditCardSaveManager* credit_card_save_manager_;
+  raw_ptr<TestCreditCardSaveManager> credit_card_save_manager_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
-  payments::TestPaymentsClient* payments_client_;
+  raw_ptr<payments::TestPaymentsClient> payments_client_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
-  TestStrikeDatabase* strike_database_;
+  raw_ptr<TestStrikeDatabase> strike_database_;
 
  private:
   int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {
@@ -5047,8 +5046,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->set_show_save_prompt(true);
   credit_card_save_manager_->set_upload_request_card_number(
       u"4111111111111111");
-  credit_card_save_manager_->OnDidUploadCard(AutofillClient::TRY_AGAIN_FAILURE,
-                                             server_id);
+  credit_card_save_manager_->OnDidUploadCard(
+      AutofillClient::PaymentsRpcResult::kTryAgainFailure, server_id);
   EXPECT_EQ(1, credit_card_save_strike_database.GetStrikes("1111"));
 }
 

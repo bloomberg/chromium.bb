@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
@@ -58,7 +59,7 @@ class AuthenticatorRequestDialogModel {
     // on the omnibox, prompting the user to tap their security key.
     kLocationBarBubble,
 
-    kTransportSelection,
+    kMechanismSelection,
 
     // The request errored out before completing. Error will only be sent
     // after user interaction.
@@ -83,14 +84,15 @@ class AuthenticatorRequestDialogModel {
     kBlePowerOnAutomatic,
     kBlePowerOnManual,
 
-    // Let the user confirm that they want to create a platform credential in an
-    // off-the-record browsing context.
-    kPlatformAuthenticatorOffTheRecordInterstitial,
+    // Let the user confirm that they want to create a credential in an
+    // off-the-record browsing context. Used for platform and caBLE credentials,
+    // where we feel that it's perhaps not obvious that something will be
+    // recorded.
+    kOffTheRecordInterstitial,
 
     // Phone as a security key.
     kCableActivate,
     kAndroidAccessory,
-    kCableV2Activate,
     kCableV2QRCode,
 
     // Authenticator Client PIN.
@@ -156,7 +158,9 @@ class AuthenticatorRequestDialogModel {
     using WindowsAPI = base::StrongAlias<class WindowsAPITag,
                                          bool /* unused, but cannot be void */>;
     using Phone = base::StrongAlias<class PhoneTag, std::string>;
-    using Type = absl::variant<Transport, WindowsAPI, Phone>;
+    using AddPhone = base::StrongAlias<class AddPhoneTag,
+                                       bool /* unused, but cannot be void */>;
+    using Type = absl::variant<Transport, WindowsAPI, Phone, AddPhone>;
 
     Mechanism(Type type,
               std::u16string name,
@@ -171,7 +175,7 @@ class AuthenticatorRequestDialogModel {
 
     const std::u16string name;
     const std::u16string short_name;
-    const gfx::VectorIcon* const icon;
+    const raw_ptr<const gfx::VectorIcon> icon;
     const base::RepeatingClosure callback;
     // priority is true if this mechanism should be activated immediately.
     // Only a single Mechanism in a list should have priority.
@@ -215,6 +219,12 @@ class AuthenticatorRequestDialogModel {
   };
 
   explicit AuthenticatorRequestDialogModel(const std::string& relying_party_id);
+
+  AuthenticatorRequestDialogModel(const AuthenticatorRequestDialogModel&) =
+      delete;
+  AuthenticatorRequestDialogModel& operator=(
+      const AuthenticatorRequestDialogModel&) = delete;
+
   ~AuthenticatorRequestDialogModel();
 
   Step current_step() const { return current_step_; }
@@ -273,7 +283,7 @@ class AuthenticatorRequestDialogModel {
   // identified.
   //
   // Valid action when at step: kNotStarted.
-  void StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
+  void StartGuidedFlowForMostLikelyTransportOrShowMechanismSelection();
 
   // Hides the modal Chrome UI dialog and shows the native Windows WebAuthn
   // UI instead.
@@ -292,10 +302,10 @@ class AuthenticatorRequestDialogModel {
   //     then advanced to the flow to turn on Bluetooth automatically.
   //  -- Otherwise advanced to the manual Bluetooth power on flow.
   //
-  // Valid action when at step: kNotStarted, kTransportSelection, and steps
+  // Valid action when at step: kNotStarted, kMechanismSelection, and steps
   // where the other transports menu is shown, namely, kUsbInsertAndActivate,
   // kCableActivate.
-  void EnsureBleAdapterIsPoweredAndContinueWithCable();
+  void EnsureBleAdapterIsPoweredAndContinueWithStep(Step step);
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
   // powered.
@@ -321,10 +331,10 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at all steps.
   void StartPlatformAuthenticatorFlow();
 
-  // Proceeds straight to the platform authenticator prompt.
-  //
-  // Valid action when at all steps.
-  void HideDialogAndDispatchToPlatformAuthenticator();
+  // OnOffTheRecordInterstitialAccepted is called when the user accepts the
+  // interstitial that warns that platform/caBLE authenticators may record
+  // information even in incognito mode.
+  void OnOffTheRecordInterstitialAccepted();
 
   // Show guidance about caBLE USB fallback.
   void ShowCableUsbFallback();
@@ -436,6 +446,10 @@ class AuthenticatorRequestDialogModel {
   // has been picked. |index| is the index of the selected account in
   // |responses()|.
   void OnAccountSelected(size_t index);
+
+  // Called when an account from |ephemeral_state_.users_| is selected from the
+  // Conditional UI prompt.
+  void OnAccountPreselected(const std::vector<uint8_t>& id);
 
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
@@ -556,11 +570,14 @@ class AuthenticatorRequestDialogModel {
   // Requests that the step-by-step wizard flow commence, guiding the user
   // through using the Secutity Key with the given |transport|.
   //
-  // Valid action when at step: kNotStarted.
-  // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kCableActivate.
+  // Valid action when at step: kNotStarted. kMechanismSelection, and steps
+  // where the other transports menu is shown, namely, kUsbInsertAndActivate,
+  // kCableActivate.
   void StartGuidedFlowForTransport(AuthenticatorTransport transport,
                                    size_t mechanism_index);
+
+  // Starts the flow for adding an unlisted phone by showing a QR code.
+  void StartGuidedFlowForAddPhone(size_t mechanism_index);
 
   // Displays a resident-key warning if needed and then calls
   // |HideDialogAndDispatchToNativeWindowsApi|.
@@ -568,6 +585,7 @@ class AuthenticatorRequestDialogModel {
 
   // Contacts a paired phone. The phone is specified by name.
   void ContactPhone(const std::string& name, size_t mechanism_index);
+  void ContactPhoneAfterOffTheRecordInterstitial(std::string name);
 
   void StartLocationBarBubbleRequest();
 
@@ -576,6 +594,11 @@ class AuthenticatorRequestDialogModel {
 
   void ContactNextPhoneByName(const std::string& name);
   void PopulateMechanisms();
+
+  // Proceeds straight to the platform authenticator prompt.
+  //
+  // Valid action when at all steps.
+  void HideDialogAndDispatchToPlatformAuthenticator();
 
   EphemeralState ephemeral_state_;
 
@@ -597,6 +620,11 @@ class AuthenticatorRequestDialogModel {
   // powered. Only set while the |current_step_| is either kBlePowerOnManual,
   // kBlePowerOnAutomatic.
   absl::optional<Step> next_step_once_ble_powered_;
+
+  // after_off_the_record_interstitial_ contains the closure to run if the user
+  // accepts the interstitial that warns that platform/caBLE authenticators may
+  // record information even in incognito mode.
+  base::OnceClosure after_off_the_record_interstitial_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 
@@ -659,14 +687,8 @@ class AuthenticatorRequestDialogModel {
   base::RepeatingCallback<void(size_t)> contact_phone_callback_;
 
   absl::optional<std::string> cable_qr_string_;
-  // win_native_api_already_tried_ is true if the Windows-native UI has been
-  // displayed already and the user cancelled it. In this case, we shouldn't
-  // jump straight to showing it again.
-  bool win_native_api_already_tried_ = false;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };
 
 #endif  // CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_

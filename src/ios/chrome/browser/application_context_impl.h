@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
@@ -34,6 +33,10 @@ class ApplicationContextImpl : public ApplicationContext {
   ApplicationContextImpl(base::SequencedTaskRunner* local_state_task_runner,
                          const base::CommandLine& command_line,
                          const std::string& locale);
+
+  ApplicationContextImpl(const ApplicationContextImpl&) = delete;
+  ApplicationContextImpl& operator=(const ApplicationContextImpl&) = delete;
+
   ~ApplicationContextImpl() override;
 
   // Called before the browser threads are created.
@@ -123,10 +126,6 @@ class ApplicationContextImpl : public ApplicationContext {
       network_connection_tracker_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
-
-  bool was_last_shutdown_clean_;
-
-  DISALLOW_COPY_AND_ASSIGN(ApplicationContextImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_APPLICATION_CONTEXT_IMPL_H_

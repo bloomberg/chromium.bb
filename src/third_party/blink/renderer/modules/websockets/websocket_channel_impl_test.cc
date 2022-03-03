@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -214,7 +213,9 @@ class WebSocketChannelImplTest : public WebSocketChannelImplTestBase {
         const net::SiteForCookies& site_for_cookies,
         const String& user_agent,
         mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>
-            handshake_client) override {
+            handshake_client,
+        const absl::optional<base::UnguessableToken>& throttling_profile_id)
+        override {
       connect_args_.push_back(ConnectArgs(url, requested_protocols,
                                           site_for_cookies, user_agent,
                                           std::move(handshake_client)));
@@ -309,7 +310,8 @@ class WebSocketChannelImplTest : public WebSocketChannelImplTestBase {
 
   static Vector<uint8_t> AsVector(const char* data, size_t size) {
     Vector<uint8_t> v;
-    v.Append(reinterpret_cast<const uint8_t*>(data), size);
+    v.Append(reinterpret_cast<const uint8_t*>(data),
+             static_cast<wtf_size_t>(size));
     return v;
   }
   static Vector<uint8_t> AsVector(const char* data) {
@@ -394,6 +396,9 @@ class CallTrackingClosure {
  public:
   CallTrackingClosure() = default;
 
+  CallTrackingClosure(const CallTrackingClosure&) = delete;
+  CallTrackingClosure& operator=(const CallTrackingClosure&) = delete;
+
   base::OnceClosure Closure() {
     // This use of base::Unretained is safe because nothing can call the
     // callback once the test has finished.
@@ -406,8 +411,6 @@ class CallTrackingClosure {
   void Called() { was_called_ = true; }
 
   bool was_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CallTrackingClosure);
 };
 
 std::ostream& operator<<(
@@ -673,7 +676,7 @@ TEST_F(WebSocketChannelImplTest, SendTextSync) {
 
   test::RunPendingTasks();
   CallTrackingClosure closure;
-  EXPECT_EQ(WebSocketChannel::SendResult::SENT_SYNCHRONOUSLY,
+  EXPECT_EQ(WebSocketChannel::SendResult::kSentSynchronously,
             Channel()->Send("hello", closure.Closure()));
   EXPECT_FALSE(closure.WasCalled());
 }
@@ -698,7 +701,7 @@ TEST_F(WebSocketChannelImplTest, SendTextAsyncDueToQueueing) {
 
   Channel()->Send(long_message, base::OnceClosure());
   CallTrackingClosure closure;
-  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+  EXPECT_EQ(WebSocketChannel::SendResult::kCallbackWillBeCalled,
             Channel()->Send(long_message, closure.Closure()));
 
   ReadDataFromDataPipe(readable, kMessageSize);
@@ -724,7 +727,7 @@ TEST_F(WebSocketChannelImplTest, SendTextAsyncDueToMessageSize) {
   std::string long_message(kMessageSize, 'a');
 
   CallTrackingClosure closure;
-  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+  EXPECT_EQ(WebSocketChannel::SendResult::kCallbackWillBeCalled,
             Channel()->Send(long_message, closure.Closure()));
 
   ReadDataFromDataPipe(readable, 4 * 1024);
@@ -747,7 +750,7 @@ TEST_F(WebSocketChannelImplTest, SendBinaryInArrayBufferSync) {
 
   CallTrackingClosure closure;
   const auto* b = DOMArrayBuffer::Create("hello", 5);
-  EXPECT_EQ(WebSocketChannel::SendResult::SENT_SYNCHRONOUSLY,
+  EXPECT_EQ(WebSocketChannel::SendResult::kSentSynchronously,
             Channel()->Send(*b, 0, 5, closure.Closure()));
 
   test::RunPendingTasks();
@@ -772,7 +775,7 @@ TEST_F(WebSocketChannelImplTest, SendBinaryInArrayBufferAsyncDueToQueueing) {
   CallTrackingClosure closure;
   const auto* b = DOMArrayBuffer::Create(long_message.data(), kMessageSize);
   Channel()->Send(*b, 0, kMessageSize, base::OnceClosure());
-  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+  EXPECT_EQ(WebSocketChannel::SendResult::kCallbackWillBeCalled,
             Channel()->Send(*b, 0, kMessageSize, closure.Closure()));
 
   ReadDataFromDataPipe(readable, kMessageSize);
@@ -799,7 +802,7 @@ TEST_F(WebSocketChannelImplTest, SendBinaryInArrayBufferAsyncDueToMessageSize) {
 
   CallTrackingClosure closure;
   const auto* b = DOMArrayBuffer::Create(long_message.data(), kMessageSize);
-  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+  EXPECT_EQ(WebSocketChannel::SendResult::kCallbackWillBeCalled,
             Channel()->Send(*b, 0, kMessageSize, closure.Closure()));
 
   ReadDataFromDataPipe(readable, 1024);
@@ -1574,7 +1577,8 @@ class MockWebSocketConnector : public mojom::blink::WebSocketConnector {
        const Vector<String>&,
        const net::SiteForCookies&,
        const String&,
-       mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>));
+       mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>,
+       const absl::optional<base::UnguessableToken>&));
 };
 
 // This can't use WebSocketChannelImplTest because it requires multiple
@@ -1610,9 +1614,8 @@ TEST_F(WebSocketChannelImplMultipleTest, ConnectionLimit) {
       [&handshake_clients](
           Unused, Unused, Unused, Unused,
           mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>
-              handshake_client) {
-        handshake_clients.Add(std::move(handshake_client));
-      };
+              handshake_client,
+          Unused) { handshake_clients.Add(std::move(handshake_client)); };
 
   auto failure_handshake_throttle =
       std::make_unique<StrictMock<MockWebSocketHandshakeThrottle>>();
@@ -1626,7 +1629,7 @@ TEST_F(WebSocketChannelImplMultipleTest, ConnectionLimit) {
 
   {
     InSequence s;
-    EXPECT_CALL(connector_, Connect(_, _, _, _, _))
+    EXPECT_CALL(connector_, Connect(_, _, _, _, _, _))
         .Times(WebSocketChannelImpl::kMaxWebSocketsPerRenderProcess)
         .WillRepeatedly(handshake_client_add_action);
 
@@ -1642,7 +1645,7 @@ TEST_F(WebSocketChannelImplMultipleTest, ConnectionLimit) {
     EXPECT_CALL(checkpoint, Call(2));
 
     EXPECT_CALL(*successful_handshake_throttle, ThrottleHandshake(_, _));
-    EXPECT_CALL(connector_, Connect(_, _, _, _, _))
+    EXPECT_CALL(connector_, Connect(_, _, _, _, _, _))
         .WillOnce(handshake_client_add_action);
     EXPECT_CALL(*successful_handshake_throttle, Destructor());
   }

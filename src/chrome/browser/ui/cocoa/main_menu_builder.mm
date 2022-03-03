@@ -219,6 +219,14 @@ base::scoped_nsobject<NSMenuItem> BuildEditMenu(
                       Item(IDS_EDIT_TEXT_REPLACEMENT_MAC)
                           .action(@selector(toggleAutomaticTextReplacement:)),
                 }),
+                Item(IDS_EDIT_TRANSFORMATIONS_MAC).submenu({
+                  Item(IDS_EDIT_MAKE_UPPERCASE_MAC)
+                      .action(@selector(uppercaseWord:)),
+                  Item(IDS_EDIT_MAKE_LOWERCASE_MAC)
+                      .action(@selector(lowercaseWord:)),
+                  Item(IDS_EDIT_CAPITALIZE_MAC)
+                      .action(@selector(capitalizeWord:)),
+                }),
                 Item(IDS_SPEECH_MAC).tag(50158).submenu({
                   Item(IDS_SPEECH_START_SPEAKING_MAC)
                       .action(@selector(startSpeaking:)),
@@ -326,15 +334,6 @@ base::scoped_nsobject<NSMenuItem> BuildHistoryMenu(
               Item(IDS_HISTORY_SHOWFULLHISTORY_LINK)
                   .command_id(IDC_SHOW_HISTORY)
                   .remove_if(is_pwa),
-              Item()
-                  .tag(HistoryMenuBridge::kIncognitoDisclaimerSeparator)
-                  .is_separator()
-                  .set_hidden(true)
-                  .remove_if(is_pwa),
-              Item(IDS_HISTORY_INCOGNITO_DISCLAIMER_MAC)
-                  .tag(HistoryMenuBridge::kIncognitoDisclaimerLabel)
-                  .set_hidden(true)
-                  .remove_if(is_pwa),
           })
           .Build();
   return item;
@@ -367,14 +366,10 @@ base::scoped_nsobject<NSMenuItem> BuildPeopleMenu(
     id app_delegate,
     const std::u16string& product_name,
     bool is_pwa) {
-  const bool new_picker =
-      base::FeatureList::IsEnabled(features::kNewProfilePicker);
-  base::scoped_nsobject<NSMenuItem> item =
-      Item(new_picker ? IDS_PROFILES_MENU_NAME
-                      : IDS_PROFILES_OPTIONS_GROUP_NAME)
-          .tag(IDC_PROFILE_MAIN_MENU)
-          .submenu({})
-          .Build();
+  base::scoped_nsobject<NSMenuItem> item = Item(IDS_PROFILES_MENU_NAME)
+                                               .tag(IDC_PROFILE_MAIN_MENU)
+                                               .submenu({})
+                                               .Build();
   return item;
 }
 
@@ -383,8 +378,6 @@ base::scoped_nsobject<NSMenuItem> BuildWindowMenu(
     id app_delegate,
     const std::u16string& product_name,
     bool is_pwa) {
-  const bool window_naming =
-      base::FeatureList::IsEnabled(features::kWindowNaming);
   base::scoped_nsobject<NSMenuItem> item =
       Item(IDS_WINDOW_MENU_MAC)
           .tag(IDC_WINDOW_MENU)
@@ -401,7 +394,7 @@ base::scoped_nsobject<NSMenuItem> BuildWindowMenu(
                     .remove_if(is_pwa),
                 Item(IDS_NAME_WINDOW)
                     .command_id(IDC_NAME_WINDOW)
-                    .remove_if(is_pwa || !window_naming),
+                    .remove_if(is_pwa),
                 Item().is_separator().remove_if(is_pwa),
                 Item(IDS_SHOW_DOWNLOADS_MAC)
                     .command_id(IDC_SHOW_DOWNLOADS)

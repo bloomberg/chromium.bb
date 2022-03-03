@@ -57,7 +57,7 @@ extern "C" {
 // to leverage in-development code without breaking their stable builds.
 #define AVIF_VERSION_MAJOR 0
 #define AVIF_VERSION_MINOR 9
-#define AVIF_VERSION_PATCH 1
+#define AVIF_VERSION_PATCH 2
 #define AVIF_VERSION_DEVEL 1
 #define AVIF_VERSION \
     ((AVIF_VERSION_MAJOR * 1000000) + (AVIF_VERSION_MINOR * 10000) + (AVIF_VERSION_PATCH * 100) + AVIF_VERSION_DEVEL)
@@ -67,6 +67,10 @@ typedef int avifBool;
 #define AVIF_FALSE 0
 
 #define AVIF_DIAGNOSTICS_ERROR_BUFFER_SIZE 256
+
+// A reasonable default for maximum image size to avoid out-of-memory errors or integer overflow in
+// (32-bit) int or unsigned int arithmetic operations.
+#define AVIF_DEFAULT_IMAGE_SIZE_LIMIT (16384 * 16384)
 
 // a 12 hour AVIF image sequence, running at 60 fps (a basic sanity check as this is quite ridiculous)
 #define AVIF_DEFAULT_IMAGE_COUNT_LIMIT (12 * 3600 * 60)
@@ -708,7 +712,7 @@ typedef enum avifStrictFlag
     // Disables all strict checks.
     AVIF_STRICT_DISABLED = 0,
 
-    // Allow the PixelInformationProperty ('pixi') to be missing in AV1 image items. libheif v1.11.0
+    // Requires the PixelInformationProperty ('pixi') be present in AV1 image items. libheif v1.11.0
     // or older does not add the 'pixi' item property to AV1 image items. If you need to decode AVIF
     // images encoded by libheif v1.11.0 or older, be sure to disable this bit. (This issue has been
     // corrected in libheif v1.12.0.)
@@ -719,8 +723,16 @@ typedef enum avifStrictFlag
     // function returns AVIF_FALSE and this strict flag is set, the decode will fail.
     AVIF_STRICT_CLAP_VALID = (1 << 1),
 
+    // Requires the ImageSpatialExtentsProperty ('ispe') be present in alpha auxiliary image items.
+    // avif-serialize 0.7.3 or older does not add the 'ispe' item property to alpha auxiliary image
+    // items. If you need to decode AVIF images encoded by the cavif encoder with avif-serialize
+    // 0.7.3 or older, be sure to disable this bit. (This issue has been corrected in avif-serialize
+    // 0.7.4.) See https://github.com/kornelski/avif-serialize/issues/3 and
+    // https://crbug.com/1246678.
+    AVIF_STRICT_ALPHA_ISPE_REQUIRED = (1 << 2),
+
     // Maximum strictness; enables all bits above. This is avifDecoder's default.
-    AVIF_STRICT_ENABLED = AVIF_STRICT_PIXI_REQUIRED | AVIF_STRICT_CLAP_VALID
+    AVIF_STRICT_ENABLED = AVIF_STRICT_PIXI_REQUIRED | AVIF_STRICT_CLAP_VALID | AVIF_STRICT_ALPHA_ISPE_REQUIRED
 } avifStrictFlag;
 typedef uint32_t avifStrictFlags;
 
@@ -735,7 +747,9 @@ struct avifDecoderData;
 
 typedef enum avifDecoderSource
 {
-    // If a moov box is present in the .avif(s), use the tracks in it, otherwise decode the primary item.
+    // Honor the major brand signaled in the beginning of the file to pick between an AVIF sequence
+    // ('avis', tracks-based) or a single image ('avif', item-based). If the major brand is neither
+    // of these, prefer the AVIF sequence ('avis', tracks-based), if present.
     AVIF_DECODER_SOURCE_AUTO = 0,
 
     // Use the primary item and the aux (alpha) item in the avif(s).
@@ -760,8 +774,31 @@ typedef struct avifImageTiming
     uint64_t durationInTimescales; // duration in "timescales"
 } avifImageTiming;
 
+typedef enum avifProgressiveState
+{
+    // The current AVIF/Source does not offer a progressive image. This will always be the state
+    // for an image sequence.
+    AVIF_PROGRESSIVE_STATE_UNAVAILABLE = 0,
+
+    // The current AVIF/Source offers a progressive image, but avifDecoder.allowProgressive is not
+    // enabled, so it will behave as if the image was not progressive and will simply decode the
+    // best version of this item.
+    AVIF_PROGRESSIVE_STATE_AVAILABLE,
+
+    // The current AVIF/Source offers a progressive image, and avifDecoder.allowProgressive is true.
+    // In this state, avifDecoder.imageCount will be the count of all of the available progressive
+    // layers, and any specific layer can be decoded using avifDecoderNthImage() as if it was an
+    // image sequence, or simply using repeated calls to avifDecoderNextImage() to decode better and
+    // better versions of this image.
+    AVIF_PROGRESSIVE_STATE_ACTIVE
+} avifProgressiveState;
+AVIF_API const char * avifProgressiveStateToString(avifProgressiveState progressiveState);
+
 typedef struct avifDecoder
 {
+    // --------------------------------------------------------------------------------------------
+    // Inputs
+
     // Defaults to AVIF_CODEC_CHOICE_AUTO: Preference determined by order in availableCodecs table (avif.c)
     avifCodecChoice codecChoice;
 
@@ -771,6 +808,39 @@ typedef struct avifDecoder
     // avifs can have multiple sets of images in them. This specifies which to decode.
     // Set this via avifDecoderSetSource().
     avifDecoderSource requestedSource;
+
+    // If this is true and a progressive AVIF is decoded, avifDecoder will behave as if the AVIF is
+    // an image sequence, in that it will set imageCount to the number of progressive frames
+    // available, and avifDecoderNextImage()/avifDecoderNthImage() will allow for specific layers
+    // of a progressive image to be decoded. To distinguish between a progressive AVIF and an AVIF
+    // image sequence, inspect avifDecoder.progressiveState.
+    avifBool allowProgressive;
+
+    // Enable any of these to avoid reading and surfacing specific data to the decoded avifImage.
+    // These can be useful if your avifIO implementation heavily uses AVIF_RESULT_WAITING_ON_IO for
+    // streaming data, as some of these payloads are (unfortunately) packed at the end of the file,
+    // which will cause avifDecoderParse() to return AVIF_RESULT_WAITING_ON_IO until it finds them.
+    // If you don't actually leverage this data, it is best to ignore it here.
+    avifBool ignoreExif;
+    avifBool ignoreXMP;
+
+    // This represents the maximum size of a image (in pixel count) that libavif and the underlying
+    // AV1 decoder should attempt to decode. It defaults to AVIF_DEFAULT_IMAGE_SIZE_LIMIT, and can be
+    // set to a smaller value. The value 0 is reserved.
+    // Note: Only some underlying AV1 codecs support a configurable size limit (such as dav1d).
+    uint32_t imageSizeLimit;
+
+    // This provides an upper bound on how many images the decoder is willing to attempt to decode,
+    // to provide a bit of protection from malicious or malformed AVIFs citing millions upon
+    // millions of frames, only to be invalid later. The default is AVIF_DEFAULT_IMAGE_COUNT_LIMIT
+    // (see comment above), and setting this to 0 disables the limit.
+    uint32_t imageCountLimit;
+
+    // Strict flags. Defaults to AVIF_STRICT_ENABLED. See avifStrictFlag definitions above.
+    avifStrictFlags strictFlags;
+
+    // --------------------------------------------------------------------------------------------
+    // Outputs
 
     // All decoded image data; owned by the decoder. All information in this image is incrementally
     // added and updated as avifDecoder*() functions are called. After a successful call to
@@ -788,43 +858,30 @@ typedef struct avifDecoder
     avifImage * image;
 
     // Counts and timing for the current image in an image sequence. Uninteresting for single image files.
-    int imageIndex;                // 0-based
-    int imageCount;                // Always 1 for non-sequences
-    avifImageTiming imageTiming;   //
-    uint64_t timescale;            // timescale of the media (Hz)
-    double duration;               // in seconds (durationInTimescales / timescale)
-    uint64_t durationInTimescales; // duration in "timescales"
+    int imageIndex;                        // 0-based
+    int imageCount;                        // Always 1 for non-progressive, non-sequence AVIFs.
+    avifProgressiveState progressiveState; // See avifProgressiveState declaration
+    avifImageTiming imageTiming;           //
+    uint64_t timescale;                    // timescale of the media (Hz)
+    double duration;                       // in seconds (durationInTimescales / timescale)
+    uint64_t durationInTimescales;         // duration in "timescales"
 
     // This is true when avifDecoderParse() detects an alpha plane. Use this to find out if alpha is
     // present after a successful call to avifDecoderParse(), but prior to any call to
     // avifDecoderNextImage() or avifDecoderNthImage(), as decoder->image->alphaPlane won't exist yet.
     avifBool alphaPresent;
 
-    // Enable any of these to avoid reading and surfacing specific data to the decoded avifImage.
-    // These can be useful if your avifIO implementation heavily uses AVIF_RESULT_WAITING_ON_IO for
-    // streaming data, as some of these payloads are (unfortunately) packed at the end of the file,
-    // which will cause avifDecoderParse() to return AVIF_RESULT_WAITING_ON_IO until it finds them.
-    // If you don't actually leverage this data, it is best to ignore it here.
-    avifBool ignoreExif;
-    avifBool ignoreXMP;
-
-    // This provides an upper bound on how many images the decoder is willing to attempt to decode,
-    // to provide a bit of protection from malicious or malformed AVIFs citing millions upon
-    // millions of frames, only to be invalid later. The default is AVIF_DEFAULT_IMAGE_COUNT_LIMIT
-    // (see comment above), and setting this to 0 disables the limit.
-    uint32_t imageCountLimit;
-
-    // Strict flags. Defaults to AVIF_STRICT_ENABLED. See avifStrictFlag definitions above.
-    avifStrictFlags strictFlags;
-
     // stats from the most recent read, possibly 0s if reading an image sequence
     avifIOStats ioStats;
 
-    // Use one of the avifDecoderSetIO*() functions to set this
-    avifIO * io;
-
     // Additional diagnostics (such as detailed error state)
     avifDiagnostics diag;
+
+    // --------------------------------------------------------------------------------------------
+    // Internals
+
+    // Use one of the avifDecoderSetIO*() functions to set this
+    avifIO * io;
 
     // Internals used by the decoder
     struct avifDecoderData * data;

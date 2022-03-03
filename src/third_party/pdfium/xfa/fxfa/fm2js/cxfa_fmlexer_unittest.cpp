@@ -4,11 +4,10 @@
 
 #include "xfa/fxfa/fm2js/cxfa_fmlexer.h"
 
-#include <memory>
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 TEST(CXFA_FMLexerTest, NullString) {
   WideStringView null_string;

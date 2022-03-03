@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
@@ -59,6 +58,9 @@ class PendingAssociatedRemote {
                 std::move(other))) {}
 #endif  // !defined(OS_NACL)
 
+  PendingAssociatedRemote(const PendingAssociatedRemote&) = delete;
+  PendingAssociatedRemote& operator=(const PendingAssociatedRemote&) = delete;
+
   ~PendingAssociatedRemote() = default;
 
   PendingAssociatedRemote& operator=(PendingAssociatedRemote&& other) {
@@ -103,11 +105,11 @@ class PendingAssociatedRemote {
 
     MessagePipe pipe;
     scoped_refptr<internal::MultiplexRouter> router0 =
-        internal::MultiplexRouter::Create(
+        internal::MultiplexRouter::CreateAndStartReceiving(
             std::move(pipe.handle0), internal::MultiplexRouter::MULTI_INTERFACE,
             false, base::SequencedTaskRunnerHandle::Get());
     scoped_refptr<internal::MultiplexRouter> router1 =
-        internal::MultiplexRouter::Create(
+        internal::MultiplexRouter::CreateAndStartReceiving(
             std::move(pipe.handle1), internal::MultiplexRouter::MULTI_INTERFACE,
             true, base::SequencedTaskRunnerHandle::Get());
 
@@ -118,8 +120,6 @@ class PendingAssociatedRemote {
  private:
   ScopedInterfaceEndpointHandle handle_;
   uint32_t version_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingAssociatedRemote);
 };
 
 // Constructs an invalid PendingAssociatedRemote of any arbitrary interface

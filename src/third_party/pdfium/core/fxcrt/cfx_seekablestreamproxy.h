@@ -7,9 +7,12 @@
 #ifndef CORE_FXCRT_CFX_SEEKABLESTREAMPROXY_H_
 #define CORE_FXCRT_CFX_SEEKABLESTREAMPROXY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_stream.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/fx_types.h"
 #include "core/fxcrt/retain_ptr.h"
 
 class CFX_SeekableStreamProxy final : public Retainable {
@@ -22,8 +25,8 @@ class CFX_SeekableStreamProxy final : public Retainable {
   bool IsEOF();
   size_t ReadBlock(wchar_t* pStr, size_t size);
 
-  uint16_t GetCodePage() const { return m_wCodePage; }
-  void SetCodePage(uint16_t wCodePage);
+  FX_CodePage GetCodePage() const { return m_wCodePage; }
+  void SetCodePage(FX_CodePage wCodePage);
 
  private:
   enum class From {
@@ -39,7 +42,7 @@ class CFX_SeekableStreamProxy final : public Retainable {
   void Seek(From eSeek, FX_FILESIZE iOffset);
   size_t ReadData(uint8_t* pBuffer, size_t iBufferSize);
 
-  uint16_t m_wCodePage = FX_CODEPAGE_DefANSI;
+  FX_CodePage m_wCodePage = FX_CodePage::kDefANSI;
   size_t m_wBOMLength = 0;
   FX_FILESIZE m_iPosition = 0;
   RetainPtr<IFX_SeekableReadStream> const m_pStream;

@@ -4,8 +4,8 @@
 
 import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
 import {assertFalse} from 'chrome://test/chai_assert.js';
-import {waitUntil} from '../../../common/js/test_error_reporting.m.js';
-import {FileManagerDialogBase} from './file_manager_dialog_base.m.js';
+import {waitUntil} from '../../../common/js/test_error_reporting.js';
+import {FileManagerDialogBase} from './file_manager_dialog_base.js';
 
 export function setUp() {
   // Polyfill chrome.app.window.current().
@@ -13,10 +13,7 @@ export function setUp() {
   chrome.app = {window: {current: () => null}};
 
   // Mock loadTimeData.
-  window.loadTimeData.resetForTesting();
-  window.loadTimeData.overrideValues({
-    FILES_NG_ENABLED: true,
-  });
+  window.loadTimeData.resetForTesting({});
 }
 
 export async function testShowDialogAfterHide(done) {

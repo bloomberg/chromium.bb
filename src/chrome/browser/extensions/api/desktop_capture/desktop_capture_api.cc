@@ -39,16 +39,17 @@ DesktopCaptureChooseDesktopMediaFunction::
 
 ExtensionFunction::ResponseAction
 DesktopCaptureChooseDesktopMediaFunction::Run() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetSize() > 0);
-
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id_));
+  EXTENSION_FUNCTION_VALIDATE(args().size() > 0);
+  const auto& request_id_value = args()[0];
+  EXTENSION_FUNCTION_VALIDATE(request_id_value.is_int());
+  request_id_ = request_id_value.GetInt();
   DesktopCaptureRequestsRegistry::GetInstance()->AddRequest(source_process_id(),
                                                             request_id_, this);
 
-  args_->Remove(0, NULL);
+  mutable_args().erase(args().begin());
 
   std::unique_ptr<api::desktop_capture::ChooseDesktopMedia::Params> params =
-      api::desktop_capture::ChooseDesktopMedia::Params::Create(*args_);
+      api::desktop_capture::ChooseDesktopMedia::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // |web_contents| is the WebContents for which the stream is created, and will
@@ -60,7 +61,7 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
     if (!params->target_tab->url) {
       return RespondNow(Error(kDesktopCaptureApiNoUrlError));
     }
-    origin = GURL(*(params->target_tab->url)).GetOrigin();
+    origin = GURL(*(params->target_tab->url)).DeprecatedGetOriginAsURL();
 
     if (!origin.is_valid()) {
       return RespondNow(Error(kDesktopCaptureApiInvalidOriginError));

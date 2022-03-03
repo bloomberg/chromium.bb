@@ -40,7 +40,7 @@ namespace {
 
 class RpcRemoteRendezvous : public BaseRemoteRendezvous {
  public:
-  RpcRemoteRendezvous(const WorkerEnv* env, int64 step_id)
+  RpcRemoteRendezvous(const WorkerEnv* env, int64_t step_id)
       : BaseRemoteRendezvous(env, step_id) {}
 
  protected:
@@ -59,7 +59,7 @@ class RpcRecvTensorCall : public BaseRecvTensorCall {
  public:
   RpcRecvTensorCall() : wi_(nullptr), dst_device_(nullptr) {}
 
-  void Init(WorkerInterface* wi, int64 step_id, StringPiece key,
+  void Init(WorkerInterface* wi, int64_t step_id, StringPiece key,
             AllocatorAttributes alloc_attrs, Device* dst_device,
             const Rendezvous::Args& recv_args, Rendezvous::DoneCallback done) {
     wi_ = wi;
@@ -277,12 +277,12 @@ void RpcRemoteRendezvous::RecvFromRemoteAsync(
 
   // RendezvousMgr already aborted, shouldn't send RPC call any more
   if (!call->status().ok()) {
+    DeregisterCall(call);
     // NOTE: `*sess` can potentially be deleted before we return from
     // `call->done()(...)`, so we must release the worker before calling the
     // callback.
     call->ReleaseWorker(sess->worker_cache());
     call->done()(call->status(), Args(), Args(), Tensor(), false);
-    DeregisterCall(call);
     get_call_freelist()->Release(call);
     return;
   }
@@ -310,7 +310,7 @@ void RpcRemoteRendezvous::RecvFromRemoteAsync(
 RpcRendezvousMgr::RpcRendezvousMgr(const WorkerEnv* env)
     : BaseRendezvousMgr(env) {}
 
-BaseRemoteRendezvous* RpcRendezvousMgr::Create(int64 step_id,
+BaseRemoteRendezvous* RpcRendezvousMgr::Create(int64_t step_id,
                                                const WorkerEnv* worker_env) {
   return new RpcRemoteRendezvous(worker_env, step_id);
 }

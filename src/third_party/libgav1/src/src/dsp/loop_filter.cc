@@ -56,6 +56,9 @@ struct LoopFilterFuncs_C {
 
 inline void AdjustThresholds(const int bitdepth, int* const outer_thresh,
                              int* const inner_thresh, int* const hev_thresh) {
+  assert(*outer_thresh >= 7 && *outer_thresh <= 3 * kMaxLoopFilterValue + 4);
+  assert(*inner_thresh >= 1 && *inner_thresh <= kMaxLoopFilterValue);
+  assert(*hev_thresh >= 0 && *hev_thresh <= 3);
   *outer_thresh <<= bitdepth - 8;
   *inner_thresh <<= bitdepth - 8;
   *hev_thresh <<= bitdepth - 8;

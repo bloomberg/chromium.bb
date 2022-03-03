@@ -40,6 +40,18 @@ void AccessorPair::set(AccessorComponent component, Object value) {
   }
 }
 
+void AccessorPair::set(AccessorComponent component, Object value,
+                       ReleaseStoreTag tag) {
+  if (component == ACCESSOR_GETTER) {
+    set_getter(value, tag);
+  } else {
+    set_setter(value, tag);
+  }
+}
+
+RELEASE_ACQUIRE_ACCESSORS(AccessorPair, getter, Object, kGetterOffset)
+RELEASE_ACQUIRE_ACCESSORS(AccessorPair, setter, Object, kSetterOffset)
+
 void AccessorPair::SetComponents(Object getter, Object setter) {
   if (!getter.IsNull()) set_getter(getter);
   if (!setter.IsNull()) set_setter(setter);

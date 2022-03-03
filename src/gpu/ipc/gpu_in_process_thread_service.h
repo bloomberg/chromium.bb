@@ -9,7 +9,8 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
@@ -56,6 +57,11 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       const GpuPreferences& gpu_preferences,
       SharedImageManager* shared_image_manager,
       gles2::ProgramCache* program_cache);
+
+  GpuInProcessThreadService(const GpuInProcessThreadService&) = delete;
+  GpuInProcessThreadService& operator=(const GpuInProcessThreadService&) =
+      delete;
+
   ~GpuInProcessThreadService() override;
 
   // CommandBufferTaskExecutor implementation.
@@ -69,14 +75,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
   scoped_refptr<gl::GLShareGroup> GetShareGroup() override;
 
  private:
-  void CreateSequenceOnThread(std::unique_ptr<SingleTaskSequence>* sequence,
-                              base::WaitableEvent* completion);
-
-  GpuInProcessThreadServiceDelegate* const delegate_;
+  const raw_ptr<GpuInProcessThreadServiceDelegate> delegate_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Scheduler* scheduler_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuInProcessThreadService);
+  raw_ptr<Scheduler> scheduler_;
 };
 
 }  // namespace gpu

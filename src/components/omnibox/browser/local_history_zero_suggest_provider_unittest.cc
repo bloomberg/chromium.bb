@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,14 +35,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
-using base::TimeDelta;
 using OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold;
 
 namespace {
 
 // Used to populate the URLDatabase.
 struct TestURLData {
-  const TemplateURL* search_provider;
+  raw_ptr<const TemplateURL> search_provider;
   std::string search_terms;
   std::string additional_query_params;
   int age_in_seconds;
@@ -161,7 +161,7 @@ void LocalHistoryZeroSuggestProviderTest::LoadURLs(
                                                             search_terms_data);
     client_->GetHistoryService()->AddPageWithDetails(
         GURL(search_url), base::UTF8ToUTF16(entry.title), entry.visit_count,
-        entry.typed_count, now - TimeDelta::FromSeconds(entry.age_in_seconds),
+        entry.typed_count, now - base::Seconds(entry.age_in_seconds),
         entry.hidden, history::SOURCE_BROWSED);
     client_->GetHistoryService()->SetKeywordSearchTermsForURL(
         GURL(search_url), entry.search_provider->id(),
@@ -216,7 +216,8 @@ void LocalHistoryZeroSuggestProviderTest::ExpectMatches(
 }
 
 void LocalHistoryZeroSuggestProviderTest::SignIn() {
-  identity_env_->MakeUnconsentedPrimaryAccountAvailable("test@email.com");
+  identity_env_->MakePrimaryAccountAvailable("test@email.com",
+                                             signin::ConsentLevel::kSignin);
 }
 
 void LocalHistoryZeroSuggestProviderTest::SignOut() {

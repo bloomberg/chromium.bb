@@ -16,10 +16,10 @@ ui::WaylandWindowSnapDirection ToWaylandWindowSnapDirection(
   switch (snap) {
     case chromeos::SnapDirection::kNone:
       return ui::WaylandWindowSnapDirection::kNone;
-    case chromeos::SnapDirection::kLeft:
-      return ui::WaylandWindowSnapDirection::kLeft;
-    case chromeos::SnapDirection::kRight:
-      return ui::WaylandWindowSnapDirection::kRight;
+    case chromeos::SnapDirection::kPrimary:
+      return ui::WaylandWindowSnapDirection::kPrimary;
+    case chromeos::SnapDirection::kSecondary:
+      return ui::WaylandWindowSnapDirection::kSecondary;
   }
 }
 
@@ -41,9 +41,11 @@ bool SnapControllerLacros::CanSnap(aura::Window* window) {
   return true;
 }
 void SnapControllerLacros::ShowSnapPreview(aura::Window* window,
-                                           chromeos::SnapDirection snap) {
+                                           chromeos::SnapDirection snap,
+                                           bool allow_haptic_feedback) {
   auto* wayland_extension = WaylandExtensionForAuraWindow(window);
-  wayland_extension->ShowSnapPreview(ToWaylandWindowSnapDirection(snap));
+  wayland_extension->ShowSnapPreview(ToWaylandWindowSnapDirection(snap),
+                                     allow_haptic_feedback);
 }
 
 void SnapControllerLacros::CommitSnap(aura::Window* window,

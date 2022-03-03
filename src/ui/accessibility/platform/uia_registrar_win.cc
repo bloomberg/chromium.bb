@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/uia_registrar_win.h"
+
 #include <wrl/implements.h>
-#include "base/stl_util.h"
+
+#include "base/no_destructor.h"
 #include "ui/accessibility/accessibility_features.h"
 
 namespace ui {

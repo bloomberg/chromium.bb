@@ -98,9 +98,15 @@ class BuilderList(object):
         for b in self._builders:
             builder_specifiers = _lower_specifiers(
                 self._builders[b].get('specifiers', {}))
-            if flag_specific and self._builders[b].get('flag_specific',
-                                                       None) != flag_specific:
-                continue
+            if flag_specific:
+                if (flag_specific == '*' and
+                        not self._builders[b].get('flag_specific', None)):
+                    # Skip non flag_specific builders
+                    continue
+                if (flag_specific != '*' and
+                        self._builders[b].get('flag_specific', None) != flag_specific):
+                    # Skip if not an exact match
+                    continue
             if is_try and self._builders[b].get('is_try_builder', False) != is_try:
                 continue
             if is_cq and self._builders[b].get('is_cq_builder', False) != is_cq:
@@ -111,11 +117,6 @@ class BuilderList(object):
                 continue
             if  (include_specifiers and
                      not include_specifiers & builder_specifiers):
-                continue
-            # TODO(crbug.com/1178099): When this builder is stabilized remove this
-            # and make it part of default try builders.
-            if is_try and not flag_specific and self.is_flag_specific_builder(
-                    b):
                 continue
             builders.append(b)
         return sorted(builders)
@@ -138,6 +139,9 @@ class BuilderList(object):
     def specifiers_for_builder(self, builder_name):
         return self._builders[builder_name]['specifiers']
 
+    def step_name_for_builder(self, builder_name):
+        return self._builders[builder_name].get('step_name', None)
+
     def is_try_server_builder(self, builder_name):
         return self._builders[builder_name].get('is_try_builder', False)
 
@@ -146,6 +150,9 @@ class BuilderList(object):
 
     def is_flag_specific_builder(self, builder_name):
         return self._builders[builder_name].get('flag_specific', None) != None
+
+    def flag_specific_option(self, builder_name):
+        return self._builders[builder_name].get('flag_specific', None)
 
     def platform_specifier_for_builder(self, builder_name):
         return self.specifiers_for_builder(builder_name)[0]
@@ -158,7 +165,7 @@ class BuilderList(object):
         to non-debug builders. If no builder is found, None is returned.
         """
         debug_builder_name = None
-        for builder_name, builder_info in self._builders.iteritems():
+        for builder_name, builder_info in list(self._builders.items()):
             if builder_info.get('is_try_builder'):
                 continue
             if builder_info['port_name'] == target_port_name:
@@ -175,7 +182,7 @@ class BuilderList(object):
         the version specifier for the first builder that matches, even
         if it's a try bot builder.
         """
-        for _, builder_info in sorted(self._builders.iteritems()):
+        for _, builder_info in sorted(self._builders.items()):
             if builder_info['port_name'] == target_port_name:
                 return builder_info['specifiers'][0]
         return None

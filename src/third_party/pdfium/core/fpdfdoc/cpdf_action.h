@@ -12,7 +12,7 @@
 #include "core/fpdfdoc/cpdf_dest.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_Dictionary;
 class CPDF_Document;
@@ -60,7 +60,7 @@ class CPDF_Action {
   std::vector<const CPDF_Object*> GetAllFields() const;
 
   // Differentiates between empty JS entry and no JS entry.
-  Optional<WideString> MaybeGetJavaScript() const;
+  absl::optional<WideString> MaybeGetJavaScript() const;
 
   // Returns empty string for empty JS entry and no JS entry.
   WideString GetJavaScript() const;

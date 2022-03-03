@@ -6,13 +6,13 @@
 
 emulator_package {
   package_name: "chromium/third_party/android_sdk/public/emulator"
-  version: "xhyuoquVvBTcJelgRjMKZeoBVSQRjB7pLVJPt5C9saIC"
+  version: "Dogc_gNCYNb3fIG-ovlMkV5EhjaYwdA_Jw9goUpl3A8C"  # 30.7.5
   dest_path: ".emulator_sdk"
 }
 
 system_image_package {
   package_name: "chromium/third_party/android_sdk/public/system-images/android-28/google_apis/x86"
-  version: "LDa0XkTjgGYx7Amzg5qjIRgCfc4F_pq7rKMJVdACYx8C"
+  version: "6Su449q7w5pa__QFk2yDsRT-xWiiDRLLJ3uPiQtJquoC"  # 12
   dest_path: ".emulator_sdk"
 }
 system_image_name: "system-images;android-28;google_apis;x86"
@@ -28,5 +28,9 @@ avd_settings {
     density: 480
     height: 1920
     width: 1080
+  }
+  advanced_features {
+    key: "GLESDynamicVersion"
+    value: "on"
   }
 }

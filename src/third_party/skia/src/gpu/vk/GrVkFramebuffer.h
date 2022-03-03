@@ -13,8 +13,10 @@
 #include "src/gpu/vk/GrVkManagedResource.h"
 #include "src/gpu/vk/GrVkResourceProvider.h"
 
-class GrVkAttachment;
+#include <cinttypes>
+
 class GrVkGpu;
+class GrVkImage;
 class GrVkImageView;
 class GrVkRenderPass;
 
@@ -23,14 +25,14 @@ public:
     static sk_sp<const GrVkFramebuffer> Make(GrVkGpu* gpu,
                                              SkISize dimensions,
                                              sk_sp<const GrVkRenderPass> compatibleRenderPass,
-                                             GrVkAttachment* colorAttachment,
-                                             GrVkAttachment* resolveAttachment,
-                                             GrVkAttachment* stencilAttachment,
+                                             GrVkImage* colorAttachment,
+                                             GrVkImage* resolveAttachment,
+                                             GrVkImage* stencilAttachment,
                                              GrVkResourceProvider::CompatibleRPHandle);
 
     // Used for wrapped external secondary command buffers
     GrVkFramebuffer(const GrVkGpu* gpu,
-                    sk_sp<GrVkAttachment> colorAttachment,
+                    sk_sp<GrVkImage> colorAttachment,
                     sk_sp<const GrVkRenderPass> renderPass,
                     std::unique_ptr<GrVkSecondaryCommandBuffer>);
 
@@ -57,7 +59,8 @@ public:
 
 #ifdef SK_TRACE_MANAGED_RESOURCES
     void dumpInfo() const override {
-        SkDebugf("GrVkFramebuffer: %d (%d refs)\n", fFramebuffer, this->getRefCnt());
+        SkDebugf("GrVkFramebuffer: %" PRIdPTR " (%d refs)\n",
+                 (intptr_t)fFramebuffer, this->getRefCnt());
     }
 #endif
 
@@ -67,16 +70,16 @@ public:
         return fCompatibleRenderPassHandle;
     }
 
-    GrVkAttachment* colorAttachment() { return fColorAttachment.get(); }
-    GrVkAttachment* resolveAttachment() { return fResolveAttachment.get(); }
-    GrVkAttachment* stencilAttachment() { return fStencilAttachment.get(); }
+    GrVkImage* colorAttachment() { return fColorAttachment.get(); }
+    GrVkImage* resolveAttachment() { return fResolveAttachment.get(); }
+    GrVkImage* stencilAttachment() { return fStencilAttachment.get(); }
 
 private:
     GrVkFramebuffer(const GrVkGpu* gpu,
                     VkFramebuffer framebuffer,
-                    sk_sp<GrVkAttachment> colorAttachment,
-                    sk_sp<GrVkAttachment> resolveAttachment,
-                    sk_sp<GrVkAttachment> stencilAttachment,
+                    sk_sp<GrVkImage> colorAttachment,
+                    sk_sp<GrVkImage> resolveAttachment,
+                    sk_sp<GrVkImage> stencilAttachment,
                     sk_sp<const GrVkRenderPass> compatibleRenderPass,
                     GrVkResourceProvider::CompatibleRPHandle);
 
@@ -87,9 +90,9 @@ private:
 
     VkFramebuffer  fFramebuffer = VK_NULL_HANDLE;
 
-    sk_sp<GrVkAttachment> fColorAttachment;
-    sk_sp<GrVkAttachment> fResolveAttachment;
-    sk_sp<GrVkAttachment> fStencilAttachment;
+    sk_sp<GrVkImage> fColorAttachment;
+    sk_sp<GrVkImage> fResolveAttachment;
+    sk_sp<GrVkImage> fStencilAttachment;
 
     sk_sp<const GrVkRenderPass> fCompatibleRenderPass;
     GrVkResourceProvider::CompatibleRPHandle fCompatibleRenderPassHandle;

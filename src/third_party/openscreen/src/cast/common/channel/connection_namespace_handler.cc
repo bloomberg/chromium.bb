@@ -221,8 +221,8 @@ void ConnectionNamespaceHandler::HandleConnect(CastSocket* socket,
     data.ip_fragment = {};
   }
 
-  OSP_DVLOG << "Connection opened: " << virtual_conn.local_id << ", "
-            << virtual_conn.peer_id << ", " << virtual_conn.socket_id;
+  OSP_VLOG << "Connection opened: " << virtual_conn.local_id << ", "
+           << virtual_conn.peer_id << ", " << virtual_conn.socket_id;
 
   // NOTE: Only send a response for senders that actually sent a version.  This
   // maintains compatibility with older senders that don't send a version and
@@ -242,9 +242,9 @@ void ConnectionNamespaceHandler::HandleClose(CastSocket* socket,
                                ToCastSocketId(socket)};
   const auto reason = GetCloseReason(parsed_message);
   if (RemoveConnection(conn, reason)) {
-    OSP_DVLOG << "Connection closed (reason: " << reason
-              << "): " << conn.local_id << ", " << conn.peer_id << ", "
-              << conn.socket_id;
+    OSP_VLOG << "Connection closed (reason: " << reason
+             << "): " << conn.local_id << ", " << conn.peer_id << ", "
+             << conn.socket_id;
   }
 }
 

@@ -7,12 +7,11 @@
 #ifndef XFA_FXFA_FM2JS_CXFA_FMPARSER_H_
 #define XFA_FXFA_FM2JS_CXFA_FMPARSER_H_
 
-#include <memory>
 #include <vector>
 
 #include "core/fxcrt/unowned_ptr.h"
 #include "fxjs/gc/heap.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/cppgc/macros.h"
 #include "v8/include/cppgc/member.h"
 #include "xfa/fxfa/fm2js/cxfa_fmexpression.h"
@@ -61,7 +60,7 @@ class CXFA_FMParser {
   CXFA_FMSimpleExpression* ParsePostExpression(CXFA_FMSimpleExpression* e);
   CXFA_FMSimpleExpression* ParseIndexExpression();
   CXFA_FMSimpleExpression* ParseLiteral();
-  Optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
+  absl::optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
   ParseArgumentList();
 
   UnownedPtr<cppgc::Heap> const m_heap;

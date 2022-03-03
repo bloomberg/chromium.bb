@@ -14,9 +14,6 @@ namespace feed {
 
 namespace prefs {
 
-// The pref name for the last time when a background fetch was attempted.
-extern const char kLastFetchAttemptTime[];
-
 // The pref name for the feed host override.
 extern const char kHostOverrideHost[];
 // The pref name for the feed host override auth token.
@@ -42,10 +39,12 @@ extern const char kLastFetchHadNoticeCard[];
 extern const char kLastFetchHadLoggingEnabled[];
 #endif  // defined(OS_IOS)
 
-// The pref name for the counter for the number of views on the notice card.
+// The pref name for the counter for the number of views on the privacy notice
+// card.
 extern const char kNoticeCardViewsCount[];
 
-// The pref name for the counter for the number of clicks on the notice card.
+// The pref name for the counter for the number of clicks on the privacy notice
+// card.
 extern const char kNoticeCardClicksCount[];
 
 // The following prefs are used only by v2.
@@ -72,16 +71,21 @@ extern const char kExperiments[];
 extern const char kEnableWebFeedFollowIntroDebug[];
 // Random bytes used in generating reliability logging ID.
 extern const char kReliabilityLoggingIdSalt[];
-// Whether the user has subscribed to a web feed.
-extern const char kIsWebFeedSubscriber[];
 // Whether the Feed may have data stored, which should be deleted if the Feed
 // is ever turned off.
 extern const char kHasStoredData[];
+// `feed::ContentOrder` of the Web feed.
+extern const char kWebFeedContentOrder[];
+// The last feed type that the user was viewing.
+extern const char kLastSeenFeedType[];
+// The pref name for the keys of the notices.
+extern const char kNoticeStates[];
 
 }  // namespace prefs
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 void MigrateObsoleteProfilePrefsFeb_2021(PrefService* prefs);
+void MigrateObsoleteProfilePrefsJune_2021(PrefService* prefs);
 
 }  // namespace feed
 

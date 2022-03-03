@@ -20,6 +20,9 @@ limitations under the License.
 #include "tensorflow/core/framework/kernel_def_builder.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/framework/variant.h"
+#include "tensorflow/core/framework/variant_encode_decode.h"
+#include "tensorflow/core/framework/variant_tensor_data.h"
 #include "tensorflow/core/lib/core/errors.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/strings/stringprintf.h"
@@ -31,10 +34,10 @@ class AsStringOp : public OpKernel {
   using OpKernel::OpKernel;
 
   explicit AsStringOp(OpKernelConstruction* ctx) : OpKernel(ctx) {
-    int32 precision;
+    int32_t precision;
     bool scientific;
     bool shortest;
-    int32 width;
+    int32_t width;
     string fill_string;
     DataType dtype;
     OP_REQUIRES_OK(ctx, ctx->GetAttr("T", &dtype));
@@ -44,6 +47,8 @@ class AsStringOp : public OpKernel {
     OP_REQUIRES_OK(ctx, ctx->GetAttr("width", &width));
     OP_REQUIRES_OK(ctx, ctx->GetAttr("fill", &fill_string));
     switch (dtype) {
+      case DT_HALF:
+      case DT_BFLOAT16:
       case DT_FLOAT:
       case DT_DOUBLE:
       case DT_COMPLEX64:
@@ -90,6 +95,14 @@ class AsStringOp : public OpKernel {
       strings::Appendf(&format_, ".%d", precision);
     }
     switch (dtype) {
+      case DT_UINT8:
+      case DT_UINT16:
+      case DT_UINT32:
+        strings::Appendf(&format_, "u");
+        break;
+      case DT_UINT64:
+        strings::Appendf(&format_, "llu");
+        break;
       case DT_INT8:
       case DT_INT16:
       case DT_INT32:
@@ -98,6 +111,8 @@ class AsStringOp : public OpKernel {
       case DT_INT64:
         strings::Appendf(&format_, "lld");
         break;
+      case DT_HALF:
+      case DT_BFLOAT16:
       case DT_FLOAT:
       case DT_DOUBLE:
       case DT_COMPLEX64:
@@ -111,6 +126,8 @@ class AsStringOp : public OpKernel {
         }
         break;
       case DT_BOOL:
+        break;
+      case DT_VARIANT:
         break;
       default:
         bool type_not_supported = true;
@@ -144,16 +161,40 @@ class AsStringOp : public OpKernel {
   } break
 
     switch (dtype) {
-      ENCODE_TYPE(DT_INT32, int32, format_);
-      ENCODE_TYPE(DT_INT64, int64, format_);
-      ENCODE_TYPE(DT_FLOAT, float, format_);
-      ENCODE_TYPE(DT_DOUBLE, double, format_);
+      ENCODE_TYPE(DT_UINT8, uint8, format_);
+      ENCODE_TYPE(DT_UINT16, uint16, format_);
+      ENCODE_TYPE(DT_UINT32, uint32, format_);
+      ENCODE_TYPE(DT_UINT64, uint64, format_);
       ENCODE_TYPE(DT_INT8, int8, format_);
       ENCODE_TYPE(DT_INT16, int16, format_);
+      ENCODE_TYPE(DT_INT32, int32, format_);
+      ENCODE_TYPE(DT_INT64, int64_t, format_);
+      ENCODE_TYPE(DT_FLOAT, float, format_);
+      ENCODE_TYPE(DT_DOUBLE, double, format_);
       case (DT_BOOL): {
         const auto& input_flat = input_tensor->flat<bool>();
         for (int i = 0; i < input_flat.size(); ++i) {
           output_flat(i) = (input_flat(i)) ? "true" : "false";
+        }
+      } break;
+      case (DT_VARIANT): {
+        const auto& input_flat = input_tensor->flat<Variant>();
+        for (int i = 0; i < input_flat.size(); ++i) {
+          output_flat(i) = input_flat(i).DebugString();
+        }
+      } break;
+      case (DT_HALF): {
+        const auto& input_flat = input_tensor->flat<Eigen::half>();
+        for (int i = 0; i < input_flat.size(); ++i) {
+          output_flat(i) = strings::Printf(format_.c_str(),
+                                           static_cast<float>(input_flat(i)));
+        }
+      } break;
+      case (DT_BFLOAT16): {
+        const auto& input_flat = input_tensor->flat<bfloat16>();
+        for (int i = 0; i < input_flat.size(); ++i) {
+          output_flat(i) = strings::Printf(format_.c_str(),
+                                           static_cast<float>(input_flat(i)));
         }
       } break;
       case (DT_COMPLEX64): {

@@ -4,6 +4,8 @@
 
 #include "net/http/transport_security_state.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -11,11 +13,14 @@
 
 #include "base/base64.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -26,6 +31,7 @@
 #include "crypto/openssl_util.h"
 #include "crypto/sha2.h"
 #include "net/base/features.h"
+#include "net/base/hash_value.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
@@ -36,11 +42,11 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/test_root_certs.h"
-#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/extras/preload_data/decoder.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_state_source.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
@@ -227,8 +233,8 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
   GURL report_uri_;
   base::Time expiration_;
   uint32_t num_failures_;
-  const X509Certificate* served_certificate_chain_;
-  const X509Certificate* validated_certificate_chain_;
+  raw_ptr<const X509Certificate> served_certificate_chain_;
+  raw_ptr<const X509Certificate> validated_certificate_chain_;
   SignedCertificateTimestampAndStatusList signed_certificate_timestamps_;
   NetworkIsolationKey network_isolation_key_;
 };
@@ -358,7 +364,7 @@ class TransportSecurityStateTest : public ::testing::Test,
     SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
     // Need mocked out time for pruning tests. Don't start with a
     // time of 0, as code doesn't generally expect it.
-    FastForwardBy(base::TimeDelta::FromDays(1));
+    FastForwardBy(base::Days(1));
   }
 
   ~TransportSecurityStateTest() override {
@@ -411,7 +417,7 @@ class TransportSecurityStateTest : public ::testing::Test,
 TEST_F(TransportSecurityStateTest, DomainNameOddities) {
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   // DNS suffix search tests. Some DNS resolvers allow a terminal "." to
   // indicate not perform DNS suffix searching. Ensure that regardless
@@ -469,7 +475,7 @@ TEST_F(TransportSecurityStateTest, DomainNameOddities) {
 TEST_F(TransportSecurityStateTest, SimpleMatches) {
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
   bool include_subdomains = false;
@@ -483,7 +489,7 @@ TEST_F(TransportSecurityStateTest, SimpleMatches) {
 TEST_F(TransportSecurityStateTest, MatchesCase1) {
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
   bool include_subdomains = false;
@@ -494,7 +500,7 @@ TEST_F(TransportSecurityStateTest, MatchesCase1) {
 TEST_F(TransportSecurityStateTest, MatchesCase2) {
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   // Check dynamic entries
   EXPECT_FALSE(state.ShouldUpgradeToSSL("EXample.coM"));
@@ -511,7 +517,7 @@ TEST_F(TransportSecurityStateTest, MatchesCase2) {
 TEST_F(TransportSecurityStateTest, SubdomainMatches) {
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.test"));
   bool include_subdomains = true;
@@ -531,8 +537,8 @@ TEST_F(TransportSecurityStateTest, STSSubdomainNoOverride) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
+  const base::Time older = current_time - base::Seconds(1000);
 
   state.AddHSTS("example.test", expiry, true);
   state.AddHSTS("foo.example.test", expiry, false);
@@ -561,8 +567,8 @@ TEST_F(TransportSecurityStateTest, PKPSubdomainCarveout) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
+  const base::Time older = current_time - base::Seconds(1000);
 
   state.AddHPKP("example.test", expiry, true, GetSampleSPKIHashes(),
                 report_uri);
@@ -589,7 +595,7 @@ TEST_F(TransportSecurityStateTest, FatalSSLErrors) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   state.AddHSTS("example1.test", expiry, false);
   state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes(),
@@ -606,8 +612,8 @@ TEST_F(TransportSecurityStateTest, Expiration) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
+  const base::Time older = current_time - base::Seconds(1000);
 
   // Note: this test assumes that inserting an entry with an expiration time in
   // the past works and is pruned on query.
@@ -655,7 +661,7 @@ TEST_F(TransportSecurityStateTest, IndependentSubdomain) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   state.AddHSTS("example1.test", expiry, true);
   state.AddHPKP("example1.test", expiry, false, GetSampleSPKIHashes(),
@@ -676,7 +682,7 @@ TEST_F(TransportSecurityStateTest, IndependentInsertion) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   // Place an includeSubdomains HSTS entry below a normal HPKP entry.
   state.AddHSTS("example1.test", expiry, true);
@@ -716,8 +722,8 @@ TEST_F(TransportSecurityStateTest, DynamicDomainState) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry1 = current_time + base::TimeDelta::FromSeconds(1000);
-  const base::Time expiry2 = current_time + base::TimeDelta::FromSeconds(2000);
+  const base::Time expiry1 = current_time + base::Seconds(1000);
+  const base::Time expiry2 = current_time + base::Seconds(2000);
 
   state.AddHSTS("example.com", expiry1, true);
   state.AddHPKP("foo.example.com", expiry2, false, GetSampleSPKIHashes(),
@@ -744,7 +750,7 @@ TEST_F(TransportSecurityStateTest, NewPinsOverride) {
   TransportSecurityState state;
   TransportSecurityState::PKPState pkp_state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   HashValue hash1(HASH_VALUE_SHA256);
   memset(hash1.data(), 0x01, hash1.size());
   HashValue hash2(HASH_VALUE_SHA256);
@@ -782,8 +788,8 @@ TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataBetween) {
 
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
+  const base::Time older = current_time - base::Seconds(1000);
 
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
   EXPECT_FALSE(state.HasPublicKeyPins("example.com"));
@@ -835,7 +841,7 @@ TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
       {});
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   bool include_subdomains = false;
 
   NetworkIsolationKey network_isolation_key =
@@ -921,7 +927,6 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
 // the preloaded pin contains a report URI.
 TEST_F(TransportSecurityStateTest, PreloadedPKPReportUri) {
   const char kPreloadedPinDomain[] = "with-report-uri-pkp.preloaded.test";
-  const uint16_t kPort = 443;
   HostPortPair host_port_pair(kPreloadedPinDomain, kPort);
   net::NetworkIsolationKey network_isolation_key =
       NetworkIsolationKey::CreateTransient();
@@ -990,7 +995,7 @@ TEST_F(TransportSecurityStateTest, HPKPReportUriToSameHost) {
   state.SetReportSender(&mock_report_sender);
 
   const base::Time current_time = base::Time::Now();
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   HashValueVector good_hashes;
   for (size_t i = 0; kGoodPath[i]; i++)
     EXPECT_TRUE(AddHash(kGoodPath[i], &good_hashes));
@@ -1314,7 +1319,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTReporter) {
   EXPECT_EQ(GURL(kExpectCTStaticReportURI), reporter.report_uri());
   EXPECT_EQ(cert1.get(), reporter.served_certificate_chain());
   EXPECT_EQ(cert2.get(), reporter.validated_certificate_chain());
-  EXPECT_EQ(ssl_info.signed_certificate_timestamps.size(),
+  ASSERT_EQ(1u, ssl_info.signed_certificate_timestamps.size());
+  ASSERT_EQ(ssl_info.signed_certificate_timestamps.size(),
             reporter.signed_certificate_timestamps().size());
   EXPECT_EQ(ssl_info.signed_certificate_timestamps[0].status,
             reporter.signed_certificate_timestamps()[0].status);
@@ -1739,6 +1745,97 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
   }
 }
 
+// Tests that the emergency disable flag causes CT to stop being required
+// regardless of host or delegate status.
+TEST_F(TransportSecurityStateTest, CTEmergencyDisable) {
+  using ::testing::_;
+  using ::testing::Return;
+  using CTRequirementLevel =
+      TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
+
+  // Dummy cert to use as the validation chain. The contents do not matter.
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert);
+
+  HashValueVector hashes;
+  hashes.push_back(
+      HashValue(X509Certificate::CalculateFingerprint256(cert->cert_buffer())));
+
+  TransportSecurityState state;
+
+  // Set CT emergency disable flag.
+  state.SetCTEmergencyDisabled(true);
+
+  MockRequireCTDelegate always_require_delegate;
+  EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_, _, _))
+      .WillRepeatedly(Return(CTRequirementLevel::REQUIRED));
+  state.SetRequireCTDelegate(&always_require_delegate);
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+                NetworkIsolationKey()));
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS,
+                NetworkIsolationKey()));
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS,
+                NetworkIsolationKey()));
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY,
+                NetworkIsolationKey()));
+
+  state.SetRequireCTDelegate(nullptr);
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+                NetworkIsolationKey()));
+}
+
+// Tests that the if the CT log list last update time is set, it is used for
+// enforcement decisions.
+TEST_F(TransportSecurityStateTest, CTTimestampUpdate) {
+  TransportSecurityState state;
+  TransportSecurityStateTest::EnableStaticExpectCT(&state);
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  // Initially the preloaded host should require CT.
+  EXPECT_TRUE(
+      GetExpectCTState(&state, kExpectCTStaticHostname, &expect_ct_state));
+
+  // Change the last updated time to a value greater than 10 weeks.
+  // We use a close value (70 days + 1 hour ago) to ensure rounding behavior is
+  // working properly.
+  state.SetCTLogListUpdateTime(base::Time::Now() -
+                               (base::Days(70) + base::Hours(1)));
+  // CT should no longer be required.
+  EXPECT_FALSE(
+      GetExpectCTState(&state, kExpectCTStaticHostname, &expect_ct_state));
+
+  // CT should once again be required after the log list is newer than 70 days.
+  state.SetCTLogListUpdateTime(base::Time::Now() -
+                               (base::Days(70) - base::Hours(1)));
+  EXPECT_TRUE(
+      GetExpectCTState(&state, kExpectCTStaticHostname, &expect_ct_state));
+}
+
 // Tests that Certificate Transparency is required for Symantec-issued
 // certificates, unless the certificate was issued prior to 1 June 2016
 // or the issuing CA is permitted as independently operated.
@@ -1956,7 +2053,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTStateCleared) {
   TransportSecurityState state;
   TransportSecurityState::ExpectCTState expect_ct_state;
   const base::Time current_time = base::Time::Now();
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   state.AddExpectCT(host, expiry, true, GURL(), NetworkIsolationKey());
   EXPECT_TRUE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
@@ -1979,7 +2076,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTState) {
   TransportSecurityState state;
   TransportSecurityState::ExpectCTState expect_ct_state;
   const base::Time current_time = base::Time::Now();
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   // Test that Expect-CT state can be added and retrieved.
   state.AddExpectCT(host, expiry, true, GURL(), NetworkIsolationKey());
@@ -2000,8 +2097,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTState) {
   EXPECT_EQ(expiry, expect_ct_state.expiry);
 
   // Test that Expect-CT state is discarded when expired.
-  state.AddExpectCT(host, current_time - base::TimeDelta::FromSeconds(1000),
-                    true, report_uri, NetworkIsolationKey());
+  state.AddExpectCT(host, current_time - base::Seconds(1000), true, report_uri,
+                    NetworkIsolationKey());
   EXPECT_FALSE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
                                              &expect_ct_state));
 }
@@ -2145,7 +2242,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTStateDisabled) {
   TransportSecurityState state;
   TransportSecurityState::ExpectCTState expect_ct_state;
   const base::Time current_time = base::Time::Now();
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
 
   state.AddExpectCT(host, expiry, true, GURL(), NetworkIsolationKey());
   EXPECT_FALSE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
@@ -2304,7 +2401,7 @@ TEST_F(TransportSecurityStateTest,
 // to a host violates an Expect-CT header, and that it reports violations.
 TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ASSERT_TRUE(cert1);
@@ -2447,7 +2544,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
       TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
 
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ASSERT_TRUE(cert1);
@@ -2507,7 +2604,7 @@ TEST_F(TransportSecurityStateTest,
       TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
 
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ASSERT_TRUE(cert1);
@@ -2555,47 +2652,6 @@ TEST_F(TransportSecurityStateTest,
             reporter.signed_certificate_timestamps()[0].status);
   EXPECT_EQ(sct_list[0].sct, reporter.signed_certificate_timestamps()[0].sct);
   EXPECT_EQ(network_isolation_key, reporter.network_isolation_key());
-}
-
-// Tests that the dynamic Expect-CT UMA histogram is recorded correctly.
-TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
-  const char kHistogramName[] = "Net.ExpectCTHeader.ParseSuccess";
-  SSLInfo ssl;
-  ssl.is_issued_by_known_root = true;
-  ssl.ct_policy_compliance =
-      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      TransportSecurityState::kDynamicExpectCTFeature);
-
-  // Test that the histogram is recorded correctly when the header successfully
-  // parses.
-  {
-    const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
-    base::HistogramTester histograms;
-    TransportSecurityState state;
-    MockExpectCTReporter reporter;
-    state.SetExpectCTReporter(&reporter);
-    state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
-                                NetworkIsolationKey());
-    histograms.ExpectTotalCount(kHistogramName, 1);
-    histograms.ExpectBucketCount(kHistogramName, true, 1);
-  }
-
-  // Test that the histogram is recorded correctly when the header fails to
-  // parse (due to semi-colons instead of commas).
-  {
-    const char kHeader[] = "max-age=123;enforce;report-uri=\"http://foo.test\"";
-    base::HistogramTester histograms;
-    TransportSecurityState state;
-    MockExpectCTReporter reporter;
-    state.SetExpectCTReporter(&reporter);
-    state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
-                                NetworkIsolationKey());
-    histograms.ExpectTotalCount(kHistogramName, 1);
-    histograms.ExpectBucketCount(kHistogramName, false, 1);
-  }
 }
 
 #if BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
@@ -3098,7 +3154,7 @@ TEST_F(TransportSecurityStateStaticTest, OverrideBuiltins) {
 
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   state.AddHSTS("www.google.com", expiry, true);
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("www.google.com"));
@@ -3327,8 +3383,7 @@ TEST_F(TransportSecurityStateTest,
   feature_list.InitAndEnableFeature(
       TransportSecurityState::kDynamicExpectCTFeature);
 
-  const base::Time expiry =
-      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = base::Time::Now() + base::Seconds(1000);
 
   // Dummy cert to use as the validation chain. The contents do not matter.
   scoped_refptr<X509Certificate> cert =
@@ -3583,13 +3638,12 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTPriority) {
     // the future than that.
     base::Time unexpired_expiry_time =
         base::Time::Now() +
-        base::TimeDelta::FromDays(
-            2 * features::kExpectCTSafeFromPruneDays.Get() + 1);
+        base::Days(2 * features::kExpectCTSafeFromPruneDays.Get() + 1);
 
     // Always add entries unexpired.
     base::Time first_group_expiry =
         test_case.first_group_is_expired
-            ? base::Time::Now() + base::TimeDelta::FromMilliseconds(1)
+            ? base::Time::Now() + base::Milliseconds(1)
             : unexpired_expiry_time;
 
     TransportSecurityState state;
@@ -3605,20 +3659,19 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTPriority) {
 
     // Skip forward in time slightly, so the first group is always older than
     // the first.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    FastForwardBy(base::Seconds(1));
 
     // If only the first group should be old enough to be pruned, wait until
     // enough time for the group to be prunable has passed.
     if (test_case.groups_old_enough_to_be_pruned ==
         GroupsOldEnoughToBePruned::kFirstGroupOnly) {
-      FastForwardBy(base::TimeDelta::FromDays(
-          features::kExpectCTSafeFromPruneDays.Get() + 1));
+      FastForwardBy(base::Days(features::kExpectCTSafeFromPruneDays.Get() + 1));
     }
 
     // Always add entries unexpired.
     base::Time second_group_expiry =
         test_case.second_group_is_expired
-            ? base::Time::Now() + base::TimeDelta::FromMilliseconds(1)
+            ? base::Time::Now() + base::Milliseconds(1)
             : unexpired_expiry_time;
 
     base::Time second_group_observation_time = base::Time::Now();
@@ -3633,20 +3686,18 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTPriority) {
     // Skip forward in time slightly, so the first group is always older than
     // the first. This needs to be long enough so that if
     // |second_group_is_expired| is true, the entry will expire.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    FastForwardBy(base::Seconds(1));
 
     // If both the first and second groups should be old enough to be pruned,
     // wait until enough time has passed for both groups to prunable.
     if (test_case.groups_old_enough_to_be_pruned ==
         GroupsOldEnoughToBePruned::kFirstAndSecondGroups) {
-      FastForwardBy(base::TimeDelta::FromDays(
-          features::kExpectCTSafeFromPruneDays.Get() + 1));
+      FastForwardBy(base::Days(features::kExpectCTSafeFromPruneDays.Get() + 1));
     }
 
     for (size_t i = 0; i < kThirdGroupSize; ++i) {
       state.AddExpectCT(
-          CreateUniqueHostName(),
-          base::Time::Now() + base::TimeDelta::FromSeconds(1),
+          CreateUniqueHostName(), base::Time::Now() + base::Seconds(1),
           true /* enforce */, report_uri,
           CreateUniqueNetworkIsolationKey(false /* is_transient */));
     }
@@ -3687,7 +3738,7 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTDelay) {
       TransportSecurityState::kDynamicExpectCTFeature);
 
   TransportSecurityState state;
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(10);
+  base::Time expiry = base::Time::Now() + base::Days(10);
   // Add prunable entries until pruning is triggered.
   for (int i = 0; i < features::kExpectCTPruneMax.Get(); ++i) {
     state.AddExpectCT(CreateUniqueHostName(), expiry, false /* enforce */,
@@ -3697,7 +3748,7 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTDelay) {
   // Should have removed enough entries to get down to kExpectCTPruneMin
   // entries.
   EXPECT_EQ(features::kExpectCTPruneMin.Get(),
-            static_cast<int>(state.num_expect_ct_entries()));
+            static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
   // Add more prunable entries, but pruning should not be triggered, due to the
   // delay between subsequent pruning tasks.
@@ -3708,14 +3759,13 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTDelay) {
   }
   EXPECT_EQ(
       features::kExpectCTPruneMax.Get() + features::kExpectCTPruneMin.Get(),
-      static_cast<int>(state.num_expect_ct_entries()));
+      static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
   // Time passes, which does not trigger pruning.
-  FastForwardBy(
-      base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get()));
+  FastForwardBy(base::Seconds(features::kExpectCTPruneDelaySecs.Get()));
   EXPECT_EQ(
       features::kExpectCTPruneMax.Get() + features::kExpectCTPruneMin.Get(),
-      static_cast<int>(state.num_expect_ct_entries()));
+      static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
   // Another entry is added, which triggers pruning, now that enough time has
   // passed.
@@ -3723,13 +3773,12 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTDelay) {
                     report_uri,
                     CreateUniqueNetworkIsolationKey(true /* is_transient */));
   EXPECT_EQ(features::kExpectCTPruneMin.Get(),
-            static_cast<int>(state.num_expect_ct_entries()));
+            static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
   // More time passes.
-  FastForwardBy(base::TimeDelta::FromSeconds(
-      10 * features::kExpectCTPruneDelaySecs.Get()));
+  FastForwardBy(base::Seconds(10 * features::kExpectCTPruneDelaySecs.Get()));
   EXPECT_EQ(features::kExpectCTPruneMin.Get(),
-            static_cast<int>(state.num_expect_ct_entries()));
+            static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
   // When enough entries are added to trigger pruning, it runs immediately,
   // since enough time has passed.
@@ -3741,7 +3790,7 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTDelay) {
                       CreateUniqueNetworkIsolationKey(true /* is_transient */));
   }
   EXPECT_EQ(features::kExpectCTPruneMin.Get(),
-            static_cast<int>(state.num_expect_ct_entries()));
+            static_cast<int>(state.num_expect_ct_entries_for_testing()));
 }
 
 // Test that Expect-CT pruning respects kExpectCTMaxEntriesPerNik, which is only
@@ -3761,9 +3810,9 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTNetworkIsolationKeyLimit) {
 
   // Three different expiration times, which are used to distinguish entries
   // added by each loop. No entries actually expire in this test.
-  base::Time expiry1 = base::Time::Now() + base::TimeDelta::FromDays(10);
-  base::Time expiry2 = expiry1 + base::TimeDelta::FromDays(10);
-  base::Time expiry3 = expiry2 + base::TimeDelta::FromDays(10);
+  base::Time expiry1 = base::Time::Now() + base::Days(10);
+  base::Time expiry2 = expiry1 + base::Days(10);
+  base::Time expiry3 = expiry2 + base::Days(10);
 
   // Add non-prunable entries using different non-transient NIKs. They should
   // not be pruned because they are recently-observed enforce entries.
@@ -3773,32 +3822,30 @@ TEST_F(TransportSecurityStateTest, PruneExpectCTNetworkIsolationKeyLimit) {
         CreateUniqueNetworkIsolationKey(false /* is_transient */));
   }
   EXPECT_EQ(features::kExpectCTPruneMax.Get(),
-            static_cast<int>(state.num_expect_ct_entries()));
+            static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
   // Add kExpectCTMaxEntriesPerNik non-prunable entries with a single NIK,
   // allowing pruning to run each time. No entries should be deleted.
   NetworkIsolationKey network_isolation_key =
       CreateUniqueNetworkIsolationKey(false /* is_transient */);
   for (int i = 0; i < features::kExpectCTMaxEntriesPerNik.Get(); ++i) {
-    FastForwardBy(
-        base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get()));
+    FastForwardBy(base::Seconds(features::kExpectCTPruneDelaySecs.Get()));
     state.AddExpectCT(CreateUniqueHostName(), expiry2, true /* enforce */,
                       report_uri, network_isolation_key);
     EXPECT_EQ(features::kExpectCTPruneMax.Get() + i + 1,
-              static_cast<int>(state.num_expect_ct_entries()));
+              static_cast<int>(state.num_expect_ct_entries_for_testing()));
   }
 
   // Add kExpectCTMaxEntriesPerNik non-prunable entries with the same NIK as
   // before, allowing pruning to run each time. Each time, a single entry should
   // be removed, resulting in the same total number of entries as before.
   for (int i = 0; i < features::kExpectCTMaxEntriesPerNik.Get(); ++i) {
-    FastForwardBy(
-        base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get()));
+    FastForwardBy(base::Seconds(features::kExpectCTPruneDelaySecs.Get()));
     state.AddExpectCT(CreateUniqueHostName(), expiry3, true /* enforce */,
                       report_uri, network_isolation_key);
     EXPECT_EQ(features::kExpectCTPruneMax.Get() +
                   features::kExpectCTMaxEntriesPerNik.Get(),
-              static_cast<int>(state.num_expect_ct_entries()));
+              static_cast<int>(state.num_expect_ct_entries_for_testing()));
 
     // Count entries with |expiry2| and |expiry3|. For each loop iteration, an
     // entry with |expiry2| should be replaced by one with |expiry3|.

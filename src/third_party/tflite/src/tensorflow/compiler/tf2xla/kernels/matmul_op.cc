@@ -21,12 +21,14 @@ limitations under the License.
 #include "tensorflow/compiler/xla/client/lib/matrix.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/types.pb.h"
 
 namespace tensorflow {
 namespace {
 
-constexpr std::array<DataType, 6> kMatmulTypes = {
-    {DT_HALF, DT_BFLOAT16, DT_FLOAT, DT_DOUBLE, DT_COMPLEX64, DT_COMPLEX128}};
+constexpr std::array<DataType, 10> kMatmulTypes = {
+    {DT_HALF, DT_BFLOAT16, DT_FLOAT, DT_DOUBLE, DT_COMPLEX64, DT_COMPLEX128,
+     DT_INT32, DT_INT64, DT_INT16, DT_INT8}};
 
 class MatMulOp : public XlaOpKernel {
  public:
@@ -55,6 +57,10 @@ class MatMulOp : public XlaOpKernel {
     const TensorShape b_shape = ctx->InputShape(1);
 
     // Check that the dimensions of the two matrices are valid.
+    OP_REQUIRES(ctx, a_shape.dims() == b_shape.dims(),
+                errors::InvalidArgument("In[0] and In[1] has different ndims: ",
+                                        a_shape.DebugString(), " vs. ",
+                                        b_shape.DebugString()));
     OP_REQUIRES(
         ctx, TensorShapeUtils::IsMatrix(a_shape),
         errors::InvalidArgument("In[0] is not a matrix. Instead it has shape ",

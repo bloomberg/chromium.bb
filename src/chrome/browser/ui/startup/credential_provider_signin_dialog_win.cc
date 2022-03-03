@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
 
+#include <windows.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -12,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/syslog_logging.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -32,6 +35,9 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace {
+
+// The OAuth token consumer name.
+const char kOAuthConsumerName[] = "credential_provider_signin_dialog";
 
 #if BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
 bool g_enable_gcpw_signin_during_tests = false;
@@ -125,7 +131,7 @@ void HandleSigninCompleteForGcpwLogin(
     // Create the fetcher and pass it to the callback so that it can be
     // deleted once it is finished.
     auto fetcher = std::make_unique<CredentialProviderSigninInfoFetcher>(
-        refresh_token, url_loader_factory);
+        refresh_token, kOAuthConsumerName, url_loader_factory);
     auto* const fetcher_ptr = fetcher.get();
     fetcher_ptr->SetCompletionCallbackAndStart(
         access_token, additional_mdm_oauth_scopes,
@@ -155,7 +161,7 @@ class CredentialProviderWebUIMessageHandler
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kLSTFetchResultsMessage,
         base::BindRepeating(
             &CredentialProviderWebUIMessageHandler::OnSigninComplete,
@@ -164,7 +170,7 @@ class CredentialProviderWebUIMessageHandler
     // This message is always sent as part of the SAML flow but we don't really
     // need to process it. We do however have to handle the message or else
     // there will be a DCHECK failure in web_ui about an unhandled message.
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         "updatePasswordAttributes",
         base::BindRepeating([](const base::ListValue* args) {}));
   }
@@ -189,13 +195,16 @@ class CredentialProviderWebUIMessageHandler
   base::Value ParseArgs(const base::ListValue* args, int* out_exit_code) {
     DCHECK(out_exit_code);
 
-    const base::Value* dict_result = nullptr;
-    if (!args || args->empty() || !args->Get(0, &dict_result) ||
-        !dict_result->is_dict()) {
+    if (!args || args->GetList().empty()) {
       *out_exit_code = credential_provider::kUiecMissingSigninData;
       return base::Value(base::Value::Type::DICTIONARY);
     }
-    const base::Value* exit_code = dict_result->FindKeyOfType(
+    const base::Value& dict_result = args->GetList()[0];
+    if (!dict_result.is_dict()) {
+      *out_exit_code = credential_provider::kUiecMissingSigninData;
+      return base::Value(base::Value::Type::DICTIONARY);
+    }
+    const base::Value* exit_code = dict_result.FindKeyOfType(
         credential_provider::kKeyExitCode, base::Value::Type::INTEGER);
 
     if (exit_code && exit_code->GetInt() != credential_provider::kUiecSuccess) {
@@ -203,15 +212,15 @@ class CredentialProviderWebUIMessageHandler
       return base::Value(base::Value::Type::DICTIONARY);
     }
 
-    const base::Value* email = dict_result->FindKeyOfType(
+    const base::Value* email = dict_result.FindKeyOfType(
         credential_provider::kKeyEmail, base::Value::Type::STRING);
-    const base::Value* password = dict_result->FindKeyOfType(
+    const base::Value* password = dict_result.FindKeyOfType(
         credential_provider::kKeyPassword, base::Value::Type::STRING);
-    const base::Value* id = dict_result->FindKeyOfType(
+    const base::Value* id = dict_result.FindKeyOfType(
         credential_provider::kKeyId, base::Value::Type::STRING);
-    const base::Value* access_token = dict_result->FindKeyOfType(
+    const base::Value* access_token = dict_result.FindKeyOfType(
         credential_provider::kKeyAccessToken, base::Value::Type::STRING);
-    const base::Value* refresh_token = dict_result->FindKeyOfType(
+    const base::Value* refresh_token = dict_result.FindKeyOfType(
         credential_provider::kKeyRefreshToken, base::Value::Type::STRING);
 
     if (!email || email->GetString().empty() || !password ||
@@ -223,7 +232,7 @@ class CredentialProviderWebUIMessageHandler
     }
 
     *out_exit_code = credential_provider::kUiecSuccess;
-    return dict_result->Clone();
+    return dict_result.Clone();
   }
 
   void OnSigninComplete(const base::ListValue* args) {
@@ -378,7 +387,7 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override {}
 
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) override {
     return true;
   }
@@ -410,7 +419,7 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // through the dialog.
   mutable HandleGcpwSigninCompleteResult signin_callback_;
 
-  mutable CredentialProviderWebUIMessageHandler* handler_ = nullptr;
+  mutable raw_ptr<CredentialProviderWebUIMessageHandler> handler_ = nullptr;
 };
 
 bool ValidateSigninCompleteResult(const std::string& access_token,

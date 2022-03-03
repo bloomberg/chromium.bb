@@ -16,9 +16,9 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
 
 bool GraphicsData::operator<(const GraphicsData& other) const {
   if (!FXSYS_SafeEQ(fillAlpha, other.fillAlpha))
@@ -84,11 +84,11 @@ std::set<int32_t> CPDF_PageObjectHolder::TakeDirtyStreams() {
   return dirty_streams;
 }
 
-Optional<ByteString> CPDF_PageObjectHolder::GraphicsMapSearch(
+absl::optional<ByteString> CPDF_PageObjectHolder::GraphicsMapSearch(
     const GraphicsData& gd) {
   auto it = m_GraphicsMap.find(gd);
   if (it == m_GraphicsMap.end())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return it->second;
 }
@@ -98,10 +98,11 @@ void CPDF_PageObjectHolder::GraphicsMapInsert(const GraphicsData& gd,
   m_GraphicsMap[gd] = str;
 }
 
-Optional<ByteString> CPDF_PageObjectHolder::FontsMapSearch(const FontData& fd) {
+absl::optional<ByteString> CPDF_PageObjectHolder::FontsMapSearch(
+    const FontData& fd) {
   auto it = m_FontsMap.find(fd);
   if (it == m_FontsMap.end())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return it->second;
 }
@@ -127,7 +128,7 @@ void CPDF_PageObjectHolder::LoadTransparencyInfo() {
 
 CPDF_PageObject* CPDF_PageObjectHolder::GetPageObjectByIndex(
     size_t index) const {
-  return pdfium::IndexInBounds(m_PageObjectList, index)
+  return fxcrt::IndexInBounds(m_PageObjectList, index)
              ? m_PageObjectList[index].get()
              : nullptr;
 }
@@ -138,7 +139,7 @@ void CPDF_PageObjectHolder::AppendPageObject(
 }
 
 bool CPDF_PageObjectHolder::RemovePageObject(CPDF_PageObject* pPageObj) {
-  pdfium::FakeUniquePtr<CPDF_PageObject> p(pPageObj);
+  fxcrt::FakeUniquePtr<CPDF_PageObject> p(pPageObj);
 
   auto it =
       std::find(std::begin(m_PageObjectList), std::end(m_PageObjectList), p);

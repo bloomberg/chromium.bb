@@ -35,8 +35,6 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &scanning_);
   } else if (key == shill::kSupportNetworkScanProperty) {
     return GetBooleanValue(key, value, &support_network_scan_);
-  } else if (key == shill::kCellularAllowRoamingProperty) {
-    return GetBooleanValue(key, value, &allow_roaming_);
   } else if (key == shill::kProviderRequiresRoamingProperty) {
     return GetBooleanValue(key, value, &provider_requires_roaming_);
   } else if (key == shill::kHomeProviderProperty) {
@@ -86,17 +84,17 @@ bool DeviceState::PropertyChanged(const std::string& key,
     sim_lock_enabled_ = false;
 
     const base::Value* out_value = nullptr;
-    if (dict->GetWithoutPathExpansion(shill::kSIMLockTypeProperty,
-                                      &out_value)) {
+    out_value = dict->FindKey(shill::kSIMLockTypeProperty);
+    if (out_value) {
       GetStringValue(shill::kSIMLockTypeProperty, *out_value, &sim_lock_type_);
     }
-    if (dict->GetWithoutPathExpansion(shill::kSIMLockRetriesLeftProperty,
-                                      &out_value)) {
+    out_value = dict->FindKey(shill::kSIMLockRetriesLeftProperty);
+    if (out_value) {
       GetIntegerValue(shill::kSIMLockRetriesLeftProperty, *out_value,
                       &sim_retries_left_);
     }
-    if (dict->GetWithoutPathExpansion(shill::kSIMLockEnabledProperty,
-                                      &out_value)) {
+    out_value = dict->FindKey(shill::kSIMLockEnabledProperty);
+    if (out_value) {
       GetBooleanValue(shill::kSIMLockEnabledProperty, *out_value,
                       &sim_lock_enabled_);
     }
@@ -124,7 +122,7 @@ bool DeviceState::PropertyChanged(const std::string& key,
     // If kIPConfigsProperty changes, clear any previous ip_configs_.
     // ShillPropertyhandler will request the IPConfig objects which will trigger
     // calls to IPConfigPropertiesChanged.
-    ip_configs_.Clear();
+    ip_configs_.DictClear();
     return false;  // No actual state change.
   } else if (key == shill::kLinkUpProperty) {
     return GetBooleanValue(key, value, &link_up_);

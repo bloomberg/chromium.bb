@@ -13,6 +13,18 @@
 
 using content::WebContents;
 
+TabStripModelChange::RemovedTab::RemovedTab(
+    content::WebContents* contents,
+    int index,
+    RemoveReason remove_reason,
+    absl::optional<SessionID> session_id)
+    : contents(contents),
+      index(index),
+      remove_reason(remove_reason),
+      session_id(session_id) {}
+TabStripModelChange::RemovedTab::~RemovedTab() = default;
+TabStripModelChange::RemovedTab::RemovedTab(RemovedTab&& other) = default;
+
 TabStripModelChange::Insert::Insert() = default;
 TabStripModelChange::Insert::Insert(Insert&& other) = default;
 TabStripModelChange::Insert& TabStripModelChange::Insert::operator=(Insert&&) =
@@ -72,12 +84,12 @@ TabStripModelChange::TabStripModelChange(Type type,
                                          std::unique_ptr<Delta> delta)
     : type_(type), delta_(std::move(delta)) {}
 
-void TabStripModelChange::ContentsWithIndexAndWillBeDeleted::WriteIntoTrace(
+void TabStripModelChange::RemovedTab::WriteIntoTrace(
     perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("contents", contents);
   dict.Add("index", index);
-  dict.Add("will_be_deleted", will_be_deleted);
+  dict.Add("remove_reason", remove_reason);
 }
 
 void TabStripModelChange::ContentsWithIndex::WriteIntoTrace(

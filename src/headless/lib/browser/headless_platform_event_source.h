@@ -5,7 +5,6 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_PLATFORM_EVENT_SOURCE_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_PLATFORM_EVENT_SOURCE_H_
 
-#include "base/macros.h"
 #include "ui/events/platform/platform_event_source.h"
 
 namespace headless {
@@ -15,10 +14,12 @@ namespace headless {
 class HeadlessPlatformEventSource : public ui::PlatformEventSource {
  public:
   HeadlessPlatformEventSource();
-  ~HeadlessPlatformEventSource() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(HeadlessPlatformEventSource);
+  HeadlessPlatformEventSource(const HeadlessPlatformEventSource&) = delete;
+  HeadlessPlatformEventSource& operator=(const HeadlessPlatformEventSource&) =
+      delete;
+
+  ~HeadlessPlatformEventSource() override;
 };
 
 }  // namespace headless

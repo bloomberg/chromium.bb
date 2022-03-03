@@ -14,7 +14,8 @@ namespace settings {
 
 const char kOsSignOutSubPage[] = "osSignOut";
 
-// Any changes here need to be kept in sync with chrome_new_window_client.cc
+// Any changes here need to be kept in sync with the mapping in
+// chrome_new_window_client.cc - for routes that can be opened from ARC++.
 // TODO(khorimoto): Instead of listing out every path, use an enum parameter.
 bool IsOSSettingsSubPage(const std::string& sub_page) {
   static const char* const kPaths[] = {
@@ -32,6 +33,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       // Bluetooth section.
       chromeos::settings::mojom::kBluetoothSectionPath,
       chromeos::settings::mojom::kBluetoothDevicesSubpagePath,
+      chromeos::settings::mojom::kBluetoothDeviceDetailSubpagePath,
 
       // MultiDevice section.
       chromeos::settings::mojom::kMultiDeviceSectionPath,
@@ -43,10 +45,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kPeopleSectionPath,
       chromeos::settings::mojom::kMyAccountsSubpagePath,
       chromeos::settings::mojom::kSyncSubpagePath,
-      chromeos::settings::mojom::kSecurityAndSignInSubpagePath,
-      chromeos::settings::mojom::kFingerprintSubpagePath,
-      chromeos::settings::mojom::kManageOtherPeopleSubpagePath,
-      chromeos::settings::mojom::kKerberosAccountsSubpagePath,
 
       // Device section.
       chromeos::settings::mojom::kDeviceSectionPath,
@@ -62,6 +60,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kPersonalizationSectionPath,
       chromeos::settings::mojom::kChangePictureSubpagePath,
       chromeos::settings::mojom::kAmbientModeSubpagePath,
+      chromeos::settings::mojom::kDarkModeSubpagePath,
 
       // Search and Assistant section.
       chromeos::settings::mojom::kSearchAndAssistantSectionPath,
@@ -74,7 +73,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kAppDetailsSubpagePath,
       chromeos::settings::mojom::kGooglePlayStoreSubpagePath,
       chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath,
-      chromeos::settings::mojom::kOnStartupSubpagePath,
+      chromeos::settings::mojom::kArcVmUsbPreferencesSubpagePath,
 
       // Crostini section.
       chromeos::settings::mojom::kCrostiniSectionPath,
@@ -84,6 +83,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath,
       chromeos::settings::mojom::kCrostiniDevelopAndroidAppsSubpagePath,
       chromeos::settings::mojom::kCrostiniPortForwardingSubpagePath,
+      chromeos::settings::mojom::kCrostiniExtraContainersSubpagePath,
 
       // Date and Time section.
       chromeos::settings::mojom::kDateAndTimeSectionPath,
@@ -91,6 +91,10 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
 
       // Privacy and Security section.
       chromeos::settings::mojom::kPrivacyAndSecuritySectionPath,
+      chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2,
+      chromeos::settings::mojom::kFingerprintSubpagePathV2,
+      chromeos::settings::mojom::kManageOtherPeopleSubpagePathV2,
+      chromeos::settings::mojom::kSmartPrivacySubpagePath,
 
       // Languages and Input section.
       chromeos::settings::mojom::kLanguagesAndInputSectionPath,

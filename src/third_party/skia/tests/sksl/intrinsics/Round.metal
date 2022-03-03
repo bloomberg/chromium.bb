@@ -2,19 +2,19 @@
 #include <simd/simd.h>
 using namespace metal;
 struct Uniforms {
-    float4 input;
-    float4 expected;
-    float4 colorGreen;
-    float4 colorRed;
+    half4 testInputs;
+    half4 colorGreen;
+    half4 colorRed;
 };
 struct Inputs {
 };
 struct Outputs {
-    float4 sk_FragColor [[color(0)]];
+    half4 sk_FragColor [[color(0)]];
 };
 fragment Outputs fragmentMain(Inputs _in [[stage_in]], constant Uniforms& _uniforms [[buffer(0)]], bool _frontFacing [[front_facing]], float4 _fragCoord [[position]]) {
     Outputs _out;
     (void)_out;
-    _out.sk_FragColor = ((((((round(_uniforms.input.x) == _uniforms.expected.x && all(round(_uniforms.input.xy) == _uniforms.expected.xy)) && all(round(_uniforms.input.xyz) == _uniforms.expected.xyz)) && all(round(_uniforms.input) == _uniforms.expected)) && -2.0 == _uniforms.expected.x) && all(float2(-2.0, -0.0) == _uniforms.expected.xy)) && all(float3(-2.0, -0.0, 0.0) == _uniforms.expected.xyz)) && all(float4(-2.0, -0.0, 0.0, 2.0) == _uniforms.expected) ? _uniforms.colorGreen : _uniforms.colorRed;
+    const float4 expectedA = float4(-1.0, 0.0, 1.0, 2.0);
+    _out.sk_FragColor = ((float(round(_uniforms.testInputs.x)) == -1.0 && all(float2(round(_uniforms.testInputs.xy)) == float2(-1.0, 0.0))) && all(float3(round(_uniforms.testInputs.xyz)) == float3(-1.0, 0.0, 1.0))) && all(float4(round(_uniforms.testInputs)) == expectedA) ? _uniforms.colorGreen : _uniforms.colorRed;
     return _out;
 }

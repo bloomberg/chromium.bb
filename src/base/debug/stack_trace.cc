@@ -10,16 +10,17 @@
 #include <sstream>
 
 #include "base/check_op.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/config/compiler/compiler_buildflags.h"
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include <pthread.h>
+
 #include "base/process/process_handle.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #endif
 
 #if defined(OS_APPLE)
@@ -174,22 +175,22 @@ uintptr_t GetStackEnd() {
     main_stack_end = stack_end;
   }
   return stack_end;  // 0 in case of error
+#elif defined(OS_APPLE)
+  // No easy way to get end of the stack for non-main threads,
+  // see crbug.com/617730.
+  return reinterpret_cast<uintptr_t>(pthread_get_stackaddr_np(pthread_self()));
+#else
 
-#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__GLIBC__)
-
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__GLIBC__)
   if (GetCurrentProcId() == PlatformThread::CurrentId()) {
     // For the main thread we have a shortcut.
     return reinterpret_cast<uintptr_t>(__libc_stack_end);
   }
-
-// No easy way to get end of the stack for non-main threads,
-// see crbug.com/617730.
-#elif defined(OS_APPLE)
-  return reinterpret_cast<uintptr_t>(pthread_get_stackaddr_np(pthread_self()));
 #endif
 
   // Don't know how to get end of the stack.
   return 0;
+#endif
 }
 #endif  // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 

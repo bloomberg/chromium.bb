@@ -6,11 +6,17 @@
 #define BASE_ALLOCATOR_ALLOCATOR_SHIM_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/base_export.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#endif
 
 namespace base {
 namespace allocator {
@@ -154,6 +160,9 @@ BASE_EXPORT void ConfigurePartitionAlloc();
 #endif  // defined(OS_WIN)
 
 #if defined(OS_APPLE)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+void InitializeDefaultAllocatorPartitionRoot();
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 // On macOS, the allocator shim needs to be turned on during runtime.
 BASE_EXPORT void InitializeAllocatorShim();
 #endif  // defined(OS_APPLE)
@@ -161,14 +170,29 @@ BASE_EXPORT void InitializeAllocatorShim();
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 BASE_EXPORT void EnablePartitionAllocMemoryReclaimer();
 
-BASE_EXPORT void ReconfigurePartitionAllocLazyCommit();
+BASE_EXPORT void ReconfigurePartitionAllocLazyCommit(bool enabled);
 
-BASE_EXPORT void ConfigurePartitionRefCountSupport(bool enable_ref_count);
-#endif
+using EnableBrp = base::StrongAlias<class EnableBrpTag, bool>;
+using ThreadCacheOnNonQuarantinablePartition =
+    base::StrongAlias<class ThreadCacheOnNonQuarantinablePartitionTag, bool>;
+using SplitMainPartition = base::StrongAlias<class SplitMainPartitionTag, bool>;
+using UseDedicatedAlignedPartition =
+    base::StrongAlias<class UseDedicatedAlignedPartitionTag, bool>;
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_ALLOW_PCSCAN
-BASE_EXPORT void EnablePCScan(bool dcscan);
+// If |thread_cache_on_non_quarantinable_partition| is specified, the
+// thread-cache will be enabled on the non-quarantinable partition. The
+// thread-cache on the main (malloc) partition will be disabled.
+BASE_EXPORT void ConfigurePartitions(
+    EnableBrp enable_brp,
+    SplitMainPartition split_main_partition,
+    UseDedicatedAlignedPartition use_dedicated_aligned_partition,
+    ThreadCacheOnNonQuarantinablePartition
+        thread_cache_on_non_quarantinable_partition);
+
+#if defined(PA_ALLOW_PCSCAN)
+BASE_EXPORT void EnablePCScan(base::internal::PCScan::InitConfig);
 #endif
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 }  // namespace allocator
 }  // namespace base

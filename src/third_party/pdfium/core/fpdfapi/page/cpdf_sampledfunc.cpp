@@ -13,7 +13,7 @@
 #include "core/fxcrt/cfx_bitstream.h"
 #include "core/fxcrt/cfx_fixedbufgrow.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -99,7 +99,8 @@ bool CPDF_SampledFunc::v_Init(const CPDF_Object* pObj,
   return true;
 }
 
-bool CPDF_SampledFunc::v_Call(const float* inputs, float* results) const {
+bool CPDF_SampledFunc::v_Call(pdfium::span<const float> inputs,
+                              pdfium::span<float> results) const {
   int pos = 0;
   CFX_FixedBufGrow<float, 16> encoded_input_buf(m_nInputs);
   float* encoded_input = encoded_input_buf;

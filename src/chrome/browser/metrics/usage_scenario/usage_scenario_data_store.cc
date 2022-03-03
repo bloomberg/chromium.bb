@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "base/containers/contains.h"
-#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -19,6 +17,8 @@ UsageScenarioDataStore::~UsageScenarioDataStore() = default;
 UsageScenarioDataStore::IntervalData::IntervalData() = default;
 UsageScenarioDataStore::IntervalData::IntervalData(const IntervalData&) =
     default;
+UsageScenarioDataStore::IntervalData&
+UsageScenarioDataStore::IntervalData::operator=(const IntervalData&) = default;
 
 UsageScenarioDataStoreImpl::UsageScenarioDataStoreImpl()
     : UsageScenarioDataStoreImpl(base::DefaultTickClock::GetInstance()) {}
@@ -206,6 +206,11 @@ void UsageScenarioDataStoreImpl::OnAudioStops() {
         base::TimeTicks::Now() - playing_audio_since_;
     playing_audio_since_ = base::TimeTicks();
   }
+}
+
+void UsageScenarioDataStoreImpl::OnSleepEvent() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  interval_data_.sleep_events++;
 }
 
 void UsageScenarioDataStoreImpl::OnVideoStartsInVisibleTab() {

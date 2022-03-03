@@ -50,6 +50,12 @@ Polymer({
   usersPrivate_: chrome.usersPrivate,
 
   /** @override */
+  attached() {
+    // Initialize the announcer once.
+    Polymer.IronA11yAnnouncer.requestAvailability();
+  },
+
+  /** @override */
   ready() {
     chrome.settingsPrivate.onPrefsChanged.addListener(prefs => {
       prefs.forEach(function(pref) {
@@ -104,6 +110,10 @@ Polymer({
    * @param {!{model: !{item: !chrome.usersPrivate.User}}} e
    */
   removeUser_(e) {
+    this.fire(
+        'iron-announce',
+        {text: this.i18n('userRemovedMessage', e.model.item.name)});
+
     // Focus the add user button since, after this removal, the only user left
     // will be the account owner.
     if (this.users_.length === 2) {
@@ -133,7 +143,7 @@ Polymer({
    * @private
    */
   shouldShowEmail_(user) {
-    return !user.isSupervised && user.name !== user.displayEmail;
+    return !user.isChild && user.name !== user.displayEmail;
   },
 
   /**

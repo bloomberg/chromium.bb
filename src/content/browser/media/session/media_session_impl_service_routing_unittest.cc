@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/media/session/media_session_impl.h"
 
 #include <map>
@@ -35,15 +36,18 @@ namespace content {
 namespace {
 
 constexpr base::TimeDelta kDefaultSeekTime =
-    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
+    base::Seconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 static const int kPlayerId = 0;
 
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
   MockMediaSessionPlayerObserver(RenderFrameHost* rfh,
-                                 MediaAudioVideoState audio_video_state)
-      : render_frame_host_(rfh), audio_video_state_(audio_video_state) {}
+                                 MediaAudioVideoState audio_video_state,
+                                 media::MediaContentType media_content_type)
+      : render_frame_host_(rfh),
+        audio_video_state_(audio_video_state),
+        media_content_type_(media_content_type) {}
 
   ~MockMediaSessionPlayerObserver() override = default;
 
@@ -58,6 +62,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   MOCK_METHOD1(OnExitPictureInPicture, void(int player_id));
   MOCK_METHOD2(OnSetAudioSinkId,
                void(int player_id, const std::string& raw_device_id));
+  MOCK_METHOD2(OnSetMute, void(int player_id, bool mute));
 
   absl::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
@@ -89,14 +94,20 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     return false;
   }
 
+  media::MediaContentType GetMediaContentType() const override {
+    return media_content_type_;
+  }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }
 
  private:
-  RenderFrameHost* render_frame_host_;
+  raw_ptr<RenderFrameHost> render_frame_host_;
 
   const media_session::mojom::MediaAudioVideoState audio_video_state_;
+
+  media::MediaContentType media_content_type_;
 
   absl::optional<media_session::MediaPosition> position_;
 };
@@ -127,6 +138,8 @@ class MediaSessionImplServiceRoutingTest
 
     empty_metadata_.title = contents()->GetTitle();
     empty_metadata_.source_title = u"example.com";
+
+    GetMediaSession()->SetShouldThrottleDurationUpdateForTest(false);
   }
 
   void TearDown() override {
@@ -164,9 +177,9 @@ class MediaSessionImplServiceRoutingTest
                                MediaAudioVideoState::kAudioOnly) {
     players_[frame] =
         std::make_unique<NiceMock<MockMediaSessionPlayerObserver>>(
-            frame, audio_video_state);
+            frame, audio_video_state, type);
     MediaSessionImpl::Get(contents())
-        ->AddPlayer(players_[frame].get(), kPlayerId, type);
+        ->AddPlayer(players_[frame].get(), kPlayerId);
   }
 
   void ClearPlayersForFrame(TestRenderFrameHost* frame) {
@@ -210,8 +223,8 @@ class MediaSessionImplServiceRoutingTest
     return empty_metadata_.source_title;
   }
 
-  TestRenderFrameHost* main_frame_;
-  TestRenderFrameHost* sub_frame_;
+  raw_ptr<TestRenderFrameHost> main_frame_;
+  raw_ptr<TestRenderFrameHost> sub_frame_;
 
   using ServiceMap = std::map<TestRenderFrameHost*,
                               std::unique_ptr<MockMediaSessionServiceImpl>>;
@@ -623,7 +636,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(10);
+  base::TimeDelta seek_time = base::Seconds(10);
 
   EXPECT_CALL(*GetClientForFrame(main_frame_),
               DidReceiveAction(MediaSessionAction::kSeekTo, _))
@@ -648,7 +661,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(10);
+  base::TimeDelta seek_time = base::Seconds(10);
 
   EXPECT_CALL(*GetClientForFrame(main_frame_),
               DidReceiveAction(MediaSessionAction::kSeekTo, _))
@@ -1001,7 +1014,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   StartPlayerForFrame(main_frame_);
 
   media_session::MediaPosition player_position(
-      0.0, base::TimeDelta::FromSeconds(20), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::Seconds(20),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
@@ -1014,7 +1028,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
 
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::Seconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   services_[main_frame_]->SetPositionState(expected_position);
 
@@ -1032,7 +1047,8 @@ TEST_F(MediaSessionImplServiceRoutingTest, PositionFromServiceCanBeReset) {
   StartPlayerForFrame(main_frame_);
 
   media_session::MediaPosition player_position(
-      0.0, base::TimeDelta::FromSeconds(20), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::Seconds(20),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
@@ -1045,7 +1061,8 @@ TEST_F(MediaSessionImplServiceRoutingTest, PositionFromServiceCanBeReset) {
   EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
 
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::Seconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   services_[main_frame_]->SetPositionState(expected_position);
 
@@ -1160,6 +1177,47 @@ TEST_F(MediaSessionImplServiceRoutingTest, RouteAudioVideoState) {
       // We should fallback to the default state.
       observer.WaitForAudioVideoStates({});
     }
+  }
+}
+
+// Test duration duration update throttle behavior for routed service.
+// TODO (jazzhsu): Remove these tests once media session supports livestream.
+class MediaSessionImplServiceRoutingThrottleTest
+    : public MediaSessionImplServiceRoutingTest {
+ public:
+  void SetUp() override {
+    MediaSessionImplServiceRoutingTest::SetUp();
+    GetMediaSession()->SetShouldThrottleDurationUpdateForTest(true);
+  }
+
+  void FlushForTesting(MediaSessionImpl* session) {
+    session->FlushForTesting();
+  }
+
+  int GetDurationUpdateMaxAllowance() {
+    return MediaSessionImpl::kDurationUpdateMaxAllowance;
+  }
+};
+
+TEST_F(MediaSessionImplServiceRoutingThrottleTest,
+       ShouldNotThrottleRoutedService) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  // Duration updates will not be throttled for routed service.
+  for (int duration = 0; duration <= GetDurationUpdateMaxAllowance();
+       ++duration) {
+    media_session::MediaPosition expected_position(
+        /*playback_rate=*/0.0,
+        /*duration=*/base::Seconds(duration),
+        /*position=*/base::TimeDelta(), /*end_of_media=*/false);
+
+    services_[main_frame_]->SetPositionState(expected_position);
+    FlushForTesting(GetMediaSession());
+
+    observer.WaitForExpectedPosition(expected_position);
   }
 }
 

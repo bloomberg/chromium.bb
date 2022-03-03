@@ -5,7 +5,6 @@
 #ifndef REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
 #define REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/input_stub.h"
@@ -18,6 +17,10 @@ namespace protocol {
 class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
  public:
   ClientEventDispatcher();
+
+  ClientEventDispatcher(const ClientEventDispatcher&) = delete;
+  ClientEventDispatcher& operator=(const ClientEventDispatcher&) = delete;
+
   ~ClientEventDispatcher() override;
 
   // InputStub implementation.
@@ -28,8 +31,6 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
 
  private:
   void OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) override;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientEventDispatcher);
 };
 
 }  // namespace protocol

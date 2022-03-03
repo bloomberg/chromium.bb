@@ -16,7 +16,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -113,19 +113,14 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_INVALID_STREAM_ID = 38,
   SPDY_ERROR_INVALID_CONTROL_FRAME = 1,
   SPDY_ERROR_CONTROL_PAYLOAD_TOO_LARGE = 2,
-  SPDY_ERROR_ZLIB_INIT_FAILURE = 3,
-  SPDY_ERROR_UNSUPPORTED_VERSION = 4,
   SPDY_ERROR_DECOMPRESS_FAILURE = 5,
-  SPDY_ERROR_COMPRESS_FAILURE = 6,
-  SPDY_ERROR_GOAWAY_FRAME_CORRUPT = 29,
-  SPDY_ERROR_RST_STREAM_FRAME_CORRUPT = 30,
   SPDY_ERROR_INVALID_PADDING = 39,
   SPDY_ERROR_INVALID_DATA_FRAME_FLAGS = 8,
-  SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS = 9,
   SPDY_ERROR_UNEXPECTED_FRAME = 31,
   SPDY_ERROR_INTERNAL_FRAMER_ERROR = 41,
   SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE = 37,
   SPDY_ERROR_OVERSIZED_PAYLOAD = 40,
+
   // HttpDecoder or HttpDecoderAdapter error.
   SPDY_ERROR_HPACK_INDEX_VARINT_ERROR = 43,
   SPDY_ERROR_HPACK_NAME_LENGTH_VARINT_ERROR = 44,
@@ -144,6 +139,7 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_HPACK_TRUNCATED_BLOCK = 56,
   SPDY_ERROR_HPACK_FRAGMENT_TOO_LONG = 57,
   SPDY_ERROR_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT = 58,
+  SPDY_ERROR_STOP_PROCESSING = 59,
   // spdy::SpdyErrorCode mappings.
   STATUS_CODE_NO_ERROR = 41,
   STATUS_CODE_PROTOCOL_ERROR = 11,
@@ -174,7 +170,7 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION = 28,
 
   // Next free value.
-  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 59,
+  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 60,
 };
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapFramerErrorToProtocolError(
     http2::Http2DecoderAdapter::SpdyFramerError error);
@@ -214,7 +210,7 @@ enum class SpdyPushedStreamFate {
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
-static_assert(33 == http2::Http2DecoderAdapter::LAST_ERROR,
+static_assert(28 == http2::Http2DecoderAdapter::LAST_ERROR,
               "SpdyProtocolErrorDetails / Spdy Errors mismatch");
 static_assert(13 == spdy::SpdyErrorCode::ERROR_CODE_MAX,
               "SpdyProtocolErrorDetails / spdy::SpdyErrorCode mismatch");
@@ -223,6 +219,10 @@ static_assert(13 == spdy::SpdyErrorCode::ERROR_CODE_MAX,
 class NET_EXPORT_PRIVATE SpdyStreamRequest {
  public:
   SpdyStreamRequest();
+
+  SpdyStreamRequest(const SpdyStreamRequest&) = delete;
+  SpdyStreamRequest& operator=(const SpdyStreamRequest&) = delete;
+
   // Calls CancelRequest().
   ~SpdyStreamRequest();
 
@@ -271,9 +271,6 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // request in the session.
   void SetPriority(RequestPriority priority);
 
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
-
   const NetworkTrafficAnnotationTag traffic_annotation() const {
     return NetworkTrafficAnnotationTag(traffic_annotation_);
   }
@@ -312,8 +309,6 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   base::TimeTicks confirm_handshake_end_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyStreamRequest);
 };
 
 class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
@@ -350,6 +345,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               size_t session_max_recv_window_size,
               int session_max_queued_capped_frames,
               const spdy::SettingsMap& initial_settings,
+              bool enable_http2_settings_grease,
               const absl::optional<SpdySessionPool::GreasedHttp2Frame>&
                   greased_http2_frame,
               bool http2_end_stream_with_data_frame,
@@ -519,8 +515,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // MultiplexedSession methods:
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   bool GetSSLInfo(SSLInfo* ssl_info) const override;
-  base::StringPiece GetAcceptChViaAlpsForOrigin(
-      const url::Origin& origin) const override;
+  base::StringPiece GetAcceptChViaAlps(
+      const url::SchemeHostPort& scheme_host_port) const override;
 
   // Returns true if ALPN was negotiated for the underlying socket.
   bool WasAlpnNegotiated() const;
@@ -634,15 +630,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                             const HttpRequestInfo& request_info,
                             const SpdySessionKey& key) const override;
   base::WeakPtr<SpdySession> GetWeakPtrToSession() override;
-
-  // Dumps memory allocation stats to |stats|. Sets |*is_session_active| to
-  // indicate whether session is active.
-  // |stats| can be assumed as being default initialized upon entry.
-  // Implementation overrides fields in |stats|.
-  // Returns the estimate of dynamically allocated memory in bytes, which
-  // includes the size attributed to the underlying socket.
-  size_t DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
-                         bool* is_session_active) const;
 
   // Change this session's socket tag to |new_tag|. Returns true on success.
   bool ChangeSocketTag(const SocketTag& new_tag);
@@ -1034,11 +1021,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   std::set<SpdySessionKey> pooled_aliases_;
 
   // |pool_| owns us, therefore its lifetime must exceed ours.
-  SpdySessionPool* pool_;
-  HttpServerProperties* http_server_properties_;
+  raw_ptr<SpdySessionPool> pool_;
+  raw_ptr<HttpServerProperties> http_server_properties_;
 
-  TransportSecurityState* transport_security_state_;
-  SSLConfigService* ssl_config_service_;
+  raw_ptr<TransportSecurityState> transport_security_state_;
+  raw_ptr<SSLConfigService> ssl_config_service_;
 
   // One of these two owns the socket for this session, which is stored in
   // |socket_|. If |client_socket_handle_| is non-null, this session is on top
@@ -1051,7 +1038,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   std::unique_ptr<LoadTimingInfo::ConnectTiming> connect_timing_;
 
   // The socket for this session.
-  StreamSocket* socket_;
+  raw_ptr<StreamSocket> socket_;
 
   // The read buffer used to read data from the socket.
   // Non-null if there is a Read() pending.
@@ -1081,7 +1068,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Not owned. |push_delegate_| outlives the session and handles server pushes
   // received by session.
-  ServerPushDelegate* push_delegate_;
+  raw_ptr<ServerPushDelegate> push_delegate_;
 
   // Set of all created streams but that have not yet sent any frames.
   //
@@ -1120,7 +1107,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   base::WeakPtr<SpdyStream> in_flight_write_stream_;
 
   // Traffic annotation for the write in progress.
-  MutableNetworkTrafficAnnotationTag in_flight_write_traffic_annotation;
+  MutableNetworkTrafficAnnotationTag in_flight_write_traffic_annotation_;
 
   // Spdy Frame state.
   std::unique_ptr<BufferedSpdyFramer> buffered_spdy_framer_;
@@ -1141,6 +1128,13 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // and also control SpdySession parameters like initial receive window size
   // and maximum HPACK dynamic table size.
   const spdy::SettingsMap initial_settings_;
+
+  // If true, a setting parameter with reserved identifier will be sent in every
+  // initial SETTINGS frame, see
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+  // The setting identifier and value will be drawn independently for each
+  // connection to prevent tracking of the client.
+  const bool enable_http2_settings_grease_;
 
   // If set, an HTTP/2 frame with a reserved frame type will be sent after
   // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
@@ -1297,16 +1291,16 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   Http2PriorityDependencies priority_dependency_state_;
 
   // Map of origin to Accept-CH header field values received via ALPS.
-  base::flat_map<url::Origin, std::string> accept_ch_entries_received_via_alps_;
+  base::flat_map<url::SchemeHostPort, std::string>
+      accept_ch_entries_received_via_alps_;
 
   // Network quality estimator to which the ping RTTs should be reported. May be
   // nullptr.
-  NetworkQualityEstimator* network_quality_estimator_;
+  raw_ptr<NetworkQualityEstimator> network_quality_estimator_;
 
-  // Used for posting asynchronous IO tasks.  We use this even though
-  // SpdySession is refcounted because we don't need to keep the SpdySession
-  // alive if the last reference is within a RunnableMethod.  Just revoke the
-  // method.
+  // Used for accessing the SpdySession from asynchronous tasks. An asynchronous
+  // must check if its WeakPtr<SpdySession> is valid before accessing it, to
+  // correctly handle the case where it became unavailable and was deleted.
   base::WeakPtrFactory<SpdySession> weak_factory_{this};
 };
 

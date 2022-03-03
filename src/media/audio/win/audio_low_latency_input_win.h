@@ -69,7 +69,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
@@ -125,6 +125,9 @@ class MEDIA_EXPORT WASAPIAudioInputStream
                          const std::string& device_id,
                          AudioManager::LogCallback log_callback);
 
+  WASAPIAudioInputStream(const WASAPIAudioInputStream&) = delete;
+  WASAPIAudioInputStream& operator=(const WASAPIAudioInputStream&) = delete;
+
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
   ~WASAPIAudioInputStream() override;
@@ -171,8 +174,14 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // For the selected |uwp_device_id|, generate two lists of enabled audio
   // effects and store them in |default_effect_types_| and |raw_effect_types_|.
   HRESULT GetAudioCaptureEffects(const std::string& uwp_device_id);
-  HRESULT SetCommunicationsCategoryAndRawCaptureMode();
-  HRESULT GetAudioEngineStreamFormat();
+  // Returns the native number of channels that the audio engine uses for its
+  // internal processing of shared-mode streams.
+  HRESULT GetAudioEngineNumChannels(WORD* channels);
+  // Sets communications policy and excludes any built-in audio processing,
+  // i.e., activates raw capture mode.
+  // Raw capture mode is only enabled if the native number of input channels is
+  // less than |media::kMaxConcurrentChannels| (8).
+  HRESULT SetCommunicationsCategoryAndMaybeRawCaptureMode(WORD channels);
   // Returns whether the desired format is supported or not and writes the
   // result of a failing system call to |*hr|, or S_OK if successful. If this
   // function returns false with |*hr| == S_FALSE, the OS supports a closest
@@ -196,7 +205,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   void ReportAndResetGlitchStats();
 
   // Our creator, the audio manager needs to be notified when we close.
-  AudioManagerWin* const manager_;
+  const raw_ptr<AudioManagerWin> manager_;
 
   // Capturing is driven by this thread (which has no message loop).
   // All OnData() callbacks will be called from this thread.
@@ -241,7 +250,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   std::string device_id_;
 
   // Pointer to the object that will receive the recorded audio samples.
-  AudioInputCallback* sink_ = nullptr;
+  raw_ptr<AudioInputCallback> sink_ = nullptr;
 
   // Windows Multimedia Device (MMDevice) API interfaces.
 
@@ -339,8 +348,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   std::vector<ABI::Windows::Media::Effects::AudioEffectType> raw_effect_types_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(WASAPIAudioInputStream);
 };
 
 }  // namespace media

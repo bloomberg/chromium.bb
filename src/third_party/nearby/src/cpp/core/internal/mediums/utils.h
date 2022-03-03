@@ -16,9 +16,10 @@
 #define CORE_INTERNAL_MEDIUMS_UTILS_H_
 
 #include <memory>
+#include <string>
 
-#include "proto/connections/offline_wire_formats.pb.h"
 #include "platform/base/byte_array.h"
+#include "proto/connections/offline_wire_formats.pb.h"
 
 namespace location {
 namespace nearby {

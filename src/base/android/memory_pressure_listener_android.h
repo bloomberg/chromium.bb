@@ -6,7 +6,6 @@
 #define BASE_ANDROID_MEMORY_PRESSURE_LISTENER_ANDROID_H_
 
 #include "base/android/jni_android.h"
-#include "base/macros.h"
 
 namespace base {
 namespace android {
@@ -16,11 +15,12 @@ class BASE_EXPORT MemoryPressureListenerAndroid {
  public:
   static void Initialize(JNIEnv* env);
 
+  MemoryPressureListenerAndroid(const MemoryPressureListenerAndroid&) = delete;
+  MemoryPressureListenerAndroid& operator=(
+      const MemoryPressureListenerAndroid&) = delete;
+
   // Called by JNI.
   static void OnMemoryPressure(int memory_pressure_type);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureListenerAndroid);
 };
 
 }  // namespace android

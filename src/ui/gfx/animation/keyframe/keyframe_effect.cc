@@ -6,8 +6,7 @@
 
 #include <algorithm>
 
-#include "base/numerics/ranges.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "ui/gfx/animation/keyframe/animation_curve.h"
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 

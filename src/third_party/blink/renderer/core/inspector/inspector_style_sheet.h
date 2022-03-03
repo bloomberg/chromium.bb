@@ -30,7 +30,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_property_source_data.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
-#include "third_party/blink/renderer/core/inspector/protocol/CSS.h"
+#include "third_party/blink/renderer/core/inspector/protocol/css.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -40,6 +40,7 @@ namespace blink {
 
 class CSSKeyframeRule;
 class CSSMediaRule;
+class CSSContainerRule;
 class CSSStyleDeclaration;
 class CSSStyleRule;
 class CSSStyleSheet;
@@ -162,6 +163,11 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
                                  SourceRange* new_range,
                                  String* old_selector,
                                  ExceptionState&);
+  CSSContainerRule* SetContainerRuleText(const SourceRange&,
+                                         const String& selector,
+                                         SourceRange* new_range,
+                                         String* old_selector,
+                                         ExceptionState&);
   CSSStyleRule* AddRule(const String& rule_text,
                         const SourceRange& location,
                         SourceRange* added_range,

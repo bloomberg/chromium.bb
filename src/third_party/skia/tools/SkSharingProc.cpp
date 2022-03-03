@@ -29,7 +29,7 @@ void SkSharingSerialContext::collectNonTextureImagesFromPicture(
     SkSerialProcs tempProc;
     tempProc.fImageCtx = sharingCtx;
     tempProc.fImageProc = collectNonTextureImagesProc;
-    auto ns = SkNullWStream();
+    SkNullWStream ns;
     pic->serialize(&ns, &tempProc);
 }
 
@@ -56,7 +56,7 @@ sk_sp<SkData> SkSharingSerialContext::serializeImage(SkImage* img, void* ctx) {
 sk_sp<SkImage> SkSharingDeserialContext::deserializeImage(
   const void* data, size_t length, void* ctx) {
     if (!data || !length || !ctx) {
-        SkDebugf("SkSharingDeserialContext::deserializeImage arguments invalid %p %d %p.\n",
+        SkDebugf("SkSharingDeserialContext::deserializeImage arguments invalid %p %zu %p.\n",
             data, length, ctx);
         // Return something so the rest of the debugger can proceed.
         SkBitmap bm;

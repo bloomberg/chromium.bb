@@ -10,7 +10,10 @@
 
 #include "include/gpu/GrTypes.h"
 #include "include/gpu/vk/GrVkTypes.h"
+#include "include/private/SkMacros.h"
 #include "src/gpu/vk/GrVkManagedResource.h"
+
+#include <cinttypes>
 
 class GrProcessorKeyBuilder;
 class GrVkGpu;
@@ -85,7 +88,7 @@ public:
         // at least have a color attachment.
         kExternal_AttachmentFlag = 0x8,
     };
-    GR_DECL_BITFIELD_OPS_FRIENDS(AttachmentFlags);
+    SK_DECL_BITFIELD_OPS_FRIENDS(AttachmentFlags);
 
     enum class SelfDependencyFlags {
         kNone =                   0,
@@ -164,7 +167,8 @@ public:
 
 #ifdef SK_TRACE_MANAGED_RESOURCES
     void dumpInfo() const override {
-        SkDebugf("GrVkRenderPass: %d (%d refs)\n", fRenderPass, this->getRefCnt());
+        SkDebugf("GrVkRenderPass: %" PRIdPTR " (%d refs)\n",
+                 (intptr_t)fRenderPass, this->getRefCnt());
     }
 #endif
 
@@ -198,7 +202,7 @@ private:
     using INHERITED = GrVkManagedResource;
 };
 
-GR_MAKE_BITFIELD_OPS(GrVkRenderPass::AttachmentFlags);
-GR_MAKE_BITFIELD_CLASS_OPS(GrVkRenderPass::SelfDependencyFlags);
+SK_MAKE_BITFIELD_OPS(GrVkRenderPass::AttachmentFlags)
+GR_MAKE_BITFIELD_CLASS_OPS(GrVkRenderPass::SelfDependencyFlags)
 
 #endif

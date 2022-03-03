@@ -8,14 +8,11 @@
 #define CONTENT_BROWSER_SANDBOX_IPC_LINUX_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"
-#include "content/common/content_export.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
 namespace content {
@@ -26,6 +23,10 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   // the other end of.
   // browser_socket: the browser's end of the sandbox IPC socketpair.
   SandboxIPCHandler(int lifeline_fd, int browser_socket);
+
+  SandboxIPCHandler(const SandboxIPCHandler&) = delete;
+  SandboxIPCHandler& operator=(const SandboxIPCHandler&) = delete;
+
   ~SandboxIPCHandler() override;
 
   void Run() override;
@@ -43,8 +44,6 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
   const int lifeline_fd_;
   const int browser_socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxIPCHandler);
 };
 
 }  // namespace content

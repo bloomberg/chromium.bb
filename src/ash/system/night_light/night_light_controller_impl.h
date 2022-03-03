@@ -11,7 +11,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/night_light_controller.h"
 #include "ash/public/cpp/session/session_observer.h"
-#include "ash/system/night_light/time_of_day.h"
+#include "ash/system/time/time_of_day.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -87,6 +87,10 @@ class ASH_EXPORT NightLightControllerImpl
   };
 
   NightLightControllerImpl();
+
+  NightLightControllerImpl(const NightLightControllerImpl&) = delete;
+  NightLightControllerImpl& operator=(const NightLightControllerImpl&) = delete;
+
   ~NightLightControllerImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -345,8 +349,6 @@ class ASH_EXPORT NightLightControllerImpl
   gfx::Vector3dF ambient_rgb_scaling_factors_ = {1.f, 1.f, 1.f};
 
   base::WeakPtrFactory<NightLightControllerImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(NightLightControllerImpl);
 };
 
 }  // namespace ash

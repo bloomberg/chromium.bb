@@ -31,9 +31,7 @@ bool CPDF_ScaledRenderBuffer::Initialize(CPDF_RenderContext* pContext,
   if (m_pDevice->GetDeviceCaps(FXDC_RENDER_CAPS) & FXRC_GET_BITS)
     return true;
 
-  m_pContext = pContext;
   m_Rect = rect;
-  m_pObject = pObj;
   m_Matrix = CPDF_DeviceBuffer::CalculateMatrix(pDevice, rect, max_dpi,
                                                 /*scale=*/true);
   m_pBitmapDevice = std::make_unique<CFX_DefaultRenderDevice>();
@@ -47,7 +45,7 @@ bool CPDF_ScaledRenderBuffer::Initialize(CPDF_RenderContext* pContext,
     int32_t height = bitmap_rect.Height();
     // Set to 0 to make CalculatePitchAndSize() calculate it.
     constexpr uint32_t kNoPitch = 0;
-    Optional<CFX_DIBitmap::PitchAndSize> pitch_size =
+    absl::optional<CFX_DIBitmap::PitchAndSize> pitch_size =
         CFX_DIBitmap::CalculatePitchAndSize(width, height, dibFormat, kNoPitch);
     if (!pitch_size.has_value())
       return false;
@@ -58,8 +56,8 @@ bool CPDF_ScaledRenderBuffer::Initialize(CPDF_RenderContext* pContext,
     }
     m_Matrix.Scale(0.5f, 0.5f);
   }
-  m_pContext->GetBackground(m_pBitmapDevice->GetBitmap(), m_pObject.Get(),
-                            pOptions, m_Matrix);
+  pContext->GetBackground(m_pBitmapDevice->GetBitmap(), pObj, pOptions,
+                          m_Matrix);
   return true;
 }
 

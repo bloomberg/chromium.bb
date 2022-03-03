@@ -12,18 +12,26 @@
 #error "This file requires ARC support."
 #endif
 
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeMatchersAppInterface)
-
 namespace chrome_test_util {
 
 id<GREYMatcher> WindowWithNumber(int window_number) {
   return [ChromeMatchersAppInterface windowWithNumber:window_number];
 }
 
+id<GREYMatcher> BlockerWindowWithNumber(int window_number) {
+  return [ChromeMatchersAppInterface blockerWindowWithNumber:window_number];
+}
+
 id<GREYMatcher> MatchInWindowWithNumber(int window_number,
                                         id<GREYMatcher> matcher) {
   return grey_allOf(matcher, grey_ancestor(WindowWithNumber(window_number)),
                     nil);
+}
+
+id<GREYMatcher> MatchInBlockerWindowWithNumber(int window_number,
+                                               id<GREYMatcher> matcher) {
+  return grey_allOf(matcher,
+                    grey_ancestor(BlockerWindowWithNumber(window_number)), nil);
 }
 
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
@@ -162,6 +170,10 @@ id<GREYMatcher> ToolsMenuButton() {
   return [ChromeMatchersAppInterface toolsMenuButton];
 }
 
+id<GREYMatcher> NewTabButton() {
+  return [ChromeMatchersAppInterface openNewTabButton];
+}
+
 id<GREYMatcher> ShareButton() {
   return [ChromeMatchersAppInterface shareButton];
 }
@@ -210,9 +222,8 @@ id<GREYMatcher> OpenLinkInNewTabButton() {
   return [ChromeMatchersAppInterface openLinkInNewTabButton];
 }
 
-id<GREYMatcher> OpenLinkInIncognitoButton(BOOL use_new_string) {
-  return [ChromeMatchersAppInterface
-      openLinkInIncognitoButtonWithUseNewString:use_new_string];
+id<GREYMatcher> OpenLinkInIncognitoButton() {
+  return [ChromeMatchersAppInterface openLinkInIncognitoButton];
 }
 
 id<GREYMatcher> OpenLinkInNewWindowButton() {
@@ -261,10 +272,6 @@ id<GREYMatcher> SettingsMenuButton() {
 
 id<GREYMatcher> SettingsDoneButton() {
   return [ChromeMatchersAppInterface settingsDoneButton];
-}
-
-id<GREYMatcher> SyncSettingsConfirmButton() {
-  return [ChromeMatchersAppInterface syncSettingsConfirmButton];
 }
 
 id<GREYMatcher> AutofillCreditCardEditTableView() {
@@ -343,16 +350,16 @@ id<GREYMatcher> SettingsPrivacyTableView() {
   return [ChromeMatchersAppInterface settingsPrivacyTableView];
 }
 
-id<GREYMatcher> AccountsSyncButton() {
-  return [ChromeMatchersAppInterface accountsSyncButton];
-}
-
 id<GREYMatcher> ContentSettingsButton() {
   return [ChromeMatchersAppInterface contentSettingsButton];
 }
 
 id<GREYMatcher> GoogleServicesSettingsButton() {
   return [ChromeMatchersAppInterface googleServicesSettingsButton];
+}
+
+id<GREYMatcher> ManageSyncSettingsButton() {
+  return [ChromeMatchersAppInterface manageSyncSettingsButton];
 }
 
 id<GREYMatcher> GoogleServicesSettingsView() {
@@ -424,6 +431,18 @@ id<GREYMatcher> NTPCollectionView() {
   return [ChromeMatchersAppInterface ntpCollectionView];
 }
 
+id<GREYMatcher> NTPIncognitoView() {
+  return [ChromeMatchersAppInterface ntpIncognitoView];
+}
+
+id<GREYMatcher> NTPFeedMenuEnableButton() {
+  return [ChromeMatchersAppInterface ntpFeedMenuEnableButton];
+}
+
+id<GREYMatcher> NTPFeedMenuDisableButton() {
+  return [ChromeMatchersAppInterface ntpFeedMenuDisableButton];
+}
+
 id<GREYMatcher> WarningMessageView() {
   return [ChromeMatchersAppInterface warningMessageView];
 }
@@ -464,17 +483,20 @@ id<GREYMatcher> SystemSelectionCalloutCopyButton() {
   return [ChromeMatchersAppInterface systemSelectionCalloutCopyButton];
 }
 
-id<GREYMatcher> CopyActivityButton() API_AVAILABLE(ios(13)) {
+id<GREYMatcher> SystemSelectionCalloutOverflowButton() {
+  return [ChromeMatchersAppInterface systemSelectionCalloutOverflowButton];
+}
+
+id<GREYMatcher> CopyActivityButton() {
   return [ChromeMatchersAppInterface copyActivityButton];
 }
 
-id<GREYMatcher> CopyLinkButton(BOOL use_new_string) {
-  return [ChromeMatchersAppInterface
-      copyLinkButtonWithUseNewString:use_new_string];
+id<GREYMatcher> CopyLinkButton() {
+  return [ChromeMatchersAppInterface copyLinkButton];
 }
 
-id<GREYMatcher> EditButton(BOOL use_new_string) {
-  return [ChromeMatchersAppInterface editButtonWithUseNewString:use_new_string];
+id<GREYMatcher> EditButton() {
+  return [ChromeMatchersAppInterface editButton];
 }
 
 id<GREYMatcher> MoveButton() {
@@ -519,6 +541,11 @@ id<GREYMatcher> WebViewMatcher() {
 
 id<GREYMatcher> WebStateScrollViewMatcher() {
   return [ChromeMatchersAppInterface webStateScrollViewMatcher];
+}
+
+id<GREYMatcher> WebStateScrollViewMatcherInWindowWithNumber(int windowNumber) {
+  return [ChromeMatchersAppInterface
+      webStateScrollViewMatcherInWindowWithNumber:windowNumber];
 }
 
 id<GREYMatcher> HistoryClearBrowsingDataButton() {
@@ -619,14 +646,6 @@ id<GREYMatcher> AutofillSuggestionViewMatcher() {
 
 id<GREYMatcher> ContentViewSmallerThanScrollView() {
   return [ChromeMatchersAppInterface contentViewSmallerThanScrollView];
-}
-
-id<GREYMatcher> AutofillSaveCardLocallyInfobar() {
-  return [ChromeMatchersAppInterface autofillSaveCardLocallyInfobar];
-}
-
-id<GREYMatcher> AutofillUploadCardInfobar() {
-  return [ChromeMatchersAppInterface autofillUploadCardInfobar];
 }
 
 id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title) {
@@ -730,6 +749,36 @@ id<GREYMatcher> ManualFallbackSuggestPasswordMatcher() {
 
 id<GREYMatcher> UseSuggestedPasswordMatcher() {
   return [ChromeMatchersAppInterface useSuggestedPasswordMatcher];
+}
+
+#pragma mark - Tab Grid Edit Mode
+
+id<GREYMatcher> TabGridEditButton() {
+  return [ChromeMatchersAppInterface tabGridEditButton];
+}
+
+id<GREYMatcher> TabGridEditMenuCloseAllButton() {
+  return [ChromeMatchersAppInterface tabGridEditMenuCloseAllButton];
+}
+
+id<GREYMatcher> TabGridSelectTabsMenuButton() {
+  return [ChromeMatchersAppInterface tabGridSelectTabsMenuButton];
+}
+
+id<GREYMatcher> TabGridEditAddToButton() {
+  return [ChromeMatchersAppInterface tabGridEditAddToButton];
+}
+
+id<GREYMatcher> TabGridEditCloseTabsButton() {
+  return [ChromeMatchersAppInterface tabGridEditCloseTabsButton];
+}
+
+id<GREYMatcher> TabGridEditSelectAllButton() {
+  return [ChromeMatchersAppInterface tabGridEditSelectAllButton];
+}
+
+id<GREYMatcher> TabGridEditShareButton() {
+  return [ChromeMatchersAppInterface tabGridEditShareButton];
 }
 
 }  // namespace chrome_test_util

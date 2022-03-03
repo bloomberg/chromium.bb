@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace base {
@@ -29,6 +28,10 @@ class BrowserStateInfoCache {
  public:
   BrowserStateInfoCache(PrefService* prefs,
                         const base::FilePath& user_data_dir);
+
+  BrowserStateInfoCache(const BrowserStateInfoCache&) = delete;
+  BrowserStateInfoCache& operator=(const BrowserStateInfoCache&) = delete;
+
   virtual ~BrowserStateInfoCache();
 
   void AddBrowserState(const base::FilePath& browser_state_path,
@@ -76,8 +79,6 @@ class BrowserStateInfoCache {
   base::FilePath user_data_dir_;
   base::ObserverList<BrowserStateInfoCacheObserver, true>::Unchecked
       observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserStateInfoCache);
 };
 
 #endif  // IOS_CHROME_BROWSER_BROWSER_STATE_BROWSER_STATE_INFO_CACHE_H_

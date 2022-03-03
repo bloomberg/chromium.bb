@@ -50,8 +50,11 @@ class MultisampledSamplingTest : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
+        // TODO(crbug.com/dawn/1030): Compute pipeline compilation crashes.
+        DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsIntel());
+
         {
-            utils::ComboRenderPipelineDescriptor2 desc;
+            utils::ComboRenderPipelineDescriptor desc;
 
             desc.vertex.module = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]]
@@ -87,25 +90,25 @@ class MultisampledSamplingTest : public DawnTest {
 
             desc.primitive.topology = wgpu::PrimitiveTopology::TriangleStrip;
 
-            drawPipeline = device.CreateRenderPipeline2(&desc);
+            drawPipeline = device.CreateRenderPipeline(&desc);
         }
         {
             wgpu::ComputePipelineDescriptor desc = {};
-            desc.computeStage.entryPoint = "main";
-            desc.computeStage.module = utils::CreateShaderModule(device, R"(
+            desc.compute.entryPoint = "main";
+            desc.compute.module = utils::CreateShaderModule(device, R"(
                 [[group(0), binding(0)]] var texture0 : texture_multisampled_2d<f32>;
-                [[group(0), binding(1)]] var texture1 : texture_multisampled_2d<f32>;
+                [[group(0), binding(1)]] var texture1 : texture_depth_multisampled_2d;
 
                 [[block]] struct Results {
                     colorSamples : array<f32, 4>;
                     depthSamples : array<f32, 4>;
                 };
-                [[group(0), binding(2)]] var<storage> results : [[access(read_write)]] Results;
+                [[group(0), binding(2)]] var<storage, read_write> results : Results;
 
-                [[stage(compute)]] fn main() {
+                [[stage(compute), workgroup_size(1)]] fn main() {
                     for (var i : i32 = 0; i < 4; i = i + 1) {
                         results.colorSamples[i] = textureLoad(texture0, vec2<i32>(0, 0), i).x;
-                        results.depthSamples[i] = textureLoad(texture1, vec2<i32>(0, 0), i).x;
+                        results.depthSamples[i] = textureLoad(texture1, vec2<i32>(0, 0), i);
                     }
                 })");
 
@@ -128,7 +131,7 @@ TEST_P(MultisampledSamplingTest, SamplePositions) {
     wgpu::Texture colorTexture;
     {
         wgpu::TextureDescriptor desc = {};
-        desc.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment;
+        desc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment;
         desc.size = kTextureSize;
         desc.format = kColorFormat;
         desc.sampleCount = kSampleCount;
@@ -138,7 +141,7 @@ TEST_P(MultisampledSamplingTest, SamplePositions) {
     wgpu::Texture depthTexture;
     {
         wgpu::TextureDescriptor desc = {};
-        desc.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment;
+        desc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment;
         desc.size = kTextureSize;
         desc.format = kDepthFormat;
         desc.sampleCount = kSampleCount;

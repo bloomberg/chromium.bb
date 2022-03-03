@@ -29,6 +29,10 @@ bool TestAutofillDriver::IsInMainFrame() const {
   return is_in_main_frame_;
 }
 
+bool TestAutofillDriver::IsPrerendering() const {
+  return false;
+}
+
 bool TestAutofillDriver::CanShowAutofillUi() const {
   return true;
 }
@@ -48,15 +52,26 @@ bool TestAutofillDriver::RendererIsAvailable() {
 }
 
 #if !defined(OS_IOS)
-InternalAuthenticator*
+webauthn::InternalAuthenticator*
 TestAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
   return test_authenticator_.get();
 }
 #endif
 
-void TestAutofillDriver::SendFormDataToRenderer(int query_id,
-                                                RendererFormDataAction action,
-                                                const FormData& form_data) {
+base::flat_map<FieldGlobalId, ServerFieldType>
+TestAutofillDriver::FillOrPreviewForm(
+    int query_id,
+    mojom::RendererFormDataAction action,
+    const FormData& form_data,
+    const url::Origin& triggered_origin,
+    const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
+  base::flat_map<FieldGlobalId, ServerFieldType> result = field_type_map;
+  if (field_type_map_filter_) {
+    base::EraseIf(result, [&](const auto& p) {
+      return !field_type_map_filter_.Run(triggered_origin, p.first, p.second);
+    });
+  }
+  return result;
 }
 
 void TestAutofillDriver::PropagateAutofillPredictions(
@@ -94,17 +109,12 @@ void TestAutofillDriver::RendererShouldSetSuggestionAvailability(
 void TestAutofillDriver::PopupHidden() {
 }
 
-gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
-    const gfx::RectF& bounding_box) {
-  return bounding_box;
-}
-
 net::IsolationInfo TestAutofillDriver::IsolationInfo() {
   return isolation_info_;
 }
 
 void TestAutofillDriver::SendFieldsEligibleForManualFillingToRenderer(
-    const std::vector<FieldRendererId>& fields) {}
+    const std::vector<FieldGlobalId>& fields) {}
 
 void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
   is_incognito_ = is_incognito;
@@ -119,6 +129,12 @@ void TestAutofillDriver::SetIsolationInfo(
   isolation_info_ = isolation_info;
 }
 
+void TestAutofillDriver::SetFieldTypeMapFilter(
+    base::RepeatingCallback<
+        bool(const url::Origin&, FieldGlobalId, ServerFieldType)> callback) {
+  field_type_map_filter_ = callback;
+}
+
 void TestAutofillDriver::SetSharedURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   test_shared_loader_factory_ = url_loader_factory;
@@ -126,7 +142,7 @@ void TestAutofillDriver::SetSharedURLLoaderFactory(
 
 #if !defined(OS_IOS)
 void TestAutofillDriver::SetAuthenticator(
-    InternalAuthenticator* authenticator_) {
+    webauthn::InternalAuthenticator* authenticator_) {
   test_authenticator_.reset(authenticator_);
 }
 #endif

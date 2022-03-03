@@ -4,7 +4,7 @@
 
 #include "ui/accessibility/ax_action_handler_registry.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_action_handler_base.h"
 
@@ -12,7 +12,8 @@ namespace ui {
 
 // static
 AXActionHandlerRegistry* AXActionHandlerRegistry::GetInstance() {
-  return base::Singleton<AXActionHandlerRegistry>::get();
+  static base::NoDestructor<AXActionHandlerRegistry> registry;
+  return registry.get();
 }
 
 void AXActionHandlerRegistry::SetFrameIDForAXTreeID(
@@ -38,14 +39,9 @@ void AXActionHandlerRegistry::RemoveObserver(
 }
 
 void AXActionHandlerRegistry::PerformAction(
-    const ui::AXTreeID& tree_id,
-    int32_t automation_node_id,
-    const std::string& action_type,
-    int32_t request_id,
-    const base::DictionaryValue& optional_args) {
+    const ui::AXActionData& action_data) {
   for (AXActionHandlerObserver& observer : observers_) {
-    observer.PerformAction(tree_id, automation_node_id, action_type, request_id,
-                           optional_args);
+    observer.PerformAction(action_data);
   }
 }
 

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/action_value.pb.h"
@@ -24,6 +24,7 @@
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/web/check_on_top_worker.h"
 #include "components/autofill_assistant/browser/web/click_or_tap_worker.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -36,6 +37,8 @@
 #include "url/gurl.h"
 
 namespace autofill {
+class AutofillableData;
+class AutofillDataModel;
 class AutofillProfile;
 class ContentAutofillDriver;
 class CreditCard;
@@ -45,7 +48,6 @@ struct FormFieldData;
 
 namespace content {
 class WebContents;
-class RenderFrameHost;
 }  // namespace content
 
 namespace autofill_assistant {
@@ -61,14 +63,22 @@ namespace autofill_assistant {
 // multiple operations, whether in sequence or in parallel.
 class WebController {
  public:
-  // Create web controller for a given |web_contents|. |settings| must be valid
+  // Create web controller for a given |web_contents|. |user_data| must be valid
   // for the lifetime of the controller.
   static std::unique_ptr<WebController> CreateForWebContents(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const UserData* user_data,
+      ProcessedActionStatusDetailsProto* log_info);
 
-  // |web_contents| and |settings| must outlive this web controller.
+  // |web_contents| and |user_data| must outlive this web controller.
   WebController(content::WebContents* web_contents,
-                std::unique_ptr<DevtoolsClient> devtools_client);
+                std::unique_ptr<DevtoolsClient> devtools_client,
+                const UserData* user_data,
+                ProcessedActionStatusDetailsProto* log_info);
+
+  WebController(const WebController&) = delete;
+  WebController& operator=(const WebController&) = delete;
+
   virtual ~WebController();
 
   // Load |url| in the current tab. Returns immediately, before the new page has
@@ -77,22 +87,57 @@ class WebController {
 
   // Find the element given by |selector|. If multiple elements match
   // |selector| and if |strict_mode| is false, return the first one that is
-  // found. Otherwise if |strict-mode| is true, do not return any.
+  // found. Otherwise if |strict_mode| is true, do not return any.
   //
   // To check multiple elements, use a BatchElementChecker.
   virtual void FindElement(const Selector& selector,
                            bool strict_mode,
                            ElementFinder::Callback callback);
 
+  // Find the element given by |selector| starting from the given
+  // |start_element|. Returns results or errors based on the |result_type|.
+  virtual void RunElementFinder(const ElementFinder::Result& start_element,
+                                const Selector& selector,
+                                ElementFinder::ResultType result_type,
+                                ElementFinder::Callback callback);
+
   // Find all elements matching |selector|. If there are no matches, the status
   // will be ELEMENT_RESOLUTION_FAILED.
   virtual void FindAllElements(const Selector& selector,
                                ElementFinder::Callback callback);
 
-  // Scroll the |element| into view if needed, center the element on the screen
-  // if specified.
+  // Scroll the |element| into view. |animation| defines the transition
+  // animation, |vertical_alignment| defines the vertical alignment,
+  // |horizontal_alignment| defines the horizontal alignment.
   virtual void ScrollIntoView(
+      const std::string& animation,
+      const std::string& vertical_alignment,
+      const std::string& horizontal_alignment,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the |element| into view only if needed. |center| the element if
+  // requested.
+  virtual void ScrollIntoViewIfNeeded(
       bool center,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the window by |scroll_distance|. |animation| defines the transition
+  // animation. Specify |optional_frame| if an iFrame instead of the main
+  // window should be scrolled.
+  virtual void ScrollWindow(
+      const ScrollDistance& scroll_distance,
+      const std::string& animation,
+      const ElementFinder::Result& optional_frame,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the |element| by |scroll_distance|. |animation| defines the
+  // transition animation. Specify |optional_frame| if an iFrame instead of the
+  // main window should be scrolled.
+  virtual void ScrollContainer(
+      const ScrollDistance& scroll_distance,
+      const std::string& animation,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -122,19 +167,19 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Fill the address form given by |selector| with the given address
+  // Fill the address form given by |element| with the given address
   // |profile|.
   virtual void FillAddressForm(
-      const autofill::AutofillProfile* profile,
-      const Selector& selector,
+      std::unique_ptr<autofill::AutofillProfile> profile,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Fill the card form given by |selector| with the given |card| and its
+  // Fill the card form given by |element| with the given |card| and its
   // |cvc|.
   virtual void FillCardForm(
       std::unique_ptr<autofill::CreditCard> card,
       const std::u16string& cvc,
-      const Selector& selector,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Return |FormData| and |FormFieldData| for the element identified with
@@ -167,19 +212,14 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Highlight an |element|.
-  virtual void HighlightElement(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback);
-
   // Scrolls |container| to an |element|'s position. |top_padding|
   // specifies the padding between the focused element and the top of the
   // container. If |scrollable_element| is not specified, the window will be
   // scrolled instead.
   virtual void ScrollToElementPosition(
       std::unique_ptr<ElementFinder::Result> container,
-      const ElementFinder::Result& element,
       const TopPadding& top_padding,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Get the value attribute of an |element| and return the result through
@@ -225,6 +265,11 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  // Blur the current |element| that might have focus to remove its focus.
+  virtual void BlurField(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   // Inputs the specified codepoints into |element|. Expects the |element| to
   // have focus. Key presses will have a delay of
   // |key_press_delay_in_millisecond| between them. Returns the result through
@@ -253,6 +298,7 @@ class WebController {
 
   // Return the outerHTML of |element|.
   virtual void GetOuterHtml(
+      bool include_all_inner_text,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
@@ -260,6 +306,7 @@ class WebController {
   // Return the outerHTML of each element in |elements|. |elements| must contain
   // the object ID of a JS array containing the elements.
   virtual void GetOuterHtmls(
+      bool include_all_inner_text,
       const ElementFinder::Result& elements,
       base::OnceCallback<void(const ClientStatus&,
                               const std::vector<std::string>&)> callback);
@@ -312,51 +359,14 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Dispatch a custom JS event 'duplexweb' with an optional payload.
+  // Dispatch a custom JS event 'duplexweb'.
   virtual void DispatchJsEvent(
-      base::OnceCallback<void(const ClientStatus&)> callback) const;
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
  private:
   friend class WebControllerBrowserTest;
-
-  struct FillFormInputData {
-    FillFormInputData();
-    ~FillFormInputData();
-
-    // Data for filling address form.
-    std::unique_ptr<autofill::AutofillProfile> profile;
-
-    // Data for filling card form.
-    std::unique_ptr<autofill::CreditCard> card;
-    std::u16string cvc;
-  };
-
-  // RAII object that sets the action state to "running" when the object is
-  // allocated and to "not running" when it gets deallocated.
-  class ScopedAssistantActionStateRunning
-      : private content::WebContentsObserver {
-   public:
-    explicit ScopedAssistantActionStateRunning(
-        content::WebContents* web_contents,
-        content::RenderFrameHost* render_frame_host);
-    ~ScopedAssistantActionStateRunning() override;
-
-    ScopedAssistantActionStateRunning(
-        const ScopedAssistantActionStateRunning&) = delete;
-    ScopedAssistantActionStateRunning& operator=(
-        const ScopedAssistantActionStateRunning&) = delete;
-
-   private:
-    void SetAssistantActionState(bool running);
-
-    // Overrides content::WebContentsObserver:
-    void RenderFrameDeleted(
-        content::RenderFrameHost* render_frame_host) override;
-
-    content::RenderFrameHost* render_frame_host_;
-  };
 
   void OnJavaScriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,
@@ -376,6 +386,14 @@ class WebController {
                               const std::vector<std::string>&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void ExecuteVoidJsWithoutArguments(
+      const ElementFinder::Result& element,
+      const std::string& js_snippet,
+      WebControllerErrorInfoProto::WebAction web_action,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnScrollWindow(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
+                      std::unique_ptr<runtime::EvaluateResult> result);
   void OnCheckOnTop(CheckOnTopWorker* worker,
                     base::OnceCallback<void(const ClientStatus&)> callback,
                     const ClientStatus& status);
@@ -392,56 +410,38 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-  void RunElementFinder(const Selector& selector,
-                        ElementFinder::ResultType result_type,
-                        ElementFinder::Callback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,
                            ElementFinder::Callback callback,
                            const ClientStatus& status,
                            std::unique_ptr<ElementFinder::Result> result);
+  void OnFindElementForRetrieveElementFormAndFieldData(
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData& form_data,
+                              const autofill::FormFieldData& field_data)>
+          callback,
+      const ClientStatus& element_status,
+      std::unique_ptr<ElementFinder::Result> element_result);
   void GetElementFormAndFieldData(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&,
                               autofill::ContentAutofillDriver* driver,
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback);
-  void OnFindElementForGetFormAndFieldData(
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&,
-                              autofill::ContentAutofillDriver* driver,
-                              const autofill::FormData&,
-                              const autofill::FormFieldData&)> callback,
-      const ClientStatus& element_status,
-      std::unique_ptr<ElementFinder::Result> element_result);
-  void GetUniqueElementSelector(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
-          callback);
-  void OnGetElementTagForUniqueSelector(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
-          callback,
-      const ClientStatus& tag_status,
-      const std::string& tag);
-  void GetElementQueryIndex(
-      const std::string& query_selector,
+  void GetBackendNodeId(
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&, int)> callback);
-  void OnGetElementQueryIndexForUniqueSelector(
-      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
-          callback,
-      const std::string& query_selector,
-      const ClientStatus& index_status,
-      int index);
-  void OnGetUniqueSelectorForFormAndFieldData(
+  void OnGetBackendNodeId(
+      base::OnceCallback<void(const ClientStatus&, int)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<dom::DescribeNodeResult> result);
+  void OnGetBackendNodeIdForFormAndFieldData(
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&,
                               autofill::ContentAutofillDriver* driver,
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback,
-      std::unique_ptr<ElementFinder::Result> element,
-      const ClientStatus& selector_status,
-      const std::string& query_selector,
-      int index);
+      const ClientStatus& node_status,
+      int backend_node_id);
   void OnGetFormAndFieldData(
       base::OnceCallback<void(const ClientStatus&,
                               autofill::ContentAutofillDriver* driver,
@@ -450,14 +450,18 @@ class WebController {
       autofill::ContentAutofillDriver* driver,
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
+  // Use |retain_data| to retain the source data until the form filling has
+  // been performed.
   void OnGetFormAndFieldDataForFilling(
-      std::unique_ptr<FillFormInputData> data_to_autofill,
+      const autofill::AutofillableData& data_to_autofill,
+      std::unique_ptr<autofill::AutofillDataModel> retain_data,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& form_status,
       autofill::ContentAutofillDriver* driver,
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   void OnGetFormAndFieldDataForRetrieving(
+      std::unique_ptr<ElementFinder::Result> element,
       base::OnceCallback<void(const ClientStatus&,
                               const autofill::FormData& form_data,
                               const autofill::FormFieldData& field_data)>
@@ -467,31 +471,28 @@ class WebController {
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   // Handling a JS result for a "SelectOption" action. This expects the JS
-  // result to contain an integer and returns the following status:
-  // * -1 -> INVALID_TARGET
-  // *  0 -> OPTION_ELEMENT_NOT_FOUND
-  // *  1 -> ACTION_APPLIED
-  // *  n -> TOO_MANY_OPTION_VALUES_FOUND
+  // result to contain an integer mapped to a ClientStatus.
   void OnSelectOptionJavascriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      ProcessedActionStatusProto status_if_zero,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-
+  void SendKeyEvents(WebControllerErrorInfoProto::WebAction web_action,
+                     const std::vector<KeyEvent>& key_events,
+                     int key_press_delay,
+                     const ElementFinder::Result& element,
+                     base::OnceCallback<void(const ClientStatus&)> callback);
   void OnSendKeyboardInputDone(
       SendKeyboardInputWorker* worker_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
-
-  void OnGetElementRect(ElementRectGetter* getter_to_release,
-                        ElementRectGetter::ElementRectCallback callback,
-                        const ClientStatus& rect_status,
-                        const RectF& element_rect);
   void OnGetVisualViewport(
       base::OnceCallback<void(const ClientStatus&, const RectF&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-
+  void OnGetElementRect(ElementRectGetter* getter_to_release,
+                        ElementRectGetter::ElementRectCallback callback,
+                        const ClientStatus& rect_status,
+                        const RectF& element_rect);
   void OnWaitForDocumentReadyState(
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
@@ -499,36 +500,22 @@ class WebController {
       base::TimeTicks wait_start_time,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-
   void OnDispatchJsEvent(base::OnceCallback<void(const ClientStatus&)> callback,
                          const DevtoolsClient::ReplyStatus& reply_status,
                          std::unique_ptr<runtime::EvaluateResult> result) const;
 
-  // Wrapper for calling the |callback| after re-enabling the keyboard by
-  // setting the assistant action state to "not running".
-  void RetainAssistantActionRunningStateAndExecuteCallback(
-      std::unique_ptr<ScopedAssistantActionStateRunning> scoped_state,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& client_status);
-  // Disables the keyboard by setting the assistant action state to "running"
-  // and wraps the |callback| such that the keyboard is re-enabled before
-  // calling it. Uses the |RenderFrameHost| of the |ElementFinder::Result| to
-  // extract the appropriate |ContentAutofillDriver|.
-  base::OnceCallback<void(const ClientStatus&)>
-  GetAssistantActionRunningStateRetainingCallback(
-      const ElementFinder::Result& element_result,
-      base::OnceCallback<void(const ClientStatus&)> callback);
-
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
-  content::WebContents* web_contents_;
+  const raw_ptr<content::WebContents> web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+  // Must not be |nullptr| and outlive this web controller.
+  const raw_ptr<const UserData> user_data_;
+  const raw_ptr<ProcessedActionStatusDetailsProto> log_info_;
 
   // Currently running workers.
   std::vector<std::unique_ptr<WebControllerWorker>> pending_workers_;
 
   base::WeakPtrFactory<WebController> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(WebController);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_H_

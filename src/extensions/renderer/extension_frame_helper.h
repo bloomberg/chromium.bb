@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -20,7 +19,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
@@ -40,6 +39,10 @@ class ExtensionFrameHelper
  public:
   ExtensionFrameHelper(content::RenderFrame* render_frame,
                        Dispatcher* extension_dispatcher);
+
+  ExtensionFrameHelper(const ExtensionFrameHelper&) = delete;
+  ExtensionFrameHelper& operator=(const ExtensionFrameHelper&) = delete;
+
   ~ExtensionFrameHelper() override;
 
   // Returns a list of extension RenderFrames that match the given filter
@@ -115,6 +118,9 @@ class ExtensionFrameHelper
                                 const std::string& extension_id,
                                 const std::string& script_id,
                                 const GURL& url) override;
+
+  void set_did_create_script_context() { did_create_script_context_ = true; }
+  bool did_create_script_context() const { return did_create_script_context_; }
 
   // Called when the document element has been inserted in this frame. This
   // method may invoke untrusted JavaScript code that invalidate the frame and
@@ -211,13 +217,13 @@ class ExtensionFrameHelper
   // navigation happens, it is either the initial one or a reload.
   bool has_started_first_navigation_ = false;
 
+  bool did_create_script_context_ = false;
+
   mojo::AssociatedRemote<mojom::LocalFrameHost> local_frame_host_remote_;
 
   mojo::AssociatedReceiver<mojom::LocalFrame> local_frame_receiver_{this};
 
   base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionFrameHelper);
 };
 
 }  // namespace extensions

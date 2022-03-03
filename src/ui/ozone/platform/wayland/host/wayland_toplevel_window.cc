@@ -5,12 +5,16 @@
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 
 #include <aura-shell-client-protocol.h>
+#include <string>
 
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/gtk_shell1.h"
 #include "ui/ozone/platform/wayland/host/gtk_surface1.h"
@@ -22,6 +26,8 @@
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
+#include "ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.h"
+#include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/wayland_extension.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -29,6 +35,12 @@
 #endif
 
 namespace ui {
+
+namespace {
+bool decorations_allowed_for_test_ = true;
+}
+
+constexpr int kVisibleOnAllWorkspaces = -1;
 
 WaylandToplevelWindow::WaylandToplevelWindow(PlatformWindowDelegate* delegate,
                                              WaylandConnection* connection)
@@ -42,6 +54,11 @@ WaylandToplevelWindow::WaylandToplevelWindow(PlatformWindowDelegate* delegate,
 WaylandToplevelWindow::~WaylandToplevelWindow() = default;
 
 bool WaylandToplevelWindow::CreateShellToplevel() {
+  // Certain Wayland compositors (E.g. Mutter) expects wl_surface to have no
+  // buffer attached when xdg-surface role is created.
+  wl_surface_attach(root_surface()->surface(), nullptr, 0, 0);
+  root_surface()->Commit(false);
+
   ShellObjectFactory factory;
   shell_toplevel_ = factory.CreateShellToplevelWrapper(connection(), this);
   if (!shell_toplevel_) {
@@ -97,7 +114,7 @@ void WaylandToplevelWindow::Show(bool inactive) {
     return;
   }
 
-  UpdateBufferScale(false);
+  UpdateWindowScale(false);
 
   if (auto* drag_controller = connection()->window_drag_controller())
     drag_controller->OnToplevelWindowCreated(this);
@@ -117,10 +134,6 @@ void WaylandToplevelWindow::Hide() {
 
   shell_toplevel_.reset();
   connection()->ScheduleFlush();
-
-  // Detach buffer from surface in order to completely shutdown menus and
-  // tooltips, and release resources.
-  connection()->buffer_manager_host()->ResetSurfaceContents(root_surface());
 }
 
 bool WaylandToplevelWindow::IsVisible() const {
@@ -200,10 +213,17 @@ void WaylandToplevelWindow::Activate() {
   //
   // TODO(crbug.com/1175327): add support for xdg-activation.
   if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
-                           ZAURA_SURFACE_ACTIVATE_SINCE_VERSION)
+                           ZAURA_SURFACE_ACTIVATE_SINCE_VERSION) {
     zaura_surface_activate(aura_surface_.get());
-  else if (gtk_surface1_)
+  } else if (gtk_surface1_) {
     gtk_surface1_->RequestFocus();
+  }
+  // This is required as the high level activation might not get a flush for
+  // a while. Example: Ash calls OpenURL in Lacros, which activates a window
+  // but nothing more happens (until the user moves the mouse over a Lacros
+  // window in which case events will start and the activation will come
+  // through).
+  connection()->ScheduleFlush();
 }
 
 void WaylandToplevelWindow::SizeConstraintsChanged() {
@@ -245,23 +265,56 @@ bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
   return true;
 }
 
+bool WaylandToplevelWindow::CanSetDecorationInsets() const {
+  return decorations_allowed_for_test_ &&
+         const_cast<WaylandToplevelWindow*>(this)
+             ->connection()
+             ->SupportsSetWindowGeometry();
+}
+
+void WaylandToplevelWindow::SetOpaqueRegion(
+    const std::vector<gfx::Rect>* region_px) {
+  root_surface()->SetOpaqueRegion(region_px);
+}
+
+void WaylandToplevelWindow::SetInputRegion(const gfx::Rect* region_px) {
+  if (region_px)
+    input_region_px_ = *region_px;
+  else
+    input_region_px_ = absl::nullopt;
+  root_surface()->SetInputRegion(region_px);
+}
+
+void WaylandToplevelWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_SET_ASPECT_RATIO_SINCE_VERSION) {
+    zaura_surface_set_aspect_ratio(aura_surface_.get(), aspect_ratio.width(),
+                                   aspect_ratio.height());
+  }
+}
+
 absl::optional<std::vector<gfx::Rect>> WaylandToplevelWindow::GetWindowShape()
     const {
   return window_shape_in_dips_;
 }
 
-void WaylandToplevelWindow::UpdateBufferScale(bool update_bounds) {
-  auto old_scale = buffer_scale();
-  WaylandWindow::UpdateBufferScale(update_bounds);
-  if (old_scale == buffer_scale())
+// static
+void WaylandToplevelWindow::AllowSettingDecorationInsetsForTest(bool allow) {
+  decorations_allowed_for_test_ = allow;
+}
+
+void WaylandToplevelWindow::UpdateWindowScale(bool update_bounds) {
+  auto old_scale = window_scale();
+  WaylandWindow::UpdateWindowScale(update_bounds);
+  if (old_scale == window_scale())
     return;
 
   // Update min/max size in DIP if buffer scale is updated.
   SizeConstraintsChanged();
 }
 
-void WaylandToplevelWindow::HandleToplevelConfigure(int32_t width,
-                                                    int32_t height,
+void WaylandToplevelWindow::HandleToplevelConfigure(int32_t width_dip,
+                                                    int32_t height_dip,
                                                     bool is_maximized,
                                                     bool is_fullscreen,
                                                     bool is_activated) {
@@ -304,85 +357,54 @@ void WaylandToplevelWindow::HandleToplevelConfigure(int32_t width,
   // the fullscreen mode, wayland may set the width and height to be 1. Instead,
   // explicitly set the bounds to the current desired ones or the previous
   // bounds.
-  if (width > 1 && height > 1) {
-    pending_bounds_dip_ = gfx::Rect(0, 0, width, height);
+  if (width_dip > 1 && height_dip > 1) {
+    pending_bounds_dip_ = gfx::Rect(0, 0, width_dip, height_dip);
+    if (is_normal && frame_insets_px()) {
+      pending_bounds_dip_.Inset(
+          -gfx::ScaleToRoundedInsets(*frame_insets_px(), 1.f / window_scale()));
+      pending_bounds_dip_.set_origin({0, 0});
+    }
   } else if (is_normal) {
     pending_bounds_dip_.set_size(
         gfx::ScaleToRoundedSize(GetRestoredBoundsInPixels().IsEmpty()
                                     ? GetBounds().size()
                                     : GetRestoredBoundsInPixels().size(),
-                                1.0 / buffer_scale()));
+                                1.0 / window_scale()));
   }
 
-  // Store the restored bounds of current state differs from the normal state.
+  // Store the restored bounds if current state differs from the normal state.
   // It can be client or compositor side change from normal to something else.
   // Thus, we must store previous bounds to restore later.
   SetOrResetRestoredBounds();
 
   if (did_window_show_state_change && !did_send_delegate_notification) {
     previous_state_ = old_state;
-    delegate()->OnWindowStateChanged(state_);
+    delegate()->OnWindowStateChanged(previous_state_, state_);
   }
 
   if (did_active_change)
     delegate()->OnActivationChanged(is_active_);
+
+  state_change_in_transit_ = false;
 }
 
 void WaylandToplevelWindow::HandleSurfaceConfigure(uint32_t serial) {
-  if (pending_bounds_dip_ ==
-          gfx::ScaleToRoundedRect(GetBounds(), 1.f / buffer_scale()) &&
-      pending_configures_.empty()) {
-    // If |pending_bounds_dip_| matches GetBounds(), and |pending_configures_|
-    // is empty, implying that the window is already rendering at
-    // |pending_bounds_dip_|, then a frame matching |pending_bounds_dip_| may
-    // not arrive soon, despite the window delegate receives the updated bounds.
-    // Without a new frame, UpdateVisualSize() is not invoked, leaving this
-    // |configure| unacknowledged.
-    //   E.g. With static window content, |configure| that does not
-    //     change window size will not cause the window to redraw.
-    // Hence, acknowledge this |configure| now to tell the Wayland compositor
-    // that this window has been configured.
-    shell_toplevel()->SetWindowGeometry(pending_bounds_dip_);
-    shell_toplevel()->AckConfigure(serial);
-    connection()->ScheduleFlush();
-  } else if (!pending_configures_.empty() &&
-             pending_bounds_dip_.size() ==
-                 pending_configures_.back().bounds_dip.size()) {
-    // There is an existing pending_configure with the same size, do not push a
-    // new one. Instead, update the serial of the pending_configure.
-    pending_configures_.back().serial = serial;
-  } else {
-    // Otherwise, push the pending |configure| to |pending_configures_|, wait
-    // for a frame update, which will invoke UpdateVisualSize().
-    DCHECK_LT(pending_configures_.size(), 100u);
-    pending_configures_.push_back({pending_bounds_dip_, serial});
-    // The Wayland compositor can generate xdg-shell.configure events more
-    // frequently than frame updates from gpu process. Throttle
-    // ApplyPendingBounds() such that we forward new bounds to
-    // PlatformWindowDelegate at most once per frame.
-    if (pending_configures_.size() <= 1)
-      ApplyPendingBounds();
-  }
+  ProcessPendingBoundsDip(serial);
   pending_bounds_dip_ = gfx::Rect();
 }
 
-void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px) {
-  WaylandWindow::UpdateVisualSize(size_px);
+void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px,
+                                             float scale_factor) {
+  WaylandWindow::UpdateVisualSize(size_px, scale_factor);
 
   if (!shell_toplevel_)
     return;
-  auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / buffer_scale());
-  auto result =
-      std::find_if(pending_configures_.begin(), pending_configures_.end(),
-                   [&size_dip](auto& configure) {
-                     return size_dip == configure.bounds_dip.size();
-                   });
 
-  if (result != pending_configures_.end()) {
-    shell_toplevel()->SetWindowGeometry(gfx::Rect(size_dip));
-    shell_toplevel()->AckConfigure(result->serial);
-    connection()->ScheduleFlush();
-    pending_configures_.erase(pending_configures_.begin(), ++result);
+  if (!ProcessVisualSizeUpdate(size_px, scale_factor) &&
+      set_geometry_on_next_frame_) {
+    auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / scale_factor);
+    SetWindowGeometry(gfx::Rect(size_dip));
+    set_geometry_on_next_frame_ = false;
   }
 
   // UpdateVisualSize() indicates a frame update, which means we can forward new
@@ -401,12 +423,56 @@ bool WaylandToplevelWindow::OnInitialize(
 #endif
   SetWaylandExtension(this, static_cast<WaylandExtension*>(this));
   SetWmMoveLoopHandler(this, static_cast<WmMoveLoopHandler*>(this));
+  SetWorkspaceExtension(this, static_cast<WorkspaceExtension*>(this));
+  SetWorkspaceExtensionDelegate(properties.workspace_extension_delegate);
+  SetDeskExtension(this, static_cast<DeskExtension*>(this));
+
+  if (!properties.workspace.empty()) {
+    int workspace;
+    base::StringToInt(properties.workspace, &workspace);
+    workspace_ = workspace;
+  } else if (properties.visible_on_all_workspaces) {
+    workspace_ = kVisibleOnAllWorkspaces;
+  }
+
+  SetPinnedModeExtension(this, static_cast<PinnedModeExtension*>(this));
   return true;
 }
 
 bool WaylandToplevelWindow::IsActive() const {
   return is_active_;
 }
+
+bool WaylandToplevelWindow::IsSurfaceConfigured() {
+  return shell_toplevel() ? shell_toplevel()->IsConfigured() : false;
+}
+
+void WaylandToplevelWindow::SetWindowGeometry(gfx::Rect bounds_dip) {
+  DCHECK(connection()->SupportsSetWindowGeometry());
+
+  if (!shell_toplevel_)
+    return;
+
+  if (state_ == PlatformWindowState::kNormal && frame_insets_px()) {
+    bounds_dip.Inset(
+        gfx::ScaleToRoundedInsets(*frame_insets_px(), 1.f / window_scale()));
+  }
+  shell_toplevel_->SetWindowGeometry(bounds_dip);
+}
+
+void WaylandToplevelWindow::AckConfigure(uint32_t serial) {
+  shell_toplevel()->AckConfigure(serial);
+}
+
+void WaylandToplevelWindow::UpdateDecorations() {
+  if (!state_change_in_transit_)
+    set_geometry_on_next_frame_ = true;
+}
+
+void WaylandToplevelWindow::OcclusionChanged(void* data,
+                                             zaura_surface* surface,
+                                             wl_fixed_t occlusion_fraction,
+                                             uint32_t occlusion_reason) {}
 
 void WaylandToplevelWindow::LockFrame(void* data, zaura_surface* surface) {
   WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
@@ -418,6 +484,37 @@ void WaylandToplevelWindow::UnlockFrame(void* data, zaura_surface* surface) {
   WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
   DCHECK(self);
   self->OnFrameLockingChanged(false);
+}
+
+void WaylandToplevelWindow::OcclusionStateChanged(void* data,
+                                                  zaura_surface* surface,
+                                                  uint32_t mode) {
+  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  DCHECK(self);
+  auto state = PlatformWindowOcclusionState::kUnknown;
+  switch (mode) {
+    case ZAURA_SURFACE_OCCLUSION_STATE_UNKNOWN:
+      state = PlatformWindowOcclusionState::kUnknown;
+      break;
+    case ZAURA_SURFACE_OCCLUSION_STATE_VISIBLE:
+      state = PlatformWindowOcclusionState::kVisible;
+      break;
+    case ZAURA_SURFACE_OCCLUSION_STATE_OCCLUDED:
+      state = PlatformWindowOcclusionState::kOccluded;
+      break;
+    case ZAURA_SURFACE_OCCLUSION_STATE_HIDDEN:
+      state = PlatformWindowOcclusionState::kHidden;
+      break;
+  }
+  self->OnOcclusionStateChanged(state);
+}
+
+void WaylandToplevelWindow::DeskChanged(void* data,
+                                        zaura_surface* surface,
+                                        int state) {
+  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  DCHECK(self);
+  self->OnDeskChanged(state);
 }
 
 bool WaylandToplevelWindow::RunMoveLoop(const gfx::Vector2d& drag_offset) {
@@ -450,15 +547,16 @@ void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
 }
 
 void WaylandToplevelWindow::ShowSnapPreview(
-    WaylandWindowSnapDirection snap_direction) {
+    WaylandWindowSnapDirection snap_direction,
+    bool allow_haptic_feedback) {
   if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
                            ZAURA_SURFACE_INTENT_TO_SNAP_SINCE_VERSION) {
     uint32_t zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_NONE;
     switch (snap_direction) {
-      case WaylandWindowSnapDirection::kLeft:
+      case WaylandWindowSnapDirection::kPrimary:
         zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_LEFT;
         break;
-      case WaylandWindowSnapDirection::kRight:
+      case WaylandWindowSnapDirection::kSecondary:
         zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_RIGHT;
         break;
       case WaylandWindowSnapDirection::kNone:
@@ -478,10 +576,10 @@ void WaylandToplevelWindow::CommitSnap(
   if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
                            ZAURA_SURFACE_UNSET_SNAP_SINCE_VERSION) {
     switch (snap_direction) {
-      case WaylandWindowSnapDirection::kLeft:
+      case WaylandWindowSnapDirection::kPrimary:
         zaura_surface_set_snap_left(aura_surface_.get());
         return;
-      case WaylandWindowSnapDirection::kRight:
+      case WaylandWindowSnapDirection::kSecondary:
         zaura_surface_set_snap_right(aura_surface_.get());
         return;
       case WaylandWindowSnapDirection::kNone:
@@ -504,6 +602,96 @@ void WaylandToplevelWindow::SetCanGoBack(bool value) {
   }
 }
 
+void WaylandToplevelWindow::SetPip() {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_SET_PIP_SINCE_VERSION) {
+    zaura_surface_set_pip(aura_surface_.get());
+  }
+}
+
+void WaylandToplevelWindow::Lock(WaylandOrientationLockType lock_type) {
+  shell_toplevel_->Lock(lock_type);
+}
+
+void WaylandToplevelWindow::Unlock() {
+  shell_toplevel_->Unlock();
+}
+
+bool WaylandToplevelWindow::SupportsPointerLock() {
+  return !!connection()->wayland_zwp_pointer_constraints() &&
+         !!connection()->wayland_zwp_relative_pointer_manager();
+}
+void WaylandToplevelWindow::LockPointer(bool enabled) {
+  auto* pointer_constraints = connection()->wayland_zwp_pointer_constraints();
+  if (enabled)
+    pointer_constraints->LockPointer(root_surface());
+  else
+    pointer_constraints->UnlockPointer();
+}
+
+int WaylandToplevelWindow::GetNumberOfDesks() const {
+  auto* zaura_shell =
+      const_cast<WaylandToplevelWindow*>(this)->connection()->zaura_shell();
+  return zaura_shell ? zaura_shell->GetNumberOfDesks() : 0;
+}
+
+int WaylandToplevelWindow::GetActiveDeskIndex() const {
+  auto* zaura_shell =
+      const_cast<WaylandToplevelWindow*>(this)->connection()->zaura_shell();
+  // The index of the active desk is 0 when there is no virtual desk supported.
+  return zaura_shell ? zaura_shell->GetActiveDeskIndex() : 0;
+}
+
+std::u16string WaylandToplevelWindow::GetDeskName(int index) const {
+  auto* zaura_shell =
+      const_cast<WaylandToplevelWindow*>(this)->connection()->zaura_shell();
+  return zaura_shell ? base::UTF8ToUTF16(zaura_shell->GetDeskName(index))
+                     : std::u16string();
+}
+
+void WaylandToplevelWindow::SendToDeskAtIndex(int index) {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_MOVE_TO_DESK_SINCE_VERSION) {
+    zaura_surface_move_to_desk(aura_surface_.get(), index);
+  }
+}
+
+void WaylandToplevelWindow::Pin(bool trusted) const {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_SET_PIN_SINCE_VERSION) {
+    zaura_surface_set_pin(aura_surface_.get(), trusted);
+  }
+}
+
+void WaylandToplevelWindow::Unpin() const {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_UNSET_PIN_SINCE_VERSION) {
+    zaura_surface_unset_pin(aura_surface_.get());
+  }
+}
+
+std::string WaylandToplevelWindow::GetWorkspace() const {
+  return workspace_.has_value() ? base::NumberToString(workspace_.value())
+                                : std::string();
+}
+
+void WaylandToplevelWindow::SetVisibleOnAllWorkspaces(bool always_visible) {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_MOVE_TO_DESK_SINCE_VERSION) {
+    SendToDeskAtIndex(always_visible ? kVisibleOnAllWorkspaces
+                                     : GetActiveDeskIndex());
+  }
+}
+
+bool WaylandToplevelWindow::IsVisibleOnAllWorkspaces() const {
+  return workspace_ == kVisibleOnAllWorkspaces;
+}
+
+void WaylandToplevelWindow::SetWorkspaceExtensionDelegate(
+    WorkspaceExtensionDelegate* delegate) {
+  workspace_extension_delegate_ = delegate;
+}
+
 void WaylandToplevelWindow::TriggerStateChanges() {
   if (!shell_toplevel_)
     return;
@@ -524,7 +712,9 @@ void WaylandToplevelWindow::TriggerStateChanges() {
     shell_toplevel_->UnSetMaximized();
   }
 
-  delegate()->OnWindowStateChanged(state_);
+  state_change_in_transit_ = (previous_state_ != state_);
+
+  delegate()->OnWindowStateChanged(previous_state_, state_);
 
   connection()->ScheduleFlush();
 }
@@ -553,13 +743,13 @@ void WaylandToplevelWindow::SetSizeConstraints() {
 
   if (min_size_.has_value()) {
     auto min_size_dip =
-        gfx::ScaleToRoundedSize(min_size_.value(), 1.0f / buffer_scale());
+        gfx::ScaleToRoundedSize(min_size_.value(), 1.0f / window_scale());
     shell_toplevel_->SetMinSize(min_size_dip.width(), min_size_dip.height());
   }
 
   if (max_size_.has_value()) {
     auto max_size_dip =
-        gfx::ScaleToRoundedSize(max_size_.value(), 1.0f / buffer_scale());
+        gfx::ScaleToRoundedSize(max_size_.value(), 1.0f / window_scale());
     shell_toplevel_->SetMaxSize(max_size_dip.width(), max_size_dip.height());
   }
 
@@ -582,20 +772,21 @@ void WaylandToplevelWindow::SetOrResetRestoredBounds() {
 void WaylandToplevelWindow::SetUpShellIntegration() {
   // This method should be called after the XDG surface is initialized.
   DCHECK(shell_toplevel_);
-
   if (connection()->zaura_shell() && !aura_surface_) {
-    static const zaura_surface_listener zaura_surface_listener = {
-        nullptr,
-        &WaylandToplevelWindow::LockFrame,
-        &WaylandToplevelWindow::UnlockFrame,
+    static constexpr zaura_surface_listener zaura_surface_listener = {
+        &OcclusionChanged,
+        &LockFrame,
+        &UnlockFrame,
+        &OcclusionStateChanged,
+        &DeskChanged,
     };
-
     aura_surface_.reset(zaura_shell_get_aura_surface(
         connection()->zaura_shell()->wl_object(), root_surface()->surface()));
-
     zaura_surface_add_listener(aura_surface_.get(), &zaura_surface_listener,
                                this);
+    zaura_surface_set_occlusion_tracking(aura_surface_.get());
     SetImmersiveFullscreenStatus(false);
+    SetInitialWorkspace();
   }
 
   if (connection()->gtk_shell1()) {
@@ -628,11 +819,36 @@ void WaylandToplevelWindow::OnFrameLockingChanged(bool lock) {
   delegate()->OnSurfaceFrameLockingChanged(lock);
 }
 
+void WaylandToplevelWindow::OnOcclusionStateChanged(
+    PlatformWindowOcclusionState occlusion_state) {
+  delegate()->OnOcclusionStateChanged(occlusion_state);
+}
+
+void WaylandToplevelWindow::OnDeskChanged(int state) {
+  DCHECK(delegate());
+  workspace_ = state;
+  if (workspace_extension_delegate_)
+    workspace_extension_delegate_->OnWorkspaceChanged();
+}
+
+void WaylandToplevelWindow::SetInitialWorkspace() {
+  if (!workspace_.has_value())
+    return;
+
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_SET_INITIAL_WORKSPACE_SINCE_VERSION) {
+    zaura_surface_set_initial_workspace(
+        aura_surface_.get(), base::NumberToString(workspace_.value()).c_str());
+  }
+}
+
 void WaylandToplevelWindow::UpdateWindowMask() {
   // TODO(http://crbug.com/1158733): When supporting PlatformWindow::SetShape,
   // update window region with the given |shape|.
   WaylandWindow::UpdateWindowMask();
-  root_surface()->SetInputRegion(gfx::Rect(visual_size_px()));
+  gfx::Rect region(visual_size_px());
+  root_surface()->SetInputRegion(input_region_px_ ? &*input_region_px_
+                                                  : &region);
 }
 
 void WaylandToplevelWindow::UpdateWindowShape() {
@@ -645,8 +861,12 @@ void WaylandToplevelWindow::UpdateWindowShape() {
     return;
   }
   SkPath window_mask_in_dips =
-      wl::ConvertPathToDIP(window_mask_in_pixels, buffer_scale());
+      wl::ConvertPathToDIP(window_mask_in_pixels, window_scale());
   window_shape_in_dips_ = wl::CreateRectsFromSkPath(window_mask_in_dips);
+}
+
+bool WaylandToplevelWindow::GetTabletMode() {
+  return connection()->GetTabletMode();
 }
 
 }  // namespace ui

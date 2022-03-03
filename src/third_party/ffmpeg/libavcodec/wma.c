@@ -41,9 +41,11 @@ static av_cold int init_coef_vlc(VLC *vlc, uint16_t **prun_table,
     const uint16_t *levels_table = vlc_table->levels;
     uint16_t *run_table, *int_table;
     float *flevel_table;
-    int i, l, j, k, level;
+    int i, l, j, k, level, ret;
 
-    init_vlc(vlc, VLCBITS, n, table_bits, 1, 1, table_codes, 4, 4, 0);
+    ret = init_vlc(vlc, VLCBITS, n, table_bits, 1, 1, table_codes, 4, 4, 0);
+    if (ret < 0)
+        return ret;
 
     run_table    = av_malloc_array(n, sizeof(uint16_t));
     flevel_table = av_malloc_array(n, sizeof(*flevel_table));
@@ -79,7 +81,7 @@ av_cold int ff_wma_init(AVCodecContext *avctx, int flags2)
     WMACodecContext *s = avctx->priv_data;
     int i, ret;
     float bps1, high_freq;
-    volatile float bps;
+    float bps;
     int sample_rate1;
     int coef_vlc_table;
 
@@ -457,7 +459,7 @@ int ff_wma_run_level_decode(AVCodecContext *avctx, GetBitContext *gb,
                         if (get_bits1(gb)) {
                             av_log(avctx, AV_LOG_ERROR,
                                    "broken escape sequence\n");
-                            return -1;
+                            return AVERROR_INVALIDDATA;
                         } else
                             offset += get_bits(gb, frame_len_bits) + 4;
                     } else
@@ -475,7 +477,7 @@ int ff_wma_run_level_decode(AVCodecContext *avctx, GetBitContext *gb,
                offset,
                num_coefs
               );
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     return 0;

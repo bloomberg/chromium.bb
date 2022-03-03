@@ -6,16 +6,17 @@ package org.chromium.chrome.browser.continuous_search;
 
 import static org.hamcrest.Matchers.lessThan;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
@@ -35,17 +36,19 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
-import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -79,13 +82,11 @@ public class ContinuousSearchContainerCoordinatorTest {
     @Mock
     private ThemeColorProvider mThemeColorProviderMock;
     @Mock
-    private Resources mResources;
-    @Mock
     private SearchUrlHelper.Natives mSearchUrlHelperJniMock;
     @Mock
     private ContinuousSearchSceneLayer.Natives mContinuousSearchSceneLayerJniMock;
     @Mock
-    private UrlUtilities.Natives mUrlUtilitiesJniMock;
+    private UrlFormatter.Natives mUrlFormatterJniMock;
 
     private ObservableSupplierImpl<Tab> mTabSupplier = new ObservableSupplierImpl<Tab>();
 
@@ -110,11 +111,16 @@ public class ContinuousSearchContainerCoordinatorTest {
 
     @Before
     public void setUp() {
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CONTINUOUS_SEARCH, true);
+        testValues.addFieldTrialParamOverride(ChromeFeatureList.CONTINUOUS_SEARCH,
+                ContinuousSearchListMediator.TRIGGER_MODE_PARAM, "0");
+        FeatureList.setTestValues(testValues);
         mSrpUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL);
         mJniMocker.mock(SearchUrlHelperJni.TEST_HOOKS, mSearchUrlHelperJniMock);
         mJniMocker.mock(
                 ContinuousSearchSceneLayerJni.TEST_HOOKS, mContinuousSearchSceneLayerJniMock);
-        mJniMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
+        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
         doReturn(TEST_QUERY).when(mSearchUrlHelperJniMock).getQueryIfValidSrpUrl(eq(mSrpUrl));
         doReturn(TEST_RESULT_TYPE)
                 .when(mSearchUrlHelperJniMock)
@@ -122,10 +128,12 @@ public class ContinuousSearchContainerCoordinatorTest {
         doReturn(FAKE_NATIVE_ADDR).when(mContinuousSearchSceneLayerJniMock).init(any());
         doReturn(mResourceLoaderMock).when(mResourceManagerMock).getDynamicResourceLoader();
 
-        mRoot = new LinearLayout(ContextUtils.getApplicationContext());
+        Context context =
+                new ContextThemeWrapper(ContextUtils.getApplicationContext(), R.style.ColorOverlay);
+        mRoot = new LinearLayout(context);
         mRoot.setLayoutParams(new LinearLayout.LayoutParams(100, 100));
         mRoot.setOrientation(LinearLayout.VERTICAL);
-        ViewStub viewStub = new ViewStub(ContextUtils.getApplicationContext());
+        ViewStub viewStub = new ViewStub(context);
         viewStub.setId(STUB_ID);
         viewStub.setInflatedId(INFLATED_ID);
         viewStub.setLayoutResource(
@@ -143,7 +151,7 @@ public class ContinuousSearchContainerCoordinatorTest {
         mUserData.mAllowNativeUrlChecks = false;
         mCoordinator = new ContinuousSearchContainerCoordinator(viewStub, mLayoutManagerMock,
                 mResourceManagerMock, mTabSupplier, mStateProviderMock, mAnimateNativeControls,
-                mDefaultTopHeight, mThemeColorProviderMock, mResources, (state) -> {
+                mDefaultTopHeight, mThemeColorProviderMock, context, (state) -> {
                     mAnimateHidingState = state;
                     mAnimateHidingStateCount++;
                 });
@@ -169,7 +177,7 @@ public class ContinuousSearchContainerCoordinatorTest {
         results1.add(new PageItem(resultUrl, "Red 1"));
         groups.add(new PageGroup("Red Group", false, results1));
         ContinuousNavigationMetadata metadata =
-                new ContinuousNavigationMetadata(mSrpUrl, TEST_QUERY, TEST_RESULT_TYPE, groups);
+                new ContinuousNavigationMetadata(mSrpUrl, TEST_QUERY, getProvider(), groups);
 
         mTabSupplier.set(mTabMock);
         mUserData.updateData(metadata, mSrpUrl);
@@ -183,8 +191,12 @@ public class ContinuousSearchContainerCoordinatorTest {
         mRoot.findViewById(INFLATED_ID).layout(0, 0, 100, 100);
         mCoordinator.onLayoutChange(view, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        when(mUrlUtilitiesJniMock.getDomainAndRegistry(any(), anyBoolean()))
-                .thenAnswer((invocation) -> { return (String) invocation.getArguments()[0]; });
+        // Just return the Url verbatim in this test since we are primarily concerned with the UI
+        // inflating.
+        when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(any(), anyInt()))
+                .thenAnswer((invocation) -> {
+                    return ((GURL) invocation.getArguments()[0]).getSpec();
+                });
         RecyclerView recyclerView = rootView.findViewById(R.id.recycler_view);
         Assert.assertNotNull(recyclerView);
         recyclerView.layout(0, 0, 100, 100);
@@ -193,10 +205,11 @@ public class ContinuousSearchContainerCoordinatorTest {
         Assert.assertNull(mRoot.findViewById(STUB_ID));
         Assert.assertNotNull(mRoot.findViewById(INFLATED_ID));
         // UI is still in flux so just assert that the items exist.
-        Assert.assertEquals(2, recyclerView.getAdapter().getItemCount());
+        Assert.assertEquals(1, recyclerView.getAdapter().getItemCount());
 
         // Invalidate.
         mUserData.invalidateData();
+        mCoordinator.getMediatorForTesting().runOnFinishedHide();
         Assert.assertEquals(0, recyclerView.getAdapter().getItemCount());
     }
 
@@ -214,7 +227,7 @@ public class ContinuousSearchContainerCoordinatorTest {
         results1.add(new PageItem(resultUrl, "Red 1"));
         groups.add(new PageGroup("Red Group", false, results1));
         ContinuousNavigationMetadata metadata =
-                new ContinuousNavigationMetadata(mSrpUrl, TEST_QUERY, TEST_RESULT_TYPE, groups);
+                new ContinuousNavigationMetadata(mSrpUrl, TEST_QUERY, getProvider(), groups);
 
         mUserData.updateData(metadata, mSrpUrl);
         mUserData.updateCurrentUrl(resultUrl);
@@ -239,7 +252,7 @@ public class ContinuousSearchContainerCoordinatorTest {
         results1.add(new PageItem(resultUrl, "Red 1"));
         groups.add(new PageGroup("Red Group", false, results1));
         ContinuousNavigationMetadata metadata =
-                new ContinuousNavigationMetadata(mSrpUrl, TEST_QUERY, TEST_RESULT_TYPE, groups);
+                new ContinuousNavigationMetadata(mSrpUrl, TEST_QUERY, getProvider(), groups);
 
         mTabSupplier.set(mTabMock);
         mUserData.updateData(metadata, mSrpUrl);
@@ -261,5 +274,9 @@ public class ContinuousSearchContainerCoordinatorTest {
         Assert.assertNotNull(bitmap);
         Assert.assertThat(1, lessThan(bitmap.getHeight()));
         Assert.assertThat(1, lessThan(bitmap.getWidth()));
+    }
+
+    private ContinuousNavigationMetadata.Provider getProvider() {
+        return new ContinuousNavigationMetadata.Provider(TEST_RESULT_TYPE, null, 0);
     }
 }

@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -42,6 +43,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,8 +132,7 @@ Logo GetSampleLogo(const GURL& logo_url, base::Time response_time) {
   logo.image = MakeBitmap(2, 5);
   logo.dark_image = MakeBitmap2(20, 50);
   logo.metadata.can_show_after_expiration = false;
-  logo.metadata.expiration_time =
-      response_time + base::TimeDelta::FromHours(19);
+  logo.metadata.expiration_time = response_time + base::Hours(19);
   logo.metadata.fingerprint = "8bc33a80";
   logo.metadata.source_url =
       AppendPreliminaryParamsToDoodleURL(false, false, logo_url);
@@ -150,8 +151,7 @@ Logo GetSampleLogoWithoutDarkImage(const GURL& logo_url,
   Logo logo;
   logo.image = MakeBitmap(2, 5);
   logo.metadata.can_show_after_expiration = false;
-  logo.metadata.expiration_time =
-      response_time + base::TimeDelta::FromHours(19);
+  logo.metadata.expiration_time = response_time + base::Hours(19);
   logo.metadata.fingerprint = "8bc33a80";
   logo.metadata.source_url =
       AppendPreliminaryParamsToDoodleURL(false, false, logo_url);
@@ -186,7 +186,7 @@ std::string MakeServerResponse(const SkBitmap& image,
                                const std::string& dark_mime_type,
                                const std::string& fingerprint,
                                base::TimeDelta time_to_live) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
 
   std::string data_uri = "data:";
   data_uri += mime_type;
@@ -198,27 +198,27 @@ std::string MakeServerResponse(const SkBitmap& image,
   dark_data_uri += ";base64,";
   dark_data_uri += EncodeBitmapAsPNGBase64(dark_image);
 
-  dict.SetString("ddljson.target_url", on_click_url);
-  dict.SetString("ddljson.alt_text", alt_text);
+  dict.SetStringPath("ddljson.target_url", on_click_url);
+  dict.SetStringPath("ddljson.alt_text", alt_text);
   if (animated_url.empty()) {
-    dict.SetString("ddljson.doodle_type", "SIMPLE");
+    dict.SetStringPath("ddljson.doodle_type", "SIMPLE");
     if (!image.isNull())
-      dict.SetString("ddljson.data_uri", data_uri);
+      dict.SetStringPath("ddljson.data_uri", data_uri);
     if (!dark_image.isNull())
-      dict.SetString("ddljson.dark_data_uri", dark_data_uri);
+      dict.SetStringPath("ddljson.dark_data_uri", dark_data_uri);
   } else {
-    dict.SetString("ddljson.doodle_type", "ANIMATED");
-    dict.SetBoolean("ddljson.large_image.is_animated_gif", true);
-    dict.SetString("ddljson.large_image.url", animated_url);
-    dict.SetString("ddljson.dark_large_image.url", dark_animated_url);
+    dict.SetStringPath("ddljson.doodle_type", "ANIMATED");
+    dict.SetBoolPath("ddljson.large_image.is_animated_gif", true);
+    dict.SetStringPath("ddljson.large_image.url", animated_url);
+    dict.SetStringPath("ddljson.dark_large_image.url", dark_animated_url);
     if (!image.isNull())
-      dict.SetString("ddljson.cta_data_uri", data_uri);
+      dict.SetStringPath("ddljson.cta_data_uri", data_uri);
     if (!dark_image.isNull())
-      dict.SetString("ddljson.dark_cta_data_uri", dark_data_uri);
+      dict.SetStringPath("ddljson.dark_cta_data_uri", dark_data_uri);
   }
-  dict.SetString("ddljson.fingerprint", fingerprint);
+  dict.SetStringPath("ddljson.fingerprint", fingerprint);
   if (time_to_live != base::TimeDelta())
-    dict.SetInteger("ddljson.time_to_live_ms",
+    dict.SetIntPath("ddljson.time_to_live_ms",
                     static_cast<int>(time_to_live.InMilliseconds()));
 
   std::string output;
@@ -371,7 +371,7 @@ class LogoServiceImplTest : public ::testing::Test {
         base::BindRepeating(&LogoServiceImplTest::use_gray_background,
                             base::Unretained(this)));
     logo_service_->SetClockForTests(&test_clock_);
-    logo_service_->SetLogoCacheForTests(base::WrapUnique(logo_cache_));
+    logo_service_->SetLogoCacheForTests(base::WrapUnique(logo_cache_.get()));
   }
 
   void TearDown() override {
@@ -420,7 +420,7 @@ class LogoServiceImplTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   TemplateURLService template_url_service_;
   base::SimpleTestClock test_clock_;
-  NiceMock<MockLogoCache>* logo_cache_;
+  raw_ptr<NiceMock<MockLogoCache>> logo_cache_;
 
   // Used for mocking |logo_service_| URLs.
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -710,8 +710,7 @@ TEST_F(LogoServiceImplTest, ValidateCachedLogo) {
   fresh_logo.dark_image.reset();
   fresh_logo.metadata.mime_type.clear();
   fresh_logo.metadata.dark_mime_type.clear();
-  fresh_logo.metadata.expiration_time =
-      test_clock_.Now() + base::TimeDelta::FromDays(8);
+  fresh_logo.metadata.expiration_time = test_clock_.Now() + base::Days(8);
   SetServerResponseWhenFingerprint(fresh_logo.metadata.fingerprint,
                                    ServerResponse(fresh_logo));
 
@@ -757,8 +756,7 @@ TEST_F(LogoServiceImplTest, UpdateCachedLogoMetadata) {
   fresh_logo.metadata.on_click_url = GURL("https://new.onclick.url");
   fresh_logo.metadata.alt_text = "new alt text";
   fresh_logo.metadata.animated_url = GURL("https://new.animated.url");
-  fresh_logo.metadata.expiration_time =
-      test_clock_.Now() + base::TimeDelta::FromDays(8);
+  fresh_logo.metadata.expiration_time = test_clock_.Now() + base::Days(8);
   SetServerResponseWhenFingerprint(fresh_logo.metadata.fingerprint,
                                    ServerResponse(fresh_logo));
 
@@ -845,7 +843,7 @@ TEST_F(LogoServiceImplTest, DeleteCachedLogoFromOldUrl) {
 
 TEST_F(LogoServiceImplTest, LogoWithTTLCannotBeShownAfterExpiration) {
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
-  base::TimeDelta time_to_live = base::TimeDelta::FromDays(3);
+  base::TimeDelta time_to_live = base::Days(3);
   logo.metadata.expiration_time = test_clock_.Now() + time_to_live;
   SetServerResponse(ServerResponse(logo));
   LogoCallbacks callbacks;
@@ -871,15 +869,14 @@ TEST_F(LogoServiceImplTest, LogoWithoutTTLCanBeShownAfterExpiration) {
   const LogoMetadata* cached_metadata = logo_cache_->GetCachedLogoMetadata();
   ASSERT_TRUE(cached_metadata);
   EXPECT_TRUE(cached_metadata->can_show_after_expiration);
-  EXPECT_EQ(test_clock_.Now() + base::TimeDelta::FromDays(30),
+  EXPECT_EQ(test_clock_.Now() + base::Days(30),
             cached_metadata->expiration_time);
 }
 
 TEST_F(LogoServiceImplTest, UseSoftExpiredCachedLogo) {
   SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
-  cached_logo.metadata.expiration_time =
-      test_clock_.Now() - base::TimeDelta::FromSeconds(1);
+  cached_logo.metadata.expiration_time = test_clock_.Now() - base::Seconds(1);
   cached_logo.metadata.can_show_after_expiration = true;
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -897,8 +894,7 @@ TEST_F(LogoServiceImplTest, UseSoftExpiredCachedLogo) {
 
 TEST_F(LogoServiceImplTest, RerequestSoftExpiredCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
-  cached_logo.metadata.expiration_time =
-      test_clock_.Now() - base::TimeDelta::FromDays(5);
+  cached_logo.metadata.expiration_time = test_clock_.Now() - base::Days(5);
   cached_logo.metadata.can_show_after_expiration = true;
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -920,8 +916,7 @@ TEST_F(LogoServiceImplTest, RerequestSoftExpiredCachedLogo) {
 TEST_F(LogoServiceImplTest, DeleteAncientCachedLogo) {
   SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
-  cached_logo.metadata.expiration_time =
-      test_clock_.Now() - base::TimeDelta::FromDays(200);
+  cached_logo.metadata.expiration_time = test_clock_.Now() - base::Days(200);
   cached_logo.metadata.can_show_after_expiration = true;
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -941,8 +936,7 @@ TEST_F(LogoServiceImplTest, DeleteAncientCachedLogo) {
 TEST_F(LogoServiceImplTest, DeleteExpiredCachedLogo) {
   SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
-  cached_logo.metadata.expiration_time =
-      test_clock_.Now() - base::TimeDelta::FromSeconds(1);
+  cached_logo.metadata.expiration_time = test_clock_.Now() - base::Seconds(1);
   cached_logo.metadata.can_show_after_expiration = false;
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 

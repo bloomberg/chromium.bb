@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #include "base/mac/mac_util.h"
 
+#import <Cocoa/Cocoa.h>
+#include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/xattr.h>
+
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-#include <errno.h>
-#include <sys/xattr.h>
 
 namespace base {
 namespace mac {
@@ -95,30 +94,6 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
   }
 }
 
-TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
-  // The file must already exist in order to set its exclusion property.
-  ScopedTempDir temp_dir_;
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath dummy_file_path = temp_dir_.GetPath().Append("DummyFile");
-  const char dummy_data[] = "All your base are belong to us!";
-  // Dump something real into the file.
-  ASSERT_EQ(static_cast<int>(base::size(dummy_data)),
-            WriteFile(dummy_file_path, dummy_data, base::size(dummy_data)));
-  // Initial state should be non-excluded.
-  EXPECT_FALSE(GetFileBackupExclusion(dummy_file_path));
-  // Exclude the file.
-  ASSERT_TRUE(SetFileBackupExclusion(dummy_file_path));
-  EXPECT_TRUE(GetFileBackupExclusion(dummy_file_path));
-
-  // Ensure that SetFileBackupExclusion never excludes by path.
-  base::ScopedCFTypeRef<CFURLRef> file_url =
-      base::mac::FilePathToCFURL(dummy_file_path);
-  Boolean excluded_by_path = FALSE;
-  Boolean excluded = CSBackupIsItemExcluded(file_url, &excluded_by_path);
-  EXPECT_TRUE(excluded);
-  EXPECT_FALSE(excluded_by_path);
-}
-
 TEST_F(MacUtilTest, NSObjectRetainRelease) {
   base::scoped_nsobject<NSArray> array(
       [[NSArray alloc] initWithObjects:@"foo", nil]);
@@ -183,8 +158,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       TEST_FOR_FUTURE_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
+      TEST_FOR_FUTURE_OS(12);
 
-      EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
+      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 12) {
       EXPECT_FALSE(IsOS10_11());
       EXPECT_FALSE(IsAtMostOS10_11());
@@ -194,8 +170,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       TEST_FOR_FUTURE_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
+      TEST_FOR_FUTURE_OS(12);
 
-      EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
+      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 13) {
       EXPECT_FALSE(IsOS10_11());
       EXPECT_FALSE(IsAtMostOS10_11());
@@ -205,8 +182,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       TEST_FOR_FUTURE_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
+      TEST_FOR_FUTURE_OS(12);
 
-      EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
+      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 14) {
       EXPECT_FALSE(IsOS10_11());
       EXPECT_FALSE(IsAtMostOS10_11());
@@ -216,8 +194,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       TEST_FOR_SAME_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
+      TEST_FOR_FUTURE_OS(12);
 
-      EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
+      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 15) {
       EXPECT_FALSE(IsOS10_11());
       EXPECT_FALSE(IsAtMostOS10_11());
@@ -227,11 +206,12 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       TEST_FOR_PAST_10_OS(14);
       TEST_FOR_SAME_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
+      TEST_FOR_FUTURE_OS(12);
 
-      EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
+      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else {
       // macOS 10.15 was the end of the line.
-      EXPECT_TRUE(false);
+      FAIL() << "Unexpected 10.x macOS.";
     }
   } else if (major == 11) {
     EXPECT_FALSE(IsOS10_11());
@@ -242,11 +222,24 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
     TEST_FOR_PAST_10_OS(14);
     TEST_FOR_PAST_10_OS(15);
     TEST_FOR_SAME_OS(11);
+    TEST_FOR_FUTURE_OS(12);
 
-    EXPECT_FALSE(IsOSLaterThan11_DontCallThis());
+    EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
+  } else if (major == 12) {
+    EXPECT_FALSE(IsOS10_11());
+    EXPECT_FALSE(IsAtMostOS10_11());
+
+    TEST_FOR_PAST_10_OS(12);
+    TEST_FOR_PAST_10_OS(13);
+    TEST_FOR_PAST_10_OS(14);
+    TEST_FOR_PAST_10_OS(15);
+    TEST_FOR_PAST_OS(11);
+    TEST_FOR_SAME_OS(12);
+
+    EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
   } else {
     // The spooky future.
-    EXPECT_FALSE(true);
+    FAIL() << "Time to update the OS macros!";
   }
 }
 

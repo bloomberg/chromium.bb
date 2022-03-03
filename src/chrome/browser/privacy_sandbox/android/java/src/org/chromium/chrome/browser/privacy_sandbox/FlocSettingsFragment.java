@@ -15,7 +15,6 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -28,10 +27,6 @@ import org.chromium.ui.widget.ButtonCompat;
  */
 public class FlocSettingsFragment extends PreferenceFragmentCompat
         implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
-    public static final String FLOC_REGIONS_DEFAULT_URL =
-            "https://www.privacysandbox.com/proposals/floc";
-    public static final String EXPERIMENT_URL_PARAM = "floc-website-url";
-
     public static final String FLOC_DESCRIPTION = "floc_description";
     public static final String FLOC_TOGGLE = "floc_toggle";
     public static final String FLOC_STATUS = "floc_status";
@@ -41,7 +36,6 @@ public class FlocSettingsFragment extends PreferenceFragmentCompat
     public static final String RESET_FLOC_BUTTON = "reset_floc_button";
 
     private PrivacySandboxHelpers.CustomTabIntentHelper mCustomTabHelper;
-    private PrivacySandboxHelpers.TrustedIntentHelper mTrustedIntentHelper;
     private ButtonCompat mResetButton;
 
     /**
@@ -64,7 +58,10 @@ public class FlocSettingsFragment extends PreferenceFragmentCompat
         // Configure the toggle.
         ChromeSwitchPreference flocToggle = (ChromeSwitchPreference) findPreference(FLOC_TOGGLE);
         flocToggle.setOnPreferenceChangeListener(this);
-        flocToggle.setChecked(PrivacySandboxBridge.isFlocEnabled());
+        // Disable FLoC while OT not active.
+        // TODO(crbug.com/1287951): Perform cleanup / adjustment as required.
+        flocToggle.setChecked(false);
+        flocToggle.setEnabled(false);
         // Configure the reset button.
         Preference resetButton = findPreference(RESET_FLOC_BUTTON);
         resetButton.setOnPreferenceClickListener(this);
@@ -98,10 +95,8 @@ public class FlocSettingsFragment extends PreferenceFragmentCompat
      * Set the necessary CCT helpers to be able to natively open links. This is needed because the
      * helpers are not modularized.
      */
-    public void setCctHelpers(PrivacySandboxHelpers.CustomTabIntentHelper tabHelper,
-            PrivacySandboxHelpers.TrustedIntentHelper intentHelper) {
+    public void setCustomTabIntentHelper(PrivacySandboxHelpers.CustomTabIntentHelper tabHelper) {
         mCustomTabHelper = tabHelper;
-        mTrustedIntentHelper = intentHelper;
     }
 
     private void updateInformation() {
@@ -119,16 +114,11 @@ public class FlocSettingsFragment extends PreferenceFragmentCompat
     }
 
     private String getFlocRegionsUrl() {
-        // Get the URL from Finch, if defined.
-        String url = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_2, EXPERIMENT_URL_PARAM);
-        if (url == null || url.isEmpty()) return FLOC_REGIONS_DEFAULT_URL;
-        return url;
+        return "https://www.privacysandbox.com/proposals/floc";
     }
 
     private void openUrlInCct(String url) {
         assert (mCustomTabHelper != null)
-                && (mTrustedIntentHelper != null)
             : "CCT helpers must be set on PrivacySandboxSettingsFragment before opening a link.";
         CustomTabsIntent customTabIntent =
                 new CustomTabsIntent.Builder().setShowTitle(true).build();
@@ -137,7 +127,7 @@ public class FlocSettingsFragment extends PreferenceFragmentCompat
                 getContext(), customTabIntent.intent);
         intent.setPackage(getContext().getPackageName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
-        mTrustedIntentHelper.addTrustedIntentExtras(intent);
+        IntentUtils.addTrustedIntentExtras(intent);
         IntentUtils.safeStartActivity(getContext(), intent);
     }
 }

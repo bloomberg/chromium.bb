@@ -24,12 +24,11 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
-#include "third_party/blink/renderer/core/css/css_property_id_templates.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
@@ -47,7 +46,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -72,21 +71,6 @@ void LogUnimplementedPropertyID(const CSSProperty& property) {
 
   DLOG(ERROR) << "Blink does not yet implement getComputedStyle for '"
               << property.GetPropertyName() << "'.";
-}
-
-// TODO(crbug.com/1167696): We probably want to avoid doing this for
-// performance reasons.
-bool InclusiveAncestorMayDependOnContainerQueries(Node* node) {
-  if (!RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-    return false;
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
-    const ComputedStyle* style = ancestor.GetComputedStyle();
-    // Since DependsOnContainerQueries is stored on ComputedStyle, we have to
-    // behave as if the flag is set for nullptr-styles (display:none).
-    if (!style || style->DependsOnContainerQueries())
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -179,6 +163,19 @@ const ComputedStyle* CSSComputedStyleDeclaration::ComputeComputedStyle() const {
   return style;
 }
 
+const Vector<AtomicString>* CSSComputedStyleDeclaration::GetVariableNames()
+    const {
+  if (auto* style = ComputeComputedStyle())
+    return &style->GetVariableNames();
+  return nullptr;
+}
+
+wtf_size_t CSSComputedStyleDeclaration::GetVariableNamesCount() const {
+  if (auto* style = ComputeComputedStyle())
+    return style->GetVariableNamesCount();
+  return 0;
+}
+
 Node* CSSComputedStyleDeclaration::StyledNode() const {
   if (!node_)
     return nullptr;
@@ -213,7 +210,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
-    AtomicString custom_property_name) const {
+    const AtomicString& custom_property_name) const {
   return GetPropertyCSSValue(CSSPropertyName(custom_property_name));
 }
 
@@ -247,8 +244,7 @@ void CSSComputedStyleDeclaration::UpdateStyleAndLayoutTreeIfNeeded(
     bool is_for_layout_dependent_property =
         property_name && !property_name->IsCustomProperty() &&
         CSSProperty::Get(property_name->Id()).IsLayoutDependentProperty();
-    if (is_for_layout_dependent_property ||
-        document.GetStyleEngine().HasViewportDependentMediaQueries()) {
+    if (is_for_layout_dependent_property) {
       owner->GetDocument().UpdateStyleAndLayout(
           DocumentUpdateReason::kJavaScript);
       // The style recalc could have caused the styled node to be discarded or
@@ -270,8 +266,7 @@ void CSSComputedStyleDeclaration::UpdateStyleAndLayoutIfNeeded(
       property &&
       property->IsLayoutDependent(ComputeComputedStyle(), StyledLayoutObject());
 
-  if (is_for_layout_dependent_property ||
-      InclusiveAncestorMayDependOnContainerQueries(styled_node)) {
+  if (is_for_layout_dependent_property) {
     styled_node->GetDocument().UpdateStyleAndLayoutForNode(
         styled_node, DocumentUpdateReason::kJavaScript);
   }
@@ -317,15 +312,33 @@ String CSSComputedStyleDeclaration::GetPropertyValue(
 unsigned CSSComputedStyleDeclaration::length() const {
   if (!node_ || !node_->InActiveDocument())
     return 0;
-  return ComputableProperties(GetExecutionContext()).size();
+
+  wtf_size_t variable_count = 0;
+
+  if (RuntimeEnabledFeatures::CSSEnumeratedCustomPropertiesEnabled()) {
+    UpdateStyleAndLayoutTreeIfNeeded(nullptr /* property_name */);
+    UpdateStyleAndLayoutIfNeeded(nullptr /* property */);
+    variable_count = GetVariableNamesCount();
+  }
+
+  return ComputableProperties(GetExecutionContext()).size() + variable_count;
 }
 
 String CSSComputedStyleDeclaration::item(unsigned i) const {
   if (i >= length())
     return "";
 
-  return ComputableProperties(GetExecutionContext())[i]
-      ->GetPropertyNameString();
+  const auto& standard_names = ComputableProperties(GetExecutionContext());
+
+  if (i < standard_names.size())
+    return standard_names[i]->GetPropertyNameString();
+
+  DCHECK(RuntimeEnabledFeatures::CSSEnumeratedCustomPropertiesEnabled());
+  DCHECK(GetVariableNames());
+  const auto& variable_names = *GetVariableNames();
+  CHECK_LT(i - standard_names.size(), variable_names.size());
+
+  return variable_names[i - standard_names.size()];
 }
 
 bool CSSComputedStyleDeclaration::CssPropertyMatches(
@@ -432,7 +445,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
-    AtomicString custom_property_name) {
+    const AtomicString& custom_property_name) {
   DCHECK_EQ(CSSPropertyID::kVariable,
             CssPropertyID(GetExecutionContext(), custom_property_name));
   return GetPropertyCSSValue(custom_property_name);

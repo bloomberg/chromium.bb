@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_API_PRINTER_PROVIDER_PRINTER_PROVIDER_API_FACTORY_H_
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class KeyedService;
@@ -24,6 +23,10 @@ namespace extensions {
 // Factory for PrinterProviderAPI.
 class PrinterProviderAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
+  PrinterProviderAPIFactory(const PrinterProviderAPIFactory&) = delete;
+  PrinterProviderAPIFactory& operator=(const PrinterProviderAPIFactory&) =
+      delete;
+
   static PrinterProviderAPIFactory* GetInstance();
 
   PrinterProviderAPI* GetForBrowserContext(content::BrowserContext* context);
@@ -39,8 +42,6 @@ class PrinterProviderAPIFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(PrinterProviderAPIFactory);
 };
 
 }  // namespace extensions

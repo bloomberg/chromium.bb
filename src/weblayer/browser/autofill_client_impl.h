@@ -6,7 +6,6 @@
 #define WEBLAYER_BROWSER_AUTOFILL_CLIENT_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -22,6 +21,9 @@ class AutofillClientImpl
       public content::WebContentsUserData<AutofillClientImpl>,
       public content::WebContentsObserver {
  public:
+  AutofillClientImpl(const AutofillClientImpl&) = delete;
+  AutofillClientImpl& operator=(const AutofillClientImpl&) = delete;
+
   ~AutofillClientImpl() override;
 
   // AutofillClient:
@@ -139,8 +141,6 @@ class AutofillClientImpl
   friend class content::WebContentsUserData<AutofillClientImpl>;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillClientImpl);
 };
 
 }  // namespace weblayer

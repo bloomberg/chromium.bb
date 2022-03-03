@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,8 +17,8 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/ui/views/sharing/sharing_browsertest.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
@@ -32,6 +31,11 @@ const char kTestPageURL[] = "/sharing/tel.html";
 class SharedClipboardBrowserTestBase : public SharingBrowserTest {
  public:
   SharedClipboardBrowserTestBase() {}
+
+  SharedClipboardBrowserTestBase(const SharedClipboardBrowserTestBase&) =
+      delete;
+  SharedClipboardBrowserTestBase& operator=(
+      const SharedClipboardBrowserTestBase&) = delete;
 
   ~SharedClipboardBrowserTestBase() override = default;
 
@@ -48,9 +52,6 @@ class SharedClipboardBrowserTestBase : public SharingBrowserTest {
 
  protected:
   base::test::ScopedFeatureList feature_list_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SharedClipboardBrowserTestBase);
 };
 
 class SharedClipboardBrowserTest : public SharedClipboardBrowserTestBase {

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_restrictions.h"
 
 class TestToolbarActionsBarBubbleDelegate::DelegateImpl
@@ -14,6 +15,10 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
  public:
   explicit DelegateImpl(TestToolbarActionsBarBubbleDelegate* parent)
       : parent_(parent) {}
+
+  DelegateImpl(const DelegateImpl&) = delete;
+  DelegateImpl& operator=(const DelegateImpl&) = delete;
+
   ~DelegateImpl() override {}
 
  private:
@@ -48,9 +53,7 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
     parent_->close_action_ = std::make_unique<CloseAction>(action);
   }
 
-  TestToolbarActionsBarBubbleDelegate* parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelegateImpl);
+  raw_ptr<TestToolbarActionsBarBubbleDelegate> parent_;
 };
 
 TestToolbarActionsBarBubbleDelegate::TestToolbarActionsBarBubbleDelegate(

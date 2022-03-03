@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/webapps/common/constants.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -85,7 +86,7 @@ constexpr char kLaunchContainerWindow[] = "window";
 // substring of start_url's existing params then it will not be added a second
 // time.
 // Note that substring matches include "param=a" matching in "some_param=abc".
-// Extend the implementation in AppRegistrar::GetAppLaunchUrl() if this edge
+// Extend the implementation in WebAppRegistrar::GetAppLaunchUrl() if this edge
 // case needs to be handled differently.
 constexpr char kLaunchQueryParams[] = "launch_query_params";
 
@@ -164,6 +165,19 @@ constexpr char kForceReinstallForMilestone[] = "force_reinstall_for_milestone";
 // the device OEM.
 constexpr char kOemInstalled[] = "oem_installed";
 
+// Contains boolean indicating weather the app should only be install on devices
+// with a built-in touchscreen with stylus support.
+constexpr char kDisableIfTouchScreenWithStylusNotSupported[] =
+    "disable_if_touchscreen_with_stylus_not_supported";
+
+void EnsureContains(ListPrefUpdate& update, base::StringPiece value) {
+  for (const base::Value& item : update->GetList()) {
+    if (item.is_string() && item.GetString() == value)
+      return;
+  }
+  update->Append(value);
+}
+
 }  // namespace
 
 OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
@@ -173,6 +187,7 @@ OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
   ExternalInstallOptions options(GURL(), DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalDefault);
   options.require_manifest = true;
+  options.force_reinstall = false;
 
   if (app_config.type() != base::Value::Type::DICTIONARY) {
     return base::StrCat(
@@ -402,6 +417,16 @@ OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
     options.oem_installed = value->GetBool();
   }
 
+  // disable_if_touchscreen_with_stylus_not_supported
+  value = app_config.FindKey(kDisableIfTouchScreenWithStylusNotSupported);
+  if (value) {
+    if (!value->is_bool()) {
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kDisableIfTouchScreenWithStylusNotSupported});
+    }
+    options.disable_if_touchscreen_with_stylus_not_supported = value->GetBool();
+  }
+
   return options;
 }
 
@@ -562,7 +587,7 @@ bool IsReinstallPastMilestoneNeeded(
 
 bool WasAppMigratedToWebApp(Profile* profile, const std::string& app_id) {
   const base::ListValue* migrated_apps =
-      profile->GetPrefs()->GetList(prefs::kWebAppsMigratedPreinstalledApps);
+      profile->GetPrefs()->GetList(webapps::kWebAppsMigratedPreinstalledApps);
   if (!migrated_apps)
     return false;
 
@@ -578,9 +603,9 @@ void MarkAppAsMigratedToWebApp(Profile* profile,
                                const std::string& app_id,
                                bool was_migrated) {
   ListPrefUpdate update(profile->GetPrefs(),
-                        prefs::kWebAppsMigratedPreinstalledApps);
+                        webapps::kWebAppsMigratedPreinstalledApps);
   if (was_migrated)
-    update->Append(app_id);
+    EnsureContains(update, app_id);
   else
     update->EraseListValue(base::Value(app_id));
 }
@@ -605,7 +630,7 @@ void SetMigrationRun(Profile* profile,
   ListPrefUpdate update(profile->GetPrefs(),
                         prefs::kWebAppsDidMigrateDefaultChromeApps);
   if (was_migrated)
-    update->Append(feature_name);
+    EnsureContains(update, feature_name);
   else
     update->EraseListValue(base::Value(feature_name));
 }
@@ -631,6 +656,6 @@ void MarkPreinstalledAppAsUninstalled(Profile* profile,
     return;
   ListPrefUpdate update(profile->GetPrefs(),
                         prefs::kWebAppsUninstalledDefaultChromeApps);
-  update->Append(app_id);
+  EnsureContains(update, app_id);
 }
 }  // namespace web_app

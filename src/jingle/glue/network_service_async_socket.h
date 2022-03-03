@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "jingle/glue/network_service_config.h"
@@ -41,6 +40,10 @@ class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
       size_t read_buf_size,
       size_t write_buf_size,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
+
+  NetworkServiceAsyncSocket(const NetworkServiceAsyncSocket&) = delete;
+  NetworkServiceAsyncSocket& operator=(const NetworkServiceAsyncSocket&) =
+      delete;
 
   // Does not raise any signals.
   ~NetworkServiceAsyncSocket() override;
@@ -262,8 +265,6 @@ class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
   // NetworkServiceAsyncSocket is not reused, hence annotation can be added in
   // constructor and used in all subsequent writes.
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceAsyncSocket);
 };
 
 }  // namespace jingle_glue

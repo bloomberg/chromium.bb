@@ -14,7 +14,7 @@
 #include "src/gpu/glsl/GrGLSLBlend.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-#include "src/sksl/dsl/priv/DSLWriter.h"
+#include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 
 GrGLSLShaderBuilder::GrGLSLShaderBuilder(GrGLSLProgramBuilder* program)
@@ -25,7 +25,7 @@ GrGLSLShaderBuilder::GrGLSLShaderBuilder(GrGLSLProgramBuilder* program)
     , fCodeIndex(kCode)
     , fFinalized(false)
     , fTmpVariableCounter(0) {
-    // We push back some dummy pointers which will later become our header
+    // We push back some placeholder pointers which will later become our header
     for (int i = 0; i <= kCode; i++) {
         fShaderStrings.push_back();
     }
@@ -85,8 +85,12 @@ void GrGLSLShaderBuilder::emitFunctionPrototype(GrSLType returnType,
     this->functions().append(";\n");
 }
 
+void GrGLSLShaderBuilder::emitFunctionPrototype(const char* declaration) {
+    this->functions().appendf("%s;\n", declaration);
+}
+
 void GrGLSLShaderBuilder::codeAppend(std::unique_ptr<SkSL::Statement> stmt) {
-    SkASSERT(SkSL::dsl::DSLWriter::CurrentProcessor());
+    SkASSERT(SkSL::ThreadContext::CurrentProcessor());
     SkASSERT(stmt);
     this->codeAppend(stmt->description().c_str());
     if (stmt->is<SkSL::VarDeclaration>()) {
@@ -290,7 +294,7 @@ void GrGLSLShaderBuilder::appendDecls(const VarArray& vars, SkString* out) const
 }
 
 void GrGLSLShaderBuilder::addLayoutQualifier(const char* param, InterfaceQualifier interface) {
-    SkASSERT(fProgramBuilder->shaderCaps()->generation() >= k330_GrGLSLGeneration ||
+    SkASSERT(fProgramBuilder->shaderCaps()->generation() >= SkSL::GLSLGeneration::k330 ||
              fProgramBuilder->shaderCaps()->mustEnableAdvBlendEqs());
     fLayoutParams[interface].push_back() = param;
 }

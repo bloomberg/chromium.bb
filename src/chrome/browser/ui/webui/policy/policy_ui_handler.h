@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -49,6 +48,10 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
                         public ui::SelectFileDialog::Listener {
  public:
   PolicyUIHandler();
+
+  PolicyUIHandler(const PolicyUIHandler&) = delete;
+  PolicyUIHandler& operator=(const PolicyUIHandler&) = delete;
+
   ~PolicyUIHandler() override;
 
   static void AddCommonLocalizedStringsToSource(
@@ -108,10 +111,14 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void ReloadUpdaterPoliciesAndState();
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  // Send the status of cloud policy to the UI. For each scope that has cloud
-  // policy enabled (device and/or user), a dictionary containing status
-  // information is sent.
+  // Send the status of cloud policy to the UI.
   void SendStatus();
+
+  // Get the status of cloud policy. For each scope that has cloud policy
+  // enabled (device and/or user), a dictionary containing status information.
+  // If |for_webui| is true, values needed for webui will be included
+  // additionally.
+  base::DictionaryValue GetStatusValue(bool for_webui) const;
 
   // Build a JSON string of all the policies.
   std::string GetPoliciesAsJson();
@@ -141,8 +148,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyUIHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_POLICY_POLICY_UI_HANDLER_H_

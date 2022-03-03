@@ -9,16 +9,18 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://oobe/custom_elements.html">
 
-<link rel="import" href="/components/oobe_adaptive_dialog.html">
-<link rel="import" href="/components/oobe_dialog_host_behavior.html">
-<link rel="import" href="/components/oobe_i18n_behavior.html">
-<link rel="import" href="/components/login_screen_behavior.html">
-<link rel="import" href="/components/multi_step_behavior.html">
-<link rel="import" href="/components/oobe_icons.html">
+<link rel="import" href="../../components/display_manager_types.html">
+<link rel="import" href="../../components/oobe_icons.html">
+<link rel="import" href="../../components/behaviors/login_screen_behavior.html">
+<link rel="import" href="../../components/behaviors/multi_step_behavior.html">
+<link rel="import" href="../../components/behaviors/oobe_i18n_behavior.html">
+<link rel="import" href="../../components/buttons/oobe_text_button.html">
+<link rel="import" href="../../components/common_styles/oobe_dialog_host_styles.html">
+<link rel="import" href="../../components/dialogs/oobe_adaptive_dialog.html">
 
 <dom-module id="encryption-migration-element">
   <template>
-    <style include="oobe-dialog-host">
+    <style include="oobe-dialog-host-styles">
       paper-progress {
         --paper-progress-active-color: var(--google-blue-500);
         height: 3px;
@@ -58,7 +60,7 @@
       <div slot="content" class="content-centered"
           hidden="[[!isEnoughBattery]]">
         <img src="../../images/encryption_migration.svg"
-             class="oobe-illustration">
+             class="oobe-illustration" aria-hidden="true">
       </div>
       <div slot="content" class="landscape-header-aligned"
           aria-live="polite" hidden="[[isEnoughBattery]]">
@@ -170,4 +172,5 @@
       </div>
     </oobe-adaptive-dialog>
   </template>
+  <script src="encryption_migration.js"></script>
 </dom-module>

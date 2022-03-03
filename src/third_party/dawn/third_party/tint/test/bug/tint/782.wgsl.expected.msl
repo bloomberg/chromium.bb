@@ -1,10 +1,13 @@
 #include <metal_stdlib>
 
 using namespace metal;
+struct tint_array_wrapper {
+  int arr[2];
+};
 
 void foo() {
-  int tint_symbol[2] = {0};
-  int implict[2] = {0};
+  tint_array_wrapper tint_symbol = {};
+  tint_array_wrapper implict = {};
   implict = tint_symbol;
 }
 

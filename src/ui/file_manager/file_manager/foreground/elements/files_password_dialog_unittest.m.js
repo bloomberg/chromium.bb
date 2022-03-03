@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import "chrome://resources/cr_elements/cr_button/cr_button.m.js";
 import "chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js";
 import "chrome://resources/cr_elements/cr_input/cr_input.m.js";
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {assertEquals, assertFalse, assertNotReached} from 'chrome://test/chai_assert.js';
-import {waitUntil} from '../../common/js/test_error_reporting.m.js';
-import {FilesPasswordDialog} from './files_password_dialog.m.js';
-// clang-format on
+import {waitUntil} from '../../common/js/test_error_reporting.js';
+import {FilesPasswordDialog} from './files_password_dialog.js';
 
 /** @type {!FilesPasswordDialog} */
 let passwordDialog;

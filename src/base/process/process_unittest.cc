@@ -21,6 +21,8 @@
 #if defined(OS_WIN)
 #include "base/win/base_win_buildflags.h"
 #include "base/win/windows_version.h"
+
+#include <windows.h>
 #endif
 
 namespace {
@@ -142,15 +144,15 @@ TEST_F(ProcessTest, CreationTimeOtherProcess) {
       // On Linux, process creation time is relative to boot time which has a
       // 1-second resolution. Tolerate 1 second for the imprecise boot time and
       // 100 ms for the imprecise clock.
-      TimeDelta::FromMilliseconds(1100);
+      Milliseconds(1100);
 #elif defined(OS_WIN)
       // On Windows, process creation time is based on the system clock while
       // Time::Now() is a combination of system clock and
       // QueryPerformanceCounter(). Tolerate 100 ms for the clock mismatch.
-      TimeDelta::FromMilliseconds(100);
+      Milliseconds(100);
 #elif defined(OS_APPLE) || defined(OS_FUCHSIA)
       // On Mac and Fuchsia, process creation time should be very precise.
-      TimeDelta::FromMilliseconds(0);
+      Milliseconds(0);
 #else
 #error Unsupported platform
 #endif

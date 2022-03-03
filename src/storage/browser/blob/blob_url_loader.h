@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
@@ -42,6 +42,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
       const net::HttpRequestHeaders& headers,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::unique_ptr<BlobDataHandle> blob_handle);
+
+  BlobURLLoader(const BlobURLLoader&) = delete;
+  BlobURLLoader& operator=(const BlobURLLoader&) = delete;
+
   ~BlobURLLoader() override;
 
  private:
@@ -94,8 +98,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
 
   base::WeakPtrFactory<BlobURLLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BlobURLLoader);
 };
 
 }  // namespace storage

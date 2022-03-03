@@ -5,18 +5,21 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_TESTING_SEARCH_TERMS_DATA_H_
 #define COMPONENTS_SEARCH_ENGINES_TESTING_SEARCH_TERMS_DATA_H_
 
-#include "base/macros.h"
 #include "components/search_engines/search_terms_data.h"
 
 class TestingSearchTermsData : public SearchTermsData {
  public:
   explicit TestingSearchTermsData(const std::string& google_base_url);
+
+  TestingSearchTermsData(const TestingSearchTermsData&) = delete;
+  TestingSearchTermsData& operator=(const TestingSearchTermsData&) = delete;
+
   ~TestingSearchTermsData() override;
 
   std::string GoogleBaseURLValue() const override;
   std::u16string GetRlzParameterValue(bool from_app_list) const override;
   std::string GetSearchClient() const override;
-  std::string GetSuggestClient(bool from_ntp) const override;
+  std::string GetSuggestClient() const override;
   std::string GoogleImageSearchSource() const override;
 
   // Estimates dynamic memory usage.
@@ -37,8 +40,6 @@ class TestingSearchTermsData : public SearchTermsData {
   std::string google_base_url_;
   std::string search_client_;
   std::string suggest_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingSearchTermsData);
 };
 
 #endif  // COMPONENTS_SEARCH_ENGINES_TESTING_SEARCH_TERMS_DATA_H_

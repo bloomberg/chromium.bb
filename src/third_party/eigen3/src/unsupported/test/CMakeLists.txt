@@ -13,7 +13,7 @@ include_directories(../../test ../../unsupported ../../Eigen
 find_package (Threads)
 
 find_package(GoogleHash)
-if(GOOGLEHASH_FOUND)
+if(GoogleHash_FOUND)
   add_definitions("-DEIGEN_GOOGLEHASH_SUPPORT")
   include_directories(${GOOGLEHASH_INCLUDES})
   ei_add_property(EIGEN_TESTED_BACKENDS  "GoogleHash, ")
@@ -23,14 +23,10 @@ endif()
 
 
 find_package(Adolc)
-if(ADOLC_FOUND)
+if(Adolc_FOUND)
   include_directories(${ADOLC_INCLUDES})
   ei_add_property(EIGEN_TESTED_BACKENDS "Adolc, ")
-  if(EIGEN_TEST_CXX11)
-    ei_add_test(forward_adolc "" ${ADOLC_LIBRARIES})
-  else()
-    message(STATUS "Adolc found, but tests require C++11 mode")
-  endif()
+  ei_add_test(forward_adolc "" ${ADOLC_LIBRARIES})
 else()
   ei_add_property(EIGEN_MISSING_BACKENDS "Adolc, ")
 endif()
@@ -55,13 +51,11 @@ ei_add_test(FFT)
 
 ei_add_test(EulerAngles)
 
-find_package(MPFR 2.3.0)
-find_package(GMP)
-if(MPFR_FOUND AND EIGEN_COMPILER_SUPPORT_CPP11)
-  include_directories(${MPFR_INCLUDES} ./mpreal)
+find_package(MPREAL)
+if(MPREAL_FOUND)
   ei_add_property(EIGEN_TESTED_BACKENDS "MPFR C++, ")
-  set(EIGEN_MPFR_TEST_LIBRARIES ${MPFR_LIBRARIES} ${GMP_LIBRARIES})
- ei_add_test(mpreal_support "-std=c++11" "${EIGEN_MPFR_TEST_LIBRARIES}" )
+  include_directories(${MPREAL_INCLUDES})
+  ei_add_test(mpreal_support "" "${MPREAL_LIBRARIES}" )
 else()
   ei_add_property(EIGEN_MISSING_BACKENDS "MPFR C++, ")
 endif()
@@ -81,8 +75,8 @@ else()
   ei_add_property(EIGEN_MISSING_BACKENDS "fftw, ")
 endif()
 
-option(EIGEN_TEST_NO_OPENGL "Disable OpenGL support in unit tests" OFF)
-if(NOT EIGEN_TEST_NO_OPENGL)
+option(EIGEN_TEST_OPENGL "Enable OpenGL support in unit tests" OFF)
+if(EIGEN_TEST_OPENGL)
   find_package(OpenGL)
   find_package(GLUT)
   find_package(GLEW)
@@ -104,6 +98,7 @@ ei_add_test(splines)
 ei_add_test(gmres)
 ei_add_test(dgmres)
 ei_add_test(minres)
+ei_add_test(idrs)
 ei_add_test(levenberg_marquardt)
 ei_add_test(kronecker_product)
 ei_add_test(bessel_functions)
@@ -148,8 +143,8 @@ if(EIGEN_TEST_CXX11)
       add_definitions(-DEIGEN_SYCL_DISABLE_SKINNY=${EIGEN_SYCL_DISABLE_SKINNY})
     endif()
     if(EIGEN_SYCL_DISABLE_DOUBLE_BUFFER)
-    add_definitions(-DEIGEN_SYCL_DISABLE_DOUBLE_BUFFER=${EIGEN_SYCL_DISABLE_DOUBLE_BUFFER})
-  endif()
+      add_definitions(-DEIGEN_SYCL_DISABLE_DOUBLE_BUFFER=${EIGEN_SYCL_DISABLE_DOUBLE_BUFFER})
+    endif()
     if(EIGEN_SYCL_DISABLE_RANK1)
       add_definitions(-DEIGEN_SYCL_DISABLE_RANK1=${EIGEN_SYCL_DISABLE_RANK1})
     endif()
@@ -164,8 +159,8 @@ if(EIGEN_TEST_CXX11)
     endif()
 
     if(EIGEN_SYCL_TRISYCL)
-      set(CMAKE_CXX_STANDARD 14)
-      set(STD_CXX_FLAG "-std=c++1z")
+      # triSYCL now requires c++17.
+      set(CMAKE_CXX_STANDARD 17)
     else()
       if(MSVC)
         # Set the host and device compilers C++ standard to C++14. On Windows setting this to C++11
@@ -182,7 +177,6 @@ if(EIGEN_TEST_CXX11)
         set(CMAKE_CXX_COMPILER ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE})
         string(REPLACE "-Wlogical-op" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
         string(REPLACE "-Wno-psabi" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-        string(REPLACE "-ansi" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
       endif()
       list(APPEND COMPUTECPP_USER_FLAGS
           -DEIGEN_NO_ASSERTION_CHECKING=1
@@ -282,58 +276,50 @@ if(EIGEN_TEST_CXX11)
   ei_add_test(cxx11_tensor_thread_pool "-pthread" "${CMAKE_THREAD_LIBS_INIT}")
   ei_add_test(cxx11_tensor_trace)
   ei_add_test(cxx11_tensor_volume_patch)
-#  ei_add_test(cxx11_tensor_symmetry)
-if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  # This test requires __uint128_t which is only available on 64bit systems
-  ei_add_test(cxx11_tensor_uint128)
-endif()
+  #  ei_add_test(cxx11_tensor_symmetry)
+  if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # This test requires __uint128_t which is only available on 64bit systems
+    ei_add_test(cxx11_tensor_uint128)
+  endif()
 
 endif()
 
-# These tests needs nvcc
-find_package(CUDA 7.0)
+find_package(CUDA 9.0)
 if(CUDA_FOUND AND EIGEN_TEST_CUDA)
   # Make sure to compile without the -pedantic, -Wundef, -Wnon-virtual-dtor
   # and -fno-check-new flags since they trigger thousands of compilation warnings
   # in the CUDA runtime
-  # Also remove -ansi that is incompatible with std=c++11.
   string(REPLACE "-pedantic" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REPLACE "-Wundef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REPLACE "-Wnon-virtual-dtor" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REPLACE "-fno-check-new" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  string(REPLACE "-ansi" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-  message(STATUS "Flags used to compile cuda code: " ${CMAKE_CXX_FLAGS})
-
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CUDA_NVCC_FLAGS "-ccbin ${CMAKE_C_COMPILER}" CACHE STRING "nvcc flags" FORCE)
-  endif()
   if(EIGEN_TEST_CUDA_CLANG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     string(APPEND CMAKE_CXX_FLAGS " --cuda-path=${CUDA_TOOLKIT_ROOT_DIR}")
     foreach(ARCH IN LISTS EIGEN_CUDA_COMPUTE_ARCH)
         string(APPEND CMAKE_CXX_FLAGS " --cuda-gpu-arch=sm_${ARCH}")
     endforeach()
-  endif()
-
-  set(EIGEN_CUDA_RELAXED_CONSTEXPR "--expt-relaxed-constexpr")
-  if (${CUDA_VERSION} STREQUAL "7.0")
-    set(EIGEN_CUDA_RELAXED_CONSTEXPR "--relaxed-constexpr")
-  endif()
-
-  if(( (NOT EIGEN_TEST_CXX11) OR (CMAKE_VERSION VERSION_LESS 3.3)) AND EIGEN_TEST_CXX11)
-    set(EIGEN_CUDA_CXX11_FLAG "-std=c++11")
+    string(APPEND CMAKE_CXX_FLAGS " ${EIGEN_CUDA_CXX_FLAGS}")
   else()
-    # otherwise the flag has already been added because of the above set(CMAKE_CXX_STANDARD 11)
-    set(EIGEN_CUDA_CXX11_FLAG "")
+    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+    set(NVCC_ARCH_FLAGS)
+    # Define an -arch=sm_<arch>, otherwise if GPU does not exactly match one of
+    # those in the arch list for -gencode, the kernels will fail to run with
+    #    cudaErrorNoKernelImageForDevice
+    # This can happen with newer cards (e.g. sm_75) and compiling with older
+    # versions of nvcc (e.g. 9.2) that do not support their specific arch.
+    list(LENGTH EIGEN_CUDA_COMPUTE_ARCH EIGEN_CUDA_COMPUTE_ARCH_SIZE)
+    if(EIGEN_CUDA_COMPUTE_ARCH_SIZE)
+      list(GET EIGEN_CUDA_COMPUTE_ARCH 0 EIGEN_CUDA_COMPUTE_DEFAULT)
+      set(NVCC_ARCH_FLAGS " -arch=sm_${EIGEN_CUDA_COMPUTE_DEFAULT}")
+    endif()
+    foreach(ARCH IN LISTS EIGEN_CUDA_COMPUTE_ARCH)
+      string(APPEND NVCC_ARCH_FLAGS " -gencode arch=compute_${ARCH},code=sm_${ARCH}")
+    endforeach()
+    set(CUDA_NVCC_FLAGS  "--expt-relaxed-constexpr -Xcudafe \"--display_error_number\" ${NVCC_ARCH_FLAGS} ${CUDA_NVCC_FLAGS} ${EIGEN_CUDA_CXX_FLAGS}")
+    cuda_include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CUDA_TOOLKIT_ROOT_DIR}/include")
   endif()
-
-  set(NVCC_ARCH_FLAGS)
-  foreach(ARCH IN LISTS EIGEN_CUDA_COMPUTE_ARCH)
-    string(APPEND NVCC_ARCH_FLAGS " -gencode arch=compute_${ARCH},code=sm_${ARCH}")
-  endforeach()
-  set(CUDA_NVCC_FLAGS  "${EIGEN_CUDA_CXX11_FLAG} ${EIGEN_CUDA_RELAXED_CONSTEXPR} -Xcudafe \"--display_error_number\" ${NVCC_ARCH_FLAGS} ${CUDA_NVCC_FLAGS}")
-  cuda_include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CUDA_TOOLKIT_ROOT_DIR}/include")
+  
   set(EIGEN_ADD_TEST_FILENAME_EXTENSION "cu")
 
   ei_add_test(cxx11_tensor_complex_gpu)
@@ -363,7 +349,6 @@ if(CUDA_FOUND AND EIGEN_TEST_CUDA)
     ei_add_test(cxx11_tensor_random_gpu)
   endif()
 
-
   unset(EIGEN_ADD_TEST_FILENAME_EXTENSION)
 endif()
 
@@ -373,52 +358,45 @@ if (EIGEN_TEST_HIP)
   set(HIP_PATH "/opt/rocm/hip" CACHE STRING "Path to the HIP installation.")
 
   if (EXISTS ${HIP_PATH})
-
     list(APPEND CMAKE_MODULE_PATH ${HIP_PATH}/cmake)
 
     find_package(HIP REQUIRED)
     if (HIP_FOUND)
-
       execute_process(COMMAND ${HIP_PATH}/bin/hipconfig --platform OUTPUT_VARIABLE HIP_PLATFORM)
 
-      if (${HIP_PLATFORM} STREQUAL "hcc")
+      if ((${HIP_PLATFORM} STREQUAL "hcc") OR (${HIP_PLATFORM} STREQUAL "amd"))
+        include_directories(${CMAKE_CURRENT_BINARY_DIR})
+        include_directories(${HIP_PATH}/include)
 
-	include_directories(${CMAKE_CURRENT_BINARY_DIR})
-	include_directories(${HIP_PATH}/include)
+        set(EIGEN_ADD_TEST_FILENAME_EXTENSION  "cu")
+        #
+        # complex datatype is not yet supported by HIP
+        # so leaving out those tests for now
+        #
+        # ei_add_test(cxx11_tensor_complex_gpu)
+        # ei_add_test(cxx11_tensor_complex_cwise_ops_gpu)
+        #
+        ei_add_test(cxx11_tensor_reduction_gpu)
+        ei_add_test(cxx11_tensor_argmax_gpu)
+        ei_add_test(cxx11_tensor_cast_float16_gpu)
+        ei_add_test(cxx11_tensor_scan_gpu)
+        ei_add_test(cxx11_tensor_device)
 
-	set(EIGEN_ADD_TEST_FILENAME_EXTENSION  "cu")
-	#
-	# complex datatype is not yet supported by HIP
-	# so leaving out those tests for now
-	#
-	# ei_add_test(cxx11_tensor_complex_gpu)
-	# ei_add_test(cxx11_tensor_complex_cwise_ops_gpu)
-	#
-	ei_add_test(cxx11_tensor_reduction_gpu)
-	ei_add_test(cxx11_tensor_argmax_gpu)
-	ei_add_test(cxx11_tensor_cast_float16_gpu)
-	ei_add_test(cxx11_tensor_scan_gpu)
-	ei_add_test(cxx11_tensor_device)
+        ei_add_test(cxx11_tensor_gpu)
+        ei_add_test(cxx11_tensor_contract_gpu)
+        ei_add_test(cxx11_tensor_of_float16_gpu)
+        ei_add_test(cxx11_tensor_random_gpu)
 
-	ei_add_test(cxx11_tensor_gpu)
-	ei_add_test(cxx11_tensor_contract_gpu)
-	ei_add_test(cxx11_tensor_of_float16_gpu)
-	ei_add_test(cxx11_tensor_random_gpu)
+        unset(EIGEN_ADD_TEST_FILENAME_EXTENSION)
 
-	unset(EIGEN_ADD_TEST_FILENAME_EXTENSION)
-
-      elseif (${HIP_PLATFORM} STREQUAL "nvcc")
-	message(FATAL_ERROR "HIP_PLATFORM = nvcc is not supported within Eigen")
+      elseif ((${HIP_PLATFORM} STREQUAL "nvcc") OR (${HIP_PLATFORM} STREQUAL "nvidia"))
+        message(FATAL_ERROR "HIP_PLATFORM = nvcc is not supported within Eigen")
       else ()
-	message(FATAL_ERROR "Unknown HIP_PLATFORM = ${HIP_PLATFORM}")
+        message(FATAL_ERROR "Unknown HIP_PLATFORM = ${HIP_PLATFORM}")
       endif()
-
     endif()
-
   else ()
-
     message(FATAL_ERROR "EIGEN_TEST_HIP is ON, but the specified HIP_PATH (${HIP_PATH}) does not exist")
-
   endif()
 
 endif()

@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -83,6 +82,10 @@ class BufferedFileReader : public courgette::BasicBuffer {
     if (!buffer_.Initialize(file_name))
       Problem("Can't read %s file.", kind);
   }
+
+  BufferedFileReader(const BufferedFileReader&) = delete;
+  BufferedFileReader& operator=(const BufferedFileReader&) = delete;
+
   ~BufferedFileReader() override = default;
 
   // courgette::BasicBuffer:
@@ -91,8 +94,6 @@ class BufferedFileReader : public courgette::BasicBuffer {
 
  private:
   base::MemoryMappedFile buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(BufferedFileReader);
 };
 
 /******** Various helpers ********/

@@ -20,6 +20,9 @@
 
 namespace quic {
 
+// TODO(b/171463363): Remove.
+using PushId = uint64_t;
+
 enum class HttpFrameType {
   DATA = 0x0,
   HEADERS = 0x1,
@@ -28,12 +31,9 @@ enum class HttpFrameType {
   PUSH_PROMISE = 0x5,
   GOAWAY = 0x7,
   MAX_PUSH_ID = 0xD,
-  // https://tools.ietf.org/html/draft-ietf-httpbis-priority-01
-  // TODO(b/147306124): Remove.
-  PRIORITY_UPDATE = 0XF,
   // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02
   ACCEPT_CH = 0x89,
-  // https://tools.ietf.org/html/draft-ietf-httpbis-priority-02
+  // https://tools.ietf.org/html/draft-ietf-httpbis-priority-03
   PRIORITY_UPDATE_REQUEST_STREAM = 0xF0700,
   // https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-00.html
   WEBTRANSPORT_STREAM = 0x41,
@@ -53,20 +53,6 @@ struct QUIC_EXPORT_PRIVATE DataFrame {
 //   compressed using QPACK.
 struct QUIC_EXPORT_PRIVATE HeadersFrame {
   absl::string_view headers;
-};
-
-// 7.2.3.  CANCEL_PUSH
-//
-//   The CANCEL_PUSH frame (type=0x3) is used to request cancellation of
-//   server push prior to the push stream being created.
-using PushId = uint64_t;
-
-struct QUIC_EXPORT_PRIVATE CancelPushFrame {
-  PushId push_id;
-
-  bool operator==(const CancelPushFrame& rhs) const {
-    return push_id == rhs.push_id;
-  }
 };
 
 // 7.2.4.  SETTINGS
@@ -102,20 +88,6 @@ struct QUIC_EXPORT_PRIVATE SettingsFrame {
   }
 };
 
-// 7.2.5.  PUSH_PROMISE
-//
-//   The PUSH_PROMISE frame (type=0x05) is used to carry a request header
-//   set from server to client, as in HTTP/2.
-// TODO(b/171463363): Remove.
-struct QUIC_EXPORT_PRIVATE PushPromiseFrame {
-  PushId push_id;
-  absl::string_view headers;
-
-  bool operator==(const PushPromiseFrame& rhs) const {
-    return push_id == rhs.push_id && headers == rhs.headers;
-  }
-};
-
 // 7.2.6.  GOAWAY
 //
 //   The GOAWAY frame (type=0x7) is used to initiate shutdown of a connection by
@@ -144,10 +116,9 @@ struct QUIC_EXPORT_PRIVATE MaxPushIdFrame {
 // https://httpwg.org/http-extensions/draft-ietf-httpbis-priority.html
 //
 // The PRIORITY_UPDATE frame specifies the sender-advised priority of a stream.
-// https://tools.ietf.org/html/draft-ietf-httpbis-priority-01 uses frame type
-// 0x0f, both for request streams and push streams.
-// https://tools.ietf.org/html/draft-ietf-httpbis-priority-02 uses frame types
-// 0xf0700 for request streams and 0xf0701 for push streams (not implemented).
+// Frame type 0xf0700 (called PRIORITY_UPDATE_REQUEST_STREAM in the
+// implementation) is used for for request streams.
+// Frame type 0xf0701 is used for push streams and is not implemented.
 
 // Length of a priority frame's first byte.
 const QuicByteCount kPriorityFirstByteLength = 1;

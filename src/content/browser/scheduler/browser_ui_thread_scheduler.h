@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/flat_map.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "content/browser/scheduler/browser_task_queues.h"
 #include "content/common/content_export.h"
@@ -15,7 +14,6 @@
 namespace base {
 namespace sequence_manager {
 class SequenceManager;
-class TimeDomain;
 }  // namespace sequence_manager
 }  // namespace base
 
@@ -47,12 +45,15 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   using Handle = BrowserTaskQueues::Handle;
 
   BrowserUIThreadScheduler();
+
+  BrowserUIThreadScheduler(const BrowserUIThreadScheduler&) = delete;
+  BrowserUIThreadScheduler& operator=(const BrowserUIThreadScheduler&) = delete;
+
   ~BrowserUIThreadScheduler();
 
   // Setting the DefaultTaskRunner is up to the caller.
   static std::unique_ptr<BrowserUIThreadScheduler> CreateForTesting(
-      base::sequence_manager::SequenceManager* sequence_manager,
-      base::sequence_manager::TimeDomain* time_domain);
+      base::sequence_manager::SequenceManager* sequence_manager);
 
   using QueueType = BrowserTaskQueues::QueueType;
 
@@ -61,9 +62,8 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
  private:
   friend class BrowserTaskExecutor;
 
-  BrowserUIThreadScheduler(
-      base::sequence_manager::SequenceManager* sequence_manager,
-      base::sequence_manager::TimeDomain* time_domain);
+  explicit BrowserUIThreadScheduler(
+      base::sequence_manager::SequenceManager* sequence_manager);
 
   void CommonSequenceManagerSetup(
       base::sequence_manager::SequenceManager* sequence_manager);
@@ -94,8 +94,6 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   int user_input_active_handle_count = 0;
   bool browser_prioritize_native_work_ = false;
   base::TimeDelta browser_prioritize_native_work_after_input_end_ms_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserUIThreadScheduler);
 };
 
 }  // namespace content

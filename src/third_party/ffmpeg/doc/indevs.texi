@@ -344,8 +344,22 @@ Defines number of audio channels to capture. Must be @samp{2}, @samp{8} or @samp
 Defaults to @samp{2}.
 
 @item duplex_mode
-Sets the decklink device duplex mode. Must be @samp{unset}, @samp{half} or @samp{full}.
+Sets the decklink device duplex/profile mode. Must be @samp{unset}, @samp{half}, @samp{full},
+@samp{one_sub_device_full}, @samp{one_sub_device_half}, @samp{two_sub_device_full},
+@samp{four_sub_device_half}
 Defaults to @samp{unset}.
+
+Note: DeckLink SDK 11.0 have replaced the duplex property by a profile property.
+For the DeckLink Duo 2 and DeckLink Quad 2, a profile is shared between any 2
+sub-devices that utilize the same connectors. For the DeckLink 8K Pro, a profile
+is shared between all 4 sub-devices. So DeckLink 8K Pro support four profiles.
+
+Valid profile modes for DeckLink 8K Pro(with DeckLink SDK >= 11.0):
+@samp{one_sub_device_full}, @samp{one_sub_device_half}, @samp{two_sub_device_full},
+@samp{four_sub_device_half}
+
+Valid profile modes for DeckLink Quad 2 and DeckLink Duo 2:
+@samp{half}, @samp{full}
 
 @item timecode_format
 Timecode type to include in the frame and video stream metadata. Must be
@@ -1564,8 +1578,21 @@ With @var{follow_mouse}:
 ffmpeg -f x11grab -follow_mouse centered -show_region 1 -framerate 25 -video_size cif -i :0.0 out.mpg
 @end example
 
+@item window_id
+Grab this window, instead of the whole screen. Default value is 0, which maps to
+the whole screen (root window).
+
+The id of a window can be found using the @command{xwininfo} program, possibly with options -tree and
+-root.
+
+If the window is later enlarged, the new area is not recorded. Video ends when
+the window is closed, unmapped (i.e., iconified) or shrunk beyond the video
+size (which defaults to the initial window size).
+
+This option disables options @option{follow_mouse} and @option{select_region}.
+
 @item video_size
-Set the video frame size. Default is the full desktop.
+Set the video frame size. Default is the full desktop or window.
 
 @item grab_x
 @item grab_y

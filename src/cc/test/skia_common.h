@@ -10,12 +10,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_piece.h"
 #include "cc/base/region.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_generator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -61,7 +63,7 @@ PaintImage CreateDiscardablePaintImage(
 DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
                                      sk_sp<SkColorSpace> color_space,
                                      SkRect rect,
-                                     SkFilterQuality filter_quality,
+                                     PaintFlags::FilterQuality filter_quality,
                                      const SkM44& matrix);
 
 PaintImage CreateAnimatedImage(
@@ -75,6 +77,7 @@ PaintImage CreateBitmapImage(const gfx::Size& size,
 
 scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
                                             int duration_secs);
+scoped_refptr<SkottieWrapper> CreateSkottieFromString(base::StringPiece json);
 
 PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size);
 

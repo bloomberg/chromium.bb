@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 
 import {InspectorFrontendHostInstance} from './InspectorFrontendHost.js';
-import type {LoadNetworkResourceResult} from './InspectorFrontendHostAPI.js'; // eslint-disable-line no-unused-vars
+import type {LoadNetworkResourceResult} from './InspectorFrontendHostAPI.js';
 
 const UIStrings = {
   /**
@@ -174,7 +173,7 @@ export function netErrorToMessage(
   }
   if (netError !== 0) {
     if (isHTTPError(netError)) {
-      return i18nString(UIStrings.httpErrorStatusCodeSS, {PH1: httpStatusCode, PH2: netErrorName});
+      return i18nString(UIStrings.httpErrorStatusCodeSS, {PH1: String(httpStatusCode), PH2: netErrorName});
     }
     const errorCategory = getNetErrorCategory(netError);
     // We don't localize here, as `errorCategory` is already localized,

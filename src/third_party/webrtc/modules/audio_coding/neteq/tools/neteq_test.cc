@@ -91,8 +91,7 @@ int64_t NetEqTest::Run() {
     simulation_time += step_result.simulation_step_ms;
   } while (!step_result.is_simulation_finished);
   if (callbacks_.simulation_ended_callback) {
-    callbacks_.simulation_ended_callback->SimulationEnded(simulation_time,
-                                                          neteq_.get());
+    callbacks_.simulation_ended_callback->SimulationEnded(simulation_time);
   }
   return simulation_time;
 }
@@ -172,7 +171,7 @@ NetEqTest::SimulationStepResult NetEqTest::RunToNextGetAudio() {
       }
       AudioFrame out_frame;
       bool muted;
-      int error = neteq_->GetAudio(&out_frame, &muted,
+      int error = neteq_->GetAudio(&out_frame, &muted, nullptr,
                                    ActionToOperations(next_action_));
       next_action_ = absl::nullopt;
       RTC_CHECK(!muted) << "The code does not handle enable_muted_state";

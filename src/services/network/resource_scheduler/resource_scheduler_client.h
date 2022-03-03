@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_CLIENT_H_
 #define SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_CLIENT_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/request_priority.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
@@ -32,6 +33,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerClient final
                           ResourceScheduler* resource_scheduler,
                           net::NetworkQualityEstimator* estimator);
 
+  ResourceSchedulerClient(const ResourceSchedulerClient&) = delete;
+  ResourceSchedulerClient& operator=(const ResourceSchedulerClient&) = delete;
+
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest> ScheduleRequest(
       bool is_async,
       net::URLRequest* url_request);
@@ -45,9 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerClient final
 
   const int child_id_;
   const int route_id_;
-  ResourceScheduler* const resource_scheduler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceSchedulerClient);
+  const raw_ptr<ResourceScheduler> resource_scheduler_;
 };
 }  // namespace network
 

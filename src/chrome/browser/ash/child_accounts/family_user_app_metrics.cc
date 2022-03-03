@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -24,7 +25,7 @@ namespace ash {
 
 namespace {
 // Recently launched apps this many days ago in the past will be recorded.
-constexpr base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
+constexpr base::TimeDelta kOneDay = base::Days(1);
 
 // UMA metrics for a snapshot count of installed and enabled extensions for a
 // given family user.
@@ -56,10 +57,15 @@ constexpr char kBorealisAppsCountHistogramName[] =
     "FamilyUser.BorealisAppsCount2";
 constexpr char kSystemWebAppsCountHistogramName[] =
     "FamilyUser.SystemWebAppsCount2";
+constexpr char kStandaloneBrowserExtensionCountHistogramName[] =
+    "FamilyUser.LacrosChromeAppsCount2";
 
 const char* GetAppsCountHistogramName(apps::mojom::AppType app_type) {
   switch (app_type) {
     case apps::mojom::AppType::kUnknown:
+    // Extensions are recorded separately, and AppService only has some
+    // extensions with file browser handlers.
+    case apps::mojom::AppType::kExtension:
       return kUnknownAppsCountHistogramName;
     case apps::mojom::AppType::kArc:
       return kArcAppsCountHistogramName;
@@ -67,7 +73,7 @@ const char* GetAppsCountHistogramName(apps::mojom::AppType app_type) {
       return kBuiltInAppsCountHistogramName;
     case apps::mojom::AppType::kCrostini:
       return kCrostiniAppsCountHistogramName;
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       return kExtensionAppsCountHistogramName;
     case apps::mojom::AppType::kWeb:
       return kWebAppsCountHistogramName;
@@ -83,10 +89,20 @@ const char* GetAppsCountHistogramName(apps::mojom::AppType app_type) {
       return kBorealisAppsCountHistogramName;
     case apps::mojom::AppType::kSystemWeb:
       return kSystemWebAppsCountHistogramName;
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+      return kStandaloneBrowserExtensionCountHistogramName;
   }
 }
 
 }  // namespace
+
+// static
+std::unique_ptr<FamilyUserAppMetrics> FamilyUserAppMetrics::Create(
+    Profile* profile) {
+  auto metrics = base::WrapUnique(new FamilyUserAppMetrics(profile));
+  metrics->Init();
+  return metrics;
+}
 
 FamilyUserAppMetrics::FamilyUserAppMetrics(Profile* profile)
     : extension_registry_(extensions::ExtensionRegistry::Get(profile)),
@@ -120,6 +136,12 @@ const char* FamilyUserAppMetrics::GetAppsCountHistogramNameForTest(
   return GetAppsCountHistogramName(app_type);
 }
 
+void FamilyUserAppMetrics::Init() {
+  for (const auto app_type : app_registry_->GetInitializedAppTypes()) {
+    OnAppTypeInitialized(app_type);
+  }
+}
+
 void FamilyUserAppMetrics::OnNewDay() {
   // Ignores the first report during OOBE. Apps and extensions may sync slowly
   // after the OOBE process, biasing the metrics downwards toward zero.
@@ -137,6 +159,11 @@ void FamilyUserAppMetrics::OnNewDay() {
 
 void FamilyUserAppMetrics::OnAppTypeInitialized(apps::mojom::AppType app_type) {
   DCHECK(!base::Contains(ready_app_types_, app_type));
+  // Skip the extension app type, because extensions are recorded separately,
+  // and AppService only has some extensions with file browser handlers.
+  if (app_type == apps::mojom::AppType::kExtension)
+    return;
+
   ready_app_types_.insert(app_type);
   if (should_record_metrics_on_new_day_)
     RecordRecentlyUsedAppsCount(app_type);
@@ -210,7 +237,7 @@ void FamilyUserAppMetrics::RecordRecentlyUsedAppsCount(
 
 bool FamilyUserAppMetrics::IsAppWindowOpen(const std::string& app_id) {
   // An app is active if it has an open window.
-  return !instance_registry_->GetWindows(app_id).empty();
+  return instance_registry_->ContainsAppId(app_id);
 }
 
 }  // namespace ash

@@ -124,8 +124,25 @@ class GEOMETRY_EXPORT Rect {
   // Use in place of SetRect() when you know the edges of the rectangle instead
   // of the dimensions, rather than trying to determine the width/height
   // yourself. This safely handles cases where the width/height would overflow.
-  void SetByBounds(int left, int top, int right, int bottom);
+  void SetByBounds(int left, int top, int right, int bottom) {
+    SetHorizontalBounds(left, right);
+    SetVerticalBounds(top, bottom);
+  }
+  void SetHorizontalBounds(int left, int right) {
+    set_x(left);
+    set_width(base::ClampSub(right, left));
+    if (UNLIKELY(this->right() != right))
+      AdjustForSaturatedRight(right);
+  }
+  void SetVerticalBounds(int top, int bottom) {
+    set_y(top);
+    set_height(base::ClampSub(bottom, top));
+    if (UNLIKELY(this->bottom() != bottom))
+      AdjustForSaturatedBottom(bottom);
+  }
 
+  // Shrink the rectangle by |inset| on all sides.
+  void Inset(int inset) { Inset(inset, inset); }
   // Shrink the rectangle by a horizontal and vertical distance on all sides.
   void Inset(int horizontal, int vertical) {
     Inset(horizontal, vertical, horizontal, vertical);
@@ -137,11 +154,20 @@ class GEOMETRY_EXPORT Rect {
   // Shrink the rectangle by the specified amount on each side.
   void Inset(int left, int top, int right, int bottom);
 
+  // Expand the rectangle by the specified amount on each side.
+  void Outset(int outset) { Inset(-outset); }
+  void Outset(int horizontal, int vertical) { Inset(-horizontal, -vertical); }
+  void Outset(int left, int top, int right, int bottom) {
+    Inset(-left, -top, -right, -bottom);
+  }
+
   // Move the rectangle by a horizontal and vertical distance.
-  void Offset(int horizontal, int vertical);
-  void Offset(const Vector2d& distance) { Offset(distance.x(), distance.y()); }
-  void operator+=(const Vector2d& offset);
-  void operator-=(const Vector2d& offset);
+  void Offset(int horizontal, int vertical) {
+    Offset(Vector2d(horizontal, vertical));
+  }
+  void Offset(const Vector2d& distance);
+  void operator+=(const Vector2d& offset) { Offset(offset); }
+  void operator-=(const Vector2d& offset) { Offset(-offset); }
 
   Insets InsetsFrom(const Rect& inner) const;
 
@@ -173,15 +199,31 @@ class GEOMETRY_EXPORT Rect {
   // An empty rectangle doesn't intersect any rectangle.
   bool Intersects(const Rect& rect) const;
 
-  // Computes the intersection of this rectangle with the given rectangle.
+  // Sets this rect to be the intersection of this rectangle with the given
+  // rectangle.
   void Intersect(const Rect& rect);
 
-  // Computes the union of this rectangle with the given rectangle.  The union
-  // is the smallest rectangle containing both rectangles.
+  // Sets this rect to be the intersection of itself and |rect| using
+  // edge-inclusive geometry.  If the two rectangles overlap but the overlap
+  // region is zero-area (either because one of the two rectangles is zero-area,
+  // or because the rectangles overlap at an edge or a corner), the result is
+  // the zero-area intersection.  The return value indicates whether the two
+  // rectangle actually have an intersection, since checking the result for
+  // isEmpty() is not conclusive.
+  bool InclusiveIntersect(const Rect& rect);
+
+  // Sets this rect to be the union of this rectangle with the given rectangle.
+  // The union is the smallest rectangle containing both rectangles if not
+  // empty. If both rects are empty, this rect will become |rect|.
   void Union(const Rect& rect);
 
-  // Computes the rectangle resulting from subtracting |rect| from |*this|,
-  // i.e. the bounding rect of |Region(*this) - Region(rect)|.
+  // Similar to Union(), but the result will contain both rectangles even if
+  // either of them is empty. For example, union of (100, 100, 0x0) and
+  // (200, 200, 50x0) is (100, 100, 150x100).
+  void UnionEvenIfEmpty(const Rect& rect);
+
+  // Sets this rect to be the rectangle resulting from subtracting |rect| from
+  // |*this|, i.e. the bounding rect of |Region(*this) - Region(rect)|.
   void Subtract(const Rect& rect);
 
   // Fits as much of the receiving rectangle into the supplied rectangle as
@@ -223,9 +265,6 @@ class GEOMETRY_EXPORT Rect {
   bool ApproximatelyEqual(const Rect& rect, int tolerance) const;
 
  private:
-  gfx::Point origin_;
-  gfx::Size size_;
-
   // Returns true iff a+b would overflow max int.
   static constexpr bool AddWouldOverflow(int a, int b) {
     // In this function, GCC tries to make optimizations that would only work if
@@ -248,6 +287,12 @@ class GEOMETRY_EXPORT Rect {
                ? std::numeric_limits<int>::max() - origin
                : size;
   }
+
+  void AdjustForSaturatedRight(int right);
+  void AdjustForSaturatedBottom(int bottom);
+
+  gfx::Point origin_;
+  gfx::Size size_;
 };
 
 inline bool operator==(const Rect& lhs, const Rect& rhs) {
@@ -267,6 +312,7 @@ inline Rect operator+(const Vector2d& lhs, const Rect& rhs) {
 
 GEOMETRY_EXPORT Rect IntersectRects(const Rect& a, const Rect& b);
 GEOMETRY_EXPORT Rect UnionRects(const Rect& a, const Rect& b);
+GEOMETRY_EXPORT Rect UnionRectsEvenIfEmpty(const Rect& a, const Rect& b);
 GEOMETRY_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
 
 // Constructs a rectangle with |p1| and |p2| as opposite corners.
@@ -277,57 +323,24 @@ GEOMETRY_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
 // contained within the rect, because they will appear on one of these edges.
 GEOMETRY_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
 
-// Scales the rect and returns the enclosing rect.  Use this only the inputs are
-// known to not overflow.  Use ScaleToEnclosingRectSafe if the inputs are
-// unknown and need to use saturated math.
+// Scales the rect and returns the enclosing rect. The components are clamped
+// if they would overflow.
 inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float x_scale,
                                  float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-  // These next functions cast instead of using e.g. base::ClampFloor() because
-  // we haven't checked to ensure that the clamping behavior of the helper
-  // functions doesn't degrade performance, and callers shouldn't be passing
-  // values that cause overflow anyway.
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::floor(rect.x() * x_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::floor(rect.y() * y_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::ceil(rect.right() * x_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::ceil(rect.bottom() * y_scale)));
-  int x = static_cast<int>(std::floor(rect.x() * x_scale));
-  int y = static_cast<int>(std::floor(rect.y() * y_scale));
-  int r = rect.width() == 0 ?
-      x : static_cast<int>(std::ceil(rect.right() * x_scale));
-  int b = rect.height() == 0 ?
-      y : static_cast<int>(std::ceil(rect.bottom() * y_scale));
-  return Rect(x, y, r - x, b - y);
+  int x = base::ClampFloor(rect.x() * x_scale);
+  int y = base::ClampFloor(rect.y() * y_scale);
+  int r = rect.width() == 0 ? x : base::ClampCeil(rect.right() * x_scale);
+  int b = rect.height() == 0 ? y : base::ClampCeil(rect.bottom() * y_scale);
+  Rect result;
+  result.SetByBounds(x, y, r, b);
+  return result;
 }
 
 inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
   return ScaleToEnclosingRect(rect, scale, scale);
-}
-
-// ScaleToEnclosingRect but clamping instead of asserting if the resulting rect
-// would overflow.
-// TODO(pkasting): Attempt to switch ScaleTo...Rect() to this construction and
-// check performance.
-inline Rect ScaleToEnclosingRectSafe(const Rect& rect,
-                                     float x_scale,
-                                     float y_scale) {
-  if (x_scale == 1.f && y_scale == 1.f)
-    return rect;
-  int x = base::ClampFloor(rect.x() * x_scale);
-  int y = base::ClampFloor(rect.y() * y_scale);
-  int w = base::ClampCeil(rect.width() * x_scale);
-  int h = base::ClampCeil(rect.height() * y_scale);
-  return Rect(x, y, w, h);
-}
-
-inline Rect ScaleToEnclosingRectSafe(const Rect& rect, float scale) {
-  return ScaleToEnclosingRectSafe(rect, scale, scale);
 }
 
 inline Rect ScaleToEnclosedRect(const Rect& rect,
@@ -335,21 +348,13 @@ inline Rect ScaleToEnclosedRect(const Rect& rect,
                                 float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::ceil(rect.x() * x_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::ceil(rect.y() * y_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::floor(rect.right() * x_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::floor(rect.bottom() * y_scale)));
-  int x = static_cast<int>(std::ceil(rect.x() * x_scale));
-  int y = static_cast<int>(std::ceil(rect.y() * y_scale));
-  int r = rect.width() == 0 ?
-      x : static_cast<int>(std::floor(rect.right() * x_scale));
-  int b = rect.height() == 0 ?
-      y : static_cast<int>(std::floor(rect.bottom() * y_scale));
-  return Rect(x, y, r - x, b - y);
+  int x = base::ClampCeil(rect.x() * x_scale);
+  int y = base::ClampCeil(rect.y() * y_scale);
+  int r = rect.width() == 0 ? x : base::ClampFloor(rect.right() * x_scale);
+  int b = rect.height() == 0 ? y : base::ClampFloor(rect.bottom() * y_scale);
+  Rect result;
+  result.SetByBounds(x, y, r, b);
+  return result;
 }
 
 inline Rect ScaleToEnclosedRect(const Rect& rect, float scale) {
@@ -358,38 +363,28 @@ inline Rect ScaleToEnclosedRect(const Rect& rect, float scale) {
 
 // Scales |rect| by scaling its four corner points. If the corner points lie on
 // non-integral coordinate after scaling, their values are rounded to the
-// nearest integer.
+// nearest integer. The components are clamped if they would overflow.
 // This is helpful during layout when relative positions of multiple gfx::Rect
 // in a given coordinate space needs to be same after scaling as it was before
 // scaling. ie. this gives a lossless relative positioning of rects.
 inline Rect ScaleToRoundedRect(const Rect& rect, float x_scale, float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-
-  DCHECK(
-      base::IsValueInRangeForNumericType<int>(std::round(rect.x() * x_scale)));
-  DCHECK(
-      base::IsValueInRangeForNumericType<int>(std::round(rect.y() * y_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::round(rect.right() * x_scale)));
-  DCHECK(base::IsValueInRangeForNumericType<int>(
-      std::round(rect.bottom() * y_scale)));
-
-  int x = static_cast<int>(std::round(rect.x() * x_scale));
-  int y = static_cast<int>(std::round(rect.y() * y_scale));
-  int r = rect.width() == 0
-              ? x
-              : static_cast<int>(std::round(rect.right() * x_scale));
-  int b = rect.height() == 0
-              ? y
-              : static_cast<int>(std::round(rect.bottom() * y_scale));
-
-  return Rect(x, y, r - x, b - y);
+  int x = base::ClampRound(rect.x() * x_scale);
+  int y = base::ClampRound(rect.y() * y_scale);
+  int r = rect.width() == 0 ? x : base::ClampRound(rect.right() * x_scale);
+  int b = rect.height() == 0 ? y : base::ClampRound(rect.bottom() * y_scale);
+  Rect result;
+  result.SetByBounds(x, y, r, b);
+  return result;
 }
 
 inline Rect ScaleToRoundedRect(const Rect& rect, float scale) {
   return ScaleToRoundedRect(rect, scale, scale);
 }
+
+// Return a maximum rectangle that is covered by the a or b.
+GEOMETRY_EXPORT Rect MaximumCoveredRect(const Rect& a, const Rect& b);
 
 // This is declared here for use in gtest-based unit tests but is defined in
 // the //ui/gfx:test_support target. Depend on that to use this in your unit

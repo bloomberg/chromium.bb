@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 
@@ -30,8 +31,7 @@ void FakeSyncEngine::TriggerInitializationCompletion(bool success) {
 
   initialized_ = success;
 
-  host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                             WeakHandle<DataTypeDebugInfoListener>(), success,
+  host_->OnEngineInitialized(WeakHandle<DataTypeDebugInfoListener>(), success,
                              is_first_time_sync_configure_);
 }
 
@@ -74,10 +74,8 @@ void FakeSyncEngine::StartSyncingWithServer() {}
 
 void FakeSyncEngine::SetEncryptionPassphrase(const std::string& passphrase) {}
 
-void FakeSyncEngine::SetDecryptionPassphrase(const std::string& passphrase) {}
-
-void FakeSyncEngine::SetKeystoreEncryptionBootstrapToken(
-    const std::string& token) {}
+void FakeSyncEngine::SetExplicitPassphraseDecryptionKey(
+    std::unique_ptr<Nigori> key) {}
 
 void FakeSyncEngine::AddTrustedVaultDecryptionKeys(
     const std::vector<std::vector<uint8_t>>& keys,
@@ -88,26 +86,24 @@ void FakeSyncEngine::AddTrustedVaultDecryptionKeys(
 void FakeSyncEngine::StopSyncingForShutdown() {}
 
 void FakeSyncEngine::Shutdown(ShutdownReason reason) {
-  if (reason == DISABLE_SYNC) {
+  if (reason == ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA) {
     sync_transport_data_cleared_cb_.Run();
   }
 }
 
 void FakeSyncEngine::ConfigureDataTypes(ConfigureParams params) {
   std::move(params.ready_task)
-      .Run(/*succeeded_configuration_types=*/params.enabled_types,
+      .Run(/*succeeded_configuration_types=*/params.to_download,
            /*failed_configuration_types=*/ModelTypeSet());
 }
 
-void FakeSyncEngine::ActivateDataType(
+void FakeSyncEngine::ConnectDataType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {}
 
-void FakeSyncEngine::DeactivateDataType(ModelType type) {}
+void FakeSyncEngine::DisconnectDataType(ModelType type) {}
 
-void FakeSyncEngine::ActivateProxyDataType(ModelType type) {}
-
-void FakeSyncEngine::DeactivateProxyDataType(ModelType type) {}
+void FakeSyncEngine::SetProxyTabsDatatypeEnabled(bool enabled) {}
 
 const SyncStatus& FakeSyncEngine::GetDetailedStatus() const {
   return default_sync_status_;

@@ -29,9 +29,9 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
+namespace ash {
 
-namespace chromeos {
+using ::testing::_;
 
 const char kExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kExtensionName[] = "extension_name";
@@ -391,7 +391,7 @@ class KioskLaunchControllerWithExtensionTest
     force_installed_tracker()->OnExtensionReady(profile(), ext.get());
   }
 
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
 IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithExtensionTest,
@@ -440,10 +440,9 @@ class KioskLaunchControllerWithInvalidExtensionTest
  public:
   void SetUpInProcessBrowserTestFixture() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(policy_provider_, IsFirstPolicyLoadComplete(_))
-        .WillRepeatedly(testing::Return(true));
+    policy_provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
   }
@@ -475,4 +474,5 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(KioskAppType::kArcApp,
                                          KioskAppType::kChromeApp,
                                          KioskAppType::kWebApp));
-}  // namespace chromeos
+
+}  // namespace ash

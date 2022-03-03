@@ -8,7 +8,6 @@ bsep@chromium.org
 collinbaker@chromium.org
 connily@chromium.org
 corising@chromium.org
-cyan@chromium.org
 dfried@chromium.org
 ellyjones@chromium.org
 kylixrd@chromium.org
@@ -19,7 +18,6 @@ sky@chromium.org
 tbergquist@chromium.org
 
 per-file drag_and_drop_interactive_uitest.*=lukasza@chromium.org
-per-file drag_and_drop_interactive_uitest.*=paulmeyer@chromium.org
 per-file drag_and_drop_interactive_uitest.*=file://content/OWNERS
 
 per-file hung_renderer*=file://chrome/browser/ui/hung_renderer/OWNERS

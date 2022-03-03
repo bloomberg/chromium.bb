@@ -5,9 +5,7 @@
 #ifndef UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
 #define UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
 
-
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/ui_base_types.h"
@@ -31,6 +29,9 @@ class WEB_DIALOGS_EXPORT WebDialogUIBase {
 
   WebDialogUIBase(content::WebUI* web_ui);
 
+  WebDialogUIBase(const WebDialogUIBase&) = delete;
+  WebDialogUIBase& operator=(const WebDialogUIBase&) = delete;
+
   // Close the dialog, passing the specified arguments to the close handler.
   void CloseDialog(const base::ListValue* args);
 
@@ -47,9 +48,7 @@ class WEB_DIALOGS_EXPORT WebDialogUIBase {
   // JS message handler.
   void OnDialogClosed(const base::ListValue* args);
 
-  content::WebUI* web_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebDialogUIBase);
+  raw_ptr<content::WebUI> web_ui_;
 };
 
 // Displays file URL contents inside a modal web dialog.
@@ -70,12 +69,13 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public WebDialogUIBase,
   // WebContents.
   explicit WebDialogUI(content::WebUI* web_ui);
   ~WebDialogUI() override;
+  WebDialogUI(const WebDialogUI&) = delete;
+  WebDialogUI& operator=(const WebDialogUI&) = delete;
 
  private:
   // content::WebUIController:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebDialogUI);
+  void WebUIRenderFrameCreated(
+      content::RenderFrameHost* render_frame_host) override;
 };
 
 // Displays file URL contents inside a modal web dialog while also enabling
@@ -87,12 +87,13 @@ class WEB_DIALOGS_EXPORT MojoWebDialogUI : public WebDialogUIBase,
   // WebContents.
   explicit MojoWebDialogUI(content::WebUI* web_ui);
   ~MojoWebDialogUI() override;
+  MojoWebDialogUI(const MojoWebDialogUI&) = delete;
+  MojoWebDialogUI& operator=(const MojoWebDialogUI&) = delete;
 
  private:
   // content::WebUIController:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoWebDialogUI);
+  void WebUIRenderFrameCreated(
+      content::RenderFrameHost* render_frame_host) override;
 };
 
 }  // namespace ui

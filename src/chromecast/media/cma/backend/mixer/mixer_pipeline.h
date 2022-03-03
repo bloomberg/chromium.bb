@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -38,6 +37,9 @@ class MixerPipeline {
       PostProcessingPipelineParser* parser,
       PostProcessingPipelineFactory* factory,
       int expected_input_channels);
+
+  MixerPipeline(const MixerPipeline&) = delete;
+  MixerPipeline& operator=(const MixerPipeline&) = delete;
 
   ~MixerPipeline();
 
@@ -100,8 +102,6 @@ class MixerPipeline {
   base::flat_map<std::string, FilterGroup*> stream_sinks_;
   FilterGroup* loopback_output_group_ = nullptr;
   FilterGroup* output_group_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MixerPipeline);
 };
 
 }  // namespace media

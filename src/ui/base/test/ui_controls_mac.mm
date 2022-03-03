@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
-#include "base/stl_util.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -217,6 +217,9 @@ class MockNSEventClassMethods {
     }
   }
 
+  MockNSEventClassMethods(const MockNSEventClassMethods&) = delete;
+  MockNSEventClassMethods& operator=(const MockNSEventClassMethods&) = delete;
+
  private:
   MockNSEventClassMethods()
       : mouse_location_swizzler_([NSEvent class],
@@ -228,8 +231,6 @@ class MockNSEventClassMethods {
 
   base::mac::ScopedObjCClassSwizzler mouse_location_swizzler_;
   base::mac::ScopedObjCClassSwizzler pressed_mouse_buttons_swizzler_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNSEventClassMethods);
 };
 
 }  // namespace

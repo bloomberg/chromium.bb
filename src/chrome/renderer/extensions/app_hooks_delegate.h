@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/bindings/api_binding_hooks_delegate.h"
 #include "v8/include/v8.h"
@@ -15,12 +14,19 @@
 namespace extensions {
 class APIRequestHandler;
 class Dispatcher;
+class IPCMessageSender;
 class ScriptContext;
 
 // The custom hooks for the chrome.app API.
 class AppHooksDelegate : public APIBindingHooksDelegate {
  public:
-  AppHooksDelegate(Dispatcher* dispatcher, APIRequestHandler* request_handler);
+  AppHooksDelegate(Dispatcher* dispatcher,
+                   APIRequestHandler* request_handler,
+                   IPCMessageSender* ipc_sender);
+
+  AppHooksDelegate(const AppHooksDelegate&) = delete;
+  AppHooksDelegate& operator=(const AppHooksDelegate&) = delete;
+
   ~AppHooksDelegate() override;
 
   // APIBindingHooksDelegate:
@@ -40,6 +46,10 @@ class AppHooksDelegate : public APIBindingHooksDelegate {
   bool GetIsInstalled(ScriptContext* script_context) const;
 
  private:
+  static void IsInstalledGetterCallback(
+      v8::Local<v8::String> property,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+
   // Returns the manifest of the extension associated with the frame.
   v8::Local<v8::Value> GetDetails(ScriptContext* script_context) const;
 
@@ -61,9 +71,11 @@ class AppHooksDelegate : public APIBindingHooksDelegate {
 
   APIRequestHandler* request_handler_ = nullptr;
 
-  base::WeakPtrFactory<AppHooksDelegate> weak_factory_{this};
+  // IPC sender used for activity log call.
+  // Not owned. This is owned by NativeExtensionBindingsSystem.
+  IPCMessageSender* ipc_sender_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(AppHooksDelegate);
+  base::WeakPtrFactory<AppHooksDelegate> weak_factory_{this};
 };
 
 }  // namespace extensions

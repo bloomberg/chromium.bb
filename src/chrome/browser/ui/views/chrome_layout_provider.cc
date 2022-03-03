@@ -134,6 +134,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return 8;
     case DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING:
       return 4;
+    case DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE:
+      return 18;
   }
   NOTREACHED();
   return 0;
@@ -153,11 +155,6 @@ int ChromeLayoutProvider::GetSnappedDialogWidth(int min_width) const {
 const views::TypographyProvider& ChromeLayoutProvider::GetTypographyProvider()
     const {
   return typography_provider_;
-}
-
-views::GridLayout::Alignment
-ChromeLayoutProvider::GetControlLabelGridAlignment() const {
-  return views::GridLayout::LEADING;
 }
 
 bool ChromeLayoutProvider::ShouldShowWindowIcon() const {

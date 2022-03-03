@@ -7,8 +7,6 @@
 
 #include "content/public/browser/web_contents_view_delegate.h"
 
-#include "base/macros.h"
-
 namespace content {
 class WebContents;
 }  // namespace content
@@ -20,6 +18,10 @@ class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
   static content::WebContentsViewDelegate* Create(
       content::WebContents* web_contents);
 
+  AwWebContentsViewDelegate(const AwWebContentsViewDelegate&) = delete;
+  AwWebContentsViewDelegate& operator=(const AwWebContentsViewDelegate&) =
+      delete;
+
   ~AwWebContentsViewDelegate() override;
 
   // content::WebContentsViewDelegate implementation.
@@ -27,8 +29,6 @@ class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
 
  private:
   AwWebContentsViewDelegate(content::WebContents* web_contents);
-
-  DISALLOW_COPY_AND_ASSIGN(AwWebContentsViewDelegate);
 };
 
 }  // namespace android_webview

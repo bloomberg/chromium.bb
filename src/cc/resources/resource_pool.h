@@ -10,10 +10,13 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/containers/circular_deque.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
@@ -24,7 +27,6 @@
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,11 +52,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
  public:
   // Delay before a resource is considered expired.
-  static constexpr base::TimeDelta kDefaultExpirationDelay =
-      base::TimeDelta::FromSeconds(5);
+  static constexpr base::TimeDelta kDefaultExpirationDelay = base::Seconds(5);
   // Max delay before an evicted resource is flushed.
-  static constexpr base::TimeDelta kDefaultMaxFlushDelay =
-      base::TimeDelta::FromSeconds(1);
+  static constexpr base::TimeDelta kDefaultMaxFlushDelay = base::Seconds(1);
 
   // A base class to hold ownership of gpu backed PoolResources. Allows the
   // client to define destruction semantics.
@@ -187,6 +187,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     void SetWasFreedByResourcePool() { resource_ = nullptr; }
 
     bool is_gpu_ = false;
+
+    // `resource_` is not a raw_ptr<...> for performance reasons (based on
+    // analysis of sampling profiler data and tab_search:top100:2020).
     PoolResource* resource_ = nullptr;
   };
 
@@ -205,9 +208,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   ResourcePool& operator=(const ResourcePool&) = delete;
 
   // Tries to reuse a resource. If none are available, makes a new one.
-  InUsePoolResource AcquireResource(const gfx::Size& size,
-                                    viz::ResourceFormat format,
-                                    const gfx::ColorSpace& color_space);
+  InUsePoolResource AcquireResource(
+      const gfx::Size& size,
+      viz::ResourceFormat format,
+      const gfx::ColorSpace& color_space,
+      const std::string& debug_name = std::string());
 
   // Tries to acquire the resource with |previous_content_id| for us in partial
   // raster. If successful, this function will retun the invalidated rect which
@@ -217,7 +222,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
       const gfx::Rect& new_invalidated_rect,
       uint64_t previous_content_id,
       gfx::Rect* total_invalidated_rect,
-      const gfx::ColorSpace& raster_color_space);
+      const gfx::ColorSpace& raster_color_space,
+      const std::string& debug_name = std::string());
 
   // Gives the InUsePoolResource a |resource_id_for_export()| in order to allow
   // exporting of the resource to the display compositor. This must be called
@@ -322,6 +328,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
                       const viz::ClientResourceProvider* resource_provider,
                       bool is_free) const;
 
+    void set_debug_name(const std::string& name) { debug_name_ = name; }
+    const std::string& debug_name() const { return debug_name_; }
+
    private:
     const size_t unique_id_;
     const gfx::Size size_;
@@ -348,6 +357,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     // out by ResourcePool, to be filled in by the client. Is destroyed on the
     // compositor thread.
     std::unique_ptr<SoftwareBacking> software_backing_;
+
+    // Used for debugging and tracing.
+    std::string debug_name_;
   };
 
   // Callback from the ResourceProvider to notify when an exported PoolResource
@@ -381,8 +393,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   base::TimeTicks GetUsageTimeForLRUResource() const;
   void FlushEvictedResources();
 
-  viz::ClientResourceProvider* const resource_provider_;
-  viz::ContextProvider* const context_provider_;
+  const raw_ptr<viz::ClientResourceProvider> resource_provider_;
+  const raw_ptr<viz::ContextProvider> context_provider_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const base::TimeDelta resource_expiration_delay_;
   const bool disallow_non_exact_reuse_ = false;
@@ -408,7 +420,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   base::TimeTicks flush_evicted_resources_deadline_;
 
-  const base::TickClock* clock_;
+  raw_ptr<const base::TickClock> clock_;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_{this};
 };

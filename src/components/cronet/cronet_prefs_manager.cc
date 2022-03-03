@@ -11,11 +11,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -107,6 +109,9 @@ class PrefServiceAdapter : public net::HttpServerProperties::PrefDelegate {
     pref_change_registrar_.Init(pref_service_);
   }
 
+  PrefServiceAdapter(const PrefServiceAdapter&) = delete;
+  PrefServiceAdapter& operator=(const PrefServiceAdapter&) = delete;
+
   ~PrefServiceAdapter() override {}
 
   // PrefDelegate implementation.
@@ -129,11 +134,9 @@ class PrefServiceAdapter : public net::HttpServerProperties::PrefDelegate {
   }
 
  private:
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
   const std::string path_;
   PrefChangeRegistrar pref_change_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
 };  // class PrefServiceAdapter
 
 class NetworkQualitiesPrefDelegateImpl
@@ -144,6 +147,11 @@ class NetworkQualitiesPrefDelegateImpl
       : pref_service_(pref_service), lossy_prefs_writing_task_posted_(false) {
     DCHECK(pref_service_);
   }
+
+  NetworkQualitiesPrefDelegateImpl(const NetworkQualitiesPrefDelegateImpl&) =
+      delete;
+  NetworkQualitiesPrefDelegateImpl& operator=(
+      const NetworkQualitiesPrefDelegateImpl&) = delete;
 
   ~NetworkQualitiesPrefDelegateImpl() override {}
 
@@ -169,7 +177,7 @@ class NetworkQualitiesPrefDelegateImpl
         base::BindOnce(
             &NetworkQualitiesPrefDelegateImpl::SchedulePendingLossyWrites,
             weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kUpdatePrefsDelaySeconds));
+        base::Seconds(kUpdatePrefsDelaySeconds));
   }
   std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -187,7 +195,7 @@ class NetworkQualitiesPrefDelegateImpl
     lossy_prefs_writing_task_posted_ = false;
   }
 
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
 
   // True if the task that schedules the writing of the lossy prefs has been
   // posted.
@@ -197,8 +205,6 @@ class NetworkQualitiesPrefDelegateImpl
 
   base::WeakPtrFactory<NetworkQualitiesPrefDelegateImpl> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkQualitiesPrefDelegateImpl);
 };
 
 }  // namespace
@@ -282,8 +288,7 @@ void CronetPrefsManager::SetupHostCachePersistence(
   host_cache_persistence_manager_ =
       std::make_unique<HostCachePersistenceManager>(
           host_cache, pref_service_.get(), kHostCachePref,
-          base::TimeDelta::FromMilliseconds(host_cache_persistence_delay_ms),
-          net_log);
+          base::Milliseconds(host_cache_persistence_delay_ms), net_log);
 }
 
 void CronetPrefsManager::PrepareForShutdown() {

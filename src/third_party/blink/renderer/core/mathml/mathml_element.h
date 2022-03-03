@@ -35,6 +35,8 @@ class CORE_EXPORT MathMLElement : public Element {
 
   bool IsTokenElement() const;
 
+  virtual bool IsGroupingElement() const { return false; }
+
  protected:
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
@@ -50,7 +52,7 @@ class CORE_EXPORT MathMLElement : public Element {
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  // https://mathml-refresh.github.io/mathml-core/#dfn-boolean
+  // https://w3c.github.io/mathml-core/#dfn-boolean
   absl::optional<bool> BooleanAttribute(const QualifiedName& name) const;
 };
 

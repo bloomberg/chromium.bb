@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_RENDERER_INJECTION_HOST_H_
 #define EXTENSIONS_RENDERER_INJECTION_HOST_H_
 
-#include "base/macros.h"
 #include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
@@ -18,6 +17,10 @@ class RenderFrame;
 class InjectionHost {
  public:
   InjectionHost(const extensions::mojom::HostID& host_id);
+
+  InjectionHost(const InjectionHost&) = delete;
+  InjectionHost& operator=(const InjectionHost&) = delete;
+
   virtual ~InjectionHost();
 
   // Returns the CSP to be used for the isolated world. Currently this only
@@ -43,8 +46,6 @@ class InjectionHost {
  private:
   // The ID of the host.
   extensions::mojom::HostID id_;
-
-  DISALLOW_COPY_AND_ASSIGN(InjectionHost);
 };
 
 #endif  // EXTENSIONS_RENDERER_INJECTION_HOST_H_

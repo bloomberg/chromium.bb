@@ -67,6 +67,12 @@ source_set("common_source_set") {
     "remoting_view_controller.mm",
     "session_reconnect_view.h",
     "session_reconnect_view.mm",
+    "settings/remoting_settings_view_controller.h",
+    "settings/remoting_settings_view_controller.mm",
+    "settings/setting_option.h",
+    "settings/setting_option.mm",
+    "settings/settings_view_cell.h",
+    "settings/settings_view_cell.mm",
     "side_menu_items.h",
     "side_menu_items.mm",
     "user_status_presenter.h",
@@ -79,13 +85,15 @@ source_set("common_source_set") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//google_apis",
     "//remoting/base",
+    "//remoting/base:authorization",
     "//remoting/client",
     "//remoting/client/input",
+    "//remoting/client/notification",
     "//remoting/ios:ios_core",
     "//remoting/ios/app/resources:assets",
-    "//remoting/ios/app/settings",
     "//remoting/ios/audio",
     "//remoting/ios/display",
     "//remoting/ios/domain",
@@ -133,6 +141,9 @@ source_set("app_source_set") {
   deps = [
     ":common_source_set",
     "//base",
+    "//google_apis",
+    "//remoting/resources",
+    "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
 

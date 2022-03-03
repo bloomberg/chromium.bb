@@ -11,7 +11,6 @@
 
 #include <oaidl.h>
 
-#include "base/macros.h"
 #include "base/template_util.h"
 #include "base/win/scoped_variant.h"
 
@@ -44,6 +43,9 @@ class ScopedVariantArg : public VARIANTARG {
   ScopedVariantArg() {
     vt = VT_EMPTY;
   }
+
+  ScopedVariantArg(const ScopedVariantArg&) = delete;
+  ScopedVariantArg& operator=(const ScopedVariantArg&) = delete;
 
   ~ScopedVariantArg() {
     VariantClear(this);
@@ -90,8 +92,6 @@ class ScopedVariantArg : public VARIANTARG {
     *other = *this;
     *static_cast<VARIANTARG*>(this) = temp;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedVariantArg);
 };
 
 // Make sure the layouts of |VARIANTARG| and |ScopedVariantArg| are identical.
