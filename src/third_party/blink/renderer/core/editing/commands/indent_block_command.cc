@@ -62,7 +62,6 @@ void IndentBlockCommand::IndentSiblings(Node* prpFirstSibling, Node* prpLastSibl
     Node* lastSibling = prpLastSibling;
 
     Element* blockForIndent = nullptr;
-    Node* refChild = nullptr;
     bool needToMergeNextSibling = false;
 
     const blink::HTMLQualifiedName blockQName
@@ -79,7 +78,6 @@ void IndentBlockCommand::IndentSiblings(Node* prpFirstSibling, Node* prpLastSibl
     if (nextSibling && nextSibling->HasTagName(blockQName) && !lastNode->IsDescendantOf(nextSibling)) {
         if (!blockForIndent) {
             blockForIndent = To<Element>(nextSibling);
-            refChild = nextSibling->firstChild();
         }
         else if (nextSibling->firstChild())
             needToMergeNextSibling = true;
