@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/enc_detect_dots.h"
 
@@ -351,7 +342,7 @@ void ComputeDotLosses(GaussianEllipse* ellipse, const ConnectedComponent& cc,
   const double kSigmaR = 0.0;       // 0.01;
   const double kZeroEpsilon = 0.1;  // Tolerance to consider a value negative
   double ct = cos(ellipse->angle), st = sin(ellipse->angle);
-  const std::array<double, 3> channelGains{1.0, 1.0, 1.0};
+  const std::array<double, 3> channelGains{{1.0, 1.0, 1.0}};
   int N = 0;
   ellipse->l1_loss = 0.0;
   ellipse->l2_loss = 0.0;
@@ -419,10 +410,10 @@ GaussianEllipse FitGaussianFast(const ConnectedComponent& cc,
   // Compute the 1st and 2nd moments of the CC
   double sum = 0.0;
   int N = 0;
-  std::array<double, 3> m1{0.0, 0.0, 0.0};
-  std::array<double, 3> m2{0.0, 0.0, 0.0};
-  std::array<double, 3> color{0.0, 0.0, 0.0};
-  std::array<double, 3> bgColor{0.0, 0.0, 0.0};
+  std::array<double, 3> m1{{0.0, 0.0, 0.0}};
+  std::array<double, 3> m2{{0.0, 0.0, 0.0}};
+  std::array<double, 3> color{{0.0, 0.0, 0.0}};
+  std::array<double, 3> bgColor{{0.0, 0.0, 0.0}};
 
   JXL_DEBUG(JXL_DEBUG_DOT_DETECT, "%zu %zu %zu %zu\n", cc.bounds.x0(),
             cc.bounds.y0(), cc.bounds.xsize(), cc.bounds.ysize());
@@ -463,7 +454,7 @@ GaussianEllipse FitGaussianFast(const ConnectedComponent& cc,
 
   // Some magic constants
   constexpr double kSigmaMult = 1.0;
-  constexpr std::array<double, 3> kScaleMult{1.1, 1.1, 1.1};
+  constexpr std::array<double, 3> kScaleMult{{1.1, 1.1, 1.1}};
 
   // Now set the parameters of the Gaussian
   ans.x = m1[0];

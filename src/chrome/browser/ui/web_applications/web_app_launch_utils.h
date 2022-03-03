@@ -5,17 +5,26 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_LAUNCH_UTILS_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_LAUNCH_UTILS_H_
 
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <memory>
+#include <string>
 
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/geometry/rect.h"
+
+class Profile;
 class Browser;
 class GURL;
+enum class WindowOpenDisposition;
+struct NavigateParams;
 
 namespace content {
 class WebContents;
 }
 
 namespace web_app {
+
+class AppBrowserController;
 
 absl::optional<AppId> GetWebAppForActiveTab(Browser* browser);
 
@@ -35,14 +44,35 @@ Browser* ReparentWebAppForActiveTab(Browser* browser);
 Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
                                            const AppId& app_id);
 
-// Reparents contents to a new app browser when entering the Focus Mode.
-Browser* ReparentWebContentsForFocusMode(content::WebContents* contents);
-
 // Set preferences that are unique to app windows.
 void SetAppPrefsForWebContents(content::WebContents* web_contents);
 
 // Clear preferences that are unique to app windows.
 void ClearAppPrefsForWebContents(content::WebContents* web_contents);
+
+std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
+    Browser* browser);
+
+Browser* CreateWebApplicationWindow(
+    Profile* profile,
+    const std::string& app_id,
+    WindowOpenDisposition disposition,
+    int32_t restore_id,
+    bool omit_from_session_restore = false,
+    bool can_resize = true,
+    bool can_maximize = true,
+    const gfx::Rect initial_bounds = gfx::Rect());
+
+content::WebContents* NavigateWebApplicationWindow(
+    Browser* browser,
+    const std::string& app_id,
+    const GURL& url,
+    WindowOpenDisposition disposition);
+
+content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
+                                                NavigateParams& nav_params);
+
+void RecordAppWindowLaunch(Profile* profile, const std::string& app_id);
 
 }  // namespace web_app
 

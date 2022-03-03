@@ -13,8 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
@@ -54,11 +53,10 @@ class SearchControllerImplNew : public SearchController {
   SearchControllerImplNew& operator=(const SearchControllerImplNew&) = delete;
 
   // SearchController:
-  void InitializeRankers() override;
   void Start(const std::u16string& query) override;
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
-                          int action_index) override;
+                          ash::SearchResultActionType action) override;
   size_t AddGroup(size_t max_results) override;
   void AddProvider(size_t group_id,
                    std::unique_ptr<SearchProvider> provider) override;
@@ -75,6 +73,8 @@ class SearchControllerImplNew : public SearchController {
       const std::u16string& trimmed_query,
       const ash::SearchResultIdWithPositionIndices& results,
       int launched_index) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   void set_results_changed_callback_for_test(
       ResultsChangedCallback callback) override;
   std::u16string get_query() override;
@@ -93,19 +93,21 @@ class SearchControllerImplNew : public SearchController {
   // recording.
   std::string last_launched_app_id_;
 
-  // Top-level result ranker. Replaces the Mixer if the categorical search flag
-  // is enabled.
+  // Top-level result ranker.
   std::unique_ptr<RankerDelegate> ranker_;
 
-  // Storage for all search results for the current query. Only used when
-  // categorical search is enabled.
+  // Storage for all search results for the current query.
   ResultsMap results_;
+
+  // Storage for category scores for the current query.
+  CategoriesList categories_;
 
   std::unique_ptr<SearchMetricsObserver> metrics_observer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   AppListModelUpdater* const model_updater_;
   AppListControllerDelegate* const list_controller_;
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace app_list

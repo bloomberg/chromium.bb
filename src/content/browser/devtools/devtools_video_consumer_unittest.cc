@@ -8,9 +8,11 @@
 #include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/task_environment.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/limits.h"
+#include "media/capture/mojom/video_capture_buffer.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -56,9 +58,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   }
 
   // This is never called.
-  MOCK_METHOD2(SetFormat,
-               void(media::VideoPixelFormat format,
-                    const gfx::ColorSpace& color_space));
+  MOCK_METHOD1(SetFormat, void(media::VideoPixelFormat format));
   void SetMinCapturePeriod(base::TimeDelta min_capture_period) final {
     min_capture_period_ = min_capture_period;
     MockSetMinCapturePeriod(min_capture_period_);
@@ -83,19 +83,23 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                     bool use_fixed_aspect_ratio));
   // This is never called.
   MOCK_METHOD1(SetAutoThrottlingEnabled, void(bool));
-  void ChangeTarget(const absl::optional<viz::FrameSinkId>& frame_sink_id,
-                    const viz::SubtreeCaptureId& subtree_capture_id) final {
-    frame_sink_id_ = frame_sink_id ? *frame_sink_id : viz::FrameSinkId();
+  void ChangeTarget(
+      const absl::optional<viz::VideoCaptureTarget>& target) final {
+    frame_sink_id_ = target ? target->frame_sink_id : viz::FrameSinkId();
     MockChangeTarget(frame_sink_id_);
   }
   MOCK_METHOD1(MockChangeTarget, void(const viz::FrameSinkId& frame_sink_id));
   void Start(
-      mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumer> consumer) final {
+      mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumer> consumer,
+      viz::mojom::BufferFormatPreference buffer_format_preference) final {
     DCHECK(!consumer_);
     consumer_.Bind(std::move(consumer));
-    MockStart(consumer_.get());
+    MockStart(consumer_.get(), buffer_format_preference);
   }
-  MOCK_METHOD1(MockStart, void(viz::mojom::FrameSinkVideoConsumer* consumer));
+  MOCK_METHOD2(
+      MockStart,
+      void(viz::mojom::FrameSinkVideoConsumer* consumer,
+           viz::mojom::BufferFormatPreference buffer_format_preference));
   void Stop() final {
     receiver_.reset();
     consumer_.reset();
@@ -199,9 +203,10 @@ class DevToolsVideoConsumerTest : public testing::Test {
         gfx::Rect(kResolution), kNotPremapped, gfx::ColorSpace::CreateREC709(),
         nullptr);
 
-    consumer_->OnFrameCaptured(std::move(data), std::move(info),
-                               gfx::Rect(kResolution),
-                               std::move(callbacks_remote));
+    consumer_->OnFrameCaptured(
+        media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
+            std::move(data)),
+        std::move(info), gfx::Rect(kResolution), std::move(callbacks_remote));
   }
 
   void StartCaptureWithMockCapturer() {
@@ -263,16 +268,6 @@ TEST_F(DevToolsVideoConsumerTest, CallbacksAreCalledWhenBufferValid) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Tests that only the OnFrameFromVideoConsumer callback is not called when
-// OnFrameCaptured is passed an invalid buffer.
-TEST_F(DevToolsVideoConsumerTest, CallbackIsNotCalledWhenBufferIsNotValid) {
-  // On invalid buffer, the |receiver_| doesn't get a frame.
-  EXPECT_CALL(receiver_, OnFrameFromVideoConsumerMock(_)).Times(0);
-
-  SimulateFrameCapture(base::ReadOnlySharedMemoryRegion());
-  base::RunLoop().RunUntilIdle();
-}
-
 // Tests that the OnFrameFromVideoConsumer callback is not called when
 // OnFrameCaptured is passed a buffer with less-than-expected size.
 TEST_F(DevToolsVideoConsumerTest, CallbackIsNotCalledWhenBufferIsTooSmall) {
@@ -299,7 +294,8 @@ TEST_F(DevToolsVideoConsumerTest, StartCaptureCallsSetFunctions) {
   EXPECT_CALL(capturer_, MockSetMinSizeChangePeriod(_));
   EXPECT_CALL(capturer_, MockSetResolutionConstraints(_, _, _));
   EXPECT_CALL(capturer_, MockChangeTarget(_));
-  EXPECT_CALL(capturer_, MockStart(_));
+  EXPECT_CALL(capturer_,
+              MockStart(_, viz::mojom::BufferFormatPreference::kDefault));
   StartCaptureWithMockCapturer();
   base::RunLoop().RunUntilIdle();
 
@@ -316,7 +312,8 @@ TEST_F(DevToolsVideoConsumerTest, StartCaptureCallsSetFunctions) {
   EXPECT_CALL(capturer_, MockSetMinSizeChangePeriod(_));
   EXPECT_CALL(capturer_, MockSetResolutionConstraints(_, _, _));
   EXPECT_CALL(capturer_, MockChangeTarget(_));
-  EXPECT_CALL(capturer_, MockStart(_));
+  EXPECT_CALL(capturer_,
+              MockStart(_, viz::mojom::BufferFormatPreference::kDefault));
   StartCaptureWithMockCapturer();
   base::RunLoop().RunUntilIdle();
 }
@@ -344,7 +341,9 @@ TEST_F(DevToolsVideoConsumerTest, CapturerIsPassedCachedValues) {
   EXPECT_CALL(capturer_, MockSetMinSizeChangePeriod(_)).Times(0);
   EXPECT_CALL(capturer_, MockSetResolutionConstraints(_, _, _)).Times(0);
   EXPECT_CALL(capturer_, MockChangeTarget(_)).Times(0);
-  EXPECT_CALL(capturer_, MockStart(_)).Times(0);
+  EXPECT_CALL(capturer_,
+              MockStart(_, viz::mojom::BufferFormatPreference::kDefault))
+      .Times(0);
   consumer_->SetMinCapturePeriod(kNewMinCapturePeriod);
   consumer_->SetMinAndMaxFrameSize(kNewMinFrameSize, kNewMaxFrameSize);
   consumer_->SetFrameSinkId(kNewFrameSinkId);
@@ -361,7 +360,8 @@ TEST_F(DevToolsVideoConsumerTest, CapturerIsPassedCachedValues) {
   EXPECT_CALL(capturer_, MockSetMinSizeChangePeriod(_));
   EXPECT_CALL(capturer_, MockSetResolutionConstraints(_, _, _));
   EXPECT_CALL(capturer_, MockChangeTarget(_));
-  EXPECT_CALL(capturer_, MockStart(_));
+  EXPECT_CALL(capturer_,
+              MockStart(_, viz::mojom::BufferFormatPreference::kDefault));
   StartCaptureWithMockCapturer();
   base::RunLoop().RunUntilIdle();
   // Verify that the previously cached values are sent to |capturer_|.

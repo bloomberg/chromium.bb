@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/message_pump_type.h"
@@ -41,6 +42,9 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
  public:
   MockMessagePumpDelegate() = default;
 
+  MockMessagePumpDelegate(const MockMessagePumpDelegate&) = delete;
+  MockMessagePumpDelegate& operator=(const MockMessagePumpDelegate&) = delete;
+
   // MessagePump::Delegate:
   void BeforeWait() override {}
   MOCK_METHOD0(DoWork, MessagePump::Delegate::NextWorkInfo());
@@ -48,9 +52,6 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
 
   MOCK_METHOD0(OnBeginWorkItem, void(void));
   MOCK_METHOD0(OnEndWorkItem, void(void));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMessagePumpDelegate);
 };
 
 class MessagePumpTest : public ::testing::TestWithParam<MessagePumpType> {
@@ -144,13 +145,7 @@ TEST_P(MessagePumpTest, QuitStopsWorkWithNestedRunLoop) {
   // PostDoWorkExpectations for the first DoWork.
   AddPostDoWorkExpectations(delegate);
 
-  // The outer pump may or may not trigger idle work at this point.
-  // TODO(scheduler-dev): This is unexpected, attempt to remove this legacy
-  // allowance.
-  EXPECT_CALL(delegate, DoIdleWork()).Times(AnyNumber());
-
   AddPreDoWorkExpectations(delegate);
-
   EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
     message_pump_->Quit();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
@@ -181,8 +176,8 @@ TEST_P(MessagePumpTest, YieldToNativeRequestedSmokeTest) {
   EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
     message_pump_->Quit();
     auto now = TimeTicks::Now();
-    return MessagePump::Delegate::NextWorkInfo{
-        now + TimeDelta::FromMilliseconds(1), now, true};
+    return MessagePump::Delegate::NextWorkInfo{now + Milliseconds(1), now,
+                                               true};
   }));
   EXPECT_CALL(delegate, DoIdleWork()).Times(AnyNumber());
 
@@ -199,8 +194,7 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
     // We first schedule a delayed task far in the future with maximum timer
     // slack.
     message_pump_->SetTimerSlack(TIMER_SLACK_MAXIMUM);
-    message_pump_->ScheduleDelayedWork(TimeTicks::Now() +
-                                       TimeDelta::FromHours(1));
+    message_pump_->ScheduleDelayedWork(TimeTicks::Now() + Hours(1));
 
     // Since we have no other work pending, the pump will initially be idle.
     action_.store(NONE);
@@ -221,7 +215,7 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
         // up shortly, finishing the test.
         action_.store(QUIT);
         TimeTicks now = TimeTicks::Now();
-        return {now + TimeDelta::FromMilliseconds(50), now};
+        return {now + Milliseconds(50), now};
       }
       case QUIT:
         message_pump_->Quit();
@@ -244,7 +238,7 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
     QUIT,
   };
 
-  MessagePump* const message_pump_;
+  const raw_ptr<MessagePump> message_pump_;
   std::atomic<Action> action_;
 };
 
@@ -272,7 +266,7 @@ TEST_P(MessagePumpTest, TimerSlackWithLongDelays) {
   thread.task_runner()->PostDelayedTask(
       FROM_HERE,
       BindLambdaForTesting([&delegate] { delegate.WakeUpFromOtherThread(); }),
-      TimeDelta::FromSeconds(2));
+      Seconds(2));
 
   message_pump_->Run(&delegate);
 }
@@ -296,25 +290,25 @@ TEST_P(MessagePumpTest, RunWithoutScheduleWorkInvokesDoWork) {
 TEST_P(MessagePumpTest, NestedRunWithoutScheduleWorkInvokesDoWork) {
   testing::InSequence sequence;
   testing::StrictMock<MockMessagePumpDelegate> delegate;
+  testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
 
   AddPreDoWorkExpectations(delegate);
 
-  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
-    testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
-    AddPreDoWorkExpectations(nested_delegate);
-    EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-    }));
-#if defined(OS_IOS)
-    EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
-#endif
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this, &nested_delegate] {
     message_pump_->Run(&nested_delegate);
     message_pump_->Quit();
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
   }));
 
+  AddPreDoWorkExpectations(nested_delegate);
+
+  EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([this] {
+    message_pump_->Quit();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
+
 #if defined(OS_IOS)
+  EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
   EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
 #endif
 

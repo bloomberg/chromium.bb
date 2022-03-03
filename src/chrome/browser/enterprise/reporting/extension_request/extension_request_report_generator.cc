@@ -6,19 +6,21 @@
 
 #include <string>
 
+#include "base/json/values_util.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/enterprise/common/proto/extensions_workflow_events.pb.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/common/extension_urls.h"
@@ -41,10 +43,17 @@ std::unique_ptr<ExtensionsWorkflowEvent> GenerateReport(
   report->set_id(extension_id);
   if (request_data) {
     if (request_data->is_dict()) {
-      absl::optional<base::Time> timestamp = ::util::ValueToTime(
+      absl::optional<base::Time> timestamp = ::base::ValueToTime(
           request_data->FindKey(extension_misc::kExtensionRequestTimestamp));
       if (timestamp)
         report->set_request_timestamp_millis(timestamp->ToJavaTime());
+      if (base::FeatureList::IsEnabled(
+              features::kExtensionWorkflowJustification)) {
+        const std::string* justification = request_data->FindStringKey(
+            extension_misc::kExtensionWorkflowJustification);
+        if (justification)
+          report->set_justification(*justification);
+      }
     }
     report->set_removed(false);
   } else {
@@ -54,6 +63,7 @@ std::unique_ptr<ExtensionsWorkflowEvent> GenerateReport(
   report->set_client_type(ExtensionsWorkflowEvent::CHROME_OS_USER);
 #else
   report->set_client_type(ExtensionsWorkflowEvent::BROWSER_DEVICE);
+  report->set_device_name(policy::GetMachineName());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return report;
 }
@@ -76,28 +86,10 @@ ExtensionRequestReportGenerator::ExtensionRequestReportGenerator() = default;
 ExtensionRequestReportGenerator::~ExtensionRequestReportGenerator() = default;
 
 std::vector<std::unique_ptr<ExtensionsWorkflowEvent>>
-ExtensionRequestReportGenerator::Generate() {
-  auto* throttler = ExtensionRequestReportThrottler::Get();
-
-  // Returns empty list if real time extension request uploading is not enabled.
-  if (!throttler->IsEnabled()) {
-    return std::vector<std::unique_ptr<ExtensionsWorkflowEvent>>();
-  }
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<std::unique_ptr<ExtensionsWorkflowEvent>> reports;
-  for (auto& profile_path : throttler->GetProfiles()) {
-    Profile* profile = profile_manager->GetProfileByPath(profile_path);
-    if (!profile)
-      continue;
-    std::vector<std::unique_ptr<ExtensionsWorkflowEvent>> profile_reports =
-        GenerateForProfile(profile);
-    reports.insert(reports.end(),
-                   std::make_move_iterator(profile_reports.begin()),
-                   std::make_move_iterator(profile_reports.end()));
-  }
-  throttler->ResetProfiles();
-  return reports;
+ExtensionRequestReportGenerator::Generate(
+    const RealTimeReportGenerator::Data& data) {
+  return GenerateForProfile(
+      static_cast<const ExtensionRequestData&>(data).profile);
 }
 
 std::vector<std::unique_ptr<ExtensionsWorkflowEvent>>
@@ -116,7 +108,7 @@ ExtensionRequestReportGenerator::GenerateForProfile(Profile* profile) {
   const base::DictionaryValue* uploaded_requests =
       profile->GetPrefs()->GetDictionary(kCloudExtensionRequestUploadedIds);
 
-  for (const auto& it : pending_requests->DictItems()) {
+  for (auto it : pending_requests->DictItems()) {
     const std::string& extension_id = it.first;
     if (!ShouldUploadExtensionRequest(extension_id, webstore_update_url,
                                       extension_management)) {
@@ -131,7 +123,7 @@ ExtensionRequestReportGenerator::GenerateForProfile(Profile* profile) {
         GenerateReport(extension_id, /*request_data=*/&it.second));
   }
 
-  for (const auto& it : uploaded_requests->DictItems()) {
+  for (auto it : uploaded_requests->DictItems()) {
     const std::string& extension_id = it.first;
 
     // Request is still pending, no need to send remove request.
@@ -149,7 +141,7 @@ ExtensionRequestReportGenerator::GenerateForProfile(Profile* profile) {
     std::string id = report.get()->id();
     if (!report.get()->removed()) {
       uploaded_requests_update->SetPath(id + ".upload_timestamp",
-                                        ::util::TimeToValue(base::Time::Now()));
+                                        ::base::TimeToValue(base::Time::Now()));
     } else {
       uploaded_requests_update->RemoveKey(id);
     }

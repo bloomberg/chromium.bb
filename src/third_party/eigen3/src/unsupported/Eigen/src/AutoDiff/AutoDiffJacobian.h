@@ -10,6 +10,8 @@
 #ifndef EIGEN_AUTODIFF_JACOBIAN_H
 #define EIGEN_AUTODIFF_JACOBIAN_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen
 {
 

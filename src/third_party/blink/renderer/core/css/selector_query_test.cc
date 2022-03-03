@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 // Uncomment to run the SelectorQueryTests for stats in a release build.
 // #define RELEASE_QUERY_STATS
@@ -240,7 +240,8 @@ TEST(SelectorQueryTest, FastPathScoped) {
   ShadowRoot& shadowRoot =
       scope->AttachShadowRootInternal(ShadowRootType::kOpen);
   // Make the inside the shadow root be identical to that of the outer document.
-  shadowRoot.appendChild(&document->documentElement()->CloneWithChildren());
+  shadowRoot.appendChild(&document->documentElement()->CloneWithChildren(
+      CloneChildrenFlag::kClone));
   static const struct QueryTest kTestCases[] = {
       // Id in the right most selector.
       {"#first", false, 0, {0, 0, 0, 0, 0, 0, 0}},

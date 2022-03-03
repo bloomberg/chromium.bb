@@ -12,7 +12,6 @@
 #include "include/core/SkString.h"
 #include "include/utils/SkRandom.h"
 #include "src/core/SkAAClip.h"
-#include "src/core/SkClipOpPriv.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // This bench tests out AA/BW clipping via canvas' clipPath and clipRect calls
@@ -171,7 +170,7 @@ class AAClipBuilderBench : public Benchmark {
     SkString fName;
     SkPath   fPath;
     SkRect   fRect;
-    SkRegion fRegion;
+    SkIRect  fBounds;
     bool     fDoPath;
     bool     fDoAA;
 
@@ -182,9 +181,8 @@ public:
 
         fName.printf("aaclip_build_%s_%s", doPath ? "path" : "rect",
                      doAA ? "AA" : "BW");
-
-        fRegion.setRect({0, 0, 640, 480});
-        fRect.set(fRegion.getBounds());
+        fBounds = {0, 0, 640, 480};
+        fRect.set(fBounds);
         fRect.inset(SK_Scalar1/4, SK_Scalar1/4);
         fPath.addRoundRect(fRect, SkIntToScalar(20), SkIntToScalar(20));
     }
@@ -198,9 +196,13 @@ protected:
         for (int i = 0; i < loops; ++i) {
             SkAAClip clip;
             if (fDoPath) {
-                clip.setPath(fPath, &fRegion, fDoAA);
+                clip.setPath(fPath, fBounds, fDoAA);
             } else {
-                clip.setRect(fRect, fDoAA);
+                if (fDoAA) {
+                    clip.setPath(SkPath::Rect(fRect), fBounds, fDoAA);
+                } else {
+                    clip.setRect(fBounds);
+                }
             }
         }
     }

@@ -25,11 +25,9 @@ static SkFontMetrics use_or_generate_metrics(
 }
 
 SkScalerCache::SkScalerCache(
-    const SkDescriptor& desc,
     std::unique_ptr<SkScalerContext> scaler,
     const SkFontMetrics* fontMetrics)
-        : fDesc{desc}
-        , fScalerContext{std::move(scaler)}
+        : fScalerContext{std::move(scaler)}
         , fFontMetrics{use_or_generate_metrics(fontMetrics, fScalerContext.get())}
         , fRoundingSpec{fScalerContext->isSubpixel(),
                         fScalerContext->computeAxisAlignmentForHText()} {
@@ -48,7 +46,7 @@ std::tuple<SkGlyphDigest, size_t> SkScalerCache::digest(SkPackedGlyphID packedGl
         return {*digest, 0};
     }
 
-    SkGlyph* glyph = fAlloc.make<SkGlyph>(fScalerContext->makeGlyph(packedGlyphID));
+    SkGlyph* glyph = fAlloc.make<SkGlyph>(fScalerContext->makeGlyph(packedGlyphID, &fAlloc));
     return {this->addGlyph(glyph), sizeof(SkGlyph)};
 }
 
@@ -68,17 +66,14 @@ std::tuple<const SkPath*, size_t> SkScalerCache::preparePath(SkGlyph* glyph) {
     return {glyph->path(), delta};
 }
 
-std::tuple<const SkPath*, size_t> SkScalerCache::mergePath(SkGlyph* glyph, const SkPath* path) {
+std::tuple<const SkPath*, size_t> SkScalerCache::mergePath(
+        SkGlyph* glyph, const SkPath* path, bool hairline) {
     SkAutoMutexExclusive lock{fMu};
     size_t pathDelta = 0;
-    if (glyph->setPath(&fAlloc, path)) {
+    if (glyph->setPath(&fAlloc, path, hairline)) {
         pathDelta = glyph->path()->approximateBytesUsed();
     }
     return {glyph->path(), pathDelta};
-}
-
-const SkDescriptor& SkScalerCache::getDescriptor() const {
-    return *fDesc.getDesc();
 }
 
 int SkScalerCache::countCachedGlyphs() const {

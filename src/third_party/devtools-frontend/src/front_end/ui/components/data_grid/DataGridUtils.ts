@@ -4,6 +4,11 @@
 import * as Platform from '../../../core/platform/platform.js';
 import type * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as DataGridRenderers from './DataGridRenderers.js';
+import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
+
+export interface CSSStylesObject {
+  readonly [name: string]: string;
+}
 
 /**
   * A column is an object with the following properties:
@@ -18,17 +23,20 @@ import * as DataGridRenderers from './DataGridRenderers.js';
   *   Note, if you're rendering a data-grid yourself you likely  shouldn't set
   *   this. It's set by the `data-grid-controller`, which is the component you
   *   want if your table needs to be sortable.
+  * - `styles`: an optional property of key-value sets of CSS properties and values.
 */
 export interface Column {
   id: string;
   title: string;
+  titleElement?: LitHtml.TemplateResult;
   sortable?: boolean;
   widthWeighting: number;
   hideable: boolean;
   visible: boolean;
+  styles?: CSSStylesObject;
 }
 
-export type CellValue = string|number|boolean|null;
+export type CellValue = string|number|boolean|IconButton.Icon.Icon|null;
 
 /**
  * A cell contains a `columnId`, which is the ID of the column the cell
@@ -44,9 +52,21 @@ export interface Cell {
   renderer?: (value: CellValue) => LitHtml.TemplateResult | typeof LitHtml.nothing;
 }
 
+export function getStringifiedCellValues(cells: Cell[]): string {
+  return JSON
+      .stringify(cells.map(cell => {
+        if (cell.value instanceof IconButton.Icon.Icon) {
+          return null;
+        }
+        return cell.value;
+      }))
+      .toLowerCase();
+}
+
 export type Row = {
   cells: Cell[],
   hidden?: boolean,
+  styles?: CSSStylesObject,
 };
 
 export const enum SortDirection {
@@ -77,7 +97,6 @@ export function renderCellValue(cell: Cell): LitHtml.TemplateResult|typeof LitHt
 
   return DataGridRenderers.primitiveRenderer(cell.value);
 }
-
 
 /**
  * When the user passes in columns we want to know how wide each one should be.
@@ -237,23 +256,3 @@ export const calculateFirstFocusableCell =
 
       return [focusableColIndex, focusableRowIndex];
     };
-
-
-export class ContextMenuColumnSortClickEvent extends Event {
-  data: {
-    column: Column,
-  };
-
-  constructor(column: Column) {
-    super('contextmenucolumnsortclick');
-    this.data = {
-      column,
-    };
-  }
-}
-
-export class ContextMenuHeaderResetClickEvent extends Event {
-  constructor() {
-    super('contextmenuheaderresetclick');
-  }
-}

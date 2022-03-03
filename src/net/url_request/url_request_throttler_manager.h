@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
@@ -37,6 +36,11 @@ class NET_EXPORT_PRIVATE URLRequestThrottlerManager
       public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   URLRequestThrottlerManager();
+
+  URLRequestThrottlerManager(const URLRequestThrottlerManager&) = delete;
+  URLRequestThrottlerManager& operator=(const URLRequestThrottlerManager&) =
+      delete;
+
   ~URLRequestThrottlerManager() override;
 
   // Must be called for every request, returns the URL request throttler entry
@@ -140,8 +144,6 @@ class NET_EXPORT_PRIVATE URLRequestThrottlerManager
   base::PlatformThreadId registered_from_thread_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestThrottlerManager);
 };
 
 }  // namespace net

@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
@@ -53,6 +53,9 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
                         const NetLogWithSource& source_net_log,
                         HttpAuthController* auth_controller,
                         ProxyDelegate* proxy_delegate);
+
+  SpdyProxyClientSocket(const SpdyProxyClientSocket&) = delete;
+  SpdyProxyClientSocket& operator=(const SpdyProxyClientSocket&) = delete;
 
   // On destruction Disconnect() is called.
   ~SpdyProxyClientSocket() override;
@@ -163,7 +166,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   const ProxyServer proxy_server_;
 
   // This delegate must outlive this proxy client socket.
-  ProxyDelegate* const proxy_delegate_;
+  const raw_ptr<ProxyDelegate> proxy_delegate_;
 
   std::string user_agent_;
 
@@ -190,8 +193,6 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // factory are invalidated in Disconnect().
   base::WeakPtrFactory<SpdyProxyClientSocket> write_callback_weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocket);
 };
 
 }  // namespace net

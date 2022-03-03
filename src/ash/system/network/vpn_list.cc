@@ -9,6 +9,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network_state_model.h"
+#include "base/bind.h"
 #include "base/notreached.h"
 
 namespace ash {
@@ -62,6 +63,7 @@ void VpnList::OnGetVpnProviders(std::vector<VpnProviderPtr> providers) {
     switch (provider->type) {
       case VpnType::kL2TPIPsec:
       case VpnType::kOpenVPN:
+      case VpnType::kWireGuard:
         // Only third party VpnProvider instances should exist.
         NOTREACHED();
         break;

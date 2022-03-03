@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -18,7 +19,6 @@ class Font;
 class LayoutSVGInlineText;
 class SelectionBoundsRecorder;
 class SVGInlineTextBox;
-class TextMarkerBase;
 class TextRun;
 struct PaintInfo;
 struct PhysicalOffset;
@@ -46,12 +46,12 @@ class SVGInlineTextBoxPainter {
   void PaintSelectionBackground(const PaintInfo&);
   void PaintTextMarkerForeground(const PaintInfo&,
                                  const PhysicalOffset&,
-                                 const TextMarkerBase&,
+                                 const DocumentMarker&,
                                  const ComputedStyle&,
                                  const Font&);
   void PaintTextMarkerBackground(const PaintInfo&,
                                  const PhysicalOffset&,
-                                 const TextMarkerBase&,
+                                 const DocumentMarker&,
                                  const ComputedStyle&,
                                  const Font&);
 
@@ -59,7 +59,7 @@ class SVGInlineTextBoxPainter {
   bool ShouldPaintSelection(const PaintInfo&) const;
   void PaintTextFragments(const PaintInfo&, LayoutObject&);
   void PaintDecoration(const PaintInfo&,
-                       TextDecoration,
+                       TextDecorationLine,
                        const SVGTextFragment&);
   bool SetupTextPaint(const PaintInfo&,
                       const ComputedStyle&,

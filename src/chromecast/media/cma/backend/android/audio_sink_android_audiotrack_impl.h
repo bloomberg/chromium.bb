@@ -12,7 +12,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
@@ -40,6 +39,11 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   // sent through the media pipeline, so we need to add code to break up a
   // buffer larger than this size and feed it in in smaller chunks.
   static const int kDirectBufferSize = 512 * 1024;
+
+  AudioSinkAndroidAudioTrackImpl(const AudioSinkAndroidAudioTrackImpl&) =
+      delete;
+  AudioSinkAndroidAudioTrackImpl& operator=(
+      const AudioSinkAndroidAudioTrackImpl&) = delete;
 
   // Gets the Android audio session ids used for media and communication (TTS)
   // tracks.
@@ -157,8 +161,6 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
 
   base::WeakPtr<AudioSinkAndroidAudioTrackImpl> weak_this_;
   base::WeakPtrFactory<AudioSinkAndroidAudioTrackImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioSinkAndroidAudioTrackImpl);
 };
 
 }  // namespace media

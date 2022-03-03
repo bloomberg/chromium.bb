@@ -9,7 +9,7 @@
 
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
@@ -99,6 +99,7 @@ It2MeDesktopEnvironmentFactory::~It2MeDesktopEnvironmentFactory() = default;
 
 std::unique_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<ClientSessionEvents> client_session_events,
     const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 

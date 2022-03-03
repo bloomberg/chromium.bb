@@ -26,27 +26,27 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/cursor/cursor_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/cursor_size.h"
-#include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #endif
 
@@ -717,7 +717,8 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
 
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          viz::CopyOutputRequest::ResultFormat::RGBA,
+          viz::CopyOutputRequest::ResultDestination::kSystemMemory,
           base::BindOnce(&Pointer::OnCursorCaptured,
                          cursor_capture_weak_ptr_factory_.GetWeakPtr(),
                          hotspot));
@@ -760,16 +761,17 @@ void Pointer::UpdateCursor() {
 
     // Scaling bitmap to match the corresponding supported scale factor of ash.
     const display::Display& display = cursor_client->GetDisplay();
-    float scale = ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(
-                      display.device_scale_factor())) /
-                  capture_scale_;
+    float scale =
+        ui::GetScaleForResourceScaleFactor(ui::GetSupportedResourceScaleFactor(
+            display.device_scale_factor())) /
+        capture_scale_;
     if (cursor_client->GetCursorSize() == ui::CursorSize::kLarge)
       scale *= kLargeCursorScale;
 
     // Use panel_rotation() rather than "natural" rotation, as it actually
     // relates to the hardware you're about to draw the cursor bitmap on.
-    ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
-                                              &bitmap, &hotspot);
+    aura::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
+                                                &bitmap, &hotspot);
 
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.

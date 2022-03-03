@@ -36,7 +36,6 @@ module.exports = {
      * Enforced rules
      */
 
-
     // syntax preferences
     'quotes': [2, 'single', {'avoidEscape': true, 'allowTemplateLiterals': false}],
     'semi': 2,
@@ -86,7 +85,7 @@ module.exports = {
     'template-curly-spacing': [2, 'never'],
 
     // file whitespace
-    'no-multiple-empty-lines': [2, {'max': 2}],
+    'no-multiple-empty-lines': [2, {'max': 1}],
     'no-mixed-spaces-and-tabs': 2,
     'no-trailing-spaces': 2,
     'linebreak-style': [2, 'unix'],
@@ -107,6 +106,7 @@ module.exports = {
 
     // no-implicit-globals will prevent accidental globals
     'no-implicit-globals': [0],
+    'no-unused-private-class-members': 2,
 
     // forbids interfaces starting with an I prefix.
     '@typescript-eslint/naming-convention':
@@ -126,6 +126,10 @@ module.exports = {
   },
   'overrides': [{
     'files': ['*.ts'],
+    'parserOptions': {
+      'allowAutomaticSingleRunInference': true,
+      'project': './config/typescript/tsconfig.eslint.json',
+    },
     'rules': {
       '@typescript-eslint/explicit-member-accessibility': [2, {'accessibility': 'no-public'}],
       'comma-dangle': 'off',

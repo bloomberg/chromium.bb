@@ -14,8 +14,8 @@
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -70,12 +70,13 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
@@ -134,7 +135,7 @@ class TabStyleHighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
  private:
-  TabStyle* const tab_style_;
+  const raw_ptr<TabStyle> tab_style_;
 };
 
 }  // namespace
@@ -147,7 +148,7 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
                                   TabController* controller)
       : tab_(tab), close_button_(close_button), controller_(controller) {
     DCHECK(close_button_);
-    tab_close_button_observation_.Observe(close_button_);
+    tab_close_button_observation_.Observe(close_button_.get());
   }
   TabCloseButtonObserver(const TabCloseButtonObserver&) = delete;
   TabCloseButtonObserver& operator=(const TabCloseButtonObserver&) = delete;
@@ -174,9 +175,9 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
   base::ScopedObservation<views::View, views::ViewObserver>
       tab_close_button_observation_{this};
 
-  Tab* tab_;
-  views::View* close_button_;
-  TabController* controller_;
+  raw_ptr<Tab> tab_;
+  raw_ptr<views::View> close_button_;
+  raw_ptr<TabController> controller_;
 };
 
 // Tab -------------------------------------------------------------------------
@@ -217,7 +218,7 @@ Tab::Tab(TabController* controller)
   // need a manual suppression by detecting cases where the text is painted onto
   // onto opaque parts of a not-entirely-opaque layer.
   title_->SetSkipSubpixelRenderingOpacityCheck(true);
-  AddChildView(title_);
+  AddChildView(title_.get());
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
@@ -236,11 +237,11 @@ Tab::Tab(TabController* controller)
   tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
       this, close_button_, controller_);
 
-  title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
+  title_animation_.SetDuration(base::Milliseconds(100));
 
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  focus_ring_ = views::FocusRing::Install(this);
+  views::FocusRing::Install(this);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<TabStyleHighlightPathGenerator>(tab_style_.get()));
 }
@@ -409,8 +410,8 @@ void Tab::Layout() {
   }
   title_->SetVisible(show_title);
 
-  if (focus_ring_)
-    focus_ring_->Layout();
+  if (views::FocusRing::Get(this))
+    views::FocusRing::Get(this)->Layout();
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
@@ -482,20 +483,15 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
     // event in the parents coordinate, which won't change, and recreate an
     // event after changing so the coordinates are correct.
     ui::MouseEvent event_in_parent(event, static_cast<View*>(this), parent());
-    if (controller_->SupportsMultipleSelection()) {
-      if (event.IsShiftDown() && IsSelectionModifierDown(event)) {
-        controller_->AddSelectionFromAnchorTo(this);
-      } else if (event.IsShiftDown()) {
-        controller_->ExtendSelectionTo(this);
-      } else if (IsSelectionModifierDown(event)) {
-        controller_->ToggleSelected(this);
-        if (!IsSelected()) {
-          // Don't allow dragging non-selected tabs.
-          return false;
-        }
-      } else if (!IsSelected()) {
-        controller_->SelectTab(this, event);
-        base::RecordAction(UserMetricsAction("SwitchTab_Click"));
+    if (event.IsShiftDown() && IsSelectionModifierDown(event)) {
+      controller_->AddSelectionFromAnchorTo(this);
+    } else if (event.IsShiftDown()) {
+      controller_->ExtendSelectionTo(this);
+    } else if (IsSelectionModifierDown(event)) {
+      controller_->ToggleSelected(this);
+      if (!IsSelected()) {
+        // Don't allow dragging non-selected tabs.
+        return false;
       }
     } else if (!IsSelected()) {
       controller_->SelectTab(this, event);
@@ -720,13 +716,12 @@ void Tab::SetClosing(bool closing) {
   closing_ = closing;
   ActiveStateChanged();
 
-  if (closing && focus_ring_) {
+  if (closing && views::FocusRing::Get(this)) {
     // When closing, sometimes DCHECK fails because
     // cc::Layer::IsPropertyChangeAllowed() returns false. Deleting
     // the focus ring fixes this. TODO(collinbaker): investigate why
     // this happens.
-    RemoveChildViewT(focus_ring_);
-    focus_ring_ = nullptr;
+    views::FocusRing::Remove(this);
   }
 }
 
@@ -972,11 +967,10 @@ void Tab::UpdateIconVisibility() {
       available_width >= (touch_ui ? kTouchMinimumContentsWidthForCloseButtons
                                    : kMinimumContentsWidthForCloseButtons);
 
-  showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
   if (IsActive()) {
     // Close button is shown on active tabs regardless of the size.
-    if (showing_close_button_)
-      available_width -= close_button_width;
+    showing_close_button_ = true;
+    available_width -= close_button_width;
 
     showing_alert_indicator_ =
         has_alert_icon && alert_icon_width <= available_width;
@@ -996,7 +990,7 @@ void Tab::UpdateIconVisibility() {
     if (showing_icon_)
       available_width -= favicon_width;
 
-    showing_close_button_ &= large_enough_for_close_button;
+    showing_close_button_ = large_enough_for_close_button;
     if (showing_close_button_)
       available_width -= close_button_width;
 

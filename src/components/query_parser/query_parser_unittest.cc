@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/query_parser/query_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -162,6 +162,52 @@ TEST_F(QueryParserTest, ParseQueryWords) {
       EXPECT_EQ(data[i].w2, base::UTF16ToUTF8(results[1]));
     if (results.size() == 3)
       EXPECT_EQ(data[i].w3, base::UTF16ToUTF8(results[2]));
+  }
+}
+
+TEST_F(QueryParserTest, ParseQueryNodesAndMatchExact) {
+  struct TestData2 {
+    const std::string query;
+    const std::string find_in_text;
+    const bool matches;
+  } data[] = {
+      // Trivial cases.
+      {"blah", "blah", true},
+      {"blah", "foo", false},
+      {"blah", "blahblah", false},
+      {"blah", "foo blah", true},
+      {"foo blah", "blah", false},
+      {"foo blah", "blahx foobar", false},
+
+      // Verify some prefix-match edge cases.
+      {"foo", "fooey foo", true},
+      {"foo foo", "foo", true},
+
+      // Query contains a term that doesn't have an exact match in the text.
+      {"foo fooey", "fooey", false},
+      {"fooey foo", "fooey", false},
+      {"foo fooey bar", "bar fooey", false},
+
+      // Verify that quotes still work correctly.
+      {"\"foo blah\"", "foo blah", true},
+      {"\"foo blah\"", "foox blahx", false},
+      {"\"foo blah\"", "\"foo blah\"", true},
+      {"foo blah", "\"foo bar blah\"", true},
+  };
+  for (size_t i = 0; i < base::size(data); ++i) {
+    SCOPED_TRACE(::testing::Message()
+                 << " Testing case i=" << i << " query=" << data[i].query
+                 << " find_in_text=" << data[i].find_in_text);
+
+    QueryWordVector find_in_words;
+    QueryParser::ExtractQueryWords(base::UTF8ToUTF16(data[i].find_in_text),
+                                   &find_in_words);
+
+    query_parser::QueryNodeVector query_nodes;
+    QueryParser::ParseQueryNodes(base::UTF8ToUTF16(data[i].query),
+                                 MatchingAlgorithm::DEFAULT, &query_nodes);
+    EXPECT_EQ(data[i].matches, QueryParser::DoesQueryMatch(
+                                   find_in_words, query_nodes, /*exact=*/true));
   }
 }
 

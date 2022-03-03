@@ -8,7 +8,8 @@
 #include "components/sessions/content/session_tab_helper.h"
 
 BrowserSyncedTabDelegate::BrowserSyncedTabDelegate(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents)
+    : content::WebContentsUserData<BrowserSyncedTabDelegate>(*web_contents) {
   SetWebContents(web_contents);
 }
 
@@ -28,4 +29,4 @@ bool BrowserSyncedTabDelegate::IsPlaceholderTab() const {
   return false;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(BrowserSyncedTabDelegate)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(BrowserSyncedTabDelegate);

@@ -79,7 +79,7 @@ static int read_desc_chunk(AVFormatContext *s)
     st->codecpar->channels    = avio_rb32(pb);
     st->codecpar->bits_per_coded_sample = avio_rb32(pb);
 
-    if (caf->bytes_per_packet < 0 || caf->frames_per_packet < 0)
+    if (caf->bytes_per_packet < 0 || caf->frames_per_packet < 0 || st->codecpar->channels < 0)
         return AVERROR_INVALIDDATA;
 
     /* calculate bit rate for constant size packets */
@@ -204,15 +204,20 @@ static int read_pakt_chunk(AVFormatContext *s, int64_t size)
     st->nb_frames += avio_rb32(pb); /* priming frames */
     st->nb_frames += avio_rb32(pb); /* remainder frames */
 
-    st->duration = 0;
-    for (i = 0; i < num_packets; i++) {
-        if (avio_feof(pb))
-            return AVERROR_INVALIDDATA;
-        ret = av_add_index_entry(s->streams[0], pos, st->duration, 0, 0, AVINDEX_KEYFRAME);
-        if (ret < 0)
-            return ret;
-        pos += caf->bytes_per_packet ? caf->bytes_per_packet : ff_mp4_read_descr_len(pb);
-        st->duration += caf->frames_per_packet ? caf->frames_per_packet : ff_mp4_read_descr_len(pb);
+    if (caf->bytes_per_packet > 0 && caf->frames_per_packet > 0) {
+        st->duration = caf->frames_per_packet * num_packets;
+        pos          = caf-> bytes_per_packet * num_packets;
+    } else {
+        st->duration = 0;
+        for (i = 0; i < num_packets; i++) {
+            if (avio_feof(pb))
+                return AVERROR_INVALIDDATA;
+            ret = av_add_index_entry(s->streams[0], pos, st->duration, 0, 0, AVINDEX_KEYFRAME);
+            if (ret < 0)
+                return ret;
+            pos += caf->bytes_per_packet ? caf->bytes_per_packet : ff_mp4_read_descr_len(pb);
+            st->duration += caf->frames_per_packet ? caf->frames_per_packet : ff_mp4_read_descr_len(pb);
+        }
     }
 
     if (avio_tell(pb) - ccount > size) {
@@ -323,7 +328,7 @@ static int read_header(AVFormatContext *s)
             break;
         }
 
-        if (size > 0) {
+        if (size > 0 && (pb->seekable & AVIO_SEEKABLE_NORMAL)) {
             if (pos > INT64_MAX - size)
                 return AVERROR_INVALIDDATA;
             avio_skip(pb, FFMAX(0, pos + size - avio_tell(pb)));
@@ -337,7 +342,7 @@ found_data:
     if (caf->bytes_per_packet > 0 && caf->frames_per_packet > 0) {
         if (caf->data_size > 0)
             st->nb_frames = (caf->data_size / caf->bytes_per_packet) * caf->frames_per_packet;
-    } else if (st->internal->nb_index_entries && st->duration > 0) {
+    } else if (ffstream(st)->nb_index_entries && st->duration > 0) {
         if (st->codecpar->sample_rate && caf->data_size / st->duration > INT64_MAX / st->codecpar->sample_rate / 8) {
             av_log(s, AV_LOG_ERROR, "Overflow during bit rate calculation %d * 8 * %"PRId64"\n",
                    st->codecpar->sample_rate, caf->data_size / st->duration);
@@ -367,6 +372,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVIOContext *pb = s->pb;
     AVStream *st      = s->streams[0];
+    FFStream *const sti = ffstream(st);
     CafContext *caf   = s->priv_data;
     int res, pkt_size = 0, pkt_frames = 0;
     int64_t left      = CAF_MAX_PKT_SIZE;
@@ -390,13 +396,13 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         pkt_size   = (CAF_MAX_PKT_SIZE / pkt_size) * pkt_size;
         pkt_size   = FFMIN(pkt_size, left);
         pkt_frames = pkt_size / caf->bytes_per_packet;
-    } else if (st->internal->nb_index_entries) {
-        if (caf->packet_cnt < st->internal->nb_index_entries - 1) {
-            pkt_size   = st->internal->index_entries[caf->packet_cnt + 1].pos       - st->internal->index_entries[caf->packet_cnt].pos;
-            pkt_frames = st->internal->index_entries[caf->packet_cnt + 1].timestamp - st->internal->index_entries[caf->packet_cnt].timestamp;
-        } else if (caf->packet_cnt == st->internal->nb_index_entries - 1) {
-            pkt_size   = caf->num_bytes - st->internal->index_entries[caf->packet_cnt].pos;
-            pkt_frames = st->duration   - st->internal->index_entries[caf->packet_cnt].timestamp;
+    } else if (sti->nb_index_entries) {
+        if (caf->packet_cnt < sti->nb_index_entries - 1) {
+            pkt_size   = sti->index_entries[caf->packet_cnt + 1].pos       - sti->index_entries[caf->packet_cnt].pos;
+            pkt_frames = sti->index_entries[caf->packet_cnt + 1].timestamp - sti->index_entries[caf->packet_cnt].timestamp;
+        } else if (caf->packet_cnt == sti->nb_index_entries - 1) {
+            pkt_size   = caf->num_bytes - sti->index_entries[caf->packet_cnt].pos;
+            pkt_frames = st->duration   - sti->index_entries[caf->packet_cnt].timestamp;
         } else {
             return AVERROR(EIO);
         }
@@ -423,6 +429,7 @@ static int read_seek(AVFormatContext *s, int stream_index,
                      int64_t timestamp, int flags)
 {
     AVStream *st = s->streams[0];
+    FFStream *const sti = ffstream(st);
     CafContext *caf = s->priv_data;
     int64_t pos, packet_cnt, frame_cnt;
 
@@ -435,10 +442,10 @@ static int read_seek(AVFormatContext *s, int stream_index,
             pos = FFMIN(pos, caf->data_size);
         packet_cnt = pos / caf->bytes_per_packet;
         frame_cnt  = caf->frames_per_packet * packet_cnt;
-    } else if (st->internal->nb_index_entries) {
+    } else if (sti->nb_index_entries) {
         packet_cnt = av_index_search_timestamp(st, timestamp, flags);
-        frame_cnt  = st->internal->index_entries[packet_cnt].timestamp;
-        pos        = st->internal->index_entries[packet_cnt].pos;
+        frame_cnt  = sti->index_entries[packet_cnt].timestamp;
+        pos        = sti->index_entries[packet_cnt].pos;
     } else {
         return -1;
     }
@@ -452,7 +459,7 @@ static int read_seek(AVFormatContext *s, int stream_index,
     return 0;
 }
 
-AVInputFormat ff_caf_demuxer = {
+const AVInputFormat ff_caf_demuxer = {
     .name           = "caf",
     .long_name      = NULL_IF_CONFIG_SMALL("Apple CAF (Core Audio Format)"),
     .priv_data_size = sizeof(CafContext),

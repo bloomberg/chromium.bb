@@ -32,6 +32,7 @@
 #include "libavutil/mathematics.h"
 #include "libavutil/pixfmt.h"
 #include "avcodec.h"
+#include "bsf.h"
 #include "config.h"
 
 /**
@@ -74,18 +75,20 @@
  * uses ff_thread_report/await_progress().
  */
 #define FF_CODEC_CAP_ALLOCATE_PROGRESS      (1 << 6)
+/**
+ * Codec handles avctx->thread_count == 0 (auto) internally.
+ */
+#define FF_CODEC_CAP_AUTO_THREADS           (1 << 7)
+/**
+ * Codec handles output frame properties internally instead of letting the
+ * internal logic derive them from AVCodecInternal.last_pkt_props.
+ */
+#define FF_CODEC_CAP_SETS_FRAME_PROPS       (1 << 8)
 
 /**
  * AVCodec.codec_tags termination value
  */
 #define FF_CODEC_TAGS_END -1
-
-
-#ifdef TRACE
-#   define ff_tlog(ctx, ...) av_log(ctx, AV_LOG_TRACE, __VA_ARGS__)
-#else
-#   define ff_tlog(ctx, ...) do { } while(0)
-#endif
 
 
 #define FF_DEFAULT_QUANT_BIAS 999999
@@ -109,20 +112,14 @@
 #   define STRIDE_ALIGN 8
 #endif
 
-typedef struct DecodeSimpleContext {
-    AVPacket *in_pkt;
-} DecodeSimpleContext;
-
 typedef struct EncodeSimpleContext {
     AVFrame *in_frame;
 } EncodeSimpleContext;
 
 typedef struct AVCodecInternal {
     /**
-     * Whether the parent AVCodecContext is a copy of the context which had
-     * init() called on it.
-     * This is used by multithreading - shared tables and picture pointers
-     * should be freed from the original context only.
+     * When using frame-threaded decoding, this field is set for the first
+     * worker thread (e.g. to decode extradata just once).
      */
     int is_copy;
 
@@ -132,15 +129,19 @@ typedef struct AVCodecInternal {
      */
     int last_audio_frame;
 
-#if FF_API_OLD_ENCDEC
-    AVFrame *to_free;
-#endif
-
     AVBufferRef *pool;
 
     void *thread_ctx;
 
-    DecodeSimpleContext ds;
+    /**
+     * This packet is used to hold the packet given to decoders
+     * implementing the .decode API; it is unused by the generic
+     * code for decoders implementing the .receive_frame API and
+     * may be freely used (but not freed) by them with the caveat
+     * that the packet will be unreferenced generically in
+     * avcodec_flush_buffers().
+     */
+    AVPacket *in_pkt;
     AVBSFContext *bsf;
 
     /**
@@ -156,9 +157,22 @@ typedef struct AVCodecInternal {
     uint8_t *byte_buffer;
     unsigned int byte_buffer_size;
 
+    /**
+     * This is set to AV_PKT_FLAG_KEY for encoders that encode intra-only
+     * formats (i.e. whose codec descriptor has AV_CODEC_PROP_INTRA_ONLY set).
+     * This is used to set said flag generically for said encoders.
+     */
+    int intra_only_flag;
+
     void *frame_thread_encoder;
 
     EncodeSimpleContext es;
+
+    /**
+     * If this is set, then AVCodec->close (if existing) needs to be called
+     * for the parent AVCodecContext.
+     */
+    int needs_close;
 
     /**
      * Number of audio samples to skip at the start of the next decoded frame
@@ -181,18 +195,6 @@ typedef struct AVCodecInternal {
     AVPacket *buffer_pkt;
     AVFrame *buffer_frame;
     int draining_done;
-
-#if FF_API_OLD_ENCDEC
-    int compat_decode_warned;
-    /* this variable is set by the decoder internals to signal to the old
-     * API compat wrappers the amount of data consumed from the last packet */
-    size_t compat_decode_consumed;
-    /* when a partial packet has been consumed, this stores the remaining size
-     * of the packet (that should be submitted in the next decode call */
-    size_t compat_decode_partial_size;
-    AVFrame *compat_decode_frame;
-    AVPacket *compat_encode_packet;
-#endif
 
     int showed_multi_packet_warning;
 
@@ -233,34 +235,6 @@ void ff_color_frame(AVFrame *frame, const int color[4]);
  * addressable by a 32-bit signed integer as used by get_bits.
  */
 #define FF_MAX_EXTRADATA_SIZE ((1 << 28) - AV_INPUT_BUFFER_PADDING_SIZE)
-
-/**
- * Check AVPacket size and/or allocate data.
- *
- * Encoders supporting AVCodec.encode2() can use this as a convenience to
- * ensure the output packet data is large enough, whether provided by the user
- * or allocated in this function.
- *
- * @param avctx   the AVCodecContext of the encoder
- * @param avpkt   the AVPacket
- *                If avpkt->data is already set, avpkt->size is checked
- *                to ensure it is large enough.
- *                If avpkt->data is NULL, a new buffer is allocated.
- *                avpkt->size is set to the specified size.
- *                All other AVPacket fields will be reset with av_init_packet().
- * @param size    the minimum required packet size
- * @param min_size This is a hint to the allocation algorithm, which indicates
- *                to what minimal size the caller might later shrink the packet
- *                to. Encoders often allocate packets which are larger than the
- *                amount of data that is written into them as the exact amount is
- *                not known at the time of allocation. min_size represents the
- *                size a packet might be shrunk to by the caller. Can be set to
- *                0. setting this roughly correctly allows the allocation code
- *                to choose between several allocation strategies to improve
- *                speed slightly.
- * @return        non negative on success, negative error code on failure
- */
-int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int64_t size, int64_t min_size);
 
 /**
  * Rescale from sample rate to AVCodecContext.time_base.

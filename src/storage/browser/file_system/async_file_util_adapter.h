@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "storage/browser/file_system/async_file_util.h"
 
@@ -33,6 +32,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) AsyncFileUtilAdapter
  public:
   explicit AsyncFileUtilAdapter(
       std::unique_ptr<FileSystemFileUtil> sync_file_util);
+
+  AsyncFileUtilAdapter(const AsyncFileUtilAdapter&) = delete;
+  AsyncFileUtilAdapter& operator=(const AsyncFileUtilAdapter&) = delete;
 
   ~AsyncFileUtilAdapter() override;
 
@@ -70,13 +72,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) AsyncFileUtilAdapter
   void CopyFileLocal(std::unique_ptr<FileSystemOperationContext> context,
                      const FileSystemURL& src_url,
                      const FileSystemURL& dest_url,
-                     CopyOrMoveOption option,
+                     CopyOrMoveOptionSet options,
                      CopyFileProgressCallback progress_callback,
                      StatusCallback callback) override;
   void MoveFileLocal(std::unique_ptr<FileSystemOperationContext> context,
                      const FileSystemURL& src_url,
                      const FileSystemURL& dest_url,
-                     CopyOrMoveOption option,
+                     CopyOrMoveOptionSet options,
                      StatusCallback callback) override;
   void CopyInForeignFile(std::unique_ptr<FileSystemOperationContext> context,
                          const base::FilePath& src_file_path,
@@ -97,8 +99,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) AsyncFileUtilAdapter
 
  private:
   std::unique_ptr<FileSystemFileUtil> sync_file_util_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncFileUtilAdapter);
 };
 
 }  // namespace storage

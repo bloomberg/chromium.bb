@@ -60,23 +60,23 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   return EncryptionScheme::kUnencrypted;
 }
 
-gfx::MasteringMetadata ConvertMdcvToMasteringMetadata(
+gfx::ColorVolumeMetadata ConvertMdcvToColorVolumeMetadata(
     const MasteringDisplayColorVolume& mdcv) {
-  gfx::MasteringMetadata mastering_metadata;
+  gfx::ColorVolumeMetadata color_volume_metadata;
 
-  mastering_metadata.primary_r = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.primary_r = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.display_primaries_rx, mdcv.display_primaries_ry);
-  mastering_metadata.primary_g = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.primary_g = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.display_primaries_gx, mdcv.display_primaries_gy);
-  mastering_metadata.primary_b = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.primary_b = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.display_primaries_bx, mdcv.display_primaries_by);
-  mastering_metadata.white_point = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.white_point = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.white_point_x, mdcv.white_point_y);
 
-  mastering_metadata.luminance_max = mdcv.max_display_mastering_luminance;
-  mastering_metadata.luminance_min = mdcv.min_display_mastering_luminance;
+  color_volume_metadata.luminance_max = mdcv.max_display_mastering_luminance;
+  color_volume_metadata.luminance_min = mdcv.min_display_mastering_luminance;
 
-  return mastering_metadata;
+  return color_volume_metadata;
 }
 
 }  // namespace
@@ -345,15 +345,20 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
 
-      AudioCodec codec = kUnknownAudioCodec;
-      AudioCodecProfile profile = AudioCodecProfile::kUnknown;
+      AudioCodec codec = AudioCodec::kUnknown;
       ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
       int sample_per_second = 0;
       int codec_delay_in_frames = 0;
       base::TimeDelta seek_preroll;
       std::vector<uint8_t> extra_data;
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+      AudioCodecProfile profile = AudioCodecProfile::kUnknown;
+      std::vector<uint8_t> aac_extra_data;
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
       if (audio_format == FOURCC_OPUS) {
-        codec = kCodecOpus;
+        codec = AudioCodec::kOpus;
         channel_layout = GuessChannelLayout(entry.dops.channel_count);
         sample_per_second = entry.dops.sample_rate;
         codec_delay_in_frames = entry.dops.codec_delay_in_frames;
@@ -369,14 +374,14 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           return false;
         }
 
-        codec = kCodecFLAC;
+        codec = AudioCodec::kFLAC;
         channel_layout = GuessChannelLayout(entry.channelcount);
         sample_per_second = entry.samplerate;
         extra_data = entry.dfla.stream_info;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
       } else if (audio_format == FOURCC_MHM1 || audio_format == FOURCC_MHA1) {
-        codec = kCodecMpegHAudio;
+        codec = AudioCodec::kMpegHAudio;
         channel_layout = CHANNEL_LAYOUT_BITSTREAM;
         sample_per_second = entry.samplerate;
         extra_data = entry.dfla.stream_info;
@@ -404,20 +409,24 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         // supported MPEG2 AAC varients.
         if (ESDescriptor::IsAAC(audio_type)) {
           const AAC& aac = entry.esds.aac;
-          codec = kCodecAAC;
+          codec = AudioCodec::kAAC;
           profile = aac.GetProfile();
           channel_layout = aac.GetChannelLayout(has_sbr_);
           sample_per_second = aac.GetOutputSamplesPerSecond(has_sbr_);
+          // Set `aac_extra_data` on all platforms but only set `extra_data` on
+          // Android. This is for backward compatibility until we have a better
+          // solution. See crbug.com/1245123 for details.
+          aac_extra_data = aac.codec_specific_data();
 #if defined(OS_ANDROID)
           extra_data = aac.codec_specific_data();
-#endif
+#endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
         } else if (audio_type == kAC3) {
-          codec = kCodecAC3;
+          codec = AudioCodec::kAC3;
           channel_layout = GuessChannelLayout(entry.channelcount);
           sample_per_second = entry.samplerate;
         } else if (audio_type == kEAC3) {
-          codec = kCodecEAC3;
+          codec = AudioCodec::kEAC3;
           channel_layout = GuessChannelLayout(entry.channelcount);
           sample_per_second = entry.samplerate;
 #endif
@@ -458,13 +467,18 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         if (scheme == EncryptionScheme::kUnencrypted)
           return false;
       }
+
       audio_config.Initialize(codec, sample_format, channel_layout,
                               sample_per_second, extra_data, scheme,
                               seek_preroll, codec_delay_in_frames);
-      if (codec == kCodecAAC) {
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+      if (codec == AudioCodec::kAAC) {
         audio_config.disable_discard_decoder_delay();
         audio_config.set_profile(profile);
+        audio_config.set_aac_extra_data(std::move(aac_extra_data));
       }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
       DVLOG(1) << "audio_track_id=" << audio_track_id
                << " config=" << audio_config.AsHumanReadableString();
@@ -504,16 +518,16 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       // If PASP is available, use the coded size and PASP to calculate the
       // natural size. Otherwise, use the size in track header for natural size.
-      gfx::Size natural_size(visible_rect.size());
+      VideoAspectRatio aspect_ratio;
       if (entry.pixel_aspect.h_spacing != 1 ||
           entry.pixel_aspect.v_spacing != 1) {
-        natural_size =
-            GetNaturalSize(visible_rect.size(), entry.pixel_aspect.h_spacing,
-                           entry.pixel_aspect.v_spacing);
+        aspect_ratio = VideoAspectRatio::PAR(entry.pixel_aspect.h_spacing,
+                                             entry.pixel_aspect.v_spacing);
       } else if (track->header.width && track->header.height) {
-        natural_size =
-            gfx::Size(track->header.width, track->header.height);
+        aspect_ratio =
+            VideoAspectRatio::DAR(track->header.width, track->header.height);
       }
+      gfx::Size natural_size = aspect_ratio.GetNaturalSize(visible_rect);
 
       uint32_t video_track_id = track->header.track_id;
       if (video_track_ids_.find(video_track_id) != video_track_ids_.end()) {
@@ -537,6 +551,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
                               EmptyExtraData(), scheme);
+      video_config.set_aspect_ratio(aspect_ratio);
       video_config.set_level(entry.video_codec_level);
 
       if (entry.video_color_space.IsSpecified())
@@ -546,7 +561,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           entry.content_light_level_information) {
         gfx::HDRMetadata hdr_metadata;
         if (entry.mastering_display_color_volume) {
-          hdr_metadata.mastering_metadata = ConvertMdcvToMasteringMetadata(
+          hdr_metadata.color_volume_metadata = ConvertMdcvToColorVolumeMetadata(
               *entry.mastering_display_color_volume);
         }
 
@@ -805,9 +820,9 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
 
   std::vector<uint8_t> frame_buf(buf, buf + sample_size);
   if (video) {
-    if (runs_->video_description().video_codec == kCodecH264 ||
-        runs_->video_description().video_codec == kCodecHEVC ||
-        runs_->video_description().video_codec == kCodecDolbyVision) {
+    if (runs_->video_description().video_codec == VideoCodec::kH264 ||
+        runs_->video_description().video_codec == VideoCodec::kHEVC ||
+        runs_->video_description().video_codec == VideoCodec::kDolbyVision) {
       DCHECK(runs_->video_description().frame_bitstream_converter);
       BitstreamConverter::AnalysisResult analysis;
       if (!runs_->video_description()

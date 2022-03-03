@@ -15,8 +15,6 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_TOOLS_OPTIMIZE_CALIBRATION_READER_H_
 #define TENSORFLOW_LITE_TOOLS_OPTIMIZE_CALIBRATION_READER_H_
 
-#include <unordered_map>
-
 #include "tensorflow/lite/context.h"
 #include "tensorflow/lite/model.h"
 #include "tensorflow/lite/tools/optimize/calibration/calibration_logger.h"
@@ -38,7 +36,8 @@ class CalibrationReader {
 
   // Gets a map from tensor index to recorded calibration values.
   virtual TfLiteStatus GetTensorStatsAsMap(
-      std::unordered_map<int, CalibrationStats>* tensor_id_to_stats_map) const;
+      absl::flat_hash_map<std::tuple<int, int>, CalibrationStats>*
+          tensor_id_to_stats_map) const;
 
   // Annotates the tensors in the given model with statistics captured during
   // calibration.

@@ -17,6 +17,9 @@
 namespace chrome_pdf {
 
 struct AccessibilityDocInfo {
+  bool operator==(const AccessibilityDocInfo& other) const;
+  bool operator!=(const AccessibilityDocInfo& other) const;
+
   uint32_t page_count = 0;
   bool text_accessible = false;
   bool text_copyable = false;
@@ -106,7 +109,7 @@ struct AccessibilityCharInfo {
 struct AccessibilityTextRunRangeInfo {
   // Index of the starting text run of the annotation in the collection of all
   // text runs in the page.
-  uint32_t index = 0;
+  size_t index = 0;
   // Count of the text runs spanning the annotation.
   uint32_t count = 0;
 };
@@ -218,6 +221,7 @@ struct AccessibilityChoiceFieldOptionInfo {
 enum class ChoiceFieldType {
   kListBox = 0,
   kComboBox = 1,
+  kMinValue = kListBox,
   kMaxValue = kComboBox,
 };
 
@@ -266,6 +270,7 @@ enum class ButtonType {
   kPushButton = 1,
   kCheckBox = 2,
   kRadioButton = 3,
+  kMinValue = kPushButton,
   kMaxValue = kRadioButton,
 };
 

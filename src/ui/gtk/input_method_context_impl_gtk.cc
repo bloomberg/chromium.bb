@@ -121,20 +121,16 @@ bool InputMethodContextImplGtk::DispatchKeyEvent(
   // Convert the last known caret bounds relative to the screen coordinates
   // to a GdkRectangle relative to the client window.
   aura::Window* window = static_cast<aura::Window*>(key_event.target());
-  gint win_x = window->GetBoundsInScreen().x();
-  gint win_y = window->GetBoundsInScreen().y();
-  gint caret_x = last_caret_bounds_.x();
-  gint caret_y = last_caret_bounds_.y();
-  gint caret_w = last_caret_bounds_.width();
-  gint caret_h = last_caret_bounds_.height();
+  gfx::Rect caret_bounds = last_caret_bounds_;
+  caret_bounds -= window->GetBoundsInScreen().OffsetFromOrigin();
 
   // Chrome's DIPs may be different from GTK's DIPs if
   // --force-device-scale-factor is used.
-  float factor =
-      GetDeviceScaleFactor() / gtk_widget_get_scale_factor(GetDummyWindow());
-  GdkRectangle gdk_rect = {factor * (caret_x - win_x),
-                           factor * (caret_y - win_y), factor * caret_w,
-                           factor * caret_h};
+  caret_bounds = ScaleToRoundedRect(
+      caret_bounds,
+      GetDeviceScaleFactor() / gtk_widget_get_scale_factor(GetDummyWindow()));
+  GdkRectangle gdk_rect = {caret_bounds.x(), caret_bounds.y(),
+                           caret_bounds.width(), caret_bounds.height()};
   gtk_im_context_set_cursor_location(gtk_context_, &gdk_rect);
 
   if (!GtkCheckVersion(4)) {
@@ -155,10 +151,16 @@ bool InputMethodContextImplGtk::DispatchKeyEvent(
       gdk_display_get_default_seat(gdk_display_get_default()));
   auto time = (key_event.time_stamp() - base::TimeTicks()).InMilliseconds();
   auto keycode = GetKeyEventProperty(key_event, ui::kPropertyKeyboardHwKeyCode);
-  auto state = GetGdkKeyEventState(key_event);
-  auto group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);
+  auto state = GtkUi::GetPlatform()->GetGdkKeyEventState(key_event);
+  auto group = GtkUi::GetPlatform()->GetGdkKeyEventGroup(key_event);
   return gtk_im_context_filter_key(gtk_context_, press, surface, device, time,
                                    keycode, state, group);
+}
+
+bool InputMethodContextImplGtk::IsPeekKeyEvent(const ui::KeyEvent& key_event) {
+  // Peek events are only sent to make Lacros work with Wayland. Gtk does not
+  // send peek events.
+  return false;
 }
 
 void InputMethodContextImplGtk::Reset() {
@@ -247,6 +249,11 @@ void InputMethodContextImplGtk::SetContextClientWindow(GdkWindow* window) {
   if (gdk_last_set_client_window_)
     g_object_unref(gdk_last_set_client_window_);
   gdk_last_set_client_window_ = window;
+}
+
+void InputMethodContextImplGtk::SetContentType(ui::TextInputType input_type,
+                                               int input_flags) {
+  // Do nothing.
 }
 
 }  // namespace gtk

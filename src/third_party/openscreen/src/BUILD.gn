@@ -16,7 +16,6 @@ group("gn_all") {
     "cast/sender:channel",
     "cast/streaming:receiver",
     "cast/streaming:sender",
-    "discovery:common",
     "discovery:dnssd",
     "discovery:mdns",
     "discovery:public",
@@ -37,10 +36,6 @@ group("gn_all") {
       "osp/msgs",
     ]
 
-    if (use_mdns_responder) {
-      deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
-    }
-
     if (use_chromium_quic) {
       deps += [
         "third_party/chromium_quic",
@@ -49,7 +44,7 @@ group("gn_all") {
       ]
     }
 
-    if (use_chromium_quic && use_mdns_responder) {
+    if (use_chromium_quic) {
       deps += [ "osp:osp_demo" ]
     }
   }
@@ -61,6 +56,10 @@ group("gn_all") {
       "third_party/protobuf:protoc($host_toolchain)",
       "third_party/zlib",
     ]
+  } else {
+    if (!is_mac) {
+      deps += [ "cast/cast_core/api" ]
+    }
   }
 }
 
@@ -91,15 +90,6 @@ source_set("openscreen_unittests_all") {
       "osp:unittests",
       "osp/msgs:unittests",
     ]
-
-    if (use_mdns_responder) {
-      public_deps += [
-        "osp/impl/discovery/mdns:unittests",
-
-        # Currently this target only includes mDNS tests.
-        "osp/impl/testing:unittests",
-      ]
-    }
   }
 }
 
@@ -128,6 +118,19 @@ if (!build_with_chromium && is_posix) {
     deps = [
       ":e2e_tests_all",
       "test:test_main",
+    ]
+  }
+}
+
+if (!build_with_chromium) {
+  source_set("fuzzer_tests_all") {
+    testonly = true
+    deps = [
+      "//cast/common:message_framer_fuzzer",
+      "//cast/streaming:compound_rtcp_parser_fuzzer",
+      "//cast/streaming:rtp_packet_parser_fuzzer",
+      "//cast/streaming:sender_report_parser_fuzzer",
+      "//discovery:mdns_fuzzer",
     ]
   }
 }

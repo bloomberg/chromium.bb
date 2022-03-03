@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as CssOverviewModule from '../../../../panels/css_overview/css_overview.js';
 import * as UI from '../../legacy.js';
@@ -17,7 +15,8 @@ async function getEmMultiplier(isFontSizeProperty?: boolean): Promise<number> {
   const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
   let currentFontSize;
   if (selectedNode && selectedNode.parentNode && selectedNode.nodeName() !== 'HTML') {
-    const [model] = SDK.SDKModel.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
+    const [model] =
+        SDK.TargetManager.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
     const fontSizeNodeId = isFontSizeProperty ? selectedNode.parentNode.id : selectedNode.id;
     const computedFontSize = await model.getComputedStyleForNode(fontSizeNodeId).then(findFontSizeValue);
     const computedFontSizeValue = computedFontSize.replace(/[a-z]/g, '');
@@ -34,7 +33,8 @@ async function getRemMultiplier(): Promise<number> {
   if (!htmlNode || !htmlNode.id) {
     return 16;
   }
-  const [model] = SDK.SDKModel.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
+  const [model] =
+      SDK.TargetManager.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
   const computedRootFontSize = await model.getComputedStyleForNode(htmlNode.id).then(findFontSizeValue);
   const rootFontSizeValue = computedRootFontSize.replace(/[a-z]/g, '');
   const rootFontSize = parseFloat(rootFontSizeValue);

@@ -382,8 +382,8 @@ void ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferObj *cb, VkP
 void ValidOwnershipTransfer(ErrorMonitor *monitor, VkCommandBufferObj *cb_from, VkCommandBufferObj *cb_to,
                             VkPipelineStageFlags src_stages, VkPipelineStageFlags dst_stages,
                             const VkBufferMemoryBarrier *buf_barrier, const VkImageMemoryBarrier *img_barrier) {
-    ValidOwnershipTransferOp(monitor, cb_from, src_stages, dst_stages, buf_barrier, img_barrier);
-    ValidOwnershipTransferOp(monitor, cb_to, src_stages, dst_stages, buf_barrier, img_barrier);
+    ValidOwnershipTransferOp(monitor, cb_from, src_stages, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, buf_barrier, img_barrier);
+    ValidOwnershipTransferOp(monitor, cb_to, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, dst_stages, buf_barrier, img_barrier);
 }
 
 void ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferObj *cb, const VkBufferMemoryBarrier2KHR *buf_barrier,
@@ -403,8 +403,34 @@ void ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferObj *cb, con
 
 void ValidOwnershipTransfer(ErrorMonitor *monitor, VkCommandBufferObj *cb_from, VkCommandBufferObj *cb_to,
                             const VkBufferMemoryBarrier2KHR *buf_barrier, const VkImageMemoryBarrier2KHR *img_barrier) {
-    ValidOwnershipTransferOp(monitor, cb_from, buf_barrier, img_barrier);
-    ValidOwnershipTransferOp(monitor, cb_to, buf_barrier, img_barrier);
+    VkBufferMemoryBarrier2KHR fixup_buf_barrier;
+    VkImageMemoryBarrier2KHR fixup_img_barrier;
+    if (buf_barrier) {
+        fixup_buf_barrier = *buf_barrier;
+        fixup_buf_barrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_buf_barrier.dstAccessMask = 0;
+    }
+    if (img_barrier) {
+        fixup_img_barrier = *img_barrier;
+        fixup_img_barrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_img_barrier.dstAccessMask = 0;
+    }
+
+    ValidOwnershipTransferOp(monitor, cb_from, buf_barrier ? &fixup_buf_barrier : nullptr,
+                             img_barrier ? &fixup_img_barrier : nullptr);
+
+    if (buf_barrier) {
+        fixup_buf_barrier = *buf_barrier;
+        fixup_buf_barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_buf_barrier.srcAccessMask = 0;
+    }
+    if (img_barrier) {
+        fixup_img_barrier = *img_barrier;
+        fixup_img_barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_img_barrier.srcAccessMask = 0;
+    }
+    ValidOwnershipTransferOp(monitor, cb_to, buf_barrier ? &fixup_buf_barrier : nullptr,
+                             img_barrier ? &fixup_img_barrier : nullptr);
 }
 
 VkResult GPDIFPHelper(VkPhysicalDevice dev, const VkImageCreateInfo *ci, VkImageFormatProperties *limits) {
@@ -632,8 +658,6 @@ void CreateImageTest(VkLayerTest &test, const VkImageCreateInfo *pCreateInfo, st
     VkImage image = VK_NULL_HANDLE;
     if (code.length()) {
         test.Monitor().SetDesiredFailureMsg(kErrorBit, code);
-        // Very possible a test didn't check for VK_ERROR_FORMAT_NOT_SUPPORTED
-        test.Monitor().SetUnexpectedError("UNASSIGNED-CoreValidation-Image-FormatNotSupported");
     } else {
         test.Monitor().ExpectSuccess();
     }
@@ -731,7 +755,7 @@ VkImageViewCreateInfo SafeSaneImageViewCreateInfo(const VkImageObj &image, VkFor
 bool CheckCreateRenderPass2Support(VkRenderFramework *renderFramework, std::vector<const char *> &device_extension_names) {
     if (renderFramework->DeviceExtensionSupported(renderFramework->gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
         device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
-        device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         return true;
     }
@@ -748,11 +772,11 @@ bool CheckDescriptorIndexingSupportAndInitFramework(VkRenderFramework *renderFra
     }
     renderFramework->InitFramework(userData, features);
     descriptor_indexing = descriptor_indexing && renderFramework->DeviceExtensionSupported(renderFramework->gpu(), nullptr,
-                                                                                           VK_KHR_MAINTENANCE3_EXTENSION_NAME);
+                                                                                           VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
     descriptor_indexing = descriptor_indexing && renderFramework->DeviceExtensionSupported(
                                                      renderFramework->gpu(), nullptr, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     if (descriptor_indexing) {
-        device_extension_names.push_back(VK_KHR_MAINTENANCE3_EXTENSION_NAME);
+        device_extension_names.push_back(VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
         device_extension_names.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
         return true;
     }
@@ -1084,9 +1108,11 @@ bool VkLayerTest::AddSurfaceInstanceExtension() {
         printf("%s %s extension not supported\n", kSkipPrefix, VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
         return false;
     }
-    if (XOpenDisplay(NULL)) {
+    auto temp_dpy = XOpenDisplay(NULL);
+    if (temp_dpy) {
         instance_extensions_.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
         bSupport = true;
+        XCloseDisplay(temp_dpy);
     }
 #endif
 
@@ -1095,9 +1121,13 @@ bool VkLayerTest::AddSurfaceInstanceExtension() {
         printf("%s %s extension not supported\n", kSkipPrefix, VK_KHR_XCB_SURFACE_EXTENSION_NAME);
         return false;
     }
-    if (!bSupport && xcb_connect(NULL, NULL)) {
-        instance_extensions_.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-        bSupport = true;
+    if (!bSupport) {
+        auto temp_xcb = xcb_connect(NULL, NULL);
+        if (temp_xcb) {
+            instance_extensions_.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+            bSupport = true;
+            xcb_disconnect(temp_xcb);
+        }
     }
 #endif
 
@@ -1271,6 +1301,111 @@ VkBufferTest::~VkBufferTest() {
     }
 }
 
+void SetImageLayout(VkDeviceObj *device, VkImageAspectFlags aspect, VkImage image, VkImageLayout image_layout) {
+    VkCommandPoolObj pool(device, device->graphics_queue_node_index_);
+    VkCommandBufferObj cmd_buf(device, &pool);
+
+    cmd_buf.begin();
+    VkImageMemoryBarrier layout_barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                                        nullptr,
+                                        0,
+                                        VK_ACCESS_MEMORY_READ_BIT,
+                                        VK_IMAGE_LAYOUT_UNDEFINED,
+                                        image_layout,
+                                        VK_QUEUE_FAMILY_IGNORED,
+                                        VK_QUEUE_FAMILY_IGNORED,
+                                        image,
+                                        {aspect, 0, 1, 0, 1} };
+
+    cmd_buf.PipelineBarrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1,
+        &layout_barrier);
+    cmd_buf.end();
+
+    cmd_buf.QueueCommandBuffer();
+}
+
+std::unique_ptr<VkImageObj> VkArmBestPracticesLayerTest::CreateImage(VkFormat format, const uint32_t width,
+                                                                     const uint32_t height,
+                                                                     VkImageUsageFlags attachment_usage) {
+    auto img = std::unique_ptr<VkImageObj>(new VkImageObj(m_device));
+    img->Init(width, height, 1, format,
+              VK_IMAGE_USAGE_SAMPLED_BIT | attachment_usage |
+              VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+              VK_IMAGE_TILING_OPTIMAL);
+    return img;
+}
+
+VkRenderPass VkArmBestPracticesLayerTest::CreateRenderPass(VkFormat format, VkAttachmentLoadOp load_op,
+                                                           VkAttachmentStoreOp store_op) {
+    VkRenderPass renderpass{VK_NULL_HANDLE};
+
+    // Create renderpass
+    VkAttachmentDescription attachment = {};
+    attachment.format = format;
+    attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment.loadOp = load_op;
+    attachment.storeOp = store_op;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkAttachmentReference attachment_reference = {};
+    attachment_reference.attachment = 0;
+    attachment_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkSubpassDescription subpass = {};
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &attachment_reference;
+
+    VkRenderPassCreateInfo rpinf = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+    };
+    rpinf.attachmentCount = 1;
+    rpinf.pAttachments = &attachment;
+    rpinf.subpassCount = 1;
+    rpinf.pSubpasses = &subpass;
+    rpinf.dependencyCount = 0;
+    rpinf.pDependencies = nullptr;
+
+    vk::CreateRenderPass(m_device->handle(), &rpinf, nullptr, &renderpass);
+
+    return renderpass;
+}
+
+VkFramebuffer VkArmBestPracticesLayerTest::CreateFramebuffer(const uint32_t width, const uint32_t height, VkImageView image_view,
+                                                             VkRenderPass renderpass) {
+    VkFramebuffer framebuffer{VK_NULL_HANDLE};
+
+    VkFramebufferCreateInfo framebuffer_create_info = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+    framebuffer_create_info.renderPass = renderpass;
+    framebuffer_create_info.attachmentCount = 1;
+    framebuffer_create_info.pAttachments = &image_view;
+    framebuffer_create_info.width = width;
+    framebuffer_create_info.height = height;
+    framebuffer_create_info.layers = 1;
+
+    vk::CreateFramebuffer(m_device->handle(), &framebuffer_create_info, nullptr, &framebuffer);
+
+    return framebuffer;
+}
+
+VkSampler VkArmBestPracticesLayerTest::CreateDefaultSampler() {
+    VkSampler sampler{VK_NULL_HANDLE};
+
+    VkSamplerCreateInfo sampler_create_info = {VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+    sampler_create_info.magFilter = VK_FILTER_NEAREST;
+    sampler_create_info.minFilter = VK_FILTER_NEAREST;
+    sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_create_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    sampler_create_info.maxLod = VK_LOD_CLAMP_NONE;
+
+    vk::CreateSampler(m_device->handle(), &sampler_create_info, nullptr, &sampler);
+
+    return sampler;
+}
+
 bool VkBufferTest::GetBufferCurrent() { return AllocateCurrent && BoundCurrent && CreateCurrent; }
 
 const VkBuffer &VkBufferTest::GetBuffer() { return VulkanBuffer; }
@@ -1368,7 +1503,7 @@ OneOffDescriptorSet::OneOffDescriptorSet(VkDeviceObj *device, const Bindings &bi
                                          VkDescriptorSetLayoutCreateFlags layout_flags, void *layout_pnext,
                                          VkDescriptorPoolCreateFlags poolFlags, void *allocate_pnext, int buffer_info_size,
                                          int image_info_size, int buffer_view_size)
-    : device_{device}, pool_{}, layout_(device, bindings, layout_flags, layout_pnext), set_{} {
+    : device_{device}, pool_{}, layout_(device, bindings, layout_flags, layout_pnext), set_(VK_NULL_HANDLE) {
     VkResult err;
     buffer_infos.reserve(buffer_info_size);
     image_infos.reserve(image_info_size);
@@ -1430,7 +1565,7 @@ void OneOffDescriptorSet::WriteDescriptorBufferInfo(int binding, VkBuffer buffer
     descriptor_writes.emplace_back(descriptor_write);
 }
 
-void OneOffDescriptorSet::WriteDescriptorBufferView(int binding, VkBufferView &buffer_view, VkDescriptorType descriptorType,
+void OneOffDescriptorSet::WriteDescriptorBufferView(int binding, VkBufferView buffer_view, VkDescriptorType descriptorType,
                                                     uint32_t arrayElement, uint32_t count) {
     const auto index = buffer_views.size();
 
@@ -1865,48 +2000,49 @@ void CreateNVRayTracingPipelineHelper::InitPipelineLayoutInfo() {
 }
 
 void CreateNVRayTracingPipelineHelper::InitShaderInfo() {  // DONE
-    static const char rayGenShaderText[] =
-        "#version 460 core                                                \n"
-        "#extension GL_NV_ray_tracing : require                           \n"
-        "layout(set = 0, binding = 0, rgba8) uniform image2D image;       \n"
-        "layout(set = 0, binding = 1) uniform accelerationStructureNV as; \n"
-        "                                                                 \n"
-        "layout(location = 0) rayPayloadNV float payload;                 \n"
-        "                                                                 \n"
-        "void main()                                                      \n"
-        "{                                                                \n"
-        "   vec4 col = vec4(0, 0, 0, 1);                                  \n"
-        "                                                                 \n"
-        "   vec3 origin = vec3(float(gl_LaunchIDNV.x)/float(gl_LaunchSizeNV.x), "
-        "float(gl_LaunchIDNV.y)/float(gl_LaunchSizeNV.y), "
-        "1.0); \n"
-        "   vec3 dir = vec3(0.0, 0.0, -1.0);                              \n"
-        "                                                                 \n"
-        "   payload = 0.5;                                                \n"
-        "   traceNV(as, gl_RayFlagsCullBackFacingTrianglesNV, 0xff, 0, 1, 0, origin, 0.0, dir, 1000.0, 0); \n"
-        "                                                                 \n"
-        "   col.y = payload;                                              \n"
-        "                                                                 \n"
-        "   imageStore(image, ivec2(gl_LaunchIDNV.xy), col);              \n"
-        "}\n";
+    static const char rayGenShaderText[] = R"glsl(
+        #version 460 core
+        #extension GL_NV_ray_tracing : require
+        layout(set = 0, binding = 0, rgba8) uniform image2D image;
+        layout(set = 0, binding = 1) uniform accelerationStructureNV as;
 
-    static char const closestHitShaderText[] =
-        "#version 460 core                              \n"
-        "#extension GL_NV_ray_tracing : require         \n"
-        "layout(location = 0) rayPayloadInNV float hitValue;             \n"
-        "                                               \n"
-        "void main() {                                  \n"
-        "    hitValue = 1.0;                            \n"
-        "}                                              \n";
+        layout(location = 0) rayPayloadNV float payload;
 
-    static char const missShaderText[] =
-        "#version 460 core                              \n"
-        "#extension GL_NV_ray_tracing : require         \n"
-        "layout(location = 0) rayPayloadInNV float hitValue; \n"
-        "                                               \n"
-        "void main() {                                  \n"
-        "    hitValue = 0.0;                            \n"
-        "}                                              \n";
+        void main()
+        {
+           vec4 col = vec4(0, 0, 0, 1);
+
+           vec3 origin = vec3(float(gl_LaunchIDNV.x)/float(gl_LaunchSizeNV.x), float(gl_LaunchIDNV.y)/float(gl_LaunchSizeNV.y), 1.0);
+           vec3 dir = vec3(0.0, 0.0, -1.0);
+
+           payload = 0.5;
+           traceNV(as, gl_RayFlagsCullBackFacingTrianglesNV, 0xff, 0, 1, 0, origin, 0.0, dir, 1000.0, 0);
+
+           col.y = payload;
+
+           imageStore(image, ivec2(gl_LaunchIDNV.xy), col);
+        }
+    )glsl";
+
+    static char const closestHitShaderText[] = R"glsl(
+        #version 460 core
+        #extension GL_NV_ray_tracing : require
+        layout(location = 0) rayPayloadInNV float hitValue;
+
+        void main() {
+            hitValue = 1.0;
+        }
+    )glsl";
+
+    static char const missShaderText[] = R"glsl(
+        #version 460 core
+        #extension GL_NV_ray_tracing : require
+        layout(location = 0) rayPayloadInNV float hitValue;
+
+        void main() {
+            hitValue = 0.0;
+        }
+    )glsl";
 
     rgs_.reset(new VkShaderObj(layer_test_.DeviceObj(), rayGenShaderText, VK_SHADER_STAGE_RAYGEN_BIT_NV, &layer_test_));
     chs_.reset(new VkShaderObj(layer_test_.DeviceObj(), closestHitShaderText, VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV, &layer_test_));
@@ -1925,7 +2061,7 @@ void CreateNVRayTracingPipelineHelper::InitNVRayTracingPipelineInfo() {
 }
 
 void CreateNVRayTracingPipelineHelper::InitKHRRayTracingPipelineInfo() {
-    rp_ci_KHR_.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_NV;
+    rp_ci_KHR_.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
     rp_ci_KHR_.maxPipelineRayRecursionDepth = 0;
     rp_ci_KHR_.stageCount = shader_stages_.size();
     rp_ci_KHR_.pStages = shader_stages_.data();
@@ -2098,8 +2234,14 @@ BarrierQueueFamilyBase::QueueFamilyObjs *BarrierQueueFamilyBase::GetQueueFamilyI
 void BarrierQueueFamilyTestHelper::operator()(std::string img_err, std::string buf_err, uint32_t src, uint32_t dst, bool positive,
                                               uint32_t queue_family_index, Modifier mod) {
     auto &monitor = context_->layer_test->Monitor();
-    if (img_err.length()) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, img_err);
-    if (buf_err.length()) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, buf_err);
+    const bool has_img_err = img_err.size() > 0;
+    const bool has_buf_err = buf_err.size() > 0;
+    if (has_img_err) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, img_err);
+    if (has_buf_err) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, buf_err);
+    if (!(has_img_err || has_buf_err)) {
+        monitor.ExpectSuccess();
+        positive = true;
+    }
 
     image_barrier_.srcQueueFamilyIndex = src;
     image_barrier_.dstQueueFamilyIndex = dst;
@@ -2185,7 +2327,7 @@ void Barrier2QueueFamilyTestHelper::operator()(std::string img_err, std::string 
 bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isKHR,
                                     std::vector<const char *> &instance_extension_names,
                                     std::vector<const char *> &device_extension_names, void *user_data, bool need_gpu_validation,
-                                    bool need_push_descriptors, bool deferred_state_init) {
+                                    bool need_push_descriptors, bool deferred_state_init, VkPhysicalDeviceFeatures2KHR *features2) {
     const std::array<const char *, 1> required_instance_extensions = {{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}};
     for (const char *required_instance_extension : required_instance_extensions) {
         if (renderFramework->InstanceExtensionSupported(required_instance_extension)) {
@@ -2243,16 +2385,23 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
             return false;
         }
     }
-    if (!deferred_state_init) renderFramework->InitState();
+    if (features2) {
+        // extension enabled as dependency of RT extension
+        auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
+            vk::GetInstanceProcAddr(renderFramework->instance(), "vkGetPhysicalDeviceFeatures2KHR"));
+        assert(vkGetPhysicalDeviceFeatures2KHR);
+        vkGetPhysicalDeviceFeatures2KHR(renderFramework->gpu(), features2);
+    }
+    if (!deferred_state_init) renderFramework->InitState(nullptr, features2);
     return true;
 }
 
 void GetSimpleGeometryForAccelerationStructureTests(const VkDeviceObj &device, VkBufferObj *vbo, VkBufferObj *ibo,
                                                     VkGeometryNV *geometry) {
     vbo->init(device, 1024, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV);
+              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR);
     ibo->init(device, 1024, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV);
+              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR);
 
     const std::vector<float> vertices = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f};
     const std::vector<uint32_t> indicies = {0, 1, 2};

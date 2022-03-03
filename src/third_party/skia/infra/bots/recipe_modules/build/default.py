@@ -74,8 +74,14 @@ def compile_swiftshader(api, extra_tokens, swiftshader_root, cc, cxx, out):
   with api.context(cwd=out, env=env):
     api.run(api.step, 'swiftshader cmake',
             cmd=['cmake'] + swiftshader_opts + [swiftshader_root, '-GNinja'])
+    # See https://swiftshader-review.googlesource.com/c/SwiftShader/+/56452 for when the
+    # deprecated targets were added. See skbug.com/12386 for longer-term plans.
     api.run(api.step, 'swiftshader ninja',
-            cmd=['ninja', '-C', out, 'libEGL.so', 'libGLESv2.so'])
+            cmd=['ninja', '-C', out, 'libEGL_deprecated.so', 'libGLESv2_deprecated.so'])
+    api.run(api.step, 'rename legacy libEGL binary',
+            cmd=['cp', 'libEGL_deprecated.so', 'libEGL.so'])
+    api.run(api.step, 'rename legacy libGLESv2 binary',
+            cmd=['cp', 'libGLESv2_deprecated.so', 'libGLESv2.so'])
 
 
 def compile_fn(api, checkout_root, out_dir):
@@ -127,8 +133,9 @@ def compile_fn(api, checkout_root, out_dir):
       api.step('select xcode', [
           'sudo', 'xcode-select', '-switch', xcode_app_path])
       if 'iOS' in extra_tokens:
-        # Can't compile for Metal before 11.0.
-        env['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+        # Need to verify compilation for Metal on 9.0 and above
+        env['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
+        args['ios_min_target'] = '"9.0"'
       else:
         # We have some bots on 10.13.
         env['MACOSX_DEPLOYMENT_TARGET'] = '10.13'
@@ -256,6 +263,11 @@ def compile_fn(api, checkout_root, out_dir):
     args['skia_use_fontconfig'] = 'false'
   if 'ASAN' in extra_tokens:
     args['skia_enable_spirv_validation'] = 'false'
+  if 'Graphite' in extra_tokens:
+    args['skia_enable_graphite'] = 'true'
+    args['skia_use_metal'] = 'true'
+    if 'NoGpu' in extra_tokens:
+      args['skia_enable_gpu'] = 'false'
   if 'NoDEPS' in extra_tokens:
     args.update({
       'is_official_build':             'true',
@@ -266,6 +278,7 @@ def compile_fn(api, checkout_root, out_dir):
       'skia_use_expat':                'false',
       'skia_use_freetype':             'false',
       'skia_use_harfbuzz':             'false',
+      'skia_use_icu':                  'false',
       'skia_use_libjpeg_turbo_decode': 'false',
       'skia_use_libjpeg_turbo_encode': 'false',
       'skia_use_libpng_decode':        'false',
@@ -287,20 +300,6 @@ def compile_fn(api, checkout_root, out_dir):
   if 'Metal' in extra_tokens:
     args['skia_use_metal'] = 'true'
     args['skia_use_gl'] = 'false'
-  if 'OpenCL' in extra_tokens:
-    args['skia_use_opencl'] = 'true'
-    if api.vars.is_linux:
-      extra_cflags.append(
-          '-isystem%s' % api.vars.workdir.join('opencl_headers'))
-      extra_ldflags.append(
-          '-L%s' % api.vars.workdir.join('opencl_ocl_icd_linux'))
-    elif 'Win' in os:
-      extra_cflags.append(
-          '-imsvc%s' % api.vars.workdir.join('opencl_headers'))
-      extra_ldflags.append(
-          '/LIBPATH:%s' %
-          skia_dir.join('third_party', 'externals', 'opencl-lib', '3-0', 'lib',
-                        'x86_64'))
   if 'iOS' in extra_tokens:
     # Bots use Chromium signing cert.
     args['skia_ios_identity'] = '".*GS9WA.*"'
@@ -335,7 +334,7 @@ def compile_fn(api, checkout_root, out_dir):
     'target_os': 'ios' if 'iOS' in extra_tokens else '',
     'win_sdk': win_toolchain + '/win_sdk' if 'Win' in os else '',
     'win_vc': win_toolchain + '/VC' if 'Win' in os else '',
-  }.iteritems():
+  }.items():
     if v:
       args[k] = '"%s"' % v
   if extra_cflags:
@@ -343,7 +342,7 @@ def compile_fn(api, checkout_root, out_dir):
   if extra_ldflags:
     args['extra_ldflags'] = repr(extra_ldflags).replace("'", '"')
 
-  gn_args = ' '.join('%s=%s' % (k,v) for (k,v) in sorted(args.iteritems()))
+  gn_args = ' '.join('%s=%s' % (k,v) for (k,v) in sorted(args.items()))
   gn = skia_dir.join('bin', 'gn')
 
   with api.context(cwd=skia_dir):

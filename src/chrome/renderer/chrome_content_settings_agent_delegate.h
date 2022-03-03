@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_CHROME_CONTENT_SETTINGS_AGENT_DELEGATE_H_
 #define CHROME_RENDERER_CHROME_CONTENT_SETTINGS_AGENT_DELEGATE_H_
 
+#include "base/gtest_prod_util.h"
 #include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -39,7 +40,6 @@ class ChromeContentSettingsAgentDelegate
   absl::optional<bool> AllowReadFromClipboard() override;
   absl::optional<bool> AllowWriteToClipboard() override;
   absl::optional<bool> AllowMutationEvents() override;
-  void PassiveInsecureContentFound(const blink::WebURL&) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentSettingsAgentDelegateBrowserTest,
@@ -51,6 +51,9 @@ class ChromeContentSettingsAgentDelegate
 
   // Whether the observed RenderFrame is for a platform app.
   bool IsPlatformApp();
+
+  // Whether the observed RenderFrame is an allow-listed System Web App.
+  bool IsAllowListedSystemWebApp();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If |origin| corresponds to an installed extension, returns that extension.

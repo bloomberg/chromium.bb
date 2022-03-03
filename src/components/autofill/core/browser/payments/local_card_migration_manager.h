@@ -11,11 +11,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
 
@@ -84,6 +87,11 @@ class LocalCardMigrationManager {
                             payments::PaymentsClient* payments_client,
                             const std::string& app_locale,
                             PersonalDataManager* personal_data_manager);
+
+  LocalCardMigrationManager(const LocalCardMigrationManager&) = delete;
+  LocalCardMigrationManager& operator=(const LocalCardMigrationManager&) =
+      delete;
+
   virtual ~LocalCardMigrationManager();
 
   // Returns true if all of the conditions for allowing local credit card
@@ -165,11 +173,11 @@ class LocalCardMigrationManager {
       std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
       const std::string& display_text);
 
-  AutofillClient* const client_;
+  const raw_ptr<AutofillClient> client_;
 
   // Handles Payments service requests.
   // Owned by BrowserAutofillManager.
-  payments::PaymentsClient* payments_client_;
+  raw_ptr<payments::PaymentsClient> payments_client_;
 
  private:
   friend class LocalCardMigrationBrowserTest;
@@ -219,7 +227,7 @@ class LocalCardMigrationManager {
   // web database.  This is overridden by the BrowserAutofillManagerTest.
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
-  PersonalDataManager* personal_data_manager_;
+  raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // The imported credit card number from the form submission.
   absl::optional<std::u16string> imported_credit_card_number_;
@@ -244,14 +252,12 @@ class LocalCardMigrationManager {
   AutofillMetrics::LocalCardMigrationOrigin local_card_migration_origin_;
 
   // Initialized only during tests.
-  ObserverForTest* observer_for_testing_ = nullptr;
+  raw_ptr<ObserverForTest> observer_for_testing_ = nullptr;
 
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationManager);
 };
 
 }  // namespace autofill

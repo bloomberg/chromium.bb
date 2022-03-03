@@ -8,7 +8,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -29,7 +29,7 @@ namespace {
 // Note: The synced prefs returned by this method have to match the prefs
 // shown in
 // chrome/browser/resources/settings/privacy_page/personalization_options.html
-// on Desktop and chrome/android/java/res/xml/sync_and_services_preferences.xml
+// on Desktop and chrome/android/java/res/xml/google_services_preferences.xml
 // on Android.
 
 std::vector<std::string> GetSyncedServicePrefNames() {
@@ -50,7 +50,7 @@ UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
           "UnifiedConsentService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
 }
 
 UnifiedConsentServiceFactory::~UnifiedConsentServiceFactory() = default;
@@ -81,7 +81,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   RecordSettingsHistogram(pref_service);
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
     return nullptr;
 

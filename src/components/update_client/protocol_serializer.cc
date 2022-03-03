@@ -4,22 +4,27 @@
 
 #include "components/update_client/protocol_serializer.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/containers/flat_map.h"
+#include "base/cpu.h"
 #include "base/guid.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/update_query_params.h"
 #include "components/update_client/updater_state.h"
+#include "components/update_client/utils.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -39,7 +44,7 @@ int GetPhysicalMemoryGB() {
 std::string GetOSVersion() {
 #if defined(OS_WIN)
   const auto ver = base::win::OSInfo::GetInstance()->version_number();
-  return base::StringPrintf("%d.%d.%d.%d", ver.major, ver.minor, ver.build,
+  return base::StringPrintf("%u.%u.%u.%u", ver.major, ver.minor, ver.build,
                             ver.patch);
 #else
   return base::SysInfo().OperatingSystemVersion();
@@ -52,6 +57,22 @@ std::string GetServicePack() {
 #else
   return {};
 #endif
+}
+
+// Returns brand code in the expected format, or an empty string otherwise.
+std::string FilterBrandCode(const std::string& brand) {
+  return IsValidBrand(brand) ? brand : std::string("");
+}
+
+// Filters invalid attributes from |installer_attributes|.
+base::flat_map<std::string, std::string> FilterInstallerAttributes(
+    const InstallerAttributes& installer_attributes) {
+  base::flat_map<std::string, std::string> sanitized_attrs;
+  for (const auto& attr : installer_attributes) {
+    if (IsValidInstallerAttribute(attr))
+      sanitized_attrs.insert(attr);
+  }
+  return sanitized_attrs;
 }
 
 }  // namespace
@@ -76,6 +97,7 @@ base::flat_map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
 }
 
 protocol_request::Request MakeProtocolRequest(
+    const bool is_machine,
     const std::string& session_id,
     const std::string& prod_id,
     const std::string& browser_version,
@@ -88,6 +110,7 @@ protocol_request::Request MakeProtocolRequest(
     std::vector<protocol_request::App> apps) {
   protocol_request::Request request;
   request.protocol_version = kProtocolVersion;
+  request.is_machine = is_machine;
 
   // Session id and request id.
   DCHECK(!session_id.empty());
@@ -109,8 +132,7 @@ protocol_request::Request MakeProtocolRequest(
   request.additional_attributes = additional_attributes;
 
 #if defined(OS_WIN)
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED)
+  if (base::win::OSInfo::GetInstance()->IsWowX86OnAMD64())
     request.is_wow64 = true;
 #endif
 
@@ -121,7 +143,15 @@ protocol_request::Request MakeProtocolRequest(
   }
 
   // HW platform information.
+  base::CPU cpu;
   request.hw.physmemory = GetPhysicalMemoryGB();
+  request.hw.sse = cpu.has_sse();
+  request.hw.sse2 = cpu.has_sse2();
+  request.hw.sse3 = cpu.has_sse3();
+  request.hw.ssse3 = cpu.has_ssse3();
+  request.hw.sse41 = cpu.has_sse41();
+  request.hw.sse42 = cpu.has_sse42();
+  request.hw.avx = cpu.has_avx();
 
   // OS version and platform information.
   request.os.platform = os_long_name;
@@ -174,35 +204,30 @@ protocol_request::Request MakeProtocolRequest(
 protocol_request::App MakeProtocolApp(
     const std::string& app_id,
     const base::Version& version,
-    absl::optional<std::vector<base::Value>> events) {
-  protocol_request::App app;
-  app.app_id = app_id;
-  app.version = version.GetString();
-  app.events = std::move(events);
-  return app;
-}
-
-protocol_request::App MakeProtocolApp(
-    const std::string& app_id,
-    const base::Version& version,
+    const std::string& ap,
     const std::string& brand_code,
     const std::string& install_source,
     const std::string& install_location,
     const std::string& fingerprint,
-    const base::flat_map<std::string, std::string>& installer_attributes,
+    const std::map<std::string, std::string>& installer_attributes,
     const std::string& cohort,
     const std::string& cohort_hint,
     const std::string& cohort_name,
     const std::string& release_channel,
     const std::vector<int>& disabled_reasons,
     absl::optional<protocol_request::UpdateCheck> update_check,
-    absl::optional<protocol_request::Ping> ping) {
-  auto app = MakeProtocolApp(app_id, version, absl::nullopt);
-  app.brand_code = brand_code;
+    absl::optional<protocol_request::Ping> ping,
+    absl::optional<std::vector<base::Value>> events) {
+  protocol_request::App app;
+  app.app_id = app_id;
+  app.version = version.GetString();
+  app.ap = ap;
+  app.events = std::move(events);
+  app.brand_code = FilterBrandCode(brand_code);
   app.install_source = install_source;
   app.install_location = install_location;
   app.fingerprint = fingerprint;
-  app.installer_attributes = installer_attributes;
+  app.installer_attributes = FilterInstallerAttributes(installer_attributes);
   app.cohort = cohort;
   app.cohort_hint = cohort_hint;
   app.cohort_name = cohort_name;
@@ -214,9 +239,16 @@ protocol_request::App MakeProtocolApp(
   return app;
 }
 
-protocol_request::UpdateCheck MakeProtocolUpdateCheck(bool is_update_disabled) {
+protocol_request::UpdateCheck MakeProtocolUpdateCheck(
+    bool is_update_disabled,
+    const std::string& target_version_prefix,
+    bool rollback_allowed,
+    bool same_version_update_allowed) {
   protocol_request::UpdateCheck update_check;
   update_check.is_update_disabled = is_update_disabled;
+  update_check.target_version_prefix = target_version_prefix;
+  update_check.rollback_allowed = rollback_allowed;
+  update_check.same_version_update_allowed = same_version_update_allowed;
   return update_check;
 }
 

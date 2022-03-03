@@ -33,6 +33,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
+
+#if defined(OS_APPLE)
+#include "base/mac/backup_util.h"
+#endif
 
 namespace base {
 
@@ -99,10 +104,8 @@ size_t CalculateRequiredCountsBytes(size_t bucket_count) {
 
 }  // namespace
 
-const Feature kPersistentHistogramsFeature{
-  "PersistentHistograms", FEATURE_DISABLED_BY_DEFAULT
-};
-
+const Feature kPersistentHistogramsFeature{"PersistentHistograms",
+                                           FEATURE_ENABLED_BY_DEFAULT};
 
 PersistentSparseHistogramDataManager::PersistentSparseHistogramDataManager(
     PersistentMemoryAllocator* allocator)
@@ -679,33 +682,44 @@ void GlobalHistogramAllocator::CreateWithLocalMemory(
 
 #if !defined(OS_NACL)
 // static
-bool GlobalHistogramAllocator::CreateWithFile(
-    const FilePath& file_path,
-    size_t size,
-    uint64_t id,
-    StringPiece name) {
-  bool exists = PathExists(file_path);
-  File file(
-      file_path, File::FLAG_OPEN_ALWAYS | File::FLAG_SHARE_DELETE |
-                 File::FLAG_READ | File::FLAG_WRITE);
+bool GlobalHistogramAllocator::CreateWithFile(const FilePath& file_path,
+                                              size_t size,
+                                              uint64_t id,
+                                              StringPiece name,
+                                              bool exclusive_write) {
+  uint32_t flags = File::FLAG_OPEN_ALWAYS | File::FLAG_WIN_SHARE_DELETE |
+                   File::FLAG_READ | File::FLAG_WRITE;
+  if (exclusive_write)
+    flags |= File::FLAG_WIN_EXCLUSIVE_WRITE;
+  File file(file_path, flags);
+  if (!file.IsValid())
+    return false;
 
   std::unique_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
   bool success = false;
-  if (exists) {
-    size = saturated_cast<size_t>(file.GetLength());
-    success = mmfile->Initialize(std::move(file), MemoryMappedFile::READ_WRITE);
-  } else {
+  if (file.created()) {
     success = mmfile->Initialize(std::move(file), {0, size},
                                  MemoryMappedFile::READ_WRITE_EXTEND);
+  } else {
+    success = mmfile->Initialize(std::move(file), MemoryMappedFile::READ_WRITE);
   }
   if (!success ||
       !FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true)) {
     return false;
   }
 
+#if defined(OS_APPLE)
+  // This prevents backing up and then later restoring the file created above.
+  // Preventing backup saves space and bandwidth. There is little value in
+  // backing up this file since the metrics stored in this file will likely
+  // have already been uploaded at some point between the time the backup was
+  // created and the time it is restored.
+  base::mac::SetBackupExclusion(file_path);
+#endif
+
   Set(WrapUnique(new GlobalHistogramAllocator(
-      std::make_unique<FilePersistentMemoryAllocator>(std::move(mmfile), size,
-                                                      id, name, false))));
+      std::make_unique<FilePersistentMemoryAllocator>(std::move(mmfile), 0, id,
+                                                      name, false))));
   Get()->SetPersistentLocation(file_path);
   return true;
 }
@@ -826,6 +840,15 @@ bool GlobalHistogramAllocator::CreateSpareFile(const FilePath& spare_path,
 
   if (success)
     success = ReplaceFile(temp_spare_path, spare_path, nullptr);
+
+#if defined(OS_APPLE)
+  // Then purpose of the "spare" file created above is to save time during the
+  // next startup, when this file can be used instead of creating a new one.
+  // However, this file is large, so it's not worth the storage and bandwidth
+  // costs to back up and restore it; instead, after restoration, a new file
+  // will be created on the next startup.
+  base::mac::SetBackupExclusion(spare_path);
+#endif
 
   if (!success)
     DeleteFile(temp_spare_path);

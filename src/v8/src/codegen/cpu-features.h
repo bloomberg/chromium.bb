@@ -26,7 +26,7 @@ enum CpuFeature {
   BMI2,
   LZCNT,
   POPCNT,
-  ATOM,
+  INTEL_ATOM,
 
 #elif V8_TARGET_ARCH_ARM
   // - Standard configurations. The baseline is ARMv6+VFPv2.
@@ -51,14 +51,15 @@ enum CpuFeature {
   MIPSr6,
   MIPS_SIMD,  // MSA instructions
 
-#elif V8_TARGET_ARCH_PPC || V8_TARGET_ARCH_PPC64
+#elif V8_TARGET_ARCH_LOONG64
   FPU,
-  FPR_GPR_MOV,
-  LWSYNC,
-  ISELECT,
-  VSX,
-  MODULO,
-  SIMD,
+
+#elif V8_TARGET_ARCH_PPC || V8_TARGET_ARCH_PPC64
+  PPC_6_PLUS,
+  PPC_7_PLUS,
+  PPC_8_PLUS,
+  PPC_9_PLUS,
+  PPC_10_PLUS,
 
 #elif V8_TARGET_ARCH_S390X
   FPU,

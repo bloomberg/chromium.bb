@@ -160,6 +160,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // app switching UI.
   virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
                               const gfx::ImageSkia& app_icon) = 0;
+  virtual const gfx::ImageSkia* GetWindowIcon() = 0;
+  virtual const gfx::ImageSkia* GetWindowAppIcon() = 0;
 
   // Initializes the modal type of the window to |modal_type|. Called from
   // NativeWidgetDelegate::OnNativeWidgetCreated() before the widget is
@@ -195,7 +197,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual bool IsMaximized() const = 0;
   virtual bool IsMinimized() const = 0;
   virtual void Restore() = 0;
-  virtual void SetFullscreen(bool fullscreen) = 0;
+  virtual void SetFullscreen(bool fullscreen, const base::TimeDelta& delay) = 0;
   virtual bool IsFullscreen() const = 0;
   virtual void SetCanAppearInExistingFullscreenSpaces(
       bool can_appear_in_existing_fullscreen_spaces) = 0;

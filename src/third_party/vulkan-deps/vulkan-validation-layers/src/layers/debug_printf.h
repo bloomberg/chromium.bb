@@ -67,11 +67,20 @@ struct DPFOutputRecord {
     uint32_t values;
 };
 
+class CMD_BUFFER_STATE_PRINTF : public CMD_BUFFER_STATE {
+  public:
+    std::vector<DPFBufferInfo> buffer_infos;
+
+    CMD_BUFFER_STATE_PRINTF(DebugPrintf* dp, VkCommandBuffer cb, const VkCommandBufferAllocateInfo* create_info,
+                            const COMMAND_POOL_STATE* pool);
+
+    void Reset() final;
+};
+
 class DebugPrintf : public ValidationStateTracker {
     VkPhysicalDeviceFeatures supported_features;
 
     uint32_t unique_shader_module_id = 0;
-    layer_data::unordered_map<VkCommandBuffer, std::vector<DPFBufferInfo>> command_buffer_map;
     uint32_t output_buffer_size;
 
     bool CommandBufferNeedsProcessing(VkCommandBuffer command_buffer);
@@ -94,15 +103,6 @@ class DebugPrintf : public ValidationStateTracker {
     PFN_vkSetDeviceLoaderData vkSetDeviceLoaderData;
     VmaAllocator vmaAllocator = {};
     std::map<VkQueue, UtilQueueBarrierCommandInfo> queue_barrier_command_infos;
-    std::vector<DPFBufferInfo>& GetBufferInfo(const VkCommandBuffer command_buffer) {
-        auto buffer_list = command_buffer_map.find(command_buffer);
-        if (buffer_list == command_buffer_map.end()) {
-            std::vector<DPFBufferInfo> new_list{};
-            command_buffer_map[command_buffer] = new_list;
-            return command_buffer_map[command_buffer];
-        }
-        return buffer_list->second;
-    }
 
     template <typename T>
     void ReportSetupProblem(T object, const char* const specific_message) const;
@@ -117,7 +117,6 @@ class DebugPrintf : public ValidationStateTracker {
     void PostCallRecordCreatePipelineLayout(VkDevice device, const VkPipelineLayoutCreateInfo* pCreateInfo,
                                             const VkAllocationCallbacks* pAllocator, VkPipelineLayout* pPipelineLayout,
                                             VkResult result) override;
-    void ResetCommandBuffer(VkCommandBuffer commandBuffer);
     bool PreCallValidateCmdWaitEvents(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents,
                                       VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask,
                                       uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers,
@@ -173,8 +172,13 @@ class DebugPrintf : public ValidationStateTracker {
                                     uint32_t operation_index, uint32_t* const debug_output_buffer);
     void PreCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
                               uint32_t firstInstance) override;
+    void PreCallRecordCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawInfoEXT* pVertexInfo,
+                                      uint32_t instanceCount, uint32_t firstInstance, uint32_t stride) override;
     void PreCallRecordCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount,
                                      uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override;
+    void PreCallRecordCmdDrawMultiIndexedEXT(VkCommandBuffer commandBuffer, uint32_t drawCount,
+                                             const VkMultiDrawIndexedInfoEXT* pIndexInfo, uint32_t instanceCount,
+                                             uint32_t firstInstance, uint32_t stride, const int32_t* pVertexOffset) override;
     void PreCallRecordCmdDrawIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t count,
                                       uint32_t stride) override;
     void PreCallRecordCmdDrawIndexedIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t count,
@@ -251,4 +255,25 @@ class DebugPrintf : public ValidationStateTracker {
     void PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence,
                                        VkResult result) override;
     void AllocateDebugPrintfResources(const VkCommandBuffer cmd_buffer, const VkPipelineBindPoint bind_point);
+
+    CMD_BUFFER_STATE_PRINTF* GetCBState(VkCommandBuffer commandBuffer) {
+        return static_cast<CMD_BUFFER_STATE_PRINTF*>(Get<CMD_BUFFER_STATE>(commandBuffer));
+    }
+    const CMD_BUFFER_STATE_PRINTF* GetCBState(VkCommandBuffer commandBuffer) const {
+        return static_cast<const CMD_BUFFER_STATE_PRINTF*>(Get<CMD_BUFFER_STATE>(commandBuffer));
+    }
+    const std::vector<DPFBufferInfo>& GetBufferInfo(const CMD_BUFFER_STATE* cb_node) const {
+        assert(cb_node);
+        return static_cast<const CMD_BUFFER_STATE_PRINTF*>(cb_node)->buffer_infos;
+    }
+
+    std::vector<DPFBufferInfo>& GetBufferInfo(CMD_BUFFER_STATE* cb_node) {
+        assert(cb_node);
+        return static_cast<CMD_BUFFER_STATE_PRINTF*>(cb_node)->buffer_infos;
+    }
+
+    std::shared_ptr<CMD_BUFFER_STATE> CreateCmdBufferState(VkCommandBuffer cb, const VkCommandBufferAllocateInfo* create_info,
+                                                           const COMMAND_POOL_STATE* pool) final;
+
+    void DestroyBuffer(DPFBufferInfo& buffer_info);
 };

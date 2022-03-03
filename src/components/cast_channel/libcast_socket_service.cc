@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_transport.h"
@@ -99,8 +100,8 @@ class CastSocketWrapper final : public CastSocket {
       NOTREACHED();
     }
 
-    LibcastSocket* socket_;
-    openscreen_platform::TaskRunner* openscreen_task_runner_;
+    raw_ptr<LibcastSocket> socket_;
+    raw_ptr<openscreen_platform::TaskRunner> openscreen_task_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   };
 
@@ -230,7 +231,7 @@ void LibcastSocketService::OpenSocket(
     if (!pending) {
       std::unique_ptr<base::CancelableOnceClosure> connect_timeout_callback;
       std::unique_ptr<base::OneShotTimer> connect_timer;
-      if (open_params.connect_timeout > base::TimeDelta()) {
+      if (open_params.connect_timeout.is_positive()) {
         connect_timeout_callback =
             std::make_unique<base::CancelableOnceClosure>(base::BindOnce(
                 &LibcastSocketService::OnErrorIOThread, base::Unretained(this),
@@ -370,7 +371,7 @@ void LibcastSocketService::OnConnectedIOThread(
   auto* socket_ptr = socket.get();
   auto socket_wrapper = std::make_unique<CastSocketWrapper>(
       std::move(socket), endpoint, &openscreen_task_runner_, task_runner_);
-  if (params->second.liveness_timeout > base::TimeDelta()) {
+  if (params->second.liveness_timeout.is_positive()) {
     auto keep_alive_handler = std::make_unique<KeepAliveHandler>(
         socket_wrapper.get(), logger_, params->second.ping_interval,
         params->second.liveness_timeout,

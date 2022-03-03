@@ -8,7 +8,7 @@
 
 #include "base/threading/thread_restrictions.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store_impl.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_data_manager_internal.h"
@@ -19,7 +19,7 @@
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
-#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
+#import "ios/web_view/internal/sync/web_view_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/web_view_global_state_util.h"
 
@@ -131,7 +131,7 @@ NSHashTable<CWVWebViewConfiguration*>* gNonPersistentConfigurations = nil;
     autofill::PersonalDataManager* personalDataManager =
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             self.browserState);
-    scoped_refptr<password_manager::PasswordStore> passwordStore =
+    scoped_refptr<password_manager::PasswordStoreInterface> passwordStore =
         ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
             self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
     _autofillDataManager = [[CWVAutofillDataManager alloc]
@@ -146,7 +146,7 @@ NSHashTable<CWVWebViewConfiguration*>* gNonPersistentConfigurations = nil;
 - (CWVSyncController*)syncController {
   if (!_syncController && self.persistent) {
     syncer::SyncService* syncService =
-        ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
+        ios_web_view::WebViewSyncServiceFactory::GetForBrowserState(
             self.browserState);
     signin::IdentityManager* identityManager =
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(

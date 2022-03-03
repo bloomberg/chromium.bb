@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_controller_base.h"
@@ -53,6 +52,10 @@ class RenderFrameHost;
 class FullscreenController : public ExclusiveAccessControllerBase {
  public:
   explicit FullscreenController(ExclusiveAccessManager* manager);
+
+  FullscreenController(const FullscreenController&) = delete;
+  FullscreenController& operator=(const FullscreenController&) = delete;
+
   ~FullscreenController() override;
 
   void AddObserver(FullscreenObserver* observer);
@@ -103,12 +106,20 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // previously in user-initiated fullscreen).
   bool IsFullscreenCausedByTab() const;
 
+  // Returns whether entering fullscreen with |EnterFullscreenModeForTab()| is
+  // allowed.
+  bool CanEnterFullscreenModeForTab(
+      content::RenderFrameHost* requesting_frame,
+      const int64_t display_id = display::kInvalidDisplayId);
+
   // Enter tab-initiated fullscreen mode. FullscreenController decides whether
   // to also fullscreen the browser window. See 'FullscreenWithinTab Note'.
   // |requesting_frame| is the specific content frame requesting fullscreen.
   // If the Window Placement experiment is enabled, fullscreen may be requested
   // on a particular display. In that case, |display_id| is the display's id;
   // otherwise, display::kInvalidDisplayId indicates no display is specified.
+  //
+  // |CanEnterFullscreenModeForTab()| must return true on entry.
   void EnterFullscreenModeForTab(
       content::RenderFrameHost* requesting_frame,
       const int64_t display_id = display::kInvalidDisplayId);
@@ -205,8 +216,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   base::ObserverList<FullscreenObserver> observer_list_;
 
   base::WeakPtrFactory<FullscreenController> ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };
 
 #endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_H_

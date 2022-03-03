@@ -6,17 +6,19 @@ package org.chromium.weblayer.test;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
 
+import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -28,6 +30,9 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.Callback;
+import org.chromium.weblayer.ExternalIntentInIncognitoCallback;
+import org.chromium.weblayer.ExternalIntentInIncognitoUserDecision;
 import org.chromium.weblayer.NavigateParams;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
@@ -43,17 +48,6 @@ public class ExternalNavigationTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
-
-    /**
-     * A dummy activity that claims to handle "weblayer://weblayertest".
-     */
-    public static class DummyActivityForSpecialScheme extends Activity {
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            finish();
-        }
-    }
 
     private static final boolean EXPECT_NAVIGATION_COMPLETION = true;
     private static final boolean EXPECT_NAVIGATION_FAILURE = false;
@@ -72,20 +66,20 @@ public class ExternalNavigationTest {
     // The package is not specified in the intent that gets created when navigating to the special
     // scheme.
     private static final String INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_PACKAGE = null;
-    private static final String INTENT_TO_CHROME_DATA_CONTENT =
-            "play.google.com/store/apps/details?id=com.facebook.katana/";
-    private static final String INTENT_TO_CHROME_SCHEME = "https";
-    private static final String INTENT_TO_CHROME_DATA_STRING =
-            INTENT_TO_CHROME_SCHEME + "://" + INTENT_TO_CHROME_DATA_CONTENT;
-    private static final String INTENT_TO_CHROME_ACTION = "android.intent.action.VIEW";
-    private static final String INTENT_TO_CHROME_PACKAGE = "com.android.chrome";
+    private static final String INTENT_TO_SELF_DATA_CONTENT = "example.test";
+    private static final String INTENT_TO_SELF_SCHEME = "https";
+    private static final String INTENT_TO_SELF_DATA_STRING =
+            INTENT_TO_SELF_SCHEME + "://" + INTENT_TO_SELF_DATA_CONTENT;
+    private static final String INTENT_TO_SELF_ACTION = "android.intent.action.VIEW";
+    private static final String INTENT_TO_SELF_PACKAGE =
+            InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
 
-    // An intent that opens Chrome to view a specified URL. Note that the "end" is left off to allow
-    // appending extras when constructing URLs.
-    private static final String INTENT_TO_CHROME = "intent://" + INTENT_TO_CHROME_DATA_CONTENT
-            + "#Intent;scheme=" + INTENT_TO_CHROME_SCHEME + ";action=" + INTENT_TO_CHROME_ACTION
-            + ";package=" + INTENT_TO_CHROME_PACKAGE + ";";
-    private static final String INTENT_TO_CHROME_URL = INTENT_TO_CHROME + "end";
+    // An intent that opens the test app to view a specified URL. Note that the "end" is left off to
+    // allow appending extras when constructing URLs.
+    private static final String INTENT_TO_SELF = "intent://" + INTENT_TO_SELF_DATA_CONTENT
+            + "#Intent;scheme=" + INTENT_TO_SELF_SCHEME + ";action=" + INTENT_TO_SELF_ACTION
+            + ";package=" + INTENT_TO_SELF_PACKAGE + ";";
+    private static final String INTENT_TO_SELF_URL = INTENT_TO_SELF + "end";
 
     // An intent URL that gets rejected as malformed.
     private static final String MALFORMED_INTENT_URL = "intent://garbage;end";
@@ -95,33 +89,35 @@ public class ExternalNavigationTest {
     private static final String NON_RESOLVABLE_INTENT =
             "intent://dummy.com/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;";
 
-    private static final String LINK_WITH_INTENT_TO_CHROME_IN_SAME_TAB_FILE =
-            "link_with_intent_to_chrome_in_same_tab.html";
-    private static final String LINK_WITH_INTENT_TO_CHROME_IN_NEW_TAB_FILE =
-            "link_with_intent_to_chrome_in_new_tab.html";
+    private static final String LINK_WITH_INTENT_TO_SELF_IN_SAME_TAB_FILE =
+            "link_with_intent_to_package_in_same_tab.html#" + INTENT_TO_SELF_PACKAGE;
+    private static final String LINK_WITH_INTENT_TO_SELF_IN_NEW_TAB_FILE =
+            "link_with_intent_to_package_in_new_tab.html#" + INTENT_TO_SELF_PACKAGE;
     private static final String PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE =
-            "page_that_intents_to_chrome_on_load.html";
+            "page_that_intents_to_package_on_load.html#" + INTENT_TO_SELF_PACKAGE;
     private static final String LINK_TO_PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE =
-            "link_to_page_that_intents_to_chrome_on_load.html";
+            "link_to_page_that_intents_to_package_on_load.html#" + INTENT_TO_SELF_PACKAGE;
 
     // The test server handles "echo" with a response containing "Echo" :).
     private final String mTestServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
 
     private final String mTestServerSiteFallbackUrlExtra =
             "S.browser_fallback_url=" + android.net.Uri.encode(mTestServerSiteUrl) + ";";
-    private final String mIntentToChromeWithFallbackUrl =
-            INTENT_TO_CHROME + mTestServerSiteFallbackUrlExtra + "end";
+    private final String mIntentToSelfWithFallbackUrl =
+            INTENT_TO_SELF + mTestServerSiteFallbackUrlExtra + "end";
     private final String mNonResolvableIntentWithFallbackUrl =
             NON_RESOLVABLE_INTENT + mTestServerSiteFallbackUrlExtra + "end";
 
     private final String mRedirectToCustomSchemeUrlWithDefaultExternalHandler =
             mActivityTestRule.getTestServer().getURL(
                     "/server-redirect?" + CUSTOM_SCHEME_URL_WITH_DEFAULT_EXTERNAL_HANDLER);
-    private final String mRedirectToIntentToChromeURL =
-            mActivityTestRule.getTestServer().getURL("/server-redirect?" + INTENT_TO_CHROME_URL);
+    private final String mRedirectToIntentToSelfURL =
+            mActivityTestRule.getTestServer().getURL("/server-redirect?" + INTENT_TO_SELF_URL);
     private final String mNonResolvableIntentWithFallbackUrlThatLaunchesIntent =
             NON_RESOLVABLE_INTENT + "S.browser_fallback_url="
-            + android.net.Uri.encode(mRedirectToIntentToChromeURL) + ";end";
+            + android.net.Uri.encode(mRedirectToIntentToSelfURL) + ";end";
+
+    private static final String SPECIALIZED_DATA_URL = "data://externalnavtest";
 
     private class IntentInterceptor implements InstrumentationActivity.IntentInterceptor {
         public Intent mLastIntent;
@@ -139,6 +135,26 @@ public class ExternalNavigationTest {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private class ExternalIntentInIncognitoCallbackTestImpl
+            extends ExternalIntentInIncognitoCallback {
+        private Callback<Integer> mOnUserDecisionCallback;
+        CallbackHelper mCallbackHelper = new CallbackHelper();
+
+        @Override
+        public void onExternalIntentInIncognito(@NonNull Callback<Integer> onUserDecisionCallback) {
+            mOnUserDecisionCallback = onUserDecisionCallback;
+            mCallbackHelper.notifyCalled();
+        }
+
+        public Callback<Integer> getOnUserDecisionCallback() {
+            return mOnUserDecisionCallback;
+        }
+
+        public void waitForNotificationOnExternalIntentLaunch() throws Throwable {
+            mCallbackHelper.waitForFirst();
         }
     }
 
@@ -251,10 +267,10 @@ public class ExternalNavigationTest {
 
         // Navigate directly to an intent in the background and verify that the intent is not
         // launched.
-        NavigationWaiter waiter = new NavigationWaiter(INTENT_TO_CHROME_URL, backgroundTab,
+        NavigationWaiter waiter = new NavigationWaiter(INTENT_TO_SELF_URL, backgroundTab,
                 /*expectFailure=*/true, /*waitForPaint=*/false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            backgroundTab.getNavigationController().navigate(Uri.parse(INTENT_TO_CHROME_URL));
+            backgroundTab.getNavigationController().navigate(Uri.parse(INTENT_TO_SELF_URL));
         });
 
         waiter.waitForNavigation();
@@ -296,7 +312,7 @@ public class ExternalNavigationTest {
             NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
             navigateParamsBuilder.allowIntentLaunchesInBackground();
             backgroundTab.getNavigationController().navigate(
-                    Uri.parse(INTENT_TO_CHROME_URL), navigateParamsBuilder.build());
+                    Uri.parse(INTENT_TO_SELF_URL), navigateParamsBuilder.build());
         });
 
         intentInterceptor.waitForIntent();
@@ -305,9 +321,9 @@ public class ExternalNavigationTest {
         // navigation in the background tab.
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
 
         int numNavigationsInBackgroundTab = TestThreadUtils.runOnUiThreadBlocking(
                 () -> { return backgroundTab.getNavigationController().getNavigationListSize(); });
@@ -332,11 +348,10 @@ public class ExternalNavigationTest {
 
         // Perform a navigation that redirects to an intent in the background and verify that the
         // intent is not launched.
-        NavigationWaiter waiter = new NavigationWaiter(INTENT_TO_CHROME_URL, backgroundTab,
+        NavigationWaiter waiter = new NavigationWaiter(INTENT_TO_SELF_URL, backgroundTab,
                 /*expectFailure=*/true, /*waitForPaint=*/false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            backgroundTab.getNavigationController().navigate(
-                    Uri.parse(mRedirectToIntentToChromeURL));
+            backgroundTab.getNavigationController().navigate(Uri.parse(mRedirectToIntentToSelfURL));
         });
 
         waiter.waitForNavigation();
@@ -378,7 +393,7 @@ public class ExternalNavigationTest {
             NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
             navigateParamsBuilder.allowIntentLaunchesInBackground();
             backgroundTab.getNavigationController().navigate(
-                    Uri.parse(mRedirectToIntentToChromeURL), navigateParamsBuilder.build());
+                    Uri.parse(mRedirectToIntentToSelfURL), navigateParamsBuilder.build());
         });
 
         intentInterceptor.waitForIntent();
@@ -387,9 +402,9 @@ public class ExternalNavigationTest {
         // navigation in the background tab.
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
 
         int numNavigationsInBackgroundTab = TestThreadUtils.runOnUiThreadBlocking(
                 () -> { return backgroundTab.getNavigationController().getNavigationListSize(); });
@@ -409,7 +424,7 @@ public class ExternalNavigationTest {
         NavigationCallback navigationCallback = new NavigationCallback() {
             @Override
             public void onNavigationFailed(Navigation navigation) {
-                if (navigation.getUri().toString().equals(INTENT_TO_CHROME_URL)) {
+                if (navigation.getUri().toString().equals(INTENT_TO_SELF_URL)) {
                     onNavigationFailedCallbackHelper.notifyCalled();
                 }
             }
@@ -426,7 +441,7 @@ public class ExternalNavigationTest {
                         browser.getActiveTab().getNavigationController().registerNavigationCallback(
                                 navigationCallback);
                         browser.getActiveTab().getNavigationController().navigate(
-                                Uri.parse(INTENT_TO_CHROME_URL));
+                                Uri.parse(INTENT_TO_SELF_URL));
                     }
                 });
 
@@ -483,7 +498,7 @@ public class ExternalNavigationTest {
                         NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
                         navigateParamsBuilder.allowIntentLaunchesInBackground();
                         browser.getActiveTab().getNavigationController().navigate(
-                                Uri.parse(INTENT_TO_CHROME_URL), navigateParamsBuilder.build());
+                                Uri.parse(INTENT_TO_SELF_URL), navigateParamsBuilder.build());
                     }
                 });
 
@@ -493,9 +508,9 @@ public class ExternalNavigationTest {
         intentInterceptor.waitForIntent();
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
 
         // ...the tab created for the initial navigation should be closed...
         onTabRemovedCallbackHelper.waitForFirst();
@@ -523,7 +538,7 @@ public class ExternalNavigationTest {
         NavigationCallback navigationCallback = new NavigationCallback() {
             @Override
             public void onNavigationFailed(Navigation navigation) {
-                if (navigation.getUri().toString().equals(INTENT_TO_CHROME_URL)) {
+                if (navigation.getUri().toString().equals(INTENT_TO_SELF_URL)) {
                     onNavigationFailedCallbackHelper.notifyCalled();
                 }
             }
@@ -539,7 +554,7 @@ public class ExternalNavigationTest {
                         browser.getActiveTab().getNavigationController().registerNavigationCallback(
                                 navigationCallback);
                         browser.getActiveTab().getNavigationController().navigate(
-                                Uri.parse(INTENT_TO_CHROME_URL));
+                                Uri.parse(INTENT_TO_SELF_URL));
                     }
                 });
 
@@ -601,7 +616,7 @@ public class ExternalNavigationTest {
                         NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
                         navigateParamsBuilder.allowIntentLaunchesInBackground();
                         browser.getActiveTab().getNavigationController().navigate(
-                                Uri.parse(INTENT_TO_CHROME_URL), navigateParamsBuilder.build());
+                                Uri.parse(INTENT_TO_SELF_URL), navigateParamsBuilder.build());
                     }
                 });
 
@@ -620,9 +635,9 @@ public class ExternalNavigationTest {
         intentInterceptor.waitForIntent();
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
 
         // ...the tab created for the initial navigation should be closed...
         onTabRemovedCallbackHelper.waitForFirst();
@@ -655,11 +670,13 @@ public class ExternalNavigationTest {
             @Override
             public void onNavigationStarted(Navigation navigation) {
                 // There should be no additional navigations after the initial one.
-                Assert.assertEquals(INTENT_TO_CHROME_URL, navigation.getUri().toString());
+                Assert.assertEquals(INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_DATA_STRING,
+                        navigation.getUri().toString());
             }
             @Override
             public void onNavigationFailed(Navigation navigation) {
-                if (navigation.getUri().toString().equals(INTENT_TO_CHROME_URL)) {
+                if (navigation.getUri().toString().equals(
+                            INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_DATA_STRING)) {
                     onNavigationToIntentFailedCallbackHelper.notifyCalled();
                 }
             }
@@ -678,7 +695,8 @@ public class ExternalNavigationTest {
                         NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
                         navigateParamsBuilder.allowIntentLaunchesInBackground();
                         browser.getActiveTab().getNavigationController().navigate(
-                                Uri.parse(INTENT_TO_CHROME_URL), navigateParamsBuilder.build());
+                                Uri.parse(INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_DATA_STRING),
+                                navigateParamsBuilder.build());
                     }
                 });
 
@@ -692,6 +710,170 @@ public class ExternalNavigationTest {
                 .check(matches(withText("Stay")))
                 .check(matches(isDisplayed()))
                 .perform(click());
+
+        // The navigation should fail...
+        onNavigationToIntentFailedCallbackHelper.waitForFirst();
+
+        // ...the intent should not have been launched.
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // As there was no fallback Url, there should be zero navigations in the tab.
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        int numNavigationsInTab = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return browser.getActiveTab().getNavigationController().getNavigationListSize();
+        });
+        Assert.assertEquals(0, numNavigationsInTab);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            browser.getActiveTab().getNavigationController().unregisterNavigationCallback(
+                    navigationCallback);
+        });
+    }
+
+    /**
+     * Tests that a direct navigation to an external intent in browser startup in incognito mode
+     * with the embedder having set an ExternalIntentInIncognitoCallback instance causes that
+     * instance to be notified if the embedder specifies that intent launches in the background are
+     * allowed for this navigation, and that the intent is then launched if the embedder calls back
+     * that the user has consented.
+     */
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(93)
+    public void
+    testExternalIntentWithNoRedirectInBrowserStartupInIncognitoWithEmbedderPresentingWarningDialogLaunchedWhenBackgroundLaunchesAllowedAndUserConsents()
+            throws Throwable {
+        CallbackHelper onTabRemovedCallbackHelper = new CallbackHelper();
+        TabListCallback tabListCallback = new TabListCallback() {
+            @Override
+            public void onTabRemoved(Tab tab) {
+                onTabRemovedCallbackHelper.notifyCalled();
+            }
+        };
+
+        final IntentInterceptor intentInterceptor = new IntentInterceptor();
+        final ExternalIntentInIncognitoCallbackTestImpl externalIntentCallback =
+                new ExternalIntentInIncognitoCallbackTestImpl();
+        InstrumentationActivity.registerOnCreatedCallback(
+                new InstrumentationActivity.OnCreatedCallback() {
+                    @Override
+                    public void onCreated(Browser browser, InstrumentationActivity activity) {
+                        Assert.assertEquals(true, browser.getProfile().isIncognito());
+                        activity.setIntentInterceptor(intentInterceptor);
+                        browser.registerTabListCallback(tabListCallback);
+
+                        browser.getActiveTab().setExternalIntentInIncognitoCallback(
+                                externalIntentCallback);
+
+                        NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
+                        navigateParamsBuilder.allowIntentLaunchesInBackground();
+                        browser.getActiveTab().getNavigationController().navigate(
+                                Uri.parse(INTENT_TO_SELF_URL), navigateParamsBuilder.build());
+                    }
+                });
+
+        Bundle extras = new Bundle();
+        extras.putBoolean(InstrumentationActivity.EXTRA_IS_INCOGNITO, true);
+        mActivityTestRule.launchShell(extras);
+
+        // The embedder should be invoked to present the warning dialog rather than WebLayer
+        // presenting the default warning dialog.
+        externalIntentCallback.waitForNotificationOnExternalIntentLaunch();
+        onView(withText(android.R.id.button1)).check(doesNotExist());
+
+        // Have the embedder notify the implementation that the user has consented.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            externalIntentCallback.getOnUserDecisionCallback().onResult(
+                    new Integer(ExternalIntentInIncognitoUserDecision.ALLOW));
+        });
+
+        // The intent should be launched...
+        intentInterceptor.waitForIntent();
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
+
+        // ...the tab created for the initial navigation should be closed...
+        onTabRemovedCallbackHelper.waitForFirst();
+
+        // ...and there should now be no tabs in the browser.
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        int numTabs =
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return browser.getTabs().size(); });
+        Assert.assertEquals(0, numTabs);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { browser.unregisterTabListCallback(tabListCallback); });
+    }
+
+    /**
+     * Tests that a direct navigation to an external intent in browser startup in incognito mode
+     * with the embedder having set an ExternalIntentInIncognitoCallback instance causes that
+     * instance to be notified if the embedder specifies that intent launches in the background are
+     * allowed for this navigation, and that the intent is then blocked if the embedder calls back
+     * that the user has not consented.
+     */
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(93)
+    public void
+    testExternalIntentWithNoRedirectInBrowserStartupInIncognitoWithEmbedderPresentingWarningDialogBlockedWhenBackgroundLaunchesAllowedAndUserForbids()
+            throws Throwable {
+        CallbackHelper onNavigationToIntentFailedCallbackHelper = new CallbackHelper();
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationStarted(Navigation navigation) {
+                // There should be no additional navigations after the initial one.
+                Assert.assertEquals(INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_DATA_STRING,
+                        navigation.getUri().toString());
+            }
+            @Override
+            public void onNavigationFailed(Navigation navigation) {
+                if (navigation.getUri().toString().equals(
+                            INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_DATA_STRING)) {
+                    onNavigationToIntentFailedCallbackHelper.notifyCalled();
+                }
+            }
+        };
+
+        final IntentInterceptor intentInterceptor = new IntentInterceptor();
+        final ExternalIntentInIncognitoCallbackTestImpl externalIntentCallback =
+                new ExternalIntentInIncognitoCallbackTestImpl();
+        InstrumentationActivity.registerOnCreatedCallback(
+                new InstrumentationActivity.OnCreatedCallback() {
+                    @Override
+                    public void onCreated(Browser browser, InstrumentationActivity activity) {
+                        activity.setIntentInterceptor(intentInterceptor);
+                        Assert.assertEquals(true, browser.getProfile().isIncognito());
+                        browser.getActiveTab().setExternalIntentInIncognitoCallback(
+                                externalIntentCallback);
+                        browser.getActiveTab().getNavigationController().registerNavigationCallback(
+                                navigationCallback);
+
+                        NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
+                        navigateParamsBuilder.allowIntentLaunchesInBackground();
+                        browser.getActiveTab().getNavigationController().navigate(
+                                Uri.parse(INTENT_TO_DUMMY_ACTIVITY_FOR_SPECIAL_SCHEME_DATA_STRING),
+                                navigateParamsBuilder.build());
+                    }
+                });
+
+        Bundle extras = new Bundle();
+        extras.putBoolean(InstrumentationActivity.EXTRA_IS_INCOGNITO, true);
+        mActivityTestRule.launchShell(extras);
+
+        // The embedder should be invoked to present the warning dialog rather than WebLayer
+        // presenting the default warning dialog.
+        externalIntentCallback.waitForNotificationOnExternalIntentLaunch();
+        onView(withText(android.R.id.button1)).check(doesNotExist());
+
+        // Have the embedder notify the implementation that the user has forbidden the launch.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            externalIntentCallback.getOnUserDecisionCallback().onResult(
+                    new Integer(ExternalIntentInIncognitoUserDecision.DENY));
+        });
 
         // The navigation should fail...
         onNavigationToIntentFailedCallbackHelper.waitForFirst();
@@ -727,7 +909,7 @@ public class ExternalNavigationTest {
 
         Tab tab = mActivityTestRule.getActivity().getTab();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { tab.getNavigationController().navigate(Uri.parse(INTENT_TO_CHROME_URL)); });
+                () -> { tab.getNavigationController().navigate(Uri.parse(INTENT_TO_SELF_URL)); });
 
         intentInterceptor.waitForIntent();
 
@@ -735,9 +917,118 @@ public class ExternalNavigationTest {
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
+    }
+
+    /**
+     * Tests that a direct navigation to an external intent is blocked if the client calls
+     * Navigation#disableIntentProcessing() from the onNavigationStarted() callback.
+     */
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(97)
+    public void
+    testExternalIntentWithNoRedirectBlockedIfIntentProcessingDisabledOnNavigationStarted()
+            throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        CallbackHelper onNavigationToIntentFailedCallbackHelper = new CallbackHelper();
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationStarted(Navigation navigation) {
+                if (navigation.getUri().toString().equals(INTENT_TO_SELF_URL)) {
+                    navigation.disableIntentProcessing();
+                }
+            }
+            @Override
+            public void onNavigationFailed(Navigation navigation) {
+                if (navigation.getUri().toString().equals(INTENT_TO_SELF_URL)) {
+                    onNavigationToIntentFailedCallbackHelper.notifyCalled();
+                }
+            }
+        };
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.getNavigationController().registerNavigationCallback(navigationCallback);
+            tab.getNavigationController().navigate(Uri.parse(INTENT_TO_SELF_URL));
+        });
+
+        // The navigation should fail...
+        onNavigationToIntentFailedCallbackHelper.waitForFirst();
+
+        // ...the intent should not have been launched.
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // As there was no fallback Url, there should be only the initial navigation in the tab.
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        int numNavigationsInTab = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return browser.getActiveTab().getNavigationController().getNavigationListSize();
+        });
+        Assert.assertEquals(1, numNavigationsInTab);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.getNavigationController().unregisterNavigationCallback(navigationCallback);
+        });
+    }
+
+    /**
+     * Tests that a navigation to an external intent after a server redirect is blocked if the
+     * client calls Navigation#disableIntentProcessing() from the onNavigationStarted()
+     * callback.
+     */
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(97)
+    public void
+    testExternalIntentAfterRedirectBlockedIfIntentProcessingDisabledOnNavigationStarted()
+            throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        CallbackHelper onNavigationToIntentFailedCallbackHelper = new CallbackHelper();
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationStarted(Navigation navigation) {
+                if (navigation.getUri().toString().equals(mRedirectToIntentToSelfURL)) {
+                    navigation.disableIntentProcessing();
+                }
+            }
+            @Override
+            public void onNavigationFailed(Navigation navigation) {
+                if (navigation.getUri().toString().equals(INTENT_TO_SELF_URL)) {
+                    onNavigationToIntentFailedCallbackHelper.notifyCalled();
+                }
+            }
+        };
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.getNavigationController().registerNavigationCallback(navigationCallback);
+            tab.getNavigationController().navigate(Uri.parse(mRedirectToIntentToSelfURL));
+        });
+
+        // The navigation should fail...
+        onNavigationToIntentFailedCallbackHelper.waitForFirst();
+
+        // ...the intent should not have been launched.
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // As there was no fallback Url, there should be only the initial navigation in the tab.
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        int numNavigationsInTab = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return browser.getActiveTab().getNavigationController().getNavigationListSize();
+        });
+        Assert.assertEquals(1, numNavigationsInTab);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.getNavigationController().unregisterNavigationCallback(navigationCallback);
+        });
     }
 
     /**
@@ -771,12 +1062,12 @@ public class ExternalNavigationTest {
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
-        navigateAndCheckExternalIntentParams(INTENT_TO_CHROME_URL, EXPECT_NAVIGATION_FAILURE,
+        navigateAndCheckExternalIntentParams(INTENT_TO_SELF_URL, EXPECT_NAVIGATION_FAILURE,
                 RESULTS_IN_EXTERNAL_INTENT, DOESNT_RESULT_IN_USER_DECIDING_EXTERNAL_INTENT);
-        navigateAndCheckExternalIntentParams(mIntentToChromeWithFallbackUrl,
+        navigateAndCheckExternalIntentParams(mIntentToSelfWithFallbackUrl,
                 EXPECT_NAVIGATION_FAILURE, RESULTS_IN_EXTERNAL_INTENT,
                 DOESNT_RESULT_IN_USER_DECIDING_EXTERNAL_INTENT);
-        navigateAndCheckExternalIntentParams(mRedirectToIntentToChromeURL, INTENT_TO_CHROME_URL,
+        navigateAndCheckExternalIntentParams(mRedirectToIntentToSelfURL, INTENT_TO_SELF_URL,
                 EXPECT_NAVIGATION_FAILURE, RESULTS_IN_EXTERNAL_INTENT,
                 DOESNT_RESULT_IN_USER_DECIDING_EXTERNAL_INTENT);
         navigateAndCheckExternalIntentParams(mRedirectToCustomSchemeUrlWithDefaultExternalHandler,
@@ -808,7 +1099,7 @@ public class ExternalNavigationTest {
         extras.putBoolean(InstrumentationActivity.EXTRA_IS_INCOGNITO, true);
         mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL, extras);
 
-        navigateAndCheckExternalIntentParams(INTENT_TO_CHROME_URL, EXPECT_NAVIGATION_FAILURE,
+        navigateAndCheckExternalIntentParams(INTENT_TO_SELF_URL, EXPECT_NAVIGATION_FAILURE,
                 DOESNT_RESULT_IN_EXTERNAL_INTENT, RESULTS_IN_USER_DECIDING_EXTERNAL_INTENT);
     }
 
@@ -831,7 +1122,7 @@ public class ExternalNavigationTest {
         NavigationCallback navigationCallback = new NavigationCallback() {
             @Override
             public void onNavigationFailed(Navigation navigation) {
-                Assert.assertEquals(INTENT_TO_CHROME_URL, navigation.getUri().toString());
+                Assert.assertEquals(INTENT_TO_SELF_URL, navigation.getUri().toString());
                 Assert.assertEquals(true, navigation.wasIntentLaunched());
                 Assert.assertEquals(false, navigation.isUserDecidingIntentLaunch());
 
@@ -844,7 +1135,7 @@ public class ExternalNavigationTest {
 
         // Navigate to a URL that has a link to an intent, click on the link, and verify via the
         // callback that the navigation to the intent fails with the expected state set.
-        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_CHROME_IN_SAME_TAB_FILE);
+        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_SELF_IN_SAME_TAB_FILE);
         mActivityTestRule.navigateAndWait(url);
         mActivityTestRule.executeScriptSync(
                 "document.onclick = function() {document.getElementById('link').click()}",
@@ -873,7 +1164,7 @@ public class ExternalNavigationTest {
 
         Tab tab = mActivityTestRule.getActivity().getTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            tab.getNavigationController().navigate(Uri.parse(mRedirectToIntentToChromeURL));
+            tab.getNavigationController().navigate(Uri.parse(mRedirectToIntentToSelfURL));
         });
 
         intentInterceptor.waitForIntent();
@@ -882,9 +1173,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -932,7 +1223,7 @@ public class ExternalNavigationTest {
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
-        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_CHROME_IN_SAME_TAB_FILE);
+        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_SELF_IN_SAME_TAB_FILE);
 
         mActivityTestRule.navigateAndWait(url);
 
@@ -948,9 +1239,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -967,7 +1258,7 @@ public class ExternalNavigationTest {
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
-        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_CHROME_IN_NEW_TAB_FILE);
+        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_SELF_IN_NEW_TAB_FILE);
 
         mActivityTestRule.navigateAndWait(url);
 
@@ -1005,9 +1296,9 @@ public class ExternalNavigationTest {
         intentInterceptor.waitForIntent();
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
 
         // (3) And finally the new tab should be closed.
         onTabRemovedCallbackHelper.waitForFirst();
@@ -1038,7 +1329,7 @@ public class ExternalNavigationTest {
         activity.setIntentInterceptor(intentInterceptor);
 
         String url = mActivityTestRule.getTestServer().getURL(
-                "/server-redirect?" + mIntentToChromeWithFallbackUrl);
+                "/server-redirect?" + mIntentToSelfWithFallbackUrl);
 
         Tab tab = mActivityTestRule.getActivity().getTab();
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1050,9 +1341,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -1138,7 +1429,7 @@ public class ExternalNavigationTest {
                 () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
 
         NavigationWaiter waiter = new NavigationWaiter(
-                INTENT_TO_CHROME_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+                INTENT_TO_SELF_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
         waiter.waitForNavigation();
 
         Assert.assertNull(intentInterceptor.mLastIntent);
@@ -1179,9 +1470,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(initialUrl, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -1230,9 +1521,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
-        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
-        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+        Assert.assertEquals(INTENT_TO_SELF_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_SELF_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_SELF_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -1256,12 +1547,30 @@ public class ExternalNavigationTest {
         });
 
         NavigationWaiter waiter = new NavigationWaiter(
-                INTENT_TO_CHROME_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+                INTENT_TO_SELF_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
         waiter.waitForNavigation();
 
         Assert.assertNull(intentInterceptor.mLastIntent);
 
         // The current URL should not have changed.
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
+    }
+
+    /**
+     * Verifies that for an intent with multiple matching apps that weblayer can handle, we avoid
+     * the disambiguation dialog and stay in weblayer.
+     */
+    @Test
+    @SmallTest
+    public void testAvoidDisambiguationDialog() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        // The data URL isn't valid and will fail the navigation.
+        mActivityTestRule.navigateAndWaitForFailure(SPECIALIZED_DATA_URL);
+
+        Assert.assertNull(intentInterceptor.mLastIntent);
+        Assert.assertEquals(SPECIALIZED_DATA_URL, mActivityTestRule.getCurrentDisplayUrl());
     }
 }

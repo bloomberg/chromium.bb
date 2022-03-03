@@ -14,17 +14,12 @@
 # ==============================================================================
 """Tests for supervisor.py."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import glob
 import os
 import shutil
 import time
 import uuid
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorflow.core.framework import graph_pb2
 from tensorflow.core.protobuf import config_pb2
@@ -100,7 +95,7 @@ class SupervisorTest(test.TestCase):
       my_op = constant_op.constant(1.0)
       sv = supervisor.Supervisor(logdir=logdir)
       sess = sv.prepare_or_wait_for_session("")
-      for _ in xrange(10):
+      for _ in range(10):
         self.evaluate(my_op)
       sess.close()
       sv.stop()
@@ -111,7 +106,7 @@ class SupervisorTest(test.TestCase):
       my_op = constant_op.constant(1.0)
       sv = supervisor.Supervisor(logdir=logdir)
       with sv.managed_session(""):
-        for _ in xrange(10):
+        for _ in range(10):
           self.evaluate(my_op)
       # Supervisor has been stopped.
       self.assertTrue(sv.should_stop())
@@ -122,9 +117,9 @@ class SupervisorTest(test.TestCase):
       my_op = constant_op.constant(1.0)
       sv = supervisor.Supervisor(logdir=logdir)
       last_step = None
-      with self.assertRaisesRegexp(RuntimeError, "failing here"):
+      with self.assertRaisesRegex(RuntimeError, "failing here"):
         with sv.managed_session("") as sess:
-          for step in xrange(10):
+          for step in range(10):
             last_step = step
             if step == 1:
               raise RuntimeError("failing here")
@@ -141,7 +136,7 @@ class SupervisorTest(test.TestCase):
       sv = supervisor.Supervisor(logdir=logdir)
       last_step = None
       with sv.managed_session("") as sess:
-        for step in xrange(10):
+        for step in range(10):
           last_step = step
           if step == 3:
             raise errors_impl.OutOfRangeError(my_op.op.node_def, my_op.op,
@@ -308,7 +303,7 @@ class SupervisorTest(test.TestCase):
     logdir = self._test_dir("managed_main_error_two_queues")
     os.makedirs(logdir)
     data_path = self._csv_data(logdir)
-    with self.assertRaisesRegexp(RuntimeError, "fail at step 3"):
+    with self.assertRaisesRegex(RuntimeError, "fail at step 3"):
       with ops.Graph().as_default():
         # Create an input pipeline that reads the file 3 times.
         filename_queue = input_lib.string_input_producer(
@@ -335,7 +330,7 @@ class SupervisorTest(test.TestCase):
       sv = supervisor.Supervisor(logdir=logdir)
       sess = sv.prepare_or_wait_for_session(
           "", config=config_pb2.ConfigProto(device_count={"CPU": 2}))
-      for _ in xrange(10):
+      for _ in range(10):
         self.evaluate(my_op)
       sess.close()
       sv.stop()
@@ -418,7 +413,7 @@ class SupervisorTest(test.TestCase):
       summ = summary.merge_all()
       sv = supervisor.Supervisor(logdir="", summary_op=None)
       sess = sv.prepare_or_wait_for_session("")
-      with self.assertRaisesRegexp(RuntimeError, "requires a summary writer"):
+      with self.assertRaisesRegex(RuntimeError, "requires a summary writer"):
         sv.summary_computed(sess, sess.run(summ))
 
   @test_util.run_v1_only("train.Supervisor is for v1 only")
@@ -435,7 +430,7 @@ class SupervisorTest(test.TestCase):
       # Check that a checkpoint is still be generated.
       self._wait_for_glob(sv.save_path, 3.0)
       # Check that we cannot write a summary
-      with self.assertRaisesRegexp(RuntimeError, "requires a summary writer"):
+      with self.assertRaisesRegex(RuntimeError, "requires a summary writer"):
         sv.summary_computed(sess, sess.run(summ))
 
   def testNoLogdirButExplicitSummaryWriter(self):
@@ -698,8 +693,7 @@ class SupervisorTest(test.TestCase):
       variables.VariableV1([4.0, 5.0, 6.0], name="w")
       # w will not be initialized.
       sv = supervisor.Supervisor(logdir=logdir, init_op=v.initializer)
-      with self.assertRaisesRegexp(RuntimeError,
-                                   "Variables not initialized: w"):
+      with self.assertRaisesRegex(RuntimeError, "Variables not initialized: w"):
         sv.prepare_or_wait_for_session(server.target)
 
   def testInitOpFailsForTransientVariable(self):
@@ -716,8 +710,7 @@ class SupervisorTest(test.TestCase):
           collections=[ops.GraphKeys.LOCAL_VARIABLES])
       # w will not be initialized.
       sv = supervisor.Supervisor(logdir=logdir, local_init_op=v.initializer)
-      with self.assertRaisesRegexp(RuntimeError,
-                                   "Variables not initialized: w"):
+      with self.assertRaisesRegex(RuntimeError, "Variables not initialized: w"):
         sv.prepare_or_wait_for_session(server.target)
 
   @test_util.run_v1_only("train.Supervisor is for v1 only")
@@ -725,7 +718,7 @@ class SupervisorTest(test.TestCase):
     logdir = self._test_dir("setup_fail")
     with ops.Graph().as_default():
       variables.VariableV1([1.0, 2.0, 3.0], name="v")
-      with self.assertRaisesRegexp(ValueError, "must have their device set"):
+      with self.assertRaisesRegex(ValueError, "must have their device set"):
         supervisor.Supervisor(logdir=logdir, is_chief=False)
     with ops.Graph().as_default(), ops.device("/job:ps"):
       variables.VariableV1([1.0, 2.0, 3.0], name="v")

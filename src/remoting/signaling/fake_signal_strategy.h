@@ -9,10 +9,10 @@
 #include <queue>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
@@ -33,6 +33,10 @@ class FakeSignalStrategy : public SignalStrategy {
   static void Connect(FakeSignalStrategy* peer1, FakeSignalStrategy* peer2);
 
   FakeSignalStrategy(const SignalingAddress& address);
+
+  FakeSignalStrategy(const FakeSignalStrategy&) = delete;
+  FakeSignalStrategy& operator=(const FakeSignalStrategy&) = delete;
+
   ~FakeSignalStrategy() override;
 
   const std::vector<std::unique_ptr<jingle_xmpp::XmlElement>>& received_messages() {
@@ -114,8 +118,6 @@ class FakeSignalStrategy : public SignalStrategy {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<FakeSignalStrategy> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSignalStrategy);
 };
 
 }  // namespace remoting

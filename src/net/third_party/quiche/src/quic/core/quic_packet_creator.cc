@@ -34,6 +34,7 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_server_stats.h"
+#include "common/print_elements.h"
 
 namespace quic {
 namespace {
@@ -108,8 +109,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
                         delegate) {}
 
 QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
-                                     QuicFramer* framer,
-                                     QuicRandom* random,
+                                     QuicFramer* framer, QuicRandom* random,
                                      DelegateInterface* delegate)
     : delegate_(delegate),
       debug_delegate_(nullptr),
@@ -122,11 +122,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
       packet_size_(0),
       server_connection_id_(server_connection_id),
       client_connection_id_(EmptyQuicConnectionId()),
-      packet_(QuicPacketNumber(),
-              PACKET_1BYTE_PACKET_NUMBER,
-              nullptr,
-              0,
-              false,
+      packet_(QuicPacketNumber(), PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, false,
               false),
       pending_padding_bytes_(0),
       needs_full_padding_(false),
@@ -135,7 +131,9 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
       fully_pad_crypto_handshake_packets_(true),
       latched_hard_max_packet_length_(0),
       max_datagram_frame_size_(0),
-      chaos_protection_enabled_(false) {
+      chaos_protection_enabled_(
+          GetQuicFlag(FLAGS_quic_enable_chaos_protection) &&
+          framer->perspective() == Perspective::IS_CLIENT) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
   if (!framer_->version().UsesTls()) {
     // QUIC+TLS negotiates the maximum datagram frame size via the
@@ -694,6 +692,10 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
 
 bool QuicPacketCreator::HasPendingFrames() const {
   return !queued_frames_.empty();
+}
+
+std::string QuicPacketCreator::GetPendingFramesInfo() const {
+  return QuicFramesToString(queued_frames_);
 }
 
 bool QuicPacketCreator::HasPendingRetransmittableFrames() const {
@@ -1452,8 +1454,14 @@ size_t QuicPacketCreator::ConsumeCryptoData(EncryptionLevel level,
       // The only pending data in the packet is non-retransmittable frames. I'm
       // assuming here that they won't occupy so much of the packet that a
       // CRYPTO frame won't fit.
-      QUIC_BUG(quic_bug_10752_26)
-          << ENDPOINT << "Failed to ConsumeCryptoData at level " << level;
+      const std::string error_message = absl::StrCat(
+          ENDPOINT, "Failed to ConsumeCryptoData at level ", level,
+          ", pending_frames: ", GetPendingFramesInfo(),
+          ", has_soft_max_packet_length: ", HasSoftMaxPacketLength(),
+          ", max_packet_length: ", max_packet_length_, ", transmission_type: ",
+          TransmissionTypeToString(next_transmission_type_),
+          ", packet_number: ", packet_number().ToString());
+      QUIC_BUG(quic_bug_10752_26) << error_message;
       return 0;
     }
     total_bytes_consumed += frame.crypto_frame->data_length;
@@ -1522,7 +1530,7 @@ bool QuicPacketCreator::FlushAckFrame(const QuicFrames& frames) {
   QUIC_BUG_IF(quic_bug_12398_18,
               GetQuicReloadableFlag(quic_single_ack_in_packet2) &&
                   !frames.empty() && has_ack())
-      << ENDPOINT << "Trying to flush " << frames
+      << ENDPOINT << "Trying to flush " << quiche::PrintElements(frames)
       << " when there is ACK queued";
   for (const auto& frame : frames) {
     QUICHE_DCHECK(frame.type == ACK_FRAME || frame.type == STOP_WAITING_FRAME)
@@ -1596,14 +1604,14 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
   next_transmission_type_ = type;
 }
 
-MessageStatus QuicPacketCreator::AddMessageFrame(QuicMessageId message_id,
-                                                 QuicMemSliceSpan message) {
+MessageStatus QuicPacketCreator::AddMessageFrame(
+    QuicMessageId message_id, absl::Span<QuicMemSlice> message) {
   QUIC_BUG_IF(quic_bug_10752_33, !flusher_attached_)
       << ENDPOINT
       << "Packet flusher is not attached when "
          "generator tries to add message frame.";
   MaybeBundleAckOpportunistically();
-  const QuicByteCount message_length = message.total_length();
+  const QuicByteCount message_length = MemSliceSpanTotalSize(message);
   if (message_length > GetCurrentLargestMessagePayload()) {
     return MESSAGE_STATUS_TOO_LARGE;
   }
@@ -1618,6 +1626,8 @@ MessageStatus QuicPacketCreator::AddMessageFrame(QuicMessageId message_id,
     delete frame;
     return MESSAGE_STATUS_INTERNAL_ERROR;
   }
+  QUICHE_DCHECK_EQ(MemSliceSpanTotalSize(message),
+                   0u);  // Ensure the old slices are empty.
   return MESSAGE_STATUS_SUCCESS;
 }
 

@@ -57,6 +57,7 @@ namespace dawn_native { namespace opengl {
 
       private:
         ~TextureView() override;
+        void DestroyImpl() override;
 
         GLuint mHandle;
         GLenum mTarget;

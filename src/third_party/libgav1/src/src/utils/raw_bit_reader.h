@@ -25,7 +25,7 @@
 
 namespace libgav1 {
 
-class RawBitReader : public BitReader, public Allocable {
+class RawBitReader final : public BitReader, public Allocable {
  public:
   RawBitReader(const uint8_t* data, size_t size);
   ~RawBitReader() override = default;

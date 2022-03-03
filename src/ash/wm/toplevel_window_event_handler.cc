@@ -4,13 +4,16 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -85,8 +88,10 @@ void ShowResizeShadow(aura::Window* window, int component) {
 void HideResizeShadow(aura::Window* window) {
   ResizeShadowController* resize_shadow_controller =
       Shell::Get()->resize_shadow_controller();
-  if (resize_shadow_controller)
+  if (resize_shadow_controller &&
+      window->GetProperty(kResizeShadowTypeKey) == ResizeShadowType::kUnlock) {
     resize_shadow_controller->HideShadow(window);
+  }
 }
 
 // Called once the drag completes.
@@ -113,6 +118,10 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       std::unique_ptr<WindowResizer> resizer,
                       bool grab_capture);
+
+  ScopedWindowResizer(const ScopedWindowResizer&) = delete;
+  ScopedWindowResizer& operator=(const ScopedWindowResizer&) = delete;
+
   ~ScopedWindowResizer() override;
 
   // Returns true if the drag moves the window and does not resize.
@@ -139,8 +148,6 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
 
   // Set to true if OnWindowDestroying() is received.
   bool window_destroying_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedWindowResizer);
 };
 
 ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
@@ -200,11 +207,9 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 ToplevelWindowEventHandler::ToplevelWindowEventHandler()
     : first_finger_hittest_(HTNOWHERE) {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
-  display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
@@ -319,7 +324,8 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (window_resizer_ && !in_gesture_drag_)
     return;
 
-  if (window_resizer_ && window_resizer_->resizer()->GetTarget() != target)
+  if (window_resizer_ && window_resizer_->resizer()->GetTarget() != target &&
+      !target->bounds().IsEmpty())
     return;
 
   if (event->details().touch_points() > 2) {

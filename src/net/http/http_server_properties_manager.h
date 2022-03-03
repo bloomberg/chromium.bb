@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "net/base/host_port_pair.h"
@@ -68,6 +68,10 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
       size_t max_server_configs_stored_in_properties,
       NetLog* net_log,
       const base::TickClock* clock = nullptr);
+
+  HttpServerPropertiesManager(const HttpServerPropertiesManager&) = delete;
+  HttpServerPropertiesManager& operator=(const HttpServerPropertiesManager&) =
+      delete;
 
   ~HttpServerPropertiesManager();
 
@@ -203,7 +207,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
 
   size_t max_server_configs_stored_in_properties_;
 
-  const base::TickClock* clock_;  // Unowned
+  raw_ptr<const base::TickClock> clock_;  // Unowned
 
   const NetLogWithSource net_log_;
 
@@ -211,8 +215,6 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
 
   base::WeakPtrFactory<HttpServerPropertiesManager> pref_load_weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManager);
 };
 
 }  // namespace net

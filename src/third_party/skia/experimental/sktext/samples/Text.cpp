@@ -1,6 +1,7 @@
 // Copyright 2021 Google LLC.
 
-#include "experimental/sktext/include/Processor.h"
+#include "experimental/sktext/editor/Editor.h"
+#include "experimental/sktext/src/Paint.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColorFilter.h"
 #include "include/core/SkFontMgr.h"
@@ -19,6 +20,7 @@
 #include "tools/flags/CommandLineFlags.h"
 
 using namespace skia::text;
+using namespace skia::editor;
 
 namespace {
 class TextSample_HelloWorld : public Sample {
@@ -27,7 +29,7 @@ protected:
 
     void onDrawContent(SkCanvas* canvas) override {
         canvas->drawColor(SK_ColorWHITE);
-        Processor::drawText(u"Hello word", canvas, 0, 0);
+        skia::text::Paint::drawText(u"Hello word", canvas, 0, 0);
     }
 
 private:
@@ -45,7 +47,6 @@ protected:
                   const std::u16string& text,
                   TextAlign align,
                   TextDirection direction = TextDirection::kLtr) {
-        SkColor background = SK_ColorGRAY;
         const std::u16string& ellipsis = u"\u2026";
         SkScalar margin = 20;
 
@@ -54,12 +55,14 @@ protected:
         canvas->clipRect(SkRect::MakeWH(w, h));
         canvas->drawColor(SK_ColorWHITE);
 
-        Processor::drawText(direction == TextDirection::kRtl ? mirror(text) : normal(text),
-                            canvas,
-                            TextFormatStyle(align, direction),
-                            SK_ColorBLACK, SK_ColorLTGRAY,
-                            SkString("Roboto"), 12.0f, SkFontStyle::Normal(),
-                            0, 0);
+        SkPaint foregroundPaint(SkColors::kBlack);
+        SkPaint backgroundPaint(SkColors::kLtGray);
+        Paint::drawText(direction == TextDirection::kRtl ? mirror(text) : normal(text),
+                        canvas,
+                        direction, align,
+                        foregroundPaint, backgroundPaint,
+                        SkString("Roboto"), 12.0f, SkFontStyle::Normal(),
+                        0, 0);
     }
 
     std::u16string mirror(const std::u16string& text) {
@@ -124,7 +127,7 @@ protected:
 
     void onDrawContent(SkCanvas* canvas) override {
         canvas->drawColor(SK_ColorWHITE);
-        Processor::drawText(u"A very_very_very_very_very_very_very_very_very_very "
+        Paint::drawText(u"A very_very_very_very_very_very_very_very_very_very "
                 "very_very_very_very_very_very_very_very_very_very very very very very very very "
                 "very very very very very very very very very very very very very very very very "
                 "very very very very very very very very very very very very very long text", canvas, this->width());
@@ -136,11 +139,11 @@ private:
     std::unique_ptr<SkUnicode> fUnicode;
 };
 
-class TextSample_LongRTL : public Sample {
+class TextSample_LongRTL1 : public Sample {
 protected:
     SkString name() override { return SkString("TextSample_LongRTL"); }
 
-    SkString mirror(const std::string& text) {
+    std::u16string mirror(const std::string& text) {
         std::u16string result;
         result += u"\u202E";
         for (auto i = text.size(); i > 0; --i) {
@@ -150,21 +153,42 @@ protected:
             result += ch;
         }
         result += u"\u202C";
-        return fUnicode->convertUtf16ToUtf8(result);
+        return result;
     }
 
     void onDrawContent(SkCanvas* canvas) override {
         canvas->drawColor(SK_ColorWHITE);
-        Processor::drawText(u"LONG MIRRORED TEXT SHOULD SHOW RIGHT TO LEFT (AS NORMAL)", canvas, 0, 0);
+        Paint::drawText(mirror("LONG MIRRORED TEXT SHOULD SHOW RIGHT TO LEFT (AS NORMAL)"), canvas, 0, 0);
     }
 
 private:
     using INHERITED = Sample;
     std::unique_ptr<SkUnicode> fUnicode;
 };
+
+class TextSample_LongRTL2 : public Sample {
+protected:
+    SkString name() override { return SkString("TextSample_LongRTL"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        canvas->drawColor(SK_ColorWHITE);
+        std::u16string utf16(u"يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُيَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُيَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ");
+        Paint::drawText(utf16, canvas,
+                        TextDirection::kRtl, TextAlign::kRight,
+                        SkPaint(SkColors::kBlack), SkPaint(SkColors::kLtGray),
+                        SkString("Noto Naskh Arabic"), 40.0f, SkFontStyle::Normal(),
+                        SkSize::Make(800, 800), 0, 0);
+    }
+
+private:
+    using INHERITED = Sample;
+    std::unique_ptr<SkUnicode> fUnicode;
+};
+
 }  // namespace
 
 DEF_SAMPLE(return new TextSample_HelloWorld();)
 DEF_SAMPLE(return new TextSample_Align_Dir();)
 DEF_SAMPLE(return new TextSample_LongLTR();)
-DEF_SAMPLE(return new TextSample_LongRTL();)
+DEF_SAMPLE(return new TextSample_LongRTL1();)
+DEF_SAMPLE(return new TextSample_LongRTL2();)

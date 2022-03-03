@@ -33,12 +33,14 @@
 #include <memory>
 
 #include "base/bits.h"
+#include "base/ignore_result.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/core/v8/double_or_scroll_timeline_auto_keyword.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_string_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
@@ -49,6 +51,8 @@
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_values.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -62,8 +66,10 @@
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -73,7 +79,8 @@ void ExpectRelativeErrorWithinEpsilon(double expected, double observed) {
   EXPECT_NEAR(1.0, observed / expected, std::numeric_limits<double>::epsilon());
 }
 
-class AnimationAnimationTestNoCompositing : public RenderingTest {
+class AnimationAnimationTestNoCompositing : public PaintTestConfigurations,
+                                            public RenderingTest {
  public:
   AnimationAnimationTestNoCompositing()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
@@ -90,12 +97,8 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     timeline = GetDocument().Timeline();
     timeline->ResetForTesting();
     animation = timeline->Play(nullptr);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     animation->setEffect(MakeAnimation());
   }
 
@@ -137,7 +140,9 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
 
     RunDocumentLifecycle();
 
-    SetBodyInnerHTML("<div id='target'></div>");
+    SetBodyInnerHTML(R"HTML(
+      <div id='target' style='width: 1px; height: 1px; background: green'></div>
+    )HTML");
 
     MakeCompositedAnimation();
   }
@@ -145,7 +150,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   void MakeCompositedAnimation() {
     // Create a compositable animation; in this case opacity from 1 to 0.
     Timing timing;
-    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+    timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
 
     StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
@@ -182,7 +187,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
       double duration = 30,
       Timing::FillMode fill_mode = Timing::FillMode::AUTO) {
     Timing timing;
-    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
+    timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(duration);
     timing.fill_mode = fill_mode;
     return MakeGarbageCollected<KeyframeEffect>(nullptr, MakeEmptyEffectModel(),
                                                 timing);
@@ -191,15 +196,15 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   bool SimulateFrame(double time_ms) {
     if (animation->pending()) {
       animation->NotifyReady(
-          AnimationTimeDelta::FromMillisecondsD(last_frame_time));
+          ANIMATION_TIME_DELTA_FROM_MILLISECONDS(last_frame_time));
     }
     SimulateMicrotask();
 
     last_frame_time = time_ms;
     const auto* paint_artifact_compositor =
         GetDocument().GetFrame()->View()->GetPaintArtifactCompositor();
-    GetDocument().GetAnimationClock().UpdateTime(
-        base::TimeTicks() + base::TimeDelta::FromMillisecondsD(time_ms));
+    GetDocument().GetAnimationClock().UpdateTime(base::TimeTicks() +
+                                                 base::Milliseconds(time_ms));
     GetDocument().GetPendingAnimations().Update(paint_artifact_compositor,
                                                 false);
     // The timeline does not know about our animation, so we have to explicitly
@@ -215,49 +220,38 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
 
   void SimulateFrameForScrollAnimations() {
     // Advance time by 100 ms.
-    auto new_time = GetAnimationClock().CurrentTime() +
-                    base::TimeDelta::FromMilliseconds(100);
+    auto new_time = GetAnimationClock().CurrentTime() + base::Milliseconds(100);
     GetPage().Animator().ServiceScriptedAnimations(new_time);
   }
 
-  bool StartTimeIsSet(Animation* animation) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    return animation->startTime();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    CSSNumberish start_time;
-    animation->startTime(start_time);
-    return !start_time.IsNull();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  bool StartTimeIsSet(Animation* for_animation) {
+    return for_animation->startTime();
   }
 
-  bool CurrentTimeIsSet(Animation* animation) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    return animation->currentTime();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    CSSNumberish current_time;
-    animation->currentTime(current_time);
-    return !current_time.IsNull();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  bool CurrentTimeIsSet(Animation* for_animation) {
+    return for_animation->currentTime();
   }
 
-  double GetStartTimeMs(Animation* animation) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    return animation->startTime()->GetAsDouble();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    CSSNumberish start_time;
-    animation->startTime(start_time);
-    return start_time.GetAsDouble();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  double GetStartTimeMs(Animation* for_animation) {
+    return for_animation->startTime()->GetAsDouble();
   }
 
-  double GetCurrentTimeMs(Animation* animation) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    return animation->currentTime()->GetAsDouble();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    CSSNumberish current_time;
-    animation->currentTime(current_time);
-    return current_time.GetAsDouble();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  double GetCurrentTimeMs(Animation* for_animation) {
+    return for_animation->currentTime()->GetAsDouble();
+  }
+
+  double GetStartTimePercent(Animation* for_animation) {
+    return for_animation->startTime()
+        ->GetAsCSSNumericValue()
+        ->to(CSSPrimitiveValue::UnitType::kPercentage)
+        ->value();
+  }
+
+  double GetCurrentTimePercent(Animation* for_animation) {
+    return for_animation->currentTime()
+        ->GetAsCSSNumericValue()
+        ->to(CSSPrimitiveValue::UnitType::kPercentage)
+        ->value();
   }
 
 #define EXPECT_TIME(expected, observed) \
@@ -277,7 +271,7 @@ class AnimationAnimationTestCompositing
                              String from,
                              String to) {
     Timing timing;
-    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+    timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
 
     StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetCSSPropertyValue(
@@ -308,17 +302,10 @@ class AnimationAnimationTestCompositing
   }
 };
 
-class AnimationAnimationTestCompositeAfterPaint
-    : public AnimationAnimationTestNoCompositing {
-  void SetUp() override {
-    EnableCompositing();
-    AnimationAnimationTestNoCompositing::SetUp();
-  }
+INSTANTIATE_PAINT_TEST_SUITE_P(AnimationAnimationTestNoCompositing);
+INSTANTIATE_PAINT_TEST_SUITE_P(AnimationAnimationTestCompositing);
 
-  ScopedCompositeAfterPaintForTest enable_cap{true};
-};
-
-TEST_F(AnimationAnimationTestNoCompositing, InitialState) {
+TEST_P(AnimationAnimationTestNoCompositing, InitialState) {
   SetUpWithoutStartingTimeline();
   animation = timeline->Play(nullptr);
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
@@ -337,27 +324,23 @@ TEST_F(AnimationAnimationTestNoCompositing, InitialState) {
   EXPECT_TIME(0, GetStartTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, CurrentTimeDoesNotSetOutdated) {
+TEST_P(AnimationAnimationTestNoCompositing, CurrentTimeDoesNotSetOutdated) {
   EXPECT_FALSE(animation->Outdated());
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
   EXPECT_FALSE(animation->Outdated());
   // FIXME: We should split simulateFrame into a version that doesn't update
   // the animation and one that does, as most of the tests don't require
   // update() to be called.
-  GetDocument().GetAnimationClock().UpdateTime(
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(10000));
+  GetDocument().GetAnimationClock().UpdateTime(base::TimeTicks() +
+                                               base::Milliseconds(10000));
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
   EXPECT_FALSE(animation->Outdated());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTime) {
+TEST_P(AnimationAnimationTestNoCompositing, SetCurrentTime) {
   EXPECT_EQ("running", animation->playState());
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("running", animation->playState());
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
 
@@ -366,25 +349,17 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTime) {
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeNegative) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, SetCurrentTimeNegative) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("running", animation->playState());
   EXPECT_TIME(-10000, GetCurrentTimeMs(animation));
 
   SimulateFrame(20000);
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
   animation->setPlaybackRate(-2);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   // A seek can set current time outside the range [0, EffectEnd()].
   EXPECT_TIME(-10000, GetCurrentTimeMs(animation));
@@ -396,7 +371,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeNegative) {
   EXPECT_TIME(-10000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        SetCurrentTimeNegativeWithoutSimultaneousPlaybackRateChange) {
   SimulateFrame(20000);
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
@@ -412,22 +387,14 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
   EXPECT_EQ("running", animation->playState());
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TIME(50000, GetCurrentTimeMs(animation));
 
@@ -437,12 +404,8 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
   // Reversing the play direction changes the play state from finished to
   // running.
   animation->setPlaybackRate(-2);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("running", animation->playState());
   EXPECT_TIME(50000, GetCurrentTimeMs(animation));
   SimulateAwaitReady();
@@ -452,35 +415,23 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestCompositing, SetCurrentTimeMax) {
+TEST_P(AnimationAnimationTestCompositing, SetCurrentTimeMax) {
   ResetWithCompositedAnimation();
   EXPECT_EQ(CompositorAnimations::kNoFailure,
             animation->CheckCanStartAnimationOnCompositor(nullptr));
   double limit = std::numeric_limits<double>::max();
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(limit),
                             ASSERT_NO_EXCEPTION);
   V8CSSNumberish* current_time = animation->currentTime();
   ExpectRelativeErrorWithinEpsilon(limit, current_time->GetAsDouble());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(limit));
-  CSSNumberish current_time;
-  animation->currentTime(current_time);
-  ExpectRelativeErrorWithinEpsilon(limit, current_time.GetAsDouble());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_TRUE(animation->CheckCanStartAnimationOnCompositor(nullptr) &
               CompositorAnimations::kEffectHasUnsupportedTimingParameters);
   SimulateFrame(100000);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   current_time = animation->currentTime();
   ExpectRelativeErrorWithinEpsilon(limit, current_time->GetAsDouble());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->currentTime(current_time);
-  ExpectRelativeErrorWithinEpsilon(limit, current_time.GetAsDouble());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
-TEST_F(AnimationAnimationTestCompositing, SetCurrentTimeAboveMaxTimeDelta) {
+TEST_P(AnimationAnimationTestCompositing, SetCurrentTimeAboveMaxTimeDelta) {
   // Similar to the SetCurrentTimeMax test. The limit is much less, but still
   // too large to be expressed as a 64-bit int and thus not able to run on the
   // compositor.
@@ -488,27 +439,17 @@ TEST_F(AnimationAnimationTestCompositing, SetCurrentTimeAboveMaxTimeDelta) {
   EXPECT_EQ(CompositorAnimations::kNoFailure,
             animation->CheckCanStartAnimationOnCompositor(nullptr));
   double limit = 1e30;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(limit),
                             ASSERT_NO_EXCEPTION);
   ignore_result(animation->currentTime());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(limit));
-  CSSNumberish current_time;
-  animation->currentTime(current_time);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_TRUE(animation->CheckCanStartAnimationOnCompositor(nullptr) &
               CompositorAnimations::kEffectHasUnsupportedTimingParameters);
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeSetsStartTime) {
+TEST_P(AnimationAnimationTestNoCompositing, SetCurrentTimeSetsStartTime) {
   EXPECT_TIME(0, GetStartTimeMs(animation));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(1000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(1000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_TIME(-1000, GetStartTimeMs(animation));
 
   SimulateFrame(1000);
@@ -516,17 +457,13 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeSetsStartTime) {
   EXPECT_TIME(2000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
+TEST_P(AnimationAnimationTestNoCompositing, SetStartTime) {
   SimulateFrame(20000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_TIME(0, GetStartTimeMs(animation));
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(10000),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("running", animation->playState());
   EXPECT_TIME(10000, GetStartTimeMs(animation));
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
@@ -534,73 +471,49 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
   SimulateFrame(30000);
   EXPECT_TIME(10000, GetStartTimeMs(animation));
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(-20000),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(-20000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
+TEST_P(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
   // Setting the start time is a seek operation, which is not constrained by the
   // normal limits on the animation.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(-50000),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(-50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
   EXPECT_TIME(50000, GetCurrentTimeMs(animation));
   animation->setPlaybackRate(-1);
   EXPECT_EQ("running", animation->playState());
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(-100000),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(-100000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TIME(-100000, GetCurrentTimeMs(animation));
   EXPECT_TRUE(animation->Limited());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
+TEST_P(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
   // The setStartTime method is a seek and thus not constrained by the normal
   // limits on the animation.
   SimulateFrame(30000);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TIME(40000, GetCurrentTimeMs(animation));
   EXPECT_TRUE(animation->Limited());
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_TIME(50000, GetCurrentTimeMs(animation));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(-40000),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(-40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_TIME(70000, GetCurrentTimeMs(animation));
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, StartTimePauseFinish) {
+TEST_P(AnimationAnimationTestNoCompositing, StartTimePauseFinish) {
   NonThrowableExceptionState exception_state;
   animation->pause();
   EXPECT_EQ("paused", animation->playState());
@@ -614,7 +527,7 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimePauseFinish) {
   EXPECT_TIME(-30000, GetStartTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, FinishWhenPaused) {
+TEST_P(AnimationAnimationTestNoCompositing, FinishWhenPaused) {
   NonThrowableExceptionState exception_state;
   animation->pause();
   EXPECT_EQ("paused", animation->playState());
@@ -627,7 +540,7 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishWhenPaused) {
   EXPECT_EQ("finished", animation->playState());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, StartTimeFinishPause) {
+TEST_P(AnimationAnimationTestNoCompositing, StartTimeFinishPause) {
   NonThrowableExceptionState exception_state;
   animation->finish(exception_state);
   EXPECT_TIME(-30000, GetStartTimeMs(animation));
@@ -639,7 +552,7 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeFinishPause) {
   EXPECT_FALSE(StartTimeIsSet(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
+TEST_P(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ("running", animation->playState());
   SimulateAwaitReady();
@@ -650,7 +563,7 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
+TEST_P(AnimationAnimationTestNoCompositing, PausePlay) {
   // Pause the animation at the 10s mark.
   SimulateFrame(10000);
   animation->pause();
@@ -674,24 +587,16 @@ TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
+TEST_P(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
   // Auto-replay when starting from limit.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(30000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(30000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->play();
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 
   // Auto-replay when starting past the upper bound.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->play();
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
   EXPECT_EQ("running", animation->playState());
@@ -701,12 +606,8 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
   // from a negative value of current time.
   SimulateFrame(10000);
   EXPECT_FALSE(animation->pending());
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("running", animation->playState());
   EXPECT_FALSE(animation->pending());
   animation->play();
@@ -718,19 +619,15 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
   EXPECT_FALSE(animation->pending());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
+TEST_P(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
   // Snap to end when playing a reversed animation from the start.
   animation->setPlaybackRate(-1);
   animation->play();
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
 
   // Snap to end if playing a reversed animation starting past the upper limit.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   animation->play();
@@ -743,12 +640,8 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
 
   // Snap to the end if playing a reversed animation starting with a negative
   // value for current time.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->play();
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
   EXPECT_EQ("running", animation->playState());
@@ -759,7 +652,7 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
   EXPECT_FALSE(animation->pending());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        PlayWithPlaybackRateZeroDoesNotSeek) {
   // When playback rate is zero, any value set for the current time effectively
   // becomes the hold time.
@@ -767,26 +660,18 @@ TEST_F(AnimationAnimationTestNoCompositing,
   animation->play();
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->play();
   EXPECT_TIME(40000, GetCurrentTimeMs(animation));
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->play();
   EXPECT_TIME(-10000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        PlayAfterPauseWithPlaybackRateZeroUpdatesPlayState) {
   animation->pause();
   animation->setPlaybackRate(0);
@@ -798,13 +683,9 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->pending());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, Reverse) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->pause();
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
@@ -819,14 +700,10 @@ TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        ReverseHoldsCurrentTimeWithPlaybackRateZero) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(0);
   animation->pause();
   animation->reverse();
@@ -839,55 +716,39 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, ReverseSeeksToStart) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, ReverseSeeksToStart) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(-1);
   animation->reverse();
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, ReverseSeeksToEnd) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, ReverseSeeksToEnd) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->reverse();
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, ReverseBeyondLimit) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, ReverseBeyondLimit) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(-1);
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, Finish) {
+TEST_P(AnimationAnimationTestNoCompositing, Finish) {
   NonThrowableExceptionState exception_state;
   animation->finish(exception_state);
   // Finished snaps to the end of the animation.
@@ -903,63 +764,47 @@ TEST_F(AnimationAnimationTestNoCompositing, Finish) {
   EXPECT_FALSE(animation->pending());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
+TEST_P(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
   // OK to set current time out of bounds.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->finish(exception_state);
   // The finish method triggers a snap to the upper boundary.
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, FinishBeforeStart) {
+TEST_P(AnimationAnimationTestNoCompositing, FinishBeforeStart) {
   NonThrowableExceptionState exception_state;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(-1);
   animation->finish(exception_state);
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        FinishDoesNothingWithPlaybackRateZero) {
   // Cannot finish an animation that has a playback rate of zero.
   DummyExceptionStateForTesting exception_state;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(0);
   animation->finish(exception_state);
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
   EXPECT_TRUE(exception_state.HadException());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, FinishRaisesException) {
+TEST_P(AnimationAnimationTestNoCompositing, FinishRaisesException) {
   // Cannot finish an animation that has an infinite iteration-count and a
   // non-zero iteration-duration.
   Timing timing;
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
   timing.iteration_count = std::numeric_limits<double>::infinity();
   animation->setEffect(MakeGarbageCollected<KeyframeEffect>(
       nullptr, MakeEmptyEffectModel(), timing));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(10000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(10000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   DummyExceptionStateForTesting exception_state;
   animation->finish(exception_state);
@@ -969,7 +814,7 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishRaisesException) {
             exception_state.CodeAs<DOMExceptionCode>());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, LimitingAtEffectEnd) {
+TEST_P(AnimationAnimationTestNoCompositing, LimitingAtEffectEnd) {
   SimulateFrame(30000);
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
   EXPECT_TRUE(animation->Limited());
@@ -980,7 +825,7 @@ TEST_F(AnimationAnimationTestNoCompositing, LimitingAtEffectEnd) {
   EXPECT_FALSE(animation->Paused());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, LimitingAtStart) {
+TEST_P(AnimationAnimationTestNoCompositing, LimitingAtStart) {
   SimulateFrame(30000);
   animation->setPlaybackRate(-2);
   SimulateAwaitReady();
@@ -994,14 +839,14 @@ TEST_F(AnimationAnimationTestNoCompositing, LimitingAtStart) {
   EXPECT_FALSE(animation->Paused());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, LimitingWithNoEffect) {
+TEST_P(AnimationAnimationTestNoCompositing, LimitingWithNoEffect) {
   animation->setEffect(nullptr);
   EXPECT_TRUE(animation->Limited());
   SimulateFrame(30000);
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRate) {
+TEST_P(AnimationAnimationTestNoCompositing, SetPlaybackRate) {
   animation->setPlaybackRate(2);
   SimulateAwaitReady();
   EXPECT_EQ(2, animation->playbackRate());
@@ -1011,7 +856,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRate) {
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhilePaused) {
+TEST_P(AnimationAnimationTestNoCompositing, SetPlaybackRateWhilePaused) {
   SimulateFrame(10000);
   animation->pause();
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
@@ -1029,7 +874,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhilePaused) {
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhileLimited) {
+TEST_P(AnimationAnimationTestNoCompositing, SetPlaybackRateWhileLimited) {
   // Animation plays until it hits the upper bound.
   SimulateFrame(40000);
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
@@ -1048,23 +893,19 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhileLimited) {
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateZero) {
+TEST_P(AnimationAnimationTestNoCompositing, SetPlaybackRateZero) {
   SimulateFrame(10000);
   animation->setPlaybackRate(0);
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
 
   SimulateFrame(20000);
   EXPECT_TIME(10000, GetCurrentTimeMs(animation));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(20000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(20000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateMax) {
+TEST_P(AnimationAnimationTestNoCompositing, SetPlaybackRateMax) {
   animation->setPlaybackRate(std::numeric_limits<double>::max());
   EXPECT_EQ(std::numeric_limits<double>::max(), animation->playbackRate());
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
@@ -1074,7 +915,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateMax) {
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRate) {
+TEST_P(AnimationAnimationTestNoCompositing, UpdatePlaybackRate) {
   animation->updatePlaybackRate(2);
   EXPECT_EQ(1, animation->playbackRate());
   SimulateAwaitReady();
@@ -1085,7 +926,7 @@ TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRate) {
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhilePaused) {
+TEST_P(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhilePaused) {
   animation->pause();
 
   // Pending playback rate on pending-paused animation is picked up after async
@@ -1104,7 +945,7 @@ TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhilePaused) {
   EXPECT_EQ(3, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileLimited) {
+TEST_P(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileLimited) {
   NonThrowableExceptionState exception_state;
   animation->finish(exception_state);
   EXPECT_TIME(30000, GetCurrentTimeMs(animation));
@@ -1118,7 +959,7 @@ TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileLimited) {
   EXPECT_EQ(2, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileRunning) {
+TEST_P(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileRunning) {
   animation->play();
   SimulateFrame(1000);
   animation->updatePlaybackRate(2);
@@ -1132,25 +973,17 @@ TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileRunning) {
   EXPECT_EQ(2, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetEffect) {
+TEST_P(AnimationAnimationTestNoCompositing, SetEffect) {
   animation = timeline->Play(nullptr);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   AnimationEffect* effect1 = MakeAnimation();
   AnimationEffect* effect2 = MakeAnimation();
   animation->setEffect(effect1);
   EXPECT_EQ(effect1, animation->effect());
   EXPECT_TIME(0, GetCurrentTimeMs(animation));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(15000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(15000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setEffect(effect2);
   EXPECT_TIME(15000, GetCurrentTimeMs(animation));
   EXPECT_EQ(nullptr, effect1->GetAnimationForTesting());
@@ -1158,13 +991,9 @@ TEST_F(AnimationAnimationTestNoCompositing, SetEffect) {
   EXPECT_EQ(effect2, animation->effect());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetEffectLimitsAnimation) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, SetEffectLimitsAnimation) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(20000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(20000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setEffect(MakeAnimation(10));
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
   EXPECT_TRUE(animation->Limited());
@@ -1172,13 +1001,9 @@ TEST_F(AnimationAnimationTestNoCompositing, SetEffectLimitsAnimation) {
   EXPECT_TIME(20000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, SetEffectUnlimitsAnimation) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+TEST_P(AnimationAnimationTestNoCompositing, SetEffectUnlimitsAnimation) {
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(40000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(40000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setEffect(MakeAnimation(60));
   EXPECT_FALSE(animation->Limited());
   EXPECT_TIME(40000, GetCurrentTimeMs(animation));
@@ -1186,7 +1011,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetEffectUnlimitsAnimation) {
   EXPECT_TIME(50000, GetCurrentTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, EmptyAnimationsDontUpdateEffects) {
+TEST_P(AnimationAnimationTestNoCompositing, EmptyAnimationsDontUpdateEffects) {
   animation = timeline->Play(nullptr);
   animation->Update(kTimingUpdateOnDemand);
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
@@ -1195,7 +1020,7 @@ TEST_F(AnimationAnimationTestNoCompositing, EmptyAnimationsDontUpdateEffects) {
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, AnimationsDisassociateFromEffect) {
+TEST_P(AnimationAnimationTestNoCompositing, AnimationsDisassociateFromEffect) {
   AnimationEffect* animation_node = animation->effect();
   Animation* animation2 = timeline->Play(animation_node);
   EXPECT_EQ(nullptr, animation->effect());
@@ -1207,29 +1032,25 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsDisassociateFromEffect) {
   EXPECT_NEAR(expected.InMillisecondsF(), observed.InMillisecondsF(), \
               Animation::kTimeToleranceMs)
 
-TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
+TEST_P(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   Timing timing;
-  timing.start_delay = AnimationTimeDelta::FromSecondsD(1);
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  timing.end_delay = AnimationTimeDelta::FromSecondsD(1);
+  timing.start_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
+  timing.end_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
       nullptr, MakeEmptyEffectModel(), timing);
   animation = timeline->Play(keyframe_effect);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Next effect change at end of start delay.
   SimulateFrame(0);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(1),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(1),
                    animation->TimeToEffectChange().value());
 
   // Next effect change at end of start delay.
   SimulateFrame(500);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(0.5),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(0.5),
                    animation->TimeToEffectChange().value());
 
   // Start of active phase.
@@ -1244,7 +1065,7 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
 
   // Start of the after phase. Next effect change at end of after phase.
   SimulateFrame(2000);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(1),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(1),
                    animation->TimeToEffectChange().value());
 
   // Still in effect if fillmode = forward|both.
@@ -1252,20 +1073,16 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 
   // Reset to start of animation. Next effect at the end of the start delay.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(0),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   SimulateFrame(3000);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(1),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(1),
                    animation->TimeToEffectChange().value());
 
   // Start delay is scaled by playback rate.
   animation->setPlaybackRate(2);
   SimulateFrame(3000);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(0.5),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(0.5),
                    animation->TimeToEffectChange().value());
 
   // Effectively a paused animation.
@@ -1274,27 +1091,23 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 
   // Reversed animation from end time. Next effect after end delay.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(3000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(3000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(-1);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3000);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(1),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(1),
                    animation->TimeToEffectChange().value());
 
   // End delay is scaled by playback rate.
   animation->setPlaybackRate(-2);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3000);
-  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(0.5),
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(0.5),
                    animation->TimeToEffectChange().value());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
+TEST_P(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
   EXPECT_TIMEDELTA(AnimationTimeDelta(),
                    animation->TimeToEffectChange().value());
   animation->pause();
@@ -1306,16 +1119,12 @@ TEST_F(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStart) {
   EXPECT_TIMEDELTA(AnimationTimeDelta(),
                    animation->TimeToEffectChange().value());
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(-8000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(-8000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(2);
   EXPECT_EQ("running", animation->playState());
   animation->cancel();
@@ -1327,16 +1136,12 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStartReverse) {
   EXPECT_TIMEDELTA(AnimationTimeDelta(),
                    animation->TimeToEffectChange().value());
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(9000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(9000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setPlaybackRate(-3);
   EXPECT_EQ("running", animation->playState());
   animation->cancel();
@@ -1346,7 +1151,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        TimeToNextEffectSimpleCancelledBeforeStart) {
   EXPECT_TIMEDELTA(AnimationTimeDelta(),
                    animation->TimeToEffectChange().value());
@@ -1358,7 +1163,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_EQ(absl::nullopt, animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, AttachedAnimations) {
+TEST_P(AnimationAnimationTestNoCompositing, AttachedAnimations) {
   // Prevent |element| from being collected by |CollectAllGarbageForTesting|.
   Persistent<Element> element = GetDocument().CreateElementForBinding("foo");
 
@@ -1375,7 +1180,7 @@ TEST_F(AnimationAnimationTestNoCompositing, AttachedAnimations) {
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {
+TEST_P(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {
   Animation* animation1 = timeline->Play(nullptr);
   Animation* animation2 = timeline->Play(nullptr);
   EXPECT_TRUE(Animation::HasLowerCompositeOrdering(
@@ -1383,7 +1188,7 @@ TEST_F(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {
       Animation::CompareAnimationsOrdering::kPointerOrder));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {
+TEST_P(AnimationAnimationTestNoCompositing, PlayAfterCancel) {
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(CurrentTimeIsSet(animation));
@@ -1404,14 +1209,10 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {
   EXPECT_TIME(0, GetStartTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, PlayBackwardsAfterCancel) {
+TEST_P(AnimationAnimationTestNoCompositing, PlayBackwardsAfterCancel) {
   animation->setPlaybackRate(-1);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(15000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(15000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(animation->pending());
@@ -1434,7 +1235,7 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayBackwardsAfterCancel) {
   EXPECT_TIME(30000, GetStartTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, ReverseAfterCancel) {
+TEST_P(AnimationAnimationTestNoCompositing, ReverseAfterCancel) {
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(animation->pending());
@@ -1457,7 +1258,7 @@ TEST_F(AnimationAnimationTestNoCompositing, ReverseAfterCancel) {
   EXPECT_TIME(30000, GetStartTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, FinishAfterCancel) {
+TEST_P(AnimationAnimationTestNoCompositing, FinishAfterCancel) {
   NonThrowableExceptionState exception_state;
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
@@ -1470,7 +1271,7 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishAfterCancel) {
   EXPECT_TIME(-30000, GetStartTimeMs(animation));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, PauseAfterCancel) {
+TEST_P(AnimationAnimationTestNoCompositing, PauseAfterCancel) {
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(CurrentTimeIsSet(animation));
@@ -1487,7 +1288,7 @@ TEST_F(AnimationAnimationTestNoCompositing, PauseAfterCancel) {
 }
 
 // crbug.com/1052217
-TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateAfterFinish) {
+TEST_P(AnimationAnimationTestNoCompositing, SetPlaybackRateAfterFinish) {
   animation->setEffect(MakeAnimation(30, Timing::FillMode::FORWARDS));
   animation->finish();
   animation->Update(kTimingUpdateOnDemand);
@@ -1506,7 +1307,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateAfterFinish) {
   EXPECT_FALSE(animation->Outdated());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateAfterFinish) {
+TEST_P(AnimationAnimationTestNoCompositing, UpdatePlaybackRateAfterFinish) {
   animation->setEffect(MakeAnimation(30, Timing::FillMode::FORWARDS));
   animation->finish();
   animation->Update(kTimingUpdateOnDemand);
@@ -1527,7 +1328,7 @@ TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateAfterFinish) {
   EXPECT_FALSE(animation->Outdated());
 }
 
-TEST_F(AnimationAnimationTestCompositeAfterPaint,
+TEST_P(AnimationAnimationTestCompositing,
        NoCompositeWithoutCompositedElementId) {
   SetBodyInnerHTML(
       "<div id='foo' style='position: relative; will-change: "
@@ -1538,7 +1339,7 @@ TEST_F(AnimationAnimationTestCompositeAfterPaint,
   LayoutObject* object_not_composited = GetLayoutObjectByElementId("bar");
 
   Timing timing;
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
   auto* keyframe_effect_composited = MakeGarbageCollected<KeyframeEffect>(
       To<Element>(object_composited->GetNode()), MakeSimpleEffectModel(),
       timing);
@@ -1567,7 +1368,7 @@ TEST_F(AnimationAnimationTestCompositeAfterPaint,
 // played and then paused before any start time is set (either blink or
 // compositor side), the pausing must still set compositor pending or the pause
 // won't be synced.
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        SetCompositorPendingWithUnresolvedStartTimes) {
   ResetWithCompositedAnimation();
 
@@ -1585,7 +1386,7 @@ TEST_F(AnimationAnimationTestCompositing,
   EXPECT_TRUE(animation->CompositorPending());
 }
 
-TEST_F(AnimationAnimationTestCompositing, PreCommitWithUnresolvedStartTimes) {
+TEST_P(AnimationAnimationTestCompositing, PreCommitWithUnresolvedStartTimes) {
   ResetWithCompositedAnimation();
 
   // At this point, the animation exists on both the compositor and blink side,
@@ -1610,7 +1411,7 @@ int GenerateHistogramValue(CompositorAnimations::FailureReason reason) {
 }
 }  // namespace
 
-TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
+TEST_P(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
   const std::string histogram_name =
       "Blink.Animation.CompositedAnimationFailureReason";
 
@@ -1636,7 +1437,7 @@ TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
   // Now make the playback rate 0. This trips both the invalid animation and
   // unsupported timing parameter reasons.
   animation->setPlaybackRate(0);
-  animation->NotifyReady(AnimationTimeDelta::FromSecondsD(100));
+  animation->NotifyReady(ANIMATION_TIME_DELTA_FROM_SECONDS(100));
   {
     HistogramTester histogram;
     ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
@@ -1675,7 +1476,7 @@ TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
 }
 
 // crbug.com/990000.
-TEST_F(AnimationAnimationTestCompositing, ReplaceCompositedAnimation) {
+TEST_P(AnimationAnimationTestCompositing, ReplaceCompositedAnimation) {
   const std::string histogram_name =
       "Blink.Animation.CompositedAnimationFailureReason";
 
@@ -1690,7 +1491,7 @@ TEST_F(AnimationAnimationTestCompositing, ReplaceCompositedAnimation) {
   ASSERT_TRUE(animation->HasActiveAnimationsOnCompositor());
 }
 
-TEST_F(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {
+TEST_P(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {
   ResetWithCompositedAnimation();
 
   // At this point, the animation exists on both the compositor and blink side,
@@ -1720,14 +1521,15 @@ TEST_F(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {
 
 // crbug.com/1057076
 // Infinite duration animations should not run on the compositor.
-TEST_F(AnimationAnimationTestCompositing, InfiniteDurationAnimation) {
+TEST_P(AnimationAnimationTestCompositing, InfiniteDurationAnimation) {
   ResetWithCompositedAnimation();
   EXPECT_EQ(CompositorAnimations::kNoFailure,
             animation->CheckCanStartAnimationOnCompositor(nullptr));
 
   OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
-  effect_timing->setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
-      std::numeric_limits<double>::infinity()));
+  effect_timing->setDuration(
+      MakeGarbageCollected<V8UnionCSSNumericValueOrStringOrUnrestrictedDouble>(
+          std::numeric_limits<double>::infinity()));
   animation->effect()->updateTiming(effect_timing);
   EXPECT_EQ(CompositorAnimations::kEffectHasUnsupportedTimingParameters,
             animation->CheckCanStartAnimationOnCompositor(nullptr));
@@ -1738,14 +1540,14 @@ TEST_F(AnimationAnimationTestCompositing, InfiniteDurationAnimation) {
 // relative transforms after a size change. In this test, the transform depends
 // on the width and height of the box and a change to either triggers a restart
 // of the animation if running.
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        RestartCompositedAnimationOnSizeChange) {
   // TODO(crbug.com/389359): Remove forced feature enabling once on by
   // default.
   ScopedCompositeRelativeKeyframesForTest composite_relative_keyframes(true);
   SetBodyInnerHTML(R"HTML(
-    <div id ="target"
-         style="width: 100px; height: 200px; will-change: transform">
+    <div id="target" style="width: 100px; height: 200px; background: blue;
+                            will-change: transform">
     </div>
   )HTML");
 
@@ -1765,12 +1567,8 @@ TEST_F(AnimationAnimationTestCompositing,
   EXPECT_TRUE(animation->HasActiveAnimationsOnCompositor());
 
   // Kick the animation out of the play-pending state.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // No size change and animation does not require a restart.
   keyframe_effect->UpdateBoxSizeAndCheckTransformAxisAlignment(
@@ -1795,14 +1593,14 @@ TEST_F(AnimationAnimationTestCompositing,
 // Regression test to ensure proper restart logic for composited animations on
 // relative transforms after a size change. In this test, the transform only
 // depends on width and a change to the height does not trigger a restart.
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        RestartCompositedAnimationOnWidthChange) {
   // TODO(crbug.com/389359): Remove forced feature enabling once on by
   // default.
   ScopedCompositeRelativeKeyframesForTest composite_relative_keyframes(true);
   SetBodyInnerHTML(R"HTML(
-    <div id ="target"
-         style="width: 100px; height: 200px; will-change: transform">
+    <div id="target" style="width: 100px; height: 200px; background: blue;
+                            will-change: transform">
     </div>
   )HTML");
 
@@ -1819,12 +1617,8 @@ TEST_F(AnimationAnimationTestCompositing,
   EXPECT_TRUE(animation->HasActiveAnimationsOnCompositor());
   keyframe_effect->UpdateBoxSizeAndCheckTransformAxisAlignment(
       FloatSize(100, 200));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Transform is not height dependent and a change to the height does not force
   // an animation restart.
@@ -1842,14 +1636,14 @@ TEST_F(AnimationAnimationTestCompositing,
 // Regression test to ensure proper restart logic for composited animations on
 // relative transforms after a size change.  In this test, the transition only
 // affects height and a change to the width does not trigger a restart.
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        RestartCompositedAnimationOnHeightChange) {
   // TODO(crbug.com/389359): Remove forced feature enabling once on by
   // default.
   ScopedCompositeRelativeKeyframesForTest composite_relative_keyframes(true);
   SetBodyInnerHTML(R"HTML(
-    <div id ="target"
-         style="width: 100px; height: 200px; will-change: transform">
+    <div id="target" style="width: 100px; height: 200px; background: blue;
+                            will-change: transform">
     </div>
   )HTML");
 
@@ -1866,12 +1660,8 @@ TEST_F(AnimationAnimationTestCompositing,
   EXPECT_TRUE(animation->HasActiveAnimationsOnCompositor());
   keyframe_effect->UpdateBoxSizeAndCheckTransformAxisAlignment(
       FloatSize(100, 200));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
                           ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setStartTime(CSSNumberish::FromDouble(0));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Transform is not width dependent and a change to the width does not force
   // an animation restart.
@@ -1885,13 +1675,17 @@ TEST_F(AnimationAnimationTestCompositing,
   EXPECT_FALSE(animation->HasActiveAnimationsOnCompositor());
 }
 
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        ScrollLinkedAnimationCanBeComposited) {
   ResetWithCompositedAnimation();
   SetBodyInnerHTML(R"HTML(
     <style>
-      #scroller { will-change: transform; overflow: scroll; width: 100px; height: 100px; }
-      #target { width: 100px; height: 200px; will-change: opacity;}
+      #scroller {
+        will-change: transform; overflow: scroll; width: 100px; height: 100px;
+      }
+      #target {
+        width: 100px; height: 200px; background: blue; will-change: opacity;
+      }
       #spacer { width: 200px; height: 2000px; }
     </style>
     <div id ='scroller'>
@@ -1907,16 +1701,13 @@ TEST_F(AnimationAnimationTestCompositing,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options->setTimeRange(time_range);
-  options->setScrollSource(GetElementById("scroller"));
+  options->setSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   // Create KeyframeEffect
   Timing timing;
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
 
   StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
@@ -1950,13 +1741,17 @@ TEST_F(AnimationAnimationTestCompositing,
             CompositorAnimations::kNoFailure);
 }
 
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        StartScrollLinkedAnimationWithStartTimeIfApplicable) {
   ResetWithCompositedAnimation();
   SetBodyInnerHTML(R"HTML(
     <style>
-      #scroller { will-change: transform; overflow: scroll; width: 100px; height: 100px; }
-      #target { width: 100px; height: 200px; will-change: opacity;}
+      #scroller {
+        will-change: transform; overflow: scroll; width: 100px; height: 100px; background: blue;
+      }
+      #target {
+        width: 100px; height: 200px; background: blue; will-change: opacity;
+      }
       #spacer { width: 200px; height: 700px; }
     </style>
     <div id ='scroller'>
@@ -1972,16 +1767,13 @@ TEST_F(AnimationAnimationTestCompositing,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options->setTimeRange(time_range);
-  options->setScrollSource(GetElementById("scroller"));
+  options->setSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   // Create KeyframeEffect
   Timing timing;
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
 
   StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
@@ -2012,14 +1804,11 @@ TEST_F(AnimationAnimationTestCompositing,
       nullptr);
 
   UpdateAllLifecyclePhasesForTest();
-  const double TEST_START_TIME = 10;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  const double TEST_START_PERCENT = 10;
   scroll_animation->setStartTime(
-      MakeGarbageCollected<V8CSSNumberish>(TEST_START_TIME),
+      MakeGarbageCollected<V8CSSNumberish>(
+          CSSUnitValues::percent(TEST_START_PERCENT)),
       ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scroll_animation->setStartTime(CSSNumberish::FromDouble(TEST_START_TIME));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   scroll_animation->play();
   EXPECT_EQ(scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
             CompositorAnimations::kNoFailure);
@@ -2032,13 +1821,13 @@ TEST_F(AnimationAnimationTestCompositing,
           ->CcAnimation()
           ->GetKeyframeModel(compositor_target_property::OPACITY);
   EXPECT_EQ(keyframe_model->start_time() - base::TimeTicks(),
-            base::TimeDelta::FromMilliseconds(TEST_START_TIME));
+            base::Seconds(TEST_START_PERCENT));
   EXPECT_EQ(keyframe_model->time_offset(), base::TimeDelta());
 }
 
 // Verifies correctness of scroll linked animation current and start times in
 // various animation states.
-TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
+TEST_P(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller { overflow: scroll; width: 100px; height: 100px; }
@@ -2055,10 +1844,7 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options->setTimeRange(time_range);
-  options->setScrollSource(GetElementById("scroller"));
+  options->setSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
@@ -2073,30 +1859,30 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   scroll_animation->play();
 
   // Verify start and current times in Pending state.
-  EXPECT_TIME(0, GetStartTimeMs(scroll_animation));
-  EXPECT_TIME(20, GetCurrentTimeMs(scroll_animation));
+  EXPECT_TIME(0, GetStartTimePercent(scroll_animation));
+  EXPECT_TIME(20, GetCurrentTimePercent(scroll_animation));
 
   UpdateAllLifecyclePhasesForTest();
   // Verify start and current times in Playing state.
-  EXPECT_TIME(0, GetStartTimeMs(scroll_animation));
-  EXPECT_TIME(20, GetCurrentTimeMs(scroll_animation));
+  EXPECT_TIME(0, GetStartTimePercent(scroll_animation));
+  EXPECT_TIME(20, GetCurrentTimePercent(scroll_animation));
 
   // Verify current time after scroll.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrameForScrollAnimations();
-  EXPECT_TIME(40, GetCurrentTimeMs(scroll_animation));
+  EXPECT_TIME(40, GetCurrentTimePercent(scroll_animation));
 }
 
 // Verifies that finished composited scroll-linked animations restart on
 // compositor upon reverse scrolling.
-TEST_F(AnimationAnimationTestCompositing,
+TEST_P(AnimationAnimationTestCompositing,
        FinishedScrollLinkedAnimationRestartsOnReverseScrolling) {
   ResetWithCompositedAnimation();
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller { will-change: transform; overflow: scroll; width: 100px; height: 100px; }
-      #target { width: 100px; height: 200px; will-change: opacity;}
+      #target { width: 100px; height: 200px; will-change: opacity; background: green;}
       #spacer { width: 200px; height: 700px; }
     </style>
     <div id ='scroller'>
@@ -2111,16 +1897,13 @@ TEST_F(AnimationAnimationTestCompositing,
 
   // Create ScrollTimeline
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options->setTimeRange(time_range);
-  options->setScrollSource(GetElementById("scroller"));
+  options->setSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   // Create KeyframeEffect
   Timing timing;
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
   StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                       SecureContextMode::kInsecureContext,
@@ -2156,24 +1939,18 @@ TEST_F(AnimationAnimationTestCompositing,
 
   // Advances the animation to "finished" state. The composited animation will
   // be destroyed accordingly.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scroll_animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
-                                   ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scroll_animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  scroll_animation->setCurrentTime(
+      MakeGarbageCollected<V8CSSNumberish>(CSSUnitValues::percent(100)),
+      ASSERT_NO_EXCEPTION);
   EXPECT_EQ(scroll_animation->playState(), "finished");
   scroll_animation->Update(kTimingUpdateForAnimationFrame);
   GetDocument().GetPendingAnimations().Update(nullptr, true);
   EXPECT_FALSE(scroll_animation->HasActiveAnimationsOnCompositor());
 
   // Restarting the animation should create a new compositor animation.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scroll_animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(100),
-                                   ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scroll_animation->setCurrentTime(CSSNumberish::FromDouble(100));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  scroll_animation->setCurrentTime(
+      MakeGarbageCollected<V8CSSNumberish>(CSSUnitValues::percent(50)),
+      ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scroll_animation->playState(), "running");
   scroll_animation->Update(kTimingUpdateForAnimationFrame);
@@ -2181,7 +1958,7 @@ TEST_F(AnimationAnimationTestCompositing,
   EXPECT_TRUE(scroll_animation->HasActiveAnimationsOnCompositor());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        RemoveCanceledAnimationFromActiveSet) {
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
@@ -2192,7 +1969,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        RemoveFinishedAnimationFromActiveSet) {
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
@@ -2210,17 +1987,13 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
 
   // Asynchronous completion.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
 }
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        PendingActivityWithFinishedPromise) {
   // No pending activity even when running if there is no finished promise
   // or event listener.
@@ -2235,12 +2008,8 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->HasPendingActivity());
 
   // Resolving the finished promise clears the pending activity.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   SimulateMicrotask();
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
@@ -2265,7 +2034,7 @@ class MockEventListener final : public NativeEventListener {
   MOCK_METHOD2(Invoke, void(ExecutionContext*, Event*));
 };
 
-TEST_F(AnimationAnimationTestNoCompositing,
+TEST_P(AnimationAnimationTestNoCompositing,
        PendingActivityWithFinishedEventListener) {
   EXPECT_EQ("running", animation->playState());
   EXPECT_FALSE(animation->HasPendingActivity());
@@ -2290,12 +2059,8 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->HasPendingActivity());
 
   // Finishing the animation asynchronously clears the pending activity.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50000),
                             ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  animation->setCurrentTime(CSSNumberish::FromDouble(50000));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ("finished", animation->playState());
   SimulateMicrotask();
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
@@ -2313,7 +2078,24 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_FALSE(animation->HasPendingActivity());
 }
 
-class AnimationPendingAnimationsTest : public RenderingTest {
+TEST_P(AnimationAnimationTestCompositing, InvalidExecutionContext) {
+  // Test for crbug.com/1254444. Guard against setting an invalid execution
+  // context.
+  EXPECT_TRUE(animation->GetExecutionContext());
+  GetDocument().GetExecutionContext()->NotifyContextDestroyed();
+  EXPECT_FALSE(animation->GetExecutionContext());
+  Animation* original_animation = animation;
+  ResetWithCompositedAnimation();
+  EXPECT_TRUE(animation);
+  EXPECT_NE(animation, original_animation);
+  EXPECT_FALSE(animation->GetExecutionContext());
+  // Cancel queues an event if there is a valid execution context.
+  animation->cancel();
+  EXPECT_FALSE(animation->HasPendingActivity());
+}
+
+class AnimationPendingAnimationsTest : public PaintTestConfigurations,
+                                       public RenderingTest {
  public:
   AnimationPendingAnimationsTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
@@ -2330,7 +2112,7 @@ class AnimationPendingAnimationsTest : public RenderingTest {
 
   Animation* MakeAnimation(const char* target, CompositingMode mode) {
     Timing timing;
-    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+    timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
     StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                         SecureContextMode::kInsecureContext,
@@ -2379,9 +2161,11 @@ class AnimationPendingAnimationsTest : public RenderingTest {
   Persistent<DocumentTimeline> timeline;
 };
 
-TEST_F(AnimationPendingAnimationsTest, PendingAnimationStartSynchronization) {
+INSTANTIATE_PAINT_TEST_SUITE_P(AnimationPendingAnimationsTest);
+
+TEST_P(AnimationPendingAnimationsTest, PendingAnimationStartSynchronization) {
   RunDocumentLifecycle();
-  SetBodyInnerHTML("<div id='foo'></div><div id='bar'></div>");
+  SetBodyInnerHTML("<div id='foo'>f</div><div id='bar'>b</div>");
 
   Animation* animA = MakeAnimation("foo", kComposited);
   Animation* animB = MakeAnimation("bar", kNonComposited);
@@ -2397,10 +2181,10 @@ TEST_F(AnimationPendingAnimationsTest, PendingAnimationStartSynchronization) {
   EXPECT_FALSE(animB->pending());
 }
 
-TEST_F(AnimationPendingAnimationsTest,
+TEST_P(AnimationPendingAnimationsTest,
        PendingAnimationCancelUnblocksSynchronizedStart) {
   RunDocumentLifecycle();
-  SetBodyInnerHTML("<div id='foo'></div><div id='bar'></div>");
+  SetBodyInnerHTML("<div id='foo'>f</div><div id='bar'>b</div>");
 
   Animation* animA = MakeAnimation("foo", kComposited);
   Animation* animB = MakeAnimation("bar", kNonComposited);
@@ -2415,11 +2199,11 @@ TEST_F(AnimationPendingAnimationsTest,
   EXPECT_FALSE(animB->pending());
 }
 
-TEST_F(AnimationPendingAnimationsTest,
+TEST_P(AnimationPendingAnimationsTest,
        PendingAnimationOnlySynchronizeStartsOfNewlyPendingAnimations) {
   RunDocumentLifecycle();
   SetBodyInnerHTML(
-      "<div id='foo'></div><div id='bar'></div><div id='baz'></div>");
+      "<div id='foo'>f</div><div id='bar'>b</div><div id='baz'>z</div>");
 
   Animation* animA = MakeAnimation("foo", kComposited);
   Animation* animB = MakeAnimation("bar", kNonComposited);
@@ -2450,8 +2234,8 @@ TEST_F(AnimationPendingAnimationsTest,
   EXPECT_FALSE(animD->pending());
 }
 
-TEST_F(AnimationAnimationTestCompositing,
-       ScrollLinkedAnimationNotCompositedIfScrollSourceIsNotComposited) {
+TEST_P(AnimationAnimationTestCompositing,
+       ScrollLinkedAnimationNotCompositedIfSourceIsNotComposited) {
   GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -2475,16 +2259,13 @@ TEST_F(AnimationAnimationTestCompositing,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options->setTimeRange(time_range);
-  options->setScrollSource(GetElementById("scroller"));
+  options->setSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   // Create KeyframeEffect
   Timing timing;
-  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
 
   StringKeyframe* start_keyframe = MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
@@ -2518,7 +2299,14 @@ TEST_F(AnimationAnimationTestCompositing,
             CompositorAnimations::kTimelineSourceHasInvalidCompositingState);
 }
 
-TEST_F(AnimationAnimationTestCompositing, ContentVisibleDisplayLockTest) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222646
+#define MAYBE_ContentVisibleDisplayLockTest \
+  DISABLED_ContentVisibleDisplayLockTest
+#else
+#define MAYBE_ContentVisibleDisplayLockTest ContentVisibleDisplayLockTest
+#endif
+TEST_P(AnimationAnimationTestCompositing, MAYBE_ContentVisibleDisplayLockTest) {
   animation->cancel();
   RunDocumentLifecycle();
 
@@ -2574,6 +2362,122 @@ TEST_F(AnimationAnimationTestCompositing, ContentVisibleDisplayLockTest) {
   // Ensure that the animation has not been canceled even though display locked.
   EXPECT_EQ(1u, target->GetElementAnimations()->Animations().size());
   EXPECT_EQ(animation->playState(), "running");
+}
+
+TEST_P(AnimationAnimationTestCompositing, HiddenAnimationsDoNotTick) {
+  // This test applies to CompositeAfterPaint only.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes anim {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      #target {
+        width: 10px;
+        height: 10px;
+        background: rebeccapurple;
+        animation: anim 30s;
+      }
+    </style>
+    <div id="visibility" style="visibility: hidden;">
+      <div id="target"></div>
+    </div>
+  )HTML");
+
+  Element* target = GetElementById("target");
+  ElementAnimations* element_animations = target->GetElementAnimations();
+  ASSERT_EQ(1u, element_animations->Animations().size());
+  Animation* animation = element_animations->Animations().begin()->key;
+
+  RunDocumentLifecycle();
+
+  const PaintArtifactCompositor* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositor();
+  ASSERT_TRUE(paint_artifact_compositor);
+
+  // The animation should run on main because compositor properties are missing.
+  EXPECT_EQ(
+      animation->CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
+      CompositorAnimations::kCompositorPropertyAnimationsHaveNoEffect);
+  EXPECT_TRUE(animation->CompositorPropertyAnimationsHaveNoEffectForTesting());
+  EXPECT_TRUE(animation->AnimationHasNoEffect());
+
+  // The next effect change should be at the end because the animation does not
+  // tick while hidden.
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(30),
+                   animation->TimeToEffectChange().value());
+}
+
+TEST_P(AnimationAnimationTestCompositing, HiddenAnimationsTickWhenVisible) {
+  // This test applies to CompositeAfterPaint only.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes anim {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      #target {
+        width: 10px;
+        height: 10px;
+        background: rebeccapurple;
+        animation: anim 30s;
+      }
+    </style>
+    <div id="visibility" style="visibility: hidden;">
+      <div id="target"></div>
+    </div>
+  )HTML");
+
+  Element* target = GetElementById("target");
+  ElementAnimations* element_animations = target->GetElementAnimations();
+  ASSERT_EQ(1u, element_animations->Animations().size());
+  Animation* animation = element_animations->Animations().begin()->key;
+
+  RunDocumentLifecycle();
+
+  const PaintArtifactCompositor* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositor();
+  ASSERT_TRUE(paint_artifact_compositor);
+
+  // The animation should run on main because compositor properties are missing.
+  EXPECT_EQ(
+      animation->CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
+      CompositorAnimations::kCompositorPropertyAnimationsHaveNoEffect);
+  EXPECT_TRUE(animation->CompositorPropertyAnimationsHaveNoEffectForTesting());
+  EXPECT_TRUE(animation->AnimationHasNoEffect());
+
+  // The no-effect animation doesn't count. The one animation is
+  // AnimationAnimationTestCompositing::animation_.
+  EXPECT_EQ(1u, animation->timeline()->AnimationsNeedingUpdateCount());
+
+  // The next effect change should be at the end because the animation does not
+  // tick while hidden.
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(30),
+                   animation->TimeToEffectChange().value());
+
+  Element* visibility = GetElementById("visibility");
+  visibility->setAttribute(html_names::kStyleAttr, "visibility: visible;");
+  RunDocumentLifecycle();
+
+  // The animation should run on the compositor after the properties are
+  // created.
+  EXPECT_EQ(
+      animation->CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
+      CompositorAnimations::kNoFailure);
+  EXPECT_FALSE(animation->CompositorPropertyAnimationsHaveNoEffectForTesting());
+  EXPECT_FALSE(animation->AnimationHasNoEffect());
+  EXPECT_EQ(2u, animation->timeline()->AnimationsNeedingUpdateCount());
+
+  // The next effect change should be at the end because the animation is
+  // running on the compositor.
+  EXPECT_TIMEDELTA(ANIMATION_TIME_DELTA_FROM_SECONDS(30),
+                   animation->TimeToEffectChange().value());
 }
 
 }  // namespace blink

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -215,6 +216,10 @@ class WebUsbAllowDevicesForUrlsPolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
  public:
   WebUsbAllowDevicesForUrlsPolicyHandlerTest() = default;
+  WebUsbAllowDevicesForUrlsPolicyHandlerTest(
+      const WebUsbAllowDevicesForUrlsPolicyHandlerTest&) = delete;
+  WebUsbAllowDevicesForUrlsPolicyHandlerTest& operator=(
+      const WebUsbAllowDevicesForUrlsPolicyHandlerTest&) = delete;
   ~WebUsbAllowDevicesForUrlsPolicyHandlerTest() override = default;
 
   WebUsbAllowDevicesForUrlsPolicyHandler* handler() { return handler_; }
@@ -228,9 +233,7 @@ class WebUsbAllowDevicesForUrlsPolicyHandlerTest
     handler_list_.AddHandler(std::move(handler));
   }
 
-  WebUsbAllowDevicesForUrlsPolicyHandler* handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUsbAllowDevicesForUrlsPolicyHandlerTest);
+  raw_ptr<WebUsbAllowDevicesForUrlsPolicyHandler> handler_;
 };
 
 TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest, CheckPolicySettings) {

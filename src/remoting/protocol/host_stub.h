@@ -9,8 +9,6 @@
 #ifndef REMOTING_PROTOCOL_HOST_STUB_H_
 #define REMOTING_PROTOCOL_HOST_STUB_H_
 
-#include "base/macros.h"
-
 namespace remoting {
 namespace protocol {
 
@@ -26,6 +24,9 @@ class VideoControl;
 class HostStub {
  public:
   HostStub() {}
+
+  HostStub(const HostStub&) = delete;
+  HostStub& operator=(const HostStub&) = delete;
 
   // Notification of the client dimensions and pixel density.
   // This may be used to resize the host display to match the client area.
@@ -59,9 +60,6 @@ class HostStub {
 
  protected:
   virtual ~HostStub() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HostStub);
 };
 
 }  // namespace protocol

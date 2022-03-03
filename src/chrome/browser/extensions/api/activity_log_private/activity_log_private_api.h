@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -39,9 +40,6 @@ class ActivityLogAPI : public BrowserContextKeyedAPI,
 
   void Shutdown() override;
 
-  // Lookup whether the extension ID is allowlisted.
-  static bool IsExtensionAllowlisted(const std::string& extension_id);
-
  private:
   friend class BrowserContextKeyedAPIFactory<ActivityLogAPI>;
   static const char* service_name() { return "ActivityLogPrivateAPI"; }
@@ -57,8 +55,8 @@ class ActivityLogAPI : public BrowserContextKeyedAPI,
 
   void StartOrStopListeningForExtensionActivities();
 
-  content::BrowserContext* browser_context_;
-  ActivityLog* activity_log_;
+  raw_ptr<content::BrowserContext> browser_context_;
+  raw_ptr<ActivityLog> activity_log_;
   bool initialized_ = false;
 };
 

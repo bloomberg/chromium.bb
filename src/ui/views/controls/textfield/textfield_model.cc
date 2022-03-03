@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,6 +58,9 @@ class Edit {
     kReplace,
   };
 
+  Edit(const Edit&) = delete;
+  Edit& operator=(const Edit&) = delete;
+
   virtual ~Edit() = default;
 
   // Revert the change made by this edit in |model|.
@@ -69,9 +71,10 @@ class Edit {
     std::reverse(insertion_texts.begin(), insertion_texts.end());
     auto insertion_text_starts = old_text_starts_;
     std::reverse(insertion_text_starts.begin(), insertion_text_starts.end());
-    model->ModifyText({{new_text_start_, new_text_end()}}, insertion_texts,
-                      insertion_text_starts, old_primary_selection_,
-                      old_secondary_selections_);
+    model->ModifyText({{static_cast<uint32_t>(new_text_start_),
+                        static_cast<uint32_t>(new_text_end())}},
+                      insertion_texts, insertion_text_starts,
+                      old_primary_selection_, old_secondary_selections_);
   }
 
   // Apply the change of this edit to the |model|.
@@ -82,7 +85,9 @@ class Edit {
                              old_text_starts_[i] + old_texts_[i].length());
     }
     model->ModifyText(deletions, {new_text_}, {new_text_start_},
-                      {new_cursor_pos_, new_cursor_pos_}, {});
+                      {static_cast<uint32_t>(new_cursor_pos_),
+                       static_cast<uint32_t>(new_cursor_pos_)},
+                      {});
   }
 
   // Try to merge the |edit| into this edit and returns true on success. The
@@ -192,8 +197,6 @@ class Edit {
   std::u16string new_text_;
   // The index of |new_text_|
   size_t new_text_start_;
-
-  DISALLOW_COPY_AND_ASSIGN(Edit);
 };
 
 // Insert text at a given position. Assumes 1) no previous selection and 2) the

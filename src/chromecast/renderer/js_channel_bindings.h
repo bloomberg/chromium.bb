@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_RENDERER_JS_CHANNEL_BINDINGS_H_
 #define CHROMECAST_RENDERER_JS_CHANNEL_BINDINGS_H_
 
-#include "base/macros.h"
 #include "chromecast/common/mojom/js_channel.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 
@@ -19,6 +18,10 @@ class JsChannelBindings : public content::RenderFrameObserver,
   explicit JsChannelBindings(
       content::RenderFrame* render_frame,
       mojo::PendingReceiver<mojom::JsChannelClient> receiver);
+
+  JsChannelBindings(const JsChannelBindings&) = delete;
+  JsChannelBindings& operator=(const JsChannelBindings&) = delete;
+
   ~JsChannelBindings() override;
 
  private:
@@ -41,8 +44,6 @@ class JsChannelBindings : public content::RenderFrameObserver,
   std::vector<std::pair<std::string, mojo::Remote<mojom::JsChannel>>> channels_;
 
   mojo::Receiver<mojom::JsChannelClient> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsChannelBindings);
 };
 
 }  // namespace chromecast

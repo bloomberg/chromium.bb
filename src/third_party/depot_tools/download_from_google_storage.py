@@ -79,12 +79,11 @@ class Gsutil(object):
   VPYTHON3 = ('vpython3.bat'
               if GetNormalizedPlatform() == 'win32' else 'vpython3')
 
-  def __init__(self, path, boto_path=None, version='4.28'):
+  def __init__(self, path, boto_path=None):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
     self.boto_path = boto_path
-    self.version = version
 
   def get_sub_env(self):
     env = os.environ.copy()
@@ -101,12 +100,12 @@ class Gsutil(object):
     return env
 
   def call(self, *args):
-    cmd = [self.VPYTHON3, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON3, self.path]
     cmd.extend(args)
     return subprocess2.call(cmd, env=self.get_sub_env())
 
   def check_call(self, *args):
-    cmd = [self.VPYTHON3, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON3, self.path]
     cmd.extend(args)
     ((out, err), code) = subprocess2.communicate(
         cmd,

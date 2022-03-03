@@ -74,7 +74,8 @@ void WebSocketConnectorImpl::Connect(
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
-        handshake_client) {
+        handshake_client,
+    const absl::optional<base::UnguessableToken>& throttling_profile_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   if (!process) {
@@ -90,7 +91,8 @@ void WebSocketConnectorImpl::Connect(
         frame,
         base::BindOnce(ConnectCalledByContentBrowserClient, requested_protocols,
                        site_for_cookies, isolation_info_, process_id_,
-                       frame_id_, origin_, options),
+                       frame_id_, origin_, options,
+                       std::move(throttling_profile_id)),
         url, site_for_cookies, user_agent, std::move(handshake_client));
     return;
   }
@@ -106,7 +108,7 @@ void WebSocketConnectorImpl::Connect(
       std::move(handshake_client),
       process->GetStoragePartition()->CreateURLLoaderNetworkObserverForFrame(
           process_id_, frame_id_),
-      mojo::NullRemote(), mojo::NullRemote());
+      mojo::NullRemote(), mojo::NullRemote(), std::move(throttling_profile_id));
 }
 
 void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
@@ -117,6 +119,7 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     int frame_id,
     const url::Origin& origin,
     uint32_t options,
+    absl::optional<base::UnguessableToken> throttling_profile_id,
     const GURL& url,
     std::vector<network::mojom::HttpHeaderPtr> additional_headers,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
@@ -137,7 +140,8 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
       std::move(handshake_client),
       process->GetStoragePartition()->CreateURLLoaderNetworkObserverForFrame(
           process_id, frame_id),
-      std::move(auth_handler), std::move(trusted_header_client));
+      std::move(auth_handler), std::move(trusted_header_client),
+      std::move(throttling_profile_id));
 }
 
 }  // namespace content

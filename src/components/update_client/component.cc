@@ -13,6 +13,7 @@
 #include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/notreached.h"
@@ -346,31 +347,21 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
   }
 }
 
-void Component::Uninstall(const base::Version& version, int reason) {
+void Component::Uninstall(const CrxComponent& crx_component, int reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK_EQ(ComponentState::kNew, state());
-
-  crx_component_ = CrxComponent();
-  crx_component_->version = version;
-
-  previous_version_ = version;
+  crx_component_ = crx_component;
+  previous_version_ = crx_component_->version;
   next_version_ = base::Version("0");
   extra_code1_ = reason;
-
   state_ = std::make_unique<StateUninstalled>(this);
 }
 
-void Component::Registration(const base::Version& version) {
+void Component::Registration(const CrxComponent& crx_component) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK_EQ(ComponentState::kNew, state());
-
-  crx_component_ = CrxComponent();
-  crx_component_->version = version;
-
-  next_version_ = version;
-
+  crx_component_ = crx_component;
+  next_version_ = crx_component_->version;
   state_ = std::make_unique<StateRegistration>(this);
 }
 
@@ -427,7 +418,7 @@ base::TimeDelta Component::GetUpdateDuration() const {
   const base::TimeDelta update_cost(base::TimeTicks::Now() - update_begin_);
   DCHECK_GE(update_cost, base::TimeDelta());
   const base::TimeDelta max_update_delay =
-      base::TimeDelta::FromSeconds(update_context_.config->UpdateDelay());
+      base::Seconds(update_context_.config->UpdateDelay());
   return std::min(update_cost, max_update_delay);
 }
 
@@ -690,9 +681,7 @@ void Component::StateCanUpdate::DoHandle() {
   component.is_update_available_ = true;
   component.NotifyObservers(Events::COMPONENT_UPDATE_FOUND);
 
-  if (component.crx_component()
-          ->supports_group_policy_enable_component_updates &&
-      !component.update_context_.enabled_component_updates) {
+  if (!component.crx_component()->updates_enabled) {
     component.error_category_ = ErrorCategory::kService;
     component.error_code_ = static_cast<int>(ServiceError::UPDATE_DISABLED);
     component.extra_code1_ = 0;

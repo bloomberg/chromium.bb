@@ -36,10 +36,7 @@ namespace {
 // Please keep in sync with dictionary SERVER_TYPES in testserver.py
 std::string GetServerTypeString(BaseTestServer::Type type) {
   switch (type) {
-    case BaseTestServer::TYPE_FTP:
-      return "ftp";
     case BaseTestServer::TYPE_HTTP:
-    case BaseTestServer::TYPE_HTTPS:
       return "http";
     case BaseTestServer::TYPE_WS:
     case BaseTestServer::TYPE_WSS:
@@ -116,7 +113,7 @@ bool RemoteTestServer::StartInBackground() {
   if (!GenerateArguments(&arguments_dict))
     return false;
 
-  arguments_dict.Set("on-remote-server", std::make_unique<base::Value>());
+  arguments_dict.SetKey("on-remote-server", base::Value());
 
   // Append the 'server-type' argument which is used by spawner server to
   // pass right server type to Python test server.

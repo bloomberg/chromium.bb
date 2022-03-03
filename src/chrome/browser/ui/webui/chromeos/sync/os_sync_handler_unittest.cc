@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
@@ -21,6 +21,7 @@
 #include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/test_web_ui.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
@@ -35,6 +36,8 @@ class BrowserContext;
 }
 
 namespace {
+
+using ::testing::Optional;
 
 enum SyncAllConfig { SYNC_ALL_OS_TYPES, CHOOSE_WHAT_TO_SYNC };
 
@@ -61,10 +64,8 @@ DictionaryValue CreateOsSyncPrefs(SyncAllConfig sync_all,
 void CheckBool(const DictionaryValue* dictionary,
                const std::string& key,
                bool expected_value) {
-  bool actual_value;
-  EXPECT_TRUE(dictionary->GetBoolean(key, &actual_value))
-      << "No value found for " << key;
-  EXPECT_EQ(expected_value, actual_value) << "Mismatch found for " << key;
+  EXPECT_THAT(dictionary->FindBoolPath(key), Optional(expected_value))
+      << "Key: " << key;
 }
 
 // Checks to make sure that the values stored in |dictionary| match the values
@@ -110,10 +111,10 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
     identity_test_env_adaptor_->identity_test_env()->SetPrimaryAccount(
-        "test@gmail.com");
+        "test@gmail.com", signin::ConsentLevel::kSync);
 
     sync_service_ = static_cast<syncer::TestSyncService*>(
-        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildTestSyncService)));
     user_settings_ = sync_service_->GetUserSettings();
 
@@ -140,11 +141,12 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     const TestWebUI::CallData& call_data = *web_ui_.call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
 
-    std::string event;
-    EXPECT_TRUE(call_data.arg1()->GetAsString(&event));
-    EXPECT_EQ(event, "os-sync-prefs-changed");
+    const std::string* event = call_data.arg1()->GetIfString();
+    EXPECT_TRUE(event);
+    EXPECT_EQ(*event, "os-sync-prefs-changed");
 
-    EXPECT_TRUE(call_data.arg2()->GetAsBoolean(feature_enabled));
+    EXPECT_TRUE(call_data.arg2()->is_bool());
+    *feature_enabled = call_data.arg2()->GetBool();
     EXPECT_TRUE(call_data.arg3()->GetAsDictionary(os_sync_prefs));
   }
 

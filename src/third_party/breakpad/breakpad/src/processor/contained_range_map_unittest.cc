@@ -51,9 +51,82 @@ namespace {
 
 
 using google_breakpad::ContainedRangeMap;
+// The first is the querying address, the second is the entries vector result.
+using EntriesTestPair = std::pair<unsigned, std::vector<int>>;
+using EntriesTestPairVec = std::vector<EntriesTestPair>;
 
+static bool RunTestsWithRetrieveRange(
+    const ContainedRangeMap<unsigned int, int>& crm,
+    const int* test_data,
+    unsigned int test_length) {
+  // Now, do the RetrieveRange tests.  This further validates that the
+  // objects were stored properly and that retrieval returns the correct
+  // object.
+  // If GENERATE_TEST_DATA is defined, instead of the retrieval tests, a
+  // new test_data array will be printed.  Exercise caution when doing this.
+  // Be sure to verify the results manually!
+#ifdef GENERATE_TEST_DATA
+  printf("  const int test_data[] = {\n");
+#endif  // GENERATE_TEST_DATA
 
-static bool RunTests() {
+  for (unsigned int address = 0; address < test_length; ++address) {
+    int value;
+    if (!crm.RetrieveRange(address, &value))
+      value = 0;
+
+#ifndef GENERATE_TEST_DATA
+    // Don't use ASSERT inside the loop because it won't show the failed
+    // |address|, and the line number will always be the same.  That makes
+    // it difficult to figure out which test failed.
+    if (value != test_data[address]) {
+      fprintf(stderr, "FAIL: retrieve %d expected %d observed %d @ %s:%d\n",
+              address, test_data[address], value, __FILE__, __LINE__);
+      return false;
+    }
+#else   // !GENERATE_TEST_DATA
+    printf("    %d%c%s  // %d\n", value, address == test_high - 1 ? ' ' : ',',
+           value < 10 ? " " : "", address);
+#endif  // !GENERATE_TEST_DATA
+  }
+
+#ifdef GENERATE_TEST_DATA
+  printf("  };\n");
+#endif  // GENERATE_TEST_DATA
+
+  return true;
+}
+
+static bool RunTestsWithRetrieveRangeVector(
+    const ContainedRangeMap<unsigned int, int>& crm,
+    const EntriesTestPairVec& entries_tests) {
+  for (const EntriesTestPair& entries_test : entries_tests) {
+    std::vector<const int*> entries;
+    crm.RetrieveRanges(entries_test.first, entries);
+    if (entries.size() != entries_test.second.size()) {
+      fprintf(stderr,
+              "FAIL: retrieving entries at address %u has size %zu "
+              "expected to have size %zu "
+              "@ %s: %d\n",
+              entries_test.first, entries.size(), entries_test.second.size(),
+              __FILE__, __LINE__);
+      return false;
+    }
+    for (size_t i = 0; i < entries.size(); ++i) {
+      if (*entries[i] != entries_test.second[i]) {
+        fprintf(stderr,
+                "FAIL: retrieving entries at address %u entries[%zu] is %d "
+                "expected %d"
+                "@ %s: %d\n",
+                entries_test.first, i, *entries[i], entries_test.second[i],
+                __FILE__, __LINE__);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+static bool RunTestsWithNoEqualRange() {
   ContainedRangeMap<unsigned int, int> crm;
 
   // First, do the StoreRange tests.  This validates the containment
@@ -211,45 +284,89 @@ static bool RunTests() {
     0,   // 98
     0    // 99
   };
-  unsigned int test_high = sizeof(test_data) / sizeof(int);
+  unsigned int test_length = sizeof(test_data) / sizeof(int);
+  return RunTestsWithRetrieveRange(crm, test_data, test_length);
+}
 
-  // Now, do the RetrieveRange tests.  This further validates that the
-  // objects were stored properly and that retrieval returns the correct
-  // object.
-  // If GENERATE_TEST_DATA is defined, instead of the retrieval tests, a
-  // new test_data array will be printed.  Exercise caution when doing this.
-  // Be sure to verify the results manually!
-#ifdef GENERATE_TEST_DATA
-  printf("  const int test_data[] = {\n");
-#endif  // GENERATE_TEST_DATA
+static bool RunTestsWithEqualRange() {
+  ContainedRangeMap<unsigned int, int> crm(true);
 
-  for (unsigned int address = 0; address < test_high; ++address) {
-    int value;
-    if (!crm.RetrieveRange(address, &value))
-      value = 0;
+  // First, do the StoreRange tests.  This validates the containment
+  // rules.
+  ASSERT_TRUE (crm.StoreRange(1,  3,  1));
+  ASSERT_TRUE (crm.StoreRange(1,  3,  2));  // exactly equal to 1
+  ASSERT_TRUE (crm.StoreRange(1,  3,  3));  // exactly equal to 1, 2
+  ASSERT_TRUE (crm.StoreRange(1,  3,  4));  // exactly equal to 1, 2, 3
+  ASSERT_FALSE(crm.StoreRange(0,  3,  5));  // partial overlap.
+  ASSERT_FALSE(crm.StoreRange(2,  3,  6));  // partial overlap.
 
-#ifndef GENERATE_TEST_DATA
-    // Don't use ASSERT inside the loop because it won't show the failed
-    // |address|, and the line number will always be the same.  That makes
-    // it difficult to figure out which test failed.
-    if (value != test_data[address]) {
-      fprintf(stderr, "FAIL: retrieve %d expected %d observed %d @ %s:%d\n",
-              address, test_data[address], value, __FILE__, __LINE__);
-      return false;
-    }
-#else  // !GENERATE_TEST_DATA
-    printf("    %d%c%s  // %d\n", value,
-                                  address == test_high - 1 ? ' ' : ',',
-                                  value < 10 ? " " : "",
-                                  address);
-#endif  // !GENERATE_TEST_DATA
-  }
+  ASSERT_TRUE (crm.StoreRange(5,  3,  7));
+  ASSERT_TRUE (crm.StoreRange(5,  3,  8));  // exactly equal to 7
+  ASSERT_TRUE (crm.StoreRange(5,  3,  9));  // exactly equal to 7, 8
+  ASSERT_TRUE (crm.StoreRange(5,  4, 10));  // encompasses 7, 8, 9
+  ASSERT_TRUE (crm.StoreRange(5,  5, 11));  // encompasses 7, 8, 9, 10
 
-#ifdef GENERATE_TEST_DATA
-  printf("  };\n");
-#endif  // GENERATE_TEST_DATA
+  ASSERT_TRUE (crm.StoreRange(10, 3, 12));
+  ASSERT_TRUE (crm.StoreRange(10, 3, 13));  // exactly equal to 12
+  ASSERT_TRUE (crm.StoreRange(11, 2, 14));  // encompasses by 12
+  ASSERT_TRUE (crm.StoreRange(11, 1, 15));  // encompasses by 12, 13
 
-  return true;
+  ASSERT_TRUE (crm.StoreRange(14, 3, 16));
+  ASSERT_TRUE (crm.StoreRange(14, 3, 17));  // exactly equal to 14
+  ASSERT_TRUE (crm.StoreRange(14, 1, 18));  // encompasses by 14, 15
+  ASSERT_TRUE (crm.StoreRange(14, 2, 19));  // encompasses by 14, 15 and encompasses 16
+  ASSERT_TRUE (crm.StoreRange(14, 1, 20));  // exactly equal to 18
+  ASSERT_TRUE (crm.StoreRange(14, 2, 21));  // exactly equal to 19
+
+  // Each element in test_data contains the expected result when calling
+  // RetrieveRange on an address.
+  const int test_data[] = {
+      0,   // 0
+      4,   // 1
+      4,   // 2
+      4,   // 3
+      0,   // 4
+      9,   // 5
+      9,   // 6
+      9,   // 7
+      10,  // 8
+      11,   // 9
+      13,  // 10
+      15,  // 11
+      14,  // 12
+      0,   // 13
+      20,  // 14
+      21,  // 15
+      17,  // 16
+      0,   // 17
+  };
+  unsigned int test_length = sizeof(test_data) / sizeof(int);
+  EntriesTestPairVec entries_tests = {
+      {0,  {}},
+      {1,  {4, 3, 2, 1}},
+      {2,  {4, 3, 2, 1}},
+      {3,  {4, 3, 2, 1}},
+      {4,  {}},
+      {5,  {9, 8, 7, 10, 11}},
+      {6,  {9, 8, 7, 10, 11}},
+      {7,  {9, 8, 7, 10, 11}},
+      {8,  {10, 11}},
+      {9,  {11}},
+      {10, {13, 12}},
+      {11, {15, 14, 13, 12}},
+      {12, {14, 13, 12}},
+      {13, {}},
+      {14, {20, 18, 21, 19, 17, 16}},
+      {15, {21, 19, 17, 16}},
+      {16, {17, 16}},
+      {17, {}},
+  };
+  return RunTestsWithRetrieveRange(crm, test_data, test_length) &&
+         RunTestsWithRetrieveRangeVector(crm, entries_tests);
+}
+
+static bool RunTests() {
+  return RunTestsWithNoEqualRange() && RunTestsWithEqualRange();
 }
 
 

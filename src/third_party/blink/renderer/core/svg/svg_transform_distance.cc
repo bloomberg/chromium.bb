@@ -21,9 +21,9 @@
 
 #include <math.h>
 
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
 
@@ -55,25 +55,24 @@ SVGTransformDistance::SVGTransformDistance(
     case SVGTransformType::kUnknown:
       break;
     case SVGTransformType::kRotate: {
-      FloatSize center_distance = to_svg_transform->RotationCenter() -
-                                  from_svg_transform->RotationCenter();
+      gfx::Vector2dF center_distance = to_svg_transform->RotationCenter() -
+                                       from_svg_transform->RotationCenter();
       angle_ = to_svg_transform->Angle() - from_svg_transform->Angle();
-      cx_ = center_distance.Width();
-      cy_ = center_distance.Height();
+      cx_ = center_distance.x();
+      cy_ = center_distance.y();
       break;
     }
     case SVGTransformType::kTranslate: {
-      FloatSize translation_distance =
+      gfx::Vector2dF translation_distance =
           to_svg_transform->Translate() - from_svg_transform->Translate();
-      transform_.Translate(translation_distance.Width(),
-                           translation_distance.Height());
+      transform_.Translate(translation_distance.x(), translation_distance.y());
       break;
     }
     case SVGTransformType::kScale: {
-      float scale_x = to_svg_transform->Scale().Width() -
-                      from_svg_transform->Scale().Width();
-      float scale_y = to_svg_transform->Scale().Height() -
-                      from_svg_transform->Scale().Height();
+      float scale_x = to_svg_transform->Scale().width() -
+                      from_svg_transform->Scale().width();
+      float scale_y = to_svg_transform->Scale().height() -
+                      from_svg_transform->Scale().height();
       transform_.ScaleNonUniform(scale_x, scale_y);
       break;
     }
@@ -132,17 +131,17 @@ SVGTransform* SVGTransformDistance::AddSVGTransforms(const SVGTransform* first,
       return transform;
     case SVGTransformType::kRotate: {
       transform->SetRotate(first->Angle() + second->Angle() * repeat_count,
-                           first->RotationCenter().X() +
-                               second->RotationCenter().X() * repeat_count,
-                           first->RotationCenter().Y() +
-                               second->RotationCenter().Y() * repeat_count);
+                           first->RotationCenter().x() +
+                               second->RotationCenter().x() * repeat_count,
+                           first->RotationCenter().y() +
+                               second->RotationCenter().y() * repeat_count);
       return transform;
     }
     case SVGTransformType::kTranslate: {
       float dx =
-          first->Translate().X() + second->Translate().X() * repeat_count;
+          first->Translate().x() + second->Translate().x() * repeat_count;
       float dy =
-          first->Translate().Y() + second->Translate().Y() * repeat_count;
+          first->Translate().y() + second->Translate().y() * repeat_count;
       transform->SetTranslate(dx, dy);
       return transform;
     }
@@ -150,7 +149,7 @@ SVGTransform* SVGTransformDistance::AddSVGTransforms(const SVGTransform* first,
       FloatSize scale = second->Scale();
       scale.Scale(repeat_count);
       scale += first->Scale();
-      transform->SetScale(scale.Width(), scale.Height());
+      transform->SetScale(scale.width(), scale.height());
       return transform;
     }
     case SVGTransformType::kSkewx:
@@ -178,21 +177,22 @@ SVGTransform* SVGTransformDistance::AddToSVGTransform(
     case SVGTransformType::kUnknown:
       return MakeGarbageCollected<SVGTransform>();
     case SVGTransformType::kTranslate: {
-      FloatPoint translation = transform->Translate();
-      translation += FloatSize::NarrowPrecision(transform_.E(), transform_.F());
-      new_transform->SetTranslate(translation.X(), translation.Y());
+      gfx::PointF translation = transform->Translate();
+      translation += gfx::Vector2dF(ClampTo<float>(transform_.E()),
+                                    ClampTo<float>(transform_.F()));
+      new_transform->SetTranslate(translation.x(), translation.y());
       return new_transform;
     }
     case SVGTransformType::kScale: {
       FloatSize scale = transform->Scale();
       scale += FloatSize::NarrowPrecision(transform_.A(), transform_.D());
-      new_transform->SetScale(scale.Width(), scale.Height());
+      new_transform->SetScale(scale.width(), scale.height());
       return new_transform;
     }
     case SVGTransformType::kRotate: {
-      FloatPoint center = transform->RotationCenter();
-      new_transform->SetRotate(transform->Angle() + angle_, center.X() + cx_,
-                               center.Y() + cy_);
+      gfx::PointF center = transform->RotationCenter();
+      new_transform->SetRotate(transform->Angle() + angle_, center.x() + cx_,
+                               center.y() + cy_);
       return new_transform;
     }
     case SVGTransformType::kSkewx:

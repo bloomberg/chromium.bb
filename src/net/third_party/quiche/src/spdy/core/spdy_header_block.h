@@ -14,14 +14,11 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/hash/hash.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/match.h"
-#include "absl/strings/string_view.h"
 #include "common/platform/api/quiche_export.h"
 #include "common/platform/api/quiche_logging.h"
+#include "common/quiche_linked_hash_map.h"
+#include "common/quiche_text_utils.h"
 #include "spdy/core/spdy_header_storage.h"
-#include "spdy/platform/api/spdy_containers.h"
 
 namespace spdy {
 
@@ -94,24 +91,9 @@ class QUICHE_EXPORT_PRIVATE Http2HeaderBlock {
     size_t separator_size_ = 0;
   };
 
-  struct StringPieceCaseHash {
-    size_t operator()(absl::string_view data) const {
-      std::string lower = absl::AsciiStrToLower(data);
-      absl::Hash<absl::string_view> hasher;
-      return hasher(lower);
-    }
-  };
-
-  struct StringPieceCaseEqual {
-    bool operator()(absl::string_view piece1, absl::string_view piece2) const {
-      return absl::EqualsIgnoreCase(piece1, piece2);
-    }
-  };
-
-  typedef SpdyLinkedHashMap<absl::string_view,
-                            HeaderValue,
-                            StringPieceCaseHash,
-                            StringPieceCaseEqual>
+  typedef quiche::QuicheLinkedHashMap<absl::string_view, HeaderValue,
+                                      quiche::StringPieceCaseHash,
+                                      quiche::StringPieceCaseEqual>
       MapType;
 
  public:
@@ -201,6 +183,7 @@ class QUICHE_EXPORT_PRIVATE Http2HeaderBlock {
   const_iterator find(absl::string_view key) const {
     return wrap_const_iterator(map_.find(key));
   }
+  bool contains(absl::string_view key) const { return find(key) != end(); }
   void erase(absl::string_view key);
 
   // Clears both our MapType member and the memory used to hold headers.
@@ -261,9 +244,6 @@ class QUICHE_EXPORT_PRIVATE Http2HeaderBlock {
 
   // Allows either lookup or mutation of the value associated with a key.
   ABSL_MUST_USE_RESULT ValueProxy operator[](const absl::string_view key);
-
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
 
   size_t TotalBytesUsed() const { return key_size_ + value_size_; }
 

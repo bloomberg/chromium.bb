@@ -222,8 +222,8 @@ void SkPathWriter::assemble() {
     // lengthen any partial contour adjacent to a simple segment
     for (int pIndex = 0; pIndex < endCount; pIndex++) {
         SkOpPtT* opPtT = const_cast<SkOpPtT*>(runs[pIndex]);
-        SkPath dummy;
-        SkPathWriter partWriter(dummy);
+        SkPath p;
+        SkPathWriter partWriter(p);
         do {
             if (!zero_or_one(opPtT->fT)) {
                 break;
@@ -364,7 +364,6 @@ void SkPathWriter::assemble() {
                        connect by following segments from one to the other, rather than introducing
                        a diagonal to connect the two.
                      */
-                    SkDebugf("");
                 }
             }
             if (forward) {

@@ -10,7 +10,7 @@ import * as ProtocolClientModule from '../../core/protocol_client/protocol_clien
 import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';
+import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 /**
@@ -23,6 +23,10 @@ self.Platform = self.Platform || {};
 self.Platform.StringUtilities = Platform.StringUtilities;
 self.Platform.MapUtilities = Platform.MapUtilities;
 self.Platform.ArrayUtilities = Platform.ArrayUtilities;
+self.createPlainTextSearchRegex = Platform.StringUtilities.createPlainTextSearchRegex;
+String.sprintf = Platform.StringUtilities.sprintf;
+String.regexSpecialCharacters = Platform.StringUtilities.regexSpecialCharacters;
+String.caseInsensetiveComparator = Platform.StringUtilities.caseInsensetiveComparator;
 
 /**
  * @return {boolean}
@@ -229,23 +233,36 @@ export function addSnifferPromise(receiver, methodName) {
   });
 }
 
-/** @type {function():void} */
-let _resolveOnFinishInits;
-
-/**
- * @param {string} module
- * @return {!Promise<undefined>}
- */
-export async function loadModule(module) {
-  const promise = new Promise(resolve => {
-    _resolveOnFinishInits = resolve;
-  });
-  await self.runtime.loadModulePromise(module);
-  if (!_pendingInits) {
-    return;
-  }
-  return promise;
-}
+const mappingForLayoutTests = new Map([
+  ['panels/animation', 'animation'],
+  ['panels/browser_debugger', 'browser_debugger'],
+  ['panels/changes', 'changes'],
+  ['panels/console', 'console'],
+  ['panels/elements', 'elements'],
+  ['panels/emulation', 'emulation'],
+  ['panels/mobile_throttling', 'mobile_throttling'],
+  ['panels/network', 'network'],
+  ['panels/profiler', 'profiler'],
+  ['panels/application', 'resources'],
+  ['panels/search', 'search'],
+  ['panels/sources', 'sources'],
+  ['panels/snippets', 'snippets'],
+  ['panels/settings', 'settings'],
+  ['panels/timeline', 'timeline'],
+  ['panels/web_audio', 'web_audio'],
+  ['models/persistence', 'persistence'],
+  ['models/workspace_diff', 'workspace_diff'],
+  ['entrypoints/main', 'main'],
+  ['third_party/diff', 'diff'],
+  ['ui/legacy/components/inline_editor', 'inline_editor'],
+  ['ui/legacy/components/data_grid', 'data_grid'],
+  ['ui/legacy/components/perf_ui', 'perf_ui'],
+  ['ui/legacy/components/source_frame', 'source_frame'],
+  ['ui/legacy/components/color_picker', 'color_picker'],
+  ['ui/legacy/components/cookie_table', 'cookie_table'],
+  ['ui/legacy/components/quick_open', 'quick_open'],
+  ['ui/legacy/components/utils', 'components'],
+]);
 
 /**
  * @param {string} module
@@ -253,7 +270,7 @@ export async function loadModule(module) {
  */
 export async function loadLegacyModule(module) {
   let containingFolder = module;
-  for (const [remappedFolder, originalFolder] of Root.Runtime.mappingForLayoutTests.entries()) {
+  for (const [remappedFolder, originalFolder] of mappingForLayoutTests.entries()) {
     if (originalFolder === module) {
       containingFolder = remappedFolder;
     }
@@ -397,11 +414,21 @@ export function textContentWithLineBreaks(node) {
  * @param {!Node} node
  * @return {string}
  */
+export function textContentWithLineBreaksTrimmed(node) {
+  // We want to allow single empty lines (2 white space characters), but
+  // compress occurences of 3 or more whitespaces.
+  return textContentWithLineBreaks(node).replace(/\s{3,}/g, ' ');
+}
+
+/**
+ * @param {!Node} node
+ * @return {string}
+ */
 export function textContentWithoutStyles(node) {
   let buffer = '';
   let currentNode = node;
   while (currentNode.traverseNextNode(node)) {
-    currentNode = currentNode.traverseNextNode(node);
+    currentNode = currentNode.traverseNextNode(node, currentNode.tagName === 'DEVTOOLS-CSS-LENGTH');
     if (currentNode.nodeType === Node.TEXT_NODE) {
       buffer += currentNode.nodeValue;
     } else if (currentNode.nodeName === 'STYLE') {
@@ -502,9 +529,16 @@ export async function evaluateInPageAsync(code) {
   if (!error && !response.exceptionDetails) {
     return response.result.value;
   }
-  addResult(
-      'Error: ' +
-      (error || response.exceptionDetails && response.exceptionDetails.text || 'exception while evaluation in page.'));
+  let errorMessage = 'Error: ';
+  if (error) {
+    errorMessage += error;
+  } else if (response.exceptionDetails) {
+    errorMessage += response.exceptionDetails.text;
+    if (response.exceptionDetails.exception) {
+      errorMessage += ' ' + response.exceptionDetails.exception.description;
+    }
+  }
+  addResult(errorMessage);
   completeTest();
 }
 
@@ -650,9 +684,6 @@ export function addIframe(path, options = {}) {
   `);
 }
 
-/** @type {number} */
-let _pendingInits = 0;
-
 /**
  * The old test framework executed certain snippets in the inspected page
  * context as part of loading a test helper file.
@@ -668,12 +699,7 @@ let _pendingInits = 0;
  * @param {string} code
  */
 export async function deprecatedInitAsync(code) {
-  _pendingInits++;
   await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console'});
-  _pendingInits--;
-  if (!_pendingInits && _resolveOnFinishInits !== undefined) {
-    _resolveOnFinishInits();
-  }
 }
 
 /**
@@ -699,7 +725,6 @@ export function addScriptForFrame(url, content, frame) {
 }
 
 export const formatters = {
-
 
   /**
  * @param {*} value
@@ -1224,8 +1249,8 @@ export class StringOutputStream {
    * @param {function(string):void} callback
    */
   constructor(callback) {
-    this._callback = callback;
-    this._buffer = '';
+    this.callback = callback;
+    this.buffer = '';
   }
 
   /**
@@ -1240,11 +1265,11 @@ export class StringOutputStream {
    * @param {string} chunk
    */
   async write(chunk) {
-    this._buffer += chunk;
+    this.buffer += chunk;
   }
 
   async close() {
-    this._callback(this._buffer);
+    this.callback(this.buffer);
   }
 }
 
@@ -1256,52 +1281,22 @@ export class MockSetting {
    * @param {V} value
    */
   constructor(value) {
-    this._value = value;
+    this.value = value;
   }
 
   /**
    * @return {V}
    */
   get() {
-    return this._value;
+    return this.value;
   }
 
   /**
    * @param {V} value
    */
   set(value) {
-    this._value = value;
+    this.value = value;
   }
-}
-
-/**
- * @return {!Array<!Root.Runtime.Module>}
- */
-export function loadedModules() {
-  return self.runtime._modules.filter(module => module._loadedForTest)
-      .filter(module => module.name() !== 'help')
-      .filter(module => module.name().indexOf('test_runner') === -1);
-}
-
-/**
- * @param {!Array<!Root.Runtime.Module>} relativeTo
- * @return {!Array<!Root.Runtime.Module>}
- */
-export function dumpLoadedModules(relativeTo) {
-  const previous = new Set(relativeTo || []);
-  function moduleSorter(left, right) {
-    return Platform.StringUtilities.naturalOrderComparator(left._descriptor.name, right._descriptor.name);
-  }
-
-  addResult('Loaded modules:');
-  const sortedLoadedModules = loadedModules().sort(moduleSorter);
-  for (const module of sortedLoadedModules) {
-    if (previous.has(module)) {
-      continue;
-    }
-    addResult('    ' + module._descriptor.name);
-  }
-  return sortedLoadedModules;
 }
 
 /**
@@ -1363,8 +1358,7 @@ export function url(url = '') {
 export function dumpSyntaxHighlight(str, mimeType) {
   const node = document.createElement('span');
   node.textContent = str;
-  const javascriptSyntaxHighlighter = new TextEditor.SyntaxHighlighter.SyntaxHighlighter(mimeType, false);
-  return javascriptSyntaxHighlighter.syntaxHighlightNode(node).then(dumpSyntax);
+  return CodeHighlighter.CodeHighlighter.highlightNode(node, mimeType).then(dumpSyntax);
 
   function dumpSyntax() {
     const node_parts = [];
@@ -1454,6 +1448,7 @@ TestRunner.showPanel = showPanel;
 TestRunner.createKeyEvent = createKeyEvent;
 TestRunner.safeWrap = safeWrap;
 TestRunner.textContentWithLineBreaks = textContentWithLineBreaks;
+TestRunner.textContentWithLineBreaksTrimmed = textContentWithLineBreaksTrimmed;
 TestRunner.textContentWithoutStyles = textContentWithoutStyles;
 TestRunner.evaluateInPagePromise = evaluateInPagePromise;
 TestRunner.callFunctionInPageAsync = callFunctionInPageAsync;
@@ -1495,13 +1490,10 @@ TestRunner.override = override;
 TestRunner.clearSpecificInfoFromStackFrames = clearSpecificInfoFromStackFrames;
 TestRunner.hideInspectorView = hideInspectorView;
 TestRunner.mainFrame = mainFrame;
-TestRunner.loadedModules = loadedModules;
-TestRunner.dumpLoadedModules = dumpLoadedModules;
 TestRunner.waitForUISourceCode = waitForUISourceCode;
 TestRunner.waitForUISourceCodeRemoved = waitForUISourceCodeRemoved;
 TestRunner.url = url;
 TestRunner.dumpSyntaxHighlight = dumpSyntaxHighlight;
-TestRunner.loadModule = loadModule;
 TestRunner.loadLegacyModule = loadLegacyModule;
 TestRunner.loadTestModule = loadTestModule;
 TestRunner.evaluateInPageRemoteObject = evaluateInPageRemoteObject;

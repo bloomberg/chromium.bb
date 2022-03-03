@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import {assertEquals, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {VolumeInfoImpl} from '../../background/js/volume_info_impl.m.js';
-import { EntryList,FakeEntryImpl} from '../../common/js/files_app_entry_types.m.js';
-import {MockCommandLinePrivate} from '../../common/js/mock_chrome.m.js';
-import { MockFileEntry,MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {reportPromise, waitUntil} from '../../common/js/test_error_reporting.m.js';
-import {util} from '../../common/js/util.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import {VolumeInfoImpl} from '../../background/js/volume_info_impl.js';
+import { EntryList,FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
+import {MockCommandLinePrivate} from '../../common/js/mock_chrome.js';
+import { MockFileEntry,MockFileSystem} from '../../common/js/mock_entry.js';
+import {reportPromise, waitUntil} from '../../common/js/test_error_reporting.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 
-import {AndroidAppListModel} from './android_app_list_model.m.js';
-import {DirectoryModel} from './directory_model.m.js';
-import {createFakeAndroidAppListModel} from './fake_android_app_list_model.m.js';
-import {createFakeDirectoryModel} from './mock_directory_model.m.js';
-import {MockFolderShortcutDataModel} from './mock_folder_shortcut_data_model.m.js';
-import { NavigationListModel, NavigationModelAndroidAppItem,NavigationModelFakeItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from './navigation_list_model.m.js';
-// clang-format on
+import {AndroidAppListModel} from './android_app_list_model.js';
+import {DirectoryModel} from './directory_model.js';
+import {createFakeAndroidAppListModel} from './fake_android_app_list_model.js';
+import {createFakeDirectoryModel} from './mock_directory_model.js';
+import {MockFolderShortcutDataModel} from './mock_folder_shortcut_data_model.js';
+import { NavigationListModel, NavigationModelAndroidAppItem,NavigationModelFakeItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from './navigation_list_model.js';
 
 /**
  * Mock Recent fake entry.
@@ -57,8 +55,7 @@ let hoge;
 // Setup the test components.
 export function setUp() {
   // Mock LoadTimeData strings.
-  window.loadTimeData.resetForTesting();
-  window.loadTimeData.overrideValues({
+  window.loadTimeData.resetForTesting({
     MY_FILES_ROOT_LABEL: 'My files',
     DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
     DRIVE_DIRECTORY_LABEL: 'My Drive',
@@ -415,13 +412,6 @@ export function testOrderAndNestItems() {
   volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.SMB, 'smb:file-share'));
 
-  // ZipArchiver mounts zip files as a PROVIDED volume type.
-  const zipVolumeId = 'provided:dmboannefpncccogfdikhmhpmdnddgoe:' +
-      '~%2FDownloads%2Fazip_file%2Ezip:' +
-      '096eaa592ea7e8ffb9a27435e50dabd6c809c125';
-  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.PROVIDED, zipVolumeId));
-
   const androidAppListModelWithApps =
       createFakeAndroidAppListModel(['android:app1', 'android:app2']);
 
@@ -445,10 +435,9 @@ export function testOrderAndNestItems() {
   // 13.  removable:fuga
   // 14.  archive:a-rar  - mounted as archive
   // 15.  mtp:a-phone
-  // 16.  provided:"zip" - mounted as provided: $zipVolumeId
   //
-  // 17.  android:app1
-  // 18.  android:app2
+  // 16.  android:app1
+  // 17.  android:app2
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
@@ -457,7 +446,7 @@ export function testOrderAndNestItems() {
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
-  assertEquals(18, model.length);
+  assertEquals(17, model.length);
   assertEquals('recent-label', model.item(0).label);
 
   assertEquals('MEDIA_VIEW_AUDIO_ROOT_LABEL', model.item(1).label);
@@ -483,10 +472,9 @@ export function testOrderAndNestItems() {
 
   assertEquals('archive:a-rar', model.item(13).label);
   assertEquals('mtp:a-phone', model.item(14).label);
-  assertEquals(zipVolumeId, model.item(15).label);
 
-  assertEquals('android:app1', model.item(16).label);
-  assertEquals('android:app2', model.item(17).label);
+  assertEquals('android:app1', model.item(15).label);
+  assertEquals('android:app2', model.item(16).label);
 
   // Check NavigationSection, which defaults to TOP.
   // recent-label.
@@ -525,13 +513,11 @@ export function testOrderAndNestItems() {
   assertEquals(NavigationSection.REMOVABLE, model.item(13).section);
   // mtp:a-phone.
   assertEquals(NavigationSection.REMOVABLE, model.item(14).section);
-  // archive:"zip" - $zipVolumeId
-  assertEquals(NavigationSection.REMOVABLE, model.item(15).section);
 
   // android:app1
-  assertEquals(NavigationSection.ANDROID_APPS, model.item(16).section);
+  assertEquals(NavigationSection.ANDROID_APPS, model.item(15).section);
   // android:app2
-  assertEquals(NavigationSection.ANDROID_APPS, model.item(17).section);
+  assertEquals(NavigationSection.ANDROID_APPS, model.item(16).section);
 
   const myFilesModel = model.item(6);
   // Re-order again: cast to allow calling this private model function.

@@ -94,8 +94,7 @@ static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
 // For a page that auto-refreshes, we still show the bubble, if
 // the refresh delay is less than this value (in seconds).
-static constexpr base::TimeDelta kLocationChangeInterval =
-    base::TimeDelta::FromSeconds(10);
+static constexpr base::TimeDelta kLocationChangeInterval = base::Seconds(10);
 
 // For the context menu, we want to keep transparency as is instead of
 // replacing transparent pixels with black ones
@@ -250,8 +249,7 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
     return;
 
   static crash_reporter::CrashKeyString<8> view_count_key("view-count");
-  view_count_key.Set(
-      base::NumberToString(content::RenderView::GetRenderViewCount()));
+  view_count_key.Set(base::NumberToString(blink::WebView::GetWebViewCount()));
 
 #if !defined(OS_ANDROID)
   if (render_frame()->GetEnabledBindings() &
@@ -282,11 +280,8 @@ void ChromeRenderFrameObserver::OnDestruct() {
 }
 
 void ChromeRenderFrameObserver::DraggableRegionsChanged() {
-  // The DraggableRegion interface is bound browser side when
-  // kWebAppWindowControlsOverlay feature is turned on.
-  if (!base::FeatureList::IsEnabled(features::kWebAppWindowControlsOverlay))
-    return;
-
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
   // Only the main frame is allowed to control draggable regions, to avoid other
   // frames manipulate the regions in the browser process.
   if (!render_frame()->IsMainFrame())
@@ -308,6 +303,7 @@ void ChromeRenderFrameObserver::DraggableRegionsChanged() {
   render_frame()->GetBrowserInterfaceBroker()->GetInterface(
       remote.BindNewPipeAndPassReceiver());
   remote->UpdateDraggableRegions(std::move(regions));
+#endif
 }
 
 void ChromeRenderFrameObserver::SetWindowFeatures(
@@ -606,17 +602,14 @@ bool ChromeRenderFrameObserver::NeedsEncodeImage(
   switch (image_format) {
     case chrome::mojom::ImageFormat::PNG:
       return !base::EqualsCaseInsensitiveASCII(image_extension, kPngExtension);
-      break;
     case chrome::mojom::ImageFormat::JPEG:
       return !base::EqualsCaseInsensitiveASCII(image_extension, kJpgExtension);
-      break;
     case chrome::mojom::ImageFormat::ORIGINAL:
       return !base::EqualsCaseInsensitiveASCII(image_extension,
                                                kGifExtension) &&
              !base::EqualsCaseInsensitiveASCII(image_extension,
                                                kJpgExtension) &&
              !base::EqualsCaseInsensitiveASCII(image_extension, kPngExtension);
-      break;
   }
 
   // Should never hit this code since all cases were handled above.

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../common/common.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
@@ -11,45 +9,42 @@ import * as Protocol from '../../generated/protocol.js';
 import {CSSModel} from './CSSModel.js';
 import {MultitargetNetworkManager} from './NetworkManager.js';
 import {Events, OverlayModel} from './OverlayModel.js';
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 
-export class EmulationModel extends SDKModel {
-  _emulationAgent: ProtocolProxyApi.EmulationApi;
-  _pageAgent: ProtocolProxyApi.PageApi;
-  _deviceOrientationAgent: ProtocolProxyApi.DeviceOrientationApi;
-  _cssModel: CSSModel|null;
-  _overlayModel: OverlayModel|null;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _mediaConfiguration: Map<string, any>;
-  _touchEnabled: boolean;
-  _touchMobile: boolean;
-  _customTouchEnabled: boolean;
-  _touchConfiguration: {
+export class EmulationModel extends SDKModel<void> {
+  readonly #emulationAgent: ProtocolProxyApi.EmulationApi;
+  readonly #deviceOrientationAgent: ProtocolProxyApi.DeviceOrientationApi;
+  #cssModel: CSSModel|null;
+  readonly #overlayModelInternal: OverlayModel|null;
+  readonly #mediaConfiguration: Map<string, string>;
+  #touchEnabled: boolean;
+  #touchMobile: boolean;
+  #customTouchEnabled: boolean;
+  #touchConfiguration: {
     enabled: boolean,
     configuration: Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration,
   };
 
   constructor(target: Target) {
     super(target);
-    this._emulationAgent = target.emulationAgent();
-    this._pageAgent = target.pageAgent();
-    this._deviceOrientationAgent = target.deviceOrientationAgent();
-    this._cssModel = target.model(CSSModel);
-    this._overlayModel = target.model(OverlayModel);
-    if (this._overlayModel) {
-      this._overlayModel.addEventListener(Events.InspectModeWillBeToggled, () => {
-        this._updateTouch();
+    this.#emulationAgent = target.emulationAgent();
+    this.#deviceOrientationAgent = target.deviceOrientationAgent();
+    this.#cssModel = target.model(CSSModel);
+    this.#overlayModelInternal = target.model(OverlayModel);
+    if (this.#overlayModelInternal) {
+      this.#overlayModelInternal.addEventListener(Events.InspectModeWillBeToggled, () => {
+        this.updateTouch();
       }, this);
     }
 
     const disableJavascriptSetting = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled');
     disableJavascriptSetting.addChangeListener(
         async () =>
-            await this._emulationAgent.invoke_setScriptExecutionDisabled({value: disableJavascriptSetting.get()}));
+            await this.#emulationAgent.invoke_setScriptExecutionDisabled({value: disableJavascriptSetting.get()}));
     if (disableJavascriptSetting.get()) {
-      this._emulationAgent.invoke_setScriptExecutionDisabled({value: true});
+      this.#emulationAgent.invoke_setScriptExecutionDisabled({value: true});
     }
 
     const touchSetting = Common.Settings.Settings.instance().moduleSetting('emulation.touch');
@@ -74,58 +69,78 @@ export class EmulationModel extends SDKModel {
       await this.setIdleOverride(emulationParams);
     });
 
-    const mediaTypeSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMedia');
-    const mediaFeaturePrefersColorSchemeSetting =
-        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme');
-    const mediaFeaturePrefersReducedMotionSetting =
-        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion');
-    const mediaFeaturePrefersReducedDataSetting =
-        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedData');
+    const mediaTypeSetting = Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMedia');
     const mediaFeatureColorGamutSetting =
-        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureColorGamut');
+        Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeatureColorGamut');
+    const mediaFeaturePrefersColorSchemeSetting =
+        Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersColorScheme');
+    const mediaFeatureForcedColorsSetting =
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureForcedColors');
+    const mediaFeaturePrefersContrastSetting =
+        Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersContrast');
+    const mediaFeaturePrefersReducedDataSetting =
+        Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersReducedData');
+    const mediaFeaturePrefersReducedMotionSetting =
+        Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersReducedMotion');
     // Note: this uses a different format than what the CDP API expects,
     // because we want to update these values per media type/feature
     // without having to search the `features` array (inefficient) or
     // hardcoding the indices (not readable/maintainable).
-    this._mediaConfiguration = new Map([
+    this.#mediaConfiguration = new Map([
       ['type', mediaTypeSetting.get()],
-      ['prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get()],
-      ['prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get()],
-      ['prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get()],
       ['color-gamut', mediaFeatureColorGamutSetting.get()],
+      ['prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get()],
+      ['forced-colors', mediaFeatureForcedColorsSetting.get()],
+      ['prefers-contrast', mediaFeaturePrefersContrastSetting.get()],
+      ['prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get()],
+      ['prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get()],
     ]);
     mediaTypeSetting.addChangeListener(() => {
-      this._mediaConfiguration.set('type', mediaTypeSetting.get());
-      this._updateCssMedia();
-    });
-    mediaFeaturePrefersColorSchemeSetting.addChangeListener(() => {
-      this._mediaConfiguration.set('prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get());
-      this._updateCssMedia();
-    });
-    mediaFeaturePrefersReducedMotionSetting.addChangeListener(() => {
-      this._mediaConfiguration.set('prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get());
-      this._updateCssMedia();
-    });
-    mediaFeaturePrefersReducedDataSetting.addChangeListener(() => {
-      this._mediaConfiguration.set('prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get());
-      this._updateCssMedia();
+      this.#mediaConfiguration.set('type', mediaTypeSetting.get());
+      this.updateCssMedia();
     });
     mediaFeatureColorGamutSetting.addChangeListener(() => {
-      this._mediaConfiguration.set('color-gamut', mediaFeatureColorGamutSetting.get());
-      this._updateCssMedia();
+      this.#mediaConfiguration.set('color-gamut', mediaFeatureColorGamutSetting.get());
+      this.updateCssMedia();
     });
-    this._updateCssMedia();
+    mediaFeaturePrefersColorSchemeSetting.addChangeListener(() => {
+      this.#mediaConfiguration.set('prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get());
+      this.updateCssMedia();
+    });
+    mediaFeatureForcedColorsSetting.addChangeListener(() => {
+      this.#mediaConfiguration.set('forced-colors', mediaFeatureForcedColorsSetting.get());
+      this.updateCssMedia();
+    });
+    mediaFeaturePrefersContrastSetting.addChangeListener(() => {
+      this.#mediaConfiguration.set('prefers-contrast', mediaFeaturePrefersContrastSetting.get());
+      this.updateCssMedia();
+    });
+    mediaFeaturePrefersReducedDataSetting.addChangeListener(() => {
+      this.#mediaConfiguration.set('prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get());
+      this.updateCssMedia();
+    });
+    mediaFeaturePrefersReducedMotionSetting.addChangeListener(() => {
+      this.#mediaConfiguration.set('prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get());
+      this.updateCssMedia();
+    });
+    this.updateCssMedia();
+
+    const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulateAutoDarkMode');
+    autoDarkModeSetting.addChangeListener(() => this.emulateAutoDarkMode(autoDarkModeSetting.get()));
+    if (autoDarkModeSetting.get()) {
+      this.emulateAutoDarkMode(autoDarkModeSetting.get());
+    }
 
     const visionDeficiencySetting = Common.Settings.Settings.instance().moduleSetting('emulatedVisionDeficiency');
-    visionDeficiencySetting.addChangeListener(() => this._emulateVisionDeficiency(visionDeficiencySetting.get()));
+    visionDeficiencySetting.addChangeListener(() => this.emulateVisionDeficiency(visionDeficiencySetting.get()));
     if (visionDeficiencySetting.get()) {
-      this._emulateVisionDeficiency(visionDeficiencySetting.get());
+      this.emulateVisionDeficiency(visionDeficiencySetting.get());
     }
 
     const localFontsDisabledSetting = Common.Settings.Settings.instance().moduleSetting('localFontsDisabled');
-    localFontsDisabledSetting.addChangeListener(() => this._setLocalFontsDisabled(localFontsDisabledSetting.get()));
+    localFontsDisabledSetting.addChangeListener(() => this.setLocalFontsDisabled(localFontsDisabledSetting.get()));
     if (localFontsDisabledSetting.get()) {
-      this._setLocalFontsDisabled(localFontsDisabledSetting.get());
+      this.setLocalFontsDisabled(localFontsDisabledSetting.get());
     }
 
     const avifFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting('avifFormatDisabled');
@@ -143,7 +158,7 @@ export class EmulationModel extends SDKModel {
       if (webpFormatDisabledSetting.get()) {
         types.push(Protocol.Emulation.DisabledImageType.Webp);
       }
-      this._setDisabledImageTypes(types);
+      this.setDisabledImageTypes(types);
     };
 
     avifFormatDisabledSetting.addChangeListener(updateDisabledImageFormats);
@@ -154,10 +169,10 @@ export class EmulationModel extends SDKModel {
       updateDisabledImageFormats();
     }
 
-    this._touchEnabled = false;
-    this._touchMobile = false;
-    this._customTouchEnabled = false;
-    this._touchConfiguration = {
+    this.#touchEnabled = false;
+    this.#touchMobile = false;
+    this.#customTouchEnabled = false;
+    this.#touchConfiguration = {
       enabled: false,
       configuration: Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile,
     };
@@ -168,36 +183,32 @@ export class EmulationModel extends SDKModel {
   }
 
   async resetPageScaleFactor(): Promise<void> {
-    await this._emulationAgent.invoke_resetPageScaleFactor();
+    await this.#emulationAgent.invoke_resetPageScaleFactor();
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async emulateDevice(metrics: Protocol.Page.SetDeviceMetricsOverrideRequest|null): Promise<any> {
+  async emulateDevice(metrics: Protocol.Page.SetDeviceMetricsOverrideRequest|null): Promise<void> {
     if (metrics) {
-      await this._emulationAgent.invoke_setDeviceMetricsOverride(metrics);
+      await this.#emulationAgent.invoke_setDeviceMetricsOverride(metrics);
     } else {
-      await this._emulationAgent.invoke_clearDeviceMetricsOverride();
+      await this.#emulationAgent.invoke_clearDeviceMetricsOverride();
     }
   }
 
   overlayModel(): OverlayModel|null {
-    return this._overlayModel;
+    return this.#overlayModelInternal;
   }
 
   async emulateLocation(location: Location|null): Promise<void> {
     if (!location || location.error) {
       await Promise.all([
-        this._emulationAgent.invoke_clearGeolocationOverride(),
-        this._emulationAgent.invoke_setTimezoneOverride({timezoneId: ''}),
-        this._emulationAgent.invoke_setLocaleOverride({locale: ''}),
-        this._emulationAgent.invoke_setUserAgentOverride(
+        this.#emulationAgent.invoke_clearGeolocationOverride(),
+        this.#emulationAgent.invoke_setTimezoneOverride({timezoneId: ''}),
+        this.#emulationAgent.invoke_setLocaleOverride({locale: ''}),
+        this.#emulationAgent.invoke_setUserAgentOverride(
             {userAgent: MultitargetNetworkManager.instance().currentUserAgent()}),
       ]);
     } else {
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function processEmulationResult(errorType: string, result: any): Promise<void> {
+      function processEmulationResult(errorType: string, result: Protocol.ProtocolResponseWithError): Promise<void> {
         const errorMessage = result.getError();
         if (errorMessage) {
           return Promise.reject({
@@ -209,24 +220,24 @@ export class EmulationModel extends SDKModel {
       }
 
       await Promise.all([
-        this._emulationAgent
+        this.#emulationAgent
             .invoke_setGeolocationOverride({
               latitude: location.latitude,
               longitude: location.longitude,
-              accuracy: Location.DefaultGeoMockAccuracy,
+              accuracy: Location.defaultGeoMockAccuracy,
             })
             .then(result => processEmulationResult('emulation-set-location', result)),
-        this._emulationAgent
+        this.#emulationAgent
             .invoke_setTimezoneOverride({
               timezoneId: location.timezoneId,
             })
             .then(result => processEmulationResult('emulation-set-timezone', result)),
-        this._emulationAgent
+        this.#emulationAgent
             .invoke_setLocaleOverride({
               locale: location.locale,
             })
             .then(result => processEmulationResult('emulation-set-locale', result)),
-        this._emulationAgent
+        this.#emulationAgent
             .invoke_setUserAgentOverride({
               userAgent: MultitargetNetworkManager.instance().currentUserAgent(),
               acceptLanguage: location.locale,
@@ -238,10 +249,10 @@ export class EmulationModel extends SDKModel {
 
   async emulateDeviceOrientation(deviceOrientation: DeviceOrientation|null): Promise<void> {
     if (deviceOrientation) {
-      await this._deviceOrientationAgent.invoke_setDeviceOrientationOverride(
+      await this.#deviceOrientationAgent.invoke_setDeviceOrientationOverride(
           {alpha: deviceOrientation.alpha, beta: deviceOrientation.beta, gamma: deviceOrientation.gamma});
     } else {
-      await this._deviceOrientationAgent.invoke_clearDeviceOrientationOverride();
+      await this.#deviceOrientationAgent.invoke_clearDeviceOrientationOverride();
     }
   }
 
@@ -249,109 +260,136 @@ export class EmulationModel extends SDKModel {
     isUserActive: boolean,
     isScreenUnlocked: boolean,
   }): Promise<void> {
-    await this._emulationAgent.invoke_setIdleOverride(emulationParams);
+    await this.#emulationAgent.invoke_setIdleOverride(emulationParams);
   }
 
   async clearIdleOverride(): Promise<void> {
-    await this._emulationAgent.invoke_clearIdleOverride();
+    await this.#emulationAgent.invoke_clearIdleOverride();
   }
 
-  async _emulateCSSMedia(type: string, features: {
+  private async emulateCSSMedia(type: string, features: {
     name: string,
     value: string,
   }[]): Promise<void> {
-    await this._emulationAgent.invoke_setEmulatedMedia({media: type, features});
-    if (this._cssModel) {
-      this._cssModel.mediaQueryResultChanged();
+    await this.#emulationAgent.invoke_setEmulatedMedia({media: type, features});
+    if (this.#cssModel) {
+      this.#cssModel.mediaQueryResultChanged();
     }
   }
 
-  async _emulateVisionDeficiency(type: Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType): Promise<void> {
-    await this._emulationAgent.invoke_setEmulatedVisionDeficiency({type});
+  private static parseAutoDarkModeSetting(setting: string): boolean|undefined {
+    switch (setting) {
+      case 'default':
+        return undefined;
+      case 'enabled':
+        return true;
+      case 'disabled':
+        return false;
+      default:
+        throw Error('unrecognized auto dark mode setting');
+    }
   }
 
-  _setLocalFontsDisabled(disabled: boolean): void {
-    if (!this._cssModel) {
+  private async emulateAutoDarkMode(setting: string): Promise<void> {
+    const enabled = EmulationModel.parseAutoDarkModeSetting(setting);
+    await this.#emulationAgent.invoke_setAutoDarkModeOverride({enabled});
+  }
+
+  private async emulateVisionDeficiency(type: Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType):
+      Promise<void> {
+    await this.#emulationAgent.invoke_setEmulatedVisionDeficiency({type});
+  }
+
+  private setLocalFontsDisabled(disabled: boolean): void {
+    if (!this.#cssModel) {
       return;
     }
-    this._cssModel.setLocalFontsEnabled(!disabled);
+    this.#cssModel.setLocalFontsEnabled(!disabled);
   }
 
-  _setDisabledImageTypes(imageTypes: Protocol.Emulation.DisabledImageType[]): void {
-    this._emulationAgent.invoke_setDisabledImageTypes({imageTypes});
+  private setDisabledImageTypes(imageTypes: Protocol.Emulation.DisabledImageType[]): void {
+    this.#emulationAgent.invoke_setDisabledImageTypes({imageTypes});
   }
 
   async setCPUThrottlingRate(rate: number): Promise<void> {
-    await this._emulationAgent.invoke_setCPUThrottlingRate({rate});
+    await this.#emulationAgent.invoke_setCPUThrottlingRate({rate});
   }
 
   async emulateTouch(enabled: boolean, mobile: boolean): Promise<void> {
-    this._touchEnabled = enabled;
-    this._touchMobile = mobile;
-    await this._updateTouch();
+    this.#touchEnabled = enabled;
+    this.#touchMobile = mobile;
+    await this.updateTouch();
   }
 
   async overrideEmulateTouch(enabled: boolean): Promise<void> {
-    this._customTouchEnabled = enabled;
-    await this._updateTouch();
+    this.#customTouchEnabled = enabled;
+    await this.updateTouch();
   }
 
-  async _updateTouch(): Promise<void> {
+  private async updateTouch(): Promise<void> {
     let configuration = {
-      enabled: this._touchEnabled,
-      configuration: this._touchMobile ? Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile :
+      enabled: this.#touchEnabled,
+      configuration: this.#touchMobile ? Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile :
                                          Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Desktop,
     };
-    if (this._customTouchEnabled) {
+    if (this.#customTouchEnabled) {
       configuration = {
         enabled: true,
         configuration: Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile,
       };
     }
 
-    if (this._overlayModel && this._overlayModel.inspectModeEnabled()) {
+    if (this.#overlayModelInternal && this.#overlayModelInternal.inspectModeEnabled()) {
       configuration = {
         enabled: false,
         configuration: Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile,
       };
     }
 
-    if (!this._touchConfiguration.enabled && !configuration.enabled) {
+    if (!this.#touchConfiguration.enabled && !configuration.enabled) {
       return;
     }
-    if (this._touchConfiguration.enabled && configuration.enabled &&
-        this._touchConfiguration.configuration === configuration.configuration) {
+    if (this.#touchConfiguration.enabled && configuration.enabled &&
+        this.#touchConfiguration.configuration === configuration.configuration) {
       return;
     }
 
-    this._touchConfiguration = configuration;
-    await this._emulationAgent.invoke_setTouchEmulationEnabled({enabled: configuration.enabled, maxTouchPoints: 1});
-    await this._emulationAgent.invoke_setEmitTouchEventsForMouse(
+    this.#touchConfiguration = configuration;
+    await this.#emulationAgent.invoke_setTouchEmulationEnabled({enabled: configuration.enabled, maxTouchPoints: 1});
+    await this.#emulationAgent.invoke_setEmitTouchEventsForMouse(
         {enabled: configuration.enabled, configuration: configuration.configuration});
   }
 
-  _updateCssMedia(): void {
-    // See the note above, where this._mediaConfiguration is defined.
-    const type = this._mediaConfiguration.get('type');
+  private updateCssMedia(): void {
+    // See the note above, where this.#mediaConfiguration is defined.
+    const type = this.#mediaConfiguration.get('type') ?? '';
     const features = [
       {
-        name: 'prefers-color-scheme',
-        value: this._mediaConfiguration.get('prefers-color-scheme'),
+        name: 'color-gamut',
+        value: this.#mediaConfiguration.get('color-gamut') ?? '',
       },
       {
-        name: 'prefers-reduced-motion',
-        value: this._mediaConfiguration.get('prefers-reduced-motion'),
+        name: 'prefers-color-scheme',
+        value: this.#mediaConfiguration.get('prefers-color-scheme') ?? '',
+      },
+      {
+        name: 'forced-colors',
+        value: this.#mediaConfiguration.get('forced-colors') ?? '',
+      },
+      {
+        name: 'prefers-contrast',
+        value: this.#mediaConfiguration.get('prefers-contrast') ?? '',
       },
       {
         name: 'prefers-reduced-data',
-        value: this._mediaConfiguration.get('prefers-reduced-data'),
+        value: this.#mediaConfiguration.get('prefers-reduced-data') ?? '',
       },
       {
-        name: 'color-gamut',
-        value: this._mediaConfiguration.get('color-gamut'),
+        name: 'prefers-reduced-motion',
+        value: this.#mediaConfiguration.get('prefers-reduced-motion') ?? '',
       },
     ];
-    this._emulateCSSMedia(type, features);
+    this.emulateCSSMedia(type, features);
   }
 }
 
@@ -447,9 +485,7 @@ export class Location {
     return `${this.latitude}@${this.longitude}:${this.timezoneId}:${this.locale}:${this.error || ''}`;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static DefaultGeoMockAccuracy = 150;
+  static defaultGeoMockAccuracy = 150;
 }
 
 export class DeviceOrientation {
@@ -508,7 +544,7 @@ export class DeviceOrientation {
     valid: boolean,
     errorMessage: (string|undefined),
   } {
-    return DeviceOrientation.angleRangeValidator(value, {minimum: 0, maximum: 360});
+    return DeviceOrientation.angleRangeValidator(value, {minimum: -180, maximum: 180});
   }
 
   static betaAngleValidator(value: string): {

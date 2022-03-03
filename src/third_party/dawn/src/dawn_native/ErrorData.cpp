@@ -15,6 +15,7 @@
 #include "dawn_native/ErrorData.h"
 
 #include "dawn_native/Error.h"
+#include "dawn_native/ObjectBase.h"
 #include "dawn_native/dawn_platform.h"
 
 namespace dawn_native {
@@ -42,6 +43,14 @@ namespace dawn_native {
         mBacktrace.push_back(std::move(record));
     }
 
+    void ErrorData::AppendContext(std::string context) {
+        mContexts.push_back(std::move(context));
+    }
+
+    void ErrorData::AppendDebugGroup(std::string label) {
+        mDebugGroups.push_back(std::move(label));
+    }
+
     InternalErrorType ErrorData::GetType() const {
         return mType;
     }
@@ -52,6 +61,43 @@ namespace dawn_native {
 
     const std::vector<ErrorData::BacktraceRecord>& ErrorData::GetBacktrace() const {
         return mBacktrace;
+    }
+
+    const std::vector<std::string>& ErrorData::GetContexts() const {
+        return mContexts;
+    }
+
+    const std::vector<std::string>& ErrorData::GetDebugGroups() const {
+        return mDebugGroups;
+    }
+
+    std::string ErrorData::GetFormattedMessage() const {
+        std::ostringstream ss;
+        ss << mMessage << "\n";
+
+        if (!mContexts.empty()) {
+            for (auto context : mContexts) {
+                ss << " - While " << context << "\n";
+            }
+        }
+
+        // For non-validation errors, or erros that lack a context include the
+        // stack trace for debugging purposes.
+        if (mContexts.empty() || mType != InternalErrorType::Validation) {
+            for (const auto& callsite : mBacktrace) {
+                ss << "    at " << callsite.function << " (" << callsite.file << ":"
+                   << callsite.line << ")\n";
+            }
+        }
+
+        if (!mDebugGroups.empty()) {
+            ss << "\nDebug group stack:\n";
+            for (auto label : mDebugGroups) {
+                ss << " > \"" << label << "\"\n";
+            }
+        }
+
+        return ss.str();
     }
 
 }  // namespace dawn_native

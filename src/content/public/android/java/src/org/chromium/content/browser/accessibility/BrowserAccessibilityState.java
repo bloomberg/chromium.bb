@@ -17,6 +17,8 @@ import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -41,10 +43,10 @@ public class BrowserAccessibilityState {
      * state has changed, which can happen when accessibility services start or stop.
      */
     public interface Listener {
-        public void onBrowserAccessibilityStateChanged();
+        public void onBrowserAccessibilityStateChanged(boolean newScreenReaderEnabledState);
     }
 
-    private static final String TAG = "Accessibility";
+    private static final String TAG = "ClankAccessibility";
 
     // Analysis of the most popular accessibility services on Android suggests
     // that any service that requests any of these three events is a screen reader
@@ -131,6 +133,44 @@ public class BrowserAccessibilityState {
         }
     }
 
+    @VisibleForTesting
+    public static void setFeedbackTypeMaskForTesting(int value) {
+        if (!sInitialized) updateAccessibilityServices();
+
+        sFeedbackTypeMask = value;
+
+        // Inform all listeners of this change.
+        for (Listener listener : sListeners) {
+            listener.onBrowserAccessibilityStateChanged(sScreenReader);
+        }
+    }
+
+    @VisibleForTesting
+    public static void setEventTypeMaskForTesting() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        // Explicitly set mask so all events are relevant to currently enabled service.
+        sEventTypeMask = ~0;
+
+        // Inform all listeners of this change.
+        for (Listener listener : sListeners) {
+            listener.onBrowserAccessibilityStateChanged(true);
+        }
+    }
+
+    @VisibleForTesting
+    public static void setEventTypeMaskEmptyForTesting() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        // Explicitly set mask so no events are relevant to currently enabled service.
+        sEventTypeMask = 0;
+
+        // Inform all listeners of this change.
+        for (Listener listener : sListeners) {
+            listener.onBrowserAccessibilityStateChanged(true);
+        }
+    }
+
     static void updateAccessibilityServices() {
         sInitialized = true;
         sEventTypeMask = 0;
@@ -174,6 +214,8 @@ public class BrowserAccessibilityState {
         if (serviceNamesString != null && !serviceNamesString.isEmpty()) {
             String[] serviceNames = serviceNamesString.split(":");
             for (String name : serviceNames) {
+                // null or empty names can be skipped
+                if (name == null || name.isEmpty()) continue;
                 // Try to canonicalize the component name if possible.
                 ComponentName componentName = ComponentName.unflattenFromString(name);
                 if (componentName != null) {
@@ -203,12 +245,12 @@ public class BrowserAccessibilityState {
             if (sNextDelayMillis < MAX_DELAY_MILLIS) sNextDelayMillis *= 2;
         }
 
-        boolean oldScreenReader = sScreenReader;
+        // Update all listeners that there was a state change and pass whether or not the
+        // new state includes a screen reader.
         sScreenReader = (0 != (sEventTypeMask & SCREEN_READER_EVENT_TYPE_MASK));
-        if (sScreenReader != oldScreenReader) {
-            for (Listener listener : sListeners) {
-                listener.onBrowserAccessibilityStateChanged();
-            }
+        for (Listener listener : sListeners) {
+            Log.v(TAG, "Informing listeners of changes.");
+            listener.onBrowserAccessibilityStateChanged(sScreenReader);
         }
     }
 
@@ -224,7 +266,7 @@ public class BrowserAccessibilityState {
      * @return
      */
     @CalledByNative
-    private static int getAccessibilityServiceEventTypeMask() {
+    public static int getAccessibilityServiceEventTypeMask() {
         if (!sInitialized) updateAccessibilityServices();
         return sEventTypeMask;
     }
@@ -235,7 +277,7 @@ public class BrowserAccessibilityState {
      * @return
      */
     @CalledByNative
-    private static int getAccessibilityServiceFeedbackTypeMask() {
+    public static int getAccessibilityServiceFeedbackTypeMask() {
         if (!sInitialized) updateAccessibilityServices();
         return sFeedbackTypeMask;
     }

@@ -4,7 +4,7 @@
 
 #include "components/autofill/core/browser/logging/log_manager.h"
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 
 namespace autofill {
@@ -15,6 +15,9 @@ class LogManagerImpl : public LogManager {
  public:
   LogManagerImpl(LogRouter* log_router,
                  base::RepeatingClosure notification_callback);
+
+  LogManagerImpl(const LogManagerImpl&) = delete;
+  LogManagerImpl& operator=(const LogManagerImpl&) = delete;
 
   ~LogManagerImpl() override;
 
@@ -28,7 +31,7 @@ class LogManagerImpl : public LogManager {
 
  private:
   // A LogRouter instance obtained on construction. May be null.
-  LogRouter* const log_router_;
+  const raw_ptr<LogRouter> log_router_;
 
   // True if |this| is registered with some LogRouter which can accept logs.
   bool can_use_log_router_;
@@ -37,8 +40,6 @@ class LogManagerImpl : public LogManager {
 
   // Called every time the logging activity status changes.
   base::RepeatingClosure notification_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(LogManagerImpl);
 };
 
 LogManagerImpl::LogManagerImpl(LogRouter* log_router,
@@ -104,6 +105,11 @@ std::unique_ptr<LogManager> LogManager::Create(
     base::RepeatingClosure notification_callback) {
   return std::make_unique<LogManagerImpl>(log_router,
                                           std::move(notification_callback));
+}
+
+// static
+LogBufferSubmitter LogManager::DevNull() {
+  return LogBufferSubmitter(nullptr, false);
 }
 
 }  // namespace autofill

@@ -7,9 +7,10 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/accessibility/live_caption_controller.h"
+#include "chrome/browser/accessibility/caption_bubble_context_browser.h"
 #include "chrome/browser/accessibility/live_caption_controller_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/live_caption/live_caption_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -21,28 +22,33 @@ void LiveCaptionSpeechRecognitionHost::Create(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizerClient>
         receiver) {
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<LiveCaptionSpeechRecognitionHost>(frame_host),
-      std::move(receiver));
+  // The object is bound to the lifetime of |host| and the mojo
+  // connection. See DocumentService for details.
+  new LiveCaptionSpeechRecognitionHost(frame_host, std::move(receiver));
 }
 
 LiveCaptionSpeechRecognitionHost::LiveCaptionSpeechRecognitionHost(
-    content::RenderFrameHost* frame_host)
-    : frame_host_(frame_host) {
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizerClient>
+        receiver)
+    : DocumentService<media::mojom::SpeechRecognitionRecognizerClient>(
+          frame_host,
+          std::move(receiver)) {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return;
   Observe(web_contents);
+  context_ = CaptionBubbleContextBrowser::Create(web_contents);
 }
 
 LiveCaptionSpeechRecognitionHost::~LiveCaptionSpeechRecognitionHost() {
   LiveCaptionController* live_caption_controller = GetLiveCaptionController();
   if (live_caption_controller)
-    live_caption_controller->OnAudioStreamEnd(this);
+    live_caption_controller->OnAudioStreamEnd(context_.get());
 }
 
 void LiveCaptionSpeechRecognitionHost::OnSpeechRecognitionRecognitionEvent(
-    media::mojom::SpeechRecognitionResultPtr result,
+    const media::SpeechRecognitionResult& result,
     OnSpeechRecognitionRecognitionEventCallback reply) {
   LiveCaptionController* live_caption_controller = GetLiveCaptionController();
   if (!live_caption_controller) {
@@ -50,7 +56,7 @@ void LiveCaptionSpeechRecognitionHost::OnSpeechRecognitionRecognitionEvent(
     return;
   }
   std::move(reply).Run(
-      live_caption_controller->DispatchTranscription(this, result));
+      live_caption_controller->DispatchTranscription(context_.get(), result));
 }
 
 void LiveCaptionSpeechRecognitionHost::OnLanguageIdentificationEvent(
@@ -65,17 +71,7 @@ void LiveCaptionSpeechRecognitionHost::OnLanguageIdentificationEvent(
 void LiveCaptionSpeechRecognitionHost::OnSpeechRecognitionError() {
   LiveCaptionController* live_caption_controller = GetLiveCaptionController();
   if (live_caption_controller)
-    live_caption_controller->OnError(this);
-}
-
-void LiveCaptionSpeechRecognitionHost::RenderFrameDeleted(
-    content::RenderFrameHost* frame_host) {
-  if (frame_host == frame_host_) {
-    LiveCaptionController* live_caption_controller = GetLiveCaptionController();
-    if (live_caption_controller)
-      live_caption_controller->OnAudioStreamEnd(this);
-    frame_host_ = nullptr;
-  }
+    live_caption_controller->OnError(context_.get());
 }
 
 #if defined(OS_MAC) || defined(OS_CHROMEOS)
@@ -83,18 +79,12 @@ void LiveCaptionSpeechRecognitionHost::MediaEffectivelyFullscreenChanged(
     bool is_fullscreen) {
   LiveCaptionController* live_caption_controller = GetLiveCaptionController();
   if (live_caption_controller)
-    live_caption_controller->OnToggleFullscreen(this);
+    live_caption_controller->OnToggleFullscreen(context_.get());
 }
 #endif
 
 content::WebContents* LiveCaptionSpeechRecognitionHost::GetWebContents() {
-  if (!frame_host_)
-    return nullptr;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame_host_);
-  if (!web_contents)
-    frame_host_ = nullptr;
-  return web_contents;
+  return content::WebContents::FromRenderFrameHost(render_frame_host());
 }
 
 LiveCaptionController*

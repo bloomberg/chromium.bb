@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log.h"
@@ -39,18 +38,20 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params,
       bool allow_local_host_requests_for_tests,
-      bool allow_smaller_responses_for_tests,
-      std::unique_ptr<RecordingBoundTestNetLog> net_log);
+      bool allow_smaller_responses_for_tests);
 
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params,
       bool allow_local_host_requests_for_tests,
       bool allow_smaller_responses_for_tests,
-      bool suppress_notifications_for_testing,
-      std::unique_ptr<RecordingBoundTestNetLog> net_log);
+      bool suppress_notifications_for_testing);
 
   explicit TestNetworkQualityEstimator(
       std::unique_ptr<NetworkQualityEstimatorParams> params);
+
+  TestNetworkQualityEstimator(const TestNetworkQualityEstimator&) = delete;
+  TestNetworkQualityEstimator& operator=(const TestNetworkQualityEstimator&) =
+      delete;
 
   ~TestNetworkQualityEstimator() override;
 
@@ -211,8 +212,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     transport_rtt_observation_count_last_ect_computation_ = count;
   }
 
-  void SetCurrentSignalStrength(int32_t signal_strength);
-
   // Returns count of ping RTTs received from H2/spdy connections.
   size_t ping_rtt_received_count() const { return ping_rtt_received_count_; }
 
@@ -228,19 +227,11 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   using NetworkQualityEstimator::AddAndNotifyObserversOfThroughput;
   using NetworkQualityEstimator::IsHangingRequest;
 
-  // NetworkQualityEstimator implementation that returns the overridden
-  // network id and signal strength (instead of invoking platform APIs).
-  absl::optional<int32_t> GetCurrentSignalStrengthWithThrottling() override;
-
  private:
   class LocalHttpTestServer : public EmbeddedTestServer {
    public:
     explicit LocalHttpTestServer(const base::FilePath& document_root);
   };
-
-  TestNetworkQualityEstimator(
-      std::unique_ptr<NetworkQualityEstimatorParams> params,
-      std::unique_ptr<RecordingBoundTestNetLog> net_log);
 
   // NetworkQualityEstimator implementation that returns the overridden
   // network id and signal strength (instead of invoking platform APIs).
@@ -248,8 +239,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   absl::optional<net::EffectiveConnectionType> GetOverrideECT() const override;
 
-  // Net log provided to network quality estimator.
-  std::unique_ptr<net::RecordingBoundTestNetLog> net_log_;
+  // Net log observer used to test correctness of NetLog entries.
+  net::RecordingNetLogObserver net_log_observer_;
 
   // If set, GetEffectiveConnectionType() and GetRecentEffectiveConnectionType()
   // would return the set values, respectively.
@@ -284,8 +275,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // If set, GetRTTEstimateInternal() would return the set value.
   absl::optional<base::TimeDelta> start_time_null_end_to_end_rtt_;
 
-  absl::optional<int32_t> current_cellular_signal_strength_;
-
   LocalHttpTestServer embedded_test_server_;
 
   // If true, notifications are not sent to any of the observers.
@@ -294,8 +283,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   size_t ping_rtt_received_count_ = 0;
 
   absl::optional<size_t> transport_rtt_observation_count_last_ect_computation_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
 };
 
 }  // namespace net

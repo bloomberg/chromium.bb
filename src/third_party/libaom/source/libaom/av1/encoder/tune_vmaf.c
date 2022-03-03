@@ -12,7 +12,6 @@
 #include "av1/encoder/tune_vmaf.h"
 
 #include "aom_dsp/psnr.h"
-#include "aom_ports/system_state.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/rdopt.h"
 #include "config/aom_scale_rtcd.h"
@@ -380,7 +379,6 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
 
 void av1_vmaf_neg_preprocessing(AV1_COMP *const cpi,
                                 YV12_BUFFER_CONFIG *const source) {
-  aom_clear_system_state();
   const AV1_COMMON *const cm = &cpi->common;
   const int bit_depth = cpi->td.mb.e_mbd.bd;
   const int width = source->y_width;
@@ -404,12 +402,10 @@ void av1_vmaf_neg_preprocessing(AV1_COMP *const cpi,
   gaussian_blur(bit_depth, source, &blurred);
   unsharp(cpi, source, &blurred, source, best_frame_unsharp_amount);
   aom_free_frame_buffer(&blurred);
-  aom_clear_system_state();
 }
 
 void av1_vmaf_frame_preprocessing(AV1_COMP *const cpi,
                                   YV12_BUFFER_CONFIG *const source) {
-  aom_clear_system_state();
   const AV1_COMMON *const cm = &cpi->common;
   const int bit_depth = cpi->td.mb.e_mbd.bd;
   const int width = source->y_width;
@@ -445,12 +441,10 @@ void av1_vmaf_frame_preprocessing(AV1_COMP *const cpi,
 
   unsharp(cpi, source, &blurred, source, best_frame_unsharp_amount);
   aom_free_frame_buffer(&blurred);
-  aom_clear_system_state();
 }
 
 void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
                                 YV12_BUFFER_CONFIG *const source) {
-  aom_clear_system_state();
   const AV1_COMMON *const cm = &cpi->common;
   const int width = source->y_width;
   const int height = source->y_height;
@@ -611,7 +605,6 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
   aom_free_frame_buffer(&blurred_block);
   aom_free_frame_buffer(&blurred);
   aom_free(best_unsharp_amounts);
-  aom_clear_system_state();
 }
 
 void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
@@ -624,7 +617,6 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   const int ss_x = cpi->source->subsampling_x;
   const int ss_y = cpi->source->subsampling_y;
 
-  aom_clear_system_state();
   YV12_BUFFER_CONFIG resized_source;
   memset(&resized_source, 0, sizeof(resized_source));
   aom_alloc_frame_buffer(
@@ -742,7 +734,6 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   aom_free_frame_buffer(&blurred);
   aom_close_vmaf_context(vmaf_context);
   aom_free(sses);
-  aom_clear_system_state();
 }
 
 void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
@@ -761,7 +752,6 @@ void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   double num_of_mi = 0.0;
   double geom_mean_of_scale = 0.0;
 
-  aom_clear_system_state();
   for (row = mi_row / num_mi_w;
        row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
     for (col = mi_col / num_mi_h;
@@ -776,7 +766,6 @@ void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
   *rdmult = AOMMAX(*rdmult, 0);
   av1_set_error_per_bit(&x->errorperbit, *rdmult);
-  aom_clear_system_state();
 }
 
 // TODO(sdeng): replace them with the SIMD versions.
@@ -908,7 +897,6 @@ int av1_get_vmaf_base_qindex(const AV1_COMP *const cpi, int current_qindex) {
   if (cm->current_frame.frame_number == 0 || cpi->oxcf.pass == 1) {
     return current_qindex;
   }
-  aom_clear_system_state();
   const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   const int layer_depth =
       AOMMIN(gf_group->layer_depth[cpi->gf_frame_index], MAX_ARF_LAYERS - 1);
@@ -947,13 +935,13 @@ int av1_get_vmaf_base_qindex(const AV1_COMP *const cpi, int current_qindex) {
   const double dsse = dvmaf * approx_sse / approx_dvmaf;
 
   const double beta = approx_sse / (dsse + approx_sse);
-  const int offset = av1_get_deltaq_offset(cpi, current_qindex, beta);
+  const int offset =
+      av1_get_deltaq_offset(cm->seq_params->bit_depth, current_qindex, beta);
   int qindex = current_qindex + offset;
 
   qindex = AOMMIN(qindex, MAXQ);
   qindex = AOMMAX(qindex, MINQ);
 
-  aom_clear_system_state();
   return qindex;
 }
 

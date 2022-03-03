@@ -5,13 +5,12 @@
 #ifndef NET_TEST_SPAWNED_TEST_SERVER_LOCAL_TEST_SERVER_H_
 #define NET_TEST_SPAWNED_TEST_SERVER_LOCAL_TEST_SERVER_H_
 
-#include <string>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "net/test/spawned_test_server/base_test_server.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -38,6 +37,9 @@ class LocalTestServer : public BaseTestServer {
   LocalTestServer(Type type,
                   const SSLOptions& ssl_options,
                   const base::FilePath& document_root);
+
+  LocalTestServer(const LocalTestServer&) = delete;
+  LocalTestServer& operator=(const LocalTestServer&) = delete;
 
   ~LocalTestServer() override;
 
@@ -93,8 +95,6 @@ class LocalTestServer : public BaseTestServer {
   // The file descriptor the child writes to when it starts.
   base::ScopedFD child_fd_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(LocalTestServer);
 };
 
 }  // namespace net

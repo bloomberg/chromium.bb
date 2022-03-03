@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
+
+#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "ui/gfx/x/keysyms/keysyms.h"
 
 namespace ui {
@@ -818,6 +820,9 @@ class KeySymToUnicode {
     }
   }
 
+  KeySymToUnicode(const KeySymToUnicode&) = delete;
+  KeySymToUnicode& operator=(const KeySymToUnicode&) = delete;
+
   uint16_t UnicodeFromKeySym(uint32_t keysym) const {
     // Latin-1 characters have the same representation.
     if ((0x0020 <= keysym && keysym <= 0x007e) ||
@@ -840,8 +845,6 @@ class KeySymToUnicode {
  private:
   typedef std::unordered_map<uint32_t, uint16_t> KeySymToUnicodeMap;
   KeySymToUnicodeMap keysym_to_unicode_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeySymToUnicode);
 };
 
 static base::LazyInstance<KeySymToUnicode>::Leaky g_keysym_to_unicode =

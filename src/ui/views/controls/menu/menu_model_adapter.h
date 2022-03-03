@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
@@ -31,6 +31,10 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
   explicit MenuModelAdapter(ui::MenuModel* menu_model);
   MenuModelAdapter(ui::MenuModel* menu_model,
                    base::RepeatingClosure on_menu_closed_callback);
+
+  MenuModelAdapter(const MenuModelAdapter&) = delete;
+  MenuModelAdapter& operator=(const MenuModelAdapter&) = delete;
+
   ~MenuModelAdapter() override;
 
   // Populate a MenuItemView menu with the ui::MenuModel items
@@ -62,7 +66,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
                                                int item_id);
 
   // MenuModelDelegate:
-  void OnIconChanged(int index) override {}
+  void OnIconChanged(int command_id) override {}
   void OnMenuStructureChanged() override;
   void OnMenuClearingDelegate() override;
 
@@ -80,7 +84,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
   bool IsTriggerableEvent(MenuItemView* source, const ui::Event& e) override;
   bool GetAccelerator(int id, ui::Accelerator* accelerator) const override;
   std::u16string GetLabel(int id) const override;
-  void GetLabelStyle(int id, LabelStyle* style) const override;
+  const gfx::FontList* GetLabelFontList(int id) const override;
   bool IsCommandEnabled(int id) const override;
   bool IsCommandVisible(int id) const override;
   bool IsItemChecked(int id) const override;
@@ -95,11 +99,11 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
   // Container of ui::MenuModel pointers as encountered by preorder
   // traversal.  The first element is always the top-level model
   // passed to the constructor.
-  ui::MenuModel* menu_model_;
+  raw_ptr<ui::MenuModel> menu_model_;
 
   // Pointer to the MenuItemView created and updated by |this|, but not owned by
   // |this|.
-  MenuItemView* menu_;
+  raw_ptr<MenuItemView> menu_;
 
   // Mouse event flags which can trigger menu actions.
   int triggerable_event_flags_;
@@ -109,8 +113,6 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
 
   // Optional callback triggered during OnMenuClosed().
   base::RepeatingClosure on_menu_closed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuModelAdapter);
 };
 
 }  // namespace views

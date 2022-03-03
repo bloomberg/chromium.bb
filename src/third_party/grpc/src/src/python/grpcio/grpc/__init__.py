@@ -18,14 +18,18 @@ import contextlib
 import enum
 import logging
 import sys
-import six
 
-from grpc._cython import cygrpc as _cygrpc
 from grpc import _compression
+from grpc._cython import cygrpc as _cygrpc
+from grpc._runtime_protos import protos
+from grpc._runtime_protos import protos_and_services
+from grpc._runtime_protos import services
+import six
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 try:
+    # pylint: disable=ungrouped-imports
     from grpc._grpcio_metadata import __version__
 except ImportError:
     __version__ = "dev0"
@@ -406,8 +410,6 @@ class Call(six.with_metaclass(abc.ABCMeta, RpcContext)):
 class ClientCallDetails(six.with_metaclass(abc.ABCMeta)):
     """Describes an RPC to be invoked.
 
-    This is an EXPERIMENTAL API.
-
     Attributes:
       method: The method name of the RPC.
       timeout: An optional duration of time in seconds to allow for the RPC.
@@ -422,10 +424,7 @@ class ClientCallDetails(six.with_metaclass(abc.ABCMeta)):
 
 
 class UnaryUnaryClientInterceptor(six.with_metaclass(abc.ABCMeta)):
-    """Affords intercepting unary-unary invocations.
-
-    This is an EXPERIMENTAL API.
-    """
+    """Affords intercepting unary-unary invocations."""
 
     @abc.abstractmethod
     def intercept_unary_unary(self, continuation, client_call_details, request):
@@ -459,10 +458,7 @@ class UnaryUnaryClientInterceptor(six.with_metaclass(abc.ABCMeta)):
 
 
 class UnaryStreamClientInterceptor(six.with_metaclass(abc.ABCMeta)):
-    """Affords intercepting unary-stream invocations.
-
-    This is an EXPERIMENTAL API.
-    """
+    """Affords intercepting unary-stream invocations."""
 
     @abc.abstractmethod
     def intercept_unary_stream(self, continuation, client_call_details,
@@ -496,10 +492,7 @@ class UnaryStreamClientInterceptor(six.with_metaclass(abc.ABCMeta)):
 
 
 class StreamUnaryClientInterceptor(six.with_metaclass(abc.ABCMeta)):
-    """Affords intercepting stream-unary invocations.
-
-    This is an EXPERIMENTAL API.
-    """
+    """Affords intercepting stream-unary invocations."""
 
     @abc.abstractmethod
     def intercept_stream_unary(self, continuation, client_call_details,
@@ -533,10 +526,7 @@ class StreamUnaryClientInterceptor(six.with_metaclass(abc.ABCMeta)):
 
 
 class StreamStreamClientInterceptor(six.with_metaclass(abc.ABCMeta)):
-    """Affords intercepting stream-stream invocations.
-
-    This is an EXPERIMENTAL API.
-    """
+    """Affords intercepting stream-stream invocations."""
 
     @abc.abstractmethod
     def intercept_stream_stream(self, continuation, client_call_details,
@@ -1188,6 +1178,16 @@ class ServicerContext(six.with_metaclass(abc.ABCMeta, RpcContext)):
         """
         raise NotImplementedError()
 
+    def trailing_metadata(self):
+        """Access value to be used as trailing metadata upon RPC completion.
+
+        This is an EXPERIMENTAL API.
+
+        Returns:
+          The trailing :term:`metadata` for the RPC.
+        """
+        raise NotImplementedError()
+
     @abc.abstractmethod
     def abort(self, code, details):
         """Raises an exception to terminate the RPC with a non-OK status.
@@ -1248,6 +1248,26 @@ class ServicerContext(six.with_metaclass(abc.ABCMeta, RpcContext)):
         Args:
           details: A UTF-8-encodable string to be sent to the client upon
             termination of the RPC.
+        """
+        raise NotImplementedError()
+
+    def code(self):
+        """Accesses the value to be used as status code upon RPC completion.
+
+        This is an EXPERIMENTAL API.
+
+        Returns:
+          The StatusCode value for the RPC.
+        """
+        raise NotImplementedError()
+
+    def details(self):
+        """Accesses the value to be used as detail string upon RPC completion.
+
+        This is an EXPERIMENTAL API.
+
+        Returns:
+          The details string of the RPC.
         """
         raise NotImplementedError()
 
@@ -1351,10 +1371,7 @@ class ServiceRpcHandler(six.with_metaclass(abc.ABCMeta, GenericRpcHandler)):
 
 
 class ServerInterceptor(six.with_metaclass(abc.ABCMeta)):
-    """Affords intercepting incoming RPCs on the service-side.
-
-    This is an EXPERIMENTAL API.
-    """
+    """Affords intercepting incoming RPCs on the service-side."""
 
     @abc.abstractmethod
     def intercept_service(self, continuation, handler_call_details):
@@ -1991,8 +2008,6 @@ def secure_channel(target, credentials, options=None, compression=None):
 def intercept_channel(channel, *interceptors):
     """Intercepts a channel through a set of interceptors.
 
-    This is an EXPERIMENTAL API.
-
     Args:
       channel: A Channel.
       interceptors: Zero or more objects of type
@@ -2081,8 +2096,6 @@ class Compression(enum.IntEnum):
     Gzip = _compression.Gzip
 
 
-from grpc._runtime_protos import protos, services, protos_and_services  # pylint: disable=wrong-import-position
-
 ###################################  __all__  #################################
 
 __all__ = (
@@ -2131,6 +2144,7 @@ __all__ = (
     'access_token_call_credentials',
     'composite_call_credentials',
     'composite_channel_credentials',
+    'compute_engine_channel_credentials',
     'local_channel_credentials',
     'local_server_credentials',
     'alts_channel_credentials',

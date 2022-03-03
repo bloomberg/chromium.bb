@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_UPDATER_UNINSTALL_PING_SENDER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -31,6 +30,10 @@ class UninstallPingSender : public ExtensionRegistryObserver {
                                            UninstallReason reason)>;
 
   UninstallPingSender(ExtensionRegistry* registry, Filter filter);
+
+  UninstallPingSender(const UninstallPingSender&) = delete;
+  UninstallPingSender& operator=(const UninstallPingSender&) = delete;
+
   ~UninstallPingSender() override;
 
  protected:
@@ -45,8 +48,6 @@ class UninstallPingSender : public ExtensionRegistryObserver {
 
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UninstallPingSender);
 };
 
 }  // namespace extensions

@@ -91,7 +91,9 @@ class AbstractLineBox {
     do {
       previous_line.MoveToPreviousIncludingFragmentainer();
     } while (previous_line && !previous_line.Current().IsLineBox());
-    return previous_line ? AbstractLineBox(previous_line) : AbstractLineBox();
+    if (!previous_line || IsBlockInInline(previous_line))
+      return AbstractLineBox();
+    return AbstractLineBox(previous_line);
   }
 
   AbstractLineBox NextLine() const {
@@ -104,7 +106,9 @@ class AbstractLineBox {
     do {
       next_line.MoveToNextIncludingFragmentainer();
     } while (next_line && !next_line.Current().IsLineBox());
-    return next_line ? AbstractLineBox(next_line) : AbstractLineBox();
+    if (!next_line || IsBlockInInline(next_line))
+      return AbstractLineBox();
+    return AbstractLineBox(next_line);
   }
 
   PhysicalOffset AbsoluteLineDirectionPointToLocalPointInBlock(
@@ -114,10 +118,8 @@ class AbstractLineBox {
     // TODO(yosin): Is kIgnoreTransforms correct here?
     PhysicalOffset absolute_block_point = containing_block.LocalToAbsolutePoint(
         PhysicalOffset(), kIgnoreTransforms);
-    if (containing_block.IsScrollContainer()) {
-      absolute_block_point -=
-          PhysicalOffset(containing_block.ScrolledContentOffset());
-    }
+    if (containing_block.IsScrollContainer())
+      absolute_block_point -= containing_block.ScrolledContentOffset();
 
     if (containing_block.IsHorizontalWritingMode()) {
       return PhysicalOffset(line_direction_point - absolute_block_point.left,
@@ -186,6 +188,13 @@ class AbstractLineBox {
   const RootInlineBox& GetRootInlineBox() const {
     DCHECK(IsOldLayout());
     return *root_inline_box_;
+  }
+
+  static bool IsBlockInInline(const NGInlineCursor& line) {
+    DCHECK(line.Current().IsLineBox());
+    NGInlineCursor cursor = line;
+    cursor.MoveToNext();
+    return cursor && cursor.Current()->IsBlockInInline();
   }
 
   static bool IsEditable(const NGInlineCursor& cursor) {

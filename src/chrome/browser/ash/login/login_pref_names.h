@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_LOGIN_PREF_NAMES_H_
 #define CHROME_BROWSER_ASH_LOGIN_LOGIN_PREF_NAMES_H_
 
-namespace chromeos {
-
+namespace ash {
 namespace prefs {
 
 extern const char kLastLoginInputMethod[];
@@ -28,17 +27,15 @@ extern const char kSamlPasswordSyncToken[];
 extern const char kActivityTimeAfterOnboarding[];
 
 }  // namespace prefs
-
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
+namespace chromeos {
 namespace prefs {
-using ::chromeos::prefs::kOobeMarketingOptInChoice;
-using ::chromeos::prefs::kOobeMarketingOptInScreenFinished;
-using ::chromeos::prefs::kOobeOnboardingTime;
-}
-}  // namespace ash
+using ::ash::prefs::kLastLoginInputMethod;
+using ::ash::prefs::kSamlInSessionPasswordChangeEnabled;
+}  // namespace prefs
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_LOGIN_PREF_NAMES_H_

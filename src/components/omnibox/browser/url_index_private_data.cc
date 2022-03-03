@@ -14,13 +14,15 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/stack.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +36,6 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/tailored_word_break_iterator.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
@@ -81,12 +82,6 @@ bool LengthGreater(const std::u16string& string_a,
   return string_a.length() > string_b.length();
 }
 
-bool HasApi2Qualifier(ui::PageTransition transition) {
-  return (ui::PageTransitionGetQualifier(transition) &
-          ui::PAGE_TRANSITION_FROM_API_2) ==
-         ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_FROM_API_2);
-}
-
 }  // namespace
 
 // UpdateRecentVisitsFromHistoryDBTask -----------------------------------------
@@ -112,7 +107,7 @@ class UpdateRecentVisitsFromHistoryDBTask : public history::HistoryDBTask {
 
   // The URLIndexPrivateData that gets updated after the historyDB
   // task returns.
-  URLIndexPrivateData* private_data_;
+  raw_ptr<URLIndexPrivateData> private_data_;
   // The ID of the URL to get visits for and then update.
   history::URLID url_id_;
   // Whether fetching the recent visits for the URL succeeded.
@@ -524,34 +519,6 @@ size_t URLIndexPrivateData::EstimateMemoryUsage() const {
   return res;
 }
 
-bool URLIndexPrivateData::IsUrlRowIndexed(const history::URLRow& row) const {
-  return history_info_map_.count(row.id()) > 0;
-}
-
-// static
-bool URLIndexPrivateData::ShouldExcludeBecauseOfCctTransition(
-    ui::PageTransition transition) {
-  // Cct visits are tagged with PAGE_TRANSITION_FROM_API_2.
-  return HasApi2Qualifier(transition) &&
-         base::FeatureList::IsEnabled(omnibox::kHideVisitsFromCct);
-}
-
-// static
-bool URLIndexPrivateData::ShouldExcludeBecauseOfCctVisits(
-    const history::VisitVector& visits) {
-  if (visits.empty() ||
-      !base::FeatureList::IsEnabled(omnibox::kHideVisitsFromCct)) {
-    return false;
-  }
-
-  // Cct visits are tagged with PAGE_TRANSITION_FROM_API_2.
-  for (const auto& visit : visits) {
-    if (!HasApi2Qualifier(visit.transition))
-      return false;
-  }
-  return true;
-}
-
 // Note that when running Chrome normally this destructor isn't called during
 // shutdown because these objects are intentionally leaked. See
 // InMemoryURLIndex::Shutdown for details.
@@ -832,16 +799,6 @@ bool URLIndexPrivateData::IndexRow(
     return false;
 
   const history::URLID row_id = row.id();
-  history::VisitVector recent_visits;
-  // We'd like to check that we're on the history DB thread.
-  // However, unittest code actually calls this on the UI thread.
-  // So we don't do any thread checks.
-  const bool got_visits =
-      history_db && history_db->GetMostRecentVisitsForURL(
-                        row_id, kMaxVisitsToStoreInCache, &recent_visits);
-  if (got_visits && ShouldExcludeBecauseOfCctVisits(recent_visits))
-    return false;
-
   // Strip out username and password before saving and indexing.
   std::u16string url(url_formatter::FormatUrl(
       gurl, url_formatter::kFormatUrlOmitUsernamePassword,
@@ -866,8 +823,14 @@ bool URLIndexPrivateData::IndexRow(
 
   // Update the recent visits information or schedule the update
   // as appropriate.
-  if (got_visits) {
-    UpdateRecentVisits(row_id, recent_visits);
+  if (history_db) {
+    // We'd like to check that we're on the history DB thread.
+    // However, unittest code actually calls this on the UI thread.
+    // So we don't do any thread checks.
+    history::VisitVector recent_visits;
+    if (history_db->GetMostRecentVisitsForURL(row_id, kMaxVisitsToStoreInCache,
+                                              &recent_visits))
+      UpdateRecentVisits(row_id, recent_visits);
   } else if (history_service) {
     DCHECK(tracker);
     ScheduleUpdateRecentVisits(history_service, row_id, tracker);
@@ -1119,8 +1082,7 @@ bool URLIndexPrivateData::RestorePrivateData(
       base::Time::FromInternalValue(cache.last_rebuild_timestamp());
   const base::TimeDelta rebuilt_ago =
       base::Time::Now() - last_time_rebuilt_from_history_;
-  if ((rebuilt_ago > base::TimeDelta::FromDays(7)) ||
-      (rebuilt_ago < base::TimeDelta::FromDays(-1))) {
+  if ((rebuilt_ago > base::Days(7)) || (rebuilt_ago < base::Days(-1))) {
     // Cache is more than a week old or, somehow, from some time in the future.
     // It's probably a good time to rebuild the index from history to
     // allow synced entries to now appear, expired entries to disappear, etc.

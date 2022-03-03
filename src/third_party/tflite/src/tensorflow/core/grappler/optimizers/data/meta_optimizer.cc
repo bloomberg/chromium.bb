@@ -18,6 +18,7 @@ limitations under the License.
 #include "absl/strings/str_split.h"
 #include "tensorflow/core/framework/dataset.h"
 #include "tensorflow/core/framework/function.h"
+#include "tensorflow/core/framework/metrics.h"
 #include "tensorflow/core/framework/versions.pb.h"
 #include "tensorflow/core/grappler/clusters/cluster.h"
 #include "tensorflow/core/grappler/grappler_item.h"
@@ -35,22 +36,26 @@ using ConfigMap =
     std::map<string, tensorflow::RewriterConfig_CustomGraphOptimizer>;
 
 // tf.data optimizations, in the order we want to perform them.
-constexpr std::array<const char*, 15> kTFDataOptimizations = {
+constexpr std::array<const char*, 19> kTFDataOptimizations = {
     "noop_elimination",
+    "disable_intra_op_parallelism",
+    "use_private_thread_pool",
     "shuffle_and_repeat_fusion",
     "map_fusion",
     "filter_fusion",
-    "filter_with_random_uniform_fusion",
     "map_and_filter_fusion",
-    "hoist_random_uniform",
     "map_parallelization",
     "map_and_batch_fusion",
-    "map_vectorization",
-    "latency_all_edges",
+    "batch_parallelization",
     "make_sloppy",
     "parallel_batch",
     "slack",
-    "inject_prefetch"};
+    "autotune_buffer_sizes",
+    "inject_prefetch_eligible",
+    "inject_prefetch",
+    "disable_prefetch_legacy_autotune",
+    "enable_gradient_descent",
+    "make_deterministic"};
 
 // Parses a list of string optimizer configurations into a map from
 // optimizer name -> rewriter config for that optimizer.
@@ -98,8 +103,12 @@ Status TFDataMetaOptimizer::Optimize(Cluster* cluster, const GrapplerItem& item,
 
   // Perform optimizations in a meaningful order.
   for (const auto& optimization : kTFDataOptimizations) {
-    TF_RETURN_IF_ERROR(
-        ApplyOptimization(optimization, cluster, &optimized_item));
+    tensorflow::metrics::ScopedCounter<2> timings(
+        tensorflow::metrics::GetGraphOptimizationCounter(),
+        {"TFData", optimization});
+    Status status = ApplyOptimization(optimization, cluster, &optimized_item);
+    timings.ReportAndStop();
+    if (!status.ok()) return status;
   }
 
   // Store the final result of all the optimizations in `output`.
@@ -114,7 +123,7 @@ Status TFDataMetaOptimizer::Optimize(Cluster* cluster, const GrapplerItem& item,
   for (const auto& name : flib.ListFunctionNames()) {
     auto* func = flib.Find(name);
     // Skip non tf.data functions.
-    if (!func->attr().contains(data::kTFDataFunction)) continue;
+    if (!data::IsTFDataFunction(*func)) continue;
     VLOG(3) << "Optimize function: function=" << func->signature().name();
     optimized_functions = true;
 
@@ -194,7 +203,6 @@ Status TFDataMetaOptimizer::Init(
 
       enabled_optimizers_[optimizer_name] = std::move(optimizer);
     } else {
-      // This should never happen.
       return errors::Internal(
           "Tried to register a dataset optimizer that doesn't exist: ",
           optimizer_name);
@@ -202,12 +210,6 @@ Status TFDataMetaOptimizer::Init(
   }
 
   return Status::OK();
-}
-
-void TFDataMetaOptimizer::Feedback(Cluster* cluster, const GrapplerItem& item,
-                                   const GraphDef& optimize_output,
-                                   double result) {
-  // no-op
 }
 
 REGISTER_GRAPH_OPTIMIZER_AS(TFDataMetaOptimizer, "tf_data_meta_optimizer");

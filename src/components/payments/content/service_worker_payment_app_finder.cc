@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
@@ -33,6 +35,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_canon.h"
 
@@ -74,6 +77,8 @@ bool AppSupportsAtLeastOneRequestedMethodData(
   for (const auto& enabled_method : app.enabled_methods) {
     for (const auto& request : requests) {
       if (enabled_method == request->supported_method) {
+        if (!base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard))
+          return true;
         if (enabled_method != methods::kBasicCard ||
             BasicCardCapabilitiesMatch(app.capabilities, request)) {
           return true;
@@ -132,7 +137,7 @@ class SelfDeletingServiceWorkerPaymentAppFinder
       base::OnceClosure finished_using_resources_callback) {
     DCHECK(!verifier_);
     DCHECK(initiator_render_frame_host);
-    DCHECK(initiator_render_frame_host->IsCurrent());
+    DCHECK(initiator_render_frame_host->IsActive());
 
     downloader_ = std::move(downloader);
 
@@ -368,7 +373,7 @@ class SelfDeletingServiceWorkerPaymentAppFinder
 
   // |owner_| owns this SelfDeletingServiceWorkerPaymentAppFinder, so it is
   // always valid.
-  content::WebContents* owner_;
+  raw_ptr<content::WebContents> owner_;
 
   std::unique_ptr<PaymentManifestDownloader> downloader_;
   std::unique_ptr<PaymentManifestParser> parser_;
@@ -407,8 +412,7 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
     base::OnceClosure finished_writing_cache_callback_for_testing) {
   DCHECK(!requested_method_data.empty());
 
-  auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  if (!rfh || !rfh->IsCurrent())
+  if (!render_frame_host().IsActive())
     return;
 
   // Do not look up payment handlers for ignored payment methods.
@@ -425,7 +429,8 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
     return;
   }
 
-  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(&render_frame_host());
   auto self_delete_factory =
       SelfDeletingServiceWorkerPaymentAppFinder::CreateAndSetOwnedBy(
           web_contents);
@@ -437,14 +442,16 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
   } else {
     downloader = std::make_unique<payments::PaymentManifestDownloader>(
         std::make_unique<DeveloperConsoleLogger>(web_contents),
-        rfh->GetBrowserContext()
+        render_frame_host()
+            .GetBrowserContext()
             ->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess());
   }
 
   self_delete_factory->GetAllPaymentApps(
-      merchant_origin, rfh, std::move(downloader), cache, requested_method_data,
-      may_crawl_for_installable_payment_apps, std::move(callback),
+      merchant_origin, &render_frame_host(), std::move(downloader), cache,
+      requested_method_data, may_crawl_for_installable_payment_apps,
+      std::move(callback),
       std::move(finished_writing_cache_callback_for_testing));
 }
 
@@ -469,9 +476,7 @@ void ServiceWorkerPaymentAppFinder::IgnorePaymentMethodForTest(
 
 ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder(
     content::RenderFrameHost* rfh)
-    : frame_routing_id_(
-          content::GlobalFrameRoutingId(rfh->GetProcess()->GetID(),
-                                        rfh->GetRoutingID())),
+    : content::DocumentUserData<ServiceWorkerPaymentAppFinder>(rfh),
       ignored_methods_({methods::kGooglePlayBilling}),
       test_downloader_(nullptr) {}
 
@@ -481,6 +486,6 @@ void ServiceWorkerPaymentAppFinder::
   test_downloader_ = std::move(downloader);
 }
 
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(ServiceWorkerPaymentAppFinder)
+DOCUMENT_USER_DATA_KEY_IMPL(ServiceWorkerPaymentAppFinder);
 
 }  // namespace payments

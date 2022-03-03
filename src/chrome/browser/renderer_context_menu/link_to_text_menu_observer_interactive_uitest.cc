@@ -4,10 +4,9 @@
 
 #include "chrome/browser/renderer_context_menu/link_to_text_menu_observer.h"
 
-#include "base/macros.h"
-
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
@@ -18,6 +17,7 @@
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_metrics.h"
 #include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,25 +25,9 @@
 
 namespace {
 
-class LinkToTextMenuObserverTest : public extensions::ExtensionBrowserTest,
-                                   public ::testing::WithParamInterface<bool> {
+class LinkToTextMenuObserverTest : public extensions::ExtensionBrowserTest {
  public:
   LinkToTextMenuObserverTest();
-
-  void SetUp() override {
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (GetParam()) {
-      scoped_feature_list.InitWithFeatures(
-          {shared_highlighting::kPreemptiveLinkToTextGeneration,
-           shared_highlighting::kSharedHighlightingUseBlocklist},
-          {});
-    } else {
-      scoped_feature_list.InitWithFeatures(
-          {shared_highlighting::kSharedHighlightingUseBlocklist},
-          {shared_highlighting::kPreemptiveLinkToTextGeneration});
-    }
-    InProcessBrowserTest::SetUp();
-  }
 
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
@@ -68,7 +52,8 @@ class LinkToTextMenuObserverTest : public extensions::ExtensionBrowserTest,
 
   void Reset(bool incognito) {
     menu_ = std::make_unique<MockRenderViewContextMenu>(incognito);
-    observer_ = LinkToTextMenuObserver::Create(menu_.get());
+    observer_ =
+        LinkToTextMenuObserver::Create(menu_.get(), getRenderFrameHost());
     menu_->SetObserver(observer_.get());
   }
 
@@ -76,16 +61,22 @@ class LinkToTextMenuObserverTest : public extensions::ExtensionBrowserTest,
     observer_->InitMenu(params);
   }
 
-  bool ShouldPreemptivelyGenerateLink() { return GetParam(); }
+  LinkToTextMenuObserverTest(const LinkToTextMenuObserverTest&) = delete;
+  LinkToTextMenuObserverTest& operator=(const LinkToTextMenuObserverTest&) =
+      delete;
 
   ~LinkToTextMenuObserverTest() override;
   MockRenderViewContextMenu* menu() { return menu_.get(); }
   LinkToTextMenuObserver* observer() { return observer_.get(); }
 
+  content::RenderFrameHost* getRenderFrameHost() {
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    return web_contents->GetMainFrame();
+  }
+
  private:
   std::unique_ptr<LinkToTextMenuObserver> observer_;
   std::unique_ptr<MockRenderViewContextMenu> menu_;
-  DISALLOW_COPY_AND_ASSIGN(LinkToTextMenuObserverTest);
 };
 
 LinkToTextMenuObserverTest::LinkToTextMenuObserverTest() = default;
@@ -93,7 +84,7 @@ LinkToTextMenuObserverTest::~LinkToTextMenuObserverTest() = default;
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, AddsCopyMenuItem) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, AddsCopyMenuItem) {
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.com/");
   params.selection_text = u"hello world";
@@ -105,14 +96,10 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, AddsCopyMenuItem) {
   EXPECT_EQ(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, item.command_id);
   EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
-  if (ShouldPreemptivelyGenerateLink()) {
-    EXPECT_FALSE(item.enabled);
-  } else {
-    EXPECT_TRUE(item.enabled);
-  }
+  EXPECT_FALSE(item.enabled);
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, AddsCopyAndRemoveMenuItems) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, AddsCopyAndRemoveMenuItems) {
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.com/");
   params.opened_from_highlight = true;
@@ -136,7 +123,7 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, AddsCopyAndRemoveMenuItems) {
   EXPECT_TRUE(item.enabled);
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, CopiesLinkToText) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, CopiesLinkToText) {
   content::BrowserTestClipboardScope test_clipboard_scope;
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.com/");
@@ -151,7 +138,7 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, CopiesLinkToText) {
   EXPECT_EQ(u"http://foo.com/#:~:text=hello%20world", text);
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, CopiesLinkForEmptySelector) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, CopiesLinkForEmptySelector) {
   content::BrowserTestClipboardScope test_clipboard_scope;
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.com/");
@@ -159,19 +146,10 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, CopiesLinkForEmptySelector) {
   observer()->OverrideGeneratedSelectorForTesting(std::string());
   InitMenu(params);
 
-  if (ShouldPreemptivelyGenerateLink()) {
-    EXPECT_FALSE(
-        menu()->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
-  } else {
-    menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
-    ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-    std::u16string text;
-    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
-    EXPECT_EQ(u"http://foo.com/", text);
-  }
+  EXPECT_FALSE(menu()->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, ReplacesRefInURL) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, ReplacesRefInURL) {
   content::BrowserTestClipboardScope test_clipboard_scope;
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.com/#:~:text=hello%20world");
@@ -187,11 +165,18 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, ReplacesRefInURL) {
 }
 
 // crbug.com/1139864
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, InvalidSelectorForIframe) {
+// TODO(crbug.com/1227242): Test is flaky on Mac and Windows.
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_InvalidSelectorForIframe DISABLED_InvalidSelectorForIframe
+#else
+#define MAYBE_InvalidSelectorForIframe InvalidSelectorForIframe
+#endif
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest,
+                       MAYBE_InvalidSelectorForIframe) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
 
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -208,52 +193,34 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, InvalidSelectorForIframe) {
   params.selection_text = u"hello world";
   InitMenu(params);
 
-  if (ShouldPreemptivelyGenerateLink()) {
-    EXPECT_FALSE(
-        menu()->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
-  } else {
-    menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
-    ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-    std::u16string text;
-    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
-    EXPECT_EQ(base::UTF8ToUTF16(main_url.spec()), text);
-  }
+  EXPECT_FALSE(menu()->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, HiddenForExtensions) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, HiddenForExtensions) {
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("simple_with_file"));
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("file.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("file.html")));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   menu()->set_web_contents(web_contents);
 
   std::unique_ptr<LinkToTextMenuObserver> observer =
-      LinkToTextMenuObserver::Create(menu());
+      LinkToTextMenuObserver::Create(menu(), getRenderFrameHost());
   EXPECT_EQ(nullptr, observer);
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest, Blocklist) {
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, Blocklist) {
   content::BrowserTestClipboardScope test_clipboard_scope;
   content::ContextMenuParams params;
   params.page_url = GURL("http://facebook.com/my-profile");
   params.selection_text = u"hello world";
   InitMenu(params);
 
-  if (ShouldPreemptivelyGenerateLink()) {
-    EXPECT_FALSE(
-        menu()->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
-  } else {
-    menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
-    ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-    std::u16string text;
-    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &text);
-    EXPECT_EQ(u"http://facebook.com/my-profile", text);
-  }
+  EXPECT_FALSE(menu()->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest,
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest,
                        SelectionOverlappingHighlightCopiesNewLinkToText) {
   content::BrowserTestClipboardScope test_clipboard_scope;
   content::ContextMenuParams params;
@@ -270,7 +237,7 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest,
   EXPECT_EQ(u"http://foo.com/#:~:text=hello%20world", text);
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest,
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest,
                        LinkGenerationCopiedLinkTypeMetric_NewGeneration) {
   base::HistogramTester histogram_tester;
 
@@ -292,7 +259,7 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest,
       1);
 }
 
-IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest,
+IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest,
                        LinkGenerationCopiedLinkTypeMetric_ReShare) {
   base::HistogramTester histogram_tester;
 
@@ -314,7 +281,3 @@ IN_PROC_BROWSER_TEST_P(LinkToTextMenuObserverTest,
           kCopiedFromExistingHighlight,
       1);
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         LinkToTextMenuObserverTest,
-                         ::testing::Values(true, false));

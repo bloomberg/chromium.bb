@@ -5,11 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_
 #define IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ios/chrome/browser/main/browser_observer.h"
 #include "ios/chrome/browser/main/browser_user_data.h"

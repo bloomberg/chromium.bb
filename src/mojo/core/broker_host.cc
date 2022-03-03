@@ -36,7 +36,9 @@ BrokerHost::BrokerHost(base::Process client_process,
   base::CurrentThread::Get()->AddDestructionObserver(this);
 
   channel_ = Channel::Create(this, std::move(connection_params),
-                             Channel::HandlePolicy::kAcceptHandles,
+                             client_process.IsValid()
+                                 ? Channel::HandlePolicy::kAcceptHandles
+                                 : Channel::HandlePolicy::kRejectHandles,
                              base::ThreadTaskRunnerHandle::Get());
   channel_->Start();
 }
@@ -52,6 +54,8 @@ BrokerHost::~BrokerHost() {
 bool BrokerHost::PrepareHandlesForClient(
     std::vector<PlatformHandleInTransit>* handles) {
 #if defined(OS_WIN)
+  if (!client_process_.IsValid())
+    return false;
   bool handles_ok = true;
   for (auto& handle : *handles) {
     if (!handle.TransferToProcess(client_process_.Duplicate()))

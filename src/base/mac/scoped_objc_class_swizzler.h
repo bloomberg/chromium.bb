@@ -8,7 +8,6 @@
 #import <objc/runtime.h>
 
 #include "base/base_export.h"
-#include "base/macros.h"
 
 namespace base {
 namespace mac {
@@ -25,6 +24,9 @@ class BASE_EXPORT ScopedObjCClassSwizzler {
   // inheritance or categories), swap the implementations of methods |original|
   // and |alternate|.
   ScopedObjCClassSwizzler(Class target, SEL original, SEL alternate);
+
+  ScopedObjCClassSwizzler(const ScopedObjCClassSwizzler&) = delete;
+  ScopedObjCClassSwizzler& operator=(const ScopedObjCClassSwizzler&) = delete;
 
   ~ScopedObjCClassSwizzler();
 
@@ -49,8 +51,6 @@ class BASE_EXPORT ScopedObjCClassSwizzler {
 
   Method old_selector_impl_;
   Method new_selector_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedObjCClassSwizzler);
 };
 
 }  // namespace mac

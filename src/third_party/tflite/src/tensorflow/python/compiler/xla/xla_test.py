@@ -14,10 +14,6 @@
 # =============================================================================
 """Tests for python.compiler.xla.xla."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python import summary
@@ -112,7 +108,7 @@ class XLACompileContextTest(test.TestCase, parameterized.TestCase):
 
     context = self.create_test_xla_compile_context()
     context.Enter()
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         NotImplementedError, 'Non-resource Variables are not supported inside '
         r'XLA computations \(operator name: Assign\)'):
       state_ops.assign(a, a + 1)
@@ -126,8 +122,8 @@ class XLACompileContextTest(test.TestCase, parameterized.TestCase):
 
     context2 = self.create_test_xla_compile_context()
     context2.Enter()
-    with self.assertRaisesRegexp(ValueError,
-                                 'XLA compiled computations cannot be nested'):
+    with self.assertRaisesRegex(ValueError,
+                                'XLA compiled computations cannot be nested'):
       constant_op.constant(1)
     context2.Exit()
     context1.Exit()
@@ -217,6 +213,8 @@ class XLACompileContextTest(test.TestCase, parameterized.TestCase):
 class XlaCompileTest(test.TestCase):
 
   @test_util.run_v2_only
+  @test_util.disable_tfrt(
+      'Legacy XLA test. It depends on EncapsulateXlaComputationsPass.')
   def test_xla_compile_eager(self):
     """Tests that xla.compile raises proper exception when used eagerly."""
 
@@ -225,6 +223,8 @@ class XlaCompileTest(test.TestCase):
 
     self.assertEqual(self.evaluate(xla.compile(computation, [1, 2])[0]), 3)
 
+  @test_util.disable_tfrt(
+      'Legacy XLA test. It depends on EncapsulateXlaComputationsPass.')
   def test_xla_compile_in_function(self):
     """Tests that xla.compile works in tf.function."""
 
@@ -238,6 +238,8 @@ class XlaCompileTest(test.TestCase):
 
     self.assertEqual(self.evaluate(func_wrapper(1))[0], 2)
 
+  @test_util.disable_tfrt(
+      'Legacy XLA test. It depends on EncapsulateXlaComputationsPass.')
   def test_xla_compile_write_variable_in_function(self):
     """Tests that xla.compile works with variable in tf.function."""
     a = variable_scope.get_variable(

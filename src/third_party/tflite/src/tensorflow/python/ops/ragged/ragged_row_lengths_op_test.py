@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for ragged.row_lengths."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.framework import errors
@@ -138,7 +134,7 @@ class RaggedRowLengthsOp(test_util.TensorFlowTestCase,
   ])
   def testErrors(self, rt_input, exception, message=None, axis=1):
     rt = ragged_factory_ops.constant(rt_input)
-    with self.assertRaisesRegexp(exception, message):
+    with self.assertRaisesRegex(exception, message):
       rt.row_lengths(axis)
 
 

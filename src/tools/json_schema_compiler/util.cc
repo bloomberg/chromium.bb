@@ -56,24 +56,35 @@ bool PopulateItem(const base::Value& from, bool* out, std::u16string* error) {
 }
 
 bool PopulateItem(const base::Value& from, double* out) {
-  return from.GetAsDouble(out);
+  absl::optional<double> maybe_double = from.GetIfDouble();
+  if (maybe_double.has_value()) {
+    if (out)
+      *out = maybe_double.value();
+    return true;
+  }
+  return false;
 }
 
 bool PopulateItem(const base::Value& from, double* out, std::u16string* error) {
-  if (!from.GetAsDouble(out))
+  if (!from.is_double())
     return ReportError(from, base::Value::Type::DOUBLE, error);
+  *out = from.GetDouble();
   return true;
 }
 
 bool PopulateItem(const base::Value& from, std::string* out) {
-  return from.GetAsString(out);
+  if (!from.is_string())
+    return false;
+  *out = from.GetString();
+  return true;
 }
 
 bool PopulateItem(const base::Value& from,
                   std::string* out,
                   std::u16string* error) {
-  if (!from.GetAsString(out))
+  if (!from.is_string())
     return ReportError(from, base::Value::Type::STRING, error);
+  *out = from.GetString();
   return true;
 }
 
@@ -125,11 +136,11 @@ bool PopulateItem(const base::Value& from,
 }
 
 void AddItemToList(const int from, base::ListValue* out) {
-  out->AppendInteger(from);
+  out->Append(from);
 }
 
 void AddItemToList(const bool from, base::ListValue* out) {
-  out->AppendBoolean(from);
+  out->Append(from);
 }
 
 void AddItemToList(const double from, base::ListValue* out) {
@@ -137,7 +148,7 @@ void AddItemToList(const double from, base::ListValue* out) {
 }
 
 void AddItemToList(const std::string& from, base::ListValue* out) {
-  out->AppendString(from);
+  out->Append(from);
 }
 
 void AddItemToList(const std::vector<uint8_t>& from, base::ListValue* out) {

@@ -5,7 +5,7 @@
 #ifndef SERVICES_DEVICE_PUBLIC_CPP_TEST_FAKE_SENSOR_AND_PROVIDER_H_
 #define SERVICES_DEVICE_PUBLIC_CPP_TEST_FAKE_SENSOR_AND_PROVIDER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -19,6 +19,10 @@ namespace device {
 class FakeSensor : public mojom::Sensor {
  public:
   FakeSensor(mojom::SensorType sensor_type, SensorReadingSharedBuffer* buffer);
+
+  FakeSensor(const FakeSensor&) = delete;
+  FakeSensor& operator=(const FakeSensor&) = delete;
+
   ~FakeSensor() override;
 
   // mojom::Sensor:
@@ -45,23 +49,26 @@ class FakeSensor : public mojom::Sensor {
   void SensorReadingChanged();
 
   mojom::SensorType sensor_type_;
-  SensorReadingSharedBuffer* buffer_;
+  raw_ptr<SensorReadingSharedBuffer> buffer_;
   bool reading_notification_enabled_ = true;
   mojo::Remote<mojom::SensorClient> client_;
   SensorReading reading_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSensor);
 };
 
 class FakeSensorProvider : public mojom::SensorProvider {
  public:
   FakeSensorProvider();
+
+  FakeSensorProvider(const FakeSensorProvider&) = delete;
+  FakeSensorProvider& operator=(const FakeSensorProvider&) = delete;
+
   ~FakeSensorProvider() override;
 
   // mojom::sensorProvider:
   void GetSensor(mojom::SensorType type, GetSensorCallback callback) override;
 
   void Bind(mojo::PendingReceiver<mojom::SensorProvider> receiver);
+  bool is_bound() const;
 
   void set_ambient_light_sensor_is_available(
       bool ambient_light_sensor_is_available) {
@@ -127,13 +134,13 @@ class FakeSensorProvider : public mojom::SensorProvider {
 
   // The following sensor pointers are owned by the caller of
   // FakeSensorProvider::GetSensor().
-  FakeSensor* ambient_light_sensor_ = nullptr;
-  FakeSensor* accelerometer_ = nullptr;
-  FakeSensor* linear_acceleration_sensor_ = nullptr;
-  FakeSensor* gravity_sensor_ = nullptr;
-  FakeSensor* gyroscope_ = nullptr;
-  FakeSensor* relative_orientation_sensor_ = nullptr;
-  FakeSensor* absolute_orientation_sensor_ = nullptr;
+  raw_ptr<FakeSensor> ambient_light_sensor_ = nullptr;
+  raw_ptr<FakeSensor> accelerometer_ = nullptr;
+  raw_ptr<FakeSensor> linear_acceleration_sensor_ = nullptr;
+  raw_ptr<FakeSensor> gravity_sensor_ = nullptr;
+  raw_ptr<FakeSensor> gyroscope_ = nullptr;
+  raw_ptr<FakeSensor> relative_orientation_sensor_ = nullptr;
+  raw_ptr<FakeSensor> absolute_orientation_sensor_ = nullptr;
 
   SensorReading ambient_light_sensor_reading_;
   SensorReading accelerometer_reading_;
@@ -152,8 +159,6 @@ class FakeSensorProvider : public mojom::SensorProvider {
   mojo::ReceiverSet<mojom::SensorProvider> receivers_{};
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSensorProvider);
 };
 
 }  // namespace device

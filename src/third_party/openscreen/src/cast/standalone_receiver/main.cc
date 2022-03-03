@@ -58,15 +58,20 @@ options:
                                 private key and certificate can then be used as
                                 values for the -p and -s flags.
 
-    -f, --friendly-name: Friendly name to be used for device discovery.
+    -f, --friendly-name: Friendly name to be used for receiver discovery.
 
-    -m, --model-name: Model name to be used for device discovery.
+    -m, --model-name: Model name to be used for receiver discovery.
 
     -t, --tracing: Enable performance tracing logging.
 
     -v, --verbose: Enable verbose logging.
 
     -h, --help: Show this help message.
+
+    -x, --disable-discovery: Disable discovery, useful for platforms like Mac OS
+                             where our implementation is incompatible with
+                             the native Bonjour service.
+
 )";
 
   std::cerr << StringPrintf(kTemplate, argv0);
@@ -95,30 +100,22 @@ InterfaceInfo GetInterfaceInfoFromName(const char* name) {
   return interface_info;
 }
 
-void RunCastService(TaskRunnerImpl* task_runner,
-                    const InterfaceInfo& interface,
-                    GeneratedCredentials creds,
-                    const std::string& friendly_name,
-                    const std::string& model_name,
-                    bool discovery_enabled) {
+void RunCastService(TaskRunnerImpl* runner, CastService::Configuration config) {
   std::unique_ptr<CastService> service;
-  task_runner->PostTask([&] {
-    service = std::make_unique<CastService>(task_runner, interface,
-                                            std::move(creds), friendly_name,
-                                            model_name, discovery_enabled);
-  });
+  runner->PostTask(
+      [&] { service = std::make_unique<CastService>(std::move(config)); });
 
   OSP_LOG_INFO << "CastService is running. CTRL-C (SIGINT), or send a "
                   "SIGTERM to exit.";
-  task_runner->RunUntilSignaled();
+  runner->RunUntilSignaled();
 
   // Spin the TaskRunner to execute destruction/shutdown tasks.
   OSP_LOG_INFO << "Shutting down...";
-  task_runner->PostTask([&] {
+  runner->PostTask([&] {
     service.reset();
-    task_runner->RequestStopSoon();
+    runner->RequestStopSoon();
   });
-  task_runner->RunUntilStopped();
+  runner->RunUntilStopped();
   OSP_LOG_INFO << "Bye!";
 }
 
@@ -130,6 +127,14 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
          "cast_allow_developer_certificate=true set in the GN args to "
          "actually do anything interesting.";
   return 1;
+#endif
+
+#if !defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
+  OSP_LOG_INFO
+      << "Note: compiled without external libs. The dummy player will "
+         "be linked and no video decoding will occur. If this is not desired, "
+         "install the required external libraries. For more information, see: "
+         "[external_libraries.md](../../build/config/external_libraries.md).";
 #endif
 
   // A note about modifying command line arguments: consider uniformity
@@ -152,7 +157,7 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
       {nullptr, 0, nullptr, 0}};
 
   bool is_verbose = false;
-  bool discovery_enabled = true;
+  bool enable_discovery = true;
   std::string private_key_path;
   std::string developer_certificate_path;
   std::string friendly_name = "Cast Standalone Receiver";
@@ -160,7 +165,7 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
   bool should_generate_credentials = false;
   std::unique_ptr<TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "p:d:f:m:gtvhx", kArgumentOptions,
+  while ((ch = getopt_long(argc, argv, "p:d:f:m:grtvhx", kArgumentOptions,
                            nullptr)) != -1) {
     switch (ch) {
       case 'p':
@@ -185,7 +190,7 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
         is_verbose = true;
         break;
       case 'x':
-        discovery_enabled = false;
+        enable_discovery = false;
         break;
       case 'h':
         LogUsage(argv[0]);
@@ -211,29 +216,22 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
   OSP_CHECK(interface_name && strlen(interface_name) > 0)
       << "No interface name provided.";
 
-  std::string device_id =
+  std::string receiver_id =
       absl::StrCat("Standalone Receiver on ", interface_name);
   ErrorOr<GeneratedCredentials> creds = GenerateCredentials(
-      device_id, private_key_path, developer_certificate_path);
+      receiver_id, private_key_path, developer_certificate_path);
   OSP_CHECK(creds.is_value()) << creds.error();
 
   const InterfaceInfo interface = GetInterfaceInfoFromName(interface_name);
   OSP_CHECK(interface.GetIpAddressV4() || interface.GetIpAddressV6());
-  if (std::all_of(interface.hardware_address.begin(),
-                  interface.hardware_address.end(),
-                  [](int e) { return e == 0; })) {
-    OSP_LOG_WARN
-        << "Hardware address is empty. Either you are on a loopback device "
-           "or getting the network interface information failed somehow. "
-           "Discovery publishing will be disabled.";
-    discovery_enabled = false;
-  }
 
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
   PlatformClientPosix::Create(milliseconds(50),
                               std::unique_ptr<TaskRunnerImpl>(task_runner));
-  RunCastService(task_runner, interface, std::move(creds.value()),
-                 friendly_name, model_name, discovery_enabled);
+  RunCastService(task_runner,
+                 CastService::Configuration{
+                     task_runner, interface, std::move(creds.value()),
+                     friendly_name, model_name, enable_discovery});
   PlatformClientPosix::ShutDown();
 
   return 0;

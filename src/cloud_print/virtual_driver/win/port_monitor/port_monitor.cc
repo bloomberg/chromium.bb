@@ -22,6 +22,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -75,7 +76,7 @@ struct PortData {
   }
   DWORD job_id;
   HANDLE printer_handle;
-  FILE* file;
+  raw_ptr<FILE> file;
   base::FilePath file_path;
 };
 
@@ -123,7 +124,7 @@ base::FilePath GetAppDataDir() {
 
 // Delete files which where not deleted by chrome.
 void DeleteLeakedFiles(const base::FilePath& dir) {
-  base::Time delete_before = base::Time::Now() - base::TimeDelta::FromDays(1);
+  base::Time delete_before = base::Time::Now() - base::Days(1);
   base::FileEnumerator enumerator(dir, false, base::FileEnumerator::FILES);
   for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {

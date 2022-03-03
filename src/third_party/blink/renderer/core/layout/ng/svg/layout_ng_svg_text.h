@@ -6,8 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_SVG_LAYOUT_NG_SVG_TEXT_H_
 
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow_mixin.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_block.h"
 
 namespace blink {
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutSVGBlock>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGBlockFlowMixin<LayoutSVGBlock>;
 
 // The LayoutNG representation of SVG <text>.
 class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
@@ -29,20 +34,36 @@ class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
   bool IsChildAllowed(LayoutObject* child, const ComputedStyle&) const override;
   void AddChild(LayoutObject* child, LayoutObject* before_child) override;
   void RemoveChild(LayoutObject* child) override;
-  FloatRect ObjectBoundingBox() const override;
-  FloatRect StrokeBoundingBox() const override;
-  FloatRect VisualRectInLocalSVGCoordinates() const override;
+  void InsertedIntoTree() override;
+  void WillBeRemovedFromTree() override;
+  gfx::RectF ObjectBoundingBox() const override;
+  gfx::RectF StrokeBoundingBox() const override;
+  gfx::RectF VisualRectInLocalSVGCoordinates() const override;
+  void AbsoluteQuads(Vector<FloatQuad>& quads,
+                     MapCoordinatesFlags mode) const override;
+  FloatRect LocalBoundingBoxRectForAccessibility() const override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void WillBeDestroyed() override;
+  bool NodeAtPoint(HitTestResult& result,
+                   const HitTestLocation& hit_test_location,
+                   const PhysicalOffset& accumulated_offset,
+                   HitTestAction action) override;
+  PositionWithAffinity PositionForPoint(
+      const PhysicalOffset& point_in_contents) const override;
 
   // LayoutBox override:
   bool CreatesNewFormattingContext() const override;
+  void UpdateFromStyle() override;
 
   // LayoutBlock override:
+  void Paint(const PaintInfo&) const override;
   void UpdateBlockLayout(bool relayout_children) override;
 
   void UpdateFont();
+  void UpdateTransformAffectsVectorEffect();
 
   // bounding_box_* are mutable for on-demand computation in a const method.
-  mutable FloatRect bounding_box_;
+  mutable gfx::RectF bounding_box_;
   mutable bool needs_update_bounding_box_ : 1;
 
   bool needs_text_metrics_update_ : 1;

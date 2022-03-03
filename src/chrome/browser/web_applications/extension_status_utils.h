@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 
 class Profile;
 
@@ -31,10 +32,23 @@ bool IsExtensionForceInstalled(content::BrowserContext* context,
                                const std::string& extension_id,
                                std::u16string* reason);
 
+// Returns whether the extension with `extension_id` was installed as a default
+// extension/app.
+bool IsExtensionDefaultInstalled(content::BrowserContext* context,
+                                 const std::string& extension_id);
+
 // Returns whether the user has uninstalled an externally installed extension
 // with |extension_id|.
 bool IsExternalExtensionUninstalled(content::BrowserContext* context,
                                     const std::string& extension_id);
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// Returns whether |extension_id| is a Chrome App and should be blocked by the
+// Chrome Apps Deprecation. Policy installed Chrome Apps are still allowed, and
+// all apps are allowed if the deprecation feature flag is not enabled.
+bool IsExtensionUnsupportedDeprecatedApp(content::BrowserContext* context,
+                                         const std::string& extension_id);
+#endif
 
 // Waits for extension system ready to run callback.
 void OnExtensionSystemReady(content::BrowserContext* context,

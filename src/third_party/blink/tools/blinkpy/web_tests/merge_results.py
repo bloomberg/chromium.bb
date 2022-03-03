@@ -35,8 +35,14 @@ import os
 import pprint
 import re
 import shutil
+import sys
 import tempfile
 import types
+
+BLINK_TOOLS_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+if BLINK_TOOLS_PATH not in sys.path:
+  sys.path.append(BLINK_TOOLS_PATH)
 
 from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.system.log_utils import configure_logging
@@ -161,8 +167,8 @@ class JSONMerger(Merger):
         Merger.__init__(self)
 
         self.add_helper(
-            TypeMatch(types.ListType, types.TupleType), self.merge_listlike)
-        self.add_helper(TypeMatch(types.DictType), self.merge_dictlike)
+            TypeMatch(list, tuple), self.merge_listlike)
+        self.add_helper(TypeMatch(dict), self.merge_dictlike)
 
     def fallback_matcher(self, objs, name=None):
         raise MergeFailure("No merge helper found!", name, objs)
@@ -210,7 +216,7 @@ class JSONMerger(Merger):
                 dict_mid.setdefault(key, []).append(dobj[key])
 
         dict_out = dicts[0].__class__({})
-        for k, v in dict_mid.iteritems():
+        for k, v in dict_mid.items():
             assert v
             if len(v) == 1:
                 dict_out[k] = v[0]
@@ -389,15 +395,15 @@ class MergeFilesJSONP(MergeFiles):
         """
         in_data = fd.read()
 
-        begin = in_data.find('{')
-        end = in_data.rfind('}') + 1
+        begin = in_data.find(b'{')
+        end = in_data.rfind(b'}') + 1
 
         before = in_data[:begin]
         data = in_data[begin:end]
         after = in_data[end:]
 
         # If just a JSON file, use json.load to get better error message output.
-        if before == '' and after == '':
+        if before == b'' and after == b'':
             fd.seek(0)
             json_data = json.load(fd)
         else:
@@ -413,7 +419,9 @@ class MergeFilesJSONP(MergeFiles):
         other non-JSON data.
         """
         fd.write(before)
-        fd.write(json.dumps(json_data, separators=(",", ":"), sort_keys=True))
+        fd.write(json.dumps(json_data,
+                            separators=(",", ":"),
+                            sort_keys=True).encode('utf-8'))
         fd.write(after)
 
 
@@ -490,7 +498,7 @@ class DirMerger(Merger):
 
         # Go through each file and try to merge it.
         # partial_file_path is the file relative to the directories.
-        for partial_file_path, in_dirs in sorted(files.iteritems()):
+        for partial_file_path, in_dirs in sorted(files.items()):
             out_path = self.filesystem.join(output_dir, partial_file_path)
             if self.filesystem.exists(out_path):
                 raise MergeFailure('File %s already exist in output.',
@@ -520,6 +528,38 @@ class DirMerger(Merger):
 
 # Classes specific to merging web test results directory.
 # ------------------------------------------------------------------------
+
+
+class JSONWptReportsMerger(JSONMerger):
+    """Merger for the 'wpt report' format.
+
+    The JSON format is described at
+    https://github.com/web-platform-tests/wpt.fyi/tree/main/api#apiresultsupload
+
+    """
+
+    def __init__(self):
+        JSONMerger.__init__(self)
+
+        # results is a list, and we want to add them together.
+        self.add_helper(
+            NameRegexMatch(':results$'),
+            self.merge_listlike)
+
+        # pick run_info from shard 0.
+        self.add_helper(
+            NameRegexMatch(':run_info$'),
+            lambda o, name=None: o[0])
+
+        # We just take the earliest for time_start.
+        self.add_helper(
+            NameRegexMatch(':time_start$'),
+            lambda o, name=None: min(*o))
+
+        # and the last for time_end.
+        self.add_helper(
+            NameRegexMatch(':time_end$'),
+            lambda o, name=None: max(*o))
 
 
 class JSONTestResultsMerger(JSONMerger):
@@ -626,6 +666,8 @@ class WebTestDirMerger(DirMerger):
         self.add_helper(
             FilenameRegexMatch(r'wptserve_stderr\.txt$'),
             MergeFilesKeepFiles(self.filesystem))
+        self.add_helper(FilenameRegexMatch(r'wptserve_stdout\.txt$'),
+                        MergeFilesKeepFiles(self.filesystem))
         # keep chromedriver log for webdriver tests
         self.add_helper(FilenameRegexMatch(r'chromedriver\.log$'),
                         MergeFilesKeepFiles(self.filesystem))
@@ -633,6 +675,15 @@ class WebTestDirMerger(DirMerger):
         # keep system log for tests on fuchsia platform. See ./port/fuchsia.py
         self.add_helper(FilenameRegexMatch(r'system_log$'),
                         MergeFilesKeepFiles(self.filesystem))
+
+        # Merge WPT report JSON files
+        # https://github.com/web-platform-tests/wpt.fyi/tree/main/api#apiresultsupload
+        wpt_reports_json_merger = MergeFilesJSONP(
+            self.filesystem,
+            JSONWptReportsMerger())
+        self.add_helper(
+            FilenameRegexMatch(r'reports\.json$'),
+            wpt_reports_json_merger)
 
         # These JSON files have "result style" JSON in them.
         results_json_file_merger = MergeFilesJSONP(
@@ -736,7 +787,7 @@ def mark_missing_shards(summary_json,
         json_contents_merged['missing_shards'] = missing_shards
 
         with filesystem.open_binary_file_for_writing(merged_output_json) as f:
-            MergeFilesJSONP.dump_jsonp(f, '', json_contents_merged, '')
+            MergeFilesJSONP.dump_jsonp(f, b'', json_contents_merged, b'')
 
 
 def find_shard_output_path(index, task_id, input_directories):
@@ -963,3 +1014,6 @@ directory. The script will be given the arguments plus
 
         logging.info('Running post merge script %r', post_script)
         os.execlp(post_script)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

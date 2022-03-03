@@ -396,7 +396,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -407,7 +407,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -418,7 +418,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -429,7 +429,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -440,7 +440,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -451,7 +451,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -462,7 +462,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -473,7 +473,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     },
@@ -484,7 +484,7 @@
                             "precision":"Medium",
                             "qualifier":"Const"
                         },
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "value":"resources"
                     }
@@ -754,7 +754,7 @@
         "shader_type": "FRAGMENT",
         "variables":{
             "gl_FragCoord":{
-                "essl_level":"COMMON_BUILTINS",
+                "essl_level":"ESSL1_BUILTINS",
                 "type":{
                     "basic":"Float",
                     "precision":"Medium",
@@ -808,6 +808,20 @@
             }
         },
         "subgroups":{
+            "ES300":{
+                "variables":{
+                    "gl_FragCoord":{
+                        "essl_level":"ESSL3_BUILTINS",
+                        "suffix":"300",
+                        "type":{
+                            "basic":"Float",
+                            "precision":"High",
+                            "qualifier":"FragCoord",
+                            "primarySize":4
+                        }
+                    }
+                }
+            },
             "EXTBlendFuncExtended":{
                 "variables":{
                     "gl_SecondaryFragColorEXT":{
@@ -832,7 +846,7 @@
                     "gl_FragDepthEXT":{
                         "essl_level":"ESSL1_BUILTINS",
                         "essl_extension":"EXT_frag_depth",
-                        "initDynamicType":"TType *{type_name} = new TType(EbtFloat, resources.FragmentPrecisionHigh ? EbpHigh : EbpMedium, EvqFragDepthEXT, 1);"
+                        "initDynamicType":"TType *{type_name} = new TType(EbtFloat, resources.FragmentPrecisionHigh ? EbpHigh : EbpMedium, EvqFragDepth, 1);"
                     }
                 }
             },
@@ -893,7 +907,7 @@
                 "variables":{
                     "gl_PrimitiveID":{
                         "essl_level":"ESSL3_1_BUILTINS",
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "type":{
                             "basic":"Int",
@@ -903,7 +917,7 @@
                     },
                     "gl_Layer":{
                         "essl_level":"ESSL3_1_BUILTINS",
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "type":{
                             "basic":"Int",
@@ -979,7 +993,7 @@
                 }
             },
             "gl_PointSize":{
-                "essl_level":"COMMON_BUILTINS",
+                "essl_level":"ESSL1_BUILTINS",
                 "type":{
                     "basic":"Float",
                     "precision":"Medium",
@@ -1041,6 +1055,19 @@
             }
         },
         "subgroups":{
+            "ES300":{
+                "variables":{
+                    "gl_PointSize":{
+                        "essl_level":"ESSL3_BUILTINS",
+                        "suffix":"300",
+                        "type":{
+                            "basic":"Float",
+                            "precision":"High",
+                            "qualifier":"PointSize"
+                        }
+                    }
+                }
+            },
             "ANGLEMultiDraw":{
                 "subgroups":{
                   "ESSL3":{
@@ -1064,7 +1091,7 @@
                         "variables":{
                             "gl_BaseVertex":{
                                 "essl_level":"ESSL3_BUILTINS",
-                                "essl_extension":"ANGLE_base_vertex_base_instance",
+                                "essl_extension":"ANGLE_base_vertex_base_instance_shader_builtin",
                                 "type":{
                                     "basic":"Int",
                                     "precision":"High",
@@ -1073,7 +1100,7 @@
                             },
                             "gl_BaseInstance":{
                                 "essl_level":"ESSL3_BUILTINS",
-                                "essl_extension":"ANGLE_base_vertex_base_instance",
+                                "essl_extension":"ANGLE_base_vertex_base_instance_shader_builtin",
                                 "type":{
                                     "basic":"Int",
                                     "precision":"High",
@@ -1082,7 +1109,7 @@
                             },
                             "angle_BaseVertex":{
                                 "essl_level":"COMMON_BUILTINS",
-                                "essl_extension":"ANGLE_base_vertex_base_instance",
+                                "essl_extension":"ANGLE_base_vertex_base_instance_shader_builtin",
                                 "type":{
                                     "basic":"Int",
                                     "precision":"High",
@@ -1091,7 +1118,7 @@
                             },
                             "angle_BaseInstance":{
                                 "essl_level":"COMMON_BUILTINS",
-                                "essl_extension":"ANGLE_base_vertex_base_instance",
+                                "essl_extension":"ANGLE_base_vertex_base_instance_shader_builtin",
                                 "type":{
                                     "basic":"Int",
                                     "precision":"High",
@@ -1187,7 +1214,7 @@
         "variables":{
             "gl_PrimitiveIDIn":{
                 "essl_level":"ESSL3_1_BUILTINS",
-                "essl_extension":"EXT_geometry_shader",
+                "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                 "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                 "type":{
                     "basic":"Int",
@@ -1197,7 +1224,7 @@
             },
             "gl_InvocationID":{
                 "essl_level":"ESSL3_1_BUILTINS",
-                "essl_extension":"EXT_geometry_shader",
+                "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                 "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                 "type":{
                     "basic":"Int",
@@ -1208,7 +1235,7 @@
             "gl_PrimitiveID":{
                 "suffix":"GS",
                 "essl_level":"ESSL3_1_BUILTINS",
-                "essl_extension":"EXT_geometry_shader",
+                "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                 "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                 "type":{
                     "basic":"Int",
@@ -1219,7 +1246,7 @@
             "gl_Layer":{
                 "suffix":"GS",
                 "essl_level":"ESSL3_1_BUILTINS",
-                "essl_extension":"EXT_geometry_shader",
+                "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                 "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                 "type":{
                     "basic":"Int",
@@ -1229,7 +1256,7 @@
             },
             "gl_PerVertex":{
                 "essl_level":"ESSL3_1_BUILTINS",
-                "essl_extension":"EXT_geometry_shader",
+                "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                 "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                 "class":"TInterfaceBlock",
                 "fields":{
@@ -1243,7 +1270,7 @@
             },
             "gl_in":{
                 "essl_level":"ESSL3_1_BUILTINS",
-                "essl_extension":"EXT_geometry_shader",
+                "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                 "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                 "initDynamicType":"TType *{type_name} = new TType(gl_PerVertex, EvqPerVertexIn, TLayoutQualifier::Create()); {type_name}->makeArray(0u);",
                 "comment":"The array size of gl_in is undefined until we get a valid input primitive declaration."
@@ -1255,7 +1282,7 @@
                     "gl_PerVertex":{
                         "suffix":"OutBlock",
                         "essl_level":"ESSL3_1_BUILTINS",
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "private":true,
                         "class":"TInterfaceBlock",
@@ -1271,7 +1298,7 @@
                     "gl_Position":{
                         "suffix":"GS",
                         "essl_level":"ESSL3_1_BUILTINS",
-                        "essl_extension":"EXT_geometry_shader",
+                        "essl_extension":"EXT_geometry_shader, OES_geometry_shader",
                         "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
                         "initDynamicType":"TType *{type_name} = new TType(EbtFloat, EbpHigh, EvqPosition, 4); {type_name}->setInterfaceBlock(gl_PerVertexOutBlock{ext_or_core_suffix});"
                     }
@@ -1386,6 +1413,17 @@
                         "initDynamicType":"TType *{type_name} = new TType(EbtFloat, EbpHigh, EvqPosition, 4); {type_name}->setInterfaceBlock(gl_PerVertexOutTcsBlock{ext_or_core_suffix});"
                     }
                 }
+            },
+            "EXTPrimitiveBoundingBox":{
+                "variables":{
+                    "gl_BoundingBoxEXT":{
+                        "suffix":"TCS",
+                        "essl_level":"ESSL3_1_BUILTINS",
+                        "essl_extension":"EXT_tessellation_shader",
+                        "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
+                        "initDynamicType":"TType *{type_name} = new TType(EbtFloat, EbpHigh, EvqBoundingBoxEXT, 4); {type_name}->makeArray(4u);"
+                    }
+                }
             }
         }
     },
@@ -1419,7 +1457,8 @@
                 "type":{
                     "basic":"Float",
                     "precision":"High",
-                    "primarySize":3
+                    "primarySize":3,
+                    "qualifier":"TessCoord"
                 }
             },
             "gl_TessLevelOuter":{

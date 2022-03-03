@@ -4,7 +4,7 @@
 
 import type * as puppeteer from 'puppeteer';
 
-import {$, $$, assertNotNull, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, $$, assertNotNullOrUndefined, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
 import {AsyncScope} from '../../shared/mocha-extensions.js';
 
 export const CONSOLE_TAB_SELECTOR = '#tab-console';
@@ -15,11 +15,13 @@ export const LOG_LEVELS_SELECTOR = '[aria-label^="Log level: "]';
 export const LOG_LEVELS_VERBOSE_OPTION_SELECTOR = '[aria-label^="Verbose"]';
 export const CONSOLE_PROMPT_SELECTOR = '.console-prompt-editor-container';
 export const CONSOLE_VIEW_SELECTOR = '.console-view';
+export const CONSOLE_TOOLTIP_SELECTOR = '.cm-tooltip';
 export const STACK_PREVIEW_CONTAINER = '.stack-preview-container';
 export const CONSOLE_MESSAGE_WRAPPER_SELECTOR = '.console-group-messages .console-message-wrapper';
 export const CONSOLE_SELECTOR = '.console-user-command-result';
 export const CONSOLE_SETTINGS_SELECTOR = '[aria-label^="Console settings"]';
 export const AUTOCOMPLETE_FROM_HISTORY_SELECTOR = '[aria-label^="Autocomplete from history"]';
+export const SHOW_CORS_ERRORS_SELECTOR = '[aria-label^="Show CORS errors in console"]';
 
 export async function deleteConsoleMessagesFilter(frontend: puppeteer.Page) {
   await waitFor('.console-main-toolbar');
@@ -52,6 +54,25 @@ export async function waitForConsoleMessagesToBeNonEmpty(numberOfMessages: numbe
     const textContents =
         await Promise.all(messages.map(message => message.evaluate(message => message.textContent || '')));
     return textContents.every(text => text !== '');
+  });
+}
+
+export async function waitForLastConsoleMessageToHaveContent(expectedTextContent: string) {
+  await waitForFunction(async () => {
+    const messages = await $$(CONSOLE_FIRST_MESSAGES_SELECTOR);
+    if (messages.length === 0) {
+      return false;
+    }
+    const lastMessageContent = await messages[messages.length - 1].evaluate(message => message.textContent);
+    return lastMessageContent === expectedTextContent;
+  });
+}
+
+export async function waitForAutocompletionTooltipToHaveContent(expectedAutocompletion: string) {
+  await waitForFunction(async () => {
+    const preview = await waitFor('.console-eager-inner-preview > span');
+    return preview.evaluate(
+        (node, expectedAutocompletion) => node.innerHTML === expectedAutocompletion, expectedAutocompletion);
   });
 }
 
@@ -148,8 +169,8 @@ export async function typeIntoConsole(frontend: puppeteer.Page, message: string)
   const consoleElement = await waitFor(CONSOLE_PROMPT_SELECTOR, undefined, asyncScope);
   await consoleElement.type(message);
   // Wait for autocomplete text to catch up.
-  const line = await waitFor('.CodeMirror-activeline', consoleElement, asyncScope);
-  const autocomplete = await line.$('.auto-complete-text');
+  const line = await waitFor('[aria-label="Console prompt"]', consoleElement, asyncScope);
+  const autocomplete = await $(CONSOLE_TOOLTIP_SELECTOR);
   // The autocomplete element doesn't exist until the first autocomplete suggestion
   // is actually given.
 
@@ -229,11 +250,18 @@ export async function turnOffHistoryAutocomplete() {
   await click(AUTOCOMPLETE_FROM_HISTORY_SELECTOR);
 }
 
+export async function toggleShowCorsErrors() {
+  await click(CONSOLE_SETTINGS_SELECTOR);
+  await waitFor(SHOW_CORS_ERRORS_SELECTOR);
+  await click(SHOW_CORS_ERRORS_SELECTOR);
+  await click(CONSOLE_SETTINGS_SELECTOR);
+}
+
 async function getIssueButtonLabel(): Promise<string|null> {
   const infobarButton = await waitFor('#console-issues-counter');
   const iconButton = await waitFor('icon-button', infobarButton);
   const titleElement = await waitFor('.icon-button-title', iconButton);
-  assertNotNull(titleElement);
+  assertNotNullOrUndefined(titleElement);
   const infobarButtonText = await titleElement.evaluate(node => (node as HTMLElement).textContent);
   return infobarButtonText;
 }
@@ -243,4 +271,11 @@ export async function waitForIssueButtonLabel(expectedLabel: string) {
     const label = await getIssueButtonLabel();
     return expectedLabel === label;
   });
+}
+
+export async function clickOnContextMenu(selectorForNode: string, ctxMenuItemName: string) {
+  const node = await waitFor(selectorForNode);
+  await click(node, {clickOptions: {button: 'right'}});
+  const copyButton = await waitForAria(ctxMenuItemName);
+  await copyButton.click();
 }

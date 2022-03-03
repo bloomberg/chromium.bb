@@ -9,13 +9,18 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
 
 // Implementation of DeviceAccountsProvider.
 class WebViewDeviceAccountsProviderImpl : public DeviceAccountsProvider {
  public:
   WebViewDeviceAccountsProviderImpl();
+
+  WebViewDeviceAccountsProviderImpl(const WebViewDeviceAccountsProviderImpl&) =
+      delete;
+  WebViewDeviceAccountsProviderImpl& operator=(
+      const WebViewDeviceAccountsProviderImpl&) = delete;
+
   ~WebViewDeviceAccountsProviderImpl() override;
 
   // ios::DeviceAccountsProvider
@@ -27,9 +32,6 @@ class WebViewDeviceAccountsProviderImpl : public DeviceAccountsProvider {
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       const std::string& gaia_id,
       NSError* error) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewDeviceAccountsProviderImpl);
 };
 
 #endif  // IOS_WEB_VIEW_INTERNAL_SIGNIN_WEB_VIEW_DEVICE_ACCOUNTS_PROVIDER_IMPL_H_

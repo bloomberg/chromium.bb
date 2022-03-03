@@ -89,7 +89,8 @@ class PLATFORM_EXPORT ShapeResultView final
     unsigned start_index;
     unsigned end_index;
   };
-  static scoped_refptr<ShapeResultView> Create(const Segment*, size_t);
+  static scoped_refptr<ShapeResultView> Create(
+      base::span<const Segment> segments);
 
   // Creates a new ShapeResultView from a single segment.
   static scoped_refptr<ShapeResultView> Create(const ShapeResult*);
@@ -100,6 +101,8 @@ class PLATFORM_EXPORT ShapeResultView final
                                                unsigned start_index,
                                                unsigned end_index);
 
+  ShapeResultView(const ShapeResultView&) = delete;
+  ShapeResultView& operator=(const ShapeResultView&) = delete;
   ~ShapeResultView();
 
   scoped_refptr<ShapeResult> CreateShapeResult() const;
@@ -138,7 +141,7 @@ class PLATFORM_EXPORT ShapeResultView final
 
   // Computes and returns the ink bounds (or visual overflow rect). This is
   // quite expensive and involves measuring each glyph accumulating the bounds.
-  FloatRect ComputeInkBounds() const;
+  gfx::RectF ComputeInkBounds() const;
 
   scoped_refptr<const SimpleFontData> PrimaryFont() const {
     return primary_font_;
@@ -148,22 +151,25 @@ class PLATFORM_EXPORT ShapeResultView final
   void ExpandRangeToIncludePartialGlyphs(unsigned* from, unsigned* to) const;
 
  private:
-  template <class ShapeResultType>
-  explicit ShapeResultView(const ShapeResultType*);
+  struct InitData;
+  explicit ShapeResultView(const InitData& data);
 
   struct RunInfoPart;
+  RunInfoPart* PopulateRunInfoParts(const Segment& segment, RunInfoPart* part);
+
+  // Populates |parts_[]| and accumulates |num_characters_|, |num_glyphs_| and
+  // |width_| from runs in |result|.
   template <class ShapeResultType>
-  void CreateViewsForResult(const ShapeResultType*,
-                            unsigned start_index,
-                            unsigned end_index);
-  void AddSegments(const Segment*, size_t);
+  RunInfoPart* PopulateRunInfoParts(const ShapeResultType& result,
+                                    const Segment& segment,
+                                    RunInfoPart* part);
 
   unsigned CharacterIndexOffsetForGlyphData(const RunInfoPart&) const;
 
   template <bool is_horizontal_run, bool has_glyph_offsets>
   void ComputePartInkBounds(const ShapeResultView::RunInfoPart&,
                             float run_advance,
-                            FloatRect* ink_bounds) const;
+                            gfx::RectF* ink_bounds) const;
 
   // Common signatures with ShapeResult, to templatize algorithms.
   base::span<const RunInfoPart> RunsOrParts() const { return Parts(); }
@@ -176,26 +182,33 @@ class PLATFORM_EXPORT ShapeResultView final
   }
   unsigned StartIndexOffsetForRun() const { return char_index_offset_; }
 
-  scoped_refptr<const SimpleFontData> primary_font_;
+  // Returns byte size, aka allocation size, of |ShapeResultView| with
+  // |num_parts| count of |RunInfoPart| in flexible array member.
+  static constexpr size_t ByteSize(wtf_size_t num_parts);
 
-  unsigned start_index_;
-  unsigned num_characters_;
+  scoped_refptr<const SimpleFontData> const primary_font_;
+
+  const unsigned start_index_;
+
+  // Note: Once |RunInfoPart| populated, |num_characters_|, |num_glyphs_| and
+  // |width_| are immutable.
+  float width_ = 0;
+  unsigned num_characters_ = 0;
   unsigned num_glyphs_ : 30;
 
   // Overall direction for the TextRun, dictates which order each individual
   // sub run (represented by RunInfo structs in the m_runs vector) can
   // have a different text direction.
-  unsigned direction_ : 1;
+  const unsigned direction_ : 1;
 
   // Tracks whether any runs contain glyphs with a y-offset != 0.
-  unsigned has_vertical_offsets_ : 1;
+  const unsigned has_vertical_offsets_ : 1;
 
   // Offset of the first component added to the view. Used for compatibility
   // with ShapeResult::SubRange
-  unsigned char_index_offset_;
+  const unsigned char_index_offset_;
 
-  float width_;
-  wtf_size_t num_parts_ = 0;
+  const wtf_size_t num_parts_;
 
   // TODO(yosin): We should declare |RunInoPart| in this file to avoid using
   // dummy struct.
@@ -221,8 +234,6 @@ class PLATFORM_EXPORT ShapeResultView final
                          GlyphCallback,
                          void* context,
                          const RunInfoPart& part) const;
-
-  DISALLOW_COPY_AND_ASSIGN(ShapeResultView);
 };
 
 }  // namespace blink

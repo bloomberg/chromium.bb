@@ -12,6 +12,7 @@
 # is updated in Devil.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import base64
 import json
 import math
@@ -26,11 +27,14 @@ import tempfile
 import threading
 import time
 import unittest
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import uuid
 import imghdr
 import struct
+from six.moves import map
+from six.moves import range
+from six.moves import zip
 
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -48,6 +52,7 @@ sys.path.insert(1, _CLIENT_DIR)
 import chromedriver
 import websocket_connection
 import webelement
+import webshadowroot
 sys.path.remove(_CLIENT_DIR)
 
 sys.path.insert(1, _SERVER_DIR)
@@ -524,19 +529,19 @@ class ChromeDriverWebSocketTest(ChromeDriverBaseTestWithWebServer):
 
   def testDefaultSession(self):
     driver = self.CreateDriver()
-    self.assertFalse(driver.capabilities.has_key('webSocketUrl'))
+    self.assertFalse('webSocketUrl' in driver.capabilities)
     self.assertRaises(Exception, websocket_connection.WebSocketConnection,
                       _CHROMEDRIVER_SERVER_URL, driver.GetSessionId())
 
   def testWebSocketUrlFalse(self):
     driver = self.CreateDriver(web_socket_url=False)
-    self.assertFalse(driver.capabilities.has_key('webSocketUrl'))
+    self.assertFalse('webSocketUrl' in driver.capabilities)
     self.assertRaises(Exception, websocket_connection.WebSocketConnection,
                       _CHROMEDRIVER_SERVER_URL, driver.GetSessionId())
 
   def testWebSocketUrlTrue(self):
     driver = self.CreateDriver(web_socket_url=True)
-    self.assertTrue(driver.capabilities.has_key('webSocketUrl'))
+    self.assertTrue('webSocketUrl' in driver.capabilities)
     self.assertNotEqual(None, driver.GetSessionId())
     self.assertEquals(driver.capabilities['webSocketUrl'],
         self.composeWebSocketUrl(_CHROMEDRIVER_SERVER_URL,
@@ -819,6 +824,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SwitchToFrame('id')
     self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
     self._driver.ExecuteScript('parent.postMessage("remove", "*");')
+    self._driver.SwitchToMainFrame()
     self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
 
   def testSwitchToStaleFrame(self):
@@ -841,6 +847,70 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetPageSource(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     self.assertTrue('Link to empty.html' in self._driver.GetPageSource())
+
+  def testGetElementShadowRoot(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'custom-checkbox-element')
+    shadow = element.GetElementShadowRoot()
+    self.assertTrue(isinstance(shadow, webshadowroot.WebShadowRoot))
+
+  def testGetElementShadowRootNotExists(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'div')
+    with self.assertRaises(chromedriver.NoSuchShadowRoot):
+      element.GetElementShadowRoot()
+
+  def testFindElementFromShadowRoot(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'custom-checkbox-element')
+    shadow = element.GetElementShadowRoot()
+    self.assertTrue(isinstance(shadow, webshadowroot.WebShadowRoot))
+    elementInShadow = shadow.FindElement('css selector', 'input')
+    self.assertTrue(isinstance(elementInShadow, webelement.WebElement))
+
+  def testFindElementFromShadowRootInvalidArgs(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'custom-checkbox-element')
+    shadow = element.GetElementShadowRoot()
+    self.assertTrue(isinstance(shadow, webshadowroot.WebShadowRoot))
+    with self.assertRaises(chromedriver.InvalidArgument):
+      shadow.FindElement('tag name', 'input')
+    with self.assertRaises(chromedriver.InvalidArgument):
+      shadow.FindElement('xpath', '//')
+
+  def testDetachedShadowRootError(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'custom-checkbox-element')
+    shadow = element.GetElementShadowRoot()
+    self._driver.Refresh()
+    with self.assertRaises(chromedriver.DetachedShadowRoot):
+      shadow.FindElement('css selector', 'input')
+
+  def testFindElementsFromShadowRoot(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'custom-checkbox-element')
+    shadow = element.GetElementShadowRoot()
+    self.assertTrue(isinstance(shadow, webshadowroot.WebShadowRoot))
+    elementsInShadow = shadow.FindElements('css selector', 'input')
+    self.assertTrue(isinstance(elementsInShadow, list))
+    self.assertTrue(2, len(elementsInShadow))
+
+  def testFindElementsFromShadowRootInvalidArgs(self):
+    self._driver.Load(
+      self.GetHttpUrlForFile('/chromedriver/get_element_shadow_root.html'))
+    element = self._driver.FindElement('tag name', 'custom-checkbox-element')
+    shadow = element.GetElementShadowRoot()
+    self.assertTrue(isinstance(shadow, webshadowroot.WebShadowRoot))
+    with self.assertRaises(chromedriver.InvalidArgument):
+      shadow.FindElements('tag name', 'input')
+    with self.assertRaises(chromedriver.InvalidArgument):
+      shadow.FindElements('xpath', '//')
 
   def testFindElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -917,6 +987,132 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     alert_button = self._driver.FindElement('css selector', '#aa1')
     alert_button.Click()
     self.assertTrue(self._driver.IsAlertOpen())
+
+  def testClickElementJustOutsidePage(self):
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3878
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    windowHeight = self._driver.ExecuteScript('return window.innerHeight;')
+    self._driver.ExecuteScript(
+        '''
+        document.body.innerHTML = "<div style='height:%dpx'></div>" +
+          "<a href='#' onclick='return false;' id='link'>Click me</a>";
+        document.body.style.cssText = "padding:0.25px";
+        ''' % (2 * windowHeight))
+
+    link = self._driver.FindElement('css selector', '#link')
+    offsetTop = link.GetProperty('offsetTop')
+    targetScrollTop = offsetTop - windowHeight + 1
+    self._driver.ExecuteScript('window.scrollTo(0, %d);' % (targetScrollTop));
+    link.Click()
+
+  def testClickElementHavingSmallIntersectionWithindowObscuredByScrollBar(self):
+    # This is a regression test for chromedriver:3933.
+    # It relies on some internal knowledge on how ExecuteClickElement is implemented.
+    # See also: https://bugs.chromium.org/p/chromedriver/issues/detail?id=3933
+    # This is what happens if the bug exists in the code:
+    # Assume:
+    # bar.height = 50.5 (see the CSS from horizontal_scroller.html)
+    # x = 1.5 (can be any 1.5 <= x < 2.5)
+    # horizontalScrollBar.height = 15
+    # p = 36.5 <- position of #link relative to the viewport, calculated and scrolled to by webdriver::atoms::GET_LOCATION_IN_VIEW
+    # Assign:
+    # window.innerHeight = floor(bar.height + x) = 52
+    # Then:
+    # horizontalScrollBar.y = window.innerHeight - horizontalScrollBar.height = 37
+    # clickPosition.y = p + (window.innerHeight - bar.height) / 2 = 37.25
+    #
+    # Condition clickPosition.y > horizontalScrollBar.y means that we are clicking the area obscured by horizontal scroll bar.
+    # It is worth mentioning that if x < 1.5 or x >= 2.5 then 'p' will be calculated differently and the bug will not reproduce.
+    testcaseUrl = self.GetHttpUrlForFile(
+        '/chromedriver/horizontal_scroller.html')
+    self._driver.Load(testcaseUrl)
+    self._driver.SetWindowRect(640, 480, None, None)
+    innerHeight = self._driver.ExecuteScript('return window.innerHeight;')
+    windowDecorationHeight = 480 - innerHeight
+    # The value of barHeight is 50.5
+    barHeight = self._driver.FindElement(
+        'css selector', '#bar').GetRect()['height']
+    x = 1.5  # as mentioned above any number 1.5 <= x < 2.5 is ok provided scroll.height = 15
+    windowHeight = barHeight + windowDecorationHeight + x
+
+    self._driver.SetWindowRect(640, windowHeight, None, None)
+    self._driver.Load(testcaseUrl)
+
+    link = self._driver.FindElement('css selector', '#link')
+    link.Click()
+
+    # Click must be registered
+    counter = self._driver.FindElement('css selector', '#click-counter')
+    self.assertEqual(1, int(counter.GetProperty('value')))
+
+  def testClickElementObscuredByScrollBar(self):
+    testcaseUrl = self.GetHttpUrlForFile(
+        '/chromedriver/horizontal_scroller.html')
+    self._driver.Load(testcaseUrl)
+    self._driver.SetWindowRect(640, 480, None, None)
+    innerHeight = self._driver.ExecuteScript('return window.innerHeight;')
+    windowDecorationHeight = 480 - innerHeight
+    viewportHeight = self._driver.ExecuteScript(
+        'return window.visualViewport.height;')
+    scrollbarHeight = innerHeight - viewportHeight
+    barHeight = self._driver.FindElement(
+        'css selector', '#bar').GetRect()['height']
+
+    # -1 is used to ensure that there is no space for link before the scroll bar.
+    self._driver.SetWindowRect(640, math.floor(
+        barHeight + windowDecorationHeight + scrollbarHeight - 1), None, None)
+    self._driver.Load(testcaseUrl)
+    newInnerHeight = self._driver.ExecuteScript('return window.innerHeight;')
+
+    link = self._driver.FindElement('css selector', '#link')
+    link.Click()
+
+    rc = self._driver.ExecuteScript(
+        'return document.getElementById("link").getBoundingClientRect();')
+    # As link was obscured it has to be brought into view
+    self.assertLess(0, rc['y'] + rc['height'])
+    self.assertLess(rc['y'], newInnerHeight - scrollbarHeight)
+    # Click must be registered
+    counter = self._driver.FindElement('css selector', '#click-counter')
+    self.assertEqual(1, int(counter.GetProperty('value')))
+
+  def testClickElementAlmostObscuredByScrollBar(self):
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3933
+    # This test does not reproduce chromedriver:3933.
+    # However it fails if the implementation contains the bug that was responsible for the issue:
+    # incorrect calculation of the intersection between the element and the viewport
+    # led to scrolling where the element was positioned in such a way that it could not be clicked.
+    testcaseUrl = self.GetHttpUrlForFile(
+        '/chromedriver/horizontal_scroller.html')
+    self._driver.Load(testcaseUrl)
+    self._driver.SetWindowRect(640, 480, None, None)
+    innerHeight = self._driver.ExecuteScript('return window.innerHeight;')
+    windowDecorationHeight = 480 - innerHeight
+    viewportHeight = self._driver.ExecuteScript(
+        'return window.visualViewport.height;')
+    scrollbarHeight = innerHeight - viewportHeight
+    barHeight = self._driver.FindElement(
+        'css selector', '#bar').GetRect()['height']
+
+    # +1 is used in order to give some space for link before the scroll bar.
+    self._driver.SetWindowRect(640, math.floor(
+        barHeight + windowDecorationHeight + scrollbarHeight + 1), None, None)
+    self._driver.Load(testcaseUrl)
+
+    link = self._driver.FindElement('css selector', '#link')
+    rc = self._driver.ExecuteScript(
+        'return document.getElementById("link").getBoundingClientRect();')
+    oldY = rc['y']
+
+    link.Click()
+
+    rc = self._driver.ExecuteScript(
+        'return document.getElementById("link").getBoundingClientRect();')
+    # As link is only partially obscured it must stay in place
+    self.assertEqual(oldY, rc['y'])
+    # Click must be registered
+    counter = self._driver.FindElement('css selector', '#click-counter')
+    self.assertEqual(1, int(counter.GetProperty('value')))
 
   def testActionsMouseMove(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -2351,7 +2547,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # the test HTTP server.
     path = os.path.join(chrome_paths.GetTestData(), 'chromedriver',
       'page_with_frame.html')
-    url = 'file://' + urllib.pathname2url(path)
+    url = 'file://' + six.moves.urllib.request.pathname2url(path)
     self._driver.Load(url)
     frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
@@ -3053,6 +3249,43 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual(
         is_desktop,
         self._driver.capabilities['webauthn:extension:largeBlob'])
+
+  def testCanClickInIframesInShadow(self):
+    """Test that you can interact with a iframe within a shadow element.
+       See https://bugs.chromium.org/p/chromedriver/issues/detail?id=3445
+    """
+    self._driver.SetTimeouts({'implicit': 2000})
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_iframe.html'))
+    frame = self._driver.ExecuteScript(
+      '''return document.querySelector("#shadow")
+          .shadowRoot.querySelector("iframe")''')
+    self._driver.SwitchToFrame(frame)
+    message = self._driver.FindElement('css selector', '#message')
+    self.assertTrue('clicked' not in message.GetText())
+    button = self._driver.FindElement('tag name', 'button')
+    button.Click()
+    message = self._driver.FindElement('css selector', '#message.result')
+    self.assertTrue('clicked' in message.GetText())
+
+  def testCanClickInIframesInShadowScrolled(self):
+    """Test that you can interact with a scrolled iframe
+       within a scrolled shadow element.
+       See https://bugs.chromium.org/p/chromedriver/issues/detail?id=3445
+    """
+    self._driver.SetTimeouts({'implicit': 2000})
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_iframe.html'))
+    frame = self._driver.ExecuteScript(
+      '''return document.querySelector("#shadow_scroll")
+          .shadowRoot.querySelector("iframe")''')
+    self._driver.SwitchToFrame(frame)
+    message = self._driver.FindElement('css selector', '#message')
+    self.assertTrue('clicked' not in message.GetText())
+    button = self._driver.FindElement('tag name', 'button')
+    button.Click()
+    message = self._driver.FindElement('css selector', '#message.result')
+    self.assertTrue('clicked' in message.GetText())
 
 class ChromeDriverBackgroundTest(ChromeDriverBaseTestWithWebServer):
   def setUp(self):
@@ -3917,20 +4150,20 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
 
     try:
       omaha_list = json.loads(
-          urllib2.urlopen('http://omahaproxy.appspot.com/all.json').read())
+          six.moves.urllib.request.urlopen('http://omahaproxy.appspot.com/all.json').read())
       for l in omaha_list:
         if l['os'] != 'android':
           continue
         for v in l['versions']:
           if (('stable' in v['channel'] and 'stable' in _ANDROID_PACKAGE_KEY) or
               ('beta' in v['channel'] and 'beta' in _ANDROID_PACKAGE_KEY)):
-            omaha = map(int, v['version'].split('.'))
-            device = map(int,
-              self._driver.capabilities['browserVersion'].split('.'))
+            omaha = list(map(int, v['version'].split('.')))
+            device = list(map(int,
+              self._driver.capabilities['browserVersion'].split('.')))
             self.assertTrue(omaha <= device)
             return
       raise RuntimeError('Malformed omaha JSON')
-    except urllib2.URLError as e:
+    except six.moves.urllib.error.URLError as e:
       print('Unable to fetch current version info from omahaproxy (%s)' % e)
 
   def testDeviceManagement(self):
@@ -4112,7 +4345,7 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     # selection.
     ports_generator = util.FindProbableFreePorts()
     for _ in range(3):
-      port = ports_generator.next()
+      port = next(ports_generator)
       port_flag = 'remote-debugging-port=%s' % port
       try:
         driver = self.CreateDriver(chrome_switches=[port_flag])
@@ -4546,7 +4779,7 @@ class ChromeDriverLogTest(ChromeDriverBaseTest):
           chrome_binary=_CHROME_BINARY,
           experimental_options={ self.UNEXPECTED_CHROMEOPTION_CAP : 1 })
       driver.Quit()
-    except chromedriver.ChromeDriverException, e:
+    except chromedriver.ChromeDriverException as e:
       self.assertTrue(self.LOG_MESSAGE in e.message)
     finally:
       chromedriver_server.Kill()
@@ -4646,7 +4879,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     # selection.
     ports_generator = util.FindProbableFreePorts()
     for _ in range(3):
-      port = ports_generator.next()
+      port = next(ports_generator)
       temp_dir = util.MakeTempDir()
       print('temp dir is ' + temp_dir)
       cmd = [_CHROME_BINARY,
@@ -4686,7 +4919,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
       # selection.
       ports_generator = util.FindProbableFreePorts()
       for _ in range(3):
-        port = ports_generator.next()
+        port = next(ports_generator)
         temp_dir = util.MakeTempDir()
         print('temp dir is ' + temp_dir)
         cmd = [_CHROME_BINARY,
@@ -4754,7 +4987,7 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
     try:
       os.write(file_descriptor, '#!/bin/bash\nexit 0')
       os.close(file_descriptor)
-      os.chmod(path, 0777)
+      os.chmod(path, 0o777)
       exception_raised = False
       try:
         driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
@@ -5029,7 +5262,7 @@ if __name__ == '__main__':
   parser.add_option(
       '', '--android-package',
       help=('Android package key. Possible values: ' +
-            str(_ANDROID_NEGATIVE_FILTER.keys())))
+            str(list(_ANDROID_NEGATIVE_FILTER.keys()))))
 
   parser.add_option(
       '', '--isolated-script-test-output',

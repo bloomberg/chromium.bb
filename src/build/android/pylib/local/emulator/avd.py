@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import absolute_import
+
 import contextlib
 import json
 import logging
@@ -34,6 +34,9 @@ _DEFAULT_SCREEN_DENSITY = 160
 _DEFAULT_SCREEN_HEIGHT = 960
 _DEFAULT_SCREEN_WIDTH = 480
 
+# Default to swiftshader_indirect since it works for most cases.
+_DEFAULT_GPU_MODE = 'swiftshader_indirect'
+
 
 class AvdException(Exception):
   """Raised when this module has a problem interacting with an AVD."""
@@ -49,6 +52,8 @@ class AvdException(Exception):
       message_parts.append('  stderr:')
       message_parts.extend('    %s' % line for line in stderr.splitlines())
 
+    # avd.py is executed with python2.
+    # pylint: disable=R1725
     super(AvdException, self).__init__('\n'.join(message_parts))
 
 
@@ -64,7 +69,7 @@ def _Load(avd_proto_path):
     return text_format.Merge(avd_proto_file.read(), avd_pb2.Avd())
 
 
-class _AvdManagerAgent(object):
+class _AvdManagerAgent:
   """Private utility for interacting with avdmanager."""
 
   def __init__(self, avd_home, sdk_root):
@@ -151,10 +156,12 @@ class _AvdManagerAgent(object):
       for line in cmd_helper.IterCmdOutputLines(delete_cmd, env=self._env):
         logging.info('  %s', line)
     except subprocess.CalledProcessError as e:
+      # avd.py is executed with python2.
+      # pylint: disable=W0707
       raise AvdException('AVD deletion failed: %s' % str(e), command=delete_cmd)
 
 
-class AvdConfig(object):
+class AvdConfig:
   """Represents a particular AVD configuration.
 
   This class supports creation, installation, and execution of an AVD
@@ -263,6 +270,7 @@ class AvdConfig(object):
             'hw.lcd.density': density,
             'hw.lcd.height': height,
             'hw.lcd.width': width,
+            'hw.mainKeys': 'no',  # Show nav buttons on screen
         })
 
         if self.avd_settings.ram_size:
@@ -274,15 +282,29 @@ class AvdConfig(object):
                               self._config)
       # Enable debug for snapshot when it is set to True
       debug_tags = 'init,snapshot' if snapshot else None
-      instance.Start(
-          read_only=False, snapshot_save=snapshot, debug_tags=debug_tags)
+      instance.Start(read_only=False,
+                     snapshot_save=snapshot,
+                     debug_tags=debug_tags,
+                     gpu_mode=_DEFAULT_GPU_MODE)
       # Android devices with full-disk encryption are encrypted on first boot,
       # and then get decrypted to continue the boot process (See details in
       # https://bit.ly/3agmjcM).
       # Wait for this step to complete since it can take a while for old OSs
       # like M, otherwise the avd may have "Encryption Unsuccessful" error.
-      device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted(
-          decrypt=True, timeout=180, retries=0)
+      device = device_utils.DeviceUtils(instance.serial)
+      device.WaitUntilFullyBooted(decrypt=True, timeout=180, retries=0)
+
+      # Skip network disabling on pre-N for now since the svc commands fail
+      # on Marshmallow.
+      if device.build_version_sdk > 23:
+        # Always disable the network to prevent built-in system apps from
+        # updating themselves, which could take over package manager and
+        # cause shell command timeout.
+        # Use svc as this also works on the images with build type "user".
+        logging.info('Disabling the network in emulator.')
+        device.RunShellCommand(['svc', 'wifi', 'disable'], check_return=True)
+        device.RunShellCommand(['svc', 'data', 'disable'], check_return=True)
+
       instance.Stop()
 
       # The multiinstance lock file seems to interfere with the emulator's
@@ -341,9 +363,10 @@ class AvdConfig(object):
             for line in cmd_helper.IterCmdOutputLines(cipd_create_cmd):
               logging.info('    %s', line)
           except subprocess.CalledProcessError as e:
-            raise AvdException(
-                'CIPD package creation failed: %s' % str(e),
-                command=cipd_create_cmd)
+            # avd.py is executed with python2.
+            # pylint: disable=W0707
+            raise AvdException('CIPD package creation failed: %s' % str(e),
+                               command=cipd_create_cmd)
 
     finally:
       if not keep:
@@ -376,7 +399,7 @@ class AvdConfig(object):
         pkgs_by_dir[pkg.dest_path] = []
       pkgs_by_dir[pkg.dest_path].append(pkg)
 
-    for pkg_dir, pkgs in pkgs_by_dir.items():
+    for pkg_dir, pkgs in list(pkgs_by_dir.items()):
       logging.info('Installing packages in %s', pkg_dir)
       cipd_root = os.path.join(constants.DIR_SOURCE_ROOT, pkg_dir)
       if not os.path.exists(cipd_root):
@@ -401,10 +424,11 @@ class AvdConfig(object):
         for line in cmd_helper.IterCmdOutputLines(ensure_cmd):
           logging.info('    %s', line)
       except subprocess.CalledProcessError as e:
-        raise AvdException(
-            'Failed to install CIPD package %s: %s' % (pkg.package_name,
-                                                       str(e)),
-            command=ensure_cmd)
+        # avd.py is executed with python2.
+        # pylint: disable=W0707
+        raise AvdException('Failed to install CIPD package %s: %s' %
+                           (pkg.package_name, str(e)),
+                           command=ensure_cmd)
 
   def _MakeWriteable(self):
     # The emulator requires that some files are writable.
@@ -487,7 +511,7 @@ class AvdConfig(object):
     return instance
 
 
-class _AvdInstance(object):
+class _AvdInstance:
   """Represents a single running instance of an AVD.
 
   This class should only be created directly by AvdConfig.StartInstance,
@@ -518,6 +542,8 @@ class _AvdInstance(object):
             snapshot_save=False,
             window=False,
             writable_system=False,
+            gpu_mode=_DEFAULT_GPU_MODE,
+            wipe_data=False,
             debug_tags=None):
     """Starts the emulator running an instance of the given AVD."""
 
@@ -531,28 +557,34 @@ class _AvdInstance(object):
           '-report-console',
           'unix:%s' % socket_path,
           '-no-boot-anim',
-          # Set the gpu mode to swiftshader_indirect otherwise the avd may exit
-          # with the error "change of render" under window mode
-          '-gpu',
-          'swiftshader_indirect',
       ]
 
+      if wipe_data:
+        emulator_cmd.append('-wipe-data')
       if read_only:
         emulator_cmd.append('-read-only')
       if not snapshot_save:
         emulator_cmd.append('-no-snapshot-save')
       if writable_system:
         emulator_cmd.append('-writable-system')
+      # Note when "--gpu-mode" is set to "host":
+      #  * It needs a valid DISPLAY env, even if "--emulator-window" is false.
+      #    Otherwise it may throw errors like "Failed to initialize backend
+      #    EGL display". See the code in https://bit.ly/3ruiMlB as an example
+      #    to setup the DISPLAY env with xvfb.
+      #  * It will not work under remote sessions like chrome remote desktop.
+      if gpu_mode:
+        emulator_cmd.extend(['-gpu', gpu_mode])
       if debug_tags:
         emulator_cmd.extend(['-debug', debug_tags])
 
       emulator_env = {}
       if self._emulator_home:
         emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home
+      if 'DISPLAY' in os.environ:
+        emulator_env['DISPLAY'] = os.environ.get('DISPLAY')
       if window:
-        if 'DISPLAY' in os.environ:
-          emulator_env['DISPLAY'] = os.environ.get('DISPLAY')
-        else:
+        if 'DISPLAY' not in emulator_env:
           raise AvdException('Emulator failed to start: DISPLAY not defined')
       else:
         emulator_cmd.append('-no-window')
@@ -584,6 +616,8 @@ class _AvdInstance(object):
         logging.info('%s started', self._emulator_serial)
       except Exception as e:
         self.Stop()
+        # avd.py is executed with python2.
+        # pylint: disable=W0707
         raise AvdException('Emulator failed to start: %s' % str(e))
 
   def Stop(self):

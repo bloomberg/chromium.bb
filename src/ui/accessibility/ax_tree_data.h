@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -74,6 +73,11 @@ struct AX_BASE_EXPORT AXTreeData {
   // like Android we need to ignore accessibility scroll offsets for
   // that node and get them from the viewport instead.
   AXNodeID root_scroller_id = kInvalidAXNodeID;
+
+  // Metadata from an HTML HEAD, such as <meta> tags. Stored here
+  // unparsed because the only applications that need these just want
+  // raw strings. Only included if the kHTMLMetadata AXMode is enabled.
+  std::vector<std::string> metadata;
 };
 
 AX_BASE_EXPORT bool operator==(const AXTreeData& lhs, const AXTreeData& rhs);

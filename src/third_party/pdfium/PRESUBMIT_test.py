@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +7,46 @@ import unittest
 
 import PRESUBMIT
 from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi, MockFile
+
+
+class BannedTypeCheckTest(unittest.TestCase):
+
+  def testBannedCppFunctions(self):
+    input_api = MockInputApi()
+    input_api.files = [
+        MockFile('some/cpp/problematic/file.cc', ['using namespace std;']),
+        MockFile('third_party/some/cpp/problematic/file.cc',
+                 ['using namespace std;']),
+        MockFile('some/cpp/ok/file.cc', ['using std::string;']),
+        MockFile('some/cpp/nocheck/file.cc',
+                 ['using namespace std;  // nocheck']),
+        MockFile('some/cpp/comment/file.cc',
+                 ['  // A comment about `using namespace std;`']),
+        MockFile('some/cpp/v8/get-current.cc', ['v8::Isolate::GetCurrent()']),
+        MockFile('some/cpp/v8/try-get-current.cc',
+                 ['v8::Isolate::TryGetCurrent()']),
+    ]
+
+    results = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+
+    # There are no warnings to test, so add an empty warning to keep the test
+    # extendable for the future. This block can be removed once warnings are
+    # added.
+    self.assertEqual(1, len(results))
+    results.insert(0, MockOutputApi().PresubmitPromptWarning(''))
+
+    # warnings are results[0], errors are results[1]
+    self.assertEqual(2, len(results))
+    self.assertTrue('some/cpp/problematic/file.cc' in results[1].message)
+    self.assertFalse(
+        'third_party/some/cpp/problematic/file.cc' in results[1].message)
+    self.assertFalse('some/cpp/ok/file.cc' in results[1].message)
+    self.assertFalse('some/cpp/nocheck/file.cc' in results[0].message)
+    self.assertFalse('some/cpp/nocheck/file.cc' in results[1].message)
+    self.assertFalse('some/cpp/comment/file.cc' in results[0].message)
+    self.assertFalse('some/cpp/comment/file.cc' in results[1].message)
+    self.assertTrue('some/cpp/v8/get-current.cc' in results[1].message)
+    self.assertTrue('some/cpp/v8/try-get-current.cc' in results[1].message)
 
 
 class CheckChangeOnUploadTest(unittest.TestCase):
@@ -32,8 +72,8 @@ class CheckChangeOnUploadTest(unittest.TestCase):
     mock_input_api = MockInputApi()
     mock_output_api = MockOutputApi()
     mock_input_api.files = map(MockFile, correct_paths + wrong_paths)
-    errors = map(str, PRESUBMIT._CheckPNGFormat(mock_input_api,
-                                                mock_output_api))
+    errors = list(
+        map(str, PRESUBMIT._CheckPNGFormat(mock_input_api, mock_output_api)))
 
     self.assertEqual(len(wrong_paths), len(errors))
     self.assertFalse('notpng.cc' in errors[0])

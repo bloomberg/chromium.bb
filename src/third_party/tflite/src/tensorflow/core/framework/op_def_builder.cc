@@ -28,6 +28,7 @@ limitations under the License.
 #include "tensorflow/core/lib/strings/scanner.h"
 #include "tensorflow/core/lib/strings/str_util.h"
 #include "tensorflow/core/lib/strings/strcat.h"
+#include "tensorflow/core/platform/errors.h"
 
 using ::tensorflow::strings::Scanner;
 
@@ -79,7 +80,7 @@ bool ConsumeAttrType(StringPiece* sp, StringPiece* out) {
       .GetResult(sp, out);
 }
 
-bool ConsumeAttrNumber(StringPiece* sp, int64* out) {
+bool ConsumeAttrNumber(StringPiece* sp, int64_t* out) {
   Scanner scan(*sp);
   StringPiece match;
   StringPiece remaining;
@@ -94,7 +95,7 @@ bool ConsumeAttrNumber(StringPiece* sp, int64* out) {
            .GetResult(&remaining, &match)) {
     return false;
   }
-  int64 value = 0;
+  int64_t value = 0;
   if (!strings::safe_strto64(match, &value)) {
     return false;
   }
@@ -145,7 +146,7 @@ bool ProcessCompoundType(const StringPiece type_string, AttrValue* allowed) {
   return true;
 }
 
-void FinalizeAttr(StringPiece spec, OpDef* op_def,
+void FinalizeAttr(StringPiece spec, bool allow_attr_type_any, OpDef* op_def,
                   std::vector<string>* errors) {
   OpDef::AttrDef* attr = op_def->add_attr();
   StringPiece orig(spec);
@@ -175,6 +176,8 @@ void FinalizeAttr(StringPiece spec, OpDef* op_def,
     type = "tensor";
   } else if (absl::ConsumePrefix(&spec, "func")) {
     type = "func";
+  } else if (absl::ConsumePrefix(&spec, "any") && allow_attr_type_any) {
+    type = "any";
   } else if (ConsumeCompoundAttrType(&spec, &type_string)) {
     type = "type";
     AttrValue* allowed = attr->mutable_allowed_values();
@@ -248,7 +251,7 @@ void FinalizeAttr(StringPiece spec, OpDef* op_def,
 
   // Read optional minimum constraint at the end.
   if ((is_list || type == "int") && absl::ConsumePrefix(&spec, ">=")) {
-    int64 min_limit = -999;
+    int64_t min_limit = -999;
     VERIFY(ConsumeAttrNumber(&spec, &min_limit),
            "Could not parse integer lower limit after '>=', found '", spec,
            "' instead");
@@ -611,6 +614,11 @@ OpDefBuilder& OpDefBuilder::SetAllowsUninitializedInput() {
   return *this;
 }
 
+OpDefBuilder& OpDefBuilder::SetIsDistributedCommunication() {
+  op_def()->set_is_distributed_communication(true);
+  return *this;
+}
+
 OpDefBuilder& OpDefBuilder::Deprecated(int version, string explanation) {
   if (op_def()->has_deprecation()) {
     errors_.push_back(
@@ -620,6 +628,16 @@ OpDefBuilder& OpDefBuilder::Deprecated(int version, string explanation) {
     deprecation->set_version(version);
     deprecation->set_explanation(std::move(explanation));
   }
+  return *this;
+}
+
+OpDefBuilder& OpDefBuilder::SetTypeConstructor(OpTypeConstructor c) {
+  op_reg_data_.type_ctor = c;
+  return *this;
+}
+
+OpDefBuilder& OpDefBuilder::SetForwardTypeFn(ForwardTypeInferenceFn f) {
+  op_reg_data_.fwd_type_fn = f;
   return *this;
 }
 
@@ -633,13 +651,18 @@ OpDefBuilder& OpDefBuilder::SetShapeFn(OpShapeInferenceFn fn) {
   return *this;
 }
 
+OpDefBuilder& OpDefBuilder::AllowAttrTypeAny() {
+  allow_attr_type_any_ = true;
+  return *this;
+}
+
 Status OpDefBuilder::Finalize(OpRegistrationData* op_reg_data) const {
   std::vector<string> errors = errors_;
   *op_reg_data = op_reg_data_;
 
   OpDef* op_def = &op_reg_data->op_def;
   for (StringPiece attr : attrs_) {
-    FinalizeAttr(attr, op_def, &errors);
+    FinalizeAttr(attr, allow_attr_type_any_, op_def, &errors);
   }
   for (StringPiece input : inputs_) {
     FinalizeInputOrOutput(input, false, op_def, &errors);
@@ -651,6 +674,10 @@ Status OpDefBuilder::Finalize(OpRegistrationData* op_reg_data) const {
     FinalizeControlOutput(control_output, op_def, &errors);
   }
   FinalizeDoc(doc_, op_def, &errors);
+
+  if (op_reg_data->type_ctor != nullptr) {
+    TF_RETURN_IF_ERROR(op_reg_data->type_ctor(op_def));
+  }
 
   if (errors.empty()) return Status::OK();
   return errors::InvalidArgument(absl::StrJoin(errors, "\n"));

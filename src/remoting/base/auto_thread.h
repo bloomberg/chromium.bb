@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
@@ -58,6 +58,9 @@ class AutoThread : base::PlatformThread::Delegate {
   // Construct the AutoThread.  |name| identifies the thread for debugging.
   explicit AutoThread(const char* name);
 
+  AutoThread(const AutoThread&) = delete;
+  AutoThread& operator=(const AutoThread&) = delete;
+
   // Waits for the thread to exit, and then destroys it.
   ~AutoThread() override;
 
@@ -90,7 +93,7 @@ class AutoThread : base::PlatformThread::Delegate {
 
   // Used to pass data to ThreadMain.
   struct StartupData;
-  StartupData* startup_data_;
+  raw_ptr<StartupData> startup_data_;
 
 #if defined(OS_WIN)
   // Specifies which kind of COM apartment to initialize, if any.
@@ -112,8 +115,6 @@ class AutoThread : base::PlatformThread::Delegate {
 
   // Verifies that QuitThread() is called on the same thread as ThreadMain().
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoThread);
 };
 
 }  // namespace remoting

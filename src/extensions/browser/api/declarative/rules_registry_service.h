@@ -10,7 +10,7 @@
 #include <tuple>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observation.h"
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
@@ -59,6 +59,10 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   };
 
   explicit RulesRegistryService(content::BrowserContext* context);
+
+  RulesRegistryService(const RulesRegistryService&) = delete;
+  RulesRegistryService& operator=(const RulesRegistryService&) = delete;
+
   ~RulesRegistryService() override;
 
   // Unregisters refptrs to concrete RulesRegistries at other objects that were
@@ -160,17 +164,15 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
 
   // Weak pointer into rule_registries_ to make it easier to handle content rule
   // conditions.
-  ContentRulesRegistry* content_rules_registry_;
+  raw_ptr<ContentRulesRegistry> content_rules_registry_;
 
   // Listen to extension load, unloaded notification.
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observation_{this};
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(RulesRegistryService);
 };
 
 }  // namespace extensions

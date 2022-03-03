@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
@@ -33,8 +33,12 @@ class TestDialog : public DialogDelegateView {
  public:
   TestDialog() : input_(new views::Textfield()) {
     DialogDelegate::set_draggable(true);
-    AddChildView(input_);
+    AddChildView(input_.get());
   }
+
+  TestDialog(const TestDialog&) = delete;
+  TestDialog& operator=(const TestDialog&) = delete;
+
   ~TestDialog() override = default;
 
   void Init() {
@@ -74,17 +78,19 @@ class TestDialog : public DialogDelegateView {
   views::Textfield* input() { return input_; }
 
  private:
-  views::Textfield* input_;
+  raw_ptr<views::Textfield> input_;
   std::u16string title_;
   bool show_close_button_ = true;
   bool should_handle_escape_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
 
 class DialogTest : public ViewsTestBase {
  public:
   DialogTest() = default;
+
+  DialogTest(const DialogTest&) = delete;
+  DialogTest& operator=(const DialogTest&) = delete;
+
   ~DialogTest() override = default;
 
   void SetUp() override {
@@ -145,9 +151,7 @@ class DialogTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<views::Widget> parent_widget_;
-  TestDialog* dialog_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DialogTest);
+  raw_ptr<TestDialog> dialog_ = nullptr;
 };
 
 }  // namespace
@@ -162,7 +166,31 @@ TEST_F(DialogTest, OkButtonAccepts) {
   EXPECT_TRUE(accepted_);
 }
 
-TEST_F(DialogTest, EscButtonCancels) {
+TEST_F(DialogTest, EscButtonClosesDialogWithCloseButtonWithoutCallingCancel) {
+  // Showing the close button should be sufficient to call close on Esc (even if
+  // there's no close callback), we verify this by making sure that Cancel
+  // doesn't get called as best-effort verification.
+  dialog()->set_show_close_button(true);
+  dialog()->SetCloseCallback(base::OnceClosure());
+  EXPECT_FALSE(cancelled_);
+  SimulateKeyPress(ui::VKEY_ESCAPE);
+  EXPECT_FALSE(cancelled_);
+}
+
+TEST_F(DialogTest, EscButtonClosesWithCloseCallback) {
+  // The dialog's close callback should be called even if there's no close-x.
+  // See crbug.com/1245127.
+  dialog()->set_show_close_button(false);
+  EXPECT_FALSE(closed_);
+  SimulateKeyPress(ui::VKEY_ESCAPE);
+  EXPECT_TRUE(closed_);
+}
+
+TEST_F(DialogTest, EscButtonCancelsWithoutCloseAction) {
+  // If there's no close-x or close callback then the cancelled action should be
+  // called.
+  dialog()->SetCloseCallback(base::OnceClosure());
+  dialog()->set_show_close_button(false);
   EXPECT_FALSE(cancelled_);
   SimulateKeyPress(ui::VKEY_ESCAPE);
   EXPECT_TRUE(cancelled_);
@@ -365,10 +393,11 @@ class InitialFocusTestDialog : public DialogDelegateView {
   InitialFocusTestDialog() {
     DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   }
-  ~InitialFocusTestDialog() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(InitialFocusTestDialog);
+  InitialFocusTestDialog(const InitialFocusTestDialog&) = delete;
+  InitialFocusTestDialog& operator=(const InitialFocusTestDialog&) = delete;
+
+  ~InitialFocusTestDialog() override = default;
 };
 
 // If the Widget can't be activated while the initial focus View is requesting
@@ -494,8 +523,8 @@ class TestDialogDelegateView : public DialogDelegateView {
     return true;
   }
 
-  bool* accepted_;
-  bool* cancelled_;
+  raw_ptr<bool> accepted_;
+  raw_ptr<bool> cancelled_;
 };
 
 TEST_F(DialogDelegateCloseTest, OldClosePathDoesNotDoubleClose) {

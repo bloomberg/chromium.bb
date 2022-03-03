@@ -5,10 +5,9 @@
 #ifndef CHROMECAST_BROWSER_SERVICE_MANAGER_CONTEXT_H_
 #define CHROMECAST_BROWSER_SERVICE_MANAGER_CONTEXT_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -34,6 +33,10 @@ class ServiceManagerContext {
       shell::CastContentBrowserClient* cast_content_browser_client,
       scoped_refptr<base::SingleThreadTaskRunner>
           service_manager_thread_task_runner);
+
+  ServiceManagerContext(const ServiceManagerContext&) = delete;
+  ServiceManagerContext& operator=(const ServiceManagerContext&) = delete;
+
   ~ServiceManagerContext();
 
   // Returns a service_manager::Connector that can be used on the IO thread.
@@ -54,8 +57,6 @@ class ServiceManagerContext {
       service_manager_thread_task_runner_;
   scoped_refptr<InProcessServiceManagerContext> in_process_context_;
   base::WeakPtrFactory<ServiceManagerContext> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceManagerContext);
 };
 
 }  // namespace chromecast

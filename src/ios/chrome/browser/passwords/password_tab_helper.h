@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_TAB_HELPER_H_
 
-#include "base/macros.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -27,6 +26,9 @@ class PasswordManagerClient;
 class PasswordTabHelper : public web::WebStateObserver,
                           public web::WebStateUserData<PasswordTabHelper> {
  public:
+  PasswordTabHelper(const PasswordTabHelper&) = delete;
+  PasswordTabHelper& operator=(const PasswordTabHelper&) = delete;
+
   ~PasswordTabHelper() override;
 
   // Creates a PasswordTabHelper and attaches it to the given |web_state|.
@@ -70,8 +72,6 @@ class PasswordTabHelper : public web::WebStateObserver,
   __strong PasswordController* controller_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_TAB_HELPER_H_

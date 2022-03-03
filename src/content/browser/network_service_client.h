@@ -9,11 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -21,6 +19,7 @@
 #include "net/cert/cert_database.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -31,7 +30,7 @@ namespace content {
 
 class WebRtcConnectionsObserver;
 
-class CONTENT_EXPORT NetworkServiceClient
+class NetworkServiceClient
     : public network::mojom::URLLoaderNetworkServiceObserver,
 #if defined(OS_ANDROID)
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
@@ -42,6 +41,10 @@ class CONTENT_EXPORT NetworkServiceClient
       public net::CertDatabase::Observer {
  public:
   NetworkServiceClient();
+
+  NetworkServiceClient(const NetworkServiceClient&) = delete;
+  NetworkServiceClient& operator=(const NetworkServiceClient&) = delete;
+
   ~NetworkServiceClient() override;
 
   mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
@@ -122,8 +125,6 @@ class CONTENT_EXPORT NetworkServiceClient
 
   mojo::ReceiverSet<network::mojom::URLLoaderNetworkServiceObserver>
       url_loader_network_service_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);
 };
 
 }  // namespace content

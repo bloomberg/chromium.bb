@@ -10,7 +10,6 @@
 #include "include/core/SkBlurTypes.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkMaskFilter.h"
@@ -238,9 +237,8 @@ protected:
         // Align the next set with the middle of the previous in y, translated to the right in x.
         SkPoint corners[] = {{0, 0}, {0, kBottom}, {kWidth, kBottom}, {kWidth, 0}};
         matrices.back().mapPoints(corners, 4);
-        SkScalar y = (corners[0].fY + corners[1].fY + corners[2].fY + corners[3].fY) / 4;
-        SkScalar x = std::max({corners[0].fX, corners[1].fX, corners[2].fX, corners[3].fX});
-        m.setTranslate(x, y);
+        m.setTranslate(std::max({corners[0].fX, corners[1].fX, corners[2].fX, corners[3].fX}),
+                       (corners[0].fY + corners[1].fY + corners[2].fY + corners[3].fY) / 4);
         m.preScale(0.2f, 0.2f);
         matrices.push_back(m);
 
@@ -299,23 +297,23 @@ protected:
     }
 
 private:
-    static constexpr int kBlockSize = 70;
-    static constexpr int kBlockSpacing = 12;
+    inline static constexpr int kBlockSize = 70;
+    inline static constexpr int kBlockSpacing = 12;
 
-    static constexpr int kCol0X = kBlockSpacing;
-    static constexpr int kCol1X = 2*kBlockSpacing + kBlockSize;
-    static constexpr int kCol2X = 3*kBlockSpacing + 2*kBlockSize;
-    static constexpr int kWidth = 4*kBlockSpacing + 3*kBlockSize;
+    inline static constexpr int kCol0X = kBlockSpacing;
+    inline static constexpr int kCol1X = 2*kBlockSpacing + kBlockSize;
+    inline static constexpr int kCol2X = 3*kBlockSpacing + 2*kBlockSize;
+    inline static constexpr int kWidth = 4*kBlockSpacing + 3*kBlockSize;
 
-    static constexpr int kRow0Y = kBlockSpacing;
-    static constexpr int kRow1Y = 2*kBlockSpacing + kBlockSize;
-    static constexpr int kRow2Y = 3*kBlockSpacing + 2*kBlockSize;
-    static constexpr int kRow3Y = 4*kBlockSpacing + 3*kBlockSize;
-    static constexpr int kRow4Y = 5*kBlockSpacing + 4*kBlockSize;
+    inline static constexpr int kRow0Y = kBlockSpacing;
+    inline static constexpr int kRow1Y = 2*kBlockSpacing + kBlockSize;
+    inline static constexpr int kRow2Y = 3*kBlockSpacing + 2*kBlockSize;
+    inline static constexpr int kRow3Y = 4*kBlockSpacing + 3*kBlockSize;
+    inline static constexpr int kRow4Y = 5*kBlockSpacing + 4*kBlockSize;
 
-    static constexpr int kSmallSize = 6;
+    inline static constexpr int kSmallSize = 6;
     // This must be at least as large as the GM width and height so that a surface can be made.
-    static constexpr int kMaxTextureSize = 1000;
+    inline static constexpr int kMaxTextureSize = 1000;
 
     SkString fShortName;
     sk_sp<SkImage> fBigImage;

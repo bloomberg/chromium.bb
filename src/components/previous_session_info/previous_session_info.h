@@ -11,6 +11,10 @@
 
 #include "url/gurl.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace previous_session_info_constants {
 // - The (Integer) representing UIApplicationState.
 extern NSString* const kPreviousSessionInfoApplicationState;
@@ -87,9 +91,6 @@ enum class DeviceBatteryState {
 // The thermal state of the device at the end of the previous session.
 @property(nonatomic, assign, readonly)
     previous_session_info_constants::DeviceThermalState deviceThermalState;
-
-// Whether the device was in low power mode at the end of the previous session.
-@property(nonatomic, assign, readonly) BOOL deviceWasInLowPowerMode;
 
 // Whether the app received a memory warning seconds before being terminated.
 @property(nonatomic, assign, readonly)
@@ -180,9 +181,6 @@ enum class DeviceBatteryState {
 
 // Updates the saved last known battery state of the device.
 - (void)updateStoredBatteryState;
-
-// Updates the saved last known low power mode setting of the device.
-- (void)updateStoredLowPowerMode;
 
 // Updates the saved last known thermal state of the device.
 - (void)updateStoredThermalState;

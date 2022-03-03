@@ -12,14 +12,13 @@
 namespace rx
 {
 
-CLDeviceVk::CLDeviceVk(CLPlatformVk &platform, CLDeviceVk *parent) : CLDeviceImpl(platform, parent)
-{}
+CLDeviceVk::CLDeviceVk(const cl::Device &device) : CLDeviceImpl(device) {}
 
 CLDeviceVk::~CLDeviceVk() = default;
 
-CLDeviceImpl::Info CLDeviceVk::createInfo() const
+CLDeviceImpl::Info CLDeviceVk::createInfo(cl::DeviceType type) const
 {
-    CLDeviceImpl::Info info;
+    Info info(type);
     return info;
 }
 
@@ -50,7 +49,7 @@ cl_int CLDeviceVk::getInfoString(cl::DeviceInfo name, size_t size, char *value) 
 
 cl_int CLDeviceVk::createSubDevices(const cl_device_partition_property *properties,
                                     cl_uint numDevices,
-                                    PtrList &deviceImplList,
+                                    CreateFuncs &subDevices,
                                     cl_uint *numDevicesRet)
 {
     return CL_INVALID_VALUE;

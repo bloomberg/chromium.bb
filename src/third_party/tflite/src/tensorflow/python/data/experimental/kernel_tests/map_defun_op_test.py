@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for MapDefunOp."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import time
 
 from absl.testing import parameterized
@@ -185,8 +181,8 @@ class MapDefunTest(test_base.DatasetTestBase, parameterized.TestCase):
             constant_op.constant([1, 2, 3, 4, 5], dtype=dtypes.int64), 0),
         [100, 1])
     map_defun_op = map_defun.map_defun(defun, [c], [dtypes.int64], [()])[0]
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 r"indices = 10 is not in \[0, 5\)"):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                r"indices = 10 is not in \[0, 5\)"):
       self.evaluate(map_defun_op)
 
   @combinations.generate(_test_combinations())

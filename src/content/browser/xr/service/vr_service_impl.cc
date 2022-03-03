@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
 
@@ -74,22 +76,20 @@ bool AreAllRequiredFeaturesEnabled(
         required_features) {
   DVLOG(3) << __func__
            << ": enabled_features.size()=" << enabled_features.size();
+  return base::ranges::all_of(required_features, [&enabled_features](
+                                                     const auto&
+                                                         required_feature) {
+    if (!base::Contains(enabled_features, required_feature)) {
+      DVLOG(2)
+          << __func__
+          << ": one of the required features was not enabled on the created "
+             "session, feature: "
+          << required_feature;
+      return false;
+    }
 
-  // Try to find a required feature that was not enabled on the created session:
-  auto required_but_not_enabled_it =
-      std::find_if(required_features.begin(), required_features.end(),
-                   [&enabled_features](const auto& required_feature) {
-                     return !base::Contains(enabled_features, required_feature);
-                   });
-  if (required_but_not_enabled_it != required_features.end()) {
-    DVLOG(2) << __func__
-             << ": one of the required features was not enabled on the created "
-                "session, feature: "
-             << *required_but_not_enabled_it;
-    return false;
-  }
-
-  return true;
+    return true;
+  });
 }
 
 }  // namespace
@@ -441,13 +441,9 @@ void VRServiceImpl::RequestSession(
   // features, but we don't need to block creation if an optional feature is
   // not supported. Remove all unsupported optional features from the
   // optional_features collection before handing it off.
-  options->optional_features.erase(
-      std::remove_if(options->optional_features.begin(),
-                     options->optional_features.end(),
-                     [runtime](auto& feature) {
-                       return !runtime->SupportsFeature(feature);
-                     }),
-      options->optional_features.end());
+  base::EraseIf(options->optional_features, [runtime](auto& feature) {
+    return !runtime->SupportsFeature(feature);
+  });
 
   SessionRequestData request(std::move(options), std::move(callback),
                              runtime->GetId());
@@ -462,8 +458,12 @@ void VRServiceImpl::GetPermissionStatus(SessionRequestData request,
   DCHECK(runtime);
   DCHECK_EQ(runtime->GetId(), request.runtime_id);
 
-#if defined(OS_WIN)
-  DCHECK_NE(request.options->mode, device::mojom::XRSessionMode::kImmersiveAr);
+#if BUILDFLAG(ENABLE_OPENXR)
+  if (request.options->mode == device::mojom::XRSessionMode::kImmersiveAr) {
+    DCHECK(
+        base::FeatureList::IsEnabled(
+            device::features::kOpenXrExtendedFeatureSupport));
+  }
 #endif
 
   PermissionControllerImpl* permission_controller =

@@ -24,21 +24,22 @@ namespace reporting {
 // that case it always connects to Missive Daemon.
 class StorageSelector {
  public:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Features to select specific backends.
   // By default storage is local (as opposed to missive daemon use)
   // and upload is enabled.
   static const char kUseMissiveDaemon[];
   static const char kProvideUploader[];
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
+  static bool is_use_missive();
   static bool is_uploader_required();
-  static void CreateStorageModule(
-      const base::FilePath& local_reporting_path,
-      base::StringPiece verification_key,
-      UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  static void CreateMissiveStorageModule(
       base::OnceCallback<void(StatusOr<scoped_refptr<StorageModuleInterface>>)>
           cb);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 }  // namespace reporting
 

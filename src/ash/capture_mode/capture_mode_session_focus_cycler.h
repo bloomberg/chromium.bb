@@ -45,6 +45,8 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     kSelection,
     // The button in the middle of a selection region to capture or record.
     kCaptureButton,
+    // In window mode, the group to tab through the available MRU windows.
+    kCaptureWindow,
     // The buttons to open the settings menu and exit capture mode on the
     // capture bar.
     kSettingsClose,
@@ -60,6 +62,8 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   // to override this class, which manages a custom focus ring.
   class HighlightableView {
    public:
+    bool has_focus() const { return has_focus_; }
+
     // Get the view class associated with |this|.
     virtual views::View* GetView() = 0;
 
@@ -149,6 +153,7 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
 
  private:
   friend class CaptureModeSessionTestApi;
+  class ScopedA11yOverrideWindowSetter;
 
   // Removes the focus ring from the current focused item if possible. Does not
   // alter |current_focus_group_| or |focus_index_|.
@@ -164,11 +169,21 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   // kSelection group as the items in that group do not have associated views.
   std::vector<HighlightableView*> GetGroupItems(FocusGroup group) const;
 
-  // Update the capture mode widgets so that accessibility features can traverse
-  // between our widgets.
+  // Updates the capture mode widgets so that accessibility features can
+  // traverse between our widgets.
   void UpdateA11yAnnotation();
 
   views::Widget* GetSettingsMenuWidget() const;
+
+  // Returns the window which is supposed to be set as the a11y override window
+  // for accessibility controller according to the `current_focus_group_`.
+  aura::Window* GetA11yOverrideWindow() const;
+
+  // Returns true if there's a focused view in the given `views`, otherwise
+  // returns false. In the meanwhile, updates `focus_index_` according to the
+  // index of the current focused view to ensure it is up to date.
+  bool FindFocusedViewAndUpdateFocusIndex(
+      std::vector<HighlightableView*> views);
 
   // The current focus group and focus index.
   FocusGroup current_focus_group_ = FocusGroup::kNone;
@@ -177,6 +192,11 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   // The session that owns |this|. Guaranteed to be non null for the lifetime of
   // |this|.
   CaptureModeSession* session_;
+
+  // Accessibility features will focus on whatever window is returned by
+  // GetA11yOverrideWindow(). Once `this` goes out of scope, the a11y override
+  // window is set to null.
+  std::unique_ptr<ScopedA11yOverrideWindowSetter> scoped_a11y_overrider_;
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       settings_menu_widget_observeration_{this};

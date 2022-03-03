@@ -307,26 +307,6 @@ static void y4m_42xmpeg2_42xjpeg_helper(unsigned char *_dst,
   }
 }
 
-/*Handles both 422 and 420mpeg2 to 422jpeg and 420jpeg, respectively.*/
-static void y4m_convert_42xmpeg2_42xjpeg(y4m_input *_y4m, unsigned char *_dst,
-                                         unsigned char *_aux) {
-  int c_w;
-  int c_h;
-  int c_sz;
-  int pli;
-  /*Skip past the luma data.*/
-  _dst += _y4m->pic_w * _y4m->pic_h;
-  /*Compute the size of each chroma plane.*/
-  c_w = (_y4m->pic_w + _y4m->dst_c_dec_h - 1) / _y4m->dst_c_dec_h;
-  c_h = (_y4m->pic_h + _y4m->dst_c_dec_v - 1) / _y4m->dst_c_dec_v;
-  c_sz = c_w * c_h;
-  for (pli = 1; pli < 3; pli++) {
-    y4m_42xmpeg2_42xjpeg_helper(_dst, _aux, c_w, c_h);
-    _dst += c_sz;
-    _aux += c_sz;
-  }
-}
-
 /*This format is only used for interlaced content, but is included for
    completeness.
 
@@ -916,8 +896,9 @@ int y4m_input_open(y4m_input *y4m_ctx, FILE *file, char *skip_buffer,
     return -1;
   }
   if (csp == AOM_CSP_COLOCATED) {
-    fprintf(stderr, "Colocated chroma sample position not supported in Y4M\n");
-    return -1;
+    // TODO(any): check the right way to handle this in y4m
+    fprintf(stderr,
+            "Ignoring colocated chroma sample position for reading in Y4M\n");
   }
   y4m_ctx->aom_fmt = AOM_IMG_FMT_I420;
   y4m_ctx->bps = 12;
@@ -925,7 +906,8 @@ int y4m_input_open(y4m_input *y4m_ctx, FILE *file, char *skip_buffer,
   y4m_ctx->aux_buf = NULL;
   y4m_ctx->dst_buf = NULL;
   if (strcmp(y4m_ctx->chroma_type, "420") == 0 ||
-      strcmp(y4m_ctx->chroma_type, "420jpeg") == 0) {
+      strcmp(y4m_ctx->chroma_type, "420jpeg") == 0 ||
+      strcmp(y4m_ctx->chroma_type, "420mpeg2") == 0) {
     y4m_ctx->src_c_dec_h = y4m_ctx->dst_c_dec_h = y4m_ctx->src_c_dec_v =
         y4m_ctx->dst_c_dec_v = 2;
     y4m_ctx->dst_buf_read_sz =
@@ -969,18 +951,6 @@ int y4m_input_open(y4m_input *y4m_ctx, FILE *file, char *skip_buffer,
     if (only_420) {
       fprintf(stderr, "Unsupported conversion from 420p12 to 420jpeg\n");
       return -1;
-    }
-  } else if (strcmp(y4m_ctx->chroma_type, "420mpeg2") == 0) {
-    y4m_ctx->src_c_dec_h = y4m_ctx->dst_c_dec_h = y4m_ctx->src_c_dec_v =
-        y4m_ctx->dst_c_dec_v = 2;
-    y4m_ctx->dst_buf_read_sz = y4m_ctx->pic_w * y4m_ctx->pic_h;
-    /*Chroma filter required: read into the aux buf first.*/
-    y4m_ctx->aux_buf_sz = y4m_ctx->aux_buf_read_sz =
-        2 * ((y4m_ctx->pic_w + 1) / 2) * ((y4m_ctx->pic_h + 1) / 2);
-    y4m_ctx->convert = y4m_convert_null;
-    if (csp != AOM_CSP_VERTICAL) {
-      y4m_ctx->convert = y4m_convert_42xmpeg2_42xjpeg;
-      snprintf(y4m_ctx->chroma_type, sizeof(y4m_ctx->chroma_type), "420");
     }
   } else if (strcmp(y4m_ctx->chroma_type, "420paldv") == 0) {
     y4m_ctx->src_c_dec_h = y4m_ctx->dst_c_dec_h = y4m_ctx->src_c_dec_v =

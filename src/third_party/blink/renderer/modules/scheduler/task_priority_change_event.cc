@@ -28,7 +28,7 @@ const AtomicString& TaskPriorityChangeEvent::InterfaceName() const {
   return event_interface_names::kTaskPriorityChangeEvent;
 }
 
-AtomicString TaskPriorityChangeEvent::previousPriority() const {
+V8TaskPriority TaskPriorityChangeEvent::previousPriority() const {
   return previous_priority_;
 }
 

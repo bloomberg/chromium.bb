@@ -4,6 +4,8 @@ tests = [
   'cff-full-font',
   'japanese',
   'cff-japanese',
+  'cff.notoserifmyanmar',
+  'glyf_bug_3131',
   'layout',
   'layout.gpos',
   'layout.gpos2',
@@ -16,26 +18,40 @@ tests = [
   'layout.gpos9',
   'layout.gsub3',
   'layout.gsub5',
+  'layout.gsub5_format2',
   'layout.gsub6',
   'layout.gsub8',
   'layout.gdef',
+  'layout.gdef.glyphset',
   'layout.khmer',
   'layout.context',
   'layout.gdef-varstore',
   'layout.gdef-attachlist',
   'layout.notonastaliqurdu',
+  'layout.tinos',
+  'layout.duplicate_features',
+  'layout.unsorted_featurelist',
   'cmap',
   'cmap14',
   'sbix',
   'colr',
+  'math',
+# TODO: re-enable once colrv1 subsetting is stabilized.
+# 'colrv1.notoemoji',
+  'colrv1',
+  'colr_with_components',
   'cbdt',
   'variable',
+  'glyph_names',
 ]
 
 repack_tests = [
   'basic',
   'prioritization',
   'table_duplication',
+  'isolation',
+  'advanced_prioritization',
+  'space_splitting',
 ]
 
 
@@ -53,7 +69,7 @@ foreach t : tests
     # ideally better to break and let meson handles them in parallel
     timeout: 500,
     workdir: join_paths(meson.current_build_dir(), '..', '..'),
-    suite: ['subset', 'slow'],
+    suite: 'subset',
   )
 endforeach
 

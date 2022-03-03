@@ -21,9 +21,11 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.additional_secti
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.AutofillAddress.CompletenessCheckType;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.ContactEditor;
+import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -46,6 +48,75 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         public int mMaxNumberLines;
     }
 
+    /**
+     * Model wrapper for an {@code EditableOption} to contain errors.
+     *
+     * @param <T> The type of |EditableOption| that a concrete instance of this class is created
+     * for, such as |AutofillContact|, |AutofillPaymentMethod|, etc.
+     */
+    public static class OptionModel<T extends EditableOption> {
+        public T mOption;
+        public List<String> mErrors;
+
+        public OptionModel(T option, List<String> errors) {
+            this.mOption = option;
+            this.mErrors = errors;
+        }
+
+        public OptionModel(T option) {
+            this(option, new ArrayList<>());
+        }
+    }
+
+    /** Model wrapper for an {@code AutofillContact}. */
+    public static class ContactModel extends OptionModel<AutofillContact> {
+        private final boolean mCanEdit;
+
+        public ContactModel(AutofillContact contact, List<String> errors, boolean canEdit) {
+            super(contact, errors);
+            mCanEdit = canEdit;
+        }
+
+        public ContactModel(AutofillContact contact) {
+            super(contact);
+            mCanEdit = true;
+        }
+
+        public boolean canEdit() {
+            return mCanEdit;
+        }
+    }
+
+    /** Model wrapper for an {@code AutofillAddress}. */
+    public static class AddressModel extends OptionModel<AutofillAddress> {
+        public AddressModel(AutofillAddress address, List<String> errors) {
+            super(address, errors);
+        }
+
+        public AddressModel(AutofillAddress address) {
+            super(address);
+        }
+    }
+
+    /** Model wrapper for an {@code AutofillPaymentInstrument}. */
+    public static class PaymentInstrumentModel extends OptionModel<AutofillPaymentInstrument> {
+        public PaymentInstrumentModel(
+                AutofillPaymentInstrument paymentInstrument, List<String> errors) {
+            super(paymentInstrument, errors);
+        }
+
+        public PaymentInstrumentModel(AutofillPaymentInstrument paymentInstrument) {
+            super(paymentInstrument);
+        }
+    }
+
+    /** Model wrapper for an {@code AssistantLoginChoice}. */
+    public static class LoginChoiceModel extends OptionModel<AssistantLoginChoice> {
+        public LoginChoiceModel(AssistantLoginChoice loginChoice) {
+            super(loginChoice);
+        }
+    }
+
     public static final WritableObjectPropertyKey<AssistantCollectUserDataDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
@@ -56,15 +127,15 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
     /** The chosen shipping address. */
-    public static final WritableObjectPropertyKey<AutofillAddress> SELECTED_SHIPPING_ADDRESS =
+    public static final WritableObjectPropertyKey<AddressModel> SELECTED_SHIPPING_ADDRESS =
             new WritableObjectPropertyKey<>();
 
     /** The chosen payment method (including billing address). */
-    public static final WritableObjectPropertyKey<AutofillPaymentInstrument>
+    public static final WritableObjectPropertyKey<PaymentInstrumentModel>
             SELECTED_PAYMENT_INSTRUMENT = new WritableObjectPropertyKey<>();
 
     /** The chosen contact details. */
-    public static final WritableObjectPropertyKey<AutofillContact> SELECTED_CONTACT_DETAILS =
+    public static final WritableObjectPropertyKey<ContactModel> SELECTED_CONTACT_DETAILS =
             new WritableObjectPropertyKey<>();
 
     /** The contact details section title. */
@@ -76,7 +147,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     /** The chosen login option. */
-    public static final WritableObjectPropertyKey<AssistantLoginChoice> SELECTED_LOGIN =
+    public static final WritableObjectPropertyKey<LoginChoiceModel> SELECTED_LOGIN =
             new WritableObjectPropertyKey<>();
 
     /** The status of the third party terms & conditions. */
@@ -103,13 +174,13 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<List<AutofillAddress>>
             AVAILABLE_BILLING_ADDRESSES = new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<List<AutofillContact>> AVAILABLE_CONTACTS =
+    public static final WritableObjectPropertyKey<List<ContactModel>> AVAILABLE_CONTACTS =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<List<AutofillAddress>>
-            AVAILABLE_SHIPPING_ADDRESSES = new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<List<AddressModel>> AVAILABLE_SHIPPING_ADDRESSES =
+            new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<List<AutofillPaymentInstrument>>
+    public static final WritableObjectPropertyKey<List<PaymentInstrumentModel>>
             AVAILABLE_PAYMENT_INSTRUMENTS = new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<List<String>> SUPPORTED_BASIC_CARD_NETWORKS =
@@ -121,15 +192,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     /** The currently expanded section (may be null). */
     public static final WritableObjectPropertyKey<AssistantVerticalExpander> EXPANDED_SECTION =
-            new WritableObjectPropertyKey<>();
-
-    public static final WritableBooleanPropertyKey REQUIRE_BILLING_POSTAL_CODE =
-            new WritableBooleanPropertyKey();
-
-    public static final WritableObjectPropertyKey<String> BILLING_POSTAL_CODE_MISSING_TEXT =
-            new WritableObjectPropertyKey<>();
-
-    public static final WritableObjectPropertyKey<String> CREDIT_CARD_EXPIRED_TEXT =
             new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey REQUEST_DATE_RANGE =
@@ -200,6 +262,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<ContactDescriptionOptions>
             CONTACT_FULL_DESCRIPTION_OPTIONS = new WritableObjectPropertyKey<>();
 
+    public static final WritableBooleanPropertyKey SHOULD_STORE_USER_DATA_CHANGES =
+            new WritableBooleanPropertyKey();
+
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SELECTED_SHIPPING_ADDRESS,
                 SELECTED_PAYMENT_INSTRUMENT, SELECTED_CONTACT_DETAILS, CONTACT_SECTION_TITLE,
@@ -209,30 +274,30 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 REQUEST_LOGIN_CHOICE, AVAILABLE_BILLING_ADDRESSES, AVAILABLE_CONTACTS,
                 AVAILABLE_SHIPPING_ADDRESSES, AVAILABLE_PAYMENT_INSTRUMENTS,
                 SUPPORTED_BASIC_CARD_NETWORKS, AVAILABLE_LOGINS, EXPANDED_SECTION,
-                REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
-                CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START_OPTIONS,
-                DATE_RANGE_START_DATE, DATE_RANGE_START_TIMESLOT, DATE_RANGE_START_DATE_LABEL,
-                DATE_RANGE_START_TIME_LABEL, DATE_RANGE_END_OPTIONS, DATE_RANGE_END_DATE,
-                DATE_RANGE_END_TIMESLOT, DATE_RANGE_END_DATE_LABEL, DATE_RANGE_END_TIME_LABEL,
+                REQUEST_DATE_RANGE, DATE_RANGE_START_OPTIONS, DATE_RANGE_START_DATE,
+                DATE_RANGE_START_TIMESLOT, DATE_RANGE_START_DATE_LABEL, DATE_RANGE_START_TIME_LABEL,
+                DATE_RANGE_END_OPTIONS, DATE_RANGE_END_DATE, DATE_RANGE_END_TIMESLOT,
+                DATE_RANGE_END_DATE_LABEL, DATE_RANGE_END_TIME_LABEL,
                 DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE, DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
                 PREPENDED_SECTIONS, APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT,
                 PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT, INFO_SECTION_TEXT_CENTER,
                 GENERIC_USER_INTERFACE_PREPENDED, GENERIC_USER_INTERFACE_APPENDED,
-                CONTACT_SUMMARY_DESCRIPTION_OPTIONS, CONTACT_FULL_DESCRIPTION_OPTIONS);
+                CONTACT_SUMMARY_DESCRIPTION_OPTIONS, CONTACT_FULL_DESCRIPTION_OPTIONS,
+                SHOULD_STORE_USER_DATA_CHANGES);
 
-        /**
+        /*
          * Set initial state for basic type properties (others are implicitly null).
          * This is necessary to ensure that the initial UI state is consistent with the model.
          */
         set(VISIBLE, false);
         set(TERMS_STATUS, AssistantTermsAndConditionsState.NOT_SELECTED);
+        set(SHOULD_STORE_USER_DATA_CHANGES, false);
         set(REQUEST_NAME, false);
         set(REQUEST_EMAIL, false);
         set(REQUEST_PHONE, false);
         set(REQUEST_PAYMENT, false);
         set(REQUEST_SHIPPING_ADDRESS, false);
         set(REQUEST_LOGIN_CHOICE, false);
-        set(REQUIRE_BILLING_POSTAL_CODE, false);
         set(PREPENDED_SECTIONS, Collections.emptyList());
         set(APPENDED_SECTIONS, Collections.emptyList());
         set(AVAILABLE_PAYMENT_INSTRUMENTS, Collections.emptyList());
@@ -240,6 +305,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(AVAILABLE_SHIPPING_ADDRESSES, Collections.emptyList());
         set(AVAILABLE_BILLING_ADDRESSES, Collections.emptyList());
         set(INFO_SECTION_TEXT, "");
+    }
+
+    @CalledByNative
+    private void setShouldStoreUserDataChanges(boolean shouldStoreUserDataChanges) {
+        set(SHOULD_STORE_USER_DATA_CHANGES, shouldStoreUserDataChanges);
     }
 
     @CalledByNative
@@ -275,21 +345,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setShowTermsAsCheckbox(boolean showTermsAsCheckbox) {
         set(SHOW_TERMS_AS_CHECKBOX, showTermsAsCheckbox);
-    }
-
-    @CalledByNative
-    private void setRequireBillingPostalCode(boolean requireBillingPostalCode) {
-        set(REQUIRE_BILLING_POSTAL_CODE, requireBillingPostalCode);
-    }
-
-    @CalledByNative
-    private void setBillingPostalCodeMissingText(String text) {
-        set(BILLING_POSTAL_CODE_MISSING_TEXT, text);
-    }
-
-    @CalledByNative
-    private void setCreditCardExpiredText(String text) {
-        set(CREDIT_CARD_EXPIRED_TEXT, text);
     }
 
     @CalledByNative
@@ -338,21 +393,35 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setSelectedContactDetails(@Nullable AutofillContact contact) {
-        set(SELECTED_CONTACT_DETAILS, contact);
+    private void setSelectedContactDetails(
+            @Nullable AutofillContact contact, String[] errors, boolean canEdit) {
+        set(SELECTED_CONTACT_DETAILS,
+                contact == null ? null : new ContactModel(contact, Arrays.asList(errors), canEdit));
     }
 
     @CalledByNative
-    private void setSelectedShippingAddress(@Nullable AutofillAddress shippingAddress) {
-        set(SELECTED_SHIPPING_ADDRESS, shippingAddress);
+    private void setSelectedShippingAddress(
+            @Nullable AutofillAddress shippingAddress, String[] errors) {
+        set(SELECTED_SHIPPING_ADDRESS,
+                shippingAddress == null ? null
+                                        : new AddressModel(shippingAddress, Arrays.asList(errors)));
     }
 
     @CalledByNative
     private void setSelectedPaymentInstrument(WebContents webContents,
             @Nullable PersonalDataManager.CreditCard card,
-            @Nullable PersonalDataManager.AutofillProfile billingProfile) {
+            @Nullable PersonalDataManager.AutofillProfile billingProfile, String[] errors) {
+        AutofillPaymentInstrument paymentInstrument =
+                createAutofillPaymentInstrument(webContents, card, billingProfile);
         set(SELECTED_PAYMENT_INSTRUMENT,
-                createAutofillPaymentInstrument(webContents, card, billingProfile));
+                paymentInstrument == null
+                        ? null
+                        : new PaymentInstrumentModel(paymentInstrument, Arrays.asList(errors)));
+    }
+
+    @CalledByNative
+    private void setSelectedLoginChoice(@Nullable AssistantLoginChoice loginChoice) {
+        set(SELECTED_LOGIN, loginChoice == null ? null : new LoginChoiceModel(loginChoice));
     }
 
     /** Creates an empty list of login options. */
@@ -361,10 +430,19 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         return new ArrayList<>();
     }
 
+    /** Creates a login choice. */
+    @CalledByNative
+    private static AssistantLoginChoice createLoginChoice(String identifier, String label,
+            String sublabel, @Nullable String sublabelAccessibilityHint, int priority,
+            @Nullable AssistantInfoPopup infoPopup, @Nullable String editButtonContentDescription) {
+        return new AssistantLoginChoice(identifier, label, sublabel, sublabelAccessibilityHint,
+                priority, infoPopup, editButtonContentDescription);
+    }
+
     /** Appends a login choice to {@code loginChoices}. */
     @CalledByNative
     private static void addLoginChoice(List<AssistantLoginChoice> loginChoices, String identifier,
-            String label, String sublabel, String sublabelAccessibilityHint, int priority,
+            String label, @Nullable String sublabel, String sublabelAccessibilityHint, int priority,
             @Nullable AssistantInfoPopup infoPopup, @Nullable String editButtonContentDescription) {
         loginChoices.add(new AssistantLoginChoice(identifier, label, sublabel,
                 sublabelAccessibilityHint, priority, infoPopup, editButtonContentDescription));
@@ -541,14 +619,14 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private static List<AutofillContact> createAutofillContactList() {
+    private static List<ContactModel> createAutofillContactList() {
         return new ArrayList<>();
     }
 
     @CalledByNative
-    private static void addAutofillContact(
-            List<AutofillContact> contacts, AutofillContact contact) {
-        contacts.add(contact);
+    private static void addAutofillContact(List<ContactModel> contacts, AutofillContact contact,
+            String[] errors, boolean canEdit) {
+        contacts.add(new ContactModel(contact, Arrays.asList(errors), canEdit));
     }
 
     @VisibleForTesting
@@ -571,19 +649,19 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setAvailableContacts(List<AutofillContact> contacts) {
+    private void setAvailableContacts(List<ContactModel> contacts) {
         set(AVAILABLE_CONTACTS, contacts);
     }
 
     @CalledByNative
-    private static List<AutofillAddress> createAutofillAddressList() {
+    private static List<AddressModel> createShippingAddressList() {
         return new ArrayList<>();
     }
 
     @CalledByNative
-    private static void addAutofillAddress(
-            List<AutofillAddress> addresses, AutofillAddress address) {
-        addresses.add(address);
+    private static void addShippingAddress(
+            List<AddressModel> addresses, AutofillAddress address, String[] errors) {
+        addresses.add(new AddressModel(address, Arrays.asList(errors)));
     }
 
     @VisibleForTesting
@@ -594,12 +672,23 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         if (profile == null) {
             return null;
         }
-        return new AutofillAddress(context, profile);
+        return new AutofillAddress(context, profile, CompletenessCheckType.IGNORE_PHONE);
     }
 
     @CalledByNative
-    private void setAvailableShippingAddresses(List<AutofillAddress> addresses) {
+    private void setAvailableShippingAddresses(List<AddressModel> addresses) {
         set(AVAILABLE_SHIPPING_ADDRESSES, addresses);
+    }
+
+    @CalledByNative
+    private static List<AutofillAddress> createBillingAddressList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void addBillingAddress(
+            List<AutofillAddress> addresses, AutofillAddress address) {
+        addresses.add(address);
     }
 
     @CalledByNative
@@ -608,19 +697,20 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private static List<AutofillPaymentInstrument> createAutofillPaymentInstrumentList() {
+    private static List<PaymentInstrumentModel> createAutofillPaymentInstrumentList() {
         return new ArrayList<>();
     }
 
     @CalledByNative
     private static void addAutofillPaymentInstrument(
-            List<AutofillPaymentInstrument> paymentInstruments, WebContents webContents,
+            List<PaymentInstrumentModel> paymentInstruments, WebContents webContents,
             @Nullable PersonalDataManager.CreditCard card,
-            @Nullable PersonalDataManager.AutofillProfile billingProfile) {
+            @Nullable PersonalDataManager.AutofillProfile billingProfile, String[] errors) {
         AutofillPaymentInstrument paymentInstrument =
                 createAutofillPaymentInstrument(webContents, card, billingProfile);
         if (paymentInstrument != null) {
-            paymentInstruments.add(paymentInstrument);
+            paymentInstruments.add(
+                    new PaymentInstrumentModel(paymentInstrument, Arrays.asList(errors)));
         }
     }
 
@@ -641,8 +731,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setAvailablePaymentInstruments(
-            List<AutofillPaymentInstrument> paymentInstruments) {
+    private void setAvailablePaymentInstruments(List<PaymentInstrumentModel> paymentInstruments) {
         set(AVAILABLE_PAYMENT_INSTRUMENTS, paymentInstruments);
     }
 

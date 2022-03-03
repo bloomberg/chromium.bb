@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -59,6 +60,9 @@ class MockDelegate : public InMemoryDownload::Delegate {
   MockDelegate(BlobContextGetter blob_context_getter)
       : blob_context_getter_(blob_context_getter) {}
 
+  MockDelegate(const MockDelegate&) = delete;
+  MockDelegate& operator=(const MockDelegate&) = delete;
+
   void WaitForCompletion() {
     DCHECK(!run_loop_.running());
     run_loop_.Run();
@@ -80,13 +84,15 @@ class MockDelegate : public InMemoryDownload::Delegate {
  private:
   base::RunLoop run_loop_;
   BlobContextGetter blob_context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 class InMemoryDownloadTest : public testing::Test {
  public:
   InMemoryDownloadTest() = default;
+
+  InMemoryDownloadTest(const InMemoryDownloadTest&) = delete;
+  InMemoryDownloadTest& operator=(const InMemoryDownloadTest&) = delete;
+
   ~InMemoryDownloadTest() override = default;
 
   void SetUp() override {
@@ -184,8 +190,6 @@ class InMemoryDownloadTest : public testing::Test {
 
   // Memory backed blob storage that can never page to disk.
   std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(InMemoryDownloadTest);
 };
 
 TEST_F(InMemoryDownloadTest, DownloadTest) {

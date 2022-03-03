@@ -18,58 +18,40 @@ webview::TextInputType ConvertTextInputType(
   switch (text_input_type) {
     case ui::TEXT_INPUT_TYPE_NONE:
       return webview::TEXT_INPUT_TYPE_NONE;
-      break;
     case ui::TEXT_INPUT_TYPE_TEXT:
       return webview::TEXT_INPUT_TYPE_TEXT;
-      break;
     case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
       return webview::TEXT_INPUT_TYPE_CONTENT_EDITABLE;
-      break;
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       return webview::TEXT_INPUT_TYPE_PASSWORD;
-      break;
     case ui::TEXT_INPUT_TYPE_SEARCH:
       return webview::TEXT_INPUT_TYPE_SEARCH;
-      break;
     case ui::TEXT_INPUT_TYPE_EMAIL:
       return webview::TEXT_INPUT_TYPE_EMAIL;
-      break;
     case ui::TEXT_INPUT_TYPE_NUMBER:
       return webview::TEXT_INPUT_TYPE_NUMBER;
-      break;
     case ui::TEXT_INPUT_TYPE_TELEPHONE:
       return webview::TEXT_INPUT_TYPE_TELEPHONE;
-      break;
     case ui::TEXT_INPUT_TYPE_DATE:
       return webview::TEXT_INPUT_TYPE_DATE;
-      break;
     case ui::TEXT_INPUT_TYPE_DATE_TIME:
       return webview::TEXT_INPUT_TYPE_DATE_TIME;
-      break;
     case ui::TEXT_INPUT_TYPE_MONTH:
       return webview::TEXT_INPUT_TYPE_MONTH;
-      break;
     case ui::TEXT_INPUT_TYPE_TIME:
       return webview::TEXT_INPUT_TYPE_TIME;
-      break;
     case ui::TEXT_INPUT_TYPE_URL:
       return webview::TEXT_INPUT_TYPE_URL;
-      break;
     case ui::TEXT_INPUT_TYPE_WEEK:
       return webview::TEXT_INPUT_TYPE_WEEK;
-      break;
     case ui::TEXT_INPUT_TYPE_TEXT_AREA:
       return webview::TEXT_INPUT_TYPE_TEXT_AREA;
-      break;
     case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
       return webview::TEXT_INPUT_TYPE_DATE_TIME_FIELD;
-      break;
     case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
       return webview::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
-      break;
     case ui::TEXT_INPUT_TYPE_NULL:
       return webview::TEXT_INPUT_TYPE_NULL;
-      break;
   }
   LOG(ERROR) << "Unmapped TextInputType: " << text_input_type;
   return webview::TEXT_INPUT_TYPE_NULL;
@@ -110,12 +92,15 @@ void WebviewInputMethodObserver::OnInputMethodDestroyed(
   input_method_ = nullptr;
 }
 
-void WebviewInputMethodObserver::OnShowVirtualKeyboardIfEnabled() {
-  std::unique_ptr<chromecast::webview::WebviewResponse>
-      last_focus_response_copy =
-          std::make_unique<chromecast::webview::WebviewResponse>(
-              *last_focus_response_);
-  controller_->client()->EnqueueSend(std::move(last_focus_response_copy));
+void WebviewInputMethodObserver::OnVirtualKeyboardVisibilityChangedIfEnabled(
+    bool should_show) {
+  if (should_show) {
+    std::unique_ptr<chromecast::webview::WebviewResponse>
+        last_focus_response_copy =
+            std::make_unique<chromecast::webview::WebviewResponse>(
+                *last_focus_response_);
+    controller_->client()->EnqueueSend(std::move(last_focus_response_copy));
+  }
 }
 
 }  // namespace chromecast

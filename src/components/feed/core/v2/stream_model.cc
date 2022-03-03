@@ -8,6 +8,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/json/string_escape.h"
@@ -21,6 +22,7 @@
 
 namespace feed {
 namespace {
+using Context = StreamModel::Context;
 using UiUpdate = StreamModel::UiUpdate;
 using StoreUpdate = StreamModel::StoreUpdate;
 
@@ -51,6 +53,8 @@ void MergeSharedStateIds(const feedstore::StreamData& model_data,
 
 }  // namespace
 
+Context::Context() = default;
+Context::~Context() = default;
 UiUpdate::UiUpdate() = default;
 UiUpdate::~UiUpdate() = default;
 UiUpdate::UiUpdate(const UiUpdate&) = default;
@@ -60,7 +64,9 @@ StoreUpdate::~StoreUpdate() = default;
 StoreUpdate::StoreUpdate(StoreUpdate&&) = default;
 StoreUpdate& StoreUpdate::operator=(StoreUpdate&&) = default;
 
-StreamModel::StreamModel() = default;
+StreamModel::StreamModel(Context* context)
+    : content_map_(&(context->revision_generator)) {}
+
 StreamModel::~StreamModel() = default;
 
 void StreamModel::SetStoreObserver(StoreObserver* store_observer) {
@@ -85,6 +91,12 @@ const feedstore::Content* StreamModel::FindContent(
     ContentRevision revision) const {
   return GetFinalFeatureTree()->FindContent(revision);
 }
+
+feedwire::ContentId StreamModel::FindContentId(ContentRevision revision) const {
+  const feedstore::Content* content = FindContent(revision);
+  return content ? content->content_id() : feedwire::ContentId();
+}
+
 const std::string* StreamModel::FindSharedStateData(
     const std::string& id) const {
   auto iter = shared_states_.find(id);
@@ -133,6 +145,10 @@ void StreamModel::Update(
       } else {
         MergeSharedStateIds(stream_data_, update_request->stream_data);
       }
+      // Never allow overwriting the root event ID.
+      update_request->stream_data.set_root_event_id(
+          stream_data_.root_event_id());
+
       // Note: We might be overwriting some shared-states unnecessarily.
       StoreUpdate store_update;
       store_update.stream_type = stream_type_;
@@ -145,7 +161,6 @@ void StreamModel::Update(
     }
   }
 
-  // Update non-tree data.
   stream_data_ = update_request->stream_data;
 
   if (has_clear_all) {
@@ -257,6 +272,10 @@ void StreamModel::UpdateFlattenedTree() {
     observer.OnUiUpdate(update);
 }
 
+bool StreamModel::HasVisibleContent() {
+  return !content_list_.empty();
+}
+
 stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() {
   return feature_tree_after_changes_ ? feature_tree_after_changes_.get()
                                      : &base_feature_tree_;
@@ -276,9 +295,34 @@ ContentIdSet StreamModel::GetContentIds() const {
   return feedstore::GetContentIds(stream_data_);
 }
 
+ContentStats StreamModel::GetContentStats() const {
+  ContentStats stats;
+  for (auto content_revision : content_list_) {
+    const feedstore::Content* content = FindContent(content_revision);
+    if (content) {
+      stats.total_content_frame_size_bytes += content->frame().size();
+      stats.card_count++;
+    }
+  }
+
+  for (auto& entry : shared_states_) {
+    stats.shared_state_size += entry.second.data.size();
+  }
+  return stats;
+}
+
+const std::string& StreamModel::GetRootEventId() const {
+  return stream_data_.root_event_id();
+}
+
 std::string StreamModel::DumpStateForTesting() {
   std::stringstream ss;
   ss << "StreamModel{\n";
+  {
+    std::string base64_root_id;
+    base::Base64Encode(GetRootEventId(), &base64_root_id);
+    ss << "root_event_id=" << base64_root_id << "'\n";
+  }
   ss << "next_page_token='" << GetNextPageToken() << "'\n";
   for (auto& entry : shared_states_) {
     ss << "shared_state[" << entry.first

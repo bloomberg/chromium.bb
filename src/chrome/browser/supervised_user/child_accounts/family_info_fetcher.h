@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -88,6 +88,10 @@ class FamilyInfoFetcher {
       Consumer* consumer,
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  FamilyInfoFetcher(const FamilyInfoFetcher&) = delete;
+  FamilyInfoFetcher& operator=(const FamilyInfoFetcher&) = delete;
+
   ~FamilyInfoFetcher();
 
   // Public so tests can use them.
@@ -122,9 +126,9 @@ class FamilyInfoFetcher {
   void FamilyProfileFetched(const std::string& response);
   void FamilyMembersFetched(const std::string& response);
 
-  Consumer* consumer_;
+  raw_ptr<Consumer> consumer_;
   const CoreAccountId primary_account_id_;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::string request_path_;
@@ -133,8 +137,6 @@ class FamilyInfoFetcher {
   std::string access_token_;
   bool access_token_expired_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(FamilyInfoFetcher);
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_FAMILY_INFO_FETCHER_H_

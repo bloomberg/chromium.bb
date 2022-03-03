@@ -5,9 +5,8 @@
 #ifndef MEDIA_CDM_LIBRARY_CDM_CDM_HOST_PROXY_IMPL_H_
 #define MEDIA_CDM_LIBRARY_CDM_CDM_HOST_PROXY_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
-
-#include "base/macros.h"
 
 namespace media {
 
@@ -17,6 +16,10 @@ template <typename HostInterface>
 class CdmHostProxyImpl : public CdmHostProxy {
  public:
   explicit CdmHostProxyImpl(HostInterface* host) : host_(host) {}
+
+  CdmHostProxyImpl(const CdmHostProxyImpl&) = delete;
+  CdmHostProxyImpl& operator=(const CdmHostProxyImpl&) = delete;
+
   ~CdmHostProxyImpl() override {}
 
   void OnInitialized(bool success) final {
@@ -114,9 +117,7 @@ class CdmHostProxyImpl : public CdmHostProxy {
   }
 
  private:
-  HostInterface* const host_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CdmHostProxyImpl);
+  const raw_ptr<HostInterface> host_ = nullptr;
 };
 
 }  // namespace media

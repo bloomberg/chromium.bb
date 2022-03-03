@@ -30,24 +30,24 @@ class StoragePartition;
 // DedicatedWorkerHost. They create a mojo endpoint using Clone and pass it
 // around. For example, it's sent to the Network Service via
 // network.mojom.URLLoaderFactoryParam.coep_reporter.
-// Any functions other than the destructor must not be called after the
-// associated StoragePartition is destructed.
-// TODO(yhirano): This currently only sends reports to the network. Notify
-// the event to the associated ReportingObserver.
+// A CrossOriginEmbedderPolicyReporter lives on the UI thread.
 class CONTENT_EXPORT CrossOriginEmbedderPolicyReporter final
     : public network::mojom::CrossOriginEmbedderPolicyReporter {
  public:
   CrossOriginEmbedderPolicyReporter(
-      StoragePartition* storage_partition,
+      base::WeakPtr<StoragePartition> storage_partition,
       const GURL& context_url,
       const absl::optional<std::string>& endpoint,
       const absl::optional<std::string>& report_only_endpoint,
+      const base::UnguessableToken& reporting_source,
       const net::NetworkIsolationKey& network_isolation_key);
   ~CrossOriginEmbedderPolicyReporter() override;
   CrossOriginEmbedderPolicyReporter(const CrossOriginEmbedderPolicyReporter&) =
       delete;
   CrossOriginEmbedderPolicyReporter& operator=(
       const CrossOriginEmbedderPolicyReporter&) = delete;
+
+  void set_reporting_source(const base::UnguessableToken& reporting_source);
 
   // network::mojom::CrossOriginEmbedderPolicyReporter implementation.
   void QueueCorpViolationReport(const GURL& blocked_url,
@@ -79,12 +79,16 @@ class CONTENT_EXPORT CrossOriginEmbedderPolicyReporter final
                           std::pair<base::StringPiece, base::StringPiece>> body,
                       bool report_only);
 
-  // See the class comment.
-  StoragePartition* const storage_partition_;
+  base::WeakPtr<StoragePartition> storage_partition_;
 
   const GURL context_url_;
   const absl::optional<std::string> endpoint_;
   const absl::optional<std::string> report_only_endpoint_;
+  // This reporting source is not owned by COEPReporter in any way. The
+  // COEPReporter is not responsible for cleaning up the reporting source, the
+  // actual owner of this token needs to manage the lifecycle (including
+  // cleaning up the reporting source from reporting cache).
+  base::UnguessableToken reporting_source_;
   const net::NetworkIsolationKey network_isolation_key_;
 
   mojo::ReceiverSet<network::mojom::CrossOriginEmbedderPolicyReporter>

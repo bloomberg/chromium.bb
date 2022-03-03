@@ -20,6 +20,7 @@
 
 #ifndef EIGEN_MATH_FUNCTIONS_SYCL_H
 #define EIGEN_MATH_FUNCTIONS_SYCL_H
+#include "../../InternalHeaderCheck.h"
 
 namespace Eigen {
 
@@ -70,6 +71,7 @@ SYCL_PLOG10(cl::sycl::cl_double2)
   }
 
 SYCL_PEXP(cl::sycl::cl_float4)
+SYCL_PEXP(cl::sycl::cl_float)
 SYCL_PEXP(cl::sycl::cl_double2)
 #undef SYCL_PEXP
 
@@ -237,7 +239,7 @@ SYCL_PROUND(cl::sycl::cl_double2)
 #undef SYCL_PROUND
 
 #define SYCL_PRINT(packet_type)                                         \
-  template<>                                                            \
+  template <>                                                           \
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE packet_type print<packet_type>( \
       const packet_type& a) {                                           \
     return cl::sycl::rint(a);                                           \
@@ -280,8 +282,20 @@ SYCL_PMAX(cl::sycl::cl_float4, cl::sycl::fmax(a, b))
 SYCL_PMAX(cl::sycl::cl_double2, cl::sycl::fmax(a, b))
 #undef SYCL_PMAX
 
-#endif
+#define SYCL_PLDEXP(packet_type)                                             \
+  template <>                                                                \
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE packet_type pldexp(                  \
+      const packet_type& a, const packet_type& exponent) {                   \
+    return cl::sycl::ldexp(                                                  \
+        a, exponent.template convert<cl::sycl::cl_int,                       \
+                                     cl::sycl::rounding_mode::automatic>()); \
+  }
 
+SYCL_PLDEXP(cl::sycl::cl_float4)
+SYCL_PLDEXP(cl::sycl::cl_double2)
+#undef SYCL_PLDEXP
+
+#endif
 }  // end namespace internal
 
 }  // end namespace Eigen

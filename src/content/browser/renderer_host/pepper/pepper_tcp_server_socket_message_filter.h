@@ -10,8 +10,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -59,6 +58,11 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
                                      BrowserPpapiHostImpl* host,
                                      PP_Instance instance,
                                      bool private_api);
+
+  PepperTCPServerSocketMessageFilter(
+      const PepperTCPServerSocketMessageFilter&) = delete;
+  PepperTCPServerSocketMessageFilter& operator=(
+      const PepperTCPServerSocketMessageFilter&) = delete;
 
   // Sets a global NetworkContext object to be used instead of the real one for
   // doing all network operations.
@@ -108,7 +112,7 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
       mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream);
-  void OnAcceptCompletedOnProcessThread(
+  void OnAcceptCompletedOnUIThread(
       const ppapi::host::ReplyMessageContext& context,
       mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::PendingReceiver<network::mojom::SocketObserver>
@@ -144,11 +148,11 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
 
   // Following fields are initialized and used only on the IO thread.
   // Non-owning ptr.
-  BrowserPpapiHostImpl* host_;
+  raw_ptr<BrowserPpapiHostImpl> host_;
   // Non-owning ptr.
-  ppapi::host::PpapiHost* ppapi_host_;
+  raw_ptr<ppapi::host::PpapiHost> ppapi_host_;
   // Non-owning ptr.
-  ContentBrowserPepperHostFactory* factory_;
+  raw_ptr<ContentBrowserPepperHostFactory> factory_;
   PP_Instance instance_;
 
   State state_;
@@ -176,8 +180,6 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   // pipes not owned by |this|. All weak pointers released in Close().
   base::WeakPtrFactory<PepperTCPServerSocketMessageFilter> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(PepperTCPServerSocketMessageFilter);
 };
 
 }  // namespace content

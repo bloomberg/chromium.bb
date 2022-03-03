@@ -9,7 +9,7 @@ import * as Protocol from '../../../generated/protocol.js';
 import * as UI from '../../legacy/legacy.js';
 
 import type {Settings} from './LinearMemoryInspector.js';
-import {LinearMemoryInspectorPaneImpl} from './LinearMemoryInspectorPane.js';
+import {Events as LmiEvents, LinearMemoryInspectorPaneImpl} from './LinearMemoryInspectorPane.js';
 import type {ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
 import {Endianness, getDefaultValueTypeMapping} from './ValueInterpreterDisplayUtils.js';
 
@@ -25,14 +25,14 @@ export interface LazyUint8Array {
 }
 
 export class RemoteArrayBufferWrapper implements LazyUint8Array {
-  private remoteArrayBuffer: SDK.RemoteObject.RemoteArrayBuffer;
+  #remoteArrayBuffer: SDK.RemoteObject.RemoteArrayBuffer;
 
   constructor(arrayBuffer: SDK.RemoteObject.RemoteArrayBuffer) {
-    this.remoteArrayBuffer = arrayBuffer;
+    this.#remoteArrayBuffer = arrayBuffer;
   }
 
   length(): number {
-    return this.remoteArrayBuffer.byteLength();
+    return this.#remoteArrayBuffer.byteLength();
   }
 
   async getRange(start: number, end: number): Promise<Uint8Array> {
@@ -41,7 +41,7 @@ export class RemoteArrayBufferWrapper implements LazyUint8Array {
       console.error(`Requesting invalid range of memory: (${start}, ${end})`);
       return new Uint8Array(0);
     }
-    const array = await this.remoteArrayBuffer.bytes(start, newEnd);
+    const array = await this.#remoteArrayBuffer.bytes(start, newEnd);
     return new Uint8Array(array);
   }
 }
@@ -49,7 +49,7 @@ export class RemoteArrayBufferWrapper implements LazyUint8Array {
 async function getBufferFromObject(obj: SDK.RemoteObject.RemoteObject): Promise<SDK.RemoteObject.RemoteArrayBuffer> {
   console.assert(obj.type === 'object');
   console.assert(obj.subtype !== undefined && ACCEPTED_MEMORY_TYPES.includes(obj.subtype));
-  const response = await obj.runtimeModel()._agent.invoke_callFunctionOn({
+  const response = await obj.runtimeModel().agent.invoke_callFunctionOn({
     objectId: obj.objectId,
     functionDeclaration:
         'function() { return this instanceof ArrayBuffer || (typeof SharedArrayBuffer !== \'undefined\' && this instanceof SharedArrayBuffer) ? this : this.buffer; }',
@@ -72,19 +72,19 @@ type SerializableSettings = {
   endianness: Endianness,
 };
 
-export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> {
-  private paneInstance = LinearMemoryInspectorPaneImpl.instance();
-  private bufferIdToRemoteObject: Map<string, SDK.RemoteObject.RemoteObject> = new Map();
-  private settings: Common.Settings.Setting<SerializableSettings>;
+export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> {
+  #paneInstance = LinearMemoryInspectorPaneImpl.instance();
+  #bufferIdToRemoteObject: Map<string, SDK.RemoteObject.RemoteObject> = new Map();
+  #settings: Common.Settings.Setting<SerializableSettings>;
 
   private constructor() {
     super();
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.RuntimeModel.RuntimeModel, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.RuntimeModel.RuntimeModel, this);
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.onGlobalObjectClear, this);
-    this.paneInstance.addEventListener('view-closed', this.viewClosed.bind(this));
+    this.#paneInstance.addEventListener(LmiEvents.ViewClosed, this.viewClosed.bind(this));
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this.onDebuggerPause, this);
 
     const defaultValueTypeModes = getDefaultValueTypeMapping();
@@ -93,7 +93,7 @@ export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserv
       valueTypeModes: Array.from(defaultValueTypeModes),
       endianness: Endianness.Little,
     };
-    this.settings = Common.Settings.Settings.instance().createSetting('lmiInterpreterSettings', defaultSettings);
+    this.#settings = Common.Settings.Settings.instance().createSetting('lmiInterpreterSettings', defaultSettings);
   }
 
   static instance(): LinearMemoryInspectorController {
@@ -130,11 +130,11 @@ export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserv
   saveSettings(data: Settings): void {
     const valueTypes = Array.from(data.valueTypes);
     const modes = [...data.modes];
-    this.settings.set({valueTypes, valueTypeModes: modes, endianness: data.endianness});
+    this.#settings.set({valueTypes, valueTypeModes: modes, endianness: data.endianness});
   }
 
   loadSettings(): Settings {
-    const settings = this.settings.get();
+    const settings = this.#settings.get();
     return {
       valueTypes: new Set(settings.valueTypes),
       modes: new Map(settings.valueTypeModes),
@@ -166,49 +166,47 @@ export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserv
     const memoryProperty = internalProperties?.find(({name}) => name === '[[WebAssemblyMemory]]');
     const memory = memoryProperty?.value;
 
-    if (this.bufferIdToRemoteObject.has(id)) {
-      this.paneInstance.reveal(id, address);
+    if (this.#bufferIdToRemoteObject.has(id)) {
+      this.#paneInstance.reveal(id, address);
       UI.ViewManager.ViewManager.instance().showView('linear-memory-inspector');
       return;
     }
 
     const title = String(memory ? memory.description : buffer.object().description);
-    this.bufferIdToRemoteObject.set(id, buffer.object());
+    this.#bufferIdToRemoteObject.set(id, buffer.object());
     const arrayBufferWrapper = new RemoteArrayBufferWrapper(buffer);
 
-    this.paneInstance.create(id, title, arrayBufferWrapper, address);
+    this.#paneInstance.create(id, title, arrayBufferWrapper, address);
     UI.ViewManager.ViewManager.instance().showView('linear-memory-inspector');
   }
 
   modelRemoved(model: SDK.RuntimeModel.RuntimeModel): void {
-    for (const [bufferId, remoteObject] of this.bufferIdToRemoteObject) {
+    for (const [bufferId, remoteObject] of this.#bufferIdToRemoteObject) {
       if (model === remoteObject.runtimeModel()) {
-        this.bufferIdToRemoteObject.delete(bufferId);
-        this.paneInstance.close(bufferId);
+        this.#bufferIdToRemoteObject.delete(bufferId);
+        this.#paneInstance.close(bufferId);
       }
     }
   }
 
-  private onDebuggerPause(event: Common.EventTarget.EventTargetEvent): void {
-    const debuggerModel = event.data as SDK.DebuggerModel.DebuggerModel;
-    for (const [bufferId, remoteObject] of this.bufferIdToRemoteObject) {
+  private onDebuggerPause(event: Common.EventTarget.EventTargetEvent<SDK.DebuggerModel.DebuggerModel>): void {
+    const debuggerModel = event.data;
+    for (const [bufferId, remoteObject] of this.#bufferIdToRemoteObject) {
       if (debuggerModel.runtimeModel() === remoteObject.runtimeModel()) {
-        this.paneInstance.refreshView(bufferId);
+        this.#paneInstance.refreshView(bufferId);
       }
     }
   }
 
-  private onGlobalObjectClear(event: Common.EventTarget.EventTargetEvent): void {
-    const debuggerModel = event.data as SDK.DebuggerModel.DebuggerModel;
-    this.modelRemoved(debuggerModel.runtimeModel());
+  private onGlobalObjectClear(event: Common.EventTarget.EventTargetEvent<SDK.DebuggerModel.DebuggerModel>): void {
+    this.modelRemoved(event.data.runtimeModel());
   }
 
-  private viewClosed(event: Common.EventTarget.EventTargetEvent): void {
-    const bufferId = event.data;
-    const remoteObj = this.bufferIdToRemoteObject.get(bufferId);
+  private viewClosed({data: bufferId}: Common.EventTarget.EventTargetEvent<string>): void {
+    const remoteObj = this.#bufferIdToRemoteObject.get(bufferId);
     if (remoteObj) {
       remoteObj.release();
     }
-    this.bufferIdToRemoteObject.delete(event.data);
+    this.#bufferIdToRemoteObject.delete(bufferId);
   }
 }

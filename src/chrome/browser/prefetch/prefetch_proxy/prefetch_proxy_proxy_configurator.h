@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PROXY_CONFIGURATOR_H_
 #define CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PROXY_CONFIGURATOR_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -29,10 +30,12 @@ class PrefetchProxyProxyConfigurator
   // Adds a config client that can be used to update Data Reduction Proxy
   // settings.
   void AddCustomProxyConfigClient(
-      mojo::Remote<network::mojom::CustomProxyConfigClient> config_client);
+      mojo::Remote<network::mojom::CustomProxyConfigClient> config_client,
+      base::OnceCallback<void()> callback);
 
   // Updates the custom proxy config to all clients.
-  void UpdateCustomProxyConfig();
+  void UpdateCustomProxyConfig(
+      base::OnceCallback<void()> callback);
 
   // Creates a config that can be sent to the NetworkContext.
   network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig() const;
@@ -67,7 +70,7 @@ class PrefetchProxyProxyConfigurator
   const net::ProxyServer prefetch_proxy_server_;
 
   // The time clock used to calculate |prefetch_proxy_not_available_until_|.
-  const base::Clock* clock_;
+  raw_ptr<const base::Clock> clock_;
 
   // If set, the prefetch proxy should not be used until this time.
   absl::optional<base::Time> prefetch_proxy_not_available_until_;

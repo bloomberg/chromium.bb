@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/modules/cache_storage/cache_utils.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -331,7 +331,6 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   return promise;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise CacheStorage::match(ScriptState* script_state,
                                   const V8RequestInfo* request,
                                   const MultiCacheQueryOptions* options,
@@ -351,22 +350,6 @@ ScriptPromise CacheStorage::match(ScriptState* script_state,
   }
   return MatchImpl(script_state, request_object, options);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise CacheStorage::match(ScriptState* script_state,
-                                  const RequestInfo& request,
-                                  const MultiCacheQueryOptions* options,
-                                  ExceptionState& exception_state) {
-  DCHECK(!request.IsNull());
-
-  if (request.IsRequest())
-    return MatchImpl(script_state, request.GetAsRequest(), options);
-  Request* new_request =
-      Request::Create(script_state, request.GetAsUSVString(), exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-  return MatchImpl(script_state, new_request, options);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                       const Request* request,
@@ -379,8 +362,11 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 
   ExecutionContext* context = ExecutionContext::From(script_state);
   bool in_related_fetch_event = false;
-  if (auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context))
+  bool in_range_fetch_event = false;
+  if (auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context)) {
     in_related_fetch_event = global_scope->HasRelatedFetchEvent(request->url());
+    in_range_fetch_event = global_scope->HasRangeFetchEvent(request->url());
+  }
 
   TRACE_EVENT_WITH_FLOW2("CacheStorage", "CacheStorage::MatchImpl",
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT,
@@ -418,7 +404,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   // callback from ever being executed.
   cache_storage_remote_->Match(
       std::move(mojo_request), std::move(mojo_options), in_related_fetch_event,
-      trace_id,
+      in_range_fetch_event, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const MultiCacheQueryOptions* options, int64_t trace_id,

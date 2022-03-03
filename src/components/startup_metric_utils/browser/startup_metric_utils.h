@@ -16,6 +16,10 @@
 
 namespace startup_metric_utils {
 
+// Resets this process's session to allow recording one-time-only metrics again
+// when a process is reused for multiple tests.
+void ResetSessionForTesting();
+
 // Returns true when browser UI was not launched normally: some other UI was
 // shown first or browser was launched in background mode.
 bool WasMainWindowStartupInterrupted();
@@ -86,12 +90,6 @@ void RecordBrowserWindowFirstPaint(base::TimeTicks ticks);
 // recorded yet. This method is expected to be called from the UI thread.
 base::TimeTicks MainEntryPointTicks();
 
-// Record metrics for the web-footer experiment. See https://crbug.com/993502.
-// These functions must be called after RecordApplicationStartTime(), because
-// they compute time deltas based on application start time.
-void RecordWebFooterDidFirstVisuallyNonEmptyPaint(base::TimeTicks ticks);
-void RecordWebFooterCreation(base::TimeTicks ticks);
-
 // Call this to record an arbitrary startup timing histogram with startup
 // temperature and a trace event. Records the time between `completion_ticks`
 // and the application start.
@@ -103,7 +101,11 @@ void RecordWebFooterCreation(base::TimeTicks ticks);
 // would be skewed and will not be recorded.
 // This function must be called after RecordApplicationStartTime(), because it
 // computes time deltas based on application start time.
-void RecordExternalStartupMetric(const std::string& histogram_name,
+// `histogram_name` must point to a statically allocated string (such as a
+// string literal) since the pointer will be stored for an indefinite amount of
+// time before being written to a trace (see the "Memory scoping note" in
+// base/trace_event/common/trace_event_common.h.)
+void RecordExternalStartupMetric(const char* histogram_name,
                                  base::TimeTicks completion_ticks,
                                  bool set_non_browser_ui_displayed);
 

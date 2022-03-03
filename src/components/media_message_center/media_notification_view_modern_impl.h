@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_MODERN_IMPL_H_
 #define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_MODERN_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "components/media_message_center/media_notification_view.h"
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -19,6 +19,7 @@
 
 namespace views {
 class Button;
+class ToggleImageButton;
 }  // namespace views
 
 namespace media_message_center {
@@ -32,6 +33,7 @@ class MediaControlsProgressView;
 class MediaNotificationBackground;
 class MediaNotificationContainer;
 class MediaNotificationItem;
+class MediaNotificationVolumeSliderView;
 
 class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
     : public MediaNotificationView {
@@ -61,6 +63,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
       MediaNotificationContainer* container,
       base::WeakPtr<MediaNotificationItem> item,
       std::unique_ptr<views::View> notification_controls_view,
+      std::unique_ptr<views::View> notification_footer_view,
       int notification_width);
   MediaNotificationViewModernImpl(const MediaNotificationViewModernImpl&) =
       delete;
@@ -89,6 +92,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
   void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
   void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override {}
   void UpdateDeviceSelectorAvailability(bool availability) override;
+  void UpdateWithMuteStatus(bool mute) override;
+  void UpdateWithVolume(float volume) override;
 
   // Testing methods
   const views::Label* title_label_for_testing() const { return title_label_; }
@@ -123,8 +128,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
 
   void SeekTo(double seek_progress);
 
+  void OnMuteButtonClicked();
+
+  void SetVolume(float volume);
+
   // Container that receives events.
-  MediaNotificationContainer* const container_;
+  const raw_ptr<MediaNotificationContainer> container_;
 
   // Keeps track of media metadata and controls the session when buttons are
   // clicked.
@@ -139,20 +148,22 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
   // Contains the title, artist and album separated by hyphens.
   std::u16string accessible_name_;
 
-  MediaNotificationBackground* background_;
+  raw_ptr<MediaNotificationBackground> background_;
 
   media_session::MediaPosition position_;
 
   // Container views directly attached to this view.
-  views::View* artwork_container_ = nullptr;
-  MediaArtworkView* artwork_ = nullptr;
-  views::Label* title_label_ = nullptr;
-  views::Label* subtitle_label_ = nullptr;
-  MediaButton* picture_in_picture_button_ = nullptr;
-  views::View* notification_controls_spacer_ = nullptr;
-  views::View* media_controls_container_ = nullptr;
-  MediaButton* play_pause_button_ = nullptr;
-  MediaControlsProgressView* progress_ = nullptr;
+  raw_ptr<views::View> artwork_container_ = nullptr;
+  raw_ptr<MediaArtworkView> artwork_ = nullptr;
+  raw_ptr<views::Label> title_label_ = nullptr;
+  raw_ptr<views::Label> subtitle_label_ = nullptr;
+  raw_ptr<MediaButton> picture_in_picture_button_ = nullptr;
+  raw_ptr<views::View> notification_controls_spacer_ = nullptr;
+  raw_ptr<views::View> media_controls_container_ = nullptr;
+  raw_ptr<MediaButton> play_pause_button_ = nullptr;
+  raw_ptr<MediaControlsProgressView> progress_ = nullptr;
+  raw_ptr<views::ToggleImageButton> mute_button_ = nullptr;
+  raw_ptr<MediaNotificationVolumeSliderView> volume_slider_ = nullptr;
 };
 
 }  // namespace media_message_center

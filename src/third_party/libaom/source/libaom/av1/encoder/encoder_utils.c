@@ -11,8 +11,6 @@
 
 #include "aom/aomcx.h"
 
-#include "aom_ports/system_state.h"
-
 #include "av1/encoder/bitstream.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder.h"
@@ -25,6 +23,7 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/superres_scale.h"
+#include "av1/encoder/tpl_model.h"
 #include "av1/encoder/var_based_part.h"
 
 #if CONFIG_TUNE_VMAF
@@ -311,7 +310,17 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
   const RATE_CONTROL *const rc = &cpi->rc;
   struct segmentation *const seg = &cm->seg;
 
-  int high_q = (int)(rc->avg_q > 48.0);
+  double avg_q;
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
+  avg_q = ((cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) &&
+           (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE))
+              ? cpi->ppi->p_rc.temp_avg_q
+              : cpi->ppi->p_rc.avg_q;
+#else
+  avg_q = cpi->ppi->p_rc.avg_q;
+#endif
+
+  int high_q = (int)(avg_q > 48.0);
   int qi_delta;
 
   // Disable and clear down for KF
@@ -343,7 +352,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
       seg->update_map = 1;
       seg->update_data = 1;
 
-      qi_delta = av1_compute_qdelta(rc, rc->avg_q, rc->avg_q * 0.875,
+      qi_delta = av1_compute_qdelta(rc, avg_q, avg_q * 0.875,
                                     cm->seq_params->bit_depth);
       av1_set_segdata(seg, 1, SEG_LVL_ALT_Q, qi_delta - 2);
       av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_Y_H, -2);
@@ -495,7 +504,6 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     if (mc_dep_cost_base == 0) {
       tpl_frame->is_valid = 0;
     } else {
-      aom_clear_system_state();
       cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
       if (is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
         if (cpi->ppi->lap_enabled) {
@@ -516,7 +524,6 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
               cpi->ppi->p_rc.gfu_boost, gfu_boost, cpi->rc.frames_to_key);
         }
       }
-      aom_clear_system_state();
     }
   }
 }
@@ -541,6 +548,48 @@ void av1_set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, cpi->gf_frame_index,
                                 bottom_index, top_index);
+
+#if !CONFIG_REALTIME_ONLY
+  if (cpi->oxcf.rc_cfg.mode == AOM_Q &&
+      cpi->ppi->tpl_data.tpl_frame[cpi->gf_frame_index].is_valid &&
+      is_frame_tpl_eligible(gf_group, cpi->gf_frame_index) &&
+      !is_lossless_requested(&cpi->oxcf.rc_cfg)) {
+    const RateControlCfg *const rc_cfg = &cpi->oxcf.rc_cfg;
+    const int tpl_q = av1_tpl_get_q_index(
+        &cpi->ppi->tpl_data, cpi->gf_frame_index, cpi->rc.active_worst_quality,
+        cm->seq_params->bit_depth);
+    *q = clamp(tpl_q, rc_cfg->best_allowed_q, rc_cfg->worst_allowed_q);
+    *top_index = *bottom_index = *q;
+    if (gf_group->update_type[cpi->gf_frame_index] == ARF_UPDATE)
+      cpi->ppi->p_rc.arf_q = *q;
+  }
+
+  if (cpi->oxcf.q_cfg.use_fixed_qp_offsets && cpi->oxcf.rc_cfg.mode == AOM_Q) {
+    if (is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
+      const double qratio_grad =
+          cpi->ppi->p_rc.baseline_gf_interval > 20 ? 0.2 : 0.3;
+      const double qstep_ratio =
+          0.2 +
+          (1.0 - (double)cpi->rc.active_worst_quality / MAXQ) * qratio_grad;
+      *q = av1_get_q_index_from_qstep_ratio(
+          cpi->rc.active_worst_quality, qstep_ratio, cm->seq_params->bit_depth);
+      *top_index = *bottom_index = *q;
+      if (gf_group->update_type[cpi->gf_frame_index] == ARF_UPDATE ||
+          gf_group->update_type[cpi->gf_frame_index] == KF_UPDATE ||
+          gf_group->update_type[cpi->gf_frame_index] == GF_UPDATE)
+        cpi->ppi->p_rc.arf_q = *q;
+    } else if (gf_group->layer_depth[cpi->gf_frame_index] <
+               gf_group->max_layer_depth) {
+      int this_height = gf_group->layer_depth[cpi->gf_frame_index];
+      int arf_q = cpi->ppi->p_rc.arf_q;
+      while (this_height > 1) {
+        arf_q = (arf_q + cpi->oxcf.rc_cfg.cq_level + 1) / 2;
+        --this_height;
+      }
+      *top_index = *bottom_index = *q = arf_q;
+    }
+  }
+#endif
 
   // Configure experimental use of segmentation for enhanced coding of
   // static regions if indicated.
@@ -720,6 +769,13 @@ BLOCK_SIZE av1_select_sb_size(const AV1EncoderConfig *const oxcf, int width,
   if (oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_128X128)
     return BLOCK_128X128;
 
+  // Force 64x64 superblock size to increase resolution in perceptual
+  // AQ mode.
+  if (oxcf->mode == ALLINTRA &&
+      (oxcf->q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI ||
+       oxcf->q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED))
+    return BLOCK_64X64;
+
   assert(oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
   if (number_spatial_layers > 1 ||
@@ -738,10 +794,18 @@ BLOCK_SIZE av1_select_sb_size(const AV1EncoderConfig *const oxcf, int width,
   // pass encoding, which is why this heuristic is not configured as a
   // speed-feature.
   if (oxcf->superres_cfg.superres_mode == AOM_SUPERRES_NONE &&
-      oxcf->resize_cfg.resize_mode == RESIZE_NONE && oxcf->speed >= 1) {
-    return AOMMIN(width, height) > 480 ? BLOCK_128X128 : BLOCK_64X64;
-  }
+      oxcf->resize_cfg.resize_mode == RESIZE_NONE) {
+    int is_480p_or_lesser = AOMMIN(width, height) <= 480;
+    if ((oxcf->speed >= 1 || oxcf->mode == REALTIME) && is_480p_or_lesser)
+      return BLOCK_64X64;
 
+    // For 1080p and lower resolutions, choose SB size adaptively based on
+    // resolution and speed level for multi-thread encode.
+    int is_1080p_or_lesser = AOMMIN(width, height) <= 1080;
+    if (!is_480p_or_lesser && is_1080p_or_lesser && oxcf->mode == GOOD &&
+        oxcf->row_mt == 1 && oxcf->max_threads > 1 && oxcf->speed >= 5)
+      return BLOCK_64X64;
+  }
   return BLOCK_128X128;
 }
 
@@ -842,7 +906,17 @@ static void screen_content_tools_determination(
     int *projected_size_pass, PSNR_STATS *psnr) {
   AV1_COMMON *const cm = &cpi->common;
   FeatureFlags *const features = &cm->features;
+
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
+  projected_size_pass[pass] =
+      ((cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) &&
+       (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE))
+          ? cpi->ppi->p_rc.temp_projected_frame_size
+          : cpi->rc.projected_frame_size;
+#else
   projected_size_pass[pass] = cpi->rc.projected_frame_size;
+#endif
+
 #if CONFIG_AV1_HIGHBITDEPTH
   const uint32_t in_bit_depth = cpi->oxcf.input_cfg.input_bit_depth;
   const uint32_t bit_depth = cpi->td.mb.e_mbd.bd;
@@ -932,15 +1006,16 @@ void av1_determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
       cpi->sf.part_sf.fixed_partition_size;
 
   // Setup necessary params for encoding, including frame source, etc.
-  aom_clear_system_state();
 
-  cpi->source =
-      av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source,
-                            cm->features.interp_filter, 0, false, false);
+  cpi->source = av1_realloc_and_scale_if_required(
+      cm, cpi->unscaled_source, &cpi->scaled_source, cm->features.interp_filter,
+      0, false, false, cpi->oxcf.border_in_pixels,
+      cpi->oxcf.tool_cfg.enable_global_motion);
   if (cpi->unscaled_last_source != NULL) {
-    cpi->last_source = av1_scale_if_required(
+    cpi->last_source = av1_realloc_and_scale_if_required(
         cm, cpi->unscaled_last_source, &cpi->scaled_last_source,
-        cm->features.interp_filter, 0, false, false);
+        cm->features.interp_filter, 0, false, false, cpi->oxcf.border_in_pixels,
+        cpi->oxcf.tool_cfg.enable_global_motion);
   }
 
   av1_setup_frame(cpi);
@@ -964,7 +1039,7 @@ void av1_determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
     set_encoding_params_for_screen_content(cpi, pass);
     av1_set_quantizer(cm, q_cfg->qm_minlevel, q_cfg->qm_maxlevel,
                       q_for_screen_content_quick_run,
-                      q_cfg->enable_chroma_deltaq);
+                      q_cfg->enable_chroma_deltaq, q_cfg->enable_hdr_deltaq);
     av1_set_speed_features_qindex_dependent(cpi, oxcf->speed);
     if (q_cfg->deltaq_mode != NO_DELTA_Q || q_cfg->enable_chroma_deltaq)
       av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,
@@ -984,6 +1059,10 @@ void av1_determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
   // Set partition speed feature back.
   cpi->sf.part_sf.partition_search_type = partition_search_type_orig;
   cpi->sf.part_sf.fixed_partition_size = fixed_partition_block_size_orig;
+
+  // Free token related info if screen content coding tools are not enabled.
+  if (!cm->features.allow_screen_content_tools)
+    free_token_info(&cpi->token_info);
 }
 #endif  // CONFIG_REALTIME_ONLY
 
@@ -1058,7 +1137,6 @@ void av1_finalize_encoded_frame(AV1_COMP *const cpi) {
 int av1_is_integer_mv(const YV12_BUFFER_CONFIG *cur_picture,
                       const YV12_BUFFER_CONFIG *last_picture,
                       ForceIntegerMVInfo *const force_intpel_info) {
-  aom_clear_system_state();
   // check use hash ME
   int k;
 
@@ -1241,7 +1319,7 @@ static void save_extra_coding_context(AV1_COMP *cpi) {
   cc->lf = cm->lf;
   cc->cdef_info = cm->cdef_info;
   cc->rc = cpi->rc;
-  cc->mv_stats = cpi->mv_stats;
+  cc->mv_stats = cpi->ppi->mv_stats;
 }
 
 void av1_save_all_coding_context(AV1_COMP *cpi) {

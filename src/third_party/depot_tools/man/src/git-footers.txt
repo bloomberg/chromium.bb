@@ -21,7 +21,7 @@ commit might look like:
 
     This is a fancy commit message.
 
-    Cr-Commit-Position: refs/heads/master@{#292272}
+    Cr-Commit-Position: refs/heads/main@{#292272}
     Tech-Debt-Introduced: 17 nanoMSOffices
 
 `git footers` knows how to extract this information.
@@ -46,7 +46,7 @@ case-normalized.
   then it tries a heuristic based on `Git-Svn-Id`.  Output is in one of the
   following forms:
 
-    refs/heads/master@{#292272}
+    refs/heads/main@{#292272}
     refs/branch-heads/branchname
 
 --position-num::
@@ -55,7 +55,7 @@ case-normalized.
 
 --position-ref::
   Extracts and prints the Chrome commit position ref name only 
-  (`ref/heads/master` or `refs/branch-heads/branchname` in the example above).
+  (`ref/heads/main` or `refs/branch-heads/branchname` in the example above).
 
 
 EXAMPLE

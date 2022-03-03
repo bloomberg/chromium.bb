@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
 
+#include "base/stl_util.h"
+#include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,26 +20,38 @@ namespace autofill {
 
 EditAddressProfileDialogControllerImpl::EditAddressProfileDialogControllerImpl(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<EditAddressProfileDialogControllerImpl>(
+          *web_contents) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillAddressProfileSavePrompt));
 }
 
 EditAddressProfileDialogControllerImpl::
-    ~EditAddressProfileDialogControllerImpl() = default;
+    ~EditAddressProfileDialogControllerImpl() {
+  HideDialog();
+}
 
 void EditAddressProfileDialogControllerImpl::OfferEdit(
     const AutofillProfile& profile,
     const AutofillProfile* original_profile,
     AutofillClient::AddressProfileSavePromptCallback
         address_profile_save_prompt_callback) {
+  // Don't show the bubble if it's already visible, and inform the backend.
+  if (dialog_view_) {
+    std::move(address_profile_save_prompt_callback)
+        .Run(AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined,
+             profile);
+    return;
+  }
   address_profile_to_edit_ = profile;
   original_profile_ = base::OptionalFromPtr(original_profile);
   address_profile_save_prompt_callback_ =
       std::move(address_profile_save_prompt_callback);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  browser->window()->GetAutofillBubbleHandler()->ShowEditAddressProfileDialog(
-      web_contents(), this);
+  dialog_view_ = browser->window()
+                     ->GetAutofillBubbleHandler()
+                     ->ShowEditAddressProfileDialog(web_contents(), this);
 }
 
 std::u16string EditAddressProfileDialogControllerImpl::GetWindowTitle() const {
@@ -85,8 +99,20 @@ void EditAddressProfileDialogControllerImpl::OnDialogClosed() {
         AutofillClient::SaveAddressProfileOfferUserDecision::kIgnored,
         address_profile_to_edit_);
   }
+  dialog_view_ = nullptr;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(EditAddressProfileDialogControllerImpl)
+void EditAddressProfileDialogControllerImpl::WebContentsDestroyed() {
+  HideDialog();
+}
+
+void EditAddressProfileDialogControllerImpl::HideDialog() {
+  if (dialog_view_) {
+    dialog_view_->Hide();
+    dialog_view_ = nullptr;
+  }
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(EditAddressProfileDialogControllerImpl);
 
 }  // namespace autofill

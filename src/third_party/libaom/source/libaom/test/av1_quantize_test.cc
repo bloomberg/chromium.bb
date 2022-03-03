@@ -16,7 +16,6 @@
 #include "config/av1_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "av1/common/scan.h"
 #include "av1/encoder/av1_quantize.h"
@@ -98,7 +97,7 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
                   quant_shift_ptr, ref_qcoeff_ptr, ref_dqcoeff_ptr, dequant_ptr,
                   &ref_eob, scanOrder.scan, scanOrder.iscan, log_scale);
 
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           quanFunc(coeff_ptr, count, zbin_ptr, round_ptr, quant_ptr,
                    quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, &eob,
                    scanOrder.scan, scanOrder.iscan, log_scale));
@@ -175,7 +174,7 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
                   quant_shift_ptr, ref_qcoeff_ptr, ref_dqcoeff_ptr, dequant_ptr,
                   &ref_eob, scanOrder.scan, scanOrder.iscan, log_scale);
 
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           quanFunc(coeff_ptr, count, zbin_ptr, round_ptr, quant_ptr,
                    quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, &eob,
                    scanOrder.scan, scanOrder.iscan, log_scale));
@@ -186,7 +185,7 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
 
   virtual void SetUp() { params_ = GetParam(); }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
   virtual ~AV1QuantizeTest() {}
 

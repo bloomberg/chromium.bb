@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_APPLICATION_MEDIA_CAPABILITIES_H_
 #define CHROMECAST_BROWSER_APPLICATION_MEDIA_CAPABILITIES_H_
 
-#include "base/macros.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -22,6 +21,11 @@ class ApplicationMediaCapabilities
     : public mojom::ApplicationMediaCapabilities {
  public:
   ApplicationMediaCapabilities();
+
+  ApplicationMediaCapabilities(const ApplicationMediaCapabilities&) = delete;
+  ApplicationMediaCapabilities& operator=(const ApplicationMediaCapabilities&) =
+      delete;
+
   ~ApplicationMediaCapabilities() override;
 
   void AddReceiver(
@@ -38,8 +42,6 @@ class ApplicationMediaCapabilities
   mojo::ReceiverSet<mojom::ApplicationMediaCapabilities> receivers_;
   mojo::RemoteSet<mojom::ApplicationMediaCapabilitiesObserver> observers_;
   BitstreamAudioCodecsInfo supported_bitstream_audio_codecs_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(ApplicationMediaCapabilities);
 };
 
 }  // namespace shell

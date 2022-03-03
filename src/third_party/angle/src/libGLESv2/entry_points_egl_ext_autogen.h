@@ -124,6 +124,12 @@ ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_GetMscRateANGLE(EGLDisplay dpy,
                                                         EGLint *numerator,
                                                         EGLint *denominator);
 
+// EGL_ANGLE_vulkan_image
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_ExportVkImageANGLE(EGLDisplay dpy,
+                                                           EGLImage image,
+                                                           void *vk_image,
+                                                           void *vk_image_create_info);
+
 // EGL_CHROMIUM_sync_control
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_GetSyncValuesCHROMIUM(EGLDisplay dpy,
                                                               EGLSurface surface,
@@ -183,6 +189,16 @@ ANGLE_EXPORT EGLImageKHR EGLAPIENTRY EGL_CreateImageKHR(EGLDisplay dpy,
                                                         EGLClientBuffer buffer,
                                                         const EGLint *attrib_list);
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_DestroyImageKHR(EGLDisplay dpy, EGLImageKHR image);
+
+// EGL_KHR_lock_surface3
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_LockSurfaceKHR(EGLDisplay dpy,
+                                                       EGLSurface surface,
+                                                       const EGLint *attrib_list);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_QuerySurface64KHR(EGLDisplay dpy,
+                                                          EGLSurface surface,
+                                                          EGLint attribute,
+                                                          EGLAttribKHR *value);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_UnlockSurfaceKHR(EGLDisplay dpy, EGLSurface surface);
 
 // EGL_KHR_reusable_sync
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY EGL_SignalSyncKHR(EGLDisplay dpy,

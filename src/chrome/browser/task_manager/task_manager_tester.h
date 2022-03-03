@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "components/sessions/core/session_id.h"
 
@@ -58,12 +59,16 @@ class TaskManagerTester {
   // |row_index| belongs.
   void GetRowsGroupRange(int row, int* out_start, int* out_length);
 
+  // Get all task titles associated with a WebContents and return them in a
+  // vector.
+  std::vector<std::u16string> GetWebContentsTaskTitles();
+
  private:
   explicit TaskManagerTester(const base::RepeatingClosure& on_resource_change);
 
   TaskManagerInterface* task_manager();
 
-  TaskManagerTableModel* model_;
+  raw_ptr<TaskManagerTableModel> model_;
   std::unique_ptr<ScopedInterceptTableModelObserver> interceptor_;
 };
 

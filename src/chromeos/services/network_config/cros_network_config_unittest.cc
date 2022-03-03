@@ -4,7 +4,6 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -13,11 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/cellular_inhibitor.h"
 #include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/fake_stub_cellular_networks_provider.h"
@@ -32,11 +29,10 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
-#include "chromeos/network/test_cellular_esim_profile_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "components/onc/onc_constants.h"
@@ -76,13 +72,42 @@ const char kCellularTestApnUsername3[] = "Test User";
 const char kCellularTestApnPassword3[] = "Test Pass";
 const char kCellularTestApnAttach3[] = "attach";
 
+enum ComparisonType {
+  INTEGER = 0,
+  DOUBLE,
+};
+
+void CompareTrafficCounters(
+    const std::vector<mojom::TrafficCounterPtr>& actual_traffic_counters,
+    const base::Value* expected_traffic_counters,
+    enum ComparisonType comparison_type) {
+  EXPECT_EQ(actual_traffic_counters.size(),
+            expected_traffic_counters->GetList().size());
+  for (size_t i = 0; i < actual_traffic_counters.size(); i++) {
+    auto& actual_tc = actual_traffic_counters[i];
+    auto& expected_tc = expected_traffic_counters->GetList()[i];
+    EXPECT_EQ(actual_tc->source,
+              CrosNetworkConfig::GetTrafficCounterEnumForTesting(
+                  expected_tc.FindKey("source")->GetString()));
+    if (comparison_type == ComparisonType::INTEGER) {
+      EXPECT_EQ(actual_tc->rx_bytes,
+                (size_t)expected_tc.FindKey("rx_bytes")->GetInt());
+      EXPECT_EQ(actual_tc->tx_bytes,
+                (size_t)expected_tc.FindKey("tx_bytes")->GetInt());
+    } else if (comparison_type == ComparisonType::DOUBLE) {
+      EXPECT_EQ(actual_tc->rx_bytes,
+                (size_t)expected_tc.FindKey("rx_bytes")->GetDouble());
+      EXPECT_EQ(actual_tc->tx_bytes,
+                (size_t)expected_tc.FindKey("tx_bytes")->GetDouble());
+    }
+  }
+}
+
 }  // namespace
 
 class CrosNetworkConfigTest : public testing::Test {
  public:
   CrosNetworkConfigTest() {
-    feature_list.InitAndEnableFeature(
-        ash::features::kUpdatedCellularActivationUi);
     LoginState::Initialize();
     SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
@@ -90,15 +115,11 @@ class CrosNetworkConfigTest : public testing::Test {
     helper_->AddDefaultProfiles();
     helper_->ResetDevicesAndServices();
 
+    helper_->RegisterPrefs(user_prefs_.registry(), local_state_.registry());
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
-    ::onc::RegisterProfilePrefs(user_prefs_.registry());
-    ::onc::RegisterPrefs(local_state_.registry());
-    NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
-    NetworkMetadataStore::RegisterPrefs(local_state_.registry());
-    CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
-        local_state_.registry());
-    NetworkHandler::Get()->InitializePrefServices(&user_prefs_, &local_state_);
+
+    helper_->InitializePrefs(&user_prefs_, &local_state_);
 
     NetworkHandler* network_handler = NetworkHandler::Get();
     cros_network_config_ = std::make_unique<CrosNetworkConfig>(
@@ -113,6 +134,9 @@ class CrosNetworkConfigTest : public testing::Test {
     SetupPolicy();
     SetupNetworks();
   }
+
+  CrosNetworkConfigTest(const CrosNetworkConfigTest&) = delete;
+  CrosNetworkConfigTest& operator=(const CrosNetworkConfigTest&) = delete;
 
   ~CrosNetworkConfigTest() override {
     cros_network_config_.reset();
@@ -140,8 +164,32 @@ class CrosNetworkConfigTest : public testing::Test {
         user_policy_ssid.c_str(),
         base::HexEncode(user_policy_ssid.c_str(), user_policy_ssid.size())
             .c_str()));
+
+    base::Value wifi_eap_onc =
+        onc::ReadDictionaryFromJson(R"({ "GUID": "wifi_eap",
+      "Name": "wifi_eap",
+      "Type": "WiFi",
+      "WiFi": {
+         "AutoConnect": true,
+         "EAP": {
+            "Inner": "MD5",
+            "Outer": "PEAP",
+            "SubjectAlternativeNameMatch": [
+              { "Type": "DNS" , "Value" : "example.com"},
+              {"Type" : "EMAIL", "Value" : "test@example.com"}],
+            "DomainSuffixMatch": ["example1.com","example2.com"],
+            "Recommended": [ "AnonymousIdentity", "Identity", "Password",
+              "DomainSuffixMatch" , "SubjectAlternativeNameMatch"],
+            "UseSystemCAs": true
+         },
+         "SSID": "wifi_eap",
+         "Security": "WPA-EAP"
+      }
+}  )");
+
     base::ListValue user_policy_onc;
     user_policy_onc.Append(std::move(wifi2_onc));
+    user_policy_onc.Append(std::move(wifi_eap_onc));
     managed_network_configuration_handler->SetPolicy(
         ::onc::ONC_SOURCE_USER_POLICY, helper()->UserHash(), user_policy_onc,
         /*global_network_config=*/base::DictionaryValue());
@@ -200,7 +248,8 @@ class CrosNetworkConfigTest : public testing::Test {
         R"({"GUID": "eth_guid", "Type": "ethernet", "State": "online"})");
     wifi1_path_ = helper()->ConfigureService(
         R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "ready",
-            "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false})");
+            "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false,
+            "TrafficCounterResetTime": 123456789987654})");
     helper()->ConfigureService(
         R"({"GUID": "wifi2_guid", "Type": "wifi", "SSID": "wifi2",
             "State": "idle", "SecurityClass": "psk", "Strength": 100,
@@ -555,6 +604,20 @@ class CrosNetworkConfigTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  std::vector<std::string> GetSupportedVpnTypes() {
+    std::vector<std::string> result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetSupportedVpnTypes(base::BindOnce(
+        [](std::vector<std::string>& result, base::OnceClosure quit_closure,
+           const std::vector<std::string>& return_value) {
+          result = std::move(return_value);
+          std::move(quit_closure).Run();
+        },
+        std::ref(result), run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
   bool ContainsVpnDeviceState(
       std::vector<mojom::DeviceStatePropertiesPtr> devices) {
     for (auto& device : devices) {
@@ -582,6 +645,25 @@ class CrosNetworkConfigTest : public testing::Test {
     return inhibit_lock;
   }
 
+  void RequestTrafficCountersAndCompareTrafficCounters(
+      const std::string& guid,
+      base::Value traffic_counters,
+      ComparisonType comparison_type) {
+    base::RunLoop run_loop;
+    cros_network_config()->RequestTrafficCounters(
+        guid,
+        base::BindOnce(
+            [](base::Value* expected_traffic_counters, ComparisonType* type,
+               base::OnceClosure quit_closure,
+               std::vector<mojom::TrafficCounterPtr> actual_traffic_counters) {
+              CompareTrafficCounters(actual_traffic_counters,
+                                     expected_traffic_counters, *type);
+              std::move(quit_closure).Run();
+            },
+            &traffic_counters, &comparison_type, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   NetworkHandlerTestHelper* helper() { return helper_.get(); }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
   CrosNetworkConfig* cros_network_config() {
@@ -601,15 +683,12 @@ class CrosNetworkConfigTest : public testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list;
   std::unique_ptr<NetworkHandlerTestHelper> helper_;
   TestingPrefServiceSimple local_state_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;
   std::string wifi1_path_;
   std::string vpn_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfigTest);
 };
 
 TEST_F(CrosNetworkConfigTest, GetNetworkState) {
@@ -714,27 +793,30 @@ TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {
   filter->network_type = mojom::NetworkType::kWiFi;
   filter->limit = mojom::kNoLimit;
   networks = GetNetworkStateList(filter.Clone());
-  ASSERT_EQ(4u, networks.size());
+  ASSERT_EQ(5u, networks.size());
   EXPECT_EQ("wifi1_guid", networks[0]->guid);
   EXPECT_EQ("wifi2_guid", networks[1]->guid);
   EXPECT_EQ("wifi4_guid", networks[2]->guid);
-  EXPECT_EQ("wifi3_guid", networks[3]->guid);
+  EXPECT_EQ("wifi_eap", networks[3]->guid);
+  EXPECT_EQ("wifi3_guid", networks[4]->guid);
 
   // Visible wifi networks
   filter->filter = mojom::FilterType::kVisible;
   networks = GetNetworkStateList(filter.Clone());
-  ASSERT_EQ(3u, networks.size());
+  ASSERT_EQ(4u, networks.size());
   EXPECT_EQ("wifi1_guid", networks[0]->guid);
   EXPECT_EQ("wifi2_guid", networks[1]->guid);
   EXPECT_EQ("wifi4_guid", networks[2]->guid);
+  EXPECT_EQ("wifi_eap", networks[3]->guid);
 
   // Configured wifi networks
   filter->filter = mojom::FilterType::kConfigured;
   networks = GetNetworkStateList(filter.Clone());
-  ASSERT_EQ(3u, networks.size());
+  ASSERT_EQ(4u, networks.size());
   EXPECT_EQ("wifi2_guid", networks[0]->guid);
   EXPECT_EQ("wifi4_guid", networks[1]->guid);
-  EXPECT_EQ("wifi3_guid", networks[2]->guid);
+  EXPECT_EQ("wifi_eap", networks[2]->guid);
+  EXPECT_EQ("wifi3_guid", networks[3]->guid);
 }
 
 TEST_F(CrosNetworkConfigTest, ESimAndPSimSlotInfo) {
@@ -841,24 +923,6 @@ TEST_F(CrosNetworkConfigTest, ESimNetworkNameComesFromHermes) {
   EXPECT_EQ(kTestProfileName, network->name);
 }
 
-TEST_F(CrosNetworkConfigTest, SimAbsentMeansCellularIsDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      ash::features::kUpdatedCellularActivationUi);
-
-  mojom::DeviceStatePropertiesPtr cellular =
-      GetDeviceStateFromList(mojom::NetworkType::kCellular);
-  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
-
-  helper()->device_test()->SetDeviceProperty(
-      kCellularDevicePath, shill::kSIMPresentProperty, base::Value(false),
-      /*notify_changed=*/true);
-  base::RunLoop().RunUntilIdle();
-
-  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
-  EXPECT_EQ(mojom::DeviceStateType::kDisabled, cellular->device_state);
-}
-
 TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
   std::vector<mojom::DeviceStatePropertiesPtr> devices = GetDeviceStateList();
   ASSERT_EQ(4u, devices.size());
@@ -948,6 +1012,10 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(50, properties->type_properties->get_wifi()->signal_strength);
   EXPECT_EQ(mojom::OncSource::kNone, properties->source);
   EXPECT_EQ(false, properties->type_properties->get_wifi()->is_syncable);
+  ASSERT_TRUE(properties->traffic_counter_reset_time);
+  EXPECT_EQ(123456789987654,
+            properties->traffic_counter_reset_time->ToDeltaSinceWindowsEpoch()
+                .InMilliseconds());
 
   properties = GetManagedProperties("wifi2_guid");
   ASSERT_TRUE(properties);
@@ -1007,6 +1075,30 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   ASSERT_TRUE(properties->type_properties->is_vpn());
   EXPECT_EQ(mojom::VpnType::kL2TPIPsec,
             properties->type_properties->get_vpn()->type);
+
+  properties = GetManagedProperties("wifi_eap");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("wifi_eap", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, properties->type);
+  ASSERT_TRUE(properties->type_properties);
+  ASSERT_TRUE(properties->type_properties->is_wifi());
+  mojom::ManagedEAPPropertiesPtr eap =
+      std::move(properties->type_properties->get_wifi()->eap);
+  ASSERT_TRUE(eap);
+  ASSERT_TRUE(eap->subject_alt_name_match);
+  ASSERT_EQ(2u, eap->subject_alt_name_match->active_value.size());
+  EXPECT_EQ(mojom::SubjectAltName::Type::kDns,
+            eap->subject_alt_name_match->active_value[0]->type);
+  EXPECT_EQ("example.com", eap->subject_alt_name_match->active_value[0]->value);
+  EXPECT_EQ(mojom::SubjectAltName::Type::kEmail,
+            eap->subject_alt_name_match->active_value[1]->type);
+  EXPECT_EQ("test@example.com",
+            eap->subject_alt_name_match->active_value[1]->value);
+
+  ASSERT_TRUE(eap->domain_suffix_match);
+  ASSERT_EQ(2u, eap->domain_suffix_match->active_value.size());
+  EXPECT_EQ("example1.com", eap->domain_suffix_match->active_value[0]);
+  EXPECT_EQ("example2.com", eap->domain_suffix_match->active_value[1]);
 }
 
 // Test managed property policy values.
@@ -1127,6 +1219,37 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
   config->guid = "Mismatched guid";
   success = SetProperties(kGUID, std::move(config));
   EXPECT_FALSE(success);
+
+  // Set Eap.SubjectAlternativeNameMatch and Eap.DomainSuffixMatch.
+  config = mojom::ConfigProperties::New();
+  config->type_config = mojom::NetworkTypeConfigProperties::NewWifi(
+      mojom::WiFiConfigProperties::New());
+  auto eap = mojom::EAPConfigProperties::New();
+  eap->domain_suffix_match = {"example1.com", "example2.com"};
+  auto san = mojom::SubjectAltName::New();
+  san->type = mojom::SubjectAltName::Type::kDns;
+  san->value = "test.example.com";
+  eap->subject_alt_name_match.push_back(std::move(san));
+
+  config->type_config->get_wifi()->eap = std::move(eap);
+  config->guid = kGUID;
+  success = SetProperties(kGUID, std::move(config));
+  ASSERT_TRUE(success);
+  properties = GetManagedProperties(kGUID);
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+  ASSERT_TRUE(properties->type_properties);
+  wifi = properties->type_properties->get_wifi().get();
+  ASSERT_TRUE(wifi);
+  ASSERT_TRUE(wifi->eap);
+  EXPECT_EQ(2u, wifi->eap->domain_suffix_match->active_value.size());
+  EXPECT_EQ("example1.com", wifi->eap->domain_suffix_match->active_value[0]);
+  EXPECT_EQ("example2.com", wifi->eap->domain_suffix_match->active_value[1]);
+  EXPECT_EQ(1u, wifi->eap->subject_alt_name_match->active_value.size());
+  EXPECT_EQ(mojom::SubjectAltName::Type::kDns,
+            wifi->eap->subject_alt_name_match->active_value[0]->type);
+  EXPECT_EQ("test.example.com",
+            wifi->eap->subject_alt_name_match->active_value[0]->value);
 }
 
 TEST_F(CrosNetworkConfigTest, CustomAPN) {
@@ -1217,6 +1340,31 @@ TEST_F(CrosNetworkConfigTest, UnrecognizedAttachApnValue) {
                                                ->type_properties->get_cellular()
                                                ->custom_apn_list->front()
                                                ->attach);
+}
+
+TEST_F(CrosNetworkConfigTest, AllowRoaming) {
+  const char* kGUID = "cellular_guid";
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties(kGUID);
+
+  ASSERT_FALSE(properties->type_properties->get_cellular()->allow_roaming);
+
+  auto config = mojom::ConfigProperties::New();
+  auto cellular_config = mojom::CellularConfigProperties::New();
+  auto new_roaming = mojom::RoamingProperties::New();
+
+  new_roaming->allow_roaming = true;
+  cellular_config->roaming = std::move(new_roaming);
+  config->type_config = mojom::NetworkTypeConfigProperties::NewCellular(
+      std::move(cellular_config));
+  ASSERT_TRUE(SetProperties(kGUID, std::move(config)));
+
+  properties = GetManagedProperties(kGUID);
+
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+  ASSERT_TRUE(properties->type_properties->is_cellular());
+  ASSERT_TRUE(
+      properties->type_properties->get_cellular()->allow_roaming->active_value);
 }
 
 TEST_F(CrosNetworkConfigTest, ConfigureNetwork) {
@@ -1548,7 +1696,7 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
       true);
   global_config.SetBoolKey(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, false);
+      ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect, false);
   base::Value blocked(base::Value::Type::LIST);
   blocked.Append(base::Value("blocked_ssid1"));
   blocked.Append(base::Value("blocked_ssid2"));
@@ -1560,9 +1708,11 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   base::RunLoop().RunUntilIdle();
   mojom::GlobalPolicyPtr policy = GetGlobalPolicy();
   ASSERT_TRUE(policy);
+  EXPECT_EQ(false, policy->allow_only_policy_cellular_networks);
   EXPECT_EQ(true, policy->allow_only_policy_networks_to_autoconnect);
-  EXPECT_EQ(false, policy->allow_only_policy_networks_to_connect);
-  EXPECT_EQ(false, policy->allow_only_policy_networks_to_connect_if_available);
+  EXPECT_EQ(false, policy->allow_only_policy_wifi_networks_to_connect);
+  EXPECT_EQ(false,
+            policy->allow_only_policy_wifi_networks_to_connect_if_available);
   ASSERT_EQ(2u, policy->blocked_hex_ssids.size());
   EXPECT_EQ("blocked_ssid1", policy->blocked_hex_ssids[0]);
   EXPECT_EQ("blocked_ssid2", policy->blocked_hex_ssids[1]);
@@ -1848,6 +1998,67 @@ TEST_F(CrosNetworkConfigTest, SetAlwaysOnVpn) {
   EXPECT_EQ(vpn_path(), helper()->GetProfileStringProperty(
                             helper()->ProfilePathUser(),
                             shill::kAlwaysOnVpnServiceProperty));
+}
+
+TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithIntegerType) {
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(12));
+  chrome_dict.SetKey("tx_bytes", base::Value(32));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(90));
+  user_dict.SetKey("tx_bytes", base::Value(87));
+  traffic_counters.Append(std::move(user_dict));
+
+  ASSERT_TRUE(traffic_counters.is_list());
+  ASSERT_EQ(traffic_counters.GetList().size(), (size_t)2);
+  helper()->service_test()->SetFakeTrafficCounters(traffic_counters.Clone());
+
+  RequestTrafficCountersAndCompareTrafficCounters(
+      "wifi1_guid", traffic_counters.Clone(), ComparisonType::INTEGER);
+}
+
+TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithDoubleType) {
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(123456789987.0));
+  chrome_dict.SetKey("tx_bytes", base::Value(3211234567898.0));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(9000000000000000.0));
+  user_dict.SetKey("tx_bytes", base::Value(8765432112345.0));
+  traffic_counters.Append(std::move(user_dict));
+
+  ASSERT_TRUE(traffic_counters.is_list());
+  ASSERT_EQ(traffic_counters.GetList().size(), (size_t)2);
+  helper()->service_test()->SetFakeTrafficCounters(traffic_counters.Clone());
+
+  RequestTrafficCountersAndCompareTrafficCounters(
+      "wifi1_guid", traffic_counters.Clone(), ComparisonType::DOUBLE);
+}
+
+TEST_F(CrosNetworkConfigTest, GetSupportedVpnTypes) {
+  std::vector<std::string> result = GetSupportedVpnTypes();
+  ASSERT_EQ(result.size(), 0u);
+
+  helper()->manager_test()->SetManagerProperty(
+      shill::kSupportedVPNTypesProperty, base::Value("l2tpipsec,openvpn"));
+  result = GetSupportedVpnTypes();
+  ASSERT_EQ(result.size(), 2u);
+
+  helper()->manager_test()->SetShouldReturnNullProperties(true);
+  result = GetSupportedVpnTypes();
+  ASSERT_EQ(result.size(), 0u);
+  helper()->manager_test()->SetShouldReturnNullProperties(false);
 }
 
 }  // namespace network_config
