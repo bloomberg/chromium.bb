@@ -29,13 +29,15 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
@@ -152,14 +154,6 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // is quickly terminated. Called on the main thread.
   virtual void TerminateForTesting();
 
-  // Called on the main thread for the leak detector. Forcibly terminates the
-  // script execution and waits by *blocking* the calling thread until the
-  // workers are shut down. Please be careful when using this function, because
-  // after the synchronous termination any V8 APIs may suddenly start to return
-  // empty handles and it may cause crashes.
-  // WARNING: This is not safe if a nested worker is running.
-  static void TerminateAllWorkersForTesting();
-
   // Thread::TaskObserver.
   void WillProcessTask(const base::PendingTask&, bool) override;
   void DidProcessTask(const base::PendingTask&) override;
@@ -250,7 +244,10 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // this worker to FrozenPaused and may enter a nested run loop. Only one
   // nested message loop will be entered but |pause_or_freeze_count_| will be
   // incremented on each call. May be called multiple times and from any thread.
-  void Freeze();
+  //
+  // `is_in_back_forward_cache` represents whether the page goes to back/forward
+  // cache.
+  void Freeze(bool is_in_back_forward_cache);
 
   // Decrements |pause_or_freeze_count_| and if count is zero then
   // it will exit the entered nested run loop. Might be called from any thread.
@@ -396,8 +393,10 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   bool CheckRequestedToTerminate() LOCKS_EXCLUDED(mutex_);
 
   class InterruptData;
-  void PauseOrFreeze(mojom::FrameLifecycleState state);
-  void PauseOrFreezeOnWorkerThread(mojom::FrameLifecycleState state);
+  void PauseOrFreeze(mojom::blink::FrameLifecycleState state,
+                     bool is_in_back_forward_cache);
+  void PauseOrFreezeOnWorkerThread(mojom::blink::FrameLifecycleState state,
+                                   bool is_in_back_forward_cache);
   void ResumeOnWorkerThread();
   void PauseOrFreezeWithInterruptDataOnWorkerThread(InterruptData*);
   static void PauseOrFreezeInsideV8InterruptOnWorkerThread(v8::Isolate*,

@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
@@ -96,7 +97,7 @@ class MaybeShared {
   explicit MaybeShared(std::nullptr_t) {}
   // [AllowShared] array buffer view may be a view of non-shared array buffer,
   // so we don't check if the buffer is SharedArrayBuffer or not.
-  // https://heycam.github.io/webidl/#AllowShared
+  // https://webidl.spec.whatwg.org/#AllowShared
   explicit MaybeShared(T* typed_array) : typed_array_(typed_array) {}
   template <typename U>
   explicit MaybeShared(const Member<U>& other) : typed_array_(other.Get()) {}

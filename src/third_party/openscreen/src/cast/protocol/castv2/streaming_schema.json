@@ -27,7 +27,8 @@
       "properties": {
         "index": {"type": "integer", "minimum": 0},
         "type": {"type": "string", "enum": ["audio_source", "video_source"]},
-        "codecName": {"type": "string"},
+        "codecName": {"type": "string", "enum": ["aac", "opus", "h264", "vp8", "hevc", "vp9", "av1"]},
+        "codecParameter": {"type": "string"},
         "rtpProfile": {"type": "string", "enum": ["cast"]},
         "rtpPayloadType": {"type": "integer", "minimum": 96, "maximum": 127},
         "ssrc": {"$ref": "#/definitions/ssrc"},
@@ -121,10 +122,7 @@
         "maxBitRate": {"type": "integer", "minimum": 300000},
         "maxDelay": {"$ref": "#/definitions/delay"}
       },
-      "required": [
-        "maxDimensions",
-        "maxBitRate"
-      ]
+      "required": ["maxDimensions", "maxBitRate"]
     },
     "constraints": {
       "properties": {
@@ -220,13 +218,34 @@
       ]
     }
   },
-  "required": ["type", "seqNum"],
+  "required": ["type"],
   "allOf": [
     {
       "if": {
-        "properties": {"type": {"enum": ["ANSWER", "CAPABILITIES_RESPONSE", "STATUS_RESPONSE"]}}
+        "properties": {
+          "type": {
+            "enum": ["ANSWER", "CAPABILITIES_RESPONSE", "STATUS_RESPONSE"]
+          }
+        }
       },
       "then": {"required": ["result"]}
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "OFFER",
+              "ANSWER",
+              "GET_CAPABILITIES",
+              "CAPABILITIES_RESPONSE",
+              "GET_STATUS",
+              "STATUS_RESPONSE"
+            ]
+          }
+        }
+      },
+      "then": {"required": ["seqNum"]}
     },
     {
       "if": {"properties": {"type": {"const": "OFFER"}}},

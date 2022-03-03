@@ -294,7 +294,7 @@ class AndroidPlatformBackend(
     if performance_mode == android_device.KEEP_PERFORMANCE_MODE:
       logging.info('Keeping device performance settings intact.')
       return
-    elif performance_mode == android_device.HIGH_PERFORMANCE_MODE:
+    if performance_mode == android_device.HIGH_PERFORMANCE_MODE:
       logging.info('Setting high performance mode.')
       self._perf_tests_setup.SetHighPerfMode()
     elif performance_mode == android_device.NORMAL_PERFORMANCE_MODE:
@@ -588,8 +588,7 @@ class AndroidPlatformBackend(
     """
     if self._require_root:
       return '/data/data/%s/' % package
-    else:
-      return '/data/local/tmp/%s/' % package
+    return '/data/local/tmp/%s/' % package
 
   def GetDumpLocation(self, package):
     """Returns the location where crash dumps should be written to.
@@ -622,9 +621,19 @@ class AndroidPlatformBackend(
       number_of_lines: Number of lines of log to return.
     """
     def decode_line(line):
+      # Both input and output are of 'str' type, in both Python 2 and 3.
+      # However, note that in Python 2 str is a series of bytes,
+      # while in Python 3 it is Unicode string.
       try:
-        uline = six.text_type(line, encoding='utf-8')
-        return uline.encode('ascii', 'backslashreplace')
+        if six.PY2:
+          # str -> unicode
+          uline = six.text_type(line, encoding='utf-8')
+          # unicode -> str (ASCII with special characters encoded)
+          return uline.encode('ascii', 'backslashreplace')
+        # str -> bytes (ASCII with special characters encoded)
+        bline = line.encode('ascii', 'backslashreplace')
+        # bytes -> str
+        return bline.decode('ascii')
       except Exception: # pylint: disable=broad-except
         logging.error('Error encoding UTF-8 logcat line as ASCII.')
         return '<MISSING LOGCAT LINE: FAILED TO ENCODE>'
@@ -653,7 +662,7 @@ class AndroidPlatformBackend(
       cmd.append('--arch=%s' % arch)
       cmd.append('--output-directory=%s' % self._build_dir)
       p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-      return p.communicate(input=logcat)[0]
+      return p.communicate(input=six.ensure_binary(logcat))[0]
 
     return None
 
@@ -747,10 +756,9 @@ class AndroidPlatformBackend(
           if key == 'mHasBeenInactive':
             if value == 'true':
               return True
-            elif value == 'false':
+            if value == 'false':
               return False
-            else:
-              raise ValueError('Unknown value for %s: %s' % (key, value))
+            raise ValueError('Unknown value for %s: %s' % (key, value))
     raise exceptions.AndroidDeviceParsingError(str(input_methods))
 
   def IsScreenLocked(self):
@@ -776,10 +784,10 @@ class AndroidPlatformBackend(
     if controller.IsSupported():
       controller.LetCpuCoolToTemperature(temp)
     else:
-      logging.warn('CPU temperature cooling delay - '
-                   'CPU temperature cannot be read: Either the current '
-                   'device is not supported or the specified temperature '
-                   'zones do not exist.')
+      logging.warning('CPU temperature cooling delay - '
+                      'CPU temperature cannot be read: Either the current '
+                      'device is not supported or the specified temperature '
+                      'zones do not exist.')
 
 
 def _FixPossibleAdbInstability():
@@ -798,7 +806,7 @@ def _FixPossibleAdbInstability():
         if 'adb' in process.name:
           process.set_cpu_affinity([0])
     except (psutil.NoSuchProcess, psutil.AccessDenied):
-      logging.warn('Failed to set adb process CPU affinity')
+      logging.warning('Failed to set adb process CPU affinity')
 
 
 def _BuildEvent(cat, name, ph, pid, ts, args):

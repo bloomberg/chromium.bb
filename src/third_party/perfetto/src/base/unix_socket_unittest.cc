@@ -30,6 +30,7 @@
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/periodic_task.h"
 #include "perfetto/ext/base/pipe.h"
 #include "perfetto/ext/base/temp_file.h"
 #include "perfetto/ext/base/utils.h"
@@ -131,8 +132,8 @@ TEST_F(UnixSocketTest, ConnectionImmediatelyDroppedByServer) {
 
   // On Windows the first send immediately after the disconnection succeeds, the
   // kernel will detect the disconnection only later.
-  cli->Send(".");
-  EXPECT_FALSE(cli->Send("should_fail_both_on_win_and_unix"));
+  cli->SendStr(".");
+  EXPECT_FALSE(cli->SendStr("should_fail_both_on_win_and_unix"));
   task_runner_.RunUntilCheckpoint("cli_disconnected");
 }
 
@@ -177,8 +178,8 @@ TEST_F(UnixSocketTest, ClientAndServerExchangeData) {
         ASSERT_EQ("cli>srv", s->ReceiveString());
         srv_did_recv();
       }));
-  ASSERT_TRUE(cli->Send("cli>srv"));
-  ASSERT_TRUE(srv_conn->Send("srv>cli"));
+  ASSERT_TRUE(cli->SendStr("cli>srv"));
+  ASSERT_TRUE(srv_conn->SendStr("srv>cli"));
   task_runner_.RunUntilCheckpoint("cli_did_recv");
   task_runner_.RunUntilCheckpoint("srv_did_recv");
 
@@ -192,8 +193,8 @@ TEST_F(UnixSocketTest, ClientAndServerExchangeData) {
   ASSERT_EQ("", cli->ReceiveString());
   ASSERT_EQ(0u, srv_conn->Receive(&msg, sizeof(msg)));
   ASSERT_EQ("", srv_conn->ReceiveString());
-  ASSERT_FALSE(cli->Send("foo"));
-  ASSERT_FALSE(srv_conn->Send("bar"));
+  ASSERT_FALSE(cli->SendStr("foo"));
+  ASSERT_FALSE(srv_conn->SendStr("bar"));
   srv->Shutdown(true);
   task_runner_.RunUntilCheckpoint("cli_disconnected");
   task_runner_.RunUntilCheckpoint("srv_disconnected");
@@ -250,7 +251,7 @@ TEST_F(UnixSocketTest, SeveralClients) {
         EXPECT_CALL(event_listener_, OnDataAvailable(s))
             .WillOnce(Invoke([](UnixSocket* t) {
               ASSERT_EQ("PING", t->ReceiveString());
-              ASSERT_TRUE(t->Send("PONG"));
+              ASSERT_TRUE(t->SendStr("PONG"));
             }));
       }));
 
@@ -261,7 +262,7 @@ TEST_F(UnixSocketTest, SeveralClients) {
     EXPECT_CALL(event_listener_, OnConnect(cli[i].get(), true))
         .WillOnce(Invoke([](UnixSocket* s, bool success) {
           ASSERT_TRUE(success);
-          ASSERT_TRUE(s->Send("PING"));
+          ASSERT_TRUE(s->SendStr("PING"));
         }));
 
     auto checkpoint = task_runner_.CreateCheckpoint(std::to_string(i));
@@ -318,10 +319,10 @@ TEST_F(UnixSocketTest, BlockingSend) {
     tx_task_runner.RunUntilCheckpoint("cli_connected");
 
     auto all_sent = tx_task_runner.CreateCheckpoint("all_sent");
-    char buf[1024 * 32] = {};
+    std::string buf(1024 * 32, '\0');
     tx_task_runner.PostTask([&cli, &buf, all_sent] {
-      for (size_t i = 0; i < kTotalBytes / sizeof(buf); i++)
-        cli->Send(buf, sizeof(buf));
+      for (size_t i = 0; i < kTotalBytes / buf.size(); i++)
+        cli->Send(buf.data(), buf.size());
       all_sent();
     });
     tx_task_runner.RunUntilCheckpoint("all_sent", kTimeoutMs);
@@ -405,7 +406,7 @@ TEST_F(UnixSocketTest, ReleaseSocket) {
   task_runner_.RunUntilCheckpoint("cli_connected");
   srv->Shutdown(true);
 
-  cli->Send("test");
+  cli->SendStr("test");
 
   ASSERT_NE(peer, nullptr);
   auto raw_sock = peer->ReleaseSocket();
@@ -413,10 +414,10 @@ TEST_F(UnixSocketTest, ReleaseSocket) {
   EXPECT_CALL(event_listener_, OnDataAvailable(_)).Times(0);
   task_runner_.RunUntilIdle();
 
-  char buf[sizeof("test")];
+  char buf[5];
   ASSERT_TRUE(raw_sock);
-  ASSERT_EQ(raw_sock.Receive(buf, sizeof(buf)),
-            static_cast<ssize_t>(sizeof(buf)));
+  ASSERT_EQ(raw_sock.Receive(buf, sizeof(buf)), 4);
+  buf[sizeof(buf) - 1] = '\0';
   ASSERT_STREQ(buf, "test");
 }
 
@@ -445,7 +446,7 @@ TEST_F(UnixSocketTest, TcpStream) {
             .WillRepeatedly(Invoke([](UnixSocket* cli_sock) {
               cli_sock->ReceiveString();  // Read connection EOF;
             }));
-        ASSERT_TRUE(s->Send("welcome"));
+        ASSERT_TRUE(s->SendStr("welcome"));
       }));
 
   for (size_t i = 0; i < kNumClients; i++) {
@@ -717,7 +718,7 @@ TEST_F(UnixSocketTest, SharedMemory) {
 
           // Now change the shared memory and ping the other process.
           memcpy(mem, "rock more", 10);
-          ASSERT_TRUE(s->Send("change notify"));
+          ASSERT_TRUE(s->SendStr("change notify"));
           checkpoint();
         }));
     task_runner_.RunUntilCheckpoint("change_seen_by_client");
@@ -834,11 +835,11 @@ TEST_F(UnixSocketTest, PartialSendMsgAll) {
 
   // Send something larger than send + recv kernel buffers combined to make
   // sendmsg block.
-  char send_buf[8192];
+  std::string send_buf(8192, '\0');
   // Make MSAN happy.
-  for (size_t i = 0; i < sizeof(send_buf); ++i)
+  for (size_t i = 0; i < send_buf.size(); ++i)
     send_buf[i] = static_cast<char>(i % 256);
-  char recv_buf[sizeof(send_buf)];
+  std::string recv_buf(send_buf.size(), '\0');
 
   // Need to install signal handler to cause the interrupt to happen.
   // man 3 pthread_kill:
@@ -855,15 +856,15 @@ TEST_F(UnixSocketTest, PartialSendMsgAll) {
 
   auto blocked_thread = pthread_self();
   std::thread th([blocked_thread, &recv_sock, &recv_buf] {
-    ssize_t rd = PERFETTO_EINTR(read(recv_sock.fd(), recv_buf, 1));
+    ssize_t rd = PERFETTO_EINTR(read(recv_sock.fd(), &recv_buf[0], 1));
     ASSERT_EQ(rd, 1);
     // We are now sure the other thread is in sendmsg, interrupt send.
     ASSERT_EQ(pthread_kill(blocked_thread, SIGWINCH), 0);
     // Drain the socket to allow SendMsgAllPosix to succeed.
     size_t offset = 1;
-    while (offset < sizeof(recv_buf)) {
+    while (offset < recv_buf.size()) {
       rd = PERFETTO_EINTR(
-          read(recv_sock.fd(), recv_buf + offset, sizeof(recv_buf) - offset));
+          read(recv_sock.fd(), &recv_buf[offset], recv_buf.size() - offset));
       ASSERT_GE(rd, 0);
       offset += static_cast<size_t>(rd);
     }
@@ -873,23 +874,70 @@ TEST_F(UnixSocketTest, PartialSendMsgAll) {
   // more complicated code-paths of SendMsgAllPosix.
   struct msghdr hdr = {};
   struct iovec iov[4];
-  static_assert(sizeof(send_buf) % base::ArraySize(iov) == 0,
-                "Cannot split buffer into even pieces.");
-  constexpr size_t kChunkSize = sizeof(send_buf) / base::ArraySize(iov);
+  ASSERT_EQ(send_buf.size() % base::ArraySize(iov), 0u)
+      << "Cannot split buffer into even pieces.";
+  const size_t kChunkSize = send_buf.size() / base::ArraySize(iov);
   for (size_t i = 0; i < base::ArraySize(iov); ++i) {
-    iov[i].iov_base = send_buf + i * kChunkSize;
+    iov[i].iov_base = &send_buf[i * kChunkSize];
     iov[i].iov_len = kChunkSize;
   }
   hdr.msg_iov = iov;
   hdr.msg_iovlen = base::ArraySize(iov);
 
   ASSERT_EQ(send_sock.SendMsgAllPosix(&hdr),
-            static_cast<ssize_t>(sizeof(send_buf)));
+            static_cast<ssize_t>(send_buf.size()));
   send_sock.Shutdown();
   th.join();
   // Make sure the re-entry logic was actually triggered.
   ASSERT_EQ(hdr.msg_iov, nullptr);
-  ASSERT_EQ(memcmp(send_buf, recv_buf, sizeof(send_buf)), 0);
+  ASSERT_EQ(memcmp(&send_buf[0], &recv_buf[0], send_buf.size()), 0);
+}
+
+// Regression test for b/193234818. SO_SNDTIMEO is unreliable on most systems.
+// It doesn't guarantee that the whole send() call blocks for at most X, as the
+// kernel rearms the timeout if the send buffers frees up and allows a partial
+// send. This test reproduces the issue 100% on Mac. Unfortunately on Linux the
+// repro seem to happen only when a suspend happens in the middle.
+TEST_F(UnixSocketTest, BlockingSendTimeout) {
+  TestTaskRunner ttr;
+  UnixSocketRaw send_sock;
+  UnixSocketRaw recv_sock;
+  std::tie(send_sock, recv_sock) =
+      UnixSocketRaw::CreatePairPosix(kTestSocket.family(), SockType::kStream);
+
+  auto blocking_send_done = ttr.CreateCheckpoint("blocking_send_done");
+
+  std::thread tx_thread([&] {
+    // Fill the tx buffer in non-blocking mode.
+    send_sock.SetBlocking(false);
+    char buf[1024 * 16]{};
+    while (send_sock.Send(buf, sizeof(buf)) > 0) {
+    }
+
+    // Then do a blocking send. It should return a partial value within the tx
+    // timeout.
+    send_sock.SetBlocking(true);
+    send_sock.SetTxTimeout(10);
+    ASSERT_LT(send_sock.Send(buf, sizeof(buf)),
+              static_cast<ssize_t>(sizeof(buf)));
+    ttr.PostTask(blocking_send_done);
+  });
+
+  // This task needs to be slow enough so that doesn't unblock the send, but
+  // fast enough so that within a blocking cycle, the send re-attempts and
+  // re-arms the timeout.
+  PeriodicTask read_slowly_task(&ttr);
+  PeriodicTask::Args args;
+  args.period_ms = 1;  // Read 1 byte every ms (1 KiB/s).
+  args.task = [&] {
+    char rxbuf[1]{};
+    recv_sock.Receive(rxbuf, sizeof(rxbuf));
+  };
+  read_slowly_task.Start(args);
+
+  ttr.RunUntilCheckpoint("blocking_send_done");
+  read_slowly_task.Reset();
+  tx_thread.join();
 }
 #endif  // !OS_WIN
 

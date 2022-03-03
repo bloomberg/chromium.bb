@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,7 +29,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
-#include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
@@ -142,11 +142,6 @@ string GetVersion(CERTCertificate* cert_handle) {
 
 net::CertType GetType(CERTCertificate* cert_handle) {
   return psm::GetCertType(cert_handle);
-}
-
-void GetUsageStrings(CERTCertificate* cert_handle,
-                     std::vector<string>* usages) {
-  psm::GetCertUsageStrings(cert_handle, usages);
 }
 
 string GetSerialNumberHexified(CERTCertificate* cert_handle,

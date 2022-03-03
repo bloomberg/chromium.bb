@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tab.state;
 
 import static org.mockito.Mockito.doReturn;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsService;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -83,11 +84,13 @@ public class ShoppingPersistedTabDataWithPASTest {
                 mOptimizationGuideBridgeJniMock,
                 HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
                 OptimizationGuideDecision.TRUE, null);
-        PersistedTabDataConfiguration.setUseTestConfig(true);
-
-        Profile.setLastUsedProfileForTesting(mProfileMock);
         doReturn(mPageAnnotationsServiceMock).when(mServiceFactoryMock).getForLastUsedProfile();
-        ShoppingPersistedTabData.sPageAnnotationsServiceFactory = mServiceFactoryMock;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingPersistedTabData.onDeferredStartup();
+            PersistedTabDataConfiguration.setUseTestConfig(true);
+            Profile.setLastUsedProfileForTesting(mProfileMock);
+            ShoppingPersistedTabData.sPageAnnotationsServiceFactory = mServiceFactoryMock;
+        });
     }
 
     @SmallTest
@@ -129,9 +132,10 @@ public class ShoppingPersistedTabDataWithPASTest {
                     mOptimizationGuideBridgeJniMock,
                     HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(), decision,
                     null);
-            Tab tab = ShoppingPersistedTabDataTestUtils.createTabOnUiThread(
+            MockTab tab = (MockTab) ShoppingPersistedTabDataTestUtils.createTabOnUiThread(
                     ShoppingPersistedTabDataTestUtils.TAB_ID,
                     ShoppingPersistedTabDataTestUtils.IS_INCOGNITO);
+            tab.setGurlOverrideForTesting(ShoppingPersistedTabDataTestUtils.DEFAULT_GURL);
             Semaphore semaphore = new Semaphore(0);
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 ShoppingPersistedTabData.from(

@@ -6,7 +6,11 @@
 from __future__ import absolute_import
 import logging
 import os
+import platform
 import subprocess
+
+# TODO(crbug.com/1267066): Remove when python2 is deprecated.
+import six
 
 from telemetry.core import util
 
@@ -56,6 +60,8 @@ class CommandRunner(object):
     ssh_args.append('-oControlMaster=no')
     ssh_command = self._GetSshCommandLinePrefix() + ssh_args + ['--'] + command
     logging.debug(' '.join(ssh_command))
+    if six.PY3:
+      kwargs['text'] = True
     return subprocess.Popen(ssh_command, **kwargs)
 
   def RunCommand(self, command=None, ssh_args=None, **kwargs):
@@ -64,6 +70,15 @@ class CommandRunner(object):
     cmd_proc = self.RunCommandPiped(command, ssh_args, **kwargs)
     stdout, stderr = cmd_proc.communicate()
     return cmd_proc.returncode, stdout, stderr
+
+
+def _GetHostArchFromPlatform():
+  host_arch = platform.machine()
+  if host_arch == 'x86_64':
+    return 'x64'
+  if host_arch == 'aarch64':
+    return 'arm64'
+  raise Exception('Unsupported host architecture: %s' % host_arch)
 
 
 def StartSymbolizerForProcessIfPossible(input_file, output_file, build_id_file):
@@ -80,18 +95,22 @@ def StartSymbolizerForProcessIfPossible(input_file, output_file, build_id_file):
       fails to start."""
   if os.path.isfile(build_id_file):
     sdk_root = os.path.join(util.GetCatapultDir(), '..', 'fuchsia-sdk', 'sdk')
-    symbolizer = os.path.join(sdk_root, 'tools', 'x64', 'symbolizer')
+    symbolizer = os.path.join(sdk_root, 'tools', _GetHostArchFromPlatform(),
+                              'symbolizer')
     symbolizer_cmd = [
         symbolizer, '--build-id-dir', os.path.join(sdk_root, '.build-id'),
         '--ids-txt', build_id_file
     ]
 
     logging.debug('Running "%s".' % ' '.join(symbolizer_cmd))
-    return subprocess.Popen(symbolizer_cmd,
-                            stdin=input_file,
-                            stdout=output_file,
-                            stderr=subprocess.STDOUT,
-                            close_fds=True)
-  else:
-    logging.info('Symbolizer cannot be started.')
-    return None
+    kwargs = {
+        'stdin':input_file,
+        'stdout':output_file,
+        'stderr':subprocess.STDOUT,
+        'close_fds':True
+    }
+    if six.PY3:
+      kwargs['text'] = True
+    return subprocess.Popen(symbolizer_cmd, **kwargs)
+  logging.info('Symbolizer cannot be started.')
+  return None

@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,7 +20,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/page_transition_types.h"
@@ -135,8 +134,7 @@ class RenderFrameHostTester {
   virtual int GetHeavyAdIssueCount(HeavyAdIssueType type) = 0;
 
   // Simulates the receipt of a manifest URL.
-  virtual void SimulateManifestURLUpdate(
-      const absl::optional<GURL>& manifest_url) = 0;
+  virtual void SimulateManifestURLUpdate(const GURL& manifest_url) = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.
@@ -147,8 +145,6 @@ class RenderViewHostTester {
   // RenderViewHost testing was enabled; use a
   // RenderViewHostTestEnabler instance (see below) to do this.
   static RenderViewHostTester* For(RenderViewHost* host);
-
-  static void SimulateFirstPaint(RenderViewHost* rvh);
 
   static std::unique_ptr<content::InputMsgWatcher> CreateInputWatcher(
       RenderViewHost* rvh,
@@ -177,10 +173,13 @@ class RenderViewHostTester {
 class RenderViewHostTestEnabler {
  public:
   RenderViewHostTestEnabler();
+
+  RenderViewHostTestEnabler(const RenderViewHostTestEnabler&) = delete;
+  RenderViewHostTestEnabler& operator=(const RenderViewHostTestEnabler&) =
+      delete;
+
   ~RenderViewHostTestEnabler();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestEnabler);
   friend class RenderViewHostTestHarness;
 
 #if defined(OS_ANDROID)
@@ -205,6 +204,10 @@ class RenderViewHostTestHarness : public ::testing::Test {
       : RenderViewHostTestHarness(std::make_unique<BrowserTaskEnvironment>(
             std::forward<TaskEnvironmentTraits>(traits)...)) {}
 
+  RenderViewHostTestHarness(const RenderViewHostTestHarness&) = delete;
+  RenderViewHostTestHarness& operator=(const RenderViewHostTestHarness&) =
+      delete;
+
   ~RenderViewHostTestHarness() override;
 
   NavigationController& controller();
@@ -219,21 +222,12 @@ class RenderViewHostTestHarness : public ::testing::Test {
   //   web_contents()->GetRenderViewHost()
   RenderViewHost* rvh();
 
-  // pending_rvh() is equivalent to:
-  //   WebContentsTester::For(web_contents())->GetPendingRenderViewHost()
-  RenderViewHost* pending_rvh();
-
-  // active_rvh() is equivalent to pending_rvh() ? pending_rvh() : rvh()
-  RenderViewHost* active_rvh();
-
   // main_rfh() is equivalent to web_contents()->GetMainFrame()
   RenderFrameHost* main_rfh();
 
-  // pending_main_rfh() is equivalent to:
-  //   WebContentsTester::For(web_contents())->GetPendingMainFrame()
-  RenderFrameHost* pending_main_rfh();
-
   BrowserContext* browser_context();
+
+  // Returns |main_rfh()|'s process.
   MockRenderProcessHost* process();
 
   // Frees the current WebContents for tests that want to test destruction.
@@ -317,9 +311,7 @@ class RenderViewHostTestHarness : public ::testing::Test {
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
-  RenderProcessHostFactory* factory_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
+  raw_ptr<RenderProcessHostFactory> factory_ = nullptr;
 };
 
 }  // namespace content

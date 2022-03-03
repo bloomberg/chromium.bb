@@ -9,7 +9,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -158,7 +158,7 @@ public class UrlBarIntegrationTest {
         CriteriaHelper.pollUiThread(() -> {
             final int expectedTextColor =
                     ApiCompatibilityUtils.getColor(mActivityTestRule.getActivity().getResources(),
-                            R.color.default_text_color_light);
+                            R.color.branded_url_text_on_dark_bg);
             Criteria.checkThat(getUrlBar().getCurrentTextColor(), Matchers.is(expectedTextColor));
         });
     }

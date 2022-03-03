@@ -30,18 +30,19 @@ class CONTENT_EXPORT PeerConnectionTrackerHostObserver
   // - |rtc_configuration| is the serialized RTCConfiguration.
   // - |constraints| is the media constraints used to initialize the peer
   //   connection.
-  virtual void OnPeerConnectionAdded(GlobalFrameRoutingId render_frame_host_id,
-                                     int lid,
-                                     base::ProcessId pid,
-                                     const std::string& url,
-                                     const std::string& rtc_configuration,
-                                     const std::string& constraints) {}
+  virtual void OnPeerConnectionAdded(
+      GlobalRenderFrameHostId render_frame_host_id,
+      int lid,
+      base::ProcessId pid,
+      const std::string& url,
+      const std::string& rtc_configuration,
+      const std::string& constraints) {}
 
   // This method is called when a peer connection is destroyed.
   // - |render_frame_host_id| identifies the RenderFrameHost.
   // - |lid| identifies a peer connection.
   virtual void OnPeerConnectionRemoved(
-      GlobalFrameRoutingId render_frame_host_id,
+      GlobalRenderFrameHostId render_frame_host_id,
       int lid) {}
 
   // This method is called when a peer connection is updated.
@@ -53,12 +54,12 @@ class CONTENT_EXPORT PeerConnectionTrackerHostObserver
   //
   // There are many possible values for |type| and |value|. Here are a couple
   // examples:
-  // |type| == "iceConnectionStateChange" && |value| == "connected":
+  // |type| == "connectionstatechange" && |value| == "connected":
   //   A connection was established with another peer.
-  // |type| == "stop" && |value| == "":
-  //   An estasblished connection with another peer was stopped.
+  // |type| == "close" && |value| == "":
+  //   An established connection with another peer was closed.
   virtual void OnPeerConnectionUpdated(
-      GlobalFrameRoutingId render_frame_host_id,
+      GlobalRenderFrameHostId render_frame_host_id,
       int lid,
       const std::string& type,
       const std::string& value) {}
@@ -68,7 +69,7 @@ class CONTENT_EXPORT PeerConnectionTrackerHostObserver
   // - |lid| identifies a peer connection.
   // - |session_id| is the session ID of the peer connection.
   virtual void OnPeerConnectionSessionIdSet(
-      GlobalFrameRoutingId render_frame_host_id,
+      GlobalRenderFrameHostId render_frame_host_id,
       int lid,
       const std::string& session_id) {}
 
@@ -76,37 +77,67 @@ class CONTENT_EXPORT PeerConnectionTrackerHostObserver
   // - |render_frame_host_id| identifies the RenderFrameHost.
   // - |lid| identifies a peer connection.
   // - |message| is the message to be logged.
-  virtual void OnWebRtcEventLogWrite(GlobalFrameRoutingId render_frame_host_id,
-                                     int lid,
-                                     const std::string& message) {}
+  virtual void OnWebRtcEventLogWrite(
+      GlobalRenderFrameHostId render_frame_host_id,
+      int lid,
+      const std::string& message) {}
 
   // These methods are called when results from
   // PeerConnectionInterface::GetStats() (legacy or standard API) are available.
   // - |render_frame_host_id| identifies the RenderFrameHost.
   // - |lid| identifies a peer connection.
   // - |value| is the list of stats reports.
-  virtual void OnAddStandardStats(GlobalFrameRoutingId render_frame_host_id,
+  virtual void OnAddStandardStats(GlobalRenderFrameHostId render_frame_host_id,
                                   int lid,
                                   base::Value value) {}
-  virtual void OnAddLegacyStats(GlobalFrameRoutingId render_frame_host_id,
+  virtual void OnAddLegacyStats(GlobalRenderFrameHostId render_frame_host_id,
                                 int lid,
                                 base::Value value) {}
 
   // This method is called when getUserMedia is called.
   // - |render_frame_host_id| identifies the RenderFrameHost.
   // - |pid| is the OS process ID.
-  // - |origin| is the security origin of the getUserMedia call.
+  // - |request_id| is an id assigned to the getUserMedia call and its
+  //     callback/error
   // - |audio| is true if the audio stream is requested.
   // - |video| is true if the video stream is requested.
   // - |audio_constraints| is the constraints for the audio.
   // - |video_constraints| is the constraints for the video.
-  virtual void OnGetUserMedia(GlobalFrameRoutingId render_frame_host_id,
+  virtual void OnGetUserMedia(GlobalRenderFrameHostId render_frame_host_id,
                               base::ProcessId pid,
-                              const std::string& origin,
+                              int request_id,
                               bool audio,
                               bool video,
                               const std::string& audio_constraints,
                               const std::string& video_constraints) {}
+
+  // This method is called when getUserMedia resolves with a stream.
+  // - |render_frame_host_id| identifies the RenderFrameHost.
+  // - |pid| is the OS process ID.
+  // - |request_id| is the internal getUserMedia request id.
+  // - |stream_id| is the id of the stream containing the tracks.
+  // - |audio_track_info| describes the streams audio track (if any).
+  // - |video_track_info| describes the streams video track (if any).
+  virtual void OnGetUserMediaSuccess(
+      GlobalRenderFrameHostId render_frame_host_id,
+      base::ProcessId pid,
+      int request_id,
+      const std::string& stream_id,
+      const std::string& audio_track_info,
+      const std::string& video_track_info) {}
+
+  // This method is called when getUserMedia rejects with an error.
+  // - |render_frame_host_id| identifies the RenderFrameHost.
+  // - |pid| is the OS process ID.
+  // - |request_id| is the internal getUserMedia request id.
+  // - |error| is the (DOM) error.
+  // - |error_message| is the error message.
+  virtual void OnGetUserMediaFailure(
+      GlobalRenderFrameHostId render_frame_host_id,
+      base::ProcessId pid,
+      int request_id,
+      const std::string& error,
+      const std::string& error_message) {}
 
  protected:
   PeerConnectionTrackerHostObserver();

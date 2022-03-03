@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
@@ -218,7 +218,7 @@ void MediaKeySystemAccessInitializerBase::GenerateWarningAndReportMetrics()
   LocalFrame* frame = DomWindow()->GetFrame();
   ukm::builders::Media_EME_RequestMediaKeySystemAccess builder(
       DomWindow()->UkmSourceID());
-  builder.SetKeySystem(KeySystemForUkm::kWidevine);
+  builder.SetKeySystem(KeySystemForUkmLegacy::kWidevine);
   builder.SetIsAdFrame(static_cast<int>(frame->IsAdSubframe()));
   builder.SetIsCrossOrigin(static_cast<int>(frame->IsCrossOriginToMainFrame()));
   builder.SetIsTopFrame(static_cast<int>(frame->IsMainFrame()));

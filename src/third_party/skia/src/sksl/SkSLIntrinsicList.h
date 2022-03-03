@@ -32,9 +32,8 @@
     SKSL_INTRINSIC(dFdy)             \
     SKSL_INTRINSIC(distance)         \
     SKSL_INTRINSIC(dot)              \
-    SKSL_INTRINSIC(EmitVertex)       \
-    SKSL_INTRINSIC(EndPrimitive)     \
     SKSL_INTRINSIC(equal)            \
+    SKSL_INTRINSIC(eval)             \
     SKSL_INTRINSIC(exp2)             \
     SKSL_INTRINSIC(exp)              \
     SKSL_INTRINSIC(faceforward)      \

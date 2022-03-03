@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_ACCELERATED_STATIC_BITMAP_IMAGE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "third_party/blink/renderer/platform/graphics/mailbox_ref.h"
@@ -67,19 +67,15 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       viz::ReleaseCallback release_callback);
 
   bool CurrentFrameKnownToBeOpaque() override;
-  IntSize Size() const override;
   bool IsTextureBacked() const override { return true; }
   scoped_refptr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>,
                                                        SkColorType) override;
 
   void Draw(cc::PaintCanvas*,
             const cc::PaintFlags&,
-            const FloatRect& dst_rect,
-            const FloatRect& src_rect,
-            const SkSamplingOptions&,
-            RespectImageOrientationEnum,
-            ImageClampingMode,
-            ImageDecodingMode) override;
+            const gfx::RectF& dst_rect,
+            const gfx::RectF& src_rect,
+            const ImageDrawOptions&) override;
 
   bool IsValid() const final;
   WebGraphicsContext3DProvider* ContextProvider() const final;
@@ -93,8 +89,12 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
                      GLint dest_level,
                      bool unpack_premultiply_alpha,
                      bool unpack_flip_y,
-                     const IntPoint& dest_point,
-                     const IntRect& source_sub_rectangle) override;
+                     const gfx::Point& dest_point,
+                     const gfx::Rect& source_sub_rectangle) override;
+
+  bool CopyToResourceProvider(
+      CanvasResourceProvider* resource_provider) override;
+
   // To be called on sender thread before performing a transfer to a different
   // thread.
   void Transfer() final;
@@ -113,6 +113,10 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // sync token before accessing this mailbox.
   gpu::MailboxHolder GetMailboxHolder() const final;
   bool IsOriginTopLeft() const final { return is_origin_top_left_; }
+
+  SkColorType GetSkColorType() const override {
+    return sk_image_info_.colorType();
+  }
 
   PaintImage PaintImageForCurrentFrame() override;
 
@@ -140,6 +144,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   void CreateImageFromMailboxIfNeeded();
   void InitializeTextureBacking(GLuint shared_image_texture_id);
+
+  gfx::Size SizeInternal() const override;
 
   const gpu::Mailbox mailbox_;
   const SkImageInfo sk_image_info_;

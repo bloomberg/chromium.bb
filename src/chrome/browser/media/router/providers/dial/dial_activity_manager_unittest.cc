@@ -4,17 +4,21 @@
 
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::NiceMock;
 using testing::Not;
 
 namespace media_router {
@@ -141,7 +145,7 @@ class DialActivityManagerTest : public testing::Test {
       "cast-dial:YouTube?clientId=152127444812943594&dialPostData=foo"};
   url::Origin origin_{url::Origin::Create(GURL{"https://www.youtube.com/"})};
   network::TestURLLoaderFactory loader_factory_;
-  MockDialAppDiscoveryService app_discovery_service_;
+  NiceMock<MockDialAppDiscoveryService> app_discovery_service_;
   TestDialActivityManager manager_;
 };
 

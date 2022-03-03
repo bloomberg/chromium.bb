@@ -5,8 +5,8 @@
 #include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -49,7 +49,7 @@ void ScheduleLoadForRestoredTabs(
   weakptr_page_nodes.reserve(web_contents_vector.size());
   for (auto* content : web_contents_vector) {
     weakptr_page_nodes.push_back(
-        PerformanceManager::GetPageNodeForWebContents(content));
+        PerformanceManager::GetPrimaryPageNodeForWebContents(content));
   }
   performance_manager::PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce(
@@ -98,7 +98,8 @@ void BackgroundTabLoadingPolicy::OnTakenFromGraph(Graph* graph) {
 }
 
 void BackgroundTabLoadingPolicy::OnLoadingStateChanged(
-    const PageNode* page_node) {
+    const PageNode* page_node,
+    PageNode::LoadingState previous_state) {
   switch (page_node->GetLoadingState()) {
     // Loading is complete or stalled.
     case PageNode::LoadingState::kLoadingNotStarted:
@@ -117,6 +118,16 @@ void BackgroundTabLoadingPolicy::OnLoadingStateChanged(
 
     // Loading starts.
     case PageNode::LoadingState::kLoading: {
+      if (previous_state == PageNode::LoadingState::kLoadedBusy) {
+        // The PageNode remained in |page_nodes_loading_| when it transitioned
+        // from |kLoading| to |kLoadedBusy|, so no change is necessary when it
+        // transitions back to |kLoading|.
+        DCHECK(base::Contains(page_nodes_loading_, page_node));
+        DCHECK(!base::Contains(page_nodes_load_initiated_, page_node));
+        DCHECK(!FindPageNodeToLoadData(page_node));
+        return;
+      }
+
       // The PageNode started loading because of this policy or because of
       // external factors (e.g. user-initiated). In either case, remove the
       // PageNode from the set of PageNodes for which a load needs to be
@@ -135,9 +146,11 @@ void BackgroundTabLoadingPolicy::OnLoadingStateChanged(
 
     // Loading is progressing.
     case PageNode::LoadingState::kLoadedBusy: {
-      // This PageNode should have been added to |page_nodes_loading_| when it
+      // The PageNode should have been added to |page_nodes_loading_| when it
       // transitioned to |kLoading|.
       DCHECK(base::Contains(page_nodes_loading_, page_node));
+      DCHECK(!base::Contains(page_nodes_load_initiated_, page_node));
+      DCHECK(!FindPageNodeToLoadData(page_node));
       return;
     }
   }
@@ -323,11 +336,11 @@ void BackgroundTabLoadingPolicy::SetUsedInBackgroundAsync(
     PageNodeToLoadData* page_node_to_load_data) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &BackgroundTabLoadingPolicy::OnUsedInBackgroundAvailable,
-          weak_factory_.GetWeakPtr(),
-          std::move(PageNodeImpl::FromNode(page_node_to_load_data->page_node))
-              ->GetWeakPtr()));
+      base::BindOnce(&BackgroundTabLoadingPolicy::OnUsedInBackgroundAvailable,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(PageNodeImpl::FromNode(
+                                   page_node_to_load_data->page_node.get()))
+                         ->GetWeakPtr()));
 }
 
 void BackgroundTabLoadingPolicy::DispatchNotifyAllTabsScoredIfNeeded() {

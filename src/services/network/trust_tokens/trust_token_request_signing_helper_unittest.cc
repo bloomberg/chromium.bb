@@ -24,6 +24,7 @@
 #include "components/cbor/writer.h"
 #include "net/base/request_priority.h"
 #include "net/http/structured_headers.h"
+#include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -71,7 +72,7 @@ class FakeSigner : public TrustTokenRequestSigningHelper::Signer {
     return false;
   }
 
-  std::string GetAlgorithmIdentifier() override { return "fake-signer"; }
+  std::string GetAlgorithmIdentifier() const override { return "fake-signer"; }
 };
 
 // IdentitySigner returns a "signature" over given signing data whose value
@@ -90,7 +91,9 @@ class IdentitySigner : public TrustTokenRequestSigningHelper::Signer {
               base::span<const uint8_t> verification_key) override {
     return std::equal(data.begin(), data.end(), signature.begin());
   }
-  std::string GetAlgorithmIdentifier() override { return "identity-signer"; }
+  std::string GetAlgorithmIdentifier() const override {
+    return "identity-signer";
+  }
 };
 
 // FailingSigner always fails the Sign and Verify options.
@@ -106,7 +109,9 @@ class FailingSigner : public TrustTokenRequestSigningHelper::Signer {
               base::span<const uint8_t> verification_key) override {
     return false;
   }
-  std::string GetAlgorithmIdentifier() override { return "failing-signer"; }
+  std::string GetAlgorithmIdentifier() const override {
+    return "failing-signer";
+  }
 };
 
 // Reconstructs |request|'s canonical request data, extracts the signatures from
@@ -402,6 +407,36 @@ TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
       Header("Sec-Time", StrEq(base::TimeToISO8601(base::Time::Now()))));
 }
 
+TEST_F(TrustTokenRequestSigningHelperTest, ProvidesMajorVersionHeader) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
+  params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
+  params.should_add_timestamp = true;
+
+  TrustTokenRedemptionRecord my_record;
+  my_record.set_public_key("key");
+  my_record.set_body("look at me, I'm an RR body");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
+
+  TrustTokenRequestSigningHelper helper(
+      store.get(), std::move(params), std::make_unique<FakeSigner>(),
+      std::make_unique<TrustTokenRequestCanonicalizer>());
+
+  auto my_request = MakeURLRequest("https://destination.com/");
+  my_request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
+  mojom::TrustTokenOperationStatus result =
+      ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
+
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  // This test's expectation should change whenever the supported Trust Tokens
+  // major version changes.
+  EXPECT_THAT(*my_request, Header("Sec-Trust-Token-Version", "TrustTokenV3"));
+}
+
 // Test RR attachment without request signing:
 // - The two issuers with stored redemption records should appear in the header.
 // - A third issuer without a corresponding redemption record in storage
@@ -659,11 +694,11 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
 
   // FailingSigner will fail to sign the request, so we should see the operation
   // fail.
-  net::RecordingTestNetLog net_log;
+  net::RecordingNetLogObserver net_log_observer;
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FailingSigner>(),
       std::make_unique<TrustTokenRequestCanonicalizer>(),
-      net::NetLogWithSource::Make(&net_log,
+      net::NetLogWithSource::Make(net::NetLog::Get(),
                                   net::NetLogSourceType::URL_REQUEST));
 
   auto my_request = MakeURLRequest("https://destination.com/");
@@ -678,7 +713,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
   EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
   EXPECT_TRUE(base::ranges::any_of(
-      net_log.GetEntriesWithType(
+      net_log_observer.GetEntriesWithType(
           net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_SIGNING),
       [](const net::NetLogEntry& entry) {
         absl::optional<std::string> key = net::GetOptionalStringValueFromParams(

@@ -27,9 +27,9 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
       socket_create_function.get(), "[\"udp\"]", browser_context()));
   base::DictionaryValue* value = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&value));
-  int socket_id = -1;
-  EXPECT_TRUE(value->GetInteger("socketId", &socket_id));
-  EXPECT_GT(socket_id, 0);
+  absl::optional<int> socket_id = value->FindIntKey("socketId");
+  ASSERT_TRUE(socket_id);
+  EXPECT_GT(*socket_id, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
@@ -45,9 +45,9 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
       socket_create_function.get(), "[\"tcp\"]", browser_context()));
   base::DictionaryValue* value = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&value));
-  int socket_id = -1;
-  EXPECT_TRUE(value->GetInteger("socketId", &socket_id));
-  ASSERT_GT(socket_id, 0);
+  absl::optional<int> socket_id = value->FindIntKey("socketId");
+  ASSERT_TRUE(socket_id);
+  ASSERT_GT(*socket_id, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
@@ -64,9 +64,8 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
 
   // If we're invoking socket tests, all we can confirm is that we have at
   // least one address, but not what it is.
-  base::ListValue* value = NULL;
-  ASSERT_TRUE(result->GetAsList(&value));
-  ASSERT_GT(value->GetSize(), 0U);
+  ASSERT_TRUE(result->is_list());
+  ASSERT_GT(result->GetList().size(), 0U);
 }
 
 }  //  namespace extensions

@@ -18,16 +18,20 @@
 #include "dawn_native/AttachmentState.h"
 #include "dawn_native/CommandBufferStateTracker.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/IndirectDrawMetadata.h"
 #include "dawn_native/PassResourceUsageTracker.h"
-#include "dawn_native/ProgrammablePassEncoder.h"
+#include "dawn_native/ProgrammableEncoder.h"
 
 namespace dawn_native {
 
-    class RenderEncoderBase : public ProgrammablePassEncoder {
+    class RenderEncoderBase : public ProgrammableEncoder {
       public:
         RenderEncoderBase(DeviceBase* device,
+                          const char* label,
                           EncodingContext* encodingContext,
-                          Ref<AttachmentState> attachmentState);
+                          Ref<AttachmentState> attachmentState,
+                          bool depthReadOnly,
+                          bool stencilReadOnly);
 
         void APIDraw(uint32_t vertexCount,
                      uint32_t instanceCount = 1,
@@ -56,19 +60,26 @@ namespace dawn_native {
                              const uint32_t* dynamicOffsets = nullptr);
 
         const AttachmentState* GetAttachmentState() const;
+        bool IsDepthReadOnly() const;
+        bool IsStencilReadOnly() const;
         Ref<AttachmentState> AcquireAttachmentState();
 
       protected:
         // Construct an "error" render encoder base.
         RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext, ErrorTag errorTag);
 
+        void DestroyImpl() override;
+
         CommandBufferStateTracker mCommandBufferState;
         RenderPassResourceUsageTracker mUsageTracker;
+        IndirectDrawMetadata mIndirectDrawMetadata;
 
       private:
         Ref<AttachmentState> mAttachmentState;
         const bool mDisableBaseVertex;
         const bool mDisableBaseInstance;
+        bool mDepthReadOnly = false;
+        bool mStencilReadOnly = false;
     };
 
 }  // namespace dawn_native

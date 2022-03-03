@@ -36,8 +36,8 @@ import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.AllSiteSettings;
@@ -83,6 +83,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(Bundle savedInstanceState) {
         ensureActivityNotExported();
 
+        setTheme(R.style.ColorOverlay_ChromiumAndroid);
         setContentView(R.layout.manage_space_activity);
         Resources r = getResources();
         setTitle(String.format(r.getString(R.string.storage_management_activity_label),
@@ -250,7 +251,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                                 OPTION_CLEAR_APP_DATA, OPTION_MAX);
                     }
 
-                    SearchWidgetProvider.reset();
+                    SearchActivityPreferencesManager.resetCachedValues();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         SiteChannelsManager.getInstance().deleteAllSiteChannels();
                     }

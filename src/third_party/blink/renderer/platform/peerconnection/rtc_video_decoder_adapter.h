@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
+#include "third_party/webrtc/api/video_codecs/video_decoder.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -69,11 +69,6 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // resolution streams, but they'll fall back if they adapt below the limit.
   static constexpr int32_t kMaxDecoderInstances = 8;
 
-  // Lists which implementations can be queried, this can vary based on platform
-  // and enabled features.
-  static std::vector<media::VideoDecoderImplementation>
-  SupportedImplementations();
-
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
   // |format| cannot be supported.
   // Called on the worker thread.
@@ -81,13 +76,15 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
       media::GpuVideoAcceleratorFactories* gpu_factories,
       const webrtc::SdpVideoFormat& format);
 
+  RTCVideoDecoderAdapter(const RTCVideoDecoderAdapter&) = delete;
+  RTCVideoDecoderAdapter& operator=(const RTCVideoDecoderAdapter&) = delete;
+
   // Called on |media_task_runner_|.
   ~RTCVideoDecoderAdapter() override;
 
   // webrtc::VideoDecoder implementation.
   // Called on the DecodingThread.
-  int32_t InitDecode(const webrtc::VideoCodec* codec_settings,
-                     int32_t number_of_cores) override;
+  bool Configure(const Settings& _settings) override;
   // Called on the DecodingThread.
   int32_t RegisterDecodeCompleteCallback(
       webrtc::DecodedImageCallback* callback) override;
@@ -105,6 +102,11 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   static void IncrementCurrentDecoderCountForTesting();
   static void DecrementCurrentDecoderCountForTesting();
 
+  // Returns true if there's VP9 HW support for spatial layers. Please note that
+  // the response from this function implicitly assumes that HW decoding is
+  // enabled and that VP9 decoding is supported in HW.
+  static bool Vp9HwSupportForSpatialLayers();
+
  private:
   using CreateVideoDecoderCB =
       base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
@@ -115,8 +117,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
                          const media::VideoDecoderConfig& config,
-                         const webrtc::SdpVideoFormat& format,
-                         media::VideoDecoderImplementation implementation);
+                         const webrtc::SdpVideoFormat& format);
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
@@ -137,7 +138,6 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
   const webrtc::SdpVideoFormat format_;
-  const media::VideoDecoderImplementation implementation_;
   media::VideoDecoderConfig config_;
 
   // Media thread members.
@@ -173,13 +173,10 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
 
   // Thread management.
   SEQUENCE_CHECKER(media_sequence_checker_);
-  SEQUENCE_CHECKER(worker_sequence_checker_);
   SEQUENCE_CHECKER(decoding_sequence_checker_);
 
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapter);
 };
 
 }  // namespace blink

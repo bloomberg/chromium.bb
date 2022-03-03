@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "ppapi/c/pp_instance.h"
@@ -24,6 +23,10 @@ class PluginArrayBufferVar : public ArrayBufferVar {
   explicit PluginArrayBufferVar(uint32_t size_in_bytes);
   PluginArrayBufferVar(uint32_t size_in_bytes,
                        base::UnsafeSharedMemoryRegion plugin_handle);
+
+  PluginArrayBufferVar(const PluginArrayBufferVar&) = delete;
+  PluginArrayBufferVar& operator=(const PluginArrayBufferVar&) = delete;
+
   ~PluginArrayBufferVar() override;
 
   // ArrayBufferVar implementation.
@@ -42,8 +45,6 @@ class PluginArrayBufferVar : public ArrayBufferVar {
   base::UnsafeSharedMemoryRegion plugin_handle_;
   base::WritableSharedMemoryMapping shmem_;
   uint32_t size_in_bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginArrayBufferVar);
 };
 
 }  // namespace ppapi

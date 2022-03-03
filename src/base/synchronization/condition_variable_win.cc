@@ -4,6 +4,7 @@
 
 #include "base/synchronization/condition_variable.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
@@ -27,7 +28,7 @@ ConditionVariable::ConditionVariable(Lock* user_lock)
 ConditionVariable::~ConditionVariable() = default;
 
 void ConditionVariable::Wait() {
-  TimedWait(TimeDelta::FromMilliseconds(INFINITE));
+  TimedWait(TimeDelta::Max());
 }
 
 void ConditionVariable::TimedWait(const TimeDelta& max_time) {
@@ -36,15 +37,16 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   if (waiting_is_blocking_)
     scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
 
-  DWORD timeout = static_cast<DWORD>(max_time.InMilliseconds());
+  // Limit timeout to INFINITE.
+  DWORD timeout = saturated_cast<DWORD>(max_time.InMilliseconds());
 
 #if DCHECK_IS_ON()
   user_lock_->CheckHeldAndUnmark();
 #endif
 
   if (!SleepConditionVariableSRW(reinterpret_cast<PCONDITION_VARIABLE>(&cv_),
-                                 reinterpret_cast<PSRWLOCK>(srwlock_), timeout,
-                                 0)) {
+                                 reinterpret_cast<PSRWLOCK>(srwlock_.get()),
+                                 timeout, 0)) {
     // On failure, we only expect the CV to timeout. Any other error value means
     // that we've unexpectedly woken up.
     // Note that WAIT_TIMEOUT != ERROR_TIMEOUT. WAIT_TIMEOUT is used with the

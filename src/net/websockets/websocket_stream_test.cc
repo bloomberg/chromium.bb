@@ -11,12 +11,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -303,7 +303,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     TestDelegate delegate;
     std::unique_ptr<URLRequest> request = context->CreateRequest(
         GURL("https://www.example.org/"), DEFAULT_PRIORITY, &delegate,
-        TRAFFIC_ANNOTATION_FOR_TESTS);
+        TRAFFIC_ANNOTATION_FOR_TESTS, /*is_for_websockets=*/false);
     // The IsolationInfo has to match for a socket to be reused.
     request->set_isolation_info(CreateIsolationInfo());
     request->Start();
@@ -455,6 +455,9 @@ class CommonAuthTestHelper {
  public:
   CommonAuthTestHelper() : reads_(), writes_() {}
 
+  CommonAuthTestHelper(const CommonAuthTestHelper&) = delete;
+  CommonAuthTestHelper& operator=(const CommonAuthTestHelper&) = delete;
+
   std::unique_ptr<SequencedSocketData> BuildAuthSocketData(
       std::string response1,
       std::string request2,
@@ -482,8 +485,6 @@ class CommonAuthTestHelper {
   std::string response2_;
   MockRead reads_[3];
   MockWrite writes_[2];
-
-  DISALLOW_COPY_AND_ASSIGN(CommonAuthTestHelper);
 };
 
 // Data and methods for BasicAuth tests.

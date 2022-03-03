@@ -14,9 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -89,6 +88,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // See WindowImpl for details on |debugging_id|.
   HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
                      const std::string& debugging_id);
+
+  HWNDMessageHandler(const HWNDMessageHandler&) = delete;
+  HWNDMessageHandler& operator=(const HWNDMessageHandler&) = delete;
+
   ~HWNDMessageHandler() override;
 
   void Init(HWND parent, const gfx::Rect& bounds);
@@ -213,7 +216,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
-  void OnShowVirtualKeyboardIfEnabled() override;
 
   // Overridden from WindowEventTarget
   LRESULT HandleMouseMessage(unsigned int message,
@@ -612,7 +614,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Get the cursor position, which may be mocked if running a test
   POINT GetCursorPos() const;
 
-  HWNDMessageHandlerDelegate* delegate_;
+  raw_ptr<HWNDMessageHandlerDelegate> delegate_;
 
   std::unique_ptr<FullscreenHandler> fullscreen_handler_;
 
@@ -830,8 +832,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // The factory used to lookup appbar autohide edges.
   base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
 
 }  // namespace views

@@ -18,8 +18,11 @@
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/updater/browser_updater_client_util.h"
 #import "chrome/updater/app/server/mac/update_service_wrappers.h"
+#import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/updater_scope.h"
 
 @interface CRUUpdateClientOnDemandImpl () {
   base::scoped_nsobject<NSXPCConnection> _xpcConnection;
@@ -27,13 +30,6 @@
 @end
 
 namespace {
-
-NSString* const kLaunchdServiceName = @"org.chromium.ChromiumUpdater.service";
-
-NSString* GetMachServiceName() {
-  return [kLaunchdServiceName
-      stringByAppendingFormat:@".%lu", [kLaunchdServiceName hash]];
-}
 
 NSString* GetAppIdForUpdaterAsNSString() {
   return base::SysUTF8ToNSString(base::mac::BaseBundleID());
@@ -44,13 +40,30 @@ NSString* GetAppIdForUpdaterAsNSString() {
 @implementation CRUUpdateClientOnDemandImpl
 
 - (instancetype)init {
+  return [self initWithScope:ShouldUseSystemLevelUpdater()
+                                 ? updater::UpdaterScope::kSystem
+                                 : updater::UpdaterScope::kUser];
+}
+
+- (instancetype)initWithScope:(updater::UpdaterScope)scope {
+  // If the system-level updater exists, and the browser is registered to the
+  // system-level updater, then connect using NSXPCConnectionPrivileged.
+  NSXPCConnectionOptions options = 0;
+  if (scope == updater::UpdaterScope::kSystem) {
+    options = NSXPCConnectionPrivileged;
+  }
+  return [self initWithConnectionOptions:options withScope:scope];
+}
+
+- (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options
+                                withScope:(updater::UpdaterScope)scope {
   if (self = [super init]) {
     _xpcConnection.reset([[NSXPCConnection alloc]
-        initWithMachServiceName:GetMachServiceName()
-                        options:0]);
+        initWithMachServiceName:updater::GetUpdateServiceMachName(scope)
+                        options:options]);
 
     _xpcConnection.get().remoteObjectInterface =
-        updater::GetXPCUpdateCheckingInterface();
+        updater::GetXPCUpdateServicingInterface();
 
     _xpcConnection.get().interruptionHandler = ^{
       LOG(WARNING)
@@ -133,6 +146,14 @@ NSString* GetAppIdForUpdaterAsNSString() {
                         reply:reply];
 }
 
+// Runs periodic updater tasks like checking for uninstalls and background
+// update checks.
+- (void)runPeriodicTasksWithReply:(void (^_Nullable)(void))reply {
+  // This method does not need to be implemented in the RPC on-demand update
+  // call from the browser to the updater.
+  NOTIMPLEMENTED();
+}
+
 @end
 
 BrowserUpdaterClientMac::BrowserUpdaterClientMac()
@@ -145,6 +166,24 @@ BrowserUpdaterClientMac::BrowserUpdaterClientMac(
     : client_(client) {}
 
 BrowserUpdaterClientMac::~BrowserUpdaterClientMac() = default;
+
+void BrowserUpdaterClientMac::GetUpdaterVersion(
+    base::OnceCallback<void(const std::string&)> callback) {
+  __block base::OnceCallback<void(const std::string&)> block_callback =
+      std::move(callback);
+
+  auto reply = ^(NSString* version) {
+    std::string result = base::SysNSStringToUTF8(version);
+    task_runner()->PostTask(FROM_HERE,
+                            base::BindOnce(std::move(block_callback), result));
+  };
+
+  [client_ getVersionWithReply:reply];
+}
+
+void BrowserUpdaterClientMac::ResetConnection(updater::UpdaterScope scope) {
+  client_.reset([[CRUUpdateClientOnDemandImpl alloc] initWithScope:scope]);
+}
 
 void BrowserUpdaterClientMac::BeginRegister(
     const std::string& brand_code,

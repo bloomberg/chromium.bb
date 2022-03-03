@@ -11,10 +11,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -25,6 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
@@ -51,6 +53,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -62,6 +68,10 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
                                      public spellcheck::mojom::SpellChecker {
  public:
   SpellcheckServiceBrowserTest() = default;
+
+  SpellcheckServiceBrowserTest(const SpellcheckServiceBrowserTest&) = delete;
+  SpellcheckServiceBrowserTest& operator=(const SpellcheckServiceBrowserTest&) =
+      delete;
 
 #if defined(OS_WIN)
   void SetUp() override {
@@ -75,6 +85,14 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     InProcessBrowserTest::SetUp();
   }
 #endif  // defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void SetUp() override {
+    // On CrOS, Language Settings Update 2 will be the norm going forward.
+    // Forcibly enable it here in case it is disabled in the future.
+    feature_list_.InitAndEnableFeature(ash::features::kLanguageSettingsUpdate2);
+    InProcessBrowserTest::SetUp();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void SetUpOnMainThread() override {
     renderer_ = std::make_unique<content::MockRenderProcessHost>(GetContext());
@@ -170,9 +188,8 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
         prefs_->GetList(spellcheck::prefs::kSpellCheckDictionaries);
     std::vector<base::StringPiece> dictionaries;
     for (const auto& item_value : list_value->GetList()) {
-      base::StringPiece dictionary;
-      EXPECT_TRUE(item_value.GetAsString(&dictionary));
-      dictionaries.push_back(dictionary);
+      EXPECT_TRUE(item_value.is_string());
+      dictionaries.push_back(item_value.GetString());
     }
     return base::JoinString(dictionaries, ",");
   }
@@ -245,16 +262,16 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   // Quits the RunLoop on Mojo request flow completion.
   base::OnceClosure quit_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
   base::test::ScopedFeatureList feature_list_;
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 
  private:
   // Mocked RenderProcessHost.
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
 
   // Not owned preferences service.
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 
   // Binding to receive the SpellChecker request flow.
   mojo::Receiver<spellcheck::mojom::SpellChecker> receiver_{this};
@@ -264,13 +281,16 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   bool custom_dictionary_changed_called_;
   bool initialize_spellcheck_called_;
   bool spellcheck_enabled_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceBrowserTest);
 };
 
 class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
  public:
   SpellcheckServiceHostBrowserTest() = default;
+
+  SpellcheckServiceHostBrowserTest(const SpellcheckServiceHostBrowserTest&) =
+      delete;
+  SpellcheckServiceHostBrowserTest& operator=(
+      const SpellcheckServiceHostBrowserTest&) = delete;
 
   void RequestDictionary() {
     mojo::Remote<spellcheck::mojom::SpellCheckHost> interface;
@@ -322,8 +342,6 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
 
   bool spelling_service_done_called_ = false;
   std::u16string word_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceHostBrowserTest);
 };
 
 // Disable spell check should disable spelling service
@@ -348,6 +366,40 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 }
 #endif  // !defined(OS_MAC)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Tests related to CrOS Language Settings Update 2.
+// Spell check languages and accept languages are decoupled with Update 2.
+// All tests which rely on the coupling should use the below class.
+// TODO(crbug.com/1177519): Remove this once Update 2 is fully launched.
+class SpellcheckServiceLanguageSettingsUpdate2DisabledBrowserTest
+    : public SpellcheckServiceBrowserTest {
+  void SetUp() override {
+    feature_list_.InitAndDisableFeature(
+        ash::features::kLanguageSettingsUpdate2);
+    InProcessBrowserTest::SetUp();
+  }
+};
+
+// Removing a spellcheck language from accept languages should not remove it
+// from spellcheck languages list with Update 2 enabled.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
+                       RemoveSpellcheckLanguageFromAcceptLanguages) {
+  InitSpellcheck(true, "", "en-US,fr");
+  SetAcceptLanguages("en-US,es,ru");
+  EXPECT_EQ("en-US,fr", GetMultilingualDictionaries());
+}
+
+// Removing a spellcheck language from accept languages should remove it from
+// spellcheck languages list as well with Update 2 disabled.
+// TODO(crbug.com/1177519): Remove this once Update 2 is fully launched.
+IN_PROC_BROWSER_TEST_F(
+    SpellcheckServiceLanguageSettingsUpdate2DisabledBrowserTest,
+    RemoveSpellcheckLanguageFromAcceptLanguages) {
+  InitSpellcheck(true, "", "en-US,fr");
+  SetAcceptLanguages("en-US,es,ru");
+  EXPECT_EQ("en-US", GetMultilingualDictionaries());
+}
+#else
 // Removing a spellcheck language from accept languages should remove it from
 // spellcheck languages list as well.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
@@ -356,6 +408,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   SetAcceptLanguages("en-US,es,ru");
   EXPECT_EQ("en-US", GetMultilingualDictionaries());
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Keeping spellcheck languages in accept languages should not alter spellcheck
 // languages list.
@@ -578,11 +631,18 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesMigrated) {
   SpellcheckServiceFactory::GetForContext(GetContext());
 
   // Make sure the preferences have been migrated.
-  std::string new_pref;
-  EXPECT_TRUE(GetPrefs()
+  ASSERT_EQ(1u, GetPrefs()
+                    ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                    ->GetList()
+                    .size());
+  ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(0, &new_pref));
-  EXPECT_EQ("en-US", new_pref);
+                  ->GetList()[0]
+                  .is_string());
+  EXPECT_EQ("en-US", GetPrefs()
+                         ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                         ->GetList()[0]
+                         .GetString());
   EXPECT_TRUE(
       GetPrefs()->GetString(spellcheck::prefs::kSpellCheckDictionary).empty());
 }
@@ -590,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesMigrated) {
 // Checks that preferences are not migrated when they shouldn't be.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
   base::ListValue dictionaries;
-  dictionaries.AppendString("en-US");
+  dictionaries.Append("en-US");
   GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
   GetPrefs()->SetString(spellcheck::prefs::kSpellCheckDictionary, "fr");
 
@@ -598,11 +658,18 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
   SpellcheckServiceFactory::GetForContext(GetContext());
 
   // Make sure the preferences have not been migrated.
-  std::string new_pref;
-  EXPECT_TRUE(GetPrefs()
+  ASSERT_EQ(1u, GetPrefs()
+                    ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                    ->GetList()
+                    .size());
+  ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(0, &new_pref));
-  EXPECT_EQ("en-US", new_pref);
+                  ->GetList()[0]
+                  .is_string());
+  EXPECT_EQ("en-US", GetPrefs()
+                         ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                         ->GetList()[0]
+                         .GetString());
   EXPECT_TRUE(
       GetPrefs()->GetString(spellcheck::prefs::kSpellCheckDictionary).empty());
 }
@@ -612,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        SpellcheckingDisabledPreferenceMigration) {
   base::ListValue dictionaries;
-  dictionaries.AppendString("en-US");
+  dictionaries.Append("en-US");
   GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
   GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, false);
 
@@ -622,15 +689,16 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   EXPECT_FALSE(GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
   EXPECT_EQ(1U, GetPrefs()
                     ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                    ->GetSize());
+                    ->GetList()
+                    .size());
 }
 
 // Make sure preferences get preserved and spellchecking stays enabled.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        MultilingualPreferenceNotMigrated) {
   base::ListValue dictionaries;
-  dictionaries.AppendString("en-US");
-  dictionaries.AppendString("fr");
+  dictionaries.Append("en-US");
+  dictionaries.Append("fr");
   GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
   GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
 
@@ -640,16 +708,24 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   EXPECT_TRUE(GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
   EXPECT_EQ(2U, GetPrefs()
                     ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                    ->GetSize());
-  std::string pref;
+                    ->GetList()
+                    .size());
   ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(0, &pref));
-  EXPECT_EQ("en-US", pref);
+                  ->GetList()[0]
+                  .is_string());
+  EXPECT_EQ("en-US", GetPrefs()
+                         ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                         ->GetList()[0]
+                         .GetString());
   ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(1, &pref));
-  EXPECT_EQ("fr", pref);
+                  ->GetList()[1]
+                  .is_string());
+  EXPECT_EQ("fr", GetPrefs()
+                      ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                      ->GetList()[1]
+                      .GetString());
 }
 
 #if defined(OS_WIN)
@@ -667,6 +743,12 @@ class SpellcheckServiceWindowsHybridBrowserTest
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTest,
                        WindowsHybridSpellcheck) {
   if (!spellcheck::WindowsVersionSupportsSpellchecker())
+    return;
+
+  // This test specifically covers the case where spellcheck delayed
+  // initialization is not enabled, so return early if it is. Other tests
+  // cover the case where delayed initialization is enabled.
+  if (base::FeatureList::IsEnabled(spellcheck::kWinDelaySpellcheckServiceInit))
     return;
 
   ASSERT_TRUE(spellcheck::UseBrowserSpellChecker());

@@ -20,7 +20,6 @@
 #include "include/private/SkTHash.h"
 #include "src/core/SkAutoMalloc.h"
 #include "src/core/SkCanvasPriv.h"
-#include "src/core/SkClipOpPriv.h"
 #include "src/core/SkLatticeIter.h"
 #include "src/core/SkMaskFilterBase.h"
 #include "src/core/SkPaintDefaults.h"
@@ -33,7 +32,7 @@
 #include "tools/debugger/DebugLayerManager.h"
 #include "tools/debugger/JsonWriteBuffer.h"
 
-#ifdef SK_SUPPORT_GPU
+#if SK_SUPPORT_GPU
 #include "include/gpu/GrDirectContext.h"
 #else
 class GrDirectContext;
@@ -150,12 +149,8 @@ class GrDirectContext;
 #define DEBUGCANVAS_POINTMODE_LINES "lines"
 #define DEBUGCANVAS_POINTMODE_POLYGON "polygon"
 
-#define DEBUGCANVAS_REGIONOP_DIFFERENCE "difference"
-#define DEBUGCANVAS_REGIONOP_INTERSECT "intersect"
-#define DEBUGCANVAS_REGIONOP_UNION "union"
-#define DEBUGCANVAS_REGIONOP_XOR "xor"
-#define DEBUGCANVAS_REGIONOP_REVERSE_DIFFERENCE "reverseDifference"
-#define DEBUGCANVAS_REGIONOP_REPLACE "replace"
+#define DEBUGCANVAS_CLIPOP_DIFFERENCE "difference"
+#define DEBUGCANVAS_CLIPOP_INTERSECT "intersect"
 
 #define DEBUGCANVAS_BLURSTYLE_NORMAL "normal"
 #define DEBUGCANVAS_BLURSTYLE_SOLID "solid"
@@ -218,6 +213,7 @@ const char* DrawCommand::GetCommandString(OpType type) {
         case kClipRegion_OpType: return "ClipRegion";
         case kClipRect_OpType: return "ClipRect";
         case kClipRRect_OpType: return "ClipRRect";
+        case kResetClip_OpType: return "ResetClip";
         case kConcat_OpType: return "Concat";
         case kConcat44_OpType: return "Concat44";
         case kDrawAnnotation_OpType: return "DrawAnnotation";
@@ -384,7 +380,7 @@ static_assert(SK_ARRAY_COUNT(gBlendModeMap) == static_cast<size_t>(SkBlendMode::
               "blendMode mismatch");
 
 void apply_paint_blend_mode(const SkPaint& paint, SkJSONWriter& writer) {
-    const auto mode = paint.getBlendMode();
+    const auto mode = paint.getBlendMode_or(SkBlendMode::kSrcOver);
     if (mode != SkBlendMode::kSrcOver) {
         SkASSERT(static_cast<size_t>(mode) < SK_ARRAY_COUNT(gBlendModeMap));
         writer.appendString(DEBUGCANVAS_ATTRIBUTE_BLENDMODE,
@@ -566,14 +562,10 @@ void DrawCommand::MakeJsonRegion(SkJSONWriter& writer, const SkRegion& region) {
     MakeJsonPath(writer, path);
 }
 
-static const char* regionop_name(SkClipOp op) {
+static const char* clipop_name(SkClipOp op) {
     switch (op) {
-        case kDifference_SkClipOp: return DEBUGCANVAS_REGIONOP_DIFFERENCE;
-        case kIntersect_SkClipOp: return DEBUGCANVAS_REGIONOP_INTERSECT;
-        case kUnion_SkClipOp: return DEBUGCANVAS_REGIONOP_UNION;
-        case kXOR_SkClipOp: return DEBUGCANVAS_REGIONOP_XOR;
-        case kReverseDifference_SkClipOp: return DEBUGCANVAS_REGIONOP_REVERSE_DIFFERENCE;
-        case kReplace_SkClipOp: return DEBUGCANVAS_REGIONOP_REPLACE;
+        case SkClipOp::kDifference: return DEBUGCANVAS_CLIPOP_DIFFERENCE;
+        case SkClipOp::kIntersect: return DEBUGCANVAS_CLIPOP_INTERSECT;
         default: SkASSERT(false); return "<invalid region op>";
     }
 }
@@ -659,7 +651,7 @@ bool DrawCommand::flatten(const SkImage&  image,
             SkImageInfo::Make(image.dimensions(), kN32_SkColorType, kPremul_SkAlphaType);
     // "cheat" for this debug tool and use image's context
     GrDirectContext* dContext = nullptr;
-#ifdef SK_SUPPORT_GPU
+#if SK_SUPPORT_GPU
     dContext = GrAsDirectContext(as_IB(&image)->context());
 #endif
     if (!image.readPixels(dContext, dstInfo, buffer.get(), rowBytes, 0, 0)) {
@@ -1012,7 +1004,7 @@ void ClipPathCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManage
     INHERITED::toJSON(writer, urlDataManager);
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_PATH);
     MakeJsonPath(writer, fPath);
-    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, regionop_name(fOp));
+    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, clipop_name(fOp));
     writer.appendBool(DEBUGCANVAS_ATTRIBUTE_ANTIALIAS, fDoAA);
 }
 
@@ -1028,7 +1020,7 @@ void ClipRegionCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataMana
     INHERITED::toJSON(writer, urlDataManager);
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_REGION);
     MakeJsonRegion(writer, fRegion);
-    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, regionop_name(fOp));
+    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, clipop_name(fOp));
 }
 
 ClipRectCommand::ClipRectCommand(const SkRect& rect, SkClipOp op, bool doAA)
@@ -1044,7 +1036,7 @@ void ClipRectCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManage
     INHERITED::toJSON(writer, urlDataManager);
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_COORDS);
     MakeJsonRect(writer, fRect);
-    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, regionop_name(fOp));
+    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, clipop_name(fOp));
     writer.appendBool(DEBUGCANVAS_ATTRIBUTE_ANTIALIAS, fDoAA);
 
     SkString desc;
@@ -1069,7 +1061,7 @@ void ClipRRectCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManag
     INHERITED::toJSON(writer, urlDataManager);
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_COORDS);
     make_json_rrect(writer, fRRect);
-    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, regionop_name(fOp));
+    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, clipop_name(fOp));
     writer.appendBool(DEBUGCANVAS_ATTRIBUTE_ANTIALIAS, fDoAA);
 }
 
@@ -1091,8 +1083,12 @@ bool ClipShaderCommand::render(SkCanvas* canvas) const {
 void ClipShaderCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
     INHERITED::toJSON(writer, urlDataManager);
     apply_flattenable(DEBUGCANVAS_ATTRIBUTE_SHADER, fShader.get(), writer, urlDataManager);
-    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, regionop_name(fOp));
+    writer.appendString(DEBUGCANVAS_ATTRIBUTE_REGIONOP, clipop_name(fOp));
 }
+
+ResetClipCommand::ResetClipCommand() : INHERITED(kResetClip_OpType) {}
+
+void ResetClipCommand::execute(SkCanvas* canvas) const { SkCanvasPriv::ResetClip(canvas); }
 
 ConcatCommand::ConcatCommand(const SkMatrix& matrix) : INHERITED(kConcat_OpType) {
     fMatrix = matrix;
@@ -1999,11 +1995,16 @@ SaveLayerCommand::SaveLayerCommand(const SkCanvas::SaveLayerRec& rec)
         , fBounds(rec.fBounds)
         , fPaint(rec.fPaint)
         , fBackdrop(SkSafeRef(rec.fBackdrop))
-        , fSaveLayerFlags(rec.fSaveLayerFlags) {}
+        , fSaveLayerFlags(rec.fSaveLayerFlags)
+        , fBackdropScale(SkCanvasPriv::GetBackdropScaleFactor(rec)) {}
 
 void SaveLayerCommand::execute(SkCanvas* canvas) const {
-    canvas->saveLayer(
-            SkCanvas::SaveLayerRec(fBounds.getMaybeNull(), fPaint.getMaybeNull(), fSaveLayerFlags));
+    // In the common case fBackdropScale == 1.f and then this is no different than a regular Rec
+    canvas->saveLayer(SkCanvasPriv::ScaledBackdropLayer(fBounds.getMaybeNull(),
+                                                        fPaint.getMaybeNull(),
+                                                        fBackdrop.get(),
+                                                        fBackdropScale,
+                                                        fSaveLayerFlags));
 }
 
 void SaveLayerCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {

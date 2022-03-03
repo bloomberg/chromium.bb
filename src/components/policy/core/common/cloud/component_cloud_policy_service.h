@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -65,11 +65,6 @@ class POLICY_EXPORT ComponentCloudPolicyService
   // allowed values are: |dm_protocol::kChromeExtensionPolicyType|,
   // |dm_protocol::kChromeSigninExtensionPolicyType|.
   //
-  // |policy_source| specifies where the policy originates from, and can be used
-  // to configure precedence when the same components are configured by policies
-  // from different sources. It only accepts POLICY_SOURCE_CLOUD and
-  // POLICY_SOURCE_PRIORITY_CLOUD now.
-  //
   // The |delegate| is notified of updates to the downloaded policies and must
   // outlive this object.
   //
@@ -94,7 +89,6 @@ class POLICY_EXPORT ComponentCloudPolicyService
   // |backend_task_runner|, which must support file I/O.
   ComponentCloudPolicyService(
       const std::string& policy_type,
-      PolicySource policy_source,
       Delegate* delegate,
       SchemaRegistry* schema_registry,
       CloudPolicyCore* core,
@@ -103,6 +97,9 @@ class POLICY_EXPORT ComponentCloudPolicyService
       std::unique_ptr<ResourceCache> cache,
 #endif
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
+  ComponentCloudPolicyService(const ComponentCloudPolicyService&) = delete;
+  ComponentCloudPolicyService& operator=(const ComponentCloudPolicyService&) =
+      delete;
   ~ComponentCloudPolicyService() override;
 
   // Returns true if |domain| is supported by the service.
@@ -148,9 +145,9 @@ class POLICY_EXPORT ComponentCloudPolicyService
   void FilterAndInstallPolicy();
 
   std::string policy_type_;
-  Delegate* delegate_;
-  SchemaRegistry* schema_registry_;
-  CloudPolicyCore* core_;
+  raw_ptr<Delegate> delegate_;
+  raw_ptr<SchemaRegistry> schema_registry_;
+  raw_ptr<CloudPolicyCore> core_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // The |backend_| handles all download scheduling, validation and caching of
@@ -179,8 +176,6 @@ class POLICY_EXPORT ComponentCloudPolicyService
 
   // Must be the last member.
   base::WeakPtrFactory<ComponentCloudPolicyService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ComponentCloudPolicyService);
 };
 
 }  // namespace policy

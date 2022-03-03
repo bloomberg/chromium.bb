@@ -51,7 +51,7 @@ void RenderPageImpl(CPDF_PageRenderContext* pContext,
   }
 
   const CPDF_OCContext::UsageType usage =
-      (flags & FPDF_PRINTING) ? CPDF_OCContext::Print : CPDF_OCContext::View;
+      (flags & FPDF_PRINTING) ? CPDF_OCContext::kPrint : CPDF_OCContext::kView;
   pContext->m_pOptions->SetOCContext(
       pdfium::MakeRetain<CPDF_OCContext>(pPage->GetDocument(), usage));
 
@@ -70,9 +70,12 @@ void RenderPageImpl(CPDF_PageRenderContext* pContext,
     pContext->m_pAnnots = std::move(pOwnedList);
     bool bPrinting =
         pContext->m_pDevice->GetDeviceType() != DeviceType::kDisplay;
+
+    // TODO(https://crbug.com/pdfium/993) - maybe pass true here.
+    const bool bShowWidget = false;
     pList->DisplayAnnots(pPage, pContext->m_pDevice.get(),
-                         pContext->m_pContext.get(), bPrinting, matrix, false,
-                         nullptr);
+                         pContext->m_pContext.get(), bPrinting, matrix,
+                         bShowWidget);
   }
 
   pContext->m_pRenderer = std::make_unique<CPDF_ProgressiveRenderer>(

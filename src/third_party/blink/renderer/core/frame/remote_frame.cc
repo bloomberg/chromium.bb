@@ -8,9 +8,11 @@
 #include "cc/layers/surface_layer.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
@@ -54,14 +56,15 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace blink {
@@ -77,10 +80,10 @@ static RemoteFramesByTokenMap& GetRemoteFramesMap() {
   return *map;
 }
 
-FloatRect DeNormalizeRect(const gfx::RectF& normalized, const IntRect& base) {
+FloatRect DeNormalizeRect(const gfx::RectF& normalized, const gfx::Rect& base) {
   FloatRect result(normalized);
-  result.Scale(base.Width(), base.Height());
-  result.MoveBy(FloatPoint(base.Location()));
+  result.Scale(base.width(), base.height());
+  result.MoveBy(gfx::PointF(base.origin()));
   return result;
 }
 
@@ -218,11 +221,8 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
       window->GetFrame() ? window->GetFrame()->GetContentSettingsClient()
                          : nullptr);
 
-  // Navigations in portal contexts do not create back/forward entries.
-  if (GetPage()->InsidePortal() &&
-      frame_load_type == WebFrameLoadType::kStandard) {
+  if (NavigationShouldReplaceCurrentHistoryEntry(frame_load_type))
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  }
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
@@ -310,10 +310,19 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
       request.RequestorOrigin()->CanAccess(
           GetSecurityContext()->GetSecurityOrigin()),
       initiator_frame_has_download_sandbox_flag,
-      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled(),
       initiator_frame_is_ad);
 
   GetRemoteFrameHostRemote().OpenURL(std::move(params));
+}
+
+bool RemoteFrame::NavigationShouldReplaceCurrentHistoryEntry(
+    WebFrameLoadType frame_load_type) const {
+  // Portal and Fenced Frame contexts do not create back/forward entries.
+  // TODO(https:/crbug.com/1197384, https://crbug.com/1190644): We may want to
+  // support a prerender in RemoteFrame.
+  return (frame_load_type == WebFrameLoadType::kStandard &&
+          GetPage()->InsidePortal()) ||
+         IsInFencedFrameTree();
 }
 
 bool RemoteFrame::DetachImpl(FrameDetachType type) {
@@ -359,17 +368,9 @@ void RemoteFrame::SetCcLayer(scoped_refptr<cc::Layer> layer,
     static_cast<cc::SurfaceLayer&>(*cc_layer_)
         .SetHasPointerEventsNone(IsIgnoredForHitTest());
   }
+
   HTMLFrameOwnerElement* owner = To<HTMLFrameOwnerElement>(Owner());
   owner->SetNeedsCompositingUpdate();
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // New layers for remote frames are controlled by Blink's embedder.
-    // To ensure the new surface is painted, we need to repaint the frame
-    // owner's PaintLayer.
-    LayoutBoxModelObject* layout_object = owner->GetLayoutBoxModelObject();
-    if (layout_object && layout_object->Layer())
-      layout_object->Layer()->SetNeedsRepaint();
-  }
 
   // Schedule an animation so that a new frame is produced with the updated
   // layer, otherwise this local root's visible content may not be up to date.
@@ -487,22 +488,24 @@ void RemoteFrame::CreateView() {
 }
 
 void RemoteFrame::ForwardPostMessage(
-    MessageEvent* message_event,
-    absl::optional<base::UnguessableToken> cluster_id,
-    scoped_refptr<const SecurityOrigin> target_security_origin,
-    LocalFrame* source_frame) {
+    BlinkTransferableMessage transferable_message,
+    LocalFrame* source_frame,
+    scoped_refptr<const SecurityOrigin> source_security_origin,
+    scoped_refptr<const SecurityOrigin> target_security_origin) {
   absl::optional<blink::LocalFrameToken> source_token;
   if (source_frame)
     source_token = source_frame->GetLocalFrameToken();
 
-  String source_origin = message_event->origin();
-  String target_origin = g_empty_string;
-  if (target_security_origin)
-    target_origin = target_security_origin->ToString();
+  String source_origin = source_security_origin
+                             ? source_security_origin->ToString()
+                             : g_empty_string;
+  String target_origin = target_security_origin
+                             ? target_security_origin->ToString()
+                             : g_empty_string;
 
-  GetRemoteFrameHostRemote().RouteMessageEvent(
-      source_token, source_origin, target_origin,
-      BlinkTransferableMessage::FromMessageEvent(message_event, cluster_id));
+  GetRemoteFrameHostRemote().RouteMessageEvent(source_token, source_origin,
+                                               target_origin,
+                                               std::move(transferable_message));
 }
 
 mojom::blink::RemoteFrameHost& RemoteFrame::GetRemoteFrameHostRemote() {
@@ -541,11 +544,11 @@ void RemoteFrame::SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
   security_context_.SetInsecureNavigationsSet(set);
 }
 
-void RemoteFrame::FrameRectsChanged(const IntRect& local_frame_rect,
-                                    const IntRect& screen_space_rect) {
-  pending_visual_properties_.screen_space_rect = gfx::Rect(screen_space_rect);
+void RemoteFrame::FrameRectsChanged(const gfx::Rect& local_frame_rect,
+                                    const gfx::Rect& screen_space_rect) {
+  pending_visual_properties_.screen_space_rect = screen_space_rect;
   pending_visual_properties_.local_frame_size =
-      gfx::Size(local_frame_rect.Width(), local_frame_rect.Height());
+      gfx::Size(local_frame_rect.width(), local_frame_rect.height());
   SynchronizeVisualProperties();
 }
 
@@ -618,9 +621,12 @@ void RemoteFrame::SetReplicatedOrigin(
   }
 }
 
-void RemoteFrame::SetReplicatedAdFrameType(
-    mojom::blink::AdFrameType ad_frame_type) {
-  ad_frame_type_ = ad_frame_type;
+bool RemoteFrame::IsAdSubframe() const {
+  return is_ad_subframe_;
+}
+
+void RemoteFrame::SetReplicatedIsAdSubframe(bool is_ad_subframe) {
+  is_ad_subframe_ = is_ad_subframe;
 }
 
 void RemoteFrame::SetReplicatedName(const String& name,
@@ -687,7 +693,7 @@ void RemoteFrame::SetEmbeddingToken(
 }
 
 void RemoteFrame::SetPageFocus(bool is_focused) {
-  static_cast<WebViewImpl*>(WebFrame::FromCoreFrame(this)->View())
+  To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View())
       ->SetPageFocus(is_focused);
 }
 
@@ -727,24 +733,24 @@ void RemoteFrame::ScrollRectToVisible(
   absolute_rect =
       owner_object->ScrollRectToVisible(absolute_rect, std::move(params));
 
-  IntRect rect_in_document =
+  gfx::Rect rect_in_document =
       owner_object->GetDocument()
           .GetFrame()
           ->LocalFrameRoot()
           .View()
-          ->RootFrameToDocument(EnclosingIntRect(
+          ->RootFrameToDocument(ToEnclosingRect(
               owner_element->GetDocument().View()->ConvertToRootFrame(
                   absolute_rect)));
-  IntRect element_bounds_in_document = EnclosingIntRect(
+  gfx::Rect element_bounds_in_document = ToEnclosingRect(
       DeNormalizeRect(relative_element_bounds, rect_in_document));
-  IntRect caret_bounds_in_document = EnclosingIntRect(
-      DeNormalizeRect(relative_caret_bounds, rect_in_document));
+  gfx::Rect caret_bounds_in_document =
+      ToEnclosingRect(DeNormalizeRect(relative_caret_bounds, rect_in_document));
 
   // This is due to something such as scroll focused editable element into
   // view on Android which also requires an automatic zoom into legible scale.
   // This is handled by main frame's WebView.
   WebViewImpl* web_view =
-      static_cast<WebViewImpl*>(WebFrame::FromCoreFrame(this)->View());
+      To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View());
   web_view->ZoomAndScrollToFocusedEditableElementRect(
       element_bounds_in_document, caret_bounds_in_document, true);
 }
@@ -761,8 +767,8 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
   // C++ Blink type and use the Mojo type everywhere or typemap the
   // Mojo type to the pre-existing native C++ Blink type.
   IntrinsicSizingInfo sizing_info;
-  sizing_info.size = FloatSize(info->size);
-  sizing_info.aspect_ratio = FloatSize(info->aspect_ratio);
+  sizing_info.size = info->size;
+  sizing_info.aspect_ratio = info->aspect_ratio;
   sizing_info.has_width = info->has_width;
   sizing_info.has_height = info->has_height;
   View()->SetIntrinsicSizeInfo(sizing_info);
@@ -791,7 +797,7 @@ void RemoteFrame::DidSetFramePolicyHeaders(
   // ParsedPermissionsPolicy to operate over Vector
   ParsedPermissionsPolicy parsed_permissions_policy_copy(
       parsed_permissions_policy.size());
-  for (size_t i = 0; i < parsed_permissions_policy.size(); ++i)
+  for (wtf_size_t i = 0; i < parsed_permissions_policy.size(); ++i)
     parsed_permissions_policy_copy[i] = parsed_permissions_policy[i];
   SetReplicatedPermissionsPolicyHeader(parsed_permissions_policy_copy);
 }
@@ -827,14 +833,14 @@ void RemoteFrame::UpdateOpener(
   }
 }
 
-IntSize RemoteFrame::GetMainFrameViewportSize() const {
+gfx::Size RemoteFrame::GetMainFrameViewportSize() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   DCHECK(owner);
   DCHECK(owner->GetDocument().GetFrame());
   return owner->GetDocument().GetFrame()->GetMainFrameViewportSize();
 }
 
-IntPoint RemoteFrame::GetMainFrameScrollOffset() const {
+gfx::Point RemoteFrame::GetMainFrameScrollOffset() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   DCHECK(owner);
   DCHECK(owner->GetDocument().GetFrame());
@@ -886,6 +892,11 @@ const viz::LocalSurfaceId& RemoteFrame::GetLocalSurfaceId() const {
   return parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
 }
 
+void RemoteFrame::SetCcLayerForTesting(scoped_refptr<cc::Layer> layer,
+                                       bool is_surface_layer) {
+  SetCcLayer(layer, is_surface_layer);
+}
+
 viz::FrameSinkId RemoteFrame::GetFrameSinkId() {
   return frame_sink_id_;
 }
@@ -917,7 +928,7 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
   if (!owner || !owner->GetLayoutObject())
     return false;
 
-  return owner->OwnerType() == mojom::blink::FrameOwnerElementType::kPortal ||
+  return owner->OwnerType() == FrameOwnerElementType::kPortal ||
          !visible_to_hit_testing_;
 }
 
@@ -980,8 +991,8 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
           pending_visual_properties_.local_frame_size ||
       sent_visual_properties_->screen_space_rect.size() !=
           pending_visual_properties_.screen_space_rect.size() ||
-      sent_visual_properties_->screen_info !=
-          pending_visual_properties_.screen_info ||
+      sent_visual_properties_->screen_infos !=
+          pending_visual_properties_.screen_infos ||
       sent_visual_properties_->zoom_level !=
           pending_visual_properties_.zoom_level ||
       sent_visual_properties_->page_scale_factor !=
@@ -1011,26 +1022,19 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
 
   compositing_helper_->SetSurfaceId(surface_id,
                                     capture_sequence_number_changed);
-  DCHECK(cc_layer_);
-  // Note that in pre-CompositeAfterPaint, CompositedLayerMapping/GraphicsLayer
-  // will set the bounds again with the same value.
-  cc_layer_->SetBounds(pending_visual_properties_.local_frame_size);
 
   bool rect_changed = !sent_visual_properties_ ||
                       sent_visual_properties_->screen_space_rect !=
                           pending_visual_properties_.screen_space_rect;
   bool visual_properties_changed = synchronized_props_changed || rect_changed;
 
-  if (!visual_properties_changed)
-    return false;
-
-  if (propagate) {
+  if (visual_properties_changed && propagate) {
     GetRemoteFrameHostRemote().SynchronizeVisualProperties(
         pending_visual_properties_);
     RecordSentVisualProperties();
   }
 
-  return true;
+  return visual_properties_changed;
 }
 
 void RemoteFrame::RecordSentVisualProperties() {
@@ -1073,8 +1077,14 @@ void RemoteFrame::SetViewportIntersection(
       intersection_state.Clone(), visual_properties);
 }
 
-void RemoteFrame::DidChangeScreenInfo(const ScreenInfo& screen_info) {
-  pending_visual_properties_.screen_info = screen_info;
+void RemoteFrame::UpdateCompositedLayerBounds() {
+  if (cc_layer_)
+    cc_layer_->SetBounds(pending_visual_properties_.local_frame_size);
+}
+
+void RemoteFrame::DidChangeScreenInfos(
+    const display::ScreenInfos& screen_infos) {
+  pending_visual_properties_.screen_infos = screen_infos;
   SynchronizeVisualProperties();
 }
 

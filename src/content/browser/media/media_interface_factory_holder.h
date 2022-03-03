@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERFACE_FACTORY_HOLDER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
@@ -28,6 +27,11 @@ class MediaInterfaceFactoryHolder {
   // |media_service_getter| will be called from the UI thread.
   MediaInterfaceFactoryHolder(MediaServiceGetter media_service_getter,
                               FrameServicesGetter frame_services_getter);
+
+  MediaInterfaceFactoryHolder(const MediaInterfaceFactoryHolder&) = delete;
+  MediaInterfaceFactoryHolder& operator=(const MediaInterfaceFactoryHolder&) =
+      delete;
+
   ~MediaInterfaceFactoryHolder();
 
   // Gets the MediaService |interface_factory_remote_|. The returned pointer is
@@ -37,16 +41,11 @@ class MediaInterfaceFactoryHolder {
  private:
   void ConnectToMediaService();
 
-  // Callback for connection error from |interface_factory_remote_|.
-  void OnMediaServiceConnectionError();
-
   MediaServiceGetter media_service_getter_;
   FrameServicesGetter frame_services_getter_;
   mojo::Remote<media::mojom::InterfaceFactory> interface_factory_remote_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(MediaInterfaceFactoryHolder);
 };
 
 }  // namespace content

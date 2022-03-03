@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_REMOTE_COMMANDS_INVALIDATOR_IMPL_H_
 #define CHROME_BROWSER_POLICY_CLOUD_REMOTE_COMMANDS_INVALIDATOR_IMPL_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/policy/cloud/remote_commands_invalidator.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -27,6 +27,9 @@ class RemoteCommandsInvalidatorImpl : public RemoteCommandsInvalidator,
   RemoteCommandsInvalidatorImpl(CloudPolicyCore* core,
                                 base::Clock* clock,
                                 PolicyInvalidationScope scope);
+  RemoteCommandsInvalidatorImpl(const RemoteCommandsInvalidatorImpl&) = delete;
+  RemoteCommandsInvalidatorImpl& operator=(
+      const RemoteCommandsInvalidatorImpl&) = delete;
 
   // RemoteCommandsInvalidator:
   void OnInitialize() override;
@@ -50,13 +53,11 @@ class RemoteCommandsInvalidatorImpl : public RemoteCommandsInvalidator,
   void RecordInvalidationMetric(
       const invalidation::Invalidation& invalidation) const;
 
-  CloudPolicyCore* const core_;
+  const raw_ptr<CloudPolicyCore> core_;
 
-  const base::Clock* const clock_;
+  const raw_ptr<const base::Clock> clock_;
 
   const PolicyInvalidationScope scope_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteCommandsInvalidatorImpl);
 };
 
 }  // namespace policy

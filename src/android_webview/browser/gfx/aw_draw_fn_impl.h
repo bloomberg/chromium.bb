@@ -11,7 +11,6 @@
 #include "android_webview/browser/gfx/vulkan_gl_interop.h"
 #include "android_webview/public/browser/draw_fn.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -23,6 +22,10 @@ class AwDrawFnImpl {
   static bool IsUsingVulkan();
 
   AwDrawFnImpl();
+
+  AwDrawFnImpl(const AwDrawFnImpl&) = delete;
+  AwDrawFnImpl& operator=(const AwDrawFnImpl&) = delete;
+
   ~AwDrawFnImpl();
 
   void ReleaseHandle(JNIEnv* env,
@@ -68,7 +71,7 @@ class AwDrawFnImpl {
 
   absl::optional<VulkanGLInterop> interop_;
 
-  DISALLOW_COPY_AND_ASSIGN(AwDrawFnImpl);
+  bool skip_next_post_draw_vk_ = false;
 };
 
 }  // namespace android_webview

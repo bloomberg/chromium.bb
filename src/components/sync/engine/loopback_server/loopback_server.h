@@ -15,14 +15,20 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
-#include "components/sync/protocol/loopback_server.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/http/http_status_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace sync_pb {
+class LoopbackServerProto;
+class EntitySpecifics;
+class SyncEntity;
+}  // namespace sync_pb
 
 namespace fake_server {
 class FakeServer;
@@ -255,7 +261,7 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to observe the completion of commit messages for the sake of testing.
-  ObserverForTests* observer_for_tests_;
+  raw_ptr<ObserverForTests> observer_for_tests_;
 
   // Response type override callback used in tests.
   ResponseTypeProvider response_type_override_;

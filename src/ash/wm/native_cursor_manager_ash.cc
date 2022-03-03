@@ -8,11 +8,11 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/check.h"
+#include "ui/aura/cursor/cursor_loader.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
@@ -66,10 +66,6 @@ void NativeCursorManagerAsh::SetNativeCursorEnabled(bool enabled) {
   SetCursor(cursor_manager->GetCursor(), cursor_manager);
 }
 
-float NativeCursorManagerAsh::GetScale() const {
-  return cursor_loader_.scale();
-}
-
 display::Display::Rotation NativeCursorManagerAsh::GetRotation() const {
   return cursor_loader_.rotation();
 }
@@ -81,8 +77,8 @@ void NativeCursorManagerAsh::SetDisplay(
 
   const float original_scale = display.device_scale_factor();
   // And use the nearest resource scale factor.
-  const float cursor_scale =
-      ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
+  const float cursor_scale = ui::GetScaleForResourceScaleFactor(
+      ui::GetSupportedResourceScaleFactor(original_scale));
 
   if (cursor_loader_.SetDisplayData(display.panel_rotation(), cursor_scale))
     SetCursor(delegate->GetCursor(), delegate);

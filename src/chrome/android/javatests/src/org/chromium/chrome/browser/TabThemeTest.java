@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -94,8 +95,7 @@ public class TabThemeTest {
 
     private static int getDefaultThemeColor(Tab tab) throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
-            return ChromeColors.getDefaultThemeColor(
-                    tab.getContext().getResources(), tab.isIncognito());
+            return ChromeColors.getDefaultThemeColor(tab.getContext(), tab.isIncognito());
         });
     }
 
@@ -114,15 +114,25 @@ public class TabThemeTest {
 
         ThemeColorWebContentsObserver colorObserver = new ThemeColorWebContentsObserver();
         CallbackHelper themeColorHelper = colorObserver.getCallbackHelper();
-        mActivityTestRule.getActivity()
-                .getRootUiCoordinatorForTesting()
-                .getTopUiThemeColorProvider()
-                .addThemeColorObserver(colorObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity()
+                    .getRootUiCoordinatorForTesting()
+                    .getTopUiThemeColorProvider()
+                    .addThemeColorObserver(colorObserver);
+        });
 
         // Navigate to a themed page.
         int curCallCount = themeColorHelper.getCallCount();
         mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
+        assertColorsEqual(THEME_COLOR, getThemeColor());
+
+        // Setting page theme color to white is forbidden.
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                "document.querySelector(meta).setAttribute('content', 'white');");
+        themeColorHelper.waitForCallback(curCallCount, 1);
+        assertColorsEqual(THEME_COLOR, colorObserver.getColor());
         assertColorsEqual(THEME_COLOR, getThemeColor());
 
         // Navigate to a native page from a themed page.

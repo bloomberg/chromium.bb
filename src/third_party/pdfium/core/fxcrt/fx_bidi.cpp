@@ -10,14 +10,13 @@
 
 #include "core/fxcrt/fx_unicode.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 
 CFX_BidiChar::CFX_BidiChar()
     : m_CurrentSegment({0, 0, NEUTRAL}), m_LastSegment({0, 0, NEUTRAL}) {}
 
 bool CFX_BidiChar::AppendChar(wchar_t wch) {
   Direction direction;
-  switch (FX_GetBidiClass(wch)) {
+  switch (pdfium::unicode::GetBidiClass(wch)) {
     case FX_BIDICLASS::kL:
     case FX_BIDICLASS::kAN:
     case FX_BIDICLASS::kEN:

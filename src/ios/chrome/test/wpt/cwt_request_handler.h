@@ -13,7 +13,6 @@
 
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -44,6 +43,9 @@ class CWTRequestHandler {
   // |session_completion_handler| is a block to be called when a session is
   // closed.
   CWTRequestHandler(ProceduralBlock sesssion_completion_handler);
+
+  CWTRequestHandler(const CWTRequestHandler&) = delete;
+  CWTRequestHandler& operator=(const CWTRequestHandler&) = delete;
 
   ~CWTRequestHandler();
 
@@ -147,8 +149,6 @@ class CWTRequestHandler {
 
   // The instance of Chrome that's being tested.
   XCUIApplication* application_;
-
-  DISALLOW_COPY_AND_ASSIGN(CWTRequestHandler);
 };
 
 #endif  // IOS_CHROME_TEST_WPT_CWT_REQUEST_HANDLER_H_

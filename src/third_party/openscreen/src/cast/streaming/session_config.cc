@@ -4,10 +4,19 @@
 
 #include "cast/streaming/session_config.h"
 
+#include <algorithm>
 #include <utility>
 
 namespace openscreen {
 namespace cast {
+
+namespace {
+
+bool IsNonZero(uint8_t byte) {
+  return byte > 0;
+}
+
+}  // namespace
 
 SessionConfig::SessionConfig(Ssrc sender_ssrc,
                              Ssrc receiver_ssrc,
@@ -33,5 +42,11 @@ SessionConfig& SessionConfig::operator=(SessionConfig&& other) noexcept =
     default;
 SessionConfig::~SessionConfig() = default;
 
+bool SessionConfig::IsValid() const {
+  return sender_ssrc > 0 && receiver_ssrc > 0 && rtp_timebase > 0 &&
+         channels > 0 &&
+         std::any_of(aes_secret_key.begin(), aes_secret_key.end(), IsNonZero) &&
+         std::any_of(aes_iv_mask.begin(), aes_iv_mask.end(), IsNonZero);
+}
 }  // namespace cast
 }  // namespace openscreen

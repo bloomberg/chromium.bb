@@ -74,13 +74,13 @@ void CheckParse(const ConstCommandsTestData& data,
     }
 
     input = std::make_unique<base::DictionaryValue>();
-    auto key_dict = std::make_unique<base::DictionaryValue>();
+    base::Value key_dict(base::Value::Type::DICTIONARY);
 
     for (size_t j = 0; j < platforms.size(); ++j)
-      key_dict->SetString(platforms[j], data.key);
+      key_dict.SetStringKey(platforms[j], data.key);
 
-    input->Set("suggested_key", std::move(key_dict));
-    input->SetString("description", data.description);
+    input->SetKey("suggested_key", std::move(key_dict));
+    input->SetStringKey("description", data.description);
 
     bool result = command.Parse(input.get(), data.command_name, i, &error);
     EXPECT_EQ(data.expected_result, result);
@@ -231,10 +231,10 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
 #elif defined(OS_MAC)
   ui::Accelerator accelerator(ui::VKEY_M,
                               ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   ui::Accelerator accelerator(ui::VKEY_C,
                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif defined(OS_LINUX)
   ui::Accelerator accelerator(ui::VKEY_L,
                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #else
@@ -246,29 +246,29 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   // Misspell a platform.
   key_dict->SetString("windosw", "Ctrl+M");
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
-  EXPECT_TRUE(key_dict->Remove("windosw", NULL));
+  EXPECT_TRUE(key_dict->RemoveKey("windosw"));
 
   // Now remove platform specific keys (leaving just "default") and make sure
   // every platform falls back to the default.
-  EXPECT_TRUE(key_dict->Remove("windows", NULL));
-  EXPECT_TRUE(key_dict->Remove("mac", NULL));
-  EXPECT_TRUE(key_dict->Remove("linux", NULL));
-  EXPECT_TRUE(key_dict->Remove("chromeos", NULL));
+  EXPECT_TRUE(key_dict->RemoveKey("windows"));
+  EXPECT_TRUE(key_dict->RemoveKey("mac"));
+  EXPECT_TRUE(key_dict->RemoveKey("linux"));
+  EXPECT_TRUE(key_dict->RemoveKey("chromeos"));
   EXPECT_TRUE(command.Parse(input.get(), command_name, 0, &error));
   EXPECT_EQ(ui::VKEY_D, command.accelerator().key_code());
 
   // Now remove "default", leaving no option but failure. Or, in the words of
   // the immortal Adam Savage: "Failure is always an option".
-  EXPECT_TRUE(key_dict->Remove("default", NULL));
+  EXPECT_TRUE(key_dict->RemoveKey("default"));
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 
   // Make sure Command is not supported for non-Mac platforms.
   key_dict->SetString("default", "Command+M");
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
-  EXPECT_TRUE(key_dict->Remove("default", NULL));
+  EXPECT_TRUE(key_dict->RemoveKey("default"));
   key_dict->SetString("windows", "Command+M");
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
-  EXPECT_TRUE(key_dict->Remove("windows", NULL));
+  EXPECT_TRUE(key_dict->RemoveKey("windows"));
 
   // Now add only a valid platform that we are not running on to make sure devs
   // are notified of errors on other platforms.

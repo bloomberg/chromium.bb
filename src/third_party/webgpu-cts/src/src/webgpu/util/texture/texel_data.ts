@@ -1,8 +1,9 @@
-import { assert, unreachable } from '../../../common/framework/util/util.js';
+import { assert, unreachable } from '../../../common/util/util.js';
 import { UncompressedTextureFormat } from '../../capability_info.js';
 import {
   assertInIntegerRange,
   float32ToFloatBits,
+  float32ToFloat16Bits,
   floatAsNormalizedInteger,
   gammaCompress,
   gammaDecompress,
@@ -10,6 +11,7 @@ import {
   packRGB9E5UFloat,
 } from '../conversion.js';
 
+/** A component of a texture format: R, G, B, A, Depth, or Stencil. */
 export const enum TexelComponent {
   R = 'R',
   G = 'G',
@@ -19,14 +21,11 @@ export const enum TexelComponent {
   Stencil = 'Stencil',
 }
 
+/** Arbitrary data, per component of a texel format. */
 export type PerTexelComponent<T> = { [c in TexelComponent]?: T };
 
+/** How a component is encoded in its bit range of a texel format. */
 export type ComponentDataType = 'uint' | 'sint' | 'unorm' | 'snorm' | 'float' | 'ufloat' | null;
-
-type TexelComponentInfo = PerTexelComponent<{
-  dataType: ComponentDataType;
-  bitLength: number;
-}>;
 
 /**
  * Maps component values to component values
@@ -328,7 +327,7 @@ function makeFloatInfo(componentOrder: TexelComponent[], bitLength: number) {
       switch (bitLength) {
         case 16:
           components = applyEach(
-            (n: number) => float32ToFloatBits(n, 1, 5, 10, 15),
+            (n: number) => float32ToFloat16Bits(n),
             componentOrder
           )(components);
           return packComponents(componentOrder, components, 16, 'uint');
@@ -349,15 +348,24 @@ const kBGRA = [TexelComponent.B, TexelComponent.G, TexelComponent.R, TexelCompon
 
 const identity = (n: number) => n;
 
+export type TexelRepresentationInfo = {
+  /** Order of components in the packed representation. */
+  readonly componentOrder: TexelComponent[];
+  /** Data type and bit length of each component in the format. */
+  readonly componentInfo: PerTexelComponent<{
+    dataType: ComponentDataType;
+    bitLength: number;
+  }>;
+  /** Encode shader values into their data representation. ex.) float 1.0 -> unorm8 255 */
+  readonly encode: ComponentMapFn;
+  /** Decode the data representation into the shader values. ex.) unorm8 255 -> float 1.0 */
+  readonly decode: ComponentMapFn;
+  /** Pack texel component values into an ArrayBuffer. ex.) rg8unorm {r: 0, g:255} -> 0xFF00 */
+  readonly pack: ComponentPackFn;
+  // Add fields as needed
+};
 export const kTexelRepresentationInfo: {
-  readonly [k in UncompressedTextureFormat]: {
-    readonly componentOrder: TexelComponent[];
-    readonly componentInfo: TexelComponentInfo;
-    readonly encode: ComponentMapFn; // Encode shader values into their data representation. ex.) float 1.0 -> unorm8 255
-    readonly decode: ComponentMapFn; // Decode the data representation into the shader values. ex.) unorm8 255 -> float 1.0
-    readonly pack: ComponentPackFn; // Pack texel component values into an ArrayBuffer. ex.) rg8unorm {r: 0, g:255} -> 0xFF00
-    // Add fields as needed
-  };
+  readonly [k in UncompressedTextureFormat]: TexelRepresentationInfo;
 } = {
   .../* prettier-ignore */ {
     'r8unorm':               makeNormalizedInfo(   kR,  8, { signed: false, sRGB: false }),

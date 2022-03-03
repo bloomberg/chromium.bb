@@ -16,6 +16,8 @@ source_set("test_support") {
     "scoped_set_tz.h",
     "string_write_stream.cpp",
     "string_write_stream.h",
+    "test_fonts.cpp",
+    "test_fonts.h",
     "test_loader.cpp",
     "test_loader.h",
     "test_support.h",
@@ -27,7 +29,10 @@ source_set("test_support") {
     "utils/hash.h",
   ]
   data = [ "resources/" ]
-  public_deps = [ ":path_service" ]
+  public_deps = [
+    ":path_service",
+    "//third_party/test_fonts",
+  ]
   deps = [
     "../:pdfium_public_headers",
     "../core/fdrm",
@@ -150,6 +155,7 @@ source_set("embedder_test_support") {
     "../:pdfium_public_headers",
     "../core/fdrm",
     "../core/fxcrt",
+    "../core/fxge",
     "../third_party:pdfium_base",
     "//testing/gmock",
     "//testing/gtest",

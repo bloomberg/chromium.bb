@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 
@@ -24,12 +25,12 @@ class AutoSignal {
   explicit AutoSignal(base::WaitableEvent* event) : event_(event) {
     DCHECK(event);
   }
+  AutoSignal(const AutoSignal&) = delete;
+  AutoSignal& operator=(const AutoSignal&) = delete;
   ~AutoSignal() { event_->Signal(); }
 
  private:
   base::WaitableEvent* event_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoSignal);
 };
 }  // namespace
 

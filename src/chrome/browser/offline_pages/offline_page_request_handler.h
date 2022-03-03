@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/archive_validator.h"
@@ -206,6 +207,10 @@ class OfflinePageRequestHandler {
       const net::HttpRequestHeaders& extra_request_headers,
       Delegate* delegate);
 
+  OfflinePageRequestHandler(const OfflinePageRequestHandler&) = delete;
+  OfflinePageRequestHandler& operator=(const OfflinePageRequestHandler&) =
+      delete;
+
   ~OfflinePageRequestHandler();
 
   void Start();
@@ -276,7 +281,7 @@ class OfflinePageRequestHandler {
                                         const std::string& actual_digest);
 
   GURL url_;
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   OfflinePageHeader offline_header_;
   NetworkState network_state_;
@@ -298,8 +303,6 @@ class OfflinePageRequestHandler {
   std::unique_ptr<net::FileStream> stream_;
 
   base::WeakPtrFactory<OfflinePageRequestHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestHandler);
 };
 
 }  // namespace offline_pages

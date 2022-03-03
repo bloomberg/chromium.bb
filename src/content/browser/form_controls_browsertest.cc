@@ -4,7 +4,6 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/test/pixel_comparator.h"
@@ -35,7 +34,7 @@
 // To rebaseline this test on all platforms:
 // 1. Run a CQ+1 dry run.
 // 2. Click the failing bots for android, windows, mac, and linux.
-// 3. Find the failing interactive_ui_browsertests step.
+// 3. Find the failing content_browsertests step.
 // 4. Click the "Deterministic failure" link for the failing test case.
 // 5. Copy the "Actual pixels" data url and paste into browser.
 // 6. Save the image into your chromium checkout in content/test/data/forms/.
@@ -44,12 +43,6 @@ namespace content {
 
 class FormControlsBrowserTest : public ContentBrowserTest {
  public:
-  FormControlsBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {features::kFormControlsRefresh, features::kCSSColorSchemeUARendering},
-        {});
-  }
-
   void SetUp() override {
     EnablePixelOutput(/*force_device_scale_factor=*/1.f);
     ContentBrowserTest::SetUp();
@@ -72,15 +65,14 @@ class FormControlsBrowserTest : public ContentBrowserTest {
                int screenshot_height) {
     base::ScopedAllowBlockingForTesting allow_blocking;
 
-    ASSERT_TRUE(features::IsFormControlsRefreshEnabled());
-    ASSERT_TRUE(features::IsCSSColorSchemeUARenderingEnabled());
-
     std::string platform_suffix;
 #if defined(OS_MAC)
     platform_suffix = "_mac";
 #elif defined(OS_WIN)
     platform_suffix = "_win";
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif defined(OS_LINUX)
+    platform_suffix = "_linux";
+#elif defined(OS_CHROMEOS)
     platform_suffix = "_chromeos";
 #elif defined(OS_ANDROID)
     int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
@@ -89,6 +81,8 @@ class FormControlsBrowserTest : public ContentBrowserTest {
     } else {
       platform_suffix = "_android";
     }
+#elif defined(OS_FUCHSIA)
+    platform_suffix = "_fuchsia";
 #endif
 
     base::FilePath dir_test_data;
@@ -119,7 +113,8 @@ class FormControlsBrowserTest : public ContentBrowserTest {
         /* avg_abs_error_limit */ 20.f,
         /* max_abs_error_limit */ 120.f,
         /* small_error_threshold */ 0);
-#elif defined(OS_ANDROID) || defined(OS_WIN)
+#elif defined(OS_ANDROID) || defined(OS_WIN) || (OS_LINUX) || \
+    defined(OS_FUCHSIA)
     // Different versions of android may have slight differences in rendering.
     // Some versions have more significant differences than others, which are
     // tracked separately in separate baseline image files. The less significant
@@ -163,12 +158,16 @@ class FormControlsBrowserTest : public ContentBrowserTest {
 #endif  // defined(OS_WIN)
     return false;
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, Checkbox) {
+// Checkbox renders differently on Android x86. crbug.com/1238283
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+#define MAYBE_Checkbox DISABLED_Checkbox
+#else
+#define MAYBE_Checkbox Checkbox
+#endif
+
+IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, MAYBE_Checkbox) {
   if (SkipTestForOldAndroidVersions())
     return;
 

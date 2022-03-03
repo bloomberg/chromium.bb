@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-freeze
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-FREEZE" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-FREEZE" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,11 +37,11 @@ git-freeze \- Freeze all changes on a branch (indexed and unindexed)\&.
 .sp
 .SH "DESCRIPTION"
 .sp
-git freeze works a lot like git stash, in that it stores the current changes in your working copy and index \fIsomewhere\fR\&. Unlike git stash, git freeze stores those changes on your current branch\&. This effectively allows you to \fIpause\fR development of a branch, work on something else, and then come back to exactly the same working state later (by running git thaw)\&.
+\fBgit freeze\fR works a lot like \fBgit stash\fR, in that it stores the current changes in your working copy and index \fIsomewhere\fR\&. Unlike \fBgit stash\fR, \fBgit freeze\fR stores those changes on your current branch\&. This effectively allows you to \fIpause\fR development of a branch, work on something else, and then come back to exactly the same working state later (by running \fBgit thaw\fR)\&.
 .sp
-git freeze will make up to 2 commits on your branch\&. A commit with the message FREEZE\&.indexed will contain all changes which you\(cqve added to your index (like with \fIgit add\fR, \fIgit mv\fR, \fIgit rm\fR, etc\&.)\&. A commit with the message FREEZE\&.unindexed will contain all changes which were not in your index at the time you ran git freeze (freshly modified files, new files, etc\&.)\&.
+\fBgit freeze\fR will make up to 2 commits on your branch\&. A commit with the message \fBFREEZE\&.indexed\fR will contain all changes which you\(cqve added to your index (like with \fIgit add\fR, \fIgit mv\fR, \fIgit rm\fR, etc\&.)\&. A commit with the message \fBFREEZE\&.unindexed\fR will contain all changes which were not in your index at the time you ran git freeze (freshly modified files, new files, etc\&.)\&.
 .sp
-By default git freeze will only freeze up to 100MB of untracked files\&. See \fICONFIGURATION VARIABLES\fR for more details\&.
+By default \fBgit freeze\fR will only freeze up to 100MB of untracked files\&. See \fICONFIGURATION VARIABLES\fR for more details\&.
 .SH "EXAMPLE"
 .sp
 
@@ -60,7 +60,7 @@ D  deleted_file
 \fB$ git freeze\fR
 \fB$ git status \-\-short\fR
 \fB$ git log \-n 2 \-\-stat\fR
-commit d2b155e804b71d99ce51280d2fb9a56917351680
+commit 288d7302bb306adec039d7ca24870d8d0ca14f36
 Author: local <local@chromium\&.org>
 Date:   Thu Apr 10 08:54:56 2014 +0000
 
@@ -72,7 +72,7 @@ Date:   Thu Apr 10 08:54:56 2014 +0000
  unstaged_deleted_file            | 1 \-
  4 files changed, 2 insertions(+), 1 deletion(\-)
 
-commit bc45c733e95a18f2b2f641e31c7792441cb7da21
+commit 9533cdaea75b6973d439f91b7f6007479db0f5a4
 Author: local <local@chromium\&.org>
 Date:   Thu Apr 10 08:54:56 2014 +0000
 

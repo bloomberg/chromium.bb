@@ -13,7 +13,7 @@ namespace {
 bool NavigationShouldInvalidateThumbnail(
     content::NavigationHandle* navigation) {
   // Ignore subframe navigations.
-  if (!navigation->IsInMainFrame())
+  if (!navigation->IsInPrimaryMainFrame())
     return false;
 
   // Some navigations change the tab URL but don't create a new

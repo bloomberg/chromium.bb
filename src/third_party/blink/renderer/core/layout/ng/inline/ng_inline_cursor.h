@@ -7,7 +7,6 @@
 
 #include <unicode/ubidi.h>
 
-#include "base/containers/span.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -143,6 +142,7 @@ class CORE_EXPORT NGInlineCursorPosition {
   const PhysicalRect RectInContainerFragment() const {
     return item_->RectInContainerFragment();
   }
+  gfx::RectF ObjectBoundingBox(const NGInlineCursor& cursor) const;
   const PhysicalOffset OffsetInContainerFragment() const {
     return item_->OffsetInContainerFragment();
   }
@@ -240,6 +240,7 @@ class CORE_EXPORT NGInlineCursor {
                  const NGFragmentItems& items);
   explicit NGInlineCursor(const NGInlineBackwardCursor& backward_cursor);
   NGInlineCursor(const NGInlineCursor& other) = default;
+  NGInlineCursor& operator=(const NGInlineCursor& other) = default;
 
   // Creates an |NGInlineCursor| without the root. Even when callers don't know
   // the root of the inline formatting context, this cursor can |MoveTo()|
@@ -358,9 +359,9 @@ class CORE_EXPORT NGInlineCursor {
     return CurrentRectInBlockFlow().offset;
   }
 
-  // Relative to fragment of the current position. It is error to call other
-  // than text.
-  LayoutUnit InlinePositionForOffset(unsigned offset) const;
+  // Returns inline position relative to current text fragment for
+  // |LocalCaretRect|. It is error to call other than text.
+  LayoutUnit CaretInlinePositionForOffset(unsigned offset) const;
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree within the range of |this|. This variation ignores the inline
@@ -410,7 +411,7 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move to first child of current container box. If the current position is
   // at fragment without children, this cursor points nothing.
-  // See also |TryToMoveToFirstChild()|.
+  // See also |TryMoveToFirstChild()|.
   void MoveToFirstChild();
 
   // Move to the first line.
@@ -427,7 +428,7 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move to last child of current container box. If the current position is
   // at fragment without children, this cursor points nothing.
-  // See also |TryToMoveToFirstChild()|.
+  // See also |TryMoveToFirstChild()|.
   void MoveToLastChild();
 
   // Move to the last line item. If there are no line items, the cursor becomes
@@ -450,6 +451,7 @@ class CORE_EXPORT NGInlineCursor {
   // Move the current position to next line. It is error to call other than line
   // box.
   void MoveToNextLine();
+  void MoveToNextLineIncludingFragmentainer();
 
   // Same as |MoveToNext| except that this skips children even if they exist.
   void MoveToNextSkippingChildren();
@@ -484,13 +486,13 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToPreviousLine();
 
   // Returns true if the current position moves to first child.
-  bool TryToMoveToFirstChild();
+  bool TryMoveToFirstChild();
 
   // Returns true if the current position moves to first inline leaf child.
-  bool TryToMoveToFirstInlineLeafChild();
+  bool TryMoveToFirstInlineLeafChild();
 
   // Returns true if the current position moves to last child.
-  bool TryToMoveToLastChild();
+  bool TryMoveToLastChild();
 
   //
   // Moving across fragmentainers.
@@ -587,7 +589,7 @@ class CORE_EXPORT NGInlineCursor {
 
   // Returns true and move to current position to |fragment_item|, otherwise
   // returns false.
-  bool TryToMoveTo(const NGFragmentItem& fragment_item);
+  bool TryMoveTo(const NGFragmentItem& fragment_item);
 
   void MoveToItem(const ItemsSpan::iterator& iter);
 

@@ -8,13 +8,15 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -26,6 +28,7 @@
 #endif
 
 class Browser;
+struct AccountInfo;
 struct CoreAccountId;
 
 namespace content {
@@ -62,6 +65,10 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   };
 
   explicit SigninViewController(Browser* browser);
+
+  SigninViewController(const SigninViewController&) = delete;
+  SigninViewController& operator=(const SigninViewController&) = delete;
+
   ~SigninViewController() override;
 
   // Returns true if the signin flow should be shown for |mode|.
@@ -124,6 +131,15 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // of the |browser_|'s window.
   void ShowModalSyncConfirmationDialog();
 
+  // Shows the modal enterprise confirmation dialog as a browser-modal dialog on
+  // top of the `browser_`'s window. `domain_name` is the domain of the
+  // enterprise account being shown. `callback` is called with the user's action
+  // on the dialog.
+  void ShowModalEnterpriseConfirmationDialog(
+      const AccountInfo& account_info,
+      SkColor profile_color,
+      base::OnceCallback<void(bool)> callback);
+
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
   // the |browser_|'s window.
   void ShowModalSigninErrorDialog();
@@ -144,6 +160,10 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
  private:
   FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
                            ErrorDialogDefaultFocus);
+  FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
+                           EnterpriseConfirmationDefaultFocus);
+  FRIEND_TEST_ALL_PREFIXES(SigninViewControllerDelegateViewsBrowserTest,
+                           CloseImmediately);
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
   friend class SigninReauthViewControllerBrowserTest;
 
@@ -164,18 +184,16 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   SigninViewControllerDelegate* GetModalDialogDelegateForTesting();
 
   // Browser owning this controller.
-  Browser* browser_;
+  raw_ptr<Browser> browser_;
 
   // |delegate_| owns itself and calls OnModalSigninClosed() before being
   // destroyed.
-  SigninViewControllerDelegate* delegate_ = nullptr;
+  raw_ptr<SigninViewControllerDelegate> delegate_ = nullptr;
   base::ScopedObservation<SigninViewControllerDelegate,
                           SigninViewControllerDelegate::Observer>
       delegate_observation_{this};
 
   base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SigninViewController);
 };
 
 #endif  // CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_H_

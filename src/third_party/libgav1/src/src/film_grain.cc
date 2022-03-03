@@ -24,6 +24,7 @@
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
+#include "src/dsp/film_grain_common.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/blocking_counter.h"
 #include "src/utils/common.h"
@@ -318,10 +319,14 @@ bool FilmGrain<bitdepth>::Init() {
   //
   // Note: Although it does not seem to make sense, there are test vectors
   // with chroma_scaling_from_luma=true and params_.num_y_points=0.
+#if LIBGAV1_MSAN
+  // Quiet film grain / md5 msan warnings.
+  memset(scaling_lut_y_, 0, sizeof(scaling_lut_y_));
+#endif
   if (use_luma || params_.chroma_scaling_from_luma) {
     dsp.film_grain.initialize_scaling_lut(
         params_.num_y_points, params_.point_y_value, params_.point_y_scaling,
-        scaling_lut_y_);
+        scaling_lut_y_, kScalingLutLength);
   } else {
     ASAN_POISON_MEMORY_REGION(scaling_lut_y_, sizeof(scaling_lut_y_));
   }
@@ -331,25 +336,28 @@ bool FilmGrain<bitdepth>::Init() {
       scaling_lut_v_ = scaling_lut_y_;
     } else if (params_.num_u_points > 0 || params_.num_v_points > 0) {
       const size_t buffer_size =
-          (kScalingLookupTableSize + kScalingLookupTablePadding) *
-          (static_cast<int>(params_.num_u_points > 0) +
-           static_cast<int>(params_.num_v_points > 0));
-      scaling_lut_chroma_buffer_.reset(new (std::nothrow) uint8_t[buffer_size]);
+          kScalingLutLength * (static_cast<int>(params_.num_u_points > 0) +
+                               static_cast<int>(params_.num_v_points > 0));
+      scaling_lut_chroma_buffer_.reset(new (std::nothrow) int16_t[buffer_size]);
       if (scaling_lut_chroma_buffer_ == nullptr) return false;
 
-      uint8_t* buffer = scaling_lut_chroma_buffer_.get();
+      int16_t* buffer = scaling_lut_chroma_buffer_.get();
+#if LIBGAV1_MSAN
+      // Quiet film grain / md5 msan warnings.
+      memset(buffer, 0, buffer_size * 2);
+#endif
       if (params_.num_u_points > 0) {
         scaling_lut_u_ = buffer;
         dsp.film_grain.initialize_scaling_lut(
             params_.num_u_points, params_.point_u_value,
-            params_.point_u_scaling, scaling_lut_u_);
-        buffer += kScalingLookupTableSize + kScalingLookupTablePadding;
+            params_.point_u_scaling, scaling_lut_u_, kScalingLutLength);
+        buffer += kScalingLutLength;
       }
       if (params_.num_v_points > 0) {
         scaling_lut_v_ = buffer;
         dsp.film_grain.initialize_scaling_lut(
             params_.num_v_points, params_.point_v_value,
-            params_.point_v_scaling, scaling_lut_v_);
+            params_.point_v_scaling, scaling_lut_v_, kScalingLutLength);
       }
     }
   }
@@ -364,7 +372,7 @@ void FilmGrain<bitdepth>::GenerateLumaGrain(const FilmGrainParams& params,
   // 7.18.3.3 says luma_grain "will never be read in this case". So we don't
   // call GenerateLumaGrain if params.num_y_points is equal to 0.
   assert(params.num_y_points > 0);
-  const int shift = 12 - bitdepth + params.grain_scale_shift;
+  const int shift = kBitdepth12 - bitdepth + params.grain_scale_shift;
   uint16_t seed = params.grain_seed;
   GrainType* luma_grain_row = luma_grain;
   for (int y = 0; y < kLumaHeight; ++y) {
@@ -382,7 +390,7 @@ void FilmGrain<bitdepth>::GenerateChromaGrains(const FilmGrainParams& params,
                                                int chroma_height,
                                                GrainType* u_grain,
                                                GrainType* v_grain) {
-  const int shift = 12 - bitdepth + params.grain_scale_shift;
+  const int shift = kBitdepth12 - bitdepth + params.grain_scale_shift;
   if (params.num_u_points == 0 && !params.chroma_scaling_from_luma) {
     memset(u_grain, 0, chroma_height * chroma_width * sizeof(*u_grain));
   } else {
@@ -460,22 +468,25 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::AllocateNoiseImage() {
+  // When LIBGAV1_MSAN is enabled, zero initialize to quiet optimized film grain
+  // msan warnings.
+  constexpr bool zero_initialize = LIBGAV1_MSAN == 1;
   if (params_.num_y_points > 0 &&
       !noise_image_[kPlaneY].Reset(height_, width_ + kNoiseImagePadding,
-                                   /*zero_initialize=*/false)) {
+                                   zero_initialize)) {
     return false;
   }
   if (!is_monochrome_) {
     if (!noise_image_[kPlaneU].Reset(
             (height_ + subsampling_y_) >> subsampling_y_,
             ((width_ + subsampling_x_) >> subsampling_x_) + kNoiseImagePadding,
-            /*zero_initialize=*/false)) {
+            zero_initialize)) {
       return false;
     }
     if (!noise_image_[kPlaneV].Reset(
             (height_ + subsampling_y_) >> subsampling_y_,
             ((width_ + subsampling_x_) >> subsampling_x_) + kNoiseImagePadding,
-            /*zero_initialize=*/false)) {
+            zero_initialize)) {
       return false;
     }
   }
@@ -556,7 +567,7 @@ void FilmGrain<bitdepth>::BlendNoiseChromaWorker(
 
     const auto* source_cursor_y = reinterpret_cast<const Pixel*>(
         source_plane_y + start_height * source_stride_y);
-    const uint8_t* scaling_lut_uv;
+    const int16_t* scaling_lut_uv;
     const uint8_t* source_plane_uv;
     uint8_t* dest_plane_uv;
 
@@ -689,16 +700,16 @@ bool FilmGrain<bitdepth>::AddNoise(
   int max_luma;
   int max_chroma;
   if (params_.clip_to_restricted_range) {
-    min_value = 16 << (bitdepth - 8);
-    max_luma = 235 << (bitdepth - 8);
+    min_value = 16 << (bitdepth - kBitdepth8);
+    max_luma = 235 << (bitdepth - kBitdepth8);
     if (color_matrix_is_identity_) {
       max_chroma = max_luma;
     } else {
-      max_chroma = 240 << (bitdepth - 8);
+      max_chroma = 240 << (bitdepth - kBitdepth8);
     }
   } else {
     min_value = 0;
-    max_luma = (256 << (bitdepth - 8)) - 1;
+    max_luma = (256 << (bitdepth - kBitdepth8)) - 1;
     max_chroma = max_luma;
   }
 
@@ -809,9 +820,9 @@ bool FilmGrain<bitdepth>::AddNoise(
 }
 
 // Explicit instantiations.
-template class FilmGrain<8>;
+template class FilmGrain<kBitdepth8>;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-template class FilmGrain<10>;
+template class FilmGrain<kBitdepth10>;
 #endif
 
 }  // namespace libgav1

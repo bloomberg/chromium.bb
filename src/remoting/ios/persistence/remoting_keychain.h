@@ -5,7 +5,6 @@
 #ifndef REMOTING_IOS_PERSISTENCE_REMOTING_KEYCHAIN_H_
 #define REMOTING_IOS_PERSISTENCE_REMOTING_KEYCHAIN_H_
 
-#include "base/macros.h"
 #include "remoting/ios/persistence/keychain.h"
 
 namespace remoting {
@@ -14,6 +13,10 @@ namespace remoting {
 class RemotingKeychain : public Keychain {
  public:
   RemotingKeychain();
+
+  RemotingKeychain(const RemotingKeychain&) = delete;
+  RemotingKeychain& operator=(const RemotingKeychain&) = delete;
+
   ~RemotingKeychain() override;
 
   static RemotingKeychain* GetInstance();
@@ -31,8 +34,6 @@ class RemotingKeychain : public Keychain {
   std::string KeyToService(Key key) const;
 
   std::string service_prefix_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemotingKeychain);
 };
 
 }  // namespace remoting

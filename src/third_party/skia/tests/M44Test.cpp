@@ -312,11 +312,16 @@ DEF_TEST(M44_mapRect, reporter) {
             // At least one of the mapped corners should have contributed to the rect
             REPORTER_ASSERT(reporter, leftFound || topFound || rightFound || bottomFound);
             // For any edge that came from a clipped corner, increase its error tolerance relative
-            // to what SkPath::ApplyPerspectiveClip calculates
-            if (!leftFound) {   epsilon.fLeft   = 10.f; }
-            if (!topFound) {    epsilon.fTop    = 10.f; }
-            if (!rightFound) {  epsilon.fRight  = 10.f; }
-            if (!bottomFound) { epsilon.fBottom = 10.f; }
+            // to what SkPath::ApplyPerspectiveClip calculates.
+            // TODO(michaelludwig): skbug.com/12335 required updating the w epsilon distance which
+            // greatly increased noise for coords projecting to infinity. They aren't "wrong", since
+            // the intent was clearly to pick a big number that's definitely offscreen, but
+            // MapRect should have a more robust solution than a fixed w > epsilon and when it does,
+            // these expectations for clipped points should be more accurate.
+            if (!leftFound) {   epsilon.fLeft   = .01f * actual.fLeft; }
+            if (!topFound) {    epsilon.fTop    = .01f * actual.fTop; }
+            if (!rightFound) {  epsilon.fRight  = .01f * actual.fRight; }
+            if (!bottomFound) { epsilon.fBottom = .01f * actual.fBottom; }
         } else {
             // The mapped corners should have contributed to all four edges of the returned rect
             REPORTER_ASSERT(reporter, leftFound && topFound && rightFound && bottomFound);
@@ -352,4 +357,18 @@ DEF_TEST(M44_mapRect, reporter) {
     p.setIdentity();
     p.setRow(3, {-.2f, -.6f, 0.f, 8.f});
     assertMapRect(p, src, nullptr);
+}
+
+DEF_TEST(M44_mapRect_skbug12335, r) {
+    // Stripped down test case from skbug.com/12335. Essentially, the corners of this rect would
+    // map to homogoneous coords with very small w's (below the old value of kW0PlaneDistance) and
+    // so they would be clipped "behind" the plane, resulting in an empty mapped rect. Coordinates
+    // with positive that wouldn't overflow when divided by w should still be included in the mapped
+    // rectangle.
+    SkRect rect = SkRect::MakeLTRB(0, 0, 319, 620);
+    SkM44 m(SkMatrix::MakeAll( 0.000152695269f, 0.00000000f,     -6.53848401e-05f,
+                              -1.75697533e-05f, 0.000157153074f, -1.10847975e-06f,
+                              -6.00415362e-08f, 0.00000000f,      0.000169880834f));
+    SkRect out = SkMatrixPriv::MapRect(m, rect);
+    REPORTER_ASSERT(r, !out.isEmpty());
 }

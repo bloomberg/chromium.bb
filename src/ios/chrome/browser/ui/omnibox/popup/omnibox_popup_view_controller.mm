@@ -9,15 +9,16 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "ios/chrome/browser/ui/elements/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
-#include "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #include "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/device_util.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,7 +66,7 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (instancetype)init {
   if (self = [super initWithNibName:nil bundle:nil]) {
     _forwardsScrollEvents = YES;
-    if (IsIPadIdiom()) {
+    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       // The iPad keyboard can cover some of the rows of the scroll view. The
       // scroll view's content inset may need to be updated when the keyboard is
       // displayed.

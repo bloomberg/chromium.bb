@@ -8,9 +8,10 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
-#include "ash/system/holding_space/holding_space_item_view_delegate.h"
 #include "ash/system/holding_space/holding_space_util.h"
+#include "ash/system/holding_space/holding_space_view_delegate.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
@@ -18,9 +19,9 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/style/platform_style.h"
 
 namespace ash {
 
@@ -29,8 +30,7 @@ namespace {
 using ScrollBarMode = views::ScrollView::ScrollBarMode;
 
 // Animation.
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(167);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -87,9 +87,8 @@ class HoldingSpaceScrollView : public views::ScrollView,
     // avoid clipping of these focus rings. Note that a clip rect *does* need to
     // be applied to prevent this view from painting its contents outside of its
     // viewport.
-    const float kFocusInsets =
-        kHoldingSpaceFocusInsets -
-        (views::PlatformStyle::kFocusHaloThickness / 2.f);
+    const float kFocusInsets = kHoldingSpaceFocusInsets -
+                               (views::FocusRing::kDefaultHaloThickness / 2.f);
     gfx::Rect bounds = GetLocalBounds();
     bounds.Inset(gfx::Insets(kFocusInsets));
     layer()->SetClipRect(bounds);
@@ -120,7 +119,7 @@ class HoldingSpaceScrollView : public views::ScrollView,
 // HoldingSpaceItemViewsSection ------------------------------------------------
 
 HoldingSpaceItemViewsSection::HoldingSpaceItemViewsSection(
-    HoldingSpaceItemViewDelegate* delegate,
+    HoldingSpaceViewDelegate* delegate,
     std::set<HoldingSpaceItem::Type> supported_types,
     const absl::optional<size_t>& max_count)
     : delegate_(delegate),
@@ -308,7 +307,7 @@ void HoldingSpaceItemViewsSection::RemoveAllHoldingSpaceItemViews() {
   // not visible to the user.
   DCHECK(!IsDrawn() || !container_->IsDrawn() ||
          container_->layer()->opacity() == 0.f);
-  container_->RemoveAllChildViews(/*delete_children=*/true);
+  container_->RemoveAllChildViews();
   views_by_item_id_.clear();
 }
 
@@ -469,7 +468,7 @@ void HoldingSpaceItemViewsSection::OnAnimateOutCompleted(
   // All holding space item views are going to be removed after which views will
   // be re-added for those items which still exist. A `ScopedSelectionRestore`
   // will serve to persist the current selection during this modification.
-  HoldingSpaceItemViewDelegate::ScopedSelectionRestore scoped_selection_restore(
+  HoldingSpaceViewDelegate::ScopedSelectionRestore scoped_selection_restore(
       delegate_);
 
   // Disable propagation of `PreferredSizeChanged()` while performing batch

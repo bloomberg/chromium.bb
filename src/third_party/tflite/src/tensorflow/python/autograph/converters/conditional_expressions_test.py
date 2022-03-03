@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for conditional_expressions module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.autograph.converters import conditional_expressions
 from tensorflow.python.autograph.core import converter_testing
 from tensorflow.python.platform import test
@@ -25,28 +21,27 @@ from tensorflow.python.platform import test
 
 class ConditionalExpressionsTest(converter_testing.TestCase):
 
-  def assertTransformedEquivalent(self, test_fn, *inputs):
-    ns = {}
-    with self.converted(test_fn, conditional_expressions, ns) as result:
-      self.assertEqual(test_fn(*inputs), result.test_fn(*inputs))
+  def assertTransformedEquivalent(self, f, *inputs):
+    tr = self.transform(f, conditional_expressions)
+    self.assertEqual(f(*inputs), tr(*inputs))
 
   def test_basic(self):
 
-    def test_fn(x):
+    def f(x):
       return 1 if x else 0
 
-    self.assertTransformedEquivalent(test_fn, 0)
-    self.assertTransformedEquivalent(test_fn, 3)
+    self.assertTransformedEquivalent(f, 0)
+    self.assertTransformedEquivalent(f, 3)
 
   def test_nested_orelse(self):
 
-    def test_fn(x):
+    def f(x):
       y = x * x if x > 0 else x if x else 1
       return y
 
-    self.assertTransformedEquivalent(test_fn, -2)
-    self.assertTransformedEquivalent(test_fn, 0)
-    self.assertTransformedEquivalent(test_fn, 2)
+    self.assertTransformedEquivalent(f, -2)
+    self.assertTransformedEquivalent(f, 0)
+    self.assertTransformedEquivalent(f, 2)
 
 
 if __name__ == '__main__':

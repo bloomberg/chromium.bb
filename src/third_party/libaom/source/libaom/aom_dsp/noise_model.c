@@ -15,11 +15,10 @@
 #include <string.h>
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/mathutils.h"
 #include "aom_dsp/noise_model.h"
 #include "aom_dsp/noise_util.h"
 #include "aom_mem/aom_mem.h"
-#include "av1/common/common.h"
-#include "av1/encoder/mathutils.h"
 
 #define kLowPolyNumParams 3
 

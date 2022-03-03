@@ -15,17 +15,18 @@
 #ifndef CORE_CORE_H_
 #define CORE_CORE_H_
 
+#include <functional>
 #include <string>
 
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
+#include "core/event_logger.h"
 #include "core/internal/client_proxy.h"
-#include "core/internal/offline_service_controller.h"
 #include "core/internal/service_controller.h"
 #include "core/internal/service_controller_router.h"
 #include "core/listeners.h"
 #include "core/options.h"
 #include "core/params.h"
-#include "absl/strings/string_view.h"
-#include "absl/types/span.h"
 
 namespace location {
 namespace nearby {
@@ -34,12 +35,13 @@ namespace connections {
 // This class defines the API of the Nearby Connections Core library.
 class Core {
  public:
-  explicit Core(std::function<ServiceController*()> factory =
-                    []() { return new OfflineServiceController; })
-      : router_(factory) {}
+  explicit Core(ServiceControllerRouter* router);
+  // Client needs to call this constructor if analytics logger is needed.
+  Core(analytics::EventLogger* event_logger, ServiceControllerRouter* router)
+      : client_(event_logger), router_(router) {}
   ~Core();
-  Core(Core&&) = default;
-  Core& operator=(Core&&) = default;
+  Core(Core&&);
+  Core& operator=(Core&&);
 
   // Starts advertising an endpoint for a local app.
   //
@@ -234,10 +236,8 @@ class Core {
   std::string GetLocalEndpointId() { return client_.GetLocalEndpointId(); }
 
  private:
-  static constexpr absl::Duration kWaitForDisconnect = absl::Milliseconds(5000);
-
   ClientProxy client_;
-  ServiceControllerRouter router_;
+  ServiceControllerRouter* router_ = nullptr;
 };
 
 }  // namespace connections

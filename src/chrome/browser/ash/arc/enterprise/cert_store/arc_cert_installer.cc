@@ -15,18 +15,25 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/arc/enterprise/cert_store/arc_cert_installer_utils.h"
-#include "chrome/browser/chromeos/policy/remote_commands/user_command_arc_job.h"
-#include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/ash/policy/remote_commands/user_command_arc_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
+#include "chrome/services/keymaster/public/mojom/cert_store.mojom.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace arc {
 
 CertDescription::CertDescription(crypto::RSAPrivateKey* placeholder_key,
-                                 CERTCertificate* nss_cert)
-    : placeholder_key(placeholder_key), nss_cert(nss_cert) {}
+                                 CERTCertificate* nss_cert,
+                                 keymaster::mojom::ChapsSlot slot,
+                                 std::string label,
+                                 std::string id)
+    : placeholder_key(placeholder_key),
+      nss_cert(nss_cert),
+      slot(slot),
+      label(label),
+      id(id) {}
 
 CertDescription::CertDescription(CertDescription&& other) = default;
 
@@ -139,7 +146,7 @@ std::string ArcCertInstaller::InstallArcCert(
                          "}\"}",
                          pkcs12.c_str(), name.c_str(), der_cert64.c_str()));
   if (!job || !job->Init(queue_->GetNowTicks(), command_proto,
-                         nullptr /* signed_command */)) {
+                         enterprise_management::SignedData())) {
     LOG(ERROR) << "Initialization of remote command failed";
     known_cert_names_.erase(name);
     return "";

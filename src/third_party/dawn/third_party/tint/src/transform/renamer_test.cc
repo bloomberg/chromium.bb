@@ -42,29 +42,26 @@ TEST_F(RenamerTest, EmptyModule) {
 
 TEST_F(RenamerTest, BasicModuleVertexIndex) {
   auto* src = R"(
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-
-fn test() -> u32 {
+fn test(vert_idx : u32) -> u32 {
   return vert_idx;
 }
 
 [[stage(vertex)]]
-fn entry() -> [[builtin(position)]] vec4<f32>  {
-  test();
+fn entry([[builtin(vertex_index)]] vert_idx : u32
+        ) -> [[builtin(position)]] vec4<f32>  {
+  ignore(test(vert_idx));
   return vec4<f32>();
 }
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> tint_symbol : u32;
-
-fn tint_symbol_1() -> u32 {
-  return tint_symbol;
+fn tint_symbol(tint_symbol_1 : u32) -> u32 {
+  return tint_symbol_1;
 }
 
 [[stage(vertex)]]
-fn tint_symbol_2() -> [[builtin(position)]] vec4<f32> {
-  tint_symbol_1();
+fn tint_symbol_2([[builtin(vertex_index)]] tint_symbol_1 : u32) -> [[builtin(position)]] vec4<f32> {
+  ignore(tint_symbol(tint_symbol_1));
   return vec4<f32>();
 }
 )";
@@ -77,8 +74,8 @@ fn tint_symbol_2() -> [[builtin(position)]] vec4<f32> {
 
   ASSERT_NE(data, nullptr);
   Renamer::Data::Remappings expected_remappings = {
-      {"vert_idx", "tint_symbol"},
-      {"test", "tint_symbol_1"},
+      {"vert_idx", "tint_symbol_1"},
+      {"test", "tint_symbol"},
       {"entry", "tint_symbol_2"},
   };
   EXPECT_THAT(data->remappings, ContainerEq(expected_remappings));
@@ -152,6 +149,41 @@ fn tint_symbol() -> [[builtin(position)]] vec4<f32> {
   EXPECT_THAT(data->remappings, ContainerEq(expected_remappings));
 }
 
+TEST_F(RenamerTest, PreserveBuiltinTypes) {
+  auto* src = R"(
+[[stage(compute), workgroup_size(1)]]
+fn entry() {
+  var a = modf(1.0).whole;
+  var b = modf(1.0).fract;
+  var c = frexp(1.0).sig;
+  var d = frexp(1.0).exp;
+}
+)";
+
+  auto* expect = R"(
+[[stage(compute), workgroup_size(1)]]
+fn tint_symbol() {
+  var tint_symbol_1 = modf(1.0).whole;
+  var tint_symbol_2 = modf(1.0).fract;
+  var tint_symbol_3 = frexp(1.0).sig;
+  var tint_symbol_4 = frexp(1.0).exp;
+}
+)";
+
+  auto got = Run<Renamer>(src);
+
+  EXPECT_EQ(expect, str(got));
+
+  auto* data = got.data.Get<Renamer::Data>();
+
+  ASSERT_NE(data, nullptr);
+  Renamer::Data::Remappings expected_remappings = {
+      {"entry", "tint_symbol"}, {"a", "tint_symbol_1"}, {"b", "tint_symbol_2"},
+      {"c", "tint_symbol_3"},   {"d", "tint_symbol_4"},
+  };
+  EXPECT_THAT(data->remappings, ContainerEq(expected_remappings));
+}
+
 TEST_F(RenamerTest, AttemptSymbolCollision) {
   auto* src = R"(
 [[stage(vertex)]]
@@ -189,8 +221,34 @@ fn tint_symbol() -> [[builtin(position)]] vec4<f32> {
   EXPECT_THAT(data->remappings, ContainerEq(expected_remappings));
 }
 
+using RenamerTestGlsl = TransformTestWithParam<std::string>;
 using RenamerTestHlsl = TransformTestWithParam<std::string>;
 using RenamerTestMsl = TransformTestWithParam<std::string>;
+
+TEST_P(RenamerTestGlsl, Keywords) {
+  auto keyword = GetParam();
+
+  auto src = R"(
+[[stage(fragment)]]
+fn frag_main() {
+  var )" + keyword +
+             R"( : i32;
+}
+)";
+
+  auto* expect = R"(
+[[stage(fragment)]]
+fn frag_main() {
+  var tint_symbol : i32;
+}
+)";
+
+  DataMap inputs;
+  inputs.Add<Renamer::Config>(Renamer::Target::kGlslKeywords);
+  auto got = Run<Renamer>(src, inputs);
+
+  EXPECT_EQ(expect, str(got));
+}
 
 TEST_P(RenamerTestHlsl, Keywords) {
   auto keyword = GetParam();
@@ -210,8 +268,9 @@ fn frag_main() {
 }
 )";
 
-  Renamer::Config config{Renamer::Target::kHlslKeywords};
-  auto got = Run(src, std::make_unique<Renamer>(config));
+  DataMap inputs;
+  inputs.Add<Renamer::Config>(Renamer::Target::kHlslKeywords);
+  auto got = Run<Renamer>(src, inputs);
 
   EXPECT_EQ(expect, str(got));
 }
@@ -234,11 +293,242 @@ fn frag_main() {
 }
 )";
 
-  Renamer::Config config{Renamer::Target::kMslKeywords};
-  auto got = Run(src, std::make_unique<Renamer>(config));
+  DataMap inputs;
+  inputs.Add<Renamer::Config>(Renamer::Target::kMslKeywords);
+  auto got = Run<Renamer>(src, inputs);
 
   EXPECT_EQ(expect, str(got));
 }
+
+INSTANTIATE_TEST_SUITE_P(RenamerTestGlsl,
+                         RenamerTestGlsl,
+                         testing::Values("active",
+                                         //    "asm",       // WGSL keyword
+                                         "atomic_uint",
+                                         "attribute",
+                                         //    "bool",      // WGSL keyword
+                                         //    "break",     // WGSL keyword
+                                         "buffer",
+                                         "bvec2",
+                                         "bvec3",
+                                         "bvec4",
+                                         //    "case",      // WGSL keyword
+                                         "cast",
+                                         "centroid",
+                                         "class",
+                                         "coherent",
+                                         "common",
+                                         //    "const",     // WGSL keyword
+                                         //    "continue",  // WGSL keyword
+                                         //    "default",   // WGSL keyword
+                                         //    "discard",   // WGSL keyword
+                                         "dmat2",
+                                         "dmat2x2",
+                                         "dmat2x3",
+                                         "dmat2x4",
+                                         "dmat3",
+                                         "dmat3x2",
+                                         "dmat3x3",
+                                         "dmat3x4",
+                                         "dmat4",
+                                         "dmat4x2",
+                                         "dmat4x3",
+                                         "dmat4x4",
+                                         //    "do",         // WGSL keyword
+                                         "double",
+                                         "dvec2",
+                                         "dvec3",
+                                         "dvec4",
+                                         //    "else"        // WGSL keyword
+                                         //    "enum",       // WGSL keyword
+                                         "extern",
+                                         "external",
+                                         //    "false",      // WGSL keyword
+                                         "filter",
+                                         "fixed",
+                                         "flat",
+                                         "float",
+                                         //    "for",        // WGSL keyword
+                                         "fvec2",
+                                         "fvec3",
+                                         "fvec4",
+                                         "gl_BaseInstance",
+                                         "gl_BaseVertex",
+                                         "gl_ClipDistance",
+                                         "gl_DepthRangeParameters",
+                                         "gl_DrawID",
+                                         "gl_FragCoord",
+                                         "gl_FragDepth",
+                                         "gl_FrontFacing",
+                                         "gl_GlobalInvocationID",
+                                         "gl_InstanceID",
+                                         "gl_LocalInvocationID",
+                                         "gl_LocalInvocationIndex",
+                                         "gl_NumSamples",
+                                         "gl_NumWorkGroups",
+                                         "gl_PerVertex",
+                                         "gl_PointCoord",
+                                         "gl_PointSize",
+                                         "gl_Position",
+                                         "gl_PrimitiveID",
+                                         "gl_SampleID",
+                                         "gl_SampleMask",
+                                         "gl_SampleMaskIn",
+                                         "gl_SamplePosition",
+                                         "gl_VertexID",
+                                         "gl_WorkGroupID",
+                                         "gl_WorkGroupSize",
+                                         "goto",
+                                         "half",
+                                         "highp",
+                                         "hvec2",
+                                         "hvec3",
+                                         "hvec4",
+                                         //    "if",         // WGSL keyword
+                                         "iimage1D",
+                                         "iimage1DArray",
+                                         "iimage2D",
+                                         "iimage2DArray",
+                                         "iimage2DMS",
+                                         "iimage2DMSArray",
+                                         "iimage2DRect",
+                                         "iimage3D",
+                                         "iimageBuffer",
+                                         "iimageCube",
+                                         "iimageCubeArray",
+                                         "image1D",
+                                         "image1DArray",
+                                         "image2D",
+                                         "image2DArray",
+                                         "image2DMS",
+                                         "image2DMSArray",
+                                         "image2DRect",
+                                         "image3D",
+                                         "imageBuffer",
+                                         "imageCube",
+                                         "imageCubeArray",
+                                         "in",
+                                         "inline",
+                                         "inout",
+                                         "input",
+                                         "int",
+                                         "interface",
+                                         "invariant",
+                                         "isampler1D",
+                                         "isampler1DArray",
+                                         "isampler2D",
+                                         "isampler2DArray",
+                                         "isampler2DMS",
+                                         "isampler2DMSArray",
+                                         "isampler2DRect",
+                                         "isampler3D",
+                                         "isamplerBuffer",
+                                         "isamplerCube",
+                                         "isamplerCubeArray",
+                                         "ivec2",
+                                         "ivec3",
+                                         "ivec4",
+                                         "layout",
+                                         "long",
+                                         "lowp",
+                                         //    "mat2x2",      // WGSL keyword
+                                         //    "mat2x3",      // WGSL keyword
+                                         //    "mat2x4",      // WGSL keyword
+                                         //    "mat2",
+                                         "mat3",
+                                         //    "mat3x2",      // WGSL keyword
+                                         //    "mat3x3",      // WGSL keyword
+                                         //    "mat3x4",      // WGSL keyword
+                                         "mat4",
+                                         //    "mat4x2",      // WGSL keyword
+                                         //    "mat4x3",      // WGSL keyword
+                                         //    "mat4x4",      // WGSL keyword
+                                         "mediump",
+                                         "namespace",
+                                         "noinline",
+                                         "noperspective",
+                                         "out",
+                                         "output",
+                                         "partition",
+                                         "patch",
+                                         "precise",
+                                         "precision",
+                                         "public",
+                                         "readonly",
+                                         "resource",
+                                         "restrict",
+                                         //    "return",     // WGSL keyword
+                                         "sample",
+                                         "sampler1D",
+                                         "sampler1DArray",
+                                         "sampler1DArrayShadow",
+                                         "sampler1DShadow",
+                                         "sampler2D",
+                                         "sampler2DArray",
+                                         "sampler2DArrayShadow",
+                                         "sampler2DMS",
+                                         "sampler2DMSArray",
+                                         "sampler2DRect",
+                                         "sampler2DRectShadow",
+                                         "sampler2DShadow",
+                                         "sampler3D",
+                                         "sampler3DRect",
+                                         "samplerBuffer",
+                                         "samplerCube",
+                                         "samplerCubeArray",
+                                         "samplerCubeArrayShadow",
+                                         "samplerCubeShadow",
+                                         "shared",
+                                         "short",
+                                         "sizeof",
+                                         "smooth",
+                                         "static",
+                                         //    "struct",     // WGSL keyword
+                                         "subroutine",
+                                         "superp",
+                                         //    "switch",     // WGSL keyword
+                                         "template",
+                                         "this",
+                                         //    "true",       // WGSL keyword
+                                         //    "typedef",    // WGSL keyword
+                                         "uimage1D",
+                                         "uimage1DArray",
+                                         "uimage2D",
+                                         "uimage2DArray",
+                                         "uimage2DMS",
+                                         "uimage2DMSArray",
+                                         "uimage2DRect",
+                                         "uimage3D",
+                                         "uimageBuffer",
+                                         "uimageCube",
+                                         "uimageCubeArray",
+                                         "uint",
+                                         //    "uniform",    // WGSL keyword
+                                         "union",
+                                         "unsigned",
+                                         "usampler1D",
+                                         "usampler1DArray",
+                                         "usampler2D",
+                                         "usampler2DArray",
+                                         "usampler2DMS",
+                                         "usampler2DMSArray",
+                                         "usampler2DRect",
+                                         "usampler3D",
+                                         "usamplerBuffer",
+                                         "usamplerCube",
+                                         "usamplerCubeArray",
+                                         //    "using",      // WGSL keyword
+                                         "uvec2",
+                                         "uvec3",
+                                         "uvec4",
+                                         "varying",
+                                         //    "vec2",       // WGSL keyword
+                                         //    "vec3",       // WGSL keyword
+                                         //    "vec4",       // WGSL keyword
+                                         //    "void",       // WGSL keyword
+                                         "volatile",
+                                         //    "while",      // WGSL keyword
+                                         "writeonly"));
 
 INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                          RenamerTestHlsl,
@@ -317,6 +607,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "RWByteAddressBuffer",
                                          "RWStructuredBuffer",
                                          "RWTexture1D",
+                                         "RWTexture1DArray",
                                          "RWTexture2D",
                                          "RWTexture2DArray",
                                          "RWTexture3D",
@@ -353,6 +644,8 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "Sampler2D",
                                          "Sampler3D",
                                          "SamplerCUBE",
+                                         "SamplerComparisonState",
+                                         "SamplerState",
                                          "StructuredBuffer",
                                          "TANGENT",
                                          "TESSFACTOR",
@@ -360,6 +653,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "Texcoord",
                                          "Texture",
                                          "Texture1D",
+                                         "Texture1DArray",
                                          "Texture2D",
                                          "Texture2DArray",
                                          "Texture2DMS",
@@ -421,6 +715,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "class",
                                          "clip",
                                          "column_major",
+                                         "compile",
                                          "compile_fragment",
                                          // "const",  // WGSL keyword
                                          "const_cast",
@@ -435,6 +730,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "ddy",
                                          "ddy_coarse",
                                          "ddy_fine",
+                                         // "default",  // WGSL keyword
                                          "degrees",
                                          "delete",
                                          // "determinant",  // WGSL intrinsic
@@ -588,6 +884,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          // "ldexp",  // WGSL intrinsic
                                          // "length",  // WGSL intrinsic
                                          "lerp",
+                                         "line",
                                          "lineadj",
                                          "linear",
                                          "lit",
@@ -839,257 +1136,296 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "unorm",
                                          "unroll",
                                          "unsigned",
-                                         "using",
+                                         // "using",  // WGSL reserved keyword
                                          "vector",
                                          "vertexfragment",
                                          "vertexshader",
                                          "virtual",
                                          // "void",  // WGSL keyword
-                                         "volatile",
-                                         "while"));
+                                         "volatile"));
+//                                          "while"  // WGSL reserved keyword
 
-INSTANTIATE_TEST_SUITE_P(RenamerTestMsl,
-                         RenamerTestMsl,
-                         testing::Values(
-                             // c++14 spec
-                             "alignas",
-                             "alignof",
-                             "and",
-                             "and_eq",
-                             // "asm",  // Also reserved in WGSL
-                             "auto",
-                             "bitand",
-                             "bitor",
-                             // "bool",   // Also used in WGSL
-                             // "break",  // Also used in WGSL
-                             // "case",   // Also used in WGSL
-                             "catch",
-                             "char",
-                             "char16_t",
-                             "char32_t",
-                             "class",
-                             "compl",
-                             // "const",     // Also used in WGSL
-                             "const_cast",
-                             "constexpr",
-                             // "continue",  // Also used in WGSL
-                             "decltype",
-                             // "default",   // Also used in WGSL
-                             "delete",
-                             // "do",  // Also used in WGSL
-                             "double",
-                             "dynamic_cast",
-                             // "else",  // Also used in WGSL
-                             // "enum",  // Also used in WGSL
-                             "explicit",
-                             "extern",
-                             // "false",  // Also used in WGSL
-                             "final",
-                             "float",
-                             // "for",  // Also used in WGSL
-                             "friend",
-                             "goto",
-                             // "if",  // Also used in WGSL
-                             "inline",
-                             "int",
-                             "long",
-                             "mutable",
-                             "namespace",
-                             "new",
-                             "noexcept",
-                             "not",
-                             "not_eq",
-                             "nullptr",
-                             "operator",
-                             "or",
-                             "or_eq",
-                             "override",
-                             // "private",  // Also used in WGSL
-                             "protected",
-                             "public",
-                             "register",
-                             "reinterpret_cast",
-                             // "return",  // Also used in WGSL
-                             "short",
-                             "signed",
-                             "sizeof",
-                             "static",
-                             "static_assert",
-                             "static_cast",
-                             // "struct",  // Also used in WGSL
-                             // "switch",  // Also used in WGSL
-                             "template",
-                             "this",
-                             "thread_local",
-                             "throw",
-                             // "true",  // Also used in WGSL
-                             "try",
-                             // "typedef",  // Also used in WGSL
-                             "typeid",
-                             "typename",
-                             "union",
-                             "unsigned",
-                             "using",
-                             "virtual",
-                             // "void",  // Also used in WGSL
-                             "volatile",
-                             "wchar_t",
-                             "while",
-                             "xor",
-                             "xor_eq",
+INSTANTIATE_TEST_SUITE_P(
+    RenamerTestMsl,
+    RenamerTestMsl,
+    testing::Values(
+        // c++14 spec
+        "alignas",
+        "alignof",
+        "and",
+        "and_eq",
+        // "asm",  // Also reserved in WGSL
+        "auto",
+        "bitand",
+        "bitor",
+        // "bool",   // Also used in WGSL
+        // "break",  // Also used in WGSL
+        // "case",   // Also used in WGSL
+        "catch",
+        "char",
+        "char16_t",
+        "char32_t",
+        "class",
+        "compl",
+        // "const",     // Also used in WGSL
+        "const_cast",
+        "constexpr",
+        // "continue",  // Also used in WGSL
+        "decltype",
+        // "default",   // Also used in WGSL
+        "delete",
+        // "do",  // Also used in WGSL
+        "double",
+        "dynamic_cast",
+        // "else",  // Also used in WGSL
+        // "enum",  // Also used in WGSL
+        "explicit",
+        "extern",
+        // "false",  // Also used in WGSL
+        "final",
+        "float",
+        // "for",  // Also used in WGSL
+        "friend",
+        "goto",
+        // "if",  // Also used in WGSL
+        "inline",
+        "int",
+        "long",
+        "mutable",
+        "namespace",
+        "new",
+        "noexcept",
+        "not",
+        "not_eq",
+        "nullptr",
+        "operator",
+        "or",
+        "or_eq",
+        "override",
+        // "private",  // Also used in WGSL
+        "protected",
+        "public",
+        "register",
+        "reinterpret_cast",
+        // "return",  // Also used in WGSL
+        "short",
+        "signed",
+        "sizeof",
+        "static",
+        "static_assert",
+        "static_cast",
+        // "struct",  // Also used in WGSL
+        // "switch",  // Also used in WGSL
+        "template",
+        "this",
+        "thread_local",
+        "throw",
+        // "true",  // Also used in WGSL
+        "try",
+        // "typedef",  // Also used in WGSL
+        "typeid",
+        "typename",
+        "union",
+        "unsigned",
+        // "using",  // WGSL reserved keyword
+        "virtual",
+        // "void",  // Also used in WGSL
+        "volatile",
+        "wchar_t",
+        // "while",  // WGSL reserved keyword
+        "xor",
+        "xor_eq",
 
-                             // Metal Spec
-                             "access",
-                             // "array",  // Also used in WGSL
-                             "array_ref",
-                             "as_type",
-                             "atomic",
-                             "atomic_bool",
-                             "atomic_int",
-                             "atomic_uint",
-                             "bool2",
-                             "bool3",
-                             "bool4",
-                             "buffer",
-                             "char2",
-                             "char3",
-                             "char4",
-                             "const_reference",
-                             "constant",
-                             "depth2d",
-                             "depth2d_array",
-                             "depth2d_ms",
-                             "depth2d_ms_array",
-                             "depthcube",
-                             "depthcube_array",
-                             "device",
-                             "discard_fragment",
-                             "float2",
-                             "float2x2",
-                             "float2x3",
-                             "float2x4",
-                             "float3",
-                             "float3x2",
-                             "float3x3",
-                             "float3x4",
-                             "float4",
-                             "float4x2",
-                             "float4x3",
-                             "float4x4",
-                             "fragment",
-                             "half",
-                             "half2",
-                             "half2x2",
-                             "half2x3",
-                             "half2x4",
-                             "half3",
-                             "half3x2",
-                             "half3x3",
-                             "half3x4",
-                             "half4",
-                             "half4x2",
-                             "half4x3",
-                             "half4x4",
-                             "imageblock",
-                             "int16_t",
-                             "int2",
-                             "int3",
-                             "int32_t",
-                             "int4",
-                             "int64_t",
-                             "int8_t",
-                             "kernel",
-                             "long2",
-                             "long3",
-                             "long4",
-                             "main",   // No functions called main
-                             "metal",  // The namespace
-                             "packed_bool2",
-                             "packed_bool3",
-                             "packed_bool4",
-                             "packed_char2",
-                             "packed_char3",
-                             "packed_char4",
-                             "packed_float2",
-                             "packed_float3",
-                             "packed_float4",
-                             "packed_half2",
-                             "packed_half3",
-                             "packed_half4",
-                             "packed_int2",
-                             "packed_int3",
-                             "packed_int4",
-                             "packed_short2",
-                             "packed_short3",
-                             "packed_short4",
-                             "packed_uchar2",
-                             "packed_uchar3",
-                             "packed_uchar4",
-                             "packed_uint2",
-                             "packed_uint3",
-                             "packed_uint4",
-                             "packed_ushort2",
-                             "packed_ushort3",
-                             "packed_ushort4",
-                             "patch_control_point",
-                             "ptrdiff_t",
-                             "r16snorm",
-                             "r16unorm",
-                             // "r8unorm",  // Also used in WGSL
-                             "reference",
-                             "rg11b10f",
-                             "rg16snorm",
-                             "rg16unorm",
-                             // "rg8snorm",  // Also used in WGSL
-                             // "rg8unorm",  // Also used in WGSL
-                             "rgb10a2",
-                             "rgb9e5",
-                             "rgba16snorm",
-                             "rgba16unorm",
-                             // "rgba8snorm",  // Also used in WGSL
-                             // "rgba8unorm",  // Also used in WGSL
-                             // "sampler",  // Also used in WGSL
-                             "short2",
-                             "short3",
-                             "short4",
-                             "size_t",
-                             "srgba8unorm",
-                             "texture",
-                             "texture1d",
-                             "texture1d_array",
-                             "texture2d",
-                             "texture2d_array",
-                             "texture2d_ms",
-                             "texture2d_ms_array",
-                             "texture3d",
-                             "texture_buffer",
-                             "texturecube",
-                             "texturecube_array",
-                             "thread",
-                             "threadgroup",
-                             "threadgroup_imageblock",
-                             "uchar",
-                             "uchar2",
-                             "uchar3",
-                             "uchar4",
-                             "uint",
-                             "uint16_t",
-                             "uint2",
-                             "uint3",
-                             "uint32_t",
-                             "uint4",
-                             "uint64_t",
-                             "uint8_t",
-                             "ulong2",
-                             "ulong3",
-                             "ulong4",
-                             // "uniform",  // Also used in WGSL
-                             "ushort",
-                             "ushort2",
-                             "ushort3",
-                             "ushort4",
-                             "vec",
-                             "vertex"));
+        // Metal Spec
+        "access",
+        // "array",  // Also used in WGSL
+        "array_ref",
+        "as_type",
+        // "atomic",  // Also used in WGSL
+        "atomic_bool",
+        "atomic_int",
+        "atomic_uint",
+        "bool2",
+        "bool3",
+        "bool4",
+        "buffer",
+        "char2",
+        "char3",
+        "char4",
+        "const_reference",
+        "constant",
+        "depth2d",
+        "depth2d_array",
+        "depth2d_ms",
+        "depth2d_ms_array",
+        "depthcube",
+        "depthcube_array",
+        "device",
+        "discard_fragment",
+        "float2",
+        "float2x2",
+        "float2x3",
+        "float2x4",
+        "float3",
+        "float3x2",
+        "float3x3",
+        "float3x4",
+        "float4",
+        "float4x2",
+        "float4x3",
+        "float4x4",
+        "fragment",
+        "half",
+        "half2",
+        "half2x2",
+        "half2x3",
+        "half2x4",
+        "half3",
+        "half3x2",
+        "half3x3",
+        "half3x4",
+        "half4",
+        "half4x2",
+        "half4x3",
+        "half4x4",
+        "imageblock",
+        "int16_t",
+        "int2",
+        "int3",
+        "int32_t",
+        "int4",
+        "int64_t",
+        "int8_t",
+        "kernel",
+        "long2",
+        "long3",
+        "long4",
+        "main",  // No functions called main
+        "matrix",
+        "metal",  // The namespace
+        "packed_bool2",
+        "packed_bool3",
+        "packed_bool4",
+        "packed_char2",
+        "packed_char3",
+        "packed_char4",
+        "packed_float2",
+        "packed_float3",
+        "packed_float4",
+        "packed_half2",
+        "packed_half3",
+        "packed_half4",
+        "packed_int2",
+        "packed_int3",
+        "packed_int4",
+        "packed_short2",
+        "packed_short3",
+        "packed_short4",
+        "packed_uchar2",
+        "packed_uchar3",
+        "packed_uchar4",
+        "packed_uint2",
+        "packed_uint3",
+        "packed_uint4",
+        "packed_ushort2",
+        "packed_ushort3",
+        "packed_ushort4",
+        "patch_control_point",
+        "ptrdiff_t",
+        "r16snorm",
+        "r16unorm",
+        // "r8unorm",  // Also used in WGSL
+        "reference",
+        "rg11b10f",
+        "rg16snorm",
+        "rg16unorm",
+        // "rg8snorm",  // Also used in WGSL
+        // "rg8unorm",  // Also used in WGSL
+        "rgb10a2",
+        "rgb9e5",
+        "rgba16snorm",
+        "rgba16unorm",
+        // "rgba8snorm",  // Also used in WGSL
+        // "rgba8unorm",  // Also used in WGSL
+        // "sampler",  // Also used in WGSL
+        "short2",
+        "short3",
+        "short4",
+        "size_t",
+        "srgba8unorm",
+        "texture",
+        "texture1d",
+        "texture1d_array",
+        "texture2d",
+        "texture2d_array",
+        "texture2d_ms",
+        "texture2d_ms_array",
+        "texture3d",
+        "texture_buffer",
+        "texturecube",
+        "texturecube_array",
+        "thread",
+        "threadgroup",
+        "threadgroup_imageblock",
+        "uchar",
+        "uchar2",
+        "uchar3",
+        "uchar4",
+        "uint",
+        "uint16_t",
+        "uint2",
+        "uint3",
+        "uint32_t",
+        "uint4",
+        "uint64_t",
+        "uint8_t",
+        "ulong2",
+        "ulong3",
+        "ulong4",
+        // "uniform",  // Also used in WGSL
+        "ushort",
+        "ushort2",
+        "ushort3",
+        "ushort4",
+        // "vec",  // WGSL reserved keyword
+        "vertex",
+
+        // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+        // Table 6.5. Constants for single-precision floating-point math
+        // functions
+        "MAXFLOAT",
+        "HUGE_VALF",
+        "INFINITY",
+        "infinity",
+        "NAN",
+        "M_E_F",
+        "M_LOG2E_F",
+        "M_LOG10E_F",
+        "M_LN2_F",
+        "M_LN10_F",
+        "M_PI_F",
+        "M_PI_2_F",
+        "M_PI_4_F",
+        "M_1_PI_F",
+        "M_2_PI_F",
+        "M_2_SQRTPI_F",
+        "M_SQRT2_F",
+        "M_SQRT1_2_F",
+        "MAXHALF",
+        "HUGE_VALH",
+        "M_E_H",
+        "M_LOG2E_H",
+        "M_LOG10E_H",
+        "M_LN2_H",
+        "M_LN10_H",
+        "M_PI_H",
+        "M_PI_2_H",
+        "M_PI_4_H",
+        "M_1_PI_H",
+        "M_2_PI_H",
+        "M_2_SQRTPI_H",
+        "M_SQRT2_H",
+        "M_SQRT1_2_H"));
 
 }  // namespace
 }  // namespace transform

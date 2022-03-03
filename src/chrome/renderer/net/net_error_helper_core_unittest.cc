@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -900,6 +899,11 @@ class FakeAvailableOfflineContentProvider
  public:
   FakeAvailableOfflineContentProvider() = default;
 
+  FakeAvailableOfflineContentProvider(
+      const FakeAvailableOfflineContentProvider&) = delete;
+  FakeAvailableOfflineContentProvider& operator=(
+      const FakeAvailableOfflineContentProvider&) = delete;
+
   void List(ListCallback callback) override {
     if (return_content_) {
       std::move(callback).Run(list_visible_by_prefs_,
@@ -932,8 +936,6 @@ class FakeAvailableOfflineContentProvider
   bool return_content_ = true;
   bool list_visible_by_prefs_ = true;
   mojo::ReceiverSet<chrome::mojom::AvailableOfflineContentProvider> receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAvailableOfflineContentProvider);
 };
 
 // Provides set up for testing the 'available offline content' feature.
@@ -1075,6 +1077,10 @@ class FakeOfflinePageAutoFetcher
  public:
   FakeOfflinePageAutoFetcher() = default;
 
+  FakeOfflinePageAutoFetcher(const FakeOfflinePageAutoFetcher&) = delete;
+  FakeOfflinePageAutoFetcher& operator=(const FakeOfflinePageAutoFetcher&) =
+      delete;
+
   struct TryScheduleParameters {
     bool user_requested;
     TryScheduleCallback callback;
@@ -1102,8 +1108,6 @@ class FakeOfflinePageAutoFetcher
   mojo::ReceiverSet<chrome::mojom::OfflinePageAutoFetcher> receivers_;
   int cancel_calls_ = 0;
   std::vector<TryScheduleParameters> try_schedule_calls_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeOfflinePageAutoFetcher);
 };
 // This uses the real implementation of PageAutoFetcherHelper, but with a
 // substituted fetcher.

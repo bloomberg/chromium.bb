@@ -54,6 +54,7 @@ source_set("local_search_service_provider") {
   deps = [
     "//chromeos/components/local_search_service:local_search_service",
     "//chromeos/components/local_search_service/public/cpp:local_search_service_provider",
+    "//chromeos/components/local_search_service/public/mojom",
     "//content/public/browser:browser",
   ]
 }

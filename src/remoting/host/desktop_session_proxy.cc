@@ -6,15 +6,16 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
@@ -22,6 +23,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/crash_process.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/ipc_action_executor.h"
 #include "remoting/host/ipc_audio_capturer.h"
@@ -29,7 +31,9 @@
 #include "remoting/host/ipc_keyboard_layout_monitor.h"
 #include "remoting/host/ipc_mouse_cursor_monitor.h"
 #include "remoting/host/ipc_screen_controls.h"
+#include "remoting/host/ipc_url_forwarder_configurator.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
+#include "remoting/host/remote_open_url/remote_open_url_util.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -45,6 +49,9 @@
 
 namespace remoting {
 
+using SetUpUrlForwarderResponse =
+    protocol::UrlForwarderControl::SetUpUrlForwarderResponse;
+
 class DesktopSessionProxy::IpcSharedBufferCore
     : public base::RefCountedThreadSafe<IpcSharedBufferCore> {
  public:
@@ -58,6 +65,9 @@ class DesktopSessionProxy::IpcSharedBufferCore
     // After being mapped, |region| is no longer needed and can be discarded.
   }
 
+  IpcSharedBufferCore(const IpcSharedBufferCore&) = delete;
+  IpcSharedBufferCore& operator=(const IpcSharedBufferCore&) = delete;
+
   int id() const { return id_; }
   size_t size() const { return mapping_.size(); }
   const void* memory() const { return mapping_.memory(); }
@@ -68,8 +78,6 @@ class DesktopSessionProxy::IpcSharedBufferCore
 
   int id_;
   base::ReadOnlySharedMemoryMapping mapping_;
-
-  DISALLOW_COPY_AND_ASSIGN(IpcSharedBufferCore);
 };
 
 class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
@@ -83,10 +91,11 @@ class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
                      core->id()),
         core_(core) {}
 
+  IpcSharedBuffer(const IpcSharedBuffer&) = delete;
+  IpcSharedBuffer& operator=(const IpcSharedBuffer&) = delete;
+
  private:
   scoped_refptr<IpcSharedBufferCore> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(IpcSharedBuffer);
 };
 
 DesktopSessionProxy::DesktopSessionProxy(
@@ -94,12 +103,14 @@ DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<ClientSessionEvents> client_session_events,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
     const DesktopEnvironmentOptions& options)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       client_session_control_(client_session_control),
+      client_session_events_(client_session_events),
       desktop_session_connector_(desktop_session_connector),
       ipc_file_operations_factory_(this),
       pending_capture_frame_requests_(0),
@@ -156,6 +167,13 @@ std::unique_ptr<FileOperations> DesktopSessionProxy::CreateFileOperations() {
   return ipc_file_operations_factory_.CreateFileOperations();
 }
 
+std::unique_ptr<UrlForwarderConfigurator>
+DesktopSessionProxy::CreateUrlForwarderConfigurator() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return std::make_unique<IpcUrlForwarderConfigurator>(this);
+}
+
 std::string DesktopSessionProxy::GetCapabilities() const {
   std::string result = protocol::kRateLimitResizeRequests;
   // Ask the client to send its resolution unconditionally.
@@ -172,6 +190,16 @@ std::string DesktopSessionProxy::GetCapabilities() const {
   if (options_.enable_file_transfer()) {
     result += " ";
     result += protocol::kFileTransferCapability;
+  }
+
+  if (options_.enable_remote_open_url() && IsRemoteOpenUrlSupported()) {
+    result += " ";
+    result += protocol::kRemoteOpenUrlCapability;
+  }
+
+  if (options_.enable_remote_webauthn()) {
+    result += " ";
+    result += protocol::kRemoteWebAuthnCapability;
   }
 
   return result;
@@ -216,8 +244,6 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
                         OnCreateSharedBuffer)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
                         OnReleaseSharedBuffer)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
-                        OnInjectClipboardEvent)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_KeyboardChanged,
                         OnKeyboardChanged)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisconnectSession,
@@ -249,11 +275,37 @@ void DesktopSessionProxy::OnChannelError() {
   DetachFromDesktop();
 }
 
+void DesktopSessionProxy::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (interface_name == mojom::DesktopSessionEventHandler::Name_) {
+    if (desktop_session_event_handler_.is_bound()) {
+      LOG(ERROR) << "Receiver already bound for associated interface: "
+                 << mojom::DesktopSessionEventHandler::Name_;
+      CrashProcess(base::Location::Current());
+    }
+
+    mojo::PendingAssociatedReceiver<mojom::DesktopSessionEventHandler>
+        pending_receiver(std::move(handle));
+    desktop_session_event_handler_.Bind(std::move(pending_receiver));
+  } else {
+    LOG(ERROR) << "Unknown associated interface requested: " << interface_name
+               << ", crashing this process";
+    CrashProcess(base::Location::Current());
+  }
+}
+
 bool DesktopSessionProxy::AttachToDesktop(
     const IPC::ChannelHandle& desktop_pipe,
     int session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_channel_);
+
+  if (client_session_events_) {
+    client_session_events_->OnDesktopAttached(session_id);
+  }
 
   // Ignore the attach notification if the client session has been disconnected
   // already.
@@ -270,6 +322,8 @@ bool DesktopSessionProxy::AttachToDesktop(
   SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
       client_session_control_->client_jid(), screen_resolution_, options_));
 
+  desktop_channel_->GetRemoteAssociatedInterface(&desktop_session_control_);
+
   desktop_session_id_ = session_id;
 
   return true;
@@ -279,7 +333,13 @@ void DesktopSessionProxy::DetachFromDesktop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   desktop_channel_.reset();
+  desktop_session_control_.reset();
+  desktop_session_event_handler_.reset();
   desktop_session_id_ = UINT32_MAX;
+
+  current_url_forwarder_state_ = mojom::UrlForwarderState::kUnknown;
+  // We don't reset |is_url_forwarder_set_up_callback_| here since the request
+  // can come in before the DetachFromDesktop-AttachToDesktop sequence.
 
   shared_buffers_.clear();
 
@@ -288,6 +348,10 @@ void DesktopSessionProxy::DetachFromDesktop() {
     --pending_capture_frame_requests_;
     video_capturer_->OnCaptureResult(
         webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
+  }
+
+  if (client_session_events_) {
+    client_session_events_->OnDesktopDetached();
   }
 }
 
@@ -356,66 +420,41 @@ void DesktopSessionProxy::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::ClipboardEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectClipboardEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectClipboardEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectKeyEvent(const protocol::KeyEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::KeyEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectKeyEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectKeyEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectTextEvent(const protocol::TextEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::TextEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectTextEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectTextEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectMouseEvent(const protocol::MouseEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::MouseEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectMouseEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectMouseEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectTouchEvent(const protocol::TouchEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::TouchEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectTouchEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectTouchEvent(serialized_event));
 }
 
 void DesktopSessionProxy::StartInputInjector(
@@ -500,6 +539,79 @@ void DesktopSessionProxy::Cancel(uint64_t file_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   SendToDesktop(new ChromotingNetworkDesktopMsg_CancelFile(file_id));
+}
+
+void DesktopSessionProxy::IsUrlForwarderSetUp(
+    UrlForwarderConfigurator::IsUrlForwarderSetUpCallback callback) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  switch (current_url_forwarder_state_) {
+    case mojom::UrlForwarderState::kUnknown:
+      // State is not known yet. Wait for OnUrlForwarderStateChange() to be
+      // called.
+      DCHECK(!is_url_forwarder_set_up_callback_);
+      is_url_forwarder_set_up_callback_ = std::move(callback);
+      break;
+    case mojom::UrlForwarderState::kSetUp:
+      std::move(callback).Run(true);
+      break;
+    default:
+      std::move(callback).Run(false);
+  }
+}
+
+void DesktopSessionProxy::SetUpUrlForwarder(
+    const UrlForwarderConfigurator::SetUpUrlForwarderCallback& callback) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!set_up_url_forwarder_callback_);
+
+  if (!desktop_session_control_.is_connected()) {
+    LOG(ERROR) << "The UrlForwarderConfigurator remote is not connected. Setup "
+               << "request ignored.";
+    callback.Run(SetUpUrlForwarderResponse::FAILED);
+    return;
+  }
+  set_up_url_forwarder_callback_ = callback;
+  desktop_session_control_->SetUpUrlForwarder();
+}
+
+void DesktopSessionProxy::OnUrlForwarderStateChange(
+    mojom::UrlForwarderState state) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  current_url_forwarder_state_ = state;
+
+  if (is_url_forwarder_set_up_callback_) {
+    std::move(is_url_forwarder_set_up_callback_)
+        .Run(state == mojom::UrlForwarderState::kSetUp);
+  }
+
+  if (set_up_url_forwarder_callback_) {
+    switch (state) {
+      case mojom::UrlForwarderState::kSetUp:
+        set_up_url_forwarder_callback_.Run(SetUpUrlForwarderResponse::COMPLETE);
+        // Cleanup callback due to terminating state.
+        set_up_url_forwarder_callback_.Reset();
+        break;
+      case mojom::UrlForwarderState::kNotSetUp:
+        // The desktop session agent during the setup process will only report
+        // SET_UP or FAILED. NOT_SET_UP must come from a freshly started agent.
+        LOG(WARNING) << "Setup process failed because the previous desktop "
+                     << "session agent has exited";
+        FALLTHROUGH;
+      case mojom::UrlForwarderState::kFailed:
+        set_up_url_forwarder_callback_.Run(SetUpUrlForwarderResponse::FAILED);
+        // Cleanup callback due to terminating state.
+        set_up_url_forwarder_callback_.Reset();
+        break;
+      case mojom::UrlForwarderState::kSetupPendingUserIntervention:
+        set_up_url_forwarder_callback_.Run(
+            SetUpUrlForwarderResponse::USER_INTERVENTION_REQUIRED);
+        break;
+      default:
+        LOG(ERROR) << "Received unexpected state: " << state;
+    }
+  }
 }
 
 DesktopSessionProxy::~DesktopSessionProxy() {
@@ -637,17 +749,11 @@ void DesktopSessionProxy::OnKeyboardChanged(
   }
 }
 
-void DesktopSessionProxy::OnInjectClipboardEvent(
-    const std::string& serialized_event) {
+void DesktopSessionProxy::OnClipboardEvent(
+    const protocol::ClipboardEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   if (client_clipboard_) {
-    protocol::ClipboardEvent event;
-    if (!event.ParseFromString(serialized_event)) {
-      LOG(ERROR) << "Failed to parse protocol::ClipboardEvent.";
-      return;
-    }
-
     client_clipboard_->InjectClipboardEvent(event);
   }
 }

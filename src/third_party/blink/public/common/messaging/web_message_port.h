@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -82,6 +83,10 @@ class BLINK_COMMON_EXPORT WebMessagePort : public mojo::MessageReceiver {
   // Factory function for creating two ends of a message channel. The two ports
   // are conjugates of each other.
   static std::pair<WebMessagePort, WebMessagePort> CreatePair();
+
+  // Wraps one end of a message channel. |port|'s mojo pipe must
+  // be paired, valid and not entangled.
+  static WebMessagePort Create(MessagePortDescriptor port);
 
   // Sets a message receiver for this message port. Once bound any incoming
   // messages to this port will be routed to the provided |receiver| with
@@ -170,7 +175,7 @@ class BLINK_COMMON_EXPORT WebMessagePort : public mojo::MessageReceiver {
   bool is_closed_ = true;
   bool is_errored_ = false;
   bool is_transferable_ = false;
-  MessageReceiver* receiver_ = nullptr;
+  raw_ptr<MessageReceiver> receiver_ = nullptr;
 };
 
 // A very simple message format. This is a subset of a TransferableMessage, as

@@ -6,12 +6,11 @@
 
 #include <utility>
 
-#include "base/stl_util.h"
+#include "ash/components/arc/mojom/accessibility_helper.mojom.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_test_util.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
-#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -43,6 +42,8 @@ using AXWindowIntProperty = mojom::AccessibilityWindowIntProperty;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 using AXWindowStringProperty = mojom::AccessibilityWindowStringProperty;
 
+namespace {
+
 class MockAutomationEventRouter
     : public extensions::AutomationEventRouterInterface {
  public:
@@ -58,8 +59,8 @@ class MockAutomationEventRouter
                                    std::vector<ui::AXEvent> events) override {
     for (auto&& event : events) {
       event_count_[event.event_type]++;
-      last_event_type_ = event.event_type;
     }
+    last_dispatched_events_ = std::move(events);
 
     for (const auto& update : updates)
       tree_.Unserialize(update);
@@ -81,36 +82,35 @@ class MockAutomationEventRouter
       const ui::AXActionData& data,
       const absl::optional<gfx::Rect>& rect) override {}
 
-  ax::mojom::Event last_event_type() const { return last_event_type_; }
+  std::vector<ui::AXEvent> last_dispatched_events() const {
+    return last_dispatched_events_;
+  }
 
   std::map<ax::mojom::Event, int> event_count_;
   ui::AXTree tree_;
 
  private:
-  ax::mojom::Event last_event_type_;
+  std::vector<ui::AXEvent> last_dispatched_events_;
 };
+
+}  // namespace
 
 class AXTreeSourceArcTest : public testing::Test,
                             public AXTreeSourceArc::Delegate {
  public:
-  class TestAXTreeSourceArc : public AXTreeSourceArc {
-   public:
-    TestAXTreeSourceArc(AXTreeSourceArc::Delegate* delegate,
-                        MockAutomationEventRouter* router)
-        : AXTreeSourceArc(delegate), router_(router) {}
-
-   private:
-    extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
-        const override {
-      return router_;
-    }
-
-    MockAutomationEventRouter* const router_;
-  };
-
   AXTreeSourceArcTest()
-      : router_(new MockAutomationEventRouter()),
-        tree_source_(new TestAXTreeSourceArc(this, router_.get())) {}
+      : router_(std::make_unique<MockAutomationEventRouter>()),
+        tree_source_(
+            std::make_unique<AXTreeSourceArc>(this, /*window=*/nullptr)) {
+    tree_source_->set_automation_event_router_for_test(router_.get());
+  }
+
+  AXTreeSourceArcTest(const AXTreeSourceArcTest&) = delete;
+  AXTreeSourceArcTest& operator=(const AXTreeSourceArcTest&) = delete;
+
+  // AXTreeSourceArc::Delegate overrides.
+  void OnAction(const ui::AXActionData& data) const override {}
+  bool UseFullFocusMode() const override { return full_focus_mode_; }
 
  protected:
   void CallNotifyAccessibilityEvent(AXEventData* event_data) {
@@ -142,8 +142,8 @@ class AXTreeSourceArcTest : public testing::Test,
     return router_->event_count_[type];
   }
 
-  ax::mojom::Event last_dispatched_event_type() const {
-    return router_->last_event_type();
+  std::vector<ui::AXEvent> last_dispatched_events() const {
+    return router_->last_dispatched_events();
   }
 
   ui::AXTree* tree() { return router_->tree(); }
@@ -160,17 +160,11 @@ class AXTreeSourceArcTest : public testing::Test,
 
   void set_full_focus_mode(bool enabled) { full_focus_mode_ = enabled; }
 
-  bool UseFullFocusMode() const override { return full_focus_mode_; }
-
  private:
-  void OnAction(const ui::AXActionData& data) const override {}
-
   const std::unique_ptr<MockAutomationEventRouter> router_;
   const std::unique_ptr<AXTreeSourceArc> tree_source_;
 
   bool full_focus_mode_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArcTest);
 };
 
 TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
@@ -731,7 +725,7 @@ TEST_F(AXTreeSourceArcTest, OnWindowStateChangedEvent) {
 
   // Focus will be on the first accessible node (node2).
   event->event_type = AXEventType::WINDOW_STATE_CHANGED;
-  event->source_id = root->id;
+  event->source_id = node1->id;
   CallNotifyAccessibilityEvent(event.get());
   ui::AXTreeData data;
 
@@ -740,6 +734,7 @@ TEST_F(AXTreeSourceArcTest, OnWindowStateChangedEvent) {
 
   // focus moved to node3 for some reason.
   event->event_type = AXEventType::VIEW_FOCUSED;
+  SetProperty(node3, AXBooleanProperty::FOCUSED, true);
   event->source_id = node3->id;
   CallNotifyAccessibilityEvent(event.get());
 
@@ -823,9 +818,10 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   node2->window_id = 100;
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(node2, AXBooleanProperty::FOCUSED, true);
   SetProperty(node2, AXStringProperty::TEXT, "sample string2.");
 
-  // Chrome should focus to node2, even if node1 has 'focus' in Android.
+  // Chrome should focus to node2, even if node1 has ax focused in Android.
   event->source_id = node2->id;
   CallNotifyAccessibilityEvent(event.get());
 
@@ -833,7 +829,9 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(node2->id, data.focus_id);
 
-  // Chrome should focus to node1, even if Android sends focus on List.
+  // Chrome should focus to node1, when Android sends focus on List.
+  SetProperty(node2, AXBooleanProperty::FOCUSED, false);
+  SetProperty(root, AXBooleanProperty::FOCUSED, true);
   event->source_id = root->id;
   CallNotifyAccessibilityEvent(event.get());
 
@@ -1095,6 +1093,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   node1->id = 1;
   node1->window_id = 100;
   SetProperty(node1, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(node1, AXBooleanProperty::FOCUSED, true);
   SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(node1, AXStringProperty::CONTENT_DESCRIPTION, "node1");
@@ -1121,9 +1120,17 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(node1->id, data.focus_id);
 
-  // Focus event to a non-important node. The descendant important node |node1|
+  // Focus event from a non-important node. The ancestry important node |node1|
   // gets focus instead.
   event->source_id = node3->id;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+  CallNotifyAccessibilityEvent(event.get());
+
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(node1->id, data.focus_id);
+
+  // Focus event from a non-focused node. Focus won't be updated.
+  event->source_id = node2->id;
   event->event_type = AXEventType::VIEW_FOCUSED;
   CallNotifyAccessibilityEvent(event.get());
 
@@ -1140,61 +1147,6 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
 
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(root_window->window_id, data.focus_id);
-}
-
-TEST_F(AXTreeSourceArcTest, LiveRegion) {
-  auto event = AXEventData::New();
-  event->source_id = 1;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 10;
-
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 10;
-  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
-              std::vector<int>({1, 2}));
-  SetProperty(root, AXIntProperty::LIVE_REGION,
-              static_cast<int32_t>(mojom::AccessibilityLiveRegionType::POLITE));
-
-  // Add child nodes.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* node1 = event->node_data.back().get();
-  node1->id = 1;
-  SetProperty(node1, AXStringProperty::TEXT, "text 1");
-
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* node2 = event->node_data.back().get();
-  node2->id = 2;
-  SetProperty(node2, AXStringProperty::TEXT, "text 2");
-
-  CallNotifyAccessibilityEvent(event.get());
-
-  ui::AXNodeData data;
-  data = GetSerializedNode(root->id);
-  std::string status;
-  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
-                                      &status));
-  ASSERT_EQ(status, "polite");
-  for (AXNodeInfoData* node : {root, node1, node2}) {
-    data = GetSerializedNode(node->id);
-    ASSERT_TRUE(data.GetStringAttribute(
-        ax::mojom::StringAttribute::kContainerLiveStatus, &status));
-    ASSERT_EQ(status, "polite");
-  }
-
-  EXPECT_EQ(0, GetDispatchedEventCount(ax::mojom::Event::kLiveRegionChanged));
-
-  // Modify text of node1.
-  SetProperty(node1, AXStringProperty::TEXT, "modified text 1");
-  CallNotifyAccessibilityEvent(event.get());
-
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLiveRegionChanged));
 }
 
 TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
@@ -1222,12 +1174,12 @@ TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
               content_change_types);
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
-            last_dispatched_event_type());
+            last_dispatched_events()[0].event_type);
 
   event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
-            last_dispatched_event_type());
+            last_dispatched_events()[0].event_type);
 
   // State description changed event from non range widget.
   event->node_data.push_back(AXNodeInfoData::New());
@@ -1238,12 +1190,12 @@ TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
   event->event_type = AXEventType::WINDOW_STATE_CHANGED;
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
-            last_dispatched_event_type());
+            last_dispatched_events()[0].event_type);
 
   event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
-            last_dispatched_event_type());
+            last_dispatched_events()[0].event_type);
 }
 
 TEST_F(AXTreeSourceArcTest, EventWithWrongSourceId) {
@@ -1315,7 +1267,7 @@ TEST_F(AXTreeSourceArcTest, EnsureNodeIdMapCleared) {
   CallNotifyAccessibilityEvent(event.get());
 }
 
-TEST_F(AXTreeSourceArcTest, ControlReceivesFocus) {
+TEST_F(AXTreeSourceArcTest, ControlWithoutNameReceivesFocus) {
   auto event = AXEventData::New();
   event->source_id = 1;
   event->task_id = 1;
@@ -1342,6 +1294,7 @@ TEST_F(AXTreeSourceArcTest, ControlReceivesFocus) {
   SetProperty(node, AXStringProperty::TEXT, "");
   SetProperty(node, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(node, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(node, AXBooleanProperty::FOCUSED, true);
   SetProperty(node, AXBooleanProperty::IMPORTANCE, true);
 
   CallNotifyAccessibilityEvent(event.get());
@@ -1474,4 +1427,36 @@ TEST_F(AXTreeSourceArcTest, AutoComplete) {
   EXPECT_TRUE(data.HasState(ax::mojom::State::kCollapsed));
 }
 
+TEST_F(AXTreeSourceArcTest, EventFrom) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 10;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root = event->window_data->back().get();
+  root->window_id = 1;
+  root->root_node_id = node->id;
+
+  // By default, event_from and event_from_action are None.
+  CallNotifyAccessibilityEvent(event.get());
+
+  ui::AXEvent actual = last_dispatched_events()[0];
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, actual.event_from);
+  EXPECT_EQ(ax::mojom::Action::kNone, actual.event_from_action);
+
+  // With |Action| field, event_from and event_from_action are populated.
+  SetProperty(event.get(), AXEventIntProperty::ACTION,
+              static_cast<int32_t>(arc::mojom::AccessibilityActionType::CLICK));
+  CallNotifyAccessibilityEvent(event.get());
+
+  actual = last_dispatched_events()[0];
+  EXPECT_EQ(ax::mojom::EventFrom::kAction, actual.event_from);
+  EXPECT_EQ(ax::mojom::Action::kDoDefault, actual.event_from_action);
+}
 }  // namespace arc

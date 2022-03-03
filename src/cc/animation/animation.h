@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
@@ -116,7 +117,12 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   // to be dispatched.
   void DispatchAndDelegateAnimationEvent(const AnimationEvent& event);
 
-  bool AffectsCustomProperty() const;
+  // Returns true if this animation effects pending tree, such as a custom
+  // property animation with paint worklet.
+  bool RequiresInvalidation() const;
+  // Returns true if this animation effects active tree, such as a transform
+  // animation.
+  bool AffectsNativeProperty() const;
 
   void SetNeedsPushProperties();
 
@@ -135,6 +141,8 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
 
   virtual bool IsWorkletAnimation() const;
 
+  void SetKeyframeEffectForTesting(std::unique_ptr<KeyframeEffect>);
+
  private:
   friend class base::RefCounted<Animation>;
 
@@ -149,12 +157,11 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
 
  protected:
   explicit Animation(int id);
-  Animation(int id, std::unique_ptr<KeyframeEffect>);
   virtual ~Animation();
 
-  AnimationHost* animation_host_;
-  AnimationTimeline* animation_timeline_;
-  AnimationDelegate* animation_delegate_;
+  raw_ptr<AnimationHost> animation_host_;
+  raw_ptr<AnimationTimeline> animation_timeline_;
+  raw_ptr<AnimationDelegate> animation_delegate_;
 
   int id_;
   std::unique_ptr<KeyframeEffect> keyframe_effect_;

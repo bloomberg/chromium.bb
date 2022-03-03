@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
 #define CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
@@ -23,7 +23,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthAttemptState
     : public base::SupportsWeakPtr<AuthAttemptState> {
  public:
   // Used to initialize for a login attempt.
-  AuthAttemptState(const UserContext& user_context, bool unlock);
+  explicit AuthAttemptState(std::unique_ptr<UserContext> user_context);
+
+  AuthAttemptState(const AuthAttemptState&) = delete;
+  AuthAttemptState& operator=(const AuthAttemptState&) = delete;
 
   virtual ~AuthAttemptState();
 
@@ -62,13 +65,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthAttemptState
 
   // Saved so we can retry client login, and also so we know for whom login
   // has succeeded, in the event of successful completion.
-  UserContext user_context;
-
-  // These fields are saved so we can retry client login.
-  const std::string login_token;
-  const std::string login_captcha;
-
-  const bool unlock;  // True if authenticating to unlock the computer.
+  std::unique_ptr<UserContext> user_context;
 
  protected:
   // Status of our online login attempt.
@@ -87,8 +84,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthAttemptState
   // After the username hash request is completed, this marks whether
   // the request was successful.
   bool username_hash_valid_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthAttemptState);
 };
 
 }  // namespace chromeos

@@ -278,7 +278,7 @@ typedef aom_fixed_buf_t *(*aom_codec_get_global_headers_fn_t)(
 typedef aom_image_t *(*aom_codec_get_preview_frame_fn_t)(
     aom_codec_alg_priv_t *ctx);
 
-/*!\brief Decoder algorithm interface interface
+/*!\brief Decoder algorithm interface
  *
  * All decoders \ref MUST expose a variable of this type.
  */
@@ -383,9 +383,21 @@ struct aom_internal_error_info {
 #endif
 #endif
 
+// Tells the compiler to perform `printf` format string checking if the
+// compiler supports it; see the 'format' attribute in
+// <https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html>.
+#define LIBAOM_FORMAT_PRINTF(string_index, first_to_check)
+#if defined(__has_attribute)
+#if __has_attribute(format)
+#undef LIBAOM_FORMAT_PRINTF
+#define LIBAOM_FORMAT_PRINTF(string_index, first_to_check) \
+  __attribute__((__format__(__printf__, string_index, first_to_check)))
+#endif
+#endif
+
 void aom_internal_error(struct aom_internal_error_info *info,
-                        aom_codec_err_t error, const char *fmt,
-                        ...) CLANG_ANALYZER_NORETURN;
+                        aom_codec_err_t error, const char *fmt, ...)
+    LIBAOM_FORMAT_PRINTF(3, 4) CLANG_ANALYZER_NORETURN;
 
 void aom_merge_corrupted_flag(int *corrupted, int value);
 #ifdef __cplusplus

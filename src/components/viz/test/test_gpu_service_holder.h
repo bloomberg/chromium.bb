@@ -6,12 +6,18 @@
 #define COMPONENTS_VIZ_TEST_TEST_GPU_SERVICE_HOLDER_H_
 
 #include <memory>
+#include <string>
 
-#include "base/macros.h"
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/vulkan/buildflags.h"
+
+#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#include "mojo/public/cpp/bindings/binder_map.h"
+#endif
 
 namespace gpu {
 class CommandBufferTaskExecutor;
@@ -21,11 +27,6 @@ class VulkanImplementation;
 #endif
 struct GpuPreferences;
 }  // namespace gpu
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace viz {
 class GpuServiceImpl;
@@ -63,6 +64,10 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
   static void DoNotResetOnTestExit();
 
   explicit TestGpuServiceHolder(const gpu::GpuPreferences& preferences);
+
+  TestGpuServiceHolder(const TestGpuServiceHolder&) = delete;
+  TestGpuServiceHolder& operator=(const TestGpuServiceHolder&) = delete;
+
   ~TestGpuServiceHolder() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner() {
@@ -92,11 +97,26 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
   scoped_refptr<gl::GLShareGroup> GetShareGroup() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<TestGpuServiceHolder>;
-
   void InitializeOnGpuThread(const gpu::GpuPreferences& preferences,
                              base::WaitableEvent* completion);
   void DeleteOnGpuThread();
+
+// TODO(crbug.com/1267788): Fuchsia crashes. See details in the crbug.
+#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe);
+  void BindInterfaceOnGpuThread(const std::string& interface_name,
+                                mojo::ScopedMessagePipeHandle interface_pipe);
+#endif
+
+#if !defined(OS_CHROMEOS)
+  // TODO(crbug.com/1241161): This is equally applicable to Chrome OS there are
+  // just a number of tests that already override the feature list after it's no
+  // longer safe that need to be fixed first.
+  base::FeatureList::ScopedDisallowOverrides disallow_feature_overrides{
+      "FeatureList overrides must happen before the GPU service thread has "
+      "been started."};
+#endif
 
   base::Thread gpu_thread_;
   base::Thread io_thread_;
@@ -110,7 +130,10 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(TestGpuServiceHolder);
+#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+  // Bound interfaces.
+  mojo::BinderMap binders_;
+#endif
 };
 
 }  // namespace viz

@@ -11,6 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/grit/chromium_strings.h"
@@ -33,6 +34,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
@@ -69,8 +71,8 @@ std::u16string GetWindowTitleForApp(Profile* profile,
   if (app_type == AppType::kArc && IsArcShortcutApp(profile, app_id))
     return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
 #else
-  // On non-ChromeOS, only extension and web app types meaningfully exist.
-  DCHECK(app_type != AppType::kExtension && app_type != AppType::kWeb);
+  // On non-ChromeOS, only Chrome app and web app types meaningfully exist.
+  DCHECK(app_type != AppType::kChromeApp && app_type != AppType::kWeb);
 #endif
   return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
                                     base::UTF8ToUTF16(app_name));
@@ -149,6 +151,8 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kStandaloneBrowser:
     case apps::mojom::AppType::kRemote:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+    case apps::mojom::AppType::kExtension:
       NOTREACHED();
       break;
     case apps::mojom::AppType::kArc:
@@ -182,7 +186,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kSystemWeb:
       InitializeViewForWebApp(profile, app_id);
       break;
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       InitializeViewForExtension(profile, app_id);
       break;
   }
@@ -287,10 +291,13 @@ void AppUninstallDialogView::InitializeViewForExtension(
 void AppUninstallDialogView::InitializeViewForWebApp(
     Profile* profile,
     const std::string& app_id) {
-  auto* provider = web_app::WebAppProvider::Get(profile);
-  DCHECK(provider);
-
-  GURL app_start_url = provider->registrar().GetAppStartUrl(app_id);
+  // For web apps, publisher id is the start url.
+  GURL app_start_url;
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [&app_start_url](const apps::AppUpdate& update) {
+        app_start_url = GURL(update.PublisherId());
+      });
   DCHECK(app_start_url.is_valid());
 
   InitializeCheckbox(app_start_url);

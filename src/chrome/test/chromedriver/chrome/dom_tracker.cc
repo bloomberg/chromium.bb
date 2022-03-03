@@ -29,32 +29,47 @@ Status DomTracker::GetFrameIdForNode(
 
 Status DomTracker::OnConnected(DevToolsClient* client) {
   node_to_frame_map_.clear();
-  // Fetch the root document node so that Inspector will push DOM node
-  // information to the client.
+  // Fetch the root document and traverse it populating node_to_frame_map_.
+  // The map will be updated later whenever Inspector pushes DOM node information to the client.
   base::DictionaryValue params;
-  return client->SendCommand("DOM.getDocument", params);
+  params.SetInteger("depth", -1);
+  std::unique_ptr<base::DictionaryValue> result;
+  auto status =
+      client->SendCommandAndGetResult("DOM.getDocument", params, &result);
+  if (status.IsError()) {
+    return status;
+  }
+
+  if (const base::Value* root = result->FindKey("root")) {
+    ProcessNode(*root);
+  } else {
+    status =
+        Status(kUnknownError, "DOM.getDocument missing 'root' in the response");
+  }
+
+  return status;
 }
 
 Status DomTracker::OnEvent(DevToolsClient* client,
                            const std::string& method,
                            const base::DictionaryValue& params) {
   if (method == "DOM.setChildNodes") {
-    const base::Value* nodes;
-    if (!params.Get("nodes", &nodes))
+    const base::Value* nodes = params.FindKey("nodes");
+    if (nodes == nullptr)
       return Status(kUnknownError, "DOM.setChildNodes missing 'nodes'");
 
-    if (!ProcessNodeList(nodes)) {
+    if (!ProcessNodeList(*nodes)) {
       std::string json;
       base::JSONWriter::Write(*nodes, &json);
       return Status(kUnknownError,
                     "DOM.setChildNodes has invalid 'nodes': " + json);
     }
   } else if (method == "DOM.childNodeInserted") {
-    const base::Value* node;
-    if (!params.Get("node", &node))
+    const base::Value* node = params.FindKey("node");
+    if (node == nullptr)
       return Status(kUnknownError, "DOM.childNodeInserted missing 'node'");
 
-    if (!ProcessNode(node)) {
+    if (!ProcessNode(*node)) {
       std::string json;
       base::JSONWriter::Write(*node, &json);
       return Status(kUnknownError,
@@ -68,23 +83,19 @@ Status DomTracker::OnEvent(DevToolsClient* client,
   return Status(kOk);
 }
 
-bool DomTracker::ProcessNodeList(const base::Value* nodes) {
-  const base::ListValue* nodes_list;
-  if (!nodes->GetAsList(&nodes_list))
+bool DomTracker::ProcessNodeList(const base::Value& nodes) {
+  if (!nodes.is_list())
     return false;
-  for (size_t i = 0; i < nodes_list->GetSize(); ++i) {
-    const base::Value* node;
-    if (!nodes_list->Get(i, &node))
-      return false;
+  for (const base::Value& node : nodes.GetList()) {
     if (!ProcessNode(node))
       return false;
   }
   return true;
 }
 
-bool DomTracker::ProcessNode(const base::Value* node) {
+bool DomTracker::ProcessNode(const base::Value& node) {
   const base::DictionaryValue* dict;
-  if (!node->GetAsDictionary(&dict))
+  if (!node.GetAsDictionary(&dict))
     return false;
   int node_id;
   if (!dict->GetInteger("nodeId", &node_id))
@@ -93,8 +104,7 @@ bool DomTracker::ProcessNode(const base::Value* node) {
   if (dict->GetString("frameId", &frame_id))
     node_to_frame_map_.insert(std::make_pair(node_id, frame_id));
 
-  const base::Value* children;
-  if (dict->Get("children", &children))
-    return ProcessNodeList(children);
+  if (const base::Value* children = dict->FindKey("children"))
+    return ProcessNodeList(*children);
   return true;
 }

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_H_
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
@@ -47,8 +46,6 @@ class Request;
 class ScriptPromiseResolver;
 class ScriptState;
 
-typedef RequestOrUSVString RequestInfo;
-
 class MODULES_EXPORT Cache : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -58,31 +55,19 @@ class MODULES_EXPORT Cache : public ScriptWrappable {
         mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache>,
         scoped_refptr<base::SingleThreadTaskRunner>);
 
+  Cache(const Cache&) = delete;
+  Cache& operator=(const Cache&) = delete;
+
   // From Cache.idl:
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise match(ScriptState* script_state,
                       const V8RequestInfo* request,
                       const CacheQueryOptions* options,
                       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise match(ScriptState*,
-                      const RequestInfo&,
-                      const CacheQueryOptions*,
-                      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise matchAll(ScriptState*, ExceptionState&);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise matchAll(ScriptState* script_state,
                          const V8RequestInfo* request,
                          const CacheQueryOptions* options,
                          ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise matchAll(ScriptState*,
-                         const RequestInfo&,
-                         const CacheQueryOptions*,
-                         ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise add(ScriptState* script_state,
                     const V8RequestInfo* request,
                     ExceptionState& exception_state);
@@ -97,32 +82,11 @@ class MODULES_EXPORT Cache : public ScriptWrappable {
                     const V8RequestInfo* request,
                     Response* response,
                     ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise add(ScriptState*, const RequestInfo&, ExceptionState&);
-  ScriptPromise addAll(ScriptState*,
-                       const HeapVector<RequestInfo>&,
-                       ExceptionState&);
-  ScriptPromise Delete(ScriptState*,
-                       const RequestInfo&,
-                       const CacheQueryOptions*,
-                       ExceptionState&);
-  ScriptPromise put(ScriptState*,
-                    const RequestInfo&,
-                    Response*,
-                    ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise keys(ScriptState*, ExceptionState&);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise keys(ScriptState* script_state,
                      const V8RequestInfo* request,
                      const CacheQueryOptions* options,
                      ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise keys(ScriptState*,
-                     const RequestInfo&,
-                     const CacheQueryOptions*,
-                     ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void Trace(Visitor*) const override;
 
@@ -165,8 +129,6 @@ class MODULES_EXPORT Cache : public ScriptWrappable {
   Member<CacheStorageBlobClientList> blob_client_list_;
 
   mojo::AssociatedRemote<mojom::blink::CacheStorageCache> cache_remote_;
-
-  DISALLOW_COPY_AND_ASSIGN(Cache);
 };
 
 }  // namespace blink

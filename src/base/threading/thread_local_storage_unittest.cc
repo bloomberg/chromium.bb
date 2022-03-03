@@ -4,12 +4,13 @@
 
 #include "base/threading/thread_local_storage.h"
 
+#include "base/memory/raw_ptr.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <process.h>
 #endif
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
@@ -59,6 +60,9 @@ class ThreadLocalStorageRunner : public DelegateSimpleThread::Delegate {
   explicit ThreadLocalStorageRunner(int* tls_value_ptr)
       : tls_value_ptr_(tls_value_ptr) {}
 
+  ThreadLocalStorageRunner(const ThreadLocalStorageRunner&) = delete;
+  ThreadLocalStorageRunner& operator=(const ThreadLocalStorageRunner&) = delete;
+
   ~ThreadLocalStorageRunner() override = default;
 
   void Run() override {
@@ -78,8 +82,7 @@ class ThreadLocalStorageRunner : public DelegateSimpleThread::Delegate {
   }
 
  private:
-  int* tls_value_ptr_;
-  DISALLOW_COPY_AND_ASSIGN(ThreadLocalStorageRunner);
+  raw_ptr<int> tls_value_ptr_;
 };
 
 
@@ -106,6 +109,10 @@ constexpr size_t kKeyCount = 20;
 class UseTLSDuringDestructionRunner {
  public:
   UseTLSDuringDestructionRunner() = default;
+
+  UseTLSDuringDestructionRunner(const UseTLSDuringDestructionRunner&) = delete;
+  UseTLSDuringDestructionRunner& operator=(
+      const UseTLSDuringDestructionRunner&) = delete;
 
   // The order in which pthread_key destructors are called is not well defined.
   // Hopefully, by creating 10 both before and after initializing TLS on the
@@ -134,7 +141,7 @@ class UseTLSDuringDestructionRunner {
  private:
   struct TLSState {
     pthread_key_t key;
-    bool* teardown_works_correctly;
+    raw_ptr<bool> teardown_works_correctly;
   };
 
   // The POSIX TLS destruction API takes as input a single C-function, which is
@@ -180,8 +187,6 @@ class UseTLSDuringDestructionRunner {
   static base::ThreadLocalStorage::Slot slot_;
   bool teardown_works_correctly_ = false;
   TLSState tls_states_[kKeyCount];
-
-  DISALLOW_COPY_AND_ASSIGN(UseTLSDuringDestructionRunner);
 };
 
 base::ThreadLocalStorage::Slot UseTLSDuringDestructionRunner::slot_;

@@ -14,12 +14,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -90,8 +90,8 @@ base::TimeDelta GetRetryDelay() {
       command_line->GetSwitchValueNative(kExperimentRetryDelay);
   int seconds;
   if (!value.empty() && base::StringToInt(value, &seconds))
-    return base::TimeDelta::FromSeconds(seconds);
-  return base::TimeDelta::FromMinutes(5);
+    return base::Seconds(seconds);
+  return base::Minutes(5);
 }
 
 // Overrides the participation value for testing if a value is provided via
@@ -167,8 +167,7 @@ bool MayShowNotifications() {
 }
 
 bool UserSessionIsNotYoung() {
-  static constexpr base::TimeDelta kMinSessionLength =
-      base::TimeDelta::FromMinutes(5);
+  static constexpr base::TimeDelta kMinSessionLength = base::Minutes(5);
   base::Time session_start_time = GetConsoleSessionStartTime();
   if (session_start_time.is_null())
     return true;

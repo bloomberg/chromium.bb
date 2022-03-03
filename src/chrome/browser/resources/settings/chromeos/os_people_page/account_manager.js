@@ -63,18 +63,6 @@ Polymer({
     },
 
     /**
-     * True if redesign of account management flows is enabled.
-     * @private
-     */
-    isAccountManagementFlowsV2Enabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
-      },
-      readOnly: true,
-    },
-
-    /**
      * @return {boolean} True if secondary account sign-ins are allowed, false
      *    otherwise.
      * @private
@@ -138,15 +126,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} whether the additional messages for child user should be
-   *     shown.
-   * @private
-   */
-  showChildMessage_() {
-    return this.isChildUser_ && !this.isAccountManagementFlowsV2Enabled_;
-  },
-
-  /**
    * @return {string} account manager 'add account' label.
    * @private
    */
@@ -163,10 +142,9 @@ Polymer({
    * @private
    */
   getAccountListHeader_() {
-    if (this.isAccountManagementFlowsV2Enabled_ && this.isChildUser_) {
-      return loadTimeData.getString('accountListHeaderChild');
-    }
-    return loadTimeData.getString('accountListHeader');
+    return this.isChildUser_ ?
+        loadTimeData.getString('accountListHeaderChild') :
+        loadTimeData.getString('accountListHeader');
   },
 
   /**
@@ -177,16 +155,6 @@ Polymer({
     return this.isChildUser_ ?
         loadTimeData.getString('accountListChildDescription') :
         loadTimeData.getString('accountListDescription');
-  },
-
-  /**
-   * @return {boolean} whether 'Secondary Accounts disabled' tooltip should be
-   *     shown.
-   * @private
-   */
-  showSecondaryAccountsDisabledTooltip_() {
-    return this.isAccountManagementFlowsV2Enabled_ &&
-        !this.isSecondaryGoogleAccountSigninAllowed_;
   },
 
   /**
@@ -253,15 +221,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} True if 'School account' label should be displayed for
-   *     secondary accounts.
-   * @private
-   */
-  shouldDisplayEduSecondaryAccountLabel_() {
-    return this.isChildUser_ && !this.isAccountManagementFlowsV2Enabled_;
-  },
-
-  /**
    * @return {boolean} True if managed badge should be shown next to the device
    *     account picture.
    * @private
@@ -319,7 +278,7 @@ Polymer({
     }
     // Format: 'This account is managed by
     //          <a target="_blank" href="chrome://management">google.com</a>'.
-    // Where href will be set by <settings-localized-link>.
+    // Where href will be set by <localized-link>.
     return loadTimeData.getStringF(
         'accountManagerManagementDescription',
         this.deviceAccount_.organization);
@@ -369,25 +328,7 @@ Polymer({
    */
   getAccounts_() {
     // TODO(crbug.com/1152711): rename the method to `getSecondaryAccounts_`.
-    if (this.isAccountManagementFlowsV2Enabled_) {
-      // Return only secondary accounts.
-      return this.accounts_.filter(account => !account.isDeviceAccount);
-    }
-
-    return this.accounts_;
-  },
-
-
-  /**
-   * @param {string} classList existing class list.
-   * @return {string} new class list.
-   * @private
-   */
-  getAccountManagerDescriptionClassList_(classList) {
-    if (this.isAccountManagementFlowsV2Enabled_) {
-      return classList + ' full-width';
-    }
-    return classList;
+    return this.accounts_.filter(account => !account.isDeviceAccount);
   },
 
   /**
@@ -437,22 +378,45 @@ Polymer({
   },
 
   /**
-   * Closes action menu and resets action menu model.
-   * @private
-   */
-  closeActionMenu_() {
-    this.$$('cr-action-menu').close();
-    this.actionMenuAccount_ = null;
-  },
-
-  /**
-   * Removes the account being pointed to by |this.actionMenuAccount_|.
+   * If Lacros is not enabled, removes the account pointed to by
+   * |this.actionMenuAccount_|.
+   * If Lacros is enabled, shows a warning dialog that the user needs to
+   * confirm before removing the account.
    * @private
    */
   onRemoveAccountTap_() {
+    this.$$('cr-action-menu').close();
+    if (loadTimeData.getBoolean('lacrosEnabled')) {
+      this.$.removeConfirmationDialog.showModal();
+    } else {
+      this.browserProxy_.removeAccount(
+          /** @type {?settings.Account} */ (this.actionMenuAccount_));
+      this.actionMenuAccount_ = null;
+      this.$$('#add-account-button').focus();
+    }
+  },
+
+  /**
+   * The user chooses not to remove the account after seeing the warning
+   * dialog, and taps the cancel button.
+   * @private
+   */
+  onRemoveAccountDialogCancelTap_() {
+    this.actionMenuAccount_ = null;
+    this.$.removeConfirmationDialog.cancel();
+    this.$$('#add-account-button').focus();
+  },
+
+  /**
+   * After seeing the warning dialog, the user chooses to removes the account
+   * pointed to by |this.actionMenuAccount_|, and taps the remove button.
+   * @private
+   */
+  onRemoveAccountDialogRemoveTap_() {
     this.browserProxy_.removeAccount(
         /** @type {?settings.Account} */ (this.actionMenuAccount_));
-    this.closeActionMenu_();
+    this.actionMenuAccount_ = null;
+    this.$.removeConfirmationDialog.close();
     this.$$('#add-account-button').focus();
   },
 });

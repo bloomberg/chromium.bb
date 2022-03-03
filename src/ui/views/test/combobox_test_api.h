@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TEST_COMBOBOX_TEST_API_H_
 #define UI_VIEWS_TEST_COMBOBOX_TEST_API_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace gfx {
 class Size;
@@ -25,6 +25,9 @@ class ComboboxTestApi {
  public:
   explicit ComboboxTestApi(Combobox* combobox) : combobox_(combobox) {}
 
+  ComboboxTestApi(const ComboboxTestApi&) = delete;
+  ComboboxTestApi& operator=(const ComboboxTestApi&) = delete;
+
   // Activates the Combobox menu item at |index|, as if selected by the user.
   void PerformActionAt(int index);
 
@@ -38,9 +41,7 @@ class ComboboxTestApi {
   ui::MenuModel* menu_model();
 
  private:
-  Combobox* combobox_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComboboxTestApi);
+  raw_ptr<Combobox> combobox_;
 };
 
 }  // namespace test

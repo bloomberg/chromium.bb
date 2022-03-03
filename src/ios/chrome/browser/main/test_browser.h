@@ -7,7 +7,8 @@
 
 #include "ios/chrome/browser/main/browser.h"
 
-#include "base/macros.h"
+#include <CoreFoundation/CoreFoundation.h>
+
 #include "base/observer_list.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 
@@ -26,11 +27,13 @@ class TestBrowser : public Browser {
   // requires a task environment).
   TestBrowser();
 
+  TestBrowser(const TestBrowser&) = delete;
+  TestBrowser& operator=(const TestBrowser&) = delete;
+
   ~TestBrowser() override;
 
   // Browser.
   ChromeBrowserState* GetBrowserState() const override;
-  TabModel* GetTabModel() const override;
   WebStateList* GetWebStateList() const override;
   CommandDispatcher* GetCommandDispatcher() const override;
   void AddObserver(BrowserObserver* observer) override;
@@ -45,11 +48,8 @@ class TestBrowser : public Browser {
   // Used in all cases.
   __strong CommandDispatcher* command_dispatcher_ = nil;
   ChromeBrowserState* browser_state_ = nullptr;
-  TabModel* tab_model_ = nil;
   WebStateList* web_state_list_ = nullptr;
   base::ObserverList<BrowserObserver, /* check_empty= */ true> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowser);
 };
 
 #endif  // IOS_CHROME_BROWSER_MAIN_TEST_BROWSER_H_

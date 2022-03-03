@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 #include "base/base_export.h"
-#include "base/macros.h"
 
 namespace base {
 namespace win {
@@ -71,6 +70,9 @@ class BASE_EXPORT ScopedVariant {
 
   // Moves the wrapped variant into another ScopedVariant.
   ScopedVariant(ScopedVariant&& var);
+
+  ScopedVariant(const ScopedVariant&) = delete;
+  ScopedVariant& operator=(const ScopedVariant&) = delete;
 
   ~ScopedVariant();
 
@@ -179,7 +181,6 @@ class BASE_EXPORT ScopedVariant {
   // Use the Compare method instead.
   bool operator==(const ScopedVariant& var) const;
   bool operator!=(const ScopedVariant& var) const;
-  DISALLOW_COPY_AND_ASSIGN(ScopedVariant);
 };
 
 }  // namespace win

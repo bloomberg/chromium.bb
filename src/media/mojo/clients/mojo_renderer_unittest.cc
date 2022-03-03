@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
@@ -86,6 +86,9 @@ class MojoRendererTest : public ::testing::Test {
     EXPECT_CALL(*mock_renderer_, GetMediaTime())
         .WillRepeatedly(Return(base::TimeDelta()));
   }
+
+  MojoRendererTest(const MojoRendererTest&) = delete;
+  MojoRendererTest& operator=(const MojoRendererTest&) = delete;
 
   ~MojoRendererTest() override = default;
 
@@ -179,7 +182,7 @@ class MojoRendererTest : public ::testing::Test {
     mojo_cdm_service_ =
         std::make_unique<MojoCdmService>(&mojo_cdm_service_context_);
     mojo_cdm_service_->Initialize(
-        &cdm_factory_, kClearKeyKeySystem, CdmConfig(),
+        &cdm_factory_, {kClearKeyKeySystem, false, false, false},
         base::BindOnce(&MojoRendererTest::OnCdmServiceInitialized,
                        base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -192,9 +195,7 @@ class MojoRendererTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void Play() {
-    StartPlayingFrom(base::TimeDelta::FromMilliseconds(kStartPlayingTimeInMs));
-  }
+  void Play() { StartPlayingFrom(base::Milliseconds(kStartPlayingTimeInMs)); }
 
   // Fixture members.
   base::TestMessageLoop message_loop_;
@@ -219,13 +220,10 @@ class MojoRendererTest : public ::testing::Test {
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
 
   // Service side mocks and helpers.
-  StrictMock<MockRenderer>* mock_renderer_;
+  raw_ptr<StrictMock<MockRenderer>> mock_renderer_;
   RendererClient* remote_renderer_client_;
 
   mojo::SelfOwnedReceiverRef<mojom::Renderer> renderer_receiver_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MojoRendererTest);
 };
 
 TEST_F(MojoRendererTest, Initialize_Success) {
@@ -375,9 +373,8 @@ TEST_F(MojoRendererTest, GetMediaTime) {
   Initialize();
   EXPECT_EQ(base::TimeDelta(), mojo_renderer_->GetMediaTime());
 
-  const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(500);
-  const base::TimeDelta kStartTime =
-      base::TimeDelta::FromMilliseconds(kStartPlayingTimeInMs);
+  const base::TimeDelta kSleepTime = base::Milliseconds(500);
+  const base::TimeDelta kStartTime = base::Milliseconds(kStartPlayingTimeInMs);
 
   // Media time should not advance since playback rate is 0.
   EXPECT_CALL(*mock_renderer_, SetPlaybackRate(0));

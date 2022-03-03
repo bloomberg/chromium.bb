@@ -47,8 +47,6 @@
 // registration from Barthelemy Dagenais' (barthelemy@prologique.com)
 // easyUnit framework.
 
-// GOOGLETEST_CM0001 DO NOT DELETE
-
 #ifndef GOOGLETEST_INCLUDE_GTEST_GTEST_H_
 #define GOOGLETEST_INCLUDE_GTEST_GTEST_H_
 
@@ -72,17 +70,6 @@
 
 GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 /* class A needs to have dll-interface to be used by clients of class B */)
-
-namespace testing {
-
-// Silence C4100 (unreferenced formal parameter) and 4805
-// unsafe mix of type 'const int' and type 'const bool'
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4805)
-# pragma warning(disable:4100)
-#endif
-
 
 // Declares the flags.
 
@@ -138,6 +125,12 @@ GTEST_DECLARE_int32_(random_seed);
 // is 1. If the value is -1 the tests are repeating forever.
 GTEST_DECLARE_int32_(repeat);
 
+// This flag controls whether Google Test Environments are recreated for each
+// repeat of the tests. The default value is true. If set to false the global
+// test Environment objects are only set up once, for the first iteration, and
+// only torn down once, for the last.
+GTEST_DECLARE_bool_(recreate_environments_when_repeating);
+
 // This flag controls whether Google Test includes Google Test internal
 // stack frames in failure stack traces.
 GTEST_DECLARE_bool_(show_internal_stack_frames);
@@ -162,6 +155,16 @@ GTEST_DECLARE_string_(stream_result_to);
 #if GTEST_USE_OWN_FLAGFILE_FLAG_
 GTEST_DECLARE_string_(flagfile);
 #endif  // GTEST_USE_OWN_FLAGFILE_FLAG_
+
+namespace testing {
+
+// Silence C4100 (unreferenced formal parameter) and 4805
+// unsafe mix of type 'const int' and type 'const bool'
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4805)
+#pragma warning(disable : 4100)
+#endif
 
 // The upper limit for valid stack trace depths.
 const int kMaxStackTraceDepth = 100;
@@ -1120,6 +1123,9 @@ class TestEventListener {
   // Fired before the test starts.
   virtual void OnTestStart(const TestInfo& test_info) = 0;
 
+  // Fired when a test is disabled
+  virtual void OnTestDisabled(const TestInfo& /*test_info*/) {}
+
   // Fired after a failed assertion or a SUCCEED() invocation.
   // If you want to throw an exception from this function to skip to the next
   // TEST, it must be AssertionException defined above, or inherited from it.
@@ -1169,6 +1175,7 @@ class EmptyTestEventListener : public TestEventListener {
 #endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
   void OnTestStart(const TestInfo& /*test_info*/) override {}
+  void OnTestDisabled(const TestInfo& /*test_info*/) override {}
   void OnTestPartResult(const TestPartResult& /*test_part_result*/) override {}
   void OnTestEnd(const TestInfo& /*test_info*/) override {}
   void OnTestSuiteEnd(const TestSuite& /*test_suite*/) override {}
@@ -2378,13 +2385,12 @@ constexpr bool StaticAssertTypeEq() noexcept {
 //     EXPECT_EQ(a_.size(), 0);
 //     EXPECT_EQ(b_.size(), 1);
 //   }
-//
-// GOOGLETEST_CM0011 DO NOT DELETE
-#if !GTEST_DONT_DEFINE_TEST
-#define TEST_F(test_fixture, test_name)\
+#define GTEST_TEST_F(test_fixture, test_name)\
   GTEST_TEST_(test_fixture, test_name, test_fixture, \
               ::testing::internal::GetTypeId<test_fixture>())
-#endif  // !GTEST_DONT_DEFINE_TEST
+#if !GTEST_DONT_DEFINE_TEST_F
+#define TEST_F(test_fixture, test_name) GTEST_TEST_F(test_fixture, test_name)
+#endif
 
 // Returns a path to temporary directory.
 // Tries to determine an appropriate directory for the platform.
@@ -2445,6 +2451,7 @@ GTEST_API_ std::string TempDir();
 // }
 // ...
 // int main(int argc, char** argv) {
+//   ::testing::InitGoogleTest(&argc, argv);
 //   std::vector<int> values_to_test = LoadValuesFromConfig();
 //   RegisterMyTests(values_to_test);
 //   ...

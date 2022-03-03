@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for the swig wrapper tf_optimizer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.core.framework import attr_value_pb2
 from tensorflow.core.protobuf import config_pb2
 from tensorflow.core.protobuf import rewriter_config_pb2
@@ -56,6 +52,7 @@ class MemoryOptimizerSwapTest(test.TestCase):
         rewriter_config_pb2.RewriterConfig(
             disable_model_pruning=True,
             constant_folding=rewriter_config_pb2.RewriterConfig.OFF,
+            dependency_optimization=rewriter_config_pb2.RewriterConfig.OFF,
             memory_optimization=rewriter_config_pb2.RewriterConfig.MANUAL))
     graph = tf_optimizer.OptimizeGraph(config, mg)
 

@@ -8,17 +8,14 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/ash/smb_client/smb_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
 
 namespace chromeos {
 namespace smb_dialog {
-
-using smb_client::SmbMountResult;
 
 class SmbHandler : public content::WebUIMessageHandler {
  public:
@@ -27,6 +24,10 @@ class SmbHandler : public content::WebUIMessageHandler {
                               const std::string& password)>;
 
   SmbHandler(Profile* profile, UpdateCredentialsCallback update_cred_callback);
+
+  SmbHandler(const SmbHandler&) = delete;
+  SmbHandler& operator=(const SmbHandler&) = delete;
+
   ~SmbHandler() override;
 
  private:
@@ -44,7 +45,7 @@ class SmbHandler : public content::WebUIMessageHandler {
 
   // Callback handler for SmbMount.
   void HandleSmbMountResponse(const std::string& callback_id,
-                              SmbMountResult result);
+                              smb_client::SmbMountResult result);
 
   // Callback handler for StartDiscovery.
   void HandleGatherSharesResponse(
@@ -59,8 +60,6 @@ class SmbHandler : public content::WebUIMessageHandler {
   Profile* const profile_;
   UpdateCredentialsCallback update_cred_callback_;
   base::WeakPtrFactory<SmbHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SmbHandler);
 };
 
 }  // namespace smb_dialog

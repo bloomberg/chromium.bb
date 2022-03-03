@@ -17,9 +17,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/common/api/events.h"
@@ -64,6 +62,9 @@ class DeclarativeConditionSet {
   using Values = std::vector<std::unique_ptr<base::Value>>;
   using Conditions = std::vector<std::unique_ptr<const ConditionT>>;
   using const_iterator = typename Conditions::const_iterator;
+
+  DeclarativeConditionSet(const DeclarativeConditionSet&) = delete;
+  DeclarativeConditionSet& operator=(const DeclarativeConditionSet&) = delete;
 
   // Factory method that creates a DeclarativeConditionSet for |extension|
   // according to the JSON array |conditions| passed by the extension API. Sets
@@ -110,8 +111,6 @@ class DeclarativeConditionSet {
   const URLMatcherIdToCondition match_id_to_condition_;
   const Conditions conditions_;
   const std::vector<const ConditionT*> conditions_without_urls_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeConditionSet);
 };
 
 // Immutable container for multiple actions.
@@ -149,6 +148,9 @@ class DeclarativeActionSet {
 
   explicit DeclarativeActionSet(const Actions& actions);
 
+  DeclarativeActionSet(const DeclarativeActionSet&) = delete;
+  DeclarativeActionSet& operator=(const DeclarativeActionSet&) = delete;
+
   // Factory method that instantiates a DeclarativeActionSet for |extension|
   // according to |actions| which represents the array of actions received from
   // the extension API.
@@ -185,8 +187,6 @@ class DeclarativeActionSet {
 
  private:
   const Actions actions_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeActionSet);
 };
 
 // Representation of a rule of a declarative API:
@@ -220,6 +220,9 @@ class DeclarativeRule {
                   std::unique_ptr<ConditionSet> conditions,
                   std::unique_ptr<ActionSet> actions,
                   Priority priority);
+
+  DeclarativeRule(const DeclarativeRule&) = delete;
+  DeclarativeRule& operator=(const DeclarativeRule&) = delete;
 
   // Creates a DeclarativeRule for |extension| given a json definition.  The
   // format of each condition and action's json is up to the specific ConditionT
@@ -263,8 +266,6 @@ class DeclarativeRule {
   std::unique_ptr<ConditionSet> conditions_;
   std::unique_ptr<ActionSet> actions_;
   Priority priority_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeRule);
 };
 
 // Implementation details below here.

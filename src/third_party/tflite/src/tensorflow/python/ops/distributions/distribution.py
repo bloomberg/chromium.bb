@@ -14,10 +14,6 @@
 # ==============================================================================
 """Base classes for probability distributions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
 import contextlib
 import types
@@ -462,7 +458,7 @@ class Distribution(_BaseDistribution):
     """
     graph_parents = [] if graph_parents is None else graph_parents
     for i, t in enumerate(graph_parents):
-      if t is None or not tensor_util.is_tensor(t):
+      if t is None or not tensor_util.is_tf_type(t):
         raise ValueError("Graph parent item %d is not a Tensor; %s." % (i, t))
     if not name or name[-1] != "/":  # `name` is not a name scope
       non_unique_name = name or type(self).__name__

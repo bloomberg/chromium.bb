@@ -4,7 +4,6 @@
 
 #include "weblayer/browser/autofill_client_impl.h"
 
-#include "base/stl_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -321,8 +320,9 @@ void AutofillClientImpl::LoadRiskData(
 }
 
 AutofillClientImpl::AutofillClientImpl(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsUserData<AutofillClientImpl>(*web_contents),
+      content::WebContentsObserver(web_contents) {}
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AutofillClientImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutofillClientImpl);
 
 }  // namespace weblayer

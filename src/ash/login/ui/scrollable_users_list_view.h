@@ -10,8 +10,8 @@
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
-#include "ash/public/cpp/wallpaper_controller.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "base/scoped_observation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/scroll_view.h"
@@ -50,6 +50,10 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
   ScrollableUsersListView(const std::vector<LoginUserInfo>& users,
                           const ActionWithUser& on_tap_user,
                           LoginDisplayStyle display_style);
+
+  ScrollableUsersListView(const ScrollableUsersListView&) = delete;
+  ScrollableUsersListView& operator=(const ScrollableUsersListView&) = delete;
+
   ~ScrollableUsersListView() override;
 
   // Returns user view at |index| if it exists or nullptr otherwise.
@@ -103,8 +107,6 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
 
   base::ScopedObservation<WallpaperController, WallpaperControllerObserver>
       observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableUsersListView);
 };
 
 }  // namespace ash

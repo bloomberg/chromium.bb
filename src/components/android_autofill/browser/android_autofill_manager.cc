@@ -9,6 +9,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+
 namespace autofill {
 
 using base::TimeTicks;
@@ -59,15 +60,15 @@ void AndroidAutofillManager::OnTextFieldDidScrollImpl(
     provider->OnTextFieldDidScroll(this, form, field, bounding_box);
 }
 
-void AndroidAutofillManager::OnQueryFormFieldAutofillImpl(
+void AndroidAutofillManager::OnAskForValuesToFillImpl(
     int query_id,
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
     bool autoselect_first_suggestion) {
   if (auto* provider = GetAutofillProvider()) {
-    provider->OnQueryFormFieldAutofill(
-        this, query_id, form, field, bounding_box, autoselect_first_suggestion);
+    provider->OnAskForValuesToFill(this, query_id, form, field, bounding_box,
+                                   autoselect_first_suggestion);
   }
 }
 
@@ -144,13 +145,21 @@ AutofillProvider* AndroidAutofillManager::GetAutofillProvider() {
     return autofill_provider_for_testing_;
   if (auto* rfh =
           static_cast<ContentAutofillDriver*>(driver())->render_frame_host()) {
-    if (rfh->IsCurrent()) {
+    if (rfh->IsActive()) {
       if (auto* web_contents = content::WebContents::FromRenderFrameHost(rfh)) {
         return AutofillProvider::FromWebContents(web_contents);
       }
     }
   }
   return nullptr;
+}
+
+void AndroidAutofillManager::FillOrPreviewForm(
+    int query_id,
+    mojom::RendererFormDataAction action,
+    const FormData& form) {
+  driver()->FillOrPreviewForm(query_id, action, form, form.main_frame_origin,
+                              {});
 }
 
 }  // namespace autofill

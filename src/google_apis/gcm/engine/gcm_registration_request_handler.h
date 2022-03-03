@@ -5,7 +5,6 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_GCM_REGISTRATION_REQUEST_HANDLER_H_
 #define GOOGLE_APIS_GCM_ENGINE_GCM_REGISTRATION_REQUEST_HANDLER_H_
 
-#include "base/macros.h"
 #include "google_apis/gcm/engine/registration_request.h"
 
 namespace gcm {
@@ -15,6 +14,11 @@ class GCM_EXPORT GCMRegistrationRequestHandler
     : public RegistrationRequest::CustomRequestHandler {
  public:
   GCMRegistrationRequestHandler(const std::string& senders);
+
+  GCMRegistrationRequestHandler(const GCMRegistrationRequestHandler&) = delete;
+  GCMRegistrationRequestHandler& operator=(
+      const GCMRegistrationRequestHandler&) = delete;
+
   ~GCMRegistrationRequestHandler() override;
 
   // RegistrationRequest::RequestHandler overrides:
@@ -24,8 +28,6 @@ class GCM_EXPORT GCMRegistrationRequestHandler
 
  private:
   std::string senders_;
-
-  DISALLOW_COPY_AND_ASSIGN(GCMRegistrationRequestHandler);
 };
 
 }  // namespace gcm

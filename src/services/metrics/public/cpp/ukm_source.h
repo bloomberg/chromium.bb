@@ -8,12 +8,12 @@
 #include <map>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace ukm {
@@ -109,6 +109,10 @@ class METRICS_EXPORT UkmSource {
 
   UkmSource(SourceId id, const GURL& url);
   UkmSource(SourceId id, const NavigationData& data);
+
+  UkmSource(const UkmSource&) = delete;
+  UkmSource& operator=(const UkmSource&) = delete;
+
   ~UkmSource();
 
   ukm::SourceId id() const { return id_; }
@@ -131,6 +135,9 @@ class METRICS_EXPORT UkmSource {
 
   // Sets the current "custom tab" state. This can be called from any thread.
   static void SetCustomTabVisible(bool visible);
+  // Sets the current "android_activity_type" state, this will replace the
+  // "custom tab" state.
+  static void SetAndroidActivityTypeState(int32_t android_activity_type);
 
  private:
   const ukm::SourceId id_;
@@ -141,12 +148,12 @@ class METRICS_EXPORT UkmSource {
   // A flag indicating if metric was collected in a custom tab. This is set
   // automatically when the object is created and so represents the state when
   // the metric was created.
+  // TODO(crbug/1228735): To be replaced by |android_activity_type_state_|.
   const CustomTabState custom_tab_state_;
+  const int32_t android_activity_type_state_ = -1;
 
   // When this object was created.
   const base::TimeTicks creation_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(UkmSource);
 };
 
 }  // namespace ukm

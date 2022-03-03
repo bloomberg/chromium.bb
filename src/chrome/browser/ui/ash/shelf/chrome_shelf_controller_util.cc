@@ -4,23 +4,30 @@
 
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/containers/contains.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/eche_app/app_id.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -58,7 +65,7 @@ std::string GetPolicyValueFromAppId(const std::string& app_id,
   // Handle Web App ids
   //
   // WebAppProvider is absent in some cases e.g. Arc++ Kiosk Mode.
-  if (auto* provider = web_app::WebAppProvider::Get(profile)) {
+  if (auto* provider = web_app::WebAppProvider::GetDeprecated(profile)) {
     std::map<web_app::AppId, GURL> installed_apps =
         provider->registrar().GetExternallyInstalledApps(
             web_app::ExternalInstallSource::kExternalPolicy);
@@ -92,13 +99,13 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const std::string& app_id,
     Profile* profile) {
   // These file manager apps have a shelf presence, but can only be launched
-  // when provided a filename to open. Likewise, the feedback extension needs
-  // context when launching. Pinning these creates an item that does nothing.
+  // when provided a filename to open. Likewise, the feedback extension, the
+  // Eche application need context when launching. Pinning these creates an
+  // item that does nothing.
   const char* kNoPinAppIds[] = {
-      file_manager::kVideoPlayerAppId,
-      file_manager::kGalleryAppId,
       file_manager::kAudioPlayerAppId,
       extension_misc::kFeedbackExtensionId,
+      ash::eche_app::kEcheAppId,
   };
   if (base::Contains(kNoPinAppIds, app_id))
     return AppListControllerDelegate::NO_PIN;
@@ -107,7 +114,8 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
       GetPolicyValueFromAppId(app_id, profile);
 
   if (ash::DemoSession::Get() &&
-      ash::DemoSession::Get()->ShouldIgnorePinPolicy(policy_value_for_id)) {
+      !ash::DemoSession::Get()->ShouldShowAndroidOrChromeAppInShelf(
+          policy_value_for_id)) {
     return AppListControllerDelegate::PIN_EDITABLE;
   }
 
@@ -121,7 +129,7 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
       return AppListControllerDelegate::PIN_EDITABLE;
 
     const std::string* policy_entry =
-        policy_dict_entry.FindStringKey(kPinnedAppsPrefAppIDKey);
+        policy_dict_entry.FindStringKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey);
     if (!policy_entry)
       return AppListControllerDelegate::PIN_EDITABLE;
 
@@ -138,7 +146,7 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser,
   if (!browser || !multi_user_util::IsProfileFromActiveUser(browser->profile()))
     return false;
 
-  if (browser->deprecated_is_app()) {
+  if (browser->is_type_app() || browser->is_type_app_popup()) {
     // V1 App popup windows may have their own item.
     ash::ShelfID id(web_app::GetAppIdFromApplicationName(browser->app_name()));
     if (model->ItemByID(id))
@@ -146,4 +154,59 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser,
   }
 
   return true;
+}
+
+void PinAppWithIDToShelf(const std::string& app_id) {
+  auto* shelf_controller = ChromeShelfController::instance();
+  auto* shelf_model = shelf_controller->shelf_model();
+  if (shelf_model->ItemIndexByAppID(app_id) >= 0) {
+    shelf_model->PinExistingItemWithID(app_id);
+  } else {
+    shelf_model->AddAndPinAppWithFactoryConstructedDelegate(app_id);
+  }
+}
+
+void UnpinAppWithIDFromShelf(const std::string& app_id) {
+  auto* shelf_controller = ChromeShelfController::instance();
+  shelf_controller->shelf_model()->UnpinAppWithID(app_id);
+}
+
+bool IsAppWithIDPinnedToShelf(const std::string& app_id) {
+  return ChromeShelfController::instance()->shelf_model()->IsAppPinned(app_id);
+}
+
+apps::mojom::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
+    ash::ShelfLaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_UNKNOWN:
+      return apps::mojom::LaunchSource::kUnknown;
+    case ash::LAUNCH_FROM_INTERNAL:
+      return apps::mojom::LaunchSource::kFromChromeInternal;
+    case ash::LAUNCH_FROM_APP_LIST:
+      return apps::mojom::LaunchSource::kFromAppListGrid;
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return apps::mojom::LaunchSource::kFromAppListQuery;
+    case ash::LAUNCH_FROM_APP_LIST_RECOMMENDATION:
+      return apps::mojom::LaunchSource::kFromAppListRecommendation;
+    case ash::LAUNCH_FROM_SHELF:
+      return apps::mojom::LaunchSource::kFromShelf;
+  }
+}
+
+bool BrowserAppShelfControllerShouldHandleApp(const std::string& app_id,
+                                              Profile* profile) {
+  if (!web_app::IsWebAppsCrosapiEnabled()) {
+    return false;
+  }
+  auto* proxy =
+      apps::AppServiceProxyFactory::GetInstance()->GetForProfile(profile);
+  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
+  switch (app_type) {
+    case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kSystemWeb:
+    case apps::mojom::AppType::kStandaloneBrowser:
+      return true;
+    default:
+      return false;
+  }
 }

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
@@ -50,9 +51,6 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   // is ready. If not, subscribes to token service and starts fetching if the
   // token is available. Should not be called more than once.
   virtual void StartForAccount(const CoreAccountId& account_id);
-
-  // On successful download this returns the hosted domain of the user.
-  virtual std::u16string GetProfileHostedDomain() const;
 
   // On successful download this returns the full name of the user. For example
   // "Pat Smith".
@@ -114,7 +112,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  ProfileDownloaderDelegate* delegate_;
+  raw_ptr<ProfileDownloaderDelegate> delegate_;
   CoreAccountId account_id_;
   std::string auth_token_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
@@ -122,7 +120,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_ = PICTURE_FAILED;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       identity_manager_observation_{this};

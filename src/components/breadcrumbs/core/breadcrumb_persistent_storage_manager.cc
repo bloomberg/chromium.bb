@@ -4,17 +4,19 @@
 
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 
+#include <string.h>
+
 #include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "components/breadcrumbs/core/breadcrumb_manager.h"
 #include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
@@ -27,7 +29,7 @@ namespace {
 const char kEventSeparator[] = "\n";
 
 // Minimum time between breadcrumb writes to disk.
-constexpr auto kMinDelayBetweenWrites = base::TimeDelta::FromMilliseconds(250);
+constexpr auto kMinDelayBetweenWrites = base::Milliseconds(250);
 
 // Writes |events| to |file_path| at |position|.
 void DoInsertEventsIntoMemoryMappedFile(const base::FilePath& file_path,
@@ -42,7 +44,7 @@ void DoInsertEventsIntoMemoryMappedFile(const base::FilePath& file_path,
 
   if (file_valid) {
     char* data = reinterpret_cast<char*>(file->data());
-    std::strcpy(&data[position], events.data());
+    strcpy(&data[position], events.data());
   }
 }
 
@@ -58,7 +60,7 @@ void DoWriteEventsToFile(const base::FilePath& file_path,
 
   if (file_valid) {
     char* data = reinterpret_cast<char*>(file.data());
-    std::strcpy(data, events.data());
+    strcpy(data, events.data());
   }
 }
 
@@ -95,8 +97,8 @@ std::vector<std::string> DoGetStoredEvents(const base::FilePath& file_path) {
   if (!events_file.ReadAndCheck(/*offset=*/0, data)) {
     return std::vector<std::string>();
   }
-  std::string persisted_events(data.begin(), data.end());
-  std::string all_events =
+  const std::string persisted_events(data.begin(), data.end());
+  const std::string all_events =
       persisted_events.substr(/*pos=*/0, strlen(persisted_events.c_str()));
   return base::SplitString(all_events, kEventSeparator, base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY);
@@ -133,7 +135,7 @@ size_t DoGetStoredEventsLength(const base::FilePath& file_path) {
     return 0;
   }
 
-  std::string persisted_events(data.begin(), data.end());
+  const std::string persisted_events(data.begin(), data.end());
   return strlen(persisted_events.c_str());
 }
 
@@ -219,7 +221,7 @@ void BreadcrumbPersistentStorageManager::CombineEventsAndRewriteAllBreadcrumbs(
     const std::vector<std::string> pending_breadcrumbs,
     std::vector<std::string> existing_events) {
   // Add events which had not yet been written.
-  for (auto event : pending_breadcrumbs) {
+  for (const auto& event : pending_breadcrumbs) {
     existing_events.push_back(event);
   }
 
@@ -244,12 +246,11 @@ void BreadcrumbPersistentStorageManager::CombineEventsAndRewriteAllBreadcrumbs(
   }
 
   std::reverse(breadcrumbs.begin(), breadcrumbs.end());
-  std::string breadcrumbs_string = base::JoinString(breadcrumbs, "");
+  const std::string breadcrumbs_string = base::JoinString(breadcrumbs, "");
 
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DoWriteEventsToFile, breadcrumbs_temp_file_path_,
-                     std::string(breadcrumbs_string)));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&DoWriteEventsToFile,
+                                                   breadcrumbs_temp_file_path_,
+                                                   breadcrumbs_string));
 
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DoReplaceFile, breadcrumbs_temp_file_path_,
@@ -282,11 +283,15 @@ void BreadcrumbPersistentStorageManager::WritePendingBreadcrumbs() {
     return;
   }
 
+  // Make a copy of |pending_breadcrumbs_| to pass to the
+  // DoInsertEventsIntoMemoryMappedFile() callback, since |pending_breadcrumbs_|
+  // is about to be cleared.
+  const std::string pending_breadcrumbs = pending_breadcrumbs_;
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&DoInsertEventsIntoMemoryMappedFile,
                                         breadcrumbs_file_path_,
                                         current_mapped_file_position_.value(),
-                                        std::string(pending_breadcrumbs_)));
+                                        pending_breadcrumbs));
 
   current_mapped_file_position_ =
       current_mapped_file_position_.value() + pending_breadcrumbs_.size();

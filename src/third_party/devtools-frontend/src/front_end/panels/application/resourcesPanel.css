@@ -122,7 +122,7 @@
 
 .database-query-result {
   position: relative;
-  padding: 1px 22px 1px 22px;
+  padding: 1px 22px;
   min-height: 16px;
   margin-left: -22px;
   padding-right: 0;
@@ -136,4 +136,5 @@
 .resources-sidebar {
   padding: 0;
   overflow-x: auto;
+  background-color: var(--color-background);
 }

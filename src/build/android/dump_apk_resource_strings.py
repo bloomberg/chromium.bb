@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # encoding: utf-8
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -185,7 +185,7 @@ def ReadStringMapFromRTxt(r_txt_path):
   return result
 
 
-class ResourceStringValues(object):
+class ResourceStringValues:
   """Models all possible values for a named string."""
 
   def __init__(self):
@@ -219,8 +219,8 @@ class ResourceStringValues(object):
 
   def ToStringList(self, res_id):
     """Convert entry to string list for human-friendly output."""
-    values = sorted(
-        [(str(config), value) for config, value in self.res_values.iteritems()])
+    values = sorted([(str(config), value)
+                     for config, value in self.res_values.items()])
     if res_id is None:
       # res_id will be None when the resource ID should not be part
       # of the output.
@@ -236,7 +236,7 @@ class ResourceStringValues(object):
     return result
 
 
-class ResourceStringMap(object):
+class ResourceStringMap:
   """Convenience class to hold the set of all localized strings in a table.
 
   Usage is the following:
@@ -256,7 +256,7 @@ class ResourceStringMap(object):
 
   def RemapResourceNames(self, id_name_map):
     """Rename all entries according to a given {res_id -> res_name} map."""
-    for res_id, res_name in id_name_map.iteritems():
+    for res_id, res_name in id_name_map.items():
       if res_id in self._res_map:
         self._res_map[res_id].res_name = res_name
 
@@ -278,15 +278,10 @@ class ResourceStringMap(object):
     result = ['Resource strings (count=%d) {' % len(self._res_map)]
     res_map = self._res_map
 
-    # A small function to compare two (res_id, values) tuples
-    # by resource name first, then resource ID.
-    def cmp_id_name(a, b):
-      result = cmp(a[1].res_name, b[1].res_name)
-      if result == 0:
-        result = cmp(a[0], b[0])
-      return result
-
-    for res_id, _ in sorted(res_map.iteritems(), cmp=cmp_id_name):
+    # Compare two (res_id, values) tuples by resource name first, then resource
+    # ID.
+    for res_id, _ in sorted(res_map.items(),
+                            key=lambda x: (x[1].res_name, x[0])):
       result += res_map[res_id].ToStringList(None if omit_ids else res_id)
     result.append('}  # Resource strings')
     return result
@@ -537,7 +532,7 @@ def ParseApkResources(aapt_path, apk_path):
 
   res_map = ResourceStringMap()
   current_locale = None
-  current_resource_id = None
+  current_resource_id = -1  # represents undefined.
   current_resource_name = None
   need_value = False
   while True:

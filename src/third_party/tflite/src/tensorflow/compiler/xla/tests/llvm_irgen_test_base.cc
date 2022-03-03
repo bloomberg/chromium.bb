@@ -56,7 +56,7 @@ void LlvmIrGenTestBase::CompileAndVerifyIr(
 
   StatusOr<bool> filecheck_result = RunFileCheck(ir_, pattern);
   TF_ASSERT_OK(filecheck_result.status());
-  EXPECT_TRUE(filecheck_result.ValueOrDie());
+  EXPECT_TRUE(filecheck_result.ValueOrDie()) << "Full IR: " << ir_;
 }
 
 void LlvmIrGenTestBase::CompileAndVerifyIr(const string& hlo_text,
@@ -80,7 +80,7 @@ void LlvmIrGenTestBase::CompileAheadOfTimeAndVerifyIr(
 
   StatusOr<bool> filecheck_result = RunFileCheck(ir_, pattern);
   ASSERT_TRUE(filecheck_result.ok());
-  EXPECT_TRUE(filecheck_result.ValueOrDie());
+  EXPECT_TRUE(filecheck_result.ValueOrDie()) << "Full IR: " << ir_;
 }
 
 void LlvmIrGenTestBase::MatchOptimizedHlo(absl::string_view hlo,
@@ -103,6 +103,13 @@ StatusOr<std::unique_ptr<HloModule>> LlvmIrGenTestBase::GetOptimizedModule(
       ParseAndReturnVerifiedModule(hlo, GetModuleConfigForTest()));
   return backend().compiler()->RunHloPasses(
       std::move(module), backend().default_stream_executor(),
+      backend().default_stream_executor()->GetAllocator());
+}
+
+StatusOr<std::unique_ptr<HloModule>> LlvmIrGenTestBase::GetOptimizedModule(
+    std::unique_ptr<HloModule> hlo_module) {
+  return backend().compiler()->RunHloPasses(
+      std::move(hlo_module), backend().default_stream_executor(),
       backend().default_stream_executor()->GetAllocator());
 }
 

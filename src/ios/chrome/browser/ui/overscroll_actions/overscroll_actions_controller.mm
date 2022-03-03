@@ -21,8 +21,6 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 
@@ -206,6 +204,10 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 // This property is set from the delegate headerInset and cached on first
 // call. The cached value is reset when the webview proxy is set.
 @property(nonatomic, readonly) CGFloat initialContentInset;
+// Initial content offset for the scroll view. This is used to determine how
+// far the view scrolled and where to return the content offset to when
+// bouncing
+@property(nonatomic, readonly) CGFloat initialContentOffset;
 // Initial top inset for the header.
 // This property is set from the delegate headerInset and cached on first
 // call. The cached value is reset when the webview proxy is set.
@@ -777,12 +779,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   switch (self.overscrollState) {
     case OverscrollState::NO_PULL_STARTED: {
       [self.overscrollActionView removeFromSuperview];
-#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-      CGRect statusBarFrame = [UIApplication sharedApplication].statusBarFrame;
-#else
       CGRect statusBarFrame =
           [self scrollView].window.windowScene.statusBarManager.statusBarFrame;
-#endif
+
       SetViewFrameHeight(self.overscrollActionView,
                          self.initialContentInset + statusBarFrame.size.height,
                          0);
@@ -872,6 +871,11 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   return self.initialHeaderInset;
 }
 
+- (CGFloat)initialContentOffset {
+  return
+      [self.delegate initialContentOffsetForOverscrollActionsController:self];
+}
+
 - (CGFloat)initialHeaderInset {
   return [self.delegate headerInsetForOverscrollActionsController:self];
 }
@@ -919,9 +923,10 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   _dpLink = dpLink;
   memset(&_bounceState, 0, sizeof(_bounceState));
   if (self.overscrollState == OverscrollState::ACTION_READY) {
-    const UIEdgeInsets insets =
-        TopContentInset(self.scrollView, -[self scrollView].contentOffset.y +
-                                             self.initialContentInset);
+    CGFloat distanceScrolled =
+        [self scrollView].contentOffset.y - self.initialContentOffset;
+    const UIEdgeInsets insets = TopContentInset(
+        self.scrollView, -distanceScrolled + self.initialContentInset);
     [self setScrollViewContentInset:insets];
     [[self scrollView] setScrollIndicatorInsets:insets];
   }

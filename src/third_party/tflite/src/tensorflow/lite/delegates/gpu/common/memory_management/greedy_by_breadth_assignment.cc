@@ -16,12 +16,13 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/memory_management/greedy_by_breadth_assignment.h"
 
 #include <algorithm>
-#include <cstdint>
-#include <cstdlib>
+#include <cstddef>
 #include <set>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "tensorflow/lite/delegates/gpu/common/memory_management/internal.h"
+#include "tensorflow/lite/delegates/gpu/common/memory_management/types.h"
 
 namespace tflite {
 namespace gpu {
@@ -66,7 +67,7 @@ absl::Status GreedyByBreadthAssignment(
   std::vector<SharedObjectSchedule> obj_schedules;
 
   // Iterate through all tasks in non-increasing order of their breadth.
-  std::sort(task_breadth.rbegin(), task_breadth.rend());
+  std::stable_sort(task_breadth.rbegin(), task_breadth.rend());
   for (const auto& task : task_breadth) {
     // Iterate through all tensors, that must be allocated during the execution
     // of task, in non-increasing order of their tensor_size.

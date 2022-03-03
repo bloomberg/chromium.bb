@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_WEB_SESSION_STATE_WEB_SESSION_STATE_CACHE_WEB_STATE_LIST_OBSERVER_H_
 #define IOS_CHROME_BROWSER_WEB_SESSION_STATE_WEB_SESSION_STATE_CACHE_WEB_STATE_LIST_OBSERVER_H_
 
-#include "base/macros.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
 @class WebSessionStateCache;
@@ -16,6 +15,12 @@ class WebSessionStateCacheWebStateListObserver : public WebStateListObserver {
  public:
   explicit WebSessionStateCacheWebStateListObserver(
       WebSessionStateCache* web_session_state_cache);
+
+  WebSessionStateCacheWebStateListObserver(
+      const WebSessionStateCacheWebStateListObserver&) = delete;
+  WebSessionStateCacheWebStateListObserver& operator=(
+      const WebSessionStateCacheWebStateListObserver&) = delete;
+
   ~WebSessionStateCacheWebStateListObserver() override;
 
  private:
@@ -31,8 +36,6 @@ class WebSessionStateCacheWebStateListObserver : public WebStateListObserver {
   void WillBeginBatchOperation(WebStateList* web_state_list) override;
   void BatchOperationEnded(WebStateList* web_state_list) override;
   WebSessionStateCache* web_session_state_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSessionStateCacheWebStateListObserver);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_SESSION_STATE_WEB_SESSION_STATE_CACHE_WEB_STATE_LIST_OBSERVER_H_

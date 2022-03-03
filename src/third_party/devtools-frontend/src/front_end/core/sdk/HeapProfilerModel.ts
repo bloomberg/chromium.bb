@@ -2,69 +2,66 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 
-import type {DebuggerModel} from './DebuggerModel.js';       // eslint-disable-line no-unused-vars
-import type {RemoteObject} from './RemoteObject.js';         // eslint-disable-line no-unused-vars
-import {RuntimeModel} from './RuntimeModel.js';              // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {DebuggerModel} from './DebuggerModel.js';
+import type {RemoteObject} from './RemoteObject.js';
+import {RuntimeModel} from './RuntimeModel.js';
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 
-export class HeapProfilerModel extends SDKModel {
-  _enabled: boolean;
-  _heapProfilerAgent: ProtocolProxyApi.HeapProfilerApi;
-  _memoryAgent: ProtocolProxyApi.MemoryApi;
-  _runtimeModel: RuntimeModel;
-  _samplingProfilerDepth: number;
+export class HeapProfilerModel extends SDKModel<EventTypes> {
+  #enabled: boolean;
+  readonly #heapProfilerAgent: ProtocolProxyApi.HeapProfilerApi;
+  readonly #runtimeModelInternal: RuntimeModel;
+  #samplingProfilerDepth: number;
 
   constructor(target: Target) {
     super(target);
     target.registerHeapProfilerDispatcher(new HeapProfilerDispatcher(this));
-    this._enabled = false;
-    this._heapProfilerAgent = target.heapProfilerAgent();
-    this._memoryAgent = target.memoryAgent();
-    this._runtimeModel = (target.model(RuntimeModel) as RuntimeModel);
-    this._samplingProfilerDepth = 0;
+    this.#enabled = false;
+    this.#heapProfilerAgent = target.heapProfilerAgent();
+    this.#runtimeModelInternal = (target.model(RuntimeModel) as RuntimeModel);
+    this.#samplingProfilerDepth = 0;
   }
 
   debuggerModel(): DebuggerModel {
-    return this._runtimeModel.debuggerModel();
+    return this.#runtimeModelInternal.debuggerModel();
   }
 
   runtimeModel(): RuntimeModel {
-    return this._runtimeModel;
+    return this.#runtimeModelInternal;
   }
 
   async enable(): Promise<void> {
-    if (this._enabled) {
+    if (this.#enabled) {
       return;
     }
 
-    this._enabled = true;
-    await this._heapProfilerAgent.invoke_enable();
+    this.#enabled = true;
+    await this.#heapProfilerAgent.invoke_enable();
   }
 
   async startSampling(samplingRateInBytes?: number): Promise<boolean> {
-    if (this._samplingProfilerDepth++) {
+    if (this.#samplingProfilerDepth++) {
       return false;
     }
     const defaultSamplingIntervalInBytes = 16384;
-    const response = await this._heapProfilerAgent.invoke_startSampling(
+    const response = await this.#heapProfilerAgent.invoke_startSampling(
         {samplingInterval: samplingRateInBytes || defaultSamplingIntervalInBytes});
     return Boolean(response.getError());
   }
 
   async stopSampling(): Promise<Protocol.HeapProfiler.SamplingHeapProfile|null> {
-    if (!this._samplingProfilerDepth) {
+    if (!this.#samplingProfilerDepth) {
       throw new Error('Sampling profiler is not running.');
     }
-    if (--this._samplingProfilerDepth) {
+    if (--this.#samplingProfilerDepth) {
       return this.getSamplingProfile();
     }
-    const response = await this._heapProfilerAgent.invoke_stopSampling();
+    const response = await this.#heapProfilerAgent.invoke_stopSampling();
     if (response.getError()) {
       return null;
     }
@@ -72,7 +69,7 @@ export class HeapProfilerModel extends SDKModel {
   }
 
   async getSamplingProfile(): Promise<Protocol.HeapProfiler.SamplingHeapProfile|null> {
-    const response = await this._heapProfilerAgent.invoke_getSamplingProfile();
+    const response = await this.#heapProfilerAgent.invoke_getSamplingProfile();
     if (response.getError()) {
       return null;
     }
@@ -80,44 +77,46 @@ export class HeapProfilerModel extends SDKModel {
   }
 
   async collectGarbage(): Promise<boolean> {
-    const response = await this._heapProfilerAgent.invoke_collectGarbage();
+    const response = await this.#heapProfilerAgent.invoke_collectGarbage();
     return Boolean(response.getError());
   }
 
-  async snapshotObjectIdForObjectId(objectId: string): Promise<string|null> {
-    const response = await this._heapProfilerAgent.invoke_getHeapObjectId({objectId});
+  async snapshotObjectIdForObjectId(objectId: Protocol.Runtime.RemoteObjectId): Promise<string|null> {
+    const response = await this.#heapProfilerAgent.invoke_getHeapObjectId({objectId});
     if (response.getError()) {
       return null;
     }
     return response.heapSnapshotObjectId;
   }
 
-  async objectForSnapshotObjectId(snapshotObjectId: string, objectGroupName: string): Promise<RemoteObject|null> {
-    const result = await this._heapProfilerAgent.invoke_getObjectByHeapObjectId(
+  async objectForSnapshotObjectId(
+      snapshotObjectId: Protocol.HeapProfiler.HeapSnapshotObjectId,
+      objectGroupName: string): Promise<RemoteObject|null> {
+    const result = await this.#heapProfilerAgent.invoke_getObjectByHeapObjectId(
         {objectId: snapshotObjectId, objectGroup: objectGroupName});
     if (result.getError()) {
       return null;
     }
-    return this._runtimeModel.createRemoteObject(result.result);
+    return this.#runtimeModelInternal.createRemoteObject(result.result);
   }
 
-  async addInspectedHeapObject(snapshotObjectId: string): Promise<boolean> {
-    const response = await this._heapProfilerAgent.invoke_addInspectedHeapObject({heapObjectId: snapshotObjectId});
+  async addInspectedHeapObject(snapshotObjectId: Protocol.HeapProfiler.HeapSnapshotObjectId): Promise<boolean> {
+    const response = await this.#heapProfilerAgent.invoke_addInspectedHeapObject({heapObjectId: snapshotObjectId});
     return Boolean(response.getError());
   }
 
   async takeHeapSnapshot(heapSnapshotOptions: Protocol.HeapProfiler.TakeHeapSnapshotRequest): Promise<void> {
-    await this._heapProfilerAgent.invoke_takeHeapSnapshot(heapSnapshotOptions);
+    await this.#heapProfilerAgent.invoke_takeHeapSnapshot(heapSnapshotOptions);
   }
 
   async startTrackingHeapObjects(recordAllocationStacks: boolean): Promise<boolean> {
     const response =
-        await this._heapProfilerAgent.invoke_startTrackingHeapObjects({trackAllocations: recordAllocationStacks});
+        await this.#heapProfilerAgent.invoke_startTrackingHeapObjects({trackAllocations: recordAllocationStacks});
     return Boolean(response.getError());
   }
 
   async stopTrackingHeapObjects(reportProgress: boolean): Promise<boolean> {
-    const response = await this._heapProfilerAgent.invoke_stopTrackingHeapObjects({reportProgress});
+    const response = await this.#heapProfilerAgent.invoke_stopTrackingHeapObjects({reportProgress});
     return Boolean(response.getError());
   }
 
@@ -152,6 +151,32 @@ export enum Events {
   ResetProfiles = 'ResetProfiles',
 }
 
+/**
+ * An array of triplets. Each triplet describes a fragment. The first number is the fragment
+ * index, the second number is a total count of objects for the fragment, the third number is
+ * a total size of the objects for the fragment.
+ */
+export type HeapStatsUpdateSamples = number[];
+
+export interface LastSeenObjectId {
+  lastSeenObjectId: number;
+  timestamp: number;
+}
+
+export interface HeapSnapshotProgress {
+  done: number;
+  total: number;
+  finished?: boolean;
+}
+
+export type EventTypes = {
+  [Events.HeapStatsUpdate]: HeapStatsUpdateSamples,
+  [Events.LastSeenObjectId]: LastSeenObjectId,
+  [Events.AddHeapSnapshotChunk]: string,
+  [Events.ReportHeapSnapshotProgress]: HeapSnapshotProgress,
+  [Events.ResetProfiles]: HeapProfilerModel,
+};
+
 export interface NativeProfilerCallFrame {
   functionName: string;
   url: string;
@@ -173,29 +198,29 @@ export interface CommonHeapProfile {
 }
 
 class HeapProfilerDispatcher implements ProtocolProxyApi.HeapProfilerDispatcher {
-  _heapProfilerModel: HeapProfilerModel;
+  readonly #heapProfilerModel: HeapProfilerModel;
   constructor(model: HeapProfilerModel) {
-    this._heapProfilerModel = model;
+    this.#heapProfilerModel = model;
   }
 
   heapStatsUpdate({statsUpdate}: Protocol.HeapProfiler.HeapStatsUpdateEvent): void {
-    this._heapProfilerModel.heapStatsUpdate(statsUpdate);
+    this.#heapProfilerModel.heapStatsUpdate(statsUpdate);
   }
 
   lastSeenObjectId({lastSeenObjectId, timestamp}: Protocol.HeapProfiler.LastSeenObjectIdEvent): void {
-    this._heapProfilerModel.lastSeenObjectId(lastSeenObjectId, timestamp);
+    this.#heapProfilerModel.lastSeenObjectId(lastSeenObjectId, timestamp);
   }
 
   addHeapSnapshotChunk({chunk}: Protocol.HeapProfiler.AddHeapSnapshotChunkEvent): void {
-    this._heapProfilerModel.addHeapSnapshotChunk(chunk);
+    this.#heapProfilerModel.addHeapSnapshotChunk(chunk);
   }
 
   reportHeapSnapshotProgress({done, total, finished}: Protocol.HeapProfiler.ReportHeapSnapshotProgressEvent): void {
-    this._heapProfilerModel.reportHeapSnapshotProgress(done, total, finished);
+    this.#heapProfilerModel.reportHeapSnapshotProgress(done, total, finished);
   }
 
   resetProfiles(): void {
-    this._heapProfilerModel.resetProfiles();
+    this.#heapProfilerModel.resetProfiles();
   }
 }
 

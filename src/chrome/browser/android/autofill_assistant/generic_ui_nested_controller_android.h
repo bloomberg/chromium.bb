@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_GENERIC_UI_NESTED_CONTROLLER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_GENERIC_UI_NESTED_CONTROLLER_ANDROID_H_
 
-#include <map>
 #include <memory>
 #include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
@@ -55,7 +55,7 @@ class GenericUiNestedControllerAndroid {
   base::android::ScopedJavaGlobalRef<jobject> jroot_view_;
   std::unique_ptr<ViewHandlerAndroid> view_handler_;
   std::unique_ptr<InteractionHandlerAndroid> interaction_handler_;
-  RadioButtonController* radio_button_controller_ = nullptr;
+  raw_ptr<RadioButtonController> radio_button_controller_ = nullptr;
   std::vector<std::pair<std::string, std::string>> radio_buttons_;
 };
 

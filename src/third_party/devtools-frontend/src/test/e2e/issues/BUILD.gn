@@ -9,14 +9,23 @@ node_ts_library("issues") {
     "cors-issues_test.ts",
     "cors-private-network-issues_test.ts",
     "csp-violations-tab_test.ts",
+    "deprecation-issues_test.ts",
+    "generic-issues_test.ts",
     "group-by-categories_test.ts",
+    "group-by-kind_test.ts",
     "heavy-ad-issues_test.ts",
+    "hidden-issues-row_test.ts",
+    "hide-issues-menu_test.ts",
+    "issue-links_test.ts",
+    "issue-view-caching_test.ts",
+    "issue-view-reparent_test.ts",
     "low-text-contrast-issues_test.ts",
     "navigator-user-agent-issues_test.ts",
     "quirks-mode-issues_test.ts",
     "report-only_test.ts",
     "sab-issues_test.ts",
     "twa-issues_test.ts",
+    "wasm-co-issues_test.ts",
   ]
 
   deps = [

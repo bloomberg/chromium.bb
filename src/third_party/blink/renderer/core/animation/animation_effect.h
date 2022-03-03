@@ -47,6 +47,7 @@ class AnimationEffectOwner;
 class EffectTiming;
 class ComputedEffectTiming;
 class OptionalEffectTiming;
+class PropertyHandle;
 class WorkletAnimation;
 
 enum TimingUpdateReason {
@@ -83,6 +84,8 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   virtual bool IsKeyframeEffect() const { return false; }
   virtual bool IsInertEffect() const { return false; }
 
+  virtual bool Affects(const PropertyHandle&) const = 0;
+
   Timing::Phase GetPhase() const { return EnsureCalculated().phase; }
   bool IsCurrent() const { return EnsureCalculated().is_current; }
   bool IsInEffect() const { return EnsureCalculated().is_in_effect; }
@@ -104,6 +107,13 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   }
 
   const Timing& SpecifiedTiming() const { return timing_; }
+
+  const Timing::NormalizedTiming& NormalizedTiming() const {
+    EnsureNormalizedTiming();
+    return normalized_.value();
+  }
+  void InvalidateNormalizedTiming() { normalized_.reset(); }
+
   void UpdateSpecifiedTiming(const Timing&);
   void SetIgnoreCssTimingProperties();
 
@@ -120,7 +130,10 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   }
 
   // Attach/Detach the AnimationEffect from its owning animation.
-  virtual void Attach(AnimationEffectOwner* owner) { owner_ = owner; }
+  virtual void Attach(AnimationEffectOwner* owner) {
+    owner_ = owner;
+    InvalidateNormalizedTiming();
+  }
   virtual void Detach() {
     DCHECK(owner_);
     owner_ = nullptr;
@@ -133,11 +146,13 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
  protected:
   explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);
 
-  // When AnimationEffect receives a new inherited time via updateInheritedTime
+  // When AnimationEffect receives a new inherited time via UpdateInheritedTime
   // it will (if necessary) recalculate timings and (if necessary) call
-  // updateChildrenAndEffects.
+  // UpdateChildrenAndEffects.
   void UpdateInheritedTime(absl::optional<AnimationTimeDelta> inherited_time,
                            absl::optional<TimelinePhase> inherited_phase,
+                           bool at_progress_timeline_boundary,
+                           double inherited_playback_rate,
                            TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
   void InvalidateAndNotifyOwner() const;
@@ -164,16 +179,20 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   const Animation* GetAnimation() const;
   Animation* GetAnimation();
 
+  virtual absl::optional<AnimationTimeDelta> TimelineDuration() const = 0;
+
   Member<AnimationEffectOwner> owner_;
   Timing timing_;
   Member<EventDelegate> event_delegate_;
 
   mutable Timing::CalculatedTiming calculated_;
+  mutable absl::optional<Timing::NormalizedTiming> normalized_;
   mutable bool needs_update_;
   mutable absl::optional<AnimationTimeDelta> last_update_time_;
   mutable absl::optional<Timing::Phase> last_update_phase_;
   AnimationTimeDelta cancel_time_;
   const Timing::CalculatedTiming& EnsureCalculated() const;
+  void EnsureNormalizedTiming() const;
 };
 
 }  // namespace blink

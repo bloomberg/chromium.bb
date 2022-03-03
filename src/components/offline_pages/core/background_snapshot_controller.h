@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SNAPSHOT_CONTROLLER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SNAPSHOT_CONTROLLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace offline_pages {
 
@@ -55,6 +56,11 @@ class BackgroundSnapshotController {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       BackgroundSnapshotController::Client* client,
       bool renovations_enabled);
+
+  BackgroundSnapshotController(const BackgroundSnapshotController&) = delete;
+  BackgroundSnapshotController& operator=(const BackgroundSnapshotController&) =
+      delete;
+
   virtual ~BackgroundSnapshotController();
 
   // Resets the 'session', returning controller to initial state.
@@ -81,14 +87,12 @@ class BackgroundSnapshotController {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   // Client owns this class.
-  BackgroundSnapshotController::Client* client_;
+  raw_ptr<BackgroundSnapshotController::Client> client_;
   BackgroundSnapshotController::State state_;
   int64_t delay_after_document_on_load_completed_ms_;
   int64_t delay_after_renovations_completed_ms_;
 
   base::WeakPtrFactory<BackgroundSnapshotController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundSnapshotController);
 };
 
 }  // namespace offline_pages

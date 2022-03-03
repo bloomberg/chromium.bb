@@ -10,15 +10,14 @@
 #include <set>
 #include <string>
 
-#include "base/containers/flat_set.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/object_permission_context_base.h"
@@ -43,8 +42,11 @@ class SiteSettingsHandler
       public permissions::ObjectPermissionContextBase::PermissionObserver,
       public CookiesTreeModel::Observer {
  public:
-  explicit SiteSettingsHandler(Profile* profile,
-                               web_app::AppRegistrar& web_app_registrar);
+  explicit SiteSettingsHandler(Profile* profile);
+
+  SiteSettingsHandler(const SiteSettingsHandler&) = delete;
+  SiteSettingsHandler& operator=(const SiteSettingsHandler&) = delete;
+
   ~SiteSettingsHandler() override;
 
   // SettingsPageUIHandler:
@@ -125,6 +127,7 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleClearUsage);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
@@ -170,14 +173,20 @@ class SiteSettingsHandler
   // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
 
+  // Returns a list of content settings types that are controlled via a standard
+  // permissions UI and should be made visible to the user. There is a single
+  // nullable string argument, which represents an associated origin. See
+  // `SiteSettingsPrefsBrowserProxy#getCategoryList`.
+  void HandleGetCategoryList(const base::ListValue* args);
+
   // Returns a string for display describing the current cookie settings.
   void HandleGetCookieSettingDescription(const base::ListValue* args);
 
   // Returns a list containing the most recent permission changes for the
-  // provided content types grouped by origin/profile (incognito, regular)
-  // combinations, limited to N origin/profile pairings. This includes
-  // permission changes made by embargo, but does not include permissions
-  // enforced via policy.
+  // content types that are visiblein settings, grouped by origin/profile
+  // (incognito, regular) combinations, limited to N origin/profile pairings.
+  // This includes permission changes made by embargo, but does not include
+  // permissions enforced via policy.
   void HandleGetRecentSitePermissions(const base::ListValue* args);
 
   // Called when the list of origins using storage has been fetched, and sends
@@ -260,8 +269,7 @@ class SiteSettingsHandler
   // provides the updated description label for display.
   void SendCookieSettingDescription();
 
-  Profile* profile_;
-  web_app::AppRegistrar& app_registrar_;
+  const raw_ptr<Profile> profile_;
 
   base::ScopedMultiSourceObservation<Profile, ProfileObserver>
       observed_profiles_{this};
@@ -302,8 +310,6 @@ class SiteSettingsHandler
 
   // Whether to send site detail data on cookie tree model update.
   bool update_site_details_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SiteSettingsHandler);
 };
 
 }  // namespace settings

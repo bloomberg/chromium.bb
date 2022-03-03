@@ -7,6 +7,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "fuchsia/engine/features.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/base/ime/input_method.h"
@@ -21,6 +22,19 @@ fuchsia::ui::views::ViewRef DupViewRef(
       view_ref.reference.duplicate(ZX_RIGHT_SAME_RIGHTS, &dup.reference);
   ZX_CHECK(status == ZX_OK, status) << "zx_object_duplicate";
   return dup;
+}
+
+ui::PlatformWindowInitProperties CreatePlatformWindowInitProperties(
+    scenic::ViewRefPair view_ref_pair,
+    ui::ScenicWindowDelegate* scenic_window_delegate) {
+  ui::PlatformWindowInitProperties properties;
+  properties.view_ref_pair = std::move(view_ref_pair);
+  properties.enable_keyboard =
+      base::FeatureList::IsEnabled(features::kKeyboardInput);
+  properties.enable_virtual_keyboard =
+      base::FeatureList::IsEnabled(features::kVirtualKeyboard);
+  properties.scenic_window_delegate = scenic_window_delegate;
+  return properties;
 }
 
 }  // namespace
@@ -58,9 +72,26 @@ FrameWindowTreeHost::FrameWindowTreeHost(
       web_contents_(web_contents) {
   CreateCompositor();
 
-  ui::PlatformWindowInitProperties properties;
+  ui::PlatformWindowInitProperties properties =
+      CreatePlatformWindowInitProperties(std::move(view_ref_pair), this);
   properties.view_token = std::move(view_token);
-  properties.view_ref_pair = std::move(view_ref_pair);
+  CreateAndSetPlatformWindow(std::move(properties));
+
+  window_parenting_client_ =
+      std::make_unique<WindowParentingClientImpl>(window());
+}
+
+FrameWindowTreeHost::FrameWindowTreeHost(
+    fuchsia::ui::views::ViewCreationToken view_creation_token,
+    scenic::ViewRefPair view_ref_pair,
+    content::WebContents* web_contents)
+    : view_ref_(DupViewRef(view_ref_pair.view_ref)),
+      web_contents_(web_contents) {
+  CreateCompositor();
+
+  ui::PlatformWindowInitProperties properties =
+      CreatePlatformWindowInitProperties(std::move(view_ref_pair), this);
+  properties.view_creation_token = std::move(view_creation_token);
   CreateAndSetPlatformWindow(std::move(properties));
 
   window_parenting_client_ =
@@ -86,6 +117,7 @@ void FrameWindowTreeHost::OnActivationChanged(bool active) {
 }
 
 void FrameWindowTreeHost::OnWindowStateChanged(
+    ui::PlatformWindowState old_state,
     ui::PlatformWindowState new_state) {
   // Tell the root aura::Window whether it is shown or hidden.
   if (new_state == ui::PlatformWindowState::kMinimized) {
@@ -104,4 +136,9 @@ void FrameWindowTreeHost::OnWindowBoundsChanged(const BoundsChange& bounds) {
     web_contents_->GetMainFrame()->GetView()->SetInsets(
         bounds.system_ui_overlap);
   }
+}
+
+void FrameWindowTreeHost::OnScenicPixelScale(ui::PlatformWindow* window,
+                                             float scale) {
+  scenic_pixel_scale_ = scale;
 }

@@ -313,9 +313,9 @@ class LiftoffRegister {
   }
 
  private:
-  storage_t code_;
-
   explicit constexpr LiftoffRegister(storage_t code) : code_(code) {}
+
+  storage_t code_;
 };
 ASSERT_TRIVIALLY_COPYABLE(LiftoffRegister);
 
@@ -350,12 +350,14 @@ class LiftoffRegList {
 
   constexpr LiftoffRegList() = default;
 
-  Register set(Register reg) { return set(LiftoffRegister(reg)).gp(); }
-  DoubleRegister set(DoubleRegister reg) {
+  constexpr Register set(Register reg) {
+    return set(LiftoffRegister(reg)).gp();
+  }
+  constexpr DoubleRegister set(DoubleRegister reg) {
     return set(LiftoffRegister(reg)).fp();
   }
 
-  LiftoffRegister set(LiftoffRegister reg) {
+  constexpr LiftoffRegister set(LiftoffRegister reg) {
     if (reg.is_pair()) {
       regs_ |= storage_t{1} << reg.low().liftoff_code();
       regs_ |= storage_t{1} << reg.high().liftoff_code();
@@ -467,10 +469,10 @@ class LiftoffRegList {
   }
 
  private:
-  storage_t regs_ = 0;
-
   // Unchecked constructor. Only use for valid bits.
   explicit constexpr LiftoffRegList(storage_t bits) : regs_(bits) {}
+
+  storage_t regs_ = 0;
 };
 ASSERT_TRIVIALLY_COPYABLE(LiftoffRegList);
 

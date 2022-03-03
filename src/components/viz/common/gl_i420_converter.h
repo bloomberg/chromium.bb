@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gl_scaler.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
@@ -77,6 +77,10 @@ class VIZ_COMMON_EXPORT GLI420Converter final : public ContextLostObserver {
   using Parameters = GLScaler::Parameters;
 
   explicit GLI420Converter(ContextProvider* context_provider);
+
+  GLI420Converter(const GLI420Converter&) = delete;
+  GLI420Converter& operator=(const GLI420Converter&) = delete;
+
   ~GLI420Converter() final;
 
   // Returns true if the GL context provides the necessary support for enabling
@@ -158,7 +162,7 @@ class VIZ_COMMON_EXPORT GLI420Converter final : public ContextLostObserver {
 
   // The provider of the GL context. This is non-null while the GL context is
   // valid and GLI420Converter is observing for context loss.
-  ContextProvider* context_provider_;
+  raw_ptr<ContextProvider> context_provider_;
 
   // Scales the source content and produces either:
   //   * MRT path: NV61-format output in two textures.
@@ -184,8 +188,6 @@ class VIZ_COMMON_EXPORT GLI420Converter final : public ContextLostObserver {
 
   // The Parameters that were provided to the last successful Configure() call.
   Parameters params_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLI420Converter);
 };
 
 }  // namespace viz

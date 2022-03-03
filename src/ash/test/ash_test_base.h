@@ -11,12 +11,12 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/traits_bag.h"
@@ -27,6 +27,7 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/display/display.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 
 namespace aura {
@@ -69,12 +70,16 @@ class AmbientAshTestHelper;
 class AppListTestHelper;
 class AshTestHelper;
 class Shelf;
-class TestScreenshotDelegate;
+class TestAppListClient;
 class TestShellDelegate;
 class TestSystemTrayClient;
 class UnifiedSystemTray;
 class WorkAreaInsets;
 
+// Base class for most tests in //ash. Constructs ash::Shell and all its
+// dependencies. Provides a user login session (use NoSessionAshTestBase for
+// tests that start at the login screen or need unusual user types). Sets
+// animation durations to zero via AshTestHelper/AuraTestHelper.
 class AshTestBase : public testing::Test {
  public:
   // Constructs an AshTestBase with |traits| being forwarded to its
@@ -89,6 +94,9 @@ class AshTestBase : public testing::Test {
   // Alternatively a subclass may pass a TaskEnvironment directly.
   explicit AshTestBase(
       std::unique_ptr<base::test::TaskEnvironment> task_environment);
+
+  AshTestBase(const AshTestBase&) = delete;
+  AshTestBase& operator=(const AshTestBase&) = delete;
 
   ~AshTestBase() override;
 
@@ -122,6 +130,9 @@ class AshTestBase : public testing::Test {
       int container_id = desks_util::GetActiveDeskContainerId(),
       const gfx::Rect& bounds = gfx::Rect(),
       bool show = true);
+
+  // Creates a frameless widget for testing.
+  static std::unique_ptr<views::Widget> CreateFramelessTestWidget();
 
   // Creates a widget with a visible WINDOW_TYPE_NORMAL window with the given
   // |app_type|. If |app_type| is AppType::NON_APP, this window is considered a
@@ -185,10 +196,19 @@ class AshTestBase : public testing::Test {
   bool TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
                           const gfx::Point& point_in_screen);
 
+  // Presses and releases a key to simulate typing one character.
+  void PressAndReleaseKey(ui::KeyboardCode key_code, int flags = ui::EF_NONE);
+
   // Moves the mouse to the center of the view and generates a left button click
   // event.
   void SimulateMouseClickAt(ui::test::EventGenerator* event_generator,
                             const views::View* target_view);
+
+  // Enters/Exits overview mode with the given animation type `type`.
+  bool EnterOverview(
+      OverviewEnterExitType type = OverviewEnterExitType::kNormal);
+  bool ExitOverview(
+      OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
  protected:
   enum UserSessionBlockReason {
@@ -217,13 +237,13 @@ class AshTestBase : public testing::Test {
                    const std::string& path,
                    const base::Value& value);
 
-  TestScreenshotDelegate* GetScreenshotDelegate();
-
   TestSessionControllerClient* GetSessionControllerClient();
 
   TestSystemTrayClient* GetSystemTrayClient();
 
   AppListTestHelper* GetAppListTestHelper();
+
+  TestAppListClient* GetTestAppListClient();
 
   AmbientAshTestHelper* GetAmbientAshTestHelper();
 
@@ -233,8 +253,19 @@ class AshTestBase : public testing::Test {
 
   // Simulates a user sign-in. It creates a new user session, adds it to
   // existing user sessions and makes it the active user session.
+  //
+  // For convenience |user_email| is used to create an |AccountId|. For testing
+  // behavior where |AccountId|s are compared, prefer the method of the same
+  // name that takes an |AccountId| created with a valid storage key instead.
+  // See the documentation for|AccountId::GetUserEmail| for discussion.
   void SimulateUserLogin(
       const std::string& user_email,
+      user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR);
+
+  // Simulates a user sign-in. It creates a new user session, adds it to
+  // existing user sessions and makes it the active user session.
+  void SimulateUserLogin(
+      const AccountId& account_id,
       user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR);
 
   // Simular to SimulateUserLogin but for a newly created user first ever login.
@@ -299,8 +330,6 @@ class AshTestBase : public testing::Test {
   std::unique_ptr<AshTestHelper> ash_test_helper_;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };
 
 class NoSessionAshTestBase : public AshTestBase {
@@ -308,10 +337,11 @@ class NoSessionAshTestBase : public AshTestBase {
   NoSessionAshTestBase();
   explicit NoSessionAshTestBase(
       base::test::TaskEnvironment::TimeSource time_source);
-  ~NoSessionAshTestBase() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
+  NoSessionAshTestBase(const NoSessionAshTestBase&) = delete;
+  NoSessionAshTestBase& operator=(const NoSessionAshTestBase&) = delete;
+
+  ~NoSessionAshTestBase() override;
 };
 
 }  // namespace ash

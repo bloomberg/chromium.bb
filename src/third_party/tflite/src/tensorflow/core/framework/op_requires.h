@@ -57,6 +57,18 @@ namespace tensorflow {
     }                                                        \
   } while (0)
 
+#define OP_REQUIRES_OK_OR_SET_PAYLOAD(CTX, PAYLOAD_KEY, PAYLOAD_VALUE, STATUS) \
+  do {                                                                         \
+    if (!TF_PREDICT_TRUE(STATUS.ok())) {                                       \
+      CheckNotInComputeAsync((CTX), "OP_REQUIRES_OK_ASYNC");                   \
+      if (!PAYLOAD_VALUE.empty()) {                                            \
+        STATUS.SetPayload(PAYLOAD_KEY, PAYLOAD_VALUE);                         \
+      }                                                                        \
+      (CTX)->CtxFailureWithWarning(__FILE__, __LINE__, STATUS);                \
+      return;                                                                  \
+    }                                                                          \
+  } while (0)
+
 #define OP_REQUIRES_ASYNC(CTX, EXP, STATUS, CALLBACK)  \
   do {                                                 \
     if (!TF_PREDICT_TRUE(EXP)) {                       \
@@ -68,13 +80,23 @@ namespace tensorflow {
 
 #define OP_REQUIRES_OK_ASYNC(CTX, STATUS, CALLBACK)         \
   do {                                                      \
-    ::tensorflow::Status _s(STATUS);                        \
+    const ::tensorflow::Status& _s(STATUS);                 \
     if (!TF_PREDICT_TRUE(_s.ok())) {                        \
       (CTX)->CtxFailureWithWarning(__FILE__, __LINE__, _s); \
       (CALLBACK)();                                         \
       return;                                               \
     }                                                       \
   } while (0)
+
+#define OP_REQUIRES_VALUE(lhs, ctx, rexpr)                                   \
+  OP_REQUIRES_VALUE_IMPL(                                                    \
+      TF_STATUS_MACROS_CONCAT_NAME(_status_or_value, __COUNTER__), lhs, ctx, \
+      rexpr)
+
+#define OP_REQUIRES_VALUE_IMPL(statusor, lhs, ctx, rexpr) \
+  auto statusor = (rexpr);                                \
+  OP_REQUIRES_OK(ctx, statusor.status());                 \
+  lhs = std::move(statusor.ValueOrDie())
 
 }  // namespace tensorflow
 

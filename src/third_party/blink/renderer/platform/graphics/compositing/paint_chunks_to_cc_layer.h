@@ -8,38 +8,33 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/paint/display_item_list.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class DisplayItemList;
 class Layer;
 }  // namespace cc
 
-namespace gfx {
-class Vector2dF;
-}  // namespace gfx
-
 namespace blink {
 
 class PaintChunkSubset;
-class PropertyTreeManager;
 class PropertyTreeState;
 class RasterInvalidationTracking;
 
 struct RasterUnderInvalidationCheckingParams {
   RasterUnderInvalidationCheckingParams(RasterInvalidationTracking& tracking,
-                                        const IntRect& interest_rect,
+                                        const gfx::Rect& interest_rect,
                                         const String& debug_name)
       : tracking(tracking),
         interest_rect(interest_rect),
         debug_name(debug_name) {}
 
   RasterInvalidationTracking& tracking;
-  IntRect interest_rect;
+  gfx::Rect interest_rect;
   String debug_name;
 };
 
@@ -73,11 +68,13 @@ class PLATFORM_EXPORT PaintChunksToCcLayer {
       cc::DisplayItemList::UsageHint,
       RasterUnderInvalidationCheckingParams* = nullptr);
 
+  static void UpdateLayerSelection(cc::Layer& layer,
+                                   const PropertyTreeState& layer_state,
+                                   const PaintChunkSubset&,
+                                   cc::LayerSelection& layer_selection);
   static void UpdateLayerProperties(cc::Layer& layer,
                                     const PropertyTreeState& layer_state,
-                                    const PaintChunkSubset&,
-                                    cc::LayerSelection& layer_selection,
-                                    PropertyTreeManager* = nullptr);
+                                    const PaintChunkSubset&);
 };
 
 }  // namespace blink

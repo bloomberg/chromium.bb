@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -72,6 +72,9 @@ class DirectOutputSurface : public viz::OutputSurface {
     capabilities_.output_surface_origin =
         context_provider->ContextCapabilities().surface_origin;
   }
+
+  DirectOutputSurface(const DirectOutputSurface&) = delete;
+  DirectOutputSurface& operator=(const DirectOutputSurface&) = delete;
 
   ~DirectOutputSurface() override {}
 
@@ -138,10 +141,8 @@ class DirectOutputSurface : public viz::OutputSurface {
     client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
-  viz::OutputSurfaceClient* client_ = nullptr;
+  raw_ptr<viz::OutputSurfaceClient> client_ = nullptr;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
 };
 
 }  // namespace
@@ -189,6 +190,7 @@ class InProcessContextFactory::PerCompositorData
   void SetSupportedRefreshRates(
       const std::vector<float>& refresh_rates) override {}
   void PreserveChildSurfaceControls() override {}
+  void SetSwapCompletionCallbackEnabled(bool enabled) override {}
 #endif
 
   void SetDelegatedInkPointRenderer(
@@ -219,7 +221,7 @@ class InProcessContextFactory::PerCompositorData
   }
   viz::Display* display() { return display_.get(); }
 
-  SkMatrix44 output_color_matrix() { return output_color_matrix_; }
+  skia::Matrix44 output_color_matrix() { return output_color_matrix_; }
   gfx::DisplayColorSpaces display_color_spaces() {
     return display_color_spaces_;
   }
@@ -231,7 +233,7 @@ class InProcessContextFactory::PerCompositorData
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
 
-  SkMatrix44 output_color_matrix_;
+  skia::Matrix44 output_color_matrix_;
   gfx::DisplayColorSpaces display_color_spaces_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
@@ -327,7 +329,6 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   if (renderer_settings_.use_skia_renderer) {
     auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
         viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-        viz::TestGpuServiceHolder::GetInstance()->task_executor(),
         gpu::kNullSurfaceHandle);
     display_dependency =
         std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
@@ -359,14 +360,14 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         compositor->task_runner().get());
     time_source->SetTimebaseAndInterval(
         base::TimeTicks(),
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          refresh_rate_));
+        base::Microseconds(base::Time::kMicrosecondsPerSecond / refresh_rate_));
     begin_frame_source = std::make_unique<viz::DelayBasedBeginFrameSource>(
         std::move(time_source), viz::BeginFrameSource::kNotRestartableId);
   }
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),
-      display_output_surface->capabilities().max_frames_pending);
+      display_output_surface->capabilities().pending_swap_params,
+      /*hint_session_factory=*/nullptr);
 
   data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, &debug_settings_,
@@ -448,11 +449,11 @@ viz::HostFrameSinkManager* InProcessContextFactory::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
 }
 
-SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(
+skia::Matrix44 InProcessContextFactory::GetOutputColorMatrix(
     Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
-    return SkMatrix44(SkMatrix44::kIdentity_Constructor);
+    return skia::Matrix44(skia::Matrix44::kIdentity_Constructor);
 
   return iter->second->output_color_matrix();
 }

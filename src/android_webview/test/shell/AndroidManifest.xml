@@ -26,7 +26,8 @@
       android:hardwareAccelerated="true">
     <activity android:name="org.chromium.android_webview.shell.AwShellActivity"
         android:label="Android WebView Test Shell"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize">
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -41,7 +42,8 @@
       </intent-filter>
     </activity>
     <activity android:name="org.chromium.android_webview.test.AwTestRunnerActivity"
-        android:label="AwTestRunnerActivity">
+        android:label="AwTestRunnerActivity"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.FRAMEWORK_INSTRUMENTATION_TEST" />
@@ -77,6 +79,8 @@
     <service android:name="org.chromium.android_webview.services.VariationsSeedServer"
              android:exported="true"
              android:process=":webview_service" />
+    <service android:name="org.chromium.android_webview.services.MetricsUploadService"
+             android:exported="true"/>
     <service android:name="org.chromium.android_webview.services.MetricsBridgeService"
              android:exported="true"
              android:process=":webview_service" />
@@ -93,6 +97,8 @@
              android:permission="android.permission.BIND_JOB_SERVICE"
              android:exported="false"
              android:process=":webview_apk"/>
+    <service android:name="org.chromium.android_webview.test.services.MockAwComponentUpdateService"
+             android:exported="false"/>
     <!-- Components for Developer UI, make sure that any changes in these components reflect
          the corresponding original components in nonembedded/java/AndroidManifest.xml -->
     <activity android:name="org.chromium.android_webview.devui.MainActivity"

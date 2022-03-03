@@ -42,7 +42,7 @@ extern "C" {
  * fields to structures
  */
 #define AOM_ENCODER_ABI_VERSION \
-  (9 + AOM_CODEC_ABI_VERSION + AOM_EXT_PART_ABI_VERSION) /**<\hideinitializer*/
+  (10 + AOM_CODEC_ABI_VERSION + AOM_EXT_PART_ABI_VERSION) /**<\hideinitializer*/
 
 /*! \brief Encoder capabilities bitfield
  *
@@ -155,11 +155,19 @@ typedef struct aom_rational {
   int den;        /**< fraction denominator */
 } aom_rational_t; /**< alias for struct aom_rational */
 
-/*!\brief Multi-pass Encoding Pass */
+/*!\brief Multi-pass Encoding Pass
+ *
+ * AOM_RC_LAST_PASS is kept for backward compatibility.
+ * If passes is not given and pass==2, the codec will assume passes=2.
+ * For new code, it is recommended to use AOM_RC_SECOND_PASS and set
+ * the "passes" member to 2 via the key & val API for two-pass encoding.
+ */
 enum aom_enc_pass {
-  AOM_RC_ONE_PASS,   /**< Single pass mode */
-  AOM_RC_FIRST_PASS, /**< First pass of multi-pass mode */
-  AOM_RC_LAST_PASS   /**< Final pass of multi-pass mode */
+  AOM_RC_ONE_PASS = 0,    /**< Single pass mode */
+  AOM_RC_FIRST_PASS = 1,  /**< First pass of multi-pass mode */
+  AOM_RC_SECOND_PASS = 2, /**< Second pass of multi-pass mode */
+  AOM_RC_THIRD_PASS = 3,  /**< Third pass of multi-pass mode */
+  AOM_RC_LAST_PASS = 2,   /**< Final pass of two-pass mode */
 };
 
 /*!\brief Rate control mode */
@@ -614,7 +622,7 @@ typedef struct aom_codec_enc_cfg {
 
   /*!\brief Target data rate
    *
-   * Target bandwidth to use for this stream, in kilobits per second.
+   * Target bitrate to use for this stream, in kilobits per second.
    */
   unsigned int rc_target_bitrate;
 
@@ -649,7 +657,7 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Rate control adaptation undershoot control
    *
    * This value, controls the tolerance of the VBR algorithm to undershoot
-   * and is used as a trigger threshold for more agressive adaptation of Q.
+   * and is used as a trigger threshold for more aggressive adaptation of Q.
    *
    * Valid values in the range 0-100.
    */
@@ -658,9 +666,9 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Rate control adaptation overshoot control
    *
    * This value, controls the tolerance of the VBR algorithm to overshoot
-   * and is used as a trigger threshold for more agressive adaptation of Q.
+   * and is used as a trigger threshold for more aggressive adaptation of Q.
    *
-   * Valid values in the range 0-1000.
+   * Valid values in the range 0-100.
    */
   unsigned int rc_overshoot_pct;
 
@@ -905,7 +913,7 @@ typedef struct aom_codec_enc_cfg {
  * function directly, to ensure that the ABI version number parameter
  * is properly initialized.
  *
- * If the library was configured with --disable-multithread, this call
+ * If the library was configured with -DCONFIG_MULTITHREAD=0, this call
  * is not thread safe and should be guarded with a lock if being used
  * in a multithreaded context.
  *

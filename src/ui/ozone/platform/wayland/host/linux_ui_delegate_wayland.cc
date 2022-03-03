@@ -29,7 +29,7 @@ LinuxUiBackend LinuxUiDelegateWayland::GetBackend() const {
   return LinuxUiBackend::kWayland;
 }
 
-bool LinuxUiDelegateWayland::SetWidgetTransientFor(
+bool LinuxUiDelegateWayland::ExportWindowHandle(
     gfx::AcceleratedWidget parent,
     base::OnceCallback<void(const std::string&)> callback) {
   auto* parent_window =
@@ -42,11 +42,6 @@ bool LinuxUiDelegateWayland::SetWidgetTransientFor(
 
   foreign->ExportSurfaceToForeign(parent_window, std::move(callback));
   return true;
-}
-
-int LinuxUiDelegateWayland::GetKeyState() {
-  // TODO(crbug/1159460): Test fcitx unikey IME on ozone/wayland.
-  return connection_->event_source()->keyboard_modifiers();
 }
 
 }  // namespace ui

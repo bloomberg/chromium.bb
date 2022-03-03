@@ -7,10 +7,10 @@
 #ifndef FXJS_XFA_CJX_TREE_H_
 #define FXJS_XFA_CJX_TREE_H_
 
+#include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "fxjs/xfa/jse_define.h"
 
-class CFXJSE_Value;
 class CXFA_Object;
 class CXFA_Node;
 
@@ -43,11 +43,10 @@ class CJX_Tree : public CJX_Object {
   static const TypeTag static_type__ = TypeTag::Tree;
   static const CJX_MethodSpec MethodSpecs[];
 
-  void ResolveNodeList(v8::Isolate* pIsolate,
-                       v8::Local<v8::Value>* pValue,
-                       WideString wsExpression,
-                       uint32_t dwFlag,
-                       CXFA_Node* refNode);
+  v8::Local<v8::Value> ResolveNodeList(v8::Isolate* pIsolate,
+                                       WideString wsExpression,
+                                       Mask<XFA_ResolveFlag> dwFlag,
+                                       CXFA_Node* refNode);
 };
 
 #endif  // FXJS_XFA_CJX_TREE_H_

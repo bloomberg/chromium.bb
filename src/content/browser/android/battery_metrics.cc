@@ -12,9 +12,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "net/android/network_library.h"
 #include "net/android/traffic_stats.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
 
 const base::Feature kForegroundRadioStateCountWakeups{
     "ForegroundRadioStateCountWakeups", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -98,38 +100,86 @@ void Report30SecondDrain(int capacity_consumed, bool is_exclusive_measurement) {
   }
 }
 
+base::HistogramBase* GetAvgBatteryDrainHistogram(const char* suffix) {
+  static constexpr char kAvgDrainHistogramPrefix[] =
+      "Power.ForegroundBatteryDrain.30SecondsAvg2";
+  return base::Histogram::FactoryGet(
+      std::string(kAvgDrainHistogramPrefix) + suffix, 1, 100000, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
 void ReportAveragedDrain(int capacity_consumed,
                          bool is_exclusive_measurement,
                          int num_sampling_periods) {
   // Averaged drain over 30 second intervals in uAh. We assume a max current of
   // 10A which translates to a little under 100mAh capacity drain over 30
   // seconds.
-  static const char kName[] = "Power.ForegroundBatteryDrain.30SecondsAvg";
-  STATIC_HISTOGRAM_POINTER_BLOCK(
-      kName,
-      AddCount(capacity_consumed / num_sampling_periods, num_sampling_periods),
-      base::Histogram::FactoryGet(
-          kName, /*min_value=*/1, /*max_value=*/100000, /*bucket_count=*/50,
-          base::HistogramBase::kUmaTargetedHistogramFlag));
+  auto capacity_consumed_avg = capacity_consumed / num_sampling_periods;
 
-  if (is_exclusive_measurement) {
-    static const char kExclusiveName[] =
-        "Power.ForegroundBatteryDrain.30SecondsAvg.Exclusive";
-    STATIC_HISTOGRAM_POINTER_BLOCK(
-        kExclusiveName,
-        AddCount(capacity_consumed / num_sampling_periods,
-                 num_sampling_periods),
-        base::Histogram::FactoryGet(
-            kExclusiveName, /*min_value=*/1, /*max_value=*/100000,
-            /*bucket_count=*/50,
-            base::HistogramBase::kUmaTargetedHistogramFlag));
+  GetAvgBatteryDrainHistogram("")->AddCount(capacity_consumed_avg,
+                                            num_sampling_periods);
+
+  size_t no_darkening_count = 0, user_agent_darkening_count = 0,
+         web_page_or_user_agent_darkening_count = 0,
+         web_page_darkening_count = 0;
+  auto all_webcontents = WebContentsImpl::GetAllWebContents();
+  auto total_webcontents_count = all_webcontents.size();
+  for (WebContentsImpl* wc : all_webcontents) {
+    auto dark_theme = wc->GetOrCreateWebPreferences().preferred_color_scheme ==
+                      blink::mojom::PreferredColorScheme::kDark;
+    auto force_dark = wc->GetOrCreateWebPreferences().force_dark_mode_enabled;
+
+    if (force_dark) {
+      if (dark_theme) {
+        web_page_or_user_agent_darkening_count++;
+      } else {
+        user_agent_darkening_count++;
+      }
+    } else {
+      if (dark_theme) {
+        web_page_darkening_count++;
+      } else {
+        no_darkening_count++;
+      }
+    }
   }
 
-  // Also report the time it took for us to detect this drop to see what the
-  // overall metric sensitivity is.
-  UMA_HISTOGRAM_LONG_TIMES_100(
-      "Power.ForegroundBatteryDrain.TimeBetweenEvents",
-      base::TimeDelta::FromSeconds(30 * num_sampling_periods));
+  base::HistogramBase* dark_mode_histogram = nullptr;
+  base::HistogramBase* exclusive_dark_mode_histogram = nullptr;
+
+  if (user_agent_darkening_count + web_page_or_user_agent_darkening_count ==
+      total_webcontents_count) {
+    // All WebContents have at least user-agent darkening.
+    dark_mode_histogram = GetAvgBatteryDrainHistogram(".ForcedDarkMode");
+    exclusive_dark_mode_histogram =
+        GetAvgBatteryDrainHistogram(".Exclusive.ForcedDarkMode");
+  } else if (web_page_darkening_count == total_webcontents_count) {
+    // All WebContents have only web page darkening.
+    dark_mode_histogram = GetAvgBatteryDrainHistogram(".DarkMode");
+    exclusive_dark_mode_histogram =
+        GetAvgBatteryDrainHistogram(".Exclusive.DarkMode");
+  } else if (no_darkening_count == total_webcontents_count) {
+    // None of the WebContents have any darkening.
+    dark_mode_histogram = GetAvgBatteryDrainHistogram(".LightMode");
+    exclusive_dark_mode_histogram =
+        GetAvgBatteryDrainHistogram(".Exclusive.LightMode");
+  } else {
+    // Some WebContents have some kind of darkening and some might not have any.
+    dark_mode_histogram = GetAvgBatteryDrainHistogram(".MixedMode");
+    exclusive_dark_mode_histogram =
+        GetAvgBatteryDrainHistogram(".Exclusive.MixedMode");
+  }
+  DCHECK(dark_mode_histogram);
+  DCHECK(exclusive_dark_mode_histogram);
+
+  dark_mode_histogram->AddCount(capacity_consumed_avg, num_sampling_periods);
+
+  if (is_exclusive_measurement) {
+    GetAvgBatteryDrainHistogram(".Exclusive")
+        ->AddCount(capacity_consumed_avg, num_sampling_periods);
+    exclusive_dark_mode_histogram->AddCount(capacity_consumed_avg,
+                                            num_sampling_periods);
+  }
 }
 
 }  // namespace
@@ -187,15 +237,18 @@ void AndroidBatteryMetrics::UpdateMetricsEnabled() {
     skipped_timers_ = 0;
     observed_capacity_drops_ = 0;
 
-    metrics_timer_.Start(FROM_HERE, kMetricsInterval, this,
-                         &AndroidBatteryMetrics::CaptureAndReportMetrics);
+    metrics_timer_.Start(
+        FROM_HERE, kMetricsInterval,
+        base::BindRepeating(&AndroidBatteryMetrics::CaptureAndReportMetrics,
+                            base::Unretained(this),
+                            /*disabling=*/false));
     if (base::FeatureList::IsEnabled(kForegroundRadioStateCountWakeups)) {
       radio_state_timer_.Start(FROM_HERE, kRadioStateInterval, this,
                                &AndroidBatteryMetrics::MonitorRadioState);
     }
   } else if (!should_be_enabled && metrics_timer_.IsRunning()) {
     // Capture one last measurement before disabling the timer.
-    CaptureAndReportMetrics();
+    CaptureAndReportMetrics(/*disabling=*/true);
     metrics_timer_.Stop();
     if (base::FeatureList::IsEnabled(kForegroundRadioStateCountWakeups)) {
       radio_state_timer_.Stop();
@@ -238,7 +291,7 @@ void AndroidBatteryMetrics::UpdateAndReportRadio() {
   radio_wakeups_ = 0;
 }
 
-void AndroidBatteryMetrics::CaptureAndReportMetrics() {
+void AndroidBatteryMetrics::CaptureAndReportMetrics(bool disabling) {
   int remaining_capacity_uah =
       base::PowerMonitor::GetRemainingBatteryCapacity();
 
@@ -250,6 +303,17 @@ void AndroidBatteryMetrics::CaptureAndReportMetrics() {
     skipped_timers_++;
     Report30SecondDrain(0, IsMeasuringDrainExclusively());
     UpdateAndReportRadio();
+
+    if (disabling) {
+      // Disabling the timer, but without a change in capacity counter -- We
+      // should still emit values for the elapsed time intervals into the
+      // average histograms. We exclude exclusive metrics here, because these
+      // metrics exclude the measurements before the first capacity drop and
+      // after the last drop. Member fields will be reset when tracking
+      // is resumed after foregrounding again later.
+      ReportAveragedDrain(0, /*is_exclusive_measurement=*/false,
+                          skipped_timers_);
+    }
 
     return;
   }
@@ -264,7 +328,8 @@ void AndroidBatteryMetrics::CaptureAndReportMetrics() {
   // time we recorded an increase (or started recording samples). Because the
   // underlying battery capacity counter is often low-resolution (usually
   // between .5 and 50 mAh), it may only increment after multiple sampling
-  // points.
+  // points. For example, a 20 mAh drop over two successive periods of 30
+  // seconds will be reported as two samples of 10 mAh.
   ReportAveragedDrain(capacity_consumed, IsMeasuringDrainExclusively(),
                       skipped_timers_ + 1);
 

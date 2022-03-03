@@ -20,10 +20,19 @@
 #include "base/android/build_info.h"
 #endif
 
+#define GL_NONE 0x00
+#define GL_LAYOUT_GENERAL_EXT 0x958D
+#define GL_LAYOUT_COLOR_ATTACHMENT_EXT 0x958E
+#define GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT 0x958F
+#define GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT 0x9590
+#define GL_LAYOUT_SHADER_READ_ONLY_EXT 0x9591
+#define GL_LAYOUT_TRANSFER_SRC_EXT 0x9592
+#define GL_LAYOUT_TRANSFER_DST_EXT 0x9593
+#define GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT 0x9530
+#define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
+
 namespace gpu {
 namespace {
-
-uint64_t g_submit_count = 0u;
 
 #if defined(OS_ANDROID)
 int GetEMUIVersion() {
@@ -119,14 +128,6 @@ std::string VkVersionToString(uint32_t version) {
                             VK_VERSION_PATCH(version));
 }
 
-VkResult QueueSubmitHook(VkQueue queue,
-                         uint32_t submitCount,
-                         const VkSubmitInfo* pSubmits,
-                         VkFence fence) {
-  g_submit_count++;
-  return vkQueueSubmit(queue, submitCount, pSubmits, fence);
-}
-
 VkResult CreateGraphicsPipelinesHook(
     VkDevice device,
     VkPipelineCache pipelineCache,
@@ -138,19 +139,12 @@ VkResult CreateGraphicsPipelinesHook(
       [](base::Time time) {
         UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
             "GPU.Vulkan.PipelineCache.vkCreateGraphicsPipelines",
-            base::Time::Now() - time, base::TimeDelta::FromMicroseconds(100),
-            base::TimeDelta::FromMicroseconds(50000), 50);
+            base::Time::Now() - time, base::Microseconds(100),
+            base::Microseconds(50000), 50);
       },
       base::Time::Now()));
   return vkCreateGraphicsPipelines(device, pipelineCache, createInfoCount,
                                    pCreateInfos, pAllocator, pPipelines);
-}
-
-void ReportUMAPerSwapBuffers() {
-  static uint64_t last_submit_count = 0u;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.Vulkan.QueueSubmitPerSwapBuffers",
-                              g_submit_count - last_submit_count, 1, 50, 50);
-  last_submit_count = g_submit_count;
 }
 
 bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
@@ -225,6 +219,9 @@ bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
 
   // https:://crbug.com/1165783: Performance is not yet as good as GL.
   if (device_info.properties.vendorID == kVendorQualcomm) {
+    if (device_info.properties.deviceName ==
+        base::StringPiece("Adreno (TM) 630"))
+      return true;
     return false;
   }
 
@@ -235,6 +232,63 @@ bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
 #endif  // defined(OS_ANDROID)
 
   return true;
+}
+
+VkImageLayout GLImageLayoutToVkImageLayout(uint32_t layout) {
+  switch (layout) {
+    case GL_NONE:
+      break;
+    case GL_LAYOUT_GENERAL_EXT:
+      return VK_IMAGE_LAYOUT_GENERAL;
+    case GL_LAYOUT_COLOR_ATTACHMENT_EXT:
+      return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    case GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT:
+      return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    case GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT:
+      return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    case GL_LAYOUT_SHADER_READ_ONLY_EXT:
+      return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    case GL_LAYOUT_TRANSFER_SRC_EXT:
+      return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    case GL_LAYOUT_TRANSFER_DST_EXT:
+      return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    case GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT:
+      return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+    case GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT:
+      return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR;
+    default:
+      break;
+  }
+  NOTREACHED() << "Invalid image layout " << layout;
+  return VK_IMAGE_LAYOUT_UNDEFINED;
+}
+
+uint32_t VkImageLayoutToGLImageLayout(VkImageLayout layout) {
+  switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return GL_NONE;
+    case VK_IMAGE_LAYOUT_GENERAL:
+      return GL_LAYOUT_GENERAL_EXT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return GL_LAYOUT_COLOR_ATTACHMENT_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+      return GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+      return GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return GL_LAYOUT_SHADER_READ_ONLY_EXT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+      return GL_LAYOUT_TRANSFER_SRC_EXT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return GL_LAYOUT_TRANSFER_DST_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
+      return GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
+      return GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT;
+    default:
+      NOTREACHED() << "Invalid image layout " << layout;
+      return GL_NONE;
+  }
 }
 
 }  // namespace gpu

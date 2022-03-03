@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -91,6 +90,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileServiceProvider {
     virtual void Cancel() = 0;
   };
 
+  BluetoothProfileServiceProvider(const BluetoothProfileServiceProvider&) =
+      delete;
+  BluetoothProfileServiceProvider& operator=(
+      const BluetoothProfileServiceProvider&) = delete;
+
   virtual ~BluetoothProfileServiceProvider();
 
   // Creates the instance where |bus| is the D-Bus bus connection to export
@@ -104,9 +108,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileServiceProvider {
 
  protected:
   BluetoothProfileServiceProvider();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileServiceProvider);
 };
 
 }  // namespace bluez

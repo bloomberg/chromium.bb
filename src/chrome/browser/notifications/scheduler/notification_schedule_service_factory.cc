@@ -9,6 +9,8 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
+#include "chrome/browser/feature_guide/notifications/feature_notification_guide_service_factory.h"
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_impl.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
@@ -26,8 +28,6 @@
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
 #include "chrome/browser/reading_list/android/reading_list_notification_client.h"
 #include "chrome/browser/reading_list/android/reading_list_notification_service.h"
-#include "chrome/browser/updates/update_notification_client.h"
-#include "chrome/browser/updates/update_notification_service_factory.h"
 #endif  // defined(OS_ANDROID)
 
 namespace {
@@ -37,16 +37,6 @@ RegisterClients(ProfileKey* key) {
   auto client_registrar =
       std::make_unique<notifications::NotificationSchedulerClientRegistrar>();
 #if defined(OS_ANDROID)
-  // Register UpdateNotificationClient.
-  auto update_notification_service_getter =
-      base::BindRepeating(&UpdateNotificationServiceFactory::GetForKey, key);
-  auto chrome_update_client =
-      std::make_unique<updates::UpdateNotificationClient>(
-          std::move(update_notification_service_getter));
-  client_registrar->RegisterClient(
-      notifications::SchedulerClientType::kChromeUpdate,
-      std::move(chrome_update_client));
-
   // Register reading list client.
   if (ReadingListNotificationService::IsEnabled()) {
     Profile* profile = ProfileManager::GetProfileFromProfileKey(key);
@@ -58,6 +48,19 @@ RegisterClients(ProfileKey* key) {
     client_registrar->RegisterClient(
         notifications::SchedulerClientType::kReadingList,
         std::move(reading_list_client));
+  }
+
+  if (base::FeatureList::IsEnabled(
+          feature_guide::features::kFeatureNotificationGuide)) {
+    Profile* profile = ProfileManager::GetProfileFromProfileKey(key);
+    auto feature_guide_service_getter = base::BindRepeating(
+        &feature_guide::FeatureNotificationGuideServiceFactory::GetForProfile,
+        profile);
+
+    client_registrar->RegisterClient(
+        notifications::SchedulerClientType::kFeatureGuide,
+        CreateFeatureNotificationGuideNotificationClient(
+            feature_guide_service_getter));
   }
 
 #endif  // defined(OS_ANDROID)

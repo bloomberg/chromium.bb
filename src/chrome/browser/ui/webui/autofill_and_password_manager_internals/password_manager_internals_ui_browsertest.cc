@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -32,7 +33,7 @@ class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
                                     WindowOpenDisposition disposition);
 
  private:
-  PasswordManagerInternalsUI* controller_ = nullptr;
+  raw_ptr<PasswordManagerInternalsUI> controller_ = nullptr;
 };
 
 PasswordManagerInternalsWebUIBrowserTest::
@@ -147,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
           browser()->profile());
   ASSERT_TRUE(log_router);
   log_router->ProcessLog("<script> text for testing");
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUIVersionURL)));
 }
 
 // Test that the description is correct in a non-Incognito tab.

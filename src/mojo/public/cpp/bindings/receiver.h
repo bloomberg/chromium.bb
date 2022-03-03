@@ -10,9 +10,8 @@
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/async_flusher.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
@@ -52,7 +51,7 @@ class Receiver {
   using ImplPointerType = typename ImplRefTraits::PointerType;
 
   // Constructs an unbound Receiver linked to |impl| for the duration of the
-  // Receive's lifetime. The Receiver can be bound later by calling |Bind()| or
+  // Receiver's lifetime. The Receiver can be bound later by calling |Bind()| or
   // |BindNewPipeAndPassRemote()|. An unbound Receiver does not schedule any
   // asynchronous tasks.
   explicit Receiver(ImplPointerType impl) : internal_state_(std::move(impl)) {}
@@ -73,6 +72,9 @@ class Receiver {
       : internal_state_(std::move(impl)) {
     Bind(std::move(pending_receiver), std::move(task_runner));
   }
+
+  Receiver(const Receiver&) = delete;
+  Receiver& operator=(const Receiver&) = delete;
 
   ~Receiver() = default;
 
@@ -139,7 +141,7 @@ class Receiver {
     return remote;
   }
 
-  // Like above, but the returne PendingRemote has the version annotated.
+  // Like above, but the returned PendingRemote has the version annotated.
   PendingRemote<Interface> BindNewPipeAndPassRemoteWithVersion(
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr)
       WARN_UNUSED_RESULT {
@@ -271,7 +273,7 @@ class Receiver {
 
   // Allows test code to swap the interface implementation.
   ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
-    return internal_state_.SwapImplForTesting(new_impl);
+    return internal_state_.SwapImplForTesting(std::move(new_impl));
   }
 
   // Reports the currently dispatching message as bad and resets this receiver.
@@ -301,8 +303,6 @@ class Receiver {
 
  private:
   internal::BindingState<Interface, ImplRefTraits> internal_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(Receiver);
 };
 
 }  // namespace mojo

@@ -32,9 +32,6 @@ namespace tensorflow {
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-#ifdef TENSORFLOW_USE_SYCL
-typedef Eigen::SyclDevice SYCLDevice;
-#endif  // TENSORFLOW_USE_SYCL
 
 template <typename Device, typename T>
 class UnpackOp : public OpKernel {
@@ -44,7 +41,7 @@ class UnpackOp : public OpKernel {
   }
 
   void Compute(OpKernelContext* context) override {
-    const int32 num = num_outputs();
+    const int32_t num = num_outputs();
     const Tensor& input = context->input(0);
     const TensorShape& input_shape = input.shape();
 
@@ -63,15 +60,13 @@ class UnpackOp : public OpKernel {
 
     auto output_shape = input_shape;
     output_shape.RemoveDim(axis);
-    const int64 output_size = output_shape.num_elements();
+    const int64_t output_size = output_shape.num_elements();
     OP_REQUIRES(
         context,
         FastBoundsCheck(output_size,
                         std::numeric_limits<Eigen::DenseIndex>::max()),
         errors::InvalidArgument("output size must fit in Eigen DenseIndex"));
 
-// This optimization is currently not applicable for SYCL devices
-#ifndef TENSORFLOW_USE_SYCL
     // Special case: Aligned, so we can share the underlying buffer.
     //
     // Apply this optimization conservatively: if input is aligned,
@@ -88,7 +83,6 @@ class UnpackOp : public OpKernel {
       }
       return;
     }
-#endif  // TENSORFLOW_USE_SYCL
 
     Eigen::DenseIndex before_dim = 1;
     for (int i = 0; i < axis; ++i) {
@@ -162,33 +156,10 @@ REGISTER_KERNEL_BUILDER(Name("Unpack")
                             .Device(DEVICE_GPU)
                             .HostMemory("value")
                             .HostMemory("output")
-                            .TypeConstraint<int64>("T"),
+                            .TypeConstraint<int64_t>("T"),
                         UnpackOp<CPUDevice, int64>);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL(type)                                         \
-  REGISTER_KERNEL_BUILDER(                                          \
-      Name("Unpack").Device(DEVICE_SYCL).TypeConstraint<type>("T"), \
-      UnpackOp<SYCLDevice, type>)
-
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SYCL);
-
-REGISTER_KERNEL_BUILDER(Name("Unpack")
-                            .Device(DEVICE_SYCL)
-                            .HostMemory("value")
-                            .HostMemory("output")
-                            .TypeConstraint<int32>("T"),
-                        UnpackOp<CPUDevice, int32>);
-
-REGISTER_KERNEL_BUILDER(Name("Unpack")
-                            .Device(DEVICE_SYCL)
-                            .HostMemory("value")
-                            .HostMemory("output")
-                            .TypeConstraint<int64>("T"),
-                        UnpackOp<CPUDevice, int64>);
-#undef REGISTER_SYCL
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // end namespace tensorflow

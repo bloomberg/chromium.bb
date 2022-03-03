@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -62,9 +63,11 @@
 #endif  // OS_MAC
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(ARCH_CPU_X86_64)
 #include "chromeos/memory/userspace_swap/userspace_swap_renderer_initialization_impl.h"
+#endif  // defined(X86_64)
 #include "chromeos/system/core_scheduling.h"
-#endif  // IS_CHROMEOS_ASH
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/pepper_plugin_registry.h"
@@ -101,19 +104,37 @@ std::unique_ptr<base::MessagePump> CreateMainThreadMessagePump() {
 #endif
 }
 
+void LogTimeToStartRunLoop(const base::CommandLine& command_line,
+                           base::TimeTicks run_loop_start_time) {
+  if (!command_line.HasSwitch(switches::kRendererProcessLaunchTimeTicks))
+    return;
+
+  const std::string launch_time_delta_micro_as_string =
+      command_line.GetSwitchValueASCII(
+          switches::kRendererProcessLaunchTimeTicks);
+  int64_t launch_time_delta_micro;
+  if (!base::StringToInt64(launch_time_delta_micro_as_string,
+                           &launch_time_delta_micro)) {
+    return;
+  }
+  const base::TimeDelta delta = run_loop_start_time.since_origin() -
+                                base::Microseconds(launch_time_delta_micro);
+  base::UmaHistogramTimes("Renderer.BrowserLaunchToRunLoopStart", delta);
+}
+
 }  // namespace
 
 // mainline routine for running as the Renderer process
-int RendererMain(const MainFunctionParams& parameters) {
+int RendererMain(MainFunctionParams parameters) {
   // Don't use the TRACE_EVENT0 macro because the tracing infrastructure doesn't
   // expect synchronous events around the main loop of a thread.
-  TRACE_EVENT_ASYNC_BEGIN1("startup", "RendererMain", 0, "zygote_child", false);
+  TRACE_EVENT_INSTANT0("startup", "RendererMain", TRACE_EVENT_SCOPE_THREAD);
 
   base::trace_event::TraceLog::GetInstance()->set_process_name("Renderer");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
-  const base::CommandLine& command_line = parameters.command_line;
+  const base::CommandLine& command_line = *parameters.command_line;
 
 #if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
@@ -134,6 +155,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   // available we want to turn it on.
   chromeos::system::EnableCoreSchedulingIfAvailable();
 
+#if defined(ARCH_CPU_X86_64)
   using UserspaceSwapInit =
       chromeos::memory::userspace_swap::UserspaceSwapRendererInitializationImpl;
   absl::optional<UserspaceSwapInit> swap_init;
@@ -143,7 +165,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     PLOG_IF(ERROR, !swap_init->PreSandboxSetup())
         << "Unable to complete presandbox userspace swap initialization";
   }
-#endif
+#endif  // defined(ARCH_CPU_X86_64)
+#endif  // defined(IS_CHROMEOS_ASH)
 
   if (command_line.HasSwitch(switches::kTimeZoneForTesting)) {
     std::string time_zone =
@@ -167,11 +190,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   // Force main thread initialization. When the implementation is based on a
   // better means of determining which is the main thread, remove.
   RenderThread::IsMainThread();
-
-#if defined(OS_ANDROID)
-  // If we have any pending LibraryLoader histograms, record them.
-  base::android::RecordLibraryLoaderRendererHistograms();
-#endif
 
   blink::Platform::InitializeBlink();
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
@@ -212,7 +230,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     new RenderThreadImpl(run_loop.QuitClosure(),
                          std::move(main_thread_scheduler));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_X86_64)
     // Once the sandbox has been entered and initialization of render threads
     // complete we will transfer FDs to the browser, or close them on failure.
     // This should always be called because it will also transfer the errno that
@@ -235,8 +253,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     // the tracing SMB on our behalf due to the zygote sandbox.
     if (parameters.zygote_child) {
       tracing::EnableStartupTracingIfNeeded();
-      TRACE_EVENT_ASYNC_BEGIN1("startup", "RendererMain", 0, "zygote_child",
-                               true);
+      TRACE_EVENT_INSTANT1("startup", "RendererMain", TRACE_EVENT_SCOPE_THREAD,
+                           "zygote_child", true);
     }
 #endif  // OS_POSIX && !OS_ANDROID && !OS_MAC
 
@@ -257,9 +275,12 @@ int RendererMain(const MainFunctionParams& parameters) {
       if (pool)
         pool->Recycle();
 #endif
-      TRACE_EVENT_ASYNC_BEGIN0("toplevel", "RendererMain.START_MSG_LOOP", 0);
+      TRACE_EVENT_INSTANT0("toplevel", "RendererMain.START_MSG_LOOP",
+                           TRACE_EVENT_SCOPE_THREAD);
+      const base::TimeTicks run_loop_start_time = base::TimeTicks::Now();
+      RenderThreadImpl::current()->set_run_loop_start_time(run_loop_start_time);
+      LogTimeToStartRunLoop(command_line, run_loop_start_time);
       run_loop.Run();
-      TRACE_EVENT_ASYNC_END0("toplevel", "RendererMain.START_MSG_LOOP", 0);
     }
 
 #if defined(LEAK_SANITIZER)
@@ -269,7 +290,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
   }
   platform.PlatformUninitialize();
-  TRACE_EVENT_ASYNC_END0("startup", "RendererMain", 0);
   return 0;
 }
 

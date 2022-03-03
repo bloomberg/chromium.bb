@@ -1,4 +1,4 @@
-#! /usr/bin/env sh
+#!/bin/bash
 
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="$( cd "${SRC_DIR}/.." >/dev/null 2>&1 && pwd )"
@@ -43,7 +43,7 @@ then
     done
 else
     BASEDIR=$(git rev-parse --show-toplevel)
-    FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -v '\.sh')
+    FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cpp$\|\.hpp\|\.c$\|\.h$')
     for FILE in $FILES
     do
         ${CLANG_FORMAT} -i -style=file "$BASEDIR/$FILE"

@@ -43,11 +43,12 @@ SyncedSessionsObserverBridge::~SyncedSessionsObserverBridge() {}
 void SyncedSessionsObserverBridge::OnPrimaryAccountChanged(
     const signin::PrimaryAccountChangeEvent& event) {
   switch (event.GetEventTypeFor(signin::ConsentLevel::kSync)) {
-    case signin::PrimaryAccountChangeEvent::Type::kSet:
     case signin::PrimaryAccountChangeEvent::Type::kNone:
       // Ignored.
       break;
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
     case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      // Update the session Sync state if consent is given or removed.
       [owner_ reloadSessions];
       break;
   }
@@ -55,7 +56,7 @@ void SyncedSessionsObserverBridge::OnPrimaryAccountChanged(
 
 #pragma mark - Signin and syncing status
 
-bool SyncedSessionsObserverBridge::IsSignedIn() {
+bool SyncedSessionsObserverBridge::HasSyncConsent() {
   return identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 

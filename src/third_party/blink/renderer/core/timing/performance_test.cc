@@ -7,8 +7,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_init.h"
@@ -134,10 +132,9 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
   Initialize(scope.GetScriptState());
 
   // Add a long task entry, but no observer registered.
-  base_->AddLongTaskTiming(
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "window",
-      "same-origin", "www.foo.com/bar", "", "");
+  base_->AddLongTaskTiming(base::TimeTicks() + base::Seconds(1234),
+                           base::TimeTicks() + base::Seconds(5678), "window",
+                           "same-origin", "www.foo.com/bar", "", "");
   EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
 
@@ -151,10 +148,9 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
 
   EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   // Add a long task entry
-  base_->AddLongTaskTiming(
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "window",
-      "same-origin", "www.foo.com/bar", "", "");
+  base_->AddLongTaskTiming(base::TimeTicks() + base::Seconds(1234),
+                           base::TimeTicks() + base::Seconds(5678), "window",
+                           "same-origin", "www.foo.com/bar", "", "");
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 

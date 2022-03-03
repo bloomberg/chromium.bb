@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
 
@@ -35,6 +35,10 @@ template<typename T>
 class StorageBlock : public FileBlock {
  public:
   StorageBlock(MappedFile* file, Addr address);
+
+  StorageBlock(const StorageBlock&) = delete;
+  StorageBlock& operator=(const StorageBlock&) = delete;
+
   virtual ~StorageBlock();
 
   // Deeps copies from another block. Neither this nor |other| should be
@@ -90,14 +94,12 @@ class StorageBlock : public FileBlock {
   void DeleteData();
   uint32_t CalculateHash() const;
 
-  T* data_;
-  MappedFile* file_;
+  raw_ptr<T> data_;
+  raw_ptr<MappedFile> file_;
   Addr address_;
   bool modified_;
   bool own_data_;  // Is data_ owned by this object or shared with someone else.
   bool extended_;  // Used to store an entry of more than one block.
-
-  DISALLOW_COPY_AND_ASSIGN(StorageBlock);
 };
 
 }  // namespace disk_cache

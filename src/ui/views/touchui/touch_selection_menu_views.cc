@@ -7,12 +7,14 @@
 #include <memory>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_editing_controller.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -133,12 +135,9 @@ void TouchSelectionMenuViews::CreateButtons() {
   }
 
   // Finally, add ellipsis button.
-  CreateButton(u"...", base::BindRepeating(
-                           [](TouchSelectionMenuViews* menu) {
-                             menu->CloseMenu();
-                             menu->client_->RunContextMenu();
-                           },
-                           base::Unretained(this)))
+  CreateButton(u"...",
+               base::BindRepeating(&TouchSelectionMenuViews::EllipsisPressed,
+                                   base::Unretained(this)))
       ->SetID(ButtonViewId::kEllipsisButton);
   InvalidateLayout();
 }
@@ -171,8 +170,7 @@ void TouchSelectionMenuViews::OnPaint(gfx::Canvas* canvas) {
     const View* child = *i;
     int x = child->bounds().right() + kSpacingBetweenButtons / 2;
     canvas->FillRect(gfx::Rect(x, 0, 1, child->height()),
-                     GetNativeTheme()->GetSystemColor(
-                         ui::NativeTheme::kColorId_SeparatorColor));
+                     GetColorProvider()->GetColor(ui::kColorSeparator));
   }
 }
 
@@ -187,6 +185,11 @@ void TouchSelectionMenuViews::ButtonPressed(int command,
                                             const ui::Event& event) {
   CloseMenu();
   client_->ExecuteCommand(command, event.flags());
+}
+
+void TouchSelectionMenuViews::EllipsisPressed(const ui::Event& event) {
+  CloseMenu();
+  client_->RunContextMenu();
 }
 
 BEGIN_METADATA(TouchSelectionMenuViews, BubbleDialogDelegateView)

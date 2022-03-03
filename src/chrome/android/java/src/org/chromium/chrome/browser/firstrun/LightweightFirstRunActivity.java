@@ -24,7 +24,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.policy.EnterpriseInfo;
+import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -135,10 +135,6 @@ public class LightweightFirstRunActivity
 
         mLightweightFreButtons = findViewById(R.id.lightweight_fre_buttons);
         mOkButton = (Button) findViewById(R.id.button_primary);
-        int okButtonHorizontalPadding =
-                getResources().getDimensionPixelSize(R.dimen.fre_button_padding);
-        mOkButton.setPaddingRelative(okButtonHorizontalPadding, mOkButton.getPaddingTop(),
-                okButtonHorizontalPadding, mOkButton.getPaddingBottom());
         mOkButton.setOnClickListener(view -> acceptTermsOfService());
 
         ((Button) findViewById(R.id.button_secondary))

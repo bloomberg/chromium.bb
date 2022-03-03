@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
@@ -55,13 +54,8 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 
 }  // namespace
 
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
-@interface LocationBarViewController (Scribble) <
-    UIIndirectScribbleInteractionDelegate>
-@end
-#endif  // defined(__IPHONE14_0)
-
-@interface LocationBarViewController ()
+@interface LocationBarViewController () <UIContextMenuInteractionDelegate,
+                                         UIIndirectScribbleInteractionDelegate>
 // The injected edit view.
 @property(nonatomic, strong) UIView* editView;
 
@@ -142,8 +136,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 - (void)setIncognito:(BOOL)incognito {
   _incognito = incognito;
   self.locationBarSteadyView.colorScheme =
-      incognito ? [LocationBarSteadyViewColorScheme incognitoScheme]
-                : [LocationBarSteadyViewColorScheme standardScheme];
+      [LocationBarSteadyViewColorScheme standardScheme];
 }
 
 - (void)setDispatcher:(id<ActivityServiceCommands,
@@ -200,19 +193,20 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                 action:@selector(locationBarSteadyViewTapped)
       forControlEvents:UIControlEventTouchUpInside];
 
-  UILongPressGestureRecognizer* recognizer =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(showLongPressMenu:)];
-  [_locationBarSteadyView.locationButton addGestureRecognizer:recognizer];
-
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
-  if (@available(iOS 14, *)) {
-    UIIndirectScribbleInteraction* scribbleInteraction =
-        [[UIIndirectScribbleInteraction alloc] initWithDelegate:self];
-    [_locationBarSteadyView addInteraction:scribbleInteraction];
+  if (base::FeatureList::IsEnabled(kIOSLocationBarUseNativeContextMenu)) {
+    [_locationBarSteadyView addInteraction:[[UIContextMenuInteraction alloc]
+                                               initWithDelegate:self]];
+  } else {
+    UILongPressGestureRecognizer* recognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(showLongPressMenu:)];
+    [_locationBarSteadyView.locationButton addGestureRecognizer:recognizer];
   }
-#endif  // #if defined(__IPHONE_14_0)
+
+  UIIndirectScribbleInteraction* scribbleInteraction =
+      [[UIIndirectScribbleInteraction alloc] initWithDelegate:self];
+  [_locationBarSteadyView addInteraction:scribbleInteraction];
 
   DCHECK(self.editView) << "The edit view must be set at this point";
 
@@ -224,6 +218,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   self.locationBarSteadyView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.locationBarSteadyView, self.view);
 
+  [self updateTrailingButtonState];
   [self switchToEditing:NO];
 }
 
@@ -389,8 +384,6 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 
 #pragma mark - UIIndirectScribbleInteractionDelegate
 
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
-
 - (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
               requestElementsInRect:(CGRect)rect
                          completion:
@@ -431,8 +424,6 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 
   completion(self.delegate.omniboxScribbleForwardingTarget);
 }
-
-#endif  // defined(__IPHONE_14_0)
 
 #pragma mark - private
 
@@ -583,6 +574,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 #pragma mark - UIMenu
 
 - (void)showLongPressMenu:(UILongPressGestureRecognizer*)sender {
+  DCHECK(!base::FeatureList::IsEnabled(kIOSLocationBarUseNativeContextMenu));
   if (sender.state == UIGestureRecognizerStateBegan) {
     [self.locationBarSteadyView becomeFirstResponder];
 
@@ -598,12 +590,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                action:@selector(searchCopiedText:)]);
 
     BOOL updateSuccessful = [self updateCachedClipboardStateWithCompletion:^() {
-#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-      [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
-      [menu setMenuVisible:YES animated:YES];
-#else
       [menu showMenuFromView:self.view rect:self.locationBarSteadyView.frame];
-#endif
       // When the menu is manually presented, it doesn't get focused by
       // Voiceover. This notification forces voiceover to select the
       // presented menu.
@@ -612,6 +599,82 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
     }];
     DCHECK(updateSuccessful);
   }
+}
+
+#pragma mark - UIContextMenuInteractionDelegate
+
+- (UIMenu*)contextMenuUIMenu:(NSArray<UIMenuElement*>*)suggestedActions {
+    NSMutableArray<UIMenuElement*>* menuElements =
+        [[NSMutableArray alloc] initWithArray:suggestedActions
+                                    copyItems:YES];
+
+    absl::optional<std::set<ClipboardContentType>>
+        clipboard_content_types =
+            ClipboardRecentContent::GetInstance()
+                ->GetCachedClipboardContentTypes();
+
+    if (clipboard_content_types.has_value()) {
+      std::set<ClipboardContentType>
+          clipboard_content_types_values =
+              clipboard_content_types.value();
+
+      if (clipboard_content_types_values.find(
+              ClipboardContentType::Image) !=
+          clipboard_content_types_values.end()) {
+        id searchCopiedImageHandler = ^(UIAction* action) {
+          [self searchCopiedImage:nil];
+        };
+        UIAction* searchCopiedImageAction = [UIAction
+            actionWithTitle:l10n_util::GetNSString(
+                                (IDS_IOS_SEARCH_COPIED_IMAGE))
+                      image:nil
+                 identifier:nil
+                    handler:searchCopiedImageHandler];
+        [menuElements addObject:searchCopiedImageAction];
+      } else if (clipboard_content_types_values.find(
+                     ClipboardContentType::URL) !=
+                 clipboard_content_types_values.end()) {
+        id visitCopiedLinkHandler = ^(UIAction* action) {
+          [self visitCopiedLink:nil];
+        };
+        UIAction* visitCopiedLinkAction = [UIAction
+            actionWithTitle:l10n_util::GetNSString(
+                                (IDS_IOS_VISIT_COPIED_LINK))
+                      image:nil
+                 identifier:nil
+                    handler:visitCopiedLinkHandler];
+        [menuElements addObject:visitCopiedLinkAction];
+      } else if (clipboard_content_types_values.find(
+                     ClipboardContentType::Text) !=
+                 clipboard_content_types_values.end()) {
+        id searchCopiedTextHandler = ^(UIAction* action) {
+          [self searchCopiedText:nil];
+        };
+        UIAction* searchCopiedTextAction = [UIAction
+            actionWithTitle:l10n_util::GetNSString(
+                                (IDS_IOS_SEARCH_COPIED_TEXT))
+                      image:nil
+                 identifier:nil
+                    handler:searchCopiedTextHandler];
+        [menuElements addObject:searchCopiedTextAction];
+      }
+    }
+
+    return [UIMenu menuWithTitle:@"" children:menuElements];
+}
+
+- (UIContextMenuConfiguration*)contextMenuInteraction:
+                                   (UIContextMenuInteraction*)interaction
+                       configurationForMenuAtLocation:(CGPoint)location {
+  DCHECK(base::FeatureList::IsEnabled(kIOSLocationBarUseNativeContextMenu));
+  __weak LocationBarViewController* weakSelf = self;
+
+  return [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+                  previewProvider:nil
+                   actionProvider:^UIMenu* (NSArray<UIMenuElement*>* suggestedActions) {
+                         return [weakSelf contextMenuUIMenu:suggestedActions];
+                       }];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
@@ -648,17 +711,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 - (void)searchCopiedImage:(id)sender {
   RecordAction(
       UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
-  ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
-      base::BindOnce(^(absl::optional<gfx::Image> optionalImage) {
-        if (!optionalImage) {
-          return;
-        }
-        UIImage* image = optionalImage.value().ToUIImage();
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [self.dispatcher searchByImage:image];
-          [self.dispatcher cancelOmniboxEdit];
-        });
-      }));
+  [self.delegate searchCopiedImage];
 }
 
 - (void)visitCopiedLink:(id)sender {

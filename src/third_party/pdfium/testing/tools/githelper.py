@@ -5,11 +5,10 @@
 
 import subprocess
 
-# pylint: disable=relative-import
 from common import RunCommandPropagateErr
 
 
-class GitHelper(object):
+class GitHelper:
   """Issues git commands. Stateful."""
 
   def __init__(self):
@@ -20,8 +19,8 @@ class GitHelper(object):
     RunCommandPropagateErr(['git', 'checkout', branch], exit_status_on_error=1)
 
   def FetchOriginMaster(self):
-    """Fetches new changes on origin/master."""
-    RunCommandPropagateErr(['git', 'fetch', 'origin', 'master'],
+    """Fetches new changes on origin/main."""
+    RunCommandPropagateErr(['git', 'fetch', 'origin', 'main'],
                            exit_status_on_error=1)
 
   def StashPush(self):

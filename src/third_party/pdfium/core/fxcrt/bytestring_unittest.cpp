@@ -4,14 +4,16 @@
 
 #include "core/fxcrt/bytestring.h"
 
+#include <limits.h>
+
 #include <algorithm>
 #include <iterator>
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/containers/contains.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 namespace fxcrt {
 
@@ -642,7 +644,20 @@ TEST(ByteString, Delete) {
   EXPECT_EQ("", empty);
 }
 
-TEST(ByteString, Substr) {
+TEST(ByteString, OneArgSubstr) {
+  ByteString fred("FRED");
+  EXPECT_EQ("FRED", fred.Substr(0));
+  EXPECT_EQ("RED", fred.Substr(1));
+  EXPECT_EQ("ED", fred.Substr(2));
+  EXPECT_EQ("D", fred.Substr(3));
+  EXPECT_EQ("", fred.Substr(4));
+
+  ByteString empty;
+  EXPECT_EQ("", empty.Substr(0));
+  EXPECT_EQ("", empty.Substr(1));
+}
+
+TEST(ByteString, TwoArgSubstr) {
   ByteString fred("FRED");
   EXPECT_EQ("", fred.Substr(0, 0));
   EXPECT_EQ("", fred.Substr(3, 0));
@@ -705,7 +720,7 @@ TEST(ByteString, Find) {
   EXPECT_FALSE(empty_string.Find('\0').has_value());
 
   ByteString single_string("a");
-  Optional<size_t> result = single_string.Find('a');
+  absl::optional<size_t> result = single_string.Find('a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find('b').has_value());
@@ -753,7 +768,7 @@ TEST(ByteString, ReverseFind) {
   EXPECT_FALSE(empty_string.ReverseFind('\0').has_value());
 
   ByteString single_string("a");
-  Optional<size_t> result = single_string.ReverseFind('a');
+  absl::optional<size_t> result = single_string.ReverseFind('a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.ReverseFind('b').has_value());
@@ -1272,7 +1287,7 @@ TEST(ByteStringView, Find) {
   EXPECT_FALSE(empty_string.Find('\0').has_value());
 
   ByteStringView single_string("a");
-  Optional<size_t> result = single_string.Find('a');
+  absl::optional<size_t> result = single_string.Find('a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find('b').has_value());
@@ -1296,7 +1311,28 @@ TEST(ByteStringView, Find) {
   EXPECT_EQ(2u, result.value());
 }
 
-TEST(ByteStringView, Substr) {
+TEST(ByteStringView, OneArgSubstr) {
+  ByteStringView null_string;
+  EXPECT_EQ(null_string, null_string.Substr(0));
+  EXPECT_EQ(null_string, null_string.Substr(1));
+
+  ByteStringView empty_string("");
+  EXPECT_EQ("", empty_string.Substr(0));
+  EXPECT_EQ("", empty_string.Substr(1));
+
+  ByteStringView single_character("a");
+  EXPECT_EQ(single_character, single_character.Substr(0));
+  EXPECT_EQ("", single_character.Substr(1));
+
+  ByteStringView longer_string("abcdef");
+  EXPECT_EQ(longer_string, longer_string.Substr(0));
+  EXPECT_EQ("", longer_string.Substr(187));
+
+  ByteStringView trailing_substring("ef");
+  EXPECT_EQ(trailing_substring, longer_string.Substr(4));
+}
+
+TEST(ByteStringView, TwoArgSubstr) {
   ByteStringView null_string;
   EXPECT_EQ(null_string, null_string.Substr(0, 1));
   EXPECT_EQ(null_string, null_string.Substr(1, 1));
@@ -1910,21 +1946,21 @@ TEST(ByteString, FormatInteger) {
 }
 
 TEST(ByteString, FX_HashCode_Ascii) {
-  EXPECT_EQ(0u, FX_HashCode_GetA("", false));
-  EXPECT_EQ(65u, FX_HashCode_GetA("A", false));
-  EXPECT_EQ(97u, FX_HashCode_GetA("A", true));
-  EXPECT_EQ(31 * 65u + 66u, FX_HashCode_GetA("AB", false));
-  EXPECT_EQ(31u * 65u + 255u, FX_HashCode_GetA("A\xff", false));
-  EXPECT_EQ(31u * 97u + 255u, FX_HashCode_GetA("A\xff", true));
+  EXPECT_EQ(0u, FX_HashCode_GetA(""));
+  EXPECT_EQ(65u, FX_HashCode_GetA("A"));
+  EXPECT_EQ(97u, FX_HashCode_GetLoweredA("A"));
+  EXPECT_EQ(31 * 65u + 66u, FX_HashCode_GetA("AB"));
+  EXPECT_EQ(31u * 65u + 255u, FX_HashCode_GetA("A\xff"));
+  EXPECT_EQ(31u * 97u + 255u, FX_HashCode_GetLoweredA("A\xff"));
 }
 
 TEST(ByteString, FX_HashCode_Wide) {
-  EXPECT_EQ(0u, FX_HashCode_GetAsIfW("", false));
-  EXPECT_EQ(65u, FX_HashCode_GetAsIfW("A", false));
-  EXPECT_EQ(97u, FX_HashCode_GetAsIfW("A", true));
-  EXPECT_EQ(1313u * 65u + 66u, FX_HashCode_GetAsIfW("AB", false));
-  EXPECT_EQ(1313u * 65u + 255u, FX_HashCode_GetAsIfW("A\xff", false));
-  EXPECT_EQ(1313u * 97u + 255u, FX_HashCode_GetAsIfW("A\xff", true));
+  EXPECT_EQ(0u, FX_HashCode_GetAsIfW(""));
+  EXPECT_EQ(65u, FX_HashCode_GetAsIfW("A"));
+  EXPECT_EQ(97u, FX_HashCode_GetLoweredAsIfW("A"));
+  EXPECT_EQ(1313u * 65u + 66u, FX_HashCode_GetAsIfW("AB"));
+  EXPECT_EQ(1313u * 65u + 255u, FX_HashCode_GetAsIfW("A\xff"));
+  EXPECT_EQ(1313u * 97u + 255u, FX_HashCode_GetLoweredAsIfW("A\xff"));
 }
 
 }  // namespace fxcrt

@@ -128,8 +128,6 @@ echo "Compiling bitcode"
   ${GN_GPU} \
   ${GN_FONT} \
   skia_use_expat=true \
-  skia_enable_ccpr=true \
-  skia_enable_nga=false \
   skia_enable_svg=true \
   skia_enable_skshaper=true \
   skia_enable_skparagraph=true \
@@ -141,8 +139,8 @@ parse_targets() {
     basename $LIBPATH
   done
 }
-${NINJA} -C ${BUILD_DIR} libskia.a libskshaper.a \
-  $(parse_targets $SHAPER_LIB $GM_LIB)
+${NINJA} -C ${BUILD_DIR} libskia.a libskshaper.a libskunicode.a \
+  $(parse_targets $GM_LIB)
 
 echo "Generating final wasm"
 
@@ -173,16 +171,6 @@ fi
 
 GMS_TO_BUILD="gm/*.cpp"
 TESTS_TO_BUILD="tests/*.cpp"
-
-# DSL FP tests need to include compiled test shaders from the `dslfp` subdirectory.
-TESTS_TO_BUILD+=\
-" tests/sksl/dslfp/GrDSLFPTest_DoStatement.dsl.cpp"\
-" tests/sksl/dslfp/GrDSLFPTest_ForStatement.dsl.cpp"\
-" tests/sksl/dslfp/GrDSLFPTest_IfStatement.dsl.cpp"\
-" tests/sksl/dslfp/GrDSLFPTest_SwitchStatement.dsl.cpp"\
-" tests/sksl/dslfp/GrDSLFPTest_Swizzle.dsl.cpp"\
-" tests/sksl/dslfp/GrDSLFPTest_Ternary.dsl.cpp"\
-" tests/sksl/dslfp/GrDSLFPTest_WhileStatement.dsl.cpp"
 
 # When developing locally, it can be faster to focus only on the gms or tests you care about
 # (since they all have to be recompiled/relinked) every time. To do so, mark the following as true
@@ -242,6 +230,7 @@ EMCC_DEBUG=1 ${EMCXX} \
     $TESTS_TO_BUILD \
     $GM_LIB \
     $BUILD_DIR/libskshaper.a \
+    $BUILD_DIR/libskunicode.a \
     $BUILD_DIR/libsvg.a \
     $BUILD_DIR/libskia.a \
     $BUILTIN_FONT \

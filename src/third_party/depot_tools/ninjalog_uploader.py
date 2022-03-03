@@ -26,15 +26,17 @@ import subprocess
 import sys
 import time
 
+from third_party.six.moves import http_client
 from third_party.six.moves.urllib import error
 from third_party.six.moves.urllib import request
 
-# These build configs affect build performance a lot.
-# TODO(https://crbug.com/900161): Add 'blink_symbol_level' and
-# 'enable_js_type_check'.
-WHITELISTED_CONFIGS = ('symbol_level', 'use_goma', 'is_debug',
+# These build configs affect build performance.
+ALLOWLISTED_CONFIGS = ('symbol_level', 'use_goma', 'is_debug',
                        'is_component_build', 'enable_nacl', 'host_os',
-                       'host_cpu', 'target_os', 'target_cpu')
+                       'host_cpu', 'target_os', 'target_cpu',
+                       'blink_symbol_level', 'is_java_debug',
+                       'treat_warnings_as_errors', 'disable_android_lint',
+                       'use_errorprone_java_compiler', 'incremental_install')
 
 
 def IsGoogler(server):
@@ -42,7 +44,7 @@ def IsGoogler(server):
   try:
     resp = request.urlopen('https://' + server + '/should-upload')
     return resp.read() == b'Success'
-  except error.URLError:
+  except (error.URLError, http_client.RemoteDisconnected):
     return False
 
 
@@ -53,7 +55,7 @@ def ParseGNArgs(gn_args):
 
   for config in configs:
     key = config["name"]
-    if key not in WHITELISTED_CONFIGS:
+    if key not in ALLOWLISTED_CONFIGS:
       continue
     if 'current' in config:
       build_configs[key] = config['current']['value']

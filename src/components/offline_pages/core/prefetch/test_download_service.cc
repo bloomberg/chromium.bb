@@ -24,6 +24,10 @@ namespace {
 class TestServiceConfig : public download::ServiceConfig {
  public:
   TestServiceConfig() = default;
+
+  TestServiceConfig(const TestServiceConfig&) = delete;
+  TestServiceConfig& operator=(const TestServiceConfig&) = delete;
+
   ~TestServiceConfig() override = default;
 
   // ServiceConfig implementation.
@@ -35,8 +39,6 @@ class TestServiceConfig : public download::ServiceConfig {
 
  private:
   base::TimeDelta time_delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestServiceConfig);
 };
 
 }  // namespace
@@ -87,9 +89,10 @@ bool TestDownloadService::OnStopScheduledTask(
   NOTIMPLEMENTED();
   return false;
 }
-download::DownloadService::ServiceStatus TestDownloadService::GetStatus() {
+download::BackgroundDownloadService::ServiceStatus
+TestDownloadService::GetStatus() {
   NOTIMPLEMENTED();
-  return DownloadService::ServiceStatus();
+  return BackgroundDownloadService::ServiceStatus();
 }
 void TestDownloadService::PauseDownload(const std::string& guid) {
   NOTIMPLEMENTED();

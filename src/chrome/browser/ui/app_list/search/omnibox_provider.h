@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "chrome/browser/ui/app_list/search/score_normalizer/score_normalizer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/favicon_cache.h"
@@ -27,6 +25,10 @@ class OmniboxProvider : public SearchProvider,
  public:
   explicit OmniboxProvider(Profile* profile,
                            AppListControllerDelegate* list_controller);
+
+  OmniboxProvider(const OmniboxProvider&) = delete;
+  OmniboxProvider& operator=(const OmniboxProvider&) = delete;
+
   ~OmniboxProvider() override;
 
   // SearchProvider overrides:
@@ -54,11 +56,6 @@ class OmniboxProvider : public SearchProvider,
   std::unique_ptr<AutocompleteController> controller_;
 
   FaviconCache favicon_cache_;
-
-  // The normalizer normalizes the relevance scores of Results
-  absl::optional<ScoreNormalizer> normalizer_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxProvider);
 };
 
 }  // namespace app_list

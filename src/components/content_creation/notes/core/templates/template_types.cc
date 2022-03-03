@@ -12,27 +12,39 @@ Background::Background(ARGBColor color)
     : color_(color),
       colors_(),
       direction_(LinearGradientDirection::kInvalid),
-      is_linear_gradient_(false) {}
+      image_url_(""),
+      is_linear_gradient_(false),
+      is_image_(false) {}
 
 Background::Background(const std::vector<ARGBColor>& colors,
                        LinearGradientDirection direction)
     : color_(0U),
       colors_(colors),
       direction_(direction),
-      is_linear_gradient_(true) {
+      image_url_(""),
+      is_linear_gradient_(true),
+      is_image_(false) {
   // Can't have a linear gradient with only one (or no) color.
   DCHECK(colors_.size() > 1);
 }
 
+Background::Background(const std::string& image_url)
+    : color_(0U),
+      colors_(),
+      direction_(LinearGradientDirection::kInvalid),
+      image_url_(image_url),
+      is_linear_gradient_(false),
+      is_image_(true) {
+  DCHECK(image_url.size() > 0);
+}
+
 Background::Background(const Background& other) {
-  if (other.is_linear_gradient()) {
-    is_linear_gradient_ = true;
-    colors_ = *other.colors();
-    direction_ = other.direction();
-  } else {
-    is_linear_gradient_ = false;
-    color_ = other.color();
-  }
+  color_ = other.color();
+  colors_ = other.colors();
+  direction_ = other.direction();
+  image_url_ = other.image_url();
+  is_linear_gradient_ = other.is_linear_gradient();
+  is_image_ = other.is_image();
 }
 
 Background::~Background() = default;
@@ -41,12 +53,41 @@ TextStyle::TextStyle(const std::string& font_name,
                      ARGBColor font_color,
                      uint16_t weight,
                      bool all_caps,
-                     TextAlignment alignment)
+                     TextAlignment alignment,
+                     int min_text_size_sp,
+                     int max_text_size_sp)
     : font_name_(font_name),
       font_color_(font_color),
       weight_(weight),
       all_caps_(all_caps),
-      alignment_(alignment) {}
+      alignment_(alignment),
+      min_text_size_sp_(min_text_size_sp),
+      max_text_size_sp_(max_text_size_sp),
+      highlight_color_(0U),
+      highlight_style_(HighlightStyle::kNone) {}
+
+TextStyle::TextStyle(const std::string& font_name,
+                     ARGBColor font_color,
+                     uint16_t weight,
+                     bool all_caps,
+                     TextAlignment alignment,
+                     int min_text_size_sp,
+                     int max_text_size_sp,
+                     ARGBColor highlight_color,
+                     HighlightStyle highlight_style)
+    : font_name_(font_name),
+      font_color_(font_color),
+      weight_(weight),
+      all_caps_(all_caps),
+      alignment_(alignment),
+      min_text_size_sp_(min_text_size_sp),
+      max_text_size_sp_(max_text_size_sp),
+      highlight_color_(highlight_color),
+      highlight_style_(highlight_style) {}
+
+TextStyle::TextStyle(const TextStyle& text_style) = default;
+
+TextStyle& TextStyle::operator=(const TextStyle& text_style) = default;
 
 FooterStyle::FooterStyle(ARGBColor text_color, ARGBColor logo_color)
     : text_color_(text_color), logo_color_(logo_color) {}

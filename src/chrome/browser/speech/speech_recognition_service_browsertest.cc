@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/files/file_util.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -21,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/constants.h"
 #include "components/soda/pref_names.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/common/content_switches.h"
@@ -28,6 +31,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/wav_audio_handler.h"
 #include "media/base/media_switches.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "media/mojo/mojom/media_types.mojom.h"
@@ -35,6 +39,12 @@
 #include "sandbox/policy/switches.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 using testing::StrictMock;
 
@@ -92,7 +102,7 @@ class TestStreamFactory : public audio::FakeStreamFactory {
     if (stream_receiver_.is_bound())
       return;
     base::RepeatingTimer check_timer;
-    check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10), this,
+    check_timer.Start(FROM_HERE, base::Milliseconds(10), this,
                       &TestStreamFactory::OnTimer);
     runner_.Run();
   }
@@ -120,6 +130,11 @@ class SpeechRecognitionServiceTest
     scoped_feature_list_.InitWithFeatures(
         {media::kLiveCaption, media::kUseSodaForLiveCaption}, {});
   }
+
+  SpeechRecognitionServiceTest(const SpeechRecognitionServiceTest&) = delete;
+  SpeechRecognitionServiceTest& operator=(const SpeechRecognitionServiceTest&) =
+      delete;
+
   ~SpeechRecognitionServiceTest() override = default;
 
   // InProcessBrowserTest
@@ -127,17 +142,21 @@ class SpeechRecognitionServiceTest
 
   // media::mojom::SpeechRecognitionRecognizerClient
   void OnSpeechRecognitionRecognitionEvent(
-      media::mojom::SpeechRecognitionResultPtr result,
+      const media::SpeechRecognitionResult& result,
       OnSpeechRecognitionRecognitionEventCallback reply) override;
   void OnSpeechRecognitionError() override;
   void OnLanguageIdentificationEvent(
       media::mojom::LanguageIdentificationEventPtr event) override;
 
+  // Disable the sandbox on Windows and MacOS as the sandboxes on those
+  // platforms have not been configured yet.
+#if defined(OS_WIN) || defined(OS_MAC)
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Required for the utility process to access the directory containing the
     // test files.
     command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
   }
+#endif
 
  protected:
   void CloseCaptionBubble() {
@@ -168,8 +187,6 @@ class SpeechRecognitionServiceTest
   std::vector<std::string> recognition_results_;
 
   bool is_client_requesting_speech_recognition_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionServiceTest);
 };
 
 void SpeechRecognitionServiceTest::SetUp() {
@@ -178,9 +195,15 @@ void SpeechRecognitionServiceTest::SetUp() {
 }
 
 void SpeechRecognitionServiceTest::OnSpeechRecognitionRecognitionEvent(
-    media::mojom::SpeechRecognitionResultPtr result,
+    const media::SpeechRecognitionResult& result,
     OnSpeechRecognitionRecognitionEventCallback reply) {
-  recognition_results_.push_back(std::move(result->transcription));
+  std::string transcription = result.transcription;
+  // The language pack used by the MacOS builder is newer and has punctuation
+  // enabled whereas the one used by the Linux builder does not.
+  transcription.erase(
+      std::remove(transcription.begin(), transcription.end(), ','),
+      transcription.end());
+  recognition_results_.push_back(std::move(transcription));
   std::move(reply).Run(is_client_requesting_speech_recognition_);
 }
 
@@ -194,18 +217,29 @@ void SpeechRecognitionServiceTest::OnLanguageIdentificationEvent(
 }
 
 void SpeechRecognitionServiceTest::SetUpPrefs() {
-  g_browser_process->local_state()->SetFilePath(
-      prefs::kSodaBinaryPath,
+  base::FilePath soda_binary_path;
+#if defined(OS_WIN) || defined(OS_MAC)
+  soda_binary_path =
       test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
-          .Append(soda::kSodaTestBinaryRelativePath));
+          .Append(soda::kSodaTestBinaryRelativePath);
+#else
+  base::FilePath soda_test_binary_path =
+      test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
+          .Append(soda::kSodaTestBinaryRelativePath);
+  DVLOG(0) << "SODA test path: " << soda_test_binary_path.value().c_str();
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ASSERT_TRUE(base::PathExists(soda_test_binary_path));
+
+  soda_binary_path = GetSodaTestBinaryPath();
+  DVLOG(0) << "SODA binary path: " << soda_binary_path.value().c_str();
+  ASSERT_TRUE(base::PathExists(soda_binary_path));
+#endif
+  g_browser_process->local_state()->SetFilePath(prefs::kSodaBinaryPath,
+                                                soda_binary_path);
   g_browser_process->local_state()->SetFilePath(
       prefs::kSodaEnUsConfigPath,
       test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
           .Append(soda::kSodaLanguagePackRelativePath));
-
-  PrefService* profile_prefs = browser()->profile()->GetPrefs();
-  // TODO(crbug.com/1173135): Disconnect from kLiveCaptionEnabled.
-  profile_prefs->SetBoolean(prefs::kLiveCaptionEnabled, true);
 }
 
 void SpeechRecognitionServiceTest::LaunchService() {
@@ -230,7 +264,8 @@ void SpeechRecognitionServiceTest::LaunchService() {
       std::move(pending_recognizer_receiver),
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
       media::mojom::SpeechRecognitionOptions::New(
-          media::mojom::SpeechRecognitionMode::kCaption),
+          media::mojom::SpeechRecognitionMode::kCaption,
+          /*enable_formatting=*/true, "en-US"),
       base::BindOnce(
           [](bool* p_is_multichannel_supported, base::RunLoop* run_loop,
              bool is_multichannel_supported) {
@@ -261,7 +296,8 @@ void SpeechRecognitionServiceTest::LaunchServiceWithAudioSourceFetcher() {
       audio_source_fetcher_.BindNewPipeAndPassReceiver(),
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
       media::mojom::SpeechRecognitionOptions::New(
-          media::mojom::SpeechRecognitionMode::kIme),
+          media::mojom::SpeechRecognitionMode::kIme,
+          /*enable_formatting=*/false, "en-US"),
       base::BindOnce(
           [](bool* p_is_multichannel_supported, base::RunLoop* run_loop,
              bool is_multichannel_supported) {
@@ -298,7 +334,11 @@ void SpeechRecognitionServiceTest::SendAudioChunk(
 
     // Sleep for 20ms to simulate real-time audio. SODA requires audio
     // streaming in order to return events.
+#if defined(OS_WIN)
+    ::Sleep(20);
+#else
     usleep(20000);
+#endif
   }
 }
 
@@ -341,14 +381,18 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
   base::RunLoop().RunUntilIdle();
 
   // Sleep for 50ms to ensure SODA has returned real-time results.
+#if defined(OS_WIN)
+  ::Sleep(50);
+#else
   usleep(50000);
+#endif
   ASSERT_GT(static_cast<int>(recognition_results_.size()), kReplayAudioCount);
   ASSERT_EQ(recognition_results_.back(), "Hey Google Hey Google");
 
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectUniqueTimeSample(
       SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName,
-      base::TimeDelta::FromMilliseconds(2520), 1);
+      base::Milliseconds(2520), 1);
   histograms.ExpectTotalCount(
       SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName, 0);
 }
@@ -411,17 +455,21 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest,
   base::RunLoop().RunUntilIdle();
 
   // Sleep for 50ms to ensure SODA has returned real-time results.
+#if defined(OS_WIN)
+  ::Sleep(50);
+#else
   usleep(50000);
+#endif
   ASSERT_GT(static_cast<int>(recognition_results_.size()), 3);
   ASSERT_EQ(recognition_results_.back(), "Hey Google Hey Google");
 
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectUniqueTimeSample(
       SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName,
-      base::TimeDelta::FromMilliseconds(2520), 1);
+      base::Milliseconds(2520), 1);
   histograms.ExpectUniqueTimeSample(
       SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName,
-      base::TimeDelta::FromMilliseconds(1260), 1);
+      base::Milliseconds(1260), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, CreateAudioSourceFetcher) {

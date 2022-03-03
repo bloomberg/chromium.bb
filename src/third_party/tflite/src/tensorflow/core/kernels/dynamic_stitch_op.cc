@@ -80,7 +80,7 @@ class DynamicStitchOpImplBase : public OpKernel {
     // Find maximum index in the indices vectors
     OP_REQUIRES_OK(c, c->input_list("indices", indices_inputs));
 
-    int32 max_index = -1;
+    int32_t max_index = -1;
     if (data_elements_size) {
       *data_elements_size = 0;
     }
@@ -137,7 +137,8 @@ class DynamicStitchOpImplBase : public OpKernel {
 
 template <typename T>
 void DynamicStitchGPUImpl(const Eigen::GpuDevice& gpu_device,
-                          const int32 slice_size, const int32 first_dim_size,
+                          const int32_t slice_size,
+                          const int32_t first_dim_size,
                           const GpuDeviceArrayStruct<int>& input_indices,
                           const GpuDeviceArrayStruct<const T*>& input_ptrs,
                           T* output);
@@ -195,9 +196,9 @@ class DynamicStitchOpGPU : public DynamicStitchOpImplBase<T> {
       }
 
       // data_flat index
-      int32 idx = 0;
+      int32_t idx = 0;
       // sum of indices_inputs[i].NumElements() for compute indices_flat value.
-      int32 base_size = 0;
+      int32_t base_size = 0;
       for (int i = 0; i < indices_inputs.size(); ++i) {
         auto indices_vec = indices_inputs[i].flat<int32>();
         auto data_ptr_base = data_inputs[i].template flat<T>().data();
@@ -249,7 +250,8 @@ class DynamicStitchOpImplCPU : public DynamicStitchOpImplBase<T> {
     // merged that aren't covered by an index in indices.  What should we do?
     if (first_dim_size > 0) {
       auto merged_flat = merged->flat_outer_dims<T>();
-      const int slice_size = merged_flat.dimension(1);
+      // slice_size must not be stored as int for cases of tensors over 2GB.
+      const auto slice_size = merged_flat.dimension(1);
       const size_t slice_bytes = slice_size * sizeof(T);
       auto OnInputNumber = [&](int input_num) {
         const Tensor& indices = indices_inputs[input_num];
@@ -262,7 +264,7 @@ class DynamicStitchOpImplCPU : public DynamicStitchOpImplBase<T> {
           T* merged_base = merged_flat.data();
           const T* data_base = data_flat.data();
           for (int i = 0; i < indices_vec.size(); i++) {
-            int32 index = internal::SubtleMustCopy(indices_vec(i));
+            int32_t index = internal::SubtleMustCopy(indices_vec(i));
             OP_REQUIRES(
                 c, FastBoundsCheck(index, first_dim_size),
                 errors::InvalidArgument("indices[", i, "] is out of range"));
@@ -274,7 +276,7 @@ class DynamicStitchOpImplCPU : public DynamicStitchOpImplBase<T> {
           for (int i = 0; i < indices_vec.size(); i++) {
             // Copy slice data[i] to merged[indices[i]]
             Eigen::DSizes<Eigen::DenseIndex, 2> data_indices(i, 0);
-            int32 index = internal::SubtleMustCopy(indices_vec(i));
+            int32_t index = internal::SubtleMustCopy(indices_vec(i));
             OP_REQUIRES(
                 c, FastBoundsCheck(index, first_dim_size),
                 errors::InvalidArgument("indices[", i, "] is out of range"));
@@ -284,7 +286,8 @@ class DynamicStitchOpImplCPU : public DynamicStitchOpImplBase<T> {
           }
         }
       };
-      if (Parallel) {
+      if (Parallel &&
+          c->device()->tensorflow_cpu_worker_threads()->num_threads > 1) {
         auto thread_pool =
             c->device()->tensorflow_cpu_worker_threads()->workers;
         size_t total_indices_size = 0;
@@ -365,24 +368,4 @@ TF_CALL_COMPLEX_TYPES(REGISTER_DYNAMIC_STITCH_GPU);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_DYNAMIC_STITCH_SYCL(type)               \
-  REGISTER_KERNEL_BUILDER(Name("DynamicStitch")          \
-                              .Device(DEVICE_SYCL)       \
-                              .TypeConstraint<type>("T") \
-                              .HostMemory("indices")     \
-                              .HostMemory("data")        \
-                              .HostMemory("merged"),     \
-                          DynamicStitchOpCPU<type>)      \
-  REGISTER_KERNEL_BUILDER(Name("ParallelDynamicStitch")  \
-                              .Device(DEVICE_SYCL)       \
-                              .TypeConstraint<type>("T") \
-                              .HostMemory("indices")     \
-                              .HostMemory("data")        \
-                              .HostMemory("merged"),     \
-                          ParallelDynamicStitchOpCPU<type>)
-
-TF_CALL_POD_STRING_TYPES(REGISTER_DYNAMIC_STITCH_SYCL);
-#undef REGISTER_DYNAMIC_STITCH_SYCL
-#endif  // TENSORFLOW_USE_SYCL
 }  // namespace tensorflow

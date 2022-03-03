@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_error_event.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -133,7 +133,7 @@ absl::optional<DOMHighResTimeStamp> Sensor::timestamp(
 
   return performance->MonotonicTimeToDOMHighResTimeStamp(
       base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(sensor_proxy_->GetReading().timestamp()));
+      base::Seconds(sensor_proxy_->GetReading().timestamp()));
 }
 
 void Sensor::Trace(Visitor* visitor) const {
@@ -226,8 +226,7 @@ void Sensor::OnSensorReadingChanged() {
   } else {
     pending_reading_notification_ = PostDelayedCancellableTask(
         *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
-        std::move(sensor_reading_changed),
-        base::TimeDelta::FromSecondsD(waitingTime));
+        std::move(sensor_reading_changed), base::Seconds(waitingTime));
   }
 }
 
@@ -338,12 +337,7 @@ void Sensor::NotifyActivated() {
   DCHECK_EQ(state_, SensorState::kActivating);
   state_ = SensorState::kActivated;
 
-  // Explicitly call the Sensor implementation of hasReading(). Subclasses may
-  // override the method and introduce additional requirements, but in this case
-  // we are really only interested in whether there is data in the shared
-  // buffer, so that we can then process it possibly for the first time in
-  // OnSensorReadingChanged().
-  if (Sensor::hasReading()) {
+  if (hasReading()) {
     // If reading has already arrived, process the reading values (a subclass
     // may do some filtering, for example) and then send an initial "reading"
     // event right away.

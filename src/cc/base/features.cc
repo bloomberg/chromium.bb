@@ -39,20 +39,6 @@ const base::Feature kSynchronizedScrolling = {
     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-bool IsImplLatencyRecoveryEnabled() {
-  // TODO(crbug.com/1142598): Latency recovery has been disabled by default
-  // since M87. For now, only the flag is removed. If all goes well, remove the
-  // code supporting latency recovery.
-  return false;
-}
-
-bool IsMainLatencyRecoveryEnabled() {
-  // TODO(crbug.com/1142598): Latency recovery has been disabled by default
-  // since M87. For now, only the flag is removed. If all goes well, remove the
-  // code supporting latency recovery.
-  return false;
-}
-
 const base::Feature kRemoveMobileViewportDoubleTap{
     "RemoveMobileViewportDoubleTap", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -62,13 +48,21 @@ const base::Feature kScrollUnification{"ScrollUnification",
 const base::Feature kSchedulerSmoothnessForAnimatedScrolls{
     "SmoothnessModeForAnimatedScrolls", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kWheelEventRegions{"WheelEventRegions",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kHudDisplayForPerformanceMetrics{
     "HudDisplayForPerformanceMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kJankInjectionAblationFeature{
     "JankInjectionAblation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPreferNewContentForCheckerboardedScrolls{
+    "PreferNewContentForCheckerboardedScrolls",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDurationEstimatesInCompositorTimingHistory{
+    "DurationEstimatesInCompositorTimingHistory",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSlidingWindowForDroppedFrameCounter{
+    "SlidingWindowForDroppedFrameCounter", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

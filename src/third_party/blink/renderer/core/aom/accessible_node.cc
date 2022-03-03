@@ -201,7 +201,6 @@ Document* AccessibleNode::GetDocument() const {
   if (element_)
     return &element_->GetDocument();
 
-  NOTREACHED();
   return nullptr;
 }
 
@@ -927,6 +926,13 @@ AccessibleNodeList* AccessibleNode::childNodes() {
 
 void AccessibleNode::appendChild(AccessibleNode* child,
                                  ExceptionState& exception_state) {
+  if (child == this) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "An AccessibleNode cannot be a child of itself");
+    return;
+  }
+
   if (child->element()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -939,7 +945,15 @@ void AccessibleNode::appendChild(AccessibleNode* child,
                                       "Reparenting is not supported yet.");
     return;
   }
+  child->document_ = GetAncestorDocument();
   child->parent_ = this;
+
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "Trying to access an AccessibleNode in a detached window.");
+    return;
+  }
 
   if (!GetExecutionContext()->GetSecurityOrigin()->CanAccess(
           child->GetExecutionContext()->GetSecurityOrigin())) {
@@ -952,6 +966,22 @@ void AccessibleNode::appendChild(AccessibleNode* child,
   children_.push_back(child);
   if (AXObjectCache* cache = GetAXObjectCache())
     cache->ChildrenChanged(this);
+}
+
+void AccessibleNode::DetachedFromDocument() {
+  // Clear associated AXObject from AXObjectCache since its accessible node is
+  // removed from document.
+  if (AXObjectCache* cache = GetAXObjectCache())
+    cache->Remove(this);
+
+  // Clear reference to its document, since this accessible node is removed from
+  // document.
+  document_ = nullptr;
+
+  // Remove references for subtree.
+  for (auto child : GetChildren()) {
+    child->DetachedFromDocument();
+  }
 }
 
 void AccessibleNode::removeChild(AccessibleNode* old_child,
@@ -973,6 +1003,7 @@ void AccessibleNode::removeChild(AccessibleNode* old_child,
     return;
   }
   old_child->parent_ = nullptr;
+  old_child->DetachedFromDocument();
   children_.erase(ix);
 
   if (AXObjectCache* cache = GetAXObjectCache())
@@ -1015,9 +1046,21 @@ const AtomicString& AccessibleNode::InterfaceName() const {
 ExecutionContext* AccessibleNode::GetExecutionContext() const {
   if (element_)
     return element_->GetExecutionContext();
+  if (document_)
+    return document_->GetExecutionContext();
 
   if (parent_)
     return parent_->GetExecutionContext();
+
+  return nullptr;
+}
+
+Document* AccessibleNode::GetAncestorDocument() {
+  if (element_)
+    return &(element_->GetDocument());
+
+  if (parent_)
+    return parent_->GetAncestorDocument();
 
   return nullptr;
 }
@@ -1124,7 +1167,10 @@ void AccessibleNode::NotifyAttributeChanged(
 }
 
 AXObjectCache* AccessibleNode::GetAXObjectCache() {
-  return GetDocument()->ExistingAXObjectCache();
+  if (Document* document = GetDocument())
+    return document->ExistingAXObjectCache();
+
+  return nullptr;
 }
 
 void AccessibleNode::Trace(Visitor* visitor) const {
