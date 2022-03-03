@@ -6,7 +6,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as DeveloperResources from './developer_resources.js';
 
 const UIStrings = {
@@ -26,8 +25,6 @@ let loadedDeveloperResourcesModule: (typeof DeveloperResources|undefined);
 
 async function loadDeveloperResourcesModule(): Promise<typeof DeveloperResources> {
   if (!loadedDeveloperResourcesModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/developer_resources');
     loadedDeveloperResourcesModule = await import('./developer_resources.js');
   }
   return loadedDeveloperResourcesModule;

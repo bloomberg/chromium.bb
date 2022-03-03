@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace data_decoder {
 
@@ -21,6 +20,10 @@ namespace data_decoder {
 class SafeWebBundleParser {
  public:
   SafeWebBundleParser();
+
+  SafeWebBundleParser(const SafeWebBundleParser&) = delete;
+  SafeWebBundleParser& operator=(const SafeWebBundleParser&) = delete;
+
   // Remaining callbacks on flight will be dropped.
   ~SafeWebBundleParser();
 
@@ -68,8 +71,6 @@ class SafeWebBundleParser {
   base::OnceClosure disconnect_callback_;
   size_t response_callback_next_id_ = 0;
   bool disconnected_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeWebBundleParser);
 };
 
 }  // namespace data_decoder

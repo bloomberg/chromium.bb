@@ -10,7 +10,7 @@ CBC_Writer::CBC_Writer() = default;
 
 CBC_Writer::~CBC_Writer() = default;
 
-bool CBC_Writer::SetCharEncoding(int32_t encoding) {
+bool CBC_Writer::SetCharEncoding(BC_CHAR_ENCODING encoding) {
   m_CharEncoding = encoding;
   return true;
 }
@@ -41,9 +41,7 @@ bool CBC_Writer::SetWidth(int32_t width) {
   return true;
 }
 
-bool CBC_Writer::SetTextLocation(BC_TEXT_LOC location) {
-  return false;
-}
+void CBC_Writer::SetTextLocation(BC_TEXT_LOC location) {}
 
 bool CBC_Writer::SetWideNarrowRatio(int8_t ratio) {
   return false;

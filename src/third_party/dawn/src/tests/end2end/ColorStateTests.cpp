@@ -30,14 +30,18 @@ class ColorStateTest : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
+        wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform}});
+        pipelineLayout = utils::MakePipelineLayout(device, {bindGroupLayout});
+
         // TODO(crbug.com/dawn/489): D3D12_Microsoft_Basic_Render_Driver_CPU
         // produces invalid results for these tests.
-        DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+        DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP());
 
         vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]]
                 fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                    let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    var pos = array<vec2<f32>, 3>(
                         vec2<f32>(-1.0, -1.0),
                         vec2<f32>(3.0, -1.0),
                         vec2<f32>(-1.0, 3.0));
@@ -68,20 +72,22 @@ class ColorStateTest : public DawnTest {
                 }
             )");
 
-        utils::ComboRenderPipelineDescriptor2 baseDescriptor;
+        utils::ComboRenderPipelineDescriptor baseDescriptor;
+        baseDescriptor.layout = pipelineLayout;
         baseDescriptor.vertex.module = vsModule;
         baseDescriptor.cFragment.module = fsModule;
         baseDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-        basePipeline = device.CreateRenderPipeline2(&baseDescriptor);
+        basePipeline = device.CreateRenderPipeline(&baseDescriptor);
 
-        utils::ComboRenderPipelineDescriptor2 testDescriptor;
+        utils::ComboRenderPipelineDescriptor testDescriptor;
+        testDescriptor.layout = pipelineLayout;
         testDescriptor.vertex.module = vsModule;
         testDescriptor.cFragment.module = fsModule;
         testDescriptor.cTargets[0] = colorTargetState;
         testDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-        testPipeline = device.CreateRenderPipeline2(&testDescriptor);
+        testPipeline = device.CreateRenderPipeline(&testDescriptor);
     }
 
     // Create a bind group to set the colors as a uniform buffer
@@ -205,6 +211,7 @@ class ColorStateTest : public DawnTest {
                          alphaFactor, tests);
     }
 
+    wgpu::PipelineLayout pipelineLayout;
     utils::BasicRenderPass renderPass;
     wgpu::RenderPipeline basePipeline;
     wgpu::RenderPipeline testPipeline;
@@ -760,7 +767,7 @@ TEST_P(ColorStateTest, ColorWriteMaskBlendingDisabled) {
 
 // Test that independent color states on render targets works
 TEST_P(ColorStateTest, IndependentColorState) {
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_indexed_draw_buffers"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_indexed_draw_buffers"));
 
     std::array<wgpu::Texture, 4> renderTargets;
     std::array<wgpu::TextureView, 4> renderTargetViews;
@@ -810,14 +817,16 @@ TEST_P(ColorStateTest, IndependentColorState) {
         }
     )");
 
-    utils::ComboRenderPipelineDescriptor2 baseDescriptor;
+    utils::ComboRenderPipelineDescriptor baseDescriptor;
+    baseDescriptor.layout = pipelineLayout;
     baseDescriptor.vertex.module = vsModule;
     baseDescriptor.cFragment.module = fsModule;
     baseDescriptor.cFragment.targetCount = 4;
 
-    basePipeline = device.CreateRenderPipeline2(&baseDescriptor);
+    basePipeline = device.CreateRenderPipeline(&baseDescriptor);
 
-    utils::ComboRenderPipelineDescriptor2 testDescriptor;
+    utils::ComboRenderPipelineDescriptor testDescriptor;
+    testDescriptor.layout = pipelineLayout;
     testDescriptor.vertex.module = vsModule;
     testDescriptor.cFragment.module = fsModule;
     testDescriptor.cFragment.targetCount = 4;
@@ -843,7 +852,7 @@ TEST_P(ColorStateTest, IndependentColorState) {
 
     // Blend state intentionally omitted for target 2
 
-    wgpu::BlendDescriptor blendComponent3;
+    wgpu::BlendComponent blendComponent3;
     blendComponent3.operation = wgpu::BlendOperation::Min;
     blendComponent3.srcFactor = wgpu::BlendFactor::One;
     blendComponent3.dstFactor = wgpu::BlendFactor::One;
@@ -856,7 +865,7 @@ TEST_P(ColorStateTest, IndependentColorState) {
     testDescriptor.cTargets[1].blend = &blend1;
     testDescriptor.cTargets[3].blend = &blend3;
 
-    testPipeline = device.CreateRenderPipeline2(&testDescriptor);
+    testPipeline = device.CreateRenderPipeline(&testDescriptor);
 
     for (unsigned int c = 0; c < kColors.size(); ++c) {
         RGBA8 base = kColors[((c + 31) * 29) % kColors.size()];
@@ -917,14 +926,16 @@ TEST_P(ColorStateTest, DefaultBlendColor) {
         }
     )");
 
-    utils::ComboRenderPipelineDescriptor2 baseDescriptor;
+    utils::ComboRenderPipelineDescriptor baseDescriptor;
+    baseDescriptor.layout = pipelineLayout;
     baseDescriptor.vertex.module = vsModule;
     baseDescriptor.cFragment.module = fsModule;
     baseDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    basePipeline = device.CreateRenderPipeline2(&baseDescriptor);
+    basePipeline = device.CreateRenderPipeline(&baseDescriptor);
 
-    utils::ComboRenderPipelineDescriptor2 testDescriptor;
+    utils::ComboRenderPipelineDescriptor testDescriptor;
+    testDescriptor.layout = pipelineLayout;
     testDescriptor.vertex.module = vsModule;
     testDescriptor.cFragment.module = fsModule;
     testDescriptor.cTargets[0].format = renderPass.colorFormat;
@@ -940,7 +951,7 @@ TEST_P(ColorStateTest, DefaultBlendColor) {
 
     testDescriptor.cTargets[0].blend = &blend;
 
-    testPipeline = device.CreateRenderPipeline2(&testDescriptor);
+    testPipeline = device.CreateRenderPipeline(&testDescriptor);
     constexpr wgpu::Color kWhite{1.0f, 1.0f, 1.0f, 1.0f};
 
     // Check that the initial blend color is (0,0,0,0)
@@ -1041,20 +1052,22 @@ TEST_P(ColorStateTest, ColorWriteMaskDoesNotAffectRenderPassLoadOpClear) {
         }
     )");
 
-    utils::ComboRenderPipelineDescriptor2 baseDescriptor;
+    utils::ComboRenderPipelineDescriptor baseDescriptor;
+    baseDescriptor.layout = pipelineLayout;
     baseDescriptor.vertex.module = vsModule;
     baseDescriptor.cFragment.module = fsModule;
     baseDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    basePipeline = device.CreateRenderPipeline2(&baseDescriptor);
+    basePipeline = device.CreateRenderPipeline(&baseDescriptor);
 
-    utils::ComboRenderPipelineDescriptor2 testDescriptor;
+    utils::ComboRenderPipelineDescriptor testDescriptor;
+    testDescriptor.layout = pipelineLayout;
     testDescriptor.vertex.module = vsModule;
     testDescriptor.cFragment.module = fsModule;
     testDescriptor.cTargets[0].format = renderPass.colorFormat;
     testDescriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::Red;
 
-    testPipeline = device.CreateRenderPipeline2(&testDescriptor);
+    testPipeline = device.CreateRenderPipeline(&testDescriptor);
 
     RGBA8 base(32, 64, 128, 192);
     RGBA8 expected(0, 0, 0, 0);

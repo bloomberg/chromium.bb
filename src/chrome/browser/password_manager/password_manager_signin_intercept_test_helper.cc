@@ -15,7 +15,6 @@
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +45,6 @@ PasswordManagerSigninInterceptTestHelper::
     PasswordManagerSigninInterceptTestHelper(
         net::test_server::EmbeddedTestServer* https_test_server)
     : https_test_server_(https_test_server) {
-  feature_list_.InitAndEnableFeature(kDiceWebSigninInterceptionFeature);
 }
 
 PasswordManagerSigninInterceptTestHelper::
@@ -81,11 +79,11 @@ void PasswordManagerSigninInterceptTestHelper::NavigateToGaiaSigninPage(
   std::string path = "/password/password_form.html";
   GURL https_url(https_test_server_->GetURL(path));
   DCHECK(https_url.SchemeIs(url::kHttpsScheme));
-  DCHECK(gaia::IsGaiaSignonRealm(https_url.GetOrigin()));
+  DCHECK(gaia::IsGaiaSignonRealm(https_url.DeprecatedGetOriginAsURL()));
 
   NavigationObserver navigation_observer(contents);
-  ui_test_utils::NavigateToURL(chrome::FindBrowserWithWebContents(contents),
-                               https_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      chrome::FindBrowserWithWebContents(contents), https_url));
   navigation_observer.Wait();
 }
 

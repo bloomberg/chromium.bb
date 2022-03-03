@@ -7,19 +7,21 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/bottom_sheet/child_bottom_sheet_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/child_consistency_sheet_view_controller.h"
 
 @protocol ConsistencyAccountChooserTableViewControllerActionDelegate;
 @protocol ConsistencyAccountChooserTableViewControllerModelDelegate;
 @protocol ConsistencyAccountChooserConsumer;
+@protocol ConsistencyLayoutDelegate;
 
 // View controller for ConsistencyAccountChooserCoordinator.
 @interface ConsistencyAccountChooserViewController
-    : UIViewController <ChildBottomSheetViewController>
+    : UIViewController <ChildConsistencySheetViewController>
 
 @property(nonatomic, weak)
     id<ConsistencyAccountChooserTableViewControllerActionDelegate>
         actionDelegate;
+@property(nonatomic, weak) id<ConsistencyLayoutDelegate> layoutDelegate;
 @property(nonatomic, weak)
     id<ConsistencyAccountChooserTableViewControllerModelDelegate>
         modelDelegate;

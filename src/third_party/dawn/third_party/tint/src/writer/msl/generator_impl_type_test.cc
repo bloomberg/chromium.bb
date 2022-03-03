@@ -14,10 +14,14 @@
 
 #include <array>
 
+#include "gmock/gmock.h"
+
 #include "src/ast/struct_block_decoration.h"
+#include "src/sem/depth_multisampled_texture_type.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/sampled_texture_type.h"
+#include "src/sem/sampler_type.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/writer/msl/test_helper.h"
 
@@ -25,6 +29,8 @@ namespace tint {
 namespace writer {
 namespace msl {
 namespace {
+
+using ::testing::HasSubstr;
 
 #define CHECK_TYPE_SIZE_AND_ALIGN(TYPE, SIZE, ALIGN)    \
   static_assert(sizeof(TYPE) == SIZE, "Bad type size"); \
@@ -40,9 +46,9 @@ namespace {
 
 // Size and alignments taken from the MSL spec:
 // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
-DECLARE_TYPE(packed_float2, 8, 4);
+DECLARE_TYPE(float2, 8, 8);
 DECLARE_TYPE(packed_float3, 12, 4);
-DECLARE_TYPE(packed_float4, 16, 4);
+DECLARE_TYPE(float4, 16, 16);
 DECLARE_TYPE(float2x2, 16, 8);
 DECLARE_TYPE(float2x3, 32, 16);
 DECLARE_TYPE(float2x4, 32, 16);
@@ -62,8 +68,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Array) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(arr), "ary")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool ary[4]");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), "ary")) << gen.error();
+  EXPECT_EQ(out.str(), "bool ary[4]");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_ArrayOfArray) {
@@ -73,21 +80,9 @@ TEST_F(MslGeneratorImplTest, EmitType_ArrayOfArray) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(b), "ary")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool ary[5][4]");
-}
-
-// TODO(dsinclair): Is this possible? What order should it output in?
-TEST_F(MslGeneratorImplTest, DISABLED_EmitType_ArrayOfArrayOfRuntimeArray) {
-  auto* a = ty.array<bool, 4>();
-  auto* b = ty.array(a, 5);
-  auto* c = ty.array(b, 0);
-  Global("G", c, ast::StorageClass::kPrivate);
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(c), "ary")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool ary[5][4][1]");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(b), "ary")) << gen.error();
+  EXPECT_EQ(out.str(), "bool ary[5][4]");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_ArrayOfArrayOfArray) {
@@ -98,8 +93,9 @@ TEST_F(MslGeneratorImplTest, EmitType_ArrayOfArrayOfArray) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(c), "ary")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool ary[6][5][4]");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(c), "ary")) << gen.error();
+  EXPECT_EQ(out.str(), "bool ary[6][5][4]");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Array_WithoutName) {
@@ -108,8 +104,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Array_WithoutName) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(arr), "")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool[4]");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), "")) << gen.error();
+  EXPECT_EQ(out.str(), "bool[4]");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_RuntimeArray) {
@@ -118,8 +115,34 @@ TEST_F(MslGeneratorImplTest, EmitType_RuntimeArray) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(arr), "ary")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool ary[1]");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), "ary")) << gen.error();
+  EXPECT_EQ(out.str(), "bool ary[1]");
+}
+
+TEST_F(MslGeneratorImplTest, EmitType_ArrayWithStride) {
+  auto* s = Structure("s", {Member("arr", ty.array<f32, 4>(64))},
+                      {create<ast::StructBlockDecoration>()});
+  auto* ubo = Global("ubo", ty.Of(s), ast::StorageClass::kUniform,
+                     ast::DecorationList{
+                         create<ast::GroupDecoration>(0),
+                         create<ast::BindingDecoration>(1),
+                     });
+  WrapInFunction(MemberAccessor(ubo, "arr"));
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(), HasSubstr(R"(struct tint_padded_array_element {
+  /* 0x0000 */ float el;
+  /* 0x0004 */ int8_t tint_pad[60];
+};)"));
+  EXPECT_THAT(gen.result(), HasSubstr(R"(struct tint_array_wrapper {
+  /* 0x0000 */ tint_padded_array_element arr[4];
+};)"));
+  EXPECT_THAT(gen.result(), HasSubstr(R"(struct s {
+  /* 0x0000 */ tint_array_wrapper arr;
+};)"));
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Bool) {
@@ -127,8 +150,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Bool) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(bool_, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "bool");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, bool_, "")) << gen.error();
+  EXPECT_EQ(out.str(), "bool");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_F32) {
@@ -136,8 +160,9 @@ TEST_F(MslGeneratorImplTest, EmitType_F32) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(f32, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "float");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, f32, "")) << gen.error();
+  EXPECT_EQ(out.str(), "float");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_I32) {
@@ -145,8 +170,9 @@ TEST_F(MslGeneratorImplTest, EmitType_I32) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(i32, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "int");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, i32, "")) << gen.error();
+  EXPECT_EQ(out.str(), "int");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Matrix) {
@@ -156,19 +182,21 @@ TEST_F(MslGeneratorImplTest, EmitType_Matrix) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(mat2x3, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "float2x3");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, mat2x3, "")) << gen.error();
+  EXPECT_EQ(out.str(), "float2x3");
 }
 
-// TODO(dsinclair): How to annotate as workgroup?
-TEST_F(MslGeneratorImplTest, DISABLED_EmitType_Pointer) {
+TEST_F(MslGeneratorImplTest, EmitType_Pointer) {
   auto* f32 = create<sem::F32>();
-  auto* p = create<sem::Pointer>(f32, ast::StorageClass::kWorkgroup);
+  auto* p = create<sem::Pointer>(f32, ast::StorageClass::kWorkgroup,
+                                 ast::Access::kReadWrite);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(p, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "float*");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, p, "")) << gen.error();
+  EXPECT_EQ(out.str(), "threadgroup float* ");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Struct) {
@@ -179,8 +207,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(s), "")) << gen.error();
-  EXPECT_EQ(gen.result(), "S");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(s), "")) << gen.error();
+  EXPECT_EQ(out.str(), "S");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_StructDecl) {
@@ -191,9 +220,10 @@ TEST_F(MslGeneratorImplTest, EmitType_StructDecl) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct S {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   int a;
   float b;
 };
@@ -233,31 +263,31 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_NonComposites) {
                 },
                 {create<ast::StructBlockDecoration>()});
 
-  Global("G", ty.access(ast::AccessControl::kReadOnly, s),
-         ast::StorageClass::kStorage, nullptr,
-         {
+  Global("G", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
 #define ALL_FIELDS()                             \
   FIELD(0x0000, int, a, /*NO SUFFIX*/)           \
-  FIELD(0x0004, int8_t, tint_pad_0, [124])       \
+  FIELD(0x0004, int8_t, tint_pad, [124])         \
   FIELD(0x0080, float, b, /*NO SUFFIX*/)         \
   FIELD(0x0084, int8_t, tint_pad_1, [124])       \
-  FIELD(0x0100, packed_float2, c, /*NO SUFFIX*/) \
+  FIELD(0x0100, float2, c, /*NO SUFFIX*/)        \
   FIELD(0x0108, uint, d, /*NO SUFFIX*/)          \
   FIELD(0x010c, int8_t, tint_pad_2, [4])         \
   FIELD(0x0110, packed_float3, e, /*NO SUFFIX*/) \
   FIELD(0x011c, uint, f, /*NO SUFFIX*/)          \
-  FIELD(0x0120, packed_float4, g, /*NO SUFFIX*/) \
+  FIELD(0x0120, float4, g, /*NO SUFFIX*/)        \
   FIELD(0x0130, uint, h, /*NO SUFFIX*/)          \
   FIELD(0x0134, int8_t, tint_pad_3, [4])         \
   FIELD(0x0138, float2x2, i, /*NO SUFFIX*/)      \
@@ -293,7 +323,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_NonComposites) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 
   // 1.4 Metal and C++14
   // The Metal programming language is a C++14-based Specification with
@@ -336,30 +366,30 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_Structures) {
   auto* s = Structure("S",
                       {
                           Member("a", ty.i32()),
-                          Member("b", inner_x),
+                          Member("b", ty.Of(inner_x)),
                           Member("c", ty.f32()),
-                          Member("d", inner_y),
+                          Member("d", ty.Of(inner_y)),
                           Member("e", ty.f32()),
                       },
                       {create<ast::StructBlockDecoration>()});
 
-  Global("G", ty.access(ast::AccessControl::kReadOnly, s),
-         ast::StorageClass::kStorage, nullptr,
-         {
+  Global("G", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
 #define ALL_FIELDS()                       \
   FIELD(0x0000, int, a, /*NO SUFFIX*/)     \
-  FIELD(0x0004, int8_t, tint_pad_0, [508]) \
+  FIELD(0x0004, int8_t, tint_pad, [508])   \
   FIELD(0x0200, inner_x, b, /*NO SUFFIX*/) \
   FIELD(0x0600, float, c, /*NO SUFFIX*/)   \
   FIELD(0x0604, inner_y, d, /*NO SUFFIX*/) \
@@ -371,7 +401,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_Structures) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 
   // 1.4 Metal and C++14
   // The Metal programming language is a C++14-based Specification with
@@ -421,7 +451,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayDefaultStride) {
   auto* array_x = ty.array<f32, 7>();
 
   // array_y: size(4096), align(512)
-  auto* array_y = ty.array(inner, 4);
+  auto* array_y = ty.array(ty.Of(inner), 4);
 
   // array_z: size(4), align(4)
   auto* array_z = ty.array<f32>();
@@ -438,28 +468,28 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayDefaultStride) {
                 },
                 ast::DecorationList{create<ast::StructBlockDecoration>()});
 
-  Global("G", ty.access(ast::AccessControl::kReadOnly, s),
-         ast::StorageClass::kStorage, nullptr,
-         {
+  Global("G", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
-#define ALL_FIELDS()                       \
-  FIELD(0x0000, int, a, /*NO SUFFIX*/)     \
-  FIELD(0x0004, float, b, [7])             \
-  FIELD(0x0020, float, c, /*NO SUFFIX*/)   \
-  FIELD(0x0024, int8_t, tint_pad_0, [476]) \
-  FIELD(0x0200, inner, d, [4])             \
-  FIELD(0x1200, float, e, /*NO SUFFIX*/)   \
-  FIELD(0x1204, float, f, [1])             \
+#define ALL_FIELDS()                     \
+  FIELD(0x0000, int, a, /*NO SUFFIX*/)   \
+  FIELD(0x0004, float, b, [7])           \
+  FIELD(0x0020, float, c, /*NO SUFFIX*/) \
+  FIELD(0x0024, int8_t, tint_pad, [476]) \
+  FIELD(0x0200, inner, d, [4])           \
+  FIELD(0x1200, float, e, /*NO SUFFIX*/) \
+  FIELD(0x1204, float, f, [1])           \
   FIELD(0x1208, int8_t, tint_pad_1, [504])
 
   // Check that the generated string is as expected.
@@ -467,7 +497,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayDefaultStride) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 
   // 1.4 Metal and C++14
   // The Metal programming language is a C++14-based Specification with
@@ -511,6 +541,48 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayDefaultStride) {
 #undef ALL_FIELDS
 }
 
+TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayVec3DefaultStride) {
+  // array: size(64), align(16)
+  auto* array = ty.array(ty.vec3<f32>(), 4);
+
+  auto* s =
+      Structure("S",
+                {
+                    Member("a", ty.i32()),
+                    Member("b", array),
+                    Member("c", ty.i32()),
+                },
+                ast::DecorationList{create<ast::StructBlockDecoration>()});
+
+  Global("G", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
+
+  GeneratorImpl& gen = Build();
+
+  TextGenerator::TextBuffer buf;
+  auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+
+  // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
+  // for each field of the structure s.
+#define ALL_FIELDS()                    \
+  FIELD(0x0000, int, a, /*NO SUFFIX*/)  \
+  FIELD(0x0004, int8_t, tint_pad, [12]) \
+  FIELD(0x0010, float3, b, [4])         \
+  FIELD(0x0050, int, c, /*NO SUFFIX*/)  \
+  FIELD(0x0054, int8_t, tint_pad_1, [12])
+
+  // Check that the generated string is as expected.
+#define FIELD(ADDR, TYPE, NAME, SUFFIX) \
+  "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
+  auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
+#undef FIELD
+  EXPECT_EQ(buf.String(), expect);
+}
+
 TEST_F(MslGeneratorImplTest, AttemptTintPadSymbolCollision) {
   auto* s = Structure(
       "S",
@@ -527,7 +599,7 @@ TEST_F(MslGeneratorImplTest, AttemptTintPadSymbolCollision) {
           Member("tint_pad_27", ty.mat2x2<f32>()),
           Member("tint_pad_24", ty.u32()),
           Member("tint_pad_23", ty.mat2x3<f32>()),
-          Member("tint_pad_0", ty.u32()),
+          Member("tint_pad", ty.u32()),
           Member("tint_pad_8", ty.mat2x4<f32>()),
           Member("tint_pad_26", ty.u32()),
           Member("tint_pad_29", ty.mat3x2<f32>()),
@@ -545,35 +617,35 @@ TEST_F(MslGeneratorImplTest, AttemptTintPadSymbolCollision) {
       },
       {create<ast::StructBlockDecoration>()});
 
-  Global("G", ty.access(ast::AccessControl::kReadOnly, s),
-         ast::StorageClass::kStorage, nullptr,
-         {
+  Global("G", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct S {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   /* 0x0000 */ int tint_pad_2;
   /* 0x0004 */ int8_t tint_pad_10[124];
   /* 0x0080 */ float tint_pad_20;
   /* 0x0084 */ int8_t tint_pad_11[124];
-  /* 0x0100 */ packed_float2 tint_pad_33;
+  /* 0x0100 */ float2 tint_pad_33;
   /* 0x0108 */ uint tint_pad_1;
   /* 0x010c */ int8_t tint_pad_12[4];
   /* 0x0110 */ packed_float3 tint_pad_3;
   /* 0x011c */ uint tint_pad_7;
-  /* 0x0120 */ packed_float4 tint_pad_25;
+  /* 0x0120 */ float4 tint_pad_25;
   /* 0x0130 */ uint tint_pad_5;
   /* 0x0134 */ int8_t tint_pad_13[4];
   /* 0x0138 */ float2x2 tint_pad_27;
   /* 0x0148 */ uint tint_pad_24;
   /* 0x014c */ int8_t tint_pad_14[4];
   /* 0x0150 */ float2x3 tint_pad_23;
-  /* 0x0170 */ uint tint_pad_0;
+  /* 0x0170 */ uint tint_pad;
   /* 0x0174 */ int8_t tint_pad_15[12];
   /* 0x0180 */ float2x4 tint_pad_8;
   /* 0x01a0 */ uint tint_pad_26;
@@ -600,8 +672,6 @@ TEST_F(MslGeneratorImplTest, AttemptTintPadSymbolCollision) {
 )");
 }
 
-// TODO(crbug.com/tint/649): Add tests for array with explicit stride.
-
 // TODO(dsinclair): How to translate [[block]]
 TEST_F(MslGeneratorImplTest, DISABLED_EmitType_Struct_WithDecoration) {
   auto* s = Structure("S",
@@ -611,17 +681,17 @@ TEST_F(MslGeneratorImplTest, DISABLED_EmitType_Struct_WithDecoration) {
                       },
                       {create<ast::StructBlockDecoration>()});
 
-  Global("G", ty.access(ast::AccessControl::kReadOnly, s),
-         ast::StorageClass::kStorage, nullptr,
-         {
+  Global("G", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(s), "")) << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct {
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(s), "")) << gen.error();
+  EXPECT_EQ(out.str(), R"(struct {
   /* 0x0000 */ int a;
   /* 0x0004 */ float b;
 })");
@@ -632,8 +702,9 @@ TEST_F(MslGeneratorImplTest, EmitType_U32) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(u32, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "uint");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, u32, "")) << gen.error();
+  EXPECT_EQ(out.str(), "uint");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Vector) {
@@ -642,8 +713,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Vector) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(vec3, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "float3");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, vec3, "")) << gen.error();
+  EXPECT_EQ(out.str(), "float3");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Void) {
@@ -651,8 +723,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Void) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(void_, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "void");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, void_, "")) << gen.error();
+  EXPECT_EQ(out.str(), "void");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_Sampler) {
@@ -660,8 +733,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Sampler) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(sampler, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "sampler");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, sampler, "")) << gen.error();
+  EXPECT_EQ(out.str(), "sampler");
 }
 
 TEST_F(MslGeneratorImplTest, EmitType_SamplerComparison) {
@@ -669,8 +743,9 @@ TEST_F(MslGeneratorImplTest, EmitType_SamplerComparison) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(sampler, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "sampler");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, sampler, "")) << gen.error();
+  EXPECT_EQ(out.str(), "sampler");
 }
 
 struct MslDepthTextureData {
@@ -689,8 +764,9 @@ TEST_P(MslDepthTexturesTest, Emit) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(&s, "")) << gen.error();
-  EXPECT_EQ(gen.result(), params.result);
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, &s, "")) << gen.error();
+  EXPECT_EQ(out.str(), params.result);
 }
 INSTANTIATE_TEST_SUITE_P(
     MslGeneratorImplTest,
@@ -704,6 +780,17 @@ INSTANTIATE_TEST_SUITE_P(
                     MslDepthTextureData{
                         ast::TextureDimension::kCubeArray,
                         "depthcube_array<float, access::sample>"}));
+
+using MslDepthMultisampledTexturesTest = TestHelper;
+TEST_F(MslDepthMultisampledTexturesTest, Emit) {
+  sem::DepthMultisampledTexture s(ast::TextureDimension::k2d);
+
+  GeneratorImpl& gen = Build();
+
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, &s, "")) << gen.error();
+  EXPECT_EQ(out.str(), "depth2d_ms<float, access::read>");
+}
 
 struct MslTextureData {
   ast::TextureDimension dim;
@@ -722,8 +809,9 @@ TEST_P(MslSampledtexturesTest, Emit) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(s, "")) << gen.error();
-  EXPECT_EQ(gen.result(), params.result);
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, s, "")) << gen.error();
+  EXPECT_EQ(out.str(), params.result);
 }
 INSTANTIATE_TEST_SUITE_P(
     MslGeneratorImplTest,
@@ -748,58 +836,48 @@ TEST_F(MslGeneratorImplTest, Emit_TypeMultisampledTexture) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(ms, "")) << gen.error();
-  EXPECT_EQ(gen.result(), "texture2d_ms<uint, access::sample>");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, ms, "")) << gen.error();
+  EXPECT_EQ(out.str(), "texture2d_ms<uint, access::read>");
 }
 
 struct MslStorageTextureData {
   ast::TextureDimension dim;
-  bool ro;
   std::string result;
 };
 inline std::ostream& operator<<(std::ostream& out, MslStorageTextureData data) {
-  out << data.dim << (data.ro ? "ReadOnly" : "WriteOnly");
-  return out;
+  return out << data.dim;
 }
 using MslStorageTexturesTest = TestParamHelper<MslStorageTextureData>;
 TEST_P(MslStorageTexturesTest, Emit) {
   auto params = GetParam();
 
-  auto* s = ty.storage_texture(params.dim, ast::ImageFormat::kR32Float);
-  auto* ac = ty.access(params.ro ? ast::AccessControl::kReadOnly
-                                 : ast::AccessControl::kWriteOnly,
-                       s);
-  Global("test_var", ac, ast::StorageClass::kNone, nullptr,
-         {
+  auto* s = ty.storage_texture(params.dim, ast::ImageFormat::kR32Float,
+                               ast::Access::kWrite);
+  Global("test_var", s,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(program->TypeOf(ac), "")) << gen.error();
-  EXPECT_EQ(gen.result(), params.result);
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(s), "")) << gen.error();
+  EXPECT_EQ(out.str(), params.result);
 }
 INSTANTIATE_TEST_SUITE_P(
     MslGeneratorImplTest,
     MslStorageTexturesTest,
-    testing::Values(
-        MslStorageTextureData{ast::TextureDimension::k1d, true,
-                              "texture1d<float, access::read>"},
-        MslStorageTextureData{ast::TextureDimension::k2d, true,
-                              "texture2d<float, access::read>"},
-        MslStorageTextureData{ast::TextureDimension::k2dArray, true,
-                              "texture2d_array<float, access::read>"},
-        MslStorageTextureData{ast::TextureDimension::k3d, true,
-                              "texture3d<float, access::read>"},
-        MslStorageTextureData{ast::TextureDimension::k1d, false,
-                              "texture1d<float, access::write>"},
-        MslStorageTextureData{ast::TextureDimension::k2d, false,
-                              "texture2d<float, access::write>"},
-        MslStorageTextureData{ast::TextureDimension::k2dArray, false,
-                              "texture2d_array<float, access::write>"},
-        MslStorageTextureData{ast::TextureDimension::k3d, false,
-                              "texture3d<float, access::write>"}));
+    testing::Values(MslStorageTextureData{ast::TextureDimension::k1d,
+                                          "texture1d<float, access::write>"},
+                    MslStorageTextureData{ast::TextureDimension::k2d,
+                                          "texture2d<float, access::write>"},
+                    MslStorageTextureData{
+                        ast::TextureDimension::k2dArray,
+                        "texture2d_array<float, access::write>"},
+                    MslStorageTextureData{ast::TextureDimension::k3d,
+                                          "texture3d<float, access::write>"}));
 
 }  // namespace
 }  // namespace msl

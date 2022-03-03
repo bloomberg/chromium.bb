@@ -239,7 +239,6 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   identifier_ = identifier;
   response_url_ = response.ResponseUrl();
   response_encoding_ = response.TextEncodingName();
-  app_cache_id_ = response.AppCacheID();
   response_address_space_ = response.AddressSpace();
 
   referrer_policy_ = response.HttpHeaderField(http_names::kReferrerPolicy);
@@ -282,13 +281,13 @@ void WorkerClassicScriptLoader::DidFinishLoading(uint64_t identifier) {
   NotifyFinished();
 }
 
-void WorkerClassicScriptLoader::DidFail(const ResourceError& error) {
+void WorkerClassicScriptLoader::DidFail(uint64_t, const ResourceError& error) {
   need_to_cancel_ = false;
   canceled_ = error.IsCancellation();
   NotifyError();
 }
 
-void WorkerClassicScriptLoader::DidFailRedirectCheck() {
+void WorkerClassicScriptLoader::DidFailRedirectCheck(uint64_t) {
   // When didFailRedirectCheck() is called, the ResourceLoader for the script
   // is not canceled yet. So we don't reset |m_needToCancel| here.
   NotifyError();

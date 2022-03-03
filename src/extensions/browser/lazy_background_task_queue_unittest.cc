@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -38,6 +38,10 @@ class TestProcessManager : public ProcessManager {
     // ProcessManager constructor above assumes non-incognito.
     DCHECK(!context->IsOffTheRecord());
   }
+
+  TestProcessManager(const TestProcessManager&) = delete;
+  TestProcessManager& operator=(const TestProcessManager&) = delete;
+
   ~TestProcessManager() override {}
 
   int create_count() { return create_count_; }
@@ -52,8 +56,6 @@ class TestProcessManager : public ProcessManager {
 
  private:
   int create_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
 };
 
 std::unique_ptr<KeyedService> CreateTestProcessManager(
@@ -68,6 +70,11 @@ std::unique_ptr<KeyedService> CreateTestProcessManager(
 class LazyBackgroundTaskQueueTest : public ExtensionsTest {
  public:
   LazyBackgroundTaskQueueTest() : task_run_count_(0) {}
+
+  LazyBackgroundTaskQueueTest(const LazyBackgroundTaskQueueTest&) = delete;
+  LazyBackgroundTaskQueueTest& operator=(const LazyBackgroundTaskQueueTest&) =
+      delete;
+
   ~LazyBackgroundTaskQueueTest() override {}
 
   int task_run_count() { return task_run_count_; }
@@ -120,9 +127,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
 
   // The total number of pending tasks that have been executed.
   int task_run_count_;
-  TestProcessManager* process_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(LazyBackgroundTaskQueueTest);
+  raw_ptr<TestProcessManager> process_manager_ = nullptr;
 };
 
 // Tests that only extensions with background pages should have tasks queued.

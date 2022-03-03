@@ -24,7 +24,7 @@ limitations under the License.
 
 namespace tflite {
 namespace ops {
-namespace custom {
+namespace builtin {
 namespace read_variable {
 
 constexpr int kInputVariableId = 0;
@@ -34,13 +34,23 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, node->inputs->size, 1);
   TF_LITE_ENSURE_EQ(context, node->outputs->size, 1);
 
-  const TfLiteTensor* input_resource_id_tensor =
-      GetInput(context, node, kInputVariableId);
-  TF_LITE_ENSURE_EQ(context, input_resource_id_tensor->type, kTfLiteInt32);
+  const TfLiteTensor* input_resource_id_tensor;
+  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputVariableId,
+                                          &input_resource_id_tensor));
+  TF_LITE_ENSURE(context, (input_resource_id_tensor->type == kTfLiteResource ||
+                           input_resource_id_tensor->type == kTfLiteInt32));
   TF_LITE_ENSURE_EQ(context, NumElements(input_resource_id_tensor), 1);
 
-  TfLiteTensor* output = GetOutput(context, node, kOutputValue);
-  SetTensorToDynamic(output);
+  TfLiteTensor* output;
+  TF_LITE_ENSURE_OK(context,
+                    GetOutputSafe(context, node, kOutputValue, &output));
+
+  if (output->dims->size == 0) {
+    // Currently there is no good way to differentiate between scalar and
+    // unranked tensor, so we set the tensor's allocation type to dynamic in
+    // both cases.
+    SetTensorToDynamic(output);
+  }
 
   return kTfLiteOk;
 }
@@ -48,20 +58,26 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   Subgraph* subgraph = reinterpret_cast<Subgraph*>(context->impl_);
 
-  const TfLiteTensor* input_resource_id_tensor =
-      GetInput(context, node, kInputVariableId);
+  const TfLiteTensor* input_resource_id_tensor;
+  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputVariableId,
+                                          &input_resource_id_tensor));
   int resource_id = input_resource_id_tensor->data.i32[0];
   auto& resources = subgraph->resources();
   auto* variable = resource::GetResourceVariable(&resources, resource_id);
   TF_LITE_ENSURE(context, variable != nullptr);
 
   TfLiteTensor* variable_tensor = variable->GetTensor();
-  TfLiteTensor* output = GetOutput(context, node, kOutputValue);
+  TfLiteTensor* output;
+  TF_LITE_ENSURE_OK(context,
+                    GetOutputSafe(context, node, kOutputValue, &output));
 
   TF_LITE_ENSURE_TYPES_EQ(context, variable_tensor->type, output->type);
-  TF_LITE_ENSURE_OK(
-      context, context->ResizeTensor(
-                   context, output, TfLiteIntArrayCopy(variable_tensor->dims)));
+  // Only resize the output if the op produces dynamic output.
+  if (IsDynamicTensor(output)) {
+    TF_LITE_ENSURE_OK(context, context->ResizeTensor(
+                                   context, output,
+                                   TfLiteIntArrayCopy(variable_tensor->dims)));
+  }
   memcpy(output->data.raw, variable_tensor->data.raw, output->bytes);
 
   return kTfLiteOk;
@@ -75,6 +91,6 @@ TfLiteRegistration* Register_READ_VARIABLE() {
   return &r;
 }
 
-}  // namespace custom
+}  // namespace builtin
 }  // namespace ops
 }  // namespace tflite

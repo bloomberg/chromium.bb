@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "device/base/device_base_export.h"
@@ -34,6 +33,9 @@ class DEVICE_BASE_EXPORT DeviceMonitorLinux {
 
   DeviceMonitorLinux();
 
+  DeviceMonitorLinux(const DeviceMonitorLinux&) = delete;
+  DeviceMonitorLinux& operator=(const DeviceMonitorLinux&) = delete;
+
   static DeviceMonitorLinux* GetInstance();
 
   void AddObserver(Observer* observer);
@@ -57,8 +59,6 @@ class DEVICE_BASE_EXPORT DeviceMonitorLinux {
   base::ObserverList<Observer, true>::Unchecked observers_;
 
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceMonitorLinux);
 };
 
 }  // namespace device

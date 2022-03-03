@@ -71,22 +71,22 @@ ANGLEPlatform::ANGLEPlatform(angle::LogErrorFunc logErrorFunc, uint32_t preRotat
     }
 
     {
+        std::vector<eglw::EGLAttrib> d3d11Attribs =
+            initAttribs(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+                        EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE);
+
+        auto *d3d11Factory = new ANGLENativeDisplayFactory(
+            "angle-d3d11-ref", "ANGLE D3D11 Reference Display", d3d11Attribs, &mEvents);
+        m_nativeDisplayFactoryRegistry.registerFactory(d3d11Factory);
+    }
+
+    {
         std::vector<eglw::EGLAttrib> d3d9Attribs = initAttribs(
             EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE);
 
         auto *d3d9Factory = new ANGLENativeDisplayFactory("angle-d3d9", "ANGLE D3D9 Display",
                                                           d3d9Attribs, &mEvents);
         m_nativeDisplayFactoryRegistry.registerFactory(d3d9Factory);
-    }
-
-    {
-        std::vector<eglw::EGLAttrib> d3d1193Attribs =
-            initAttribs(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-                        EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE, 9, 3);
-
-        auto *d3d1193Factory = new ANGLENativeDisplayFactory(
-            "angle-d3d11-fl93", "ANGLE D3D11 FL9_3 Display", d3d1193Attribs, &mEvents);
-        m_nativeDisplayFactoryRegistry.registerFactory(d3d1193Factory);
     }
 #endif  // (DE_OS == DE_OS_WIN32)
 

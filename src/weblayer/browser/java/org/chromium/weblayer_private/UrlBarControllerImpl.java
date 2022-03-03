@@ -32,6 +32,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.page_info.PageInfoHighlight;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -44,6 +45,8 @@ import org.chromium.weblayer_private.interfaces.UrlBarOptionsKeys;
  *  Implementation of {@link IUrlBarController}.
  */
 @JNINamespace("weblayer")
+// This isn't part of Chrome, so using explicit colors/sizes is ok.
+@SuppressWarnings("checkstyle:SetTextColorAndSetTextSizeCheck")
 public class UrlBarControllerImpl extends IUrlBarController.Stub {
     public static final float DEFAULT_TEXT_SIZE = 10.0F;
     public static final float MINIMUM_TEXT_SIZE = 5.0F;
@@ -102,6 +105,37 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         return ObjectWrapper.wrap(urlBarView);
     }
 
+    @Override
+    public void showPageInfo(@NonNull Bundle bundle) {
+        if (mBrowserImpl == null) {
+            throw new IllegalStateException("Page info can not be shown without a valid Browser");
+        }
+        if (!mBrowserImpl.isViewAttachedToWindow()) {
+            throw new IllegalStateException("Must be attached to window to show page info");
+        }
+        final boolean showPublisherUrl =
+                bundle.getBoolean(UrlBarOptionsKeys.SHOW_PUBLISHER_URL, /*default= */ false);
+        showPageInfoUi(showPublisherUrl);
+    }
+
+    private void showPageInfoUi(boolean showPublisherUrl) {
+        WebContents webContents = mBrowserImpl.getActiveTab().getWebContents();
+
+        String publisherUrl = null;
+        if (showPublisherUrl) {
+            String publisherUrlMaybeNull =
+                    UrlBarControllerImplJni.get().getPublisherUrl(mNativeUrlBarController);
+            if (publisherUrlMaybeNull != null && !TextUtils.isEmpty(publisherUrlMaybeNull)) {
+                publisherUrl = UrlUtilities.extractPublisherFromPublisherUrl(publisherUrlMaybeNull);
+            }
+        }
+
+        PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(), webContents,
+                publisherUrl, PageInfoController.OpenedFromSource.TOOLBAR,
+                PageInfoControllerDelegateImpl.create(webContents),
+                PageInfoHighlight.noHighlight());
+    }
+
     protected class UrlBarView
             extends LinearLayout implements BrowserImpl.VisibleSecurityStateObserver {
         private final UrlBarControllerImpl mController;
@@ -146,20 +180,26 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             mUrlBarLongClickListener =
                     ObjectWrapper.unwrap(longClickListener, OnLongClickListener.class);
 
-            updateView();
+            // NOTE: We don't animate the security button update here because this is not a change
+            // per se but rather an initial setting of the state. See crbug.com/1247666 for details.
+            updateView(/*animateSecurityButtonUpdate=*/false);
         }
 
         // BrowserImpl.VisibleSecurityStateObserver
         @Override
         public void onVisibleSecurityStateOfActiveTabChanged() {
-            updateView();
+            updateView(/*animateSecurityButtonUpdate=*/true);
         }
 
         @Override
         protected void onAttachedToWindow() {
             if (mBrowserImpl != null) {
                 mBrowserImpl.addVisibleSecurityStateObserver(this);
-                updateView();
+
+                // NOTE: We don't animate the security button update here because this is not a
+                // change per se but rather an initial setting of the state. See crbug.com/1247666
+                // for details.
+                updateView(/*animateSecurityButtonUpdate=*/false);
             }
 
             super.onAttachedToWindow();
@@ -173,7 +213,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             mController.removeActiveView();
         }
 
-        private void updateView() {
+        private void updateView(boolean animateSecurityButtonUpdate) {
             if (mBrowserImpl == null) return;
             int securityLevel = UrlBarControllerImplJni.get().getConnectionSecurityLevel(
                     mNativeUrlBarController);
@@ -201,7 +241,9 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                 mUrlTextView.setTextColor(ContextCompat.getColor(embedderContext, mUrlTextColor));
             }
 
-            mSecurityButtonAnimationDelegate.updateSecurityButton(securityIcon);
+            mSecurityButtonAnimationDelegate.updateSecurityButton(
+                    securityIcon, animateSecurityButtonUpdate);
+
             mSecurityButton.setContentDescription(getContext().getResources().getString(
                     SecurityStatusIcon.getSecurityIconContentDescriptionResourceId(securityLevel)));
 
@@ -215,7 +257,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                 // Set clicklisteners on the entire UrlBarView.
                 assert (mUrlBarClickListener == null);
                 mSecurityButton.setClickable(false);
-                setOnClickListener(v -> { showPageInfoUi(v); });
+                setOnClickListener(v -> { showPageInfoUi(mShowPublisherUrl); });
 
                 if (mUrlBarLongClickListener != null) {
                     setOnLongClickListener(mUrlBarLongClickListener);
@@ -223,7 +265,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             } else {
                 // Set a clicklistener on the security status and TextView separately. This mode
                 // can be used to create an editable URL bar using WebLayer.
-                mSecurityButton.setOnClickListener(v -> { showPageInfoUi(v); });
+                mSecurityButton.setOnClickListener(v -> { showPageInfoUi(mShowPublisherUrl); });
                 if (mUrlBarClickListener != null) {
                     mUrlTextView.setOnClickListener(mUrlBarClickListener);
                 }
@@ -233,23 +275,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             }
         }
 
-        private void showPageInfoUi(View v) {
-            WebContents webContents = mBrowserImpl.getActiveTab().getWebContents();
-
-            String publisherUrl = null;
-            if (mShowPublisherUrl) {
-                String publisherUrlMaybeNull =
-                        UrlBarControllerImplJni.get().getPublisherUrl(mNativeUrlBarController);
-                if (publisherUrlMaybeNull != null && !TextUtils.isEmpty(publisherUrlMaybeNull)) {
-                    publisherUrl =
-                            UrlUtilities.extractPublisherFromPublisherUrl(publisherUrlMaybeNull);
-                }
-            }
-
-            PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(),
-                    webContents, publisherUrl, PageInfoController.OpenedFromSource.TOOLBAR,
-                    PageInfoControllerDelegateImpl.create(webContents),
-                    PageInfoController.NO_HIGHLIGHTED_PERMISSION);
+        public boolean showPublisherUrl() {
+            return mShowPublisherUrl;
         }
 
         @DrawableRes
@@ -258,7 +285,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                     UrlBarControllerImplJni.get().getConnectionSecurityLevel(
                             mNativeUrlBarController),
                     mBrowserImpl.isWindowOnSmallDevice(),
-                    /* skipIconForNeutralState= */ true);
+                    /*skipIconForNeutralState=*/true,
+                    /*useUpdatedConnectionSecurityIndicators=*/false);
         }
     }
 

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_network_manager.h"
@@ -24,10 +23,11 @@ class FakePortAllocatorSession : public cricket::BasicPortAllocatorSession {
                            int component,
                            const std::string& ice_username_fragment,
                            const std::string& ice_password);
-  ~FakePortAllocatorSession() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakePortAllocatorSession);
+  FakePortAllocatorSession(const FakePortAllocatorSession&) = delete;
+  FakePortAllocatorSession& operator=(const FakePortAllocatorSession&) = delete;
+
+  ~FakePortAllocatorSession() override;
 };
 
 FakePortAllocatorSession::FakePortAllocatorSession(

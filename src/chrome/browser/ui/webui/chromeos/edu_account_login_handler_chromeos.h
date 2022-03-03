@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -97,10 +98,9 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
   void OnJavascriptDisallowed() override;
 
-  void HandleIsNetworkReady(const base::ListValue* args);
-  void HandleGetParents(const base::ListValue* args);
-  void HandleCloseDialog(const base::ListValue* args);
-  void HandleParentSignin(const base::ListValue* args);
+  void HandleIsNetworkReady(base::Value::ConstListView args);
+  void HandleGetParents(base::Value::ConstListView args);
+  void HandleParentSignin(base::Value::ConstListView args);
 
   virtual void FetchFamilyMembers();
   virtual void FetchParentImages(

@@ -7,14 +7,15 @@
 #ifndef FXJS_XFA_CFXJSE_FORMCALC_CONTEXT_H_
 #define FXJS_XFA_CFXJSE_FORMCALC_CONTEXT_H_
 
-#include <functional>
-#include <memory>
-#include <vector>
+#include <stdint.h>
 
-#include "core/fxcrt/fx_system.h"
+#include <functional>
+
 #include "core/fxcrt/unowned_ptr.h"
 #include "fxjs/xfa/fxjse.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 class CFXJSE_Context;
 class CFX_WideTextBuf;
@@ -269,8 +270,8 @@ class CFXJSE_FormCalcContext final : public CFXJSE_HostObject {
                                           int32_t iIndexFlags,
                                           int32_t iIndexValue,
                                           bool bIsStar);
-  static Optional<CFX_WideTextBuf> Translate(cppgc::Heap* pHeap,
-                                             WideStringView wsFormcalc);
+  static absl::optional<CFX_WideTextBuf> Translate(cppgc::Heap* pHeap,
+                                                   WideStringView wsFormcalc);
 
   v8::Local<v8::Value> GlobalPropertyGetter();
   v8::Isolate* GetIsolate() const { return m_pIsolate.Get(); }
@@ -299,10 +300,10 @@ class CFXJSE_FormCalcContext final : public CFXJSE_HostObject {
   void ThrowCompilerErrorException() const;
   void ThrowDivideByZeroException() const;
   void ThrowServerDeniedException() const;
-  void ThrowPropertyNotInObjectException(const WideString& name,
-                                         const WideString& exp) const;
-  void ThrowParamCountMismatchException(const WideString& method) const;
-  void ThrowException(const WideString& str) const;
+  void ThrowPropertyNotInObjectException(ByteStringView name,
+                                         ByteStringView exp) const;
+  void ThrowParamCountMismatchException(ByteStringView method) const;
+  void ThrowException(ByteStringView str) const;
 
   UnownedPtr<v8::Isolate> const m_pIsolate;
   v8::Global<v8::Value> m_Value;

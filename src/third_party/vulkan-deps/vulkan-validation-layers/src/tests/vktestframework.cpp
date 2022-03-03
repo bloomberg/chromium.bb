@@ -32,8 +32,8 @@
 #endif
 // TODO FIXME remove this once glslang doesn't define this
 #undef BadValue
-#include "SPIRV/GlslangToSpv.h"
-#include "SPIRV/SPVRemapper.h"
+#include "glslang/SPIRV/GlslangToSpv.h"
+#include "glslang/SPIRV/SPVRemapper.h"
 #if (defined(_MSC_VER) && _MSC_VER < 1900 /*vs2015*/)
 #pragma warning(pop)
 #endif
@@ -752,7 +752,7 @@ EShLanguage VkTestFramework::FindLanguage(const VkShaderStageFlagBits shader_typ
 // Return value of false means an error was encountered.
 //
 bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limits, const VkShaderStageFlagBits shader_type,
-                                const char *pshader, std::vector<unsigned int> &spirv, bool debug, uint32_t spirv_minor_version) {
+                                const char *pshader, std::vector<uint32_t> &spirv, bool debug, const spv_target_env spv_env) {
     glslang::TProgram program;
     const char *shaderStrings[1];
 
@@ -771,27 +771,9 @@ bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limit
 
     EShLanguage stage = FindLanguage(shader_type);
     glslang::TShader *shader = new glslang::TShader(stage);
-    switch (spirv_minor_version) {
-        default:
-        case 0:
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
-            break;
-        case 1:
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_1);
-            break;
-        case 2:
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
-            break;
-        case 3:
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
-            break;
-        case 4:
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
-            break;
-        case 5:
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_5);
-            break;
-    }
+    VkShaderObj::GlslangTargetEnv glslang_env(spv_env);
+    shader->setEnvTarget(glslang::EshTargetSpv, glslang_env);
+    shader->setEnvClient(glslang::EShClientVulkan, glslang_env);
 
     shaderStrings[0] = pshader;
     shader->setStrings(shaderStrings, 1);
@@ -856,7 +838,7 @@ bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limit
 // Return value of false means an error was encountered.
 //
 bool VkTestFramework::ASMtoSPV(const spv_target_env target_env, const uint32_t options, const char *pasm,
-                               std::vector<unsigned int> &spv) {
+                               std::vector<uint32_t> &spv) {
     spv_binary binary;
     spv_diagnostic diagnostic = nullptr;
     spv_context context = spvContextCreate(target_env);

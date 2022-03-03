@@ -10,11 +10,13 @@ devtools_module("logs") {
   sources = [
     "LogManager.ts",
     "NetworkLog.ts",
+    "RequestResolver.ts",
   ]
 
   deps = [
     "../../core/common:bundle",
     "../../core/i18n:bundle",
+    "../../core/platform:bundle",
     "../../core/sdk:bundle",
     "../../generated:protocol",
   ]
@@ -27,11 +29,14 @@ devtools_entrypoint("bundle") {
 
   visibility = [
     ":*",
+    "../../../test/unittests/front_end/models/logs/*",
+    "../../../test/unittests/front_end/ui/components/request_link_icon/*",
     "../../entrypoints/main/*",
     "../../panels/application/*",
     "../../panels/console/*",
     "../../panels/issues/*",
     "../../panels/network/*",
+    "../../ui/components/request_link_icon/*",
     "../extensions/*",
   ]
 

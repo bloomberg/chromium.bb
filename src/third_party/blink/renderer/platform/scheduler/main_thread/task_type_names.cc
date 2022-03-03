@@ -135,8 +135,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalNavigationAssociatedUnfreezable";
     case TaskType::kInternalContinueScriptLoading:
       return "InternalContinueScriptLoading";
-    case TaskType::kExperimentalWebScheduling:
-      return "ExperimentalWebScheduling";
+    case TaskType::kWebSchedulingPostedTask:
+      return "WebSchedulingPostedTask";
     case TaskType::kInternalFrameLifecycleControl:
       return "InternalFrameLifecycleControl";
     case TaskType::kInternalFindInPage:
@@ -151,8 +151,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "WakeLock";
     case TaskType::kWebGPU:
       return "WebGPU";
-    case TaskType::kCount:
-      return "Count";
+    case TaskType::kInternalPostMessageForwarding:
+      return "InternalPostMessageForwarding";
   }
   // FrameSchedulerImpl should not call this for invalid TaskTypes.
   NOTREACHED();

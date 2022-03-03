@@ -45,13 +45,13 @@
 #include <memory>
 #include <vector>
 
+#include "src/base/numbers/double.h"
 #include "src/base/small-vector.h"
 #include "src/codegen/arm/constants-arm.h"
 #include "src/codegen/arm/register-arm.h"
 #include "src/codegen/assembler.h"
 #include "src/codegen/constant-pool.h"
 #include "src/codegen/machine-type.h"
-#include "src/numbers/double.h"
 #include "src/utils/boxed-float.h"
 
 namespace v8 {
@@ -87,7 +87,7 @@ class V8_EXPORT_PRIVATE Operand {
  public:
   // immediate
   V8_INLINE explicit Operand(int32_t immediate,
-                             RelocInfo::Mode rmode = RelocInfo::NONE)
+                             RelocInfo::Mode rmode = RelocInfo::NO_INFO)
       : rmode_(rmode) {
     value_.immediate = immediate;
   }
@@ -401,12 +401,13 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void DataAlign(int m);
   // Aligns code to something that's optimal for a jump target for the platform.
   void CodeTargetAlign();
+  void LoopHeaderAlign() { CodeTargetAlign(); }
 
   // Branch instructions
   void b(int branch_offset, Condition cond = al,
-         RelocInfo::Mode rmode = RelocInfo::NONE);
+         RelocInfo::Mode rmode = RelocInfo::NO_INFO);
   void bl(int branch_offset, Condition cond = al,
-          RelocInfo::Mode rmode = RelocInfo::NONE);
+          RelocInfo::Mode rmode = RelocInfo::NO_INFO);
   void blx(int branch_offset);                     // v5 and above
   void blx(Register target, Condition cond = al);  // v5 and above
   void bx(Register target, Condition cond = al);   // v5 and above, plus v4t
@@ -715,7 +716,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
             SwVfpRegister last, Condition cond = al);
 
   void vmov(const SwVfpRegister dst, Float32 imm);
-  void vmov(const DwVfpRegister dst, Double imm,
+  void vmov(const DwVfpRegister dst, base::Double imm,
             const Register extra_scratch = no_reg);
   void vmov(const SwVfpRegister dst, const SwVfpRegister src,
             const Condition cond = al);
@@ -923,6 +924,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void vpmax(NeonDataType dt, DwVfpRegister dst, DwVfpRegister src1,
              DwVfpRegister src2);
 
+  void vpadal(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src);
   void vpaddl(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src);
   void vqrdmulh(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src1,
                 QwNeonRegister src2);
@@ -1056,7 +1058,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     ~BlockConstPoolScope() { assem_->EndBlockConstPool(); }
 
    private:
-    Assembler* assem_;
+    Assembler* const assem_;
 
     DISALLOW_IMPLICIT_CONSTRUCTORS(BlockConstPoolScope);
   };
@@ -1066,8 +1068,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   // Record a deoptimization reason that can be used by a log or cpu profiler.
   // Use --trace-deopt to enable.
-  void RecordDeoptReason(DeoptimizeReason reason, SourcePosition position,
-                         int id);
+  void RecordDeoptReason(DeoptimizeReason reason, uint32_t node_id,
+                         SourcePosition position, int id);
 
   // Record the emission of a constant pool.
   //
@@ -1093,9 +1095,9 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // called before any use of db/dd/dq/dp to ensure that constant pools
   // are not emitted as part of the tables generated.
   void db(uint8_t data);
-  void dd(uint32_t data, RelocInfo::Mode rmode = RelocInfo::NONE);
-  void dq(uint64_t data, RelocInfo::Mode rmode = RelocInfo::NONE);
-  void dp(uintptr_t data, RelocInfo::Mode rmode = RelocInfo::NONE) {
+  void dd(uint32_t data, RelocInfo::Mode rmode = RelocInfo::NO_INFO);
+  void dq(uint64_t data, RelocInfo::Mode rmode = RelocInfo::NO_INFO);
+  void dp(uintptr_t data, RelocInfo::Mode rmode = RelocInfo::NO_INFO) {
     dd(data, rmode);
   }
 
@@ -1230,6 +1232,12 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   bool is_const_pool_blocked() const {
     return (const_pool_blocked_nesting_ > 0) ||
            (pc_offset() < no_const_pool_before_);
+  }
+
+  bool has_pending_constants() const {
+    bool result = !pending_32_bit_constants_.empty();
+    DCHECK_EQ(result, first_const_pool_32_use_ != -1);
+    return result;
   }
 
   bool VfpRegisterIsAvailable(DwVfpRegister reg) {

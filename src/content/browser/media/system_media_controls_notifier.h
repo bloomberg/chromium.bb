@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -35,6 +36,11 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
  public:
   explicit SystemMediaControlsNotifier(
       system_media_controls::SystemMediaControls* system_media_controls);
+
+  SystemMediaControlsNotifier(const SystemMediaControlsNotifier&) = delete;
+  SystemMediaControlsNotifier& operator=(const SystemMediaControlsNotifier&) =
+      delete;
+
   ~SystemMediaControlsNotifier() override;
 
   // media_session::mojom::MediaControllerObserver implementation.
@@ -83,7 +89,8 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
 
   // Our connection to the System Media Controls. We don't own it since it's a
   // global instance.
-  system_media_controls::SystemMediaControls* const system_media_controls_;
+  const raw_ptr<system_media_controls::SystemMediaControls>
+      system_media_controls_;
 
   // Tracks current media session state/metadata.
   mojo::Remote<media_session::mojom::MediaController> media_controller_;
@@ -96,8 +103,6 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
       media_controller_image_observer_receiver_{this};
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsNotifier);
 };
 
 }  // namespace content

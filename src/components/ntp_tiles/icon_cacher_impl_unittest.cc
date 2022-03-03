@@ -18,6 +18,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_service_impl.h"
 #include "components/favicon/core/favicon_util.h"
@@ -54,7 +55,7 @@ using ::testing::ReturnArg;
 namespace ntp_tiles {
 namespace {
 
-const int kTestDipForServerRequests = 24;
+const int kTestDipForServerRequests = 32;
 const favicon_base::IconType kTestIconTypeForServerRequests =
     favicon_base::IconType::kTouchIcon;
 const char kTestGoogleServerClientParam[] = "test_chrome";
@@ -171,7 +172,7 @@ class IconCacherTestPopularSites : public IconCacherTestBase {
 #if defined(OS_ANDROID)
     base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
 #else
-    base::PathService::Get(base::DIR_MODULE, &pak_path);
+    base::PathService::Get(base::DIR_ASSETS, &pak_path);
 #endif
 
     base::FilePath ui_test_pak_path;
@@ -180,7 +181,7 @@ class IconCacherTestPopularSites : public IconCacherTestBase {
 
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path.AppendASCII("components_tests_resources.pak"),
-        ui::SCALE_FACTOR_NONE);
+        ui::kScaleFactorNone);
   }
 
   PopularSites::Site site_;

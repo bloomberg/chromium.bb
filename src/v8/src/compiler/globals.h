@@ -7,6 +7,7 @@
 
 #include "src/common/globals.h"
 #include "src/flags/flags.h"
+#include "src/objects/js-objects.h"
 
 namespace v8 {
 namespace internal {
@@ -74,6 +75,14 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+// Maximum depth and total number of elements and properties for literal
+// graphs to be considered for fast deep-copying. The limit is chosen to
+// match the maximum number of inobject properties, to ensure that the
+// performance of using object literals is not worse than using constructor
+// functions, see crbug.com/v8/6211 for details.
+const int kMaxFastLiteralDepth = 3;
+const int kMaxFastLiteralProperties = JSObject::kMaxInObjectProperties;
+
 }  // namespace compiler
 }  // namespace internal
 }  // namespace v8
@@ -83,7 +92,8 @@ inline std::ostream& operator<<(std::ostream& os,
 // to add support for IA32, because it has a totally different approach
 // (using FP stack). As support is added to more platforms, please make sure
 // to list them here in order to enable tests of this functionality.
-#if defined(V8_TARGET_ARCH_X64)
+// Make sure to sync the following with src/d8/d8-test.cc.
+#if defined(V8_TARGET_ARCH_X64) || defined(V8_TARGET_ARCH_ARM64)
 #define V8_ENABLE_FP_PARAMS_IN_C_LINKAGE
 #endif
 

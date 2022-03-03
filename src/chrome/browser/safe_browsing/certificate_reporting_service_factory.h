@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CERTIFICATE_REPORTING_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CERTIFICATE_REPORTING_SERVICE_FACTORY_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -28,6 +29,11 @@ class CertificateReportingServiceFactory
   // Returns the reporting service associated with |context|.
   static CertificateReportingService* GetForBrowserContext(
       content::BrowserContext* context);
+
+  CertificateReportingServiceFactory(
+      const CertificateReportingServiceFactory&) = delete;
+  CertificateReportingServiceFactory& operator=(
+      const CertificateReportingServiceFactory&) = delete;
 
   // Setters for testing.
   void SetReportEncryptionParamsForTesting(uint8_t* server_public_key,
@@ -54,16 +60,14 @@ class CertificateReportingServiceFactory
       content::BrowserContext* context) const override;
 
   // Encryption parameters for certificate reports.
-  uint8_t* server_public_key_;
+  raw_ptr<uint8_t> server_public_key_;
   uint32_t server_public_key_version_;
 
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
   base::TimeDelta queued_report_ttl_;
   size_t max_queued_report_count_;
   base::RepeatingClosure service_reset_callback_;
   scoped_refptr<network::SharedURLLoaderFactory> test_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CERTIFICATE_REPORTING_SERVICE_FACTORY_H_

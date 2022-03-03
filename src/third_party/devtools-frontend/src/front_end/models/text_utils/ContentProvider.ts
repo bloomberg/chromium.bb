@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 
 export abstract class ContentProvider {
   abstract contentURL(): string;
@@ -39,11 +39,7 @@ export abstract class ContentProvider {
 }
 
 export class SearchMatch {
-  lineNumber: number;
-  lineContent: string;
-  constructor(lineNumber: number, lineContent: string) {
-    this.lineNumber = lineNumber;
-    this.lineContent = lineContent;
+  constructor(public lineNumber: number, public lineContent: string, public columnNumber?: number|undefined) {
   }
 }
 

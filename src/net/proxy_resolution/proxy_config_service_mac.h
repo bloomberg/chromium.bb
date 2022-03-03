@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "net/base/network_config_watcher_mac.h"
@@ -29,6 +28,10 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   explicit ProxyConfigServiceMac(
       const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
       const NetworkTrafficAnnotationTag& traffic_annotation);
+
+  ProxyConfigServiceMac(const ProxyConfigServiceMac&) = delete;
+  ProxyConfigServiceMac& operator=(const ProxyConfigServiceMac&) = delete;
+
   ~ProxyConfigServiceMac() override;
 
  public:
@@ -48,6 +51,9 @@ class ProxyConfigServiceMac : public ProxyConfigService {
     explicit Forwarder(ProxyConfigServiceMac* proxy_config_service)
         : proxy_config_service_(proxy_config_service) {}
 
+    Forwarder(const Forwarder&) = delete;
+    Forwarder& operator=(const Forwarder&) = delete;
+
     // NetworkConfigWatcherMac::Delegate implementation:
     void StartReachabilityNotifications() override {}
     void SetDynamicStoreNotificationKeys(SCDynamicStoreRef store) override;
@@ -55,7 +61,6 @@ class ProxyConfigServiceMac : public ProxyConfigService {
 
    private:
     ProxyConfigServiceMac* const proxy_config_service_;
-    DISALLOW_COPY_AND_ASSIGN(Forwarder);
   };
 
   // Methods directly called by the NetworkConfigWatcherMac::Delegate:
@@ -80,8 +85,6 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceMac);
 };
 
 }  // namespace net

@@ -31,8 +31,6 @@
 using web::NavigationManagerImpl;
 
 using web::wk_navigation_util::IsRestoreSessionUrl;
-// TODO(crbug.com/1038303): This legacy won't be needed anymore.
-using web::wk_navigation_util::IsPlaceholderUrl;
 
 @interface CRWWebViewNavigationObserver ()
 
@@ -155,16 +153,13 @@ using web::wk_navigation_util::IsPlaceholderUrl;
   // from restore_session.html to the restored URL.
   bool previousURLHasAboutScheme =
       self.documentURL.SchemeIs(url::kAboutScheme) ||
-      (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-       IsPlaceholderUrl(self.documentURL)) ||
       web::GetWebClient()->IsAppSpecificURL(self.documentURL);
   bool needs_back_forward_navigation_reload =
       existingContext &&
       (existingContext->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
   // The back-forward workaround isn't need on iOS13.
-  if (@available(iOS 13, *)) {
-    needs_back_forward_navigation_reload = false;
-  }
+  needs_back_forward_navigation_reload = false;
+
   if (IsRestoreSessionUrl(webViewURL)) {
     if (previousURLHasAboutScheme || needs_back_forward_navigation_reload) {
       [self.webView reload];
@@ -189,7 +184,8 @@ using web::wk_navigation_util::IsPlaceholderUrl;
       !self.navigationHandler.pendingNavigationInfo.cancelled) {
     // A fast back-forward navigation does not call |didCommitNavigation:|, so
     // signal page change explicitly.
-    DCHECK_EQ(self.documentURL.GetOrigin(), webViewURL.GetOrigin());
+    DCHECK_EQ(self.documentURL.DeprecatedGetOriginAsURL(),
+              webViewURL.DeprecatedGetOriginAsURL());
     BOOL isSameDocumentNavigation =
         [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
 
@@ -305,8 +301,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 
     if (currentItem && webViewURL != currentItem->GetURL()) {
       BOOL isRestoredURL = NO;
-      if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-          web::wk_navigation_util::IsRestoreSessionUrl(webViewURL)) {
+      if (web::wk_navigation_util::IsRestoreSessionUrl(webViewURL)) {
         GURL restoredURL;
         web::wk_navigation_util::ExtractTargetURL(webViewURL, &restoredURL);
         isRestoredURL = restoredURL == currentItem->GetURL();
@@ -337,7 +332,8 @@ using web::wk_navigation_util::IsPlaceholderUrl;
            // Re-check origin in case navigaton has occurred since
            // start of JavaScript evaluation.
            BOOL newURLOriginMatchesDocumentURLOrigin =
-               self.documentURL.GetOrigin() == URL.GetOrigin();
+               self.documentURL.DeprecatedGetOriginAsURL() ==
+               URL.DeprecatedGetOriginAsURL();
            // Check that the web view URL still matches the new URL.
            // TODO(crbug.com/563568): webViewURLMatchesNewURL check
            // may drop same document URL changes if pending URL
@@ -380,8 +376,9 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 // YES for the web view (since if it's not, no guesswork is needed).
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
   // If the origin changes, it can't be same-document.
-  if (self.documentURL.GetOrigin().is_empty() ||
-      self.documentURL.GetOrigin() != newURL.GetOrigin()) {
+  if (self.documentURL.DeprecatedGetOriginAsURL().is_empty() ||
+      self.documentURL.DeprecatedGetOriginAsURL() !=
+          newURL.DeprecatedGetOriginAsURL()) {
     return NO;
   }
   if (self.navigationHandler.navigationState ==

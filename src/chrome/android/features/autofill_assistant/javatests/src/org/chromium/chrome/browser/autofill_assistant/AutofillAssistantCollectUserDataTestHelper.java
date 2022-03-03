@@ -22,9 +22,11 @@ import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataDelegate;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantUserDataEventType;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpanderAccordion;
 import org.chromium.chrome.browser.payments.AutofillAddress;
@@ -122,18 +124,24 @@ public class AutofillAssistantCollectUserDataTestHelper {
         Map<String, AssistantValue> mAdditionalValues = new HashMap<>();
 
         @Override
-        public void onContactInfoChanged(@Nullable AutofillContact contact) {
-            mContact = contact;
+        public void onContactInfoChanged(
+                @Nullable AssistantCollectUserDataModel.ContactModel contactModel,
+                @AssistantUserDataEventType int eventType) {
+            mContact = contactModel == null ? null : contactModel.mOption;
         }
 
         @Override
-        public void onShippingAddressChanged(@Nullable AutofillAddress address) {
-            mAddress = address;
+        public void onShippingAddressChanged(
+                @Nullable AssistantCollectUserDataModel.AddressModel addressModel,
+                @AssistantUserDataEventType int eventType) {
+            mAddress = addressModel == null ? null : addressModel.mOption;
         }
 
         @Override
-        public void onPaymentMethodChanged(@Nullable AutofillPaymentInstrument paymentInstrument) {
-            mPaymentMethod = paymentInstrument;
+        public void onPaymentMethodChanged(@Nullable AssistantCollectUserDataModel
+                                                   .PaymentInstrumentModel paymentInstrumentModel,
+                @AssistantUserDataEventType int eventType) {
+            mPaymentMethod = paymentInstrumentModel == null ? null : paymentInstrumentModel.mOption;
         }
 
         @Override
@@ -142,8 +150,10 @@ public class AutofillAssistantCollectUserDataTestHelper {
         }
 
         @Override
-        public void onLoginChoiceChanged(@Nullable AssistantLoginChoice loginChoice) {
-            mLoginChoice = loginChoice;
+        public void onLoginChoiceChanged(
+                @Nullable AssistantCollectUserDataModel.LoginChoiceModel loginChoiceModel,
+                @AssistantUserDataEventType int eventType) {
+            mLoginChoice = loginChoiceModel == null ? null : loginChoiceModel.mOption;
         }
 
         @Override
@@ -178,22 +188,6 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
         @Override
         public void onInputTextFocusChanged(boolean isFocused) {}
-
-        @Override
-        public boolean isContactComplete(@Nullable AutofillContact contact) {
-            return contact != null && contact.isComplete();
-        }
-
-        @Override
-        public boolean isShippingAddressComplete(@Nullable AutofillAddress address) {
-            return address != null && address.isComplete();
-        }
-
-        @Override
-        public boolean isPaymentInstrumentComplete(
-                @Nullable AutofillPaymentInstrument paymentInstrument) {
-            return paymentInstrument != null && paymentInstrument.isComplete();
-        }
     }
 
     public AutofillAssistantCollectUserDataTestHelper() throws TimeoutException {
@@ -276,8 +270,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
         return new PersonalDataManager.AutofillProfile(/* guid= */ "", "https://www.example.com",
                 /* honorificPrefix= */ "", fullName, "Acme Inc.", "123 Main", "California",
                 "Los Angeles",
-                /* dependentLocality= */ "", postcode, /* sortingCode= */ "", "UZ", "555 123-4567",
-                email, /* languageCode= */ "");
+                /* dependentLocality= */ "", postcode, /* sortingCode= */ "", "UZ",
+                /* phoneNumber= */ "", email, /* languageCode= */ "");
     }
 
     /**

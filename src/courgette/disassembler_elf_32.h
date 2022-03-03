@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
 #include "courgette/instruction_utils.h"
@@ -85,17 +85,21 @@ class DisassemblerElf32 : public Disassembler {
    public:
     Elf32RvaVisitor_Rel32(
         const std::vector<std::unique_ptr<TypedRVA>>& rva_locations);
+
+    Elf32RvaVisitor_Rel32(const Elf32RvaVisitor_Rel32&) = delete;
+    Elf32RvaVisitor_Rel32& operator=(const Elf32RvaVisitor_Rel32&) = delete;
+
     ~Elf32RvaVisitor_Rel32() override { }
 
     // VectorRvaVisitor<TypedRVA*> interfaces.
     RVA Get() const override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Elf32RvaVisitor_Rel32);
   };
 
  public:
   DisassemblerElf32(const uint8_t* start, size_t length);
+
+  DisassemblerElf32(const DisassemblerElf32&) = delete;
+  DisassemblerElf32& operator=(const DisassemblerElf32&) = delete;
 
   ~DisassemblerElf32() override { }
 
@@ -218,7 +222,7 @@ class DisassemblerElf32 : public Disassembler {
 
   CheckBool CheckSection(RVA rva) WARN_UNUSED_RESULT;
 
-  const Elf32_Ehdr* header_;
+  raw_ptr<const Elf32_Ehdr> header_;
 
   Elf32_Half section_header_table_size_;
 
@@ -228,7 +232,7 @@ class DisassemblerElf32 : public Disassembler {
   // An ordering of |section_header_table_|, sorted by file offset.
   std::vector<Elf32_Half> section_header_file_offset_order_;
 
-  const Elf32_Phdr* program_header_table_;
+  raw_ptr<const Elf32_Phdr> program_header_table_;
   Elf32_Half program_header_table_size_;
 
   // Pointer to string table containing section names.
@@ -240,9 +244,6 @@ class DisassemblerElf32 : public Disassembler {
   // Sorted rel32 RVAs. This is mutable because ParseFile() temporarily sorts
   // these by file offsets.
   mutable std::vector<std::unique_ptr<TypedRVA>> rel32_locations_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisassemblerElf32);
 };
 
 }  // namespace courgette

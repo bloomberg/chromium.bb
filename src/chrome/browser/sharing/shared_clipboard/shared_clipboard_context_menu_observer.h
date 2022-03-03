@@ -10,9 +10,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace syncer {
@@ -28,19 +27,27 @@ class SharedClipboardContextMenuObserver
   class SubMenuDelegate : public ui::SimpleMenuModel::Delegate {
    public:
     explicit SubMenuDelegate(SharedClipboardContextMenuObserver* parent);
+
+    SubMenuDelegate(const SubMenuDelegate&) = delete;
+    SubMenuDelegate& operator=(const SubMenuDelegate&) = delete;
+
     ~SubMenuDelegate() override;
 
     bool IsCommandIdEnabled(int command_id) const override;
     void ExecuteCommand(int command_id, int event_flags) override;
 
    private:
-    SharedClipboardContextMenuObserver* const parent_;
-
-    DISALLOW_COPY_AND_ASSIGN(SubMenuDelegate);
+    const raw_ptr<SharedClipboardContextMenuObserver> parent_;
   };
 
   explicit SharedClipboardContextMenuObserver(
       RenderViewContextMenuProxy* proxy);
+
+  SharedClipboardContextMenuObserver(
+      const SharedClipboardContextMenuObserver&) = delete;
+  SharedClipboardContextMenuObserver& operator=(
+      const SharedClipboardContextMenuObserver&) = delete;
+
   ~SharedClipboardContextMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
@@ -61,9 +68,9 @@ class SharedClipboardContextMenuObserver
 
   void SendSharedClipboardMessage(int chosen_device_index);
 
-  RenderViewContextMenuProxy* proxy_ = nullptr;
+  raw_ptr<RenderViewContextMenuProxy> proxy_ = nullptr;
 
-  SharedClipboardUiController* controller_ = nullptr;
+  raw_ptr<SharedClipboardUiController> controller_ = nullptr;
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices_;
 
@@ -72,8 +79,6 @@ class SharedClipboardContextMenuObserver
   std::u16string text_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedClipboardContextMenuObserver);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_CONTEXT_MENU_OBSERVER_H_

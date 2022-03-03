@@ -37,9 +37,13 @@ ModelTypeRegistry::~ModelTypeRegistry() {
 void ModelTypeRegistry::ConnectDataType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {
-  DCHECK(!IsProxyType(type));
+  DCHECK(ProtocolTypes().Has(type));
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
+  DCHECK(activation_response);
+  DCHECK(!activation_response->skip_engine_connection);
+  DCHECK(activation_response->type_processor);
+
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   auto worker = std::make_unique<ModelTypeWorker>(
@@ -59,9 +63,14 @@ void ModelTypeRegistry::ConnectDataType(
 }
 
 void ModelTypeRegistry::DisconnectDataType(ModelType type) {
+  if (update_handler_map_.count(type) == 0) {
+    // Type not connected. Simply ignore.
+    return;
+  }
+
   DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
 
-  DCHECK(!IsProxyType(type));
+  DCHECK(ProtocolTypes().Has(type));
   DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
 
@@ -81,18 +90,20 @@ void ModelTypeRegistry::DisconnectDataType(ModelType type) {
   }
 }
 
-void ModelTypeRegistry::ConnectProxyType(ModelType type) {
-  DCHECK(IsProxyType(type));
-  enabled_proxy_types_.Put(type);
+void ModelTypeRegistry::SetProxyTabsDatatypeEnabled(bool enabled) {
+  proxy_tabs_datatype_enabled_ = enabled;
 }
 
-void ModelTypeRegistry::DisconnectProxyType(ModelType type) {
-  DCHECK(IsProxyType(type));
-  enabled_proxy_types_.Remove(type);
+ModelTypeSet ModelTypeRegistry::GetConnectedTypes() const {
+  ModelTypeSet types;
+  for (const auto& worker : connected_model_type_workers_) {
+    types.Put(worker->GetModelType());
+  }
+  return types;
 }
 
-ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
-  return Union(GetEnabledDataTypes(), enabled_proxy_types_);
+bool ModelTypeRegistry::proxy_tabs_datatype_enabled() const {
+  return proxy_tabs_datatype_enabled_;
 }
 
 ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
@@ -102,14 +113,6 @@ ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
       result.Put(kv.first);
   }
   return result;
-}
-
-ModelTypeSet ModelTypeRegistry::GetEnabledDataTypes() const {
-  ModelTypeSet enabled_types;
-  for (const auto& worker : connected_model_type_workers_) {
-    enabled_types.Put(worker->GetModelType());
-  }
-  return enabled_types;
 }
 
 const UpdateHandler* ModelTypeRegistry::GetUpdateHandler(ModelType type) const {
@@ -155,8 +158,7 @@ void ModelTypeRegistry::OnTrustedVaultKeyRequired() {}
 void ModelTypeRegistry::OnTrustedVaultKeyAccepted() {}
 
 void ModelTypeRegistry::OnBootstrapTokenUpdated(
-    const std::string& bootstrap_token,
-    BootstrapTokenType type) {}
+    const std::string& bootstrap_token) {}
 
 void ModelTypeRegistry::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                                 bool encrypt_everything) {

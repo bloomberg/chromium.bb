@@ -6,9 +6,9 @@
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
+import time
 
 CHROMIUM_SRC = os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -73,6 +73,8 @@ class SkiaGoldSession(object):
     self._corpus = corpus
     self._instance = instance
     self._bucket = bucket
+    self._local_png_directory = (self._gold_properties.local_png_directory
+                                 or tempfile.mkdtemp())
     self._triage_link_file = tempfile.NamedTemporaryFile(suffix='.txt',
                                                          dir=working_dir,
                                                          delete=False).name
@@ -92,7 +94,8 @@ class SkiaGoldSession(object):
                     output_manager,
                     inexact_matching_args=None,
                     use_luci=True,
-                    optional_keys=None):
+                    optional_keys=None,
+                    force_dryrun=False):
     """Helper method to run all steps to compare a produced image.
 
     Handles authentication, itnitialization, comparison, and, if necessary,
@@ -115,6 +118,8 @@ class SkiaGoldSession(object):
           for this comparison. Optional keys are keys unrelated to the
           configuration the image was produced on, e.g. a comment or whether
           Gold should treat the image as ignored.
+      force_dryrun: A boolean denoting whether dryrun should be forced on
+          regardless of whether this is a local comparison or not.
 
     Returns:
       A tuple (status, error). |status| is a value from
@@ -133,7 +138,8 @@ class SkiaGoldSession(object):
         name=name,
         png_file=png_file,
         inexact_matching_args=inexact_matching_args,
-        optional_keys=optional_keys)
+        optional_keys=optional_keys,
+        force_dryrun=force_dryrun)
     if not compare_rc:
       return self.StatusCodes.SUCCESS, None
 
@@ -248,7 +254,8 @@ class SkiaGoldSession(object):
               name,
               png_file,
               inexact_matching_args=None,
-              optional_keys=None):
+              optional_keys=None,
+              force_dryrun=False):
     """Compares the given image to images known to Gold.
 
     Triage links can later be retrieved using GetTriageLinks().
@@ -263,6 +270,8 @@ class SkiaGoldSession(object):
           for this comparison. Optional keys are keys unrelated to the
           configuration the image was produced on, e.g. a comment or whether
           Gold should treat the image as ignored.
+      force_dryrun: A boolean denoting whether dryrun should be forced on
+          regardless of whether this is a local comparison or not.
 
     Returns:
       A tuple (return_code, output). |return_code| is the return code of the
@@ -285,7 +294,7 @@ class SkiaGoldSession(object):
         '--work-dir',
         self._working_dir,
     ]
-    if self._gold_properties.local_pixel_tests:
+    if self._gold_properties.local_pixel_tests or force_dryrun:
       compare_cmd.append('--dryrun')
     if inexact_matching_args:
       logging.info('Using inexact matching arguments for image %s: %s', name,
@@ -361,7 +370,7 @@ class SkiaGoldSession(object):
           '--bypass-skia-gold-functionality is not supported when running '
           'tests locally.')
 
-    output_dir = self._CreateDiffOutputDir()
+    output_dir = self._CreateDiffOutputDir(name)
     # TODO(skbug.com/10611): Remove this temporary work dir and instead just use
     # self._working_dir once `goldctl diff` stops clobbering the auth files in
     # the provided work directory.
@@ -496,7 +505,10 @@ class SkiaGoldSession(object):
     """
     open(self._triage_link_file, 'w').close()
 
-  def _CreateDiffOutputDir(self):
+  def _CreateDiffOutputDir(self, _):
+    # We don't use self._local_png_directory here since we want it to be
+    # automatically cleaned up with the working directory. Any subclasses that
+    # want to keep it around can override this method.
     return tempfile.mkdtemp(dir=self._working_dir)
 
   def _GetDiffGoldInstance(self):

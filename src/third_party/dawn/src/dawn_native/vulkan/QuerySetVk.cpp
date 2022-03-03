@@ -16,6 +16,7 @@
 
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 #include "dawn_platform/DawnPlatform.h"
 
@@ -31,6 +32,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::QueryType::Timestamp:
                     return VK_QUERY_TYPE_TIMESTAMP;
             }
+            UNREACHABLE();
         }
 
         VkQueryPipelineStatisticFlags VulkanQueryPipelineStatisticFlags(
@@ -77,31 +79,39 @@ namespace dawn_native { namespace vulkan {
         createInfo.pNext = NULL;
         createInfo.flags = 0;
         createInfo.queryType = VulkanQueryType(GetQueryType());
-        createInfo.queryCount = GetQueryCount();
+        createInfo.queryCount = std::max(GetQueryCount(), uint32_t(1u));
         if (GetQueryType() == wgpu::QueryType::PipelineStatistics) {
             createInfo.pipelineStatistics =
                 VulkanQueryPipelineStatisticFlags(GetPipelineStatistics());
         }
 
         Device* device = ToBackend(GetDevice());
-        return CheckVkOOMThenSuccess(
+        DAWN_TRY(CheckVkOOMThenSuccess(
             device->fn.CreateQueryPool(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
-            "vkCreateQueryPool");
+            "vkCreateQueryPool"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
     VkQueryPool QuerySet::GetHandle() const {
         return mHandle;
     }
 
-    QuerySet::~QuerySet() {
-        DestroyInternal();
-    }
+    QuerySet::~QuerySet() = default;
 
     void QuerySet::DestroyImpl() {
+        QuerySetBase::DestroyImpl();
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
             mHandle = VK_NULL_HANDLE;
         }
+    }
+
+    void QuerySet::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_QUERY_POOL,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_QuerySet", GetLabel());
     }
 
 }}  // namespace dawn_native::vulkan

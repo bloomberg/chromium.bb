@@ -63,7 +63,7 @@ public:
     }
 
     skvm::Color onProgram(skvm::Builder* p, skvm::Color c,
-                          SkColorSpace* dstCS,
+                          const SkColorInfo& dst,
                           skvm::Uniforms* uniforms, SkArenaAlloc*) const override {
 
         auto apply_table_to_component = [&](skvm::F32 c, const uint8_t* bytePtr) -> skvm::F32 {
@@ -108,7 +108,6 @@ sk_sp<SkFlattenable> SkTable_ColorFilter::CreateProc(SkReadBuffer& buffer) {
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
 class ColorTableEffect : public GrFragmentProcessor {
@@ -125,13 +124,13 @@ public:
         return std::unique_ptr<GrFragmentProcessor>(new ColorTableEffect(*this));
     }
 
-    static constexpr int kTexEffectFPIndex = 0;
-    static constexpr int kInputFPIndex = 1;
+    inline static constexpr int kTexEffectFPIndex = 0;
+    inline static constexpr int kInputFPIndex = 1;
 
 private:
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
 
     bool onIsEqual(const GrFragmentProcessor&) const override { return true; }
 
@@ -154,12 +153,10 @@ ColorTableEffect::ColorTableEffect(std::unique_ptr<GrFragmentProcessor> inputFP,
 }
 
 ColorTableEffect::ColorTableEffect(const ColorTableEffect& that)
-        : INHERITED(kColorTableEffect_ClassID, that.optimizationFlags()) {
-    this->cloneAndRegisterAllChildProcessors(that);
-}
+        : INHERITED(that) {}
 
-std::unique_ptr<GrGLSLFragmentProcessor> ColorTableEffect::onMakeProgramImpl() const {
-    class Impl : public GrGLSLFragmentProcessor {
+std::unique_ptr<GrFragmentProcessor::ProgramImpl> ColorTableEffect::onMakeProgramImpl() const {
+    class Impl : public ProgramImpl {
     public:
         void emitCode(EmitArgs& args) override {
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
@@ -175,6 +172,7 @@ std::unique_ptr<GrGLSLFragmentProcessor> ColorTableEffect::onMakeProgramImpl() c
                     inputColor.c_str(), r.c_str(), g.c_str(), b.c_str(), a.c_str());
         }
     };
+
     return std::make_unique<Impl>();
 }
 

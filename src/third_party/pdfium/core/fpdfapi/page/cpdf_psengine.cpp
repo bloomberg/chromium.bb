@@ -6,8 +6,9 @@
 
 #include "core/fpdfapi/page/cpdf_psengine.h"
 
+#include <math.h>
+
 #include <algorithm>
-#include <cmath>
 #include <limits>
 #include <utility>
 
@@ -73,7 +74,7 @@ constexpr PDF_PSOpName kPsOpNames[] = {
 // Round half up is a nearest integer round with half-way numbers always rounded
 // up. Example: -5.5 rounds to -5.
 float RoundHalfUp(float f) {
-  if (std::isnan(f))
+  if (isnan(f))
     return 0;
   if (f > std::numeric_limits<float>::max() - 0.5f)
     return std::numeric_limits<float>::max();
@@ -288,16 +289,16 @@ bool CPDF_PSEngine::DoOperator(PDF_PSOP op) {
       break;
     case PSOP_SIN:
       d1 = Pop();
-      Push(sin(d1 * FX_PI / 180.0f));
+      Push(sin(d1 * FXSYS_PI / 180.0f));
       break;
     case PSOP_COS:
       d1 = Pop();
-      Push(cos(d1 * FX_PI / 180.0f));
+      Push(cos(d1 * FXSYS_PI / 180.0f));
       break;
     case PSOP_ATAN:
       d2 = Pop();
       d1 = Pop();
-      d1 = atan2(d1, d2) * 180.0 / FX_PI;
+      d1 = atan2(d1, d2) * 180.0 / FXSYS_PI;
       if (d1 < 0) {
         d1 += 360;
       }
@@ -306,7 +307,7 @@ bool CPDF_PSEngine::DoOperator(PDF_PSOP op) {
     case PSOP_EXP:
       d2 = Pop();
       d1 = Pop();
-      Push(FXSYS_pow(d1, d2));
+      Push(powf(d1, d2));
       break;
     case PSOP_LN:
       d1 = Pop();

@@ -13,11 +13,11 @@
 
 #include <math.h>
 
+#include "aom_dsp/arm/mem_neon.h"
 #include "aom_mem/aom_mem.h"
 
 #include "av1/common/quant_common.h"
 #include "av1/common/seg_common.h"
-#include "av1/common/arm/mem_neon.h"
 
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encoder.h"
@@ -129,11 +129,12 @@ static INLINE void calculate_dqcoeff_lp_and_store(const int16x8_t qcoeff,
   vst1q_s16(dqcoeff, vcombine_s16(vmovn_s32(dqcoeff_0), vmovn_s32(dqcoeff_1)));
 }
 
-void av1_quantize_lp_neon(const int16_t *coeff_ptr, intptr_t count,
+void av1_quantize_lp_neon(const int16_t *coeff_ptr, intptr_t n_coeffs,
                           const int16_t *round_ptr, const int16_t *quant_ptr,
                           int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr,
                           const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                          const int16_t *scan) {
+                          const int16_t *scan, const int16_t *iscan) {
+  (void)scan;
   // Quantization pass: All coefficients with index >= zero_flag are
   // skippable. Note: zero_flag can be zero.
   const int16x8_t v_zero = vdupq_n_s16(0);
@@ -149,7 +150,7 @@ void av1_quantize_lp_neon(const int16_t *coeff_ptr, intptr_t count,
   v_dequant = vsetq_lane_s16(dequant_ptr[0], v_dequant, 0);
   // process dc and the first seven ac coeffs
   {
-    const int16x8_t v_iscan = vld1q_s16(&scan[0]);
+    const int16x8_t v_iscan = vld1q_s16(&iscan[0]);
     const int16x8_t v_coeff = vld1q_s16(coeff_ptr);
     const int16x8_t v_coeff_sign = vshrq_n_s16(v_coeff, 15);
     const int16x8_t v_abs = vabsq_s16(v_coeff);
@@ -173,8 +174,8 @@ void av1_quantize_lp_neon(const int16_t *coeff_ptr, intptr_t count,
     v_dequant = vmovq_n_s16(dequant_ptr[1]);
   }
   // now process the rest of the ac coeffs
-  for (int i = 8; i < count; i += 8) {
-    const int16x8_t v_iscan = vld1q_s16(&scan[i]);
+  for (int i = 8; i < n_coeffs; i += 8) {
+    const int16x8_t v_iscan = vld1q_s16(&iscan[i]);
     const int16x8_t v_coeff = vld1q_s16(coeff_ptr + i);
     const int16x8_t v_coeff_sign = vshrq_n_s16(v_coeff, 15);
     const int16x8_t v_abs = vabsq_s16(v_coeff);

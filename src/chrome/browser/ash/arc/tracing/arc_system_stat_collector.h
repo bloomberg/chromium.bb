@@ -9,10 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "base/timer/timer.h"
 
 namespace base {
@@ -70,6 +69,10 @@ class ArcSystemStatCollector {
   };
 
   ArcSystemStatCollector();
+
+  ArcSystemStatCollector(const ArcSystemStatCollector&) = delete;
+  ArcSystemStatCollector& operator=(const ArcSystemStatCollector&) = delete;
+
   ~ArcSystemStatCollector();
 
   // Starts sample collection, |max_interval| defines the maximum interval and
@@ -163,8 +166,6 @@ class ArcSystemStatCollector {
   std::unique_ptr<SystemReadersContext> context_;
 
   base::WeakPtrFactory<ArcSystemStatCollector> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSystemStatCollector);
 };
 
 // Helper that reads and parses stat file containing decimal number separated by

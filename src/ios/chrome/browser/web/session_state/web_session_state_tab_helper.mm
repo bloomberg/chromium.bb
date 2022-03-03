@@ -12,24 +12,24 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #import "build/branding_buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -59,16 +59,12 @@ bool WebSessionStateTabHelper::IsEnabled() {
   if (!base::FeatureList::IsEnabled(web::kRestoreSessionFromCache)) {
     return false;
   }
-#if 0
-  // This API only exists on iOS_TBA.
-  if (@available(iOS TBA, *)) {
+
+  // This API is only available on iOS 15.
+  if (@available(iOS 15, *)) {
     return true;
-  } else {
-    return false;
   }
-#else
-  return BUILDFLAG(CHROMIUM_BRANDING);
-#endif
+  return false;
 }
 
 WebSessionStateTabHelper::WebSessionStateTabHelper(web::WebState* web_state)
@@ -92,33 +88,16 @@ bool WebSessionStateTabHelper::RestoreSessionFromCache() {
   if (!data.length)
     return false;
 
-  if (!web_state_->SetSessionStateData(data))
+  bool restore_session_succeeded = web_state_->SetSessionStateData(data);
+  UMA_HISTOGRAM_BOOLEAN("Session.WebStates.NativeRestoreSessionFromCache",
+                        restore_session_succeeded);
+  if (!restore_session_succeeded)
     return false;
 
-  // If this fails (e.g., see crbug.com/1019672 for a previous failure), this
-  // implies a bug in WebKit session restoration.
   web::NavigationManager* navigationManager =
       web_state_->GetNavigationManager();
   DCHECK(navigationManager->GetItemCount());
-
-  for (int i = 0; i < navigationManager->GetItemCount(); i++) {
-    // The wk_state underlaying the NTP is about://newtab, which has no title.
-    // When restoring the NTP, be sure to re-add the title below.
-    // This should use NewTabPageTabHelper::UpdateItem, but it will need an
-    // unrelated upstream change.
-    web::NavigationItem* item = navigationManager->GetItemAtIndex(i);
-    if (item->GetURL() == GURL(kChromeUIAboutNewTabURL)) {
-      item->SetVirtualURL(GURL(kChromeUINewTabURL));
-      item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-    }
-
-    // The wk_state underlaying a forced-offline page is chrome://offline, which
-    // has an embedded entry URL. Apply that entryURL to the virtualURL here.
-    if (item->GetVirtualURL().host() == kChromeUIOfflineHost) {
-      item->SetVirtualURL(
-          reading_list::EntryURLForOfflineURL(item->GetVirtualURL()));
-    }
-  }
+  web::GetWebClient()->CleanupNativeRestoreURLs(web_state_);
   return true;
 }
 
@@ -166,6 +145,11 @@ void WebSessionStateTabHelper::WebStateDestroyed(web::WebState* web_state) {
 void WebSessionStateTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  // Don't record navigations that result in downloads, since these will be
+  // discarded and there's no simple callback when discarded.
+  if (navigation_context->IsDownload())
+    return;
+
   MarkStale();
 }
 

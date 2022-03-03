@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -61,6 +61,10 @@ bool IsIntentHelperPackage(const std::string& package_name) {
 class IntentPickerBubbleViewTest : public TestWithBrowserView {
  public:
   IntentPickerBubbleViewTest() = default;
+
+  IntentPickerBubbleViewTest(const IntentPickerBubbleViewTest&) = delete;
+  IntentPickerBubbleViewTest& operator=(const IntentPickerBubbleViewTest&) =
+      delete;
 
   void TearDown() override {
     // Make sure the bubble is destroyed before the profile to avoid a crash.
@@ -134,12 +138,9 @@ class IntentPickerBubbleViewTest : public TestWithBrowserView {
                       apps::IntentPickerCloseReason close_reason,
                       bool should_persist) {}
 
-  IntentPickerBubbleView* bubble_;
-  views::View* anchor_view_;
+  raw_ptr<IntentPickerBubbleView> bubble_;
+  raw_ptr<views::View> anchor_view_;
   std::vector<AppInfo> app_info_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleViewTest);
 };
 
 // Verifies that we didn't set up an image for any LabelButton.

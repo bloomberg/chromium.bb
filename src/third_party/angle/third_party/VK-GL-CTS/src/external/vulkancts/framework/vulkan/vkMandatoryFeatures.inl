@@ -56,6 +56,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDeviceAccelerationStructureFeaturesKHR.pNext;
 	}
 
+	vk::VkPhysicalDeviceBorderColorSwizzleFeaturesEXT physicalDeviceBorderColorSwizzleFeaturesEXT;
+	deMemset(&physicalDeviceBorderColorSwizzleFeaturesEXT, 0, sizeof(physicalDeviceBorderColorSwizzleFeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_border_color_swizzle")) )
+	{
+		physicalDeviceBorderColorSwizzleFeaturesEXT.sType = getStructureType<VkPhysicalDeviceBorderColorSwizzleFeaturesEXT>();
+		*nextPtr = &physicalDeviceBorderColorSwizzleFeaturesEXT;
+		nextPtr  = &physicalDeviceBorderColorSwizzleFeaturesEXT.pNext;
+	}
+
 	vk::VkPhysicalDeviceBufferDeviceAddressFeaturesKHR physicalDeviceBufferDeviceAddressFeaturesKHR;
 	deMemset(&physicalDeviceBufferDeviceAddressFeaturesKHR, 0, sizeof(physicalDeviceBufferDeviceAddressFeaturesKHR));
 
@@ -136,6 +146,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDeviceFragmentShaderInterlockFeaturesEXT.pNext;
 	}
 
+	vk::VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT physicalDeviceGlobalPriorityQueryFeaturesEXT;
+	deMemset(&physicalDeviceGlobalPriorityQueryFeaturesEXT, 0, sizeof(physicalDeviceGlobalPriorityQueryFeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_global_priority_query")) )
+	{
+		physicalDeviceGlobalPriorityQueryFeaturesEXT.sType = getStructureType<VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT>();
+		*nextPtr = &physicalDeviceGlobalPriorityQueryFeaturesEXT;
+		nextPtr  = &physicalDeviceGlobalPriorityQueryFeaturesEXT.pNext;
+	}
+
 	vk::VkPhysicalDeviceHostQueryResetFeaturesEXT physicalDeviceHostQueryResetFeaturesEXT;
 	deMemset(&physicalDeviceHostQueryResetFeaturesEXT, 0, sizeof(physicalDeviceHostQueryResetFeaturesEXT));
 
@@ -196,6 +216,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDeviceMemoryPriorityFeaturesEXT.pNext;
 	}
 
+	vk::VkPhysicalDeviceMultiDrawFeaturesEXT physicalDeviceMultiDrawFeaturesEXT;
+	deMemset(&physicalDeviceMultiDrawFeaturesEXT, 0, sizeof(physicalDeviceMultiDrawFeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_multi_draw")) )
+	{
+		physicalDeviceMultiDrawFeaturesEXT.sType = getStructureType<VkPhysicalDeviceMultiDrawFeaturesEXT>();
+		*nextPtr = &physicalDeviceMultiDrawFeaturesEXT;
+		nextPtr  = &physicalDeviceMultiDrawFeaturesEXT.pNext;
+	}
+
 	vk::VkPhysicalDeviceMultiviewFeatures physicalDeviceMultiviewFeatures;
 	deMemset(&physicalDeviceMultiviewFeatures, 0, sizeof(physicalDeviceMultiviewFeatures));
 
@@ -204,6 +234,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		physicalDeviceMultiviewFeatures.sType = getStructureType<VkPhysicalDeviceMultiviewFeatures>();
 		*nextPtr = &physicalDeviceMultiviewFeatures;
 		nextPtr  = &physicalDeviceMultiviewFeatures.pNext;
+	}
+
+	vk::VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE physicalDeviceMutableDescriptorTypeFeaturesVALVE;
+	deMemset(&physicalDeviceMutableDescriptorTypeFeaturesVALVE, 0, sizeof(physicalDeviceMutableDescriptorTypeFeaturesVALVE));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_VALVE_mutable_descriptor_type")) )
+	{
+		physicalDeviceMutableDescriptorTypeFeaturesVALVE.sType = getStructureType<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
+		*nextPtr = &physicalDeviceMutableDescriptorTypeFeaturesVALVE;
+		nextPtr  = &physicalDeviceMutableDescriptorTypeFeaturesVALVE.pNext;
 	}
 
 	vk::VkPhysicalDevicePerformanceQueryFeaturesKHR physicalDevicePerformanceQueryFeaturesKHR;
@@ -234,6 +274,36 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		physicalDevicePipelineExecutablePropertiesFeaturesKHR.sType = getStructureType<VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR>();
 		*nextPtr = &physicalDevicePipelineExecutablePropertiesFeaturesKHR;
 		nextPtr  = &physicalDevicePipelineExecutablePropertiesFeaturesKHR.pNext;
+	}
+
+	vk::VkPhysicalDevicePresentIdFeaturesKHR physicalDevicePresentIdFeaturesKHR;
+	deMemset(&physicalDevicePresentIdFeaturesKHR, 0, sizeof(physicalDevicePresentIdFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_id")) )
+	{
+		physicalDevicePresentIdFeaturesKHR.sType = getStructureType<VkPhysicalDevicePresentIdFeaturesKHR>();
+		*nextPtr = &physicalDevicePresentIdFeaturesKHR;
+		nextPtr  = &physicalDevicePresentIdFeaturesKHR.pNext;
+	}
+
+	vk::VkPhysicalDevicePresentWaitFeaturesKHR physicalDevicePresentWaitFeaturesKHR;
+	deMemset(&physicalDevicePresentWaitFeaturesKHR, 0, sizeof(physicalDevicePresentWaitFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_wait")) )
+	{
+		physicalDevicePresentWaitFeaturesKHR.sType = getStructureType<VkPhysicalDevicePresentWaitFeaturesKHR>();
+		*nextPtr = &physicalDevicePresentWaitFeaturesKHR;
+		nextPtr  = &physicalDevicePresentWaitFeaturesKHR.pNext;
+	}
+
+	vk::VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT physicalDevicePrimitiveTopologyListRestartFeaturesEXT;
+	deMemset(&physicalDevicePrimitiveTopologyListRestartFeaturesEXT, 0, sizeof(physicalDevicePrimitiveTopologyListRestartFeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_primitive_topology_list_restart")) )
+	{
+		physicalDevicePrimitiveTopologyListRestartFeaturesEXT.sType = getStructureType<VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT>();
+		*nextPtr = &physicalDevicePrimitiveTopologyListRestartFeaturesEXT;
+		nextPtr  = &physicalDevicePrimitiveTopologyListRestartFeaturesEXT.pNext;
 	}
 
 	vk::VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeaturesKHR;
@@ -286,6 +356,26 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.pNext;
 	}
 
+	vk::VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT physicalDeviceShaderAtomicFloat2FeaturesEXT;
+	deMemset(&physicalDeviceShaderAtomicFloat2FeaturesEXT, 0, sizeof(physicalDeviceShaderAtomicFloat2FeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float2")) )
+	{
+		physicalDeviceShaderAtomicFloat2FeaturesEXT.sType = getStructureType<VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT>();
+		*nextPtr = &physicalDeviceShaderAtomicFloat2FeaturesEXT;
+		nextPtr  = &physicalDeviceShaderAtomicFloat2FeaturesEXT.pNext;
+	}
+
+	vk::VkPhysicalDeviceShaderAtomicFloatFeaturesEXT physicalDeviceShaderAtomicFloatFeaturesEXT;
+	deMemset(&physicalDeviceShaderAtomicFloatFeaturesEXT, 0, sizeof(physicalDeviceShaderAtomicFloatFeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float")) )
+	{
+		physicalDeviceShaderAtomicFloatFeaturesEXT.sType = getStructureType<VkPhysicalDeviceShaderAtomicFloatFeaturesEXT>();
+		*nextPtr = &physicalDeviceShaderAtomicFloatFeaturesEXT;
+		nextPtr  = &physicalDeviceShaderAtomicFloatFeaturesEXT.pNext;
+	}
+
 	vk::VkPhysicalDeviceShaderAtomicInt64FeaturesKHR physicalDeviceShaderAtomicInt64FeaturesKHR;
 	deMemset(&physicalDeviceShaderAtomicInt64FeaturesKHR, 0, sizeof(physicalDeviceShaderAtomicInt64FeaturesKHR));
 
@@ -336,6 +426,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDeviceShaderImageAtomicInt64FeaturesEXT.pNext;
 	}
 
+	vk::VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR physicalDeviceShaderIntegerDotProductFeaturesKHR;
+	deMemset(&physicalDeviceShaderIntegerDotProductFeaturesKHR, 0, sizeof(physicalDeviceShaderIntegerDotProductFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_shader_integer_dot_product")) )
+	{
+		physicalDeviceShaderIntegerDotProductFeaturesKHR.sType = getStructureType<VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR>();
+		*nextPtr = &physicalDeviceShaderIntegerDotProductFeaturesKHR;
+		nextPtr  = &physicalDeviceShaderIntegerDotProductFeaturesKHR.pNext;
+	}
+
 	vk::VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR physicalDeviceShaderSubgroupExtendedTypesFeaturesKHR;
 	deMemset(&physicalDeviceShaderSubgroupExtendedTypesFeaturesKHR, 0, sizeof(physicalDeviceShaderSubgroupExtendedTypesFeaturesKHR));
 
@@ -344,6 +444,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		physicalDeviceShaderSubgroupExtendedTypesFeaturesKHR.sType = getStructureType<VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR>();
 		*nextPtr = &physicalDeviceShaderSubgroupExtendedTypesFeaturesKHR;
 		nextPtr  = &physicalDeviceShaderSubgroupExtendedTypesFeaturesKHR.pNext;
+	}
+
+	vk::VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR;
+	deMemset(&physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR, 0, sizeof(physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_shader_subgroup_uniform_control_flow")) )
+	{
+		physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR.sType = getStructureType<VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR>();
+		*nextPtr = &physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR;
+		nextPtr  = &physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR.pNext;
 	}
 
 	vk::VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR physicalDeviceShaderTerminateInvocationFeaturesKHR;
@@ -1176,6 +1286,15 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		}
 	}
 
+	if ( context.contextSupports(vk::ApiVersion(1, 2, 0)) && physicalDeviceShaderAtomicInt64FeaturesKHR.shaderBufferInt64Atomics )
+	{
+		if ( physicalDeviceVulkan12Features.shaderBufferInt64Atomics == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderBufferInt64Atomics not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
 	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_16bit_storage")) )
 	{
 		if ( physicalDevice16BitStorageFeaturesKHR.storageBuffer16BitAccess == VK_FALSE )
@@ -1289,6 +1408,51 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		if ( physicalDeviceShaderImageAtomicInt64FeaturesEXT.shaderImageInt64Atomics == VK_FALSE )
 		{
 			log << tcu::TestLog::Message << "Mandatory feature shaderImageInt64Atomics not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_image_atomic_int64")) )
+	{
+		if ( coreFeatures.features.shaderInt64 == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderInt64 not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( physicalDeviceShaderAtomicInt64FeaturesKHR.shaderBufferInt64Atomics )
+	{
+		if ( coreFeatures.features.shaderInt64 == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderInt64 not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( physicalDeviceVulkan12Features.shaderBufferInt64Atomics )
+	{
+		if ( coreFeatures.features.shaderInt64 == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderInt64 not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( physicalDeviceShaderAtomicInt64FeaturesKHR.shaderSharedInt64Atomics )
+	{
+		if ( coreFeatures.features.shaderInt64 == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderInt64 not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( physicalDeviceVulkan12Features.shaderSharedInt64Atomics )
+	{
+		if ( coreFeatures.features.shaderInt64 == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderInt64 not supported" << tcu::TestLog::EndMessage;
 			result = false;
 		}
 	}
@@ -1667,6 +1831,123 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		if ( physicalDeviceExtendedDynamicState2FeaturesEXT.extendedDynamicState2 == VK_FALSE )
 		{
 			log << tcu::TestLog::Message << "Mandatory feature extendedDynamicState2 not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_VALVE_mutable_descriptor_type")) )
+	{
+		if ( physicalDeviceMutableDescriptorTypeFeaturesVALVE.mutableDescriptorType == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature mutableDescriptorType not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_global_priority_query")) )
+	{
+		if ( physicalDeviceGlobalPriorityQueryFeaturesEXT.globalPriorityQuery == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature globalPriorityQuery not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_image_atomic_int64")) && physicalDeviceShaderImageAtomicInt64FeaturesEXT.sparseImageInt64Atomics )
+	{
+		if ( physicalDeviceShaderImageAtomicInt64FeaturesEXT.shaderImageInt64Atomics == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderImageInt64Atomics not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float")) && physicalDeviceShaderAtomicFloatFeaturesEXT.sparseImageFloat32Atomics )
+	{
+		if ( physicalDeviceShaderAtomicFloatFeaturesEXT.shaderImageFloat32Atomics == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderImageFloat32Atomics not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float")) && physicalDeviceShaderAtomicFloatFeaturesEXT.sparseImageFloat32AtomicAdd )
+	{
+		if ( physicalDeviceShaderAtomicFloatFeaturesEXT.shaderImageFloat32AtomicAdd == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderImageFloat32AtomicAdd not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_multi_draw")) )
+	{
+		if ( physicalDeviceMultiDrawFeaturesEXT.multiDraw == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature multiDraw not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_shader_subgroup_uniform_control_flow")) )
+	{
+		if ( physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR.shaderSubgroupUniformControlFlow == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderSubgroupUniformControlFlow not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_id")) )
+	{
+		if ( physicalDevicePresentIdFeaturesKHR.presentId == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature presentId not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_wait")) )
+	{
+		if ( physicalDevicePresentWaitFeaturesKHR.presentWait == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature presentWait not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float2")) && physicalDeviceShaderAtomicFloat2FeaturesEXT.sparseImageFloat32AtomicMinMax )
+	{
+		if ( physicalDeviceShaderAtomicFloat2FeaturesEXT.shaderImageFloat32AtomicMinMax == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderImageFloat32AtomicMinMax not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_shader_integer_dot_product")) )
+	{
+		if ( physicalDeviceShaderIntegerDotProductFeaturesKHR.shaderIntegerDotProduct == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderIntegerDotProduct not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_primitive_topology_list_restart")) )
+	{
+		if ( physicalDevicePrimitiveTopologyListRestartFeaturesEXT.primitiveTopologyListRestart == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature primitiveTopologyListRestart not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_border_color_swizzle")) )
+	{
+		if ( physicalDeviceBorderColorSwizzleFeaturesEXT.borderColorSwizzle == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature borderColorSwizzle not supported" << tcu::TestLog::EndMessage;
 			result = false;
 		}
 	}

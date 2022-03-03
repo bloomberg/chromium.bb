@@ -45,9 +45,9 @@
 // DWARF compilation units.
 class TestCompilationUnit: public google_breakpad::test_assembler::Section {
  public:
-  typedef dwarf2reader::DwarfTag DwarfTag;
-  typedef dwarf2reader::DwarfAttribute DwarfAttribute;
-  typedef dwarf2reader::DwarfForm DwarfForm;
+  typedef google_breakpad::DwarfTag DwarfTag;
+  typedef google_breakpad::DwarfAttribute DwarfAttribute;
+  typedef google_breakpad::DwarfForm DwarfForm;
   typedef google_breakpad::test_assembler::Label Label;
 
   // Set the section's DWARF format size (the 32-bit DWARF format or the
@@ -87,7 +87,7 @@ class TestCompilationUnit: public google_breakpad::test_assembler::Section {
       D8(header_type);  // DW_UT_compile, DW_UT_type, etc.
       D8(address_size);
       SectionOffset(abbrev_offset);
-      if (header_type == dwarf2reader::DW_UT_type) {
+      if (header_type == google_breakpad::DW_UT_type) {
         uint64_t dummy_type_signature = 0xdeadbeef;
         uint64_t dummy_type_offset = 0x2b;
         D64(dummy_type_signature);
@@ -122,10 +122,10 @@ class TestCompilationUnit: public google_breakpad::test_assembler::Section {
 // abbreviation tables.
 class TestAbbrevTable: public google_breakpad::test_assembler::Section {
  public:
-  typedef dwarf2reader::DwarfTag DwarfTag;
-  typedef dwarf2reader::DwarfAttribute DwarfAttribute;
-  typedef dwarf2reader::DwarfForm DwarfForm;
-  typedef dwarf2reader::DwarfHasChild DwarfHasChild;
+  typedef google_breakpad::DwarfTag DwarfTag;
+  typedef google_breakpad::DwarfAttribute DwarfAttribute;
+  typedef google_breakpad::DwarfForm DwarfForm;
+  typedef google_breakpad::DwarfHasChild DwarfHasChild;
   typedef google_breakpad::test_assembler::Label Label;
 
   // Start a new abbreviation table entry for abbreviation code |code|,

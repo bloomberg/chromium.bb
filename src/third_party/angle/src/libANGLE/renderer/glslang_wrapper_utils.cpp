@@ -106,14 +106,12 @@ ShaderInterfaceVariableInfo *AddResourceInfoToAllStages(ShaderInterfaceVariableI
 }
 
 ShaderInterfaceVariableInfo *AddResourceInfo(ShaderInterfaceVariableInfoMap *infoMap,
+                                             gl::ShaderBitSet stages,
                                              gl::ShaderType shaderType,
                                              const std::string &varName,
                                              uint32_t descriptorSet,
                                              uint32_t binding)
 {
-    gl::ShaderBitSet stages;
-    stages.set(shaderType);
-
     ShaderInterfaceVariableInfo &info = infoMap->add(shaderType, varName);
     info.descriptorSet                = descriptorSet;
     info.binding                      = binding;
@@ -226,7 +224,8 @@ void AssignTransformFeedbackEmulationBindings(gl::ShaderType shaderType,
     // set/binding.
     for (uint32_t bufferIndex = 0; bufferIndex < bufferCount; ++bufferIndex)
     {
-        AddResourceInfo(variableInfoMapOut, shaderType, GetXfbBufferName(bufferIndex),
+        AddResourceInfo(variableInfoMapOut, gl::ShaderBitSet().set(shaderType), shaderType,
+                        GetXfbBufferName(bufferIndex),
                         programInterfaceInfo->uniformsAndXfbDescriptorSetIndex,
                         programInterfaceInfo->currentUniformBindingIndex);
         ++programInterfaceInfo->currentUniformBindingIndex;
@@ -334,13 +333,13 @@ void AssignSecondaryOutputLocations(const gl::ProgramState &programState,
             if (outputVar.name == "gl_SecondaryFragColorEXT")
             {
                 AddLocationInfo(variableInfoMapOut, gl::ShaderType::Fragment,
-                                "angle_SecondaryFragColor", 0,
+                                "webgl_SecondaryFragColor", 0,
                                 ShaderInterfaceVariableInfo::kInvalid, 0, 0);
             }
             else if (outputVar.name == "gl_SecondaryFragDataEXT")
             {
                 AddLocationInfo(variableInfoMapOut, gl::ShaderType::Fragment,
-                                "angle_SecondaryFragData", 0, ShaderInterfaceVariableInfo::kInvalid,
+                                "webgl_SecondaryFragData", 0, ShaderInterfaceVariableInfo::kInvalid,
                                 0, 0);
             }
         }
@@ -672,7 +671,8 @@ void AssignUniformBindings(const GlslangSourceOptions &options,
 {
     if (programExecutable.hasLinkedShaderStage(shaderType))
     {
-        AddResourceInfo(variableInfoMapOut, shaderType, kDefaultUniformNames[shaderType],
+        AddResourceInfo(variableInfoMapOut, gl::ShaderBitSet().set(shaderType), shaderType,
+                        kDefaultUniformNames[shaderType],
                         programInterfaceInfo->uniformsAndXfbDescriptorSetIndex,
                         programInterfaceInfo->currentUniformBindingIndex);
         ++programInterfaceInfo->currentUniformBindingIndex;
@@ -683,14 +683,62 @@ void AssignUniformBindings(const GlslangSourceOptions &options,
     }
 }
 
-// TODO: http://anglebug.com/4512: Need to combine descriptor set bindings across
-// shader stages.
+bool InsertIfAbsent(UniformBindingIndexMap *uniformBindingIndexMapOut,
+                    const std::string &name,
+                    const uint32_t bindingIndex,
+                    const gl::ShaderType shaderType)
+{
+    if (uniformBindingIndexMapOut->count(name) == 0)
+    {
+        (*uniformBindingIndexMapOut)[name] =
+            UniformBindingInfo(bindingIndex, gl::ShaderBitSet(), shaderType);
+        return true;
+    }
+    return false;
+}
+
+void AddAndUpdateResourceMaps(const gl::ShaderType shaderType,
+                              std::string name,
+                              uint32_t *binding,
+                              bool updateBinding,
+                              bool updateFrontShaderType,
+                              const uint32_t descriptorSetIndex,
+                              UniformBindingIndexMap *uniformBindingIndexMapOut,
+                              ShaderInterfaceVariableInfoMap *variableInfoMapOut)
+{
+    ASSERT(binding);
+    bool isUniqueName = InsertIfAbsent(uniformBindingIndexMapOut, name, *binding, shaderType);
+    if (updateBinding && isUniqueName)
+    {
+        ++(*binding);
+    }
+    UniformBindingInfo &uniformBindingInfo = (*uniformBindingIndexMapOut)[name];
+    uniformBindingInfo.shaderBitSet.set(shaderType);
+    AddResourceInfo(variableInfoMapOut, uniformBindingInfo.shaderBitSet, shaderType, name,
+                    descriptorSetIndex, uniformBindingInfo.bindingIndex);
+    if (!isUniqueName)
+    {
+        if (updateFrontShaderType)
+        {
+            uniformBindingInfo.frontShaderType = shaderType;
+        }
+        else
+        {
+            variableInfoMapOut->markAsDuplicate(shaderType, name);
+        }
+    }
+    ShaderInterfaceVariableInfo &info =
+        variableInfoMapOut->get(uniformBindingInfo.frontShaderType, name);
+    info.activeStages = uniformBindingInfo.shaderBitSet;
+}
+
 void AssignInputAttachmentBindings(const GlslangSourceOptions &options,
                                    const gl::ProgramExecutable &programExecutable,
                                    const std::vector<gl::LinkedUniform> &uniforms,
                                    const gl::RangeUI &inputAttachmentUniformRange,
                                    const gl::ShaderType shaderType,
                                    GlslangProgramInterfaceInfo *programInterfaceInfo,
+                                   UniformBindingIndexMap *uniformBindingIndexMapOut,
                                    ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     const uint32_t baseInputAttachmentBindingIndex =
@@ -707,13 +755,12 @@ void AssignInputAttachmentBindings(const GlslangSourceOptions &options,
         if (programExecutable.hasLinkedShaderStage(shaderType) &&
             inputAttachmentUniform.isActive(shaderType))
         {
-            const uint32_t inputAttachmentBindingIndex =
+            uint32_t inputAttachmentBindingIndex =
                 baseInputAttachmentBindingIndex + inputAttachmentUniform.location;
-
-            AddResourceInfo(variableInfoMapOut, shaderType, mappedInputAttachmentName,
-                            programInterfaceInfo->shaderResourceDescriptorSetIndex,
-                            inputAttachmentBindingIndex);
-
+            AddAndUpdateResourceMaps(shaderType, mappedInputAttachmentName,
+                                     &(inputAttachmentBindingIndex), false, false,
+                                     programInterfaceInfo->shaderResourceDescriptorSetIndex,
+                                     uniformBindingIndexMapOut, variableInfoMapOut);
             hasFragmentInOutVars = true;
         }
     }
@@ -727,13 +774,12 @@ void AssignInputAttachmentBindings(const GlslangSourceOptions &options,
     }
 }
 
-// TODO: http://anglebug.com/4512: Need to combine descriptor set bindings across
-// shader stages.
 void AssignInterfaceBlockBindings(const GlslangSourceOptions &options,
                                   const gl::ProgramExecutable &programExecutable,
                                   const std::vector<gl::InterfaceBlock> &blocks,
                                   const gl::ShaderType shaderType,
                                   GlslangProgramInterfaceInfo *programInterfaceInfo,
+                                  UniformBindingIndexMap *uniformBindingIndexMapOut,
                                   ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     for (const gl::InterfaceBlock &block : blocks)
@@ -743,22 +789,22 @@ void AssignInterfaceBlockBindings(const GlslangSourceOptions &options,
             // TODO: http://anglebug.com/4523: All blocks should be active
             if (programExecutable.hasLinkedShaderStage(shaderType) && block.isActive(shaderType))
             {
-                AddResourceInfo(variableInfoMapOut, shaderType, block.mappedName,
-                                programInterfaceInfo->shaderResourceDescriptorSetIndex,
-                                programInterfaceInfo->currentShaderResourceBindingIndex);
-                ++programInterfaceInfo->currentShaderResourceBindingIndex;
+                AddAndUpdateResourceMaps(shaderType, block.mappedName,
+                                         &(programInterfaceInfo->currentShaderResourceBindingIndex),
+                                         true, false,
+                                         programInterfaceInfo->shaderResourceDescriptorSetIndex,
+                                         uniformBindingIndexMapOut, variableInfoMapOut);
             }
         }
     }
 }
 
-// TODO: http://anglebug.com/4512: Need to combine descriptor set bindings across
-// shader stages.
 void AssignAtomicCounterBufferBindings(const GlslangSourceOptions &options,
                                        const gl::ProgramExecutable &programExecutable,
                                        const std::vector<gl::AtomicCounterBuffer> &buffers,
                                        const gl::ShaderType shaderType,
                                        GlslangProgramInterfaceInfo *programInterfaceInfo,
+                                       UniformBindingIndexMap *uniformBindingIndexMapOut,
                                        ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     if (buffers.size() == 0)
@@ -768,21 +814,20 @@ void AssignAtomicCounterBufferBindings(const GlslangSourceOptions &options,
 
     if (programExecutable.hasLinkedShaderStage(shaderType))
     {
-        AddResourceInfo(variableInfoMapOut, shaderType, sh::vk::kAtomicCountersBlockName,
-                        programInterfaceInfo->shaderResourceDescriptorSetIndex,
-                        programInterfaceInfo->currentShaderResourceBindingIndex);
-        ++programInterfaceInfo->currentShaderResourceBindingIndex;
+        AddAndUpdateResourceMaps(shaderType, sh::vk::kAtomicCountersBlockName,
+                                 &(programInterfaceInfo->currentShaderResourceBindingIndex), true,
+                                 false, programInterfaceInfo->shaderResourceDescriptorSetIndex,
+                                 uniformBindingIndexMapOut, variableInfoMapOut);
     }
 }
 
-// TODO: http://anglebug.com/4512: Need to combine descriptor set bindings across
-// shader stages.
 void AssignImageBindings(const GlslangSourceOptions &options,
                          const gl::ProgramExecutable &programExecutable,
                          const std::vector<gl::LinkedUniform> &uniforms,
                          const gl::RangeUI &imageUniformRange,
                          const gl::ShaderType shaderType,
                          GlslangProgramInterfaceInfo *programInterfaceInfo,
+                         UniformBindingIndexMap *uniformBindingIndexMapOut,
                          ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     for (unsigned int uniformIndex : imageUniformRange)
@@ -794,10 +839,18 @@ void AssignImageBindings(const GlslangSourceOptions &options,
         {
             if (programExecutable.hasLinkedShaderStage(shaderType))
             {
-                AddResourceInfo(variableInfoMapOut, shaderType, name,
-                                programInterfaceInfo->shaderResourceDescriptorSetIndex,
-                                programInterfaceInfo->currentShaderResourceBindingIndex);
-                ++programInterfaceInfo->currentShaderResourceBindingIndex;
+                bool updateFrontShaderType = false;
+                if ((*uniformBindingIndexMapOut).count(name) > 0)
+                {
+                    UniformBindingInfo &uniformBindingInfo = (*uniformBindingIndexMapOut)[name];
+                    updateFrontShaderType =
+                        !imageUniform.isActive(uniformBindingInfo.frontShaderType);
+                }
+                AddAndUpdateResourceMaps(shaderType, name,
+                                         &(programInterfaceInfo->currentShaderResourceBindingIndex),
+                                         true, updateFrontShaderType,
+                                         programInterfaceInfo->shaderResourceDescriptorSetIndex,
+                                         uniformBindingIndexMapOut, variableInfoMapOut);
             }
         }
     }
@@ -807,38 +860,42 @@ void AssignNonTextureBindings(const GlslangSourceOptions &options,
                               const gl::ProgramExecutable &programExecutable,
                               const gl::ShaderType shaderType,
                               GlslangProgramInterfaceInfo *programInterfaceInfo,
+                              UniformBindingIndexMap *uniformBindingIndexMapOut,
                               ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     const std::vector<gl::LinkedUniform> &uniforms = programExecutable.getUniforms();
     const gl::RangeUI &inputAttachmentUniformRange = programExecutable.getFragmentInoutRange();
     AssignInputAttachmentBindings(options, programExecutable, uniforms, inputAttachmentUniformRange,
-                                  shaderType, programInterfaceInfo, variableInfoMapOut);
+                                  shaderType, programInterfaceInfo, uniformBindingIndexMapOut,
+                                  variableInfoMapOut);
 
     const std::vector<gl::InterfaceBlock> &uniformBlocks = programExecutable.getUniformBlocks();
     AssignInterfaceBlockBindings(options, programExecutable, uniformBlocks, shaderType,
-                                 programInterfaceInfo, variableInfoMapOut);
+                                 programInterfaceInfo, uniformBindingIndexMapOut,
+                                 variableInfoMapOut);
 
     const std::vector<gl::InterfaceBlock> &storageBlocks =
         programExecutable.getShaderStorageBlocks();
     AssignInterfaceBlockBindings(options, programExecutable, storageBlocks, shaderType,
-                                 programInterfaceInfo, variableInfoMapOut);
+                                 programInterfaceInfo, uniformBindingIndexMapOut,
+                                 variableInfoMapOut);
 
     const std::vector<gl::AtomicCounterBuffer> &atomicCounterBuffers =
         programExecutable.getAtomicCounterBuffers();
     AssignAtomicCounterBufferBindings(options, programExecutable, atomicCounterBuffers, shaderType,
-                                      programInterfaceInfo, variableInfoMapOut);
+                                      programInterfaceInfo, uniformBindingIndexMapOut,
+                                      variableInfoMapOut);
 
     const gl::RangeUI &imageUniformRange = programExecutable.getImageUniformRange();
     AssignImageBindings(options, programExecutable, uniforms, imageUniformRange, shaderType,
-                        programInterfaceInfo, variableInfoMapOut);
+                        programInterfaceInfo, uniformBindingIndexMapOut, variableInfoMapOut);
 }
 
-// TODO: http://anglebug.com/4512: Need to combine descriptor set bindings across
-// shader stages.
 void AssignTextureBindings(const GlslangSourceOptions &options,
                            const gl::ProgramExecutable &programExecutable,
                            const gl::ShaderType shaderType,
                            GlslangProgramInterfaceInfo *programInterfaceInfo,
+                           UniformBindingIndexMap *uniformBindingIndexMapOut,
                            ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     // Assign textures to a descriptor set and binding.
@@ -862,10 +919,10 @@ void AssignTextureBindings(const GlslangSourceOptions &options,
             if (programExecutable.hasLinkedShaderStage(shaderType) &&
                 samplerUniform.isActive(shaderType))
             {
-                AddResourceInfo(variableInfoMapOut, shaderType, samplerName,
-                                programInterfaceInfo->textureDescriptorSetIndex,
-                                programInterfaceInfo->currentTextureBindingIndex);
-                ++programInterfaceInfo->currentTextureBindingIndex;
+                AddAndUpdateResourceMaps(shaderType, samplerName,
+                                         &(programInterfaceInfo->currentTextureBindingIndex), true,
+                                         false, programInterfaceInfo->textureDescriptorSetIndex,
+                                         uniformBindingIndexMapOut, variableInfoMapOut);
             }
         }
     }
@@ -894,17 +951,6 @@ class SpirvTransformerBase : angle::NonCopyable
     spirv::IdRef getNewId();
 
   protected:
-    // SPIR-V 1.0 Table 1: First Words of Physical Layout
-    enum HeaderIndex
-    {
-        kHeaderIndexMagic        = 0,
-        kHeaderIndexVersion      = 1,
-        kHeaderIndexGenerator    = 2,
-        kHeaderIndexIndexBound   = 3,
-        kHeaderIndexSchema       = 4,
-        kHeaderIndexInstructions = 5,
-    };
-
     // Common utilities
     void onTransformBegin();
     const uint32_t *getCurrentInstruction(spv::Op *opCodeOut, uint32_t *wordCountOut) const;
@@ -933,10 +979,10 @@ class SpirvTransformerBase : angle::NonCopyable
 void SpirvTransformerBase::onTransformBegin()
 {
     // Glslang succeeded in outputting SPIR-V, so we assume it's valid.
-    ASSERT(mSpirvBlobIn.size() >= kHeaderIndexInstructions);
+    ASSERT(mSpirvBlobIn.size() >= spirv::kHeaderIndexInstructions);
     // Since SPIR-V comes from a local call to glslang, it necessarily has the same endianness as
     // the running architecture, so no byte-swapping is necessary.
-    ASSERT(mSpirvBlobIn[kHeaderIndexMagic] == spv::MagicNumber);
+    ASSERT(mSpirvBlobIn[spirv::kHeaderIndexMagic] == spv::MagicNumber);
 
     // Make sure the transformer is not reused to avoid having to reinitialize it here.
     ASSERT(mCurrentWord == 0);
@@ -947,9 +993,10 @@ void SpirvTransformerBase::onTransformBegin()
 
     // Copy the header to SPIR-V blob, we need that to be defined for SpirvTransformerBase::getNewId
     // to work.
-    mSpirvBlobOut->assign(mSpirvBlobIn.begin(), mSpirvBlobIn.begin() + kHeaderIndexInstructions);
+    mSpirvBlobOut->assign(mSpirvBlobIn.begin(),
+                          mSpirvBlobIn.begin() + spirv::kHeaderIndexInstructions);
 
-    mCurrentWord = kHeaderIndexInstructions;
+    mCurrentWord = spirv::kHeaderIndexInstructions;
 }
 
 const uint32_t *SpirvTransformerBase::getCurrentInstruction(spv::Op *opCodeOut,
@@ -973,7 +1020,7 @@ void SpirvTransformerBase::copyInstruction(const uint32_t *instruction, size_t w
 
 spirv::IdRef SpirvTransformerBase::GetNewId(spirv::Blob *blob)
 {
-    return spirv::IdRef((*blob)[kHeaderIndexIndexBound]++);
+    return spirv::IdRef((*blob)[spirv::kHeaderIndexIndexBound]++);
 }
 
 spirv::IdRef SpirvTransformerBase::getNewId()
@@ -1046,6 +1093,7 @@ class SpirvIDDiscoverer final : angle::NonCopyable
     spirv::IdRef vec4Id() const { return mVec4Id; }
     spirv::IdRef vec4OutTypePointerId() const { return mVec4OutTypePointerId; }
     spirv::IdRef intId() const { return mIntId; }
+    spirv::IdRef ivec4Id() const { return mIvec4Id; }
     spirv::IdRef uintId() const { return mUintId; }
     spirv::IdRef int0Id() const { return mInt0Id; }
     spirv::IdRef floatHalfId() const { return mFloatHalfId; }
@@ -1082,11 +1130,12 @@ class SpirvIDDiscoverer final : angle::NonCopyable
     // and swizzles.
     //
     // - mFloatId: id of OpTypeFloat 32
-    // - mVec4Id: id of OpTypeVector %mFloatID 4
-    // - mVec4OutTypePointerId: id of OpTypePointer Output %mVec4ID
+    // - mVec4Id: id of OpTypeVector %mFloatId 4
+    // - mVec4OutTypePointerId: id of OpTypePointer Output %mVec4Id
     // - mIntId: id of OpTypeInt 32 1
+    // - mIvecId: id of OpTypeVector %mIntId 4
     // - mUintId: id of OpTypeInt 32 0
-    // - mInt0Id: id of OpConstant %mIntID 0
+    // - mInt0Id: id of OpConstant %mIntId 0
     // - mFloatHalfId: id of OpConstant %mFloatId 0.5f
     // - mOutputPerVertexTypePointerId: id of OpTypePointer Output %mOutputPerVertex.typeId
     // - mOutputPerVertexId: id of OpVariable %mOutputPerVertexTypePointerId Output
@@ -1095,6 +1144,7 @@ class SpirvIDDiscoverer final : angle::NonCopyable
     spirv::IdRef mVec4Id;
     spirv::IdRef mVec4OutTypePointerId;
     spirv::IdRef mIntId;
+    spirv::IdRef mIvec4Id;
     spirv::IdRef mUintId;
     spirv::IdRef mInt0Id;
     spirv::IdRef mFloatHalfId;
@@ -1266,11 +1316,16 @@ void SpirvIDDiscoverer::visitTypeVector(spirv::IdResult id,
                                         spirv::IdRef componentId,
                                         spirv::LiteralInteger componentCount)
 {
-    // Only interested in OpTypeVector %mFloatId 4
+    // Only interested in OpTypeVector %mFloatId 4 and OpTypeVector %mIntId 4
     if (componentId == mFloatId && componentCount == 4)
     {
         ASSERT(!mVec4Id.valid());
         mVec4Id = id;
+    }
+    if (componentId == mIntId && componentCount == 4)
+    {
+        ASSERT(!mIvec4Id.valid());
+        mIvec4Id = id;
     }
 }
 
@@ -1350,6 +1405,12 @@ void SpirvIDDiscoverer::writePendingDeclarations(spirv::Blob *blobOut)
         spirv::WriteTypeInt(blobOut, mIntId, spirv::LiteralInteger(32), spirv::LiteralInteger(1));
     }
 
+    if (!mIvec4Id.valid())
+    {
+        mIvec4Id = SpirvTransformerBase::GetNewId(blobOut);
+        spirv::WriteTypeVector(blobOut, mIvec4Id, mIntId, spirv::LiteralInteger(4));
+    }
+
     ASSERT(!mInt0Id.valid());
     mInt0Id = SpirvTransformerBase::GetNewId(blobOut);
     spirv::WriteConstant(blobOut, mIntId, mInt0Id, spirv::LiteralContextDependentNumber(0));
@@ -1387,8 +1448,14 @@ TransformationState SpirvPerVertexTrimmer::transformMemberDecorate(const SpirvID
                                                                    spirv::LiteralInteger member,
                                                                    spv::Decoration decoration)
 {
-    // Transform only OpMemberDecorate %gl_PerVertex N BuiltIn B
-    if (!ids.isPerVertex(typeId) || decoration != spv::DecorationBuiltIn)
+    // Transform the following:
+    //
+    // - OpMemberDecorate %gl_PerVertex N BuiltIn B
+    // - OpMemberDecorate %gl_PerVertex N Invariant
+    // - OpMemberDecorate %gl_PerVertex N RelaxedPrecision
+    if (!ids.isPerVertex(typeId) ||
+        (decoration != spv::DecorationBuiltIn && decoration != spv::DecorationInvariant &&
+         decoration != spv::DecorationRelaxedPrecision))
     {
         return TransformationState::Unchanged;
     }
@@ -2149,6 +2216,13 @@ void SpirvTransformFeedbackCodeGenerator::writePendingDeclarations(
     spirv::WriteTypePointer(blobOut, mFloatUniformPointerId, spv::StorageClassUniform,
                             ids.floatId());
 
+    if (!mIVec4FuncPointerId.valid())
+    {
+        mIVec4FuncPointerId = SpirvTransformerBase::GetNewId(blobOut);
+        spirv::WriteTypePointer(blobOut, mIVec4FuncPointerId, spv::StorageClassFunction,
+                                ids.ivec4Id());
+    }
+
     mIntNIds.resize(4);
     mIntNIds[0] = ids.int0Id();
     for (int n = 1; n < 4; ++n)
@@ -2282,7 +2356,6 @@ void SpirvTransformFeedbackCodeGenerator::writeTransformFeedbackEmulationOutput(
     //
     // - For the initial offsets calculation:
     //
-    //     %getOffsetsParam = OpVariable %mIVec4FuncPointerId Function %stridesComposite
     //    %xfbOffsetsResult = OpFunctionCall %ivec4 %ANGLEGetXfbOffsets %stridesComposite
     //       %xfbOffsetsVar = OpVariable %mIVec4FuncPointerId Function
     //                        OpStore %xfbOffsetsVar %xfbOffsetsResult
@@ -2462,7 +2535,6 @@ void SpirvTransformFeedbackCodeGenerator::getVaryingTypeIds(const SpirvIDDiscove
 void SpirvTransformFeedbackCodeGenerator::writeGetOffsetsCall(spirv::IdRef xfbOffsets,
                                                               spirv::Blob *blobOut)
 {
-    const spirv::IdRef xfbGetOffsetsParam(SpirvTransformerBase::GetNewId(blobOut));
     const spirv::IdRef xfbOffsetsResult(SpirvTransformerBase::GetNewId(blobOut));
     const spirv::IdRef xfbOffsetsVar(SpirvTransformerBase::GetNewId(blobOut));
 
@@ -2470,17 +2542,13 @@ void SpirvTransformFeedbackCodeGenerator::writeGetOffsetsCall(spirv::IdRef xfbOf
     //
     //     ivec4 xfbOffsets = ANGLEGetXfbOffsets(ivec4(stride0, stride1, stride2, stride3));
 
-    // Create a variable to hold the parameter, initialized with the constant ivec4 containing the
-    // strides.
-    spirv::WriteVariable(blobOut, mIVec4FuncPointerId, xfbGetOffsetsParam,
-                         spv::StorageClassFunction, &mBufferStridesCompositeId);
     // Create a variable to hold the result.
     spirv::WriteVariable(blobOut, mIVec4FuncPointerId, xfbOffsetsVar, spv::StorageClassFunction,
                          nullptr);
     // Call a helper function generated by the translator to calculate the offsets for the current
     // vertex.
     spirv::WriteFunctionCall(blobOut, mIVec4Id, xfbOffsetsResult, mGetXfbOffsetsFuncId,
-                             {xfbGetOffsetsParam});
+                             {mBufferStridesCompositeId});
     // Store the results.
     spirv::WriteStore(blobOut, xfbOffsetsVar, xfbOffsetsResult, nullptr);
     // Load from the variable for use in expressions.
@@ -2543,7 +2611,7 @@ void SpirvTransformFeedbackCodeGenerator::addExecutionMode(spirv::IdRef entryPoi
 
     if (mHasTransformFeedbackOutput)
     {
-        spirv::WriteExecutionMode(blobOut, entryPointId, spv::ExecutionModeXfb);
+        spirv::WriteExecutionMode(blobOut, entryPointId, spv::ExecutionModeXfb, {});
     }
 }
 
@@ -2883,7 +2951,7 @@ void SpirvTransformer::transform()
 
 void SpirvTransformer::resolveVariableIds()
 {
-    const size_t indexBound = mSpirvBlobIn[kHeaderIndexIndexBound];
+    const size_t indexBound = mSpirvBlobIn[spirv::kHeaderIndexIndexBound];
 
     mIds.init(indexBound);
     mInactiveVaryingRemover.init(indexBound);
@@ -2894,7 +2962,7 @@ void SpirvTransformer::resolveVariableIds()
     // that name in mVariableInfoMap.
     mVariableInfoById.resize(indexBound, nullptr);
 
-    size_t currentWord = kHeaderIndexInstructions;
+    size_t currentWord = spirv::kHeaderIndexInstructions;
 
     while (currentWord < mSpirvBlobIn.size())
     {
@@ -3325,6 +3393,9 @@ TransformationState SpirvTransformer::transformDecorate(const uint32_t *instruct
             newDecorationValue = info->descriptorSet;
             break;
         case spv::DecorationFlat:
+        case spv::DecorationNoPerspective:
+        case spv::DecorationCentroid:
+        case spv::DecorationSample:
             if (info->useRelaxedPrecision)
             {
                 // Change the id to replacement variable
@@ -3596,7 +3667,7 @@ TransformationState SpirvTransformer::transformExecutionMode(const uint32_t *ins
 {
     spirv::IdRef entryPoint;
     spv::ExecutionMode mode;
-    spirv::ParseExecutionMode(instruction, &entryPoint, &mode);
+    spirv::ParseExecutionMode(instruction, &entryPoint, &mode, nullptr);
 
     if (mode == spv::ExecutionModeEarlyFragmentTests &&
         mOptions.removeEarlyFragmentTestsOptimization)
@@ -3761,7 +3832,7 @@ void SpirvVertexAttributeAliasingTransformer::transform()
 
 void SpirvVertexAttributeAliasingTransformer::preprocessAliasingAttributes()
 {
-    const uint32_t indexBound = mSpirvBlobIn[kHeaderIndexIndexBound];
+    const uint32_t indexBound = mSpirvBlobIn[spirv::kHeaderIndexIndexBound];
 
     mVariableInfoById.resize(indexBound, nullptr);
     mIsAliasingAttributeById.resize(indexBound, false);
@@ -4604,9 +4675,15 @@ bool HasAliasingAttributes(const ShaderInterfaceVariableInfoMap &variableInfoMap
 }
 }  // anonymous namespace
 
-// ShaderInterfaceVariableInfo implementation.
-const uint32_t ShaderInterfaceVariableInfo::kInvalid;
+UniformBindingInfo::UniformBindingInfo(uint32_t bindingIndex,
+                                       gl::ShaderBitSet shaderBitSet,
+                                       gl::ShaderType frontShaderType)
+    : bindingIndex(bindingIndex), shaderBitSet(shaderBitSet), frontShaderType(frontShaderType)
+{}
 
+UniformBindingInfo::UniformBindingInfo() {}
+
+// ShaderInterfaceVariableInfo implementation.
 ShaderInterfaceVariableInfo::ShaderInterfaceVariableInfo() {}
 
 // ShaderInterfaceVariableInfoMap implementation.
@@ -4643,6 +4720,13 @@ ShaderInterfaceVariableInfo &ShaderInterfaceVariableInfoMap::get(gl::ShaderType 
     auto it = mData[shaderType].find(variableName);
     ASSERT(it != mData[shaderType].end());
     return it->second;
+}
+
+void ShaderInterfaceVariableInfoMap::markAsDuplicate(gl::ShaderType shaderType,
+                                                     const std::string &variableName)
+{
+    ASSERT(contains(shaderType, variableName));
+    mData[shaderType][variableName].isDuplicate = true;
 }
 
 ShaderInterfaceVariableInfo &ShaderInterfaceVariableInfoMap::add(gl::ShaderType shaderType,
@@ -4731,6 +4815,7 @@ void GlslangAssignLocations(const GlslangSourceOptions &options,
                             const gl::ShaderType frontShaderType,
                             bool isTransformFeedbackStage,
                             GlslangProgramInterfaceInfo *programInterfaceInfo,
+                            UniformBindingIndexMap *uniformBindingIndexMapOut,
                             ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     const gl::ProgramExecutable &programExecutable = programState.getExecutable();
@@ -4779,9 +4864,9 @@ void GlslangAssignLocations(const GlslangSourceOptions &options,
     AssignUniformBindings(options, programExecutable, shaderType, programInterfaceInfo,
                           variableInfoMapOut);
     AssignTextureBindings(options, programExecutable, shaderType, programInterfaceInfo,
-                          variableInfoMapOut);
+                          uniformBindingIndexMapOut, variableInfoMapOut);
     AssignNonTextureBindings(options, programExecutable, shaderType, programInterfaceInfo,
-                             variableInfoMapOut);
+                             uniformBindingIndexMapOut, variableInfoMapOut);
 
     if (options.supportsTransformFeedbackEmulation &&
         gl::ShaderTypeSupportsTransformFeedback(shaderType))
@@ -4870,14 +4955,14 @@ void GlslangGetShaderSpirvCode(const GlslangSourceOptions &options,
                                                     programInterfaceInfo, variableInfoMapOut);
         }
     }
-
+    UniformBindingIndexMap uniformBindingIndexMap;
     for (const gl::ShaderType shaderType : programState.getExecutable().getLinkedShaderStages())
     {
         const bool isXfbStage =
             shaderType == xfbStage && !programState.getLinkedTransformFeedbackVaryings().empty();
         GlslangAssignLocations(options, programState, resources.varyingPacking, shaderType,
                                frontShaderType, isXfbStage, programInterfaceInfo,
-                               variableInfoMapOut);
+                               &uniformBindingIndexMap, variableInfoMapOut);
 
         frontShaderType = shaderType;
     }
@@ -4906,6 +4991,8 @@ angle::Result GlslangTransformSpirvCode(const GlslangSpirvOptions &options,
             spirvBlobOut);
         aliasingTransformer.transform();
     }
+
+    spirvBlobOut->shrink_to_fit();
 
     ASSERT(spirv::Validate(*spirvBlobOut));
 

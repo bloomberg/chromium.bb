@@ -62,7 +62,7 @@ static enum AVPixelFormat get_vaapi_format(AVCodecContext *ctx,
 static int open_input_file(const char *filename)
 {
     int ret;
-    AVCodec *decoder = NULL;
+    const AVCodec *decoder = NULL;
     AVStream *video = NULL;
 
     if ((ret = avformat_open_input(&ifmt_ctx, filename, NULL, NULL)) < 0) {
@@ -109,28 +109,25 @@ static int open_input_file(const char *filename)
     return ret;
 }
 
-static int encode_write(AVFrame *frame)
+static int encode_write(AVPacket *enc_pkt, AVFrame *frame)
 {
     int ret = 0;
-    AVPacket enc_pkt;
 
-    av_init_packet(&enc_pkt);
-    enc_pkt.data = NULL;
-    enc_pkt.size = 0;
+    av_packet_unref(enc_pkt);
 
     if ((ret = avcodec_send_frame(encoder_ctx, frame)) < 0) {
         fprintf(stderr, "Error during encoding. Error code: %s\n", av_err2str(ret));
         goto end;
     }
     while (1) {
-        ret = avcodec_receive_packet(encoder_ctx, &enc_pkt);
+        ret = avcodec_receive_packet(encoder_ctx, enc_pkt);
         if (ret)
             break;
 
-        enc_pkt.stream_index = 0;
-        av_packet_rescale_ts(&enc_pkt, ifmt_ctx->streams[video_stream]->time_base,
+        enc_pkt->stream_index = 0;
+        av_packet_rescale_ts(enc_pkt, ifmt_ctx->streams[video_stream]->time_base,
                              ofmt_ctx->streams[0]->time_base);
-        ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+        ret = av_interleaved_write_frame(ofmt_ctx, enc_pkt);
         if (ret < 0) {
             fprintf(stderr, "Error during writing data to output file. "
                     "Error code: %s\n", av_err2str(ret));
@@ -145,7 +142,7 @@ end:
     return ret;
 }
 
-static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
+static int dec_enc(AVPacket *pkt, const AVCodec *enc_codec)
 {
     AVFrame *frame;
     int ret = 0;
@@ -216,7 +213,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             initialized = 1;
         }
 
-        if ((ret = encode_write(frame)) < 0)
+        if ((ret = encode_write(pkt, frame)) < 0)
             fprintf(stderr, "Error during encoding and writing.\n");
 
 fail:
@@ -229,9 +226,9 @@ fail:
 
 int main(int argc, char **argv)
 {
+    const AVCodec *enc_codec;
     int ret = 0;
-    AVPacket dec_pkt;
-    AVCodec *enc_codec;
+    AVPacket *dec_pkt;
 
     if (argc != 4) {
         fprintf(stderr, "Usage: %s <input file> <encode codec> <output file>\n"
@@ -244,6 +241,12 @@ int main(int argc, char **argv)
     if (ret < 0) {
         fprintf(stderr, "Failed to create a VAAPI device. Error code: %s\n", av_err2str(ret));
         return -1;
+    }
+
+    dec_pkt = av_packet_alloc();
+    if (!dec_pkt) {
+        fprintf(stderr, "Failed to allocate decode packet\n");
+        goto end;
     }
 
     if ((ret = open_input_file(argv[1])) < 0)
@@ -275,23 +278,21 @@ int main(int argc, char **argv)
 
     /* read all packets and only transcoding video */
     while (ret >= 0) {
-        if ((ret = av_read_frame(ifmt_ctx, &dec_pkt)) < 0)
+        if ((ret = av_read_frame(ifmt_ctx, dec_pkt)) < 0)
             break;
 
-        if (video_stream == dec_pkt.stream_index)
-            ret = dec_enc(&dec_pkt, enc_codec);
+        if (video_stream == dec_pkt->stream_index)
+            ret = dec_enc(dec_pkt, enc_codec);
 
-        av_packet_unref(&dec_pkt);
+        av_packet_unref(dec_pkt);
     }
 
     /* flush decoder */
-    dec_pkt.data = NULL;
-    dec_pkt.size = 0;
-    ret = dec_enc(&dec_pkt, enc_codec);
-    av_packet_unref(&dec_pkt);
+    av_packet_unref(dec_pkt);
+    ret = dec_enc(dec_pkt, enc_codec);
 
     /* flush encoder */
-    ret = encode_write(NULL);
+    ret = encode_write(dec_pkt, NULL);
 
     /* write the trailer for output stream */
     av_write_trailer(ofmt_ctx);
@@ -302,5 +303,6 @@ end:
     avcodec_free_context(&decoder_ctx);
     avcodec_free_context(&encoder_ctx);
     av_buffer_unref(&hw_device_ctx);
+    av_packet_free(&dec_pkt);
     return ret;
 }

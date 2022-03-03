@@ -23,30 +23,6 @@ SkCanvas* SkDeferredDisplayListRecorder::getCanvas() { return nullptr; }
 
 sk_sp<SkDeferredDisplayList> SkDeferredDisplayListRecorder::detach() { return nullptr; }
 
-sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
-        const GrBackendFormat& backendFormat,
-        int width,
-        int height,
-        GrMipmapped mipMapped,
-        GrSurfaceOrigin origin,
-        SkColorType colorType,
-        SkAlphaType alphaType,
-        sk_sp<SkColorSpace> colorSpace,
-        PromiseImageTextureFulfillProc textureFulfillProc,
-        PromiseImageTextureReleaseProc textureReleaseProc,
-        PromiseImageTextureContext textureContext) {
-    return nullptr;
-}
-
-sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
-        const GrYUVABackendTextureInfo& yuvaBackendTextureInfo,
-        sk_sp<SkColorSpace> imageColorSpace,
-        PromiseImageTextureFulfillProc textureFulfillProc,
-        PromiseImageTextureReleaseProc textureReleaseProc,
-        PromiseImageTextureContext textureContexts[]) {
-    return nullptr;
-}
-
 #else
 
 #include "include/core/SkPromiseImageTexture.h"
@@ -54,9 +30,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
 #include "include/gpu/GrYUVABackendTextures.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
-#include "src/gpu/SkGpuDevice.h"
 #include "src/gpu/SkGr.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkImage_GpuYUVA.h"
@@ -184,13 +158,12 @@ bool SkDeferredDisplayListRecorder::init() {
     }
     fTargetProxy->priv().setIsDDLTarget();
 
-    auto device = SkGpuDevice::Make(fContext.get(),
-                                    grColorType,
-                                    fCharacterization.refColorSpace(),
-                                    fTargetProxy,
-                                    fCharacterization.origin(),
-                                    fCharacterization.surfaceProps(),
-                                    SkBaseGpuDevice::kUninit_InitContents);
+    auto device = fContext->priv().createDevice(grColorType,
+                                                fTargetProxy,
+                                                fCharacterization.refColorSpace(),
+                                                fCharacterization.origin(),
+                                                fCharacterization.surfaceProps(),
+                                                skgpu::BaseDevice::InitContents::kUninit);
     if (!device) {
         return false;
     }

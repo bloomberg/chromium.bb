@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -18,10 +18,8 @@
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
-#include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/dns/public/resolve_error_info.h"
-#include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
@@ -41,13 +39,9 @@ class HttpResponseInfo;
 class HttpUserAgentSettings;
 class NetLog;
 class NetLogWithSource;
-class NetworkIsolationKey;
 class NetworkQualityEstimator;
-struct NetworkTrafficAnnotationTag;
 class ProxyDelegate;
-class ProxyServer;
 class SocketPerformanceWatcherFactory;
-struct SSLConfig;
 class StreamSocket;
 class WebSocketEndpointLockManager;
 class QuicStreamFactory;
@@ -81,22 +75,22 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
 
   CommonConnectJobParams& operator=(const CommonConnectJobParams& other);
 
-  ClientSocketFactory* client_socket_factory;
-  HostResolver* host_resolver;
-  HttpAuthCache* http_auth_cache;
-  HttpAuthHandlerFactory* http_auth_handler_factory;
-  SpdySessionPool* spdy_session_pool;
-  const quic::ParsedQuicVersionVector* quic_supported_versions;
-  QuicStreamFactory* quic_stream_factory;
-  ProxyDelegate* proxy_delegate;
-  const HttpUserAgentSettings* http_user_agent_settings;
-  SSLClientContext* ssl_client_context;
-  SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
-  NetworkQualityEstimator* network_quality_estimator;
-  NetLog* net_log;
+  raw_ptr<ClientSocketFactory> client_socket_factory;
+  raw_ptr<HostResolver> host_resolver;
+  raw_ptr<HttpAuthCache> http_auth_cache;
+  raw_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
+  raw_ptr<SpdySessionPool> spdy_session_pool;
+  raw_ptr<const quic::ParsedQuicVersionVector> quic_supported_versions;
+  raw_ptr<QuicStreamFactory> quic_stream_factory;
+  raw_ptr<ProxyDelegate> proxy_delegate;
+  raw_ptr<const HttpUserAgentSettings> http_user_agent_settings;
+  raw_ptr<SSLClientContext> ssl_client_context;
+  raw_ptr<SocketPerformanceWatcherFactory> socket_performance_watcher_factory;
+  raw_ptr<NetworkQualityEstimator> network_quality_estimator;
+  raw_ptr<NetLog> net_log;
 
   // This must only be non-null for WebSockets.
-  WebSocketEndpointLockManager* websocket_endpoint_lock_manager;
+  raw_ptr<WebSocketEndpointLockManager> websocket_endpoint_lock_manager;
 };
 
 // When a host resolution completes, OnHostResolutionCallback() is invoked. If
@@ -132,6 +126,10 @@ class NET_EXPORT_PRIVATE ConnectJob {
   class NET_EXPORT_PRIVATE Delegate {
    public:
     Delegate() {}
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
     virtual ~Delegate() {}
 
     // Alerts the delegate that the connection completed. |job| must be
@@ -153,9 +151,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
                                   HttpAuthController* auth_controller,
                                   base::OnceClosure restart_with_auth_callback,
                                   ConnectJob* job) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   // A |timeout_duration| of 0 corresponds to no timeout.
@@ -173,27 +168,11 @@ class NET_EXPORT_PRIVATE ConnectJob {
              const NetLogWithSource* net_log,
              NetLogSourceType net_log_source_type,
              NetLogEventType net_log_connect_event_type);
-  virtual ~ConnectJob();
 
-  // Creates a ConnectJob with the specified parameters.
-  // |common_connect_job_params| and |delegate| must outlive the returned
-  // ConnectJob.
-  static std::unique_ptr<ConnectJob> CreateConnectJob(
-      bool using_ssl,
-      const HostPortPair& endpoint,
-      const ProxyServer& proxy_server,
-      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
-      const SSLConfig* ssl_config_for_origin,
-      const SSLConfig* ssl_config_for_proxy,
-      bool force_tunnel,
-      PrivacyMode privacy_mode,
-      const OnHostResolutionCallback& resolution_callback,
-      RequestPriority request_priority,
-      SocketTag socket_tag,
-      const NetworkIsolationKey& network_isolation_key,
-      SecureDnsPolicy secure_dns_policy,
-      const CommonConnectJobParams* common_connect_job_params,
-      ConnectJob::Delegate* delegate);
+  ConnectJob(const ConnectJob&) = delete;
+  ConnectJob& operator=(const ConnectJob&) = delete;
+
+  virtual ~ConnectJob();
 
   // Accessors
   const NetLogWithSource& net_log() { return net_log_; }
@@ -323,10 +302,10 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const base::TimeDelta timeout_duration_;
   RequestPriority priority_;
   const SocketTag socket_tag_;
-  const CommonConnectJobParams* common_connect_job_params_;
+  raw_ptr<const CommonConnectJobParams> common_connect_job_params_;
   // Timer to abort jobs that take too long.
   base::OneShotTimer timer_;
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
   std::unique_ptr<StreamSocket> socket_;
   // Indicates if this is the topmost ConnectJob. The topmost ConnectJob logs an
   // extra begin and end event, to allow callers to log extra data before the
@@ -334,8 +313,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const bool top_level_job_;
   NetLogWithSource net_log_;
   const NetLogEventType net_log_connect_event_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectJob);
 };
 
 }  // namespace net

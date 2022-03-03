@@ -38,7 +38,8 @@ std::ostream& operator<<(std::ostream& out, const ClientStatus& status) {
   }
   if (status.details_.has_unexpected_error_info()) {
     auto& error_info = status.details_.unexpected_error_info();
-    out << error_info.source_file() << ":" << error_info.source_line_number();
+    out << " " << error_info.source_file() << ":"
+        << error_info.source_line_number();
     if (!error_info.js_exception_classname().empty()) {
       out << " JS error " << error_info.js_exception_classname() << " at "
           << error_info.js_exception_line_number() << ":"
@@ -147,6 +148,21 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ProcessedActionStatusProto::INVALID_TARGET:
       out << "INVALID_TARGET";
+      break;
+    case ProcessedActionStatusProto::ELEMENT_POSITION_NOT_FOUND:
+      out << "ELEMENT_POSITION_NOT_FOUND";
+      break;
+    case ProcessedActionStatusProto::CLIENT_MEMORY_KEY_NOT_AVAILABLE:
+      out << "CLIENT_MEMORY_KEY_NOT_AVAILABLE";
+      break;
+    case ProcessedActionStatusProto::EMPTY_VALUE_EXPRESSION_RESULT:
+      out << "EMPTY_VALUE_EXPRESSION_RESULT";
+      break;
+    case ProcessedActionStatusProto::RESEND_USER_DATA:
+      out << "RESEND_USER_DATA";
+      break;
+    case ProcessedActionStatusProto::NO_RENDER_FRAME:
+      out << "NO_RENDER_FRAME";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

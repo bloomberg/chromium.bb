@@ -28,8 +28,10 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
@@ -38,6 +40,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 
 /**
  * A widget that shows a single row of the {@link AccessibilityTabModelListView} list.
@@ -330,12 +333,12 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             setBackgroundResource(R.color.default_bg_color_dark);
             mFaviconView.getBackground().setLevel(mIncognitoLevel);
             ApiCompatibilityUtils.setTextAppearance(
-                    mTitleView, R.style.TextAppearance_TextLarge_Primary_Light);
+                    mTitleView, R.style.TextAppearance_TextLarge_Primary_Baseline_Light);
             ApiCompatibilityUtils.setTextAppearance(
-                    mDescriptionView, R.style.TextAppearance_TextMedium_Primary_Light);
+                    mDescriptionView, R.style.TextAppearance_TextMedium_Primary_Baseline_Light);
             ApiCompatibilityUtils.setImageTintList(mCloseButton, mIncognitoCloseIconColor);
         } else {
-            setBackgroundResource(R.color.default_bg_color);
+            setBackgroundColor(SemanticColorUtils.getDefaultBgColor(getContext()));
             mFaviconView.getBackground().setLevel(mDefaultLevel);
             ApiCompatibilityUtils.setTextAppearance(
                     mTitleView, R.style.TextAppearance_TextLarge_Primary);

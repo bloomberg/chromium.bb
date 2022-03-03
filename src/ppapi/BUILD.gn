@@ -12,8 +12,9 @@ if (is_mac) {
   import("//build/config/mac/rules.gni")
 }
 
-assert(!is_android || enable_plugins,
-       "//ppapi should not be referenced when is_android && !enable_plugins")
+assert(
+    !(is_android || is_fuchsia) || enable_plugins,
+    "ppapi should not be used on Android or Fuchsia, unless plugins are explicitly enabled")
 
 # Test files shared between several targets below.
 #
@@ -118,6 +119,7 @@ test_common_source_files = [
   "tests/test_url_loader.h",
   "tests/test_url_request.cc",
   "tests/test_url_request.h",
+  "tests/test_utils.h",
   "tests/test_utils.cc",
   "tests/test_var.cc",
   "tests/test_var.h",
@@ -225,6 +227,7 @@ source_set("corb_test_plugin_sources") {
   sources = [
     "tests/corb_test_plugin.cc",
     "tests/test_utils.cc",
+    "tests/test_utils.h",
   ]
 
   deps = [
@@ -397,7 +400,10 @@ if (enable_nacl) {
         "GL_GLEXT_PROTOTYPES",
         "PPAPI_TEST_IMPLEMENTATION",
       ]
-      deps = [ "//ppapi/cpp" ]
+      deps = [
+        "//ppapi/cpp",
+        "//ppapi/native_client/src/untrusted/irt_stub:ppapi_stub_lib",
+      ]
       if (current_cpu == "pnacl") {
         pretranslate_pexe = true
       }
@@ -414,11 +420,6 @@ if (enable_nacl) {
     if (target_cpu != "mipsel" && !is_mac && !is_win) {
       data_deps +=
           [ ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})" ]
-    }
-
-    if ((is_linux || is_chromeos) && enable_nacl_nonsfi) {
-      data_deps +=
-          [ ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)" ]
     }
   }
 }

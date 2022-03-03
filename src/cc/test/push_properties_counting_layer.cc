@@ -21,8 +21,11 @@ PushPropertiesCountingLayer::PushPropertiesCountingLayer() {
 
 PushPropertiesCountingLayer::~PushPropertiesCountingLayer() = default;
 
-void PushPropertiesCountingLayer::PushPropertiesTo(LayerImpl* layer) {
-  Layer::PushPropertiesTo(layer);
+void PushPropertiesCountingLayer::PushPropertiesTo(
+    LayerImpl* layer,
+    const CommitState& commit_state,
+    const ThreadUnsafeCommitState& unsafe_state) {
+  Layer::PushPropertiesTo(layer, commit_state, unsafe_state);
   AddPushPropertiesCount();
 }
 

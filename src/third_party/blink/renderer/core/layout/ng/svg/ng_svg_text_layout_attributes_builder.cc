@@ -8,9 +8,26 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_length_list.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_number_list.h"
 #include "third_party/blink/renderer/core/svg/svg_text_positioning_element.h"
+
+namespace blink {
+
+struct SVGTextLengthContext {
+  DISALLOW_NEW();
+
+ public:
+  void Trace(Visitor* visitor) const { visitor->Trace(layout_object); }
+
+  Member<const LayoutObject> layout_object;
+  unsigned start_index;
+};
+
+}  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::SVGTextLengthContext)
 
 namespace blink {
 
@@ -180,14 +197,31 @@ class LayoutAttributesStack final {
   HeapVector<Member<LayoutAttributesIterator>> stack_;
 };
 
-bool HasUpdated(const NGSVGCharacterData& data) {
+bool HasUpdated(const NGSvgCharacterData& data) {
   return data.HasX() || data.HasY() || data.HasDx() || data.HasDy() ||
          data.HasRotate() || data.anchored_chunk;
 }
 
+bool HasValidTextLength(const LayoutObject& layout_object) {
+  if (auto* element =
+          DynamicTo<SVGTextContentElement>(layout_object.GetNode())) {
+    if (element->TextLengthIsSpecifiedByUser()) {
+      float text_length = element->textLength()->CurrentValue()->Value(
+          SVGLengthContext(element));
+      // text_length is 0.0 if the textLength attribute has an invalid
+      // string. Legacy SVG <text> skips textLength processing if the
+      // attribute is "0" or invalid. Firefox skips textLength processing if
+      // textLength value is smaller than the intrinsic width of the text.
+      // This code follows the legacy behavior.
+      return text_length > 0.0f;
+    }
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
-NGSVGTextLayoutAttributesBuilder::NGSVGTextLayoutAttributesBuilder(
+NGSvgTextLayoutAttributesBuilder::NGSvgTextLayoutAttributesBuilder(
     NGInlineNode ifc)
     : block_flow_(To<LayoutBlockFlow>(ifc.GetLayoutBox())) {}
 
@@ -198,10 +232,11 @@ NGSVGTextLayoutAttributesBuilder::NGSVGTextLayoutAttributesBuilder(
 // resolve_dy, "rotate" of result[], and "anchored chunk" of result[].
 //
 // [1]: https://svgwg.org/svg2-draft/text.html#TextLayoutAlgorithm
-void NGSVGTextLayoutAttributesBuilder::Build(
+void NGSvgTextLayoutAttributesBuilder::Build(
     const String& ifc_text_content,
-    const Vector<NGInlineItem>& items) {
+    const HeapVector<NGInlineItem>& items) {
   LayoutAttributesStack attr_stack;
+  HeapVector<SVGTextLengthContext> text_length_stack;
   unsigned addressable_index = 0;
   bool is_first_char = true;
   bool in_text_path = false;
@@ -211,6 +246,10 @@ void NGSVGTextLayoutAttributesBuilder::Build(
       IsHorizontalWritingMode(block_flow_->StyleRef().GetWritingMode());
 
   attr_stack.Push(*block_flow_, in_text_path);
+  if (HasValidTextLength(*block_flow_)) {
+    text_length_stack.push_back(
+        SVGTextLengthContext{block_flow_, addressable_index});
+  }
   for (const auto& item : items) {
     const LayoutObject* object = item.GetLayoutObject();
 
@@ -224,6 +263,10 @@ void NGSVGTextLayoutAttributesBuilder::Build(
         in_text_path = true;
         text_path_start = addressable_index;
       }
+      if (HasValidTextLength(*object)) {
+        text_length_stack.push_back(
+            SVGTextLengthContext{object, addressable_index});
+      }
 
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       if (object->IsSVGTSpan()) {
@@ -235,11 +278,19 @@ void NGSVGTextLayoutAttributesBuilder::Build(
         first_char_in_text_path = false;
         DCHECK(text_path_start);
         if (addressable_index != *text_path_start) {
-          text_path_range_list_.push_back(
-              SVGTextPathRange{To<LayoutSVGTextPath>(object), *text_path_start,
-                               addressable_index - 1});
+          text_path_range_list_.push_back(SvgTextContentRange{
+              object, *text_path_start, addressable_index - 1});
         }
         text_path_start.reset();
+      }
+      if (text_length_stack.size() > 0u &&
+          text_length_stack.back().layout_object == object) {
+        if (text_length_stack.back().start_index != addressable_index) {
+          text_length_range_list_.push_back(
+              SvgTextContentRange{object, text_length_stack.back().start_index,
+                                  addressable_index - 1});
+        }
+        text_length_stack.pop_back();
       }
 
     } else if (item.Type() != NGInlineItem::kText) {
@@ -248,7 +299,7 @@ void NGSVGTextLayoutAttributesBuilder::Build(
 
     StringView item_string(ifc_text_content, item.StartOffset(), item.Length());
     for (unsigned i = 0; i < item.Length();) {
-      NGSVGCharacterData data;
+      NGSvgCharacterData data;
 
       // 2.2. Set the "anchored chunk" flag of result[index] to true.
       // 1.6.1.1. If i < new_check_count, then set the "anchored chunk" flag
@@ -320,22 +371,25 @@ void NGSVGTextLayoutAttributesBuilder::Build(
         resolved_.push_back(std::make_pair(addressable_index, data));
       ++addressable_index;
       attr_stack.Advance();
-      i += i + 1 < item.Length() && U16_IS_LEAD(item_string[i]) &&
-                   U16_IS_TRAIL(item_string[i + 1])
-               ? 2
-               : 1;
+      i = item_string.NextCodePointOffset(i);
     }
+  }
+  if (text_length_stack.size() > 0u) {
+    DCHECK_EQ(text_length_stack.back().layout_object, block_flow_);
+    DCHECK_EQ(text_length_stack.back().start_index, 0u);
+    text_length_range_list_.push_back(
+        SvgTextContentRange{block_flow_, 0u, addressable_index - 1});
+    text_length_stack.pop_back();
   }
   attr_stack.Pop();
 }
 
-Vector<std::pair<unsigned, NGSVGCharacterData>>
-NGSVGTextLayoutAttributesBuilder::CharacterDataList() {
-  return std::move(resolved_);
-}
-
-Vector<SVGTextPathRange> NGSVGTextLayoutAttributesBuilder::TextPathRangeList() {
-  return std::move(text_path_range_list_);
+SvgInlineNodeData* NGSvgTextLayoutAttributesBuilder::CreateSvgInlineNodeData() {
+  auto* svg_node_data = MakeGarbageCollected<SvgInlineNodeData>();
+  svg_node_data->character_data_list = std::move(resolved_);
+  svg_node_data->text_length_range_list = std::move(text_length_range_list_);
+  svg_node_data->text_path_range_list = std::move(text_path_range_list_);
+  return svg_node_data;
 }
 
 }  // namespace blink

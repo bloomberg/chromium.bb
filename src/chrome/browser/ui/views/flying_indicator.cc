@@ -17,12 +17,9 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
-static constexpr base::TimeDelta kFadeInDuration =
-    base::TimeDelta::FromMilliseconds(100);
-static constexpr base::TimeDelta kFlyDuration =
-    base::TimeDelta::FromMilliseconds(580);
-static constexpr base::TimeDelta kFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(100);
+static constexpr base::TimeDelta kFadeInDuration = base::Milliseconds(100);
+static constexpr base::TimeDelta kFlyDuration = base::Milliseconds(580);
+static constexpr base::TimeDelta kFadeOutDuration = base::Milliseconds(100);
 }  // namespace
 
 // static
@@ -88,7 +85,7 @@ FlyingIndicator::FlyingIndicator(const gfx::VectorIcon& icon,
   views::BubbleDialogDelegateView* const bubble_view_ptr = bubble_view.get();
   widget_ =
       views::BubbleDialogDelegateView::CreateBubble(std::move(bubble_view));
-  scoped_observation_.Observe(widget_);
+  scoped_observation_.Observe(widget_.get());
 
   // Set required frame properties.
   views::BubbleFrameView* const frame_view =

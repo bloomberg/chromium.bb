@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DETAILS_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DETAILS_H_
 
-#include <map>
 #include <string>
 
 #include "base/values.h"
 #include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 

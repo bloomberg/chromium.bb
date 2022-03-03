@@ -15,10 +15,6 @@
 # ==============================================================================
 """A wrapper of Session API which runs hooks."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
 import os
 import sys
@@ -194,7 +190,8 @@ class Scaffold(object):
       def default_init_op():
         return control_flow_ops.group(
             variables.global_variables_initializer(),
-            resources.initialize_resources(resources.shared_resources()))
+            resources.initialize_resources(resources.shared_resources()),
+            ops.get_collection('saved_model_initializers'))
 
       self._init_op = Scaffold.get_or_default('init_op', ops.GraphKeys.INIT_OP,
                                               default_init_op)
@@ -457,6 +454,17 @@ def MonitoredTrainingSession(
   more
   information.
 
+  @compatibility(TF2)
+  This API is not compatible with eager execution and `tf.function`. To migrate
+  to TF2, rewrite the code to be compatible with eager execution. Check the
+  [migration
+  guide](https://www.tensorflow.org/guide/migrate#1_replace_v1sessionrun_calls)
+  on replacing `Session.run` calls. In Keras, session hooks can be replaced by
+  Callbacks e.g. [logging hook notebook](
+  https://github.com/tensorflow/docs/blob/master/site/en/guide/migrate/logging_stop_hook.ipynb)
+  For more details please read [Better
+  performance with tf.function](https://www.tensorflow.org/guide/function).
+  @end_compatibility
 
   Args:
     master: `String` the TensorFlow master to use.
@@ -1018,6 +1026,18 @@ class MonitoredSession(_MonitoredSession):
   * it cannot be sent to saver.save.
   * it cannot be sent to tf.train.start_queue_runners.
 
+  @compatibility(TF2)
+  This API is not compatible with eager execution and `tf.function`. To migrate
+  to TF2, rewrite the code to be compatible with eager execution. Check the
+  [migration
+  guide](https://www.tensorflow.org/guide/migrate#1_replace_v1sessionrun_calls)
+  on replacing `Session.run` calls. In Keras, session hooks can be replaced by
+  Callbacks e.g. [logging hook notebook](
+  https://github.com/tensorflow/docs/blob/master/site/en/guide/migrate/logging_stop_hook.ipynb)
+  For more details please read [Better
+  performance with tf.function](https://www.tensorflow.org/guide/function).
+  @end_compatibility
+
   Args:
     session_creator: A factory object to create session. Typically a
       `ChiefSessionCreator` which is the default one.
@@ -1090,6 +1110,18 @@ class SingularMonitoredSession(_MonitoredSession):
   * closes the queue runners and the session
   * suppresses `OutOfRange` error which indicates that all inputs have been
     processed if the `SingularMonitoredSession` is used as a context.
+
+  @compatibility(TF2)
+  This API is not compatible with eager execution and `tf.function`. To migrate
+  to TF2, rewrite the code to be compatible with eager execution. Check the
+  [migration
+  guide](https://www.tensorflow.org/guide/migrate#1_replace_v1sessionrun_calls)
+  on replacing `Session.run` calls. In Keras, session hooks can be replaced by
+  Callbacks e.g. [logging hook notebook](
+  https://github.com/tensorflow/docs/blob/master/site/en/guide/migrate/logging_stop_hook.ipynb)
+  For more details please read [Better
+  performance with tf.function](https://www.tensorflow.org/guide/function).
+  @end_compatibility
   """
 
   def __init__(self,
@@ -1323,7 +1355,7 @@ class _CoordinatedSession(_WrappedSession):
   raises an exception, the exception is reported to the coordinator.
 
   In addition, after each call to `run()` this session ask the coordinator if
-  the session should stop.  In that case it will will join all the threads
+  the session should stop.  In that case it will join all the threads
   registered with the coordinator before returning.
 
   If the coordinator was requested to stop with an exception, that exception

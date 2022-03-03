@@ -7,17 +7,16 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/timer/wall_clock_timer.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager_observer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -62,12 +61,8 @@ struct SystemEventTimes;
 // request is carried out the moment none of the inhibiting criteria apply
 // anymore (e.g. the user becomes idle on the login screen, the user logs exits
 // a session, the user suspends the device). If reboots remain inhibited for the
-// entire grace period, a reboot is unconditionally performed at its end.
-//
-// Note: Currently, automatic reboots are only enabled while the login screen is
-// being shown or a kiosk app session is in progress. This will change in the
-// future and the policy will always apply, regardless of whether a session of
-// any particular type is in progress or not. http://crbug.com/244972
+// entire grace period, a reboot is performed at its end, unless a non-kiosk
+// session is active.
 //
 // Reboots may be scheduled and canceled at any time. This causes the time at
 // which a reboot should be requested and the grace period that follows it to
@@ -84,7 +79,12 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
                                public session_manager::SessionManagerObserver,
                                public content::NotificationObserver {
  public:
-  explicit AutomaticRebootManager(const base::TickClock* clock);
+  AutomaticRebootManager(const base::Clock* clock,
+                         const base::TickClock* tick_clock);
+
+  AutomaticRebootManager(const AutomaticRebootManager&) = delete;
+  AutomaticRebootManager& operator=(const AutomaticRebootManager&) = delete;
+
   ~AutomaticRebootManager() override;
 
   AutomaticRebootManagerObserver::Reason reboot_reason() const {
@@ -138,7 +138,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   // If |ignore_session|, a session in progress does not inhibit reboots.
   void MaybeReboot(bool ignore_session);
 
-  // Reboots immediately.
+  // Reboots immediately unless a non-kiosk session is active.
   void Reboot();
 
   // Event that is signaled when Init() runs.
@@ -146,8 +146,9 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED};
 
-  // A clock that can be mocked in tests to fast-forward time.
-  const base::TickClock* const clock_;
+  // Clocks that can be mocked in tests to fast-forward time.
+  const base::Clock* const clock_;
+  const base::TickClock* const tick_clock_;
 
   PrefChangeRegistrar local_state_registrar_;
 
@@ -157,11 +158,11 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   // time.
   std::unique_ptr<base::OneShotTimer> login_screen_idle_timer_;
 
-  // The time at which the device was booted, in |clock_| ticks.
+  // The time at which the device was booted, in |tick_clock_| ticks.
   absl::optional<base::TimeTicks> boot_time_;
 
   // The time at which an update was applied and a reboot became necessary to
-  // complete the update process, in |clock_| ticks.
+  // complete the update process, in |tick_clock_| ticks.
   absl::optional<base::TimeTicks> update_reboot_needed_time_;
 
   // The reason for the reboot request. Updated whenever a reboot is scheduled.
@@ -172,8 +173,8 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   bool reboot_requested_ = false;
 
   // Timers that start and end the grace period.
-  std::unique_ptr<base::OneShotTimer> grace_start_timer_;
-  std::unique_ptr<base::OneShotTimer> grace_end_timer_;
+  std::unique_ptr<base::WallClockTimer> grace_start_timer_;
+  std::unique_ptr<base::WallClockTimer> grace_end_timer_;
 
   base::ObserverList<AutomaticRebootManagerObserver, true>::Unchecked
       observers_;
@@ -183,8 +184,6 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
       session_manager_observation_{this};
 
   base::WeakPtrFactory<AutomaticRebootManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutomaticRebootManager);
 };
 
 }  // namespace system

@@ -10,13 +10,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/scoped_multi_source_observation.h"
+#include "chrome/browser/extensions/install_observer.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/sync/model/string_ordinal.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -86,20 +87,20 @@ syncer::StringOrdinal GetPageOrdinalForApp(Profile* profile, int app_index);
 
 // Sets a new |page_ordinal| value for the application at the given index
 // on |profile|.
-void SetPageOrdinalForApp(
-    Profile* profile, int app_index,
-    const syncer::StringOrdinal& page_ordinal);
+void SetPageOrdinalForApp(Profile* profile,
+                          int app_index,
+                          const syncer::StringOrdinal& page_ordinal);
 
 // Gets the app launch ordinal value for the application at the given index on
 // |profile|.
-syncer::StringOrdinal GetAppLaunchOrdinalForApp(
-    Profile* profile, int app_index);
+syncer::StringOrdinal GetAppLaunchOrdinalForApp(Profile* profile,
+                                                int app_index);
 
 // Sets a new |page_ordinal| value for the application at the given index
 // on |profile|.
-void SetAppLaunchOrdinalForApp(
-    Profile* profile, int app_index,
-    const syncer::StringOrdinal& app_launch_ordinal);
+void SetAppLaunchOrdinalForApp(Profile* profile,
+                               int app_index,
+                               const syncer::StringOrdinal& app_launch_ordinal);
 
 // Copy the page and app launch ordinal value for the application at the given
 // index on |profile_source| to |profile_destination|.
@@ -120,9 +121,13 @@ void AwaitWebAppQuiescence(std::vector<Profile*> profiles);
 class AppsMatchChecker : public StatusChangeChecker,
                          public extensions::ExtensionRegistryObserver,
                          public extensions::ExtensionPrefsObserver,
-                         public content::NotificationObserver {
+                         public extensions::InstallObserver {
  public:
   AppsMatchChecker();
+
+  AppsMatchChecker(const AppsMatchChecker&) = delete;
+  AppsMatchChecker& operator=(const AppsMatchChecker&) = delete;
+
   ~AppsMatchChecker() override;
 
   // StatusChangeChecker implementation.
@@ -153,10 +158,9 @@ class AppsMatchChecker : public StatusChangeChecker,
   void OnExtensionStateChanged(const std::string& extension_id,
                                bool state) override;
 
-  // Implementation of content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // Implementation of extensions::InstallObserver.
+  void OnAppsReordered(
+      const absl::optional<std::string>& extension_id) override;
 
  private:
   std::vector<Profile*> profiles_;
@@ -167,7 +171,9 @@ class AppsMatchChecker : public StatusChangeChecker,
   std::vector<std::unique_ptr<SyncedExtensionInstaller>>
       synced_extension_installers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppsMatchChecker);
+  base::ScopedMultiSourceObservation<extensions::InstallTracker,
+                                     extensions::InstallObserver>
+      install_tracker_observation_{this};
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_

@@ -4,9 +4,9 @@
 
 #include "components/feed/core/v2/config.h"
 
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/v2/public/stream_type.h"
@@ -56,22 +56,22 @@ void OverrideWithFinch(Config* config) {
           config->max_list_web_feeds_requests_per_day);
 
   config->stale_content_threshold =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "stale_content_threshold_seconds",
           config->stale_content_threshold.InSecondsF()));
 
   config->content_expiration_threshold =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "content_expiration_threshold_seconds",
           config->content_expiration_threshold.InSecondsF()));
 
   config->background_refresh_window_length =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "background_refresh_window_length_seconds",
           config->background_refresh_window_length.InSecondsF()));
 
   config->default_background_refresh_interval =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "default_background_refresh_interval_seconds",
           config->default_background_refresh_interval.InSecondsF()));
 
@@ -80,7 +80,7 @@ void OverrideWithFinch(Config* config) {
       config->max_action_upload_attempts);
 
   config->max_action_age =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "max_action_age_seconds",
           config->max_action_age.InSecondsF()));
 
@@ -89,7 +89,7 @@ void OverrideWithFinch(Config* config) {
       config->max_action_upload_bytes);
 
   config->model_unload_timeout =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "model_unload_timeout_seconds",
           config->model_unload_timeout.InSecondsF()));
 
@@ -113,7 +113,7 @@ void OverrideWithFinch(Config* config) {
           config->send_signed_out_session_logs);
 
   config->session_id_max_age =
-      base::TimeDelta::FromDays(base::GetFieldTrialParamByFeatureAsInt(
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
           kInterestFeedV2, "session_id_max_age_days",
           config->session_id_max_age.InDays()));
 
@@ -128,17 +128,17 @@ void OverrideWithFinch(Config* config) {
           config->webfeed_accelerator_recent_visit_history_days);
 
   config->recommended_feeds_staleness_threshold =
-      base::TimeDelta::FromDays(base::GetFieldTrialParamByFeatureAsInt(
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
           kWebFeed, "recommended_feeds_staleness_threshold_days",
           config->recommended_feeds_staleness_threshold.InDays()));
 
   config->subscribed_feeds_staleness_threshold =
-      base::TimeDelta::FromDays(base::GetFieldTrialParamByFeatureAsInt(
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
           kWebFeed, "subscribed_feeds_staleness_threshold_days",
           config->subscribed_feeds_staleness_threshold.InDays()));
 
   config->web_feed_stale_content_threshold =
-      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+      base::Seconds(base::GetFieldTrialParamByFeatureAsDouble(
           kWebFeed, "web_feed_stale_content_threshold_seconds",
           config->web_feed_stale_content_threshold.InSecondsF()));
 
@@ -155,6 +155,13 @@ const Config& GetFeedConfig() {
     OverrideWithFinch(s_config);
   }
   return *s_config;
+}
+
+// This is a dev setting that updates Config, which is supposed to be constant.
+// TODO(crbug/1152592): remove when not needed anymore.
+void SetUseFeedQueryRequestsForWebFeeds(const bool use_legacy) {
+  Config& config = const_cast<Config&>(GetFeedConfig());
+  config.use_feed_query_requests_for_web_feeds = use_legacy;
 }
 
 void SetFeedConfigForTesting(const Config& config) {

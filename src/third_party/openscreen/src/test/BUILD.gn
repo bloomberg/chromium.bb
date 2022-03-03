@@ -7,9 +7,7 @@ import("//build_overrides/build.gni")
 source_set("test_main") {
   testonly = true
 
-  sources = [
-    "test_main.cc",
-  ]
+  sources = [ "test_main.cc" ]
 
   if (!build_with_chromium) {
     defines = [ "ENABLE_PLATFORM_IMPL" ]
@@ -17,6 +15,7 @@ source_set("test_main") {
 
   deps = [
     "../platform",
+    "../platform:standalone_impl",
     "../third_party/googletest:gtest",
   ]
 }

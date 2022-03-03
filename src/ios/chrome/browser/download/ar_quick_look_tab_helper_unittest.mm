@@ -12,7 +12,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
-#include "ios/chrome/browser/download/usdz_mime_type.h"
+#include "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/test/fakes/fake_ar_quick_look_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -83,8 +83,7 @@ TEST_F(ARQuickLookTabHelperTest, SuccessFileExtention) {
   EXPECT_TRUE(delegate().allowsContentScaling);
 
   // Downloaded file should be located in download directory.
-  base::FilePath file =
-      task_ptr->GetResponseWriter()->AsFileWriter()->file_path();
+  base::FilePath file = task_ptr->GetResponsePath();
   base::FilePath download_dir;
   ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
@@ -122,8 +121,7 @@ TEST_P(ARQuickLookTabHelperTest, SuccessContentType) {
   EXPECT_TRUE(delegate().allowsContentScaling);
 
   // Downloaded file should be located in download directory.
-  base::FilePath file =
-      task_ptr->GetResponseWriter()->AsFileWriter()->file_path();
+  base::FilePath file = task_ptr->GetResponsePath();
   base::FilePath download_dir;
   ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
@@ -163,8 +161,7 @@ TEST_P(ARQuickLookTabHelperTest, DisallowsContentScaling) {
   EXPECT_FALSE(delegate().allowsContentScaling);
 
   // Downloaded file should be located in download directory.
-  base::FilePath file =
-      task_ptr->GetResponseWriter()->AsFileWriter()->file_path();
+  base::FilePath file = task_ptr->GetResponsePath();
   base::FilePath download_dir;
   ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
@@ -186,6 +183,23 @@ TEST_P(ARQuickLookTabHelperTest, DisallowsContentScaling) {
       1);
 }
 
+// Tests allowsContentScaling to be disabled given a specified URL includes a
+// fragment that disallows content scaling and has a query string with more than
+// one key-value pair.
+TEST_P(ARQuickLookTabHelperTest, DisallowsContentScalingExtendedQuery) {
+  auto task = std::make_unique<web::FakeDownloadTask>(
+      GURL("https://test.test/#allowsContentScaling=0&testing=5"), GetParam());
+  task->SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  web::FakeDownloadTask* task_ptr = task.get();
+  tab_helper()->Download(std::move(task));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
+  task_ptr->SetDone(true);
+  EXPECT_FALSE(delegate().allowsContentScaling);
+}
+
 // Tests successfully downloading a USDZ file when the specified URL includes
 // a fragment that is unrelated to content scaling.
 TEST_P(ARQuickLookTabHelperTest, AllowsContentScaling) {
@@ -204,8 +218,7 @@ TEST_P(ARQuickLookTabHelperTest, AllowsContentScaling) {
   EXPECT_TRUE(delegate().allowsContentScaling);
 
   // Downloaded file should be located in download directory.
-  base::FilePath file =
-      task_ptr->GetResponseWriter()->AsFileWriter()->file_path();
+  base::FilePath file = task_ptr->GetResponsePath();
   base::FilePath download_dir;
   ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
@@ -225,6 +238,38 @@ TEST_P(ARQuickLookTabHelperTest, AllowsContentScaling) {
       static_cast<base::HistogramBase::Sample>(
           IOSDownloadARModelState::kSuccessful),
       1);
+}
+
+// Tests allowsContentScaling to be allowed given specified URLs where query
+// value isn't 0
+TEST_P(ARQuickLookTabHelperTest, AllowContentScalingEqualToOne) {
+  auto task = std::make_unique<web::FakeDownloadTask>(
+      GURL("https://test.test/#allowsContentScaling=1"), GetParam());
+  task->SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  web::FakeDownloadTask* task_ptr = task.get();
+  tab_helper()->Download(std::move(task));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
+  task_ptr->SetDone(true);
+  EXPECT_TRUE(delegate().allowsContentScaling);
+}
+
+// Tests allowsContentScaling to be allowed given specified URLs where query
+// value is a random string
+TEST_P(ARQuickLookTabHelperTest, AllowContentScalingEqualToRandomValue) {
+  auto task = std::make_unique<web::FakeDownloadTask>(
+      GURL("https://test.test/#allowsContentScaling=randomThing"), GetParam());
+  task->SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  web::FakeDownloadTask* task_ptr = task.get();
+  tab_helper()->Download(std::move(task));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
+  task_ptr->SetDone(true);
+  EXPECT_TRUE(delegate().allowsContentScaling);
 }
 
 // Tests replacing the download task brefore it's started.

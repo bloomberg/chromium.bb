@@ -23,10 +23,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -58,6 +59,10 @@ class PhishingClassifier {
   // |render_view|. Note that the classifier will not be 'ready' until
   // set_phishing_scorer() is called.
   explicit PhishingClassifier(content::RenderFrame* render_frame);
+
+  PhishingClassifier(const PhishingClassifier&) = delete;
+  PhishingClassifier& operator=(const PhishingClassifier&) = delete;
+
   virtual ~PhishingClassifier();
 
   // Sets a scorer for the classifier to use in computing the phishiness score.
@@ -115,6 +120,10 @@ class PhishingClassifier {
   // Called to extract the visual features of the current page.
   void ExtractVisualFeatures();
 
+  // Callback when off-thread playback of the recorded paint operations is
+  // complete.
+  void OnPlaybackDone(std::unique_ptr<SkBitmap> bitmap);
+
   // Callback when visual feature extraction is complete.
   // If it was successful, computes a score and runs the DoneCallback.
   // If extraction was unsuccessful, runs the DoneCallback with a
@@ -160,8 +169,6 @@ class PhishingClassifier {
   // Used in scheduling BeginFeatureExtraction tasks.
   // These pointers are invalidated if classification is cancelled.
   base::WeakPtrFactory<PhishingClassifier> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PhishingClassifier);
 };
 
 }  // namespace safe_browsing

@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/history_types.h"
@@ -28,6 +27,9 @@ class HistoryTabHelper : public history::Context,
                          public web::WebStateObserver,
                          public web::WebStateUserData<HistoryTabHelper> {
  public:
+  HistoryTabHelper(const HistoryTabHelper&) = delete;
+  HistoryTabHelper& operator=(const HistoryTabHelper&) = delete;
+
   ~HistoryTabHelper() override;
 
   // Updates history with the specified navigation.
@@ -84,8 +86,6 @@ class HistoryTabHelper : public history::Context,
   base::TimeTicks last_load_completion_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_HISTORY_HISTORY_TAB_HELPER_H_

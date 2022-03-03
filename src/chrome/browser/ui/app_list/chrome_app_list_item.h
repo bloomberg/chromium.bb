@@ -37,6 +37,7 @@ class ChromeAppListItem {
 
     void SetFolderId(const std::string& folder_id);
     void SetPosition(const syncer::StringOrdinal& position);
+    void SetName(const std::string& name);
 
    private:
     ChromeAppListItem* const item_;
@@ -64,22 +65,24 @@ class ChromeAppListItem {
   bool is_folder() const { return metadata_->is_folder; }
   bool is_persistent() const { return metadata_->is_persistent; }
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
+  const ash::IconColor& icon_color() const { return metadata_->icon_color; }
   bool is_page_break() const { return metadata_->is_page_break; }
 
   void SetMetadata(std::unique_ptr<ash::AppListItemMetadata> metadata);
   std::unique_ptr<ash::AppListItemMetadata> CloneMetadata() const;
 
+  // Loads the app icon and call SetIcon to update ash when finished.
+  virtual void LoadIcon();
+
   // The following methods set Chrome side data here, and call model updater
   // interfaces that talk to ash directly.
+  void IncrementIconVersion();
   void SetIcon(const gfx::ImageSkia& icon);
-  void SetName(const std::string& name);
-  void SetNameAndShortName(const std::string& name,
-                           const std::string& short_name);
   void SetAppStatus(ash::AppStatus app_status);
   void SetFolderId(const std::string& folder_id);
-  void SetPosition(const syncer::StringOrdinal& position);
   void SetIsPageBreak(bool is_page_break);
   void SetIsPersistent(bool is_persistent);
+  void SetIsNewInstall(bool is_new_install);
 
   // The following methods won't make changes to Ash and it should be called
   // by this item itself or the model updater.
@@ -90,6 +93,10 @@ class ChromeAppListItem {
 
   // Call |Activate()| and dismiss launcher if necessary.
   void PerformActivate(int event_flags);
+
+  // Returns the default position if it exists; otherwise returns an empty
+  // value.
+  syncer::StringOrdinal CalculateDefaultPositionIfApplicable();
 
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
@@ -103,7 +110,8 @@ class ChromeAppListItem {
   // takes the ownership of the returned menu model.
   using GetMenuModelCallback =
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
-  virtual void GetContextMenuModel(GetMenuModelCallback callback);
+  virtual void GetContextMenuModel(bool add_sort_options,
+                                   GetMenuModelCallback callback);
 
   // Returns true iff this item was badged because it's an extension app that
   // has its Android analog installed.
@@ -113,11 +121,13 @@ class ChromeAppListItem {
 
   std::string ToDebugString() const;
 
-  // Set the default position if it exists. Otherwise set the first available
-  // position in the app list if |model_updater| is not null.
-  void SetDefaultPositionIfApplicable(AppListModelUpdater* model_updater);
+  syncer::StringOrdinal CalculateDefaultPositionForTest();
+
+  AppListModelUpdater* model_updater() { return model_updater_; }
 
  protected:
+  friend class ChromeAppListModelUpdater;
+
   ChromeAppListItem(Profile* profile, const std::string& app_id);
 
   Profile* profile() const { return profile_; }
@@ -126,13 +136,16 @@ class ChromeAppListItem {
 
   AppListControllerDelegate* GetController();
 
-  AppListModelUpdater* model_updater() { return model_updater_; }
+  void SetName(const std::string& name);
+  void SetPosition(const syncer::StringOrdinal& position);
+
   void set_model_updater(AppListModelUpdater* model_updater) {
     model_updater_ = model_updater;
   }
 
-  // Updates item position and name from |sync_item|. |sync_item| must be valid.
-  void UpdateFromSync(
+  // Initializes item position and name from `sync_item`. `sync_item` must be
+  // valid.
+  void InitFromSync(
       const app_list::AppListSyncableService::SyncItem* sync_item);
 
   // Get the context menu of a certain app. This could be different for

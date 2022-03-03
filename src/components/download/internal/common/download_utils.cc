@@ -54,6 +54,9 @@ const int kDefaultDownloadExpiredTimeInDays = 90;
 // Default time for an overwritten download to be removed from the history.
 const int kDefaultOverwrittenDownloadExpiredTimeInDays = 90;
 
+// Default buffer size in bytes to write to the download file.
+const int kDefaultDownloadFileBufferSize = 524288;
+
 #if defined(OS_ANDROID)
 // Default maximum length of a downloaded file name on Android.
 const int kDefaultMaxFileNameLengthOnAndroid = 127;
@@ -77,8 +80,55 @@ DownloadItem::DownloadRenameResult RenameDownloadedFileForContentUri(
 
 void AppendExtraHeaders(net::HttpRequestHeaders* headers,
                         DownloadUrlParameters* params) {
+  // Some headers like "Range" or "If-Ranage", etc are managed by download
+  // system, which might be ignored when adding to the actual request.
+  // TODO(xingliu): Print out the conflict headers here.
   for (const auto& header : params->request_headers())
     headers->SetHeaderIfMissing(header.first, header.second);
+}
+
+// Return whether the download is explicitly to fetch part of the file.
+bool IsArbitraryRangeRequest(DownloadSaveInfo* save_info) {
+  if (!base::FeatureList::IsEnabled(features::kDownloadRange))
+    return false;
+  return save_info && save_info->IsArbitraryRangeRequest();
+}
+
+bool IsArbitraryRangeRequest(DownloadUrlParameters* parameters) {
+  DCHECK(parameters);
+  if (!base::FeatureList::IsEnabled(features::kDownloadRange))
+    return false;
+  auto offsets = parameters->range_request_offset();
+  return offsets.first != kInvalidRange || offsets.second != kInvalidRange;
+}
+
+void AppendRangeHeader(net::HttpRequestHeaders* headers,
+                       DownloadUrlParameters* params) {
+  std::string range_header =
+      base::StringPrintf("bytes=%" PRId64 "-", params->offset());
+
+  if (IsArbitraryRangeRequest(params)) {
+    DCHECK(!params->use_if_range());
+    auto range_offsets = params->range_request_offset();
+    std::string range_from, range_to;
+    DCHECK_GE(params->offset(), 0);
+    if (range_offsets.first != kInvalidRange) {
+      // Have a starting byte in the range request.
+      range_from = base::NumberToString(range_offsets.first + params->offset());
+      range_to = range_offsets.second != kInvalidRange
+                     ? base::NumberToString(range_offsets.second)
+                     : "";
+    } else {
+      // Have no starting byte, trying to fetch the last x bytes.
+      DCHECK_NE(range_offsets.second, kInvalidRange);
+      DCHECK_GE(range_offsets.second, params->offset())
+          << "All the bytes have been fetched.";
+      range_to = base::NumberToString(range_offsets.second - params->offset());
+    }
+    range_header = "bytes=" + range_from + "-" + range_to;
+  }
+
+  headers->SetHeader(net::HttpRequestHeaders::kRange, range_header);
 }
 
 }  // namespace
@@ -179,8 +229,28 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       result = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
   }
 
+  // Handle normal errors which are not related to range requests.
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE && !fetch_error_body)
     return result;
+
+  int64_t first_byte = -1;
+  int64_t last_byte = -1;
+  int64_t length = -1;
+
+  // Explicitly range request.
+  if (IsArbitraryRangeRequest(save_info)) {
+    // Only 206 response is allowed.
+    if (http_headers.response_code() != net::HTTP_PARTIAL_CONTENT) {
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+    }
+
+    // Must has valid range response header.
+    if (!http_headers.GetContentRangeFor206(&first_byte, &last_byte, &length)) {
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+    }
+
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
+  }
 
   // The caller is expecting a partial response.
   if (save_info && save_info->offset > 0) {
@@ -196,9 +266,6 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       return DOWNLOAD_INTERRUPT_REASON_NONE;
     }
 
-    int64_t first_byte = -1;
-    int64_t last_byte = -1;
-    int64_t length = -1;
     if (!http_headers.GetContentRangeFor206(&first_byte, &last_byte, &length))
       return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
     DCHECK_GE(first_byte, 0);
@@ -212,6 +279,7 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
     return DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
+  // For non range request.
   if (http_headers.response_code() == net::HTTP_PARTIAL_CONTENT)
     return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
@@ -269,6 +337,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->url = params->url();
   request->request_initiator = params->initiator();
   request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->has_user_gesture = params->has_user_gesture();
 
   if (params->isolation_info().has_value()) {
     request->trusted_params->isolation_info = params->isolation_info().value();
@@ -346,7 +415,8 @@ int GetLoadFlags(DownloadUrlParameters* params, bool has_upload_data) {
 std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
     DownloadUrlParameters* params) {
   auto headers = std::make_unique<net::HttpRequestHeaders>();
-  if (params->offset() == 0) {
+
+  if (params->offset() == 0 && !IsArbitraryRangeRequest(params)) {
     AppendExtraHeaders(headers.get(), params);
     return headers;
   }
@@ -357,20 +427,19 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
   // Strong validator(i.e. etag or last modified) is required in range requests
   // for download resumption and parallel download, unless
   // |kAllowDownloadResumptionWithoutStrongValidators| is enabled.
+  // For arbitrary range request, always allow to send range headers.
   bool allow_resumption =
       has_etag || has_last_modified ||
       base::FeatureList::IsEnabled(
           features::kAllowDownloadResumptionWithoutStrongValidators);
-  if (!allow_resumption) {
+  if (!allow_resumption && !IsArbitraryRangeRequest(params)) {
     DVLOG(1) << "Creating partial request without strong validators.";
     AppendExtraHeaders(headers.get(), params);
     return headers;
   }
 
   // Add "Range" header.
-  std::string range_header =
-      base::StringPrintf("bytes=%" PRId64 "-", params->offset());
-  headers->SetHeader(net::HttpRequestHeaders::kRange, range_header);
+  AppendRangeHeader(headers.get(), params);
 
   // Add "If-Range" headers.
   if (params->use_if_range()) {
@@ -424,6 +493,7 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   in_progress_info.total_bytes = item.GetTotalBytes();
   in_progress_info.current_path = item.GetFullPath();
   in_progress_info.target_path = item.GetTargetFilePath();
+  in_progress_info.reroute_info = item.GetRerouteInfo();
   in_progress_info.received_bytes = item.GetReceivedBytes();
   in_progress_info.start_time = item.GetStartTime();
   in_progress_info.end_time = item.GetEndTime();
@@ -438,6 +508,10 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   in_progress_info.bytes_wasted = item.GetBytesWasted();
   in_progress_info.auto_resume_count = item.GetAutoResumeCount();
   in_progress_info.download_schedule = item.GetDownloadSchedule();
+  in_progress_info.credentials_mode = item.GetCredentialsMode();
+  auto range_request_offset = item.GetRangeRequestOffset();
+  in_progress_info.range_request_from = range_request_offset.first;
+  in_progress_info.range_request_to = range_request_offset.second;
 
   download_info.in_progress_info = in_progress_info;
 
@@ -644,7 +718,7 @@ base::TimeDelta GetExpiredDownloadDeleteTime() {
   int expired_days = base::GetFieldTrialParamByFeatureAsInt(
       features::kDeleteExpiredDownloads, kExpiredDownloadDeleteTimeFinchKey,
       kDefaultDownloadExpiredTimeInDays);
-  return base::TimeDelta::FromDays(expired_days);
+  return base::Days(expired_days);
 }
 
 base::TimeDelta GetOverwrittenDownloadDeleteTime() {
@@ -652,7 +726,13 @@ base::TimeDelta GetOverwrittenDownloadDeleteTime() {
       features::kDeleteOverwrittenDownloads,
       kOverwrittenDownloadDeleteTimeFinchKey,
       kDefaultOverwrittenDownloadExpiredTimeInDays);
-  return base::TimeDelta::FromDays(expired_days);
+  return base::Days(expired_days);
+}
+
+int GetDownloadFileBufferSize() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kAllowFileBufferSizeControl, kDownloadFileBufferSizeFinchKey,
+      kDefaultDownloadFileBufferSize);
 }
 
 }  // namespace download

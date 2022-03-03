@@ -2,6 +2,7 @@
 *_wire.bin
 .DS_Store
 **/.build
+build
 **/Packages
 /*.xcodeproj
 **/xcuserdata/
@@ -45,6 +46,8 @@ project.properties
 proguard-project.txt
 linklint_results
 Makefile
+flatbenchmark
+flatbenchmark.exe
 flatc
 flatc.exe
 flathash
@@ -69,8 +72,6 @@ tests/monsterdata_go_wire.mon
 tests/monsterdata_javascript_wire.mon
 tests/monsterdata_lobster_wire.mon
 tests/monsterdata_rust_wire.mon
-tests/unicode_test.mon
-tests/ts/
 tests/php/
 CMakeLists.txt.user
 CMakeScripts/**
@@ -102,7 +103,10 @@ android/build/
 samples/android/.externalNativeBuild/
 samples/android/.gradle/
 samples/android/build/
-js/flatbuffers.mjs
+js/**/*.js
+js/**/*.d.ts
+mjs/**/*.js
+mjs/**/*.d.ts
 /bazel-bin
 /bazel-flatbuffers
 /bazel-genfiles
@@ -122,6 +126,24 @@ dart/doc/api/
 Cargo.lock
 .corpus**
 .seed**
+.crash**
 grpc/google/
 **/Package.resolved
 .clangd/**
+package-lock.json
+/*.ilk
+/*.pdb
+.clwb
+yarn-error.log
+.cache/
+/flatbuffers.lib
+.cmake/
+**/dist
+**/vendor
+**/go.sum
+flatbuffers.pc
+**/FlatBuffers.Test.Swift.xcodeproj
+**/html/**
+**/latex/**
+# https://cmake.org/cmake/help/latest/module/FetchContent.html#variable:FETCHCONTENT_BASE_DIR
+_deps/

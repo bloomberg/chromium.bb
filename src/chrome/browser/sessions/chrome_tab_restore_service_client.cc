@@ -13,12 +13,13 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 #endif
 
@@ -38,14 +39,15 @@ sessions::LiveTabContext* ChromeTabRestoreServiceClient::CreateLiveTabContext(
     const gfx::Rect& bounds,
     ui::WindowShowState show_state,
     const std::string& workspace,
-    const std::string& user_title) {
+    const std::string& user_title,
+    const std::map<std::string, std::string>& extra_data) {
 #if defined(OS_ANDROID)
   // Android does not support creating a LiveTabContext here.
   NOTREACHED();
   return nullptr;
 #else
   return BrowserLiveTabContext::Create(profile_, app_name, bounds, show_state,
-                                       workspace, user_title);
+                                       workspace, user_title, extra_data);
 #endif
 }
 
@@ -108,14 +110,14 @@ bool ChromeTabRestoreServiceClient::HasLastSession() {
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
-  Profile::ExitType exit_type = profile_->GetLastSessionExitType();
+  ExitType exit_type = ExitTypeService::GetLastSessionExitType(profile_);
   // The previous session crashed and wasn't restored, or was a forced
   // shutdown. Both of which won't have notified us of the browser close so
   // that we need to load the windows from session service (which will have
   // saved them).
   return (!profile_->restored_last_session() && session_service &&
-          (exit_type == Profile::EXIT_CRASHED ||
-           exit_type == Profile::EXIT_SESSION_ENDED));
+          (exit_type == ExitType::kCrashed ||
+           exit_type == ExitType::kForcedShutdown));
 #else
   return false;
 #endif

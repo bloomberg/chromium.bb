@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 
 namespace extensions {
@@ -16,6 +15,11 @@ class Dispatcher;
 class CastExtensionsRendererClient : public ExtensionsRendererClient {
  public:
   CastExtensionsRendererClient();
+
+  CastExtensionsRendererClient(const CastExtensionsRendererClient&) = delete;
+  CastExtensionsRendererClient& operator=(const CastExtensionsRendererClient&) =
+      delete;
+
   ~CastExtensionsRendererClient() override;
 
   // ExtensionsRendererClient implementation.
@@ -28,8 +32,6 @@ class CastExtensionsRendererClient : public ExtensionsRendererClient {
 
  private:
   std::unique_ptr<Dispatcher> dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionsRendererClient);
 };
 
 }  // namespace extensions

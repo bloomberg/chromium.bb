@@ -14,12 +14,13 @@
 
 #include "dawn_native/opengl/CommandBufferGL.h"
 
-#include "common/VertexFormatUtils.h"
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/BindGroupTracker.h"
 #include "dawn_native/CommandEncoder.h"
 #include "dawn_native/Commands.h"
+#include "dawn_native/ExternalTexture.h"
 #include "dawn_native/RenderBundle.h"
+#include "dawn_native/VertexFormat.h"
 #include "dawn_native/opengl/BufferGL.h"
 #include "dawn_native/opengl/ComputePipelineGL.h"
 #include "dawn_native/opengl/DeviceGL.h"
@@ -44,8 +45,9 @@ namespace dawn_native { namespace opengl {
                 case wgpu::IndexFormat::Uint32:
                     return GL_UNSIGNED_INT;
                 case wgpu::IndexFormat::Undefined:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         GLenum VertexFormatType(wgpu::VertexFormat format) {
@@ -178,7 +180,7 @@ namespace dawn_native { namespace opengl {
                         uint64_t offset = mVertexBufferOffsets[slot];
 
                         const VertexBufferInfo& vertexBuffer = mLastPipeline->GetVertexBuffer(slot);
-                        uint32_t components = dawn::VertexFormatNumComponents(attribute.format);
+                        uint32_t components = GetVertexFormatInfo(attribute.format).componentCount;
                         GLenum formatType = VertexFormatType(attribute.format);
 
                         GLboolean normalized = VertexFormatIsNormalized(attribute.format);
@@ -224,12 +226,13 @@ namespace dawn_native { namespace opengl {
             }
 
             void Apply(const OpenGLFunctions& gl) {
+                BeforeApply();
                 for (BindGroupIndex index :
                      IterateBitSet(mDirtyBindGroupsObjectChangedOrIsDynamic)) {
                     ApplyBindGroup(gl, index, mBindGroups[index], mDynamicOffsetCounts[index],
                                    mDynamicOffsets[index].data());
                 }
-                DidApply();
+                AfterApply();
             }
 
           private:
@@ -264,6 +267,7 @@ namespace dawn_native { namespace opengl {
                                     target = GL_UNIFORM_BUFFER;
                                     break;
                                 case wgpu::BufferBindingType::Storage:
+                                case kInternalStorageBufferBinding:
                                 case wgpu::BufferBindingType::ReadOnlyStorage:
                                     target = GL_SHADER_STORAGE_BUFFER;
                                     break;
@@ -336,9 +340,6 @@ namespace dawn_native { namespace opengl {
 
                             GLenum access;
                             switch (bindingInfo.storageTexture.access) {
-                                case wgpu::StorageTextureAccess::ReadOnly:
-                                    access = GL_READ_ONLY;
-                                    break;
                                 case wgpu::StorageTextureAccess::WriteOnly:
                                     access = GL_WRITE_ONLY;
                                     break;
@@ -360,6 +361,29 @@ namespace dawn_native { namespace opengl {
                             gl.BindImageTexture(imageIndex, handle, view->GetBaseMipLevel(),
                                                 isLayered, view->GetBaseArrayLayer(), access,
                                                 texture->GetGLFormat().internalFormat);
+                            break;
+                        }
+
+                        case BindingInfoType::ExternalTexture: {
+                            const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>&
+                                textureViews = mBindGroups[index]
+                                                   ->GetBindingAsExternalTexture(bindingIndex)
+                                                   ->GetTextureViews();
+
+                            // Only single-plane formats are supported right now, so assert only one
+                            // view exists.
+                            ASSERT(textureViews[1].Get() == nullptr);
+                            ASSERT(textureViews[2].Get() == nullptr);
+
+                            TextureView* view = ToBackend(textureViews[0].Get());
+                            GLuint handle = view->GetHandle();
+                            GLenum target = view->GetGLTarget();
+                            GLuint viewIndex = indices[bindingIndex];
+
+                            for (auto unit : mPipeline->GetTextureUnitsForTextureView(viewIndex)) {
+                                gl.ActiveTexture(GL_TEXTURE0 + unit);
+                                gl.BindTexture(target, handle);
+                            }
                             break;
                         }
                     }
@@ -433,11 +457,13 @@ namespace dawn_native { namespace opengl {
             Extent3D validTextureCopyExtent = copySize;
             const TextureBase* texture = textureCopy.texture.Get();
             Extent3D virtualSizeAtLevel = texture->GetMipLevelVirtualSize(textureCopy.mipLevel);
-            if (textureCopy.origin.x + copySize.width > virtualSizeAtLevel.width) {
+            ASSERT(textureCopy.origin.x <= virtualSizeAtLevel.width);
+            ASSERT(textureCopy.origin.y <= virtualSizeAtLevel.height);
+            if (copySize.width > virtualSizeAtLevel.width - textureCopy.origin.x) {
                 ASSERT(texture->GetFormat().isCompressed);
                 validTextureCopyExtent.width = virtualSizeAtLevel.width - textureCopy.origin.x;
             }
-            if (textureCopy.origin.y + copySize.height > virtualSizeAtLevel.height) {
+            if (copySize.height > virtualSizeAtLevel.height - textureCopy.origin.y) {
                 ASSERT(texture->GetFormat().isCompressed);
                 validTextureCopyExtent.height = virtualSizeAtLevel.height - textureCopy.origin.y;
             }
@@ -588,6 +614,10 @@ namespace dawn_native { namespace opengl {
 
                 case Command::CopyBufferToBuffer: {
                     CopyBufferToBufferCmd* copy = mCommands.NextCommand<CopyBufferToBufferCmd>();
+                    if (copy->size == 0) {
+                        // Skip no-op copies.
+                        break;
+                    }
 
                     ToBackend(copy->source)->EnsureDataInitialized();
                     ToBackend(copy->destination)
@@ -606,14 +636,19 @@ namespace dawn_native { namespace opengl {
 
                 case Command::CopyBufferToTexture: {
                     CopyBufferToTextureCmd* copy = mCommands.NextCommand<CopyBufferToTextureCmd>();
+                    if (copy->copySize.width == 0 || copy->copySize.height == 0 ||
+                        copy->copySize.depthOrArrayLayers == 0) {
+                        // Skip no-op copies.
+                        continue;
+                    }
                     auto& src = copy->source;
                     auto& dst = copy->destination;
                     Buffer* buffer = ToBackend(src.buffer.Get());
 
-                    if (dst.aspect == Aspect::Stencil) {
-                        return DAWN_VALIDATION_ERROR(
-                            "Copies to stencil textures unsupported on OpenGL");
-                    }
+                    DAWN_INVALID_IF(
+                        dst.aspect == Aspect::Stencil,
+                        "Copies to stencil textures are unsupported on the OpenGL backend.");
+
                     ASSERT(dst.aspect == Aspect::Color);
 
                     buffer->EnsureDataInitialized();
@@ -640,6 +675,11 @@ namespace dawn_native { namespace opengl {
 
                 case Command::CopyTextureToBuffer: {
                     CopyTextureToBufferCmd* copy = mCommands.NextCommand<CopyTextureToBufferCmd>();
+                    if (copy->copySize.width == 0 || copy->copySize.height == 0 ||
+                        copy->copySize.depthOrArrayLayers == 0) {
+                        // Skip no-op copies.
+                        continue;
+                    }
                     auto& src = copy->source;
                     auto& dst = copy->destination;
                     auto& copySize = copy->copySize;
@@ -747,10 +787,15 @@ namespace dawn_native { namespace opengl {
                 case Command::CopyTextureToTexture: {
                     CopyTextureToTextureCmd* copy =
                         mCommands.NextCommand<CopyTextureToTextureCmd>();
+                    if (copy->copySize.width == 0 || copy->copySize.height == 0 ||
+                        copy->copySize.depthOrArrayLayers == 0) {
+                        // Skip no-op copies.
+                        continue;
+                    }
                     auto& src = copy->source;
                     auto& dst = copy->destination;
 
-                    // TODO(jiawei.shao@intel.com): add workaround for the case that imageExtentSrc
+                    // TODO(crbug.com/dawn/817): add workaround for the case that imageExtentSrc
                     // is not equal to imageExtentDst. For example when copySize fits in the virtual
                     // size of the source image but does not fit in the one of the destination
                     // image.
@@ -780,8 +825,29 @@ namespace dawn_native { namespace opengl {
                     break;
                 }
 
+                case Command::ClearBuffer: {
+                    ClearBufferCmd* cmd = mCommands.NextCommand<ClearBufferCmd>();
+                    if (cmd->size == 0) {
+                        // Skip no-op fills.
+                        break;
+                    }
+                    Buffer* dstBuffer = ToBackend(cmd->buffer.Get());
+
+                    bool clearedToZero =
+                        dstBuffer->EnsureDataInitializedAsDestination(cmd->offset, cmd->size);
+
+                    if (!clearedToZero) {
+                        const std::vector<uint8_t> clearValues(cmd->size, 0u);
+                        gl.BindBuffer(GL_ARRAY_BUFFER, dstBuffer->GetHandle());
+                        gl.BufferSubData(GL_ARRAY_BUFFER, cmd->offset, cmd->size,
+                                         clearValues.data());
+                    }
+
+                    break;
+                }
+
                 case Command::ResolveQuerySet: {
-                    // TODO(hao.x.li@intel.com): Resolve non-precise occlusion query.
+                    // TODO(crbug.com/dawn/434): Resolve non-precise occlusion query.
                     SkipCommand(&mCommands, type);
                     break;
                 }
@@ -796,6 +862,23 @@ namespace dawn_native { namespace opengl {
                     // Due to lack of linux driver support for GL_EXT_debug_marker
                     // extension these functions are skipped.
                     SkipCommand(&mCommands, type);
+                    break;
+                }
+
+                case Command::WriteBuffer: {
+                    WriteBufferCmd* write = mCommands.NextCommand<WriteBufferCmd>();
+                    uint64_t offset = write->offset;
+                    uint64_t size = write->size;
+                    if (size == 0) {
+                        continue;
+                    }
+
+                    Buffer* dstBuffer = ToBackend(write->buffer.Get());
+                    uint8_t* data = mCommands.NextData<uint8_t>(size);
+                    dstBuffer->EnsureDataInitializedAsDestination(offset, size);
+
+                    gl.BindBuffer(GL_ARRAY_BUFFER, dstBuffer->GetHandle());
+                    gl.BufferSubData(GL_ARRAY_BUFFER, offset, size, data);
                     break;
                 }
 
@@ -825,7 +908,6 @@ namespace dawn_native { namespace opengl {
                     bindGroupTracker.Apply(gl);
 
                     gl.DispatchCompute(dispatch->x, dispatch->y, dispatch->z);
-                    // TODO(cwallez@chromium.org): add barriers to the API
                     gl.MemoryBarrier(GL_ALL_BARRIER_BITS);
                     break;
                 }
@@ -839,7 +921,6 @@ namespace dawn_native { namespace opengl {
 
                     gl.BindBuffer(GL_DISPATCH_INDIRECT_BUFFER, indirectBuffer->GetHandle());
                     gl.DispatchComputeIndirect(static_cast<GLintptr>(indirectBufferOffset));
-                    // TODO(cwallez@chromium.org): add barriers to the API
                     gl.MemoryBarrier(GL_ALL_BARRIER_BITS);
                     break;
                 }
@@ -940,8 +1021,6 @@ namespace dawn_native { namespace opengl {
 
                 // Attach depth/stencil buffer.
                 GLenum glAttachment = 0;
-                // TODO(kainino@chromium.org): it may be valid to just always use
-                // GL_DEPTH_STENCIL_ATTACHMENT here.
                 if (format.aspects == (Aspect::Depth | Aspect::Stencil)) {
                     glAttachment = GL_DEPTH_STENCIL_ATTACHMENT;
                 } else if (format.aspects == Aspect::Depth) {
@@ -1012,7 +1091,7 @@ namespace dawn_native { namespace opengl {
                     }
                 }
 
-                if (attachmentInfo->storeOp == wgpu::StoreOp::Clear) {
+                if (attachmentInfo->storeOp == wgpu::StoreOp::Discard) {
                     // TODO(natlee@microsoft.com): call glDiscard to do optimization
                 }
             }
@@ -1125,16 +1204,17 @@ namespace dawn_native { namespace opengl {
 
                 case Command::DrawIndexedIndirect: {
                     DrawIndexedIndirectCmd* draw = iter->NextCommand<DrawIndexedIndirectCmd>();
+
                     vertexStateBufferBindingTracker.Apply(gl);
                     bindGroupTracker.Apply(gl);
 
-                    uint64_t indirectBufferOffset = draw->indirectOffset;
                     Buffer* indirectBuffer = ToBackend(draw->indirectBuffer.Get());
+                    ASSERT(indirectBuffer != nullptr);
 
                     gl.BindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer->GetHandle());
                     gl.DrawElementsIndirect(
                         lastPipeline->GetGLPrimitiveTopology(), indexBufferFormat,
-                        reinterpret_cast<void*>(static_cast<intptr_t>(indirectBufferOffset)));
+                        reinterpret_cast<void*>(static_cast<intptr_t>(draw->indirectOffset)));
                     break;
                 }
 

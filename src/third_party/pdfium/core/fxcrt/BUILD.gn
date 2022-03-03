@@ -5,6 +5,11 @@
 import("../../pdfium.gni")
 import("../../testing/test.gni")
 
+source_set("unowned_ptr") {
+  sources = [ "unowned_ptr.h" ]
+  configs += [ "../../:pdfium_strict_config" ]
+}
+
 source_set("fxcrt") {
   sources = [
     "autonuller.h",
@@ -36,10 +41,12 @@ source_set("fxcrt") {
     "fx_bidi.h",
     "fx_codepage.cpp",
     "fx_codepage.h",
+    "fx_codepage_forward.h",
     "fx_coordinates.cpp",
     "fx_coordinates.h",
     "fx_extension.cpp",
     "fx_extension.h",
+    "fx_folder.h",
     "fx_memory.cpp",
     "fx_memory.h",
     "fx_memory_wrappers.h",
@@ -54,8 +61,10 @@ source_set("fxcrt") {
     "fx_string.h",
     "fx_system.cpp",
     "fx_system.h",
+    "fx_types.h",
     "fx_unicode.cpp",
     "fx_unicode.h",
+    "mask.h",
     "maybe_owned.h",
     "observed_ptr.cpp",
     "observed_ptr.h",
@@ -64,12 +73,13 @@ source_set("fxcrt") {
     "retained_tree_node.h",
     "scoped_set_insertion.h",
     "shared_copy_on_write.h",
+    "span_util.h",
+    "stl_util.h",
     "string_data_template.cpp",
     "string_data_template.h",
     "string_pool_template.h",
     "string_view_template.h",
     "tree_node.h",
-    "unowned_ptr.h",
     "weak_ptr.h",
     "widestring.cpp",
     "widestring.h",
@@ -101,27 +111,28 @@ source_set("fxcrt") {
     "../../third_party:fx_lcms2",
     "../../third_party:fx_libopenjpeg",
     "../../third_party:fx_tiff",
-    "../../third_party:pdfium_base",
     "../../xfa/*",
   ]
   deps = [ "../../third_party:pdfium_base" ]
   public_deps = [
+    ":unowned_ptr",
     "../../:freetype_common",
     "../../third_party:pdfium_base",
     "//third_party/icu:icuuc",
   ]
-  allow_circular_includes_from = [ "../../third_party:pdfium_base" ]
 
   if (is_posix || is_fuchsia) {
     sources += [
       "cfx_fileaccess_posix.cpp",
       "cfx_fileaccess_posix.h",
+      "fx_folder_posix.cpp",
     ]
   }
   if (is_win) {
     sources += [
       "cfx_fileaccess_windows.cpp",
       "cfx_fileaccess_windows.h",
+      "fx_folder_windows.cpp",
     ]
   }
   if (pdf_enable_xfa) {
@@ -151,6 +162,7 @@ pdfium_unittest_source_set("unittests") {
     "fx_random_unittest.cpp",
     "fx_string_unittest.cpp",
     "fx_system_unittest.cpp",
+    "mask_unittest.cpp",
     "maybe_owned_unittest.cpp",
     "observed_ptr_unittest.cpp",
     "pdfium_span_unittest.cpp",
@@ -158,6 +170,7 @@ pdfium_unittest_source_set("unittests") {
     "retained_tree_node_unittest.cpp",
     "scoped_set_insertion_unittest.cpp",
     "shared_copy_on_write_unittest.cpp",
+    "span_util_unittest.cpp",
     "string_pool_template_unittest.cpp",
     "tree_node_unittest.cpp",
     "unowned_ptr_unittest.cpp",

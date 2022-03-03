@@ -555,18 +555,11 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   inline void Isb();
   inline void Csdb();
 
-  // Removes current frame and its arguments from the stack preserving
-  // the arguments and a return address pushed to the stack for the next call.
-  // Both |callee_args_count| and |caller_args_count| do not include
-  // receiver. |callee_args_count| is not modified. |caller_args_count| is
-  // trashed.
-  void PrepareForTailCall(Register callee_args_count,
-                          Register caller_args_count, Register scratch0,
-                          Register scratch1);
-
   inline void SmiUntag(Register dst, Register src);
   inline void SmiUntag(Register dst, const MemOperand& src);
   inline void SmiUntag(Register smi);
+
+  inline void SmiToInt32(Register smi);
 
   // Calls Abort(msg) if the condition cond is not satisfied.
   // Use --debug_code to enable.
@@ -584,8 +577,8 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   inline void Debug(const char* message, uint32_t code, Instr params = BREAK);
 
-  void Trap() override;
-  void DebugBreak() override;
+  void Trap();
+  void DebugBreak();
 
   // Print a message to stderr and abort execution.
   void Abort(AbortReason reason);
@@ -652,7 +645,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Define a jump/call target and bind a label.
   inline void BindJumpOrCallTarget(Label* label);
 
-  static unsigned CountClearHalfWords(uint64_t imm, unsigned reg_size);
+  static unsigned CountSetHalfWords(uint64_t imm, unsigned reg_size);
 
   CPURegList* TmpList() { return &tmp_list_; }
   CPURegList* FPTmpList() { return &fptmp_list_; }
@@ -837,17 +830,20 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   template <StoreLRMode lr_mode = kDontStoreLR>
   void Push(const Register& src0, const VRegister& src1);
 
-  void SaveRegisters(RegList registers);
-  void RestoreRegisters(RegList registers);
+  void MaybeSaveRegisters(RegList registers);
+  void MaybeRestoreRegisters(RegList registers);
 
-  void CallRecordWriteStub(Register object, Operand offset,
-                           RememberedSetAction remembered_set_action,
-                           SaveFPRegsMode fp_mode);
-  void CallRecordWriteStub(Register object, Operand offset,
-                           RememberedSetAction remembered_set_action,
-                           SaveFPRegsMode fp_mode, Address wasm_target);
   void CallEphemeronKeyBarrier(Register object, Operand offset,
                                SaveFPRegsMode fp_mode);
+
+  void CallRecordWriteStubSaveRegisters(
+      Register object, Operand offset,
+      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      StubCallMode mode = StubCallMode::kCallBuiltinPointer);
+  void CallRecordWriteStub(
+      Register object, Register slot_address,
+      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      StubCallMode mode = StubCallMode::kCallBuiltinPointer);
 
   // For a given |object| and |offset|:
   //   - Move |object| to |dst_object|.
@@ -950,15 +946,14 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
             int shift_amount = 0);
   void Movi(const VRegister& vd, uint64_t hi, uint64_t lo);
 
-  void LoadFromConstantsTable(Register destination,
-                              int constant_index) override;
-  void LoadRootRegisterOffset(Register destination, intptr_t offset) override;
-  void LoadRootRelative(Register destination, int32_t offset) override;
+  void LoadFromConstantsTable(Register destination, int constant_index) final;
+  void LoadRootRegisterOffset(Register destination, intptr_t offset) final;
+  void LoadRootRelative(Register destination, int32_t offset) final;
 
   void Jump(Register target, Condition cond = al);
   void Jump(Address target, RelocInfo::Mode rmode, Condition cond = al);
   void Jump(Handle<Code> code, RelocInfo::Mode rmode, Condition cond = al);
-  void Jump(const ExternalReference& reference) override;
+  void Jump(const ExternalReference& reference);
 
   void Call(Register target);
   void Call(Address target, RelocInfo::Mode rmode);
@@ -968,35 +963,45 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Generate an indirect call (for when a direct call's range is not adequate).
   void IndirectCall(Address target, RelocInfo::Mode rmode);
 
-  // Load the builtin given by the Smi in |builtin_index| into the same
+  // Load the builtin given by the Smi in |builtin_| into the same
   // register.
-  void LoadEntryFromBuiltinIndex(Register builtin_index);
-  void LoadEntryFromBuiltinIndex(Builtins::Name builtin_index,
-                                 Register destination);
-  MemOperand EntryFromBuiltinIndexAsOperand(Builtins::Name builtin_index);
-  void CallBuiltinByIndex(Register builtin_index) override;
-  void CallBuiltin(Builtins::Name builtin) {
-    // TODO(11527): drop the int overload in favour of the Builtins::Name one.
-    return CallBuiltin(static_cast<int>(builtin));
-  }
-  void CallBuiltin(int builtin_index);
-  void TailCallBuiltin(Builtins::Name builtin) {
-    // TODO(11527): drop the int overload in favour of the Builtins::Name one.
-    return TailCallBuiltin(static_cast<int>(builtin));
-  }
-  void TailCallBuiltin(int builtin_index);
+  void LoadEntryFromBuiltinIndex(Register builtin);
+  void LoadEntryFromBuiltin(Builtin builtin, Register destination);
+  MemOperand EntryFromBuiltinAsOperand(Builtin builtin);
+  void CallBuiltinByIndex(Register builtin);
+  void CallBuiltin(Builtin builtin);
+  void TailCallBuiltin(Builtin builtin);
 
-  void LoadCodeObjectEntry(Register destination, Register code_object) override;
-  void CallCodeObject(Register code_object) override;
+  void LoadCodeObjectEntry(Register destination, Register code_object);
+  void CallCodeObject(Register code_object);
   void JumpCodeObject(Register code_object,
-                      JumpMode jump_mode = JumpMode::kJump) override;
+                      JumpMode jump_mode = JumpMode::kJump);
+
+  // Load code entry point from the CodeDataContainer object.
+  void LoadCodeDataContainerEntry(Register destination,
+                                  Register code_data_container_object);
+  // Load code entry point from the CodeDataContainer object and compute
+  // Code object pointer out of it. Must not be used for CodeDataContainers
+  // corresponding to builtins, because their entry points values point to
+  // the embedded instruction stream in .text section.
+  void LoadCodeDataContainerCodeNonBuiltin(Register destination,
+                                           Register code_data_container_object);
+  void CallCodeDataContainerObject(Register code_data_container_object);
+  void JumpCodeDataContainerObject(Register code_data_container_object,
+                                   JumpMode jump_mode = JumpMode::kJump);
+
+  // Helper functions that dispatch either to Call/JumpCodeObject or to
+  // Call/JumpCodeDataContainerObject.
+  void LoadCodeTEntry(Register destination, Register code);
+  void CallCodeTObject(Register code);
+  void JumpCodeTObject(Register code, JumpMode jump_mode = JumpMode::kJump);
 
   // Generates an instruction sequence s.t. the return address points to the
   // instruction following the call.
   // The return address on the stack is used by frame iteration.
   void StoreReturnAddressAndCall(Register target);
 
-  void CallForDeoptimization(Builtins::Name target, int deopt_id, Label* exit,
+  void CallForDeoptimization(Builtin target, int deopt_id, Label* exit,
                              DeoptimizeKind kind, Label* ret,
                              Label* jump_deoptimization_entry_label);
 
@@ -1189,6 +1194,29 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   LSPAIR_MACRO_LIST(DECLARE_FUNCTION)
 #undef DECLARE_FUNCTION
 
+  void St1(const VRegister& vt, const MemOperand& dst) {
+    DCHECK(allow_macro_instructions());
+    st1(vt, dst);
+  }
+  void St1(const VRegister& vt, const VRegister& vt2, const MemOperand& dst) {
+    DCHECK(allow_macro_instructions());
+    st1(vt, vt2, dst);
+  }
+  void St1(const VRegister& vt, const VRegister& vt2, const VRegister& vt3,
+           const MemOperand& dst) {
+    DCHECK(allow_macro_instructions());
+    st1(vt, vt2, vt3, dst);
+  }
+  void St1(const VRegister& vt, const VRegister& vt2, const VRegister& vt3,
+           const VRegister& vt4, const MemOperand& dst) {
+    DCHECK(allow_macro_instructions());
+    st1(vt, vt2, vt3, vt4, dst);
+  }
+  void St1(const VRegister& vt, int lane, const MemOperand& dst) {
+    DCHECK(allow_macro_instructions());
+    st1(vt, lane, dst);
+  }
+
 #define NEON_2VREG_SHIFT_MACRO_LIST(V) \
   V(rshrn, Rshrn)                      \
   V(rshrn2, Rshrn2)                    \
@@ -1276,7 +1304,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 #undef DECLARE_FUNCTION
 
   // Load an object from the root table.
-  void LoadRoot(Register destination, RootIndex index) override;
+  void LoadRoot(Register destination, RootIndex index) final;
   void PushRoot(RootIndex index);
 
   inline void Ret(const Register& xn = lr);
@@ -1315,6 +1343,10 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     DCHECK(allow_macro_instructions());
     cmlt(vd, vn, imm);
   }
+  void Cmle(const VRegister& vd, const VRegister& vn, int imm) {
+    DCHECK(allow_macro_instructions());
+    cmle(vd, vn, imm);
+  }
 
   inline void Neg(const Register& rd, const Operand& operand);
   inline void Negs(const Register& rd, const Operand& operand);
@@ -1344,8 +1376,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // This is an alternative to embedding the {CodeObject} handle as a reference.
   void ComputeCodeStartAddress(const Register& rd);
 
-  void ResetSpeculationPoisonRegister();
-
   // ---------------------------------------------------------------------------
   // Pointer compression Support
 
@@ -1370,6 +1400,9 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void StoreTaggedField(const Register& value,
                         const MemOperand& dst_field_operand);
 
+  void AtomicStoreTaggedField(const Register& value, const Register& dst_base,
+                              const Register& dst_index, const Register& temp);
+
   void DecompressTaggedSigned(const Register& destination,
                               const MemOperand& field_operand);
   void DecompressTaggedPointer(const Register& destination,
@@ -1379,6 +1412,17 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void DecompressAnyTagged(const Register& destination,
                            const MemOperand& field_operand);
 
+  void AtomicDecompressTaggedSigned(const Register& destination,
+                                    const Register& base, const Register& index,
+                                    const Register& temp);
+  void AtomicDecompressTaggedPointer(const Register& destination,
+                                     const Register& base,
+                                     const Register& index,
+                                     const Register& temp);
+  void AtomicDecompressAnyTagged(const Register& destination,
+                                 const Register& base, const Register& index,
+                                 const Register& temp);
+
   // Restore FP and LR from the values stored in the current frame. This will
   // authenticate the LR when pointer authentication is enabled.
   void RestoreFPAndLR();
@@ -1387,11 +1431,34 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void StoreReturnAddressInWasmExitFrame(Label* return_location);
 #endif  // V8_ENABLE_WEBASSEMBLY
 
-  // Wasm SIMD helpers. These instructions don't have direct lowering to native
-  // instructions. These helpers allow us to define the optimal code sequence,
-  // and be used in both TurboFan and Liftoff.
+  // Wasm helpers. These instructions don't have direct lowering
+  // to native instructions. These helpers allow us to define the optimal code
+  // sequence, and be used in both TurboFan and Liftoff.
+  void PopcntHelper(Register dst, Register src);
   void I64x2BitMask(Register dst, VRegister src);
   void I64x2AllTrue(Register dst, VRegister src);
+
+  // ---------------------------------------------------------------------------
+  // V8 Heap sandbox support
+
+  // Transform a CagedPointer from/to its encoded form, which is used when the
+  // pointer is stored on the heap and ensures that the pointer will always
+  // point into the virtual memory cage.
+  void EncodeCagedPointer(const Register& value);
+  void DecodeCagedPointer(const Register& value);
+
+  // Load and decode a CagedPointer from the heap.
+  void LoadCagedPointerField(const Register& destination,
+                             const MemOperand& field_operand);
+  // Encode and store a CagedPointer to the heap.
+  void StoreCagedPointerField(const Register& value,
+                              const MemOperand& dst_field_operand);
+
+  // Loads a field containing off-heap pointer and does necessary decoding
+  // if V8 heap sandbox is enabled.
+  void LoadExternalPointerField(Register destination, MemOperand field_operand,
+                                ExternalPointerTag tag,
+                                Register isolate_root = Register::no_reg());
 
  protected:
   // The actual Push and Pop implementations. These don't generate any code
@@ -1462,11 +1529,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
                                 byte* pc);
 
   void JumpHelper(int64_t offset, RelocInfo::Mode rmode, Condition cond = al);
-
-  void CallRecordWriteStub(Register object, Operand offset,
-                           RememberedSetAction remembered_set_action,
-                           SaveFPRegsMode fp_mode, int builtin_index,
-                           Address wasm_target);
 };
 
 class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
@@ -1573,11 +1635,6 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   inline void Umsubl(const Register& rd, const Register& rn, const Register& rm,
                      const Register& ra);
 
-  void Cmle(const VRegister& vd, const VRegister& vn, int imm) {
-    DCHECK(allow_macro_instructions());
-    cmle(vd, vn, imm);
-  }
-
   void Ld1(const VRegister& vt, const MemOperand& src) {
     DCHECK(allow_macro_instructions());
     ld1(vt, src);
@@ -1646,28 +1703,6 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
             const VRegister& vt4, const MemOperand& src) {
     DCHECK(allow_macro_instructions());
     ld4r(vt, vt2, vt3, vt4, src);
-  }
-  void St1(const VRegister& vt, const MemOperand& dst) {
-    DCHECK(allow_macro_instructions());
-    st1(vt, dst);
-  }
-  void St1(const VRegister& vt, const VRegister& vt2, const MemOperand& dst) {
-    DCHECK(allow_macro_instructions());
-    st1(vt, vt2, dst);
-  }
-  void St1(const VRegister& vt, const VRegister& vt2, const VRegister& vt3,
-           const MemOperand& dst) {
-    DCHECK(allow_macro_instructions());
-    st1(vt, vt2, vt3, dst);
-  }
-  void St1(const VRegister& vt, const VRegister& vt2, const VRegister& vt3,
-           const VRegister& vt4, const MemOperand& dst) {
-    DCHECK(allow_macro_instructions());
-    st1(vt, vt2, vt3, vt4, dst);
-  }
-  void St1(const VRegister& vt, int lane, const MemOperand& dst) {
-    DCHECK(allow_macro_instructions());
-    st1(vt, lane, dst);
   }
   void St2(const VRegister& vt, const VRegister& vt2, const MemOperand& dst) {
     DCHECK(allow_macro_instructions());
@@ -1826,11 +1861,18 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   void AssertNotSmi(Register object,
                     AbortReason reason = AbortReason::kOperandIsASmi);
 
+  // Abort execution if argument is not a CodeT, enabled via --debug-code.
+  void AssertCodeT(Register object);
+
   // Abort execution if argument is not a Constructor, enabled via --debug-code.
   void AssertConstructor(Register object);
 
   // Abort execution if argument is not a JSFunction, enabled via --debug-code.
   void AssertFunction(Register object);
+
+  // Abort execution if argument is not a callable JSFunction, enabled via
+  // --debug-code.
+  void AssertCallableFunction(Register object);
 
   // Abort execution if argument is not a JSGeneratorObject (or subclass),
   // enabled via --debug-code.
@@ -1869,7 +1911,7 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
                                bool builtin_exit_frame = false);
 
   // Generates a trampoline to jump to the off-heap instruction stream.
-  void JumpToInstructionStream(Address entry);
+  void JumpToOffHeapInstructionStream(Address entry);
 
   // Registers used through the invocation chain are hard-coded.
   // We force passing the parameters to ensure the contracts are correctly
@@ -2007,9 +2049,17 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // StatsCounter support
 
   void IncrementCounter(StatsCounter* counter, int value, Register scratch1,
-                        Register scratch2);
+                        Register scratch2) {
+    if (!FLAG_native_code_counters) return;
+    EmitIncrementCounter(counter, value, scratch1, scratch2);
+  }
+  void EmitIncrementCounter(StatsCounter* counter, int value, Register scratch1,
+                            Register scratch2);
   void DecrementCounter(StatsCounter* counter, int value, Register scratch1,
-                        Register scratch2);
+                        Register scratch2) {
+    if (!FLAG_native_code_counters) return;
+    EmitIncrementCounter(counter, -value, scratch1, scratch2);
+  }
 
   // ---------------------------------------------------------------------------
   // Stack limit utilities

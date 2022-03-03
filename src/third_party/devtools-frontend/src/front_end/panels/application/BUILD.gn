@@ -4,16 +4,34 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "appManifestView.css",
+    "backForwardCacheView.css",
+    "backgroundServiceView.css",
+    "cookieItemsView.css",
+    "frameDetailsReportView.css",
+    "indexedDBViews.css",
+    "reportingApiReportsView.css",
+    "resourcesPanel.css",
+    "resourcesSidebar.css",
+    "serviceWorkerCacheViews.css",
+    "serviceWorkerUpdateCycleView.css",
+    "serviceWorkersView.css",
+    "storageView.css",
+  ]
+}
 
 devtools_module("application") {
   sources = [
     "AppManifestView.ts",
-    "ApplicationCacheItemsView.ts",
-    "ApplicationCacheModel.ts",
     "ApplicationPanelCacheSection.ts",
     "ApplicationPanelSidebar.ts",
     "ApplicationPanelTreeElement.ts",
+    "BackForwardCacheStrings.ts",
     "BackForwardCacheView.ts",
     "BackgroundServiceModel.ts",
     "BackgroundServiceView.ts",
@@ -26,6 +44,9 @@ devtools_module("application") {
     "IndexedDBModel.ts",
     "IndexedDBViews.ts",
     "OpenedWindowDetailsView.ts",
+    "ReportingApiReportsView.ts",
+    "ReportingApiTreeElement.ts",
+    "ReportingApiView.ts",
     "ResourcesPanel.ts",
     "ServiceWorkerCacheViews.ts",
     "ServiceWorkerUpdateCycleView.ts",
@@ -51,6 +72,7 @@ devtools_module("application") {
     "../../models/workspace:bundle",
     "../../panels/mobile_throttling:bundle",
     "../../panels/network:bundle",
+    "../../panels/network/forward:bundle",
     "../../ui/components/data_grid:bundle",
     "../../ui/components/expandable_list:bundle",
     "../../ui/components/report_view:bundle",
@@ -68,7 +90,11 @@ devtools_module("application") {
 devtools_entrypoint("bundle") {
   entrypoint = "application.ts"
 
-  deps = [ ":application" ]
+  deps = [
+    ":application",
+    ":css_files",
+    "../../ui/legacy:css_files",
+  ]
 
   visibility = [
     ":*",
@@ -78,10 +104,6 @@ devtools_entrypoint("bundle") {
   ]
 
   visibility += devtools_panels_visibility
-}
-
-copy_to_gen("legacy_css") {
-  sources = [ "serviceWorkerUpdateCycleView.css" ]
 }
 
 devtools_entrypoint("legacy") {

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
@@ -32,6 +33,9 @@ class SaveCardBubbleViews : public AutofillBubbleBase,
   SaveCardBubbleViews(views::View* anchor_view,
                       content::WebContents* web_contents,
                       SaveCardBubbleController* controller);
+
+  SaveCardBubbleViews(const SaveCardBubbleViews&) = delete;
+  SaveCardBubbleViews& operator=(const SaveCardBubbleViews&) = delete;
 
   void Show(DisplayReason reason);
 
@@ -74,14 +78,12 @@ class SaveCardBubbleViews : public AutofillBubbleBase,
  private:
   friend class SaveCardBubbleViewsFullFormBrowserTest;
 
-  views::View* footnote_view_ = nullptr;
+  raw_ptr<views::View> footnote_view_ = nullptr;
 
-  SaveCardBubbleController* controller_;  // Weak reference.
+  raw_ptr<SaveCardBubbleController> controller_;  // Weak reference.
 
   PaymentsBubbleClosedReason closed_reason_ =
       PaymentsBubbleClosedReason::kUnknown;
-
-  DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };
 
 }  // namespace autofill

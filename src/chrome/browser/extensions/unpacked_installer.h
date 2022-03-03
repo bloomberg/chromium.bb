@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
@@ -39,6 +39,9 @@ class UnpackedInstaller
   using CompletionCallback = base::OnceCallback<void(const Extension* extension,
                                                      const base::FilePath&,
                                                      const std::string&)>;
+
+  UnpackedInstaller(const UnpackedInstaller&) = delete;
+  UnpackedInstaller& operator=(const UnpackedInstaller&) = delete;
 
   static scoped_refptr<UnpackedInstaller> Create(
       ExtensionService* extension_service);
@@ -145,7 +148,7 @@ class UnpackedInstaller
   base::WeakPtr<ExtensionService> service_weak_;
 
   // The Profile the extension is being installed in.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // The pathname of the directory to load from, which is an absolute path
   // after GetAbsolutePath has been called.
@@ -181,8 +184,6 @@ class UnpackedInstaller
 
   // Specify an install param.
   absl::optional<std::string> install_param_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnpackedInstaller);
 };
 
 }  // namespace extensions

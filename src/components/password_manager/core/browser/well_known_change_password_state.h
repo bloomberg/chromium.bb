@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -37,8 +38,7 @@ class WellKnownChangePasswordState {
   // Time to wait for the callback from AffiliationService before finishing
   // processing. A callback signals the prefetch action was completed regardless
   // if the response arrived or not.
-  static constexpr base::TimeDelta kPrefetchTimeout =
-      base::TimeDelta::FromSeconds(2);
+  static constexpr base::TimeDelta kPrefetchTimeout = base::Seconds(2);
 
   explicit WellKnownChangePasswordState(
       password_manager::WellKnownChangePasswordStateDelegate* delegate);
@@ -75,7 +75,7 @@ class WellKnownChangePasswordState {
   // supported.
   bool SupportsWellKnownChangePasswordUrl() const;
 
-  WellKnownChangePasswordStateDelegate* delegate_ = nullptr;
+  raw_ptr<WellKnownChangePasswordStateDelegate> delegate_ = nullptr;
   int non_existing_resource_response_code_ = 0;
   int change_password_response_code_ = 0;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
@@ -24,16 +23,23 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
  public:
   InputMethodContextImplGtk(ui::LinuxInputMethodContextDelegate* delegate,
                             bool is_simple);
+
+  InputMethodContextImplGtk(const InputMethodContextImplGtk&) = delete;
+  InputMethodContextImplGtk& operator=(const InputMethodContextImplGtk&) =
+      delete;
+
   ~InputMethodContextImplGtk() override;
 
   // Overridden from ui::LinuxInputMethodContext
   bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
+  bool IsPeekKeyEvent(const ui::KeyEvent& key_event) override;
   void SetCursorLocation(const gfx::Rect& rect) override;
   void Reset() override;
   void Focus() override;
   void Blur() override;
   void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
+  void SetContentType(ui::TextInputType input_type, int input_flags) override;
 
  private:
   // GtkIMContext event handlers.  They are shared among |gtk_context_simple_|
@@ -78,8 +84,6 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
 
   // Last known caret bounds relative to the screen coordinates, in DIPs.
   gfx::Rect last_caret_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodContextImplGtk);
 };
 
 }  // namespace gtk

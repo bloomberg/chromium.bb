@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
@@ -72,14 +71,16 @@ struct KioskModeInfo : public Extension::ManifestData {
 class KioskModeHandler : public ManifestHandler {
  public:
   KioskModeHandler();
+
+  KioskModeHandler(const KioskModeHandler&) = delete;
+  KioskModeHandler& operator=(const KioskModeHandler&) = delete;
+
   ~KioskModeHandler() override;
 
   bool Parse(Extension* extension, std::u16string* error) override;
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskModeHandler);
 };
 
 }  // namespace extensions

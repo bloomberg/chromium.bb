@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for StructuredTensor."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.framework import constant_op
@@ -256,7 +252,7 @@ class StructuredTensorSliceTest(test_util.TensorFlowTestCase,
   ])
   def testGetItemError(self, slice_spec, error, exception=ValueError):
     struct = structured_tensor.StructuredTensor.from_pyval(EXAMPLE_STRUCT)
-    with self.assertRaisesRegexp(exception, error):
+    with self.assertRaisesRegex(exception, error):
       struct.__getitem__(slice_spec)
 
   @parameterized.parameters([
@@ -266,7 +262,7 @@ class StructuredTensorSliceTest(test_util.TensorFlowTestCase,
   def testGetItemFromVectorError(self, slice_spec, error, exception=ValueError):
     struct = structured_tensor.StructuredTensor.from_pyval(
         EXAMPLE_STRUCT_VECTOR)
-    with self.assertRaisesRegexp(exception, error):
+    with self.assertRaisesRegex(exception, error):
       struct.__getitem__(slice_spec)
 
 

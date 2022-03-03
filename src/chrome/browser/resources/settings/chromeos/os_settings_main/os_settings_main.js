@@ -3,18 +3,40 @@
 // found in the LICENSE file.
 
 /**
+ * @fileoverview
+ * 'os-settings-main' displays the selected settings page.
+ */
+import '//resources/cr_components/managed_footnote/managed_footnote.js';
+import '//resources/cr_elements/hidden_style_css.m.js';
+import '//resources/cr_elements/icons.m.js';
+import '//resources/js/search_highlight_utils.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../os_about_page/os_about_page.js';
+import '../os_settings_page/os_settings_page.js';
+import '../../prefs/prefs.js';
+import '../../settings_shared_css.js';
+import '../../settings_vars_css.js';
+
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {PromiseResolver} from '//resources/js/promise_resolver.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../../i18n_setup.js';
+import {Route, Router} from '../../router.js';
+import {OSPageVisibility, osPageVisibility} from '../os_page_visibility.m.js';
+import {routes} from '../os_route.m.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
+
+/**
  * @typedef {{about: boolean, settings: boolean}}
  */
 let MainPageVisibility;
 
-/**
- * @fileoverview
- * 'os-settings-main' displays the selected settings page.
- */
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'os-settings-main',
 
-  behaviors: [settings.RouteObserverBehavior],
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     /**
@@ -48,22 +70,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether a search operation is in progress or previous search results are
-     * being displayed.
-     * @private {boolean}
-     */
-    inSearchMode_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
-    showNoResultsFound_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private */
     showingSubpage_: Boolean,
 
@@ -80,6 +86,8 @@ Polymer({
     pageVisibility: Object,
 
     showAndroidApps: Boolean,
+
+    showArcvmManageUsb: Boolean,
 
     showCrostini: Boolean,
 
@@ -133,11 +141,11 @@ Polymer({
   /**
    * Updates the hidden state of the about and settings pages based on the
    * current route.
-   * @param {!settings.Route} newRoute
+   * @param {!Route} newRoute
    */
   currentRouteChanged(newRoute) {
-    const inAbout = settings.routes.ABOUT.contains(
-        settings.Router.getInstance().getCurrentRoute());
+    const inAbout =
+        routes.ABOUT.contains(Router.getInstance().getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
     if (!newRoute.isSubpage()) {
@@ -179,66 +187,10 @@ Polymer({
   },
 
   /**
-   * Returns the root page (if it exists) for a route.
-   * @param {!settings.Route} route
-   * @return {?OsSettingsPageElement}
-   */
-  getPage_(route) {
-    if (settings.routes.BASIC.contains(route) ||
-        (settings.routes.ADVANCED &&
-         settings.routes.ADVANCED.contains(route))) {
-      return /** @type {?OsSettingsPageElement} */ (
-          this.$$('os-settings-page'));
-    }
-    assertNotReached();
-  },
-
-  /**
-   * @param {string} query
-   * @return {!Promise} A promise indicating that searching finished.
-   */
-  searchContents(query) {
-    // Trigger rendering of the basic and advanced pages and search once ready.
-    this.inSearchMode_ = true;
-    this.toolbarSpinnerActive = true;
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const whenSearchDone =
-            assert(this.getPage_(settings.routes.BASIC)).searchContents(query);
-        whenSearchDone.then(result => {
-          resolve();
-          if (result.canceled) {
-            // Nothing to do here. A previous search request was canceled
-            // because a new search request was issued with a different query
-            // before the previous completed.
-            return;
-          }
-
-          this.toolbarSpinnerActive = false;
-          this.inSearchMode_ = !result.wasClearSearch;
-          this.showNoResultsFound_ =
-              this.inSearchMode_ && !result.didFindMatches;
-
-          if (this.inSearchMode_) {
-            Polymer.IronA11yAnnouncer.requestAvailability();
-            this.fire('iron-announce', {
-              text: this.showNoResultsFound_ ?
-                  loadTimeData.getString('searchNoResults') :
-                  loadTimeData.getStringF('searchResults', query)
-            });
-          }
-        });
-      }, 0);
-    });
-  },
-
-  /**
    * @return {boolean}
    * @private
    */
   showManagedHeader_() {
-    return !this.inSearchMode_ && !this.showingSubpage_ &&
-        !this.showPages_.about;
+    return !this.showingSubpage_ && !this.showPages_.about;
   },
 });

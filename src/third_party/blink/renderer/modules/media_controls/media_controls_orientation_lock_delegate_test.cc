@@ -12,7 +12,6 @@
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -29,12 +28,12 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "ui/display/mojom/screen_orientation.mojom-blink.h"
 #include "ui/gfx/geometry/rect.h"
 
 using testing::_;
@@ -138,11 +137,20 @@ class MockChromeClientForOrientationLockDelegate final
         WTF::Bind(DidExitFullscreen, WrapPersistent(frame.GetDocument())));
   }
 
-  const ScreenInfo& GetScreenInfo(LocalFrame&) const override {
-    return mock_screen_info_;
+  const display::ScreenInfo& GetScreenInfo(LocalFrame&) const override {
+    // This dcheck is for the assumption that MockScreenInfo gets the
+    // correct (and only) screen info to modify.
+    DCHECK_EQ(mock_screen_infos_.screen_infos.size(), 1u);
+    return mock_screen_infos_.current();
+  }
+  const display::ScreenInfos& GetScreenInfos(LocalFrame&) const override {
+    DCHECK_EQ(mock_screen_infos_.screen_infos.size(), 1u);
+    return mock_screen_infos_;
   }
 
-  ScreenInfo& MockScreenInfo() { return mock_screen_info_; }
+  display::ScreenInfo& MockScreenInfo() {
+    return mock_screen_infos_.mutable_current();
+  }
 
   MockScreenOrientation& ScreenOrientationClient() {
     return mock_screen_orientation_;
@@ -150,7 +158,8 @@ class MockChromeClientForOrientationLockDelegate final
 
  private:
   MockScreenOrientation mock_screen_orientation_;
-  ScreenInfo mock_screen_info_ = {};
+  display::ScreenInfos mock_screen_infos_ =
+      display::ScreenInfos(display::ScreenInfo());
 };
 
 class StubLocalFrameClientForOrientationLockDelegate final
@@ -366,16 +375,17 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   }
 
   // Calls must be wrapped in ASSERT_NO_FATAL_FAILURE.
-  void RotateScreenTo(mojom::blink::ScreenOrientation screen_orientation_type,
-                      uint16_t screen_orientation_angle) {
-    ScreenInfo new_screen_info;
-    new_screen_info.orientation_type = screen_orientation_type;
-    new_screen_info.orientation_angle = screen_orientation_angle;
-    new_screen_info.rect = ScreenRectFromAngle(screen_orientation_angle);
-    ASSERT_TRUE(new_screen_info.orientation_type ==
+  void RotateScreenTo(
+      display::mojom::blink::ScreenOrientation screen_orientation_type,
+      uint16_t screen_orientation_angle) {
+    auto rect = ScreenRectFromAngle(screen_orientation_angle);
+    ASSERT_TRUE(screen_orientation_type ==
                 ScreenOrientationController::ComputeOrientation(
-                    new_screen_info.rect, new_screen_info.orientation_angle));
-    ChromeClient().MockScreenInfo() = new_screen_info;
+                    rect, screen_orientation_angle));
+    ChromeClient().MockScreenInfo().orientation_type = screen_orientation_type;
+    ChromeClient().MockScreenInfo().orientation_angle =
+        screen_orientation_angle;
+    ChromeClient().MockScreenInfo().rect = rect;
 
     // Screen Orientation API
     ScreenOrientationController::From(*GetDocument().domWindow())
@@ -587,27 +597,27 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
   // 100x100 has more subtilities, it depends on the current screen orientation.
   MockWebMediaPlayer().MockNaturalSize() = gfx::Size(100, 100);
   ChromeClient().MockScreenInfo().orientation_type =
-      mojom::blink::ScreenOrientation::kUndefined;
+      display::mojom::blink::ScreenOrientation::kUndefined;
   EXPECT_EQ(device::mojom::ScreenOrientationLockType::LANDSCAPE,
             ComputeOrientationLock());
 
   ChromeClient().MockScreenInfo().orientation_type =
-      mojom::blink::ScreenOrientation::kPortraitPrimary;
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary;
   EXPECT_EQ(device::mojom::ScreenOrientationLockType::PORTRAIT,
             ComputeOrientationLock());
 
   ChromeClient().MockScreenInfo().orientation_type =
-      mojom::blink::ScreenOrientation::kPortraitPrimary;
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary;
   EXPECT_EQ(device::mojom::ScreenOrientationLockType::PORTRAIT,
             ComputeOrientationLock());
 
   ChromeClient().MockScreenInfo().orientation_type =
-      mojom::blink::ScreenOrientation::kLandscapePrimary;
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary;
   EXPECT_EQ(device::mojom::ScreenOrientationLockType::LANDSCAPE,
             ComputeOrientationLock());
 
   ChromeClient().MockScreenInfo().orientation_type =
-      mojom::blink::ScreenOrientation::kLandscapeSecondary;
+      display::mojom::blink::ScreenOrientation::kLandscapeSecondary;
   EXPECT_EQ(device::mojom::ScreenOrientationLockType::LANDSCAPE,
             ComputeOrientationLock());
 }
@@ -636,32 +646,35 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
     // or naturally landscape). Similarly for a naturally landscape device.
     for (int screen_angle = 0; screen_angle < 360; screen_angle += 90) {
       SCOPED_TRACE(testing::Message() << "screen_angle=" << screen_angle);
-      mojom::blink::ScreenOrientation screen_type =
-          mojom::blink::ScreenOrientation::kUndefined;
+      display::mojom::blink::ScreenOrientation screen_type =
+          display::mojom::blink::ScreenOrientation::kUndefined;
       switch (screen_angle) {
         case 0:
           screen_type =
               natural_orientation_is_portrait_
-                  ? mojom::blink::ScreenOrientation::kPortraitPrimary
-                  : mojom::blink::ScreenOrientation::kLandscapePrimary;
+                  ? display::mojom::blink::ScreenOrientation::kPortraitPrimary
+                  : display::mojom::blink::ScreenOrientation::kLandscapePrimary;
           break;
         case 90:
           screen_type =
               natural_orientation_is_portrait_
-                  ? mojom::blink::ScreenOrientation::kLandscapePrimary
-                  : mojom::blink::ScreenOrientation::kPortraitSecondary;
+                  ? display::mojom::blink::ScreenOrientation::kLandscapePrimary
+                  : display::mojom::blink::ScreenOrientation::
+                        kPortraitSecondary;
           break;
         case 180:
           screen_type =
               natural_orientation_is_portrait_
-                  ? mojom::blink::ScreenOrientation::kPortraitSecondary
-                  : mojom::blink::ScreenOrientation::kLandscapeSecondary;
+                  ? display::mojom::blink::ScreenOrientation::kPortraitSecondary
+                  : display::mojom::blink::ScreenOrientation::
+                        kLandscapeSecondary;
           break;
         case 270:
           screen_type =
               natural_orientation_is_portrait_
-                  ? mojom::blink::ScreenOrientation::kLandscapeSecondary
-                  : mojom::blink::ScreenOrientation::kPortraitPrimary;
+                  ? display::mojom::blink::ScreenOrientation::
+                        kLandscapeSecondary
+                  : display::mojom::blink::ScreenOrientation::kPortraitPrimary;
           break;
       }
       ASSERT_NO_FATAL_FAILURE(RotateScreenTo(screen_type, screen_angle));
@@ -800,8 +813,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        PortraitInlineRotateToLandscapeFullscreen) {
   // Naturally portrait device, initially portrait, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
   PlayVideo();
@@ -814,8 +827,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to landscape triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
 
   // MediaControlsRotateToFullscreenDelegate should enter fullscreen, so
   // MediaControlsOrientationLockDelegate should lock orientation to landscape
@@ -841,8 +854,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        PortraitInlineButtonToPortraitLockedLandscapeFullscreen) {
   // Naturally portrait device, initially portrait, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -861,8 +874,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
             DelegateOrientationLock());
 
   // This will trigger a screen orientation change to landscape.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
 
   // Even though the device is still held in portrait.
   RotateDeviceTo(0 /* portrait primary */);
@@ -879,8 +892,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Naturally portrait device, initially portrait device orientation but locked
   // to landscape screen orientation, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -909,8 +922,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Naturally portrait device, initially portrait device orientation but locked
   // to landscape screen orientation, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -938,8 +951,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Unlocking the orientation earlier will trigger a screen orientation change
   // to portrait (since the device orientation was already portrait, even though
   // the screen was locked to landscape).
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
 
   // Video should remain inline, unlocked.
   CheckStatePendingFullscreen();
@@ -951,8 +964,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        LandscapeInlineRotateToPortraitInline) {
   // Naturally portrait device, initially landscape, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
   PlayVideo();
@@ -965,8 +978,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to portrait triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
   test::RunDelayedTasks(GetUnlockDelay());
 
   // Video should remain inline, unlocked.
@@ -979,8 +992,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        LandscapeInlineButtonToLandscapeFullscreen) {
   // Naturally portrait device, initially landscape, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -1015,8 +1028,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        LandscapeFullscreenRotateToPortraitInline) {
   // Naturally portrait device, initially landscape, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -1032,8 +1045,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to portrait triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
   test::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
@@ -1048,8 +1061,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        LandscapeFullscreenBackToLandscapeInline) {
   // Naturally portrait device, initially landscape, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -1077,8 +1090,8 @@ TEST_F(
     AutoRotateDisabledPortraitInlineButtonToPortraitLockedLandscapeFullscreen) {
   // Naturally portrait device, initially portrait, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
   InitVideo(640, 480);
   // But this time the user has disabled auto rotate, e.g. locked to portrait.
   SetIsAutoRotateEnabledByUser(false);
@@ -1099,8 +1112,8 @@ TEST_F(
 
   // This will trigger a screen orientation change to landscape, since the app's
   // lock overrides the user's orientation lock (at least on Android).
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
 
   // Even though the device is still held in portrait.
   RotateDeviceTo(0 /* portrait primary */);
@@ -1118,8 +1131,8 @@ TEST_F(
   // Naturally portrait device, initially portrait device orientation but locked
   // to landscape screen orientation, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   // But this time the user has disabled auto rotate, e.g. locked to portrait
   // (even though the app's landscape screen orientation lock overrides it).
@@ -1153,8 +1166,8 @@ TEST_F(
   // Naturally portrait device, initially portrait device orientation but locked
   // to landscape screen orientation, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   // But this time the user has disabled auto rotate, e.g. locked to portrait
   // (even though the app's landscape screen orientation lock overrides it).
@@ -1185,8 +1198,8 @@ TEST_F(
   // to portrait, since the user had locked the screen orientation to portrait,
   // (which happens to also match the device orientation) and
   // MediaControlsOrientationLockDelegate is no longer overriding that lock.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
 
   // Video should remain inline, unlocked.
   CheckStatePendingFullscreen();
@@ -1201,8 +1214,8 @@ TEST_F(
   // locked to landscape screen orientation since the user had disabled auto
   // rotate, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   // The user has disabled auto rotate, e.g. locked to portrait (even though the
   // app's landscape screen orientation lock overrides it).
@@ -1242,8 +1255,8 @@ TEST_F(
   // locked to landscape screen orientation since the user had disabled auto
   // rotate, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(640, 480);
   // The user has disabled auto rotate, e.g. locked to portrait (even though the
   // app's landscape screen orientation lock overrides it).
@@ -1274,8 +1287,8 @@ TEST_F(
   // to portrait even though the device orientation is landscape, since the user
   // had locked the screen orientation to portrait, and
   // MediaControlsOrientationLockDelegate is no longer overriding that.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
 
   // Video should remain inline, unlocked.
   CheckStatePendingFullscreen();
@@ -1287,8 +1300,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        PortraitVideoRotateEnterExit) {
   // Naturally portrait device, initially landscape, with *portrait* video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
   InitVideo(480, 640);
   SetIsAutoRotateEnabledByUser(true);
   PlayVideo();
@@ -1301,8 +1314,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to portrait triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
 
   // MediaControlsRotateToFullscreenDelegate should enter fullscreen, so
   // MediaControlsOrientationLockDelegate should lock orientation to portrait
@@ -1326,8 +1339,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to landscape triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
 
   // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
   EXPECT_FALSE(Video().IsFullscreen());
@@ -1341,8 +1354,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        LandscapeDeviceRotateEnterExit) {
   // Naturally *landscape* device, initially portrait, with landscape video.
   natural_orientation_is_portrait_ = false;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 270));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 270));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
   PlayVideo();
@@ -1355,8 +1368,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to landscape triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 0));
 
   // MediaControlsRotateToFullscreenDelegate should enter fullscreen, so
   // MediaControlsOrientationLockDelegate should lock orientation to landscape
@@ -1380,8 +1393,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Simulate user rotating their device to portrait triggering a screen
   // orientation change.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 270));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 270));
 
   // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
   EXPECT_FALSE(Video().IsFullscreen());
@@ -1395,8 +1408,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
        ScreenOrientationRaceCondition) {
   // Naturally portrait device, initially portrait, with landscape video.
   natural_orientation_is_portrait_ = true;
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kPortraitPrimary, 0));
   InitVideo(640, 480);
   SetIsAutoRotateEnabledByUser(true);
 
@@ -1415,8 +1428,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
             DelegateOrientationLock());
 
   // This will trigger a screen orientation change to landscape.
-  ASSERT_NO_FATAL_FAILURE(
-      RotateScreenTo(mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
+  ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
+      display::mojom::blink::ScreenOrientation::kLandscapePrimary, 90));
 
   // Even though the device is still held in portrait.
   RotateDeviceTo(0 /* portrait primary */);
@@ -1444,8 +1457,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // delegate unlocks the screen orientation, so Android changes the screen
   // orientation back to portrait because it hasn't yet processed the device
   // orientation change to landscape.
-  constexpr base::TimeDelta kMinUnlockDelay =
-      base::TimeDelta::FromMilliseconds(249);
+  constexpr base::TimeDelta kMinUnlockDelay = base::Milliseconds(249);
   static_assert(GetUnlockDelay() > kMinUnlockDelay,
                 "GetUnlockDelay() should significantly exceed kMinUnlockDelay");
   test::RunDelayedTasks(kMinUnlockDelay);
@@ -1456,7 +1468,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Simulate the OS processing the device orientation change after a delay of
   // `kMinUnlockDelay` and hence changing the screen orientation.
   ASSERT_NO_FATAL_FAILURE(RotateScreenTo(
-      mojom::blink::ScreenOrientation::kLandscapeSecondary, 270));
+      display::mojom::blink::ScreenOrientation::kLandscapeSecondary, 270));
 
   // MediaControlsOrientationLockDelegate should remain locked to landscape.
   CheckStateMaybeLockedFullscreen();

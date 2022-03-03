@@ -21,6 +21,7 @@
 #include "src/sem/function.h"
 #include "src/sem/variable.h"
 
+TINT_INSTANTIATE_TYPEINFO(tint::transform::SingleEntryPoint);
 TINT_INSTANTIATE_TYPEINFO(tint::transform::SingleEntryPoint::Config);
 
 namespace tint {
@@ -30,67 +31,85 @@ SingleEntryPoint::SingleEntryPoint() = default;
 
 SingleEntryPoint::~SingleEntryPoint() = default;
 
-Output SingleEntryPoint::Run(const Program* in, const DataMap& data) {
-  ProgramBuilder out;
-
-  auto* cfg = data.Get<Config>();
+void SingleEntryPoint::Run(CloneContext& ctx, const DataMap& inputs, DataMap&) {
+  auto* cfg = inputs.Get<Config>();
   if (cfg == nullptr) {
-    out.Diagnostics().add_error("missing transform data for SingleEntryPoint");
-    return Output(Program(std::move(out)));
+    ctx.dst->Diagnostics().add_error(
+        diag::System::Transform,
+        "missing transform data for " + std::string(TypeInfo().name));
+
+    return;
   }
 
   // Find the target entry point.
-  ast::Function* entry_point = nullptr;
-  for (auto* f : in->AST().Functions()) {
+  const ast::Function* entry_point = nullptr;
+  for (auto* f : ctx.src->AST().Functions()) {
     if (!f->IsEntryPoint()) {
       continue;
     }
-    if (in->Symbols().NameFor(f->symbol()) == cfg->entry_point_name) {
+    if (ctx.src->Symbols().NameFor(f->symbol) == cfg->entry_point_name) {
       entry_point = f;
       break;
     }
   }
   if (entry_point == nullptr) {
-    out.Diagnostics().add_error("entry point '" + cfg->entry_point_name +
-                                "' not found");
-    return Output(Program(std::move(out)));
+    ctx.dst->Diagnostics().add_error(
+        diag::System::Transform,
+        "entry point '" + cfg->entry_point_name + "' not found");
+    return;
   }
 
-  CloneContext ctx(&out, in);
-
-  auto* sem = in->Sem().Get(entry_point);
+  auto& sem = ctx.src->Sem();
 
   // Build set of referenced module-scope variables for faster lookups later.
   std::unordered_set<const ast::Variable*> referenced_vars;
-  for (auto* var : sem->ReferencedModuleVariables()) {
+  for (auto* var : sem.Get(entry_point)->TransitivelyReferencedGlobals()) {
     referenced_vars.emplace(var->Declaration());
   }
 
   // Clone any module-scope variables, types, and functions that are statically
   // referenced by the target entry point.
-  for (auto* decl : in->AST().GlobalDeclarations()) {
-    if (auto* ty = decl->As<ast::NamedType>()) {
+  for (auto* decl : ctx.src->AST().GlobalDeclarations()) {
+    if (auto* ty = decl->As<ast::TypeDecl>()) {
       // TODO(jrprice): Strip unused types.
-      out.AST().AddConstructedType(ctx.Clone(ty));
+      ctx.dst->AST().AddTypeDecl(ctx.Clone(ty));
     } else if (auto* var = decl->As<ast::Variable>()) {
-      if (var->is_const() || referenced_vars.count(var)) {
-        out.AST().AddGlobalVariable(ctx.Clone(var));
+      if (referenced_vars.count(var)) {
+        if (var->is_const) {
+          if (auto* deco = ast::GetDecoration<ast::OverrideDecoration>(
+                  var->decorations)) {
+            // It is an overridable constant
+            if (!deco->has_value) {
+              // If the decoration doesn't have numeric ID specified explicitly
+              // Make their ids explicitly assigned in the decoration so that
+              // they won't be affected by other stripped away constants
+              auto* global = sem.Get(var)->As<sem::GlobalVariable>();
+              const auto* new_deco =
+                  ctx.dst->Override(deco->source, global->ConstantId());
+              ctx.Replace(deco, new_deco);
+            }
+          }
+        }
+        ctx.dst->AST().AddGlobalVariable(ctx.Clone(var));
       }
     } else if (auto* func = decl->As<ast::Function>()) {
-      if (in->Sem().Get(func)->HasAncestorEntryPoint(entry_point->symbol())) {
-        out.AST().AddFunction(ctx.Clone(func));
+      if (sem.Get(func)->HasAncestorEntryPoint(entry_point->symbol)) {
+        ctx.dst->AST().AddFunction(ctx.Clone(func));
       }
     } else {
-      TINT_UNREACHABLE(out.Diagnostics())
+      TINT_UNREACHABLE(Transform, ctx.dst->Diagnostics())
           << "unhandled global declaration: " << decl->TypeInfo().name;
-      return Output(Program(std::move(out)));
+      return;
     }
   }
 
   // Clone the entry point.
-  out.AST().AddFunction(ctx.Clone(entry_point));
+  ctx.dst->AST().AddFunction(ctx.Clone(entry_point));
 
-  return Output(Program(std::move(out)));
+  // Retain the list of applied transforms.
+  // We need to do this manually since we are not going to use the top-level
+  // ctx.Clone() function.
+  ctx.dst->SetTransformApplied(ctx.src->TransformsApplied());
 }
 
 SingleEntryPoint::Config::Config(std::string entry_point)

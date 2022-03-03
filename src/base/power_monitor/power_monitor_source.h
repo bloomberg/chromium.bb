@@ -6,7 +6,6 @@
 #define BASE_POWER_MONITOR_POWER_MONITOR_SOURCE_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
@@ -18,6 +17,10 @@ namespace base {
 class BASE_EXPORT PowerMonitorSource {
  public:
   PowerMonitorSource();
+
+  PowerMonitorSource(const PowerMonitorSource&) = delete;
+  PowerMonitorSource& operator=(const PowerMonitorSource&) = delete;
+
   virtual ~PowerMonitorSource();
 
   // Normalized list of power events.
@@ -30,6 +33,13 @@ class BASE_EXPORT PowerMonitorSource {
   // Reads the current DeviceThermalState, if available on the platform.
   // Otherwise, returns kUnknown.
   virtual PowerThermalObserver::DeviceThermalState GetCurrentThermalState();
+
+  // Reads the initial operating system CPU speed limit, if available on the
+  // platform. Otherwise returns PowerThermalObserver::kSpeedLimitMax.
+  // Only called on the main thead in PowerMonitor::Initialize().
+  // The actual speed limit value will be updated asynchronosulsy via the
+  // ProcessSpeedLimitEvent() if/when the value changes.
+  virtual int GetInitialSpeedLimit();
 
   // Update the result of thermal state.
   virtual void SetCurrentThermalState(
@@ -58,9 +68,7 @@ class BASE_EXPORT PowerMonitorSource {
   static void ProcessPowerEvent(PowerEvent event_id);
   static void ProcessThermalEvent(
       PowerThermalObserver::DeviceThermalState new_thermal_state);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PowerMonitorSource);
+  static void ProcessSpeedLimitEvent(int speed_limit);
 };
 
 }  // namespace base

@@ -10,6 +10,7 @@
 
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_move_support.h"
@@ -96,7 +97,7 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
     auto factory = std::make_unique<MockLeakDetectionCheckFactory>();
     factory_ = factory.get();
     service_.set_leak_factory(std::move(factory));
-    store_->Init(/*prefs=*/nullptr);
+    store_->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordLeakDetectionEnabled,
                                            true);
     prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled, true);
@@ -126,7 +127,7 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
   BulkLeakCheckService service_{
       identity_test_env_.identity_manager(),
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>()};
-  MockLeakDetectionCheckFactory* factory_ = nullptr;
+  raw_ptr<MockLeakDetectionCheckFactory> factory_ = nullptr;
   TestingPrefServiceSimple prefs_;
   BulkLeakCheckServiceAdapter adapter_{&presenter_, &service_, &prefs_};
 };

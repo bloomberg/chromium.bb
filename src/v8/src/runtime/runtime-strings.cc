@@ -320,7 +320,7 @@ RUNTIME_FUNCTION(Runtime_StringToArray) {
     DisallowGarbageCollection no_gc;
     String::FlatContent content = s->GetFlatContent(no_gc);
     if (content.IsOneByte()) {
-      Vector<const uint8_t> chars = content.ToOneByteVector();
+      base::Vector<const uint8_t> chars = content.ToOneByteVector();
       // Note, this will initialize all elements (not only the prefix)
       // to prevent GC from seeing partially initialized array.
       position = CopyCachedOneByteCharsToArray(isolate->heap(), chars.begin(),
@@ -423,17 +423,17 @@ RUNTIME_FUNCTION(Runtime_StringEscapeQuotes) {
   Handle<String> quotes =
       isolate->factory()->LookupSingleCharacterStringFromCode('"');
 
-  int index = String::IndexOf(isolate, string, quotes, 0);
+  int quote_index = String::IndexOf(isolate, string, quotes, 0);
 
   // No quotes, nothing to do.
-  if (index == -1) return *string;
+  if (quote_index == -1) return *string;
 
   // Find all quotes.
-  std::vector<int> indices = {index};
-  while (index + 1 < string_length) {
-    index = String::IndexOf(isolate, string, quotes, index + 1);
-    if (index == -1) break;
-    indices.emplace_back(index);
+  std::vector<int> indices = {quote_index};
+  while (quote_index + 1 < string_length) {
+    quote_index = String::IndexOf(isolate, string, quotes, quote_index + 1);
+    if (quote_index == -1) break;
+    indices.emplace_back(quote_index);
   }
 
   // Build the replacement string.

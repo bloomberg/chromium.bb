@@ -73,6 +73,9 @@ fate-adpcm-ima_wav-stereo: CMD = md5 -i $(TARGET_SAMPLES)/qt-surge-suite/surge-2
 FATE_ADPCM-$(call DEMDEC, WSVQA, ADPCM_IMA_WS) += fate-adpcm-ima-ws
 fate-adpcm-ima-ws: CMD = framecrc -i $(TARGET_SAMPLES)/vqa/cc-demo1-partial.vqa -vn
 
+FATE_ADPCM-$(call DEMDEC, WSVQA, ADPCM_IMA_WS) += fate-adpcm-ima-ws-vqa3
+fate-adpcm-ima-ws-vqa3: CMD = framecrc -i $(TARGET_SAMPLES)/vqa/small-cut-v3.vqa -vn -af aresample
+
 FATE_ADPCM-$(call DEMDEC, DXA, ADPCM_MS) += fate-adpcm-ms-mono
 fate-adpcm-ms-mono: CMD = framecrc -i $(TARGET_SAMPLES)/dxa/meetsquid.dxa -t 2 -vn
 
@@ -113,31 +116,34 @@ FATE_ADPCM-$(call DEMDEC, ALP, ADPCM_IMA_ALP) += fate-adpcm-ima-alp-stereo
 fate-adpcm-ima-alp-stereo: CMD = md5 -i $(TARGET_SAMPLES)/alp/theme-cut.tun -f s16le
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-single
-fate-adpcm-ima-cunning-single: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/GD-cut.5c -f s16le
+fate-adpcm-ima-cunning-single: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/GD-cut.5c -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-track0
-fate-adpcm-ima-cunning-track0: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-cut.11c -map 0:a:0 -f s16le
+fate-adpcm-ima-cunning-track0: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-cut.11c -map 0:a:0 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-track1
-fate-adpcm-ima-cunning-track1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-cut.11c -map 0:a:1 -f s16le
+fate-adpcm-ima-cunning-track1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-cut.11c -map 0:a:1 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-trunc-t1
-fate-adpcm-ima-cunning-trunc-t1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t1.11c -map 0:a:0 -f s16le
+fate-adpcm-ima-cunning-trunc-t1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t1.11c -map 0:a:0 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-trunc-t2-track0
-fate-adpcm-ima-cunning-trunc-t2-track0: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2.11c -map 0:a:0 -f s16le
+fate-adpcm-ima-cunning-trunc-t2-track0: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2.11c -map 0:a:0 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-trunc-t2-track1
-fate-adpcm-ima-cunning-trunc-t2-track1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2.11c -map 0:a:1 -f s16le
+fate-adpcm-ima-cunning-trunc-t2-track1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2.11c -map 0:a:1 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-trunc-t2a-track0
-fate-adpcm-ima-cunning-trunc-t2a-track0: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2a.11c -map 0:a:0 -f s16le
+fate-adpcm-ima-cunning-trunc-t2a-track0: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2a.11c -map 0:a:0 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-trunc-t2a-track1
-fate-adpcm-ima-cunning-trunc-t2a-track1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2a.11c -map 0:a:1 -f s16le
+fate-adpcm-ima-cunning-trunc-t2a-track1: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-t2a.11c -map 0:a:1 -f s16le -af aresample
 
 FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-trunc-h2
-fate-adpcm-ima-cunning-trunc-h2: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-h2.11c -map 0:a:0 -f s16le
+fate-adpcm-ima-cunning-trunc-h2: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/VIDEOMOD-trunc-h2.11c -map 0:a:0 -f s16le -af aresample
+
+FATE_ADPCM-$(call DEMDEC, PP_BNK, ADPCM_IMA_CUNNING) += fate-adpcm-ima-cunning-stereo
+fate-adpcm-ima-cunning-stereo: CMD = md5 -y -i $(TARGET_SAMPLES)/pp_bnk/MOGODON2-cut.44c -f s16le -af aresample
 
 FATE_SAMPLES_AVCONV += $(FATE_ADPCM-yes)
 fate-adpcm: $(FATE_ADPCM-yes)

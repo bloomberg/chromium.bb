@@ -21,6 +21,7 @@
 #include "chrome/services/sharing/public/cpp/sharing_webrtc_metrics.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -37,7 +38,7 @@ const char kIceConfigApiUrl[] =
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
 // Timeout for network calls to Tachyon servers.
-constexpr base::TimeDelta kNetworkTimeout = base::TimeDelta::FromSeconds(4);
+constexpr base::TimeDelta kNetworkTimeout = base::Seconds(4);
 
 // Response with 2 ice server configs takes ~1KB. A loose upper bound of 16KB is
 // chosen to avoid breaking the flow in case the response has longer URLs in ice
@@ -338,7 +339,7 @@ TachyonIceConfigFetcher::ParseIceServersResponse(
     ice_server_cache_ = CloneIceServerList(servers_mojo);
     ice_server_cache_expiration_ =
         base::Time::Now() +
-        base::TimeDelta::FromSeconds(ice_config.lifetime_duration().seconds());
+        base::Seconds(ice_config.lifetime_duration().seconds());
   }
   return servers_mojo;
 }

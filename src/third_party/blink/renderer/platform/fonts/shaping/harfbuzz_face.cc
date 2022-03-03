@@ -92,7 +92,7 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
   HarfBuzzFontCache::AddResult result =
       FontGlobalContext::GetHarfBuzzFontCache()->insert(unique_id_, nullptr);
   if (result.is_new_entry) {
-    HbScoped<hb_face_t> face(CreateFace());
+    HbScoped<hb_face_t> face = CreateFace();
     result.stored_value->value =
         CreateHbFontCacheEntry(face.get(), platform_data->Typeface());
   }
@@ -242,7 +242,7 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
   // Check whether computing is needed and compute for gpos/gsub.
   if (features & kKerning &&
       harfbuzz_font_data_->space_in_gpos_ ==
-          HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Unknown) {
+          HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kUnknown) {
     if (space == kInvalidCodepoint && !GetSpaceGlyph(unscaled_font_, space))
       return false;
     // Compute for gpos.
@@ -251,15 +251,15 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
     harfbuzz_font_data_->space_in_gpos_ =
         hb_ot_layout_has_positioning(face) &&
                 TableHasSpace(face, glyphs.get(), HB_OT_TAG_GPOS, space)
-            ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present
-            : HarfBuzzFontData::SpaceGlyphInOpenTypeTables::NotPresent;
+            ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kPresent
+            : HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kNotPresent;
   }
 
   hb_set_clear(glyphs.get());
 
   if (features & kLigatures &&
       harfbuzz_font_data_->space_in_gsub_ ==
-          HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Unknown) {
+          HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kUnknown) {
     if (space == kInvalidCodepoint && !GetSpaceGlyph(unscaled_font_, space))
       return false;
     // Compute for gpos.
@@ -268,21 +268,28 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
     harfbuzz_font_data_->space_in_gsub_ =
         hb_ot_layout_has_substitution(face) &&
                 TableHasSpace(face, glyphs.get(), HB_OT_TAG_GSUB, space)
-            ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present
-            : HarfBuzzFontData::SpaceGlyphInOpenTypeTables::NotPresent;
+            ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kPresent
+            : HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kNotPresent;
   }
 
   return (features & kKerning &&
           harfbuzz_font_data_->space_in_gpos_ ==
-              HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present) ||
+              HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kPresent) ||
          (features & kLigatures &&
           harfbuzz_font_data_->space_in_gsub_ ==
-              HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present);
+              HarfBuzzFontData::SpaceGlyphInOpenTypeTables::kPresent);
 }
 
 unsigned HarfBuzzFace::UnitsPerEmFromHeadTable() {
   hb_face_t* face = hb_font_get_face(unscaled_font_);
   return hb_face_get_upem(face);
+}
+
+Glyph HarfBuzzFace::HbGlyphForCharacter(UChar32 character) {
+  hb_codepoint_t glyph = 0;
+  HarfBuzzGetNominalGlyph(unscaled_font_, harfbuzz_font_data_, character,
+                          &glyph, nullptr);
+  return glyph;
 }
 
 bool HarfBuzzFace::ShouldSubpixelPosition() {
@@ -364,8 +371,8 @@ static void DeleteTypefaceStream(void* stream_asset_ptr) {
 }
 #endif
 
-hb_face_t* HarfBuzzFace::CreateFace() {
-  hb_face_t* face = nullptr;
+HbScoped<hb_face_t> HarfBuzzFace::CreateFace() {
+  HbScoped<hb_face_t> face;
 
   SkTypeface* typeface = platform_data_->Typeface();
   CHECK(typeface);
@@ -383,14 +390,21 @@ hb_face_t* HarfBuzzFace::CreateFace() {
         hb_blob_create(reinterpret_cast<const char*>(tf_memory),
                        SafeCast<unsigned int>(tf_size), HB_MEMORY_MODE_READONLY,
                        tf_stream.release(), DeleteTypefaceStream));
-    face = hb_face_create(face_blob.get(), ttc_index);
+    // hb_face_create always succeeds.
+    // Use hb_face_count to retrieve the number of recognized faces in the blob.
+    // hb_face_create_for_tables may still create a working hb_face.
+    // See https://github.com/harfbuzz/harfbuzz/issues/248 .
+    unsigned int num_hb_faces = hb_face_count(face_blob.get());
+    if (0 < num_hb_faces && static_cast<unsigned>(ttc_index) < num_hb_faces) {
+      face.reset(hb_face_create(face_blob.get(), ttc_index));
+    }
   }
 #endif
 
   // Fallback to table copies if there is no in-memory access.
   if (!face) {
-    face = hb_face_create_for_tables(HarfBuzzSkiaGetTable,
-                                     platform_data_->Typeface(), nullptr);
+    face.reset(hb_face_create_for_tables(HarfBuzzSkiaGetTable,
+                                         platform_data_->Typeface(), nullptr));
   }
 
   DCHECK(face);
@@ -445,9 +459,9 @@ static_assert(
     "Skia and HarfBuzz Variation parameter types must match in structure and "
     "size.");
 
-hb_font_t* HarfBuzzFace::GetScaledFont(
-    scoped_refptr<UnicodeRangeSet> range_set,
-    VerticalLayoutCallbacks vertical_layout) const {
+hb_font_t* HarfBuzzFace::GetScaledFont(scoped_refptr<UnicodeRangeSet> range_set,
+                                       VerticalLayoutCallbacks vertical_layout,
+                                       float specified_size) const {
   harfbuzz_font_data_->range_set_ = std::move(range_set);
   harfbuzz_font_data_->UpdateFallbackMetricsAndScale(*platform_data_,
                                                      vertical_layout);
@@ -460,7 +474,8 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   // points. After discussion on the pull request and with Apple developers, the
   // meaning of HarfBuzz' hb_font_set_ptem API was changed to expect the
   // equivalent of CSS pixels here.
-  hb_font_set_ptem(unscaled_font_, platform_data_->size());
+  hb_font_set_ptem(unscaled_font_, specified_size > 0 ? specified_size
+                                                      : platform_data_->size());
 
   return unscaled_font_;
 }

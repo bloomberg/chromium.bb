@@ -243,6 +243,10 @@
 #define GR_GL_MULTISAMPLE_COVERAGE_MODES     0x8E12
 #define GR_GL_MAX_TEXTURE_BUFFER_SIZE        0x8C2B
 
+#define GR_GL_CONTEXT_FLAGS                  0x821E
+#define GR_GL_CONTEXT_FLAG_PROTECTED_CONTENT_BIT_EXT  0x00000010
+#define GR_GL_TEXTURE_PROTECTED_EXT          0x8BFA
+
 /* GetTextureParameter */
 /*      GL_TEXTURE_MAG_FILTER */
 /*      GL_TEXTURE_MIN_FILTER */
@@ -545,7 +549,6 @@
 /* Shaders */
 #define GR_GL_FRAGMENT_SHADER                          0x8B30
 #define GR_GL_VERTEX_SHADER                            0x8B31
-#define GR_GL_GEOMETRY_SHADER                          0x8DD9
 #define GR_GL_TESS_CONTROL_SHADER                      0x8E88
 #define GR_GL_TESS_EVALUATION_SHADER                   0x8E87
 #define GR_GL_MAX_VERTEX_ATTRIBS                       0x8869

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
@@ -31,12 +31,19 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
                                     public syncer::SyncServiceObserver {
  public:
   AvatarToolbarButtonDelegate(AvatarToolbarButton* button, Profile* profile);
+
+  AvatarToolbarButtonDelegate(const AvatarToolbarButtonDelegate&) = delete;
+  AvatarToolbarButtonDelegate& operator=(const AvatarToolbarButtonDelegate&) =
+      delete;
+
   ~AvatarToolbarButtonDelegate() override;
 
-  // Called by the AvatarToolbarButton to get information about the profile.
+  // Methods called by the AvatarToolbarButton to get profile information.
   std::u16string GetProfileName() const;
   std::u16string GetShortProfileName() const;
   gfx::Image GetGaiaAccountImage() const;
+  // Must only be called in states which have an avatar image (i.e. not
+  // kGuestSession and not kIncognitoProfile).
   gfx::Image GetProfileAvatarImage(gfx::Image gaia_account_image,
                                    int preferred_size) const;
 
@@ -44,6 +51,10 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
   int GetWindowCount() const;
 
   AvatarToolbarButton::State GetState() const;
+
+  absl::optional<AvatarSyncErrorType> GetAvatarSyncErrorType() const;
+
+  bool IsSyncFeatureEnabled() const;
 
   void ShowHighlightAnimation();
   bool IsHighlightAnimationVisible() const;
@@ -113,8 +124,8 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
                           signin::IdentityManager::Observer>
       identity_manager_observation_{this};
 
-  AvatarToolbarButton* const avatar_toolbar_button_;
-  Profile* const profile_;
+  const raw_ptr<AvatarToolbarButton> avatar_toolbar_button_;
+  const raw_ptr<Profile> profile_;
   IdentityAnimationState identity_animation_state_ =
       IdentityAnimationState::kNotShowing;
 
@@ -134,11 +145,9 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
 
   // Caches the value of the last error so the class can detect when it changes
   // and notify |avatar_toolbar_button_|.
-  absl::optional<sync_ui_util::AvatarSyncErrorType> last_avatar_error_;
+  absl::optional<AvatarSyncErrorType> last_avatar_error_;
 
   base::WeakPtrFactory<AvatarToolbarButtonDelegate> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AvatarToolbarButtonDelegate);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_DELEGATE_H_

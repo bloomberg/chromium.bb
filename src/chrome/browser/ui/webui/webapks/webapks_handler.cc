@@ -11,7 +11,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
-#include "ui/android/color_helpers.h"
+#include "ui/android/color_utils_android.h"
 #include "ui/gfx/color_utils.h"
 
 WebApksHandler::WebApksHandler()
@@ -21,11 +21,11 @@ WebApksHandler::WebApksHandler()
 WebApksHandler::~WebApksHandler() {}
 
 void WebApksHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestWebApksInfo",
       base::BindRepeating(&WebApksHandler::HandleRequestWebApksInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestWebApkUpdate",
       base::BindRepeating(&WebApksHandler::HandleRequestWebApkUpdate,
                           base::Unretained(this)));
@@ -66,10 +66,10 @@ void WebApksHandler::OnWebApkInfoRetrieved(const WebApkInfo& webapk_info) {
                    ui::OptionalSkColorToString(webapk_info.theme_color));
   result.SetString("backgroundColor",
                    ui::OptionalSkColorToString(webapk_info.background_color));
-  result.SetDouble("lastUpdateCheckTimeMs",
-                   webapk_info.last_update_check_time.ToJsTime());
-  result.SetDouble("lastUpdateCompletionTimeMs",
-                   webapk_info.last_update_completion_time.ToJsTime());
+  result.SetDoubleKey("lastUpdateCheckTimeMs",
+                      webapk_info.last_update_check_time.ToJsTime());
+  result.SetDoubleKey("lastUpdateCompletionTimeMs",
+                      webapk_info.last_update_completion_time.ToJsTime());
   result.SetBoolean("relaxUpdates", webapk_info.relax_updates);
   result.SetString("backingBrowser", webapk_info.backing_browser_package_name);
   result.SetBoolean("isBackingBrowser", webapk_info.is_backing_browser);

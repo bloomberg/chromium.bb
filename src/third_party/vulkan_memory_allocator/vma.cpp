@@ -5,4 +5,4 @@
 #include <vulkan/vulkan.h>
 
 #define VMA_IMPLEMENTATION
-#include "src/vk_mem_alloc.h"
+#include "include/vk_mem_alloc.h"

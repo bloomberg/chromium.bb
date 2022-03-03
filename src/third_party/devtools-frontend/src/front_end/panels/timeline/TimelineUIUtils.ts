@@ -33,8 +33,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -45,6 +43,9 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
+import invalidationsTreeStyles from './invalidationsTree.css.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import imagePreviewStyles from '../../ui/legacy/components/utils/imagePreview.css.js';
 
 import {CLSRect} from './CLSLinkifier.js';
 import {TimelinePanel, TimelineSelection} from './TimelinePanel.js';
@@ -101,7 +102,9 @@ const UIStrings = {
   */
   hitTest: 'Hit Test',
   /**
-  *@description Text in Timeline UIUtils of the Performance panel
+  *@description Noun for an event in the Performance panel. The browser has decided
+  *that the styles for some elements need to be recalculated and scheduled that
+  *recalculation process at some time in the future.
   */
   scheduleStyleRecalculation: 'Schedule Style Recalculation',
   /**
@@ -196,11 +199,27 @@ const UIStrings = {
   /**
   *@description Text in Timeline UIUtils of the Performance panel
   */
+  cacheScript: 'Cache Script Code',
+  /**
+  *@description Text in Timeline UIUtils of the Performance panel
+  */
+  compileCode: 'Compile Code',
+  /**
+  *@description Text in Timeline UIUtils of the Performance panel
+  */
+  optimizeCode: 'Optimize Code',
+  /**
+  *@description Text in Timeline UIUtils of the Performance panel
+  */
   evaluateScript: 'Evaluate Script',
   /**
   *@description Text in Timeline UIUtils of the Performance panel
   */
   compileModule: 'Compile Module',
+  /**
+  *@description Text in Timeline UIUtils of the Performance panel
+  */
+  cacheModule: 'Cache Module Code',
   /**
    * @description Text for an event. Shown in the timeline in the Perforamnce panel.
    * "Module" refers to JavaScript modules: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
@@ -407,8 +426,9 @@ const UIStrings = {
   */
   decryptReply: 'Decrypt Reply',
   /**
-  *@description Text in Timeline UIUtils of the Performance panel
-  */
+   * @description Noun phrase meaning 'the browser was preparing the digest'.
+   * Digest: https://developer.mozilla.org/en-US/docs/Glossary/Digest
+   */
   digest: 'Digest',
   /**
   *@description Noun phrase meaning 'the browser was preparing the digest
@@ -497,7 +517,7 @@ const UIStrings = {
   */
   flingHalt: 'Fling Halt',
   /**
-  *@description Text in Timeline UIUtils of the Performance panel
+  *@description Noun for a tap event (tap on a touch screen device) in the Performance panel.
   */
   tap: 'Tap',
   /**
@@ -604,10 +624,6 @@ const UIStrings = {
   /**
   *@description Text in Timeline UIUtils of the Performance panel
   */
-  scriptSavedToCache: 'script saved to cache',
-  /**
-  *@description Text in Timeline UIUtils of the Performance panel
-  */
   compilationCacheSize: 'Compilation cache size',
   /**
   *@description Text in Timeline UIUtils of the Performance panel
@@ -697,6 +713,10 @@ const UIStrings = {
   *@description Text in Timeline UIUtils of the Performance panel
   */
   streamed: 'Streamed',
+  /**
+  *@description Text in Timeline UIUtils of the Performance panel
+  */
+  eagerCompile: 'Compiling all functions eagerly',
   /**
   *@description Text in Timeline UIUtils of the Performance panel
   */
@@ -808,10 +828,15 @@ const UIStrings = {
   */
   cumulativeLayoutShifts: 'Cumulative Layout Shifts',
   /**
-  *@description Warning in Timeline that CLS can cause a poor user experience
-  *@example {Link to web.dev/metrics} PH1
+  *@description Text for the link to the evolved CLS website
   */
-  sCanResultInPoorUserExperiences: '{PH1} can result in poor user experiences.',
+  evolvedClsLink: 'evolved',
+  /**
+  *@description Warning in Timeline that CLS can cause a poor user experience. It contains a link to inform developers about the recent changes to how CLS is measured. The new CLS metric is said to have evolved from the previous version.
+  *@example {Link to web.dev/metrics} PH1
+  *@example {Link to web.dev/evolving-cls which will always have the text 'evolved'} PH2
+  */
+  sCLSInformation: '{PH1} can result in poor user experiences. It has recently {PH2}.',
   /**
   *@description Text to indicate an item is a warning
   */
@@ -824,6 +849,14 @@ const UIStrings = {
   *@description Text in Timeline for the cumulative CLS score
   */
   cumulativeScore: 'Cumulative Score',
+  /**
+  *@description Text in Timeline for the current CLS score
+  */
+  currentClusterScore: 'Current Cluster Score',
+  /**
+  *@description Text in Timeline for the current CLS cluster
+  */
+  currentClusterId: 'Current Cluster ID',
   /**
   *@description Text in Timeline for whether input happened recently
   */
@@ -1211,7 +1244,7 @@ interface EventStylesMap {
   [x: string]: TimelineRecordStyle;
 }
 export class TimelineUIUtils {
-  static _initEventStyles(): EventStylesMap {
+  private static initEventStyles(): EventStylesMap {
     if (eventStylesMap) {
       return eventStylesMap;
     }
@@ -1264,8 +1297,12 @@ export class TimelineUIUtils {
         new TimelineRecordStyle(i18nString(UIStrings.xhrReadyStateChange), scripting);
     eventStyles[type.XHRLoad] = new TimelineRecordStyle(i18nString(UIStrings.xhrLoad), scripting);
     eventStyles[type.CompileScript] = new TimelineRecordStyle(i18nString(UIStrings.compileScript), scripting);
+    eventStyles[type.CacheScript] = new TimelineRecordStyle(i18nString(UIStrings.cacheScript), scripting);
+    eventStyles[type.CompileCode] = new TimelineRecordStyle(i18nString(UIStrings.compileCode), scripting);
+    eventStyles[type.OptimizeCode] = new TimelineRecordStyle(i18nString(UIStrings.optimizeCode), scripting);
     eventStyles[type.EvaluateScript] = new TimelineRecordStyle(i18nString(UIStrings.evaluateScript), scripting);
     eventStyles[type.CompileModule] = new TimelineRecordStyle(i18nString(UIStrings.compileModule), scripting);
+    eventStyles[type.CacheModule] = new TimelineRecordStyle(i18nString(UIStrings.cacheModule), scripting);
     eventStyles[type.EvaluateModule] = new TimelineRecordStyle(i18nString(UIStrings.evaluateModule), scripting);
     eventStyles[type.StreamingCompileScript] =
         new TimelineRecordStyle(i18nString(UIStrings.streamingCompileTask), other);
@@ -1446,7 +1483,7 @@ export class TimelineUIUtils {
   }
 
   static eventStyle(event: SDK.TracingModel.Event): TimelineRecordStyle {
-    const eventStyles = TimelineUIUtils._initEventStyles();
+    const eventStyles = TimelineUIUtils.initEventStyles();
     if (event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.Console) ||
         event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.UserTiming)) {
       return new TimelineRecordStyle(event.name, TimelineUIUtils.categories()['scripting']);
@@ -1537,7 +1574,7 @@ export class TimelineUIUtils {
     return title;
   }
 
-  static _interactionPhaseStyles(): Map<TimelineModel.TimelineIRModel.Phases, {
+  private static interactionPhaseStyles(): Map<TimelineModel.TimelineIRModel.Phases, {
     color: string,
     label: string,
   }> {
@@ -1576,7 +1613,7 @@ export class TimelineUIUtils {
   }
 
   static interactionPhaseColor(phase: TimelineModel.TimelineIRModel.Phases): string {
-    const interactionPhase = TimelineUIUtils._interactionPhaseStyles().get(phase);
+    const interactionPhase = TimelineUIUtils.interactionPhaseStyles().get(phase);
     if (!interactionPhase) {
       throw new Error(`Unknown phase ${phase}`);
     }
@@ -1584,7 +1621,7 @@ export class TimelineUIUtils {
   }
 
   static interactionPhaseLabel(phase: TimelineModel.TimelineIRModel.Phases): string {
-    const interactionPhase = TimelineUIUtils._interactionPhaseStyles().get(phase);
+    const interactionPhase = TimelineUIUtils.interactionPhaseStyles().get(phase);
     if (!interactionPhase) {
       throw new Error(`Unknown phase ${phase}`);
     }
@@ -1638,7 +1675,7 @@ export class TimelineUIUtils {
     }
   }
 
-  static async buildDetailsTextForTraceEvent(event: SDK.TracingModel.Event, target: SDK.SDKModel.Target|null):
+  static async buildDetailsTextForTraceEvent(event: SDK.TracingModel.Event, target: SDK.Target.Target|null):
       Promise<string|null> {
     const recordType = TimelineModel.TimelineModel.RecordType;
     let detailsText;
@@ -1683,9 +1720,11 @@ export class TimelineUIUtils {
         break;
       }
       case recordType.CompileModule:
+      case recordType.CacheModule:
         detailsText = Bindings.ResourceUtils.displayNameForURL(event.args['fileName']);
         break;
       case recordType.CompileScript:
+      case recordType.CacheScript:
       case recordType.EvaluateScript: {
         const url = eventData && eventData['url'];
         if (url) {
@@ -1759,7 +1798,7 @@ export class TimelineUIUtils {
     return detailsText;
 
     async function linkifyLocationAsText(
-        scriptId: string, lineNumber: number, columnNumber: number): Promise<string|null> {
+        scriptId: Protocol.Runtime.ScriptId, lineNumber: number, columnNumber: number): Promise<string|null> {
       const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
       if (!target || target.isDisposed() || !scriptId || !debuggerModel) {
         return null;
@@ -1771,7 +1810,7 @@ export class TimelineUIUtils {
       const uiLocation =
           await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
               rawLocation);
-      return uiLocation ? uiLocation.linkText() : null;
+      return uiLocation ? uiLocation.linkText(false /* skipTrim*/, true /* showColumnNumber*/) : null;
     }
 
     async function linkifyTopCallFrameAsText(): Promise<string|null> {
@@ -1782,17 +1821,14 @@ export class TimelineUIUtils {
       let text: string|(string | null) =
           await linkifyLocationAsText(frame.scriptId, frame.lineNumber, frame.columnNumber);
       if (!text) {
-        text = frame.url;
-        if (typeof frame.lineNumber === 'number') {
-          text += ':' + (frame.lineNumber + 1);
-        }
+        text = frame.url + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1);
       }
       return text;
     }
   }
 
   static async buildDetailsNodeForTraceEvent(
-      event: SDK.TracingModel.Event, target: SDK.SDKModel.Target|null,
+      event: SDK.TracingModel.Event, target: SDK.Target.Target|null,
       linkifier: Components.Linkifier.Linkifier): Promise<Node|null> {
     const recordType = TimelineModel.TimelineModel.RecordType;
     let details: HTMLElement|HTMLSpanElement|(Element | null)|Text|null = null;
@@ -1837,6 +1873,7 @@ export class TimelineUIUtils {
             tabStop: true,
             className: undefined,
             columnNumber: undefined,
+            showColumnNumber: false,
             inlineFrameIndex: 0,
             text: undefined,
             lineNumber: undefined,
@@ -1862,16 +1899,18 @@ export class TimelineUIUtils {
         break;
       }
 
-      case recordType.CompileModule: {
-        details = linkifyLocation('', event.args['fileName'], 0, 0);
+      case recordType.CompileModule:
+      case recordType.CacheModule: {
+        details = linkifyLocation(null, event.args['fileName'], 0, 0);
         break;
       }
 
       case recordType.CompileScript:
+      case recordType.CacheScript:
       case recordType.EvaluateScript: {
         const url = eventData['url'];
         if (url) {
-          details = linkifyLocation('', url, eventData['lineNumber'], 0);
+          details = linkifyLocation(null, url, eventData['lineNumber'], 0);
         }
         break;
       }
@@ -1879,7 +1918,7 @@ export class TimelineUIUtils {
       case recordType.StreamingCompileScript: {
         const url = eventData['url'];
         if (url) {
-          details = linkifyLocation('', url, 0, 0);
+          details = linkifyLocation(null, url, 0, 0);
         }
         break;
       }
@@ -1899,8 +1938,11 @@ export class TimelineUIUtils {
     }
     return details;
 
-    function linkifyLocation(scriptId: string, url: string, lineNumber: number, columnNumber?: number): Element|null {
-      const options = {columnNumber, inlineFrameIndex: 0, className: 'timeline-details', tabStop: true};
+    function linkifyLocation(
+        scriptId: Protocol.Runtime.ScriptId|null, url: string, lineNumber: number, columnNumber?: number): Element|
+        null {
+      const options =
+          {columnNumber, showColumnNumber: true, inlineFrameIndex: 0, className: 'timeline-details', tabStop: true};
       return linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, options);
     }
 
@@ -1908,7 +1950,7 @@ export class TimelineUIUtils {
       const frame = TimelineModel.TimelineModel.TimelineData.forEvent(event).topFrame();
       return frame ? linkifier.maybeLinkifyConsoleCallFrame(
                          target, frame,
-                         {className: 'timeline-details', tabStop: true, inlineFrameIndex: 0, columnNumber: undefined}) :
+                         {className: 'timeline-details', tabStop: true, inlineFrameIndex: 0, showColumnNumber: true}) :
                      null;
     }
   }
@@ -1935,14 +1977,8 @@ export class TimelineUIUtils {
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static buildCompilationCacheDetails(eventData: any, contentHelper: TimelineDetailsContentHelper): void {
-    if ('producedCacheSize' in eventData) {
-      contentHelper.appendTextRow(
-          i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptSavedToCache));
-      contentHelper.appendTextRow(
-          i18nString(UIStrings.compilationCacheSize),
-          Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
-    } else if ('consumedCacheSize' in eventData) {
+  static buildConsumeCacheDetails(eventData: any, contentHelper: TimelineDetailsContentHelper): void {
+    if ('consumedCacheSize' in eventData) {
       contentHelper.appendTextRow(
           i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptLoadedFromCache));
       contentHelper.appendTextRow(
@@ -1964,7 +2000,7 @@ export class TimelineUIUtils {
     const maybeTarget = model.targetByEvent(event);
     let relatedNodesMap: (Map<number, SDK.DOMModel.DOMNode|null>|null)|null = null;
     if (maybeTarget) {
-      const target = (maybeTarget as SDK.SDKModel.Target);
+      const target = (maybeTarget as SDK.Target.Target);
       // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
       if (typeof event[previewElementSymbol] === 'undefined') {
         let previewElement: (Element|null)|null = null;
@@ -1981,7 +2017,7 @@ export class TimelineUIUtils {
         event[previewElementSymbol] = previewElement;
       }
 
-      const nodeIdsToResolve = new Set<number>();
+      const nodeIdsToResolve = new Set<Protocol.DOM.BackendNodeId>();
       const timelineData = TimelineModel.TimelineModel.TimelineData.forEvent(event);
       if (timelineData.backendNodeIds) {
         for (let i = 0; i < timelineData.backendNodeIds.length; ++i) {
@@ -1990,7 +2026,7 @@ export class TimelineUIUtils {
       }
       const invalidationTrackingEvents = TimelineModel.TimelineModel.InvalidationTracker.invalidationEventsFor(event);
       if (invalidationTrackingEvents) {
-        TimelineUIUtils._collectInvalidationNodeIds(nodeIdsToResolve, invalidationTrackingEvents);
+        TimelineUIUtils.collectInvalidationNodeIds(nodeIdsToResolve, invalidationTrackingEvents);
       }
       if (nodeIdsToResolve.size) {
         const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -2028,8 +2064,10 @@ export class TimelineUIUtils {
     }
 
     if (detailed && !Number.isNaN(event.duration || 0)) {
-      contentHelper.appendTextRow(i18nString(UIStrings.totalTime), Number.millisToString(event.duration || 0, true));
-      contentHelper.appendTextRow(i18nString(UIStrings.selfTime), Number.millisToString(event.selfTime, true));
+      contentHelper.appendTextRow(
+          i18nString(UIStrings.totalTime), i18n.TimeUtilities.millisToString(event.duration || 0, true));
+      contentHelper.appendTextRow(
+          i18nString(UIStrings.selfTime), i18n.TimeUtilities.millisToString(event.selfTime, true));
     }
 
     if (model.isGenericTrace()) {
@@ -2067,7 +2105,8 @@ export class TimelineUIUtils {
       case recordTypes.TimerRemove: {
         contentHelper.appendTextRow(i18nString(UIStrings.timerId), eventData['timerId']);
         if (event.name === recordTypes.TimerInstall) {
-          contentHelper.appendTextRow(i18nString(UIStrings.timeout), Number.millisToString(eventData['timeout']));
+          contentHelper.appendTextRow(
+              i18nString(UIStrings.timeout), i18n.TimeUtilities.millisToString(eventData['timeout']));
           contentHelper.appendTextRow(i18nString(UIStrings.repeats), !eventData['singleShot']);
         }
         break;
@@ -2089,6 +2128,7 @@ export class TimelineUIUtils {
             tabStop: true,
             className: undefined,
             columnNumber: undefined,
+            showColumnNumber: false,
             inlineFrameIndex: 0,
             lineNumber: undefined,
             text: undefined,
@@ -2134,10 +2174,34 @@ export class TimelineUIUtils {
           contentHelper.appendLocationRow(
               i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
         }
+        const isEager = eventData['eager'] ?? false;
+        if (isEager) {
+          contentHelper.appendTextRow(i18nString(UIStrings.eagerCompile), true);
+        }
         const isStreamed = eventData['streamed'];
         contentHelper.appendTextRow(
             i18nString(UIStrings.streamed), isStreamed + (isStreamed ? '' : `: ${eventData['notStreamedReason']}`));
-        TimelineUIUtils.buildCompilationCacheDetails(eventData, contentHelper);
+        TimelineUIUtils.buildConsumeCacheDetails(eventData, contentHelper);
+        break;
+      }
+
+      case recordTypes.CacheModule: {
+        url = eventData && eventData['url'];
+        contentHelper.appendTextRow(
+            i18nString(UIStrings.compilationCacheSize),
+            Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
+        break;
+      }
+
+      case recordTypes.CacheScript: {
+        url = eventData && eventData['url'];
+        if (url) {
+          contentHelper.appendLocationRow(
+              i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
+        }
+        contentHelper.appendTextRow(
+            i18nString(UIStrings.compilationCacheSize),
+            Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
         break;
       }
 
@@ -2202,6 +2266,7 @@ export class TimelineUIUtils {
             tabStop: true,
             className: undefined,
             columnNumber: undefined,
+            showColumnNumber: false,
             lineNumber: undefined,
             inlineFrameIndex: 0,
             text: undefined,
@@ -2222,6 +2287,7 @@ export class TimelineUIUtils {
             tabStop: true,
             className: undefined,
             columnNumber: undefined,
+            showColumnNumber: false,
             inlineFrameIndex: 0,
             lineNumber: undefined,
             text: undefined,
@@ -2298,7 +2364,7 @@ export class TimelineUIUtils {
       // @ts-ignore Fall-through intended.
       case recordTypes.FireIdleCallback: {
         contentHelper.appendTextRow(
-            i18nString(UIStrings.allottedTime), Number.millisToString(eventData['allottedMilliseconds']));
+            i18nString(UIStrings.allottedTime), i18n.TimeUtilities.millisToString(eventData['allottedMilliseconds']));
         contentHelper.appendTextRow(i18nString(UIStrings.invokedByTimeout), eventData['timedOut']);
       }
 
@@ -2335,7 +2401,8 @@ export class TimelineUIUtils {
           }
         }
 
-        contentHelper.appendTextRow(i18nString(UIStrings.timestamp), Number.preciseMillisToString(eventTime, 1));
+        contentHelper.appendTextRow(
+            i18nString(UIStrings.timestamp), i18n.TimeUtilities.preciseMillisToString(eventTime, 1));
         contentHelper.appendElementRow(
             i18nString(UIStrings.details), TimelineUIUtils.buildDetailsNodeForPerformanceEvent(event));
         break;
@@ -2344,13 +2411,23 @@ export class TimelineUIUtils {
       case recordTypes.LayoutShift: {
         const warning = document.createElement('span');
         const clsLink = UI.XLink.XLink.create('https://web.dev/cls/', i18nString(UIStrings.cumulativeLayoutShifts));
+        const evolvedClsLink =
+            UI.XLink.XLink.create('https://web.dev/evolving-cls/', i18nString(UIStrings.evolvedClsLink));
+
         warning.appendChild(
-            i18n.i18n.getFormatLocalizedString(str_, UIStrings.sCanResultInPoorUserExperiences, {PH1: clsLink}));
+            i18n.i18n.getFormatLocalizedString(str_, UIStrings.sCLSInformation, {PH1: clsLink, PH2: evolvedClsLink}));
         contentHelper.appendElementRow(i18nString(UIStrings.warning), warning, true);
 
         contentHelper.appendTextRow(i18nString(UIStrings.score), eventData['score'].toPrecision(4));
         contentHelper.appendTextRow(
             i18nString(UIStrings.cumulativeScore), eventData['cumulative_score'].toPrecision(4));
+        if ('_current_cluster_id' in eventData) {
+          contentHelper.appendTextRow(i18nString(UIStrings.currentClusterId), eventData['_current_cluster_id']);
+        }
+        if ('_current_cluster_score' in eventData) {
+          contentHelper.appendTextRow(
+              i18nString(UIStrings.currentClusterScore), eventData['_current_cluster_score'].toPrecision(4));
+        }
         contentHelper.appendTextRow(
             i18nString(UIStrings.hadRecentInput),
             eventData['had_recent_input'] ? i18nString(UIStrings.yes) : i18nString(UIStrings.no));
@@ -2382,7 +2459,7 @@ export class TimelineUIUtils {
     if (timelineData.timeWaitingForMainThread) {
       contentHelper.appendTextRow(
           i18nString(UIStrings.timeWaitingForMainThread),
-          Number.millisToString(timelineData.timeWaitingForMainThread, true));
+          i18n.TimeUtilities.millisToString(timelineData.timeWaitingForMainThread, true));
     }
 
     for (let i = 0; i < timelineData.backendNodeIds.length; ++i) {
@@ -2402,13 +2479,13 @@ export class TimelineUIUtils {
 
     if (initiator || timelineData.stackTraceForSelfOrInitiator() ||
         TimelineModel.TimelineModel.InvalidationTracker.invalidationEventsFor(event)) {
-      TimelineUIUtils._generateCauses(event, model.targetByEvent(event), relatedNodesMap, contentHelper);
+      TimelineUIUtils.generateCauses(event, model.targetByEvent(event), relatedNodesMap, contentHelper);
     }
 
     const stats: {
       [x: string]: number,
     } = {};
-    const showPieChart = detailed && TimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
+    const showPieChart = detailed && TimelineUIUtils.aggregatedStatsForTraceEvent(stats, model, event);
     if (showPieChart) {
       contentHelper.addSection(i18nString(UIStrings.aggregatedTime));
       const pieChart =
@@ -2566,6 +2643,7 @@ export class TimelineUIUtils {
         tabStop: true,
         className: undefined,
         columnNumber: undefined,
+        showColumnNumber: false,
         text: undefined,
         inlineFrameIndex: 0,
         lineNumber: undefined,
@@ -2580,15 +2658,15 @@ export class TimelineUIUtils {
     // The time from queueing the request until resource processing is finished.
     const fullDuration = request.endTime - (request.getStartTime() || -Infinity);
     if (isFinite(fullDuration)) {
-      let textRow = Number.millisToString(fullDuration, true);
+      let textRow = i18n.TimeUtilities.millisToString(fullDuration, true);
       // The time from queueing the request until the download is finished. This
       // corresponds to the total time reported for the request in the network tab.
       const networkDuration = (request.finishTime || request.getStartTime()) - request.getStartTime();
       // The time it takes to make the resource available to the renderer process.
       const processingDuration = request.endTime - (request.finishTime || 0);
       if (isFinite(networkDuration) && isFinite(processingDuration)) {
-        const networkDurationStr = Number.millisToString(networkDuration, true);
-        const processingDurationStr = Number.millisToString(processingDuration, true);
+        const networkDurationStr = i18n.TimeUtilities.millisToString(networkDuration, true);
+        const processingDurationStr = i18n.TimeUtilities.millisToString(processingDuration, true);
         const cacheOrNetworkLabel =
             request.cached() ? i18nString(UIStrings.loadFromCache) : i18nString(UIStrings.networkTransfer);
         textRow += i18nString(
@@ -2633,7 +2711,7 @@ export class TimelineUIUtils {
     const topFrame = TimelineModel.TimelineModel.TimelineData.forEvent(sendRequest).topFrame();
     if (topFrame) {
       const link = linkifier.maybeLinkifyConsoleCallFrame(
-          target, topFrame, {tabStop: true, className: undefined, inlineFrameIndex: 0, columnNumber: undefined});
+          target, topFrame, {tabStop: true, className: undefined, inlineFrameIndex: 0, showColumnNumber: true});
       if (link) {
         contentHelper.appendElementRow(title, link);
       }
@@ -2668,12 +2746,12 @@ export class TimelineUIUtils {
     return contentHelper.fragment;
   }
 
-  static _stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[]): Protocol.Runtime.StackTrace {
+  static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[]): Protocol.Runtime.StackTrace {
     return {callFrames: callFrames} as Protocol.Runtime.StackTrace;
   }
 
-  static _generateCauses(
-      event: SDK.TracingModel.Event, target: SDK.SDKModel.Target|null,
+  private static generateCauses(
+      event: SDK.TracingModel.Event, target: SDK.Target.Target|null,
       relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null, contentHelper: TimelineDetailsContentHelper): void {
     const recordTypes = TimelineModel.TimelineModel.RecordType;
 
@@ -2706,7 +2784,7 @@ export class TimelineUIUtils {
       contentHelper.addSection(i18nString(UIStrings.callStacks));
       contentHelper.appendStackTrace(
           stackLabel || i18nString(UIStrings.stackTrace),
-          TimelineUIUtils._stackTraceFromCallFrames(timelineData.stackTrace));
+          TimelineUIUtils.stackTraceFromCallFrames(timelineData.stackTrace));
     }
 
     const initiator = TimelineModel.TimelineModel.TimelineData.forEvent(event).initiator();
@@ -2714,10 +2792,10 @@ export class TimelineUIUtils {
     if (TimelineModel.TimelineModel.InvalidationTracker.invalidationEventsFor(event) && target) {
       // Full invalidation tracking (experimental).
       contentHelper.addSection(i18nString(UIStrings.invalidations));
-      TimelineUIUtils._generateInvalidations(event, target, relatedNodesMap, contentHelper);
+      TimelineUIUtils.generateInvalidations(event, target, relatedNodesMap, contentHelper);
     } else if (initiator) {  // Partial invalidation tracking.
       const delay = event.startTime - initiator.startTime;
-      contentHelper.appendTextRow(i18nString(UIStrings.pendingFor), Number.preciseMillisToString(delay, 1));
+      contentHelper.appendTextRow(i18nString(UIStrings.pendingFor), i18n.TimeUtilities.preciseMillisToString(delay, 1));
 
       const link = document.createElement('span');
       link.classList.add('devtools-link');
@@ -2739,13 +2817,13 @@ export class TimelineUIUtils {
       if (initiatorStackTrace) {
         contentHelper.appendStackTrace(
             callSiteStackLabel || i18nString(UIStrings.firstInvalidated),
-            TimelineUIUtils._stackTraceFromCallFrames(initiatorStackTrace));
+            TimelineUIUtils.stackTraceFromCallFrames(initiatorStackTrace));
       }
     }
   }
 
-  static _generateInvalidations(
-      event: SDK.TracingModel.Event, target: SDK.SDKModel.Target,
+  private static generateInvalidations(
+      event: SDK.TracingModel.Event, target: SDK.Target.Target,
       relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null, contentHelper: TimelineDetailsContentHelper): void {
     const invalidationTrackingEvents = TimelineModel.TimelineModel.InvalidationTracker.invalidationEventsFor(event);
     if (!invalidationTrackingEvents) {
@@ -2763,12 +2841,12 @@ export class TimelineUIUtils {
     }
 
     Object.keys(invalidations).forEach(function(type) {
-      TimelineUIUtils._generateInvalidationsForType(type, target, invalidations[type], relatedNodesMap, contentHelper);
+      TimelineUIUtils.generateInvalidationsForType(type, target, invalidations[type], relatedNodesMap, contentHelper);
     });
   }
 
-  static _generateInvalidationsForType(
-      type: string, target: SDK.SDKModel.Target, invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[],
+  private static generateInvalidationsForType(
+      type: string, target: SDK.Target.Target, invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[],
       relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null, contentHelper: TimelineDetailsContentHelper): void {
     let title;
     switch (type) {
@@ -2784,8 +2862,7 @@ export class TimelineUIUtils {
     }
 
     const invalidationsTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    invalidationsTreeOutline.registerRequiredCSS(
-        'panels/timeline/invalidationsTree.css', {enableLegacyPatching: false});
+    invalidationsTreeOutline.registerCSSFiles([invalidationsTreeStyles]);
     invalidationsTreeOutline.element.classList.add('invalidations-tree');
 
     const invalidationGroups = groupInvalidationsByCause(invalidations);
@@ -2825,12 +2902,12 @@ export class TimelineUIUtils {
     }
   }
 
-  static _collectInvalidationNodeIds(
+  private static collectInvalidationNodeIds(
       nodeIds: Set<number>, invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[]): void {
     Platform.SetUtilities.addAll(nodeIds, invalidations.map(invalidation => invalidation.nodeId).filter(id => id));
   }
 
-  static _aggregatedStatsForTraceEvent(
+  private static aggregatedStatsForTraceEvent(
       total: {
         [x: string]: number,
       },
@@ -2879,7 +2956,7 @@ export class TimelineUIUtils {
     return hasChildren;
   }
 
-  static async buildPicturePreviewContent(event: SDK.TracingModel.Event, target: SDK.SDKModel.Target):
+  static async buildPicturePreviewContent(event: SDK.TracingModel.Event, target: SDK.Target.Target):
       Promise<Element|null> {
     const snapshotWithRect =
         await new TimelineModel.TimelineFrameModel.LayerPaintEvent(event, target).snapshotPromise();
@@ -2892,8 +2969,10 @@ export class TimelineUIUtils {
     if (!imageURL) {
       return null;
     }
-    const container = document.createElement('div');
-    UI.Utils.appendStyle(container, 'ui/legacy/components/utils/imagePreview.css', {enableLegacyPatching: false});
+    const stylesContainer = document.createElement('div');
+    const shadowRoot = stylesContainer.attachShadow({mode: 'open'});
+    shadowRoot.adoptedStyleSheets = [imagePreviewStyles];
+    const container = shadowRoot.createChild('div') as HTMLDivElement;
     container.classList.add('image-preview-container', 'vbox', 'link');
     const img = (container.createChild('img') as HTMLImageElement);
     img.src = imageURL;
@@ -2910,13 +2989,13 @@ export class TimelineUIUtils {
         keyEvent.consume(true);
       }
     });
-    return container;
+    return stylesContainer;
   }
 
   static createEventDivider(event: SDK.TracingModel.Event, zeroTime: number): Element {
     const eventDivider = document.createElement('div');
     eventDivider.classList.add('resources-event-divider');
-    const startTime = Number.millisToString(event.startTime - zeroTime);
+    const startTime = i18n.TimeUtilities.millisToString(event.startTime - zeroTime);
     UI.Tooltip.Tooltip.install(
         eventDivider, i18nString(UIStrings.sAtS, {PH1: TimelineUIUtils.eventTitle(event), PH2: startTime}));
     const style = TimelineUIUtils.markerStyleForEvent(event);
@@ -2926,8 +3005,8 @@ export class TimelineUIUtils {
     return eventDivider;
   }
 
-  static _visibleTypes(): string[] {
-    const eventStyles = TimelineUIUtils._initEventStyles();
+  private static visibleTypes(): string[] {
+    const eventStyles = TimelineUIUtils.initEventStyles();
     const result = [];
     for (const name in eventStyles) {
       if (!eventStyles[name].hidden) {
@@ -2938,7 +3017,7 @@ export class TimelineUIUtils {
   }
 
   static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter {
-    return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(TimelineUIUtils._visibleTypes());
+    return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(TimelineUIUtils.visibleTypes());
   }
 
   static categories(): {
@@ -3041,7 +3120,7 @@ export class TimelineUIUtils {
     pieChart.data = {
       chartName: i18nString(UIStrings.timeSpentInRendering),
       size: 110,
-      formatter: (value: number): string => Number.preciseMillisToString(value),
+      formatter: (value: number): string => i18n.TimeUtilities.preciseMillisToString(value),
       showLegend: true,
       total,
       slices,
@@ -3062,7 +3141,7 @@ export class TimelineUIUtils {
     contentHelper.appendElementRow(i18nString(UIStrings.duration), duration, frame.hasWarnings());
     const durationInMillis = frame.endTime - frame.startTime;
     contentHelper.appendTextRow(i18nString(UIStrings.fps), Math.floor(1000 / durationInMillis));
-    contentHelper.appendTextRow(i18nString(UIStrings.cpuTime), Number.millisToString(frame.cpuTime, true));
+    contentHelper.appendTextRow(i18nString(UIStrings.cpuTime), i18n.TimeUtilities.millisToString(frame.cpuTime, true));
     if (filmStripFrame) {
       const filmStripPreview = document.createElement('div');
       filmStripPreview.classList.add('timeline-filmstrip-preview');
@@ -3088,8 +3167,8 @@ export class TimelineUIUtils {
 
   static frameDuration(frame: TimelineModel.TimelineFrameModel.TimelineFrame): Element {
     const durationText = i18nString(UIStrings.sAtSParentheses, {
-      PH1: Number.millisToString(frame.endTime - frame.startTime, true),
-      PH2: Number.millisToString(frame.startTimeOffset, true),
+      PH1: i18n.TimeUtilities.millisToString(frame.endTime - frame.startTime, true),
+      PH2: i18n.TimeUtilities.millisToString(frame.startTimeOffset, true),
     });
     if (!frame.hasWarnings()) {
       return i18n.i18n.getFormatLocalizedString(str_, UIStrings.emptyPlaceholder, {PH1: durationText});
@@ -3265,20 +3344,21 @@ export class TimelineUIUtils {
       }
 
       case warnings.IdleDeadlineExceeded: {
-        const exceededMs = Number.millisToString((event.duration || 0) - eventData['allottedMilliseconds'], true);
+        const exceededMs =
+            i18n.TimeUtilities.millisToString((event.duration || 0) - eventData['allottedMilliseconds'], true);
         span.textContent = i18nString(UIStrings.idleCallbackExecutionExtended, {PH1: exceededMs});
         break;
       }
 
       case warnings.LongHandler: {
         span.textContent =
-            i18nString(UIStrings.handlerTookS, {PH1: Number.millisToString((event.duration || 0), true)});
+            i18nString(UIStrings.handlerTookS, {PH1: i18n.TimeUtilities.millisToString((event.duration || 0), true)});
         break;
       }
 
       case warnings.LongRecurringHandler: {
-        span.textContent =
-            i18nString(UIStrings.recurringHandlerTookS, {PH1: Number.millisToString((event.duration || 0), true)});
+        span.textContent = i18nString(
+            UIStrings.recurringHandlerTookS, {PH1: i18n.TimeUtilities.millisToString((event.duration || 0), true)});
         break;
       }
 
@@ -3286,7 +3366,8 @@ export class TimelineUIUtils {
         const longTaskLink =
             UI.XLink.XLink.create('https://web.dev/rail/#goals-and-guidelines', i18nString(UIStrings.longTask));
         span.appendChild(i18n.i18n.getFormatLocalizedString(
-            str_, UIStrings.sTookS, {PH1: longTaskLink, PH2: Number.millisToString((event.duration || 0), true)}));
+            str_, UIStrings.sTookS,
+            {PH1: longTaskLink, PH2: i18n.TimeUtilities.millisToString((event.duration || 0), true)}));
         break;
       }
 
@@ -3338,17 +3419,16 @@ export enum NetworkCategory {
   Other = 'Other',
 }
 
-
 export const aggregatedStatsKey = Symbol('aggregatedStats');
 
 export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
   toggleOnClick: boolean;
-  _relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null;
-  _contentHelper: TimelineDetailsContentHelper;
-  _invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[];
+  private readonly relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null;
+  private readonly contentHelper: TimelineDetailsContentHelper;
+  private readonly invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[];
 
   constructor(
-      target: SDK.SDKModel.Target, relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null,
+      target: SDK.Target.Target, relatedNodesMap: Map<number, SDK.DOMModel.DOMNode|null>|null,
       contentHelper: TimelineDetailsContentHelper,
       invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[]) {
     super('', true);
@@ -3357,32 +3437,33 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     this.selectable = false;
     this.toggleOnClick = true;
 
-    this._relatedNodesMap = relatedNodesMap;
-    this._contentHelper = contentHelper;
-    this._invalidations = invalidations;
-    this.title = this._createTitle(target);
+    this.relatedNodesMap = relatedNodesMap;
+    this.contentHelper = contentHelper;
+    this.invalidations = invalidations;
+    this.title = this.createTitle(target);
   }
 
-  _createTitle(target: SDK.SDKModel.Target): Element {
-    const first = this._invalidations[0];
+  private createTitle(target: SDK.Target.Target): Element {
+    const first = this.invalidations[0];
     const reason = first.cause.reason || i18nString(UIStrings.unknownCause);
     const topFrame = first.cause.stackTrace && first.cause.stackTrace[0];
 
-    const truncatedNodesElement = this._getTruncatedNodesElement(this._invalidations);
+    const truncatedNodesElement = this.getTruncatedNodesElement(this.invalidations);
     if (truncatedNodesElement === null) {
       return i18n.i18n.getFormatLocalizedString(str_, UIStrings.emptyPlaceholder, {PH1: reason});
     }
 
     const title = i18n.i18n.getFormatLocalizedString(str_, UIStrings.sForS, {PH1: reason, PH2: truncatedNodesElement});
 
-    if (topFrame && this._contentHelper.linkifier()) {
+    if (topFrame && this.contentHelper.linkifier()) {
       const stack = document.createElement('span');
       stack.classList.add('monospace');
       const completeTitle = i18n.i18n.getFormatLocalizedString(str_, UIStrings.sSDot, {PH1: title, PH2: stack});
       stack.createChild('span').textContent = TimelineUIUtils.frameDisplayName(topFrame);
-      const linkifier = this._contentHelper.linkifier();
+      const linkifier = this.contentHelper.linkifier();
       if (linkifier) {
-        const link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame);
+        const link =
+            linkifier.maybeLinkifyConsoleCallFrame(target, topFrame, {showColumnNumber: true, inlineFrameIndex: 0});
         if (link) {
           // Linkifier is using a workaround with the 'zero width space' (\u200b).
           // TODO(szuend): Remove once the Linkifier is no longer using the workaround.
@@ -3403,21 +3484,21 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     const content = document.createElement('div');
     content.classList.add('content');
 
-    const first = this._invalidations[0];
+    const first = this.invalidations[0];
     if (first.cause.stackTrace) {
       const stack = content.createChild('div');
       UI.UIUtils.createTextChild(stack, i18nString(UIStrings.stackTraceColon));
-      this._contentHelper.createChildStackTraceElement(
-          stack, TimelineUIUtils._stackTraceFromCallFrames(first.cause.stackTrace));
+      this.contentHelper.createChildStackTraceElement(
+          stack, TimelineUIUtils.stackTraceFromCallFrames(first.cause.stackTrace));
     }
 
     UI.UIUtils.createTextChild(
-        content, this._invalidations.length !== 1 ? i18nString(UIStrings.nodes) : i18nString(UIStrings.node));
+        content, this.invalidations.length !== 1 ? i18nString(UIStrings.nodes) : i18nString(UIStrings.node));
     const nodeList = content.createChild('div', 'node-list');
     let firstNode = true;
-    for (let i = 0; i < this._invalidations.length; i++) {
-      const invalidation = this._invalidations[i];
-      const invalidationNode = this._createInvalidationNode(invalidation, true);
+    for (let i = 0; i < this.invalidations.length; i++) {
+      const invalidation = this.invalidations[i];
+      const invalidationNode = this.createInvalidationNode(invalidation, true);
       if (invalidationNode) {
         if (!firstNode) {
           UI.UIUtils.createTextChild(nodeList, ', ');
@@ -3452,14 +3533,15 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     this.appendChild(contentTreeElement);
   }
 
-  _getTruncatedNodesElement(invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[]): Element|null {
+  private getTruncatedNodesElement(invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[]): Element
+      |null {
     const invalidationNodes = [];
     const invalidationNodeIdMap: {
       [x: number]: boolean,
     } = {};
     for (let i = 0; i < invalidations.length; i++) {
       const invalidation = invalidations[i];
-      const invalidationNode = this._createInvalidationNode(invalidation, false);
+      const invalidationNode = this.createInvalidationNode(invalidation, false);
       invalidationNode.addEventListener(
           'click',
 
@@ -3494,10 +3576,10 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     return null;
   }
 
-  _createInvalidationNode(
+  private createInvalidationNode(
       invalidation: TimelineModel.TimelineModel.InvalidationTrackingEvent, showUnknownNodes: boolean): HTMLSpanElement
       |Text {
-    const node = (invalidation.nodeId && this._relatedNodesMap) ? this._relatedNodesMap.get(invalidation.nodeId) : null;
+    const node = (invalidation.nodeId && this.relatedNodesMap) ? this.relatedNodesMap.get(invalidation.nodeId) : null;
     if (node) {
       const nodeSpan = document.createElement('span');
       Common.Linkifier.Linkifier.linkify(node).then(link => nodeSpan.appendChild(link));
@@ -3531,16 +3613,15 @@ export class EventDispatchTypeDescriptor {
   }
 }
 
-export class TimelineCategory extends Common.ObjectWrapper.ObjectWrapper {
+export class TimelineCategory {
   name: string;
   title: string;
   visible: boolean;
   childColor: string;
   color: string;
-  _hidden?: boolean;
+  private hiddenInternal?: boolean;
 
   constructor(name: string, title: string, visible: boolean, childColor: string, color: string) {
-    super();
     this.name = name;
     this.title = title;
     this.visible = visible;
@@ -3550,44 +3631,35 @@ export class TimelineCategory extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   get hidden(): boolean {
-    return Boolean(this._hidden);
+    return Boolean(this.hiddenInternal);
   }
 
   set hidden(hidden: boolean) {
-    this._hidden = hidden;
-    this.dispatchEventToListeners(TimelineCategory.Events.VisibilityChanged, this);
-  }
-}
-
-export namespace TimelineCategory {
-  // TODO(crbug.com/1167717): Make this a const enum again
-  // eslint-disable-next-line rulesdir/const_enum
-  export enum Events {
-    VisibilityChanged = 'VisibilityChanged',
+    this.hiddenInternal = hidden;
   }
 }
 
 export class TimelineDetailsContentHelper {
   fragment: DocumentFragment;
-  _linkifier: Components.Linkifier.Linkifier|null;
-  _target: SDK.SDKModel.Target|null;
+  private linkifierInternal: Components.Linkifier.Linkifier|null;
+  private target: SDK.Target.Target|null;
   element: HTMLDivElement;
-  _tableElement: HTMLElement;
+  private tableElement: HTMLElement;
 
-  constructor(target: SDK.SDKModel.Target|null, linkifier: Components.Linkifier.Linkifier|null) {
+  constructor(target: SDK.Target.Target|null, linkifier: Components.Linkifier.Linkifier|null) {
     this.fragment = document.createDocumentFragment();
 
-    this._linkifier = linkifier;
-    this._target = target;
+    this.linkifierInternal = linkifier;
+    this.target = target;
 
     this.element = document.createElement('div');
     this.element.classList.add('timeline-details-view-block');
-    this._tableElement = this.element.createChild('div', 'vbox timeline-details-chip-body');
+    this.tableElement = this.element.createChild('div', 'vbox timeline-details-chip-body');
     this.fragment.appendChild(this.element);
   }
 
   addSection(title: string, swatchColor?: string): void {
-    if (!this._tableElement.hasChildNodes()) {
+    if (!this.tableElement.hasChildNodes()) {
       this.element.removeChildren();
     } else {
       this.element = document.createElement('div');
@@ -3603,22 +3675,22 @@ export class TimelineDetailsContentHelper {
       UI.UIUtils.createTextChild(titleElement, title);
     }
 
-    this._tableElement = this.element.createChild('div', 'vbox timeline-details-chip-body');
+    this.tableElement = this.element.createChild('div', 'vbox timeline-details-chip-body');
     this.fragment.appendChild(this.element);
   }
 
   linkifier(): Components.Linkifier.Linkifier|null {
-    return this._linkifier;
+    return this.linkifierInternal;
   }
 
   appendTextRow(title: string, value: string|number|boolean): void {
-    const rowElement = this._tableElement.createChild('div', 'timeline-details-view-row');
+    const rowElement = this.tableElement.createChild('div', 'timeline-details-view-row');
     rowElement.createChild('div', 'timeline-details-view-row-title').textContent = title;
     rowElement.createChild('div', 'timeline-details-view-row-value').textContent = value.toString();
   }
 
   appendElementRow(title: string, content: string|Node, isWarning?: boolean, isStacked?: boolean): void {
-    const rowElement = this._tableElement.createChild('div', 'timeline-details-view-row');
+    const rowElement = this.tableElement.createChild('div', 'timeline-details-view-row');
     if (isWarning) {
       rowElement.classList.add('timeline-details-warning');
     }
@@ -3636,7 +3708,7 @@ export class TimelineDetailsContentHelper {
   }
 
   appendLocationRow(title: string, url: string, startLine: number, startColumn?: number): void {
-    if (!this._linkifier || !this._target) {
+    if (!this.linkifierInternal || !this.target) {
       return;
     }
 
@@ -3644,6 +3716,7 @@ export class TimelineDetailsContentHelper {
       tabStop: true,
       className: undefined,
       columnNumber: startColumn,
+      showColumnNumber: true,
       inlineFrameIndex: 0,
       text: undefined,
       lineNumber: undefined,
@@ -3651,7 +3724,7 @@ export class TimelineDetailsContentHelper {
       maxLength: undefined,
       bypassURLTrimming: undefined,
     };
-    const link = this._linkifier.maybeLinkifyScriptLocation(this._target, null, url, startLine, options);
+    const link = this.linkifierInternal.maybeLinkifyScriptLocation(this.target, null, url, startLine, options);
     if (!link) {
       return;
     }
@@ -3659,12 +3732,12 @@ export class TimelineDetailsContentHelper {
   }
 
   appendLocationRange(title: string, url: string, startLine: number, endLine?: number): void {
-    if (!this._linkifier || !this._target) {
+    if (!this.linkifierInternal || !this.target) {
       return;
     }
     const locationContent = document.createElement('span');
-    const link = this._linkifier.maybeLinkifyScriptLocation(
-        this._target, null, url, startLine,
+    const link = this.linkifierInternal.maybeLinkifyScriptLocation(
+        this.target, null, url, startLine,
         {tabStop: true, className: undefined, inlineFrameIndex: 0, columnNumber: undefined});
     if (!link) {
       return;
@@ -3676,24 +3749,24 @@ export class TimelineDetailsContentHelper {
   }
 
   appendStackTrace(title: string, stackTrace: Protocol.Runtime.StackTrace): void {
-    if (!this._linkifier || !this._target) {
+    if (!this.linkifierInternal || !this.target) {
       return;
     }
 
-    const rowElement = this._tableElement.createChild('div', 'timeline-details-view-row');
+    const rowElement = this.tableElement.createChild('div', 'timeline-details-view-row');
     rowElement.createChild('div', 'timeline-details-view-row-title').textContent = title;
     this.createChildStackTraceElement(rowElement, stackTrace);
   }
 
   createChildStackTraceElement(parentElement: Element, stackTrace: Protocol.Runtime.StackTrace): void {
-    if (!this._linkifier || !this._target) {
+    if (!this.linkifierInternal || !this.target) {
       return;
     }
     parentElement.classList.add('timeline-details-stack-values');
     const stackTraceElement =
         parentElement.createChild('div', 'timeline-details-view-row-value timeline-details-view-row-stack-trace');
     const callFrameContents = Components.JSPresentationUtils.buildStackTracePreviewContents(
-        this._target, this._linkifier, {stackTrace, tabStops: true});
+        this.target, this.linkifierInternal, {stackTrace, tabStops: true});
     stackTraceElement.appendChild(callFrameContents.element);
   }
 
@@ -3713,4 +3786,48 @@ export interface TimelineMarkerStyle {
   dashStyle: number[];
   tall: boolean;
   lowPriority: boolean;
+}
+
+export function assignLayoutShiftsToClusters(layoutShifts: readonly SDK.TracingModel.Event[]): void {
+  const gapTimeInMs = 1000;
+  const limitTimeInMs = 5000;
+  let firstTimestamp = Number.NEGATIVE_INFINITY;
+  let previousTimestamp = Number.NEGATIVE_INFINITY;
+  let currentClusterId = 0;
+  let currentClusterScore = 0;
+  let currentCluster = new Set<SDK.TracingModel.Event>();
+
+  for (const event of layoutShifts) {
+    if (event.args['data']['had_recent_input'] || event.args['data']['weighted_score_delta'] === undefined) {
+      continue;
+    }
+
+    if (event.startTime - firstTimestamp > limitTimeInMs || event.startTime - previousTimestamp > gapTimeInMs) {
+      // This means the event does not fit into the current session/cluster, so we need to start a new cluster.
+      firstTimestamp = event.startTime;
+
+      // Update all the layout shifts we found in this cluster to associate them with the cluster.
+      for (const layoutShift of currentCluster) {
+        layoutShift.args['data']['_current_cluster_score'] = currentClusterScore;
+        layoutShift.args['data']['_current_cluster_id'] = currentClusterId;
+      }
+
+      // Increment the cluster ID and reset the data.
+      currentClusterId += 1;
+      currentClusterScore = 0;
+      currentCluster = new Set();
+    }
+
+    // Store the timestamp of the previous layout shift.
+    previousTimestamp = event.startTime;
+    // Update the score of the current cluster and store this event in that cluster
+    currentClusterScore += event.args['data']['weighted_score_delta'];
+    currentCluster.add(event);
+  }
+
+  // The last cluster we find may not get closed out - so if not, update all the shifts that we associate with it.
+  for (const layoutShift of currentCluster) {
+    layoutShift.args['data']['_current_cluster_score'] = currentClusterScore;
+    layoutShift.args['data']['_current_cluster_id'] = currentClusterId;
+  }
 }

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
 
+#include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -17,8 +19,11 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
+#include "ui/views/view_utils.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
@@ -115,11 +120,12 @@ class BookmarkEditorViewTest : public testing::Test {
     editor_->ExecuteCommandDelete(std::move(non_empty_folder_confirmation_cb));
   }
 
-  views::TreeView* tree_view() { return editor_->tree_view_; }
+  views::TreeView* tree_view() const { return editor_->tree_view_; }
+  BookmarkEditorView* editor() const { return editor_.get(); }
 
   content::BrowserTaskEnvironment task_environment_;
 
-  BookmarkModel* model_;
+  raw_ptr<BookmarkModel> model_;
   std::unique_ptr<TestingProfile> profile_;
 
  private:
@@ -161,7 +167,7 @@ class BookmarkEditorViewTest : public testing::Test {
 TEST_F(BookmarkEditorViewTest, ModelsMatch) {
   CreateEditor(profile_.get(), nullptr,
                BookmarkEditor::EditDetails::AddNodeInFolder(
-                   nullptr, size_t{-1}, GURL(), std::u16string()),
+                   nullptr, static_cast<size_t>(-1), GURL(), std::u16string()),
                BookmarkEditorView::SHOW_TREE);
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two or three children: bookmark bar, other bookmarks
@@ -202,7 +208,7 @@ TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
 
 // Changes the url and makes sure parent/visual order doesn't change.
 TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
-  base::Time node_time = base::Time::Now() + base::TimeDelta::FromDays(2);
+  base::Time node_time = base::Time::Now() + base::Days(2);
   GetMutableNode("a")->set_date_added(node_time);
   CreateEditor(profile_.get(), nullptr,
                BookmarkEditor::EditDetails::EditNode(GetNode("a")),
@@ -235,7 +241,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParent) {
 
 // Moves 'a' to be a child of the other node and changes its url to new_a.
 TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
-  base::Time node_time = base::Time::Now() + base::TimeDelta::FromDays(2);
+  base::Time node_time = base::Time::Now() + base::Days(2);
   GetMutableNode("a")->set_date_added(node_time);
   CreateEditor(profile_.get(), nullptr,
                BookmarkEditor::EditDetails::EditNode(GetNode("a")),
@@ -379,7 +385,10 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
   const BookmarkNode* bb_node = model_->bookmark_bar_node();
   BookmarkEditor::EditDetails details =
       BookmarkEditor::EditDetails::AddFolder(bb_node, 1);
-  details.urls.push_back(std::make_pair(GURL(base_path() + "x"), u"z"));
+  BookmarkEditor::EditDetails::BookmarkData url_data;
+  url_data.title = u"z";
+  url_data.url = GURL(base_path() + "x");
+  details.bookmark_data.children.push_back(url_data);
   CreateEditor(profile_.get(), bb_node, details, BookmarkEditorView::SHOW_TREE);
 
   // The url field shouldn't be visible.
@@ -398,16 +407,19 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
   const BookmarkNode* new_child = new_node->children()[0].get();
   // Make sure the child url/title match.
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
-  EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
-  EXPECT_EQ(details.urls[0].first, new_child->url());
+  EXPECT_EQ(details.bookmark_data.children.at(0).title, new_child->GetTitle());
+  EXPECT_EQ(details.bookmark_data.children.at(0).url, new_child->url());
 }
 
 // Creates a new folder and selects a different folder for the folder to appear
 // in then the editor is initially created showing.
 TEST_F(BookmarkEditorViewTest, MoveFolder) {
   BookmarkEditor::EditDetails details = BookmarkEditor::EditDetails::AddFolder(
-      model_->bookmark_bar_node(), size_t{-1});
-  details.urls.push_back(std::make_pair(GURL(base_path() + "x"), u"z"));
+      model_->bookmark_bar_node(), static_cast<size_t>(-1));
+  BookmarkEditor::EditDetails::BookmarkData url_data;
+  url_data.title = u"z";
+  url_data.url = GURL(base_path() + "x");
+  details.bookmark_data.children.push_back(url_data);
   CreateEditor(profile_.get(), model_->bookmark_bar_node(),
                details, BookmarkEditorView::SHOW_TREE);
 
@@ -426,8 +438,8 @@ TEST_F(BookmarkEditorViewTest, MoveFolder) {
   const BookmarkNode* new_child = new_node->children()[0].get();
   // Make sure the child url/title match.
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
-  EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
-  EXPECT_EQ(details.urls[0].first, new_child->url());
+  EXPECT_EQ(details.bookmark_data.children.at(0).title, new_child->GetTitle());
+  EXPECT_EQ(details.bookmark_data.children.at(0).url, new_child->url());
 }
 
 // Verifies the title of a new folder is updated correctly if ApplyEdits() is
@@ -559,4 +571,37 @@ TEST_F(BookmarkEditorViewTest, ConcurrentDeleteDuringConfirmationDialog) {
   ApplyEdits();
 
   EXPECT_EQ(nullptr, GetNode("f11a"));
+}
+
+// Add enough new folders to scroll to the bottom of the scroll view. Verify
+// that the editor at the end can still be fully visible.
+TEST_F(BookmarkEditorViewTest, EditorFullyShown) {
+  CreateEditor(profile_.get(), nullptr,
+               BookmarkEditor::EditDetails::EditNode(GetNode("oa")),
+               BookmarkEditorView::SHOW_TREE);
+  editor()->SetBounds(0, 0, 200, 200);
+
+  views::TreeView* tree = tree_view();
+  BookmarkEditorView::EditorNode* parent_node =
+      editor_tree_model()->GetRoot()->children()[1]->children()[0].get();
+  // Add more nodes to exceed the height of the viewport.
+  do {
+    tree->Expand(parent_node);
+    parent_node = AddNewFolder(parent_node);
+    editor()->Layout();
+  } while (tree->bounds().height() <= tree->parent()->bounds().height());
+
+  // Edit the last node which also has the focus.
+  tree->StartEditing(parent_node);
+  views::Textfield* editor = tree->editor();
+  EXPECT_TRUE(editor && editor->GetVisible());
+  views::FocusRing* focus_ring = views::FocusRing::Get(editor);
+  ASSERT_TRUE(focus_ring);
+  views::ScrollView* scroll_view =
+      views::ScrollView::GetScrollViewForContents(tree);
+  ASSERT_TRUE(scroll_view);
+  gfx::Point bottom_right = focus_ring->GetLocalBounds().bottom_right();
+  views::View::ConvertPointToTarget(focus_ring, scroll_view, &bottom_right);
+  // Confirm the bottom right of the focus ring is also visible.
+  EXPECT_TRUE(scroll_view->GetVisibleRect().Contains(bottom_right));
 }

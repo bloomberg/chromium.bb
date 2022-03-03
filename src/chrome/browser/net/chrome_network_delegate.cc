@@ -12,10 +12,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/files/file_util.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/download/download_prefs.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/common/chrome_paths.h"
 #endif
 
@@ -65,8 +61,11 @@ bool IsAccessAllowedChromeOS(const base::FilePath& path,
   static const base::FilePath::CharType* const kLocalAccessAllowList[] = {
       "/home/chronos/user/Downloads",
       "/home/chronos/user/MyFiles",
-      "/home/chronos/user/log",
       "/home/chronos/user/WebRTC Logs",
+      "/home/chronos/user/google-assistant-library/log",
+      "/home/chronos/user/lacros/lacros.log",
+      "/home/chronos/user/log",
+      "/home/chronos/user/crostini.icons",
       "/media",
       "/opt/oem",
       "/run/arc/sdcard/write/emulated/0",
@@ -81,10 +80,6 @@ bool IsAccessAllowedChromeOS(const base::FilePath& path,
   if (base::PathService::Get(base::DIR_TEMP, &temp_dir))
     allowlist.push_back(temp_dir);
 
-  // For developers on linux-chromeos, MyFiles dir is at $HOME/Downloads.
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    allowlist.push_back(base::GetHomeDir().Append("Downloads"));
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // The actual location of "/home/chronos/user/Xyz" is the Xyz directory under
   // the profile path ("/home/chronos/user' is a hard link to current primary
@@ -98,10 +93,19 @@ bool IsAccessAllowedChromeOS(const base::FilePath& path,
     const base::FilePath webrtc_logs = profile_path.AppendASCII("WebRTC Logs");
     allowlist.push_back(webrtc_logs);
   }
+  // For developers using the linux-chromeos emulator, the MyFiles dir is at
+  // $HOME/Downloads. Ensure developers can access it for manual testing.
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    base::FilePath downloads_dir;
+    if (base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_dir))
+      allowlist.push_back(downloads_dir);
+  }
 #else
   // Lacros uses the system-level documents directory and downloads directory
   // under /home/chronos/u-<hash>, which are provided via PathService. Since
   // they are system-level, they are not subdirectories of |profile_path|.
+  // PathService also provides valid paths for developers using the
+  // linux-chromeos emulator.
   base::FilePath documents_dir;
   if (base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir))
     allowlist.push_back(documents_dir);

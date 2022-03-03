@@ -52,8 +52,7 @@ private:
 // holds the glyphs for that strike.
 class SkScalerCache {
 public:
-    SkScalerCache(const SkDescriptor& desc,
-                  std::unique_ptr<SkScalerContext> scaler,
+    SkScalerCache(std::unique_ptr<SkScalerContext> scaler,
                   const SkFontMetrics* metrics = nullptr);
 
     // Lookup (or create if needed) the toGlyph using toID. If that glyph is not initialized with
@@ -65,7 +64,7 @@ public:
 
     // If the path has never been set, then add a path to glyph.
     std::tuple<const SkPath*, size_t> mergePath(
-            SkGlyph* glyph, const SkPath* path) SK_EXCLUDES(fMu);
+            SkGlyph* glyph, const SkPath* path, bool hairline) SK_EXCLUDES(fMu);
 
     /** Return the number of glyphs currently cached. */
     int countCachedGlyphs() const SK_EXCLUDES(fMu);
@@ -95,8 +94,6 @@ public:
     const SkGlyphPositionRoundingSpec& roundingSpec() const {
         return fRoundingSpec;
     }
-
-    const SkDescriptor& getDescriptor() const;
 
     size_t prepareForMaskDrawing(
             SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) SK_EXCLUDES(fMu);
@@ -140,7 +137,6 @@ private:
             PathDetail pathDetail,
             const SkGlyph** results) SK_REQUIRES(fMu);
 
-    const SkAutoDescriptor                 fDesc;
     const std::unique_ptr<SkScalerContext> fScalerContext;
     const SkFontMetrics                    fFontMetrics;
     const SkGlyphPositionRoundingSpec      fRoundingSpec;
@@ -156,9 +152,9 @@ private:
     std::vector<SkGlyph*> fGlyphForIndex SK_GUARDED_BY(fMu);
 
     // so we don't grow our arrays a lot
-    static constexpr size_t kMinGlyphCount = 8;
-    static constexpr size_t kMinGlyphImageSize = 16 /* height */ * 8 /* width */;
-    static constexpr size_t kMinAllocAmount = kMinGlyphImageSize * kMinGlyphCount;
+    inline static constexpr size_t kMinGlyphCount = 8;
+    inline static constexpr size_t kMinGlyphImageSize = 16 /* height */ * 8 /* width */;
+    inline static constexpr size_t kMinAllocAmount = kMinGlyphImageSize * kMinGlyphCount;
 
     SkArenaAlloc            fAlloc SK_GUARDED_BY(fMu) {kMinAllocAmount};
 };

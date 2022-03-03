@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 257
+#define ANGLE_SH_VERSION 268
 
 enum ShShaderSpec
 {
@@ -74,13 +74,27 @@ enum ShShaderOutput
 
     // Output SPIR-V to be cross compiled to Metal.
     SH_SPIRV_METAL_OUTPUT = 0x8B4C,
+
+    // Output for MSL
+    SH_MSL_METAL_OUTPUT = 0x8B4D,
 };
 
 // Compile options.
 // The Compile options type is defined in ShaderVars.h, to allow ANGLE to import the ShaderVars
 // header without needing the ShaderLang header. This avoids some conflicts with glslang.
-
-const ShCompileOptions SH_VALIDATE               = 0;
+// SH_VALIDATE_LOOP_INDEXING: Validates loop and indexing in the shader to
+//                            ensure that they do not exceed the minimum
+//                            functionality mandated in GLSL 1.0 spec,
+//                            Appendix A, Section 4 and 5.
+//                            There is no need to specify this parameter when
+//                            compiling for WebGL - it is implied.
+// SH_OBJECT_CODE: Translates intermediate tree to glsl or hlsl shader, or SPIR-V binary.
+//                 Can be queried by calling sh::GetObjectCode().
+// SH_VARIABLES: Extracts attributes, uniforms, and varyings.
+//               Can be queried by calling ShGetVariableInfo().
+// SH_LINE_DIRECTIVES: Emits #line directives in HLSL.
+// SH_SOURCE_PATH: Tracks the source path for shaders.
+//                 Can be queried with getSourcePath().
 const ShCompileOptions SH_VALIDATE_LOOP_INDEXING = UINT64_C(1) << 0;
 const ShCompileOptions SH_INTERMEDIATE_TREE      = UINT64_C(1) << 1;
 const ShCompileOptions SH_OBJECT_CODE            = UINT64_C(1) << 2;
@@ -120,10 +134,7 @@ const ShCompileOptions SH_ENFORCE_PACKING_RESTRICTIONS = UINT64_C(1) << 9;
 // This flag ensures all indirect (expression-based) array indexing
 // is clamped to the bounds of the array. This ensures, for example,
 // that you cannot read off the end of a uniform, whether an array
-// vec234, or mat234 type. The ShArrayIndexClampingStrategy enum,
-// specified in the ShBuiltInResources when constructing the
-// compiler, selects the strategy for the clamping implementation.
-// TODO(http://anglebug.com/4361): fix for compute shaders.
+// vec234, or mat234 type.
 const ShCompileOptions SH_CLAMP_INDIRECT_ARRAY_BOUNDS = UINT64_C(1) << 10;
 
 // This flag limits the complexity of an expression.
@@ -236,13 +247,7 @@ const ShCompileOptions SH_SELECT_VIEW_IN_NV_GLSL_VERTEX_SHADER = UINT64_C(1) << 
 // ShBuiltInResources in vertex shaders.
 const ShCompileOptions SH_CLAMP_POINT_SIZE = UINT64_C(1) << 32;
 
-// Turn some arithmetic operations that operate on a float vector-scalar pair into vector-vector
-// operations. This is done recursively. Some scalar binary operations inside vector constructors
-// are also turned into vector operations.
-//
-// This is targeted to work around a bug in NVIDIA OpenGL drivers that was reproducible on NVIDIA
-// driver version 387.92. It works around the most common occurrences of the bug.
-const ShCompileOptions SH_REWRITE_VECTOR_SCALAR_ARITHMETIC = UINT64_C(1) << 33;
+// Bit 33 is available.
 
 // Don't use loops to initialize uninitialized variables. Only has an effect if some kind of
 // variable initialization is turned on.
@@ -337,15 +342,12 @@ const ShCompileOptions SH_ADD_VULKAN_XFB_EXTENSION_SUPPORT_CODE = UINT64_C(1) <<
 // gl_FragColor is not written.
 const ShCompileOptions SH_INIT_FRAGMENT_OUTPUT_VARIABLES = UINT64_C(1) << 57;
 
-// Defines alternate strategies for implementing array index clamping.
-enum ShArrayIndexClampingStrategy
-{
-    // Use the clamp intrinsic for array index clamping.
-    SH_CLAMP_WITH_CLAMP_INTRINSIC = 1,
+// Transitory flag to select between producing SPIR-V directly vs using glslang.  Ignored in
+// non-assert-enabled builds to avoid increasing ANGLE's binary size.
+const ShCompileOptions SH_GENERATE_SPIRV_THROUGH_GLSLANG = UINT64_C(1) << 58;
 
-    // Use a user-defined function for array index clamping.
-    SH_CLAMP_WITH_USER_DEFINED_INT_CLAMP_FUNCTION
-};
+// Insert explicit casts for float/double/unsigned/signed int on macOS 10.15 with Intel driver
+const ShCompileOptions SH_ADD_EXPLICIT_BOOL_CASTS = UINT64_C(1) << 59;
 
 // The 64 bits hash function. The first parameter is the input string; the
 // second parameter is the string length.
@@ -378,7 +380,6 @@ struct ShBuiltInResources
     int EXT_draw_buffers;
     int EXT_frag_depth;
     int EXT_shader_texture_lod;
-    int WEBGL_debug_shader_precision;
     int EXT_shader_framebuffer_fetch;
     int EXT_shader_framebuffer_fetch_non_coherent;
     int NV_shader_framebuffer_fetch;
@@ -390,6 +391,7 @@ struct ShBuiltInResources
     int EXT_multisampled_render_to_texture2;
     int EXT_YUV_target;
     int EXT_geometry_shader;
+    int OES_geometry_shader;
     int OES_shader_io_blocks;
     int EXT_shader_io_blocks;
     int EXT_gpu_shader5;
@@ -398,6 +400,7 @@ struct ShBuiltInResources
     int OES_texture_3D;
     int ANGLE_texture_multisample;
     int ANGLE_multi_draw;
+    // TODO(angleproject:3402) remove after chromium side removal to pass compilation
     int ANGLE_base_vertex_base_instance;
     int WEBGL_video_texture;
     int APPLE_clip_distance;
@@ -411,6 +414,8 @@ struct ShBuiltInResources
     int EXT_texture_buffer;
     int OES_sample_variables;
     int EXT_clip_cull_distance;
+    int EXT_primitive_bounding_box;
+    int ANGLE_base_vertex_base_instance_shader_builtin;
 
     // Set to 1 to enable replacing GL_EXT_draw_buffers #extension directives
     // with GL_NV_draw_buffers in ESSL output. This flag can be used to emulate
@@ -444,10 +449,6 @@ struct ShBuiltInResources
     // Set a 64 bit hash function to enable user-defined name hashing.
     // Default is NULL.
     ShHashFunction64 HashFunction;
-
-    // Selects a strategy to use when implementing array index clamping.
-    // Default is SH_CLAMP_WITH_CLAMP_INTRINSIC.
-    ShArrayIndexClampingStrategy ArrayIndexClampingStrategy;
 
     // The maximum complexity an expression can be when SH_LIMIT_EXPRESSION_COMPLEXITY is turned on.
     int MaxExpressionComplexity;
@@ -583,6 +584,15 @@ struct ShBuiltInResources
     int MaxClipDistances;
     int MaxCullDistances;
     int MaxCombinedClipAndCullDistances;
+
+    // Direct-to-metal backend constants:
+
+    // Binding index for driver uniforms:
+    int DriverUniformsBindingIndex;
+    // Binding index for default uniforms:
+    int DefaultUniformsBindingIndex;
+    // Binding index for UBO's argument buffer
+    int UBOArgumentBufferBindingIndex;
 };
 
 //
@@ -648,22 +658,7 @@ void Destruct(ShHandle handle);
 // shaderStrings: Specifies an array of pointers to null-terminated strings containing the shader
 // source code.
 // numStrings: Specifies the number of elements in shaderStrings array.
-// compileOptions: A mask containing the following parameters:
-// SH_VALIDATE: Validates shader to ensure that it conforms to the spec
-//              specified during compiler construction.
-// SH_VALIDATE_LOOP_INDEXING: Validates loop and indexing in the shader to
-//                            ensure that they do not exceed the minimum
-//                            functionality mandated in GLSL 1.0 spec,
-//                            Appendix A, Section 4 and 5.
-//                            There is no need to specify this parameter when
-//                            compiling for WebGL - it is implied.
-// SH_INTERMEDIATE_TREE: Writes intermediate tree to info log.
-//                       Can be queried by calling sh::GetInfoLog().
-// SH_OBJECT_CODE: Translates intermediate tree to glsl or hlsl shader, or SPIR-V binary.
-//                 Can be queried by calling sh::GetObjectCode().
-// SH_VARIABLES: Extracts attributes, uniforms, and varyings.
-//               Can be queried by calling ShGetVariableInfo().
-//
+// compileOptions: A mask of compile options defined above.
 bool Compile(const ShHandle handle,
              const char *const shaderStrings[],
              size_t numStrings,

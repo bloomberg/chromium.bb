@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
@@ -30,6 +29,12 @@ class BluetoothRemoteGattDescriptorCast : public BluetoothRemoteGattDescriptor {
   BluetoothRemoteGattDescriptorCast(
       BluetoothRemoteGattCharacteristicCast* characteristic,
       scoped_refptr<chromecast::bluetooth::RemoteDescriptor> remote_descriptor);
+
+  BluetoothRemoteGattDescriptorCast(const BluetoothRemoteGattDescriptorCast&) =
+      delete;
+  BluetoothRemoteGattDescriptorCast& operator=(
+      const BluetoothRemoteGattDescriptorCast&) = delete;
+
   ~BluetoothRemoteGattDescriptorCast() override;
 
   // BluetoothGattDescriptor implementation:
@@ -69,7 +74,6 @@ class BluetoothRemoteGattDescriptorCast : public BluetoothRemoteGattDescriptor {
   std::vector<uint8_t> value_;
 
   base::WeakPtrFactory<BluetoothRemoteGattDescriptorCast> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorCast);
 };
 
 }  // namespace device

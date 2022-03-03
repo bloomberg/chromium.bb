@@ -7,13 +7,17 @@ package org.chromium.components.omnibox;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,9 +56,25 @@ public class AutocompleteResult {
         }
     };
 
+    @IntDef({VerificationPoint.INVALID, VerificationPoint.SELECT_MATCH,
+            VerificationPoint.UPDATE_MATCH, VerificationPoint.DELETE_MATCH,
+            VerificationPoint.GROUP_BY_SEARCH_VS_URL_BEFORE,
+            VerificationPoint.GROUP_BY_SEARCH_VS_URL_AFTER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface VerificationPoint {
+        int INVALID = 0;
+        int SELECT_MATCH = 1;
+        int UPDATE_MATCH = 2;
+        int DELETE_MATCH = 3;
+        int GROUP_BY_SEARCH_VS_URL_BEFORE = 4;
+        int GROUP_BY_SEARCH_VS_URL_AFTER = 5;
+    }
+
     /** An empty, initialized AutocompleteResult object. */
     public static final AutocompleteResult EMPTY_RESULT =
             new AutocompleteResult(0, Collections.emptyList(), null);
+    /** A special value indicating that action has no particular index associated. */
+    public static final int NO_SUGGESTION_INDEX = -1;
 
     private final @NonNull SparseArray<GroupDetails> mGroupsDetails;
     private final @NonNull List<AutocompleteMatch> mSuggestions;
@@ -70,7 +90,8 @@ public class AutocompleteResult {
      * @param suggestions List of AutocompleteMatch objects.
      * @param groupsDetails Additional information about the AutocompleteMatch groups.
      */
-    private AutocompleteResult(long nativeResult, @Nullable List<AutocompleteMatch> suggestions,
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    AutocompleteResult(long nativeResult, @Nullable List<AutocompleteMatch> suggestions,
             @Nullable SparseArray<GroupDetails> groupsDetails) {
         // Consider all locally constructed AutocompleteResult objects as coming from Cache.
         // These results do not have a native counterpart, meaning there's no corresponding C++
@@ -99,8 +120,25 @@ public class AutocompleteResult {
         return new AutocompleteResult(0, suggestions, groupsDetails);
     }
 
+    /**
+     * Create AutocompleteResult object from native object.
+     *
+     * Newly created AutocompleteResult object is associated with its Native counterpart.
+     *
+     * @param nativeAutocompleteResult Corresponding Native object.
+     * @param suggestions Array of encompassed, associated AutocompleteMatch objects.
+     *         These suggestions must be exact same and in same order as the ones held by
+     *         Native AutocompleteResult content.
+     * @param groupIds An array of known group identifiers (used for matching group headers).
+     * @param groupNames An array of group names for each of the identifiers. The length and
+     *         the content of this array must match the length and IDs of the |groupIds|.
+     * @param groupCollapsedStates An array of group default collapsed states. The length and
+     *         the content of this array must match the length and IDs of the |groupIds|.
+     * @return AutocompleteResult object encompassing supplied information.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     @CalledByNative
-    private static AutocompleteResult build(long nativeAutocompleteResult,
+    static AutocompleteResult fromNative(long nativeAutocompleteResult,
             @NonNull AutocompleteMatch[] suggestions, @NonNull int[] groupIds,
             @NonNull String[] groupNames, @NonNull boolean[] groupCollapsedStates) {
         assert groupIds.length == groupNames.length;
@@ -124,8 +162,9 @@ public class AutocompleteResult {
         Collections.addAll(mSuggestions, suggestions);
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     @CalledByNative
-    private void destroy() {
+    void notifyNativeDestroyed() {
         mNativeAutocompleteResult = 0;
     }
 
@@ -152,9 +191,13 @@ public class AutocompleteResult {
     /**
      * Verifies coherency of this AutocompleteResult object with its C++ counterpart.
      * Records histogram data reflecting the outcome.
+     *
+     * @param suggestionIndex The index of suggestion the code intends to operate on,
+     *         or NO_SUGGESTION_INDEX if there is no specific suggestion.
+     * @param origin Used to track the source of the mismatch, should it occur.
      * @return Whether Java and C++ AutocompleteResult objects are in sync.
      */
-    public boolean verifyCoherency() {
+    public boolean verifyCoherency(int suggestionIndex, @VerificationPoint int origin) {
         // May happen with either test data, or AutocompleteResult built from the ZeroSuggestCache.
         // This is a valid case, despite not meeting coherency criteria. Do not record.
         if (mNativeAutocompleteResult == 0) return false;
@@ -163,7 +206,7 @@ public class AutocompleteResult {
             nativeMatches[index] = mSuggestions.get(index).getNativeObjectRef();
         }
         return AutocompleteResultJni.get().verifyCoherency(
-                mNativeAutocompleteResult, nativeMatches);
+                mNativeAutocompleteResult, nativeMatches, suggestionIndex, origin);
     }
 
     /** Returns a reference to Native AutocompleteResult object. */
@@ -211,7 +254,8 @@ public class AutocompleteResult {
      */
     public void groupSuggestionsBySearchVsURL(int firstIndex, int lastIndex) {
         if (mNativeAutocompleteResult != 0) {
-            if (!verifyCoherency()) {
+            if (!verifyCoherency(
+                        NO_SUGGESTION_INDEX, VerificationPoint.GROUP_BY_SEARCH_VS_URL_BEFORE)) {
                 // This may trigger if the Native (C++) object got updated and we haven't had a
                 // chance to reflect this update here. When this happens, do not rearrange the
                 // order of suggestions and wait for a corresponding update.
@@ -224,7 +268,9 @@ public class AutocompleteResult {
                     mNativeAutocompleteResult, firstIndex, lastIndex);
             // Verify that the Native AutocompleteResult update has been properly
             // reflected on the Java part.
-            assert verifyCoherency() : "Post-group verification failed";
+            assert verifyCoherency(
+                    NO_SUGGESTION_INDEX, VerificationPoint.GROUP_BY_SEARCH_VS_URL_AFTER)
+                : "Post-group verification failed";
         }
     }
 
@@ -232,6 +278,7 @@ public class AutocompleteResult {
     interface Natives {
         void groupSuggestionsBySearchVsURL(
                 long nativeAutocompleteResult, int firstIndex, int lastIndex);
-        boolean verifyCoherency(long nativeAutocompleteResult, long[] matches);
+        boolean verifyCoherency(
+                long nativeAutocompleteResult, long[] matches, long suggestionIndex, int origin);
     }
 }

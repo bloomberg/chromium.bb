@@ -17,6 +17,10 @@ _BENCHMARK_UMA = [
     'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollJank',
+    'Event.Latency.ScrollUpdate.JankyDuration',
+    'Event.Latency.ScrollUpdate.JankyEvents',
+    'Event.Latency.ScrollUpdate.TotalDuration',
+    'Event.Latency.ScrollUpdate.TotalEvents',
     'Graphics.Smoothness.Checkerboarding.TouchScroll',
     'Graphics.Smoothness.Checkerboarding.WheelScroll',
     'Graphics.Smoothness.Jank.Compositor.TouchScroll',
@@ -45,8 +49,10 @@ class SystemHealthScrollJankMobile(system_health.MobileCommonSystemHealth):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     options = super(SystemHealthScrollJankMobile,
                     self).CreateCoreTimelineBasedMeasurementOptions()
-    options.ExtendTraceCategoryFilter(
-        ['benchmark', 'cc', 'input', 'disabled-by-default-histogram_samples'])
+    options.ExtendTraceCategoryFilter([
+        'benchmark', 'cc', 'input', 'disabled-by-default-histogram_samples',
+        'latencyInfo'
+    ])
     options.config.chrome_trace_config.EnableUMAHistograms(*_BENCHMARK_UMA)
     options.SetTimelineBasedMetrics([
         'renderingMetric',

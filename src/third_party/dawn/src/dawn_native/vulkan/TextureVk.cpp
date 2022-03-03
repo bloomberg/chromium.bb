@@ -26,6 +26,7 @@
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/ResourceHeapVk.h"
+#include "dawn_native/vulkan/ResourceMemoryAllocatorVk.h"
 #include "dawn_native/vulkan/StagingBufferVk.h"
 #include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
@@ -50,12 +51,13 @@ namespace dawn_native { namespace vulkan {
 
                 case wgpu::TextureViewDimension::e1D:
                 case wgpu::TextureViewDimension::Undefined:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         // Computes which vulkan access type could be required for the given Dawn usage.
-        // TODO(cwallez@chromium.org): We shouldn't need any access usages for srcAccessMask when
+        // TODO(crbug.com/dawn/269): We shouldn't need any access usages for srcAccessMask when
         // the previous usage is readonly because an execution dependency is sufficient.
         VkAccessFlags VulkanAccessFlags(wgpu::TextureUsage usage, const Format& format) {
             VkAccessFlags flags = 0;
@@ -66,14 +68,11 @@ namespace dawn_native { namespace vulkan {
             if (usage & wgpu::TextureUsage::CopyDst) {
                 flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
             }
-            if (usage & wgpu::TextureUsage::Sampled) {
+            if (usage & wgpu::TextureUsage::TextureBinding) {
                 flags |= VK_ACCESS_SHADER_READ_BIT;
             }
-            if (usage & wgpu::TextureUsage::Storage) {
+            if (usage & wgpu::TextureUsage::StorageBinding) {
                 flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-            }
-            if (usage & kReadOnlyStorageTexture) {
-                flags |= VK_ACCESS_SHADER_READ_BIT;
             }
             if (usage & wgpu::TextureUsage::RenderAttachment) {
                 if (format.HasDepthOrStencil()) {
@@ -118,15 +117,15 @@ namespace dawn_native { namespace vulkan {
             if (usage & (wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst)) {
                 flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
-            if (usage & (wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture)) {
-                // TODO(cwallez@chromium.org): Only transition to the usage we care about to avoid
+            if (usage & wgpu::TextureUsage::TextureBinding) {
+                // TODO(crbug.com/dawn/851): Only transition to the usage we care about to avoid
                 // introducing FS -> VS dependencies that would prevent parallelization on tiler
                 // GPUs
                 flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
                          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
             }
-            if (usage & wgpu::TextureUsage::Storage) {
+            if (usage & wgpu::TextureUsage::StorageBinding) {
                 flags |=
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
             }
@@ -134,8 +133,6 @@ namespace dawn_native { namespace vulkan {
                 if (format.HasDepthOrStencil()) {
                     flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-                    // TODO(cwallez@chromium.org): This is missing the stage where the depth and
-                    // stencil values are written, but it isn't clear which one it is.
                 } else {
                     flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
                 }
@@ -295,6 +292,8 @@ namespace dawn_native { namespace vulkan {
             case wgpu::TextureFormat::RGBA32Float:
                 return VK_FORMAT_R32G32B32A32_SFLOAT;
 
+            case wgpu::TextureFormat::Depth16Unorm:
+                return VK_FORMAT_D16_UNORM;
             case wgpu::TextureFormat::Depth32Float:
                 return VK_FORMAT_D32_SFLOAT;
             case wgpu::TextureFormat::Depth24Plus:
@@ -338,11 +337,96 @@ namespace dawn_native { namespace vulkan {
                 return VK_FORMAT_BC7_UNORM_BLOCK;
             case wgpu::TextureFormat::BC7RGBAUnormSrgb:
                 return VK_FORMAT_BC7_SRGB_BLOCK;
+
+            case wgpu::TextureFormat::ETC2RGB8Unorm:
+                return VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ETC2RGB8UnormSrgb:
+                return VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK;
+            case wgpu::TextureFormat::ETC2RGB8A1Unorm:
+                return VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
+            case wgpu::TextureFormat::ETC2RGB8A1UnormSrgb:
+                return VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK;
+            case wgpu::TextureFormat::ETC2RGBA8Unorm:
+                return VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ETC2RGBA8UnormSrgb:
+                return VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
+            case wgpu::TextureFormat::EACR11Unorm:
+                return VK_FORMAT_EAC_R11_UNORM_BLOCK;
+            case wgpu::TextureFormat::EACR11Snorm:
+                return VK_FORMAT_EAC_R11_SNORM_BLOCK;
+            case wgpu::TextureFormat::EACRG11Unorm:
+                return VK_FORMAT_EAC_R11G11_UNORM_BLOCK;
+            case wgpu::TextureFormat::EACRG11Snorm:
+                return VK_FORMAT_EAC_R11G11_SNORM_BLOCK;
+
+            case wgpu::TextureFormat::ASTC4x4Unorm:
+                return VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC4x4UnormSrgb:
+                return VK_FORMAT_ASTC_4x4_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC5x4Unorm:
+                return VK_FORMAT_ASTC_5x4_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC5x4UnormSrgb:
+                return VK_FORMAT_ASTC_5x4_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC5x5Unorm:
+                return VK_FORMAT_ASTC_5x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC5x5UnormSrgb:
+                return VK_FORMAT_ASTC_5x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC6x5Unorm:
+                return VK_FORMAT_ASTC_6x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC6x5UnormSrgb:
+                return VK_FORMAT_ASTC_6x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC6x6Unorm:
+                return VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC6x6UnormSrgb:
+                return VK_FORMAT_ASTC_6x6_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC8x5Unorm:
+                return VK_FORMAT_ASTC_8x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC8x5UnormSrgb:
+                return VK_FORMAT_ASTC_8x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC8x6Unorm:
+                return VK_FORMAT_ASTC_8x6_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC8x6UnormSrgb:
+                return VK_FORMAT_ASTC_8x6_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC8x8Unorm:
+                return VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC8x8UnormSrgb:
+                return VK_FORMAT_ASTC_8x8_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x5Unorm:
+                return VK_FORMAT_ASTC_10x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x5UnormSrgb:
+                return VK_FORMAT_ASTC_10x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x6Unorm:
+                return VK_FORMAT_ASTC_10x6_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x6UnormSrgb:
+                return VK_FORMAT_ASTC_10x6_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x8Unorm:
+                return VK_FORMAT_ASTC_10x8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x8UnormSrgb:
+                return VK_FORMAT_ASTC_10x8_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x10Unorm:
+                return VK_FORMAT_ASTC_10x10_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x10UnormSrgb:
+                return VK_FORMAT_ASTC_10x10_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC12x10Unorm:
+                return VK_FORMAT_ASTC_12x10_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC12x10UnormSrgb:
+                return VK_FORMAT_ASTC_12x10_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC12x12Unorm:
+                return VK_FORMAT_ASTC_12x12_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC12x12UnormSrgb:
+                return VK_FORMAT_ASTC_12x12_SRGB_BLOCK;
+
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
+            // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:690): implement depth24unorm-stencil8
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+            // TODO(dawn:690): implement depth32float-stencil8
+            case wgpu::TextureFormat::Depth32FloatStencil8:
             case wgpu::TextureFormat::Undefined:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     // Converts the Dawn usage flags to Vulkan usage flags. Also needs the format to choose
@@ -356,10 +440,10 @@ namespace dawn_native { namespace vulkan {
         if (usage & wgpu::TextureUsage::CopyDst) {
             flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         }
-        if (usage & wgpu::TextureUsage::Sampled) {
+        if (usage & wgpu::TextureUsage::TextureBinding) {
             flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
         }
-        if (usage & (wgpu::TextureUsage::Storage | kReadOnlyStorageTexture)) {
+        if (usage & wgpu::TextureUsage::StorageBinding) {
             flags |= VK_IMAGE_USAGE_STORAGE_BIT;
         }
         if (usage & wgpu::TextureUsage::RenderAttachment) {
@@ -384,7 +468,7 @@ namespace dawn_native { namespace vulkan {
         if (!wgpu::HasZeroOrOneBits(usage)) {
             // Sampled | ReadOnlyStorage is the only possible multi-bit usage, if more appear  we
             // might need additional special-casing.
-            ASSERT(usage == (wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture));
+            ASSERT(usage == wgpu::TextureUsage::TextureBinding);
             return VK_IMAGE_LAYOUT_GENERAL;
         }
 
@@ -398,8 +482,8 @@ namespace dawn_native { namespace vulkan {
                 // the storage usage. We can't know at bindgroup creation time if that case will
                 // happen so we must prepare for the pessimistic case and always use the GENERAL
                 // layout.
-            case wgpu::TextureUsage::Sampled:
-                if (texture->GetUsage() & wgpu::TextureUsage::Storage) {
+            case wgpu::TextureUsage::TextureBinding:
+                if (texture->GetInternalUsage() & wgpu::TextureUsage::StorageBinding) {
                     return VK_IMAGE_LAYOUT_GENERAL;
                 } else {
                     return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -410,14 +494,13 @@ namespace dawn_native { namespace vulkan {
                 // or a combination with something else, the texture could be in a combination of
                 // GENERAL and TRANSFER_SRC_OPTIMAL. This would be a problem, so we make CopySrc use
                 // GENERAL.
-                // TODO(cwallez@chromium.org): We no longer need to transition resources all at
+                // TODO(crbug.com/dawn/851): We no longer need to transition resources all at
                 // once and can instead track subresources so we should lift this limitation.
             case wgpu::TextureUsage::CopySrc:
                 // Read-only and write-only storage textures must use general layout because load
                 // and store operations on storage images can only be done on the images in
                 // VK_IMAGE_LAYOUT_GENERAL layout.
-            case wgpu::TextureUsage::Storage:
-            case kReadOnlyStorageTexture:
+            case wgpu::TextureUsage::StorageBinding:
                 return VK_IMAGE_LAYOUT_GENERAL;
 
             case wgpu::TextureUsage::RenderAttachment:
@@ -431,8 +514,9 @@ namespace dawn_native { namespace vulkan {
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
             case wgpu::TextureUsage::None:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     VkSampleCountFlagBits VulkanSampleCount(uint32_t sampleCount) {
@@ -441,28 +525,24 @@ namespace dawn_native { namespace vulkan {
                 return VK_SAMPLE_COUNT_1_BIT;
             case 4:
                 return VK_SAMPLE_COUNT_4_BIT;
-            default:
-                UNREACHABLE();
         }
+        UNREACHABLE();
     }
 
     MaybeError ValidateVulkanImageCanBeWrapped(const DeviceBase*,
                                                const TextureDescriptor* descriptor) {
-        if (descriptor->dimension != wgpu::TextureDimension::e2D) {
-            return DAWN_VALIDATION_ERROR("Texture must be 2D");
-        }
+        DAWN_INVALID_IF(descriptor->dimension != wgpu::TextureDimension::e2D,
+                        "Texture dimension (%s) is not %s.", descriptor->dimension,
+                        wgpu::TextureDimension::e2D);
 
-        if (descriptor->mipLevelCount != 1) {
-            return DAWN_VALIDATION_ERROR("Mip level count must be 1");
-        }
+        DAWN_INVALID_IF(descriptor->mipLevelCount != 1, "Mip level count (%u) is not 1.",
+                        descriptor->mipLevelCount);
 
-        if (descriptor->size.depthOrArrayLayers != 1) {
-            return DAWN_VALIDATION_ERROR("Array layer count must be 1");
-        }
+        DAWN_INVALID_IF(descriptor->size.depthOrArrayLayers != 1,
+                        "Array layer count (%u) is not 1.", descriptor->size.depthOrArrayLayers);
 
-        if (descriptor->sampleCount != 1) {
-            return DAWN_VALIDATION_ERROR("Sample count must be 1");
-        }
+        DAWN_INVALID_IF(descriptor->sampleCount != 1, "Sample count (%u) is not 1.",
+                        descriptor->sampleCount);
 
         return {};
     }
@@ -539,7 +619,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.flags = 0;
         createInfo.format = VulkanImageFormat(device, GetFormat().format);
         createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        createInfo.usage = VulkanImageUsage(GetUsage(), GetFormat()) | extraUsages;
+        createInfo.usage = VulkanImageUsage(GetInternalUsage(), GetFormat()) | extraUsages;
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;
         createInfo.pQueueFamilyIndices = nullptr;
@@ -564,7 +644,8 @@ namespace dawn_native { namespace vulkan {
         VkMemoryRequirements requirements;
         device->fn.GetImageMemoryRequirements(device->GetVkDevice(), mHandle, &requirements);
 
-        DAWN_TRY_ASSIGN(mMemoryAllocation, device->AllocateMemory(requirements, false));
+        DAWN_TRY_ASSIGN(mMemoryAllocation, device->GetResourceMemoryAllocator()->Allocate(
+                                               requirements, MemoryKind::Opaque));
 
         DAWN_TRY(CheckVkSuccess(
             device->fn.BindImageMemory(device->GetVkDevice(), mHandle,
@@ -577,6 +658,8 @@ namespace dawn_native { namespace vulkan {
                                   GetAllSubresources(), TextureBase::ClearValue::NonZero));
         }
 
+        SetLabelImpl();
+
         return {};
     }
 
@@ -584,10 +667,9 @@ namespace dawn_native { namespace vulkan {
     MaybeError Texture::InitializeFromExternal(const ExternalImageDescriptorVk* descriptor,
                                                external_memory::Service* externalMemoryService) {
         VkFormat format = VulkanImageFormat(ToBackend(GetDevice()), GetFormat().format);
-        VkImageUsageFlags usage = VulkanImageUsage(GetUsage(), GetFormat());
-        if (!externalMemoryService->SupportsCreateImage(descriptor, format, usage)) {
-            return DAWN_VALIDATION_ERROR("Creating an image from external memory is not supported");
-        }
+        VkImageUsageFlags usage = VulkanImageUsage(GetInternalUsage(), GetFormat());
+        DAWN_INVALID_IF(!externalMemoryService->SupportsCreateImage(descriptor, format, usage),
+                        "Creating an image from external memory is not supported.");
 
         mExternalState = ExternalState::PendingAcquire;
 
@@ -611,11 +693,15 @@ namespace dawn_native { namespace vulkan {
         baseCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         DAWN_TRY_ASSIGN(mHandle, externalMemoryService->CreateImage(descriptor, baseCreateInfo));
+
+        SetLabelHelper("Dawn_ExternalTexture");
+
         return {};
     }
 
     void Texture::InitializeForSwapChain(VkImage nativeImage) {
         mHandle = nativeImage;
+        SetLabelHelper("Dawn_SwapChainTexture");
     }
 
     MaybeError Texture::BindExternalMemory(const ExternalImageDescriptorVk* descriptor,
@@ -645,14 +731,12 @@ namespace dawn_native { namespace vulkan {
                                               VkImageLayout* releasedNewLayout) {
         Device* device = ToBackend(GetDevice());
 
-        if (mExternalState == ExternalState::Released) {
-            return DAWN_VALIDATION_ERROR("Can't export signal semaphore from signaled texture");
-        }
+        DAWN_INVALID_IF(mExternalState == ExternalState::Released,
+                        "Can't export a signal semaphore from signaled texture %s.", this);
 
-        if (mExternalAllocation == VK_NULL_HANDLE) {
-            return DAWN_VALIDATION_ERROR(
-                "Can't export signal semaphore from destroyed / non-external texture");
-        }
+        DAWN_INVALID_IF(
+            mExternalAllocation == VK_NULL_HANDLE,
+            "Can't export a signal semaphore from destroyed or non-external texture %s.", this);
 
         ASSERT(mSignalSemaphore != VK_NULL_HANDLE);
 
@@ -712,12 +796,20 @@ namespace dawn_native { namespace vulkan {
         mSignalSemaphore = VK_NULL_HANDLE;
 
         // Destroy the texture so it can't be used again
-        DestroyInternal();
+        Destroy();
         return {};
     }
 
     Texture::~Texture() {
-        DestroyInternal();
+    }
+
+    void Texture::SetLabelHelper(const char* prefix) {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_IMAGE,
+                     reinterpret_cast<uint64_t&>(mHandle), prefix, GetLabel());
+    }
+
+    void Texture::SetLabelImpl() {
+        SetLabelHelper("Dawn_InternalTexture");
     }
 
     void Texture::DestroyImpl() {
@@ -726,7 +818,7 @@ namespace dawn_native { namespace vulkan {
 
             // For textures created from a VkImage, the allocation if kInvalid so the Device knows
             // to skip the deallocation of the (absence of) VkDeviceMemory.
-            device->DeallocateMemory(&mMemoryAllocation);
+            device->GetResourceMemoryAllocator()->Deallocate(&mMemoryAllocation);
 
             if (mHandle != VK_NULL_HANDLE) {
                 device->GetFencedDeleter()->DeleteWhenUnused(mHandle);
@@ -741,6 +833,9 @@ namespace dawn_native { namespace vulkan {
             // If a signal semaphore exists it should be requested before we delete the texture
             ASSERT(mSignalSemaphore == VK_NULL_HANDLE);
         }
+        // For Vulkan, we currently run the base destruction code after the internal changes because
+        // of the dependency on the texture state which the base code overwrites too early.
+        TextureBase::DestroyImpl();
     }
 
     VkImage Texture::GetHandle() const {
@@ -760,8 +855,9 @@ namespace dawn_native { namespace vulkan {
                 return VulkanAspectMask(Aspect::Stencil);
             case wgpu::TextureAspect::Plane0Only:
             case wgpu::TextureAspect::Plane1Only:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     void Texture::TweakTransitionForExternalUsage(CommandRecordingContext* recordingContext,
@@ -904,8 +1000,8 @@ namespace dawn_native { namespace vulkan {
         wgpu::TextureUsage allUsages = wgpu::TextureUsage::None;
         wgpu::TextureUsage allLastUsages = wgpu::TextureUsage::None;
 
-        // This transitions assume it is a 2D texture
-        ASSERT(GetDimension() == wgpu::TextureDimension::e2D);
+        // TODO(crbug.com/dawn/814): support 1D textures.
+        ASSERT(GetDimension() != wgpu::TextureDimension::e1D);
 
         mSubresourceLastUsages.Merge(
             subresourceUsages, [&](const SubresourceRange& range, wgpu::TextureUsage* lastUsage,
@@ -1072,7 +1168,7 @@ namespace dawn_native { namespace vulkan {
             device->fn.CmdCopyBufferToImage(
                 recordingContext->commandBuffer,
                 ToBackend(uploadHandle.stagingBuffer)->GetBufferHandle(), GetHandle(),
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, regions.data());
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions.size(), regions.data());
         } else {
             for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
                  ++level) {
@@ -1180,6 +1276,11 @@ namespace dawn_native { namespace vulkan {
             return {};
         }
 
+        // Texture could be destroyed by the time we make a view.
+        if (GetTexture()->GetTextureState() == Texture::TextureState::Destroyed) {
+            return {};
+        }
+
         Device* device = ToBackend(GetTexture()->GetDevice());
 
         VkImageViewCreateInfo createInfo;
@@ -1199,12 +1300,19 @@ namespace dawn_native { namespace vulkan {
         createInfo.subresourceRange.layerCount = subresources.layerCount;
         createInfo.subresourceRange.aspectMask = VulkanAspectMask(subresources.aspects);
 
-        return CheckVkSuccess(
+        DAWN_TRY(CheckVkSuccess(
             device->fn.CreateImageView(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
-            "CreateImageView");
+            "CreateImageView"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
     TextureView::~TextureView() {
+    }
+
+    void TextureView::DestroyImpl() {
         Device* device = ToBackend(GetTexture()->GetDevice());
 
         if (mHandle != VK_NULL_HANDLE) {
@@ -1215,6 +1323,11 @@ namespace dawn_native { namespace vulkan {
 
     VkImageView TextureView::GetHandle() const {
         return mHandle;
+    }
+
+    void TextureView::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_IMAGE_VIEW,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_InternalTextureView", GetLabel());
     }
 
 }}  // namespace dawn_native::vulkan

@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../i18n/i18n.js';
-import type * as Platform from '../platform/platform.js'; // eslint-disable-line no-unused-vars
+import type * as Platform from '../platform/platform.js';
 
 const UIStrings = {
   /**
@@ -87,8 +85,6 @@ function getApplicableRegisteredRevealers(revealable: Object): RevealerRegistrat
       return true;
     }
     for (const contextType of revealerRegistration.contextTypes()) {
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // @ts-expect-error
       if (revealable instanceof contextType) {
         return true;
       }
@@ -97,7 +93,7 @@ function getApplicableRegisteredRevealers(revealable: Object): RevealerRegistrat
   }
 }
 export interface RevealerRegistration {
-  contextTypes: () => Array<unknown>;
+  contextTypes: () => Array<Function>;
   loadRevealer: () => Promise<Revealer>;
   destination?: RevealerDestination;
 }

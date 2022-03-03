@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/assist_ranker/ranker_model_loader.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/translate/core/browser/translate_ranker.h"
@@ -90,6 +91,10 @@ class TranslateRankerImpl : public TranslateRanker {
   TranslateRankerImpl(const base::FilePath& model_path,
                       const GURL& model_url,
                       ukm::UkmRecorder* ukm_recorder);
+
+  TranslateRankerImpl(const TranslateRankerImpl&) = delete;
+  TranslateRankerImpl& operator=(const TranslateRankerImpl&) = delete;
+
   ~TranslateRankerImpl() override;
 
   // Get the file path of the translate ranker model, by default with a fixed
@@ -135,7 +140,7 @@ class TranslateRankerImpl : public TranslateRanker {
                          ukm::SourceId ukm_source_id);
 
   // Used to log URL-keyed metrics. This pointer will outlive |this|.
-  ukm::UkmRecorder* ukm_recorder_;
+  raw_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   // Used to sanity check the threading of this ranker.
   base::SequenceChecker sequence_checker_;
@@ -164,8 +169,6 @@ class TranslateRankerImpl : public TranslateRanker {
   std::vector<metrics::TranslateEventProto> event_cache_;
 
   base::WeakPtrFactory<TranslateRankerImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateRankerImpl);
 };
 
 }  // namespace translate

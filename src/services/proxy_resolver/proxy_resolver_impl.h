@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -20,6 +19,9 @@ class ProxyResolverV8Tracing;
 class ProxyResolverImpl : public mojom::ProxyResolver {
  public:
   explicit ProxyResolverImpl(std::unique_ptr<ProxyResolverV8Tracing> resolver);
+
+  ProxyResolverImpl(const ProxyResolverImpl&) = delete;
+  ProxyResolverImpl& operator=(const ProxyResolverImpl&) = delete;
 
   ~ProxyResolverImpl() override;
 
@@ -36,8 +38,6 @@ class ProxyResolverImpl : public mojom::ProxyResolver {
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver_;
   std::map<Job*, std::unique_ptr<Job>> resolve_jobs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverImpl);
 };
 
 }  // namespace proxy_resolver

@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 namespace blink {
@@ -101,9 +101,9 @@ LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&,
                                               LegacyLayout) {
   auto* svg_element = DynamicTo<SVGElement>(parentNode());
   if (svg_element && svg_element->IsTextContent())
-    return new LayoutSVGInline(this);
+    return MakeGarbageCollected<LayoutSVGInline>(this);
 
-  return new LayoutSVGTransformableContainer(this);
+  return MakeGarbageCollected<LayoutSVGTransformableContainer>(this);
 }
 
 void SVGAElement::DefaultEventHandler(Event& event) {

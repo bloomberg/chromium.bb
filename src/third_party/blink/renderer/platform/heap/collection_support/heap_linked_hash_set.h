@@ -5,18 +5,22 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_LINKED_HASH_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_LINKED_HASH_SET_H_
 
+// Needs heap_vector.h for VectorTraits of Member and WeakMember.
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator_impl.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
 
-template <typename ValueArg, typename TraitsArg = HashTraits<ValueArg>>
+template <typename ValueArg,
+          typename TraitsArg = HashTraits<ValueArg>,
+          typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class HeapLinkedHashSet final
-    : public GarbageCollected<HeapLinkedHashSet<ValueArg, TraitsArg>>,
-      public LinkedHashSet<ValueArg, TraitsArg, HeapAllocator> {
+    : public GarbageCollected<HeapLinkedHashSet<ValueArg, TraitsArg, HashArg>>,
+      public LinkedHashSet<ValueArg, TraitsArg, HashArg, HeapAllocator> {
   static void CheckType() {
     static_assert(WTF::IsMemberOrWeakMemberType<ValueArg>::value,
                   "HeapLinkedHashSet supports only Member and WeakMember.");
@@ -33,7 +37,7 @@ class HeapLinkedHashSet final
   HeapLinkedHashSet() { CheckType(); }
 
   void Trace(Visitor* v) const {
-    LinkedHashSet<ValueArg, TraitsArg, HeapAllocator>::Trace(v);
+    LinkedHashSet<ValueArg, TraitsArg, HashArg, HeapAllocator>::Trace(v);
   }
 };
 

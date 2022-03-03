@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/watchdog.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -27,6 +28,7 @@
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/webrtc_video_encoder_factory.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -39,8 +41,7 @@ namespace {
 const char kChannelName[] = "test_channel";
 const char kAuthKey[] = "test_auth_key";
 
-constexpr base::TimeDelta kWaitForThreadJoinTimeout =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kWaitForThreadJoinTimeout = base::Milliseconds(200);
 
 class TestTransportEventHandler : public WebrtcTransport::EventHandler {
  public:
@@ -50,6 +51,11 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
       IncomingChannelCallback;
 
   TestTransportEventHandler() = default;
+
+  TestTransportEventHandler(const TestTransportEventHandler&) = delete;
+  TestTransportEventHandler& operator=(const TestTransportEventHandler&) =
+      delete;
+
   ~TestTransportEventHandler() override = default;
 
   // All callbacks must be set before the test handler is passed to a Transport
@@ -100,13 +106,16 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   base::RepeatingClosure connected_callback_;
   ErrorCallback error_callback_;
   IncomingChannelCallback incoming_channel_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTransportEventHandler);
 };
 
 class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
  public:
   TestMessagePipeEventHandler() = default;
+
+  TestMessagePipeEventHandler(const TestMessagePipeEventHandler&) = delete;
+  TestMessagePipeEventHandler& operator=(const TestMessagePipeEventHandler&) =
+      delete;
+
   ~TestMessagePipeEventHandler() override = default;
 
   void set_open_callback(const base::RepeatingClosure& callback) {
@@ -150,8 +159,6 @@ class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
   base::RepeatingClosure closed_callback_;
 
   std::list<std::unique_ptr<CompoundBuffer>> received_messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMessagePipeEventHandler);
 };
 
 class FakeThreadJoinWatchdog : public base::Watchdog {
@@ -166,7 +173,7 @@ class FakeThreadJoinWatchdog : public base::Watchdog {
   void Alarm() override { *alarm_triggered_ = true; }
 
  private:
-  bool* alarm_triggered_;
+  raw_ptr<bool> alarm_triggered_;
 };
 
 }  // namespace
@@ -209,7 +216,7 @@ class WebrtcTransportTest : public testing::Test {
     host_transport_ = std::make_unique<WebrtcTransport>(
         jingle_glue::JingleThreadWrapper::current(),
         TransportContext::ForTests(TransportRole::SERVER),
-        &host_event_handler_);
+        std::make_unique<WebrtcVideoEncoderFactory>(), &host_event_handler_);
 
     host_transport_->SetThreadJoinWatchdogForTests(
         std::make_unique<FakeThreadJoinWatchdog>(
@@ -226,7 +233,7 @@ class WebrtcTransportTest : public testing::Test {
 
     client_transport_ = std::make_unique<WebrtcTransport>(
         jingle_glue::JingleThreadWrapper::current(),
-        TransportContext::ForTests(TransportRole::CLIENT),
+        TransportContext::ForTests(TransportRole::CLIENT), nullptr,
         &client_event_handler_);
 
     client_transport_->SetThreadJoinWatchdogForTests(
@@ -362,7 +369,13 @@ class WebrtcTransportTest : public testing::Test {
   bool destroy_on_error_ = false;
 };
 
-TEST_F(WebrtcTransportTest, Connects) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Connects DISABLED_Connects
+#else
+#define MAYBE_Connects Connects
+#endif
+TEST_F(WebrtcTransportTest, MAYBE_Connects) {
   InitializeConnection();
   StartConnection();
   WaitUntilConnected();
@@ -379,7 +392,13 @@ TEST_F(WebrtcTransportTest, InvalidAuthKey) {
   EXPECT_EQ(AUTHENTICATION_FAILED, client_error_);
 }
 
-TEST_F(WebrtcTransportTest, DataStream) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_DataStream DISABLED_DataStream
+#else
+#define MAYBE_DataStream DataStream
+#endif
+TEST_F(WebrtcTransportTest, MAYBE_DataStream) {
   client_event_handler_.set_connecting_callback(base::BindRepeating(
       &WebrtcTransportTest::ExpectClientDataStream, base::Unretained(this)));
   host_event_handler_.set_connecting_callback(base::BindRepeating(
@@ -410,8 +429,14 @@ TEST_F(WebrtcTransportTest, DataStream) {
   EXPECT_EQ(message.text(), received_message->text());
 }
 
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_DataStreamLate DISABLED_DataStreamLate
+#else
+#define MAYBE_DataStreamLate DataStreamLate
+#endif
 // Verify that data streams can be created after connection has been initiated.
-TEST_F(WebrtcTransportTest, DataStreamLate) {
+TEST_F(WebrtcTransportTest, MAYBE_DataStreamLate) {
   InitializeConnection();
   StartConnection();
   WaitUntilConnected();
@@ -426,7 +451,13 @@ TEST_F(WebrtcTransportTest, DataStreamLate) {
   EXPECT_TRUE(host_message_pipe_);
 }
 
-TEST_F(WebrtcTransportTest, TerminateDataChannel) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_TerminateDataChannel DISABLED_TerminateDataChannel
+#else
+#define MAYBE_TerminateDataChannel TerminateDataChannel
+#endif
+TEST_F(WebrtcTransportTest, MAYBE_TerminateDataChannel) {
   InitializeConnection();
   StartConnection();
   WaitUntilConnected();
@@ -459,8 +490,16 @@ TEST_F(WebrtcTransportTest, TerminateDataChannel) {
   EXPECT_FALSE(host_message_pipe_);
 }
 
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_ThreadJoinBlockedDuringConnectionTeardown_WatchdogFired \
+  DISABLED_ThreadJoinBlockedDuringConnectionTeardown_WatchdogFired
+#else
+#define MAYBE_ThreadJoinBlockedDuringConnectionTeardown_WatchdogFired \
+  ThreadJoinBlockedDuringConnectionTeardown_WatchdogFired
+#endif
 TEST_F(WebrtcTransportTest,
-       ThreadJoinBlockedDuringConnectionTeardown_WatchdogFired) {
+       MAYBE_ThreadJoinBlockedDuringConnectionTeardown_WatchdogFired) {
   InitializeConnection();
 
   int counter = 2;

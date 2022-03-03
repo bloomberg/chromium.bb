@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// **** DO NOT EDIT - this .proto was automatically generated. ****
+// **** DO NOT EDIT - this file was automatically generated. ****
 syntax = "proto3";
 
 package cast.v2;
@@ -24,6 +24,7 @@ service CoreApplicationService {
   // the gRPC status code.
   rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
 
+  // DEPRECATED
   // Send a Cast V2 message to core application.
   rpc SendCastMessage(CastMessageRequest) returns (CastMessageResponse);
 
@@ -34,18 +35,25 @@ service CoreApplicationService {
   rpc SetApplicationStatus(ApplicationStatusRequest)
       returns (ApplicationStatusResponse);
 
+  // DEPRECATED
   // Posts messages between MessagePorts. MessagePorts are connected using other
   // services (e.g. ApiBindings), then registered with the
   // MessageConnectorService to communicate over IPC.
   rpc PostMessage(cast.web.Message) returns (cast.web.MessagePortStatus);
 
+  // DEPRECATED
   // Gets the list of bindings to early-inject into javascript at page load.
   rpc GetAll(cast.bindings.GetAllRequest)
       returns (cast.bindings.GetAllResponse);
 
+  // DEPRECATED
   // Connects to a binding returned by GetAll.
   rpc Connect(cast.bindings.ConnectRequest)
       returns (cast.bindings.ConnectResponse);
+
+  // GetWebUIResource request
+  rpc GetWebUIResource(GetWebUIResourceRequest)
+      returns (GetWebUIResourceResponse);
 }
 
 message GetConfigRequest {
@@ -96,3 +104,13 @@ message ApplicationStatusRequest {
 }
 
 message ApplicationStatusResponse {}
+
+message GetWebUIResourceRequest {
+  // Resource identifier. It can either be name of the resource or a url.
+  string resource_id = 1;
+}
+
+message GetWebUIResourceResponse {
+  // Path to the resource file on device.
+  string resource_path = 1;
+}

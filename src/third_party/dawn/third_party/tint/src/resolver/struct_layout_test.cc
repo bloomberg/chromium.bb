@@ -52,14 +52,12 @@ TEST_F(ResolverStructLayoutTest, Scalars) {
 }
 
 TEST_F(ResolverStructLayoutTest, Alias) {
-  auto* alias_a = ty.alias("a", ty.f32());
-  AST().AddConstructedType(alias_a);
-  auto* alias_b = ty.alias("b", ty.f32());
-  AST().AddConstructedType(alias_b);
+  auto* alias_a = Alias("a", ty.f32());
+  auto* alias_b = Alias("b", ty.f32());
 
   auto* s = Structure("S", {
-                               Member("a", alias_a),
-                               Member("b", alias_b),
+                               Member("a", ty.Of(alias_a)),
+                               Member("b", ty.Of(alias_b)),
                            });
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();
@@ -197,8 +195,8 @@ TEST_F(ResolverStructLayoutTest, ImplicitStrideArrayOfStructure) {
                                        Member("a", ty.vec2<i32>()),
                                        Member("b", ty.vec3<i32>()),
                                        Member("c", ty.vec4<i32>()),
-                                   });  // size: 48
-  auto* outer = ty.array(inner, 12);    // size: 12 * 48
+                                   });       // size: 48
+  auto* outer = ty.array(ty.Of(inner), 12);  // size: 12 * 48
   auto* s = Structure("S", {
                                Member("c", outer),
                            });
@@ -244,15 +242,15 @@ TEST_F(ResolverStructLayoutTest, Vector) {
 
 TEST_F(ResolverStructLayoutTest, Matrix) {
   auto* s = Structure("S", {
-                               Member("a", ty.mat2x2<i32>()),
-                               Member("b", ty.mat2x3<i32>()),
-                               Member("c", ty.mat2x4<i32>()),
-                               Member("d", ty.mat3x2<i32>()),
-                               Member("e", ty.mat3x3<i32>()),
-                               Member("f", ty.mat3x4<i32>()),
-                               Member("g", ty.mat4x2<i32>()),
-                               Member("h", ty.mat4x3<i32>()),
-                               Member("i", ty.mat4x4<i32>()),
+                               Member("a", ty.mat2x2<f32>()),
+                               Member("b", ty.mat2x3<f32>()),
+                               Member("c", ty.mat2x4<f32>()),
+                               Member("d", ty.mat3x2<f32>()),
+                               Member("e", ty.mat3x3<f32>()),
+                               Member("f", ty.mat3x4<f32>()),
+                               Member("g", ty.mat4x2<f32>()),
+                               Member("h", ty.mat4x3<f32>()),
+                               Member("i", ty.mat4x4<f32>()),
                            });
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();
@@ -294,11 +292,11 @@ TEST_F(ResolverStructLayoutTest, Matrix) {
 
 TEST_F(ResolverStructLayoutTest, NestedStruct) {
   auto* inner = Structure("Inner", {
-                                       Member("a", ty.mat3x3<i32>()),
+                                       Member("a", ty.mat3x3<f32>()),
                                    });
   auto* s = Structure("S", {
                                Member("a", ty.i32()),
-                               Member("b", inner),
+                               Member("b", ty.Of(inner)),
                                Member("c", ty.i32()),
                            });
 
@@ -330,7 +328,7 @@ TEST_F(ResolverStructLayoutTest, SizeDecorations) {
   auto* s = Structure("S", {
                                Member("a", ty.f32(), {MemberSize(4)}),
                                Member("b", ty.u32(), {MemberSize(8)}),
-                               Member("c", inner),
+                               Member("c", ty.Of(inner)),
                                Member("d", ty.i32(), {MemberSize(32)}),
                            });
 
@@ -365,7 +363,7 @@ TEST_F(ResolverStructLayoutTest, AlignDecorations) {
   auto* s = Structure("S", {
                                Member("a", ty.f32(), {MemberAlign(4)}),
                                Member("b", ty.u32(), {MemberAlign(8)}),
-                               Member("c", inner),
+                               Member("c", ty.Of(inner)),
                                Member("d", ty.i32(), {MemberAlign(32)}),
                            });
 

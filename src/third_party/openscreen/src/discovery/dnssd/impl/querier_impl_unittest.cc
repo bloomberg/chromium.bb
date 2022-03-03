@@ -21,6 +21,7 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace discovery {
@@ -155,17 +156,17 @@ class DnsSdQuerierImplTest : public testing::Test {
  protected:
   void ValidateRecordChangeStartsQuery(
       const std::vector<PendingQueryChange>& changes,
-      const DomainName& name,
+      const DomainName& domain_name,
       size_t expected_size) {
-    ValidateRecordChangeResult(changes, name, expected_size,
+    ValidateRecordChangeResult(changes, domain_name, expected_size,
                                PendingQueryChange::kStartQuery);
   }
 
   void ValidateRecordChangeStopsQuery(
       const std::vector<PendingQueryChange>& changes,
-      const DomainName& name,
+      const DomainName& domain_name,
       size_t expected_size) {
-    ValidateRecordChangeResult(changes, name, expected_size,
+    ValidateRecordChangeResult(changes, domain_name, expected_size,
                                PendingQueryChange::kStopQuery);
   }
 
@@ -221,18 +222,17 @@ class DnsSdQuerierImplTest : public testing::Test {
  private:
   void ValidateRecordChangeResult(
       const std::vector<PendingQueryChange>& changes,
-      const DomainName& name,
+      const DomainName& domain_name,
       size_t expected_size,
       PendingQueryChange::ChangeType change_type) {
     EXPECT_EQ(changes.size(), expected_size);
-    auto it = std::find_if(
-        changes.begin(), changes.end(),
-        [&name, change_type](const PendingQueryChange& change) {
+    EXPECT_TRUE(ContainsIf(
+        changes, [&domain_name, change_type](const PendingQueryChange& change) {
           return change.dns_type == DnsType::kANY &&
                  change.dns_class == DnsClass::kANY &&
-                 change.change_type == change_type && change.name == name;
-        });
-    EXPECT_TRUE(it != changes.end());
+                 change.change_type == change_type &&
+                 change.name == domain_name;
+        }));
   }
 };
 

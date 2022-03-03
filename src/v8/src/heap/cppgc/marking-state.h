@@ -9,6 +9,7 @@
 
 #include "include/cppgc/trace-trait.h"
 #include "include/cppgc/visitor.h"
+#include "src/base/logging.h"
 #include "src/heap/cppgc/compaction-worklists.h"
 #include "src/heap/cppgc/globals.h"
 #include "src/heap/cppgc/heap-object-header.h"
@@ -99,17 +100,25 @@ class MarkingStateBase {
   MarkingWorklists::WeakContainersWorklist& weak_containers_worklist() {
     return weak_containers_worklist_;
   }
+  MarkingWorklists::RetraceMarkedObjectsWorklist::Local&
+  retrace_marked_objects_worklist() {
+    return retrace_marked_objects_worklist_;
+  }
 
   CompactionWorklists::MovableReferencesWorklist::Local*
   movable_slots_worklist() {
     return movable_slots_worklist_.get();
   }
 
-  void NotifyCompactionCancelled() {
-    DCHECK(IsCompactionEnabled());
-    movable_slots_worklist_->Clear();
-    movable_slots_worklist_.reset();
+  bool DidDiscoverNewEphemeronPairs() const {
+    return discovered_new_ephemeron_pairs_;
   }
+
+  void ResetDidDiscoverNewEphemeronPairs() {
+    discovered_new_ephemeron_pairs_ = false;
+  }
+
+  void set_in_atomic_pause() { in_atomic_pause_ = true; }
 
  protected:
   inline void MarkAndPush(HeapObjectHeader&, TraceDescriptor);
@@ -138,19 +147,23 @@ class MarkingStateBase {
   MarkingWorklists::EphemeronPairsWorklist::Local
       ephemeron_pairs_for_processing_worklist_;
   MarkingWorklists::WeakContainersWorklist& weak_containers_worklist_;
+  MarkingWorklists::RetraceMarkedObjectsWorklist::Local
+      retrace_marked_objects_worklist_;
   // Existence of the worklist (|movable_slot_worklist_| != nullptr) denotes
   // that compaction is currently enabled and slots must be recorded.
   std::unique_ptr<CompactionWorklists::MovableReferencesWorklist::Local>
       movable_slots_worklist_;
 
   size_t marked_bytes_ = 0;
+  bool in_ephemeron_processing_ = false;
+  bool discovered_new_ephemeron_pairs_ = false;
+  bool in_atomic_pause_ = false;
 };
 
 MarkingStateBase::MarkingStateBase(HeapBase& heap,
                                    MarkingWorklists& marking_worklists,
                                    CompactionWorklists* compaction_worklists)
-    :
-      heap_(heap),
+    : heap_(heap),
       marking_worklist_(marking_worklists.marking_worklist()),
       not_fully_constructed_worklist_(
           *marking_worklists.not_fully_constructed_worklist()),
@@ -164,7 +177,9 @@ MarkingStateBase::MarkingStateBase(HeapBase& heap,
           marking_worklists.discovered_ephemeron_pairs_worklist()),
       ephemeron_pairs_for_processing_worklist_(
           marking_worklists.ephemeron_pairs_for_processing_worklist()),
-      weak_containers_worklist_(*marking_worklists.weak_containers_worklist()) {
+      weak_containers_worklist_(*marking_worklists.weak_containers_worklist()),
+      retrace_marked_objects_worklist_(
+          marking_worklists.retrace_marked_objects_worklist()) {
   if (compaction_worklists) {
     movable_slots_worklist_ =
         std::make_unique<CompactionWorklists::MovableReferencesWorklist::Local>(
@@ -192,7 +207,7 @@ void MarkingStateBase::MarkAndPush(HeapObjectHeader& header,
 
 bool MarkingStateBase::MarkNoPush(HeapObjectHeader& header) {
   // A GC should only mark the objects that belong in its heap.
-  DCHECK_EQ(&heap_, BasePage::FromPayload(&header)->heap());
+  DCHECK_EQ(&heap_, &BasePage::FromPayload(&header)->heap());
   // Never mark free space objects. This would e.g. hint to marking a promptly
   // freed backing store.
   DCHECK(!header.IsFree<AccessMode::kAtomic>());
@@ -222,8 +237,10 @@ void MarkingStateBase::RegisterWeakReferenceIfNeeded(const void* object,
   // Filter out already marked values. The write barrier for WeakMember
   // ensures that any newly set value after this point is kept alive and does
   // not require the callback.
-  if (HeapObjectHeader::FromObject(desc.base_object_payload)
-          .IsMarked<AccessMode::kAtomic>())
+  const HeapObjectHeader& header =
+      HeapObjectHeader::FromObject(desc.base_object_payload);
+  if (!header.IsInConstruction<AccessMode::kAtomic>() &&
+      header.IsMarked<AccessMode::kAtomic>())
     return;
   RegisterWeakCallback(weak_callback, parameter);
 }
@@ -277,10 +294,23 @@ void MarkingStateBase::ProcessWeakContainer(const void* object,
 void MarkingStateBase::ProcessEphemeron(const void* key, const void* value,
                                         TraceDescriptor value_desc,
                                         Visitor& visitor) {
-  // Filter out already marked keys. The write barrier for WeakMember
-  // ensures that any newly set value after this point is kept alive and does
-  // not require the callback.
-  if (HeapObjectHeader::FromObject(key).IsMarked<AccessMode::kAtomic>()) {
+  // ProcessEphemeron is not expected to find new ephemerons recursively, which
+  // would break the main marking loop.
+  DCHECK(!in_ephemeron_processing_);
+  in_ephemeron_processing_ = true;
+  // Keys are considered live even in incremental/concurrent marking settings
+  // because the write barrier for WeakMember ensures that any newly set value
+  // after this point is kept alive and does not require the callback.
+  const bool key_in_construction =
+      HeapObjectHeader::FromObject(key).IsInConstruction<AccessMode::kAtomic>();
+  const bool key_considered_as_live =
+      key_in_construction
+          ? in_atomic_pause_
+          : HeapObjectHeader::FromObject(key).IsMarked<AccessMode::kAtomic>();
+  DCHECK_IMPLIES(
+      key_in_construction && in_atomic_pause_,
+      HeapObjectHeader::FromObject(key).IsMarked<AccessMode::kAtomic>());
+  if (key_considered_as_live) {
     if (value_desc.base_object_payload) {
       MarkAndPush(value_desc.base_object_payload, value_desc);
     } else {
@@ -288,9 +318,11 @@ void MarkingStateBase::ProcessEphemeron(const void* key, const void* value,
       // should be immediately traced.
       value_desc.callback(&visitor, value);
     }
-    return;
+  } else {
+    discovered_ephemeron_pairs_worklist_.Push({key, value, value_desc});
+    discovered_new_ephemeron_pairs_ = true;
   }
-  discovered_ephemeron_pairs_worklist_.Push({key, value, value_desc});
+  in_ephemeron_processing_ = false;
 }
 
 void MarkingStateBase::AccountMarkedBytes(const HeapObjectHeader& header) {
@@ -354,9 +386,7 @@ void MutatorMarkingState::ReTraceMarkedWeakContainer(cppgc::Visitor& visitor,
                                                      HeapObjectHeader& header) {
   DCHECK(weak_containers_worklist_.Contains(&header));
   recently_retraced_weak_containers_.Insert(&header);
-  // Don't push to the marking worklist to avoid double accounting of marked
-  // bytes as the container is already accounted for.
-  header.Trace(&visitor);
+  retrace_marked_objects_worklist().Push(&header);
 }
 
 void MutatorMarkingState::DynamicallyMarkAddress(ConstAddress address) {
@@ -379,15 +409,17 @@ void MutatorMarkingState::InvokeWeakRootsCallbackIfNeeded(
 #if DEBUG
   const HeapObjectHeader& header =
       HeapObjectHeader::FromObject(desc.base_object_payload);
-  DCHECK_IMPLIES(header.IsInConstruction(), header.IsMarked());
+  DCHECK_IMPLIES(header.IsInConstruction(),
+                 header.IsMarked<AccessMode::kAtomic>());
 #endif  // DEBUG
   weak_callback(LivenessBrokerFactory::Create(), parameter);
 }
 
 bool MutatorMarkingState::IsMarkedWeakContainer(HeapObjectHeader& header) {
-  const bool result = weak_containers_worklist_.Contains(&header) &&
-                      !recently_retraced_weak_containers_.Contains(&header);
-  DCHECK_IMPLIES(result, header.IsMarked());
+  const bool result =
+      weak_containers_worklist_.Contains<AccessMode::kAtomic>(&header) &&
+      !recently_retraced_weak_containers_.Contains(&header);
+  DCHECK_IMPLIES(result, header.IsMarked<AccessMode::kAtomic>());
   DCHECK_IMPLIES(result, !header.IsInConstruction());
   return result;
 }
@@ -457,7 +489,7 @@ template <AccessMode mode>
 void DynamicallyTraceMarkedObject(Visitor& visitor,
                                   const HeapObjectHeader& header) {
   DCHECK(!header.IsInConstruction<mode>());
-  DCHECK(header.IsMarked<mode>());
+  DCHECK(header.IsMarked<AccessMode::kAtomic>());
   header.Trace<mode>(&visitor);
 }
 

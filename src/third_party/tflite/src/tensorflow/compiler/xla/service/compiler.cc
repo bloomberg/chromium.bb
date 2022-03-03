@@ -28,14 +28,6 @@ namespace xla {
 /* static */ tensorflow::mutex Compiler::platform_compiler_mutex_(
     tensorflow::LINKER_INITIALIZED);
 
-StatusOr<
-    std::tuple<std::unique_ptr<HloModule>, std::unique_ptr<BufferAssignment>>>
-Compiler::RunHloPassesAndBufferAssignement(
-    std::unique_ptr<HloModule> module, se::StreamExecutor* executor,
-    se::DeviceMemoryAllocator* device_allocator) {
-  return Unimplemented("This compiler does not support this method");
-}
-
 std::vector<std::unique_ptr<tensorflow::protobuf::Message>>
 Compiler::ComputeBackendConfigs(const HloInstruction& hlo,
                                 se::StreamExecutor* executor) const {
@@ -108,9 +100,13 @@ Compiler::GetPlatformCompilers() {
   if (it == factories->end()) {
     string hint;
     if (platform->Name() == "Host") {
-      hint = " (hint: try linking in tensorflow/compiler/jit:xla_cpu_jit)";
+      hint =
+          " (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a "
+          "dependency)";
     } else if (platform->Name() == "CUDA") {
-      hint = " (hint: try linking in tensorflow/compiler/jit:xla_gpu_jit)";
+      hint =
+          " (hint: try adding tensorflow/compiler/jit:xla_gpu_jit as a "
+          "dependency)";
     }
 
     return NotFound(

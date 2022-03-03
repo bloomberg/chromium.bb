@@ -2,6 +2,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
   'gitiles',
   'recipe_engine/properties',
@@ -25,7 +27,7 @@ def RunSteps(api):
 
   invalid_urls = [
     'https://host/a/path/to/project?a=b',
-    'https://host/path/to/project/+/master',
+    'https://host/path/to/project/+/main',
   ]
   for repo_url in invalid_urls:
     host, project = api.gitiles.parse_repo_url(repo_url)

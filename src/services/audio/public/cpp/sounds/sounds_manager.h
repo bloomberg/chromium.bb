@@ -6,7 +6,6 @@
 #define SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_SOUNDS_MANAGER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -32,6 +31,9 @@ class SoundsManager {
 
   // Returns a pointer to a singleton instance of the SoundsManager.
   static SoundsManager* Get();
+
+  SoundsManager(const SoundsManager&) = delete;
+  SoundsManager& operator=(const SoundsManager&) = delete;
 
   // Initializes sounds manager for testing. The |manager| will be owned
   // by the internal pointer and will be deleted by Shutdown().
@@ -60,9 +62,6 @@ class SoundsManager {
   virtual ~SoundsManager();
 
   SEQUENCE_CHECKER(sequence_checker_);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SoundsManager);
 };
 
 }  // namespace audio

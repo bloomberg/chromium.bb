@@ -9,7 +9,6 @@ AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
 void avcodec_free_context(AVCodecContext **avctx);
 AVCodec *avcodec_find_decoder(enum AVCodecID id);
 int av_new_packet(AVPacket *pkt, int size);
-int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt);
 int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
 const char *avcodec_get_name(enum AVCodecID id);
 void av_packet_unref(AVPacket *pkt);
@@ -44,6 +43,7 @@ AVFormatContext *avformat_alloc_context(void);
 void avformat_free_context(AVFormatContext *s);
 AVIOContext *avio_alloc_context(unsigned char *buffer, int buffer_size, int write_flag, void *opaque, AVIOReadWriteOperation read_packet, AVIOReadWriteOperation write_packet, AVIOSeekOperation seek);
 int avio_close(AVIOContext *s);
+int64_t av_stream_get_first_dts(const AVStream *st);
 
 
 //------------------------------------------------

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -46,6 +47,11 @@ namespace blink {
 
 CaretDisplayItemClient::CaretDisplayItemClient() = default;
 CaretDisplayItemClient::~CaretDisplayItemClient() = default;
+void CaretDisplayItemClient::Trace(Visitor* visitor) const {
+  visitor->Trace(layout_block_);
+  visitor->Trace(previous_layout_block_);
+  DisplayItemClient::Trace(visitor);
+}
 
 namespace {
 
@@ -103,7 +109,8 @@ CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(
     return {};
 
   // First compute a rect local to the layoutObject at the selection start.
-  const LocalCaretRect& caret_rect = LocalCaretRectOfPosition(caret_position);
+  const LocalCaretRect& caret_rect =
+      LocalCaretRectOfPosition(caret_position, kCannotCrossEditingBoundary);
   if (!caret_rect.layout_object)
     return {};
 
@@ -143,7 +150,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
   // We don't care about intermediate changes of LayoutBlock because they are
   // not painted.
   if (!previous_layout_block_)
-    previous_layout_block_ = layout_block_;
+    previous_layout_block_ = layout_block_.Get();
 
   CaretRectAndPainterBlock rect_and_block =
       ComputeCaretRectAndPainterBlock(caret_position);
@@ -245,18 +252,24 @@ void CaretDisplayItemClient::PaintCaret(
     GraphicsContext& context,
     const PhysicalOffset& paint_offset,
     DisplayItem::Type display_item_type) const {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, *this,
-                                                  display_item_type))
-    return;
-
   PhysicalRect drawing_rect = local_rect_;
   drawing_rect.Move(paint_offset);
 
-  DrawingRecorder recorder(context, *this, display_item_type,
-                           EnclosingIntRect(drawing_rect));
-  IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
+  // When caret is in text-combine box with scaling, |context| is already
+  // associated to drawing record to apply affine transform.
+  absl::optional<DrawingRecorder> recorder;
+  if (LIKELY(!context.InDrawingRecorder())) {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(context, *this,
+                                                    display_item_type))
+      return;
+    recorder.emplace(context, *this, display_item_type,
+                     ToEnclosingRect(drawing_rect));
+  }
+
+  gfx::Rect paint_rect = ToPixelSnappedRect(drawing_rect);
   context.FillRect(paint_rect, is_visible_if_active_ ? color_ : Color(),
-                   DarkModeFilter::ElementRole::kText);
+                   PaintAutoDarkMode(layout_block_->StyleRef(),
+                                     DarkModeFilter::ElementRole::kForeground));
 }
 
 void CaretDisplayItemClient::RecordSelection(
@@ -264,13 +277,13 @@ void CaretDisplayItemClient::RecordSelection(
     const PhysicalOffset& paint_offset) {
   PhysicalRect drawing_rect = local_rect_;
   drawing_rect.Move(paint_offset);
-  IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
+  gfx::Rect paint_rect = ToPixelSnappedRect(drawing_rect);
 
   // For the caret, the start and selection selection bounds are recorded as
   // the same edges, with the type marked as CENTER.
   PaintedSelectionBound start = {gfx::SelectionBound::Type::CENTER,
-                                 paint_rect.MinXMinYCorner(),
-                                 paint_rect.MinXMaxYCorner(), false};
+                                 paint_rect.origin(), paint_rect.bottom_left(),
+                                 false};
   PaintedSelectionBound end = start;
 
   context.GetPaintController().RecordSelection(start, end);

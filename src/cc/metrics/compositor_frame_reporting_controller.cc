@@ -7,17 +7,22 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_id_helper.h"
 #include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/dropped_frame_counter.h"
+#include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "cc/metrics/latency_ukm_reporter.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
 
 namespace cc {
 namespace {
 using SmoothThread = CompositorFrameReporter::SmoothThread;
 using StageType = CompositorFrameReporter::StageType;
 using FrameTerminationStatus = CompositorFrameReporter::FrameTerminationStatus;
+
+constexpr char kTraceCategory[] = "cc,benchmark";
 }  // namespace
 
 CompositorFrameReportingController::CompositorFrameReportingController(
@@ -25,7 +30,9 @@ CompositorFrameReportingController::CompositorFrameReportingController(
     int layer_tree_host_id)
     : should_report_metrics_(should_report_metrics),
       layer_tree_host_id_(layer_tree_host_id),
-      latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {}
+      latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {
+  global_trackers_.latency_ukm_reporter = latency_ukm_reporter_.get();
+}
 
 CompositorFrameReportingController::~CompositorFrameReportingController() {
   base::TimeTicks now = Now();
@@ -64,16 +71,23 @@ bool CompositorFrameReportingController::HasReporterAt(
 
 void CompositorFrameReportingController::ProcessSkippedFramesIfNecessary(
     const viz::BeginFrameArgs& args) {
-  if (previous_frame_.IsValid() &&
-      previous_frame_.frame_id.source_id == args.frame_id.source_id) {
-    CreateReportersForDroppedFrames(previous_frame_, args);
+  const auto& previous_frame = last_started_compositor_frame_.args;
+  if (previous_frame.IsValid() &&
+      previous_frame.frame_id.source_id == args.frame_id.source_id) {
+    CreateReportersForDroppedFrames(previous_frame, args);
   }
-  previous_frame_ = args;
+
+  last_started_compositor_frame_.args = args;
+  last_started_compositor_frame_.scrolling_thread = scrolling_thread_;
+  last_started_compositor_frame_.active_trackers = active_trackers_;
+  last_started_compositor_frame_.smooth_thread = GetSmoothThread();
 }
 
 void CompositorFrameReportingController::WillBeginImplFrame(
     const viz::BeginFrameArgs& args) {
   ProcessSkippedFramesIfNecessary(args);
+  ReportMultipleSwaps(args.frame_time, last_interval_);
+  last_interval_ = args.interval;
 
   base::TimeTicks begin_time = Now();
   if (reporters_[PipelineStage::kBeginImplFrame]) {
@@ -93,9 +107,8 @@ void CompositorFrameReportingController::WillBeginImplFrame(
     }
   }
   auto reporter = std::make_unique<CompositorFrameReporter>(
-      active_trackers_, args, latency_ukm_reporter_.get(),
-      should_report_metrics_, GetSmoothThread(), scrolling_thread_,
-      layer_tree_host_id_, dropped_frame_counter_);
+      active_trackers_, args, should_report_metrics_, GetSmoothThread(),
+      scrolling_thread_, layer_tree_host_id_, global_trackers_);
   reporter->set_tick_clock(tick_clock_);
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                        begin_time);
@@ -118,11 +131,22 @@ void CompositorFrameReportingController::WillBeginMainFrame(
   } else {
     // In this case we have already submitted the ImplFrame, but we received
     // beginMain frame before next BeginImplFrame (Not reached the ImplFrame
-    // deadline yet). So will start a new reporter at BeginMainFrame.
+    // deadline yet). So will start a new reporter at BeginMainFrame, and use
+    // the state(s) from the ImplFrame where necessary.
+    auto scrolling_thread = scrolling_thread_;
+    auto active_trackers = active_trackers_;
+    auto smooth_thread = GetSmoothThread();
+    if (args.frame_id == last_started_compositor_frame_.args.frame_id) {
+      // TODO(1277547): Instead of replacing all current information with the
+      // older information from when the impl-frame started, merge the two sets
+      // of information that makes sense.
+      scrolling_thread = last_started_compositor_frame_.scrolling_thread;
+      active_trackers = last_started_compositor_frame_.active_trackers;
+      smooth_thread = last_started_compositor_frame_.smooth_thread;
+    }
     auto reporter = std::make_unique<CompositorFrameReporter>(
-        active_trackers_, args, latency_ukm_reporter_.get(),
-        should_report_metrics_, GetSmoothThread(), scrolling_thread_,
-        layer_tree_host_id_, dropped_frame_counter_);
+        active_trackers, args, should_report_metrics_, smooth_thread,
+        scrolling_thread, layer_tree_host_id_, global_trackers_);
     reporter->set_tick_clock(tick_clock_);
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
@@ -296,6 +320,8 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
     impl_reporter->AddEventsMetrics(
         std::move(events_metrics.impl_event_metrics));
     impl_reporter->set_has_missing_content(has_missing_content);
+    impl_reporter->set_is_accompanied_by_main_thread_update(
+        is_activated_frame_new);
     submitted_compositor_frames_.emplace_back(frame_token,
                                               std::move(impl_reporter));
   }
@@ -352,6 +378,46 @@ void CompositorFrameReportingController::
   }
 }
 
+void CompositorFrameReportingController::TrackSwapTiming(
+    const viz::FrameTimingDetails& details) {
+  if (details.swap_timings.swap_start != base::TimeTicks()) {
+    if (latest_swap_times_.empty() ||
+        latest_swap_times_.back() < details.swap_timings.swap_start)
+      latest_swap_times_.push(details.swap_timings.swap_start);
+  }
+
+  // Making sure the queue would not keep growing in size.
+  DCHECK_LE(latest_swap_times_.size(), 10u);
+}
+
+void CompositorFrameReportingController::ReportMultipleSwaps(
+    base::TimeTicks begin_frame_time,
+    base::TimeDelta interval) {
+  while (!latest_swap_times_.empty() &&
+         latest_swap_times_.front() <= begin_frame_time - interval) {
+    latest_swap_times_.pop();
+  }
+
+  if (latest_swap_times_.empty())
+    return;
+
+  if (latest_swap_times_.size() > 1) {
+    base::TimeDelta swap_delta =
+        latest_swap_times_.back() - latest_swap_times_.front();
+
+    if (swap_delta < interval) {
+      UMA_HISTOGRAM_PERCENTAGE("GPU.MultipleSwapsDelta",
+                               swap_delta * 100.0 / interval);
+
+      const auto trace_track =
+          perfetto::Track(base::trace_event::GetNextGlobalTraceId());
+      TRACE_EVENT_BEGIN(kTraceCategory, "MultipleSwaps", trace_track,
+                        latest_swap_times_.front());
+      TRACE_EVENT_END(kTraceCategory, trace_track, latest_swap_times_.back());
+    }
+  }
+}
+
 void CompositorFrameReportingController::OnFinishImplFrame(
     const viz::BeginFrameId& id) {
   for (auto& reporter : reporters_) {
@@ -366,6 +432,10 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {
   bool feedback_failed = details.presentation_feedback.failed();
+
+  if (!feedback_failed)
+    TrackSwapTiming(details);
+
   for (auto submitted_frame = submitted_compositor_frames_.begin();
        submitted_frame != submitted_compositor_frames_.end() &&
        !viz::FrameTokenGT(submitted_frame->frame_token, frame_token);) {
@@ -470,7 +540,7 @@ void CompositorFrameReportingController::OnStoppedRequestingBeginFrames() {
                                     now);
     }
   }
-  previous_frame_ = {};
+  last_started_compositor_frame_ = {};
 }
 
 void CompositorFrameReportingController::NotifyReadyToCommit(
@@ -488,31 +558,31 @@ void CompositorFrameReportingController::AddActiveTracker(
 void CompositorFrameReportingController::RemoveActiveTracker(
     FrameSequenceTrackerType type) {
   active_trackers_.reset(static_cast<size_t>(type));
-  if (dropped_frame_counter_)
-    dropped_frame_counter_->ReportFrames();
+  if (global_trackers_.dropped_frame_counter)
+    global_trackers_.dropped_frame_counter->ReportFrames();
 }
 
 void CompositorFrameReportingController::SetScrollingThread(
-    FrameSequenceMetrics::ThreadType thread) {
+    FrameInfo::SmoothEffectDrivingThread thread) {
   scrolling_thread_ = thread;
 }
 
 void CompositorFrameReportingController::SetThreadAffectsSmoothness(
-    FrameSequenceMetrics::ThreadType thread_type,
+    FrameInfo::SmoothEffectDrivingThread thread_type,
     bool affects_smoothness) {
   auto current_smooth_thread = GetSmoothThread();
 
-  if (thread_type == FrameSequenceMetrics::ThreadType::kCompositor) {
+  if (thread_type == FrameInfo::SmoothEffectDrivingThread::kCompositor) {
     is_compositor_thread_driving_smoothness_ = affects_smoothness;
   } else {
-    DCHECK_EQ(thread_type, FrameSequenceMetrics::ThreadType::kMain);
+    DCHECK_EQ(thread_type, FrameInfo::SmoothEffectDrivingThread::kMain);
     is_main_thread_driving_smoothness_ = affects_smoothness;
   }
 
   // keep the history for the last 3 seconds.
   if (!smooth_thread_history_.empty()) {
-    auto expired_smooth_thread = smooth_thread_history_.lower_bound(
-        Now() - base::TimeDelta::FromSeconds(3))--;
+    auto expired_smooth_thread =
+        smooth_thread_history_.lower_bound(Now() - base::Seconds(3))--;
     smooth_thread_history_.erase(smooth_thread_history_.begin(),
                                  expired_smooth_thread);
   }
@@ -649,20 +719,40 @@ void CompositorFrameReportingController::CreateReportersForDroppedFrames(
         old_args.frame_id.sequence_number + i, timestamp,
         timestamp + old_args.interval, old_args.interval,
         viz::BeginFrameArgs::NORMAL);
+    devtools_instrumentation::DidBeginFrame(
+        layer_tree_host_id_, args.frame_time, args.frame_id.sequence_number);
     // ThreadType::kUnknown is used here for scrolling thread, because the
     // frames reported here could have a scroll interaction active at their
     // start time, but they were skipped and history of scrolling thread might
     // change in the diff of start time and report time.
     auto reporter = std::make_unique<CompositorFrameReporter>(
-        active_trackers_, args, latency_ukm_reporter_.get(),
-        should_report_metrics_, GetSmoothThreadAtTime(timestamp),
-        FrameSequenceMetrics::ThreadType::kUnknown, layer_tree_host_id_,
-        dropped_frame_counter_);
+        active_trackers_, args, should_report_metrics_,
+        GetSmoothThreadAtTime(timestamp),
+        FrameInfo::SmoothEffectDrivingThread::kUnknown, layer_tree_host_id_,
+        global_trackers_);
     reporter->set_tick_clock(tick_clock_);
     reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                          timestamp);
     reporter->TerminateFrame(FrameTerminationStatus::kDidNotPresentFrame,
                              args.deadline);
+  }
+}
+
+void CompositorFrameReportingController::AddSortedFrame(
+    const viz::BeginFrameArgs& args,
+    const FrameInfo& frame_info) {
+  if (global_trackers_.frame_sequence_trackers) {
+    global_trackers_.frame_sequence_trackers->AddSortedFrame(args, frame_info);
+  }
+}
+
+void CompositorFrameReportingController::SetDroppedFrameCounter(
+    DroppedFrameCounter* counter) {
+  global_trackers_.dropped_frame_counter = counter;
+  if (counter) {
+    counter->SetSortedFrameCallback(
+        base::BindRepeating(&CompositorFrameReportingController::AddSortedFrame,
+                            base::Unretained(this)));
   }
 }
 

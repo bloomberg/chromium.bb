@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/nonscannable_memory.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/connection_params.h"
 #include "mojo/core/platform_handle_in_transit.h"
@@ -62,6 +62,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // A message to be written to a channel.
   struct MOJO_SYSTEM_IMPL_EXPORT Message {
+    Message(const Message&) = delete;
+    Message& operator=(const Message&) = delete;
+
     virtual ~Message() = default;
 
     enum class MessageType : uint16_t {
@@ -188,6 +191,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     static MessagePtr Deserialize(
         const void* data,
         size_t data_num_bytes,
+        HandlePolicy handle_policy,
         base::ProcessHandle from_process = base::kNullProcessHandle);
 
     virtual const void* data() const = 0;
@@ -233,8 +237,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // be transmitted if the message is written to a channel. Includes all
     // headers and user payload.
     size_t size_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(Message);
   };
 
   // Error types which may be reported by a Channel instance to its delegate.
@@ -278,6 +280,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       ConnectionParams connection_params,
       HandlePolicy handle_policy,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+
+  Channel(const Channel&) = delete;
+  Channel& operator=(const Channel&) = delete;
 
 #if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_MAC)
   // At this point only ChannelPosix needs InitFeatures.
@@ -419,14 +424,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   class ReadBuffer;
 
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
   HandlePolicy handle_policy_;
   const std::unique_ptr<ReadBuffer> read_buffer_;
 
   // Handle to the process on the other end of this Channel, iff known.
   base::Process remote_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
 }  // namespace core

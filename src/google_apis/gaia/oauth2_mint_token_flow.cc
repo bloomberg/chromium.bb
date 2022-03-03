@@ -400,7 +400,7 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
 
     base::Time expiration_time = base::Time();
     if (max_age > 0)
-      expiration_time = time_now + base::TimeDelta::FromSeconds(max_age);
+      expiration_time = time_now + base::Seconds(max_age);
 
     std::unique_ptr<net::CanonicalCookie> cookie =
         net::CanonicalCookie::CreateSanitizedCookie(
@@ -408,7 +408,8 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
             time_now, expiration_time, time_now, is_secure ? *is_secure : false,
             is_http_only ? *is_http_only : false,
             net::StringToCookieSameSite(same_site ? *same_site : ""),
-            net::COOKIE_PRIORITY_DEFAULT, /* same_party */ false);
+            net::COOKIE_PRIORITY_DEFAULT, /* same_party */ false,
+            /* partition_key */ absl::nullopt);
     cookies.push_back(*cookie);
   }
 

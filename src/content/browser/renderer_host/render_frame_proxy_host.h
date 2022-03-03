@@ -10,8 +10,9 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -31,13 +32,22 @@ namespace gfx {
 class Rect;
 }
 
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class RenderFrameProxyHost;
+}
+}  // namespace protos
+}  // namespace perfetto
+
 namespace content {
 
 class CrossProcessFrameConnector;
 class FrameTreeNode;
 class RenderProcessHost;
 class RenderViewHostImpl;
-class RenderWidgetHostView;
+class RenderWidgetHostViewChildFrame;
+class SiteInstanceGroup;
 
 // When a page's frames are rendered by multiple processes, each renderer has a
 // full copy of the frame tree. It has full RenderFrames for the frames it is
@@ -46,24 +56,25 @@ class RenderWidgetHostView;
 //
 // This class is the browser-side host object for the placeholder. Each node in
 // the frame tree has a RenderFrameHost for the active SiteInstance and a set
-// of RenderFrameProxyHost objects - one for all other SiteInstances with
+// of RenderFrameProxyHost objects - one for all other SiteInstanceGroups with
 // references to this frame. The proxies allow us to keep existing window
 // references valid over cross-process navigations and route cross-site
 // asynchronous JavaScript calls, such as postMessage.
 //
 // RenderFrameProxyHost is created whenever a cross-site
 // navigation occurs and a reference to the frame navigating needs to be kept
-// alive. A RenderFrameProxyHost and a RenderFrameHost for the same SiteInstance
-// can exist at the same time, but only one will be "active" at a time.
-// There are two cases where the two objects will coexist:
+// alive. A RenderFrameProxyHost and a RenderFrameHost in the same
+// SiteInstanceGroup can exist at the same time, but only one will be "active"
+// at a time. There are two cases where the two objects will coexist:
 // * When navigating cross-process and there is already a RenderFrameProxyHost
-// for the new SiteInstance. A pending RenderFrameHost is created, but it is
-// not used until it commits. At that point, RenderFrameHostManager transitions
-// the pending RenderFrameHost to the active one and deletes the proxy.
+// for the new SiteInstanceGroup. A pending RenderFrameHost is created, but it
+// is not used until it commits. At that point, RenderFrameHostManager
+// transitions the pending RenderFrameHost to the active one and deletes the
+// proxy.
 // * When navigating cross-process and the existing document has an unload
 // event handler. When the new navigation commits, RenderFrameHostManager
-// creates a RenderFrameProxyHost for the old SiteInstance and uses it going
-// forward. It also instructs the RenderFrameHost to run the unload event
+// creates a RenderFrameProxyHost for the old SiteInstanceGroup and uses it
+// going forward. It also instructs the RenderFrameHost to run the unload event
 // handler and is kept alive for the duration. Once the event handling is
 // complete, the RenderFrameHost is deleted.
 class CONTENT_EXPORT RenderFrameProxyHost
@@ -72,43 +83,51 @@ class CONTENT_EXPORT RenderFrameProxyHost
       public blink::mojom::RemoteFrameHost,
       public blink::mojom::RemoteMainFrameHost {
  public:
-  using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
-  using DeletedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
-  using BindRemoteFrameCallback =
-      base::RepeatingCallback<void(RenderFrameProxyHost*)>;
+  // A test observer to monitor RenderFrameProxyHosts.
+  class TestObserver {
+   public:
+    virtual ~TestObserver() = default;
+    // Called when a RenderFrameProxyHost is created.
+    virtual void OnCreated(RenderFrameProxyHost* host) {}
+    // Called when a RenderFrameProxyHost is deleted.
+    virtual void OnDeleted(RenderFrameProxyHost* host) {}
+    // Called when RemoteMainFrame mojo channels are bound to a
+    // RenderFrameProxyHost.
+    virtual void OnRemoteMainFrameBound(RenderFrameProxyHost* host) {}
+  };
+
+  static void SetObserverForTesting(TestObserver* observer);
 
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
   static RenderFrameProxyHost* FromFrameToken(
       int process_id,
       const blink::RemoteFrameToken& frame_token);
 
-  // Sets a callback to be called whenever any RenderFrameProxyHost is created.
-  static void SetCreatedCallbackForTesting(
-      const CreatedCallback& created_callback);
-
-  // Sets a callback to be called whenever any RenderFrameProxyHost is deleted.
-  static void SetDeletedCallbackForTesting(
-      const DeletedCallback& deleted_callback);
-
-  // Sets a callback to be called whenever mojo connections to any
-  // RenderFrameProxyHost is bound and transferred.
-  static void SetBindRemoteFrameCallbackForTesting(
-      const BindRemoteFrameCallback& bind_callback);
-
   RenderFrameProxyHost(SiteInstance* site_instance,
                        scoped_refptr<RenderViewHostImpl> render_view_host,
                        FrameTreeNode* frame_tree_node);
+
+  RenderFrameProxyHost(const RenderFrameProxyHost&) = delete;
+  RenderFrameProxyHost& operator=(const RenderFrameProxyHost&) = delete;
+
   ~RenderFrameProxyHost() override;
 
   RenderProcessHost* GetProcess() { return process_; }
 
   // Initializes the object and creates the RenderFrameProxy in the process
-  // for the SiteInstance.
+  // for the SiteInstanceGroup.
   bool InitRenderFrameProxy();
 
   int GetRoutingID() { return routing_id_; }
 
+  // Each RenderFrameProxyHost belongs to a SiteInstanceGroup, where it is a
+  // placeholder for a frame in a different SiteInstanceGroup.
+  // TODO(crbug.com/1195535): Remove GetSiteInstance() in favor of
+  // site_instance_group().
   SiteInstance* GetSiteInstance() { return site_instance_.get(); }
+  SiteInstanceGroup* site_instance_group() {
+    return site_instance_group_.get();
+  }
 
   // TODO(https://crbug.com/1179502): FrameTree and FrameTreeNode are not const
   // as with prerenderer activation the page needs to move between
@@ -127,17 +146,17 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // the child frame will wait until the CrossProcessFrameConnector
   // receives its size from the parent via FrameHostMsg_UpdateResizeParams
   // before it begins parsing the content.
-  void SetChildRWHView(RenderWidgetHostView* view,
+  void SetChildRWHView(RenderWidgetHostViewChildFrame* view,
                        const gfx::Size* initial_frame_size);
 
   RenderViewHostImpl* GetRenderViewHost();
-  RenderWidgetHostView* GetRenderWidgetHostView();
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
+  std::string ToDebugString() override;
 
   CrossProcessFrameConnector* cross_process_frame_connector() {
     return cross_process_frame_connector_.get();
@@ -237,7 +256,14 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // Bind mojo endpoints of the RemoteMainFrame in blink and pass unbound
   // corresponding endpoints. The corresponding endpoints should be transferred
   // and bound in blink.
-  mojom::RemoteMainFrameInterfacesPtr BindAndPassRemoteMainFrameInterfaces();
+  mojom::RemoteMainFrameInterfacesPtr CreateAndBindRemoteMainFrameInterfaces();
+
+  // Bind mojo endpoints of the RemoteMainFrame in blink.
+  void BindRemoteMainFrameInterfaces(
+      mojo::PendingAssociatedRemote<blink::mojom::RemoteMainFrame>
+          remote_main_frame,
+      mojo::PendingAssociatedReceiver<blink::mojom::RemoteMainFrameHost>
+          remote_main_frame_host_receiver);
 
   // Invalidate the mojo connections between this RenderFrameProxyHost and its
   // associated instances in renderer, allowing the endpoints to be re-bound.
@@ -246,7 +272,12 @@ class CONTENT_EXPORT RenderFrameProxyHost
   //   (i.e. crashing)
   // - undoing a `CommitNavigation()` that has already been sent to a
   //   speculative RenderFrameHost by swapping it back to a RenderFrameProxy.
-  void InvalidateMojoConnection();
+  void TearDownMojoConnection();
+
+  // Write a representation of this object into a trace.
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::RenderFrameProxyHost>
+          proto);
 
  private:
   // These interceptor need access to frame_host_receiver_for_testing().
@@ -275,16 +306,21 @@ class CONTENT_EXPORT RenderFrameProxyHost
   int routing_id_;
 
   // The SiteInstance this proxy is associated with.
+  // TODO(crbug.com/1195535): Remove this in favor of site_instance_group_.
   scoped_refptr<SiteInstance> site_instance_;
 
-  // The renderer process this RenderFrameHostProxy is associated with. It is
+  // The SiteInstanceGroup this RenderFrameProxyHost belongs to, where it is a
+  // placeholder for a frame in a different SiteInstanceGroup.
+  scoped_refptr<SiteInstanceGroup> site_instance_group_;
+
+  // The renderer process this RenderFrameProxyHost is associated with. It is
   // equivalent to the result of site_instance_->GetProcess(), but that
   // method has the side effect of creating the process if it doesn't exist.
   // Cache a pointer to avoid unnecessary process creation.
-  RenderProcessHost* process_;
+  raw_ptr<RenderProcessHost> process_;
 
   // The node in the frame tree where this proxy is located.
-  FrameTreeNode* frame_tree_node_;
+  raw_ptr<FrameTreeNode> frame_tree_node_;
 
   // True if we have a live RenderFrameProxy for this host.
   bool render_frame_proxy_created_;
@@ -321,8 +357,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
       remote_main_frame_host_receiver_{this};
 
   blink::RemoteFrameToken frame_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };
 
 }  // namespace content

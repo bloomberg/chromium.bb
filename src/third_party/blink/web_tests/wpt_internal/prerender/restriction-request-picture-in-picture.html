@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<!--
-This file cannot be upstreamed to WPT until:
-* startPrerendering() usage is replaced with a WebDriver API
--->
 <title>Prerendering cannot invoke
        HTMLVideoElement.requestPictureInPicture</title>
+<meta name="timeout" content="long">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/utils.js"></script>
@@ -28,7 +25,7 @@ promise_test(async t => {
   startPrerendering(`resources/request-picture-in-picture.html`);
 
   const result = await gotMessage;
-  assert_equals(result, 'request failed for a user gesture');
+  assert_equals(result, 'Metadata for the video element are not loaded yet');
 }, 'prerendering page cannot invoke' +
    'HTMLVideoElement.requestPictureInPicture');
 </script>

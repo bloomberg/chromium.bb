@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -53,6 +53,8 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
                      const std::string& settings_entity_id,
                      CloudPolicyClient* client,
                      CloudPolicyStore* store);
+  CloudPolicyService(const CloudPolicyService&) = delete;
+  CloudPolicyService& operator=(const CloudPolicyService&) = delete;
   ~CloudPolicyService() override;
 
   // Refreshes policy. |callback| will be invoked after the operation completes
@@ -114,10 +116,10 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   std::string settings_entity_id_;
 
   // The client used to talk to the cloud.
-  CloudPolicyClient* client_;
+  raw_ptr<CloudPolicyClient> client_;
 
   // Takes care of persisting and decoding cloud policy.
-  CloudPolicyStore* store_;
+  raw_ptr<CloudPolicyStore> store_;
 
   // Tracks the state of a pending refresh operation, if any.
   enum {
@@ -156,8 +158,6 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   // reported once if the validated policy's data signature matches with this
   // one. Will be cleared once we send the validation report.
   std::string policy_pending_validation_signature_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPolicyService);
 };
 
 }  // namespace policy

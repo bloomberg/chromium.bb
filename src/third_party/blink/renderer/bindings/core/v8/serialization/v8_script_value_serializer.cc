@@ -7,8 +7,8 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix.h"
@@ -26,11 +26,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_transform_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
@@ -39,11 +42,14 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -77,9 +83,6 @@ bool V8ScriptValueSerializer::ExtractTransferable(
     wtf_size_t object_index,
     Transferables& transferables,
     ExceptionState& exception_state) {
-  bool transferable_streams_enabled =
-      RuntimeEnabledFeatures::TransferableStreamsEnabled(
-          CurrentExecutionContext(isolate));
   // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
   if (V8MessagePort::HasInstance(object, isolate)) {
     MessagePort* port =
@@ -111,7 +114,10 @@ bool V8ScriptValueSerializer::ExtractTransferable(
   }
   if (object->IsArrayBuffer()) {
     DOMArrayBuffer* array_buffer =
-        V8ArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(object));
+        NativeValueTraits<DOMArrayBuffer>::NativeValue(isolate, object,
+                                                       exception_state);
+    if (exception_state.HadException())
+      return false;
     if (transferables.array_buffers.Contains(array_buffer)) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
@@ -124,7 +130,10 @@ bool V8ScriptValueSerializer::ExtractTransferable(
   }
   if (object->IsSharedArrayBuffer()) {
     DOMSharedArrayBuffer* shared_array_buffer =
-        V8SharedArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(object));
+        NativeValueTraits<DOMSharedArrayBuffer>::NativeValue(isolate, object,
+                                                             exception_state);
+    if (exception_state.HadException())
+      return false;
     if (transferables.array_buffers.Contains(shared_array_buffer)) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
@@ -161,8 +170,7 @@ bool V8ScriptValueSerializer::ExtractTransferable(
     transferables.offscreen_canvases.push_back(offscreen_canvas);
     return true;
   }
-  if (transferable_streams_enabled &&
-      V8ReadableStream::HasInstance(object, isolate)) {
+  if (V8ReadableStream::HasInstance(object, isolate)) {
     ReadableStream* stream =
         V8ReadableStream::ToImpl(v8::Local<v8::Object>::Cast(object));
     if (transferables.readable_streams.Contains(stream)) {
@@ -175,8 +183,7 @@ bool V8ScriptValueSerializer::ExtractTransferable(
     transferables.readable_streams.push_back(stream);
     return true;
   }
-  if (transferable_streams_enabled &&
-      V8WritableStream::HasInstance(object, isolate)) {
+  if (V8WritableStream::HasInstance(object, isolate)) {
     WritableStream* stream =
         V8WritableStream::ToImpl(v8::Local<v8::Object>::Cast(object));
     if (transferables.writable_streams.Contains(stream)) {
@@ -189,8 +196,7 @@ bool V8ScriptValueSerializer::ExtractTransferable(
     transferables.writable_streams.push_back(stream);
     return true;
   }
-  if (transferable_streams_enabled &&
-      V8TransformStream::HasInstance(object, isolate)) {
+  if (V8TransformStream::HasInstance(object, isolate)) {
     TransformStream* stream =
         V8TransformStream::ToImpl(v8::Local<v8::Object>::Cast(object));
     if (transferables.transform_streams.Contains(stream)) {
@@ -335,23 +341,21 @@ void V8ScriptValueSerializer::FinalizeTransfer(
     if (exception_state.HadException())
       return;
 
-    if (TransferableStreamsEnabled()) {
-      // Order matters here, because the order in which streams are added to the
-      // |stream_ports_| array must match the indexes which are calculated in
-      // WriteDOMObject().
-      serialized_script_value_->TransferReadableStreams(
-          script_state_, transferables_->readable_streams, exception_state);
-      if (exception_state.HadException())
-        return;
-      serialized_script_value_->TransferWritableStreams(
-          script_state_, transferables_->writable_streams, exception_state);
-      if (exception_state.HadException())
-        return;
-      serialized_script_value_->TransferTransformStreams(
-          script_state_, transferables_->transform_streams, exception_state);
-      if (exception_state.HadException())
-        return;
-    }
+    // Order matters here, because the order in which streams are added to the
+    // |stream_ports_| array must match the indexes which are calculated in
+    // WriteDOMObject().
+    serialized_script_value_->TransferReadableStreams(
+        script_state_, transferables_->readable_streams, exception_state);
+    if (exception_state.HadException())
+      return;
+    serialized_script_value_->TransferWritableStreams(
+        script_state_, transferables_->writable_streams, exception_state);
+    if (exception_state.HadException())
+      return;
+    serialized_script_value_->TransferTransformStreams(
+        script_state_, transferables_->transform_streams, exception_state);
+    if (exception_state.HadException())
+      return;
 
     for (auto& transfer_list : transferables_->transfer_lists.Values()) {
       transfer_list->FinalizeTransfer(exception_state);
@@ -678,11 +682,12 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint64(canvas->PlaceholderCanvasId());
     WriteUint32(canvas->ClientId());
     WriteUint32(canvas->SinkId());
-    WriteUint32(canvas->FilterQuality() == kNone_SkFilterQuality ? 0 : 1);
+    WriteUint32(canvas->FilterQuality() == cc::PaintFlags::FilterQuality::kNone
+                    ? 0
+                    : 1);
     return true;
   }
-  if (wrapper_type_info == V8ReadableStream::GetWrapperTypeInfo() &&
-      TransferableStreamsEnabled()) {
+  if (wrapper_type_info == V8ReadableStream::GetWrapperTypeInfo()) {
     ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -703,8 +708,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == V8WritableStream::GetWrapperTypeInfo() &&
-      TransferableStreamsEnabled()) {
+  if (wrapper_type_info == V8WritableStream::GetWrapperTypeInfo()) {
     WritableStream* stream = wrappable->ToImpl<WritableStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -730,8 +734,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
         static_cast<uint32_t>(index + transferables_->readable_streams.size()));
     return true;
   }
-  if (wrapper_type_info == V8TransformStream::GetWrapperTypeInfo() &&
-      TransferableStreamsEnabled()) {
+  if (wrapper_type_info == V8TransformStream::GetWrapperTypeInfo()) {
     TransformStream* stream = wrappable->ToImpl<TransformStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -811,9 +814,8 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
 void V8ScriptValueSerializer::ThrowDataCloneError(
     v8::Local<v8::String> v8_message) {
   DCHECK(exception_state_);
-  ExceptionState exception_state(
-      script_state_->GetIsolate(), exception_state_->Context(),
-      exception_state_->InterfaceName(), exception_state_->PropertyName());
+  ExceptionState exception_state(script_state_->GetIsolate(),
+                                 exception_state_->GetContext());
   exception_state.ThrowDOMException(
       DOMExceptionCode::kDataCloneError,
       ToBlinkString<String>(v8_message, kDoNotExternalize));
@@ -824,9 +826,7 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
     v8::Local<v8::Object> object) {
   DCHECK(exception_state_);
   DCHECK_EQ(isolate, script_state_->GetIsolate());
-  ExceptionState exception_state(isolate, exception_state_->Context(),
-                                 exception_state_->InterfaceName(),
-                                 exception_state_->PropertyName());
+  ExceptionState exception_state(isolate, exception_state_->GetContext());
 
   if (!V8DOMWrapper::IsWrapper(isolate, object)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
@@ -851,12 +851,12 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
 v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
     v8::Isolate* isolate,
     v8::Local<v8::SharedArrayBuffer> v8_shared_array_buffer) {
+  DCHECK(exception_state_);
+  DCHECK_EQ(isolate, script_state_->GetIsolate());
+
+  ExceptionState exception_state(isolate, exception_state_->GetContext());
+
   if (for_storage_) {
-    DCHECK(exception_state_);
-    DCHECK_EQ(isolate, script_state_->GetIsolate());
-    ExceptionState exception_state(isolate, exception_state_->Context(),
-                                   exception_state_->InterfaceName(),
-                                   exception_state_->PropertyName());
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataCloneError,
         "A SharedArrayBuffer can not be serialized for storage.");
@@ -864,7 +864,10 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
   }
 
   DOMSharedArrayBuffer* shared_array_buffer =
-      V8SharedArrayBuffer::ToImpl(v8_shared_array_buffer);
+      NativeValueTraits<DOMSharedArrayBuffer>::NativeValue(
+          isolate, v8_shared_array_buffer, exception_state);
+  if (exception_state.HadException())
+    return v8::Nothing<uint32_t>();
 
   // The index returned from this function will be serialized into the data
   // stream. When deserializing, this will be used to index into the
@@ -883,9 +886,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
   if (for_storage_) {
     DCHECK(exception_state_);
     DCHECK_EQ(isolate, script_state_->GetIsolate());
-    ExceptionState exception_state(isolate, exception_state_->Context(),
-                                   exception_state_->InterfaceName(),
-                                   exception_state_->PropertyName());
+    ExceptionState exception_state(isolate, exception_state_->GetContext());
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataCloneError,
         "A WebAssembly.Module can not be serialized for storage.");
@@ -899,9 +900,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
     case Options::kBlockedInNonSecureContext: {
       // This happens, currently, when we try to serialize to IndexedDB
       // in an non-secure context.
-      ExceptionState exception_state(isolate, exception_state_->Context(),
-                                     exception_state_->InterfaceName(),
-                                     exception_state_->PropertyName());
+      ExceptionState exception_state(isolate, exception_state_->GetContext());
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "Serializing WebAssembly modules in "
                                         "non-secure contexts is not allowed.");
@@ -943,11 +942,6 @@ void* V8ScriptValueSerializer::ReallocateBufferMemory(void* old_buffer,
 
 void V8ScriptValueSerializer::FreeBufferMemory(void* buffer) {
   return WTF::Partitions::BufferFree(buffer);
-}
-
-bool V8ScriptValueSerializer::TransferableStreamsEnabled() const {
-  return RuntimeEnabledFeatures::TransferableStreamsEnabled(
-      ExecutionContext::From(script_state_));
 }
 
 }  // namespace blink

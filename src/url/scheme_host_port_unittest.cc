@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -16,12 +16,14 @@ namespace {
 class SchemeHostPortTest : public testing::Test {
  public:
   SchemeHostPortTest() = default;
+
+  SchemeHostPortTest(const SchemeHostPortTest&) = delete;
+  SchemeHostPortTest& operator=(const SchemeHostPortTest&) = delete;
+
   ~SchemeHostPortTest() override = default;
 
  private:
   url::ScopedSchemeRegistryForTests scoped_registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(SchemeHostPortTest);
 };
 
 void ExpectParsedUrlsEqual(const GURL& a, const GURL& b) {

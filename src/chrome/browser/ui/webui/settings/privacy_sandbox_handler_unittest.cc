@@ -12,6 +12,7 @@
 #include "components/federated_learning/floc_id.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -81,6 +82,7 @@ class PrivacySandboxHandlerTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment browser_task_environment_;
+  content::RenderViewHostTestEnabler render_view_host_test_enabler_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_ =
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
@@ -89,13 +91,14 @@ class PrivacySandboxHandlerTest : public testing::Test {
 };
 
 TEST_F(PrivacySandboxHandlerTest, GetFlocId) {
-  federated_learning::FlocId floc_id(123456, base::Time(), base::Time::Now(),
-                                     /*sorting_lsh_version=*/0);
+  federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
+      123456, base::Time(), base::Time::Now(),
+      /*sorting_lsh_version=*/0);
   floc_id.SaveToPrefs(profile()->GetTestingPrefService());
 
-  base::ListValue args;
-  args.AppendString(kCallbackId);
-  handler()->HandleGetFlocId(&args);
+  base::Value args(base::Value::Type::LIST);
+  args.Append(kCallbackId);
+  handler()->HandleGetFlocId(&base::Value::AsListValue(args));
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ(kCallbackId, data.arg1()->GetString());
@@ -105,8 +108,9 @@ TEST_F(PrivacySandboxHandlerTest, GetFlocId) {
 }
 
 TEST_F(PrivacySandboxHandlerTest, ResetFlocId) {
-  federated_learning::FlocId floc_id(123456, base::Time(), base::Time::Now(),
-                                     /*sorting_lsh_version=*/0);
+  federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
+      123456, base::Time(), base::Time::Now(),
+      /*sorting_lsh_version=*/0);
   floc_id.SaveToPrefs(profile()->GetTestingPrefService());
 
   // Observers of the PrivacySandboxSettings service should be informed that
@@ -115,8 +119,8 @@ TEST_F(PrivacySandboxHandlerTest, ResetFlocId) {
   privacy_sandbox_settings()->AddObserver(&observer);
   EXPECT_CALL(observer, OnFlocDataAccessibleSinceUpdated(true));
 
-  base::ListValue args;
-  handler()->HandleResetFlocId(&args);
+  base::Value args(base::Value::Type::LIST);
+  handler()->HandleResetFlocId(&base::Value::AsListValue(args));
 
   // Resetting the FLoC ID should also fire the appropriate WebUI listener.
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();

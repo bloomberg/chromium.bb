@@ -15,10 +15,10 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -67,6 +67,10 @@ class P2PSocketManager
       mojo::PendingReceiver<mojom::P2PSocketManager> socket_manager_receiver,
       DeleteCallback delete_callback,
       net::URLRequestContext* url_request_context);
+
+  P2PSocketManager(const P2PSocketManager&) = delete;
+  P2PSocketManager& operator=(const P2PSocketManager&) = delete;
+
   ~P2PSocketManager() override;
 
   // net::NetworkChangeNotifier::NetworkChangeObserver overrides.
@@ -122,7 +126,7 @@ class P2PSocketManager
   void OnConnectionError();
 
   DeleteCallback delete_callback_;
-  net::URLRequestContext* url_request_context_;
+  raw_ptr<net::URLRequestContext> url_request_context_;
   const net::NetworkIsolationKey network_isolation_key_;
 
   std::unique_ptr<ProxyResolvingClientSocketFactory>
@@ -151,8 +155,6 @@ class P2PSocketManager
       network_notification_client_;
 
   base::WeakPtrFactory<P2PSocketManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketManager);
 };
 
 }  // namespace network

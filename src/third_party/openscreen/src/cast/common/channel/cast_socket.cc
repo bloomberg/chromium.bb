@@ -14,6 +14,8 @@ namespace cast {
 using ::cast::channel::CastMessage;
 using message_serialization::DeserializeResult;
 
+CastSocket::Client::~Client() = default;
+
 CastSocket::CastSocket(std::unique_ptr<TlsConnection> connection,
                        Client* client)
     : connection_(std::move(connection)),

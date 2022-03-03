@@ -11,10 +11,12 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/bitrate.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/bitstream_helpers.h"
@@ -43,101 +45,109 @@ void CallbackThunk(
                         base::BindOnce(func, *encoder_client, args...));
 }
 
-std::vector<VideoEncodeAccelerator::Config::SpatialLayer>
-CreateSpatialLayersConfig(const gfx::Size& resolution,
-                          const VideoEncoderClientConfig& config) {
-  // Returns empty spatial layer config because one temporal layer stream is
-  // equivalent to a simple stream.
-  if (config.num_temporal_layers == 1u)
-    return {};
-
-  // VideoEncodeAccelerator supports only temporal layer encoding.
-  VideoEncodeAccelerator::Config::SpatialLayer spatial_layer;
-  spatial_layer.width = resolution.width();
-  spatial_layer.height = resolution.height();
-  spatial_layer.bitrate_bps = config.bitrate;
-  spatial_layer.framerate = config.framerate;
-  spatial_layer.num_of_temporal_layers = config.num_temporal_layers;
-  // Note: VideoEncodeAccelerator currently ignores this max_qp parameter.
-  spatial_layer.max_qp = 30u;
-  return {spatial_layer};
-}
 }  // namespace
 
 VideoEncoderClientConfig::VideoEncoderClientConfig(
     const Video* video,
     VideoCodecProfile output_profile,
-    size_t num_temporal_layers,
-    uint32_t bitrate)
+    const std::vector<VideoEncodeAccelerator::Config::SpatialLayer>&
+        spatial_layers,
+    const VideoBitrateAllocation& bitrate,
+    bool reverse)
     : output_profile(output_profile),
       output_resolution(video->Resolution()),
-      num_temporal_layers(num_temporal_layers),
+      num_temporal_layers(spatial_layers.empty()
+                              ? 1
+                              : spatial_layers[0].num_of_temporal_layers),
+      num_spatial_layers(
+          std::max(spatial_layers.size(), static_cast<size_t>(1u))),
+      spatial_layers(spatial_layers),
       bitrate(bitrate),
       framerate(video->FrameRate()),
-      num_frames_to_encode(video->NumFrames()) {}
+      num_frames_to_encode(video->NumFrames()),
+      reverse(reverse) {}
 
 VideoEncoderClientConfig::VideoEncoderClientConfig(
     const VideoEncoderClientConfig&) = default;
+VideoEncoderClientConfig::~VideoEncoderClientConfig() = default;
 
 VideoEncoderStats::VideoEncoderStats() = default;
 VideoEncoderStats::~VideoEncoderStats() = default;
 VideoEncoderStats::VideoEncoderStats(const VideoEncoderStats&) = default;
 
 VideoEncoderStats::VideoEncoderStats(uint32_t framerate,
-                                     size_t num_temporal_layers)
+                                     size_t num_temporal_layers,
+                                     size_t num_spatial_layers)
     : framerate(framerate),
-      num_encoded_frames_per_layer(num_temporal_layers, 0),
-      encoded_frames_size_per_layer(num_temporal_layers, 0) {}
+      num_encoded_frames_per_layer(num_spatial_layers,
+                                   std::vector<size_t>(num_temporal_layers, 0)),
+      encoded_frames_size_per_layer(
+          num_spatial_layers,
+          std::vector<size_t>(num_temporal_layers, 0)),
+      num_spatial_layers(num_spatial_layers),
+      num_temporal_layers(num_temporal_layers) {}
 
 uint32_t VideoEncoderStats::Bitrate() const {
-  auto compute_bitrate = [](double framerate, size_t num_frames,
+  auto compute_bitrate = [](double framerate_dbl, size_t num_frames,
                             size_t total_size,
-                            absl::optional<size_t> layer_index) {
+                            absl::optional<size_t> temporal_index,
+                            absl::optional<size_t> spatial_index) {
     const size_t average_frame_size_in_bits = total_size * 8 / num_frames;
-    const uint32_t average_bitrate = average_frame_size_in_bits * framerate;
-    const std::string prefix =
-        layer_index ? "[TL#" + std::to_string(*layer_index) + "] " : "[Total] ";
+    const uint32_t average_bitrate = average_frame_size_in_bits * framerate_dbl;
+    std::string prefix = "[Total] ";
+    if (spatial_index) {
+      prefix = "[SL#" + base::NumberToString(*spatial_index) + " TL#" +
+               base::NumberToString(*temporal_index) + "] ";
+    } else if (temporal_index) {
+      prefix = "[TL#" + base::NumberToString(*temporal_index) + "] ";
+    }
     VLOGF(2) << prefix << "encoded_frames=" << num_frames
-             << ", framerate=" << framerate
+             << ", framerate=" << framerate_dbl
              << ", total_encoded_frames_size=" << total_size
              << ", average_frame_size_in_bits=" << average_frame_size_in_bits
              << ", average bitrate=" << average_bitrate;
     return average_bitrate;
   };
 
-  const size_t num_layers = num_encoded_frames_per_layer.size();
-  if (num_layers == 1) {
+  if (num_spatial_layers == 1 && num_temporal_layers == 1) {
     return compute_bitrate(framerate, total_num_encoded_frames,
-                           total_encoded_frames_size, absl::nullopt);
+                           total_encoded_frames_size, absl::nullopt,
+                           absl::nullopt);
   }
 
-  for (size_t i = 0; i < num_layers; ++i) {
-    // Used to compute the ratio of the framerate on each layer. For example,
-    // when the number of temporal layers is three, the ratio of framerate of
-    // layers are 1/4, 1/4 and 1/2 for the first, second and third layer,
-    // respectively.
-    constexpr size_t kFramerateDenom[][3] = {
-        {1, 0, 0},
-        {2, 2, 0},
-        {4, 4, 2},
-    };
-    const size_t num_frames = num_encoded_frames_per_layer[i];
-    const size_t frames_size = encoded_frames_size_per_layer[i];
-    const uint32_t layer_framerate =
-        static_cast<double>(framerate) / kFramerateDenom[num_layers - 1][i];
-    compute_bitrate(layer_framerate, num_frames, frames_size, i);
+  for (size_t sid = 0; sid < num_spatial_layers; ++sid) {
+    for (size_t tid = 0; tid < num_temporal_layers; ++tid) {
+      // Used to compute the ratio of the framerate on each layer. For example,
+      // when the number of temporal layers is three, the ratio of framerate of
+      // layers are 1/4, 1/4 and 1/2 for the first, second and third layer,
+      // respectively.
+      constexpr size_t kFramerateDenom[][3] = {
+          {1, 0, 0},
+          {2, 2, 0},
+          {4, 4, 2},
+      };
+      const size_t num_frames = num_encoded_frames_per_layer[sid][tid];
+      const size_t frames_size = encoded_frames_size_per_layer[sid][tid];
+      const uint32_t layer_framerate =
+          static_cast<double>(framerate) /
+          kFramerateDenom[num_temporal_layers - 1][tid];
+      compute_bitrate(layer_framerate, num_frames, frames_size, tid, sid);
+    }
   }
-  return compute_bitrate(framerate, total_num_encoded_frames,
-                         total_encoded_frames_size, absl::nullopt);
+  return compute_bitrate(framerate * num_spatial_layers,
+                         total_num_encoded_frames, total_encoded_frames_size,
+                         absl::nullopt, absl::nullopt);
 }
 
 void VideoEncoderStats::Reset() {
   total_num_encoded_frames = 0;
   total_encoded_frames_size = 0;
   std::fill(num_encoded_frames_per_layer.begin(),
-            num_encoded_frames_per_layer.end(), 0u);
+            num_encoded_frames_per_layer.end(),
+            std::vector<size_t>(num_temporal_layers, 0u));
   std::fill(encoded_frames_size_per_layer.begin(),
-            encoded_frames_size_per_layer.end(), 0u);
+            encoded_frames_size_per_layer.end(),
+            std::vector<size_t>(num_temporal_layers, 0u));
 }
 
 VideoEncoderClient::VideoEncoderClient(
@@ -151,7 +161,8 @@ VideoEncoderClient::VideoEncoderClient(
       encoder_client_thread_("VDAClientEncoderThread"),
       encoder_client_state_(VideoEncoderClientState::kUninitialized),
       current_stats_(encoder_client_config_.framerate,
-                     config.num_temporal_layers),
+                     config.num_temporal_layers,
+                     config.num_spatial_layers),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
   DETACH_FROM_SEQUENCE(encoder_client_sequence_checker_);
 
@@ -295,7 +306,9 @@ void VideoEncoderClient::RequireBitstreamBuffers(
   // Follow the behavior of the chrome capture stack; |natural_size| is the
   // dimension to be encoded.
   aligned_data_helper_ = std::make_unique<AlignedDataHelper>(
-      video_->Data(), video_->NumFrames(), video_->PixelFormat(),
+      video_->Data(), video_->NumFrames(),
+      encoder_client_config_.num_frames_to_encode,
+      encoder_client_config_.reverse, video_->PixelFormat(),
       /*src_coded_size=*/video_->Resolution(),
       /*dst_coded_size=*/coded_size,
       /*visible_rect=*/video_->VisibleRect(),
@@ -339,8 +352,7 @@ VideoEncoderClient::CreateBitstreamRef(
       0u /* offset */, metadata.payload_size_bytes);
   if (!decoder_buffer)
     return nullptr;
-  decoder_buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(frame_index_));
+  decoder_buffer->set_timestamp(base::Microseconds(frame_index_));
 
   return BitstreamProcessor::BitstreamRef::Create(
       std::move(decoder_buffer), metadata, bitstream_buffer_id,
@@ -361,12 +373,17 @@ void VideoEncoderClient::BitstreamBufferReady(
     current_stats_.total_encoded_frames_size += metadata.payload_size_bytes;
     if (metadata.vp9.has_value()) {
       uint8_t temporal_id = metadata.vp9->temporal_idx;
-      ASSERT_LE(temporal_id,
-                current_stats_.num_encoded_frames_per_layer.size());
-      ASSERT_LE(temporal_id,
-                current_stats_.encoded_frames_size_per_layer.size());
-      current_stats_.num_encoded_frames_per_layer[temporal_id]++;
-      current_stats_.encoded_frames_size_per_layer[temporal_id] +=
+      uint8_t spatial_id = metadata.vp9->spatial_idx;
+      ASSERT_LT(spatial_id, current_stats_.num_spatial_layers);
+      ASSERT_LT(temporal_id, current_stats_.num_temporal_layers);
+      current_stats_.num_encoded_frames_per_layer[spatial_id][temporal_id]++;
+      current_stats_.encoded_frames_size_per_layer[spatial_id][temporal_id] +=
+          metadata.payload_size_bytes;
+    } else if (metadata.h264.has_value()) {
+      uint8_t temporal_id = metadata.h264->temporal_idx;
+      ASSERT_EQ(current_stats_.num_spatial_layers, 1u);
+      current_stats_.num_encoded_frames_per_layer[0][temporal_id]++;
+      current_stats_.encoded_frames_size_per_layer[0][temporal_id] +=
           metadata.payload_size_bytes;
     }
   }
@@ -391,7 +408,16 @@ void VideoEncoderClient::BitstreamBufferReady(
       bitstream_processor_->ProcessBitstream(bitstream_ref, frame_index_);
     }
   }
-  frame_index_++;
+  if (metadata.vp9.has_value()) {
+    if (!metadata.vp9->spatial_layer_resolutions.empty()) {
+      current_top_spatial_index_ =
+          metadata.vp9->spatial_layer_resolutions.size() - 1;
+    }
+    if (metadata.vp9->spatial_idx == current_top_spatial_index_)
+      frame_index_++;
+  } else {
+    frame_index_++;
+  }
   FlushDoneTaskIfNeeded();
 }
 
@@ -439,12 +465,13 @@ void VideoEncoderClient::CreateEncoderTask(const Video* video,
 
   const VideoEncodeAccelerator::Config config(
       video_->PixelFormat(), encoder_client_config_.output_resolution,
-      encoder_client_config_.output_profile, encoder_client_config_.bitrate,
+      encoder_client_config_.output_profile,
+      Bitrate::ConstantBitrate(encoder_client_config_.bitrate.GetSumBps()),
       encoder_client_config_.framerate, absl::nullopt /* gop_length */,
       absl::nullopt /* h264_output_level*/, false /* is_constrained_h264 */,
       encoder_client_config_.input_storage_type,
       VideoEncodeAccelerator::Config::ContentType::kCamera,
-      CreateSpatialLayersConfig(video_->Resolution(), encoder_client_config_));
+      encoder_client_config_.spatial_layers);
 
   encoder_ = GpuVideoEncodeAcceleratorFactory::CreateVEA(
       config, this, gpu::GpuPreferences(), gpu::GpuDriverBugWorkarounds());
@@ -492,17 +519,13 @@ void VideoEncoderClient::EncodeNextFrameTask() {
   if (encoder_client_state_ != VideoEncoderClientState::kEncoding)
     return;
 
-  const bool end_of_stream =
-      encoder_client_config_.num_frames_to_encode == num_encodes_requested_;
-  if (end_of_stream) {
+  if (aligned_data_helper_->AtEndOfStream()) {
     // Flush immediately when we reached the end of the stream (either the real
     // end, or the artificial end when using num_encode_frames). This changes
     // the state to kFlushing so further encode tasks will be aborted.
     FlushTask();
     return;
   }
-  if (aligned_data_helper_->AtEndOfStream())
-    aligned_data_helper_->Rewind();
 
   scoped_refptr<VideoFrame> video_frame = aligned_data_helper_->GetNextFrame();
   ASSERT_TRUE(video_frame);
@@ -569,7 +592,6 @@ void VideoEncoderClient::ForceKeyFrameTask() {
 
 void VideoEncoderClient::EncodeDoneTask(base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
-  DCHECK_NE(VideoEncoderClientState::kIdle, encoder_client_state_);
   DVLOGF(4);
 
   FireEvent(VideoEncoder::EncoderEvent::kFrameReleased);

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/input/touch_input_strategy.h"
 #include "remoting/client/ui/desktop_viewport.h"
@@ -32,6 +32,10 @@ class GestureInterpreter {
   };
 
   GestureInterpreter();
+
+  GestureInterpreter(const GestureInterpreter&) = delete;
+  GestureInterpreter& operator=(const GestureInterpreter&) = delete;
+
   ~GestureInterpreter();
 
   // Sets the context for the interpreter. Both arguments are nullable. If both
@@ -112,17 +116,14 @@ class GestureInterpreter {
   InputMode input_mode_ = UNDEFINED_INPUT_MODE;
   std::unique_ptr<TouchInputStrategy> input_strategy_;
   DesktopViewport viewport_;
-  RendererProxy* renderer_ = nullptr;
-  ChromotingSession* input_stub_ = nullptr;
+  raw_ptr<RendererProxy> renderer_ = nullptr;
+  raw_ptr<ChromotingSession> input_stub_ = nullptr;
   TouchInputStrategy::Gesture gesture_in_progress_;
 
   FlingAnimation pan_animation_;
   FlingAnimation scroll_animation_;
 
   base::WeakPtrFactory<GestureInterpreter> weak_factory_{this};
-
-  // GestureInterpreter is neither copyable nor movable.
-  DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
 };
 
 }  // namespace remoting

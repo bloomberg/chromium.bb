@@ -8,6 +8,7 @@
 # toolchain, this GNI file may be read and processed from within Chrome OS
 # toolchains. Checking |is_android| here would therefore be too restrictive.
 if (is_android || is_chromeos) {
+  import("//build/config/android/channel.gni")
   import("//build/config/chromecast_build.gni")
   import("//build/config/dcheck_always_on.gni")
   import("//build_overrides/build.gni")
@@ -48,7 +49,7 @@ if (is_android || is_chromeos) {
 
     # The default to use for android:minSdkVersion for targets that do
     # not explicitly set it.
-    default_min_sdk_version = 21
+    default_min_sdk_version = 23
 
     # [WIP] Allows devs to achieve much faster edit-build-install cycles.
     # Currently only works for ChromeModern apks due to incremental install.
@@ -89,10 +90,10 @@ if (is_android || is_chromeos) {
   }
 
   public_android_sdk_root = "//third_party/android_sdk/public"
-  if (android_sdk_release == "r") {
+  if (android_sdk_release == "s") {
     default_android_sdk_root = public_android_sdk_root
-    default_android_sdk_version = "30"
-    default_android_sdk_build_tools_version = "30.0.1"
+    default_android_sdk_version = "31"
+    default_android_sdk_build_tools_version = "31.0.0"
     public_android_sdk = true
   }
 
@@ -105,7 +106,7 @@ if (is_android || is_chromeos) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing lint version.
     default_lint_android_sdk_root = public_android_sdk_root
-    default_lint_android_sdk_version = 30
+    default_lint_android_sdk_version = 31
   }
 
   if (!defined(default_extras_android_sdk_root)) {
@@ -248,7 +249,11 @@ if (is_android || is_chromeos) {
     enable_arsc_obfuscation = true
 
     # The target to use as the system WebView implementation.
-    system_webview_apk_target = "//android_webview:system_webview_apk"
+    if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
+      system_webview_apk_target = "//android_webview:system_webview_64_apk"
+    } else {
+      system_webview_apk_target = "//android_webview:system_webview_apk"
+    }
 
     # Where to write failed expectations for bots to read.
     expectations_failure_dir = "$root_build_dir/failed_expectations"
@@ -264,7 +269,7 @@ if (is_android || is_chromeos) {
     }
 
     # Whether java assertions and Preconditions checks are enabled.
-    enable_java_asserts = is_java_debug || dcheck_always_on
+    enable_java_asserts = dcheck_always_on || !is_official_build
 
     # Reduce build time by using d8 incremental build.
     enable_incremental_d8 = true
@@ -272,13 +277,15 @@ if (is_android || is_chromeos) {
     # Use hashed symbol names to reduce JNI symbol overhead.
     use_hashed_jni_names = !is_java_debug
 
-    # Desugar lambdas and interfaces methods using Desugar.jar rather than
-    # D8/R8. D8/R8 will still be used for backported method desugaring.
-    enable_bazel_desugar = true
-
     # Enables Java library desugaring.
     # This will cause an extra classes.dex file to appear in every apk.
     enable_jdk_library_desugaring = true
+
+    # Enables trace event injection on Android views with bytecode rewriting.
+    # This adds an additional step on android_app_bundle_module targets that
+    # adds trace events to some methods in android.view.View subclasses.
+    enable_trace_event_bytecode_rewriting =
+        !is_java_debug && android_channel != "stable"
   }
 
   # Host stuff -----------------------------------------------------------------
@@ -322,29 +329,24 @@ if (is_android || is_chromeos) {
   # like the toolchain roots.
   if (current_cpu == "x86") {
     android_prebuilt_arch = "android-x86"
-    _binary_prefix = "i686-linux-android"
   } else if (current_cpu == "arm") {
     android_prebuilt_arch = "android-arm"
-    _binary_prefix = "arm-linux-androideabi"
   } else if (current_cpu == "mipsel") {
     android_prebuilt_arch = "android-mips"
-    _binary_prefix = "mipsel-linux-android"
   } else if (current_cpu == "x64") {
     android_prebuilt_arch = "android-x86_64"
-    _binary_prefix = "x86_64-linux-android"
   } else if (current_cpu == "arm64") {
     android_prebuilt_arch = "android-arm64"
-    _binary_prefix = "aarch64-linux-android"
   } else if (current_cpu == "mips64el") {
     android_prebuilt_arch = "android-mips64"
-    _binary_prefix = "mips64el-linux-android"
   } else {
     assert(false, "Need android libgcc support for your target arch.")
   }
 
   android_toolchain_root = "$android_ndk_root/toolchains/llvm/prebuilt/${android_host_os}-${android_host_arch}"
-  android_tool_prefix = "$android_toolchain_root/bin/$_binary_prefix-"
-  android_readelf = "${android_tool_prefix}readelf"
+  android_ndk_library_path = "$android_toolchain_root/lib64"
+  android_tool_prefix = "$android_toolchain_root/bin/llvm-"
+  android_readelf = "${android_tool_prefix}readobj"
   android_objcopy = "${android_tool_prefix}objcopy"
   android_gdbserver =
       "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"

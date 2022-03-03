@@ -7,13 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
 #include "remoting/client/notification/notification_client.h"
 #include "remoting/client/notification/notification_message.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace remoting {
 
@@ -23,6 +23,9 @@ namespace remoting {
 class NotificationPresenter final {
  public:
   static NotificationPresenter* GetInstance();
+
+  NotificationPresenter(const NotificationPresenter&) = delete;
+  NotificationPresenter& operator=(const NotificationPresenter&) = delete;
 
   void Start();
 
@@ -51,8 +54,6 @@ class NotificationPresenter final {
   State state_ = State::NOT_FETCHED;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationPresenter);
 };
 
 }  // namespace remoting

@@ -11,20 +11,30 @@
 
 class Profile;
 class PrefRegistrySimple;
+class PrefService;
 
 namespace ash {
-class ReleaseNotesNotification;
-}  // namespace ash
 
-namespace chromeos {
+namespace help_app {
+namespace prefs {
+
+extern const char kObsoleteReleaseNotesLastShownMilestone[];
+extern const char kObsoleteDiscoverTabNotificationLastShownMilestone[];
+
+}  // namespace prefs
+}  // namespace help_app
 
 class HelpAppDiscoverTabNotification;
+class ReleaseNotesNotification;
 
 // Class to show notifications under the Help App.
 class HelpAppNotificationController {
  public:
   // Registers profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterObsoletePrefsForMigration(PrefRegistrySimple* registry);
+  static void MigrateObsoleteNotificationPrefs(PrefService* pref_service);
+  static void ClearObsoleteNotificationPrefs(PrefService* pref_service);
 
   explicit HelpAppNotificationController(Profile* profile);
   HelpAppNotificationController(const HelpAppNotificationController&) = delete;
@@ -32,29 +42,27 @@ class HelpAppNotificationController {
       const HelpAppNotificationController&) = delete;
   ~HelpAppNotificationController();
 
-  // Determines which notification to show to the user, if any at all. This will
-  // never show more than 1 notification, to avoid spamming the user.
-  void MaybeShowNotification();
+  // Determines if the Release Notes notification should be shown to the user
+  // and shows it if so. This will not do anything if a Help app notification
+  // has already been shown in the current milestone.
+  void MaybeShowReleaseNotesNotification();
+
+  // Returns whether the discover notification should be shown to the user.
+  bool ShouldShowDiscoverNotification();
 
   // Determines if the discover notification should be shown to the user and
-  // shows it if so. Will produce an additional notification on top of
-  // |MaybeShowNotification|.
+  // shows it if so. This will not do anything if a Help app notification has
+  // already been shown in the current milestone.
   void MaybeShowDiscoverNotification();
 
  private:
   Profile* const profile_;
   std::unique_ptr<HelpAppDiscoverTabNotification> discover_tab_notification_;
-  std::unique_ptr<ash::ReleaseNotesNotification> release_notes_notification_;
+  std::unique_ptr<ReleaseNotesNotification> release_notes_notification_;
 
   base::WeakPtrFactory<HelpAppNotificationController> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::HelpAppNotificationController;
-}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_WEB_APPLICATIONS_HELP_APP_HELP_APP_NOTIFICATION_CONTROLLER_H_

@@ -93,7 +93,12 @@ class VkDeviceObj : public vk_testing::Device {
 // failure was encountered.
 class ErrorMonitor {
   public:
-    ErrorMonitor();
+    enum Behavior {
+        DefaultSuccess = 0,
+        DefaultIgnore,
+    };
+
+    ErrorMonitor(Behavior = Behavior::DefaultIgnore);
 
     ~ErrorMonitor() NOEXCEPT;
 
@@ -129,6 +134,13 @@ class ErrorMonitor {
 
     // ExpectSuccess now takes an optional argument allowing a custom combination of debug flags
     void ExpectSuccess(VkDebugReportFlagsEXT const message_flag_mask = kErrorBit);
+    bool ExpectingSuccess() const {
+        return (desired_message_strings_.size() == 1) &&
+               (desired_message_strings_.count("") == 1 && ignore_message_strings_.size() == 0);
+    }
+    bool NeedCheckSuccess() const {
+        return (behavior_ == Behavior::DefaultSuccess) && ExpectingSuccess();
+    }
 
     void VerifyFound();
     void VerifyNotFound();
@@ -152,6 +164,7 @@ class ErrorMonitor {
     test_platform_thread_mutex mutex_;
     bool *bailout_;
     bool message_found_;
+    Behavior behavior_;
 };
 
 struct DebugReporter {
@@ -248,18 +261,22 @@ class VkRenderFramework : public VkTestFramework {
     void InitViewport();
     bool InitSurface();
     bool InitSurface(float width, float height);
+    bool InitSurface(float width, float height, VkSurfaceKHR &surface);
     void InitSwapchainInfo();
     bool InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                        VkSurfaceTransformFlagBitsKHR preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
     bool InitSwapchain(VkImageUsageFlags imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                        VkSurfaceTransformFlagBitsKHR preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
+    bool InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,  VkSurfaceTransformFlagBitsKHR preTransform, VkSwapchainKHR &swapchain, VkSwapchainKHR oldSwapchain = 0);
     void DestroySwapchain();
     void InitRenderTarget();
     void InitRenderTarget(uint32_t targets);
     void InitRenderTarget(VkImageView *dsBinding);
     void InitRenderTarget(uint32_t targets, VkImageView *dsBinding);
     void DestroyRenderTarget();
+    bool InitFrameworkAndRetrieveFeatures(VkPhysicalDeviceFeatures2KHR &features2);
 
+    bool IsDriver(VkDriverId driver_id);
     bool IsPlatform(PlatformType platform);
     void GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *features);
     void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties *props);
@@ -278,6 +295,32 @@ class VkRenderFramework : public VkTestFramework {
     bool DeviceExtensionEnabled(const char *name);
     bool DeviceSimulation();
 
+    // Tracks ext_name to be enabled at device creation time and attempts to enable any required instance extensions.
+    // Returns true if all required instance extensions are supported or there are no required instance extensions, false
+    // otherwise.
+    // `ext_name` can refer to a device or instance extension.
+    bool AddRequiredExtensions(const char *ext_name);
+    // After instance and physical device creation (e.g., after InitFramework), returns true if all required extensions are
+    // available, false otherwise
+    bool AreRequestedExtensionsEnabled() const;
+
+    // Add ext_name, the names of all instance extensions required by ext_name, and return true if ext_name is supported. If the
+    // extension is not supported, no extension names are added for instance creation. `ext_name` can refer to a device or instance
+    // extension.
+    bool AddRequiredInstanceExtensions(const char *ext_name);
+    // Returns true if the instance extension inst_ext_name is enabled. This call is only valid _after_ previous
+    // `AddRequired*Extensions` calls and InitFramework has been called. `inst_ext_name` must be an instance extension name; false
+    // is returned for all device extension names.
+    bool CanEnableInstanceExtension(const std::string &inst_ext_name) const;
+    // Add dev_ext_name, then names of _device_ extensions required by dev_ext_name, and return true if dev_ext_name is supported.
+    // If the extension is not supported, no extension names are added for device creation. This function has no effect if
+    // dev_ext_name refers to an instance extension.
+    bool AddRequiredDeviceExtensions(const char *dev_ext_name);
+    // Returns true if the device extension is enabled. This call is only valid _after_ previous `AddRequired*Extensions` calls and
+    // InitFramework has been called.
+    // `dev_ext_name` msut be an instance extension name; false is returned for all instance extension names.
+    bool CanEnableDeviceExtension(const std::string &dev_ext_name) const;
+
   protected:
     VkRenderFramework();
     virtual ~VkRenderFramework() = 0;
@@ -293,6 +336,7 @@ class VkRenderFramework : public VkTestFramework {
     VkPhysicalDevice gpu_ = VK_NULL_HANDLE;
     VkPhysicalDeviceProperties physDevProps_;
 
+    uint32_t m_gpu_index;
     VkDeviceObj *m_device;
     VkCommandPoolObj *m_commandPool;
     VkCommandBufferObj *m_commandBuffer;
@@ -308,10 +352,18 @@ class VkRenderFramework : public VkTestFramework {
 
     // WSI items
     VkSurfaceKHR m_surface;
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+    Display *m_surface_dpy;
+    Window m_surface_window;
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+    xcb_connection_t *m_surface_xcb_conn;
+#endif
     VkSwapchainKHR m_swapchain;
     VkSurfaceCapabilitiesKHR m_surface_capabilities;
     std::vector<VkSurfaceFormatKHR> m_surface_formats;
     std::vector<VkPresentModeKHR> m_surface_present_modes;
+    VkPresentModeKHR m_surface_non_shared_present_mode;
     VkCompositeAlphaFlagBitsKHR m_surface_composite_alpha;
 
     std::vector<VkViewport> m_viewports;
@@ -327,6 +379,7 @@ class VkRenderFramework : public VkTestFramework {
     uint32_t m_writeMask;
     uint32_t m_reference;
     bool m_addRenderPassSelfDependency;
+    std::vector<VkSubpassDependency> m_additionalSubpassDependencies;
     std::vector<VkClearValue> m_renderPassClearValues;
     VkRenderPassBeginInfo m_renderPassBeginInfo;
     std::vector<std::unique_ptr<VkImageObj>> m_renderTargets;
@@ -339,6 +392,9 @@ class VkRenderFramework : public VkTestFramework {
     uint32_t m_stencil_clear_color;
     VkDepthStencilObj *m_depthStencil;
 
+    // Requested extensions to enable at device creation time
+    std::vector<const char *> m_requested_extensions;
+    // Device extensions to enable
     std::vector<const char *> m_device_extension_names;
 };
 
@@ -370,8 +426,10 @@ class VkCommandBufferObj : public vk_testing::CommandBuffer {
     void BindDescriptorSet(VkDescriptorSetObj &descriptorSet);
     void BindIndexBuffer(VkBufferObj *indexBuffer, VkDeviceSize offset, VkIndexType indexType);
     void BindVertexBuffer(VkConstantBufferObj *vertexBuffer, VkDeviceSize offset, uint32_t binding);
-    void BeginRenderPass(const VkRenderPassBeginInfo &info);
+    void BeginRenderPass(const VkRenderPassBeginInfo &info, VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE);
     void EndRenderPass();
+    void BeginRendering(const VkRenderingInfoKHR &renderingInfo);
+    void EndRendering();
     void FillBuffer(VkBuffer buffer, VkDeviceSize offset, VkDeviceSize fill_size, uint32_t data);
     void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);
     void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset,
@@ -419,22 +477,17 @@ class VkConstantBufferObj : public VkBufferObj {
     VkDeviceObj *m_device;
 };
 
-class VkRenderpassObj {
+class VkRenderpassObj : public vk_testing::RenderPass {
   public:
     VkRenderpassObj(VkDeviceObj *device, VkFormat format = VK_FORMAT_B8G8R8A8_UNORM);
     VkRenderpassObj(VkDeviceObj *device, VkFormat format, bool depthStencil);
-    ~VkRenderpassObj() NOEXCEPT;
-    VkRenderPass handle() { return m_renderpass; }
-
-  protected:
-    VkRenderPass m_renderpass;
-    VkDevice device;
 };
 
 class VkImageObj : public vk_testing::Image {
   public:
     VkImageObj(VkDeviceObj *dev);
     bool IsCompatible(VkImageUsageFlags usages, VkFormatFeatureFlags features);
+    bool IsCompatibleCheck(const VkImageCreateInfo &create_info);
 
   public:
     static VkImageCreateInfo ImageCreateInfo2D(uint32_t const width, uint32_t const height, uint32_t const mipLevels,
@@ -598,19 +651,85 @@ class VkDescriptorSetObj : public vk_testing::DescriptorPool {
 class VkShaderObj : public vk_testing::ShaderModule {
   public:
     VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char const *name = "main",
-                VkSpecializationInfo *specInfo = nullptr);
+                const VkSpecializationInfo *specInfo = nullptr);
     VkShaderObj(VkDeviceObj *device, const char *shaderText, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                char const *name = "main", bool debug = false, VkSpecializationInfo *specInfo = nullptr,
-                uint32_t spirv_minor_version = 0);
+                char const *name = "main", bool debug = false, const VkSpecializationInfo *specInfo = nullptr,
+                const spv_target_env env = SPV_ENV_VULKAN_1_0);
     VkShaderObj(VkDeviceObj *device, const std::string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                char const *name = "main", VkSpecializationInfo *specInfo = nullptr, const spv_target_env env = SPV_ENV_VULKAN_1_0);
+                char const *name = "main", const VkSpecializationInfo *specInfo = nullptr,
+                const spv_target_env env = SPV_ENV_VULKAN_1_0);
     VkPipelineShaderStageCreateInfo const &GetStageCreateInfo() const;
 
-    bool InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug = false, uint32_t spirv_minor_version = 0);
+    bool InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug = false,
+                      const spv_target_env env = SPV_ENV_VULKAN_1_0);
     VkResult InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug = false,
-                             uint32_t spirv_minor_version = 0);
+                             const spv_target_env env = SPV_ENV_VULKAN_1_0);
     bool InitFromASM(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env env = SPV_ENV_VULKAN_1_0);
-    VkResult InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source);
+    VkResult InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env = SPV_ENV_VULKAN_1_0);
+
+    // These functions return a pointer to a newly created _and initialized_ VkShaderObj if initialization was successful.
+    // Otherwise, {} is returned.
+    static std::unique_ptr<VkShaderObj> CreateFromGLSL(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                       const std::string &code, const char *entry_point = "main",
+                                                       const VkSpecializationInfo *spec_info = nullptr,
+                                                       const spv_target_env = SPV_ENV_VULKAN_1_0, bool debug = false);
+    static std::unique_ptr<VkShaderObj> CreateFromASM(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                      const std::string &code, const char *entry_point = "main",
+                                                      const VkSpecializationInfo *spec_info = nullptr,
+                                                      const spv_target_env spv_env = SPV_ENV_VULKAN_1_0);
+
+    // TODO (ncesario) remove ifndef once android build consolidation changes go in
+#ifndef __ANDROID__
+    struct GlslangTargetEnv {
+        GlslangTargetEnv(const spv_target_env env) {
+            switch (env) {
+                case SPV_ENV_UNIVERSAL_1_0:
+                    language_version = glslang::EShTargetSpv_1_0;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_1:
+                    language_version = glslang::EShTargetSpv_1_1;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_2:
+                    language_version = glslang::EShTargetSpv_1_2;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_3:
+                    language_version = glslang::EShTargetSpv_1_3;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_4:
+                    language_version = glslang::EShTargetSpv_1_4;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_5:
+                    language_version = glslang::EShTargetSpv_1_5;
+                    break;
+                case SPV_ENV_VULKAN_1_0:
+                    client_version = glslang::EShTargetVulkan_1_0;
+                    break;
+                case SPV_ENV_VULKAN_1_1:
+                    client_version = glslang::EShTargetVulkan_1_1;
+                    language_version = glslang::EShTargetSpv_1_3;
+                    break;
+                case SPV_ENV_VULKAN_1_2:
+                    client_version = glslang::EShTargetVulkan_1_2;
+                    language_version = glslang::EShTargetSpv_1_5;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        operator glslang::EShTargetLanguageVersion() const {
+            return language_version;
+        }
+
+        operator glslang::EShTargetClientVersion() const {
+            return client_version;
+        }
+
+      private:
+        glslang::EShTargetLanguageVersion language_version = glslang::EShTargetSpv_1_0;
+        glslang::EShTargetClientVersion client_version = glslang::EShTargetVulkan_1_0;
+    };
+#endif
 
   protected:
     VkPipelineShaderStageCreateInfo m_stage_info;

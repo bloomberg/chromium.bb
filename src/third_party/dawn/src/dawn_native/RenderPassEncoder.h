@@ -16,6 +16,7 @@
 #define DAWNNATIVE_RENDERPASSENCODER_H_
 
 #include "dawn_native/Error.h"
+#include "dawn_native/Forward.h"
 #include "dawn_native/RenderEncoderBase.h"
 
 namespace dawn_native {
@@ -25,23 +26,27 @@ namespace dawn_native {
     class RenderPassEncoder final : public RenderEncoderBase {
       public:
         RenderPassEncoder(DeviceBase* device,
+                          const RenderPassDescriptor* descriptor,
                           CommandEncoder* commandEncoder,
                           EncodingContext* encodingContext,
                           RenderPassResourceUsageTracker usageTracker,
                           Ref<AttachmentState> attachmentState,
                           QuerySetBase* occlusionQuerySet,
                           uint32_t renderTargetWidth,
-                          uint32_t renderTargetHeight);
+                          uint32_t renderTargetHeight,
+                          bool depthReadOnly,
+                          bool stencilReadOnly);
 
         static RenderPassEncoder* MakeError(DeviceBase* device,
                                             CommandEncoder* commandEncoder,
                                             EncodingContext* encodingContext);
 
+        ObjectType GetType() const override;
+
         void APIEndPass();
 
         void APISetStencilReference(uint32_t reference);
         void APISetBlendConstant(const Color* color);
-        void APISetBlendColor(const Color* color);  // Deprecated
         void APISetViewport(float x,
                             float y,
                             float width,
@@ -63,6 +68,8 @@ namespace dawn_native {
                           ErrorTag errorTag);
 
       private:
+        void DestroyImpl() override;
+
         void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
 
         // For render and compute passes, the encoding context is borrowed from the command encoder.

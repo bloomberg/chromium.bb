@@ -9,16 +9,20 @@ group("docs") {
   public_deps = [
     ":bundle",
     "../../../Images",
+    "./button",
     "./color_swatch",
     "./computed_style_property",
     "./computed_style_trace",
+    "./css_overview",
     "./data_grid",
     "./data_grid_controller",
     "./elements_breadcrumbs",
     "./expandable_list",
     "./icon_button",
     "./icon_component",
+    "./input",
     "./issue_counter",
+    "./issue_link_icon",
     "./layout_pane",
     "./legacy_color_invert",
     "./linear_memory_inspector",
@@ -26,12 +30,18 @@ group("docs") {
     "./markdown_image",
     "./markdown_link",
     "./markdown_view",
+    "./panel_feedback",
     "./perf_piechart",
     "./report",
+    "./request_link_icon",
     "./style_property_editor",
     "./survey_link",
+    "./text_editor",
+    "./text_prompt",
     "./theme_colors",
     "./tree_outline",
+    "./trust_tokens_view",
+    "./user_agent_client_hints",
     "./webvitals",
   ]
 }
@@ -42,6 +52,7 @@ ts_library("bundle") {
     "component_docs.ts",
     "create_breadcrumbs.ts",
     "toggle_dark_mode.ts",
+    "toggle_fonts.ts",
   ]
 
   deps = [ "../../../ui/lit-html:bundle" ]

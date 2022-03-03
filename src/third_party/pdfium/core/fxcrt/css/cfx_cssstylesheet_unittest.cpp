@@ -46,7 +46,7 @@ class CFX_CSSStyleSheetTest : public testing::Test {
     EXPECT_EQ(selectors.size(), style->CountSelectorLists());
 
     for (size_t i = 0; i < selectors.size(); i++) {
-      uint32_t hash = FX_HashCode_GetW(selectors[i].AsStringView(), true);
+      uint32_t hash = FX_HashCode_GetLoweredW(selectors[i].AsStringView());
       EXPECT_EQ(hash, style->GetSelectorList(i)->name_hash());
     }
 
@@ -62,7 +62,7 @@ class CFX_CSSStyleSheetTest : public testing::Test {
 
     bool important;
     RetainPtr<CFX_CSSValue> v = decl_->GetProperty(prop, &important);
-    EXPECT_EQ(v->GetType(), CFX_CSSPrimitiveType::Number);
+    EXPECT_EQ(v->GetType(), CFX_CSSValue::PrimitiveType::kNumber);
     EXPECT_EQ(v.As<CFX_CSSNumberValue>()->unit(), unit);
     EXPECT_EQ(v.As<CFX_CSSNumberValue>()->value(), val);
   }
@@ -72,7 +72,7 @@ class CFX_CSSStyleSheetTest : public testing::Test {
 
     bool important;
     RetainPtr<CFX_CSSValue> v = decl_->GetProperty(prop, &important);
-    EXPECT_EQ(v->GetType(), CFX_CSSPrimitiveType::Enum);
+    EXPECT_EQ(v->GetType(), CFX_CSSValue::PrimitiveType::kEnum);
     EXPECT_EQ(v.As<CFX_CSSEnumValue>()->Value(), val);
   }
 
@@ -89,13 +89,13 @@ class CFX_CSSStyleSheetTest : public testing::Test {
 
     for (size_t i = 0; i < expected_values.size(); ++i) {
       const auto& val = values[i];
-      EXPECT_EQ(val->GetType(), CFX_CSSPrimitiveType::Enum);
+      EXPECT_EQ(val->GetType(), CFX_CSSValue::PrimitiveType::kEnum);
       EXPECT_EQ(val.As<CFX_CSSEnumValue>()->Value(), expected_values[i]);
     }
   }
 
   static bool HasSelector(CFX_CSSStyleRule* style, WideStringView selector) {
-    uint32_t hash = FX_HashCode_GetW(selector, true);
+    uint32_t hash = FX_HashCode_GetLoweredW(selector);
     for (size_t i = 0; i < style->CountSelectorLists(); ++i) {
       if (style->GetSelectorList(i)->name_hash() == hash)
         return true;
@@ -202,15 +202,15 @@ TEST_F(CFX_CSSStyleSheetTest, ParseChildSelectors) {
 
   const auto* sel = style->GetSelectorList(0);
   ASSERT_TRUE(sel);
-  EXPECT_EQ(FX_HashCode_GetW(L"c", true), sel->name_hash());
+  EXPECT_EQ(FX_HashCode_GetLoweredW(L"c"), sel->name_hash());
 
   sel = sel->next_selector();
   ASSERT_TRUE(sel);
-  EXPECT_EQ(FX_HashCode_GetW(L"b", true), sel->name_hash());
+  EXPECT_EQ(FX_HashCode_GetLoweredW(L"b"), sel->name_hash());
 
   sel = sel->next_selector();
   ASSERT_TRUE(sel);
-  EXPECT_EQ(FX_HashCode_GetW(L"a", true), sel->name_hash());
+  EXPECT_EQ(FX_HashCode_GetLoweredW(L"a"), sel->name_hash());
 
   sel = sel->next_selector();
   EXPECT_FALSE(sel);

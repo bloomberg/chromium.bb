@@ -8,9 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/containers/id_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/chromeos_buildflags.h"
@@ -24,7 +22,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 enum class Slot { kUser, kSystem };
 enum class CertificateSource { kBuiltIn, kImported };
 
@@ -51,7 +48,6 @@ enum class CACertificateManagementPermission : int {
   // Disallow users from managing certificates
   kNone = 2
 };
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace certificate_manager {
 
@@ -62,6 +58,10 @@ class CertificatesHandler : public content::WebUIMessageHandler,
                             public ui::SelectFileDialog::Listener {
  public:
   CertificatesHandler();
+
+  CertificatesHandler(const CertificatesHandler&) = delete;
+  CertificatesHandler& operator=(const CertificatesHandler&) = delete;
+
   ~CertificatesHandler() override;
 
   // content::WebUIMessageHandler.
@@ -76,10 +76,10 @@ class CertificatesHandler : public content::WebUIMessageHandler,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // Register profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#endif
+#endif  // defined(OS_CHROMEOS)
 
  private:
   // View certificate.
@@ -202,7 +202,17 @@ class CertificatesHandler : public content::WebUIMessageHandler,
       const base::Value& args,
       size_t arg_index);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Returns true if it is allowed to display the list of client certificates
+  // for the current profile.
+  bool ShouldDisplayClientCertificates();
+
+  // Returns true if the user may manage client certificates on |slot|.
+  bool IsClientCertificateManagementAllowed(Slot slot);
+
+  // Returns true if the user may manage CA certificates.
+  bool IsCACertificateManagementAllowed(CertificateSource source);
+
+#if defined(OS_CHROMEOS)
   // Returns true if the user may manage certificates on |slot| according
   // to ClientCertificateManagementAllowed policy.
   bool IsClientCertificateManagementAllowedPolicy(Slot slot);
@@ -210,7 +220,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   // Returns true if the user may manage certificates according
   // to CACertificateManagementAllowed policy.
   bool IsCACertificateManagementAllowedPolicy(CertificateSource source);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
   // Returns true if the certificate represented by |cert_info| can be deleted.
   bool CanDeleteCertificate(const CertificateManagerModel::CertInfo* cert_info);
@@ -244,8 +254,6 @@ class CertificatesHandler : public content::WebUIMessageHandler,
       cert_info_id_map_;
 
   base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CertificatesHandler);
   friend class ::CertificateHandlerTest;
 };
 

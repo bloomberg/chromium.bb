@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {I18nBehavior} from '../i18n_setup.js';
+import {I18nBehavior, loadTimeData} from '../i18n_setup.js';
 
 /**
  * Element that displays a header inside a module.
@@ -25,6 +25,12 @@ export class ModuleHeaderElement extends mixinBehaviors
 
   static get properties() {
     return {
+      /**
+       * The src for the icon showing on the header.
+       * @type {string}
+       */
+      iconSrc: String,
+
       /**
        * The chip text showing on the header.
        * @type {string}
@@ -47,10 +53,31 @@ export class ModuleHeaderElement extends mixinBehaviors
       },
 
       /**
+       * True if the redesigned modules are enabled. Will put the info
+       * button in the action menu dropdown instead of separate button next to
+       * the action menu.
+       * @type {boolean}
+       */
+      showInfoButtonDropdown: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
        * True if the header should display a dismiss button.
        * @type {boolean}
        */
       showDismissButton: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
+       * False if the header should display a menu button that lets the user
+       * open the module action menu.
+       * @type {boolean}
+       */
+      hideMenuButton: {
         type: Boolean,
         value: false,
       },
@@ -60,11 +87,19 @@ export class ModuleHeaderElement extends mixinBehaviors
 
       /** @type {string} */
       disableText: String,
+
+      /** @private */
+      modulesRedesignedEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('modulesRedesignedEnabled'),
+        reflectToAttribute: true,
+      },
     };
   }
 
   /** @private */
   onInfoButtonClick_() {
+    this.$.actionMenu.close();
     this.dispatchEvent(new Event('info-button-click', {bubbles: true}));
   }
 

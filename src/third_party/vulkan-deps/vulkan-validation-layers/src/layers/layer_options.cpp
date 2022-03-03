@@ -1,6 +1,7 @@
 /* Copyright (c) 2020-2021 The Khronos Group Inc.
  * Copyright (c) 2020-2021 Valve Corporation
  * Copyright (c) 2020-2021 LunarG, Inc.
+ * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@
  *
  * Author: Mark Lobodzinski <mark@lunarg.com>
  * Author: John Zulauf <jzulauf@lunarg.com>
+ * Author: Nadav Geva <nadav.geva@amd.com>
  */
 
 #include "layer_options.h"
@@ -28,12 +30,6 @@ void SetValidationDisable(CHECK_DISABLED &disable_data, const ValidationCheckDis
             break;
         case VALIDATION_CHECK_DISABLE_OBJECT_IN_USE:
             disable_data[object_in_use] = true;
-            break;
-        case VALIDATION_CHECK_DISABLE_IDLE_DESCRIPTOR_SET:
-            disable_data[idle_descriptor_set] = true;
-            break;
-        case VALIDATION_CHECK_DISABLE_PUSH_CONSTANT_RANGE:
-            disable_data[push_constant_range] = true;
             break;
         case VALIDATION_CHECK_DISABLE_QUERY_VALIDATION:
             disable_data[query_validation] = true;
@@ -67,6 +63,9 @@ void SetValidationFeatureDisable(CHECK_DISABLED &disable_data, const VkValidatio
         case VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT:
             disable_data[handle_wrapping] = true;
             break;
+        case VK_VALIDATION_FEATURE_DISABLE_SHADER_VALIDATION_CACHE_EXT:
+            disable_data[shader_validation_caching] = true;
+            break;
         case VK_VALIDATION_FEATURE_DISABLE_ALL_EXT:
             // Set all disabled flags to true
             std::fill(disable_data.begin(), disable_data.end(), true);
@@ -82,8 +81,12 @@ void SetValidationEnable(CHECK_ENABLED &enable_data, const ValidationCheckEnable
         case VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ARM:
             enable_data[vendor_specific_arm] = true;
             break;
+        case VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD:
+            enable_data[vendor_specific_amd] = true;
+            break;
         case VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ALL:
             enable_data[vendor_specific_arm] = true;
+            enable_data[vendor_specific_amd] = true;
             break;
         default:
             assert(true);
@@ -288,7 +291,7 @@ const VkLayerSettingsEXT *FindSettingsInChain(const void *next) {
     const VkBaseOutStructure *current = reinterpret_cast<const VkBaseOutStructure *>(next);
     const VkLayerSettingsEXT *found = nullptr;
     while (current) {
-        if (static_cast<VkStructureType>(VK_STRUCTURE_TYPE_INSTANCE_LAYER_SETTINGS_EXT) == current->sType) {
+        if (VK_STRUCTURE_TYPE_INSTANCE_LAYER_SETTINGS_EXT == static_cast<uint32_t>(current->sType)) {
             found = reinterpret_cast<const VkLayerSettingsEXT *>(current);
             current = nullptr;
         } else {

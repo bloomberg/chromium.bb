@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 
 from py_utils import contextlib_ext
@@ -9,7 +10,7 @@ from py_utils import contextlib_ext
 
 class OptionalUnittest(unittest.TestCase):
 
-  class SampleContextMgr(object):
+  class SampleContextMgr():
 
     def __init__(self):
       self.entered = False

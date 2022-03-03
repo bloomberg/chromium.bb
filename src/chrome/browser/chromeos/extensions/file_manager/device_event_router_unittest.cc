@@ -8,18 +8,17 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "ash/components/disks/disk.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chromeos/disks/disk.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
 namespace {
 
 namespace file_manager_private = extensions::api::file_manager_private;
-using chromeos::disks::Disk;
+using ::ash::disks::Disk;
 
 const char kTestDevicePath[] = "/device/test";
 
@@ -32,9 +31,14 @@ struct DeviceEvent {
 // DeviceEventRouter implementation for testing.
 class DeviceEventRouterImpl : public DeviceEventRouter {
  public:
-  DeviceEventRouterImpl()
-      : DeviceEventRouter(base::TimeDelta::FromSeconds(0)),
+  explicit DeviceEventRouterImpl(
+      SystemNotificationManager* notification_manager)
+      : DeviceEventRouter(notification_manager, base::Seconds(0)),
         external_storage_disabled(false) {}
+
+  DeviceEventRouterImpl(const DeviceEventRouterImpl&) = delete;
+  DeviceEventRouterImpl& operator=(const DeviceEventRouterImpl&) = delete;
+
   ~DeviceEventRouterImpl() override = default;
 
   // DeviceEventRouter overrides.
@@ -58,9 +62,6 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 
   // Flag returned by |IsExternalStorageDisabled|.
   bool external_storage_disabled;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceEventRouterImpl);
 };
 
 }  // namespace
@@ -68,7 +69,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 class DeviceEventRouterTest : public testing::Test {
  protected:
   void SetUp() override {
-    device_event_router = std::make_unique<DeviceEventRouterImpl>();
+    device_event_router = std::make_unique<DeviceEventRouterImpl>(nullptr);
   }
 
   // Creates a disk instance with |device_path| and |mount_path| for testing.

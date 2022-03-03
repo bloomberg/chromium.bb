@@ -14,8 +14,9 @@
 #include "src/core/SkConvertPixels.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrSurfaceContext.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/SurfaceContext.h"
+#include "src/gpu/SurfaceFillContext.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
 #include "tools/ToolUtils.h"
@@ -38,6 +39,7 @@ static constexpr int min_rgb_channel_bits(SkColorType ct) {
         case kR16G16_unorm_SkColorType:       return 16;
         case kR16G16_float_SkColorType:       return 16;
         case kRGBA_8888_SkColorType:          return 8;
+        case kSRGBA_8888_SkColorType:         return 8;
         case kRGB_888x_SkColorType:           return 8;
         case kBGRA_8888_SkColorType:          return 8;
         case kRGBA_1010102_SkColorType:       return 10;
@@ -65,6 +67,7 @@ static constexpr int alpha_channel_bits(SkColorType ct) {
         case kR16G16_unorm_SkColorType:       return 0;
         case kR16G16_float_SkColorType:       return 0;
         case kRGBA_8888_SkColorType:          return 8;
+        case kSRGBA_8888_SkColorType:         return 8;
         case kRGB_888x_SkColorType:           return 0;
         case kBGRA_8888_SkColorType:          return 8;
         case kRGBA_1010102_SkColorType:       return 2;
@@ -476,7 +479,7 @@ static void gpu_read_pixels_test_driver(skiatest::Reporter* reporter,
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextReadPixels, reporter, ctxInfo) {
-    using Surface = std::unique_ptr<GrSurfaceContext>;
+    using Surface = std::unique_ptr<skgpu::SurfaceContext>;
     GrDirectContext* direct = ctxInfo.directContext();
     auto reader = std::function<GpuReadSrcFn<Surface>>(
             [direct](const Surface& surface, const SkIPoint& offset, const SkPixmap& pixels) {
@@ -501,12 +504,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextReadPixels, reporter, ctxInfo) 
         for (GrSurfaceOrigin origin : {kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin}) {
             auto factory = std::function<GpuSrcFactory<Surface>>(
                     [direct, origin, renderable](const SkPixmap& src) {
-                        auto surfContext = GrSurfaceContext::Make(
+                        auto sc = CreateSurfaceContext(
                                 direct, src.info(), SkBackingFit::kExact, origin, renderable);
-                        if (surfContext) {
-                            surfContext->writePixels(direct, src, {0, 0});
+                        if (sc) {
+                            sc->writePixels(direct, src, {0, 0});
                         }
-                        return surfContext;
+                        return sc;
                     });
             auto label = SkStringPrintf("Renderable: %d, Origin: %d", (int)renderable, origin);
             gpu_read_pixels_test_driver(reporter, rules, factory, reader, label);
@@ -1055,7 +1058,7 @@ static void gpu_write_pixels_test_driver(skiatest::Reporter* reporter,
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixels, reporter, ctxInfo) {
-    using Surface = std::unique_ptr<GrSurfaceContext>;
+    using Surface = std::unique_ptr<skgpu::SurfaceContext>;
     GrDirectContext* direct = ctxInfo.directContext();
     auto writer = std::function<GpuWriteDstFn<Surface>>(
             [direct](const Surface& surface, const SkIPoint& offset, const SkPixmap& pixels) {
@@ -1084,11 +1087,11 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixels, reporter, ctxInfo)
         for (GrSurfaceOrigin origin : {kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin}) {
             auto factory = std::function<GpuDstFactory<Surface>>(
                     [direct, origin, renderable](const SkImageInfo& info) {
-                        return GrSurfaceContext::Make(direct,
-                                                      info,
-                                                      SkBackingFit::kExact,
-                                                      origin,
-                                                      renderable);
+                        return CreateSurfaceContext(direct,
+                                                    info,
+                                                    SkBackingFit::kExact,
+                                                    origin,
+                                                    renderable);
                     });
 
             gpu_write_pixels_test_driver(reporter, factory, writer, reader);
@@ -1137,13 +1140,13 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixelsMipped, reporter, ct
             for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {
                 for (GrSurfaceOrigin origin : {kTopLeft_GrSurfaceOrigin,
                                                kBottomLeft_GrSurfaceOrigin}) {
-                    auto sc = GrSurfaceContext::Make(direct,
-                                                     info,
-                                                     SkBackingFit::kExact,
-                                                     origin,
-                                                     renderable,
-                                                     /*sample count*/ 1,
-                                                     GrMipmapped::kYes);
+                    auto sc = CreateSurfaceContext(direct,
+                                                   info,
+                                                   SkBackingFit::kExact,
+                                                   origin,
+                                                   renderable,
+                                                   /*sample count*/ 1,
+                                                   GrMipmapped::kYes);
                     if (!sc) {
                         continue;
                     }
@@ -1177,13 +1180,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixelsMipped, reporter, ct
 
                     // TODO: Update this when read pixels supports reading back levels to read
                     // directly rather than using minimizing draws.
-                    auto dst = GrSurfaceDrawContext::Make(direct,
-                                                          info.colorType(),
-                                                          info.refColorSpace(),
-                                                          SkBackingFit::kExact,
-                                                          info.dimensions(),
-                                                          SkSurfaceProps());
-                    SkASSERT(dst);
+                    auto dstSC = CreateSurfaceContext(direct,
+                                                      info,
+                                                      SkBackingFit::kExact,
+                                                      kBottomLeft_GrSurfaceOrigin,
+                                                      GrRenderable::kYes);
+                    SkASSERT(dstSC);
                     GrSamplerState sampler(SkFilterMode::kNearest, SkMipmapMode::kNearest);
                     for (int i = 1; i <= 1; ++i) {
                         auto te = GrTextureEffect::Make(sc->readSurfaceView(),
@@ -1191,13 +1193,14 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixelsMipped, reporter, ct
                                                         SkMatrix::I(),
                                                         sampler,
                                                         *direct->priv().caps());
-                        dst->fillRectToRectWithFP(SkIRect::MakeSize(sc->dimensions()),
-                                                  SkIRect::MakeSize(levels[i].dimensions()),
-                                                  std::move(te));
+                        dstSC->asFillContext()->fillRectToRectWithFP(
+                                SkIRect::MakeSize(sc->dimensions()),
+                                SkIRect::MakeSize(levels[i].dimensions()),
+                                std::move(te));
                         GrImageInfo readInfo =
-                                dst->imageInfo().makeDimensions(levels[i].dimensions());
+                                dstSC->imageInfo().makeDimensions(levels[i].dimensions());
                         GrPixmap read = GrPixmap::Allocate(readInfo);
-                        if (!dst->readPixels(direct, read, {0, 0})) {
+                        if (!dstSC->readPixels(direct, read, {0, 0})) {
                             continue;
                         }
 
@@ -1238,4 +1241,60 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixelsMipped, reporter, ct
             }
         }
     }
+}
+
+// Tests a bug found in OOP-R canvas2d in Chrome. The GPU backend would incorrectly not bind
+// buffer 0 to GL_PIXEL_PACK_BUFFER before a glReadPixels() that was supposed to read into
+// client memory if a GrDirectContext::resetContext() occurred.
+DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(GLReadPixelsUnbindPBO, reporter, ctxInfo) {
+    // Start with a async read so that we bind to GL_PIXEL_PACK_BUFFER.
+    auto info = SkImageInfo::Make(16, 16, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    SkAutoPixmapStorage pmap = make_ref_data(info, /*forceOpaque=*/false);
+    auto image = SkImage::MakeFromRaster(pmap, nullptr, nullptr);
+    image = image->makeTextureImage(ctxInfo.directContext());
+    if (!image) {
+        ERRORF(reporter, "Couldn't make texture image.");
+        return;
+    }
+
+    AsyncContext asyncContext;
+    image->asyncRescaleAndReadPixels(info,
+                                     SkIRect::MakeSize(info.dimensions()),
+                                     SkImage::RescaleGamma::kSrc,
+                                     SkImage::RescaleMode::kNearest,
+                                     async_callback,
+                                     &asyncContext);
+
+    // This will force the async readback to finish.
+    ctxInfo.directContext()->flushAndSubmit(true);
+    if (!asyncContext.fCalled) {
+        ERRORF(reporter, "async_callback not called.");
+    }
+    if (!asyncContext.fResult) {
+        ERRORF(reporter, "async read failed.");
+    }
+
+    SkPixmap asyncResult(info, asyncContext.fResult->data(0), asyncContext.fResult->rowBytes(0));
+
+    // Bug was that this would cause GrGLGpu to think no buffer was left bound to
+    // GL_PIXEL_PACK_BUFFER even though async transfer did leave one bound. So the sync read
+    // wouldn't bind buffer 0.
+    ctxInfo.directContext()->resetContext();
+
+    SkBitmap syncResult;
+    syncResult.allocPixels(info);
+    syncResult.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
+
+    image->readPixels(ctxInfo.directContext(), syncResult.pixmap(), 0, 0);
+
+    float tol[4] = {};  // expect exactly same pixels, no conversions.
+    auto error = std::function<ComparePixmapsErrorReporter>([&](int x, int y,
+                                                                const float diffs[4]) {
+      SkASSERT(x >= 0 && y >= 0);
+      ERRORF(reporter, "Expect sync and async read to be the same. "
+             "Error at %d, %d. Diff in floats: (%f, %f, %f, %f)",
+             x, y, diffs[0], diffs[1], diffs[2], diffs[3]);
+    });
+
+    ComparePixels(syncResult.pixmap(), asyncResult, tol, error);
 }

@@ -117,22 +117,24 @@ public class TabModelMergingTest {
         // Create a few tabs in each activity.
         createTabsOnUiThread();
 
-        // Initialize activity states and register for state change events.
-        mActivity1State = ApplicationStatus.getStateForActivity(mActivity1);
-        mActivity2State = ApplicationStatus.getStateForActivity(mActivity2);
-        ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
-            @Override
-            public void onActivityStateChange(Activity activity, int newState) {
-                if (activity.equals(mActivity1)) {
-                    mActivity1State = newState;
-                } else if (activity.equals(mActivity2)) {
-                    mActivity2State = newState;
-                } else if (activity instanceof ChromeTabbedActivity2
-                        && newState == ActivityState.CREATED) {
-                    mNewCTA2 = (ChromeTabbedActivity2) activity;
-                    mNewCTA2CallbackHelper.notifyCalled();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Initialize activity states and register for state change events.
+            mActivity1State = ApplicationStatus.getStateForActivity(mActivity1);
+            mActivity2State = ApplicationStatus.getStateForActivity(mActivity2);
+            ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
+                @Override
+                public void onActivityStateChange(Activity activity, int newState) {
+                    if (activity.equals(mActivity1)) {
+                        mActivity1State = newState;
+                    } else if (activity.equals(mActivity2)) {
+                        mActivity2State = newState;
+                    } else if (activity instanceof ChromeTabbedActivity2
+                            && newState == ActivityState.CREATED) {
+                        mNewCTA2 = (ChromeTabbedActivity2) activity;
+                        mNewCTA2CallbackHelper.notifyCalled();
+                    }
                 }
-            }
+            });
         });
     }
 
@@ -295,12 +297,15 @@ public class TabModelMergingTest {
             ApplicationStatus.registerStateListenerForActivity(listener, activity);
         });
         helper.waitForFirst();
-        ApplicationStatus.unregisterActivityStateListener(listener);
+        // listener was registered on UiThread. So it should be unregistered on UiThread.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ApplicationStatus.unregisterActivityStateListener(listener); });
     }
 
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
+    @DisabledTest(message = "https://crbug.com/1275082")
     public void testMergeIntoChromeTabbedActivity1() {
         mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs);
         mActivity1.finishAndRemoveTask();
@@ -309,6 +314,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
+    @DisabledTest(message = "https://crbug.com/1275082")
     public void testMergeIntoChromeTabbedActivity2() {
         mergeTabsAndAssert(mActivity2, mMergeIntoActivity2ExpectedTabs);
         mActivity2.finishAndRemoveTask();
@@ -317,6 +323,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
+    @DisabledTest(message = "https://crbug.com/1275082")
     public void testMergeOnColdStart() {
         String expectedSelectedUrl = ChromeTabUtils.getUrlStringOnUiThread(
                 mActivity1.getTabModelSelector().getCurrentTab());
@@ -354,6 +361,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
+    @DisabledTest(message = "https://crbug.com/1275082")
     public void testMergeOnColdStartFromChromeTabbedActivity2() throws Exception {
         String expectedSelectedUrl = ChromeTabUtils.getUrlStringOnUiThread(
                 mActivity2.getTabModelSelector().getCurrentTab());
@@ -448,6 +456,7 @@ public class TabModelMergingTest {
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @DisabledTest(message = "https://crbug.com/1275082")
     public void testMergeWhileInTabSwitcher() {
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivity1.getLayoutManager(), true, false);
@@ -463,6 +472,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
+    @DisabledTest(message = "https://crbug.com/1275082")
     public void testMergeWithNoTabs() {
         // Enter the tab switcher before closing all tabs with grid tab switcher enabled, otherwise
         // the activity is killed and the test fails.
@@ -530,6 +540,7 @@ public class TabModelMergingTest {
         waitForActivityStateChange(ActivityState.RESUMED, mActivity2, false);
         waitForActivityStateChange(ActivityState.RESUMED, mActivity1, true);
 
+        MultiInstanceManager.setTestDisplayIds(Collections.singletonList(0));
         m1.setCurrentDisplayIdForTesting(0);
         m2.setCurrentDisplayIdForTesting(1);
 

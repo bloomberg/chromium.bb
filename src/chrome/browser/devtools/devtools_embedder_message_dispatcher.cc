@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/devtools/devtools_settings.h"
 
 namespace {
 
@@ -46,19 +47,28 @@ bool GetValue(const base::Value& value, bool* result) {
 }
 
 bool GetValue(const base::Value& value, gfx::Rect* rect) {
-  const base::DictionaryValue* dict;
-  if (!value.GetAsDictionary(&dict))
+  if (!value.is_dict())
     return false;
-  int x = 0;
-  int y = 0;
-  int width = 0;
-  int height = 0;
-  if (!dict->GetInteger("x", &x) ||
-      !dict->GetInteger("y", &y) ||
-      !dict->GetInteger("width", &width) ||
-      !dict->GetInteger("height", &height))
+  absl::optional<int> x = value.FindIntKey("x");
+  absl::optional<int> y = value.FindIntKey("y");
+  absl::optional<int> width = value.FindIntKey("width");
+  absl::optional<int> height = value.FindIntKey("height");
+  if (!x.has_value() || !y.has_value() || !width.has_value() ||
+      !height.has_value()) {
     return false;
-  rect->SetRect(x, y, width, height);
+  }
+
+  rect->SetRect(x.value(), y.value(), width.value(), height.value());
+  return true;
+}
+
+bool GetValue(const base::Value& value, RegisterOptions* options) {
+  if (!value.is_dict())
+    return false;
+
+  const bool synced = value.FindBoolKey("synced").value_or(false);
+  options->sync_mode = synced ? RegisterOptions::SyncMode::kSync
+                              : RegisterOptions::SyncMode::kDontSync;
   return true;
 }
 
@@ -74,9 +84,9 @@ struct StorageTraits<const T&> {
 
 template <typename... Ts>
 struct ParamTuple {
-  bool Parse(const base::ListValue& list,
-             const base::ListValue::const_iterator& it) {
-    return it == list.GetList().end();
+  bool Parse(const std::vector<base::Value>& list,
+             const std::vector<base::Value>::const_iterator& it) {
+    return it == list.end();
   }
 
   template <typename H, typename... As>
@@ -87,10 +97,9 @@ struct ParamTuple {
 
 template <typename T, typename... Ts>
 struct ParamTuple<T, Ts...> {
-  bool Parse(const base::ListValue& list,
-             const base::ListValue::const_iterator& it) {
-    return it != list.GetList().end() && GetValue(*it, &head) &&
-           tail.Parse(list, it + 1);
+  bool Parse(const std::vector<base::Value>& list,
+             const std::vector<base::Value>::const_iterator& it) {
+    return it != list.end() && GetValue(*it, &head) && tail.Parse(list, it + 1);
   }
 
   template <typename H, typename... As>
@@ -105,9 +114,9 @@ struct ParamTuple<T, Ts...> {
 template <typename... As>
 bool ParseAndHandle(const base::RepeatingCallback<void(As...)>& handler,
                     DispatchCallback callback,
-                    const base::ListValue& list) {
+                    const std::vector<base::Value>& list) {
   ParamTuple<As...> tuple;
-  if (!tuple.Parse(list, list.GetList().begin()))
+  if (!tuple.Parse(list, list.begin()))
     return false;
   tuple.Apply(handler);
   return true;
@@ -117,9 +126,9 @@ template <typename... As>
 bool ParseAndHandleWithCallback(
     const base::RepeatingCallback<void(DispatchCallback, As...)>& handler,
     DispatchCallback callback,
-    const base::ListValue& list) {
+    const std::vector<base::Value>& list) {
   ParamTuple<As...> tuple;
-  if (!tuple.Parse(list, list.GetList().begin()))
+  if (!tuple.Parse(list, list.begin()))
     return false;
   tuple.Apply(handler, std::move(callback));
   return true;
@@ -141,10 +150,9 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
 
   bool Dispatch(DispatchCallback callback,
                 const std::string& method,
-                const base::ListValue* params) override {
+                const std::vector<base::Value>& params) override {
     auto it = handlers_.find(method);
-    return it != handlers_.end() &&
-           it->second.Run(std::move(callback), *params);
+    return it != handlers_.end() && it->second.Run(std::move(callback), params);
   }
 
   template<typename... As>
@@ -168,7 +176,8 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
 
  private:
   using Handler =
-      base::RepeatingCallback<bool(DispatchCallback, const base::ListValue&)>;
+      base::RepeatingCallback<bool(DispatchCallback,
+                                   const std::vector<base::Value>&)>;
   using HandlerMap = std::map<std::string, Handler>;
   HandlerMap handlers_;
 };
@@ -233,6 +242,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::RecordUserMetricsAction, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",
                                  &Delegate::SendJsonRequest, delegate);
+  d->RegisterHandler("registerPreference", &Delegate::RegisterPreference,
+                     delegate);
   d->RegisterHandlerWithCallback("getPreferences",
                                  &Delegate::GetPreferences, delegate);
   d->RegisterHandler("setPreference",
@@ -241,6 +252,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::RemovePreference, delegate);
   d->RegisterHandler("clearPreferences",
                      &Delegate::ClearPreferences, delegate);
+  d->RegisterHandlerWithCallback("getSyncInformation",
+                                 &Delegate::GetSyncInformation, delegate);
   d->RegisterHandlerWithCallback("reattach",
                                  &Delegate::Reattach, delegate);
   d->RegisterHandler("readyForTest",

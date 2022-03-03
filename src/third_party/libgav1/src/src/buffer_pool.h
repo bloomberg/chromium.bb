@@ -17,12 +17,13 @@
 #ifndef LIBGAV1_SRC_BUFFER_POOL_H_
 #define LIBGAV1_SRC_BUFFER_POOL_H_
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <climits>
 #include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <cstdint>
-#include <cstring>
+#include <memory>
 #include <mutex>  // NOLINT (unapproved c++11 header)
 
 #include "src/dsp/common.h"
@@ -52,7 +53,9 @@ enum FrameState : uint8_t {
 
 // A reference-counted frame buffer. Clients should access it via
 // RefCountedBufferPtr, which manages reference counting transparently.
-class RefCountedBuffer {
+// The alignment requirement is due to the SymbolDecoderContext member
+// frame_context_.
+class RefCountedBuffer : public MaxAlignedAllocable {
  public:
   // Not copyable or movable.
   RefCountedBuffer(const RefCountedBuffer&) = delete;

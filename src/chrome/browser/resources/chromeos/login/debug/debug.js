@@ -6,6 +6,13 @@
  * @fileoverview Root element of the OOBE UI Debugger.
  */
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// #import {loadTimeData} from '../i18n_setup.js';
+// #import {Oobe} from '../cr_ui.m.js'
+// #import {$} from 'chrome://resources/js/util.m.js';
+
+// #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js';
+
 cr.define('cr.ui.login.debug', function() {
   const DEBUG_BUTTON_STYLE = `
       height:20px;
@@ -71,9 +78,6 @@ cr.define('cr.ui.login.debug', function() {
   const RECOMMENDED_APPS_CONTENT = `
 // <include src="../../arc_support/recommend_app_list_view.html">
   `;
-  const RECOMMENDED_APPS_CONTENT_NEW = `
-// <include src="../../arc_support/recommend_app_list_view_new.html">
-  `;
   /**
    * Indicates if screen is present in usual user flow, represents some error
    * state or is shown in some other cases. See KNOWN_SCREENS for more details.
@@ -113,7 +117,9 @@ cr.define('cr.ui.login.debug', function() {
             screen.setKeyboardDeviceName('Some Keyboard');
             screen.setPointingDeviceName('Some Mouse');
             screen.setKeyboardState('searching');
-            screen.setMouseState('usb');
+            screen.setMouseState('searching');
+            screen.setTouchscreenDetectedState(false);
+            screen.setContinueButtonEnabled(false);
             screen.setPinDialogVisible(false);
           },
         },
@@ -124,6 +130,8 @@ cr.define('cr.ui.login.debug', function() {
             screen.setPointingDeviceName('Some Mouse');
             screen.setKeyboardState('connected');
             screen.setMouseState('paired');
+            screen.setTouchscreenDetectedState(false);
+            screen.setContinueButtonEnabled(true);
             screen.setPinDialogVisible(false);
           },
         },
@@ -134,10 +142,25 @@ cr.define('cr.ui.login.debug', function() {
             screen.setPointingDeviceName('Some Mouse');
             screen.setKeyboardState('pairing');
             screen.setMouseState('pairing');
+            screen.setTouchscreenDetectedState(false);
+            screen.setContinueButtonEnabled(false);
             screen.setPinDialogVisible(true);
             screen.setNumKeysEnteredPinCode(1);
           },
         },
+        {
+          id: 'touchscreen-detected',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('searching');
+            screen.setMouseState('searching');
+            screen.setTouchscreenDetectedState(true);
+            screen.setContinueButtonEnabled(true);
+            screen.setPinDialogVisible(false);
+          },
+        },
+
       ],
     },
     {
@@ -184,6 +207,23 @@ cr.define('cr.ui.login.debug', function() {
     },
     {
       id: 'os-install',
+      kind: ScreenKind.OTHER,
+      handledSteps: 'success',
+      states: [
+        {
+          id: 'success',
+          trigger: (screen) => {
+            screen.updateCountdownString(
+                'Your device will shut down in 60 seconds. Remove the USB \
+                 before turning your device back on. Then you can start using \
+                 CloudReady 2.0.');
+            screen.showStep('success');
+          },
+        },
+      ],
+    },
+    {
+      id: 'os-trial',
       kind: ScreenKind.OTHER,
     },
     {
@@ -265,7 +305,7 @@ cr.define('cr.ui.login.debug', function() {
           id: 'require-permission-celluar',
           trigger: (screen) => {
             screen.onBeforeShow();
-            screen.setRequiresPermissionForCellular(true);
+            screen.setUpdateState('cellular');
           },
         },
       ],
@@ -316,8 +356,24 @@ cr.define('cr.ui.login.debug', function() {
       // Remove this step from preview here, because it can only occur during
       // enterprise enrollment step and it is already available there in debug
       // overlay.
-      handledSteps: 'unlock',
+      handledSteps: 'unlock,creds',
       suffix: 'E',
+      states: [
+        {
+          id: 'unlock',
+          trigger: (screen) => {
+            screen.setUIStep('unlock');
+          },
+          data: {},
+        },
+        {
+          id: 'creds',
+          trigger: (screen) => {
+            screen.setUIStep('creds');
+          },
+          data: {},
+        },
+      ],
     },
     {
       id: 'enterprise-enrollment',
@@ -578,19 +634,15 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
-          // Retry after incorrect password attempt, user name is already known.
-          id: 'offline-gaia-user',
+          // Password and email mismatch error message.
+          id: 'offline-login-password-mismatch',
           trigger: (screen) => {
-            screen.loadParams({
-              email: 'someone@example.com',
-            });
+            screen.setEmailForTest('someuser@gmail.com');
+            screen.proceedToPasswordPage();
+            screen.showPasswordMismatchMessage();
           },
         },
       ],
-    },
-    {
-      id: 'tpm-error-message',
-      kind: ScreenKind.ERROR,
     },
     {
       // Failure during SAML flow.
@@ -810,6 +862,18 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
+      id: 'lacros-data-migration',
+      kind: ScreenKind.OTHER,
+      defaultState: 'default',
+      handledSteps: 'skip-revealed',
+      states: [{
+        id: 'skip-revealed',
+        trigger: (screen) => {
+          screen.showSkipButton();
+        }
+      }],
+    },
+    {
       id: 'terms-of-service',
       kind: ScreenKind.NORMAL,
       handledSteps: 'loading,loaded,error',
@@ -817,14 +881,14 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'loading',
           trigger: (screen) => {
-            screen.setManager('TestCompany');
+            screen.onBeforeShow({manager: 'TestCompany'});
             screen.setUIStep('loading');
           },
         },
         {
           id: 'loaded',
           trigger: (screen) => {
-            screen.setManager('TestCompany');
+            screen.onBeforeShow({manager: 'TestCompany'});
             screen.setTermsOfService('TOS BEGIN\nThese are the terms\nTOS END');
           },
         },
@@ -840,6 +904,155 @@ cr.define('cr.ui.login.debug', function() {
       id: 'sync-consent',
       kind: ScreenKind.NORMAL,
       defaultState: 'step-no-split',
+      states: [{
+        id: 'minor-mode',
+        data: {
+          syncConsentOptionalEnabled: false,
+          isMinorMode: true,
+        },
+      }]
+    },
+    {
+      id: 'consolidated-consent',
+      kind: ScreenKind.NORMAL,
+      handledSteps: 'loaded,loading,error,google-eula,cros-eula,arc,privacy',
+      // TODO(crbug.com/1247174): Use localized URLs for eulaUrl and
+      // additionalTosUrl.
+      states: [
+        {
+          id: 'regular',
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'child',
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: true,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'demo-mode',
+          data: {
+            isArcEnabled: true,
+            isDemo: true,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'arc-disabled',
+          data: {
+            isArcEnabled: false,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'managed-account',
+          trigger: (screen) => {
+            screen.setBackupMode(true, true);
+            screen.setLocationMode(false, true);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: true,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.setUIStep('error');
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+
+      ]
+    },
+    {
+      id: 'guest-tos',
+      kind: ScreenKind.NORMAL,
+      handledSteps: 'loading,loaded,google-eula,cros-eula',
+      // TODO(crbug.com/1247174): Use localized URLs for googleEulaURL and
+      // crosEulaURL.
+      states: [
+        {
+          id: 'loaded',
+          trigger: (screen) => {
+            screen.setUIStep('loaded');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+        {
+          id: 'loading',
+          trigger: (screen) => {
+            screen.setUIStep('loading');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+        {
+          id: 'google-eula',
+          trigger: (screen) => {
+            screen.setUIStep('google-eula');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+        {
+          id: 'cros-eula',
+          trigger: (screen) => {
+            screen.setUIStep('cros-eula');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+      ]
+    },
+    {
+      id: 'hw-data-collection',
+      kind: ScreenKind.OTHER,
     },
     {
       id: 'fingerprint-setup',
@@ -879,6 +1092,28 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'pin-setup',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'clear-error',
+          trigger: (screen) => {
+            (screen.$).pinKeyboard.hideProblem_();
+          }
+        },
+        {
+          id: 'error-warning',
+          trigger: (screen) => {
+            (screen.$).pinKeyboard.showProblem_(
+                MessageType.TOO_WEAK, ProblemType.WARNING);
+          }
+        },
+        {
+          id: 'error-error',
+          trigger: (screen) => {
+            (screen.$).pinKeyboard.showProblem_(
+                MessageType.TOO_LONG, ProblemType.ERROR);
+          }
+        }
+      ]
     },
     {
       id: 'arc-tos',
@@ -910,12 +1145,8 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: '2-apps',
           trigger: (screen) => {
-            let newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
-                loadTimeData.getBoolean('newLayoutEnabled');
             screen.reset();
-            screen.setWebview(
-                newLayout ? RECOMMENDED_APPS_CONTENT_NEW :
-                            RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
             screen.loadAppList([
               {
                 name: 'Test app 1',
@@ -931,15 +1162,11 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: '21-apps',
           trigger: (screen) => {
-            let newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
-                loadTimeData.getBoolean('newLayoutEnabled');
             // There can be up to 21 apps: see recommend_apps_fetcher_impl
             screen.reset();
-            screen.setWebview(
-                newLayout ? RECOMMENDED_APPS_CONTENT_NEW :
-                            RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
             let apps = [];
-            for (i = 1; i <= 21; i++) {
+            for (let i = 1; i <= 21; i++) {
               apps.push({
                 name: 'Test app ' + i,
                 package_name: 'app.test' + i,
@@ -953,20 +1180,6 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'app-downloading',
       kind: ScreenKind.NORMAL,
-      states: [
-        {
-          id: 'single-app',
-          data: {
-            numOfApps: 1,
-          },
-        },
-        {
-          id: 'multiple-apps',
-          data: {
-            numOfApps: 2,
-          },
-        },
-      ],
     },
     {
       id: 'assistant-optin-flow',
@@ -1104,7 +1317,7 @@ cr.define('cr.ui.login.debug', function() {
     }
   }
 
-  class DebuggerUI {
+  /* #export */ class DebuggerUI {
     constructor() {
       this.debuggerVisible_ = false;
       /** Element with Debugger UI */
@@ -1539,28 +1752,9 @@ cr.define('cr.ui.login.debug', function() {
 
   cr.addSingletonGetter(DebuggerUI);
 
+  // #cr_define_end
   // Export
   return {
     DebuggerUI: DebuggerUI,
   };
 });
-
-/**
- * Initializes the Debugger. Called after the DOM, and all external scripts,
- * have been loaded.
- */
-function initializeDebugger() {
-  if (document.readyState === 'loading')
-    return;
-  document.removeEventListener('DOMContentLoaded', initializeDebugger);
-  cr.ui.login.debug.DebuggerUI.getInstance().register(document.body);
-}
-
-/**
- * Final initialization performed after DOM and all scripts have loaded.
- */
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeDebugger);
-} else {
-  initializeDebugger();
-}

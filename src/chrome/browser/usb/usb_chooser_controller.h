@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -22,7 +22,6 @@
 
 namespace content {
 class RenderFrameHost;
-class WebContents;
 }
 
 // UsbChooserController creates a chooser for WebUSB.
@@ -33,6 +32,10 @@ class UsbChooserController : public permissions::ChooserController,
       content::RenderFrameHost* render_frame_host,
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
       blink::mojom::WebUsbService::GetPermissionCallback callback);
+
+  UsbChooserController(const UsbChooserController&) = delete;
+  UsbChooserController& operator=(const UsbChooserController&) = delete;
+
   ~UsbChooserController() override;
 
   // permissions::ChooserController:
@@ -62,7 +65,7 @@ class UsbChooserController : public permissions::ChooserController,
   blink::mojom::WebUsbService::GetPermissionCallback callback_;
   url::Origin origin_;
 
-  content::WebContents* const web_contents_;
+  const raw_ptr<content::RenderFrameHost> requesting_frame_;
   base::WeakPtr<UsbChooserContext> chooser_context_;
   base::ScopedObservation<UsbChooserContext, UsbChooserContext::DeviceObserver>
       observation_{this};
@@ -72,8 +75,6 @@ class UsbChooserController : public permissions::ChooserController,
   // Maps from device name to number of devices.
   std::unordered_map<std::u16string, int> device_name_map_;
   base::WeakPtrFactory<UsbChooserController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UsbChooserController);
 };
 
 #endif  // CHROME_BROWSER_USB_USB_CHOOSER_CONTROLLER_H_

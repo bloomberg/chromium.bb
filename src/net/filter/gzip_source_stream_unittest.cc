@@ -6,8 +6,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bit_cast.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/filter/filter_source_stream_test_util.h"
@@ -140,7 +140,7 @@ class GzipSourceStreamTest : public ::testing::TestWithParam<GzipTestParam> {
   scoped_refptr<IOBuffer> output_buffer_;
   const int output_buffer_size_;
 
-  MockSourceStream* source_;
+  raw_ptr<MockSourceStream> source_;
   std::unique_ptr<GzipSourceStream> stream_;
 };
 

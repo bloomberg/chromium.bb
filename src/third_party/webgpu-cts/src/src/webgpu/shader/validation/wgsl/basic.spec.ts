@@ -10,8 +10,13 @@ export const g = makeTestGroup(ShaderValidationTest);
 g.test('trivial')
   .desc(`A trivial correct and incorrect shader.`)
   .fn(t => {
-    t.expectCompileResult(true, `[[stage(vertex)]] fn main() {}`);
-    t.expectCompileResult('v-0020', `[[stage(vertex), stage(fragment)]] fn main() {}`);
+    t.expectCompileResult(
+      true,
+      `[[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+  return vec4<f32>();
+}`
+    );
+    t.expectCompileResult(false, `[[stage(vertex), stage(fragment)]] fn main() {}`);
   });
 
 g.test('nonsense')

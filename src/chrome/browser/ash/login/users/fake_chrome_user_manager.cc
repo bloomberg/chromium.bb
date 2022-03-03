@@ -11,20 +11,23 @@
 #include "ash/constants/ash_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/fake_supervised_user_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
@@ -38,6 +41,9 @@ namespace {
 class FakeTaskRunner : public base::SingleThreadTaskRunner {
  public:
   FakeTaskRunner() = default;
+
+  FakeTaskRunner(const FakeTaskRunner&) = delete;
+  FakeTaskRunner& operator=(const FakeTaskRunner&) = delete;
 
  protected:
   ~FakeTaskRunner() override {}
@@ -56,8 +62,6 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
     return PostDelayedTask(from_here, std::move(task), delay);
   }
   bool RunsTasksInCurrentSequence() const override { return true; }
-
-  DISALLOW_COPY_AND_ASSIGN(FakeTaskRunner);
 };
 
 }  // namespace
@@ -210,8 +214,15 @@ SupervisedUserManager* FakeChromeUserManager::GetSupervisedUserManager() {
 }
 
 UserImageManager* FakeChromeUserManager::GetUserImageManager(
-    const AccountId& /* account_id */) {
-  return nullptr;
+    const AccountId& account_id) {
+  UserImageManagerMap::iterator user_image_manager_it =
+      user_image_managers_.find(account_id);
+  if (user_image_manager_it != user_image_managers_.end())
+    return user_image_manager_it->second.get();
+  auto mgr = std::make_unique<UserImageManagerImpl>(account_id, this);
+  UserImageManagerImpl* mgr_raw = mgr.get();
+  user_image_managers_[account_id] = std::move(mgr);
+  return mgr_raw;
 }
 
 void FakeChromeUserManager::SetUserFlow(const AccountId& account_id,
@@ -265,6 +276,7 @@ void FakeChromeUserManager::OnSessionStarted() {}
 
 void FakeChromeUserManager::RemoveUser(
     const AccountId& account_id,
+    user_manager::UserRemovalReason reason,
     user_manager::RemoveUserDelegate* delegate) {}
 
 void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
@@ -344,8 +356,8 @@ bool FakeChromeUserManager::IsStubAccountId(const AccountId& account_id) const {
 
 bool FakeChromeUserManager::IsDeprecatedSupervisedAccountId(
     const AccountId& account_id) const {
-  const policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   // Supervised accounts are not allowed on the Active Directory devices. It
   // also makes sure "locally-managed.localhost" would work properly and would
   // not be detected as supervised users.
@@ -380,8 +392,7 @@ void FakeChromeUserManager::ScheduleResolveLocale(
 }
 
 bool FakeChromeUserManager::IsValidDefaultUserImageId(int image_index) const {
-  NOTIMPLEMENTED();
-  return false;
+  return default_user_image::IsValidIndex(image_index);
 }
 
 // UserManager implementation:
@@ -390,7 +401,11 @@ void FakeChromeUserManager::Initialize() {
 }
 
 void FakeChromeUserManager::Shutdown() {
-  return ChromeUserManager::Shutdown();
+  ChromeUserManager::Shutdown();
+
+  for (auto& user_image_manager : user_image_managers_) {
+    user_image_manager.second->Shutdown();
+  }
 }
 
 const user_manager::UserList& FakeChromeUserManager::GetUsers() const {
@@ -408,6 +423,10 @@ const user_manager::UserList& FakeChromeUserManager::GetLRULoggedInUsers()
 
 user_manager::UserList FakeChromeUserManager::GetUnlockUsers() const {
   return logged_in_users_;
+}
+
+const AccountId& FakeChromeUserManager::GetLastSessionActiveAccountId() const {
+  return last_session_active_account_id_;
 }
 
 void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,
@@ -451,6 +470,15 @@ const user_manager::User* FakeChromeUserManager::FindUser(
 
 user_manager::User* FakeChromeUserManager::FindUserAndModify(
     const AccountId& account_id) {
+  if (active_user_ != nullptr && active_user_->GetAccountId() == account_id)
+    return active_user_;
+
+  const user_manager::UserList& users = GetUsers();
+  for (auto* user : users) {
+    if (user->GetAccountId() == account_id)
+      return user;
+  }
+
   return nullptr;
 }
 
@@ -613,13 +641,10 @@ bool FakeChromeUserManager::IsUserAllowed(
     const user_manager::User& user) const {
   DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
          user.GetType() == user_manager::USER_TYPE_GUEST ||
-         user.GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          user.GetType() == user_manager::USER_TYPE_CHILD);
 
   if (user.GetType() == user_manager::USER_TYPE_GUEST &&
       !IsGuestSessionAllowed())
-    return false;
-  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED)
     return false;
   if (user.HasGaiaAccount() && !IsGaiaUserAllowed(user))
     return false;
@@ -704,6 +729,21 @@ bool FakeChromeUserManager::IsManagedSessionEnabledForUser(
 bool FakeChromeUserManager::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return true;
+}
+
+void FakeChromeUserManager::CacheRemovedUser(
+    const std::string& user_email,
+    user_manager::UserRemovalReason reason) {
+  removed_user_cache_.push_back(std::make_pair(user_email, reason));
+}
+
+std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
+FakeChromeUserManager::GetRemovedUserCache() const {
+  return removed_user_cache_;
+}
+
+void FakeChromeUserManager::MarkReporterInitialized() {
+  removed_user_cache_.clear();
 }
 
 user_manager::User* FakeChromeUserManager::GetActiveUserInternal() const {

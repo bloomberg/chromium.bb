@@ -40,10 +40,10 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
   auto do_refresh_keys = base::BindRepeating(
       &EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent,
       weak_ptr_factory_.GetWeakPtr(), user_context,
-      base::Owned(remote_devices.DeepCopy()), base::Passed(&callback));
+      base::Passed(remote_devices.CreateDeepCopy()), base::Passed(&callback));
 
   // Private TPM key is needed only when adding new keys.
-  if (remote_devices.empty() ||
+  if (remote_devices.GetList().empty() ||
       tpm_key_manager->PrepareTpmKey(/*check_private_key=*/false,
                                      do_refresh_keys)) {
     do_refresh_keys.Run();
@@ -60,7 +60,7 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
 
 void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
     const UserContext& user_context,
-    base::ListValue* remote_devices,
+    std::unique_ptr<base::ListValue> remote_devices,
     RefreshKeysCallback callback) {
   EasyUnlockTpmKeyManager* tpm_key_manager =
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
@@ -97,9 +97,8 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
     base::DictionaryValue* dict) {
   dict->SetString(key_names::kKeyBluetoothAddress, data.bluetooth_address);
   dict->SetString(key_names::kKeyPsk, data.psk);
-  std::unique_ptr<base::DictionaryValue> permit_record(
-      new base::DictionaryValue);
-  dict->Set(key_names::kKeyPermitRecord, std::move(permit_record));
+  base::DictionaryValue permit_record;
+  dict->SetKey(key_names::kKeyPermitRecord, std::move(permit_record));
   dict->SetString(key_names::kKeyPermitId, data.public_key);
   dict->SetString(key_names::kKeyPermitData, data.public_key);
   dict->SetString(key_names::kKeyPermitType, key_names::kPermitTypeLicence);
@@ -134,17 +133,12 @@ bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
                   << "expected serialized_beacon_seeds.";
   }
 
-  bool unlock_key;
-  if (!dict.GetBoolean(key_names::kKeyUnlockKey, &unlock_key)) {
-    // If GetBoolean() fails, that means we're reading a Dictionary from
-    // user prefs which did not include the bool when it was stored. That means
-    // it's an older Dictionary that didn't include this `unlock_key` field --
-    // only one device was persisted, and it was implicitly assumed to be the
-    // unlock key -- thus `unlock_key` should default to being true.
-    unlock_key = true;
-  }
-  data->unlock_key = unlock_key;
-
+  // If FindBoolPath() fails, that means we're reading a Dictionary from
+  // user prefs which did not include the bool when it was stored. That means
+  // it's an older Dictionary that didn't include this `unlock_key` field --
+  // only one device was persisted, and it was implicitly assumed to be the
+  // unlock key -- thus `unlock_key` should default to being true.
+  data->unlock_key = dict.FindBoolPath(key_names::kKeyUnlockKey).value_or(true);
   data->bluetooth_address.swap(bluetooth_address);
   data->public_key.swap(public_key);
   data->psk.swap(psk);
@@ -156,7 +150,7 @@ void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
     const AccountId& account_id,
     const EasyUnlockDeviceKeyDataList& data_list,
     base::ListValue* device_list) {
-  device_list->Clear();
+  device_list->ClearList();
   for (size_t i = 0; i < data_list.size(); ++i) {
     std::unique_ptr<base::DictionaryValue> device_dict(
         new base::DictionaryValue);

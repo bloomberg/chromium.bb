@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/containers/flat_map.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -36,7 +36,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
   explicit ScopedClipboardWriter(
       ClipboardBuffer buffer,
       std::unique_ptr<DataTransferEndpoint> src = nullptr);
-
+  ScopedClipboardWriter(const ScopedClipboardWriter&) = delete;
+  ScopedClipboardWriter& operator=(const ScopedClipboardWriter&) = delete;
   ~ScopedClipboardWriter();
 
   // Converts |text| to UTF-8 and adds it to the clipboard.
@@ -76,6 +77,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
 
   // Data is written to the system clipboard in the same order as WriteData
   // calls are received.
+  // This is only used to write custom format data.
   void WriteData(const std::u16string& format, mojo_base::BigBuffer data);
 
   void WriteImage(const SkBitmap& bitmap);
@@ -93,6 +95,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
   Clipboard::ObjectMap objects_;
 
   std::vector<Clipboard::PlatformRepresentation> platform_representations_;
+  // Keeps track of the unique custom formats registered in the clipboard.
+  base::flat_map<std::string, std::string> registered_formats_;
+  int counter_ = 0;
 
   // The type is set at construction, and can be changed before committing.
   const ClipboardBuffer buffer_;
@@ -105,8 +110,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
   // not set, or the source of the data can't be represented by
   // DataTransferEndpoint.
   std::unique_ptr<DataTransferEndpoint> data_src_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };
 
 }  // namespace ui
