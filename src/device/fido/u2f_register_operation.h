@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/device_operation.h"
@@ -34,6 +33,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   U2fRegisterOperation(FidoDevice* device,
                        const CtapMakeCredentialRequest& request,
                        DeviceResponseCallback callback);
+
+  U2fRegisterOperation(const U2fRegisterOperation&) = delete;
+  U2fRegisterOperation& operator=(const U2fRegisterOperation&) = delete;
+
   ~U2fRegisterOperation() override;
 
   // DeviceOperation:
@@ -61,8 +64,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   // ID.
   bool probing_alternative_rp_id_ = false;
   base::WeakPtrFactory<U2fRegisterOperation> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(U2fRegisterOperation);
 };
 
 }  // namespace device

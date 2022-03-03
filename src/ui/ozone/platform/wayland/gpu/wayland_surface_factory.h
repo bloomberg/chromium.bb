@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
@@ -24,10 +23,14 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
   WaylandSurfaceFactory(WaylandConnection* connection,
                         WaylandBufferManagerGpu* buffer_manager);
+
+  WaylandSurfaceFactory(const WaylandSurfaceFactory&) = delete;
+  WaylandSurfaceFactory& operator=(const WaylandSurfaceFactory&) = delete;
+
   ~WaylandSurfaceFactory() override;
 
   // SurfaceFactoryOzone overrides:
-  std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+  std::vector<gl::GLImplementationParts> GetAllowedGLImplementations() override;
   GLOzone* GetGLOzone(const gl::GLImplementationParts& implementation) override;
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation(
@@ -59,8 +62,6 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
   WaylandConnection* const connection_;
   WaylandBufferManagerGpu* const buffer_manager_;
   std::unique_ptr<GLOzone> egl_implementation_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactory);
 };
 
 }  // namespace ui

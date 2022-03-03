@@ -14,13 +14,20 @@
 
 #include <string>
 
-#include "fuzzers/tint_common_fuzzer.h"
+#include "fuzzers/fuzzer_init.h"
+#include "fuzzers/tint_reader_writer_fuzzer.h"
 
 namespace tint {
 namespace fuzzers {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  tint::fuzzers::CommonFuzzer fuzzer(InputFormat::kWGSL, OutputFormat::kMSL);
+  DataBuilder db(data, size);
+  writer::msl::Options options;
+  GenerateMslOptions(&db, &options);
+  tint::fuzzers::ReaderWriterFuzzer fuzzer(InputFormat::kWGSL,
+                                           OutputFormat::kMSL);
+  fuzzer.SetOptionsMsl(options);
+  fuzzer.SetDumpInput(GetCliParams().dump_input);
   return fuzzer.Run(data, size);
 }
 

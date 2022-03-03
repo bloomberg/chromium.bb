@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kConfigPropertyData[] = {
-    {XFA_Element::Present, 1, 0},
-    {XFA_Element::Acrobat, 1, 0},
-    {XFA_Element::Trace, 1, 0},
+    {XFA_Element::Present, 1, {}},
+    {XFA_Element::Acrobat, 1, {}},
+    {XFA_Element::Trace, 1, {}},
 };
 
 const CXFA_Node::AttributeData kConfigAttributeData[] = {
@@ -27,7 +27,7 @@ const CXFA_Node::AttributeData kConfigAttributeData[] = {
 CXFA_Config::CXFA_Config(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::ModelNode,
                 XFA_Element::Config,
                 kConfigPropertyData,

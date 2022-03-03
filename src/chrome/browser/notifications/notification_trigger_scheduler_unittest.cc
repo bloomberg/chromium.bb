@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/notifications/notification_trigger_scheduler.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -48,15 +49,15 @@ class NotificationTriggerSchedulerTest : public testing::Test {
         : profile_(profile_manager->CreateTestingProfile(profile_name)),
           service_(PlatformNotificationServiceFactory::GetForProfile(profile_)),
           scheduler_(new MockNotificationTriggerScheduler()) {
-      service_->trigger_scheduler_ = base::WrapUnique(scheduler_);
+      service_->trigger_scheduler_ = base::WrapUnique(scheduler_.get());
     }
 
     // Owned by TestingProfileManager.
-    Profile* profile_;
+    raw_ptr<Profile> profile_;
     // Owned by PlatformNotificationServiceFactory.
-    PlatformNotificationServiceImpl* service_;
+    raw_ptr<PlatformNotificationServiceImpl> service_;
     // Owned by |service_|.
-    MockNotificationTriggerScheduler* scheduler_;
+    raw_ptr<MockNotificationTriggerScheduler> scheduler_;
   };
 
   content::BrowserTaskEnvironment task_environment_;
@@ -80,7 +81,7 @@ TEST_F(NotificationTriggerSchedulerTest,
       data2.profile_->GetStoragePartitionForUrl(GURL("http://example.com"));
 
   auto now = base::Time::Now();
-  auto delta = base::TimeDelta::FromSeconds(3);
+  auto delta = base::Seconds(3);
   data1.service_->ScheduleTrigger(now + delta);
   data2.service_->ScheduleTrigger(now + delta);
   base::RunLoop().RunUntilIdle();

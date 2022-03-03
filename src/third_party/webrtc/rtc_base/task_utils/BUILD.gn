@@ -14,6 +14,7 @@ rtc_library("repeating_task") {
     "repeating_task.h",
   ]
   deps = [
+    ":pending_task_safety_flag",
     ":to_queued_task",
     "..:logging",
     "..:timeutils",
@@ -67,9 +68,13 @@ if (rtc_include_tests) {
     sources = [ "repeating_task_unittest.cc" ]
     deps = [
       ":repeating_task",
+      ":to_queued_task",
       "..:rtc_base_approved",
       "..:rtc_task_queue",
       "..:task_queue_for_test",
+      "../../api/task_queue",
+      "../../api/units:timestamp",
+      "../../system_wrappers:system_wrappers",
       "../../test:test_support",
     ]
   }

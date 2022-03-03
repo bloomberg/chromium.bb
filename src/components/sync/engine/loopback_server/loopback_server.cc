@@ -16,19 +16,25 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/sync/engine/loopback_server/persistent_bookmark_entity.h"
 #include "components/sync/engine/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/engine/loopback_server/persistent_tombstone_entity.h"
 #include "components/sync/engine/loopback_server/persistent_unique_client_entity.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/loopback_server.pb.h"
+#include "components/sync/protocol/nigori_specifics.pb.h"
+#include "components/sync/protocol/session_specifics.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 
@@ -118,7 +124,7 @@ class UpdateSieve {
   UpdateSieve(const sync_pb::GetUpdatesMessage& message,
               const std::map<ModelType, int>& server_migration_versions)
       : UpdateSieve(MessageToVersionMap(message, server_migration_versions)) {}
-  ~UpdateSieve() {}
+  ~UpdateSieve() = default;
 
   // Verifies if MIGRATION_DONE should be exercised. It intentionally returns
   // migrations in the order that they were triggered.  Doing it this way
@@ -321,6 +327,10 @@ net::HttpStatusCode LoopbackServer::HandleCommand(
 
   if (message.has_store_birthday() &&
       message.store_birthday() != GetStoreBirthday()) {
+    // The birthday provided by the client does not match the authoritative
+    // value server-side, which in the absence of client-side bugs means that
+    // the birthday was reset (e.g. via ClearServerDataMessage) since the last
+    // time the client interacted with the server.
     response->set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
   } else {
     bool success = false;
@@ -741,8 +751,7 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
   // Initialize an empty ListValue for all ModelTypes.
   ModelTypeSet all_types = ModelTypeSet::All();
   for (ModelType type : all_types) {
-    dictionary->Set(ModelTypeToString(type),
-                    std::make_unique<base::ListValue>());
+    dictionary->SetKey(ModelTypeToString(type), base::ListValue());
   }
 
   for (const auto& kv : entities_) {
@@ -761,7 +770,7 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
     // TODO(pvalenzuela): Store more data for each entity so additional
     // verification can be performed. One example of additional verification
     // is checking the correctness of the bookmark hierarchy.
-    list_value->AppendString(entity.GetName());
+    list_value->Append(entity.GetName());
   }
 
   return dictionary;
@@ -874,9 +883,9 @@ bool LoopbackServer::LoadStateFromFile() {
 
   // Ensures local sync file can be opened, read, and is not being written to.
   // Also makes sure file will not be written to during serialization.
-  base::File state_file(persistent_file_, base::File::FLAG_OPEN |
-                                              base::File::FLAG_READ |
-                                              base::File::FLAG_EXCLUSIVE_WRITE);
+  base::File state_file(persistent_file_,
+                        base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_WIN_EXCLUSIVE_WRITE);
   base::File::Error state_file_error = state_file.error_details();
 
   if (state_file_error != base::File::FILE_OK) {

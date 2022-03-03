@@ -38,8 +38,6 @@ class CC_EXPORT LayerTreeSettings {
   // When |enable_early_damage_check| is true, the early damage check is
   // performed if one of the last |damaged_frame_limit| frames had no damage.
   int damaged_frame_limit = 3;
-  bool enable_impl_latency_recovery = false;
-  bool enable_main_latency_recovery = false;
   bool can_use_lcd_text = true;
   bool gpu_rasterization_disabled = false;
   int gpu_rasterization_msaa_sample_count = -1;
@@ -193,13 +191,16 @@ class CC_EXPORT LayerTreeSettings {
 
   // When enabled, enforces new interoperable semantics for 3D transforms.
   // See crbug.com/1008483.
-  bool enable_transform_interop = false;
+  bool enable_backface_visibility_interop = false;
 
   // Enables ThrottleDecider which produces a list of FrameSinkIds that are
   // candidates for throttling.
   // LayerTreeHostSingleThreadClient::FrameSinksToThrottleUpdated() will be
   // called with candidates.
   bool enable_compositing_based_throttling = false;
+
+  // Whether it is a LayerTree for ui.
+  bool is_layer_tree_for_ui = false;
 };
 
 class CC_EXPORT LayerListSettings : public LayerTreeSettings {

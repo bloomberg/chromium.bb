@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_CODEC_IN_OUT_H_
 #define LIB_JXL_CODEC_IN_OUT_H_
@@ -69,44 +60,6 @@ Status VerifyDimensions(const SizeConstraints* constraints, T xs, T ys) {
 }
 
 using CodecIntervals = std::array<CodecInterval, 4>;  // RGB[A] or Y[A]
-
-// Allows passing arbitrary metadata to decoders (required for PNM).
-class DecoderHints {
- public:
-  // key=color_space, value=Description(c/pp): specify the ColorEncoding of
-  //   the pixels for decoding. Otherwise, if the codec did not obtain an ICC
-  //   profile from the image, assume sRGB.
-  //
-  // Strings are taken from the command line, so avoid spaces for convenience.
-  void Add(const std::string& key, const std::string& value) {
-    kv_.emplace_back(key, value);
-  }
-
-  // Calls `func(key, value)` for each key/value in the order they were added,
-  // returning false immediately if `func` returns false.
-  template <class Func>
-  Status Foreach(const Func& func) const {
-    for (const KeyValue& kv : kv_) {
-      Status ok = func(kv.key, kv.value);
-      if (!ok) {
-        return JXL_FAILURE("DecoderHints::Foreach returned false");
-      }
-    }
-    return true;
-  }
-
- private:
-  // Splitting into key/value avoids parsing in each codec.
-  struct KeyValue {
-    KeyValue(std::string key, std::string value)
-        : key(std::move(key)), value(std::move(value)) {}
-
-    std::string key;
-    std::string value;
-  };
-
-  std::vector<KeyValue> kv_;
-};
 
 // Optional text/EXIF metadata.
 struct Blobs {
@@ -192,12 +145,23 @@ class CodecInOut {
     }
     return true;
   }
+  // Calls PremultiplyAlpha for each ImageBundle (preview/frames).
+  void PremultiplyAlpha() {
+    ExtraChannelInfo* eci = metadata.m.Find(ExtraChannel::kAlpha);
+    if (eci == nullptr || eci->alpha_associated) return;  // nothing to do
+    if (metadata.m.have_preview) {
+      preview_frame.PremultiplyAlpha();
+    }
+    for (ImageBundle& ib : frames) {
+      ib.PremultiplyAlpha();
+    }
+    eci->alpha_associated = true;
+    return;
+  }
 
   // -- DECODER INPUT:
 
   SizeConstraints constraints;
-  // Used to set c_current for codecs that lack color space metadata.
-  DecoderHints dec_hints;
   // Decode to pixels or keep JPEG as quantized DCT coefficients
   DecodeTarget dec_target = DecodeTarget::kPixels;
 

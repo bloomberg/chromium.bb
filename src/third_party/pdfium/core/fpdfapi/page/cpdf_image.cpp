@@ -26,6 +26,7 @@
 #include "core/fxcodec/jpeg/jpegmodule.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxcrt/span_util.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/check.h"
@@ -82,11 +83,12 @@ CPDF_Dictionary* CPDF_Image::GetDict() const {
 
 RetainPtr<CPDF_Dictionary> CPDF_Image::InitJPEG(
     pdfium::span<uint8_t> src_span) {
-  Optional<JpegModule::JpegImageInfo> info_opt = JpegModule::LoadInfo(src_span);
+  absl::optional<JpegModule::ImageInfo> info_opt =
+      JpegModule::LoadInfo(src_span);
   if (!info_opt.has_value())
     return nullptr;
 
-  const JpegModule::JpegImageInfo& info = info_opt.value();
+  const JpegModule::ImageInfo& info = info_opt.value();
   if (!IsValidJpegComponent(info.num_components) ||
       !IsValidJpegBitsPerComponent(info.bits_per_components)) {
     return nullptr;
@@ -159,7 +161,7 @@ void CPDF_Image::SetJpegImageInline(
   if (!pDict)
     return;
 
-  m_pStream->InitStream(data, std::move(pDict));
+  m_pStream = pdfium::MakeRetain<CPDF_Stream>(data, std::move(pDict));
 }
 
 void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
@@ -269,8 +271,8 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
       mask_buf.reset(FX_AllocUninit2D(uint8_t, maskHeight, maskWidth));
       mask_size = maskHeight * maskWidth;  // Safe since checked alloc returned.
       for (int32_t a = 0; a < maskHeight; a++) {
-        memcpy(mask_buf.get() + a * maskWidth, pMaskBitmap->GetScanline(a),
-               maskWidth);
+        memcpy(mask_buf.get() + a * maskWidth,
+               pMaskBitmap->GetScanline(a).data(), maskWidth);
       }
     }
     pMaskDict->SetNewFor<CPDF_Number>("Length", mask_size);
@@ -290,7 +292,8 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
   size_t dest_span_offset = 0;
   if (bCopyWithoutAlpha) {
     for (int32_t i = 0; i < BitmapHeight; i++) {
-      memcpy(&dest_span[dest_span_offset], src_buf, dest_pitch);
+      fxcrt::spancpy(dest_span.subspan(dest_span_offset),
+                     pdfium::make_span(src_buf, dest_pitch));
       dest_span_offset += dest_pitch;
       src_buf += src_pitch;
     }
@@ -314,10 +317,8 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
       dest_span_offset += dest_pitch;
     }
   }
-  if (!m_pStream)
-    m_pStream = pdfium::MakeRetain<CPDF_Stream>();
 
-  m_pStream->InitStream(dest_span, std::move(pDict));
+  m_pStream = pdfium::MakeRetain<CPDF_Stream>(dest_span, std::move(pDict));
   m_bIsMask = pBitmap->IsMaskFormat();
   m_Width = BitmapWidth;
   m_Height = BitmapHeight;

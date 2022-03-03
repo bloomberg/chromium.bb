@@ -35,7 +35,10 @@ def RunCmd(args, cwd=None, quiet=False):
 
 
 def GetAllCmdOutput(args, cwd=None, quiet=False):
-  return cmd_util.GetAllCmdOutput(args, cwd, quiet)
+  # GetAllCmdOutput returns bytes on Python 3. As the downstream codes are
+  # expecting strings, we decode the inpout here.
+  stdout, stderr = cmd_util.GetAllCmdOutput(args, cwd, quiet)
+  return (stdout.decode('utf-8'), stderr.decode('utf-8'))
 
 
 def StartCmd(args, cwd=None, quiet=False):
@@ -327,7 +330,7 @@ class CrOSInterface(object):
 
   def PushContents(self, text, remote_filename):
     logging.debug("PushContents(<text>, %s)" % remote_filename)
-    with tempfile.NamedTemporaryFile() as f:
+    with tempfile.NamedTemporaryFile(mode='w+') as f:
       f.write(text)
       f.flush()
       self.PushFile(f.name, remote_filename)
@@ -348,8 +351,7 @@ class CrOSInterface(object):
       if destfile is not None and destfile != filename:
         shutil.copyfile(filename, destfile)
         return
-      else:
-        raise OSError('No such file or directory %s' % filename)
+      raise OSError('No such file or directory %s' % filename)
 
     if destfile is None:
       destfile = os.path.basename(filename)
@@ -386,7 +388,7 @@ class CrOSInterface(object):
     Returns:
       A string containing the contents of the file.
     """
-    with tempfile.NamedTemporaryFile() as t:
+    with tempfile.NamedTemporaryFile(mode='w') as t:
       self.GetFile(filename, t.name)
       with open(t.name, 'r') as f2:
         res = f2.read()
@@ -766,7 +768,9 @@ class CrOSInterface(object):
       stop_cmd.insert(0, 'systemctl')
     if clear_enterprise_policy:
       self.RunCmdOnDevice(stop_cmd)
+      # TODO(b/187793661) Delete /var/lib/whitelist once migration is finished.
       self.RmRF('/var/lib/whitelist/*')
+      self.RmRF('/var/lib/devicesettings/*')
       self.RmRF(r'/home/chronos/Local\ State')
 
     if self.IsServiceRunning('ui'):

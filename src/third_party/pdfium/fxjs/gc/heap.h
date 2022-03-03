@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "v8/include/cppgc/allocation.h"
-#include "v8/include/cppgc/heap.h"
-#include "v8/include/v8-default-platform.h"
+
+namespace cppgc {
+class Heap;
+}  // namespace cppgc
 
 namespace v8 {
 class Isolate;

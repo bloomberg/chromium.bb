@@ -75,7 +75,7 @@ void CFWL_ComboList::OnProcessMessage(CFWL_Message* pMessage) {
   } else if (type == CFWL_Message::Type::kMouse) {
     CFWL_MessageMouse* pMsg = static_cast<CFWL_MessageMouse*>(pMessage);
     CFWL_ScrollBar* vertSB = GetVertScrollBar();
-    if (IsShowScrollBar(true) && vertSB) {
+    if (IsShowVertScrollBar() && vertSB) {
       CFX_RectF rect = vertSB->GetWidgetRect();
       if (rect.Contains(pMsg->m_pos)) {
         pMsg->m_pos -= rect.TopLeft();
@@ -84,21 +84,18 @@ void CFWL_ComboList::OnProcessMessage(CFWL_Message* pMessage) {
       }
     }
     switch (pMsg->m_dwCmd) {
-      case FWL_MouseCommand::Move: {
+      case CFWL_MessageMouse::MouseCommand::kMove:
         backDefault = false;
         OnDropListMouseMove(pMsg);
         break;
-      }
-      case FWL_MouseCommand::LeftButtonDown: {
+      case CFWL_MessageMouse::MouseCommand::kLeftButtonDown:
         backDefault = false;
         OnDropListLButtonDown(pMsg);
         break;
-      }
-      case FWL_MouseCommand::LeftButtonUp: {
+      case CFWL_MessageMouse::MouseCommand::kLeftButtonUp:
         backDefault = false;
         OnDropListLButtonUp(pMsg);
         break;
-      }
       default:
         break;
     }
@@ -117,7 +114,7 @@ void CFWL_ComboList::OnDropListFocusChanged(CFWL_Message* pMsg, bool bSet) {
   CFWL_ComboBox* pOuter = static_cast<CFWL_ComboBox*>(GetOuter());
   if (pKill->IsFocusedOnWidget(pOuter) ||
       pKill->IsFocusedOnWidget(pOuter->GetComboEdit())) {
-    pOuter->ShowDropList(false);
+    pOuter->HideDropDownList();
   }
 }
 
@@ -127,7 +124,7 @@ void CFWL_ComboList::OnDropListMouseMove(CFWL_MessageMouse* pMsg) {
       m_bNotifyOwner = false;
 
     CFWL_ScrollBar* vertSB = GetVertScrollBar();
-    if (IsShowScrollBar(true) && vertSB) {
+    if (IsShowVertScrollBar() && vertSB) {
       CFX_RectF rect = vertSB->GetWidgetRect();
       if (rect.Contains(pMsg->m_pos))
         return;
@@ -151,7 +148,7 @@ void CFWL_ComboList::OnDropListLButtonDown(CFWL_MessageMouse* pMsg) {
     return;
 
   CFWL_ComboBox* pOuter = static_cast<CFWL_ComboBox*>(GetOuter());
-  pOuter->ShowDropList(false);
+  pOuter->HideDropDownList();
 }
 
 void CFWL_ComboList::OnDropListLButtonUp(CFWL_MessageMouse* pMsg) {
@@ -163,12 +160,12 @@ void CFWL_ComboList::OnDropListLButtonUp(CFWL_MessageMouse* pMsg) {
   }
 
   CFWL_ScrollBar* vertSB = GetVertScrollBar();
-  if (IsShowScrollBar(true) && vertSB) {
+  if (IsShowVertScrollBar() && vertSB) {
     CFX_RectF rect = vertSB->GetWidgetRect();
     if (rect.Contains(pMsg->m_pos))
       return;
   }
-  pOuter->ShowDropList(false);
+  pOuter->HideDropDownList();
 
   CFWL_ListBox::Item* hItem = GetItemAtPoint(pMsg->m_pos);
   if (hItem)
@@ -178,12 +175,12 @@ void CFWL_ComboList::OnDropListLButtonUp(CFWL_MessageMouse* pMsg) {
 bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
   CFWL_ComboBox* pOuter = static_cast<CFWL_ComboBox*>(GetOuter());
   bool bPropagate = false;
-  if (pKey->m_dwCmd == CFWL_MessageKey::Type::kKeyDown) {
-    uint32_t dwKeyCode = pKey->m_dwKeyCode;
+  if (pKey->m_dwCmd == CFWL_MessageKey::KeyCommand::kKeyDown) {
+    uint32_t dwKeyCode = pKey->m_dwKeyCodeOrChar;
     switch (dwKeyCode) {
       case XFA_FWL_VKEY_Return:
       case XFA_FWL_VKEY_Escape: {
-        pOuter->ShowDropList(false);
+        pOuter->HideDropDownList();
         return true;
       }
       case XFA_FWL_VKEY_Up:
@@ -197,7 +194,7 @@ bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
         break;
       }
     }
-  } else if (pKey->m_dwCmd == CFWL_MessageKey::Type::kChar) {
+  } else if (pKey->m_dwCmd == CFWL_MessageKey::KeyCommand::kChar) {
     bPropagate = true;
   }
   if (bPropagate) {
@@ -209,7 +206,7 @@ bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
 }
 
 void CFWL_ComboList::OnDropListKeyDown(CFWL_MessageKey* pKey) {
-  uint32_t dwKeyCode = pKey->m_dwKeyCode;
+  auto dwKeyCode = static_cast<XFA_FWL_VKEYCODE>(pKey->m_dwKeyCodeOrChar);
   switch (dwKeyCode) {
     case XFA_FWL_VKEY_Up:
     case XFA_FWL_VKEY_Down:

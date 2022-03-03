@@ -13,11 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import config
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
@@ -37,6 +34,13 @@ CheckTapeSafeSkipOptions = linear_operator_test_util.CheckTapeSafeSkipOptions
 class LinearOperatorPermutationTest(
     linear_operator_test_util.SquareLinearOperatorDerivedClassTest):
   """Most tests done in the base class LinearOperatorDerivedClassTest."""
+
+  def tearDown(self):
+    config.enable_tensor_float_32_execution(self.tf32_keep_)
+
+  def setUp(self):
+    self.tf32_keep_ = config.tensor_float_32_execution_enabled()
+    config.enable_tensor_float_32_execution(False)
 
   @staticmethod
   def operator_shapes_infos():
@@ -75,14 +79,14 @@ class LinearOperatorPermutationTest(
 
   def test_permutation_raises(self):
     perm = constant_op.constant(0, dtype=dtypes.int32)
-    with self.assertRaisesRegexp(ValueError, "must have at least 1 dimension"):
+    with self.assertRaisesRegex(ValueError, "must have at least 1 dimension"):
       permutation.LinearOperatorPermutation(perm)
     perm = [0., 1., 2.]
-    with self.assertRaisesRegexp(TypeError, "must be integer dtype"):
+    with self.assertRaisesRegex(TypeError, "must be integer dtype"):
       permutation.LinearOperatorPermutation(perm)
     perm = [-1, 2, 3]
-    with self.assertRaisesRegexp(
-        ValueError, "must be a vector of unique integers"):
+    with self.assertRaisesRegex(ValueError,
+                                "must be a vector of unique integers"):
       permutation.LinearOperatorPermutation(perm)
 
   def test_to_dense_4x4(self):

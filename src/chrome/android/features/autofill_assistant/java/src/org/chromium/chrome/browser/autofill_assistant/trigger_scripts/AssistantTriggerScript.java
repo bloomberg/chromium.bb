@@ -18,7 +18,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantBottomBarDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AssistantBottomSheetContent;
 import org.chromium.chrome.browser.autofill_assistant.AssistantRootViewContainer;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantServiceInjector;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantDependencyInjector;
 import org.chromium.chrome.browser.autofill_assistant.BottomSheetUtils;
 import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
 import org.chromium.chrome.browser.autofill_assistant.ScrollToHideGestureListener;
@@ -35,6 +35,7 @@ import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.util.AccessibilityUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,7 @@ public class AssistantTriggerScript {
     private final BottomSheetObserver mBottomSheetObserver;
     private final ObservableSupplierImpl<Integer> mInsetSupplier = new ObservableSupplierImpl<>();
     private final ApplicationViewportInsetSupplier mApplicationViewportInsetSupplier;
+    private final AccessibilityUtil mAccessibilityUtil;
 
     private AssistantHeaderCoordinator mHeaderCoordinator;
     private AssistantHeaderModel mHeaderModel;
@@ -79,7 +81,8 @@ public class AssistantTriggerScript {
 
     public AssistantTriggerScript(Context context, Delegate delegate, WebContents webContents,
             BottomSheetController controller,
-            ApplicationViewportInsetSupplier applicationViewportInsetSupplier) {
+            ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
+            AccessibilityUtil accessibilityUtil) {
         assert delegate != null;
         mContext = context;
         mDelegate = delegate;
@@ -87,6 +90,7 @@ public class AssistantTriggerScript {
         mBottomSheetController = controller;
         mApplicationViewportInsetSupplier = applicationViewportInsetSupplier;
         mApplicationViewportInsetSupplier.addSupplier(mInsetSupplier);
+        mAccessibilityUtil = accessibilityUtil;
         mBottomSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
@@ -165,6 +169,7 @@ public class AssistantTriggerScript {
         AssistantRootViewContainer rootViewContainer =
                 (AssistantRootViewContainer) LayoutUtils.createInflater(mContext).inflate(
                         R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);
+        rootViewContainer.setAccessibilityUtil(mAccessibilityUtil);
         rootViewContainer.disableTalkbackViewResizing();
         ScrollView scrollableContent = rootViewContainer.findViewById(R.id.scrollable_content);
         rootViewContainer.addView(mHeaderCoordinator.getView(), 0);
@@ -215,10 +220,11 @@ public class AssistantTriggerScript {
         if (mHeaderCoordinator != null) {
             mHeaderCoordinator.destroy();
         }
-        mHeaderCoordinator = new AssistantHeaderCoordinator(mContext, mHeaderModel);
+        mHeaderCoordinator =
+                new AssistantHeaderCoordinator(mContext, mHeaderModel, mAccessibilityUtil);
         mHeaderModel.set(
                 AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK, mDelegate::onFeedbackButtonClicked);
-        if (AutofillAssistantServiceInjector.hasServiceRequestSenderToInject()) {
+        if (AutofillAssistantDependencyInjector.hasServiceRequestSenderToInject()) {
             mHeaderModel.set(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING, true);
             mAnimateBottomSheet = false;
         }
@@ -233,10 +239,9 @@ public class AssistantTriggerScript {
             if (actions[index] == TriggerScriptAction.SHOW_CANCEL_POPUP) {
                 chips.get(index).setPopupItems(mCancelPopupItems,
                         result -> mDelegate.onTriggerScriptAction(mCancelPopupActions.get(result)));
-            } else {
-                chips.get(index).setSelectedListener(
-                        () -> mDelegate.onTriggerScriptAction(actions[index]));
             }
+            chips.get(index).setSelectedListener(
+                    () -> mDelegate.onTriggerScriptAction(actions[index]));
         }
     }
 

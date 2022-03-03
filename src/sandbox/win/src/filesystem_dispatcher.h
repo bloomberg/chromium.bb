@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -20,6 +20,10 @@ namespace sandbox {
 class FilesystemDispatcher : public Dispatcher {
  public:
   explicit FilesystemDispatcher(PolicyBase* policy_base);
+
+  FilesystemDispatcher(const FilesystemDispatcher&) = delete;
+  FilesystemDispatcher& operator=(const FilesystemDispatcher&) = delete;
+
   ~FilesystemDispatcher() override {}
 
   // Dispatcher interface.
@@ -67,8 +71,7 @@ class FilesystemDispatcher : public Dispatcher {
                             uint32_t length,
                             uint32_t info_class);
 
-  PolicyBase* policy_base_;
-  DISALLOW_COPY_AND_ASSIGN(FilesystemDispatcher);
+  raw_ptr<PolicyBase> policy_base_;
 };
 
 }  // namespace sandbox

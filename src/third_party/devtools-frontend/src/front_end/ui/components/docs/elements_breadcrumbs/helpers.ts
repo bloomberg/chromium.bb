@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import type * as Elements from '../../../../panels/elements/components/components.js';
+import type * as SDK from '../../../../core/sdk/sdk.js';
 
-interface CrumbOverrides extends Partial<Elements.ElementsBreadcrumbsUtils.DOMNode> {
+interface CrumbOverrides extends Partial<Elements.Helper.DOMNode> {
   attributes?: {[x: string]: string|undefined};
 }
 
 let id = 0;
-export const makeCrumb = (overrides: CrumbOverrides = {}): Elements.ElementsBreadcrumbsUtils.DOMNode => {
+export const makeCrumb = (overrides: CrumbOverrides = {}): Elements.Helper.DOMNode => {
   const attributes = overrides.attributes || {};
-  const newCrumb: Elements.ElementsBreadcrumbsUtils.DOMNode = {
+  const newCrumb: Elements.Helper.DOMNode = {
     nodeType: Node.ELEMENT_NODE,
     id: id++,
     pseudoType: '',
@@ -18,7 +19,7 @@ export const makeCrumb = (overrides: CrumbOverrides = {}): Elements.ElementsBrea
     shadowRootType: '',
     nodeName: 'body',
     nodeNameNicelyCased: 'body',
-    legacyDomNode: {},
+    legacyDomNode: {} as unknown as SDK.DOMModel.DOMNode,
     highlightNode: (): void => {},
     clearHighlight: (): void => {},
     getAttribute: (x: string): string => attributes[x] || '',

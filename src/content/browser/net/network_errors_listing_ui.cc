@@ -32,7 +32,7 @@ std::unique_ptr<base::ListValue> GetNetworkErrorData() {
   base::Value error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;
 
-  for (const auto& item : error_codes.DictItems()) {
+  for (auto item : error_codes.DictItems()) {
     if (item.first == kNetworkErrorKey) {
       item.second.GetAsDictionary(&net_error_codes_dict);
       break;
@@ -66,7 +66,8 @@ void HandleWebUIRequestCallback(BrowserContext* current_context,
   DCHECK(ShouldHandleWebUIRequestCallback(path));
 
   base::DictionaryValue data;
-  data.Set(kErrorCodesDataName, GetNetworkErrorData());
+  data.SetKey(kErrorCodesDataName,
+              base::Value::FromUniquePtrValue(GetNetworkErrorData()));
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
   std::move(callback).Run(base::RefCountedString::TakeString(&json_string));

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -23,15 +24,17 @@ class SetOnDestroy {
     DCHECK(was_destroyed_ptr_);
     DCHECK(!(*was_destroyed_ptr_));
   }
+
+  SetOnDestroy(const SetOnDestroy&) = delete;
+  SetOnDestroy& operator=(const SetOnDestroy&) = delete;
+
   ~SetOnDestroy() {
     DCHECK(!(*was_destroyed_ptr_));
     *was_destroyed_ptr_ = true;
   }
 
  private:
-  bool* const was_destroyed_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetOnDestroy);
+  const raw_ptr<bool> was_destroyed_ptr_;
 };
 
 template <typename T, typename... Args>

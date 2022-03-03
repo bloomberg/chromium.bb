@@ -24,6 +24,7 @@
 #   - Msys2
 #   - Anaconda3
 # * Bazel windows executable copied as "bazel.exe" and included in PATH.
+# change
 
 # All commands shall pass, and all should be visible.
 set -x
@@ -135,12 +136,15 @@ fi
 
 run_configure_for_cpu_build
 
-bazel build --announce_rc --config=opt ${EXTRA_BUILD_FLAGS}  \
+bazel build ${EXTRA_BUILD_FLAGS}  \
+  --experimental_cc_shared_library \
   --build_tag_filters=-no_pip,-no_windows,-no_oss,-gpu,-tpu \
   --output_filter=^$ \
   tensorflow/lite:framework tensorflow/lite/examples/minimal:minimal || exit $?
 
-bazel build --announce_rc --config=opt ${EXTRA_BUILD_FLAGS} \
+bazel build \
+  --experimental_cc_shared_library \
+  --config=release_cpu_windows ${EXTRA_BUILD_FLAGS} \
   --output_filter=^$ \
   tensorflow/tools/pip_package:build_pip_package || exit $?
 
@@ -167,6 +171,7 @@ N_JOBS="${NUMBER_OF_PROCESSORS}"
 # Define no_tensorflow_py_deps=true so that every py_test has no deps anymore,
 # which will result testing system installed tensorflow
 bazel test --announce_rc --config=opt -k --test_output=errors \
+  --experimental_cc_shared_library \
   ${EXTRA_TEST_FLAGS} \
   --define=no_tensorflow_py_deps=true --test_lang_filters=py \
   --test_tag_filters=-no_pip,-no_windows,-no_oss,-gpu,-tpu,-v1only \

@@ -19,6 +19,9 @@
 #include "url/gurl.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/feature_list_creator.h"
+#include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/page_impl.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/translate_accept_languages_factory.h"
 #include "weblayer/browser/translate_ranker_factory.h"
 
@@ -52,7 +55,8 @@ std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
 
 TranslateClientImpl::TranslateClientImpl(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      translate_driver_(&web_contents->GetController(),
+      content::WebContentsUserData<TranslateClientImpl>(*web_contents),
+      translate_driver_(*web_contents,
                         /*url_language_histogram=*/nullptr,
                         /*translate_model_service=*/nullptr),
       translate_manager_(new translate::TranslateManager(
@@ -76,10 +80,9 @@ bool TranslateClientImpl::ShowTranslateUI(
     const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
+#if defined(OS_ANDROID)
   if (error_type != translate::TranslateErrors::NONE)
     step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
-
-#if defined(OS_ANDROID)
   translate::TranslateInfoBarDelegate::Create(
       step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
       translate_manager_->GetWeakPtr(),
@@ -87,8 +90,9 @@ bool TranslateClientImpl::ShowTranslateUI(
       web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
       source_language, target_language, error_type, triggered_from_menu);
   return true;
-#endif
+#else
   return false;
+#endif
 }
 
 translate::TranslateDriver* TranslateClientImpl::GetTranslateDriver() {
@@ -137,24 +141,44 @@ bool TranslateClientImpl::IsAutofillAssistantRunning() const {
   return false;
 }
 
-void TranslateClientImpl::ShowReportLanguageDetectionErrorUI(
-    const GURL& report_url) {
-  NOTREACHED();
-}
-
 void TranslateClientImpl::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
-  if (manual_translate_on_ready_) {
-    GetTranslateManager()->InitiateManualTranslation();
-    manual_translate_on_ready_ = false;
+  // Inform NavigationControllerImpl that the language has been determined. Note
+  // that this event is implicitly regarded as being for the Page corresponding
+  // to the most recently committed primary main-frame navigation, if one exists
+  // (see the call to SetPageLanguageInNavigation() in
+  // ContentTranslateDriver::RegisterPage()); this corresponds to
+  // WebContents::GetMainFrame()::GetPage(). Note also that in certain corner
+  // cases (e.g., tab startup) there might not be such a committed primary
+  // main-frame navigation; in those cases there won't be a weblayer::Page
+  // corresponding to the primary page, as weblayer::Page objects are created
+  // only at navigation commit.
+  // TODO(crbug.com/1231889): Rearchitect translate's renderer-browser Mojo
+  // connection to be able to explicitly determine the document/content::Page
+  // with which this language determination event is associated.
+  PageImpl* page =
+      PageImpl::GetForPage(web_contents()->GetMainFrame()->GetPage());
+  if (page) {
+    std::string language = details.adopted_language;
+
+    auto* tab = TabImpl::FromWebContents(web_contents());
+    auto* navigation_controller =
+        static_cast<NavigationControllerImpl*>(tab->GetNavigationController());
+    navigation_controller->OnPageLanguageDetermined(page, language);
+  }
+
+  // Show translate UI if desired.
+  if (show_translate_ui_on_ready_) {
+    GetTranslateManager()->ShowTranslateUI();
+    show_translate_ui_on_ready_ = false;
   }
 }
 
-void TranslateClientImpl::ManualTranslateWhenReady() {
+void TranslateClientImpl::ShowTranslateUiWhenReady() {
   if (GetLanguageState().source_language().empty()) {
-    manual_translate_on_ready_ = true;
+    show_translate_ui_on_ready_ = true;
   } else {
-    GetTranslateManager()->InitiateManualTranslation();
+    GetTranslateManager()->ShowTranslateUI();
   }
 }
 
@@ -167,4 +191,4 @@ void TranslateClientImpl::WebContentsDestroyed() {
 
 }  // namespace weblayer
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(weblayer::TranslateClientImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(weblayer::TranslateClientImpl);

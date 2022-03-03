@@ -5,6 +5,8 @@
 #include "ash/system/phonehub/phone_hub_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/components/phonehub/phone_model.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -25,12 +27,11 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/bind.h"
-#include "chromeos/components/phonehub/phone_hub_manager.h"
-#include "chromeos/components/phonehub/phone_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
@@ -53,10 +54,6 @@ PhoneHubTray::PhoneHubTray(Shelf* shelf)
   auto icon = std::make_unique<views::ImageView>();
   icon->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_TRAY_ACCESSIBLE_NAME));
-  icon->SetImage(CreateVectorIcon(
-      kPhoneHubPhoneIcon,
-      TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
-
   tray_container()->SetMargin(kTrayIconMainAxisInset, kTrayIconCrossAxisInset);
   icon_ = tray_container()->AddChildView(std::move(icon));
 }
@@ -67,7 +64,7 @@ PhoneHubTray::~PhoneHubTray() {
 }
 
 void PhoneHubTray::SetPhoneHubManager(
-    chromeos::phonehub::PhoneHubManager* phone_hub_manager) {
+    phonehub::PhoneHubManager* phone_hub_manager) {
   ui_controller_->SetPhoneHubManager(phone_hub_manager);
 }
 
@@ -187,7 +184,12 @@ void PhoneHubTray::ShowBubble() {
   // on the current mode.
   auto content_view = ui_controller_->CreateContentView(this);
   content_view_ = content_view.get();
-  DCHECK(content_view_);
+
+  if (!content_view_) {
+    CloseBubble();
+    return;
+  }
+
   bubble_view->AddChildView(std::move(content_view));
 
   bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view);
@@ -208,6 +210,13 @@ views::Widget* PhoneHubTray::GetBubbleWidget() const {
 
 const char* PhoneHubTray::GetClassName() const {
   return "PhoneHubTray";
+}
+
+void PhoneHubTray::OnThemeChanged() {
+  TrayBackgroundView::OnThemeChanged();
+  icon_->SetImage(CreateVectorIcon(
+      kPhoneHubPhoneIcon,
+      TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
 }
 
 bool PhoneHubTray::CanOpenConnectedDeviceSettings() {
@@ -235,12 +244,18 @@ void PhoneHubTray::CloseBubble() {
   if (!bubble_)
     return;
 
-  DCHECK(content_view_);
-  phone_hub_metrics::LogScreenOnBubbleClose(
-      content_view_->GetScreenForMetrics());
+  auto* bubble_view = bubble_->GetBubbleView();
+  if (bubble_view)
+    bubble_view->ResetDelegate();
 
-  content_view_->OnBubbleClose();
-  content_view_ = nullptr;
+  if (content_view_) {
+    phone_hub_metrics::LogScreenOnBubbleClose(
+        content_view_->GetScreenForMetrics());
+
+    content_view_->OnBubbleClose();
+    content_view_ = nullptr;
+  }
+
   bubble_.reset();
   SetIsActive(false);
   shelf()->UpdateAutoHideState();
@@ -254,8 +269,7 @@ void PhoneHubTray::UpdateVisibility() {
 
 void PhoneHubTray::TemporarilyDisableAnimation() {
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, DisableShowAnimation().Release(),
-      base::TimeDelta::FromSeconds(5));
+      FROM_HERE, DisableShowAnimation().Release(), base::Seconds(5));
 }
 
 }  // namespace ash

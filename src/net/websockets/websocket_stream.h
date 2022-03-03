@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -180,6 +179,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       std::unique_ptr<base::OneShotTimer> timer,
       std::unique_ptr<WebSocketStreamRequestAPI> api_delegate);
 
+  WebSocketStream(const WebSocketStream&) = delete;
+  WebSocketStream& operator=(const WebSocketStream&) = delete;
+
   // Derived classes must make sure Close() is called when the stream is not
   // closed on destruction.
   virtual ~WebSocketStream();
@@ -270,9 +272,6 @@ class NET_EXPORT_PRIVATE WebSocketStream {
 
  protected:
   WebSocketStream();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebSocketStream);
 };
 
 // A helper function used in the implementation of CreateAndConnectStream() and

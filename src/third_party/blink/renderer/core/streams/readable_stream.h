@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <memory>
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_byob_reader.h"
@@ -16,7 +15,7 @@
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "v8/include/v8.h"
 
@@ -28,7 +27,6 @@ class MessagePort;
 class ReadableByteStreamController;
 class ReadableStreamController;
 class ReadableStreamDefaultController;
-class ReadableStreamDefaultReaderOrReadableStreamBYOBReader;
 class ReadableStreamGetReaderOptions;
 class ReadableStreamTransferringOptimizer;
 class ReadableWritablePair;
@@ -117,6 +115,16 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
 
   ~ReadableStream() override;
 
+  // See CreateWithCountQueueingStrategy() comment above for how to use
+  // `allow_per_chunk_transferring`.
+  void InitWithCountQueueingStrategy(
+      ScriptState*,
+      UnderlyingSourceBase*,
+      size_t high_water_mark,
+      AllowPerChunkTransferring allow_per_chunk_transferring,
+      std::unique_ptr<ReadableStreamTransferringOptimizer>,
+      ExceptionState&);
+
   // https://streams.spec.whatwg.org/#rs-constructor
   bool locked() const;
 
@@ -125,29 +133,14 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   // https://streams.spec.whatwg.org/#rs-cancel
   ScriptPromise cancel(ScriptState*, ScriptValue reason, ExceptionState&);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8ReadableStreamReader* getReader(ScriptState* script_state,
                                     ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void getReader(
-      ScriptState*,
-      ReadableStreamDefaultReaderOrReadableStreamBYOBReader& return_value,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // https://streams.spec.whatwg.org/#rs-get-reader
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8ReadableStreamReader* getReader(
       ScriptState* script_state,
       const ReadableStreamGetReaderOptions* options,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void getReader(
-      ScriptState*,
-      ReadableStreamGetReaderOptions* options,
-      ReadableStreamDefaultReaderOrReadableStreamBYOBReader& return_value,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   ReadableStreamDefaultReader* GetDefaultReaderForTesting(ScriptState*,
                                                           ExceptionState&);

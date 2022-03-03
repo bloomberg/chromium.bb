@@ -51,15 +51,16 @@ limitations under the License.
 // main parts:
 // - "entry-point" (ruy.h) - this is the highly templated ruy::Mul entry
 // point.
-// - "front-end" (dispatch.h) - the work to handle the entry-point call down
-// to the point where it can be handed off to the middle/back ends below. That
+// - "front-end" (frontend.*, validate.*, create_trmul_params.*,
+// prepare_packed_matrices.*) - the work to handle the entry-point call down to
+// the point where it can be handed off to the middle/back ends below. That
 // includes routines that select RunKernel and RunPack
 // implementations statically based on those template parameters.
-// - "back-end" (kernel.h, pack.h)- this consists of the implementations of
+// - "back-end" (kernel_*.*, pack_*.*)- this consists of the implementations of
 // RunKernel and RunPack, often in assembly code, which are the building blocks
 // that Ruy calls to perform matrix multiplication.  These are templated so that
 // only the requested types/Path's are actually emitted by the compiler.
-// - "middle-end" (trmul.h) - this is the part of Ruy that orchestrates the
+// - "middle-end" (trmul.*) - this is the part of Ruy that orchestrates the
 // calls to the "back-end" optimized building blocks. This layer has to deal
 // with issues like cache locality and low-overhead multi-threading.
 //
@@ -95,7 +96,6 @@ limitations under the License.
 #include <utility>
 
 #include "ruy/check_macros.h"
-#include "ruy/common.h"
 #include "ruy/matrix.h"
 #include "ruy/size_util.h"
 
@@ -226,6 +226,12 @@ struct Type final {
   std::uint8_t size = 0;
 };
 
+inline bool operator==(const Type& type1, const Type& type2) {
+  return type1.is_signed == type2.is_signed &&
+         type1.is_floating_point == type2.is_floating_point &&
+         type1.size == type2.size;
+}
+
 // Type-erased matrix.
 struct EMat final {
   Type data_type;
@@ -272,7 +278,7 @@ template <typename T>
 EMat EraseType(const Mat<T>& matrix) {
   EMat ret;
   ret.data_type = Type::Create<T>();
-  ret.data = ToVoidPtr(matrix.data.get());
+  ret.data = const_cast<void*>(static_cast<const void*>(matrix.data.get()));
   ret.layout = matrix.layout;
   ret.zero_point = matrix.zero_point;
   ret.cache_policy = matrix.cache_policy;
@@ -321,7 +327,7 @@ inline bool IsColMajor(const MatLayout& layout) {
   return layout.order == Order::kColMajor;
 }
 
-inline int FlatSize(const MatLayout& layout) {
+inline std::ptrdiff_t FlatSize(const MatLayout& layout) {
   const int outerdim =
       layout.order == Order::kColMajor ? layout.cols : layout.rows;
   return layout.stride * outerdim;
@@ -343,7 +349,7 @@ inline bool IsColMajor(const PMatLayout& layout) {
   return layout.order == Order::kColMajor;
 }
 
-inline int FlatSize(const PMatLayout& layout) {
+inline std::ptrdiff_t FlatSize(const PMatLayout& layout) {
   const int outerdim =
       layout.order == Order::kColMajor ? layout.cols : layout.rows;
   return layout.stride * outerdim;
@@ -423,11 +429,11 @@ Scalar Element(const PMat<Scalar>& mat, int row, int col) {
 
 // Helpers for PEMat.
 
-inline int DataBytes(const PEMat& packed) {
+inline std::ptrdiff_t DataBytes(const PEMat& packed) {
   return FlatSize(packed.layout) * packed.data_type.size;
 }
 
-inline int SumsBytes(const PEMat& packed) {
+inline std::ptrdiff_t SumsBytes(const PEMat& packed) {
   // Packed matrices are only relevant for Ruy's TrMul implementations. For
   // TrMul, the number of sums is always equal to the number of columns.
   return packed.layout.cols * packed.sums_type.size;
@@ -435,21 +441,32 @@ inline int SumsBytes(const PEMat& packed) {
 
 // Transpose helpers.
 
-inline void TransposeOrder(Order* order) {
-  *order = *order == Order::kColMajor ? Order::kRowMajor : Order::kColMajor;
+inline Order Transpose(Order order) {
+  return order == Order::kColMajor ? Order::kRowMajor : Order::kColMajor;
 }
 
-inline void TransposeLayout(MatLayout* layout) {
-  TransposeOrder(&layout->order);
-  std::swap(layout->rows, layout->cols);
+inline MatLayout Transpose(const MatLayout& layout) {
+  MatLayout result(layout);
+  result.order = Transpose(result.order);
+  std::swap(result.rows, result.cols);
+  return result;
 }
 
 template <typename Scalar>
-void Transpose(Mat<Scalar>* matrix) {
-  TransposeLayout(&matrix->layout);
+Mat<Scalar> Transpose(const Mat<Scalar>& matrix) {
+  Mat<Scalar> result(matrix);
+  result.layout = Transpose(result.layout);
+  return result;
 }
 
-// Helpers for KernelLayout.
+// Compile-time version of KernelLayout, used to declare kernel layouts in a
+// way that can be consumed by compile-time logic.
+template <Order tOrder, int tRows, int tCols>
+struct FixedKernelLayout {
+  static constexpr Order kOrder = tOrder;
+  static constexpr int kRows = tRows;
+  static constexpr int kCols = tCols;
+};
 
 template <typename FixedKernelLayout>
 KernelLayout ToKernelLayout() {
@@ -459,6 +476,16 @@ KernelLayout ToKernelLayout() {
   ret.cols = FixedKernelLayout::kCols;
   return ret;
 }
+
+#if (__cplusplus < 201703L)
+// A static constexpr data member is automatically inline and should not require
+// redeclaration without an initializer. This is actually deprecated from C++17
+// onwards. Clang with -O0 without this can fail to link.
+template <Order tOrder, int tRows, int tCols>
+constexpr int FixedKernelLayout<tOrder, tRows, tCols>::kCols;
+template <Order tOrder, int tRows, int tCols>
+constexpr int FixedKernelLayout<tOrder, tRows, tCols>::kRows;
+#endif
 
 }  // namespace ruy
 

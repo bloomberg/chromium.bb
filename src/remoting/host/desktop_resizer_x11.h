@@ -8,9 +8,7 @@
 #include <string.h>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/numerics/ranges.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/linux/x11_util.h"

@@ -11,6 +11,7 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
 
 /**
  * @typedef {{
+ *   isManaged: boolean,
  *   ppdManufacturer: string,
  *   ppdModel: string,
  *   printerAddress: string,
@@ -103,7 +104,7 @@ export const PrinterSetupResult = {
 /**
  *  @enum {number}
  *  These values must be kept in sync with the PrintServerQueryResult enum in
- *  /chrome/browser/chromeos/printing/server_printers_fetcher.h
+ *  /chrome/browser/ash/printing/server_printers_fetcher.h
  */
 export const PrintServerResult = {
   NO_ERRORS: 0,
@@ -125,7 +126,12 @@ export class CupsPrintersBrowserProxy {
   /**
    * @return {!Promise<!CupsPrintersList>}
    */
-  getCupsPrintersList() {}
+  getCupsSavedPrintersList() {}
+
+  /**
+   * @return {!Promise<!CupsPrintersList>}
+   */
+  getCupsEnterprisePrintersList() {}
 
   /**
    * @param {string} printerId
@@ -226,8 +232,13 @@ export class CupsPrintersBrowserProxy {
  */
 export class CupsPrintersBrowserProxyImpl {
   /** @override */
-  getCupsPrintersList() {
-    return sendWithPromise('getCupsPrintersList');
+  getCupsSavedPrintersList() {
+    return sendWithPromise('getCupsSavedPrintersList');
+  }
+
+  /** @override */
+  getCupsEnterprisePrintersList() {
+    return sendWithPromise('getCupsEnterprisePrintersList');
   }
 
   /** @override */

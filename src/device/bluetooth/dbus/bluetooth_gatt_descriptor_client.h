@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -74,6 +73,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
       absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
       const std::vector<uint8_t>& value)>;
 
+  BluetoothGattDescriptorClient(const BluetoothGattDescriptorClient&) = delete;
+  BluetoothGattDescriptorClient& operator=(
+      const BluetoothGattDescriptorClient&) = delete;
+
   ~BluetoothGattDescriptorClient() override;
 
   // Adds and removes observers for events on all remote GATT descriptors. Check
@@ -113,9 +116,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
 
  protected:
   BluetoothGattDescriptorClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattDescriptorClient);
 };
 
 }  // namespace bluez

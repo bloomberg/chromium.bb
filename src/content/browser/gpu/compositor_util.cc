@@ -11,17 +11,15 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -41,6 +39,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/switches.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_switches.h"
 
 namespace content {
@@ -105,6 +104,24 @@ const GpuFeatureData GetGpuFeatureData(
          "Accelerated 2D canvas is unavailable: either disabled "
          "via blocklist or the command line."),
      true},
+    {"canvas_oop_rasterization",
+     SafeGetFeatureStatus(gpu_feature_info,
+                          gpu::GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION),
+     !base::FeatureList::IsEnabled(features::kCanvasOopRasterization),
+#if 0
+     // TODO(crbug.com/1240756): Remove the "#if 0" once OOPR-Canvas is fully
+     // launched.
+     DisableInfo::Problem(
+         "Canvas out-of-process rasterization has been disabled, either via "
+         "blocklist, the command line, about:flags, or because out-of-process "
+         "rasterization is disabled."
+     ),
+#else
+     // As long as the Finch experiment is running, having the feature disabled
+     // is not a "problem".
+     DisableInfo::NotProblem(),
+#endif
+     /*fallback_to_software=*/false},
     {"gpu_compositing",
      // TODO(rivr): Replace with a check to see which backend is used for
      // compositing; do the same for GPU rasterization if it's enabled. For now
@@ -135,6 +152,18 @@ const GpuFeatureData GetGpuFeatureData(
 #endif  // defined(OS_LINUX)
      DisableInfo::Problem(
          "Accelerated video decode has been disabled, either via blocklist, "
+         "about:flags or the command line."),
+     true},
+    {"video_encode",
+     SafeGetFeatureStatus(gpu_feature_info,
+                          gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
+#if defined(OS_LINUX)
+     !base::FeatureList::IsEnabled(media::kVaapiVideoEncodeLinux),
+#else
+     command_line.HasSwitch(switches::kDisableAcceleratedVideoEncode),
+#endif  // defined(OS_LINUX)
+     DisableInfo::Problem(
+         "Accelerated video encode has been disabled, either via blocklist, "
          "about:flags or the command line."),
      true},
     {"rasterization",
@@ -190,6 +219,10 @@ const GpuFeatureData GetGpuFeatureData(
      false},
     {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
      !features::IsUsingSkiaRenderer(), DisableInfo::NotProblem(), false},
+    {"raw_draw", gpu::kGpuFeatureStatusEnabled, !features::IsUsingRawDraw(),
+     DisableInfo::NotProblem(), false},
+    {"direct_rendering_display_compositor", gpu::kGpuFeatureStatusEnabled,
+     !features::IsDrDcEnabled(), DisableInfo::NotProblem(), false},
   };
   DCHECK(index < base::size(kGpuFeatureData));
   *eof = (index == base::size(kGpuFeatureData) - 1);
@@ -223,6 +256,8 @@ base::Value GetFeatureStatusImpl(GpuFeatureInfoType type) {
     std::string status;
     // Features undergoing a finch controlled roll out.
     if (gpu_feature_data.name == "skia_renderer" ||
+        gpu_feature_data.name == "raw_draw" ||
+        gpu_feature_data.name == "direct_rendering_display_compositor" ||
         gpu_feature_data.name == "viz_hit_test_surface_layer") {
       status = (gpu_feature_data.disabled ? "disabled_off_ok" : "enabled_on");
     } else if (gpu_feature_data.disabled || gpu_access_blocked ||
@@ -238,6 +273,9 @@ base::Value GetFeatureStatusImpl(GpuFeatureInfoType type) {
       status = "unavailable_software";
     } else {
       status = "enabled";
+      if (gpu_feature_data.name == "canvas_oop_rasterization") {
+        status += "_on";
+      }
       if ((gpu_feature_data.name == "webgl" ||
            gpu_feature_data.name == "webgl2") &&
           is_gpu_compositing_disabled)
@@ -370,7 +408,7 @@ int NumberOfRendererRasterThreads() {
   int num_processors = base::SysInfo::NumberOfProcessors();
 
 #if defined(OS_ANDROID) || \
-    (BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY))
+    (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))
   // Android and ChromeOS ARM devices may report 6 to 8 CPUs for big.LITTLE
   // configurations. Limit the number of raster threads based on maximum of
   // 4 big cores.
@@ -398,8 +436,7 @@ int NumberOfRendererRasterThreads() {
     }
   }
 
-  return base::ClampToRange(num_raster_threads, kMinRasterThreads,
-                            kMaxRasterThreads);
+  return base::clamp(num_raster_threads, kMinRasterThreads, kMaxRasterThreads);
 }
 
 bool IsZeroCopyUploadEnabled() {
@@ -413,11 +450,19 @@ bool IsZeroCopyUploadEnabled() {
 }
 
 bool IsPartialRasterEnabled() {
+  // Partial raster is not supported with RawDraw.
+  if (features::IsUsingRawDraw())
+    return false;
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
   return !command_line.HasSwitch(blink::switches::kDisablePartialRaster);
 }
 
 bool IsGpuMemoryBufferCompositorResourcesEnabled() {
+  // To use Raw Draw, the Raw Draw shared image backing should be used, so
+  // not use GPU memory buffer shared image backings for compositor resources.
+  if (features::IsUsingRawDraw()) {
+    return false;
+  }
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(

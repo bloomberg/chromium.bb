@@ -9,6 +9,9 @@
 #include "components/sync/engine/events/poll_get_updates_request_event.h"
 #include "components/sync/engine/get_updates_processor.h"
 #include "components/sync/engine/update_handler.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
+#include "components/sync/protocol/get_updates_caller_info.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
@@ -16,7 +19,7 @@ NormalGetUpdatesDelegate::NormalGetUpdatesDelegate(
     const NudgeTracker& nudge_tracker)
     : nudge_tracker_(nudge_tracker) {}
 
-NormalGetUpdatesDelegate::~NormalGetUpdatesDelegate() {}
+NormalGetUpdatesDelegate::~NormalGetUpdatesDelegate() = default;
 
 // This function assumes the progress markers have already been populated.
 void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
@@ -62,7 +65,7 @@ ConfigureGetUpdatesDelegate::ConfigureGetUpdatesDelegate(
     sync_pb::SyncEnums::GetUpdatesOrigin origin)
     : origin_(origin) {}
 
-ConfigureGetUpdatesDelegate::~ConfigureGetUpdatesDelegate() {}
+ConfigureGetUpdatesDelegate::~ConfigureGetUpdatesDelegate() = default;
 
 void ConfigureGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
@@ -82,9 +85,9 @@ ConfigureGetUpdatesDelegate::GetNetworkRequestEvent(
                                                            request);
 }
 
-PollGetUpdatesDelegate::PollGetUpdatesDelegate() {}
+PollGetUpdatesDelegate::PollGetUpdatesDelegate() = default;
 
-PollGetUpdatesDelegate::~PollGetUpdatesDelegate() {}
+PollGetUpdatesDelegate::~PollGetUpdatesDelegate() = default;
 
 void PollGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {

@@ -13,31 +13,31 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import functools
 import itertools
 import pickle
 import re
 import sys
+import unittest
 import weakref
 
 from absl.testing import parameterized
 from six.moves import range
 
 from tensorflow.python.autograph.core import converter
+from tensorflow.python.eager import backprop
 from tensorflow.python.eager import def_function
 from tensorflow.python.eager import lift_to_graph
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
+from tensorflow.python.framework import extension_type
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_spec
 from tensorflow.python.framework import test_util
 from tensorflow.python.module import module
 from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import cond_v2
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import random_ops
@@ -45,6 +45,11 @@ from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+from tensorflow.python.saved_model import save_context
+from tensorflow.python.saved_model import save_options
+from tensorflow.python.saved_model.load import load
+from tensorflow.python.saved_model.save import save
+from tensorflow.python.training.tracking.util import Checkpoint
 
 
 def undecorated_function(x):
@@ -68,7 +73,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertAllEqual(fn(constant_op.constant(4.0)), 8.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testFailIfVariablesAreCreatedMoreThanOnce(self):
 
     @def_function.function
@@ -78,7 +82,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     with self.assertRaises(ValueError):
       fn(1.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testFailIfVariablesAreCreatedMoreThanOnceNoWeakRef(self):
     state = []
 
@@ -98,7 +101,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertAllEqual(f(range(5)), 1.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testCorrectVariableCreation(self):
 
     state = []
@@ -112,7 +114,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     self.assertAllEqual(fn(constant_op.constant(1.0)), 2.0)
     self.assertAllEqual(fn(constant_op.constant(3.0)), 6.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testFunctionInitializer(self):
 
     state = []
@@ -125,7 +126,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertAllEqual(fn(constant_op.constant(1.0)), 2.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testFunctionMultipleVariableInitializer(self):
 
     state = []
@@ -139,7 +139,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertAllEqual(fn(constant_op.constant(1.0)), [2.0, 5.0])
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testFunctionInitializationFunction(self):
 
     state = []
@@ -157,7 +156,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     init_fn()
     self.assertEqual(state[0].numpy(), 2.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testVariableInitializerNotConstant(self):
 
     state = []
@@ -187,7 +185,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       self.assertAllEqual(sess.run(state[0]), 2.0)
       self.assertAllEqual(self.evaluate(result), 6.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testLegacyGraphModeVariablesNonTrivialInitializer(self):
     with ops.Graph().as_default(), self.test_session() as sess:
       state = []
@@ -207,7 +204,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       self.assertAllEqual(sess.run(state[0]), 6.0)
       self.assertAllEqual(self.evaluate(result), 18.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testLegacyGraphModeInputDependentInitializerFails(self):
     with ops.Graph().as_default():
       state = []
@@ -218,11 +214,10 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
           state.append(variables.Variable(2.0 * x))
         return state[0] * x
 
-      with self.assertRaisesRegexp(
-          lift_to_graph.UnliftableError, r'transitively.* mul .* x'):
+      with self.assertRaisesRegex(lift_to_graph.UnliftableError,
+                                  r'transitively.* mul .* x'):
         fn(constant_op.constant(3.0))
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testMethod(self):
 
     class MyModel(object):
@@ -245,13 +240,119 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     m1 = MyModel()
     self.assertAllEqual(m1.apply(3.0), 6.0)
 
+  @unittest.expectedFailure
+  def testMethodAllowDynamicVariableWithoutGuards(self):
+
+    class Foo:
+
+      def __init__(self):
+        self._var = 0
+
+      def __call__(self, val):
+        self.compute(val)
+        return self._var
+
+      @def_function.function
+      def compute(self, val):
+        self._var = variables.Variable(val)
+
+    def_function.ALLOW_DYNAMIC_VARIABLE_CREATION = True
+    foo = Foo()
+    self.assertAllEqual(foo(0.3), 0.3)
+    self.assertAllEqual(
+        foo(0.9), 0.9, 'https://github.com/tensorflow/tensorflow/issues/27120')
+
+  def testMethodAllowDynamicVariable(self):
+
+    class Foo:
+
+      def __init__(self):
+        self._flag_keyed_vars = {}
+        self.trace_count = 0
+
+      def __call__(self, var_creation_flag):
+        self.compute(var_creation_flag)
+        return self._flag_keyed_vars[var_creation_flag]
+
+      @def_function.function
+      def compute(self, var_creation_flag):
+        self.trace_count += 1
+        if var_creation_flag not in self._flag_keyed_vars:
+          if var_creation_flag:
+            self._flag_keyed_vars[var_creation_flag] = variables.Variable(1.0)
+          else:
+            self._flag_keyed_vars[var_creation_flag] = variables.Variable(2.0)
+
+    def_function.ALLOW_DYNAMIC_VARIABLE_CREATION = True
+    foo = Foo()
+    self.assertAllEqual(foo(True), 1.0)
+    self.assertEqual(foo.trace_count, 2)
+    self.assertAllEqual(foo(True), 1.0)
+    self.assertEqual(foo.trace_count, 2)
+    self.assertAllEqual(foo(False), 2.0)
+    self.assertEqual(foo.trace_count, 3)
+
+  def testMethodNotAllowDynamicVariable(self):
+
+    class Foo:
+
+      def __init__(self):
+        self._flag_keyed_vars = {}
+        self.trace_count = 0
+
+      def __call__(self, var_creation_flag):
+        self.compute(var_creation_flag)
+        return self._flag_keyed_vars[var_creation_flag]
+
+      @def_function.function
+      def compute(self, var_creation_flag):
+        self.trace_count += 1
+        if var_creation_flag not in self._flag_keyed_vars:
+          if var_creation_flag:
+            self._flag_keyed_vars[var_creation_flag] = variables.Variable(1.0)
+          else:
+            self._flag_keyed_vars[var_creation_flag] = variables.Variable(2.0)
+
+    def_function.ALLOW_DYNAMIC_VARIABLE_CREATION = False
+    foo = Foo()
+    self.assertAllEqual(foo(True), 1.0)
+    self.assertEqual(foo.trace_count, 2)
+    self.assertAllEqual(foo(True), 1.0)
+    self.assertEqual(foo.trace_count, 2)
+    msg = 'singleton tf.Variable.*on the first call'
+    with self.assertRaisesRegex(ValueError, msg):
+      foo(False)
+    self.assertEqual(foo.trace_count, 3)
+
+  def testMethodExtensionType(self):
+
+    class MaskedTensor(extension_type.ExtensionType):
+      values: ops.Tensor
+      mask: ops.Tensor
+
+      @def_function.function
+      def with_default(self, default_value):
+        return array_ops.where_v2(self.mask, self.values, default_value)
+
+      @def_function.function
+      def sum(self):
+        # Use a loop & conditional to test that autograph works correctly.
+        result = 0
+        for i in range(array_ops.size(self.values)):
+          if self.mask[i]:
+            result += self.values[i]
+        return result
+
+    mt = MaskedTensor([1, 2, 3], [True, False, True])
+    self.assertAllEqual(mt.with_default(-1), [1, -1, 3])
+    self.assertAllEqual(mt.sum(), 4)
+
   def test_functools_partial(self):
     self.assertAllClose(
         3.,
         def_function.function(functools.partial(lambda x, y: x + y, 1.))(
             constant_op.constant(2.)))
 
-  @test_util.disable_tfrt('Partial is not supported')
   def test_functools_partial_new_default(self):
     def f(x=3, y=7):
       return x + y
@@ -260,7 +361,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     self.assertEqual(func().numpy(), 9)
     self.assertEqual(func(y=8).numpy(), 11)
 
-  @test_util.disable_tfrt('Partial is not supported')
   def test_functools_partial_keywords(self):
     def f(x, y):
       return x + y
@@ -269,7 +369,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
         functools.partial(f, x=array_ops.zeros([1]), y=array_ops.zeros([1])))
     self.assertAllEqual(func(), [0.0])
 
-  @test_util.disable_tfrt('Partial is not supported')
   def test_functools_partial_single_positional(self):
     def f(x, y):
       return x + y
@@ -278,7 +377,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
         functools.partial(f, constant_op.constant(1)))
     self.assertAllEqual(func(5), 6)
 
-  @test_util.disable_tfrt('Partial is not supported')
   def test_complicated_partial_with_defaults(self):
 
     def identity(*args):
@@ -326,7 +424,144 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
                      (tensor_spec.TensorSpec(
                          None, dtypes.float32, name='x'),))
 
-  @test_util.disable_tfrt('Variable argument is not supported')
+  def testInputSignatureMissingTensorSpecsMethod(self):
+
+    class MyModule(module.Module):
+
+      def f1(self, arg1, arg2, arg3):
+        pass
+
+      def f2(self, arg1, arg2, arg3, **kwargs):
+        pass
+
+      def f3(self, arg1, arg2, arg3, arg4=4, **kwargs):
+        pass
+
+      def f4(self, arg1, arg2, arg3, *args):
+        pass
+
+      def f5(self, arg1, arg2, arg3, *args, **kwargs):
+        pass
+
+      def f6(self, arg1, arg4=4, **kwargs):
+        return arg1 + arg4
+
+    m = MyModule()
+    tf_func_dec = def_function.function(
+        input_signature=(tensor_spec.TensorSpec([], dtypes.int32),))
+    error_msg = 'TensorSpecs are still required.*arg2.*arg3'
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(m.f1)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(m.f2)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(m.f3)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(m.f4)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(m.f5)(1, 2, 3)
+
+    self.assertEqual(tf_func_dec(m.f6)(1).numpy(), 5)
+
+  def testInputSignatureMissingTensorSpecsFunction(self):
+    tf_func_dec = def_function.function(
+        input_signature=(tensor_spec.TensorSpec([], dtypes.int32),))
+    error_msg = 'TensorSpecs are still required.*arg2.*arg3'
+    # pylint: disable=unused-argument
+    def f1(arg1, arg2, arg3):
+      pass
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(f1)(1, 2, 3)
+
+    def f2(arg1, arg2, arg3, **kwargs):
+      pass
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(f2)(1, 2, 3)
+
+    def f3(arg1, arg2, arg3, arg4=4, **kwargs):
+      pass
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(f3)(1, 2, 3)
+
+    def f4(arg1, arg2, arg3, *args):
+      pass
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(f4)(1, 2, 3)
+
+    def f5(arg1, arg2, arg3, *args, **kwargs):
+      pass
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(f5)(1, 2, 3)
+    # pyline: enable=unused-argument
+
+    def f6(arg1, arg4=4, **kwargs):
+      return arg1 + arg4
+    self.assertEqual(tf_func_dec(f6)(1).numpy(), 5)
+
+  def testInputSignatureMissingTensorSpecsLambdaFunction(self):
+    tf_func_dec = def_function.function(
+        input_signature=(tensor_spec.TensorSpec([], dtypes.int32),))
+    error_msg = 'TensorSpecs are still required.*arg2.*arg3'
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(lambda ar1, arg2, arg3: None)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(lambda arg1, arg2, arg3, **kwargs: None)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(lambda arg1, arg2, arg3, arg4=4, **kwargs: None)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(lambda arg1, arg2, arg3, *args: None)(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError, error_msg):
+      tf_func_dec(lambda arg1, arg2, arg3, *args, **kwargs: None)(1, 2, 3)
+
+    self.assertEqual(
+        tf_func_dec(lambda arg1, arg4=4, **kwargs: arg1 + arg4)(1).numpy(), 5)
+
+  @parameterized.named_parameters(('_method', 'method'),
+                                  ('_function', 'function'),
+                                  ('_lambda_function', 'lambda_function'))
+  def testInputSignaturePartialFuncMissingTensorSpecs(self, func_type):
+    if func_type == 'method':
+      class MyModule(module.Module):
+
+        def f(self, arg1, arg2, arg3, arg4=4):
+          return arg1 + arg2 + arg3 + arg4
+      f = MyModule().f
+    elif func_type == 'function':
+      def f(arg1, arg2, arg3, arg4=4):
+        return arg1 + arg2 + arg3 + arg4
+    else:  # lambda_function
+      f = lambda arg1, arg2, arg3, arg4=4: arg1 + arg2 + arg3 + arg4
+
+    tf_func_dec = def_function.function(
+        input_signature=(tensor_spec.TensorSpec([], dtypes.int32),))
+    with self.assertRaisesRegex(TypeError,
+                                'TensorSpecs are still required.*arg3'):
+      tf_func_dec(functools.partial(f, 1))(2, 3)
+
+    with self.assertRaisesRegex(TypeError,
+                                'TensorSpecs are still required.*arg2.*arg3'):
+      tf_func_dec(functools.partial(f, arg4=5))(1, 2, 3)
+
+    with self.assertRaisesRegex(TypeError,
+                                'TensorSpecs are still required.*arg3'):
+      tf_func_dec(functools.partial(f, 1, arg4=5))(2, 3)
+
+    self.assertAllEqual(tf_func_dec(functools.partial(f, 1, 2, arg4=5))(3),
+                        array_ops.constant(11))
+
   @test_util.run_in_graph_and_eager_modes
   def test_variable_naming(self):
     class HasVars(module.Module):
@@ -383,21 +618,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     signature_args, _ = conc.structured_input_signature
     self.assertEqual('z', signature_args[0][0].name)
 
-  def test_error_inner_capture(self):
-
-    @def_function.function
-    def f(inputs):
-      num_steps, _ = inputs.shape[:2]
-      outputs = []
-      for t in math_ops.range(num_steps):
-        outputs.append(inputs[t])
-      return outputs
-
-    with self.assertRaisesRegexp(errors.InaccessibleTensorError,
-                                 'defined in another function or code block'):
-      f(array_ops.zeros(shape=(8, 42, 3)))
-
-  @test_util.disable_tfrt('Control flow is not supported')
   def testRuntimeErrorNotSticky(self):
 
     @def_function.function
@@ -472,10 +692,40 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       with ops.init_scope():
         _ = a + a
 
-    with self.assertRaisesRegexp(
-        TypeError,
-        re.compile('An op outside of the function.*passed.*Const', re.DOTALL)):
+    with self.assertRaisesRegex(
+        TypeError, re.compile('def_function_test.*out of scope', re.DOTALL)):
       failing_function()
+
+  def testSymbolicTensorIllegalCaptureCallTimeError(self):
+    x = None
+
+    @def_function.function
+    def f1(a):
+      nonlocal x
+      x = a
+      return a
+
+    @def_function.function
+    def f2(b):
+      return b + x
+
+    f1(constant_op.constant(1))
+    with self.assertRaisesRegex(
+        TypeError, re.compile('def_function_test.*out of scope', re.DOTALL)):
+      f2(constant_op.constant(2))
+
+  def testSymbolicTensorIllegalCaptureTraceTimeError(self):
+
+    @def_function.function
+    def f(inputs):
+      num_steps, _ = inputs.shape[:2]
+      outputs = []
+      for t in math_ops.range(num_steps):
+        outputs.append(inputs[t])
+      return outputs
+
+    with self.assertRaisesRegex(errors.InaccessibleTensorError, 'out of scope'):
+      f(array_ops.zeros(shape=(8, 42, 3)))
 
   def testNonUniqueNamesGetConcreteFunction(self):
     @def_function.function
@@ -502,7 +752,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
                  constant_op.constant(3.),
                  constant_op.constant(4.)))
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testVariableCreatorScope(self):
     created_variables = []
     captured_variables = []
@@ -522,7 +771,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       f()
     self.assertEqual(created_variables, captured_variables)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testVarAlreadyInitializedNoClobbering(self):
     v_holder = []
 
@@ -540,7 +788,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     add_var.get_concrete_function(constant_op.constant(2.))
     self.assertAllClose([13., 14.], add_var(constant_op.constant(2.)))
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testSameVariableTwice(self):
     v = variables.Variable(1.0)
 
@@ -550,7 +797,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertAllEqual(add(v, v), 2.0)
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testVariableUpdate(self):
     v1 = variables.Variable(1.0)
     v2 = variables.Variable(2.0)
@@ -568,10 +814,12 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     self.assertEqual(trace_count[0], 1)
     self.assertEqual(self.evaluate(v1), 2.0)
     double_variable(v2)
-    self.assertEqual(trace_count[0], 2)
+    # No retracing because v2's data type and shape are the same as v1
+    self.assertEqual(trace_count[0], 1)
     self.assertEqual(self.evaluate(v2), 4.0)
     double_variable(v3)
-    self.assertEqual(trace_count[0], 3)
+    # Retracing because of data type change
+    self.assertEqual(trace_count[0], 2)
     self.assertEqual(self.evaluate(v3), 8)
 
   def testShapeCache(self):
@@ -586,7 +834,30 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertIs(func_a, func_b)
 
-  @test_util.disable_tfrt('Nested function is not supported')
+  def testCacheWithinSaveContext(self):
+
+    @def_function.function
+    def func(x):
+      return 2 * x
+
+    func_a = func.get_concrete_function(constant_op.constant(2.))
+    func_b = func.get_concrete_function(constant_op.constant(2.))
+
+    self.assertIs(func_a, func_b)
+
+    with save_context.save_context(
+        save_options.SaveOptions(experimental_variable_policy=save_options
+                                 .VariablePolicy.EXPAND_DISTRIBUTED_VARIABLES)):
+      func_c = func.get_concrete_function(constant_op.constant(2.))
+
+    with save_context.save_context(
+        save_options.SaveOptions(
+            experimental_variable_policy=save_options.VariablePolicy.NONE)):
+      func_d = func.get_concrete_function(constant_op.constant(2.))
+
+    self.assertIsNot(func_a, func_c)
+    self.assertIsNot(func_a, func_d)
+
   def testInitializationInNestedCall(self):
     v_holder = []
 
@@ -609,7 +880,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     v_holder[1].assign(11.)
     self.assertAllClose([14., 15.], wrapper(constant_op.constant(2.)))
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   @test_util.run_gpu_only
   def testDeviceAnnotationRespected(self):
     a = []
@@ -627,9 +897,8 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       return a[0].read_value()
 
     create_variable()
-    self.assertRegexpMatches(a[0].device, 'CPU')
+    self.assertRegex(a[0].device, 'CPU')
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   @test_util.run_gpu_only
   def testDeviceAnnotationForInitializerRespected(self):
     a = []
@@ -647,8 +916,8 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     with ops.device('CPU:0'):
       create_variable()
-    self.assertRegexpMatches(a[0].device, 'CPU')
-    self.assertRegexpMatches(initial_value[0].device, 'CPU')
+    self.assertRegex(a[0].device, 'CPU')
+    self.assertRegex(initial_value[0].device, 'CPU')
 
   def testDecorate(self):
     func = def_function.function(lambda: 1)
@@ -667,6 +936,7 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       (True, False),                          # compile
       (True, False),                          # override_function
   ))
+
   def testClone(self, input_signature, autograph, autograph_options, implements,
                 relax_shapes, compile_, override_function):
     original_py_function = lambda x: x
@@ -679,7 +949,7 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
         experimental_implements=implements,
         experimental_autograph_options=autograph_options,
         experimental_relax_shapes=relax_shapes,
-        experimental_compile=compile_)
+        jit_compile=compile_)
 
     if override_function:
       cloned_py_function = lambda x: x + 1
@@ -695,7 +965,7 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     self.assertEqual(implements, cloned._implements)
     self.assertEqual(autograph_options, cloned._experimental_autograph_options)
     self.assertEqual(relax_shapes, cloned._experimental_relax_shapes)
-    self.assertEqual(compile_, cloned._experimental_compile)
+    self.assertEqual(compile_, cloned._jit_compile)
 
     # This test does not run with XLA JIT support linked in so we can only check
     # the output of the function if compile is disabled.
@@ -704,7 +974,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       self.assertEqual(self.evaluate(cloned(x)),
                        self.evaluate(cloned_py_function(x)))
 
-  @test_util.disable_tfrt('Variable argument is not supported')
   def testLiftPlaceholderInitializedVariable(self):
     with ops.Graph().as_default():
       var_list = []
@@ -727,7 +996,7 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     func = def_function.function(lambda: 1)
     self.assertEqual(func().numpy(), 1)
     msg = 'Functions cannot be decorated after they have been traced.'
-    with self.assertRaisesRegexp(ValueError, msg):
+    with self.assertRaisesRegex(ValueError, msg):
       func._decorate(lambda f: f)
 
   def testGetConcreteFunctionGraphLifetime(self):
@@ -749,6 +1018,7 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
       (None, 'foo.bar'),  # implements
       (None, True, False),  # relax_shapes
   ))
+
   def test_pickle(self, input_signature, autograph, autograph_options,
                   implements, relax_shapes):
     """@function objects can be pickled and unpickled."""
@@ -858,7 +1128,6 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
     self.assertLen(logs.output, 1)
     self.assertIn('Tracing is expensive', logs.output[0])
 
-  @test_util.disable_tfrt('Nested function is not supported')
   def test_frequent_retracing_warning_nested(self):
     if sys.version_info[0] < 3:
       self.skipTest('self.assertLogs() call is not available in Python 2.')
@@ -916,6 +1185,194 @@ class DefFunctionTest(test.TestCase, parameterized.TestCase):
 
     self.assertLen(logs.output, 1)
     self.assertIn('Tracing is expensive', logs.output[0])
+
+  def test_restored_function_retracing_warning(self):
+
+    class Foo(Checkpoint):
+
+      @def_function.function
+      def __call__(self, x):
+        return x
+
+    f_flexible = Foo()
+    _ = f_flexible.__call__.get_concrete_function(
+        tensor_spec.TensorSpec(shape=[None], dtype=dtypes.int32))
+    tmp_dir = self.create_tempdir()
+    save(f_flexible, tmp_dir.full_path)
+    restored_f_flexible = load(tmp_dir.full_path)
+
+    f_fixed_shape = Foo()
+
+    with self.assertLogs(level='WARN') as logs:
+      restored_f_flexible(constant_op.constant([1], dtypes.int32))
+      restored_f_flexible(constant_op.constant([1, 2], dtypes.int32))
+      restored_f_flexible(constant_op.constant([1, 2, 3], dtypes.int32))
+      restored_f_flexible(constant_op.constant([1, 2, 3, 4], dtypes.int32))
+      restored_f_flexible(constant_op.constant([1, 2, 3, 4, 5], dtypes.int32))
+      self.assertEmpty(logs.output)
+
+      f_fixed_shape(constant_op.constant([1], dtypes.int32))
+      f_fixed_shape(constant_op.constant([1, 2], dtypes.int32))
+      f_fixed_shape(constant_op.constant([1, 2, 3], dtypes.int32))
+      f_fixed_shape(constant_op.constant([1, 2, 3, 4], dtypes.int32))
+      f_fixed_shape(constant_op.constant([1, 2, 3, 4, 5], dtypes.int32))
+      self.assertLen(logs.output, 1)
+      self.assertIn('Tracing is expensive', logs.output[0])
+
+  def test_retracing_warning_limits(self):
+
+    @def_function.function
+    def my_func(x):
+      return x
+
+    with self.assertLogs(level='WARN') as logs:
+      for i in range(10):
+        my_func(i)
+
+      self.assertLen(logs.output, 2)
+
+  def test_experimental_get_tracing_count_function(self):
+
+    @def_function.function
+    def double(a):
+      return a + a
+
+    double(constant_op.constant(1))
+    double(constant_op.constant(2))
+    self.assertAllEqual(double.experimental_get_tracing_count(), 1)
+    double(constant_op.constant('a'))
+    self.assertAllEqual(double.experimental_get_tracing_count(), 2)
+
+  def test_experimental_get_tracing_count_method(self):
+
+    class TestClass():
+
+      @def_function.function
+      def testDouble(self, a):
+        return a + a
+
+    obj1 = TestClass()
+    obj1.testDouble(constant_op.constant(1))
+    obj1.testDouble(constant_op.constant(2))
+    obj1.testDouble(constant_op.constant(1.1))
+    self.assertAllEqual(obj1.testDouble.experimental_get_tracing_count(), 2)
+    obj2 = TestClass()
+    obj2.testDouble(constant_op.constant(1))
+    obj2.testDouble(constant_op.constant(1.1))
+    obj2.testDouble(constant_op.constant('a'))
+    self.assertAllEqual(obj2.testDouble.experimental_get_tracing_count(), 3)
+    self.assertAllEqual(obj1.testDouble.experimental_get_tracing_count(), 2)
+
+  def test_recursive_tf_function(self):
+
+    @def_function.function
+    def recursive_fn(n):
+      if n > 0:
+        return recursive_fn(n - 1)
+      return 1
+
+    self.assertEqual(recursive_fn(5).numpy(), 1)
+
+  def test_recursive_tf_function_with_gradients(self):
+
+    @def_function.function
+    def recursive_fn(n, x):
+      if n > 0:
+        return n * recursive_fn(n - 1, x)
+      else:
+        return x
+
+    x = variables.Variable(1.0)
+    with backprop.GradientTape() as tape:
+      g = recursive_fn(5, x)
+
+    dg_dx = tape.gradient(g, x)
+    self.assertEqual(dg_dx.numpy(), 120)
+
+  def test_recursive_python_function(self):
+
+    def recursive_py_fn(n):
+      if n > 0:
+        return recursive_py_fn(n - 1)
+      return 1
+
+    @def_function.function
+    def recursive_fn(n):
+      return recursive_py_fn(n)
+
+    self.assertEqual(recursive_fn(5).numpy(), 1)
+
+  def test_recursive_python_function_with_gradients(self):
+
+    def recursive_py_fn(n, x):
+      if n > 0:
+        return n * recursive_py_fn(n - 1, x)
+      return x
+
+    @def_function.function
+    def recursive_fn(n, x):
+      return recursive_py_fn(n, x)
+
+    x = variables.Variable(1.0)
+    with backprop.GradientTape() as tape:
+      g = recursive_fn(5, x)
+
+    dg_dx = tape.gradient(g, x)
+    self.assertEqual(dg_dx.numpy(), 120)
+
+  def test_recursive_tf_function_call_each_other(self):
+
+    @def_function.function
+    def recursive_fn1(n):
+      if n <= 1:
+        return 1
+      return recursive_fn2(n - 1)
+
+    @def_function.function
+    def recursive_fn2(n):
+      if n <= 1:
+        return 2
+      return recursive_fn1(n - 1)
+
+    self.assertEqual(recursive_fn1(5).numpy(), 1)
+    self.assertEqual(recursive_fn1(6).numpy(), 2)
+    self.assertEqual(recursive_fn2(5).numpy(), 2)
+    self.assertEqual(recursive_fn2(6).numpy(), 1)
+
+  def test_recursive_tf_function_call_each_other_with_gradients(self):
+
+    @def_function.function
+    def recursive_fn1(n, x):
+      if n <= 1:
+        return x
+      return n * recursive_fn2(n - 1, x)
+
+    @def_function.function
+    def recursive_fn2(n, x):
+      if n <= 1:
+        return 2 * x
+      return n * recursive_fn1(n - 1, x)
+
+    x = variables.Variable(1.0)
+    with backprop.GradientTape() as tape:
+      g1 = recursive_fn1(5, x)
+
+    dg1_dx = tape.gradient(g1, x)
+    self.assertEqual(dg1_dx.numpy(), 120)
+
+    with backprop.GradientTape() as tape:
+      g2 = recursive_fn2(5, x)
+
+    dg2_dx = tape.gradient(g2, x)
+    self.assertEqual(dg2_dx.numpy(), 240)
+
+  def test_recursive_tf_function_with_cond(self):
+    @def_function.function(autograph=False)
+    def recursive_fn(n):
+      return cond_v2.cond_v2(n > 0, recursive_fn(n - 1), 1)
+
+    with self.assertRaises(RecursionError):
+      recursive_fn(constant_op.constant(5))
 
 
 if __name__ == '__main__':

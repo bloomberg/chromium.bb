@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -84,6 +85,10 @@ base::LazyInstance<Patterns>::Leaky g_patterns = LAZY_INSTANCE_INITIALIZER;
 class FormDataParserUrlEncoded : public FormDataParser {
  public:
   FormDataParserUrlEncoded();
+
+  FormDataParserUrlEncoded(const FormDataParserUrlEncoded&) = delete;
+  FormDataParserUrlEncoded& operator=(const FormDataParserUrlEncoded&) = delete;
+
   ~FormDataParserUrlEncoded() override;
 
   // Implementation of FormDataParser.
@@ -115,9 +120,7 @@ class FormDataParserUrlEncoded : public FormDataParser {
   const RE2::Arg* args_[args_size_];
 
   // Caching the pointer to g_patterns.Get().
-  const Patterns* patterns_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormDataParserUrlEncoded);
+  raw_ptr<const Patterns> patterns_;
 };
 
 // The following class, FormDataParserMultipart, parses forms encoded as
@@ -194,6 +197,10 @@ class FormDataParserUrlEncoded : public FormDataParser {
 class FormDataParserMultipart : public FormDataParser {
  public:
   explicit FormDataParserMultipart(const std::string& boundary_separator);
+
+  FormDataParserMultipart(const FormDataParserMultipart&) = delete;
+  FormDataParserMultipart& operator=(const FormDataParserMultipart&) = delete;
+
   ~FormDataParserMultipart() override;
 
   // Implementation of FormDataParser.
@@ -294,9 +301,7 @@ class FormDataParserMultipart : public FormDataParser {
   re2::StringPiece source_;
 
   // Caching the pointer to g_patterns.Get().
-  const Patterns* patterns_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormDataParserMultipart);
+  raw_ptr<const Patterns> patterns_;
 };
 
 FormDataParser::Result::Result() {}

@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "rtc_base/event.h"
 #include "rtc_base/gunit.h"
 
 #import "components/audio/RTCAudioSession+Private.h"
@@ -230,7 +231,7 @@ OCMLocation *OCMMakeLocation(id testCase, const char *fileCString, int line){
     __autoreleasing NSError **retError;
     [invocation getArgument:&retError atIndex:4];
     *retError = [NSError errorWithDomain:@"AVAudioSession"
-                                    code:AVAudioSessionErrorInsufficientPriority
+                                    code:AVAudioSessionErrorCodeCannotInterruptOthers
                                 userInfo:nil];
     BOOL failure = NO;
     [invocation setReturnValue:&failure];
@@ -266,6 +267,41 @@ OCMLocation *OCMMakeLocation(id testCase, const char *fileCString, int line){
   OCMVerify([mockAudioSession session]);
   OCMVerify([[mockAVAudioSession ignoringNonObjectArgs] setActive:YES withOptions:0 error:&error]);
   OCMVerify([[mockAVAudioSession ignoringNonObjectArgs] setActive:NO withOptions:0 error:&error]);
+
+  [mockAVAudioSession stopMocking];
+  [mockAudioSession stopMocking];
+}
+
+- (void)testConfigureWebRTCSessionWithoutLocking {
+  NSError *error = nil;
+
+  id mockAVAudioSession = OCMPartialMock([AVAudioSession sharedInstance]);
+  id mockAudioSession = OCMPartialMock([RTC_OBJC_TYPE(RTCAudioSession) sharedInstance]);
+  OCMStub([mockAudioSession session]).andReturn(mockAVAudioSession);
+
+  RTC_OBJC_TYPE(RTCAudioSession) *audioSession = mockAudioSession;
+
+  std::unique_ptr<rtc::Thread> thread = rtc::Thread::Create();
+  EXPECT_TRUE(thread);
+  EXPECT_TRUE(thread->Start());
+
+  rtc::Event waitLock;
+  rtc::Event waitCleanup;
+  constexpr int timeoutMs = 5000;
+  thread->PostTask(RTC_FROM_HERE, [audioSession, &waitLock, &waitCleanup] {
+    [audioSession lockForConfiguration];
+    waitLock.Set();
+    waitCleanup.Wait(timeoutMs);
+    [audioSession unlockForConfiguration];
+  });
+
+  waitLock.Wait(timeoutMs);
+  [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:0 error:&error];
+  EXPECT_TRUE(error != nil);
+  EXPECT_EQ(error.domain, kRTCAudioSessionErrorDomain);
+  EXPECT_EQ(error.code, kRTCAudioSessionErrorLockRequired);
+  waitCleanup.Set();
+  thread->Stop();
 
   [mockAVAudioSession stopMocking];
   [mockAudioSession stopMocking];
@@ -327,6 +363,11 @@ TEST_F(AudioSessionTest, AudioSessionActivation) {
 TEST_F(AudioSessionTest, ConfigureWebRTCSession) {
   RTCAudioSessionTest *test = [[RTCAudioSessionTest alloc] init];
   [test testConfigureWebRTCSession];
+}
+
+TEST_F(AudioSessionTest, ConfigureWebRTCSessionWithoutLocking) {
+  RTCAudioSessionTest *test = [[RTCAudioSessionTest alloc] init];
+  [test testConfigureWebRTCSessionWithoutLocking];
 }
 
 TEST_F(AudioSessionTest, AudioVolumeDidNotify) {

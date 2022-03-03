@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertNotNull} from '../../../../../../front_end/core/platform/platform.js';
+import {assertNotNullOrUndefined} from '../../../../../../front_end/core/platform/platform.js';
 import * as Protocol from '../../../../../../front_end/generated/protocol.js';
 import * as NetworkComponents from '../../../../../../front_end/panels/network/components/components.js';
 import {getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM} from '../../../helpers/DOMHelpers.js';
@@ -10,6 +10,8 @@ import {getElementsWithinComponent, getElementWithinComponent, renderElementInto
 const {assert} = chai;
 
 describe('RequestTrustTokensView', () => {
+  const mockId = 'mockId' as Protocol.Network.RequestId;
+
   const renderRequestTrustTokensView = () => {
     const component = new NetworkComponents.RequestTrustTokensView.RequestTrustTokensReport();
     renderElementIntoDOM(component);
@@ -53,12 +55,12 @@ describe('RequestTrustTokensView', () => {
       result: {
         status: Protocol.Network.TrustTokenOperationDoneEventStatus.Ok,
         type: Protocol.Network.TrustTokenOperationType.Issuance,
-        requestId: 'mockId',
+        requestId: mockId,
       },
     };
 
     const simpleText = getElementWithinComponent(component, 'span > strong', HTMLElement);
-    assertNotNull(simpleText);
+    assertNotNullOrUndefined(simpleText);
     assert.strictEqual(simpleText.textContent, 'Success');
   });
 
@@ -68,12 +70,12 @@ describe('RequestTrustTokensView', () => {
       result: {
         status: Protocol.Network.TrustTokenOperationDoneEventStatus.BadResponse,
         type: Protocol.Network.TrustTokenOperationType.Issuance,
-        requestId: 'mockId',
+        requestId: mockId,
       },
     };
 
     const simpleText = getElementWithinComponent(component, 'span > strong', HTMLElement);
-    assertNotNull(simpleText);
+    assertNotNullOrUndefined(simpleText);
     assert.strictEqual(simpleText.textContent, 'Failure');
   });
 });

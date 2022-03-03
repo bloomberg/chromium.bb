@@ -36,10 +36,6 @@ StringWithTags& StringWithTags::operator=(StringWithTags&& other) = default;
 
 StringWithTags::~StringWithTags() = default;
 
-StringWithTag ParseStringWithLink(NSString* text) {
-  return ParseStringWithTag(text, kBeginLinkTag, kEndLinkTag);
-}
-
 StringWithTags ParseStringWithLinks(NSString* text) {
   return ParseStringWithTags(text, kBeginLinkTag, kEndLinkTag);
 }
@@ -48,13 +44,17 @@ NSAttributedString* AttributedStringFromStringWithLink(
     NSString* text,
     NSDictionary* text_attributes,
     NSDictionary* link_attributes) {
-  StringWithTag parsed_string = ParseStringWithLink(text);
+  StringWithTag parsed_string =
+      ParseStringWithTag(text, kBeginLinkTag, kEndLinkTag);
   NSMutableAttributedString* attributed_string =
       [[NSMutableAttributedString alloc] initWithString:parsed_string.string
                                              attributes:text_attributes];
 
   DCHECK(parsed_string.range.location != NSNotFound);
-  [attributed_string addAttributes:link_attributes range:parsed_string.range];
+
+  if (link_attributes != nil) {
+    [attributed_string addAttributes:link_attributes range:parsed_string.range];
+  }
 
   return attributed_string;
 }
@@ -247,4 +247,29 @@ NSString* SubstringOfWidth(NSString* string,
   } while (characters > 0 && characters < [string length]);
 
   return substring;
+}
+
+CGRect TextViewLinkBound(UITextView* text_view, NSRange character_range) {
+  // Calculate UITextRange with NSRange.
+  UITextPosition* beginning = text_view.beginningOfDocument;
+  UITextPosition* start =
+      [text_view positionFromPosition:beginning
+                               offset:character_range.location];
+  UITextPosition* end = [text_view positionFromPosition:start
+                                                 offset:character_range.length];
+
+  CGRect rect = CGRectNull;
+  // Returns CGRectNull if there is a nil text position.
+  if (start && end) {
+    UITextRange* text_range = [text_view textRangeFromPosition:start
+                                                    toPosition:end];
+
+    NSArray* selection_rects = [text_view selectionRectsForRange:text_range];
+
+    for (UITextSelectionRect* selection_rect in selection_rects) {
+      rect = CGRectUnion(rect, selection_rect.rect);
+    }
+  }
+
+  return rect;
 }

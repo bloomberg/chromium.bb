@@ -14,14 +14,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
+#include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/storage/storage_queue.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 
@@ -34,6 +36,7 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
       const StorageOptions& options,
       UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
       scoped_refptr<EncryptionModuleInterface> encryption_module,
+      scoped_refptr<CompressionModule> compression_module,
       base::OnceCallback<void(StatusOr<scoped_refptr<Storage>>)> completion_cb);
 
   // Wraps and serializes Record (taking ownership of it), encrypts and writes
@@ -45,7 +48,7 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
              base::OnceCallback<void(Status)> completion_cb);
 
   // Confirms acceptance of the records according to the priority up to
-  // |sequencing_id| (inclusively). All records with sequeincing ids <= this
+  // |sequencing_id| (inclusively). All records with sequencing ids <= this
   // one can be removed from the Storage, and can no longer be uploaded.
   // If |force| is false (which is used in most cases), |sequencing_id| is
   // only accepted if no higher ids were confirmed before; otherwise it is
@@ -80,10 +83,16 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
   // Private helper class for key upload/download to the file system.
   class KeyInStorage;
 
+  // Private helper class for initial key delivery from the server.
+  // It can be invoked multiple times in parallel, but will only do
+  // one server roundtrip and notify all requestors upon its completion.
+  class KeyDelivery;
+
   // Private constructor, to be called by Create factory method only.
   // Queues need to be added afterwards.
   Storage(const StorageOptions& options,
           scoped_refptr<EncryptionModuleInterface> encryption_module,
+          scoped_refptr<CompressionModule> compression_module,
           UploaderInterface::AsyncStartUploaderCb async_start_upload_cb);
 
   // Initializes the object by adding all queues for all priorities.
@@ -102,6 +111,12 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
 
   // Encryption module.
   scoped_refptr<EncryptionModuleInterface> encryption_module_;
+
+  // Internal module for initiail key delivery from server.
+  std::unique_ptr<KeyDelivery> key_delivery_;
+
+  // Compression module.
+  scoped_refptr<CompressionModule> compression_module_;
 
   // Internal key management module.
   std::unique_ptr<KeyInStorage> key_in_storage_;

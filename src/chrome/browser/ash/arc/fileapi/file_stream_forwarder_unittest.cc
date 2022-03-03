@@ -14,12 +14,13 @@
 #include "base/run_loop.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace arc {
 
@@ -39,14 +40,14 @@ class FileStreamForwarderTest : public testing::Test {
     ASSERT_TRUE(dest_file.IsValid());
     dest_fd_ = base::ScopedFD(dest_file.TakePlatformFile());
 
-    context_ = storage::CreateFileSystemContextForTesting(nullptr,
-                                                          temp_dir_.GetPath());
+    context_ = storage::CreateFileSystemContextForTesting(
+        /*quota_manager_proxy=*/nullptr, temp_dir_.GetPath());
 
     // Prepare a file system.
     constexpr char kURLOrigin[] = "http://origin/";
 
     context_->OpenFileSystem(
-        url::Origin::Create(GURL(kURLOrigin)),
+        blink::StorageKey::CreateFromStringForTesting(kURLOrigin),
         storage::kFileSystemTypeTemporary,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce([](const GURL& root_url, const std::string& name,
@@ -57,7 +58,7 @@ class FileStreamForwarderTest : public testing::Test {
 
     // Prepare a 64KB file in the file system.
     url_ = context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL(kURLOrigin)),
+        blink::StorageKey::CreateFromStringForTesting(kURLOrigin),
         storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII("test.dat"));
 
@@ -181,7 +182,7 @@ TEST_F(FileStreamForwarderTest, ForwardTooMuch2) {
 
 TEST_F(FileStreamForwarderTest, InvalidURL) {
   storage::FileSystemURL invalid_url = context_->CreateCrackedFileSystemURL(
-      url::Origin::Create(GURL("http://invalid-origin/")),
+      blink::StorageKey::CreateFromStringForTesting("http://invalid-origin/"),
       storage::kFileSystemTypeTemporary,
       base::FilePath().AppendASCII("invalid.dat"));
   constexpr int kOffset = 0;

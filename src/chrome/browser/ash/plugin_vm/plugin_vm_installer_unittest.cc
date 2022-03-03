@@ -37,7 +37,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
-#include "google_apis/drive/drive_api_error_codes.h"
+#include "google_apis/common/api_error_codes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -105,12 +105,12 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
   using GetContentCallback = google_apis::GetContentCallback;
   using ProgressCallback = google_apis::ProgressCallback;
 
-  void RunDownloadActionCallback(google_apis::DriveApiErrorCode error,
+  void RunDownloadActionCallback(google_apis::ApiErrorCode error,
                                  const base::FilePath& temp_file) {
     std::move(download_action_callback_).Run(error, temp_file);
   }
 
-  void RunGetContentCallback(google_apis::DriveApiErrorCode error,
+  void RunGetContentCallback(google_apis::ApiErrorCode error,
                              std::unique_ptr<std::string> content) {
     get_content_callback_.Run(error, std::move(content),
                               !get_content_callback_called_);
@@ -155,6 +155,11 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
 class PluginVmInstallerTestBase : public testing::Test {
  public:
   PluginVmInstallerTestBase() = default;
+
+  PluginVmInstallerTestBase(const PluginVmInstallerTestBase&) = delete;
+  PluginVmInstallerTestBase& operator=(const PluginVmInstallerTestBase&) =
+      delete;
+
   ~PluginVmInstallerTestBase() override = default;
 
  protected:
@@ -173,6 +178,7 @@ class PluginVmInstallerTestBase : public testing::Test {
     installer_ = PluginVmInstallerFactory::GetForProfile(profile_.get());
     observer_ = std::make_unique<StrictMock<MockObserver>>();
     installer_->SetObserver(observer_.get());
+    installer_->SkipLicenseCheckForTesting();
     installer_->SetFreeDiskSpaceForTesting(std::numeric_limits<int64_t>::max());
     installer_->SetDownloadedImageForTesting(CreateZipFile());
 
@@ -290,13 +296,17 @@ class PluginVmInstallerTestBase : public testing::Test {
   }
 
   base::ScopedTempDir profiles_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerTestBase);
 };
 
 class PluginVmInstallerDownloadServiceTest : public PluginVmInstallerTestBase {
  public:
   PluginVmInstallerDownloadServiceTest() = default;
+
+  PluginVmInstallerDownloadServiceTest(
+      const PluginVmInstallerDownloadServiceTest&) = delete;
+  PluginVmInstallerDownloadServiceTest& operator=(
+      const PluginVmInstallerDownloadServiceTest&) = delete;
+
   ~PluginVmInstallerDownloadServiceTest() override = default;
 
  protected:
@@ -325,19 +335,23 @@ class PluginVmInstallerDownloadServiceTest : public PluginVmInstallerTestBase {
 
  private:
   std::unique_ptr<PluginVmImageDownloadClient> client_;
-  DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerDownloadServiceTest);
 };
 
 class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
  public:
   PluginVmInstallerDriveTest() = default;
+
+  PluginVmInstallerDriveTest(const PluginVmInstallerDriveTest&) = delete;
+  PluginVmInstallerDriveTest& operator=(const PluginVmInstallerDriveTest&) =
+      delete;
+
   ~PluginVmInstallerDriveTest() override = default;
 
  protected:
   void SetUp() override {
     PluginVmInstallerTestBase::SetUp();
 
-    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+    google_apis::ApiErrorCode error = google_apis::OTHER_ERROR;
     std::unique_ptr<google_apis::FileResource> entry;
     auto fake_drive_service = std::make_unique<drive::FakeDriveService>();
     // We will need to access this object for some tests in the future.
@@ -348,7 +362,7 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
         kPluginVmImageFile,
         true,  // shared_with_me
         base::BindLambdaForTesting(
-            [&](google_apis::DriveApiErrorCode drive_error,
+            [&](google_apis::ApiErrorCode drive_error,
                 std::unique_ptr<google_apis::FileResource> drive_entry) {
               error = drive_error;
               entry = std::move(drive_entry);
@@ -393,9 +407,6 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
   PluginVmDriveImageDownloadService* drive_download_service_;
   drive::FakeDriveService* fake_drive_service_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerDriveTest);
 };
 
 TEST_F(PluginVmInstallerDownloadServiceTest, ProgressUpdates) {
@@ -641,8 +652,8 @@ TEST_F(PluginVmInstallerDownloadServiceTest, VerifyDownloadTest) {
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, CannotStartIfPluginVmIsDisabled) {
-  profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
-      chromeos::kPluginVmAllowed, false);
+  profile_->ScopedCrosSettingsTestHelper()->SetBoolean(ash::kPluginVmAllowed,
+                                                       false);
   EXPECT_EQ(FailureReason::NOT_ALLOWED, installer_->Start());
   task_environment_.RunUntilIdle();
 }
@@ -691,7 +702,7 @@ TEST_F(PluginVmInstallerDriveTest, DriveDownloadFailedAfterStartingTest) {
   fake_drive_service->RunGetContentCallback(
       google_apis::HTTP_SUCCESS, std::make_unique<std::string>("Part2"));
   fake_drive_service->RunProgressCallback(10, 100);
-  fake_drive_service->RunGetContentCallback(google_apis::DRIVE_NO_CONNECTION,
+  fake_drive_service->RunGetContentCallback(google_apis::NO_CONNECTION,
                                             std::unique_ptr<std::string>());
 }
 

@@ -63,7 +63,7 @@ namespace {
 // The amount of time to wait before informing the clients that the image has
 // been updated (in seconds). This effectively throttles invalidations that
 // result from new data arriving for this image.
-constexpr auto kFlushDelay = base::TimeDelta::FromSeconds(1);
+constexpr auto kFlushDelay = base::Seconds(1);
 
 }  // namespace
 
@@ -240,8 +240,8 @@ void ImageResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
   Resource::OnMemoryDump(level_of_detail, memory_dump);
   const String name = GetMemoryDumpName() + "/image_content";
   auto* dump = memory_dump->CreateMemoryAllocatorDump(name);
-  if (content_->HasImage() && content_->GetImage()->Data())
-    dump->AddScalar("size", "bytes", content_->GetImage()->Data()->size());
+  if (content_->HasImage() && content_->GetImage()->HasData())
+    dump->AddScalar("size", "bytes", content_->GetImage()->DataSize());
 }
 
 void ImageResource::Trace(Visitor* visitor) const {

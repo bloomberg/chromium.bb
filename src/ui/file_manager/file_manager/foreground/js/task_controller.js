@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {FileTransferController} from './file_transfer_controller.m.js';
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-// #import {Crostini} from '../../externs/background/crostini.m.js';
-// #import {NamingController} from './naming_controller.m.js';
-// #import {MetadataUpdateController} from './metadata_update_controller.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {DialogType} from './dialog_type.m.js';
-// #import {strf, util, str} from '../../common/js/util.m.js';
-// #import {FileTasks} from './file_tasks.m.js';
-// #import {FileSelectionHandler, FileSelection} from './file_selection.m.js';
-// #import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-// #import {assert, assertInstanceof, assertNotReached} from 'chrome://resources/js/assert.m.js';
-// #import {TaskHistory} from './task_history.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// clang-format on
+import {assert, assertInstanceof, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-/* #export */ class TaskController {
+import {DialogType} from '../../common/js/dialog_type.js';
+import {strf, util} from '../../common/js/util.js';
+import {Crostini} from '../../externs/background/crostini.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {DirectoryModel} from './directory_model.js';
+import {FileSelection, FileSelectionHandler} from './file_selection.js';
+import {FileTasks} from './file_tasks.js';
+import {FileTransferController} from './file_transfer_controller.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {MetadataUpdateController} from './metadata_update_controller.js';
+import {NamingController} from './naming_controller.js';
+import {TaskHistory} from './task_history.js';
+import {FileManagerUI} from './ui/file_manager_ui.js';
+
+export class TaskController {
   /**
    * @param {DialogType} dialogType
    * @param {!VolumeManager} volumeManager
@@ -123,42 +123,20 @@
     this.canExecuteOpenActions_ = false;
 
     /**
-     * @private {boolean}
-     */
-    this.canExecuteMoreActions_ = false;
-
-    /**
-     * @private {!cr.ui.Command}
+     * @private {!Command}
      * @const
      */
-    this.defaultTaskCommand_ = assertInstanceof(
-        document.querySelector('#default-task'), cr.ui.Command);
+    this.defaultTaskCommand_ =
+        assertInstanceof(document.querySelector('#default-task'), Command);
 
     /**
      * More actions command that uses #open-with as selector due to the
      * open-with command used previously for the same task.
-     * @private {!cr.ui.Command}
+     * @private {!Command}
      * @const
      */
     this.openWithCommand_ =
-        assertInstanceof(document.querySelector('#open-with'), cr.ui.Command);
-
-    /**
-     * More actions command that uses #open-with as selector due to the
-     * open-with command used previously for the same task.
-     * @private {!cr.ui.Command}
-     * @const
-     */
-    this.moreActionsCommand_ = assertInstanceof(
-        document.querySelector('#more-actions'), cr.ui.Command);
-
-    /**
-     * Show sub menu command that uses #show-submenu as selector.
-     * @private {!cr.ui.Command}
-     * @const
-     */
-    this.showSubMenuCommand_ = assertInstanceof(
-        document.querySelector('#show-submenu'), cr.ui.Command);
+        assertInstanceof(document.querySelector('#open-with'), Command);
 
     /**
      * @private {Promise<!FileTasks>}
@@ -179,10 +157,6 @@
 
     ui.taskMenuButton.addEventListener(
         'select', this.onTaskItemClicked_.bind(this));
-    ui.shareMenuButton.menu.addEventListener(
-        'activate', this.onTaskItemClicked_.bind(this));
-    ui.shareSubMenu.addEventListener(
-        'activate', this.onTaskItemClicked_.bind(this));
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
@@ -216,7 +190,7 @@
     }
 
     // 'select' event from ComboButton has the item as event.item.
-    // 'activate' event from cr.ui.MenuButton has the item as event.target.data.
+    // 'activate' event from MenuButton has the item as event.target.data.
     const item = event.item || event.target.data;
     this.getFileTasks()
         .then(tasks => {
@@ -280,7 +254,7 @@
     Promise.all(entries.map((entry) => this.getMimeType_(entry)))
         .then(mimeTypes => {
           chrome.fileManagerPrivate.setDefaultTask(
-              task.taskId, entries, mimeTypes, util.checkAPIError);
+              task.descriptor, entries, mimeTypes, util.checkAPIError);
           this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
 
           // Update task menu button unless the task button was updated other
@@ -289,8 +263,7 @@
             this.tasks_ = null;
             this.getFileTasks()
                 .then(tasks => {
-                  tasks.display(
-                      this.ui_.taskMenuButton, this.ui_.shareMenuButton);
+                  tasks.display(this.ui_.taskMenuButton);
                 })
                 .catch(error => {
                   if (error) {
@@ -309,7 +282,9 @@
     this.getFileTasks()
         .then(tasks => {
           const task = {
-            taskId: /** @type {string} */ (this.ui_.defaultTaskMenuItem.taskId),
+            descriptor:
+                /** @type {!chrome.fileManagerPrivate.FileTaskDescriptor} */ (
+                    this.ui_.defaultTaskMenuItem.descriptor),
             title: /** @type {string} */ (this.ui_.defaultTaskMenuItem.label),
             get iconUrl() {
               assert(false);
@@ -373,11 +348,11 @@
       // Compare entries while ignoring changes inside directories.
       if (!util.isSameEntries(this.lastSelectedEntries_, selection.entries)) {
         // Update the context menu if selection changed.
-        this.updateContextMenuTaskItems_([], []);
+        this.updateContextMenuTaskItems_([]);
       }
     } else {
       // Update context menu.
-      this.updateContextMenuTaskItems_([], []);
+      this.updateContextMenuTaskItems_([]);
     }
     this.lastSelectedEntries_ = selection.entries;
   }
@@ -392,9 +367,8 @@
         (selection.directoryCount > 0 || selection.fileCount > 0)) {
       this.getFileTasks()
           .then(tasks => {
-            tasks.display(this.ui_.taskMenuButton, this.ui_.shareMenuButton);
-            this.updateContextMenuTaskItems_(
-                tasks.getOpenTaskItems(), tasks.getNonOpenTaskItems());
+            tasks.display(this.ui_.taskMenuButton);
+            this.updateContextMenuTaskItems_(tasks.getOpenTaskItems());
           })
           .catch(error => {
             if (error) {
@@ -403,7 +377,6 @@
           });
     } else {
       this.ui_.taskMenuButton.hidden = true;
-      this.ui_.shareMenuButton.hidden = true;
     }
   }
 
@@ -461,32 +434,13 @@
   }
 
   /**
-   * Returns whether open with command can be executed or not.
-   * @return {boolean} True if open with command is executable.
-   */
-  canExecuteMoreActions() {
-    return this.canExecuteMoreActions_;
-  }
-
-  /**
-   * Returns whether show sub-menu command can be executed or not.
-   * @return {boolean} True if show-submenu command is executable.
-   */
-  canExecuteShowOverflow() {
-    // TODO (adanilo@) extend this for general sub-menu case
-    return this.ui_.shareMenuButton.overflow.firstChild !== null;
-  }
-
-  /**
    * Updates tasks menu item to match passed task items.
    *
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} openTasks List of OPEN
    *     tasks.
-   * @param {!Array<!chrome.fileManagerPrivate.FileTask>} nonOpenTasks List of
-   *     non-OPEN tasks.
    * @private
    */
-  updateContextMenuTaskItems_(openTasks, nonOpenTasks) {
+  updateContextMenuTaskItems_(openTasks) {
     const defaultTask = FileTasks.getDefaultTask(openTasks, this.taskHistory_);
     if (defaultTask) {
       this.ui_.defaultTaskMenuItem.removeAttribute('file-type-icon');
@@ -504,15 +458,10 @@
         this.ui_.defaultTaskMenuItem.style.marginInlineEnd = '';
       }
 
-      if (defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID) {
-        this.ui_.defaultTaskMenuItem.label = str('TASK_OPEN');
-      } else {
-        this.ui_.defaultTaskMenuItem.label =
-            defaultTask.label || defaultTask.title;
-      }
-
+      this.ui_.defaultTaskMenuItem.label =
+          defaultTask.label || defaultTask.title;
       this.ui_.defaultTaskMenuItem.disabled = !!defaultTask.disabled;
-      this.ui_.defaultTaskMenuItem.taskId = defaultTask.taskId;
+      this.ui_.defaultTaskMenuItem.descriptor = defaultTask.descriptor;
     }
 
     this.canExecuteDefaultTask_ = defaultTask != null;
@@ -521,11 +470,7 @@
     this.canExecuteOpenActions_ = openTasks.length > 1;
     this.openWithCommand_.canExecuteChange(this.ui_.listContainer.element);
 
-    this.canExecuteMoreActions_ = nonOpenTasks.length >= 1;
-    this.moreActionsCommand_.canExecuteChange(this.ui_.listContainer.element);
-
-    this.ui_.tasksSeparator.hidden =
-        openTasks.length === 0 && nonOpenTasks.length == 0;
+    this.ui_.tasksSeparator.hidden = openTasks.length === 0;
   }
 
   /**

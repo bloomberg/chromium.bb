@@ -8,11 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -22,11 +23,14 @@ class TestToggleButton : public ToggleButton {
  public:
   explicit TestToggleButton(int* counter) : counter_(counter) {}
 
+  TestToggleButton(const TestToggleButton&) = delete;
+  TestToggleButton& operator=(const TestToggleButton&) = delete;
+
   ~TestToggleButton() override {
-    // Calling ink_drop()->SetMode() in this subclass allows this class's
-    // implementation of RemoveLayerBeneathView() to be called. The same
-    // call is made in ~ToggleButton() so this is testing the general technique.
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+    // TODO(pbos): Revisit explicit removal of InkDrop for classes that override
+    // Add/RemoveLayerBeneathView(). This is done so that the InkDrop doesn't
+    // access the non-override versions in ~View.
+    views::InkDrop::Remove(this);
   }
 
   void AddLayerBeneathView(ui::Layer* layer) override {
@@ -42,14 +46,16 @@ class TestToggleButton : public ToggleButton {
   using View::Focus;
 
  private:
-  int* const counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestToggleButton);
+  const raw_ptr<int> counter_;
 };
 
 class ToggleButtonTest : public ViewsTestBase {
  public:
   ToggleButtonTest() = default;
+
+  ToggleButtonTest(const ToggleButtonTest&) = delete;
+  ToggleButtonTest& operator=(const ToggleButtonTest&) = delete;
+
   ~ToggleButtonTest() override = default;
 
   void SetUp() override {
@@ -81,10 +87,8 @@ class ToggleButtonTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<Widget> widget_;
-  TestToggleButton* button_ = nullptr;
+  raw_ptr<TestToggleButton> button_ = nullptr;
   int counter_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ToggleButtonTest);
 };
 
 // Starts ink drop animation on a ToggleButton and destroys the button.

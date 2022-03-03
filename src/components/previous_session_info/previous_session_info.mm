@@ -11,6 +11,7 @@
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #import "components/previous_session_info/previous_session_info_private.h"
 #include "components/version_info/version_info.h"
@@ -89,6 +90,7 @@ NSString* const kPreviousSessionInfoOSVersion = @"PreviousSessionInfoOSVersion";
 //   the device thermal state.
 NSString* const kPreviousSessionInfoThermalState =
     @"PreviousSessionInfoThermalState";
+// TODO(crbug.com/1266034): Remove key for no longer logged state.
 // - A (boolean) describing whether or not low power mode is enabled.
 NSString* const kPreviousSessionInfoLowPowerMode =
     @"PreviousSessionInfoLowPowerMode";
@@ -137,7 +139,6 @@ NSString* const kPreviousSessionInfoOTRTabCount =
 @property(nonatomic, assign) float deviceBatteryLevel;
 @property(nonatomic, assign) DeviceBatteryState deviceBatteryState;
 @property(nonatomic, assign) DeviceThermalState deviceThermalState;
-@property(nonatomic, assign) BOOL deviceWasInLowPowerMode;
 @property(nonatomic, assign) BOOL didSeeMemoryWarningShortlyBeforeTerminating;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
@@ -188,8 +189,6 @@ static PreviousSessionInfo* gSharedInstance = nil;
     gSharedInstance.didSeeMemoryWarningShortlyBeforeTerminating =
         [defaults boolForKey:previous_session_info_constants::
                                  kDidSeeMemoryWarningShortlyBeforeTerminating];
-    gSharedInstance.deviceWasInLowPowerMode =
-        [defaults boolForKey:kPreviousSessionInfoLowPowerMode];
     gSharedInstance.deviceBatteryState = static_cast<DeviceBatteryState>(
         [defaults integerForKey:kPreviousSessionInfoBatteryState]);
     gSharedInstance.deviceBatteryLevel =
@@ -296,6 +295,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
   [[NSUserDefaults standardUserDefaults]
       removeObjectForKey:kPreviousSessionInfoAppWillTerminate];
+  [[NSUserDefaults standardUserDefaults]
+      removeObjectForKey:kPreviousSessionInfoLowPowerMode];
 
   [defaults setObject:[NSDate date] forKey:kPreviousSessionInfoStartTime];
 
@@ -346,12 +347,6 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
   [[NSNotificationCenter defaultCenter]
       addObserver:self
-         selector:@selector(updateStoredLowPowerMode)
-             name:NSProcessInfoPowerStateDidChangeNotification
-           object:nil];
-
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
          selector:@selector(updateStoredThermalState)
              name:NSProcessInfoThermalStateDidChangeNotification
            object:nil];
@@ -381,7 +376,6 @@ static PreviousSessionInfo* gSharedInstance = nil;
   [self updateApplicationState];
   [self updateStoredBatteryLevel];
   [self updateStoredBatteryState];
-  [self updateStoredLowPowerMode];
   [self updateStoredThermalState];
   // Save critical state information for crash detection.
   [[NSUserDefaults standardUserDefaults] synchronize];
@@ -455,18 +449,6 @@ static PreviousSessionInfo* gSharedInstance = nil;
   [[NSUserDefaults standardUserDefaults]
       setInteger:batteryStateValue
           forKey:kPreviousSessionInfoBatteryState];
-
-  [self updateSessionEndTime];
-}
-
-- (void)updateStoredLowPowerMode {
-  if (!self.recordingCurrentSession)
-    return;
-  BOOL isLowPoweredModeEnabled =
-      [[NSProcessInfo processInfo] isLowPowerModeEnabled];
-  [[NSUserDefaults standardUserDefaults]
-      setInteger:isLowPoweredModeEnabled
-          forKey:kPreviousSessionInfoLowPowerMode];
 
   [self updateSessionEndTime];
 }
@@ -629,9 +611,10 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
 - (void)setReportParameterURL:(const GURL&)URL forKey:(NSString*)key {
   // Store only URL origin (not whole URL spec) as requested by Privacy Team.
-  [self setReportParameterValue:base::SysUTF8ToNSString(
-                                    URL.GetOrigin().spec().c_str())
-                         forKey:key];
+  [self
+      setReportParameterValue:base::SysUTF8ToNSString(
+                                  URL.DeprecatedGetOriginAsURL().spec().c_str())
+                       forKey:key];
 }
 
 - (void)removeReportParameterForKey:(NSString*)key {

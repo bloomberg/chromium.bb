@@ -185,21 +185,23 @@ static bool init_instance_extensions_and_layers(GrVkGetProc getProc,
 
     // instance extensions
     // via Vulkan implementation and implicitly enabled layers
-    uint32_t extensionCount = 0;
-    res = EnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    if (VK_SUCCESS != res) {
-        return false;
+    {
+        uint32_t extensionCount = 0;
+        res = EnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+        if (VK_SUCCESS != res) {
+            return false;
+        }
+        VkExtensionProperties* extensions = new VkExtensionProperties[extensionCount];
+        res = EnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions);
+        if (VK_SUCCESS != res) {
+            delete[] extensions;
+            return false;
+        }
+        for (uint32_t i = 0; i < extensionCount; ++i) {
+            instanceExtensions->push_back() = extensions[i];
+        }
+        delete [] extensions;
     }
-    VkExtensionProperties* extensions = new VkExtensionProperties[extensionCount];
-    res = EnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions);
-    if (VK_SUCCESS != res) {
-        delete[] extensions;
-        return false;
-    }
-    for (uint32_t i = 0; i < extensionCount; ++i) {
-        instanceExtensions->push_back() = extensions[i];
-    }
-    delete [] extensions;
 
     // via explicitly enabled layers
     layerCount = instanceLayers->count();
@@ -270,21 +272,23 @@ static bool init_device_extensions_and_layers(GrVkGetProc getProc, uint32_t spec
 
     // device extensions
     // via Vulkan implementation and implicitly enabled layers
-    uint32_t extensionCount = 0;
-    res = EnumerateDeviceExtensionProperties(physDev, nullptr, &extensionCount, nullptr);
-    if (VK_SUCCESS != res) {
-        return false;
-    }
-    VkExtensionProperties* extensions = new VkExtensionProperties[extensionCount];
-    res = EnumerateDeviceExtensionProperties(physDev, nullptr, &extensionCount, extensions);
-    if (VK_SUCCESS != res) {
+    {
+        uint32_t extensionCount = 0;
+        res = EnumerateDeviceExtensionProperties(physDev, nullptr, &extensionCount, nullptr);
+        if (VK_SUCCESS != res) {
+            return false;
+        }
+        VkExtensionProperties* extensions = new VkExtensionProperties[extensionCount];
+        res = EnumerateDeviceExtensionProperties(physDev, nullptr, &extensionCount, extensions);
+        if (VK_SUCCESS != res) {
+            delete[] extensions;
+            return false;
+        }
+        for (uint32_t i = 0; i < extensionCount; ++i) {
+            deviceExtensions->push_back() = extensions[i];
+        }
         delete[] extensions;
-        return false;
     }
-    for (uint32_t i = 0; i < extensionCount; ++i) {
-        deviceExtensions->push_back() = extensions[i];
-    }
-    delete[] extensions;
 
     // via explicitly enabled layers
     layerCount = deviceLayers->count();
@@ -568,7 +572,7 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
 
     VkPhysicalDeviceProperties physDeviceProperties;
     grVkGetPhysicalDeviceProperties(physDev, &physDeviceProperties);
-    int physDeviceVersion = std::min(physDeviceProperties.apiVersion, apiVersion);
+    uint32_t physDeviceVersion = std::min(physDeviceProperties.apiVersion, apiVersion);
 
     if (isProtected && physDeviceVersion < VK_MAKE_VERSION(1, 1, 0)) {
         SkDebugf("protected requires vk physical device version 1.1\n");
@@ -662,7 +666,10 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
 
             // This is an nvidia extension that isn't supported by the debug layers so we get lots
             // of warnings. We don't actually use it, so it is easiest to just not enable it.
-            if (0 == strcmp(deviceExtensions[i].extensionName, "VK_NV_low_latency")) {
+            if (0 == strcmp(deviceExtensions[i].extensionName, "VK_NV_low_latency") ||
+                0 == strcmp(deviceExtensions[i].extensionName, "VK_NV_acquire_winrt_display") ||
+                0 == strcmp(deviceExtensions[i].extensionName, "VK_NV_cuda_kernel_launch") ||
+                0 == strcmp(deviceExtensions[i].extensionName, "VK_EXT_provoking_vertex")) {
                 continue;
             }
 

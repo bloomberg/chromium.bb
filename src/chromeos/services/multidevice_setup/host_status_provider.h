@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_HOST_STATUS_PROVIDER_H_
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_HOST_STATUS_PROVIDER_H_
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -50,6 +50,9 @@ class HostStatusProvider {
         const HostStatusWithDevice& host_status_with_device) = 0;
   };
 
+  HostStatusProvider(const HostStatusProvider&) = delete;
+  HostStatusProvider& operator=(const HostStatusProvider&) = delete;
+
   virtual ~HostStatusProvider();
 
   virtual HostStatusWithDevice GetHostWithStatus() const = 0;
@@ -66,8 +69,6 @@ class HostStatusProvider {
 
  private:
   base::ObserverList<Observer>::Unchecked observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostStatusProvider);
 };
 
 }  // namespace multidevice_setup

@@ -19,6 +19,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/views/border.h"
 
 namespace ash {
 
@@ -158,7 +159,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
     DCHECK(bubble_view_);
 
     if (slider_type_ != slider_type) {
-      bubble_view_->RemoveAllChildViews(true);
+      bubble_view_->RemoveAllChildViews();
 
       slider_type_ = slider_type;
       CreateSliderController();
@@ -225,17 +226,17 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
 void UnifiedSliderBubbleController::CreateSliderController() {
   switch (slider_type_) {
     case SLIDER_TYPE_VOLUME:
-      slider_controller_ = std::make_unique<UnifiedVolumeSliderController>(
-          this, true /* in_bubble */);
+      slider_controller_ =
+          std::make_unique<UnifiedVolumeSliderController>(this);
       return;
     case SLIDER_TYPE_DISPLAY_BRIGHTNESS:
-      slider_controller_ =
-          std::make_unique<UnifiedBrightnessSliderController>(tray_->model());
+      slider_controller_ = std::make_unique<UnifiedBrightnessSliderController>(
+          tray_->model().get());
       return;
     case SLIDER_TYPE_KEYBOARD_BRIGHTNESS:
       slider_controller_ =
           std::make_unique<UnifiedKeyboardBrightnessSliderController>(
-              tray_->model());
+              tray_->model().get());
       return;
     case SLIDER_TYPE_MIC:
       slider_controller_ = std::make_unique<MicGainSliderController>();
@@ -244,10 +245,8 @@ void UnifiedSliderBubbleController::CreateSliderController() {
 
 void UnifiedSliderBubbleController::StartAutoCloseTimer() {
   autoclose_.Stop();
-  autoclose_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kTrayPopupAutoCloseDelayInSeconds), this,
-      &UnifiedSliderBubbleController::CloseBubble);
+  autoclose_.Start(FROM_HERE, base::Seconds(kTrayPopupAutoCloseDelayInSeconds),
+                   this, &UnifiedSliderBubbleController::CloseBubble);
 }
 
 }  // namespace ash

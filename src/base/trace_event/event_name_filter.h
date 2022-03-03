@@ -10,7 +10,6 @@
 #include <unordered_set>
 
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/trace_event/trace_event_filter.h"
 
 namespace base {
@@ -29,6 +28,10 @@ class BASE_EXPORT EventNameFilter : public TraceEventFilter {
   static const char kName[];
 
   EventNameFilter(std::unique_ptr<EventNamesWhitelist>);
+
+  EventNameFilter(const EventNameFilter&) = delete;
+  EventNameFilter& operator=(const EventNameFilter&) = delete;
+
   ~EventNameFilter() override;
 
   // TraceEventFilter implementation.
@@ -36,8 +39,6 @@ class BASE_EXPORT EventNameFilter : public TraceEventFilter {
 
  private:
   std::unique_ptr<const EventNamesWhitelist> event_names_whitelist_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventNameFilter);
 };
 
 }  // namespace trace_event

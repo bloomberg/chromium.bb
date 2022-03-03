@@ -12,10 +12,9 @@
 #include "ash/public/cpp/session/session_controller_client.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/browser_manager_observer.h"
-#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
+#include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -48,6 +47,11 @@ class SessionControllerClientImpl
       public crosapi::BrowserManagerObserver {
  public:
   SessionControllerClientImpl();
+
+  SessionControllerClientImpl(const SessionControllerClientImpl&) = delete;
+  SessionControllerClientImpl& operator=(const SessionControllerClientImpl&) =
+      delete;
+
   ~SessionControllerClientImpl() override;
 
   void Init();
@@ -85,6 +89,7 @@ class SessionControllerClientImpl
   void EmitAshInitialized() override;
   PrefService* GetSigninScreenPrefService() override;
   PrefService* GetUserPrefService(const AccountId& account_id) override;
+  bool IsEnterpriseManaged() const override;
 
   // Returns true if a multi-profile user can be added to the session or if
   // multiple users are already signed in.
@@ -180,8 +185,6 @@ class SessionControllerClientImpl
   std::unique_ptr<ash::UserSession> last_sent_user_session_;
 
   base::WeakPtrFactory<SessionControllerClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SessionControllerClientImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_IMPL_H_

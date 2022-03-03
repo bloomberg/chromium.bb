@@ -9,9 +9,14 @@
 #include <string>
 #include <tuple>
 
+#include "build/build_config.h"
 #include "ui/gfx/geometry/geometry_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+
+#if defined(OS_APPLE)
+struct CGPoint;
+#endif
 
 namespace gfx {
 
@@ -23,6 +28,11 @@ class GEOMETRY_EXPORT PointF {
 
   constexpr explicit PointF(const Point& p)
       : PointF(static_cast<float>(p.x()), static_cast<float>(p.y())) {}
+
+#if defined(OS_APPLE)
+  explicit PointF(const CGPoint&);
+  CGPoint ToCGPoint() const;
+#endif
 
   constexpr float x() const { return x_; }
   constexpr float y() const { return y_; }
@@ -39,12 +49,12 @@ class GEOMETRY_EXPORT PointF {
     y_ += delta_y;
   }
 
-  void operator+=(const Vector2dF& vector) {
+  constexpr void operator+=(const Vector2dF& vector) {
     x_ += vector.x();
     y_ += vector.y();
   }
 
-  void operator-=(const Vector2dF& vector) {
+  constexpr void operator-=(const Vector2dF& vector) {
     x_ -= vector.x();
     y_ -= vector.y();
   }
@@ -54,7 +64,7 @@ class GEOMETRY_EXPORT PointF {
 
   bool IsOrigin() const { return x_ == 0 && y_ == 0; }
 
-  Vector2dF OffsetFromOrigin() const { return Vector2dF(x_, y_); }
+  constexpr Vector2dF OffsetFromOrigin() const { return Vector2dF(x_, y_); }
 
   // A point is less than another point if its y-value is closer
   // to the origin. If the y-values are the same, then point with
@@ -74,6 +84,16 @@ class GEOMETRY_EXPORT PointF {
     SetPoint(x() * x_scale, y() * y_scale);
   }
 
+  void Transpose() {
+    using std::swap;
+    swap(x_, y_);
+  }
+
+  // Uses the Pythagorean theorem to determine the straight line distance
+  // between the two points, and returns true if it is less than
+  // |allowed_distance|.
+  bool IsWithinDistance(const PointF& rhs, const float allowed_distance) const;
+
   // Returns a string representation of point.
   std::string ToString() const;
 
@@ -82,21 +102,21 @@ class GEOMETRY_EXPORT PointF {
   float y_;
 };
 
-inline bool operator==(const PointF& lhs, const PointF& rhs) {
+constexpr bool operator==(const PointF& lhs, const PointF& rhs) {
   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
 
-inline bool operator!=(const PointF& lhs, const PointF& rhs) {
+constexpr bool operator!=(const PointF& lhs, const PointF& rhs) {
   return !(lhs == rhs);
 }
 
-inline PointF operator+(const PointF& lhs, const Vector2dF& rhs) {
+constexpr PointF operator+(const PointF& lhs, const Vector2dF& rhs) {
   PointF result(lhs);
   result += rhs;
   return result;
 }
 
-inline PointF operator-(const PointF& lhs, const Vector2dF& rhs) {
+constexpr PointF operator-(const PointF& lhs, const Vector2dF& rhs) {
   PointF result(lhs);
   result -= rhs;
   return result;
@@ -116,6 +136,10 @@ GEOMETRY_EXPORT PointF ScalePoint(const PointF& p,
 
 inline PointF ScalePoint(const PointF& p, float scale) {
   return ScalePoint(p, scale, scale);
+}
+
+inline PointF TransposePoint(const PointF& p) {
+  return PointF(p.y(), p.x());
 }
 
 // This is declared here for use in gtest-based unit tests but is defined in

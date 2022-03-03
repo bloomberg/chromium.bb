@@ -16,110 +16,15 @@
 #define SRC_SEM_INTRINSIC_H_
 
 #include <string>
+#include <vector>
 
 #include "src/sem/call_target.h"
+#include "src/sem/intrinsic_type.h"
+#include "src/sem/pipeline_stage_set.h"
+#include "src/utils/hash.h"
 
 namespace tint {
 namespace sem {
-
-enum class IntrinsicType {
-  kNone = -1,
-
-  kAbs,
-  kAcos,
-  kAll,
-  kAny,
-  kArrayLength,
-  kAsin,
-  kAtan,
-  kAtan2,
-  kCeil,
-  kClamp,
-  kCos,
-  kCosh,
-  kCountOneBits,
-  kCross,
-  kDeterminant,
-  kDistance,
-  kDot,
-  kDpdx,
-  kDpdxCoarse,
-  kDpdxFine,
-  kDpdy,
-  kDpdyCoarse,
-  kDpdyFine,
-  kExp,
-  kExp2,
-  kFaceForward,
-  kFloor,
-  kFma,
-  kFract,
-  kFrexp,
-  kFwidth,
-  kFwidthCoarse,
-  kFwidthFine,
-  kInverseSqrt,
-  kIsFinite,
-  kIsInf,
-  kIsNan,
-  kIsNormal,
-  kLdexp,
-  kLength,
-  kLog,
-  kLog2,
-  kMax,
-  kMin,
-  kMix,
-  kModf,
-  kNormalize,
-  kPack2x16Float,
-  kPack2x16Snorm,
-  kPack2x16Unorm,
-  kPack4x8Snorm,
-  kPack4x8Unorm,
-  kPow,
-  kReflect,
-  kReverseBits,
-  kRound,
-  kSelect,
-  kSign,
-  kSin,
-  kSinh,
-  kSmoothStep,
-  kSqrt,
-  kStep,
-  kStorageBarrier,
-  kTan,
-  kTanh,
-  kTextureDimensions,
-  kTextureLoad,
-  kTextureNumLayers,
-  kTextureNumLevels,
-  kTextureNumSamples,
-  kTextureSample,
-  kTextureSampleBias,
-  kTextureSampleCompare,
-  kTextureSampleGrad,
-  kTextureSampleLevel,
-  kTextureStore,
-  kTrunc,
-  kUnpack2x16Float,
-  kUnpack2x16Snorm,
-  kUnpack2x16Unorm,
-  kUnpack4x8Snorm,
-  kUnpack4x8Unorm,
-  kWorkgroupBarrier,
-};
-
-/// Matches the IntrisicType by name
-/// @param name the intrinsic name to parse
-/// @returns the parsed IntrinsicType, or IntrinsicType::kNone if `name` did not
-/// match any intrinsic.
-IntrinsicType ParseIntrinsicType(const std::string& name);
-
-/// @returns the name of the intrinsic function type. The spelling, including
-/// case, matches the name in the WGSL spec.
-const char* str(IntrinsicType i);
 
 /// Determines if the given `i` is a coarse derivative
 /// @param i the intrinsic type
@@ -166,6 +71,11 @@ bool IsDataUnpackingIntrinsic(IntrinsicType i);
 /// @returns true if the given `i` is a barrier intrinsic
 bool IsBarrierIntrinsic(IntrinsicType i);
 
+/// Determines if the given `i` is a atomic intrinsic
+/// @param i the intrinsic
+/// @returns true if the given `i` is a atomic intrinsic
+bool IsAtomicIntrinsic(IntrinsicType i);
+
 /// Intrinsic holds the semantic information for an intrinsic function.
 class Intrinsic : public Castable<Intrinsic, CallTarget> {
  public:
@@ -173,15 +83,27 @@ class Intrinsic : public Castable<Intrinsic, CallTarget> {
   /// @param type the intrinsic type
   /// @param return_type the return type for the intrinsic call
   /// @param parameters the parameters for the intrinsic overload
+  /// @param supported_stages the pipeline stages that this intrinsic can be
+  /// used in
+  /// @param is_deprecated true if the particular overload is considered
+  /// deprecated
   Intrinsic(IntrinsicType type,
-            sem::Type* return_type,
-            const ParameterList& parameters);
+            const sem::Type* return_type,
+            std::vector<Parameter*> parameters,
+            PipelineStageSet supported_stages,
+            bool is_deprecated);
 
   /// Destructor
   ~Intrinsic() override;
 
   /// @return the type of the intrinsic
   IntrinsicType Type() const { return type_; }
+
+  /// @return the pipeline stages that this intrinsic can be used in
+  PipelineStageSet SupportedStages() const { return supported_stages_; }
+
+  /// @return true if the intrinsic overload is considered deprecated
+  bool IsDeprecated() const { return is_deprecated_; }
 
   /// @returns the name of the intrinsic function type. The spelling, including
   /// case, matches the name in the WGSL spec.
@@ -214,15 +136,32 @@ class Intrinsic : public Castable<Intrinsic, CallTarget> {
   /// @returns true if intrinsic is a barrier intrinsic
   bool IsBarrier() const;
 
- private:
-  IntrinsicType const type_;
-};
+  /// @returns true if intrinsic is a atomic intrinsic
+  bool IsAtomic() const;
 
-/// Emits the name of the intrinsic function type. The spelling, including case,
-/// matches the name in the WGSL spec.
-std::ostream& operator<<(std::ostream& out, IntrinsicType i);
+ private:
+  const IntrinsicType type_;
+  const PipelineStageSet supported_stages_;
+  const bool is_deprecated_;
+};
 
 }  // namespace sem
 }  // namespace tint
+
+namespace std {
+
+/// Custom std::hash specialization for tint::sem::Intrinsic
+template <>
+class hash<tint::sem::Intrinsic> {
+ public:
+  /// @param i the Intrinsic to create a hash for
+  /// @return the hash value
+  inline std::size_t operator()(const tint::sem::Intrinsic& i) const {
+    return tint::utils::Hash(i.Type(), i.SupportedStages(), i.ReturnType(),
+                             i.Parameters(), i.IsDeprecated());
+  }
+};
+
+}  // namespace std
 
 #endif  // SRC_SEM_INTRINSIC_H_

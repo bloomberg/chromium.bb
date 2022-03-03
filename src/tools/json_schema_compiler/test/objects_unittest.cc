@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -19,18 +20,18 @@ namespace objects_movable = test::api::objects_movable;
 
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
-    auto strings = std::make_unique<base::ListValue>();
-    strings->AppendString("one");
-    strings->AppendString("two");
-    auto info_value = std::make_unique<base::DictionaryValue>();
-    info_value->Set("strings", std::move(strings));
-    info_value->SetInteger("integer", 5);
-    info_value->SetBoolean("boolean", true);
+    base::Value strings(base::Value::Type::LIST);
+    strings.Append("one");
+    strings.Append("two");
+    base::Value info_value(base::Value::Type::DICTIONARY);
+    info_value.SetKey("strings", std::move(strings));
+    info_value.SetIntPath("integer", 5);
+    info_value.SetBoolPath("boolean", true);
 
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->Append(std::move(info_value));
+    std::vector<base::Value> params_value;
+    params_value.push_back(std::move(info_value));
     std::unique_ptr<test::api::objects::ObjectParam::Params> params(
-        test::api::objects::ObjectParam::Params::Create(*params_value));
+        test::api::objects::ObjectParam::Params::Create(params_value));
     EXPECT_TRUE(params.get());
     EXPECT_EQ((size_t) 2, params->info.strings.size());
     EXPECT_EQ("one", params->info.strings[0]);
@@ -39,17 +40,17 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     EXPECT_TRUE(params->info.boolean);
   }
   {
-    auto strings = std::make_unique<base::ListValue>();
-    strings->AppendString("one");
-    strings->AppendString("two");
-    auto info_value = std::make_unique<base::DictionaryValue>();
-    info_value->Set("strings", std::move(strings));
-    info_value->SetInteger("integer", 5);
+    base::Value strings(base::Value::Type::LIST);
+    strings.Append("one");
+    strings.Append("two");
+    base::Value info_value(base::Value::Type::DICTIONARY);
+    info_value.SetKey("strings", std::move(strings));
+    info_value.SetIntPath("integer", 5);
 
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->Append(std::move(info_value));
+    std::vector<base::Value> params_value;
+    params_value.push_back(std::move(info_value));
     std::unique_ptr<test::api::objects::ObjectParam::Params> params(
-        test::api::objects::ObjectParam::Params::Create(*params_value));
+        test::api::objects::ObjectParam::Params::Create(params_value));
     EXPECT_FALSE(params.get());
   }
 }

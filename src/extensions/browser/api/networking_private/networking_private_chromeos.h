@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
@@ -26,6 +25,11 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
  public:
   // |verify_delegate| is passed to NetworkingPrivateDelegate and may be NULL.
   explicit NetworkingPrivateChromeOS(content::BrowserContext* browser_context);
+
+  NetworkingPrivateChromeOS(const NetworkingPrivateChromeOS&) = delete;
+  NetworkingPrivateChromeOS& operator=(const NetworkingPrivateChromeOS&) =
+      delete;
+
   ~NetworkingPrivateChromeOS() override;
 
   // NetworkingPrivateApi
@@ -83,7 +87,7 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
                                    const std::string& network_id,
                                    VoidCallback success_callback,
                                    FailureCallback failure_callback) override;
-  std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  base::Value GetEnabledNetworkTypes() override;
   std::unique_ptr<DeviceStateList> GetDeviceStateList() override;
   std::unique_ptr<base::DictionaryValue> GetGlobalPolicy() override;
   std::unique_ptr<base::DictionaryValue> GetCertificateLists() override;
@@ -108,8 +112,6 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
 
   content::BrowserContext* browser_context_;
   base::WeakPtrFactory<NetworkingPrivateChromeOS> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateChromeOS);
 };
 
 }  // namespace extensions

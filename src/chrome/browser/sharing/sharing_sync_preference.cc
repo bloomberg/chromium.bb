@@ -6,16 +6,16 @@
 
 #include "base/base64.h"
 #include "base/feature_list.h"
+#include "base/json/values_util.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -36,13 +36,13 @@ const char kSharingInfoVapidTargetInfo[] = "vapid_target_info";
 const char kSharingInfoSenderIdTargetInfo[] = "sender_id_target_info";
 const char kSharingInfoEnabledFeatures[] = "enabled_features";
 
-base::DictionaryValue TargetInfoToValue(
+base::Value TargetInfoToValue(
     const syncer::DeviceInfo::SharingTargetInfo& target_info) {
   std::string base64_p256dh, base64_auth_secret;
   base::Base64Encode(target_info.p256dh, &base64_p256dh);
   base::Base64Encode(target_info.auth_secret, &base64_auth_secret);
 
-  base::DictionaryValue result;
+  base::Value result(base::Value::Type::DICTIONARY);
   result.SetStringKey(kDeviceFcmToken, target_info.fcm_token);
   result.SetStringKey(kDeviceP256dh, base64_p256dh);
   result.SetStringKey(kDeviceAuthSecret, base64_auth_secret);
@@ -112,13 +112,15 @@ void SharingSyncPreference::RegisterProfilePrefs(
 
 absl::optional<std::vector<uint8_t>> SharingSyncPreference::GetVapidKey()
     const {
-  const base::DictionaryValue* vapid_key =
-      prefs_->GetDictionary(prefs::kSharingVapidKey);
-  std::string base64_private_key, private_key;
-  if (!vapid_key->GetString(kVapidECPrivateKey, &base64_private_key))
+  const base::Value* vapid_key = prefs_->GetDictionary(prefs::kSharingVapidKey);
+  const std::string* base64_private_key =
+      vapid_key->FindStringKey(kVapidECPrivateKey);
+
+  if (!base64_private_key)
     return absl::nullopt;
 
-  if (base::Base64Decode(base64_private_key, &private_key)) {
+  std::string private_key;
+  if (base::Base64Decode(*base64_private_key, &private_key)) {
     return std::vector<uint8_t>(private_key.begin(), private_key.end());
   } else {
     LOG(ERROR) << "Could not decode stored vapid keys.";
@@ -136,7 +138,7 @@ void SharingSyncPreference::SetVapidKey(
   DictionaryPrefUpdate update(prefs_, prefs::kSharingVapidKey);
   update->SetStringKey(kVapidECPrivateKey, base64_vapid_key);
   update->SetKey(kVapidCreationTimestamp,
-                 util::TimeToValue(creation_timestamp));
+                 base::TimeToValue(creation_timestamp));
 }
 
 void SharingSyncPreference::SetVapidKeyChangeObserver(
@@ -152,7 +154,7 @@ void SharingSyncPreference::ClearVapidKeyChangeObserver() {
 
 absl::optional<SharingSyncPreference::FCMRegistration>
 SharingSyncPreference::GetFCMRegistration() const {
-  const base::DictionaryValue* registration =
+  const base::Value* registration =
       prefs_->GetDictionary(prefs::kSharingFCMRegistration);
   const std::string* authorized_entity_ptr =
       registration->FindStringKey(kRegistrationAuthorizedEntity);
@@ -165,7 +167,7 @@ SharingSyncPreference::GetFCMRegistration() const {
   if (authorized_entity_ptr)
     authorized_entity = *authorized_entity_ptr;
 
-  absl::optional<base::Time> timestamp = util::ValueToTime(timestamp_value);
+  absl::optional<base::Time> timestamp = base::ValueToTime(timestamp_value);
   if (!timestamp)
     return absl::nullopt;
 
@@ -181,7 +183,7 @@ void SharingSyncPreference::SetFCMRegistration(FCMRegistration registration) {
     update->RemoveKey(kRegistrationAuthorizedEntity);
   }
   update->SetKey(kRegistrationTimestamp,
-                 util::TimeToValue(registration.timestamp));
+                 base::TimeToValue(registration.timestamp));
 }
 
 void SharingSyncPreference::ClearFCMRegistration() {
@@ -198,12 +200,12 @@ void SharingSyncPreference::SetLocalSharingInfo(
   if (device_info->sharing_info() == sharing_info)
     return;
 
-  base::DictionaryValue vapid_target_info =
+  base::Value vapid_target_info =
       TargetInfoToValue(sharing_info.vapid_target_info);
-  base::DictionaryValue sender_id_target_info =
+  base::Value sender_id_target_info =
       TargetInfoToValue(sharing_info.sender_id_target_info);
 
-  base::ListValue list_value;
+  base::Value list_value(base::Value::Type::LIST);
   for (SharingSpecificFields::EnabledFeatures feature :
        sharing_info.enabled_features) {
     list_value.Append(feature);
@@ -237,7 +239,7 @@ void SharingSyncPreference::ClearLocalSharingInfo() {
 // static
 absl::optional<syncer::DeviceInfo::SharingInfo>
 SharingSyncPreference::GetLocalSharingInfoForSync(PrefService* prefs) {
-  const base::DictionaryValue* registration =
+  const base::Value* registration =
       prefs->GetDictionary(prefs::kSharingLocalSharingInfo);
 
   const base::Value* vapid_target_info_value =

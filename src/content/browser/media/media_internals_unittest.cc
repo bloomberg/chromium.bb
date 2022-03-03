@@ -68,9 +68,9 @@ class MediaInternalsTestBase {
   }
 
   void ExpectInt(const std::string& key, int expected_value) const {
-    int actual_value = 0;
-    ASSERT_TRUE(update_data_.GetInteger(key, &actual_value));
-    EXPECT_EQ(expected_value, actual_value);
+    absl::optional<int> actual_value = update_data_.FindIntKey(key);
+    ASSERT_TRUE(actual_value);
+    EXPECT_EQ(expected_value, *actual_value);
   }
 
   void ExpectString(const std::string& key,
@@ -88,14 +88,16 @@ class MediaInternalsTestBase {
                            const base::ListValue& expected_list) const {
     const base::ListValue* actual_list;
     ASSERT_TRUE(update_data_.GetList(key, &actual_list));
-    const size_t expected_size = expected_list.GetSize();
-    const size_t actual_size = actual_list->GetSize();
+    const size_t expected_size = expected_list.GetList().size();
+    const size_t actual_size = actual_list->GetList().size();
     ASSERT_EQ(expected_size, actual_size);
     for (size_t i = 0; i < expected_size; ++i) {
-      std::string expected_value, actual_value;
-      ASSERT_TRUE(expected_list.GetString(i, &expected_value));
-      ASSERT_TRUE(actual_list->GetString(i, &actual_value));
-      EXPECT_EQ(expected_value, actual_value);
+      const std::string* expected_value =
+          expected_list.GetList()[i].GetIfString();
+      const std::string* actual_value = actual_list->GetList()[i].GetIfString();
+      ASSERT_TRUE(expected_value);
+      ASSERT_TRUE(actual_value);
+      EXPECT_EQ(*expected_value, *actual_value);
     }
   }
 
@@ -195,7 +197,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
 #endif
   ExpectString("name", "dummy");
   base::ListValue expected_list;
-  expected_list.AppendString(media::VideoCaptureFormat::ToString(format_hd));
+  expected_list.Append(media::VideoCaptureFormat::ToString(format_hd));
   ExpectListOfStrings("formats", expected_list);
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   ExpectString("captureApi", "V4L2 SPLANE");
@@ -355,7 +357,7 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
         update_data_.FindKeyOfType("sessions", base::Value::Type::LIST)
             ->Clone();
 
-    update_data_.Clear();
+    update_data_.DictClear();
     run_loop_ = std::make_unique<base::RunLoop>();
     call_count_ = 0;
 
@@ -365,7 +367,7 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
   void Reset() {
     base::AutoLock auto_lock(lock_);
 
-    update_data_.Clear();
+    update_data_.DictClear();
     run_loop_ = std::make_unique<base::RunLoop>();
     call_count_ = 0;
   }

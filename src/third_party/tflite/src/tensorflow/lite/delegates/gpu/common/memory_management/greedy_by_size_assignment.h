@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_MEMORY_MANAGEMENT_GREEDY_BY_SIZE_ASSIGNMENT_H_
 #define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_MEMORY_MANAGEMENT_GREEDY_BY_SIZE_ASSIGNMENT_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "tensorflow/lite/delegates/gpu/common/memory_management/types.h"
@@ -40,7 +42,7 @@ namespace gpu {
 // corresponding offset to current tensor and the tensor becomes assigned.
 absl::Status GreedyBySizeAssignment(
     const std::vector<TensorUsageRecord<size_t>>& usage_records,
-    OffsetsAssignment* assignment);
+    size_t base_addr_align_bytes, OffsetsAssignment* assignment);
 
 // Assigns given tensors to shared objects, using the following greedy
 // algorithm:

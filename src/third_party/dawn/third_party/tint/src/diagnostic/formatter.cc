@@ -15,6 +15,7 @@
 #include "src/diagnostic/formatter.h"
 
 #include <algorithm>
+#include <iterator>
 #include <vector>
 
 #include "src/diagnostic/diagnostic.h"
@@ -96,9 +97,7 @@ struct Formatter::State {
   /// @param c the character to print `n` times
   /// @param n the number of times to print character `c`
   void repeat(char c, size_t n) {
-    while (n-- > 0) {
-      stream << c;
-    }
+    std::fill_n(std::ostream_iterator<char>(stream), n, c);
   }
 
  private:
@@ -113,7 +112,6 @@ Formatter::Formatter(const Style& style) : style_(style) {}
 void Formatter::format(const List& list, Printer* printer) const {
   State state{printer};
 
-  bool please_report_bug = false;
   bool first = true;
   for (auto diag : list) {
     state.set_style({});
@@ -122,21 +120,6 @@ void Formatter::format(const List& list, Printer* printer) const {
     }
     format(diag, state);
     first = false;
-
-    if (static_cast<int>(diag.severity) > static_cast<int>(Severity::Error)) {
-      please_report_bug = true;
-    }
-  }
-  if (please_report_bug) {
-    state.set_style({Color::kRed, true});
-    state << R"(
-********************************************************************
-*  The tint shader compiler has encountered an unexpected error.   *
-*                                                                  *
-*  Please help us fix this issue by submitting a bug report at     *
-*  crbug.com/tint with the source program that triggered the bug.  *
-********************************************************************
-)";
   }
 
   if (style_.print_newline_at_end) {
@@ -212,7 +195,8 @@ void Formatter::format(const Diagnostic& diag, State& state) const {
     state.set_style({Color::kDefault, false});
 
     for (size_t line_num = rng.begin.line;
-         (line_num <= rng.end.line) && (src.file_content->lines.size() + 1);
+         (line_num <= rng.end.line) &&
+         (line_num <= src.file_content->lines.size());
          line_num++) {
       auto& line = src.file_content->lines[line_num - 1];
       auto line_len = line.size();

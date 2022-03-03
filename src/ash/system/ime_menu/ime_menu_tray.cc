@@ -9,7 +9,6 @@
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -18,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/icon_button.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -28,13 +28,14 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/system/unified/top_shortcut_button.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/session_manager/session_manager_types.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -147,13 +149,14 @@ class ImeTitleView : public views::BoxLayoutView {
                                      TrayPopupUtils::FontStyle::kPodMenuHeader);
     SetFlexForView(title_label, 1);
 
-    settings_button_ = AddChildView(std::make_unique<TopShortcutButton>(
+    settings_button_ = AddChildView(std::make_unique<IconButton>(
         base::BindRepeating([]() {
           base::RecordAction(
               base::UserMetricsAction("StatusArea_IME_Detailed"));
           Shell::Get()->system_tray_model()->client()->ShowIMESettings();
         }),
-        kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS));
+        IconButton::Type::kSmall, &kSystemMenuSettingsIcon,
+        IDS_ASH_STATUS_TRAY_IME_SETTINGS));
     settings_button_->SetEnabled(TrayPopupUtils::CanOpenWebUISettings());
   }
   ImeTitleView(const ImeTitleView&) = delete;
@@ -162,7 +165,7 @@ class ImeTitleView : public views::BoxLayoutView {
   ~ImeTitleView() override = default;
 
  private:
-  TopShortcutButton* settings_button_ = nullptr;
+  IconButton* settings_button_ = nullptr;
 };
 
 BEGIN_METADATA(ImeTitleView, views::BoxLayoutView)
@@ -186,7 +189,7 @@ class ImeButtonsView : public views::View {
 
   ~ImeButtonsView() override = default;
 
-  void KeysetButtonPressed(chromeos::input_method::ImeKeyset keyset) {
+  void KeysetButtonPressed(input_method::ImeKeyset keyset) {
     // TODO(dcheng): When https://crbug.com/742517 is fixed, Mojo will generate
     // a constant for the number of values in the enum. For now, we just define
     // it here and keep it in sync with the enum.
@@ -215,10 +218,8 @@ class ImeButtonsView : public views::View {
 
     if (show_emoji) {
       emoji_button_ = new SystemMenuButton(
-          base::BindRepeating(&ImeButtonsView::KeysetButtonPressed,
-                              base::Unretained(this),
-                              chromeos::input_method::ImeKeyset::kEmoji),
-          kImeMenuEmoticonIcon, IDS_ASH_STATUS_TRAY_IME_EMOJI);
+          base::BindRepeating(&ui::ShowEmojiPanel), kImeMenuEmoticonIcon,
+          IDS_ASH_STATUS_TRAY_IME_EMOJI);
       emoji_button_->SetID(kEmojiButtonId);
       AddChildView(emoji_button_);
     }
@@ -227,7 +228,7 @@ class ImeButtonsView : public views::View {
       handwriting_button_ = new SystemMenuButton(
           base::BindRepeating(&ImeButtonsView::KeysetButtonPressed,
                               base::Unretained(this),
-                              chromeos::input_method::ImeKeyset::kHandwriting),
+                              input_method::ImeKeyset::kHandwriting),
           kImeMenuWriteIcon, IDS_ASH_STATUS_TRAY_IME_HANDWRITING);
       AddChildView(handwriting_button_);
     }
@@ -236,7 +237,7 @@ class ImeButtonsView : public views::View {
       voice_button_ = new SystemMenuButton(
           base::BindRepeating(&ImeButtonsView::KeysetButtonPressed,
                               base::Unretained(this),
-                              chromeos::input_method::ImeKeyset::kVoice),
+                              input_method::ImeKeyset::kVoice),
           kImeMenuMicrophoneIcon, IDS_ASH_STATUS_TRAY_IME_VOICE);
       AddChildView(voice_button_);
     }
@@ -268,6 +269,9 @@ class ImeMenuListView : public ImeListView {
    public:
     Delegate() : DetailedViewDelegate(nullptr /* tray_controller */) {}
 
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
     // DetailedViewDelegate:
     void TransitionToMainView(bool restore_focus) override {}
     void CloseBubble() override {}
@@ -275,9 +279,6 @@ class ImeMenuListView : public ImeListView {
     gfx::Insets GetInsetsForDetailedView() const override {
       return gfx::Insets();
     }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   explicit ImeMenuListView(std::unique_ptr<Delegate> delegate)
@@ -379,8 +380,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   SetIsActive(true);
 }
 
-void ImeMenuTray::ShowKeyboardWithKeyset(
-    chromeos::input_method::ImeKeyset keyset) {
+void ImeMenuTray::ShowKeyboardWithKeyset(input_method::ImeKeyset keyset) {
   CloseBubble();
 
   Shell::Get()
@@ -486,7 +486,7 @@ void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
     ime_list_view_->Update(
-        ime_controller_->current_ime().id, ime_controller_->available_imes(),
+        ime_controller_->current_ime().id, ime_controller_->GetVisibleImes(),
         ime_controller_->current_ime_menu_items(), ShouldShowKeyboardToggle(),
         ImeListView::SHOW_SINGLE_IME);
   }
@@ -534,7 +534,7 @@ void ImeMenuTray::UpdateTrayLabel() {
 
   // For ARC IMEs, we use the globe icon instead of the short name of the active
   // IME.
-  if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
+  if (extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
     image_view_->SetImage(gfx::CreateVectorIcon(
         kShelfGlobeIcon,

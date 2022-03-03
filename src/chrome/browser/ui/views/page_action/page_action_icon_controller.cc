@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/autofill/payments/offer_notification_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/virtual_card_manual_fallback_icon_view.h"
-#include "chrome/browser/ui/views/autofill/save_address_profile_icon_view.h"
+#include "chrome/browser/ui/views/autofill/save_update_address_profile_icon_view.h"
 #include "chrome/browser/ui/views/file_system_access/file_system_access_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/browser/ui/views/webauthn/webauthn_icon_view.h"
 #include "content/public/common/content_features.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/layout/box_layout.h"
 
 PageActionIconController::PageActionIconController() = default;
@@ -56,8 +57,9 @@ void PageActionIconController::Init(const PageActionIconParams& params,
   auto add_page_action_icon = [&params, this](PageActionIconType type,
                                               auto icon) {
     icon->SetVisible(false);
-    icon->ink_drop()->SetVisibleOpacity(
-        params.page_action_icon_delegate->GetPageActionInkDropVisibleOpacity());
+    views::InkDrop::Get(icon.get())
+        ->SetVisibleOpacity(params.page_action_icon_delegate
+                                ->GetPageActionInkDropVisibleOpacity());
     if (params.icon_color)
       icon->SetIconColor(*params.icon_color);
     if (params.font_list)
@@ -155,7 +157,7 @@ void PageActionIconController::Init(const PageActionIconParams& params,
         break;
       case PageActionIconType::kSaveAutofillAddress:
         add_page_action_icon(
-            type, std::make_unique<autofill::SaveAddressProfileIconView>(
+            type, std::make_unique<autofill::SaveUpdateAddressProfileIconView>(
                       params.command_updater, params.icon_label_bubble_delegate,
                       params.page_action_icon_delegate));
         break;

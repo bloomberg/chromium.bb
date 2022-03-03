@@ -21,9 +21,8 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -169,7 +168,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
     const uint32_t registration_flags_;
 
     // Reference to the PrefService in which this pref was created.
-    const PrefService* const pref_service_;
+    const raw_ptr<const PrefService> pref_service_;
   };
 
   // You may wish to use PrefServiceFactory or one of its subclasses
@@ -181,6 +180,10 @@ class COMPONENTS_PREFS_EXPORT PrefService {
               base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
                   read_error_callback,
               bool async);
+
+  PrefService(const PrefService&) = delete;
+  PrefService& operator=(const PrefService&) = delete;
+
   virtual ~PrefService();
 
   // Lands pending writes to disk. This should only be used if we need to save
@@ -195,7 +198,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
       base::OnceClosure reply_callback = base::OnceClosure(),
       base::OnceClosure synchronous_done_callback = base::OnceClosure());
 
-  // Schedule a write if there is any lossy data pending. Unlike
+  // Schedules a write if there is any lossy data pending. Unlike
   // CommitPendingWrite() this does not immediately sync to disk, instead it
   // triggers an eventual write if there is lossy data pending and if there
   // isn't one scheduled already.
@@ -480,8 +483,6 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 #endif
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
 
 #endif  // COMPONENTS_PREFS_PREF_SERVICE_H_

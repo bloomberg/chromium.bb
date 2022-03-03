@@ -117,7 +117,9 @@ void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
 
 MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
     WebContents* web_contents)
-    : MediaRouterDialogController(web_contents) {
+    : content::WebContentsUserData<MediaRouterDialogControllerAndroid>(
+          *web_contents),
+      MediaRouterDialogController(web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_dialog_controller_.Reset(Java_BrowserMediaRouterDialogController_create(
       env, reinterpret_cast<jlong>(this), web_contents->GetJavaWebContents()));
@@ -182,6 +184,6 @@ bool MediaRouterDialogControllerAndroid::IsShowingMediaRouterDialog() const {
       env, java_dialog_controller_);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerAndroid)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerAndroid);
 
 }  // namespace media_router

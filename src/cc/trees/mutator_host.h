@@ -13,17 +13,15 @@
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-
-namespace gfx {
-class ScrollOffset;
-}
 
 namespace cc {
 
 class MutatorEvents;
 class MutatorHostClient;
 class LayerTreeMutator;
+class PropertyTrees;
 class ScrollTree;
 
 // Used as the return value of GetAnimationScales() to indicate that there is
@@ -58,7 +56,8 @@ class MutatorHost {
   virtual void SetLayerTreeMutator(
       std::unique_ptr<LayerTreeMutator> mutator) = 0;
 
-  virtual void PushPropertiesTo(MutatorHost* host_impl) = 0;
+  virtual void PushPropertiesTo(MutatorHost* host_impl,
+                                const PropertyTrees& property_trees) = 0;
 
   virtual void SetScrollAnimationDurationForTesting(
       base::TimeDelta duration) = 0;
@@ -129,20 +128,20 @@ class MutatorHost {
 
   virtual void ImplOnlyAutoScrollAnimationCreate(
       ElementId element_id,
-      const gfx::ScrollOffset& target_offset,
-      const gfx::ScrollOffset& current_offset,
+      const gfx::PointF& target_offset,
+      const gfx::PointF& current_offset,
       float autoscroll_velocity,
       base::TimeDelta animation_start_offset) = 0;
 
   virtual void ImplOnlyScrollAnimationCreate(
       ElementId element_id,
-      const gfx::ScrollOffset& target_offset,
-      const gfx::ScrollOffset& current_offset,
+      const gfx::PointF& target_offset,
+      const gfx::PointF& current_offset,
       base::TimeDelta delayed_by,
       base::TimeDelta animation_start_offset) = 0;
   virtual bool ImplOnlyScrollAnimationUpdateTarget(
       const gfx::Vector2dF& scroll_delta,
-      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::PointF& max_scroll_offset,
       base::TimeTicks frame_monotonic_time,
       base::TimeDelta delayed_by) = 0;
 
@@ -153,7 +152,8 @@ class MutatorHost {
   virtual ElementId ImplOnlyScrollAnimatingElement() const = 0;
 
   virtual size_t MainThreadAnimationsCount() const = 0;
-  virtual bool HasCustomPropertyAnimations() const = 0;
+  virtual bool HasInvalidationAnimation() const = 0;
+  virtual bool HasNativePropertyAnimation() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
   virtual bool NextFrameHasPendingRAF() const = 0;
   virtual bool HasCanvasInvalidation() const = 0;

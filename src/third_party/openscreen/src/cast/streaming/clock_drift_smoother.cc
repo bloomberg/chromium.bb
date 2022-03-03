@@ -55,8 +55,9 @@ void ClockDriftSmoother::Update(Clock::time_point now,
     // Update(), the more-heavily |measured_offset| will be weighed.
     const double weight =
         elapsed_ticks / (elapsed_ticks + time_constant_.count());
-    estimated_tick_offset_ = weight * measured_offset.count() +
-                             (1.0 - weight) * estimated_tick_offset_;
+    estimated_tick_offset_ =
+        weight * static_cast<double>(measured_offset.count()) +
+        (1.0 - weight) * estimated_tick_offset_;
   }
 }
 

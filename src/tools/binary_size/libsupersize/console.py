@@ -5,7 +5,7 @@
 """An interactive console for looking analyzing .size files."""
 
 import argparse
-import atexit
+import bisect
 import code
 import contextlib
 import itertools
@@ -22,16 +22,15 @@ import data_quality
 import describe
 import diff
 import file_format
-import html_report
 import match_util
 import models
 import path_util
+import readelf
 import string_extract
 
 
 # Number of lines before using less for Print().
 _THRESHOLD_FOR_PAGER = 50
-
 
 @contextlib.contextmanager
 def _LessPipe():
@@ -70,8 +69,19 @@ def _WriteToStream(lines, use_pager=None, to_file=None):
     describe.WriteLines(lines, sys.stdout.write)
 
 
-class _Session(object):
-  _readline_initialized = False
+@contextlib.contextmanager
+def _ReadlineSession():
+  history_file = os.path.join(os.path.expanduser('~'),
+                              '.binary_size_query_history')
+  # Without initializing readline, arrow keys don't even work!
+  readline.parse_and_bind('tab: complete')
+  if os.path.exists(history_file):
+    readline.read_history_file(history_file)
+  yield
+  readline.write_history_file(history_file)
+
+
+class _Session:
 
   def __init__(self, size_infos, output_directory_finder, tool_prefix_finder):
     self._printed_variables = []
@@ -83,6 +93,7 @@ class _Session(object):
         'SaveSizeInfo': self._SaveSizeInfo,
         'SaveDeltaSizeInfo': self._SaveDeltaSizeInfo,
         'ReadStringLiterals': self._ReadStringLiterals,
+        'ReplaceWithRelocations': self._ReplaceWithRelocations,
         'Disassemble': self._DisassembleFunc,
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
         'SizeStats': self._SizeStats,
@@ -272,13 +283,13 @@ class _Session(object):
         '--tool-prefix, or setting --output-directory')
     return tool_prefix
 
-  def _ElfPathForSymbol(self, size_info, container, tool_prefix, elf_path):
+  def _ElfPathForSymbol(self, size_info, container, tool_prefix, elf_path=None):
     def build_id_matches(elf_path):
-      found_build_id = archive.BuildIdFromElf(elf_path, tool_prefix)
+      found_build_id = readelf.BuildIdFromElf(elf_path, tool_prefix)
       expected_build_id = container.metadata.get(models.METADATA_ELF_BUILD_ID)
       return found_build_id == expected_build_id
 
-    filename = container.metadata.get(models.METADATA_ELF_FILENAME)
+    filename = container.metadata[models.METADATA_ELF_FILENAME]
     paths_to_try = []
     if elf_path:
       paths_to_try.append(elf_path)
@@ -299,9 +310,9 @@ class _Session(object):
 
     paths_to_try = [p for p in paths_to_try if os.path.exists(p)]
 
-    for i, elf_path in enumerate(paths_to_try):
-      if build_id_matches(elf_path):
-        return elf_path
+    for i, path in enumerate(paths_to_try):
+      if build_id_matches(path):
+        return path
 
       # Show an error only once all paths are tried.
       if i + 1 == len(paths_to_try):
@@ -312,12 +323,14 @@ class _Session(object):
         '--output-directory is set. If output directory is unavailable, '
         'ensure {} is located beside {}, or pass its path explicitly using '
         'elf_path=').format(os.path.basename(filename), size_info.size_path)
+    return None
 
   def _SizeInfoForSymbol(self, symbol):
     for size_info in self._size_infos:
       if symbol in size_info.raw_symbols:
         return size_info
     assert False, 'Symbol does not belong to a size_info.'
+    return None
 
   def _DisassembleFunc(self, symbol, elf_path=None, use_pager=None,
                        to_file=None):
@@ -347,6 +360,9 @@ class _Session(object):
       tool_prefix = path_util.ToolPrefixFinder(
           output_directory=output_directory_finder.Finalized(),
           linker_name='ld').Finalized()
+      # Running objdump from an output directory means that objdump can
+      # interleave source file lines in the disassembly.
+      objdump_pwd = output_directory_finder.Finalized()
     else:
       # Output directory is not set, so we cannot load tool_prefix from
       # build_vars.json, nor resolve the output directory-relative path stored
@@ -360,25 +376,96 @@ class _Session(object):
       # Hardcode path for arm32.
       if is_android and arch == 'arm':
         tool_prefix = path_util.ANDROID_ARM_NDK_TOOL_PREFIX
+      # If we do not know/guess the output directory, run from any directory 2
+      # levels below src since it is better than a random cwd (because usually
+      # source file paths are relative to an output directory two levels below
+      # src and start with ../../).
+      objdump_pwd = os.path.join(path_util.TOOLS_SRC_ROOT, 'tools',
+                                 'binary_size')
 
     args = [
-        path_util.GetObjDumpPath(tool_prefix),
+        os.path.relpath(path_util.GetObjDumpPath(tool_prefix), objdump_pwd),
         '--disassemble',
         '--source',
         '--line-numbers',
         '--demangle',
         '--start-address=0x%x' % symbol.address,
         '--stop-address=0x%x' % symbol.end_address,
-        elf_path,
+        os.path.relpath(elf_path, objdump_pwd),
     ]
 
     # pylint: disable=unexpected-keyword-arg
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, encoding='utf-8')
+    proc = subprocess.Popen(args,
+                            stdout=subprocess.PIPE,
+                            encoding='utf-8',
+                            cwd=objdump_pwd)
     lines = itertools.chain(('Showing disassembly for %r' % symbol,
                              'Command: %s' % ' '.join(args)),
                             (l.rstrip() for l in proc.stdout))
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
     proc.kill()
+
+  def _ReplaceWithRelocations(self, size_info=None):
+    """Replace all symbol sizes with counts of native relocations.
+
+    Removes all symbols that do not contain relocations.
+
+    Args:
+      size_info: The size_info to filter. Defaults to size_infos[0].
+
+    Returns:
+      A new SizeInfo.
+    """
+    size_info = size_info or self._size_infos[0]
+    tool_prefix = self._ToolPrefixForSymbol(size_info)
+
+    new_syms = []
+    new_containers = []
+
+    for container, group in itertools.groupby(
+        size_info.raw_symbols, lambda s: s.container):
+      if models.METADATA_ELF_FILENAME not in container.metadata:
+        continue
+
+      raw_symbols = [s for s in group if s.IsNative()]
+      if not raw_symbols:
+        continue
+
+      new_containers.append(container)
+
+      elf_path = self._ElfPathForSymbol(size_info, container, tool_prefix)
+      relro_addresses = readelf.CollectRelocationAddresses(
+          elf_path, tool_prefix)
+
+      # More likely for there to be a bug in supersize than an ELF to have any
+      # relative relocations.
+      assert relro_addresses
+
+      # Last symbol address is the end of the last symbol, so we don't
+      # misattribute all relros after the last symbol to that symbol.
+      symbol_addresses = [s.address for s in raw_symbols]
+      symbol_addresses.append(raw_symbols[-1].end_address)
+
+      for symbol in raw_symbols:
+        symbol.address = 0
+        symbol.size = 0
+        symbol.padding = 0
+
+      logging.info('Adding %d relocations', len(relro_addresses))
+      for addr in relro_addresses:
+        # Attribute relros to largest symbol start address that precede them.
+        idx = bisect.bisect_right(symbol_addresses, addr) - 1
+        if 0 <= idx < len(raw_symbols):
+          symbol = raw_symbols[idx]
+          for alias in symbol.aliases or [symbol]:
+            alias.size += 1
+
+      new_syms.extend(s for s in raw_symbols if s.size)
+
+    return models.SizeInfo(size_info.build_config,
+                           new_containers,
+                           models.SymbolGroup(new_syms),
+                           size_path=size_info.size_path)
 
   def _ShowExamplesFunc(self):
     print(self._CreateBanner())
@@ -469,30 +556,18 @@ class _Session(object):
       if isinstance(value, types.ModuleType):
         continue
       if key.startswith('size_info'):
-        lines.append('  {}: Loaded from {}'.format(key, value.size_path))
+        # pylint: disable=no-member
+        lines.append(f'  {key}: Loaded from {value.size_path}')
+        # pylint: enable=no-member
     lines.append('*' * 80)
     return '\n'.join(lines)
-
-
-  @classmethod
-  def _InitReadline(cls):
-    if cls._readline_initialized:
-      return
-    cls._readline_initialized = True
-    # Without initializing readline, arrow keys don't even work!
-    readline.parse_and_bind('tab: complete')
-    history_file = os.path.join(os.path.expanduser('~'),
-                                '.binary_size_query_history')
-    if os.path.exists(history_file):
-      readline.read_history_file(history_file)
-    atexit.register(lambda: readline.write_history_file(history_file))
 
   def Eval(self, query):
     exec (query, self._variables)
 
   def GoInteractive(self):
-    _Session._InitReadline()
-    code.InteractiveConsole(self._variables).interact(self._CreateBanner())
+    with _ReadlineSession():
+      code.InteractiveConsole(self._variables).interact(self._CreateBanner())
 
 
 def AddArguments(parser):
@@ -540,3 +615,10 @@ def Run(args, on_config_error):
   else:
     logging.info('Entering interactive console.')
     session.GoInteractive()
+
+  # Exit without running GC, which can save multiple seconds due the large
+  # number of objects created. It meants atexit and __del__ calls are not
+  # made, but this shouldn't matter for console.
+  sys.stdout.flush()
+  sys.stderr.flush()
+  os._exit(0)

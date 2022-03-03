@@ -8,9 +8,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -97,6 +97,10 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
 }  // namespace
 
 class GCMProfileServiceTest : public testing::Test {
+ public:
+  GCMProfileServiceTest(const GCMProfileServiceTest&) = delete;
+  GCMProfileServiceTest& operator=(const GCMProfileServiceTest&) = delete;
+
  protected:
   GCMProfileServiceTest();
   ~GCMProfileServiceTest() override;
@@ -134,7 +138,7 @@ class GCMProfileServiceTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  GCMProfileService* gcm_profile_service_;
+  raw_ptr<GCMProfileService> gcm_profile_service_;
   std::unique_ptr<FakeGCMAppHandler> gcm_app_handler_;
 
   std::string registration_id_;
@@ -142,8 +146,6 @@ class GCMProfileServiceTest : public testing::Test {
   GCMClient::Result unregistration_result_;
   std::string send_message_id_;
   GCMClient::Result send_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
 };
 
 GCMProfileServiceTest::GCMProfileServiceTest()

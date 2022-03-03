@@ -21,30 +21,30 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementExists;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementOnScreen;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.fullyCovers;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getAbsoluteBoundingRect;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.scrollIntoViewIfNeeded;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.tapElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
-
-import android.support.test.InstrumentationRegistry;
+import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCssSelector;
 
 import androidx.test.espresso.matcher.ViewMatchers.Visibility;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ClientSettingsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ClientSettingsProto.IntegrationTestSettings;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
@@ -59,7 +59,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.Input
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -75,16 +74,17 @@ import java.util.List;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantAccessibilityIntegrationTest {
-    @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+    private final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
-    private static final String TEST_PAGE = "/components/test/data/autofill_assistant/html/"
-            + "autofill_assistant_target_website.html";
+    @Rule
+    public final TestRule mRulesChain =
+            RuleChain.outerRule(mTestRule).around(new AutofillAssistantCustomTabTestRule(
+                    mTestRule, "autofill_assistant_target_website.html"));
 
     private void runScript(AutofillAssistantTestScript script) {
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(script),
-                        (ClientSettingsProto) ClientSettingsProto.newBuilder()
+                        ClientSettingsProto.newBuilder()
                                 .setIntegrationTestSettings(
                                         IntegrationTestSettings.newBuilder()
                                                 .setDisableHeaderAnimations(true)
@@ -92,18 +92,6 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                                 .setTalkbackSheetSizeFraction(0.5f)
                                 .build());
         startAutofillAssistant(mTestRule.getActivity(), testService);
-    }
-
-    @Before
-    public void setUp() {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mTestRule.getActivity()
-                .getRootUiCoordinatorForTesting()
-                .getScrimCoordinator()
-                .disableAnimationForTesting(true);
     }
 
     private void setAccessibilityEnabledForTesting(Boolean value) {
@@ -123,20 +111,14 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Show an element on top that should not be covered by the bottom sheet.
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
-                        .build();
+        SelectorProto element = toCssSelector("#touch_area_one");
         ElementAreaProto elementArea =
-                (ElementAreaProto) ElementAreaProto.newBuilder()
+                ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                SelectorProto.newBuilder().addFilters(
-                                        SelectorProto.Filter.newBuilder().setCssSelector(
-                                                "#touch_area_four"))))
+                                toCssSelector("#touch_area_four")))
                         .build();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(elementArea))
@@ -146,7 +128,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         List<UserFormSectionProto> additionalSections = new ArrayList<>();
         for (int i = 1; i <= 20; ++i) {
             additionalSections.add(
-                    (UserFormSectionProto) UserFormSectionProto.newBuilder()
+                    UserFormSectionProto.newBuilder()
                             .setTextInputSection(TextInputSectionProto.newBuilder().addInputFields(
                                     TextInputProto.newBuilder()
                                             .setHint("Text input " + i)
@@ -155,7 +137,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                             .setTitle("Title " + i)
                             .build());
         }
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
                                          .addAllAdditionalAppendedSections(additionalSections)
@@ -163,10 +145,9 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 
@@ -189,31 +170,27 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                 .perform(scrollTo(), typeText("Hello World!"));
         onView(withId(R.id.control_container)).check(matches(isCompletelyDisplayed()));
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
+        scrollIntoViewIfNeeded(mTestRule.getWebContents(), "touch_area_four");
+        waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_four"));
         tapElement(mTestRule, "touch_area_four");
         waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_four"));
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky test.  crbug.com/1114867")
+    @FlakyTest(message = "https://crbug.com/1254159")
     public void testBottomSheetListensToAccessibilityChanges() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Show an element on top that may or may not be covered by the bottom sheet.
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
-                        .build();
+        SelectorProto element = toCssSelector("#touch_area_one");
         ElementAreaProto elementArea =
-                (ElementAreaProto) ElementAreaProto.newBuilder()
+                ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                SelectorProto.newBuilder().addFilters(
-                                        SelectorProto.Filter.newBuilder().setCssSelector(
-                                                "#touch_area_four"))))
+                                toCssSelector("#touch_area_four")))
                         .build();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(elementArea))
@@ -223,7 +200,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         List<UserFormSectionProto> additionalSections = new ArrayList<>();
         for (int i = 1; i <= 20; ++i) {
             additionalSections.add(
-                    (UserFormSectionProto) UserFormSectionProto.newBuilder()
+                    UserFormSectionProto.newBuilder()
                             .setTextInputSection(TextInputSectionProto.newBuilder().addInputFields(
                                     TextInputProto.newBuilder()
                                             .setHint("Text input " + i)
@@ -232,7 +209,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                             .setTitle("Title " + i)
                             .build());
         }
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
                                          .addAllAdditionalAppendedSections(additionalSections)
@@ -240,10 +217,9 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 

@@ -35,7 +35,7 @@ namespace dawn_wire { namespace client {
             }
         };
 
-        mDeviceLostCallback = [](char const*, void*) {
+        mDeviceLostCallback = [](WGPUDeviceLostReason, char const*, void*) {
             static bool calledOnce = false;
             if (!calledOnce) {
                 calledOnce = true;
@@ -48,26 +48,23 @@ namespace dawn_wire { namespace client {
     }
 
     Device::~Device() {
-        // Fire pending error scopes
-        auto errorScopes = std::move(mErrorScopes);
-        for (const auto& it : errorScopes) {
-            it.second.callback(WGPUErrorType_Unknown, "Device destroyed before callback",
-                               it.second.userdata);
-        }
+        mErrorScopes.CloseAll([](ErrorScopeData* request) {
+            request->callback(WGPUErrorType_Unknown, "Device destroyed before callback",
+                              request->userdata);
+        });
 
-        auto createPipelineAsyncRequests = std::move(mCreatePipelineAsyncRequests);
-        for (const auto& it : createPipelineAsyncRequests) {
-            if (it.second.createComputePipelineAsyncCallback != nullptr) {
-                it.second.createComputePipelineAsyncCallback(
+        mCreatePipelineAsyncRequests.CloseAll([](CreatePipelineAsyncRequest* request) {
+            if (request->createComputePipelineAsyncCallback != nullptr) {
+                request->createComputePipelineAsyncCallback(
                     WGPUCreatePipelineAsyncStatus_DeviceDestroyed, nullptr,
-                    "Device destroyed before callback", it.second.userdata);
+                    "Device destroyed before callback", request->userdata);
             } else {
-                ASSERT(it.second.createRenderPipelineAsyncCallback != nullptr);
-                it.second.createRenderPipelineAsyncCallback(
+                ASSERT(request->createRenderPipelineAsyncCallback != nullptr);
+                request->createRenderPipelineAsyncCallback(
                     WGPUCreatePipelineAsyncStatus_DeviceDestroyed, nullptr,
-                    "Device destroyed before callback", it.second.userdata);
+                    "Device destroyed before callback", request->userdata);
             }
-        }
+        });
     }
 
     void Device::HandleError(WGPUErrorType errorType, const char* message) {
@@ -76,33 +73,37 @@ namespace dawn_wire { namespace client {
         }
     }
 
-    void Device::HandleDeviceLost(const char* message) {
+    void Device::HandleLogging(WGPULoggingType loggingType, const char* message) {
+        if (mLoggingCallback) {
+            // Since client always run in single thread, calling the callback directly is safe.
+            mLoggingCallback(loggingType, message, mLoggingUserdata);
+        }
+    }
+
+    void Device::HandleDeviceLost(WGPUDeviceLostReason reason, const char* message) {
         if (mDeviceLostCallback && !mDidRunLostCallback) {
             mDidRunLostCallback = true;
-            mDeviceLostCallback(message, mDeviceLostUserdata);
+            mDeviceLostCallback(reason, message, mDeviceLostUserdata);
         }
     }
 
     void Device::CancelCallbacksForDisconnect() {
-        for (auto& it : mCreatePipelineAsyncRequests) {
-            ASSERT((it.second.createComputePipelineAsyncCallback != nullptr) ^
-                   (it.second.createRenderPipelineAsyncCallback != nullptr));
-            if (it.second.createRenderPipelineAsyncCallback) {
-                it.second.createRenderPipelineAsyncCallback(
-                    WGPUCreatePipelineAsyncStatus_DeviceLost, nullptr, "Device lost",
-                    it.second.userdata);
-            } else {
-                it.second.createComputePipelineAsyncCallback(
-                    WGPUCreatePipelineAsyncStatus_DeviceLost, nullptr, "Device lost",
-                    it.second.userdata);
-            }
-        }
-        mCreatePipelineAsyncRequests.clear();
+        mErrorScopes.CloseAll([](ErrorScopeData* request) {
+            request->callback(WGPUErrorType_DeviceLost, "Device lost", request->userdata);
+        });
 
-        for (auto& it : mErrorScopes) {
-            it.second.callback(WGPUErrorType_DeviceLost, "Device lost", it.second.userdata);
-        }
-        mErrorScopes.clear();
+        mCreatePipelineAsyncRequests.CloseAll([](CreatePipelineAsyncRequest* request) {
+            if (request->createComputePipelineAsyncCallback != nullptr) {
+                request->createComputePipelineAsyncCallback(
+                    WGPUCreatePipelineAsyncStatus_DeviceLost, nullptr, "Device lost",
+                    request->userdata);
+            } else {
+                ASSERT(request->createRenderPipelineAsyncCallback != nullptr);
+                request->createRenderPipelineAsyncCallback(WGPUCreatePipelineAsyncStatus_DeviceLost,
+                                                           nullptr, "Device lost",
+                                                           request->userdata);
+            }
+        });
     }
 
     std::weak_ptr<bool> Device::GetAliveWeakPtr() {
@@ -112,6 +113,11 @@ namespace dawn_wire { namespace client {
     void Device::SetUncapturedErrorCallback(WGPUErrorCallback errorCallback, void* errorUserdata) {
         mErrorCallback = errorCallback;
         mErrorUserdata = errorUserdata;
+    }
+
+    void Device::SetLoggingCallback(WGPULoggingCallback callback, void* userdata) {
+        mLoggingCallback = callback;
+        mLoggingUserdata = userdata;
     }
 
     void Device::SetDeviceLostCallback(WGPUDeviceLostCallback callback, void* userdata) {
@@ -140,10 +146,7 @@ namespace dawn_wire { namespace client {
             return true;
         }
 
-        uint64_t serial = mErrorScopeRequestSerial++;
-        ASSERT(mErrorScopes.find(serial) == mErrorScopes.end());
-
-        mErrorScopes[serial] = {callback, userdata};
+        uint64_t serial = mErrorScopes.Add({callback, userdata});
 
         DevicePopErrorScopeCmd cmd;
         cmd.deviceId = this->id;
@@ -168,14 +171,11 @@ namespace dawn_wire { namespace client {
                 return false;
         }
 
-        auto requestIt = mErrorScopes.find(requestSerial);
-        if (requestIt == mErrorScopes.end()) {
+        ErrorScopeData request;
+        if (!mErrorScopes.Acquire(requestSerial, &request)) {
             return false;
         }
 
-        ErrorScopeData request = std::move(requestIt->second);
-
-        mErrorScopes.erase(requestIt);
         request.callback(type, message, request.userdata);
         return true;
     }
@@ -194,6 +194,12 @@ namespace dawn_wire { namespace client {
 
     WGPUBuffer Device::CreateErrorBuffer() {
         return Buffer::CreateError(this);
+    }
+
+    bool Device::GetLimits(WGPUSupportedLimits* limits) {
+        // Not implemented in the wire.
+        UNREACHABLE();
+        return false;
     }
 
     WGPUQueue Device::GetQueue() {
@@ -217,10 +223,6 @@ namespace dawn_wire { namespace client {
         return ToAPI(mQueue);
     }
 
-    WGPUQueue Device::GetDefaultQueue() {
-        return GetQueue();
-    }
-
     void Device::CreateComputePipelineAsync(WGPUComputePipelineDescriptor const* descriptor,
                                             WGPUCreateComputePipelineAsyncCallback callback,
                                             void* userdata) {
@@ -229,36 +231,31 @@ namespace dawn_wire { namespace client {
                             "GPU device disconnected", userdata);
         }
 
-        DeviceCreateComputePipelineAsyncCmd cmd;
-        cmd.deviceId = this->id;
-        cmd.descriptor = descriptor;
-
-        uint64_t serial = mCreatePipelineAsyncRequestSerial++;
-        ASSERT(mCreatePipelineAsyncRequests.find(serial) == mCreatePipelineAsyncRequests.end());
-        cmd.requestSerial = serial;
-
         auto* allocation = client->ComputePipelineAllocator().New(client);
+
         CreatePipelineAsyncRequest request = {};
         request.createComputePipelineAsyncCallback = callback;
         request.userdata = userdata;
         request.pipelineObjectID = allocation->object->id;
 
-        cmd.pipelineObjectHandle = ObjectHandle{allocation->object->id, allocation->generation};
-        client->SerializeCommand(cmd);
+        uint64_t serial = mCreatePipelineAsyncRequests.Add(std::move(request));
 
-        mCreatePipelineAsyncRequests[serial] = std::move(request);
+        DeviceCreateComputePipelineAsyncCmd cmd;
+        cmd.deviceId = this->id;
+        cmd.descriptor = descriptor;
+        cmd.requestSerial = serial;
+        cmd.pipelineObjectHandle = ObjectHandle{allocation->object->id, allocation->generation};
+
+        client->SerializeCommand(cmd);
     }
 
     bool Device::OnCreateComputePipelineAsyncCallback(uint64_t requestSerial,
                                                       WGPUCreatePipelineAsyncStatus status,
                                                       const char* message) {
-        const auto& requestIt = mCreatePipelineAsyncRequests.find(requestSerial);
-        if (requestIt == mCreatePipelineAsyncRequests.end()) {
+        CreatePipelineAsyncRequest request;
+        if (!mCreatePipelineAsyncRequests.Acquire(requestSerial, &request)) {
             return false;
         }
-
-        CreatePipelineAsyncRequest request = std::move(requestIt->second);
-        mCreatePipelineAsyncRequests.erase(requestIt);
 
         auto pipelineAllocation =
             client->ComputePipelineAllocator().GetObject(request.pipelineObjectID);
@@ -277,43 +274,39 @@ namespace dawn_wire { namespace client {
         return true;
     }
 
-    void Device::CreateRenderPipelineAsync(WGPURenderPipelineDescriptor2 const* descriptor,
+    void Device::CreateRenderPipelineAsync(WGPURenderPipelineDescriptor const* descriptor,
                                            WGPUCreateRenderPipelineAsyncCallback callback,
                                            void* userdata) {
         if (client->IsDisconnected()) {
             return callback(WGPUCreatePipelineAsyncStatus_DeviceLost, nullptr,
                             "GPU device disconnected", userdata);
         }
-        DeviceCreateRenderPipelineAsyncCmd cmd;
-        cmd.deviceId = this->id;
-        cmd.descriptor = descriptor;
-
-        uint64_t serial = mCreatePipelineAsyncRequestSerial++;
-        ASSERT(mCreatePipelineAsyncRequests.find(serial) == mCreatePipelineAsyncRequests.end());
-        cmd.requestSerial = serial;
 
         auto* allocation = client->RenderPipelineAllocator().New(client);
+
         CreatePipelineAsyncRequest request = {};
         request.createRenderPipelineAsyncCallback = callback;
         request.userdata = userdata;
         request.pipelineObjectID = allocation->object->id;
 
-        cmd.pipelineObjectHandle = ObjectHandle(allocation->object->id, allocation->generation);
-        client->SerializeCommand(cmd);
+        uint64_t serial = mCreatePipelineAsyncRequests.Add(std::move(request));
 
-        mCreatePipelineAsyncRequests[serial] = std::move(request);
+        DeviceCreateRenderPipelineAsyncCmd cmd;
+        cmd.deviceId = this->id;
+        cmd.descriptor = descriptor;
+        cmd.requestSerial = serial;
+        cmd.pipelineObjectHandle = ObjectHandle(allocation->object->id, allocation->generation);
+
+        client->SerializeCommand(cmd);
     }
 
     bool Device::OnCreateRenderPipelineAsyncCallback(uint64_t requestSerial,
                                                      WGPUCreatePipelineAsyncStatus status,
                                                      const char* message) {
-        const auto& requestIt = mCreatePipelineAsyncRequests.find(requestSerial);
-        if (requestIt == mCreatePipelineAsyncRequests.end()) {
+        CreatePipelineAsyncRequest request;
+        if (!mCreatePipelineAsyncRequests.Acquire(requestSerial, &request)) {
             return false;
         }
-
-        CreatePipelineAsyncRequest request = std::move(requestIt->second);
-        mCreatePipelineAsyncRequests.erase(requestIt);
 
         auto pipelineAllocation =
             client->RenderPipelineAllocator().GetObject(request.pipelineObjectID);

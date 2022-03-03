@@ -13,21 +13,15 @@
 #include <vector>
 
 #include "core/fxcodec/fx_codec_def.h"
+#include "core/fxcodec/jbig2/JBig2_DocumentContext.h"
 #include "core/fxcodec/jbig2/JBig2_Page.h"
 #include "core/fxcodec/jbig2/JBig2_Segment.h"
-#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "third_party/base/span.h"
 
 class CJBig2_ArithDecoder;
 class CJBig2_GRDProc;
-class CPDF_StreamAcc;
 class PauseIndicatorIface;
-
-// Cache is keyed by the ObjNum of a stream and an index within the stream.
-using CJBig2_CacheKey = std::pair<uint32_t, uint32_t>;
-using CJBig2_CachePair =
-    std::pair<CJBig2_CacheKey, std::unique_ptr<CJBig2_SymbolDict>>;
 
 #define JBIG2_MIN_SEGMENT_SIZE 11
 
@@ -37,9 +31,9 @@ class CJBig2_Context {
  public:
   static std::unique_ptr<CJBig2_Context> Create(
       pdfium::span<const uint8_t> pGlobalSpan,
-      uint32_t dwGlobalObjNum,
+      uint64_t global_key,
       pdfium::span<const uint8_t> pSrcSpan,
-      uint32_t dwSrcObjNum,
+      uint64_t src_key,
       std::list<CJBig2_CachePair>* pSymbolDictCache);
 
   ~CJBig2_Context();
@@ -57,7 +51,7 @@ class CJBig2_Context {
 
  private:
   CJBig2_Context(pdfium::span<const uint8_t> pSrcSpan,
-                 uint32_t dwObjNum,
+                 uint64_t src_key,
                  std::list<CJBig2_CachePair>* pSymbolDictCache,
                  bool bIsGlobal);
 
@@ -97,12 +91,12 @@ class CJBig2_Context {
   bool m_bInPage = false;
   bool m_bBufSpecified = false;
   int32_t m_PauseStep = 10;
-  FXCODEC_STATUS m_ProcessingStatus = FXCODEC_STATUS_FRAME_READY;
+  FXCODEC_STATUS m_ProcessingStatus = FXCODEC_STATUS::kFrameReady;
   std::vector<JBig2ArithCtx> m_gbContext;
   std::unique_ptr<CJBig2_ArithDecoder> m_pArithDecoder;
   std::unique_ptr<CJBig2_GRDProc> m_pGRD;
   std::unique_ptr<CJBig2_Segment> m_pSegment;
-  FX_SAFE_UINT32 m_dwOffset = 0;
+  uint32_t m_nOffset = 0;
   JBig2RegionInfo m_ri;
   UnownedPtr<std::list<CJBig2_CachePair>> const m_pSymbolDictCache;
 };

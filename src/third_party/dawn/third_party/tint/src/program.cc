@@ -21,6 +21,15 @@
 #include "src/sem/expression.h"
 
 namespace tint {
+namespace {
+
+std::string DefaultPrinter(const Program*) {
+  return "<no program printer assigned>";
+}
+
+}  // namespace
+
+Program::Printer Program::printer = DefaultPrinter;
 
 Program::Program() = default;
 
@@ -33,6 +42,7 @@ Program::Program(Program&& program)
       sem_(std::move(program.sem_)),
       symbols_(std::move(program.symbols_)),
       diagnostics_(std::move(program.diagnostics_)),
+      transforms_applied_(std::move(program.transforms_applied_)),
       is_valid_(program.is_valid_) {
   program.AssertNotMoved();
   program.moved_ = true;
@@ -57,13 +67,14 @@ Program::Program(ProgramBuilder&& builder) {
   sem_ = std::move(builder.Sem());
   symbols_ = std::move(builder.Symbols());
   diagnostics_.add(std::move(builder.Diagnostics()));
+  transforms_applied_ = builder.TransformsApplied();
   builder.MarkAsMoved();
 
   if (!is_valid_ && !diagnostics_.contains_errors()) {
     // If the builder claims to be invalid, then we really should have an error
     // message generated. If we find a situation where the program is not valid
     // and there are no errors reported, add one here.
-    diagnostics_.add_error("invalid program generated");
+    diagnostics_.add_error(diag::System::Program, "invalid program generated");
   }
 }
 
@@ -72,6 +83,7 @@ Program::~Program() = default;
 Program& Program::operator=(Program&& program) {
   program.AssertNotMoved();
   program.moved_ = true;
+  moved_ = false;
   id_ = std::move(program.id_);
   types_ = std::move(program.types_);
   ast_nodes_ = std::move(program.ast_nodes_);
@@ -80,6 +92,7 @@ Program& Program::operator=(Program&& program) {
   sem_ = std::move(program.sem_);
   symbols_ = std::move(program.symbols_);
   diagnostics_ = std::move(program.diagnostics_);
+  transforms_applied_ = std::move(program.transforms_applied_);
   is_valid_ = program.is_valid_;
   return *this;
 }
@@ -101,7 +114,7 @@ bool Program::IsValid() const {
   return is_valid_;
 }
 
-sem::Type* Program::TypeOf(const ast::Expression* expr) const {
+const sem::Type* Program::TypeOf(const ast::Expression* expr) const {
   auto* sem = Sem().Get(expr);
   return sem ? sem->Type() : nullptr;
 }
@@ -110,21 +123,12 @@ const sem::Type* Program::TypeOf(const ast::Type* type) const {
   return Sem().Get(type);
 }
 
-std::string Program::to_str(bool demangle) const {
-  AssertNotMoved();
-  auto str = ast_->to_str(Sem());
-  if (demangle) {
-    str = Demangler().Demangle(Symbols(), str);
-  }
-  return str;
-}
-
-std::string Program::str(const ast::Node* node) const {
-  return Demangler().Demangle(Symbols(), node->str(Sem()));
+const sem::Type* Program::TypeOf(const ast::TypeDecl* type_decl) const {
+  return Sem().Get(type_decl);
 }
 
 void Program::AssertNotMoved() const {
-  TINT_ASSERT(!moved_);
+  TINT_ASSERT(Program, !moved_);
 }
 
 }  // namespace tint

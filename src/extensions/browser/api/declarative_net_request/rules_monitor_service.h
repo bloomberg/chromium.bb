@@ -12,11 +12,12 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/global_rules_tracker.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -66,6 +67,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
    protected:
     virtual ~TestObserver() = default;
   };
+
+  RulesMonitorService(const RulesMonitorService&) = delete;
+  RulesMonitorService& operator=(const RulesMonitorService&) = delete;
 
   // This is public so that it can be deleted by tests.
   ~RulesMonitorService() override;
@@ -198,14 +202,14 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // Unloads all rulesets for the given |extension_id|.
   void RemoveCompositeMatcher(const ExtensionId& extension_id);
 
-  // Loads the given |matcher| for the given |extension_id|.
-  void AddCompositeMatcher(const ExtensionId& extension_id,
-                           std::unique_ptr<CompositeMatcher> matcher);
+  // Creates and adds a `CompositeMatcher` for the given `extension`.
+  void AddCompositeMatcher(const Extension& extension,
+                           CompositeMatcher::MatcherList matchers);
 
-  // Adds the given |ruleset_matcher| to the set of matchers for the given
-  // |extension_id|. If a RulesetMatcher with the same ID is already present for
-  // the extension, it is replaced.
-  void UpdateRulesetMatcher(const ExtensionId& extension_id,
+  // Adds the given `ruleset_matcher` to the set of matchers for the given
+  // `extension`. If a RulesetMatcher with the same ID is already present for
+  // the `extension`, it is replaced.
+  void UpdateRulesetMatcher(const Extension& extension,
                             std::unique_ptr<RulesetMatcher> ruleset_matcher);
 
   // Adjusts the extra headers listener count on the
@@ -225,11 +229,11 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   std::unique_ptr<const FileSequenceBridge> file_sequence_bridge_;
 
   // Guaranteed to be valid through-out the lifetime of this instance.
-  ExtensionPrefs* const prefs_;
-  ExtensionRegistry* const extension_registry_;
-  WarningService* const warning_service_;
+  const raw_ptr<ExtensionPrefs> prefs_;
+  const raw_ptr<ExtensionRegistry> extension_registry_;
+  const raw_ptr<WarningService> warning_service_;
 
-  content::BrowserContext* const context_;
+  const raw_ptr<content::BrowserContext> context_;
 
   declarative_net_request::RulesetManager ruleset_manager_;
 
@@ -238,7 +242,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   GlobalRulesTracker global_rules_tracker_;
 
   // Non-owned pointer.
-  TestObserver* test_observer_ = nullptr;
+  raw_ptr<TestObserver> test_observer_ = nullptr;
 
   // Api call queues to ensure only one api call of the given type proceeds at a
   // time. Only maintained for enabled extensions.
@@ -256,8 +260,6 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.
   base::WeakPtrFactory<RulesMonitorService> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RulesMonitorService);
 };
 
 }  // namespace declarative_net_request

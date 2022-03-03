@@ -64,14 +64,6 @@ bool IsKeyboardAccessoryEnabled() {
 #endif
 }
 
-bool IsTouchToFillEnabled() {
-#if defined(OS_ANDROID)
-  return true;
-#else  // !defined(OS_ANDROID)
-  return false;
-#endif
-}
-
 bool FieldIsSuggestionSubstringStartingOnTokenBoundary(
     const std::u16string& suggestion,
     const std::u16string& field_contents,
@@ -197,6 +189,15 @@ SubmissionIndicatorEvent ToSubmissionIndicatorEvent(SubmissionSource source) {
 
   NOTREACHED();
   return SubmissionIndicatorEvent::NONE;
+}
+
+GURL StripAuthAndParams(const GURL& gurl) {
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return gurl.ReplaceComponents(rep);
 }
 
 }  // namespace autofill

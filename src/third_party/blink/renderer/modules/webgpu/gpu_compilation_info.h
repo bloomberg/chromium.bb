@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_COMPILATION_INFO_H_
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 
 namespace blink {
 
@@ -17,6 +18,9 @@ class GPUCompilationInfo : public ScriptWrappable {
  public:
   GPUCompilationInfo() = default;
 
+  GPUCompilationInfo(const GPUCompilationInfo&) = delete;
+  GPUCompilationInfo& operator=(const GPUCompilationInfo&) = delete;
+
   void AppendMessage(GPUCompilationMessage* message);
 
   const HeapVector<Member<GPUCompilationMessage>>& messages() const {
@@ -27,8 +31,6 @@ class GPUCompilationInfo : public ScriptWrappable {
 
  private:
   HeapVector<Member<GPUCompilationMessage>> messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(GPUCompilationInfo);
 };
 
 }  // namespace blink

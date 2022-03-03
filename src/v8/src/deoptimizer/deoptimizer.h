@@ -31,11 +31,15 @@ class Deoptimizer : public Malloced {
  public:
   struct DeoptInfo {
     DeoptInfo(SourcePosition position, DeoptimizeReason deopt_reason,
-              int deopt_id)
-        : position(position), deopt_reason(deopt_reason), deopt_id(deopt_id) {}
+              uint32_t node_id, int deopt_id)
+        : position(position),
+          deopt_reason(deopt_reason),
+          node_id(node_id),
+          deopt_id(deopt_id) {}
 
     const SourcePosition position;
     const DeoptimizeReason deopt_reason;
+    const uint32_t node_id;
     const int deopt_id;
   };
 
@@ -93,11 +97,10 @@ class Deoptimizer : public Malloced {
 
   // Returns the builtin that will perform a check and either eagerly deopt with
   // |reason| or resume execution in the optimized code.
-  V8_EXPORT_PRIVATE static Builtins::Name GetDeoptWithResumeBuiltin(
+  V8_EXPORT_PRIVATE static Builtin GetDeoptWithResumeBuiltin(
       DeoptimizeReason reason);
 
-  V8_EXPORT_PRIVATE static Builtins::Name GetDeoptimizationEntry(
-      DeoptimizeKind kind);
+  V8_EXPORT_PRIVATE static Builtin GetDeoptimizationEntry(DeoptimizeKind kind);
 
   // Returns true if {addr} is a deoptimization entry and stores its type in
   // {type_out}. Returns false if {addr} is not a deoptimization entry.
@@ -165,8 +168,8 @@ class Deoptimizer : public Malloced {
   void DoComputeConstructStubFrame(TranslatedFrame* translated_frame,
                                    int frame_index);
 
-  static Builtins::Name TrampolineForBuiltinContinuation(
-      BuiltinContinuationMode mode, bool must_handle_result);
+  static Builtin TrampolineForBuiltinContinuation(BuiltinContinuationMode mode,
+                                                  bool must_handle_result);
 
 #if V8_ENABLE_WEBASSEMBLY
   TranslatedValue TranslatedValueForWasmReturnKind(

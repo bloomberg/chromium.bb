@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/translate/source_language_combobox_model.h"
@@ -22,6 +22,7 @@
 #include "components/language/core/common/language_experiments.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -31,6 +32,10 @@
 #include "ui/views/window/non_client_view.h"
 
 class Browser;
+
+namespace translate {
+class TranslateBubbleVisualTest;
+}  // namespace translate
 
 namespace views {
 class Checkbox;
@@ -51,6 +56,23 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     CHANGE_TARGET_LANGUAGE,
     CHANGE_SOURCE_LANGUAGE
   };
+
+  // Element IDs for ui::ElementTracker
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kIdentifier);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSourceLanguageTab);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTargetLanguageTab);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kCloseButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kOptionsMenuButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kChangeTargetLanguage);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTargetLanguageCombobox);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTargetLanguageDoneButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kChangeSourceLanguage);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSourceLanguageCombobox);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSourceLanguageDoneButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kErrorMessage);
+
+  TranslateBubbleView(const TranslateBubbleView&) = delete;
+  TranslateBubbleView& operator=(const TranslateBubbleView&) = delete;
 
   ~TranslateBubbleView() override;
 
@@ -110,6 +132,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   };
 
   friend class TranslateBubbleViewTest;
+  friend class translate::TranslateBubbleVisualTest;
   friend void ::translate::test_utils::PressTranslate(::Browser*);
   friend void ::translate::test_utils::PressRevert(::Browser*);
   friend void ::translate::test_utils::SelectTargetLanguageByDisplayName(
@@ -122,6 +145,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            AlwaysTranslateCheckboxAndCloseButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateCheckboxAndDoneButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, SourceResetButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TargetResetButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, SourceDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TargetDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
@@ -140,6 +165,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            TabSelectedAfterTranslation);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateTriggerTranslation);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           AlwaysTranslateWithNeverTranslateSite);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            ShowOriginalUpdatesViewState);
 
@@ -195,7 +222,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewAdvanced(
       std::unique_ptr<views::Combobox> combobox,
       std::unique_ptr<views::Label> language_title_label,
-      std::unique_ptr<views::Button> advance_done_button,
+      std::unique_ptr<views::Button> advanced_reset_button,
+      std::unique_ptr<views::Button> advanced_done_button,
       std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox);
 
   // Creates a translate icon for when the bottom branding isn't showing. This
@@ -236,6 +264,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void ShowOriginal();
   void ConfirmAdvancedOptions();
 
+  // Returns whether or not the current language selection is different from the
+  // initial language selection in an advanced view.
+  bool DidLanguageSelectionChange(TranslateBubbleModel::ViewState view_state);
+
   // Handles the reset button in advanced view under Tab UI.
   void ResetLanguage();
 
@@ -252,23 +284,25 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   static TranslateBubbleView* translate_bubble_view_;
 
-  views::View* translate_view_ = nullptr;
-  views::View* error_view_ = nullptr;
-  views::View* advanced_view_source_ = nullptr;
-  views::View* advanced_view_target_ = nullptr;
+  raw_ptr<views::View> translate_view_ = nullptr;
+  raw_ptr<views::View> error_view_ = nullptr;
+  raw_ptr<views::View> advanced_view_source_ = nullptr;
+  raw_ptr<views::View> advanced_view_target_ = nullptr;
 
   std::unique_ptr<SourceLanguageComboboxModel> source_language_combobox_model_;
   std::unique_ptr<TargetLanguageComboboxModel> target_language_combobox_model_;
 
-  views::Combobox* source_language_combobox_ = nullptr;
-  views::Combobox* target_language_combobox_ = nullptr;
+  raw_ptr<views::Combobox> source_language_combobox_ = nullptr;
+  raw_ptr<views::Combobox> target_language_combobox_ = nullptr;
 
-  views::Checkbox* always_translate_checkbox_ = nullptr;
-  views::Checkbox* advanced_always_translate_checkbox_ = nullptr;
-  views::TabbedPane* tabbed_pane_ = nullptr;
+  raw_ptr<views::Checkbox> always_translate_checkbox_ = nullptr;
+  raw_ptr<views::Checkbox> advanced_always_translate_checkbox_ = nullptr;
+  raw_ptr<views::TabbedPane> tabbed_pane_ = nullptr;
 
-  views::LabelButton* advanced_done_button_source_ = nullptr;
-  views::LabelButton* advanced_done_button_target_ = nullptr;
+  raw_ptr<views::LabelButton> advanced_reset_button_source_ = nullptr;
+  raw_ptr<views::LabelButton> advanced_reset_button_target_ = nullptr;
+  raw_ptr<views::LabelButton> advanced_done_button_source_ = nullptr;
+  raw_ptr<views::LabelButton> advanced_done_button_target_ = nullptr;
 
   // Default source/target language without user interaction.
   int previous_source_language_index_;
@@ -289,8 +323,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   bool should_never_translate_site_ = false;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateBubbleView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TRANSLATE_TRANSLATE_BUBBLE_VIEW_H_

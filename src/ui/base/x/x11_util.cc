@@ -14,63 +14,41 @@
 
 #include <bitset>
 #include <limits>
-#include <list>
-#include <map>
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/containers/contains.h"
-#include "base/environment.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_byteorder.h"
-#include "base/task/current_thread.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_local_storage.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/visual_picker_glx.h"
-#include "ui/base/x/x11_cursor.h"
-#include "ui/base/x/x11_cursor_loader.h"
-#include "ui/base/x/x11_menu_list.h"
+#include "ui/display/util/gpu_info_util.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
-#include "ui/events/event_utils.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/screensaver.h"
 #include "ui/gfx/x/shm.h"
-#include "ui/gfx/x/sync.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -81,14 +59,6 @@
 #endif
 
 namespace ui {
-
-class TLSDestructionCheckerForX11 {
- public:
-  static bool HasBeenDestroyed() {
-    return base::ThreadLocalStorage::HasBeenDestroyed();
-  }
-};
-
 namespace {
 
 // Constants that are part of EWMH.
@@ -163,13 +133,65 @@ bool IsX11ScreenSaverAvailable() {
                       version->server_minor_version >= 1));
 }
 
-// Must be in sync with the copy in //content/browser/gpu/gpu_internals_ui.cc.
-base::Value NewDescriptionValuePair(base::StringPiece desc,
-                                    base::StringPiece value) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("description", base::Value(desc));
-  dict.SetKey("value", base::Value(value));
-  return dict;
+// Returns the bounds of |window| in the screen before adjusting for the frame.
+bool GetUndecoratedWindowBounds(x11::Window window, gfx::Rect* rect) {
+  auto root = GetX11RootWindow();
+
+  x11::Connection* connection = x11::Connection::Get();
+  auto get_geometry = connection->GetGeometry(window);
+  auto translate_coords = connection->TranslateCoordinates({window, root});
+
+  // Sync after making both requests so only one round-trip is made.
+  // Flush so all requests are sent before waiting on any replies.
+  connection->Flush();
+  auto geometry = get_geometry.Sync();
+  auto coords = translate_coords.Sync();
+
+  if (!geometry || !coords)
+    return false;
+
+  *rect = gfx::Rect(coords->dst_x, coords->dst_y, geometry->width,
+                    geometry->height);
+  return true;
+}
+
+// Obtains the value of _{NET,GTK}_FRAME_EXTENTS as a gfx::Insets.  Returns an
+// empty gfx::Insets if the property doesn't exist or is malformed.
+gfx::Insets GetFrameExtentsProperty(x11::Window window, x11::Atom property) {
+  std::vector<int32_t> frame_extents;
+  GetArrayProperty(window, property, &frame_extents);
+  if (frame_extents.size() != 4)
+    return gfx::Insets();
+  return gfx::Insets(frame_extents[2] /* top */, frame_extents[0] /* left */,
+                     frame_extents[3] /* bottom */,
+                     frame_extents[1] /* right */);
+}
+
+// Returns the adjustment necessary to obtain the opaque bounds of |window|.
+gfx::Insets GetWindowDecorationAdjustment(x11::Window window) {
+  // _GTK_FRAME_EXTENTS is set by clients using client side decorations to
+  // subtract the window shadow from the bounds.  _NET_FRAME_EXTENTS is set by
+  // the WM to add the opaque portion of the frame to the bounds.
+  return GetFrameExtentsProperty(window, x11::GetAtom("_GTK_FRAME_EXTENTS")) -
+         GetFrameExtentsProperty(window, x11::GetAtom("_NET_FRAME_EXTENTS"));
+}
+
+// Returns the opaque bounds of |window| with it's frame.
+bool GetDecoratedWindowBounds(x11::Window window, gfx::Rect* rect) {
+  if (!GetUndecoratedWindowBounds(window, rect))
+    return false;
+
+  rect->Inset(GetWindowDecorationAdjustment(window));
+  return true;
+}
+
+// Returns true if the event has event_x and event_y fields.
+bool EventHasCoordinates(const x11::Event& event) {
+  return event.As<x11::KeyEvent>() || event.As<x11::ButtonEvent>() ||
+         event.As<x11::MotionNotifyEvent>() || event.As<x11::CrossingEvent>() ||
+         event.As<x11::Input::LegacyDeviceEvent>() ||
+         event.As<x11::Input::DeviceEvent>() ||
+         event.As<x11::Input::CrossingEvent>();
 }
 
 }  // namespace
@@ -295,10 +317,10 @@ void DrawPixmap(x11::Connection* connection,
         .format = x11::ImageFormat::ZPixmap,
         .drawable = drawable,
         .gc = gc,
-        .width = width,
-        .height = n_rows,
-        .dst_x = dst_x,
-        .dst_y = dst_y + row,
+        .width = static_cast<uint16_t>(width),
+        .height = static_cast<uint16_t>(n_rows),
+        .dst_x = static_cast<int16_t>(dst_x),
+        .dst_y = static_cast<int16_t>(dst_y + row),
         .left_pad = 0,
         .depth = visual_info->format->depth,
         .data = data,
@@ -319,34 +341,38 @@ bool QueryShmSupport() {
 
 int CoalescePendingMotionEvents(const x11::Event& x11_event,
                                 x11::Event* last_event) {
+  auto* conn = x11::Connection::Get();
+  auto* ddmx11 = ui::DeviceDataManagerX11::GetInstance();
+  int num_coalesced = 0;
+
   const auto* motion = x11_event.As<x11::MotionNotifyEvent>();
   const auto* device = x11_event.As<x11::Input::DeviceEvent>();
   DCHECK(motion || device);
-  auto* conn = x11::Connection::Get();
-  int num_coalesced = 0;
+  DCHECK(!device || device->opcode == x11::Input::DeviceEvent::Motion ||
+         device->opcode == x11::Input::DeviceEvent::TouchUpdate);
 
   conn->ReadResponses();
-  if (motion) {
-    for (auto& next_event : conn->events()) {
+  for (auto& event : conn->events()) {
+    // There may be non-input events such as ConfigureNotifyEvents and
+    // PropertyNotifyEvents that get interleaved between mouse events, so it is
+    // necessary to skip over those to coalesce as many pending motion events as
+    // possible so mouse dragging is smooth.
+    if (!EventHasCoordinates(event))
+      continue;
+
+    if (motion) {
+      const auto* next_motion = event.As<x11::MotionNotifyEvent>();
+
       // Discard all but the most recent motion event that targets the same
       // window with unchanged state.
-      const auto* next_motion = next_event.As<x11::MotionNotifyEvent>();
       if (next_motion && next_motion->event == motion->event &&
           next_motion->child == motion->child &&
           next_motion->state == motion->state) {
-        *last_event = std::move(next_event);
-      } else {
-        break;
+        *last_event = std::move(event);
+        continue;
       }
-    }
-  } else {
-    DCHECK(device->opcode == x11::Input::DeviceEvent::Motion ||
-           device->opcode == x11::Input::DeviceEvent::TouchUpdate);
-
-    auto* ddmx11 = ui::DeviceDataManagerX11::GetInstance();
-    for (auto& event : conn->events()) {
+    } else {
       auto* next_device = event.As<x11::Input::DeviceEvent>();
-
       if (!next_device)
         break;
 
@@ -360,27 +386,26 @@ int CoalescePendingMotionEvents(const x11::Event& x11_event,
         continue;
       }
 
+      // Confirm that the motion event is of the same type, is
+      // targeted at the same window, and that no buttons or modifiers
+      // have changed.
       if (next_device->opcode == device->opcode &&
           !ddmx11->IsCMTGestureEvent(event) &&
-          ddmx11->GetScrollClassEventDetail(event) == SCROLL_TYPE_NO_SCROLL) {
-        // Confirm that the motion event is targeted at the same window
-        // and that no buttons or modifiers have changed.
-        if (device->event == next_device->event &&
-            device->child == next_device->child &&
-            device->detail == next_device->detail &&
-            device->button_mask == next_device->button_mask &&
-            device->mods.base == next_device->mods.base &&
-            device->mods.latched == next_device->mods.latched &&
-            device->mods.locked == next_device->mods.locked &&
-            device->mods.effective == next_device->mods.effective) {
-          *last_event = std::move(event);
-          num_coalesced++;
-          continue;
-        }
+          ddmx11->GetScrollClassEventDetail(event) == SCROLL_TYPE_NO_SCROLL &&
+          device->event == next_device->event &&
+          device->child == next_device->child &&
+          device->detail == next_device->detail &&
+          device->button_mask == next_device->button_mask &&
+          device->mods.base == next_device->mods.base &&
+          device->mods.latched == next_device->mods.latched &&
+          device->mods.locked == next_device->mods.locked &&
+          device->mods.effective == next_device->mods.effective) {
+        *last_event = std::move(event);
+        num_coalesced++;
+        continue;
       }
-
-      break;
     }
+    break;
   }
 
   return num_coalesced;
@@ -434,9 +459,7 @@ void SetHideTitlebarWhenMaximizedProperty(x11::Window window,
 bool IsWindowVisible(x11::Window window) {
   TRACE_EVENT0("ui", "IsWindowVisible");
 
-  auto x11_window = static_cast<x11::Window>(window);
-  auto* connection = x11::Connection::Get();
-  auto response = connection->GetWindowAttributes({x11_window}).Sync();
+  auto response = x11::Connection::Get()->GetWindowAttributes({window}).Sync();
   if (!response || response->map_state != x11::MapState::Viewable)
     return false;
 
@@ -448,72 +471,23 @@ bool IsWindowVisible(x11::Window window) {
       return false;
   }
 
-  // Some compositing window managers (notably kwin) do not actually unmap
-  // windows on desktop switch, so we also must check the current desktop.
-  int32_t window_desktop, current_desktop;
-  return (!GetWindowDesktop(window, &window_desktop) ||
-          !GetCurrentDesktop(&current_desktop) ||
-          window_desktop == kAllDesktops || window_desktop == current_desktop);
-}
-
-bool GetInnerWindowBounds(x11::Window window, gfx::Rect* rect) {
-  auto x11_window = static_cast<x11::Window>(window);
-  auto root = static_cast<x11::Window>(GetX11RootWindow());
-
-  x11::Connection* connection = x11::Connection::Get();
-  auto get_geometry = connection->GetGeometry(x11_window);
-  auto translate_coords = connection->TranslateCoordinates({x11_window, root});
-
-  // Sync after making both requests so only one round-trip is made.
-  // Flush so all requests are sent before waiting on any replies.
-  connection->Flush();
-  auto geometry = get_geometry.Sync();
-  auto coords = translate_coords.Sync();
-
-  if (!geometry || !coords)
-    return false;
-
-  *rect = gfx::Rect(coords->dst_x, coords->dst_y, geometry->width,
-                    geometry->height);
-  return true;
-}
-
-bool GetWindowExtents(x11::Window window, gfx::Insets* extents) {
-  std::vector<int32_t> insets;
-  if (!GetArrayProperty(window, x11::GetAtom("_NET_FRAME_EXTENTS"), &insets))
-    return false;
-  if (insets.size() != 4)
-    return false;
-
-  int left = insets[0];
-  int right = insets[1];
-  int top = insets[2];
-  int bottom = insets[3];
-  extents->Set(-top, -left, -bottom, -right);
-  return true;
-}
-
-bool GetOuterWindowBounds(x11::Window window, gfx::Rect* rect) {
-  if (!GetInnerWindowBounds(window, rect))
-    return false;
-
-  gfx::Insets extents;
-  if (GetWindowExtents(window, &extents))
-    rect->Inset(extents);
-  // Not all window managers support _NET_FRAME_EXTENTS so return true even if
-  // requesting the property fails.
-
+  // Do not check _NET_CURRENT_DESKTOP/_NET_WM_DESKTOP since some
+  // window managers (eg. i3) have per-monitor workspaces where more
+  // than one workspace can be visible at once, but only one will be
+  // "active".
   return true;
 }
 
 bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
   TRACE_EVENT0("ui", "WindowContainsPoint");
 
-  gfx::Rect window_rect;
-  if (!GetOuterWindowBounds(window, &window_rect))
+  gfx::Rect undecorated_bounds;
+  if (!GetUndecoratedWindowBounds(window, &undecorated_bounds))
     return false;
 
-  if (!window_rect.Contains(screen_loc))
+  gfx::Rect decorated_bounds = undecorated_bounds;
+  decorated_bounds.Inset(GetWindowDecorationAdjustment(window));
+  if (!decorated_bounds.Contains(screen_loc))
     return false;
 
   if (!IsShapeExtensionAvailable())
@@ -548,8 +522,8 @@ bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
       // The ShapeInput and ShapeBounding rects are to be in window space, so we
       // have to translate by the window_rect's offset to map to screen space.
       gfx::Rect shape_rect =
-          gfx::Rect(rect.x + window_rect.x(), rect.y + window_rect.y(),
-                    rect.width, rect.height);
+          gfx::Rect(rect.x + undecorated_bounds.x(),
+                    rect.y + undecorated_bounds.y(), rect.width, rect.height);
       if (shape_rect.Contains(screen_loc)) {
         is_in_shape_rects = true;
         break;
@@ -564,7 +538,7 @@ bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
 bool PropertyExists(x11::Window window, x11::Atom property) {
   auto response = x11::Connection::Get()
                       ->GetProperty(x11::GetPropertyRequest{
-                          .window = static_cast<x11::Window>(window),
+                          .window = window,
                           .property = property,
                           .long_length = 1,
                       })
@@ -577,7 +551,7 @@ bool GetRawBytesOfProperty(x11::Window window,
                            scoped_refptr<base::RefCountedMemory>* out_data,
                            x11::Atom* out_type) {
   auto future = x11::Connection::Get()->GetProperty(x11::GetPropertyRequest{
-      .window = static_cast<x11::Window>(window),
+      .window = window,
       .property = property,
       // Don't limit the amount of returned data.
       .long_length = std::numeric_limits<uint32_t>::max(),
@@ -615,7 +589,7 @@ void SetWMSpecState(x11::Window window,
                     x11::Atom state2) {
   SendClientMessage(
       window, GetX11RootWindow(), x11::GetAtom("_NET_WM_STATE"),
-      {enabled ? kNetWMStateAdd : kNetWMStateRemove,
+      {static_cast<uint32_t>(enabled ? kNetWMStateAdd : kNetWMStateRemove),
        static_cast<uint32_t>(state1), static_cast<uint32_t>(state2), 1, 0});
 }
 
@@ -631,7 +605,9 @@ void DoWMMoveResize(x11::Connection* connection,
   connection->UngrabPointer({x11::Time::CurrentTime});
 
   SendClientMessage(window, root_window, x11::GetAtom("_NET_WM_MOVERESIZE"),
-                    {location_px.x(), location_px.y(), direction, 0, 0});
+                    {static_cast<uint32_t>(location_px.x()),
+                     static_cast<uint32_t>(location_px.y()),
+                     static_cast<uint32_t>(direction), 0, 0});
 }
 
 bool HasWMSpecProperty(const base::flat_set<x11::Atom>& properties,
@@ -640,28 +616,17 @@ bool HasWMSpecProperty(const base::flat_set<x11::Atom>& properties,
 }
 
 bool GetCustomFramePrefDefault() {
-  // If the window manager doesn't support enough of EWMH to tell us its name,
-  // assume that it doesn't want custom frames. For example, _NET_WM_MOVERESIZE
-  // is needed for frame-drag-initiated window movement.
-  std::string wm_name;
-  if (!GetWindowManagerName(&wm_name))
+  // _NET_WM_MOVERESIZE is needed for frame-drag-initiated window movement.
+  if (!WmSupportsHint(x11::GetAtom("_NET_WM_MOVERESIZE")))
     return false;
 
-  // Also disable custom frames for (at-least-partially-)EWMH-supporting tiling
-  // window managers.
   ui::WindowManagerName wm = GuessWindowManager();
-  if (wm == WM_AWESOME || wm == WM_I3 || wm == WM_ION3 || wm == WM_MATCHBOX ||
-      wm == WM_NOTION || wm == WM_QTILE || wm == WM_RATPOISON ||
-      wm == WM_STUMPWM || wm == WM_WMII)
+  // If we don't know which WM is active, conservatively disable custom frames.
+  if (wm == WM_OTHER || wm == WM_UNNAMED)
     return false;
 
-  // Handle a few more window managers that don't get along well with custom
-  // frames.
-  if (wm == WM_ICE_WM || wm == WM_KWIN)
-    return false;
-
-  // For everything else, use custom frames.
-  return true;
+  // Stacking WMs should use custom frames.
+  return !IsWmTiling(wm);
 }
 
 bool IsWmTiling(WindowManagerName window_manager) {
@@ -705,17 +670,6 @@ bool IsWmTiling(WindowManagerName window_manager) {
 
 bool GetWindowDesktop(x11::Window window, int32_t* desktop) {
   return GetProperty(window, x11::GetAtom("_NET_WM_DESKTOP"), desktop);
-}
-
-bool GetXWindowStack(x11::Window window, std::vector<x11::Window>* windows) {
-  if (!GetArrayProperty(window, x11::GetAtom("_NET_CLIENT_LIST_STACKING"),
-                        windows)) {
-    return false;
-  }
-  // It's more common to iterate from lowest window to highest,
-  // so reverse the vector.
-  std::reverse(windows->begin(), windows->end());
-  return true;
 }
 
 WindowManagerName GuessWindowManager() {
@@ -857,7 +811,7 @@ bool IsX11WindowFullScreen(x11::Window window) {
   }
 
   gfx::Rect window_rect;
-  if (!ui::GetOuterWindowBounds(window, &window_rect))
+  if (!ui::GetDecoratedWindowBounds(window, &window_rect))
     return false;
 
   // TODO(thomasanderson): We should use
@@ -869,25 +823,26 @@ bool IsX11WindowFullScreen(x11::Window window) {
   return window_rect.size() == gfx::Size(width, height);
 }
 
-void SuspendX11ScreenSaver(bool suspend) {
+bool SuspendX11ScreenSaver(bool suspend) {
   static const bool kScreenSaverAvailable = IsX11ScreenSaverAvailable();
   if (!kScreenSaverAvailable)
-    return;
+    return false;
 
   x11::Connection::Get()->screensaver().Suspend({suspend});
+  return true;
 }
 
 void StoreGpuExtraInfoIntoListValue(x11::VisualId system_visual,
                                     x11::VisualId rgba_visual,
                                     base::Value& list_value) {
-  list_value.Append(
-      NewDescriptionValuePair("Window manager", ui::GuessWindowManagerName()));
-  list_value.Append(NewDescriptionValuePair(
+  list_value.Append(display::BuildGpuInfoEntry("Window manager",
+                                               ui::GuessWindowManagerName()));
+  list_value.Append(display::BuildGpuInfoEntry(
       "Compositing manager", ui::IsCompositingManagerPresent() ? "Yes" : "No"));
-  list_value.Append(NewDescriptionValuePair(
+  list_value.Append(display::BuildGpuInfoEntry(
       "System visual ID",
       base::NumberToString(static_cast<uint32_t>(system_visual))));
-  list_value.Append(NewDescriptionValuePair(
+  list_value.Append(display::BuildGpuInfoEntry(
       "RGBA visual ID",
       base::NumberToString(static_cast<uint32_t>(rgba_visual))));
 }
@@ -1175,22 +1130,12 @@ x11::ColorMap XVisualManager::XVisualData::GetColormap() {
     colormap_ = connection->GenerateId<x11::ColorMap>();
     connection->CreateColormap({x11::ColormapAlloc::None, colormap_,
                                 connection->default_root(), info->visual_id});
+    // In single-process mode, XVisualManager may be used on multiple threads,
+    // so we need to flush colormap creation early so that other threads are
+    // able to use it.
+    connection->Flush();
   }
   return colormap_;
-}
-
-ScopedUnsetDisplay::ScopedUnsetDisplay() {
-  const char* display = getenv("DISPLAY");
-  if (display) {
-    display_.emplace(display);
-    unsetenv("DISPLAY");
-  }
-}
-
-ScopedUnsetDisplay::~ScopedUnsetDisplay() {
-  if (display_) {
-    setenv("DISPLAY", display_->c_str(), 1);
-  }
 }
 
 }  // namespace ui

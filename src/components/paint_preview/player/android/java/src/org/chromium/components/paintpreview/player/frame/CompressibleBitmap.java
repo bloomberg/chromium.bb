@@ -15,6 +15,7 @@ import android.graphics.PorterDuffXfermode;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.task.SequencedTaskRunner;
 
 import java.io.ByteArrayOutputStream;
@@ -59,7 +60,8 @@ class CompressibleBitmap {
      * @param visible Whether the bitmap is currently visible. If visible, the bitmap won't be
      *     immediately discarded.
      */
-    CompressibleBitmap(Bitmap bitmap, SequencedTaskRunner taskRunner, boolean visible) {
+    CompressibleBitmap(Bitmap bitmap, SequencedTaskRunner taskRunner, boolean visible,
+            boolean shouldCompress) {
         mBitmap = bitmap;
         mWidth = mBitmap.getWidth();
         mHeight = mBitmap.getHeight();
@@ -68,7 +70,9 @@ class CompressibleBitmap {
         // ARGB8888 AKA N32Premultiplied.
         mBitmap.setHasAlpha(true);
         mTaskRunner = taskRunner;
-        compressInBackground(visible);
+        if (shouldCompress) {
+            compressInBackground(visible);
+        }
     }
 
     /**
@@ -108,7 +112,14 @@ class CompressibleBitmap {
      * Destroys the data associated with this bitmap.
      */
     void destroy() {
-        mTaskRunner.postTask(this::destroyInternal);
+        mTaskRunner.postTask(() -> { destroyInternal(false); });
+    }
+
+    /**
+     * Destroys the data associated with this bitmap ignoring any locks.
+     */
+    void forceDestroy() {
+        mTaskRunner.postTask(() -> { destroyInternal(true); });
     }
 
     /**
@@ -125,7 +136,9 @@ class CompressibleBitmap {
      */
     void inflateInBackground(Callback<CompressibleBitmap> onInflated) {
         mTaskRunner.postTask(() -> {
+            TraceEvent.begin("CompressibleBitmap.inflate");
             inflate();
+            TraceEvent.end("CompressibleBitmap.inflate");
             if (onInflated != null) {
                 onInflated.onResult(this);
             }
@@ -171,13 +184,12 @@ class CompressibleBitmap {
     private void compress() {
         if (mBitmap == null) return;
 
-        ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
-
         Bitmap alphaChannel = mBitmap.extractAlpha();
         // Bitmap#compress() doesn't work for Bitmap.Config.ALPHA_8 so use zip instead.
         mCompressedAlphaBytes = compressAlpha(alphaChannel);
         alphaChannel.recycle();
 
+        ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
         boolean success = mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayStream);
         if (success) {
             mCompressedData = byteArrayStream.toByteArray();
@@ -186,7 +198,9 @@ class CompressibleBitmap {
 
     private void compressInBackground(boolean visible) {
         mTaskRunner.postTask(() -> {
+            TraceEvent.begin("CompressibleBitmap.compress");
             compress();
+            TraceEvent.end("CompressibleBitmap.compress");
             if (visible) return;
 
             discardBitmapInternal();
@@ -206,9 +220,10 @@ class CompressibleBitmap {
         unlock();
     }
 
-    private void destroyInternal() {
-        if (!lock()) {
-            mTaskRunner.postDelayedTask(this::destroyInternal, IN_USE_BACKOFF_MS);
+    private void destroyInternal(boolean forceDestroy) {
+        if (!lock() && !forceDestroy) {
+            mTaskRunner.postDelayedTask(
+                    () -> { destroyInternal(forceDestroy); }, IN_USE_BACKOFF_MS);
             return;
         }
         if (mBitmap != null) {

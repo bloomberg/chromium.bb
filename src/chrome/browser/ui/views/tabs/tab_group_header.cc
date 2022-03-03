@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -30,12 +31,13 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
@@ -75,8 +77,8 @@ class TabGroupHighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
  private:
-  const views::View* const chip_;
-  const views::View* const title_;
+  const raw_ptr<const views::View> chip_;
+  const raw_ptr<const views::View> title_;
 };
 
 }  // namespace
@@ -92,6 +94,10 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   // The size and color of the chip are set in VisualsChanged().
   title_chip_ = AddChildView(std::make_unique<views::View>());
 
+  // Disable events processing (like tooltip handling)
+  // for children of TabGroupHeader.
+  title_chip_->SetCanProcessEventsWithinSubtree(false);
+
   // The text and color of the title are set in VisualsChanged().
   title_ = title_chip_->AddChildView(std::make_unique<views::Label>());
   title_->SetCollapseWhenHidden(true);
@@ -101,10 +107,16 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
 
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  focus_ring_ = views::FocusRing::Install(this);
+  views::FocusRing::Install(this);
   views::HighlightPathGenerator::Install(
       this,
       std::make_unique<TabGroupHighlightPathGenerator>(title_chip_, title_));
+  // The tab group gets painted with a solid color that may not contrast well
+  // with the focus indicator, so draw an outline around the focus ring for it
+  // to contrast with the solid color.
+  SetProperty(views::kDrawFocusRingBackgroundOutline, true);
+
+  SetProperty(views::kElementIdentifierKey, kTabGroupHeaderIdentifier);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
@@ -165,9 +177,15 @@ bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
   if (editor_bubble_tracker_.is_open())
     return false;
 
-  tab_strip_->MaybeStartDrag(this, event, tab_strip_->GetSelectionModel());
+  // Allow a right click from touch to drag, which corresponds to a long click.
+  if (event.IsOnlyLeftMouseButton() ||
+      (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
+    tab_strip_->MaybeStartDrag(this, event, tab_strip_->GetSelectionModel());
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
@@ -277,6 +295,29 @@ void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
         l10n_util::GetStringFUTF16(IDS_GROUP_AX_LABEL_NAMED_GROUP_FORMAT, title,
                                    contents, collapsed_state));
   }
+}
+
+std::u16string TabGroupHeader::GetTooltipText(const gfx::Point& p) const {
+  if (!title_->GetText().empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_TAB_GROUPS_NAMED_GROUP_TOOLTIP, title_->GetText(),
+        tab_strip_->controller()->GetGroupContentString(group().value()));
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_TAB_GROUPS_UNNAMED_GROUP_TOOLTIP,
+        tab_strip_->controller()->GetGroupContentString(group().value()));
+  }
+}
+
+gfx::Rect TabGroupHeader::GetAnchorBoundsInScreen() const {
+  // Skip the insetting in TabSlotView::GetAnchorBoundsInScreen(). In this
+  // context insetting makes the anchored bubble partially cut into the tab
+  // outline.
+  // TODO(crbug.com/1268481): See if the layout of TabGroupHeader can be unified
+  // with tabs so that bounds do not need to be calculated differently between
+  // tabs and headers. As of writing this, hover cards to not cut into the tab
+  // outline but without this change TabGroupEditorBubbleView does.
+  return View::GetAnchorBoundsInScreen();
 }
 
 TabSlotView::ViewType TabGroupHeader::GetTabSlotViewType() const {
@@ -395,10 +436,10 @@ void TabGroupHeader::VisualsChanged() {
       tab_strip_->controller()->GetGroupColorId(group().value());
   const SkColor color = tab_strip_->GetPaintedGroupColor(color_id);
 
+  title_->SetText(title);
+
   if (title.empty()) {
     // If the title is empty, the chip is just a circle.
-    title_->SetVisible(false);
-
     const int y = (GetLayoutConstant(TAB_HEIGHT) - kEmptyChipSize) / 2;
 
     title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
@@ -408,9 +449,7 @@ void TabGroupHeader::VisualsChanged() {
   } else {
     // If the title is set, the chip is a rounded rect that matches the active
     // tab shape, particularly the tab's corner radius.
-    title_->SetVisible(true);
     title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(color));
-    title_->SetText(title);
 
     // Set the radius such that the chip nestles snugly against the tab corner
     // radius, taking into account the group underline stroke.
@@ -439,8 +478,8 @@ void TabGroupHeader::VisualsChanged() {
                       text_height);
   }
 
-  if (focus_ring_)
-    focus_ring_->Layout();
+  if (views::FocusRing::Get(this))
+    views::FocusRing::Get(this)->Layout();
 }
 
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {
@@ -471,3 +510,6 @@ void TabGroupHeader::EditorBubbleTracker::OnWidgetDestroyed(
     views::Widget* widget) {
   is_open_ = false;
 }
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(TabGroupHeader,
+                                      kTabGroupHeaderIdentifier);

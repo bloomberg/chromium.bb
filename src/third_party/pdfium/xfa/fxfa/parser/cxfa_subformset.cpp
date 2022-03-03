@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kSubformSetPropertyData[] = {
-    {XFA_Element::Break, 1, 0},  {XFA_Element::Overflow, 1, 0},
-    {XFA_Element::Desc, 1, 0},   {XFA_Element::Bookend, 1, 0},
-    {XFA_Element::Extras, 1, 0}, {XFA_Element::Occur, 1, 0},
+    {XFA_Element::Break, 1, {}},  {XFA_Element::Overflow, 1, {}},
+    {XFA_Element::Desc, 1, {}},   {XFA_Element::Bookend, 1, {}},
+    {XFA_Element::Extras, 1, {}}, {XFA_Element::Occur, 1, {}},
 };
 
 const CXFA_Node::AttributeData kSubformSetAttributeData[] = {
@@ -32,7 +32,7 @@ const CXFA_Node::AttributeData kSubformSetAttributeData[] = {
 CXFA_SubformSet::CXFA_SubformSet(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::ContainerNode,
                 XFA_Element::SubformSet,
                 kSubformSetPropertyData,

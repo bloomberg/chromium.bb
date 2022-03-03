@@ -23,8 +23,8 @@ class FailingProofSource : public ProofSource {
 
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
-      const QuicSocketAddress& client_address,
-      const std::string& hostname) override;
+      const QuicSocketAddress& client_address, const std::string& hostname,
+      bool* cert_matched_sni) override;
 
   void ComputeTlsSignature(
       const QuicSocketAddress& server_address,
@@ -33,6 +33,11 @@ class FailingProofSource : public ProofSource {
       uint16_t signature_algorithm,
       absl::string_view in,
       std::unique_ptr<SignatureCallback> callback) override;
+
+  absl::InlinedVector<uint16_t, 8> SupportedTlsSignatureAlgorithms()
+      const override {
+    return {};
+  }
 
   TicketCrypter* GetTicketCrypter() override { return nullptr; }
 };

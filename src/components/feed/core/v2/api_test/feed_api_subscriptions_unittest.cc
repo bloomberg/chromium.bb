@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "components/feed/core/proto/v2/wire/web_feeds.pb.h"
 #include "components/feed/core/v2/api_test/feed_api_test.h"
-
 #include "components/feed/core/v2/config.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/feedstore_util.h"
@@ -21,45 +22,6 @@ namespace feed {
 namespace test {
 namespace {
 using testing::PrintToString;
-constexpr int64_t kFollowerCount = 123;
-
-WebFeedPageInformation MakeWebFeedPageInformation(const std::string& url) {
-  WebFeedPageInformation info;
-  info.SetUrl(GURL(url));
-  return info;
-}
-
-feedwire::webfeed::WebFeedMatcher MakeDomainMatcher(const std::string& domain) {
-  feedwire::webfeed::WebFeedMatcher result;
-  feedwire::webfeed::WebFeedMatcher::Criteria* criteria = result.add_criteria();
-  criteria->set_criteria_type(
-      feedwire::webfeed::WebFeedMatcher::Criteria::PAGE_URL_HOST_SUFFIX);
-  criteria->set_text(domain);
-  return result;
-}
-
-feedwire::webfeed::WebFeed MakeWireWebFeed(const std::string& name) {
-  feedwire::webfeed::WebFeed result;
-  result.set_name("id_" + name);
-  result.set_title("Title " + name);
-  result.set_subtitle("Subtitle " + name);
-  result.set_detail_text("details...");
-  result.set_visit_uri("https://" + name + ".com");
-  result.set_follower_count(kFollowerCount);
-  *result.add_web_feed_matchers() = MakeDomainMatcher(name + ".com");
-  return result;
-}
-
-feedwire::webfeed::FollowWebFeedResponse SuccessfulFollowResponse(
-    const std::string& follow_name) {
-  feedwire::webfeed::FollowWebFeedResponse response;
-  *response.mutable_web_feed() = MakeWireWebFeed(follow_name);
-  return response;
-}
-
-feedwire::webfeed::UnfollowWebFeedResponse SuccessfulUnfollowResponse() {
-  return {};
-}
 
 FeedNetwork::RawResponse MakeFailedResponse() {
   FeedNetwork::RawResponse network_response;
@@ -83,7 +45,6 @@ void WriteRecommendedFeeds(
 class FeedApiSubscriptionsTest : public FeedApiTest {
  public:
   void SetUp() override {
-    subscription_feature_list_.InitAndEnableFeature(kWebFeed);
     FeedApiTest::SetUp();
   }
 
@@ -150,40 +111,54 @@ class FeedApiSubscriptionsTest : public FeedApiTest {
     network_.InjectResponse(response);
   }
 
-  void InjectListWebFeedsResponse(
-      std::vector<feedwire::webfeed::WebFeed> web_feeds) {
-    feedwire::webfeed::ListWebFeedsResponse response;
-    for (const auto& feed : web_feeds) {
-      *response.add_web_feeds() = feed;
-    }
-    network_.InjectResponse(response);
-  }
-
   WebFeedSubscriptionCoordinator& subscriptions() {
     return stream_->subscriptions();
   }
-
- private:
-  base::test::ScopedFeatureList subscription_feature_list_;
 };
 
 TEST_F(FeedApiSubscriptionsTest, FollowWebFeedSuccess) {
+  {
+    auto metadata = stream_->GetMetadata();
+    metadata.set_consistency_token("token");
+    stream_->SetMetadata(metadata);
+  }
+  base::HistogramTester histograms;
   network_.InjectResponse(SuccessfulFollowResponse("cats"));
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
 
-  subscriptions().FollowWebFeed(MakeWebFeedPageInformation("http://cats.com"),
-                                callback.Bind());
+  WebFeedPageInformation page_info =
+      MakeWebFeedPageInformation("http://cats.com");
+  page_info.SetRssUrls({GURL("http://rss1/"), GURL("http://rss2/")});
+
+  subscriptions().FollowWebFeed(page_info, callback.Bind());
 
   EXPECT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback.RunAndGetResult().request_status);
+  auto sent_request = network_.GetApiRequestSent<FollowWebFeedDiscoverApi>();
+  ASSERT_THAT(sent_request->page_rss_uris(),
+              testing::ElementsAre("http://rss1/", "http://rss2/"));
+  EXPECT_EQ("token", sent_request->consistency_token().token());
   EXPECT_EQ(
       "WebFeedMetadata{ id=id_cats title=Title cats "
       "publisher_url=https://cats.com/ status=kSubscribed }",
       PrintToString(callback.RunAndGetResult().web_feed_metadata));
+  EXPECT_EQ(1, callback.RunAndGetResult().subscription_count);
+  EXPECT_EQ("follow-ct", stream_->GetMetadata().consistency_token());
   EXPECT_TRUE(feedstore::IsKnownStale(stream_->GetMetadata(), kWebFeedStream));
+  ASSERT_THAT(
+      network_.GetApiRequestSent<FollowWebFeedDiscoverApi>()->page_rss_uris(),
+      testing::ElementsAre("http://rss1/", "http://rss2/"));
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowUriResult",
+      WebFeedSubscriptionRequestStatus::kSuccess, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.AfterFollow", 1, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended", 0, 1);
 }
 
 TEST_F(FeedApiSubscriptionsTest, FollowRecommendedWebFeedById) {
+  base::HistogramTester histograms;
   WriteRecommendedFeeds(*store_, {MakeWebFeedInfo("catfood")});
   CreateStream();
   network_.InjectResponse(SuccessfulFollowResponse("catfood"));
@@ -193,6 +168,14 @@ TEST_F(FeedApiSubscriptionsTest, FollowRecommendedWebFeedById) {
       "WebFeedMetadata{ id=id_catfood is_recommended title=Title catfood "
       "publisher_url=https://catfood.com/ status=kSubscribed }",
       PrintToString(callback.RunAndGetResult().web_feed_metadata));
+  EXPECT_EQ(1, callback.RunAndGetResult().subscription_count);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowByIdResult",
+      WebFeedSubscriptionRequestStatus::kSuccess, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.AfterFollow", 1, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended", 1, 1);
 }
 
 // Make two Follow attempts for the same page. Both appear successful, but only
@@ -212,6 +195,7 @@ TEST_F(FeedApiSubscriptionsTest, FollowWebFeedTwiceAtOnce) {
             callback.RunAndGetResult().request_status);
   EXPECT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback2.RunAndGetResult().request_status);
+  EXPECT_EQ(1, callback.RunAndGetResult().subscription_count);
   EXPECT_EQ(1, network_.GetFollowRequestCount());
   EXPECT_EQ(
       "{ WebFeedMetadata{ id=id_cats title=Title cats "
@@ -236,6 +220,8 @@ TEST_F(FeedApiSubscriptionsTest, FollowWebFeedTwiceFromDifferentUrls) {
   EXPECT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback2.RunAndGetResult().request_status);
   EXPECT_EQ(2, network_.GetFollowRequestCount());
+  EXPECT_EQ(1, callback.RunAndGetResult().subscription_count);
+  EXPECT_EQ(1, callback2.RunAndGetResult().subscription_count);
   EXPECT_EQ(
       "{ WebFeedMetadata{ id=id_cats title=Title cats "
       "publisher_url=https://cats.com/ status=kSubscribed } }",
@@ -257,6 +243,8 @@ TEST_F(FeedApiSubscriptionsTest, FollowTwoWebFeedsAtOnce) {
             callback.RunAndGetResult().request_status);
   EXPECT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
             callback2.RunAndGetResult().request_status);
+  EXPECT_EQ(1, callback.RunAndGetResult().subscription_count);
+  EXPECT_EQ(2, callback2.RunAndGetResult().subscription_count);
   EXPECT_EQ(
       "{ WebFeedMetadata{ id=id_cats title=Title cats "
       "publisher_url=https://cats.com/ status=kSubscribed }, "
@@ -279,7 +267,29 @@ TEST_F(FeedApiSubscriptionsTest, CantFollowWebFeedWhileOffline) {
   EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
 }
 
+TEST_F(FeedApiSubscriptionsTest, CantFollowWebFeedByIdWhileOffline) {
+  base::HistogramTester histograms;
+  is_offline_ = true;
+  network_.InjectResponse(SuccessfulFollowResponse("cats"));
+  CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
+
+  subscriptions().FollowWebFeed("feed_id", callback.Bind());
+
+  EXPECT_EQ(0, network_.GetFollowRequestCount());
+  EXPECT_EQ(WebFeedSubscriptionRequestStatus::kFailedOffline,
+            callback.RunAndGetResult().request_status);
+  EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowByIdResult",
+      WebFeedSubscriptionRequestStatus::kFailedOffline, 1);
+  histograms.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.AfterFollow", 0);
+  histograms.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended", 0);
+}
+
 TEST_F(FeedApiSubscriptionsTest, FollowWebFeedNetworkError) {
+  base::HistogramTester histograms;
   network_.InjectFollowResponse(MakeFailedResponse());
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
   EXPECT_FALSE(feedstore::IsKnownStale(stream_->GetMetadata(), kWebFeedStream));
@@ -291,10 +301,14 @@ TEST_F(FeedApiSubscriptionsTest, FollowWebFeedNetworkError) {
             callback.RunAndGetResult().request_status);
   EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
   EXPECT_FALSE(feedstore::IsKnownStale(stream_->GetMetadata(), kWebFeedStream));
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowUriResult",
+      WebFeedSubscriptionRequestStatus::kFailedUnknownError, 1);
 }
 
 // Follow and then unfollow a web feed successfully.
 TEST_F(FeedApiSubscriptionsTest, UnfollowAFollowedWebFeed) {
+  base::HistogramTester histograms;
   network_.InjectResponse(SuccessfulFollowResponse("cats"));
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> follow_callback;
   subscriptions().FollowWebFeed(MakeWebFeedPageInformation("http://cats.com"),
@@ -311,10 +325,21 @@ TEST_F(FeedApiSubscriptionsTest, UnfollowAFollowedWebFeed) {
 
   unfollow_callback.RunUntilCalled();
   EXPECT_EQ(1, network_.GetUnfollowRequestCount());
+  EXPECT_EQ("follow-ct",
+            network_.GetApiRequestSent<UnfollowWebFeedDiscoverApi>()
+                ->consistency_token()
+                .token());
   EXPECT_EQ(WebFeedSubscriptionRequestStatus::kSuccess,
-            unfollow_callback.GetResult()->request_status);
+            unfollow_callback.RunAndGetResult().request_status);
+  EXPECT_EQ(0, unfollow_callback.RunAndGetResult().subscription_count);
+  EXPECT_EQ("unfollow-ct", stream_->GetMetadata().consistency_token());
   EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
   EXPECT_TRUE(feedstore::IsKnownStale(stream_->GetMetadata(), kWebFeedStream));
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.UnfollowResult",
+      WebFeedSubscriptionRequestStatus::kSuccess, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.AfterUnfollow", 0, 1);
 }
 
 TEST_F(FeedApiSubscriptionsTest, UnfollowAFollowedWebFeedTwiceAtOnce) {
@@ -631,7 +656,7 @@ TEST_F(FeedApiSubscriptionsTest,
 
   // Wait until the delayed task would normally run, verify no request is made.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(0, network_.GetListRecommendedWebFeedsRequestCount());
 }
@@ -644,7 +669,7 @@ TEST_F(
 
   // Wait until the delayed task would normally run, verify no request is made.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   EXPECT_EQ(0, network_.GetListRecommendedWebFeedsRequestCount());
   EXPECT_EQ(0, network_.GetListFollowedWebFeedsRequestCount());
@@ -656,7 +681,7 @@ TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreFetchedAfterStartup) {
 
   // Wait until the delayed task runs, and verify the network request was sent.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
 
@@ -684,7 +709,7 @@ TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreClearedOnSignOut) {
     // Wait until the delayed task runs, and verify the network request was
     // sent.
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
     ASSERT_EQ(
@@ -709,7 +734,7 @@ TEST_F(FeedApiSubscriptionsTest,
 
   // Wait until the delayed task runs, and verify the network request was sent.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
 
@@ -739,7 +764,7 @@ TEST_F(FeedApiSubscriptionsTest,
     InjectRecommendedWebFeedsResponse({MakeWireWebFeed("cats")});
 
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
   }
@@ -750,7 +775,7 @@ TEST_F(FeedApiSubscriptionsTest,
     CreateStream();
 
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
   }
@@ -761,16 +786,20 @@ TEST_F(FeedApiSubscriptionsTest,
     task_environment_.FastForwardBy(
         GetFeedConfig().recommended_feeds_staleness_threshold);
     InjectRecommendedWebFeedsResponse({MakeWireWebFeed("catsv2")});
+    base::HistogramTester histograms;
     CreateStream();
 
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(2, network_.GetListRecommendedWebFeedsRequestCount());
     EXPECT_EQ(
         "{ WebFeedMetadata{ id=id_catsv2 is_recommended title=Title catsv2 "
         "publisher_url=https://catsv2.com/ status=kNotSubscribed } }",
         PrintToString(CheckRecommendedFeeds()));
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.WebFeed.RefreshRecommendedFeeds",
+        WebFeedRefreshStatus::kSuccess, 1);
   }
 }
 
@@ -783,18 +812,18 @@ TEST_F(FeedApiSubscriptionsTest,
 
   // Wait until the delayed task would normally run, verify no request is made.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(0, network_.GetListFollowedWebFeedsRequestCount());
 }
 
 TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreFetchedAfterStartup) {
   SetUpWithDefaultConfig();
-  InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+  network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
 
   // Wait until the delayed task runs, and verify the network request was sent.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
 
@@ -811,19 +840,18 @@ TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreFetchedAfterStartup) {
       "{ WebFeedMetadata{ id=id_cats title=Title cats "
       "publisher_url=https://cats.com/ status=kSubscribed } }",
       PrintToString(CheckAllSubscriptions()));
-  EXPECT_TRUE(subscriptions().IsWebFeedSubscriber());
 }
 
 TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreClearedOnSignOut) {
   // Populate web feeds at startup for a signed-in users.
   {
     SetUpWithDefaultConfig();
-    InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+    network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
 
     // Wait until the delayed task runs, and verify the network request was
     // sent.
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
     ASSERT_EQ(
@@ -838,18 +866,17 @@ TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreClearedOnSignOut) {
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
   EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
-  EXPECT_FALSE(subscriptions().IsWebFeedSubscriber());
 }
 
 TEST_F(FeedApiSubscriptionsTest,
        SubscribedWebFeedsAreFetchedAfterSignInButNotSignOut) {
   SetUpWithDefaultConfig();
-  InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
-  InjectListWebFeedsResponse({MakeWireWebFeed("dogs")});
+  network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+  network_.InjectListWebFeedsResponse({MakeWireWebFeed("dogs")});
 
   // Wait until the delayed task runs, and verify the network request was sent.
   task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                  base::TimeDelta::FromSeconds(1));
+                                  base::Seconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
 
@@ -878,10 +905,10 @@ TEST_F(FeedApiSubscriptionsTest,
   // SubscribedWebFeedsAreFetchedAfterStartup.
   {
     SetUpWithDefaultConfig();
-    InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+    network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
 
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
   }
@@ -892,7 +919,7 @@ TEST_F(FeedApiSubscriptionsTest,
     CreateStream();
 
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
   }
@@ -902,11 +929,11 @@ TEST_F(FeedApiSubscriptionsTest,
   {
     task_environment_.FastForwardBy(
         GetFeedConfig().subscribed_feeds_staleness_threshold);
-    InjectListWebFeedsResponse({MakeWireWebFeed("catsv2")});
+    network_.InjectListWebFeedsResponse({MakeWireWebFeed("catsv2")});
     CreateStream();
 
     task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
-                                    base::TimeDelta::FromSeconds(1));
+                                    base::Seconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(2, network_.GetListFollowedWebFeedsRequestCount());
     EXPECT_EQ(
@@ -917,18 +944,30 @@ TEST_F(FeedApiSubscriptionsTest,
 }
 
 TEST_F(FeedApiSubscriptionsTest, RefreshSubscriptionsSuccess) {
+  {
+    auto metadata = stream_->GetMetadata();
+    metadata.set_consistency_token("token");
+    stream_->SetMetadata(metadata);
+  }
+  base::HistogramTester histograms;
   CallbackReceiver<WebFeedSubscriptions::RefreshResult> result;
-  InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+  network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+
   subscriptions().RefreshSubscriptions(result.Bind());
 
   WaitForIdleTaskQueue();
 
   EXPECT_TRUE(result.RunAndGetResult().success);
-
+  EXPECT_EQ("token", network_.GetApiRequestSent<ListWebFeedsDiscoverApi>()
+                         ->consistency_token()
+                         .token());
   EXPECT_EQ(
       "{ WebFeedMetadata{ id=id_cats title=Title cats "
       "publisher_url=https://cats.com/ status=kSubscribed } }",
       PrintToString(CheckAllSubscriptions()));
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.WebFeed.RefreshSubscribedFeeds.Force",
+      WebFeedRefreshStatus::kSuccess, 1);
 }
 
 TEST_F(FeedApiSubscriptionsTest, RefreshSubscriptionsFail) {
@@ -947,7 +986,7 @@ TEST_F(FeedApiSubscriptionsTest, RefreshSubscriptionsFail) {
 TEST_F(FeedApiSubscriptionsTest, RefreshSubscriptionsDuringRefresh) {
   CallbackReceiver<WebFeedSubscriptions::RefreshResult> result1;
   CallbackReceiver<WebFeedSubscriptions::RefreshResult> result2;
-  InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+  network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
   subscriptions().RefreshSubscriptions(result1.Bind());
   subscriptions().RefreshSubscriptions(result2.Bind());
 
@@ -960,6 +999,23 @@ TEST_F(FeedApiSubscriptionsTest, RefreshSubscriptionsDuringRefresh) {
       "{ WebFeedMetadata{ id=id_cats title=Title cats "
       "publisher_url=https://cats.com/ status=kSubscribed } }",
       PrintToString(CheckAllSubscriptions()));
+}
+
+TEST_F(FeedApiSubscriptionsTest, FieldTrialRegistered_OneFollow) {
+  // Follow one web feed, and recreate FeedStream to simulate a Chrome restart.
+  network_.InjectResponse(SuccessfulFollowResponse("cats"));
+  CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
+
+  subscriptions().FollowWebFeed(MakeWebFeedPageInformation("http://cats.com"),
+                                base::DoNothing());
+
+  WaitForIdleTaskQueue();
+  CreateStream();
+
+  // RegisterFollowingFeedFollowCountFieldTrial is called twice, one before and
+  // one after CreateStream().
+  EXPECT_EQ(std::vector<size_t>({0, 1}),
+            register_following_feed_follow_count_field_trial_calls_);
 }
 
 }  // namespace

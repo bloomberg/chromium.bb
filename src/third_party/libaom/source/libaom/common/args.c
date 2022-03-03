@@ -133,7 +133,7 @@ int arg_match(struct arg *arg_, const struct arg_def *def, char **argv) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   int ret = arg_match_helper(arg_, def, argv, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }
@@ -194,7 +194,7 @@ unsigned int arg_parse_uint(const struct arg *arg) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   unsigned int ret = arg_parse_uint_helper(arg, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }
@@ -203,7 +203,7 @@ int arg_parse_int(const struct arg *arg) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   int ret = arg_parse_int_helper(arg, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }
@@ -212,7 +212,7 @@ struct aom_rational arg_parse_rational(const struct arg *arg) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   struct aom_rational ret = arg_parse_rational_helper(arg, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }
@@ -221,7 +221,7 @@ int arg_parse_enum(const struct arg *arg) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   int ret = arg_parse_enum_helper(arg, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }
@@ -230,7 +230,7 @@ int arg_parse_enum_or_int(const struct arg *arg) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   int ret = arg_parse_enum_or_int_helper(arg, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }
@@ -241,7 +241,7 @@ int arg_parse_list(const struct arg *arg, int *list, int n) {
   char err_msg[ARG_ERR_MSG_MAX_LEN];
   int ret = arg_parse_list_helper(arg, list, n, err_msg);
   if (err_msg[0] != '\0') {
-    die(err_msg);
+    die("%s", err_msg);
   }
   return ret;
 }

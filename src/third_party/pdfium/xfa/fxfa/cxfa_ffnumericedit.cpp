@@ -36,7 +36,7 @@ bool CXFA_FFNumericEdit::LoadWidget() {
 
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pWidget);
-    pWidget->SetText(m_pNode->GetValue(XFA_VALUEPICTURE_Display));
+    pWidget->SetText(m_pNode->GetValue(XFA_ValuePicture::kDisplay));
     UpdateWidgetProperty();
   }
 
@@ -55,16 +55,16 @@ void CXFA_FFNumericEdit::UpdateWidgetProperty() {
   if (!m_pNode->IsHorizontalScrollPolicyOff())
     dwExtendedStyle |= FWL_STYLEEXT_EDT_AutoHScroll;
 
-  Optional<int32_t> numCells = m_pNode->GetNumberOfCells();
-  if (numCells && *numCells > 0) {
+  absl::optional<int32_t> numCells = m_pNode->GetNumberOfCells();
+  if (numCells.has_value() && numCells.value() > 0) {
     dwExtendedStyle |= FWL_STYLEEXT_EDT_CombText;
-    pWidget->SetLimit(*numCells);
+    pWidget->SetLimit(numCells.value());
   }
   dwExtendedStyle |= GetAlignment();
   if (!m_pNode->IsOpenAccess() || !GetDoc()->GetXFADoc()->IsInteractive())
     dwExtendedStyle |= FWL_STYLEEXT_EDT_ReadOnly;
 
-  GetNormalWidget()->ModifyStylesEx(dwExtendedStyle, 0xFFFFFFFF);
+  GetNormalWidget()->ModifyStyleExts(dwExtendedStyle, 0xFFFFFFFF);
 }
 
 void CXFA_FFNumericEdit::OnProcessEvent(CFWL_Event* pEvent) {
@@ -78,7 +78,7 @@ void CXFA_FFNumericEdit::OnProcessEvent(CFWL_Event* pEvent) {
 
 bool CXFA_FFNumericEdit::OnValidate(CFWL_Widget* pWidget,
                                     const WideString& wsText) {
-  WideString wsPattern = m_pNode->GetPictureContent(XFA_VALUEPICTURE_Edit);
+  WideString wsPattern = m_pNode->GetPictureContent(XFA_ValuePicture::kEdit);
   if (!wsPattern.IsEmpty())
     return true;
 

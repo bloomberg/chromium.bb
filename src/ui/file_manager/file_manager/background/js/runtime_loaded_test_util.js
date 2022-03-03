@@ -7,6 +7,17 @@
  * extension under test at runtime to populate testing functionality.
  */
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+import {metrics} from '../../common/js/metrics.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {BackgroundBase} from '../../externs/background/background_base.js';
+import {test} from './test_util_base.js';
+
+/** @type {!BackgroundBase} */
+window.background;
+
 /**
  * @typedef {{
  *   attributes:Object<string>,
@@ -26,7 +37,7 @@
  *   scrollHeight: (number|undefined),
  *  }}
  */
-let ElementObject;
+export let ElementObject;
 
 /**
  * Object containing common key modifiers: shift, alt, and ctrl.
@@ -37,7 +48,7 @@ let ElementObject;
  *   ctrl: (boolean|undefined),
  * }}
  */
-let KeyModifiers;
+export let KeyModifiers;
 
 /**
  * @typedef {{
@@ -182,16 +193,6 @@ test.util.sync.resizeWindow = (contentWindow, width, height) => {
  */
 test.util.sync.maximizeWindow = contentWindow => {
   window.appWindows[contentWindow.appID].maximize();
-  return true;
-};
-
-/**
- * Restores the window state (maximized/minimized/etc...).
- * @param {Window} contentWindow Window to be tested.
- * @return {boolean} True for success.
- */
-test.util.sync.restoreWindow = contentWindow => {
-  window.appWindows[contentWindow.appID].restore();
   return true;
 };
 
@@ -383,6 +384,7 @@ test.util.sync.deepGetActiveElement = (contentWindow, opt_styleNames) => {
  *     |query[1]| specifies elements inside the shadow DOM of the first element,
  *     and so on.
  * @param {string} text Text to be assigned.
+ * @return {boolean} Whether or not the text was assigned.
  */
 test.util.sync.inputText = (contentWindow, query, text) => {
   if (typeof query === 'string') {
@@ -393,12 +395,13 @@ test.util.sync.inputText = (contentWindow, query, text) => {
       test.util.sync.deepQuerySelectorAll_(contentWindow.document, query);
   if (elems.length === 0) {
     console.error(`Input element not found: [${query.join(',')}]`);
-    return;
+    return false;
   }
 
   const input = elems[0];
   input.value = text;
   input.dispatchEvent(new Event('change'));
+  return true;
 };
 
 /**
@@ -406,10 +409,11 @@ test.util.sync.inputText = (contentWindow, query, text) => {
  * @param {Window} contentWindow Window to be tested.
  * @param {string} query Query for the test element.
  * @param {number} position scrollLeft position to set.
+ * @return {boolean} True if operation was successful.
  */
 test.util.sync.setScrollLeft = (contentWindow, query, position) => {
-  const scrollablElement = contentWindow.document.querySelector(query);
-  scrollablElement.scrollLeft = position;
+  contentWindow.document.querySelector(query).scrollLeft = position;
+  return true;
 };
 
 /**
@@ -417,10 +421,11 @@ test.util.sync.setScrollLeft = (contentWindow, query, position) => {
  * @param {Window} contentWindow Window to be tested.
  * @param {string} query Query for the test element.
  * @param {number} position scrollTop position to set.
+ * @return {boolean} True if operation was successful.
  */
 test.util.sync.setScrollTop = (contentWindow, query, position) => {
-  const scrollablElement = contentWindow.document.querySelector(query);
-  scrollablElement.scrollTop = position;
+  contentWindow.document.querySelector(query).scrollTop = position;
+  return true;
 };
 
 /**
@@ -428,12 +433,18 @@ test.util.sync.setScrollTop = (contentWindow, query, position) => {
  * @param {Window} contentWindow Window to be tested.
  * @param {string} query Query for the test element.
  * @param {!Object<?, string>} properties CSS Property name/values to set.
+ * @return {boolean} Whether styles were set or not.
  */
 test.util.sync.setElementStyles = (contentWindow, query, properties) => {
   const element = contentWindow.document.querySelector(query);
+  if (element === null) {
+    console.error(`Failed to locate element using query "${query}"`);
+    return false;
+  }
   for (const [key, value] of Object.entries(properties)) {
     element.style[key] = value;
   }
+  return true;
 };
 
 /**
@@ -492,6 +503,10 @@ test.util.sync.fakeEvent =
           /** @type {!EventInit} */ (opt_additionalProperties || {}));
       if (opt_additionalProperties) {
         for (const name in opt_additionalProperties) {
+          if (name === 'bubbles') {
+            // bubbles is a read-only which, causes an error when assigning.
+            continue;
+          }
           event[name] = opt_additionalProperties[name];
         }
       }
@@ -950,6 +965,40 @@ test.util.async.fakeDragLeaveOrDrop =
     };
 
 /**
+ * Sends a drop event to simulate dropping a file originating in the browser to
+ * a target.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} fileName File name.
+ * @param {string} fileContent File content.
+ * @param {string} fileMimeType File mime type.
+ * @param {string} targetQuery Query to specify the target element.
+ * @param {function(boolean)} callback Function called with result
+ *    true on success, or false on failure.
+ */
+test.util.async.fakeDropBrowserFile =
+    (contentWindow, fileName, fileContent, fileMimeType, targetQuery,
+     callback) => {
+      const target = contentWindow.document.querySelector(targetQuery);
+
+      if (!target) {
+        setTimeout(() => callback(false));
+        return;
+      }
+
+      const file = new File([fileContent], fileName, {type: fileMimeType});
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      // The value for the callback is true if the event has been handled, i.e.
+      // event has been received and preventDefault() called.
+      callback(target.dispatchEvent(new DragEvent('drop', {
+        bubbles: true,
+        composed: true,
+        dataTransfer: dataTransfer,
+      })));
+    };
+
+/**
  * Sends a resize event to the content window.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -1001,8 +1050,19 @@ test.util.async.getNotificationIDs = callback => {
  */
 test.util.async.getFilesUnderVolume = async (volumeType, names, callback) => {
   const volumeManager = await window.background.getVolumeManager();
-  const volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
-  const displayRoot = await volumeInfo.resolveDisplayRoot();
+  let volumeInfo = null;
+  let displayRoot = null;
+
+  // Wait for the volume to initialize.
+  while (!(volumeInfo && displayRoot)) {
+    volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
+    if (volumeInfo) {
+      displayRoot = await volumeInfo.resolveDisplayRoot();
+    }
+    if (!displayRoot) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
 
   const filesPromise = names.map(name => {
     // TODO(crbug.com/880130): Remove this conditional.
@@ -1047,7 +1107,8 @@ test.util.async.unmount = async (volumeType, callback) => {
  * Remote call API handler. When loaded, this replaces the declaration in
  * test_util_base.js.
  * @param {*} request
- * @param {function(*):void} sendResponse
+ * @param {function(*): void} sendResponse
+ * @return {boolean|undefined}
  */
 test.util.executeTestMessage = (request, sendResponse) => {
   window.IN_TEST = true;
@@ -1062,7 +1123,15 @@ test.util.executeTestMessage = (request, sendResponse) => {
 
   const args = request.args.slice();  // shallow copy
   if (request.appId) {
-    if (window.appWindows[request.appId]) {
+    if (request.contentWindow) {
+      // request.contentWindow is present if this function was called via
+      // test.swaTestMessageListener, an alternative code path used by the test
+      // harness to send messages directly to Files SWA. Test code uses
+      // request.contentWindow only, thus by setting it, we avoid having to
+      // change the test.utils functions to check for contentWindow || window,
+      // just to support SWA files app.
+      args.unshift(request.contentWindow);
+    } else if (window.appWindows[request.appId]) {
       args.unshift(window.appWindows[request.appId].contentWindow);
     } else if (window.background.dialogs[request.appId]) {
       args.unshift(window.background.dialogs[request.appId]);
@@ -1081,10 +1150,15 @@ test.util.executeTestMessage = (request, sendResponse) => {
     test.util.async[request.func].apply(null, args);
     return true;
   } else if (test.util.sync[request.func]) {
-    sendResponse(test.util.sync[request.func].apply(null, args));
+    try {
+      sendResponse(test.util.sync[request.func].apply(null, args));
+    } catch (e) {
+      console.error(`Failure executing ${request.func}: ${e}`);
+      sendResponse(null);
+    }
     return false;
   } else {
-    console.error('Invalid function name.');
+    console.error('Invalid function name: ' + request.func);
     return false;
   }
 };
@@ -1201,7 +1275,13 @@ test.util.sync.recordEnumMetric = (name, value, validValues) => {
  * appId/windowId won't be usable after the reload.
  */
 test.util.sync.reload = () => {
-  chrome.runtime.reload();
+  // TODO(b/198106171): Remove chrome.runtime.reload.
+  if (chrome && chrome.runtime && chrome.runtime.reload) {
+    chrome.runtime.reload();
+  } else {
+    window.location.reload();
+  }
+  return true;
 };
 
 /**
@@ -1211,13 +1291,61 @@ test.util.sync.reload = () => {
  */
 test.util.sync.progressCenterNeverNotifyCompleted = () => {
   window.background.progressCenter.neverNotifyCompleted();
+  return true;
 };
 
 /**
  * Waits for the background page to initialize.
  * @param {function()} callback Callback function called when background page
  *      has finished initializing.
+ * @suppress {missingProperties}: ready() isn't available for Audio and Video
+ * Player.
  */
 test.util.async.waitForBackgroundReady = callback => {
   window.background.ready(callback);
+};
+
+/**
+ * Isolates a specific banner to be shown. Useful when testing functionality of
+ * a banner in isolation.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} bannerTagName Tag name of the banner to isolate.
+ * @param {function(boolean)} callback Callback function to be called with a
+ *    boolean indicating success or failure.
+ * @suppress {missingProperties} banners is only defined for foreground
+ *    Window so it isn't visible in the background.
+ */
+test.util.async.isolateBannerForTesting =
+    async (contentWindow, bannerTagName, callback) => {
+  try {
+    await contentWindow.fileManager.ui_.banners.isolateBannerForTesting(
+        bannerTagName);
+    callback(true);
+    return;
+  } catch (e) {
+    console.error(`Error isolating banner with tagName ${
+        bannerTagName} for testing: ${e}`);
+  }
+  callback(false);
+};
+
+/**
+ * Disable banners from attaching themselves to the DOM.
+ *
+ * @param {Window} contentWindow Window the banner controller exists.
+ * @param {function(boolean)} callback Callback function to be called with a
+ *    boolean indicating success or failure.
+ * @suppress {missingProperties} banners is only defined for foreground
+ *    Window so it isn't visible in the background.
+ */
+test.util.async.disableBannersForTesting = async (contentWindow, callback) => {
+  try {
+    await contentWindow.fileManager.ui_.banners.disableBannersForTesting();
+    callback(true);
+    return;
+  } catch (e) {
+    console.error(`Error disabling banners for testing: ${e}`);
+  }
+  callback(false);
 };

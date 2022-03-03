@@ -13,13 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for `tf.data.experimental.assert_cardinality()`."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.data.experimental.ops import cardinality
+from tensorflow.python.data.kernel_tests import checkpoint_test_base
 from tensorflow.python.data.kernel_tests import test_base
 from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.framework import combinations
@@ -55,6 +52,16 @@ class AssertCardinalityTest(test_base.DatasetTestBase, parameterized.TestCase):
               "elements but contained only 1 element.") +
           combinations.combine(
               num_elements=10,
+              asserted_cardinality=cardinality.INFINITE,
+              expected_error="Input dataset was expected to contain an "
+              "infinite number of elements but contained only 10 elements.") +
+          combinations.combine(
+              num_elements=1,
+              asserted_cardinality=cardinality.INFINITE,
+              expected_error="Input dataset was expected to contain an "
+              "infinite number of elements but contained only 1 element.") +
+          combinations.combine(
+              num_elements=10,
               asserted_cardinality=5,
               expected_error="Input dataset was expected to contain 5 "
               "elements but contained at least 6 elements.") +
@@ -69,10 +76,24 @@ class AssertCardinalityTest(test_base.DatasetTestBase, parameterized.TestCase):
     dataset = dataset.apply(
         cardinality.assert_cardinality(asserted_cardinality))
     get_next = self.getNext(dataset)
-    with self.assertRaisesRegexp(errors.FailedPreconditionError,
-                                 expected_error):
+    with self.assertRaisesRegex(errors.FailedPreconditionError, expected_error):
       while True:
         self.evaluate(get_next())
+
+
+class AssertCardinalityCheckpointTest(checkpoint_test_base.CheckpointTestBase,
+                                      parameterized.TestCase):
+
+  @combinations.generate(
+      combinations.times(test_base.default_test_combinations(),
+                         checkpoint_test_base.default_test_combinations()))
+  def test(self, verify_fn):
+
+    def build_dataset(num_elements):
+      return dataset_ops.Dataset.range(num_elements).apply(
+          cardinality.assert_cardinality(num_elements))
+
+    verify_fn(self, lambda: build_dataset(200), num_outputs=200)
 
 
 if __name__ == "__main__":

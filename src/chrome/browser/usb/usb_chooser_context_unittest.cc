@@ -33,6 +33,7 @@
 using device::mojom::UsbDeviceInfoPtr;
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::NiceMock;
 
 namespace {
 
@@ -70,8 +71,7 @@ class UsbChooserContextTest : public testing::Test {
 
     // Call GetDevices once to make sure the connection with DeviceManager has
     // been set up, so that it can be notified when device is removed.
-    chooser_context->GetDevices(
-        base::DoNothing::Once<std::vector<UsbDeviceInfoPtr>>());
+    chooser_context->GetDevices(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // Add observers
@@ -84,7 +84,7 @@ class UsbChooserContextTest : public testing::Test {
   device::FakeUsbDeviceManager device_manager_;
 
   // Mock observers
-  permissions::MockPermissionObserver mock_permission_observer_;
+  NiceMock<permissions::MockPermissionObserver> mock_permission_observer_;
   MockDeviceObserver mock_device_observer_;
 
  private:

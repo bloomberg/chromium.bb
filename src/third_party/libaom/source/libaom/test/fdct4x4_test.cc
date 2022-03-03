@@ -20,7 +20,6 @@
 #include "config/av1_rtcd.h"
 #include "config/aom_dsp_rtcd.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/transform_test_base.h"
 #include "test/util.h"
@@ -72,7 +71,7 @@ class Trans4x4FDCT : public libaom_test::TransformTestBase<OutputType>,
     TxfmBaseOutType::mask_ = (1 << TxfmBaseOutType::bit_depth_) - 1;
     TxfmBaseOutType::num_coeffs_ = std::get<3>(this->GetParam());
   }
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   void RunFwdTxfm(const int16_t *in, OutputType *out, int stride) {

@@ -205,6 +205,10 @@ class TParseContext : angle::NonCopyable
                                const char *value,
                                bool stdgl);
 
+    // For built-ins that can be redeclared, adjusts the type qualifier so transformations can
+    // identify them correctly.
+    void adjustRedeclaredBuiltInType(const ImmutableString &identifier, TType *type);
+
     // Returns true on success. *initNode may still be nullptr on success in case the initialization
     // is not needed in the AST.
     bool executeInitializer(const TSourceLoc &line,
@@ -489,6 +493,9 @@ class TParseContext : angle::NonCopyable
         return mTessEvaluationShaderInputPointType;
     }
 
+    void markShaderHasPrecise() { mHasAnyPreciseType = true; }
+    bool hasAnyPreciseType() const { return mHasAnyPreciseType; }
+
     ShShaderOutput getOutputType() const { return mOutputType; }
 
     // TODO(jmadill): make this private
@@ -722,6 +729,11 @@ class TParseContext : angle::NonCopyable
     TLayoutTessEvaluationType mTessEvaluationShaderInputVertexSpacingType;
     TLayoutTessEvaluationType mTessEvaluationShaderInputOrderingType;
     TLayoutTessEvaluationType mTessEvaluationShaderInputPointType;
+    // List of array declarations without an explicit size that have come before layout(vertices=N).
+    // Once the vertex count is specified, these arrays are sized.
+    TVector<TType *> mTessControlDeferredArrayTypesToSize;
+    // Whether the |precise| keyword has been seen in the shader.
+    bool mHasAnyPreciseType;
 
     // Track when we add new scope for func body in ESSL 1.00 spec
     bool mFunctionBodyNewScope;

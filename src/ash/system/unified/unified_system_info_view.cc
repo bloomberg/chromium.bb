@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_info_view.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -31,10 +31,12 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -63,6 +65,10 @@ std::u16string FormatDayOfWeek(const base::Time& time) {
 class DateView : public views::Button, public ClockObserver {
  public:
   explicit DateView(UnifiedSystemTrayController* controller);
+
+  DateView(const DateView&) = delete;
+  DateView& operator=(const DateView&) = delete;
+
   ~DateView() override;
 
   // views::Button:
@@ -82,13 +88,13 @@ class DateView : public views::Button, public ClockObserver {
   void Refresh() override;
 
   views::Label* label_;
-
-  DISALLOW_COPY_AND_ASSIGN(DateView);
 };
 
 DateView::DateView(UnifiedSystemTrayController* controller)
     : Button(base::BindRepeating(
-          &UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction,
+          features::IsCalendarViewEnabled()
+              ? &UnifiedSystemTrayController::ShowCalendarView
+              : &UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction,
           base::Unretained(controller))) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   label_ = AddChildView(std::make_unique<views::Label>());
@@ -99,7 +105,7 @@ DateView::DateView(UnifiedSystemTrayController* controller)
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
   SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
   SetInstallFocusRingOnFocus(true);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 DateView::~DateView() {
@@ -111,7 +117,7 @@ void DateView::OnThemeChanged() {
   auto* color_provider = AshColorProvider::Get();
   label_->SetEnabledColor(color_provider->GetContentLayerColor(
       ContentLayerType::kTextColorPrimary));
-  focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+  views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
@@ -145,6 +151,10 @@ void DateView::Refresh() {
 class BatteryView : public views::View, public PowerStatus::Observer {
  public:
   BatteryView();
+
+  BatteryView(const BatteryView&) = delete;
+  BatteryView& operator=(const BatteryView&) = delete;
+
   ~BatteryView() override;
 
   // views::View:
@@ -165,8 +175,6 @@ class BatteryView : public views::View, public PowerStatus::Observer {
   views::Label* percentage_;
   views::Label* separator_;
   views::Label* status_;
-
-  DISALLOW_COPY_AND_ASSIGN(BatteryView);
 };
 
 BatteryView::BatteryView() {
@@ -238,6 +246,9 @@ void BatteryView::ConfigureLabel(views::Label* label) {
 // A base class of the views showing device management state.
 class ManagedStateView : public views::Button {
  public:
+  ManagedStateView(const ManagedStateView&) = delete;
+  ManagedStateView& operator=(const ManagedStateView&) = delete;
+
   ~ManagedStateView() override = default;
 
   // views::Button:
@@ -253,8 +264,6 @@ class ManagedStateView : public views::Button {
   views::Label* label_ = nullptr;
   views::ImageView* image_ = nullptr;
   const gfx::VectorIcon& icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedStateView);
 };
 
 void ManagedStateView::OnThemeChanged() {
@@ -265,7 +274,7 @@ void ManagedStateView::OnThemeChanged() {
   image_->SetImage(
       gfx::CreateVectorIcon(icon_, color_provider->GetContentLayerColor(
                                        ContentLayerType::kIconColorSecondary)));
-  focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+  views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
@@ -287,7 +296,7 @@ ManagedStateView::ManagedStateView(PressedCallback callback,
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
 
   SetInstallFocusRingOnFocus(true);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 // A view that shows whether the device is enterprise managed or not. It updates
@@ -297,6 +306,10 @@ class EnterpriseManagedView : public ManagedStateView,
                               public SessionObserver {
  public:
   explicit EnterpriseManagedView(UnifiedSystemTrayController* controller);
+
+  EnterpriseManagedView(const EnterpriseManagedView&) = delete;
+  EnterpriseManagedView& operator=(const EnterpriseManagedView&) = delete;
+
   ~EnterpriseManagedView() override;
 
   // EnterpriseDomainObserver:
@@ -311,8 +324,6 @@ class EnterpriseManagedView : public ManagedStateView,
 
  private:
   void Update();
-
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseManagedView);
 };
 
 EnterpriseManagedView::EnterpriseManagedView(
@@ -406,21 +417,21 @@ void EnterpriseManagedView::Update() {
 class SupervisedUserView : public ManagedStateView {
  public:
   SupervisedUserView();
+
+  SupervisedUserView(const SupervisedUserView&) = delete;
+  SupervisedUserView& operator=(const SupervisedUserView&) = delete;
+
   ~SupervisedUserView() override = default;
 
   // views::Button:
   const char* GetClassName() const override { return "SupervisedUserView"; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SupervisedUserView);
 };
 
 SupervisedUserView::SupervisedUserView()
     : ManagedStateView(PressedCallback(),
                        IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL,
                        GetSupervisedUserIcon()) {
-  bool visible =
-      Shell::Get()->session_controller()->IsUserChildOrDeprecatedSupervised();
+  bool visible = Shell::Get()->session_controller()->IsUserChild();
   SetVisible(visible);
   if (visible)
     SetTooltipText(GetSupervisedUserMessage());

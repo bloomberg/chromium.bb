@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,7 +23,7 @@
 namespace content {
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
-    const GlobalFrameRoutingId& id)
+    const GlobalRenderFrameHostId& id)
     : tracker_(new WebContentsFrameTracker(AsWeakPtr(), cursor_controller())) {
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -43,9 +42,30 @@ WebContentsVideoCaptureDevice::Create(const std::string& device_id) {
     return nullptr;
   }
 
-  const GlobalFrameRoutingId routing_id(media_id.render_process_id,
-                                        media_id.main_render_frame_id);
+  const GlobalRenderFrameHostId routing_id(media_id.render_process_id,
+                                           media_id.main_render_frame_id);
   return std::make_unique<WebContentsVideoCaptureDevice>(routing_id);
+}
+
+void WebContentsVideoCaptureDevice::Crop(
+    const base::Token& crop_id,
+    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+  DCHECK(callback);
+
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const base::Token& crop_id,
+             base::OnceCallback<void(media::mojom::CropRequestResult)> callback,
+             base::WeakPtr<WebContentsFrameTracker> tracker) {
+            if (!tracker) {
+              std::move(callback).Run(
+                  media::mojom::CropRequestResult::kErrorGeneric);
+              return;
+            }
+            tracker->Crop(crop_id, std::move(callback));
+          },
+          crop_id, std::move(callback), tracker_->AsWeakPtr()));
 }
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice() = default;

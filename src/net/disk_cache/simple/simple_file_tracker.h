@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "net/base/net_export.h"
@@ -46,6 +46,10 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
    public:
     FileHandle();
     FileHandle(FileHandle&& other);
+
+    FileHandle(const FileHandle&) = delete;
+    FileHandle& operator=(const FileHandle&) = delete;
+
     ~FileHandle();
     FileHandle& operator=(FileHandle&& other);
     base::File* operator->() const;
@@ -63,11 +67,10 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
                base::File* file);
 
     // All the pointer fields are nullptr in the default/moved away from form.
-    SimpleFileTracker* file_tracker_ = nullptr;
-    const SimpleSynchronousEntry* entry_ = nullptr;
+    raw_ptr<SimpleFileTracker> file_tracker_ = nullptr;
+    raw_ptr<const SimpleSynchronousEntry> entry_ = nullptr;
     SimpleFileTracker::SubFile subfile_;
-    base::File* file_ = nullptr;
-    DISALLOW_COPY_AND_ASSIGN(FileHandle);
+    raw_ptr<base::File> file_ = nullptr;
   };
 
   struct EntryFileKey {
@@ -87,6 +90,10 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
   // The default limit here is half of what's available on our target OS where
   // Chrome has the lowest limit.
   SimpleFileTracker(int file_limit = 512);
+
+  SimpleFileTracker(const SimpleFileTracker&) = delete;
+  SimpleFileTracker& operator=(const SimpleFileTracker&) = delete;
+
   ~SimpleFileTracker();
 
   // Established |file| as what's backing |subfile| for |owner|. This is
@@ -160,7 +167,7 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
     // 2) To get info on the caller of our operation.
     //    Accessing |owner| from any other TrackedFiles would be unsafe (as it
     //    may be doing its own thing in a different thread).
-    const SimpleSynchronousEntry* owner;
+    raw_ptr<const SimpleSynchronousEntry> owner;
     EntryFileKey key;
 
     // Some of these may be nullptr, if they are not open. Non-null pointers
@@ -218,8 +225,6 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
   // number of threads, and getting it exact would require re-acquiring the
   // lock after closing the file.
   int open_files_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleFileTracker);
 };
 
 }  // namespace disk_cache

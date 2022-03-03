@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/media_router/cast_modes_with_media_sources.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
@@ -73,6 +73,10 @@ class QueryResultManager {
   };
 
   explicit QueryResultManager(MediaRouter* media_router);
+
+  QueryResultManager(const QueryResultManager&) = delete;
+  QueryResultManager& operator=(const QueryResultManager&) = delete;
+
   ~QueryResultManager();
 
   // Adds/removes an observer that is notified with query results.
@@ -183,9 +187,7 @@ class QueryResultManager {
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Not owned by this object.
-  MediaRouter* const router_;
-
-  DISALLOW_COPY_AND_ASSIGN(QueryResultManager);
+  const raw_ptr<MediaRouter> router_;
 };
 
 }  // namespace media_router

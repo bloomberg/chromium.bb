@@ -18,6 +18,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -38,8 +39,7 @@ constexpr int kBubbleBetweenChildSpacingDp = 16;
 constexpr int kBubbleBorderRadius = 8;
 
 // The amount of time for bubble show/hide animation.
-constexpr base::TimeDelta kBubbleAnimationDuration =
-    base::TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kBubbleAnimationDuration = base::Milliseconds(300);
 
 }  // namespace
 
@@ -47,9 +47,12 @@ constexpr base::TimeDelta kBubbleAnimationDuration =
 // associated bubble in response.
 class LoginBubbleHandler : public ui::EventHandler {
  public:
-  LoginBubbleHandler(LoginBaseBubbleView* bubble) : bubble_(bubble) {
+  explicit LoginBubbleHandler(LoginBaseBubbleView* bubble) : bubble_(bubble) {
     Shell::Get()->AddPreTargetHandler(this);
   }
+
+  LoginBubbleHandler(const LoginBubbleHandler&) = delete;
+  LoginBubbleHandler& operator=(const LoginBubbleHandler&) = delete;
 
   ~LoginBubbleHandler() override { Shell::Get()->RemovePreTargetHandler(this); }
 
@@ -114,8 +117,6 @@ class LoginBubbleHandler : public ui::EventHandler {
   }
 
   LoginBaseBubbleView* bubble_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginBubbleHandler);
 };
 
 LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view)
@@ -144,8 +145,7 @@ void LoginBaseBubbleView::EnsureLayer() {
       AshColorProvider::BaseLayerType::kTransparent80);
   SetBackground(views::CreateRoundedRectBackground(background_color,
                                                    kBubbleBorderRadius));
-  layer()->SetBackgroundBlur(
-      static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));
+  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
   layer()->SetFillsBoundsOpaquely(false);
 }
 
@@ -310,10 +310,10 @@ gfx::Rect LoginBaseBubbleView::GetWorkArea() const {
 
 void LoginBaseBubbleView::ScheduleAnimation(bool visible) {
   if (GetBubbleOpener()) {
-    GetBubbleOpener()->ink_drop()->AnimateToState(
-        visible ? views::InkDropState::ACTIVATED
-                : views::InkDropState::DEACTIVATED,
-        nullptr /*event*/);
+    views::InkDrop::Get(GetBubbleOpener())
+        ->AnimateToState(visible ? views::InkDropState::ACTIVATED
+                                 : views::InkDropState::DEACTIVATED,
+                         nullptr /*event*/);
   }
 
   if (layer())

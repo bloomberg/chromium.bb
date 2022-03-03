@@ -11,12 +11,13 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/password_manager/affiliation_service_factory.h"
 #include "chrome/browser/password_manager/credentials_cleaner_runner_factory.h"
+#include "chrome/browser/password_manager/password_store_utils.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -24,50 +25,36 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
-#include "components/password_manager/core/browser/password_store_impl.h"
-#include "components/password_manager/core/browser/password_store_signin_notifier_impl.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/password_manager/password_manager_util_win.h"
-#endif
-
+using password_manager::AffiliatedMatchHelper;
 using password_manager::PasswordStore;
+using password_manager::PasswordStoreInterface;
 
 namespace {
 
-std::string GetSyncUsername(Profile* profile) {
-  auto* identity_manager =
-      IdentityManagerFactory::GetForProfileIfExists(profile);
-  return identity_manager
-             ? identity_manager
-                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-                   .email
-             : std::string();
-}
-
-bool IsSignedIn(Profile* profile) {
-  auto* identity_manager =
-      IdentityManagerFactory::GetForProfileIfExists(profile);
-  return identity_manager
-             ? !identity_manager->GetAccountsWithRefreshTokens().empty()
-             : false;
+bool IsSyncingPasswords(Profile* profile) {
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile);
+  return sync_service && sync_service->IsSyncFeatureEnabled() &&
+         sync_service->GetUserSettings()->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kPasswords);
 }
 
 }  // namespace
 
 // static
-scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
+scoped_refptr<PasswordStoreInterface> PasswordStoreFactory::GetForProfile(
     Profile* profile,
     ServiceAccessType access_type) {
   // |profile| gets always redirected to a non-Incognito profile below, so
@@ -76,7 +63,7 @@ scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
   if (access_type == ServiceAccessType::IMPLICIT_ACCESS &&
       profile->IsOffTheRecord())
     return nullptr;
-  return base::WrapRefCounted(static_cast<password_manager::PasswordStore*>(
+  return base::WrapRefCounted(static_cast<PasswordStoreInterface*>(
       GetInstance()->GetServiceForBrowserContext(profile, true).get()));
 }
 
@@ -85,31 +72,12 @@ PasswordStoreFactory* PasswordStoreFactory::GetInstance() {
   return base::Singleton<PasswordStoreFactory>::get();
 }
 
-// static
-void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
-    Profile* profile) {
-  scoped_refptr<PasswordStore> password_store =
-      GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!password_store)
-    return;
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-
-  password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
-      password_store.get(), sync_service,
-      profile->GetDefaultStoragePartition()
-          ->GetURLLoaderFactoryForBrowserProcess(),
-      content::GetNetworkConnectionTracker(), profile->GetPath());
-}
-
 PasswordStoreFactory::PasswordStoreFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "PasswordStore",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(AffiliationServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
-  // TODO(crbug.com/715987). Remove when PasswordReuseDetector is decoupled
-  // from PasswordStore.
-  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 PasswordStoreFactory::~PasswordStoreFactory() = default;
@@ -117,39 +85,46 @@ PasswordStoreFactory::~PasswordStoreFactory() = default;
 scoped_refptr<RefcountedKeyedService>
 PasswordStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-#if defined(OS_WIN)
-  password_manager_util_win::DelayReportOsPassword();
-#endif
   Profile* profile = static_cast<Profile*>(context);
 
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabaseForProfileStorage(
           profile->GetPath()));
-#if defined(OS_MAC)
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  login_db->InitPasswordRecoveryUtil(
-      std::make_unique<password_manager::PasswordRecoveryUtilMac>(
-          local_state, base::ThreadTaskRunnerHandle::Get()));
-#endif
 
   scoped_refptr<PasswordStore> ps;
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID) || \
-    defined(OS_MAC) || defined(USE_X11) || defined(USE_OZONE)
-  ps = new password_manager::PasswordStoreImpl(std::move(login_db));
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_MAC) || \
+    defined(USE_OZONE)
+  // Since SyncService has dependency on PasswordStore keyed service, there
+  // are no guarantees that during the construction of the password store
+  // about the sync service existence. And hence we cannot directly query the
+  // status of password syncing. However, status of password syncing is
+  // relevant for migrating passwords from the built-in backend to the Android
+  // backend. Since migration does *not* start immediately after start up, we
+  // inject a repeating callback that queries the sync service. Assumption is
+  // by the time the migration starts, the sync service will have been
+  // created. As a safety mechanism, if the sync service isn't created yet, we
+  // proceed as if the user isn't syncing which forces moving the passwords to
+  // the Android backend to avoid data loss.
+  ps = new password_manager::PasswordStore(
+      password_manager::PasswordStoreBackend::Create(
+          std::move(login_db), profile->GetPrefs(),
+          base::BindRepeating(&IsSyncingPasswords, profile)));
 #else
   NOTIMPLEMENTED();
 #endif
   DCHECK(ps);
-  if (!ps->Init(profile->GetPrefs())) {
+
+  password_manager::AffiliationService* affiliation_service =
+      AffiliationServiceFactory::GetForProfile(profile);
+  std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper =
+      std::make_unique<AffiliatedMatchHelper>(affiliation_service);
+
+  if (!ps->Init(profile->GetPrefs(), std::move(affiliated_match_helper))) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";
     return nullptr;
   }
-
-  // Prepare password hash data for reuse detection.
-  ps->PreparePasswordHashData(GetSyncUsername(profile), IsSignedIn(profile));
 
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {
@@ -160,31 +135,9 @@ PasswordStoreFactory::BuildServiceInstanceFor(
       profile);
   password_manager_util::RemoveUselessCredentials(
       CredentialsCleanerRunnerFactory::GetForProfile(profile), ps,
-      profile->GetPrefs(), base::TimeDelta::FromSeconds(60),
-      network_context_getter);
+      profile->GetPrefs(), base::Seconds(60), network_context_getter);
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-  std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
-      std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(
-          IdentityManagerFactory::GetForProfile(profile));
-  ps->SetPasswordStoreSigninNotifier(std::move(notifier));
-#endif
-
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kFillingAcrossAffiliatedWebsites)) {
-    // Try to create affiliation service without awaiting synced state changes.
-    // TODO(http://crbug.com/1202699): Remove sync service completely after
-    // launching HashAffiliationLookup.
-    password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
-        ps.get(), /*sync_service=*/nullptr,
-        profile->GetDefaultStoragePartition()
-            ->GetURLLoaderFactoryForBrowserProcess(),
-        content::GetNetworkConnectionTracker(), profile->GetPath());
-  }
-
+  DelayReportingPasswordStoreMetrics(profile);
   return ps;
 }
 

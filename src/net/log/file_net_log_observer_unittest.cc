@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -23,13 +24,13 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/test_completion_callback.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_entry.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
 #include "net/log/net_log_values.h"
-#include "net/log/test_net_log.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -105,13 +106,13 @@ struct ParsedNetLog {
   base::Value root;
 
   // The constants dictionary.
-  const base::Value* constants = nullptr;
+  raw_ptr<const base::Value> constants = nullptr;
 
   // The events list.
-  const base::Value* events = nullptr;
+  raw_ptr<const base::Value> events = nullptr;
 
   // The optional polled data (may be nullptr).
-  const base::Value* polled_data = nullptr;
+  raw_ptr<const base::Value> polled_data = nullptr;
 };
 
 ::testing::AssertionResult ParsedNetLog::InitFromFileContents(
@@ -246,7 +247,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
                                                     std::move(constants));
     }
 
-    logger_->StartObserving(&net_log_);
+    logger_->StartObserving(NetLog::Get());
   }
 
   void CreateAndStartObservingPreExisting(
@@ -268,7 +269,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
           std::move(file), NetLogCaptureMode::kDefault, std::move(constants));
     }
 
-    logger_->StartObserving(&net_log_);
+    logger_->StartObserving(NetLog::Get());
   }
 
   bool LogFileExists() {
@@ -280,7 +281,6 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
   }
 
  protected:
-  TestNetLog net_log_;
   std::unique_ptr<FileNetLogObserver> logger_;
   base::ScopedTempDir temp_dir_;
   base::ScopedTempDir scratch_dir_;  // used for bounded + preexisting
@@ -308,7 +308,7 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
     logger_ = FileNetLogObserver::CreateBoundedForTests(
         log_path_, total_file_size, num_files, NetLogCaptureMode::kDefault,
         std::move(constants));
-    logger_->StartObserving(&net_log_);
+    logger_->StartObserving(NetLog::Get());
   }
 
   // Returns the path for an internally directory created for bounded logs (this
@@ -332,7 +332,6 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
 
 
  protected:
-  TestNetLog net_log_;
   std::unique_ptr<FileNetLogObserver> logger_;
   base::FilePath log_path_;
 
@@ -495,7 +494,7 @@ TEST_P(FileNetLogObserverTest, PreExistingFileBroken) {
   else
     logger_ = FileNetLogObserver::CreateUnboundedPreExisting(
         std::move(file), NetLogCaptureMode::kDefault, nullptr);
-  logger_->StartObserving(&net_log_);
+  logger_->StartObserving(NetLog::Get());
 
   // Send dummy event.
   AddEntries(logger_.get(), 1, kDummyEventSize);
@@ -975,7 +974,7 @@ TEST_F(FileNetLogObserverBoundedTest, PreExistingUsesSpecifiedDir) {
   logger_ = FileNetLogObserver::CreateBoundedPreExisting(
       scratch_dir.GetPath(), std::move(file), kLargeFileSize,
       NetLogCaptureMode::kDefault, nullptr);
-  logger_->StartObserving(&net_log_);
+  logger_->StartObserving(NetLog::Get());
 
   base::ThreadPoolInstance::Get()->FlushForTesting();
   EXPECT_TRUE(base::PathExists(log_path_));
@@ -1046,7 +1045,7 @@ TEST_P(FileNetLogObserverTest, AddEventsFromMultipleThreadsWithStopObserving) {
   for (size_t i = 0; i < kNumThreads; ++i) {
     threads[i]->task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&AddEntriesViaNetLog, base::Unretained(&net_log_),
+        base::BindOnce(&AddEntriesViaNetLog, base::Unretained(NetLog::Get()),
                        kNumEventsAddedPerThread));
   }
 
@@ -1082,7 +1081,7 @@ TEST_P(FileNetLogObserverTest,
   for (size_t i = 0; i < kNumThreads; ++i) {
     threads[i]->task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&AddEntriesViaNetLog, base::Unretained(&net_log_),
+        base::BindOnce(&AddEntriesViaNetLog, base::Unretained(NetLog::Get()),
                        kNumEventsAddedPerThread));
   }
 

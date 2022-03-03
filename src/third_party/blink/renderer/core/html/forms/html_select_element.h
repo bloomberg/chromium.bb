@@ -42,11 +42,9 @@ namespace blink {
 class AXObject;
 class AutoscrollController;
 class ExceptionState;
-class HTMLElementOrLong;
 class HTMLHRElement;
 class HTMLOptGroupElement;
 class HTMLOptionElement;
-class HTMLOptionElementOrHTMLOptGroupElement;
 class LayoutUnit;
 class PopupMenu;
 class SelectType;
@@ -87,15 +85,9 @@ class CORE_EXPORT HTMLSelectElement final
 
   bool UsesMenuList() const { return uses_menu_list_; }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void add(const V8UnionHTMLOptGroupElementOrHTMLOptionElement* element,
            const V8UnionHTMLElementOrLong* before,
            ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void add(const HTMLOptionElementOrHTMLOptGroupElement&,
-           const HTMLElementOrLong&,
-           ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   using Node::remove;
   void remove(int index);
@@ -181,9 +173,6 @@ class CORE_EXPORT HTMLSelectElement final
 
   void ResetTypeAheadSessionForTesting();
 
-  // Used for slot assignment.
-  static bool CanAssignToSelectSlot(const Node&);
-
   bool HasNonInBodyInsertionMode() const override { return true; }
 
   void Trace(Visitor*) const override;
@@ -229,6 +218,7 @@ class CORE_EXPORT HTMLSelectElement final
   void DetachLayoutTree(bool performing_reattach = false) override;
   void AppendToFormData(FormData&) override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  void ManuallyAssignSlots() override;
 
   void DefaultEventHandler(Event&) override;
 
@@ -291,6 +281,7 @@ class CORE_EXPORT HTMLSelectElement final
   mutable ListItems list_items_;
   TypeAhead type_ahead_;
   unsigned size_;
+  Member<HTMLSlotElement> option_slot_;
   Member<HTMLOptionElement> last_on_change_option_;
   Member<HTMLOptionElement> suggested_option_;
   bool uses_menu_list_ = true;

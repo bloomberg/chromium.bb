@@ -133,10 +133,6 @@ component("crypto") {
   }
 
   defines = [ "CRYPTO_IMPLEMENTATION" ]
-
-  if (is_nacl) {
-    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
-  }
 }
 
 test("crypto_unittests") {
@@ -207,24 +203,19 @@ static_library("test_support") {
   ]
 }
 
-config("platform_config") {
-  if (use_nss_certs && is_clang) {
-    # There is a broken header guard in /usr/include/nss/secmod.h:
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
-    cflags = [ "-Wno-header-guard" ]
-  }
-}
-
-# This is a meta-target that forwards to NSS's SSL library or OpenSSL,
-# according to the state of the crypto flags. A target just wanting to depend
-# on the current SSL library should just depend on this.
+# This target historically abstracted between different cryptography and TLS
+# libraries. Now we always use //third_party/boringssl for cryptography and TLS.
+# On Linux and Chrome OS, we additionally use //build/config/linux/nss for some
+# certificate-related platform integration points. Depend on one or both of the
+# individual targets instead of this one.
+#
+# TODO(https://crbug.com/1275165): Remove this target.
 group("platform") {
   public_deps = [ "//third_party/boringssl" ]
 
   # Link in NSS if it is used for the platform certificate library
   # (use_nss_certs).
   if (use_nss_certs) {
-    public_configs = [ ":platform_config" ]
-    public_configs += [ "//build/config/linux/nss:system_nss_no_ssl_config" ]
+    public_configs = [ "//build/config/linux/nss" ]
   }
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -24,6 +25,11 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       base::OnceCallback<void(PrimaryAccountChangeEvent)>;
 
   explicit TestIdentityManagerObserver(IdentityManager* identity_manager);
+
+  TestIdentityManagerObserver(const TestIdentityManagerObserver&) = delete;
+  TestIdentityManagerObserver& operator=(const TestIdentityManagerObserver&) =
+      delete;
+
   ~TestIdentityManagerObserver() override;
 
   void SetOnPrimaryAccountChangedCallback(
@@ -83,7 +89,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   void StartBatchOfRefreshTokenStateChanges();
   void OnEndBatchOfRefreshTokenStateChanges() override;
 
-  IdentityManager* identity_manager_;
+  raw_ptr<IdentityManager> identity_manager_;
 
   PrimaryAccountChangedCallback on_primary_account_changed_callback_;
   PrimaryAccountChangeEvent on_primary_account_changed_event_;
@@ -113,8 +119,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   bool is_inside_batch_ = false;
   bool was_called_account_removed_with_info_callback_ = false;
   std::vector<std::vector<CoreAccountId>> batch_change_records_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestIdentityManagerObserver);
 };
 
 }  // namespace signin

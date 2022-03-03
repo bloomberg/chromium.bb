@@ -72,7 +72,7 @@ class SnapPageTest(unittest.TestCase):
     finally:
       shutil.rmtree(test_dir)
 
-  @mock.patch('urllib2.urlopen')
+  @mock.patch('six.moves.urllib.request.urlopen')
   def testSnappingPageWithImage(self, mock_urlopen):
     test_dir = tempfile.mkdtemp()
     try:
@@ -122,4 +122,4 @@ class JSONTransmissionTest(tab_test_case.TabTestCase):
     json_obj = [1] * 1000000
     snap_page_util._TransmitLargeJSONToTab(
         self._tab, json_obj, 'big_array')
-    self.assertEquals(self._tab.EvaluateJavaScript('big_array.length'), 1000000)
+    self.assertEqual(self._tab.EvaluateJavaScript('big_array.length'), 1000000)

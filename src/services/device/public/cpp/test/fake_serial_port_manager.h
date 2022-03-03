@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -20,6 +19,10 @@ namespace device {
 class FakeSerialPortManager : public mojom::SerialPortManager {
  public:
   FakeSerialPortManager();
+
+  FakeSerialPortManager(const FakeSerialPortManager&) = delete;
+  FakeSerialPortManager& operator=(const FakeSerialPortManager&) = delete;
+
   ~FakeSerialPortManager() override;
 
   void AddReceiver(mojo::PendingReceiver<mojom::SerialPortManager> receiver);
@@ -46,8 +49,6 @@ class FakeSerialPortManager : public mojom::SerialPortManager {
   mojo::ReceiverSet<mojom::SerialPortManager> receivers_;
   mojo::RemoteSet<mojom::SerialPortManagerClient> clients_;
   bool simulate_open_failure_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
 };
 
 }  // namespace device

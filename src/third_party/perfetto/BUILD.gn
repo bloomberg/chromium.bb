@@ -68,7 +68,10 @@ if (perfetto_build_with_android) {
 }
 
 if (enable_perfetto_tools) {
-  all_targets += [ "tools" ]
+  all_targets += [
+    "tools",
+    "src/websocket_bridge",
+  ]
 }
 
 if (enable_perfetto_unittests) {
@@ -143,6 +146,9 @@ if (perfetto_build_standalone) {
   ]
   if (is_linux || is_android) {
     all_targets += [ "src/tracing/consumer_api_deprecated:consumer_api_test" ]
+  }
+  if (is_linux || is_android || is_mac) {
+    all_targets += [ "src/tracebox" ]
   }
 }
 

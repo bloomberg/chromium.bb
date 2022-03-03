@@ -23,6 +23,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
@@ -81,19 +82,27 @@ inline uint8x8_t SuperRes(const uint8x8_t src[kSuperResFilterTaps],
   return vqrshrn_n_u16(res, kFilterBits);
 }
 
-void SuperRes_NEON(const void* const coefficients, void* const source,
+void SuperRes_NEON(const void* LIBGAV1_RESTRICT const coefficients,
+                   void* LIBGAV1_RESTRICT const source,
                    const ptrdiff_t source_stride, const int height,
                    const int downscaled_width, const int upscaled_width,
                    const int initial_subpixel_x, const int step,
-                   void* const dest, const ptrdiff_t dest_stride) {
+                   void* LIBGAV1_RESTRICT const dest,
+                   const ptrdiff_t dest_stride) {
   auto* src = static_cast<uint8_t*>(source) - DivideBy2(kSuperResFilterTaps);
   auto* dst = static_cast<uint8_t*>(dest);
   int y = height;
   do {
     const auto* filter = static_cast<const uint8_t*>(coefficients);
     uint8_t* dst_ptr = dst;
+#if LIBGAV1_MSAN
+    // Initialize the padding area to prevent msan warnings.
+    const int super_res_right_border = kSuperResHorizontalPadding;
+#else
+    const int super_res_right_border = kSuperResHorizontalBorder;
+#endif
     ExtendLine<uint8_t>(src + DivideBy2(kSuperResFilterTaps), downscaled_width,
-                        kSuperResHorizontalBorder, kSuperResHorizontalBorder);
+                        kSuperResHorizontalBorder, super_res_right_border);
     int subpixel_x = initial_subpixel_x;
     uint8x8_t sr[8];
     uint8x16_t s[8];
@@ -234,19 +243,27 @@ inline uint16x8_t SuperRes(const uint16x8_t src[kSuperResFilterTaps],
 }
 
 template <int bitdepth>
-void SuperRes_NEON(const void* const coefficients, void* const source,
+void SuperRes_NEON(const void* LIBGAV1_RESTRICT const coefficients,
+                   void* LIBGAV1_RESTRICT const source,
                    const ptrdiff_t source_stride, const int height,
                    const int downscaled_width, const int upscaled_width,
                    const int initial_subpixel_x, const int step,
-                   void* const dest, const ptrdiff_t dest_stride) {
+                   void* LIBGAV1_RESTRICT const dest,
+                   const ptrdiff_t dest_stride) {
   auto* src = static_cast<uint16_t*>(source) - DivideBy2(kSuperResFilterTaps);
   auto* dst = static_cast<uint16_t*>(dest);
   int y = height;
   do {
     const auto* filter = static_cast<const uint16_t*>(coefficients);
     uint16_t* dst_ptr = dst;
+#if LIBGAV1_MSAN
+    // Initialize the padding area to prevent msan warnings.
+    const int super_res_right_border = kSuperResHorizontalPadding;
+#else
+    const int super_res_right_border = kSuperResHorizontalBorder;
+#endif
     ExtendLine<uint16_t>(src + DivideBy2(kSuperResFilterTaps), downscaled_width,
-                         kSuperResHorizontalBorder, kSuperResHorizontalBorder);
+                         kSuperResHorizontalBorder, super_res_right_border);
     int subpixel_x = initial_subpixel_x;
     uint16x8_t sr[8];
     int x = RightShiftWithCeiling(upscaled_width, 3);

@@ -7,12 +7,15 @@
 #import <Foundation/Foundation.h>
 
 #include "base/check.h"
+#include "base/command_line.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/crash_report/crash_helper.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
+#import "ios/chrome/common/credential_provider/multi_store_credential_store.h"
+#import "ios/chrome/common/credential_provider/user_defaults_credential_store.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
@@ -21,12 +24,22 @@
 #import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
+#import "ios/chrome/credential_provider_extension/ui/consent_legacy_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_coordinator.h"
+#import "ios/chrome/credential_provider_extension/ui/feature_flags.h"
 #import "ios/chrome/credential_provider_extension/ui/stale_credentials_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+UIColor* BackgroundColor() {
+  return IsPasswordCreationEnabled()
+             ? [UIColor colorNamed:kGroupedPrimaryBackgroundColor]
+             : [UIColor colorNamed:kBackgroundColor];
+}
+}
 
 @interface CredentialProviderViewController () <ConfirmationAlertActionHandler,
                                                 SuccessfulReauthTimeAccessor>
@@ -37,8 +50,14 @@
 // List coordinator that shows the list of passwords when started.
 @property(nonatomic, strong) CredentialListCoordinator* listCoordinator;
 
+// Legacy consent coordinator that shows a view requesting device auth in order
+// to enable the extension. Will be used when
+// IsCredentialProviderExtensionPromoEnabled() == NO.
+@property(nonatomic, strong) ConsentLegacyCoordinator* consentLegacyCoordinator;
+
 // Consent coordinator that shows a view requesting device auth in order to
-// enable the extension.
+// enable the extension. Will be used when
+// IsCredentialProviderExtensionPromoEnabled() == YES.
 @property(nonatomic, strong) ConsentCoordinator* consentCoordinator;
 
 // Date kept for ReauthenticationModule.
@@ -57,15 +76,51 @@
 // Loading indicator used for user validation, which APIs can take a long time.
 @property(nonatomic, strong) UIActivityIndicatorView* activityIndicatorView;
 
+// Identfiers cached in |-prepareCredentialListForServiceIdentifiers:| to show
+// the next time this view appears.
+@property(nonatomic, strong)
+    NSArray<ASCredentialServiceIdentifier*>* serviceIdentifiers;
+
 @end
 
 @implementation CredentialProviderViewController
 
 + (void)initialize {
   if (self == [CredentialProviderViewController self]) {
-    if (crash_helper::common::CanCrashpadStart()) {
+    if (crash_helper::common::CanUseCrashpad()) {
       crash_helper::common::StartCrashpad();
     }
+  }
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.view.backgroundColor = BackgroundColor();
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  // If identifiers were stored in
+  // |-prepareCredentialListForServiceIdentifiers:|, handle that now.
+  if (self.serviceIdentifiers) {
+    NSArray<ASCredentialServiceIdentifier*>* serviceIdentifiers =
+        self.serviceIdentifiers;
+    self.serviceIdentifiers = nil;
+    __weak __typeof__(self) weakSelf = self;
+    [self validateUserWithCompletion:^(BOOL userIsValid) {
+      if (!userIsValid) {
+        [weakSelf showStaleCredentials];
+        return;
+      }
+      [weakSelf reauthenticateIfNeededWithCompletionHandler:^(
+                    ReauthenticationResult result) {
+        if (result != ReauthenticationResult::kFailure) {
+          [weakSelf showCredentialListForServiceIdentifiers:serviceIdentifiers];
+        } else {
+          [weakSelf exitWithErrorCode:ASExtensionErrorCodeFailed];
+        }
+      }];
+    }];
   }
 }
 
@@ -73,21 +128,11 @@
 
 - (void)prepareCredentialListForServiceIdentifiers:
     (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
-  __weak __typeof__(self) weakSelf = self;
-  [self validateUserWithCompletion:^(BOOL userIsValid) {
-    if (!userIsValid) {
-      [weakSelf showStaleCredentials];
-      return;
-    }
-    [weakSelf reauthenticateIfNeededWithCompletionHandler:^(
-                  ReauthenticationResult result) {
-      if (result != ReauthenticationResult::kFailure) {
-        [weakSelf showCredentialListForServiceIdentifiers:serviceIdentifiers];
-      } else {
-        [weakSelf exitWithErrorCode:ASExtensionErrorCodeFailed];
-      }
-    }];
-  }];
+  // Sometimes, this method is called while the authentication framework thinks
+  // the app is not foregrounded, so authentication fails. Instead of directly
+  // authenticating and showing the credentials, store the list of
+  // identifiers and authenticate once the extension is visible.
+  self.serviceIdentifiers = serviceIdentifiers;
 }
 
 - (void)provideCredentialWithoutUserInteractionForIdentity:
@@ -131,20 +176,41 @@
   NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
   [user_defaults
       removeObjectForKey:kUserDefaultsCredentialProviderConsentVerified];
-  self.consentCoordinator = [[ConsentCoordinator alloc]
-         initWithBaseViewController:self
-                            context:self.extensionContext
-            reauthenticationHandler:self.reauthenticationHandler
-      isInitialConfigurationRequest:YES];
-  [self.consentCoordinator start];
+  if (IsCredentialProviderExtensionPromoEnabled()) {
+    self.consentCoordinator = [[ConsentCoordinator alloc]
+        initWithBaseViewController:self
+                           context:self.extensionContext];
+    [self.consentCoordinator start];
+  } else {
+    self.consentLegacyCoordinator = [[ConsentLegacyCoordinator alloc]
+           initWithBaseViewController:self
+                              context:self.extensionContext
+              reauthenticationHandler:self.reauthenticationHandler
+        isInitialConfigurationRequest:YES];
+    [self.consentLegacyCoordinator start];
+  }
 }
 
 #pragma mark - Properties
 
 - (id<CredentialStore>)credentialStore {
   if (!_credentialStore) {
-    _credentialStore = [[ArchivableCredentialStore alloc]
-        initWithFileURL:CredentialProviderSharedArchivableStoreURL()];
+    ArchivableCredentialStore* archivableStore =
+        [[ArchivableCredentialStore alloc]
+            initWithFileURL:CredentialProviderSharedArchivableStoreURL()];
+
+    if (IsPasswordCreationEnabled()) {
+      NSString* key = AppGroupUserDefaultsCredentialProviderNewCredentials();
+      UserDefaultsCredentialStore* defaultsStore =
+          [[UserDefaultsCredentialStore alloc]
+              initWithUserDefaults:app_group::GetGroupUserDefaults()
+                               key:key];
+      _credentialStore = [[MultiStoreCredentialStore alloc]
+          initWithStores:@[ defaultsStore, archivableStore ]];
+
+    } else {
+      _credentialStore = archivableStore;
+    }
   }
   return _credentialStore;
 }
@@ -242,7 +308,7 @@
   };
 
   NSString* validationID = [app_group::GetGroupUserDefaults()
-      stringForKey:AppGroupUserDefaultsCredentialProviderManagedUserID()];
+      stringForKey:AppGroupUserDefaultsCredentialProviderUserID()];
   if (validationID) {
     [self.accountVerificator
         validateValidationID:validationID
@@ -269,6 +335,14 @@
 // Starts the credential list feature.
 - (void)showCredentialListForServiceIdentifiers:
     (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
+  // Views in the password creation flow (FormInputAccessoryView) use
+  // base::i18n::IsRTL(), which checks some values from the command line.
+  // Initialize the command line for the process running this extension here
+  // before that.
+  if (IsPasswordCreationEnabled() &&
+      !base::CommandLine::InitializedForCurrentProcess()) {
+    base::CommandLine::Init(0, nullptr);
+  }
   self.listCoordinator = [[CredentialListCoordinator alloc]
       initWithBaseViewController:self
                  credentialStore:self.credentialStore
@@ -303,14 +377,6 @@
 }
 
 - (void)confirmationAlertPrimaryAction {
-  // No-op.
-}
-
-- (void)confirmationAlertSecondaryAction {
-  // No-op.
-}
-
-- (void)confirmationAlertLearnMoreAction {
   // No-op.
 }
 

@@ -19,6 +19,7 @@
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/sampled_texture_type.h"
+#include "src/sem/sampler_type.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
@@ -37,10 +38,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Array) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, "ary"))
+                           ast::Access::kReadWrite, "ary"))
       << gen.error();
-  EXPECT_EQ(result(), "bool ary[4]");
+  EXPECT_EQ(out.str(), "bool ary[4]");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_ArrayOfArray) {
@@ -49,24 +51,26 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_ArrayOfArray) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, "ary"))
+                           ast::Access::kReadWrite, "ary"))
       << gen.error();
-  EXPECT_EQ(result(), "bool ary[5][4]");
+  EXPECT_EQ(out.str(), "bool ary[5][4]");
 }
 
 // TODO(dsinclair): Is this possible? What order should it output in?
 TEST_F(HlslGeneratorImplTest_Type,
        DISABLED_EmitType_ArrayOfArrayOfRuntimeArray) {
-  auto* arr = ty.array(ty.array(ty.array<bool, 4>(), 5), 0);
+  auto* arr = ty.array(ty.array(ty.array<bool, 4>(), 5));
   Global("G", arr, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, "ary"))
+                           ast::Access::kReadWrite, "ary"))
       << gen.error();
-  EXPECT_EQ(result(), "bool ary[5][4][1]");
+  EXPECT_EQ(out.str(), "bool ary[5][4][1]");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_ArrayOfArrayOfArray) {
@@ -75,10 +79,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_ArrayOfArrayOfArray) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, "ary"))
+                           ast::Access::kReadWrite, "ary"))
       << gen.error();
-  EXPECT_EQ(result(), "bool ary[6][5][4]");
+  EXPECT_EQ(out.str(), "bool ary[6][5][4]");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Array_WithoutName) {
@@ -87,22 +92,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Array_WithoutName) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "bool[4]");
-}
-
-TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_RuntimeArray) {
-  auto* arr = ty.array<bool>();
-  Global("G", arr, ast::StorageClass::kPrivate);
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.EmitType(out, program->TypeOf(arr), ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, "ary"))
-      << gen.error();
-  EXPECT_EQ(result(), "bool ary[]");
+  EXPECT_EQ(out.str(), "bool[4]");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Bool) {
@@ -110,10 +104,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Bool) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, bool_, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "bool");
+  EXPECT_EQ(out.str(), "bool");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_F32) {
@@ -121,10 +116,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_F32) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, f32, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "float");
+  EXPECT_EQ(out.str(), "float");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_I32) {
@@ -132,10 +128,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_I32) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, i32, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "int");
+  EXPECT_EQ(out.str(), "int");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Matrix) {
@@ -145,23 +142,26 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Matrix) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, mat2x3, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "float2x3");
+  EXPECT_EQ(out.str(), "float2x3");
 }
 
 // TODO(dsinclair): How to annotate as workgroup?
 TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_Pointer) {
   auto* f32 = create<sem::F32>();
-  auto* p = create<sem::Pointer>(f32, ast::StorageClass::kWorkgroup);
+  auto* p = create<sem::Pointer>(f32, ast::StorageClass::kWorkgroup,
+                                 ast::Access::kReadWrite);
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, p, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "float*");
+  EXPECT_EQ(out.str(), "float*");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl) {
@@ -169,13 +169,14 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl) {
                                Member("a", ty.i32()),
                                Member("b", ty.f32()),
                            });
-  Global("g", s, ast::StorageClass::kPrivate);
+  Global("g", ty.Of(s), ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(out, sem_s, "S")) << gen.error();
-  EXPECT_EQ(result(), R"(struct S {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   int a;
   float b;
 };
@@ -189,18 +190,16 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl_OmittedIfStorageBuffer) {
                           Member("b", ty.f32()),
                       },
                       {create<ast::StructBlockDecoration>()});
-  Global("g", ty.access(ast::AccessControl::kReadWrite, s),
-         ast::StorageClass::kStorage, nullptr,
-         {
+  Global("g", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kReadWrite,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
   GeneratorImpl& gen = Build();
 
-  auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(out, sem_s, "S")) << gen.error();
-  EXPECT_EQ(result(), "");
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), "RWByteAddressBuffer g : register(u0, space0);\n");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct) {
@@ -208,43 +207,16 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct) {
                                Member("a", ty.i32()),
                                Member("b", ty.f32()),
                            });
-  Global("g", s, ast::StorageClass::kPrivate);
+  Global("g", ty.Of(s), ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, sem_s, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "S");
-}
-
-/// TODO(bclayton): Enable this, fix it, add tests for vector, matrix, array and
-/// nested structures.
-TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_Struct_InjectPadding) {
-  auto* s = Structure(
-      "S", {
-               Member("a", ty.i32(), {MemberSize(32)}),
-               Member("b", ty.f32()),
-               Member("c", ty.f32(), {MemberAlign(128), MemberSize(128)}),
-           });
-  Global("g", s, ast::StorageClass::kPrivate);
-
-  GeneratorImpl& gen = Build();
-
-  auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitType(out, sem_s, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
-      << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct S {
-  int a;
-  int8_t pad_0[28];
-  float b;
-  int8_t pad_1[92];
-  float c;
-  int8_t pad_2[124];
-};
-)");
+  EXPECT_EQ(out.str(), "S");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_NameCollision) {
@@ -252,36 +224,37 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_NameCollision) {
                                Member("double", ty.i32()),
                                Member("float", ty.f32()),
                            });
-  Global("g", s, ast::StorageClass::kPrivate);
+  Global("g", ty.Of(s), ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_THAT(result(), HasSubstr(R"(struct S {
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(), HasSubstr(R"(struct S {
   int tint_symbol;
   float tint_symbol_1;
 };
 )"));
 }
 
-// TODO(dsinclair): How to translate [[block]]
-TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_Struct_WithDecoration) {
+TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_WithOffsetAttributes) {
   auto* s = Structure("S",
                       {
-                          Member("a", ty.i32()),
-                          Member("b", ty.f32()),
+                          Member("a", ty.i32(), {MemberOffset(0)}),
+                          Member("b", ty.f32(), {MemberOffset(8)}),
                       },
                       {create<ast::StructBlockDecoration>()});
-  Global("g", s, ast::StorageClass::kPrivate);
+  Global("g", ty.Of(s), ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(out, sem_s, "B")) << gen.error();
-  EXPECT_EQ(result(), R"(struct B {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   int a;
   float b;
-})");
+};
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_U32) {
@@ -289,10 +262,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_U32) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, u32, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "uint");
+  EXPECT_EQ(out.str(), "uint");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Vector) {
@@ -301,10 +275,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Vector) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, vec3, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "float3");
+  EXPECT_EQ(out.str(), "float3");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Void) {
@@ -312,10 +287,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Void) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, void_, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "void");
+  EXPECT_EQ(out.str(), "void");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitSampler) {
@@ -323,10 +299,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitSampler) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, sampler, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "SamplerState");
+  EXPECT_EQ(out.str(), "SamplerState");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitSamplerComparison) {
@@ -334,10 +311,11 @@ TEST_F(HlslGeneratorImplTest_Type, EmitSamplerComparison) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, sampler, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "SamplerComparisonState");
+  EXPECT_EQ(out.str(), "SamplerComparisonState");
 }
 
 struct HlslDepthTextureData {
@@ -354,22 +332,19 @@ TEST_P(HlslDepthTexturesTest, Emit) {
 
   auto* t = ty.depth_texture(params.dim);
 
-  Global("tex", t, ast::StorageClass::kNone, nullptr,
+  Global("tex", t,
          ast::DecorationList{
              create<ast::BindingDecoration>(1),
              create<ast::GroupDecoration>(2),
          });
 
-  Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("textureDimensions", "tex"))},
+  Func("main", {}, ty.void_(), {CallStmt(Call("textureDimensions", "tex"))},
        {Stage(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_THAT(result(), HasSubstr(params.result));
-
-  Validate();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(), HasSubstr(params.result));
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Type,
@@ -383,6 +358,26 @@ INSTANTIATE_TEST_SUITE_P(
                              "TextureCube tex : register(t1, space2);"},
         HlslDepthTextureData{ast::TextureDimension::kCubeArray,
                              "TextureCubeArray tex : register(t1, space2);"}));
+
+using HlslDepthMultisampledTexturesTest = TestHelper;
+TEST_F(HlslDepthMultisampledTexturesTest, Emit) {
+  auto* t = ty.depth_multisampled_texture(ast::TextureDimension::k2d);
+
+  Global("tex", t,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("main", {}, ty.void_(), {CallStmt(Call("textureDimensions", "tex"))},
+       {Stage(ast::PipelineStage::kFragment)});
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(),
+              HasSubstr("Texture2DMS<float4> tex : register(t1, space2);"));
+}
 
 enum class TextureDataType { F32, U32, I32 };
 struct HlslSampledTextureData {
@@ -399,7 +394,7 @@ using HlslSampledTexturesTest = TestParamHelper<HlslSampledTextureData>;
 TEST_P(HlslSampledTexturesTest, Emit) {
   auto params = GetParam();
 
-  ast::Type* datatype = nullptr;
+  const ast::Type* datatype = nullptr;
   switch (params.datatype) {
     case TextureDataType::F32:
       datatype = ty.f32();
@@ -413,22 +408,19 @@ TEST_P(HlslSampledTexturesTest, Emit) {
   }
   auto* t = ty.sampled_texture(params.dim, datatype);
 
-  Global("tex", t, ast::StorageClass::kNone, nullptr,
+  Global("tex", t,
          ast::DecorationList{
              create<ast::BindingDecoration>(1),
              create<ast::GroupDecoration>(2),
          });
 
-  Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("textureDimensions", "tex"))},
+  Func("main", {}, ty.void_(), {CallStmt(Call("textureDimensions", "tex"))},
        {Stage(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_THAT(result(), HasSubstr(params.result));
-
-  Validate();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(), HasSubstr(params.result));
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Type,
@@ -531,91 +523,81 @@ TEST_F(HlslGeneratorImplTest_Type, EmitMultisampledTexture) {
 
   GeneratorImpl& gen = Build();
 
+  std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, s, ast::StorageClass::kNone,
-                           ast::AccessControl::kInvalid, ""))
+                           ast::Access::kReadWrite, ""))
       << gen.error();
-  EXPECT_EQ(result(), "Texture2DMS<float4>");
+  EXPECT_EQ(out.str(), "Texture2DMS<float4>");
 }
 
 struct HlslStorageTextureData {
   ast::TextureDimension dim;
   ast::ImageFormat imgfmt;
-  bool ro;
   std::string result;
 };
 inline std::ostream& operator<<(std::ostream& out,
                                 HlslStorageTextureData data) {
-  out << data.dim << (data.ro ? "ReadOnly" : "WriteOnly");
+  out << data.dim;
   return out;
 }
 using HlslStorageTexturesTest = TestParamHelper<HlslStorageTextureData>;
 TEST_P(HlslStorageTexturesTest, Emit) {
   auto params = GetParam();
 
-  auto* t = ty.storage_texture(params.dim, params.imgfmt);
-  auto* ac = ty.access(params.ro ? ast::AccessControl::kReadOnly
-                                 : ast::AccessControl::kWriteOnly,
-                       t);
+  auto* t = ty.storage_texture(params.dim, params.imgfmt, ast::Access::kWrite);
 
-  Global("tex", ac, ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(1),
-             create<ast::GroupDecoration>(2),
-         });
+  Global("tex", t, ast::DecorationList{GroupAndBinding(2, 1)});
 
-  Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("textureDimensions", "tex"))},
+  Func("main", {}, ty.void_(), {CallStmt(Call("textureDimensions", "tex"))},
        {Stage(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_THAT(result(), HasSubstr(params.result));
-
-  Validate();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(), HasSubstr(params.result));
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Type,
     HlslStorageTexturesTest,
     testing::Values(
-        HlslStorageTextureData{ast::TextureDimension::k1d,
-                               ast::ImageFormat::kRgba8Unorm, true,
-                               "Texture1D<float4> tex : register(t1, space2);"},
-        HlslStorageTextureData{ast::TextureDimension::k2d,
-                               ast::ImageFormat::kRgba16Float, true,
-                               "Texture2D<float4> tex : register(t1, space2);"},
         HlslStorageTextureData{
-            ast::TextureDimension::k2dArray, ast::ImageFormat::kR32Float, true,
-            "Texture2DArray<float4> tex : register(t1, space2);"},
-        HlslStorageTextureData{ast::TextureDimension::k3d,
-                               ast::ImageFormat::kRg32Float, true,
-                               "Texture3D<float4> tex : register(t1, space2);"},
-        HlslStorageTextureData{
-            ast::TextureDimension::k1d, ast::ImageFormat::kRgba32Float, false,
+            ast::TextureDimension::k1d, ast::ImageFormat::kRgba8Unorm,
             "RWTexture1D<float4> tex : register(u1, space2);"},
         HlslStorageTextureData{
-            ast::TextureDimension::k2d, ast::ImageFormat::kRgba16Uint, false,
+            ast::TextureDimension::k2d, ast::ImageFormat::kRgba16Float,
+            "RWTexture2D<float4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            ast::TextureDimension::k2dArray, ast::ImageFormat::kR32Float,
+            "RWTexture2DArray<float4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            ast::TextureDimension::k3d, ast::ImageFormat::kRg32Float,
+            "RWTexture3D<float4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            ast::TextureDimension::k1d, ast::ImageFormat::kRgba32Float,
+            "RWTexture1D<float4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            ast::TextureDimension::k2d, ast::ImageFormat::kRgba16Uint,
             "RWTexture2D<uint4> tex : register(u1, space2);"},
         HlslStorageTextureData{
-            ast::TextureDimension::k2dArray, ast::ImageFormat::kR32Uint, false,
+            ast::TextureDimension::k2dArray, ast::ImageFormat::kR32Uint,
             "RWTexture2DArray<uint4> tex : register(u1, space2);"},
         HlslStorageTextureData{
-            ast::TextureDimension::k3d, ast::ImageFormat::kRg32Uint, false,
+            ast::TextureDimension::k3d, ast::ImageFormat::kRg32Uint,
             "RWTexture3D<uint4> tex : register(u1, space2);"},
-        HlslStorageTextureData{ast::TextureDimension::k1d,
-                               ast::ImageFormat::kRgba32Uint, true,
-                               "Texture1D<uint4> tex : register(t1, space2);"},
+        HlslStorageTextureData{
+            ast::TextureDimension::k1d, ast::ImageFormat::kRgba32Uint,
+            "RWTexture1D<uint4> tex : register(u1, space2);"},
         HlslStorageTextureData{ast::TextureDimension::k2d,
-                               ast::ImageFormat::kRgba16Sint, true,
-                               "Texture2D<int4> tex : register(t1, space2);"},
+                               ast::ImageFormat::kRgba16Sint,
+                               "RWTexture2D<int4> tex : register(u1, space2);"},
         HlslStorageTextureData{
-            ast::TextureDimension::k2dArray, ast::ImageFormat::kR32Sint, true,
-            "Texture2DArray<int4> tex : register(t1, space2);"},
+            ast::TextureDimension::k2dArray, ast::ImageFormat::kR32Sint,
+            "RWTexture2DArray<int4> tex : register(u1, space2);"},
         HlslStorageTextureData{ast::TextureDimension::k3d,
-                               ast::ImageFormat::kRg32Sint, true,
-                               "Texture3D<int4> tex : register(t1, space2);"},
+                               ast::ImageFormat::kRg32Sint,
+                               "RWTexture3D<int4> tex : register(u1, space2);"},
         HlslStorageTextureData{
-            ast::TextureDimension::k1d, ast::ImageFormat::kRgba32Sint, false,
+            ast::TextureDimension::k1d, ast::ImageFormat::kRgba32Sint,
             "RWTexture1D<int4> tex : register(u1, space2);"}));
 
 }  // namespace

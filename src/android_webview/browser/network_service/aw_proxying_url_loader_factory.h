@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/embedder_support/android/util/android_stream_reader_url_loader.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -71,6 +70,10 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
       bool intercept_only,
       absl::optional<SecurityOptions> security_options);
 
+  AwProxyingURLLoaderFactory(const AwProxyingURLLoaderFactory&) = delete;
+  AwProxyingURLLoaderFactory& operator=(const AwProxyingURLLoaderFactory&) =
+      delete;
+
   ~AwProxyingURLLoaderFactory() override;
 
   // static
@@ -109,8 +112,6 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   absl::optional<SecurityOptions> security_options_;
 
   base::WeakPtrFactory<AwProxyingURLLoaderFactory> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AwProxyingURLLoaderFactory);
 };
 
 }  // namespace android_webview

@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/message_loop/message_pump.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -42,6 +41,8 @@ class WebWidgetScheduler;
 
 class BLINK_PLATFORM_EXPORT WebThreadScheduler {
  public:
+  WebThreadScheduler(const WebThreadScheduler&) = delete;
+  WebThreadScheduler& operator=(const WebThreadScheduler&) = delete;
   virtual ~WebThreadScheduler();
 
   // ==== Functions for any scheduler =========================================
@@ -73,6 +74,10 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   // Returns the default task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
+
+  // Returns a task runner for input-blocking tasks on the compositor thread.
+  // (For input tasks on the main thread, use WebWidgetScheduler instead.)
+  virtual scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner();
 
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner();
@@ -189,11 +194,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // constructed. Must be called on the main thread.
   virtual void SetRendererBackgrounded(bool backgrounded);
 
-  // Tells the scheduler about "keep-alive" state which can be due to:
-  // service workers, shared workers, or fetch keep-alive.
-  // If set to true, then the scheduler should not freeze the renderer.
-  virtual void SetSchedulerKeepActive(bool keep_active);
-
   // Tells the scheduler when a begin main frame is requested due to input
   // handling.
   virtual void OnMainFrameRequestedForInput();
@@ -216,10 +216,9 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   class BLINK_PLATFORM_EXPORT RendererPauseHandle {
    public:
     RendererPauseHandle() = default;
+    RendererPauseHandle(const RendererPauseHandle&) = delete;
+    RendererPauseHandle& operator=(const RendererPauseHandle&) = delete;
     virtual ~RendererPauseHandle() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(RendererPauseHandle);
   };
 
   // Tells the scheduler that the renderer process should be paused.
@@ -248,7 +247,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
  protected:
   WebThreadScheduler() = default;
-  DISALLOW_COPY_AND_ASSIGN(WebThreadScheduler);
 };
 
 }  // namespace scheduler

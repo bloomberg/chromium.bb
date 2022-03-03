@@ -6,17 +6,19 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_TOUCH_DRIVER_H_
 
 #include <array>
-#include "base/macros.h"
 #include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 
-class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
+class SyntheticTouchDriver : public SyntheticPointerDriver {
  public:
   SyntheticTouchDriver();
   explicit SyntheticTouchDriver(blink::SyntheticWebTouchEvent touch_event);
+
+  SyntheticTouchDriver(const SyntheticTouchDriver&) = delete;
+  SyntheticTouchDriver& operator=(const SyntheticTouchDriver&) = delete;
+
   ~SyntheticTouchDriver() override;
 
   void DispatchEvent(SyntheticGestureTarget* target,
@@ -47,7 +49,9 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
             float force = 0.5,
             float tangential_pressure = 0.f,
             int tilt_x = 0,
-            int tilt_y = 0) override;
+            int tilt_y = 0,
+            SyntheticPointerActionParams::Button button =
+                SyntheticPointerActionParams::Button::NO_BUTTON) override;
   void Release(int index,
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT,
@@ -69,8 +73,6 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
 
   blink::SyntheticWebTouchEvent touch_event_;
   PointerIdIndexMap pointer_id_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticTouchDriver);
 };
 
 }  // namespace content

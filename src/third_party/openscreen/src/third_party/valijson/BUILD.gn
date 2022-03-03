@@ -22,7 +22,7 @@ if (!build_with_chromium) {
 
       # We only need the adapter for JsonCpp.
       "src/include/valijson/adapters/jsoncpp_adapter.hpp",
-      "src/include/valijson/constraints_builder.hpp",
+      "src/include/valijson/constraint_builder.hpp",
       "src/include/valijson/internal/custom_allocator.hpp",
       "src/include/valijson/internal/debug.hpp",
       "src/include/valijson/internal/json_pointer.hpp",

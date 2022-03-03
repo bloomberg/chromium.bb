@@ -63,8 +63,8 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
         network_state_handler_.get());
     network_configuration_handler_ =
-        base::WrapUnique(NetworkConfigurationHandler::InitializeForTest(
-            network_state_handler_.get(), network_device_handler_.get()));
+        NetworkConfigurationHandler::InitializeForTest(
+            network_state_handler_.get(), network_device_handler_.get());
     network_connection_handler_ =
         std::make_unique<FakeNetworkConnectionHandler>();
     cellular_inhibitor_ = std::make_unique<CellularInhibitor>();
@@ -338,42 +338,6 @@ TEST_F(CellularESimUninstallHandlerTest, StubCellularNetwork) {
   EXPECT_TRUE(success);
 
   ExpectResult(CellularESimUninstallHandler::UninstallESimResult::kSuccess);
-}
-
-TEST_F(CellularESimUninstallHandlerTest, RemovesShillOnlyServices) {
-  Init();
-  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
-  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
-
-  // Start without having refreshed profiles.
-  SetHasRefreshedProfiles(/*has_refreshed=*/false);
-
-  // Remove first profile without removing service. Both services should still
-  // exist, since removal of stale services only occurs if the EUICC has been
-  // refreshed.
-  EXPECT_TRUE(
-      HermesEuiccClient::Get()->GetTestInterface()->RemoveCarrierProfile(
-          dbus::ObjectPath(kDefaultEuiccPath),
-          dbus::ObjectPath(kTestCarrierProfilePath)));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
-  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
-
-  // Finish refreshing profiles.
-  SetHasRefreshedProfiles(/*has_refreshed=*/true);
-
-  // Remove the second profile without removing service. Both services should
-  // have been detected as "stale" and should now be removed.
-  EXPECT_TRUE(
-      HermesEuiccClient::Get()->GetTestInterface()->RemoveCarrierProfile(
-          dbus::ObjectPath(kDefaultEuiccPath),
-          dbus::ObjectPath(kTestCarrierProfilePath2)));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath));
-  EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath2));
-
-  ExpectResult(CellularESimUninstallHandler::UninstallESimResult::kSuccess,
-               /*expected_count=*/2);
 }
 
 }  // namespace chromeos

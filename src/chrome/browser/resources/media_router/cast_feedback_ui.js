@@ -70,7 +70,8 @@ export class FeedbackUiBrowserProxyImpl {
   /** @override */
   sendFeedback(info) {
     return new Promise(
-        resolve => chrome.feedbackPrivate.sendFeedback(info, resolve));
+        resolve => chrome.feedbackPrivate.sendFeedback(
+            info, /*loadSystemInfo=*/ null, /*formOpenTime=*/ null, resolve));
   }
 }
 
@@ -155,6 +156,14 @@ export class FeedbackUiElement extends PolymerElement {
         type: String,
         value() {
           return loadTimeData.getString('logData');
+        }
+      },
+
+      /** @private */
+      categoryTag_: {
+        type: String,
+        value() {
+          return loadTimeData.getString('categoryTag');
         }
       },
 
@@ -280,7 +289,7 @@ export class FeedbackUiElement extends PolymerElement {
       description: parts.join('\n'),
       email: this.userEmail_,
       flow: chrome.feedbackPrivate.FeedbackFlow.REGULAR,
-      categoryTag: 'dev',
+      categoryTag: this.categoryTag_,
       systemInformation: this.getProductSpecificData_(),
     };
     if (this.attachLogs_) {

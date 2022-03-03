@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
@@ -41,6 +41,10 @@ class NET_EXPORT HttpAuthHandlerFactory {
   };
 
   HttpAuthHandlerFactory() : http_auth_preferences_(nullptr) {}
+
+  HttpAuthHandlerFactory(const HttpAuthHandlerFactory&) = delete;
+  HttpAuthHandlerFactory& operator=(const HttpAuthHandlerFactory&) = delete;
+
   virtual ~HttpAuthHandlerFactory() {}
 
   // Sets the source of the HTTP authentication preferences.
@@ -154,9 +158,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
 
  private:
   // The preferences for HTTP authentication.
-  const HttpAuthPreferences* http_auth_preferences_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerFactory);
+  raw_ptr<const HttpAuthPreferences> http_auth_preferences_;
 };
 
 // The HttpAuthHandlerRegistryFactory dispatches create requests out
@@ -165,6 +167,12 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
     : public HttpAuthHandlerFactory {
  public:
   HttpAuthHandlerRegistryFactory();
+
+  HttpAuthHandlerRegistryFactory(const HttpAuthHandlerRegistryFactory&) =
+      delete;
+  HttpAuthHandlerRegistryFactory& operator=(
+      const HttpAuthHandlerRegistryFactory&) = delete;
+
   ~HttpAuthHandlerRegistryFactory() override;
 
   // Sets the preferences into the factory associated with |scheme|.
@@ -238,7 +246,6 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
       std::map<std::string, std::unique_ptr<HttpAuthHandlerFactory>>;
 
   FactoryMap factory_map_;
-  DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerRegistryFactory);
 };
 
 }  // namespace net

@@ -26,8 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_CARET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_CARET_H_
 
-#include <memory>
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -52,6 +51,8 @@ class SelectionEditor;
 class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
  public:
   FrameCaret(LocalFrame&, const SelectionEditor&);
+  FrameCaret(const FrameCaret&) = delete;
+  FrameCaret& operator=(const FrameCaret&) = delete;
   ~FrameCaret();
 
   bool IsActive() const;
@@ -66,7 +67,7 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   void StopCaretBlinkTimer();
   void StartBlinkCaret();
   void SetCaretEnabled(bool);
-  IntRect AbsoluteCaretBounds() const;
+  gfx::Rect AbsoluteCaretBounds() const;
 
   // Paint invalidation methods delegating to DisplayItemClient.
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
@@ -99,14 +100,12 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
 
   const Member<const SelectionEditor> selection_editor_;
   const Member<LocalFrame> frame_;
-  const std::unique_ptr<CaretDisplayItemClient> display_item_client_;
+  const Member<CaretDisplayItemClient> display_item_client_;
   // TODO(https://crbug.com/668758): Consider using BeginFrame update for this.
   HeapTaskRunnerTimer<FrameCaret> caret_blink_timer_;
   bool is_caret_enabled_ = false;
   bool should_show_caret_ = false;
   bool is_caret_blinking_suspended_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameCaret);
 };
 
 }  // namespace blink

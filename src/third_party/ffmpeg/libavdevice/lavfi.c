@@ -100,6 +100,7 @@ static int create_subcc_streams(AVFormatContext *avctx)
     LavfiContext *lavfi = avctx->priv_data;
     AVStream *st;
     int stream_idx, sink_idx;
+    AVRational *time_base;
 
     for (stream_idx = 0; stream_idx < lavfi->nb_sinks; stream_idx++) {
         sink_idx = lavfi->stream_sink_map[stream_idx];
@@ -109,6 +110,9 @@ static int create_subcc_streams(AVFormatContext *avctx)
                 return AVERROR(ENOMEM);
             st->codecpar->codec_id = AV_CODEC_ID_EIA_608;
             st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
+            time_base = &avctx->streams[stream_idx]->time_base;
+            st->time_base.num = time_base->num;
+            st->time_base.den = time_base->den;
         } else {
             lavfi->sink_stream_subcc_map[sink_idx] = -1;
         }
@@ -446,7 +450,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
 
     frame_metadata = frame->metadata;
     if (frame_metadata) {
-        int size;
+        size_t size;
         uint8_t *metadata = av_packet_pack_dictionary(frame_metadata, &size);
 
         if (!metadata) {
@@ -494,7 +498,7 @@ static const AVClass lavfi_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_INPUT,
 };
 
-AVInputFormat ff_lavfi_demuxer = {
+const AVInputFormat ff_lavfi_demuxer = {
     .name           = "lavfi",
     .long_name      = NULL_IF_CONFIG_SMALL("Libavfilter virtual input device"),
     .priv_data_size = sizeof(LavfiContext),

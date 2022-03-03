@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/events/gesture_event_details.h"
+
+#include <ostream>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
 
@@ -71,6 +74,7 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       data_(other.data_),
       device_type_(other.device_type_),
       primary_pointer_type_(other.primary_pointer_type_),
+      primary_unique_touch_event_id_(other.primary_unique_touch_event_id_),
       touch_points_(other.touch_points_),
       bounding_box_(other.bounding_box_) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);

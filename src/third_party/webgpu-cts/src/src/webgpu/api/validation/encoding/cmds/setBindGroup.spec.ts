@@ -10,15 +10,15 @@ TODO: merge these notes and implement.
 >     - setBindGroup in different orders (e.g. 0,1,2 vs 2,0,1)
 `;
 
-import { poptions, params, pbool } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
-import { range, unreachable } from '../../../../../common/framework/util/util.js';
+import { range, unreachable } from '../../../../../common/util/util.js';
 import { kMinDynamicBufferOffsetAlignment } from '../../../../capability_info.js';
+import { kResourceStates, ResourceState } from '../../../../gpu_test.js';
 import {
   kProgrammableEncoderTypes,
   ProgrammableEncoderType,
-  ValidationTest,
-} from '../../validation_test.js';
+} from '../../../../util/command_buffer_maker.js';
+import { ValidationTest } from '../../validation_test.js';
 
 class F extends ValidationTest {
   encoderTypeToStageFlag(encoderType: ProgrammableEncoderType): GPUShaderStageFlags {
@@ -58,8 +58,12 @@ class F extends ValidationTest {
     }
   }
 
+  /**
+   * If state is 'invalid', creates an invalid bind group with valid resources.
+   * If state is 'destroyed', creates a valid bind group with destroyed resources.
+   */
   createBindGroup(
-    state: 'valid' | 'invalid' | 'destroyed',
+    state: ResourceState,
     resourceType: 'buffer' | 'texture',
     encoderType: ProgrammableEncoderType,
     indices: number[]
@@ -98,36 +102,21 @@ export const g = makeTestGroup(F);
 
 g.test('state_and_binding_index')
   .desc('Tests that setBindGroup correctly handles {valid, invalid} bindGroups.')
-  .cases(
-    params()
-      .combine(poptions('encoderType', kProgrammableEncoderTypes))
-      .combine(poptions('state', ['valid', 'invalid', 'destroyed'] as const))
-      .combine(poptions('resourceType', ['buffer', 'texture'] as const))
+  .params(u =>
+    u
+      .combine('encoderType', kProgrammableEncoderTypes)
+      .combine('state', kResourceStates)
+      .combine('resourceType', ['buffer', 'texture'] as const)
   )
   .fn(async t => {
     const { encoderType, state, resourceType } = t.params;
     const maxBindGroups = t.device.limits?.maxBindGroups ?? 4;
 
     async function runTest(index: number) {
-      const { encoder, finish } = t.createEncoder(encoderType);
+      const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType);
       encoder.setBindGroup(index, t.createBindGroup(state, resourceType, encoderType, [index]));
 
-      const shouldError = index >= maxBindGroups;
-
-      if (!shouldError && state === 'destroyed') {
-        t.device.pushErrorScope('validation');
-        const commandBuffer = finish();
-        const error = await t.device.popErrorScope();
-        t.expect(error === null, `finish() should not fail, but failed with ${error}`);
-        t.expectValidationError(() => {
-          t.queue.submit([commandBuffer]);
-        });
-      } else {
-        t.expectValidationError(() => {
-          t.debug('here');
-          finish();
-        }, shouldError || state !== 'valid');
-      }
+      validateFinishAndSubmit(state !== 'invalid' && index < maxBindGroups, state !== 'destroyed');
     }
 
     // TODO: move to subcases() once we can query the device limits
@@ -137,28 +126,41 @@ g.test('state_and_binding_index')
     }
   });
 
+g.test('bind_group,device_mismatch')
+  .desc(
+    `
+    Tests setBindGroup cannot be called with a bind group created from another device
+    - x= setBindGroup {sequence overload, Uint32Array overload}
+    `
+  )
+  .params(u =>
+    u
+      .combine('encoderType', kProgrammableEncoderTypes)
+      .beginSubcases()
+      .combine('useU32Array', [true, false])
+      .combine('mismatched', [true, false])
+  )
+  .unimplemented();
+
 g.test('dynamic_offsets_passed_but_not_expected')
   .desc('Tests that setBindGroup correctly errors on unexpected dynamicOffsets.')
-  .cases(poptions('encoderType', kProgrammableEncoderTypes))
+  .params(u => u.combine('encoderType', kProgrammableEncoderTypes))
   .fn(async t => {
     const { encoderType } = t.params;
     const bindGroup = t.createBindGroup('valid', 'buffer', encoderType, []);
     const dynamicOffsets = [0];
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setBindGroup(0, bindGroup, dynamicOffsets);
-
-    t.expectValidationError(() => {
-      finish();
-    });
+    validateFinish(false);
   });
 
 g.test('dynamic_offsets_match_expectations_in_pass_encoder')
   .desc('Tests that given dynamicOffsets match the specified bindGroup.')
-  .cases(
-    params()
-      .combine(poptions('encoderType', kProgrammableEncoderTypes))
-      .combine([
+  .params(u =>
+    u
+      .combine('encoderType', kProgrammableEncoderTypes)
+      .combineWithParams([
         { dynamicOffsets: [256, 0], _success: true }, // Dynamic offsets aligned
         { dynamicOffsets: [1, 2], _success: false }, // Dynamic offsets not aligned
 
@@ -177,7 +179,7 @@ g.test('dynamic_offsets_match_expectations_in_pass_encoder')
         { dynamicOffsets: [0, 1024], _success: false },
         { dynamicOffsets: [0, 0xffffffff], _success: false },
       ])
-      .combine(pbool('useU32array'))
+      .combine('useU32array', [false, true])
   )
   .fn(async t => {
     const kBindingSize = 9;
@@ -235,21 +237,18 @@ g.test('dynamic_offsets_match_expectations_in_pass_encoder')
 
     const { encoderType, dynamicOffsets, useU32array, _success } = t.params;
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     if (useU32array) {
       encoder.setBindGroup(0, bindGroup, new Uint32Array(dynamicOffsets), 0, dynamicOffsets.length);
     } else {
       encoder.setBindGroup(0, bindGroup, dynamicOffsets);
     }
-
-    t.expectValidationError(() => {
-      finish();
-    }, !_success);
+    validateFinish(_success);
   });
 
 g.test('u32array_start_and_length')
   .desc('Tests that dynamicOffsetsData(Start|Length) apply to the given Uint32Array.')
-  .subcases(() => [
+  .paramsSubcasesOnly([
     // dynamicOffsetsDataLength > offsets.length
     {
       offsets: [0] as const,
@@ -312,16 +311,24 @@ g.test('u32array_start_and_length')
       })),
     });
 
-    const { encoder, finish } = t.createEncoder('render pass');
-    encoder.setBindGroup(
-      0,
-      bindGroup,
-      new Uint32Array(offsets),
-      dynamicOffsetsDataStart,
-      dynamicOffsetsDataLength
-    );
+    const { encoder, validateFinish } = t.createEncoder('render pass');
 
-    t.expectValidationError(() => {
-      finish();
-    }, !_success);
+    const doSetBindGroup = () => {
+      encoder.setBindGroup(
+        0,
+        bindGroup,
+        new Uint32Array(offsets),
+        dynamicOffsetsDataStart,
+        dynamicOffsetsDataLength
+      );
+    };
+
+    if (_success) {
+      doSetBindGroup();
+    } else {
+      t.shouldThrow('RangeError', doSetBindGroup);
+    }
+
+    // RangeError in setBindGroup does not cause the encoder to become invalid.
+    validateFinish(true);
   });

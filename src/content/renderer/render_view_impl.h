@@ -8,29 +8,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/common/frame.mojom-forward.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/render_frame_impl.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -60,6 +52,7 @@ struct WebWindowFeatures;
 
 namespace content {
 class AgentSchedulingGroup;
+class RenderFrameImpl;
 class RenderViewImplTest;
 class RenderViewTest;
 
@@ -96,6 +89,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       bool was_created_by_renderer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+  RenderViewImpl(const RenderViewImpl&) = delete;
+  RenderViewImpl& operator=(const RenderViewImpl&) = delete;
+
   // Instances of this object are created by and destroyed by the browser
   // process. This method must be called exactly once by the IPC subsystem when
   // the browser wishes the object to be destroyed.
@@ -103,20 +99,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
-
-  void set_send_content_state_immediately(bool value) {
-    send_content_state_immediately_ = value;
-  }
-
-  // Passes along the page zoom to the WebView to set it on a newly attached
-  // LocalFrame.
-  void PropagatePageZoomToNewlyAttachedFrame(bool use_zoom_for_dsf,
-                                             float device_scale_factor);
-
-  // Starts a timer to send an UpdateState message on behalf of |frame|, if the
-  // timer isn't already running. This allows multiple state changing events to
-  // be coalesced into one update.
-  void StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame);
 
   // blink::WebViewClient implementation --------------------------------------
 
@@ -130,12 +112,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id,
       bool& consumed_user_gesture,
       const absl::optional<blink::WebImpression>& impression) override;
-  void PrintPage(blink::WebLocalFrame* frame) override;
-  void OnPageFrozenChanged(bool frozen) override;
 
   // RenderView implementation -------------------------------------------------
 
-  RenderFrameImpl* GetMainRenderFrame() override;
   int GetRoutingID() override;
   blink::WebView* GetWebView() override;
 
@@ -173,12 +152,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
-  // Misc private functions ----------------------------------------------------
-
-  // In OOPIF-enabled modes, this tells each RenderFrame with a pending state
-  // update to inform the browser process.
-  void SendFrameStateUpdates();
-
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.
@@ -198,21 +171,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Settings ------------------------------------------------------------------
 
-  // Whether content state (such as form state, scroll position and page
-  // contents) should be sent to the browser immediately. This is normally
-  // false, but set to true by some tests.
-  bool send_content_state_immediately_ = false;
-
-  // Loading state -------------------------------------------------------------
-
-  // Timer used to delay the updating of nav state (see
-  // StartNavStateSyncTimerIfNecessary).
-  base::OneShotTimer nav_state_sync_timer_;
-
-  // Set of RenderFrame routing IDs for frames that having pending UpdateState
-  // messages to send when the next |nav_state_sync_timer_| fires.
-  std::set<int> frames_with_pending_state_;
-
   // View ----------------------------------------------------------------------
 
   // This class owns this member, and is responsible for calling
@@ -223,8 +181,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // The `AgentSchedulingGroup` this view is associated with.
   AgentSchedulingGroup& agent_scheduling_group_;
-
-  RenderFrameImpl* main_render_frame_ = nullptr;
 
 #if defined(OS_ANDROID)
   // Android Specific ----------------------------------------------------------
@@ -241,8 +197,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // use the Observer interface to filter IPC messages and receive frame change
   // notifications.
   // ---------------------------------------------------------------------------
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewImpl);
 };
 
 }  // namespace content

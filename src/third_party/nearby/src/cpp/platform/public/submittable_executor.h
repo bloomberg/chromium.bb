@@ -20,6 +20,7 @@
 #include <memory>
 #include <utility>
 
+#include "absl/base/thread_annotations.h"
 #include "platform/api/executor.h"
 #include "platform/api/submittable_executor.h"
 #include "platform/base/callable.h"
@@ -31,7 +32,6 @@
 #include "platform/public/mutex_lock.h"
 #include "platform/public/thread_check_callable.h"
 #include "platform/public/thread_check_runnable.h"
-#include "absl/base/thread_annotations.h"
 
 namespace location {
 namespace nearby {
@@ -71,11 +71,6 @@ class ABSL_LOCKABLE SubmittableExecutor : public api::SubmittableExecutor,
     if (impl_)
       impl_->Execute(
           MonitoredRunnable(ThreadCheckRunnable(this, std::move(runnable))));
-  }
-
-  int GetTid(int index) const ABSL_LOCKS_EXCLUDED(mutex_) override {
-    MutexLock lock(&mutex_);
-    return impl_ ? impl_->GetTid(index) : 0;
   }
 
   void Shutdown() ABSL_LOCKS_EXCLUDED(mutex_) override {

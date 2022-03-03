@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 
-#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -42,7 +41,6 @@
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -53,13 +51,13 @@ DataObject* DataObject::CreateFromClipboard(SystemClipboard* system_clipboard,
 #if DCHECK_IS_ON()
   HashSet<String> types_seen;
 #endif
-  uint64_t sequence_number = system_clipboard->SequenceNumber();
+  ClipboardSequenceNumberToken sequence_number =
+      system_clipboard->SequenceNumber();
   for (const String& type : system_clipboard->ReadAvailableTypes()) {
     if (paste_mode == PasteMode::kPlainTextOnly && type != kMimeTypeTextPlain)
       continue;
     mojom::blink::ClipboardFilesPtr files;
-    if (type == kMimeTypeTextURIList &&
-        base::FeatureList::IsEnabled(features::kClipboardFilenames)) {
+    if (type == kMimeTypeTextURIList) {
       files = system_clipboard->ReadFiles();
       // Ignore ReadFiles() result if clipboard sequence number has changed.
       if (system_clipboard->SequenceNumber() != sequence_number) {
@@ -259,12 +257,14 @@ void DataObject::AddFilename(
       std::move(file_system_access_entry)));
 }
 
-void DataObject::AddSharedBuffer(scoped_refptr<SharedBuffer> buffer,
-                                 const KURL& source_url,
-                                 const String& filename_extension,
-                                 const AtomicString& content_disposition) {
-  InternalAddFileItem(DataObjectItem::CreateFromSharedBuffer(
-      std::move(buffer), source_url, filename_extension, content_disposition));
+void DataObject::AddFileSharedBuffer(scoped_refptr<SharedBuffer> buffer,
+                                     bool is_image_accessible,
+                                     const KURL& source_url,
+                                     const String& filename_extension,
+                                     const AtomicString& content_disposition) {
+  InternalAddFileItem(DataObjectItem::CreateFromFileSharedBuffer(
+      std::move(buffer), is_image_accessible, source_url, filename_extension,
+      content_disposition));
 }
 
 DataObject::DataObject() : modifiers_(0) {}
@@ -334,7 +334,10 @@ DataObject* DataObject::Create(WebDragData data) {
                                  item.file_system_access_entry);
         break;
       case WebDragData::Item::kStorageTypeBinaryData:
-        // This should never happen when dragging in.
+        data_object->AddFileSharedBuffer(
+            item.binary_data, item.binary_data_image_accessible,
+            item.binary_data_source_url, item.binary_data_filename_extension,
+            item.binary_data_content_disposition);
         break;
       case WebDragData::Item::kStorageTypeFileSystemFile: {
         // TODO(http://crbug.com/429077): The file system URL may refer a user
@@ -376,6 +379,7 @@ WebDragData DataObject::ToWebDragData() {
       if (original_item->GetSharedBuffer()) {
         item.storage_type = WebDragData::Item::kStorageTypeBinaryData;
         item.binary_data = original_item->GetSharedBuffer();
+        item.binary_data_image_accessible = original_item->IsImageAccessible();
         item.binary_data_source_url = original_item->BaseURL();
         item.binary_data_filename_extension =
             original_item->FilenameExtension();

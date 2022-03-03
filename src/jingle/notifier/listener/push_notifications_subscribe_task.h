@@ -12,7 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
@@ -30,6 +30,12 @@ class PushNotificationsSubscribeTask : public jingle_xmpp::XmppTask {
   PushNotificationsSubscribeTask(jingle_xmpp::XmppTaskParentInterface* parent,
                                  const SubscriptionList& subscriptions,
                                  Delegate* delegate);
+
+  PushNotificationsSubscribeTask(const PushNotificationsSubscribeTask&) =
+      delete;
+  PushNotificationsSubscribeTask& operator=(
+      const PushNotificationsSubscribeTask&) = delete;
+
   ~PushNotificationsSubscribeTask() override;
 
   // Overridden from XmppTask.
@@ -44,12 +50,10 @@ class PushNotificationsSubscribeTask : public jingle_xmpp::XmppTask {
       const jingle_xmpp::Jid& jid, const std::string& task_id);
 
   SubscriptionList subscriptions_;
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   FRIEND_TEST_ALL_PREFIXES(PushNotificationsSubscribeTaskTest,
                            MakeSubscriptionMessage);
-
-  DISALLOW_COPY_AND_ASSIGN(PushNotificationsSubscribeTask);
 };
 
 typedef PushNotificationsSubscribeTask::Delegate

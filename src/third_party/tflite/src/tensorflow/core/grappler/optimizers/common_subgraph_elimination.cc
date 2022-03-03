@@ -56,6 +56,9 @@ namespace grappler {
 
 class UniqueNodes {
  public:
+  // Warning: This is conservative and may fail to find an identical node in
+  // some cases. This happens if the node has large attribute tensor values that
+  // have different proto encoding but identical tensor value.
   NodeDef* FindOrAddRepresentative(NodeDef* node) {
     uint64 sig = ComputeSignature(*node);
     std::vector<NodeDef*>& candidates = rep_[sig];
@@ -73,8 +76,7 @@ class UniqueNodes {
     if (it == memoized_signatures_.end()) return;
 
     std::vector<NodeDef*>& candidates = rep_[it->second];
-    for (int i = 0, candidates_size = candidates.size(); i < candidates_size;
-         ++i) {
+    for (int i = 0, end = candidates.size(); i < end; ++i) {
       if (candidates[i] == node) {
         std::swap(candidates[i], candidates[candidates.size() - 1]);
         candidates.resize(candidates.size() - 1);
@@ -143,7 +145,10 @@ bool UniqueNodes::SameNode(const NodeDef& node1, const NodeDef& node2) const {
   for (const auto& attr1 : node1.attr()) {
     auto it = node2.attr().find(attr1.first);
     if (it == node2.attr().end()) return false;
-    if (!FastAreAttrValuesEqual(attr1.second, it->second)) return false;
+    if (!AreAttrValuesEqual(attr1.second, it->second,
+                            /*allow_false_negatives=*/true)) {
+      return false;
+    }
   }
 
   return true;
@@ -282,13 +287,6 @@ Status CommonSubgraphElimination::Optimize(Cluster* /*cluster*/,
   GRAPPLER_RETURN_IF_DEADLINE_EXCEEDED();
 
   return DedupComputations(optimized_graph);
-}
-
-void CommonSubgraphElimination::Feedback(Cluster* /*cluster*/,
-                                         const GrapplerItem& /*item*/,
-                                         const GraphDef& /*optimized_graph*/,
-                                         double /*result*/) {
-  // Nothing to do for ArithmeticOptimizer.
 }
 
 }  // namespace grappler

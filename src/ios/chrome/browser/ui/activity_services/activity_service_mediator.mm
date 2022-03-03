@@ -53,6 +53,8 @@
 
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 
+@property(nonatomic, weak) UIViewController* baseViewController;
+
 @end
 
 @implementation ActivityServiceMediator
@@ -63,39 +65,55 @@
                bookmarksHandler:(id<BookmarksCommands>)bookmarksHandler
             qrGenerationHandler:(id<QRGenerationCommands>)qrGenerationHandler
                     prefService:(PrefService*)prefService
-                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
+                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+             baseViewController:(UIViewController*)baseViewController {
   if (self = [super init]) {
     _handler = handler;
     _bookmarksHandler = bookmarksHandler;
     _qrGenerationHandler = qrGenerationHandler;
     _prefService = prefService;
     _bookmarkModel = bookmarkModel;
+    _baseViewController = baseViewController;
   }
   return self;
 }
 
-- (NSArray<id<ChromeActivityItemSource>>*)activityItemsForData:
-    (ShareToData*)data {
+- (NSArray<id<ChromeActivityItemSource>>*)activityItemsForDataItems:
+    (NSArray<ShareToData*>*)dataItems {
   NSMutableArray* items = [[NSMutableArray alloc] init];
 
-  if (data.additionalText) {
+  // The |additionalText| is not added when sharing multiple URLs since items
+  // are not associated with each other and the |additionalText| is not likely
+  // be meaningful without the context of the page it came from.
+  if (dataItems.count == 1 && dataItems.firstObject.additionalText) {
     [items addObject:[[ChromeActivityTextSource alloc]
-                         initWithText:data.additionalText]];
+                         initWithText:dataItems.firstObject.additionalText]];
   }
 
-  ChromeActivityURLSource* activityURLSource =
-      [[ChromeActivityURLSource alloc] initWithShareURL:data.shareNSURL
-                                                subject:data.title];
-  activityURLSource.thumbnailGenerator = data.thumbnailGenerator;
-  [items addObject:activityURLSource];
+  for (ShareToData* data in dataItems) {
+    ChromeActivityURLSource* activityURLSource =
+        [[ChromeActivityURLSource alloc] initWithShareURL:data.shareNSURL
+                                                  subject:data.title];
+    activityURLSource.thumbnailGenerator = data.thumbnailGenerator;
+    [items addObject:activityURLSource];
+  }
 
   return items;
 }
 
-- (NSArray*)applicationActivitiesForData:(ShareToData*)data {
+- (NSArray*)applicationActivitiesForDataItems:
+    (NSArray<ShareToData*>*)dataItems {
   NSMutableArray* applicationActivities = [NSMutableArray array];
 
-  [applicationActivities addObject:[[CopyActivity alloc] initWithData:data]];
+  [applicationActivities
+      addObject:[[CopyActivity alloc] initWithDataItems:dataItems]];
+
+  if (dataItems.count != 1) {
+    return applicationActivities;
+  }
+
+  // The following acitivites only support a single item.
+  ShareToData* data = dataItems.firstObject;
 
   if (data.shareURL.SchemeIsHTTPOrHTTPS()) {
     SendTabToSelfActivity* sendTabToSelfActivity =
@@ -135,7 +153,9 @@
 
   if (self.prefService->GetBoolean(prefs::kPrintingEnabled)) {
     PrintActivity* printActivity =
-        [[PrintActivity alloc] initWithData:data handler:self.handler];
+        [[PrintActivity alloc] initWithData:data
+                                    handler:self.handler
+                         baseViewController:self.baseViewController];
     [applicationActivities addObject:printActivity];
   }
 
@@ -149,8 +169,14 @@
 }
 
 - (NSArray*)applicationActivitiesForImageData:(ShareImageData*)data {
-  // For images, we're using the native activities.
-  return @[];
+  // For images, we only customize the print activity. Other activities use
+  // the native ones.
+  PrintActivity* printActivity =
+      [[PrintActivity alloc] initWithImageData:data
+                                       handler:self.handler
+                            baseViewController:self.baseViewController];
+
+  return @[ printActivity ];
 }
 
 - (NSSet*)excludedActivityTypesForItems:

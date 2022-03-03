@@ -9,12 +9,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
+#include "remoting/base/oauth_token_getter.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/remoting_ice_config_request.h"
@@ -27,8 +28,7 @@ namespace protocol {
 namespace {
 
 // Use a cooldown period to prevent multiple service requests in case of a bug.
-constexpr base::TimeDelta kIceConfigRequestCooldown =
-    base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kIceConfigRequestCooldown = base::Minutes(2);
 
 void PrintIceConfig(const IceConfig& ice_config) {
   std::stringstream ss;
@@ -62,6 +62,7 @@ scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   return new protocol::TransportContext(
       std::make_unique<protocol::ChromiumPortAllocatorFactory>(), nullptr,
+      nullptr,
       protocol::NetworkSettings(
           protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
       role);
@@ -70,10 +71,12 @@ scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
 TransportContext::TransportContext(
     std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    OAuthTokenGetter* oauth_token_getter,
     const NetworkSettings& network_settings,
     TransportRole role)
     : port_allocator_factory_(std::move(port_allocator_factory)),
       url_loader_factory_(url_loader_factory),
+      oauth_token_getter_(oauth_token_getter),
       network_settings_(network_settings),
       role_(role) {}
 
@@ -118,8 +121,8 @@ void TransportContext::EnsureFreshIceConfig() {
 
   if (base::Time::Now() >
       (last_request_completion_time_ + kIceConfigRequestCooldown)) {
-    ice_config_request_ =
-        std::make_unique<RemotingIceConfigRequest>(url_loader_factory_);
+    ice_config_request_ = std::make_unique<RemotingIceConfigRequest>(
+        url_loader_factory_, oauth_token_getter_);
     ice_config_request_->Send(
         base::BindOnce(&TransportContext::OnIceConfig, base::Unretained(this)));
   } else {

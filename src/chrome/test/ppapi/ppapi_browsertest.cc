@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -145,30 +144,18 @@ using content::RenderViewHost;
     }
 
 // NaCl based PPAPI tests
-#define TEST_PPAPI_NACL(test_name) \
-    TEST_PPAPI_NACL_NATIVE(test_name)                       \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, \
-                           MAYBE_PPAPI_PNACL(test_name)) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, \
-                           MAYBE_PNACL_NONSFI(test_name)) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    }
+#define TEST_PPAPI_NACL(test_name)                                           \
+  TEST_PPAPI_NACL_NATIVE(test_name)                                          \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(test_name)) { \
+    RunTestViaHTTP(STRIP_PREFIXES(test_name));                               \
+  }
 
 // NaCl based PPAPI tests
-#define TEST_PPAPI_NACL_SUBTESTS(test_name, run_statement) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      run_statement; \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, \
-                           MAYBE_PPAPI_PNACL(test_name)) { \
-      run_statement; \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, \
-                           MAYBE_PNACL_NONSFI(test_name)) { \
-      run_statement; \
-    }
+#define TEST_PPAPI_NACL_SUBTESTS(test_name, run_statement)                   \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { run_statement; }  \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(test_name)) { \
+    run_statement;                                                           \
+  }
 
 // NaCl based PPAPI tests with disallowed socket API
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name) \
@@ -177,18 +164,13 @@ using content::RenderViewHost;
     }
 
 // NaCl based PPAPI tests with SSL server
-#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, \
-                           MAYBE_PPAPI_PNACL(test_name)) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, \
-                           MAYBE_PNACL_NONSFI(test_name)) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    }
+#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)                           \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) {                   \
+    RunTestWithSSLServer(STRIP_PREFIXES(test_name));                         \
+  }                                                                          \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(test_name)) { \
+    RunTestWithSSLServer(STRIP_PREFIXES(test_name));                         \
+  }
 
 #endif  // !BUILDFLAG(ENABLE_NACL)
 
@@ -261,10 +243,6 @@ TEST_PPAPI_NACL(ImageData)
     RunTestViaHTTP(LIST_TEST(_test));                                    \
   }                                                                      \
   IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(_test)) { \
-    RunTestViaHTTP(LIST_TEST(_test));                                    \
-  }                                                                      \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,                       \
-                         MAYBE_PNACL_NONSFI(_test)) {                    \
     RunTestViaHTTP(LIST_TEST(_test));                                    \
   }
 
@@ -455,6 +433,9 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
     ClosePipeIfNeeded();
   }
 
+  MockTCPConnectedSocket(const MockTCPConnectedSocket&) = delete;
+  MockTCPConnectedSocket& operator=(const MockTCPConnectedSocket&) = delete;
+
   ~MockTCPConnectedSocket() override {}
 
   // mojom::TCPConnectedSocket implementation:
@@ -591,8 +572,6 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
   mojo::Receiver<network::mojom::TCPConnectedSocket> receiver_;
   mojo::Receiver<network::mojom::TLSClientSocket> tls_client_socket_receiver_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockTCPConnectedSocket);
 };
 
 class MockTCPServerSocket : public network::mojom::TCPServerSocket {
@@ -633,6 +612,9 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
     std::move(callback).Run(net::OK);
   }
 
+  MockTCPServerSocket(const MockTCPServerSocket&) = delete;
+  MockTCPServerSocket& operator=(const MockTCPServerSocket&) = delete;
+
   ~MockTCPServerSocket() override {}
 
   // TCPServerSocket implementation:
@@ -656,8 +638,6 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
   network::mojom::TCPBoundSocket::ListenCallback listen_callback_;
 
   mojo::Receiver<network::mojom::TCPServerSocket> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTCPServerSocket);
 };
 
 class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
@@ -678,6 +658,9 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
     }
     std::move(callback).Run(net::OK, LocalAddress());
   }
+
+  MockTCPBoundSocket(const MockTCPBoundSocket&) = delete;
+  MockTCPBoundSocket& operator=(const MockTCPBoundSocket&) = delete;
 
   ~MockTCPBoundSocket() override {}
 
@@ -719,8 +702,6 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
   network::mojom::NetworkContext::CreateTCPBoundSocketCallback callback_;
 
   mojo::Receiver<network::mojom::TCPBoundSocket> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTCPBoundSocket);
 };
 
 class MockNetworkContext : public network::TestNetworkContext {
@@ -732,6 +713,9 @@ class MockNetworkContext : public network::TestNetworkContext {
       : tcp_failure_type_(tcp_failure_type),
         browser_(browser),
         receiver_(this, std::move(receiver)) {}
+
+  MockNetworkContext(const MockNetworkContext&) = delete;
+  MockNetworkContext& operator=(const MockNetworkContext&) = delete;
 
   ~MockNetworkContext() override {}
 
@@ -804,8 +788,6 @@ class MockNetworkContext : public network::TestNetworkContext {
   std::vector<std::unique_ptr<MockTCPConnectedSocket>> connected_sockets_;
 
   mojo::Receiver<network::mojom::NetworkContext> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkContext);
 };
 
 // Runs a TCP test using a MockNetworkContext, through a Mojo pipe. Using a Mojo
@@ -837,10 +819,6 @@ class MockNetworkContext : public network::TestNetworkContext {
     RUN_TCP_FAILURE_TEST(_test, failure_type);                               \
   }                                                                          \
   IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(test_name)) { \
-    RUN_TCP_FAILURE_TEST(_test, failure_type);                               \
-  }                                                                          \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,                           \
-                         MAYBE_PNACL_NONSFI(test_name)) {                    \
     RUN_TCP_FAILURE_TEST(_test, failure_type);                               \
   }
 
@@ -1057,6 +1035,9 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
         base::BindOnce(&WrappedUDPSocket::Close, base::Unretained(this)));
   }
 
+  WrappedUDPSocket(const WrappedUDPSocket&) = delete;
+  WrappedUDPSocket& operator=(const WrappedUDPSocket&) = delete;
+
   // network::mojom::UDPSocket implementation.
   void Connect(const net::IPEndPoint& remote_addr,
                network::mojom::UDPSocketOptionsPtr options,
@@ -1159,8 +1140,6 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
 
   // Only populated on certain read FailureTypes.
   mojo::Remote<network::mojom::UDPSocketListener> socket_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(WrappedUDPSocket);
 };
 
 void TestCreateUDPSocketCallback(
@@ -1198,10 +1177,6 @@ void TestCreateUDPSocketCallback(
     RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
   }                                                                          \
   IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(test_name)) { \
-    RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
-  }                                                                          \
-  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,                           \
-                         MAYBE_PNACL_NONSFI(test_name)) {                    \
     RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
   }
 
@@ -1316,10 +1291,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(HostResolver)) {
   RUN_HOST_RESOLVER_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(HostResolver)) {
-  RUN_HOST_RESOLVER_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(HostResolver)) {
   RUN_HOST_RESOLVER_SUBTESTS;
 }
 
@@ -1446,13 +1417,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(URLLoader3)) {
   RUN_URLLOADER_SUBTESTS_3;
 }
 
-// Flaky on 32-bit linux bot; http://crbug.com/308906
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86)
-#define MAYBE_URLLoader_BasicFilePOST DISABLED_URLLoader_BasicFilePOST
-#else
-#define MAYBE_URLLoader_BasicFilePOST URLLoader_BasicFilePOST
-#endif
-
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(URLLoader0)) {
   RUN_URLLOADER_SUBTESTS_0;
 }
@@ -1465,23 +1429,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(URLLoader2)) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(URLLoader3)) {
   RUN_URLLOADER_SUBTESTS_3;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(URLLoader0)) {
-  RUN_URLLOADER_SUBTESTS_0;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(URLLoader1)) {
-  RUN_URLLOADER_SUBTESTS_1;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(URLLoader2)) {
-  RUN_URLLOADER_SUBTESTS_2;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(URLLoader3)) {
-  RUN_URLLOADER_SUBTESTS_3;
-}
-
 
 // URLRequestInfo tests.
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
@@ -1526,8 +1473,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NaClIRTStackAlignment) {
   // Windows kernel, only 64-bit NaCl works.  This test matches the condition
   // used in //components/nacl/browser/nacl_browser.cc::NaClIrtName to
   // choose which kind of NaCl nexe to load, so it better be right.
-  is32 = (base::win::OSInfo::GetInstance()->wow64_status() !=
-          base::win::OSInfo::WOW64_ENABLED);
+  is32 = !base::win::OSInfo::GetInstance()->IsWowX86OnAMD64();
 #endif
   if (is32)
     RunTestViaHTTP(STRIP_PREFIXES(NaClIRTStackAlignment));
@@ -1570,10 +1516,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(PostMessage)) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(PostMessage)) {
-  RUN_POSTMESSAGE_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(PostMessage)) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
 
@@ -1628,14 +1570,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, DISABLED_FileIO) {
 }
 IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest,
                        DISABLED_PNaCl_FileIO_Private) {
-  RUN_FILEIO_PRIVATE_SUBTESTS;
-}
-
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_PNACL_NONSFI(FileIO)) {
-  RUN_FILEIO_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(FILEIO_Private)) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
@@ -1702,14 +1636,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(FileRef1)) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(FileRef2)) {
   RUN_FILEREF_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(FileRef1)) {
-  RUN_FILEREF_SUBTESTS_1;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(FileRef2)) {
-  RUN_FILEREF_SUBTESTS_2;
-}
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
@@ -1761,10 +1687,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(NetAddress)) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(NetAddress)) {
   RUN_NETADDRESS_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(NetAddress)) {
-  RUN_NETADDRESS_SUBTESTS;
-}
 
 // NetAddressPrivate tests.
 #define RUN_NETADDRESS_PRIVATE_SUBTESTS \
@@ -1805,10 +1727,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest,
                        MAYBE_PPAPI_PNACL(NetAddressPrivate)) {
   RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(NetAddressPrivate)) {
-  RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
-}
 
 // NetworkMonitor tests.
 #define RUN_NETWORK_MONITOR_SUBTESTS \
@@ -1826,10 +1744,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, DISABLED_NetworkMonitor) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(NetworkMonitor)) {
-  RUN_NETWORK_MONITOR_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(NetworkMonitor)) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
 
@@ -1873,10 +1787,22 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
       LIST_TEST(WebSocket_UtilityBufferedAmount) \
   )
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket1) {
+// TODO(https://crbug.com/1277909): Flaky on Mac and Windows builders.
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_WebSocket1 DISABLED_WebSocket1
+#else
+#define MAYBE_WebSocket1 WebSocket1
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket2) {
+// TODO(https://crbug.com/1277909): Flaky on Mac and Windows builders.
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_WebSocket2 DISABLED_WebSocket2
+#else
+#define MAYBE_WebSocket2 WebSocket2
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_WebSocket2) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(WebSocket1)) {
@@ -1889,14 +1815,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(WebSocket1)) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(WebSocket2)) {
-  RUN_WEBSOCKET_SUBTESTS_2;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(WebSocket1)) {
-  RUN_WEBSOCKET_SUBTESTS_1;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(WebSocket2)) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
 
@@ -1918,10 +1836,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioConfig)) {
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(AudioConfig)) {
-  RUN_AUDIO_CONFIG_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(AudioConfig)) {
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
 
@@ -1957,10 +1871,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(MAYBE_Audio)) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(MAYBE_Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(MAYBE_Audio)) {
-  RUN_AUDIO_SUBTESTS;
-}
 
 #define RUN_AUDIO_THREAD_CREATOR_SUBTESTS \
   RunTestViaHTTP( \
@@ -1981,10 +1891,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest,
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest,
                        MAYBE_PPAPI_PNACL(MAYBE_AudioThreadCreator)) {
-  RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(MAYBE_AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 
@@ -2017,7 +1923,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_View_PageHideShow) {
       &handler);
 
   GURL url = GetTestFileUrl("View_PageHideShow");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   ASSERT_TRUE(observer.Run()) << handler.error_message();
   EXPECT_STREQ("TestPageHideShow:Created", handler.message().c_str());
@@ -2081,9 +1987,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(View)) {
   RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(View)) {
-  RUN_VIEW_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_PNACL_NONSFI(View)) {
   RUN_VIEW_SUBTESTS;
 }
 
@@ -2202,7 +2105,7 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     apps::AppLaunchParams params(
         extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
         WindowOpenDisposition::NEW_WINDOW,
-        apps::mojom::AppLaunchSource::kSourceTest);
+        apps::mojom::LaunchSource::kFromTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
         ->BrowserAppLauncher()
@@ -2224,16 +2127,6 @@ class NewlibPackagedAppTest : public PackagedAppTest {
   NewlibPackagedAppTest() : PackagedAppTest("newlib") { }
 };
 
-class NonSfiPackagedAppTest : public PackagedAppTest {
- public:
-  NonSfiPackagedAppTest() : PackagedAppTest("nonsfi") { }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PackagedAppTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
-  }
-};
-
 // Load a packaged app, and wait for it to successfully post a "hello" message
 // back.
 #if defined(OS_WIN) || !defined(NDEBUG) || defined(OS_MAC)
@@ -2244,16 +2137,6 @@ IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, DISABLED_SuccessfulLoad) {
 IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
                        MAYBE_PPAPI_NACL(SuccessfulLoad)) {
 #endif
-  RunTests("packaged_app");
-}
-
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// http://crbug.com/579804
-#define MAYBE_SuccessfulLoad DISABLED_SuccessfulLoad
-#else
-#define MAYBE_SuccessfulLoad MAYBE_PNACL_NONSFI(SuccessfulLoad)
-#endif
-IN_PROC_BROWSER_TEST_F(NonSfiPackagedAppTest, MAYBE_SuccessfulLoad) {
   RunTests("packaged_app");
 }
 

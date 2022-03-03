@@ -9,10 +9,10 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/host/clipboard.h"
+#include "ui/base/clipboard/clipboard.h"
 
 namespace remoting {
 
@@ -33,6 +33,10 @@ class ClipboardStub;
 class ClipboardAura : public Clipboard {
  public:
   explicit ClipboardAura();
+
+  ClipboardAura(const ClipboardAura&) = delete;
+  ClipboardAura& operator=(const ClipboardAura&) = delete;
+
   ~ClipboardAura() override;
 
   // Clipboard interface.
@@ -49,10 +53,8 @@ class ClipboardAura : public Clipboard {
   base::ThreadChecker thread_checker_;
   std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
   base::RepeatingTimer clipboard_polling_timer_;
-  uint64_t current_change_count_;
+  ui::ClipboardSequenceNumberToken current_change_token_;
   base::TimeDelta polling_interval_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardAura);
 };
 
 }  // namespace remoting

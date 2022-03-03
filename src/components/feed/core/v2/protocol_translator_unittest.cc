@@ -25,8 +25,7 @@ namespace feed {
 namespace {
 
 const char kResponsePbPath[] = "components/test/data/feed/response.binarypb";
-const base::Time kCurrentTime =
-    base::Time::UnixEpoch() + base::TimeDelta::FromDays(123);
+const base::Time kCurrentTime = base::Time::UnixEpoch() + base::Days(123);
 
 feedwire::Response TestWireResponse() {
   // Read and parse response.binarypb.
@@ -122,6 +121,27 @@ TEST(ProtocolTranslatorTest, NextPageToken) {
 TEST(ProtocolTranslatorTest, EmptyResponse) {
   feedwire::Response response = EmptyWireResponse();
   EXPECT_TRUE(TranslateWireResponse(response).model_update_request);
+}
+
+TEST(ProtocolTranslatorTest, RootEventIdPresent) {
+  feedwire::Response response = EmptyWireResponse();
+  response.mutable_feed_response()
+      ->mutable_feed_response_metadata()
+      ->mutable_event_id()
+      ->set_time_usec(123);
+  EXPECT_EQ(TranslateWireResponse(response)
+                .model_update_request->stream_data.root_event_id(),
+            response.mutable_feed_response()
+                ->mutable_feed_response_metadata()
+                ->event_id()
+                .SerializeAsString());
+}
+
+TEST(ProtocolTranslatorTest, RootEventIdNotPresent) {
+  feedwire::Response response = EmptyWireResponse();
+  EXPECT_EQ(TranslateWireResponse(response)
+                .model_update_request->stream_data.root_event_id(),
+            "");
 }
 
 TEST(ProtocolTranslatorTest, WasSignedInRequest) {
@@ -231,6 +251,28 @@ TEST(ProtocolTranslatorTest, TranslateRenderData) {
       translated.model_update_request->shared_states[0].shared_state_data());
 }
 
+TEST(ProtocolTranslatorTest, TranslateContentLifetime) {
+  feedwire::Response wire_response = EmptyWireResponse();
+  feedwire::ContentLifetime* content_lifetime =
+      wire_response.mutable_feed_response()
+          ->mutable_feed_response_metadata()
+          ->mutable_content_lifetime();
+  content_lifetime->set_stale_age_ms(123);
+  content_lifetime->set_invalid_age_ms(456);
+  RefreshResponseData translated = TranslateWireResponse(wire_response);
+  ASSERT_TRUE(translated.content_lifetime.has_value());
+  EXPECT_EQ(translated.content_lifetime->stale_age_ms(),
+            content_lifetime->stale_age_ms());
+  EXPECT_EQ(translated.content_lifetime->invalid_age_ms(),
+            content_lifetime->invalid_age_ms());
+}
+
+TEST(ProtocolTranslatorTest, TranslateMissingContentLifetime) {
+  feedwire::Response wire_response = EmptyWireResponse();
+  RefreshResponseData translated = TranslateWireResponse(wire_response);
+  EXPECT_FALSE(translated.content_lifetime.has_value());
+}
+
 TEST(ProtocolTranslatorTest, TranslateRenderDataFailsWithUnknownType) {
   feedwire::Response wire_response = EmptyWireResponse();
   feedwire::DataOperation wire_operation = MakeDataOperationWithRenderData(
@@ -294,9 +336,8 @@ TEST(ProtocolTranslatorTest, TranslateRealResponse) {
   ASSERT_TRUE(translated.request_schedule);
   EXPECT_EQ(kCurrentTime, translated.request_schedule->anchor_time);
   EXPECT_EQ(std::vector<base::TimeDelta>(
-                {base::TimeDelta::FromSeconds(86308) +
-                     base::TimeDelta::FromNanoseconds(822963644),
-                 base::TimeDelta::FromSeconds(120000)}),
+                {base::Seconds(86308) + base::Nanoseconds(822963644),
+                 base::Seconds(120000)}),
             translated.request_schedule->refresh_offsets);
 
   std::stringstream ss;
@@ -304,6 +345,9 @@ TEST(ProtocolTranslatorTest, TranslateRealResponse) {
 
   const std::string want = R"(source: 0
 stream_data: {
+  root_event_id: )"
+                           "\"\\b\xEF\xBF\xBD\xEF\xBF\xBD\\u0007\""
+                           R"(
   last_added_time_millis: 10627200000
   shared_state_ids {
     content_domain: "render_data"

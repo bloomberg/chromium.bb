@@ -11,6 +11,7 @@
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrResourceCache.h"
 #include "tools/ToolUtils.h"
 
 
@@ -45,7 +46,7 @@ void set_cache_budget(SkCanvas* canvas, int approxImagesInBudget) {
     auto context =  canvas->recordingContext()->asDirectContext();
     SkASSERT(context);
     context->flushAndSubmit();
-    context->priv().testingOnly_purgeAllUnlockedResources();
+    context->priv().getResourceCache()->purgeUnlockedResources();
     sk_sp<SkImage> image;
     make_images(&image, 1);
     draw_image(canvas, image.get());
@@ -54,7 +55,7 @@ void set_cache_budget(SkCanvas* canvas, int approxImagesInBudget) {
     context->getResourceCacheUsage(&baselineCount, nullptr);
     baselineCount -= 1; // for the image's textures.
     context->setResourceCacheLimits(baselineCount + approxImagesInBudget, 1 << 30);
-    context->priv().testingOnly_purgeAllUnlockedResources();
+    context->priv().getResourceCache()->purgeUnlockedResources();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -142,8 +143,8 @@ protected:
     }
 
 private:
-    static constexpr int kImagesToDraw = 100;
-    static constexpr int kSimulatedFrames = 5;
+    inline static constexpr int kImagesToDraw = 100;
+    inline static constexpr int kSimulatedFrames = 5;
 
     int                         fBudgetSize;
     bool                        fShuffle;
@@ -250,10 +251,10 @@ protected:
     }
 
 private:
-    static constexpr int kImagesInBudget  = 25;
-    static constexpr int kMinImagesToDraw = 15;
-    static constexpr int kMaxImagesToDraw = 35;
-    static constexpr int kSimulatedFrames = 80;
+    inline static constexpr int kImagesInBudget  = 25;
+    inline static constexpr int kMinImagesToDraw = 15;
+    inline static constexpr int kMaxImagesToDraw = 35;
+    inline static constexpr int kSimulatedFrames = 80;
 
     Mode                        fMode;
     sk_sp<SkImage>              fImages[kMaxImagesToDraw];

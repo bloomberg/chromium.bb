@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
@@ -22,6 +21,10 @@ namespace message_center {
 class FakeMessageCenter : public MessageCenter {
  public:
   FakeMessageCenter();
+
+  FakeMessageCenter(const FakeMessageCenter&) = delete;
+  FakeMessageCenter& operator=(const FakeMessageCenter&) = delete;
+
   ~FakeMessageCenter() override;
 
   // Overridden from FakeMessageCenter.
@@ -33,6 +36,10 @@ class FakeMessageCenter : public MessageCenter {
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
   bool IsSpokenFeedbackEnabled() const override;
+  Notification* FindNotificationById(const std::string& id) override;
+  Notification* FindParentNotificationForOriginUrl(
+      const GURL& origin_url) override;
+  Notification* FindPopupNotificationById(const std::string& id) override;
   Notification* FindVisibleNotificationById(const std::string& id) override;
   NotificationList::Notifications FindNotificationsByAppId(
       const std::string& app_id) override;
@@ -63,6 +70,7 @@ class FakeMessageCenter : public MessageCenter {
   void DisableNotification(const std::string& id) override;
   void MarkSinglePopupAsShown(const std::string& id,
                               bool mark_notification_as_read) override;
+  void ResetSinglePopup(const std::string& id) override;
   void DisplayedNotification(const std::string& id,
                              const DisplaySource source) override;
   void SetQuietMode(bool in_quiet_mode) override;
@@ -89,8 +97,6 @@ class FakeMessageCenter : public MessageCenter {
   NotificationList::Notifications visible_notifications_;
   std::vector<NotificationBlocker*> blockers_;
   bool has_message_center_view_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeMessageCenter);
 };
 
 }  // namespace message_center

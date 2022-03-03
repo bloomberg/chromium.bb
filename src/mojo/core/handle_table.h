@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "mojo/core/dispatcher.h"
@@ -25,6 +24,10 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable
     : public base::trace_event::MemoryDumpProvider {
  public:
   HandleTable();
+
+  HandleTable(const HandleTable&) = delete;
+  HandleTable& operator=(const HandleTable&) = delete;
+
   ~HandleTable() override;
 
   // HandleTable is thread-hostile. All access should be gated by GetLock().
@@ -80,8 +83,6 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable
   base::Lock lock_;
 
   uint32_t next_available_handle_ = 1;
-
-  DISALLOW_COPY_AND_ASSIGN(HandleTable);
 };
 
 }  // namespace core

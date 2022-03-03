@@ -38,11 +38,11 @@ class D3D12ResidencyTestBase : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
         // Restrict Dawn's budget to create an artificial budget.
         dawn_native::d3d12::Device* d3dDevice =
-            reinterpret_cast<dawn_native::d3d12::Device*>(device.Get());
+            dawn_native::d3d12::ToBackend(dawn_native::FromAPI((device.Get())));
         d3dDevice->GetResidencyManager()->RestrictBudgetForTesting(kRestrictedBudgetSize);
 
         // Initialize a source buffer on the GPU to serve as a source to quickly copy data to other
@@ -94,18 +94,20 @@ class D3D12ResourceResidencyTests : public D3D12ResidencyTestBase {
     bool CheckAllocationMethod(wgpu::Buffer buffer,
                                dawn_native::AllocationMethod allocationMethod) const {
         dawn_native::d3d12::Buffer* d3dBuffer =
-            reinterpret_cast<dawn_native::d3d12::Buffer*>(buffer.Get());
+            dawn_native::d3d12::ToBackend(dawn_native::FromAPI((buffer.Get())));
         return d3dBuffer->CheckAllocationMethodForTesting(allocationMethod);
     }
 
     bool CheckIfBufferIsResident(wgpu::Buffer buffer) const {
         dawn_native::d3d12::Buffer* d3dBuffer =
-            reinterpret_cast<dawn_native::d3d12::Buffer*>(buffer.Get());
+            dawn_native::d3d12::ToBackend(dawn_native::FromAPI((buffer.Get())));
         return d3dBuffer->CheckIsResidentForTesting();
     }
 
     bool IsUMA() const {
-        return reinterpret_cast<dawn_native::d3d12::Device*>(device.Get())->GetDeviceInfo().isUMA;
+        return dawn_native::d3d12::ToBackend(dawn_native::FromAPI(device.Get()))
+            ->GetDeviceInfo()
+            .isUMA;
     }
 };
 
@@ -114,7 +116,7 @@ class D3D12DescriptorResidencyTests : public D3D12ResidencyTestBase {};
 // Check that resources existing on suballocated heaps are made resident and evicted correctly.
 TEST_P(D3D12ResourceResidencyTests, OvercommitSmallResources) {
     // TODO(http://crbug.com/dawn/416): Tests fails on Intel HD 630 bot.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsIntel() && IsBackendValidationEnabled());
 
     // Create suballocated buffers to fill half the budget.
     std::vector<wgpu::Buffer> bufferSet1 = AllocateBuffers(
@@ -332,9 +334,9 @@ TEST_P(D3D12ResourceResidencyTests, SetExternalReservation) {
 TEST_P(D3D12DescriptorResidencyTests, SwitchedViewHeapResidency) {
     // TODO(crbug.com/dawn/739):
     // unknown file: error: SEH exception with code 0x87d thrown in the test body.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP() && IsBackendValidationEnabled());
 
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
 
     // Fill in a view heap with "view only" bindgroups (1x view per group) by creating a
     // view bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps must switch over.
@@ -342,7 +344,7 @@ TEST_P(D3D12DescriptorResidencyTests, SwitchedViewHeapResidency) {
             [[stage(vertex)]] fn main(
                 [[builtin(vertex_index)]] VertexIndex : u32
             ) -> [[builtin(position)]] vec4<f32> {
-                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                var pos = array<vec2<f32>, 3>(
                     vec2<f32>(-1.0,  1.0),
                     vec2<f32>( 1.0,  1.0),
                     vec2<f32>(-1.0, -1.0)
@@ -360,14 +362,14 @@ TEST_P(D3D12DescriptorResidencyTests, SwitchedViewHeapResidency) {
                 return colorBuffer.color;
             })");
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
     constexpr uint32_t kSize = 512;
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kSize, kSize);
 
     wgpu::Sampler sampler = device.CreateSampler();
 
     dawn_native::d3d12::Device* d3dDevice =
-        reinterpret_cast<dawn_native::d3d12::Device*>(device.Get());
+        dawn_native::d3d12::ToBackend(dawn_native::FromAPI(device.Get()));
 
     dawn_native::d3d12::ShaderVisibleDescriptorAllocator* allocator =
         d3dDevice->GetViewShaderVisibleDescriptorAllocator();

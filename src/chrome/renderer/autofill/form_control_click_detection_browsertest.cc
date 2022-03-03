@@ -18,12 +18,24 @@
 
 namespace autofill {
 
+namespace {
+
+FieldRendererId GetFieldRendererId(blink::WebElement element) {
+  blink::WebFormControlElement field =
+      element.To<blink::WebFormControlElement>();
+  if (field.IsNull())
+    return {};
+  return FieldRendererId(field.UniqueRendererFormControlId());
+}
+
+}  // namespace
+
 class FormControlClickDetectionTest : public ChromeRenderViewTest {
  protected:
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
     // Must be set before loading HTML.
-    view_->GetWebView()->SetDefaultPageScaleLimits(1, 4);
+    web_view_->SetDefaultPageScaleLimits(1, 4);
 
     LoadHTML(
         "<form>"
@@ -54,24 +66,15 @@ class FormControlClickDetectionTest : public ChromeRenderViewTest {
   }
 
   void ClearAutofillAgentTestState() {
-    autofill_agent_->last_clicked_form_control_element_for_testing_ =
-        blink::WebFormControlElement();
-    autofill_agent_
-        ->last_clicked_form_control_element_was_focused_for_testing_ = false;
+    autofill_agent_->last_clicked_form_control_element_for_testing_ = {};
   }
 
-  const blink::WebFormControlElement& last_clicked_form_control_element()
-      const {
+  FieldRendererId last_clicked_form_control_element() const {
     return autofill_agent_->last_clicked_form_control_element_for_testing_;
   }
 
-  bool last_clicked_form_control_element_was_focused() const {
-    return autofill_agent_
-        ->last_clicked_form_control_element_was_focused_for_testing_;
-  }
-
   bool form_control_element_clicked_called() const {
-    return !last_clicked_form_control_element().IsNull();
+    return !last_clicked_form_control_element().is_null();
   }
 
   blink::WebElement text_;
@@ -85,16 +88,14 @@ TEST_F(FormControlClickDetectionTest, InputClicked) {
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
   // Click the text field again and verify that AutofillAgent knows about its
   // focus.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_TRUE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
   // Click the button, no notification should happen (this is not a text-input).
@@ -109,8 +110,7 @@ TEST_F(FormControlClickDetectionTest, InputRightClicked) {
   // Right click the text field once.
   EXPECT_TRUE(SimulateElementRightClick("text_1"));
   EXPECT_FALSE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_NE(text_, last_clicked_form_control_element());
+  EXPECT_NE(GetFieldRendererId(text_), last_clicked_form_control_element());
 }
 
 TEST_F(FormControlClickDetectionTest, InputFocusedAndClicked) {
@@ -123,8 +123,7 @@ TEST_F(FormControlClickDetectionTest, InputFocusedAndClicked) {
   // Click the focused text field to test that was_focused_ is set correctly.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_TRUE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
 }
 
 // Tests that AutofillAgent accepts form clicks for a textarea element which is
@@ -134,16 +133,14 @@ TEST_F(FormControlClickDetectionTest, TextAreaClicked) {
   // Click the textarea field once.
   EXPECT_TRUE(SimulateElementClick("textarea_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(textarea_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(textarea_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
   // Click the text field again and verify that AutofillAgent knows about its
   // focus.
   EXPECT_TRUE(SimulateElementClick("textarea_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_TRUE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(textarea_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(textarea_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
   // Click the button, no notification should happen (this is not a text-input).
@@ -162,35 +159,32 @@ TEST_F(FormControlClickDetectionTest, TextAreaFocusedAndClicked) {
   // focus.
   EXPECT_TRUE(SimulateElementClick("textarea_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_TRUE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(textarea_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(textarea_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 }
 
 TEST_F(FormControlClickDetectionTest, ScaledTextareaClicked) {
   ClearAutofillAgentTestState();
   EXPECT_NE(textarea_, textarea_.GetDocument().FocusedElement());
-  view_->GetWebView()->SetPageScaleFactor(3);
-  view_->GetWebView()->SetVisualViewportOffset(gfx::PointF(50, 50));
+  web_view_->SetPageScaleFactor(3);
+  web_view_->SetVisualViewportOffset(gfx::PointF(50, 50));
 
   // Click textarea_1.
   SimulatePointClick(gfx::Point(30, 30));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(textarea_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(textarea_), last_clicked_form_control_element());
 }
 
 TEST_F(FormControlClickDetectionTest, ScaledTextareaTapped) {
   ClearAutofillAgentTestState();
   EXPECT_NE(textarea_, textarea_.GetDocument().FocusedElement());
-  view_->GetWebView()->SetPageScaleFactor(3);
-  view_->GetWebView()->SetVisualViewportOffset(gfx::PointF(50, 50));
+  web_view_->SetPageScaleFactor(3);
+  web_view_->SetVisualViewportOffset(gfx::PointF(50, 50));
 
   // Tap textarea_1.
   SimulateRectTap(gfx::Rect(30, 30, 30, 30));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(textarea_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(textarea_), last_clicked_form_control_element());
 }
 
 TEST_F(FormControlClickDetectionTest, DisabledInputClickedNoEvent) {
@@ -199,8 +193,7 @@ TEST_F(FormControlClickDetectionTest, DisabledInputClickedNoEvent) {
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
   // Click the disabled element.
@@ -214,8 +207,7 @@ TEST_F(FormControlClickDetectionTest,
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
   // Click the disabled element and focus should change.
@@ -227,8 +219,7 @@ TEST_F(FormControlClickDetectionTest,
   // focus already.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
 }
 
 TEST_F(FormControlClickDetectionTest, TapNearEdgeIsPageClick) {
@@ -238,8 +229,7 @@ TEST_F(FormControlClickDetectionTest, TapNearEdgeIsPageClick) {
   SimulateRectTap(element_bounds -
                   gfx::Vector2d(element_bounds.width() / 2 + 1, 0));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
-  EXPECT_EQ(text_, last_clicked_form_control_element());
+  EXPECT_EQ(GetFieldRendererId(text_), last_clicked_form_control_element());
 }
 
 }  // namespace autofill

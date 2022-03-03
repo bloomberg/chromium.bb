@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Unit tests for tensor formatter."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import re
 
 import numpy as np
@@ -373,16 +369,13 @@ class RichTextLinesTest(test_util.TensorFlowTestCase):
 
     self._checkTensorElementLocations(out, a)
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices exceed tensor dimensions"):
+    with self.assertRaisesRegex(ValueError, "Indices exceed tensor dimensions"):
       tensor_format.locate_tensor_element(out, [20])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices contain negative"):
+    with self.assertRaisesRegex(ValueError, "Indices contain negative"):
       tensor_format.locate_tensor_element(out, [-1])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Dimensions mismatch"):
+    with self.assertRaisesRegex(ValueError, "Dimensions mismatch"):
       tensor_format.locate_tensor_element(out, [0, 0])
 
   def testLocateTensorElement1DNoEllipsisBatchMode(self):
@@ -407,18 +400,17 @@ class RichTextLinesTest(test_util.TensorFlowTestCase):
         self, ["Tensor \"a\":", ""], out.lines[:2])
     self.assertEqual(repr(a).split("\n"), out.lines[2:])
 
-    with self.assertRaisesRegexp(ValueError, "Dimensions mismatch"):
+    with self.assertRaisesRegex(ValueError, "Dimensions mismatch"):
       tensor_format.locate_tensor_element(out, [[0, 0], [0]])
 
-    with self.assertRaisesRegexp(ValueError,
-                                 "Indices exceed tensor dimensions"):
+    with self.assertRaisesRegex(ValueError, "Indices exceed tensor dimensions"):
       tensor_format.locate_tensor_element(out, [[0], [20]])
 
-    with self.assertRaisesRegexp(ValueError,
-                                 r"Indices contain negative value\(s\)"):
+    with self.assertRaisesRegex(ValueError,
+                                r"Indices contain negative value\(s\)"):
       tensor_format.locate_tensor_element(out, [[0], [-1]])
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         ValueError, "Input indices sets are not in ascending order"):
       tensor_format.locate_tensor_element(out, [[5], [0]])
 
@@ -447,16 +439,13 @@ class RichTextLinesTest(test_util.TensorFlowTestCase):
 
     self._checkTensorElementLocations(out, a)
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices exceed tensor dimensions"):
+    with self.assertRaisesRegex(ValueError, "Indices exceed tensor dimensions"):
       tensor_format.locate_tensor_element(out, [1, 4])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices contain negative"):
+    with self.assertRaisesRegex(ValueError, "Indices contain negative"):
       tensor_format.locate_tensor_element(out, [-1, 2])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Dimensions mismatch"):
+    with self.assertRaisesRegex(ValueError, "Dimensions mismatch"):
       tensor_format.locate_tensor_element(out, [0])
 
   def testLocateTensorElement2DNoEllipsisWithNumericSummary(self):
@@ -479,16 +468,13 @@ class RichTextLinesTest(test_util.TensorFlowTestCase):
 
     self._checkTensorElementLocations(out, a)
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices exceed tensor dimensions"):
+    with self.assertRaisesRegex(ValueError, "Indices exceed tensor dimensions"):
       tensor_format.locate_tensor_element(out, [1, 4])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices contain negative"):
+    with self.assertRaisesRegex(ValueError, "Indices contain negative"):
       tensor_format.locate_tensor_element(out, [-1, 2])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Dimensions mismatch"):
+    with self.assertRaisesRegex(ValueError, "Dimensions mismatch"):
       tensor_format.locate_tensor_element(out, [0])
 
   def testLocateTensorElement3DWithEllipses(self):
@@ -564,16 +550,13 @@ class RichTextLinesTest(test_util.TensorFlowTestCase):
     self.assertIsNone(start_col)  # Past ellipsis.
     self.assertIsNone(end_col)
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices exceed tensor dimensions"):
+    with self.assertRaisesRegex(ValueError, "Indices exceed tensor dimensions"):
       tensor_format.locate_tensor_element(out, [11, 5, 5])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Indices contain negative"):
+    with self.assertRaisesRegex(ValueError, "Indices contain negative"):
       tensor_format.locate_tensor_element(out, [-1, 5, 5])
 
-    with self.assertRaisesRegexp(
-        ValueError, "Dimensions mismatch"):
+    with self.assertRaisesRegex(ValueError, "Dimensions mismatch"):
       tensor_format.locate_tensor_element(out, [5, 5])
 
   def testLocateTensorElement3DWithEllipsesBatchMode(self):
@@ -633,7 +616,7 @@ class RichTextLinesTest(test_util.TensorFlowTestCase):
     self.assertEqual(["Tensor \"a\":", "", "Uninitialized tensor:"],
                      out.lines[:3])
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         AttributeError, "tensor_metadata is not available in annotations"):
       tensor_format.locate_tensor_element(out, [0])
 
@@ -699,29 +682,29 @@ class NumericSummaryTest(test_util.TensorFlowTestCase):
         self, [-3, 3, 1.79282868526, 2.39789673081], out.lines[3:4])
 
   def testNumericSummaryOnBool(self):
-    x = np.array([False, True, True, False], dtype=np.bool)
+    x = np.array([False, True, True, False], dtype=np.bool_)
     out = tensor_format.numeric_summary(x)
     cli_test_utils.assert_lines_equal_ignoring_whitespace(
         self,
         ["| False  True | total |", "|     2     2 |     4 |"], out.lines)
 
-    x = np.array([True] * 10, dtype=np.bool)
+    x = np.array([True] * 10, dtype=np.bool_)
     out = tensor_format.numeric_summary(x)
     cli_test_utils.assert_lines_equal_ignoring_whitespace(
         self, ["| True | total |", "|   10 |    10 |"], out.lines)
 
-    x = np.array([False] * 10, dtype=np.bool)
+    x = np.array([False] * 10, dtype=np.bool_)
     out = tensor_format.numeric_summary(x)
     cli_test_utils.assert_lines_equal_ignoring_whitespace(
         self, ["| False | total |", "|    10 |    10 |"], out.lines)
 
-    x = np.array([], dtype=np.bool)
+    x = np.array([], dtype=np.bool_)
     out = tensor_format.numeric_summary(x)
     self.assertEqual(["No numeric summary available due to empty tensor."],
                      out.lines)
 
   def testNumericSummaryOnStrTensor(self):
-    x = np.array(["spam", "egg"], dtype=np.object)
+    x = np.array(["spam", "egg"], dtype=np.object_)
     out = tensor_format.numeric_summary(x)
     self.assertEqual(
         ["No numeric summary available due to tensor dtype: object."],

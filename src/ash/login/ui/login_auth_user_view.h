@@ -28,9 +28,13 @@ class LabelButton;
 
 namespace ash {
 
+class LoginAuthFactorsView;
+class FingerprintAuthFactorModel;
+class SmartLockAuthFactorModel;
 class LoginPasswordView;
 class LoginPinView;
 class LoginPinInputView;
+enum class SmartLockState;
 
 // Wraps a UserView which also has authentication available. Adds additional
 // views below the UserView instance which show authentication UIs.
@@ -98,6 +102,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     views::View* disabled_auth_message() const;
     views::Button* challenge_response_button();
     views::Label* challenge_response_label();
+    LoginAuthFactorsView* auth_factors_view() const;
     bool HasAuthMethod(AuthMethods auth_method) const;
     const std::u16string& GetDisabledAuthMessageContent() const;
 
@@ -132,6 +137,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   };
 
   LoginAuthUserView(const LoginUserInfo& user, const Callbacks& callbacks);
+
+  LoginAuthUserView(const LoginAuthUserView&) = delete;
+  LoginAuthUserView& operator=(const LoginAuthUserView&) = delete;
+
   ~LoginAuthUserView() override;
 
   // Set the displayed set of auth methods. |auth_methods| contains or-ed
@@ -145,7 +154,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   InputFieldMode input_field_mode() const { return input_field_mode_; }
 
   // Add an easy unlock icon.
-  void SetEasyUnlockIcon(EasyUnlockIconId id,
+  void SetEasyUnlockIcon(EasyUnlockIconState icon_state,
                          const std::u16string& accessibility_label);
 
   // Captures any metadata about the current view state that will be used for
@@ -165,6 +174,12 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // Called to show a fingerprint authentication attempt result.
   void NotifyFingerprintAuthResult(bool success);
 
+  // Update the current Smart Lock state.
+  void SetSmartLockState(SmartLockState state);
+
+  // Called to show a Smart Lock authentication attempt result.
+  void NotifySmartLockAuthResult(bool success);
+
   // Set the parameters needed to render the message that is shown to user when
   // auth method is |AUTH_DISABLED|.
   void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data);
@@ -180,6 +195,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // NonAccessibleView:
   void OnThemeChanged() override;
@@ -230,6 +246,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // starts the asynchronous authentication process against a security token.
   void AttemptAuthenticateWithChallengeResponse();
 
+  // Requests focus on the password view and shows the virtual keyboard if
+  // enabled and if the PIN pad is not shown already.
+  void RequestFocusOnPasswordView();
+
   // Updates the element in focus. Used in `ApplyAnimationPostLayout`.
   void UpdateFocus();
 
@@ -252,8 +272,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   gfx::Size GetPaddingBelowPasswordView() const;
 
   // Convenience methods to determine UI text based on the InputFieldMode.
-  std::u16string GetPinPasswordToggleText();
+  std::u16string GetPinPasswordToggleText() const;
   std::u16string GetPasswordViewPlaceholder() const;
+  std::u16string GetMultiprofileDisableAuthMessage() const;
 
   // Authentication methods available and extra parameters that control the UI.
   AuthMethods auth_methods_ = AUTH_NONE;
@@ -262,15 +283,21 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // Controls which input field is currently being shown.
   InputFieldMode input_field_mode_ = InputFieldMode::NONE;
 
+  // TODO(https://crbug.com/1233614): Remove this field once the Smart Lock UI
+  // revamp is complete.
+  bool smart_lock_ui_revamp_enabled_ = false;
+
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
-  NonAccessibleView* password_view_container_ = nullptr;
   LoginPinInputView* pin_input_view_ = nullptr;
   views::LabelButton* pin_password_toggle_ = nullptr;
   LoginPinView* pin_view_ = nullptr;
-  views::LabelButton* online_sign_in_message_ = nullptr;
+  views::LabelButton* online_sign_in_button_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
+  LoginAuthFactorsView* auth_factors_view_ = nullptr;
+  FingerprintAuthFactorModel* fingerprint_auth_factor_model_ = nullptr;
+  SmartLockAuthFactorModel* smart_lock_auth_factor_model_ = nullptr;
   ChallengeResponseView* challenge_response_view_ = nullptr;
   LockedTpmMessageView* locked_tpm_message_view_ = nullptr;
 
@@ -291,8 +318,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   std::unique_ptr<UiState> previous_state_;
 
   base::WeakPtrFactory<LoginAuthUserView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginAuthUserView);
 };
 
 }  // namespace ash

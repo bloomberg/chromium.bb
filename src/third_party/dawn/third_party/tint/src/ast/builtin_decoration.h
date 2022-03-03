@@ -15,6 +15,8 @@
 #ifndef SRC_AST_BUILTIN_DECORATION_H_
 #define SRC_AST_BUILTIN_DECORATION_H_
 
+#include <string>
+
 #include "src/ast/builtin.h"
 #include "src/ast/decoration.h"
 
@@ -25,33 +27,23 @@ namespace ast {
 class BuiltinDecoration : public Castable<BuiltinDecoration, Decoration> {
  public:
   /// constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this decoration
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param builtin the builtin value
-  BuiltinDecoration(ProgramID program_id,
-                    const Source& source,
-                    Builtin builtin);
+  BuiltinDecoration(ProgramID pid, const Source& src, Builtin builtin);
   ~BuiltinDecoration() override;
 
-  /// @returns the builtin value
-  Builtin value() const { return builtin_; }
-
-  /// Outputs the decoration to the given stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// @returns the WGSL name for the decoration
+  std::string Name() const override;
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  BuiltinDecoration* Clone(CloneContext* ctx) const override;
+  const BuiltinDecoration* Clone(CloneContext* ctx) const override;
 
- private:
-  Builtin const builtin_;
+  /// The builtin value
+  const Builtin builtin;
 };
 
 }  // namespace ast
