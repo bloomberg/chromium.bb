@@ -10,9 +10,11 @@
 #include <memory>
 
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
@@ -23,7 +25,7 @@
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/test_ax_tree_manager.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 // Helper macro for testing selection values and maintain
 // correct stack tracing and failure causality.
@@ -77,13 +79,13 @@ bool IsNodeOffscreen(const AXTree& tree, int32_t id) {
   return result;
 }
 
-class TestAXTreeObserver : public AXTreeObserver {
+class TestAXTreeObserver final : public AXTreeObserver {
  public:
   explicit TestAXTreeObserver(AXTree* tree)
       : tree_(tree), tree_data_changed_(false), root_changed_(false) {
     tree_->AddObserver(this);
   }
-  ~TestAXTreeObserver() final { tree_->RemoveObserver(this); }
+  ~TestAXTreeObserver() override { tree_->RemoveObserver(this); }
 
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
@@ -175,6 +177,14 @@ class TestAXTreeObserver : public AXTreeObserver {
                      ax::mojom::Role new_role) override {
     attribute_change_log_.push_back(base::StringPrintf(
         "Role changed from %s to %s", ToString(old_role), ToString(new_role)));
+  }
+
+  void OnIgnoredChanged(AXTree* tree,
+                        AXNode* node,
+                        bool is_ignored_new_value) override {
+    attribute_change_log_.push_back(
+        base::StringPrintf("IsIgnored changed on node ID %d to %s", node->id(),
+                           is_ignored_new_value ? "true" : "false"));
   }
 
   void OnStateChanged(AXTree* tree,
@@ -274,7 +284,7 @@ class TestAXTreeObserver : public AXTreeObserver {
   }
 
  private:
-  AXTree* tree_;
+  raw_ptr<AXTree> tree_;
   bool tree_data_changed_;
   bool root_changed_;
   std::vector<int32_t> deleted_ids_;
@@ -293,7 +303,26 @@ class TestAXTreeObserver : public AXTreeObserver {
   std::vector<std::string> attribute_change_log_;
 };
 
+// UTF encodings that are tested by the `AXTreeTestWithMultipleUTFEncodings`
+// parameterized tests.
+enum class TestEncoding { kUTF8, kUTF16 };
+
+// Fixture for a test that needs to run multiple times with different UTF
+// encodings. For example, once with UTF8 encoding and once with UTF16.
+class AXTreeTestWithMultipleUTFEncodings
+    : public ::testing::TestWithParam<TestEncoding> {
+ public:
+  AXTreeTestWithMultipleUTFEncodings() = default;
+  ~AXTreeTestWithMultipleUTFEncodings() override = default;
+  AXTreeTestWithMultipleUTFEncodings(
+      const AXTreeTestWithMultipleUTFEncodings& other) = delete;
+  AXTreeTestWithMultipleUTFEncodings& operator=(
+      const AXTreeTestWithMultipleUTFEncodings& other) = delete;
+};
+
 }  // namespace
+
+using ::testing::ElementsAre;
 
 // A macro for testing that a absl::optional has both a value and that its value
 // is set to a particular expectation.
@@ -343,17 +372,17 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   const AXNode* root_node = dst_tree.root();
   ASSERT_TRUE(root_node != nullptr);
   EXPECT_EQ(root.id, root_node->id());
-  EXPECT_EQ(root.role, root_node->data().role);
+  EXPECT_EQ(root.role, root_node->GetRole());
 
   ASSERT_EQ(2u, root_node->children().size());
 
   const AXNode* button_node = root_node->children()[0];
   EXPECT_EQ(button.id, button_node->id());
-  EXPECT_EQ(button.role, button_node->data().role);
+  EXPECT_EQ(button.role, button_node->GetRole());
 
   const AXNode* checkbox_node = root_node->children()[1];
   EXPECT_EQ(checkbox.id, checkbox_node->id());
-  EXPECT_EQ(checkbox.role, checkbox_node->data().role);
+  EXPECT_EQ(checkbox.role, checkbox_node->GetRole());
 
   EXPECT_EQ(
       "AXTree title=Title\n"
@@ -1078,8 +1107,8 @@ TEST(AXTreeTest, MultipleIgnoredChangesDoesNotBreakCache) {
 
   EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
   EXPECT_EQ(0u, tree.GetFromId(2)->GetUnignoredChildCount());
-  EXPECT_FALSE(tree.GetFromId(2)->data().HasState(ax::mojom::State::kIgnored));
-  EXPECT_TRUE(tree.GetFromId(3)->data().HasState(ax::mojom::State::kIgnored));
+  EXPECT_FALSE(tree.GetFromId(2)->HasState(ax::mojom::State::kIgnored));
+  EXPECT_TRUE(tree.GetFromId(3)->HasState(ax::mojom::State::kIgnored));
 }
 
 TEST(AXTreeTest, NodeToClearUpdatesParentUnignoredCount) {
@@ -2921,7 +2950,7 @@ TEST(AXTreeTest, UnignoredSelection) {
   // |  |
   // 9  16
   tree_update.has_tree_data = true;
-  tree_update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  tree_update.tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
   tree_update.root_id = 1;
   tree_update.nodes.resize(16);
   tree_update.nodes[0].id = 1;
@@ -3122,9 +3151,9 @@ TEST(AXTreeTest, GetChildrenOrSiblings) {
 }
 
 TEST(AXTreeTest, ChildTreeIds) {
-  ui::AXTreeID tree_id_1 = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeID tree_id_2 = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeID tree_id_3 = ui::AXTreeID::CreateNewAXTreeID();
+  AXTreeID tree_id_1 = AXTreeID::CreateNewAXTreeID();
+  AXTreeID tree_id_2 = AXTreeID::CreateNewAXTreeID();
+  AXTreeID tree_id_3 = AXTreeID::CreateNewAXTreeID();
 
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -3168,6 +3197,216 @@ TEST(AXTreeTest, ChildTreeIds) {
   child_tree_3_nodes = tree.GetNodeIdsForChildTreeId(tree_id_3);
   EXPECT_EQ(0U, child_tree_3_nodes.size());
 }
+
+TEST_P(AXTreeTestWithMultipleUTFEncodings, ComputedNodeData) {
+  // kRootWebArea
+  // ++kTextField (contenteditable)
+  // ++++kGenericContainer
+  // ++++++kStaticText "Line 1"
+  // ++++++kLineBreak '\n'
+  // ++++++kStaticText "Line 2"
+  // ++kParagraph
+  // ++++kGenericContainer (span) IGNORED
+  // ++++++kStaticText "span text" IGNORED
+  // ++++kLink
+  // ++++++kStaticText "Link text"
+
+  AXNodeData root;
+  root.id = 1;
+  AXNodeData rich_text_field;
+  rich_text_field.id = 2;
+  AXNodeData rich_text_field_text_container;
+  rich_text_field_text_container.id = 3;
+  AXNodeData rich_text_field_line_1;
+  rich_text_field_line_1.id = 4;
+  AXNodeData rich_text_field_line_break;
+  rich_text_field_line_break.id = 5;
+  AXNodeData rich_text_field_line_2;
+  rich_text_field_line_2.id = 6;
+  AXNodeData paragraph;
+  paragraph.id = 7;
+  AXNodeData paragraph_span;
+  paragraph_span.id = 8;
+  AXNodeData paragraph_span_text;
+  paragraph_span_text.id = 9;
+  AXNodeData paragraph_link;
+  paragraph_link.id = 10;
+  AXNodeData paragraph_link_text;
+  paragraph_link_text.id = 11;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {rich_text_field.id, paragraph.id};
+
+  rich_text_field.role = ax::mojom::Role::kTextField;
+  rich_text_field.AddState(ax::mojom::State::kEditable);
+  rich_text_field.AddState(ax::mojom::State::kRichlyEditable);
+  rich_text_field.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot, true);
+  rich_text_field.SetName("Rich text field");
+  rich_text_field.SetValue("Line 1\nLine 2");
+  rich_text_field.child_ids = {rich_text_field_text_container.id};
+
+  rich_text_field_text_container.role = ax::mojom::Role::kGenericContainer;
+  rich_text_field_text_container.AddState(ax::mojom::State::kIgnored);
+  rich_text_field_text_container.child_ids = {rich_text_field_line_1.id,
+                                              rich_text_field_line_break.id,
+                                              rich_text_field_line_2.id};
+
+  rich_text_field_line_1.role = ax::mojom::Role::kStaticText;
+  rich_text_field_line_1.AddState(ax::mojom::State::kEditable);
+  rich_text_field_line_1.AddState(ax::mojom::State::kRichlyEditable);
+  rich_text_field_line_1.SetName("Line 1");
+
+  rich_text_field_line_break.role = ax::mojom::Role::kLineBreak;
+  rich_text_field_line_break.AddState(ax::mojom::State::kEditable);
+  rich_text_field_line_break.AddState(ax::mojom::State::kRichlyEditable);
+  rich_text_field_line_break.SetName("\n");
+
+  rich_text_field_line_2.role = ax::mojom::Role::kStaticText;
+  rich_text_field_line_2.AddState(ax::mojom::State::kEditable);
+  rich_text_field_line_2.AddState(ax::mojom::State::kRichlyEditable);
+  rich_text_field_line_2.SetName("Line 2");
+
+  paragraph.role = ax::mojom::Role::kParagraph;
+  paragraph.child_ids = {paragraph_span.id, paragraph_link.id};
+
+  paragraph_span.role = ax::mojom::Role::kGenericContainer;
+  paragraph_span.AddState(ax::mojom::State::kIgnored);
+  paragraph_span.child_ids = {paragraph_span_text.id};
+
+  paragraph_span_text.role = ax::mojom::Role::kStaticText;
+  paragraph_span_text.AddState(ax::mojom::State::kIgnored);
+  paragraph_span_text.SetName("span text");
+
+  paragraph_link.role = ax::mojom::Role::kLink;
+  paragraph_link.AddState(ax::mojom::State::kLinked);
+  paragraph_link.child_ids = {paragraph_link_text.id};
+
+  paragraph_link_text.role = ax::mojom::Role::kStaticText;
+  paragraph_link_text.SetName("Link text");
+
+  AXTreeUpdate update;
+  update.has_tree_data = true;
+  update.tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
+  update.root_id = root.id;
+  update.nodes = {root,
+                  rich_text_field,
+                  rich_text_field_text_container,
+                  rich_text_field_line_1,
+                  rich_text_field_line_break,
+                  rich_text_field_line_2,
+                  paragraph,
+                  paragraph_span,
+                  paragraph_span_text,
+                  paragraph_link,
+                  paragraph_link_text};
+
+  AXTree tree(update);
+  TestAXTreeObserver test_observer(&tree);
+
+  ASSERT_NE(nullptr, tree.root());
+  ASSERT_EQ(2u, tree.root()->children().size());
+
+  if (GetParam() == TestEncoding::kUTF8) {
+    EXPECT_EQ("Line 1\nLine 2Link text", tree.root()->GetTextContentUTF8());
+    EXPECT_EQ(22, tree.root()->GetTextContentLengthUTF8());
+  } else if (GetParam() == TestEncoding::kUTF16) {
+    EXPECT_EQ(u"Line 1\nLine 2Link text", tree.root()->GetTextContentUTF16());
+    EXPECT_EQ(22, tree.root()->GetTextContentLengthUTF16());
+  }
+
+  if (GetParam() == TestEncoding::kUTF8) {
+    EXPECT_EQ("Line 1\nLine 2",
+              tree.root()->GetChildAtIndex(0)->GetTextContentUTF8());
+    EXPECT_EQ(13, tree.root()->GetChildAtIndex(0)->GetTextContentLengthUTF8());
+  } else if (GetParam() == TestEncoding::kUTF16) {
+    EXPECT_EQ(u"Line 1\nLine 2",
+              tree.root()->GetChildAtIndex(0)->GetTextContentUTF16());
+    EXPECT_EQ(13, tree.root()->GetChildAtIndex(0)->GetTextContentLengthUTF16());
+  }
+
+  if (GetParam() == TestEncoding::kUTF8) {
+    EXPECT_EQ("Link text",
+              tree.root()->GetChildAtIndex(1)->GetTextContentUTF8());
+    EXPECT_EQ(9, tree.root()->GetChildAtIndex(1)->GetTextContentLengthUTF8());
+  } else if (GetParam() == TestEncoding::kUTF16) {
+    EXPECT_EQ(u"Link text",
+              tree.root()->GetChildAtIndex(1)->GetTextContentUTF16());
+    EXPECT_EQ(9, tree.root()->GetChildAtIndex(1)->GetTextContentLengthUTF16());
+  }
+
+  //
+  // Flip the ignored state of the span, the link and the line break, and delete
+  // the second line in the rich text field, all of which should change their
+  // cached text content.
+
+  // kRootWebArea
+  // ++kTextField (contenteditable)
+  // ++++kGenericContainer
+  // ++++++kStaticText "Line 1"
+  // ++++++kLineBreak '\n' IGNORED
+  // ++kParagraph
+  // ++++kGenericContainer (span)
+  // ++++++kStaticText "span text"
+  // ++++kLink IGNORED
+  // ++++++kStaticText "Link text"
+
+  rich_text_field_line_break.AddState(ax::mojom::State::kIgnored);
+  paragraph_span.RemoveState(ax::mojom::State::kIgnored);
+  paragraph_span_text.RemoveState(ax::mojom::State::kIgnored);
+  // Do not add the ignored state to the link's text on purpose.
+  paragraph_link.AddState(ax::mojom::State::kIgnored);
+  rich_text_field_text_container.child_ids = {rich_text_field_line_1.id,
+                                              rich_text_field_line_break.id};
+
+  AXTreeUpdate update_2;
+  update_2.node_id_to_clear = rich_text_field_line_2.id;
+  update_2.nodes = {rich_text_field_text_container, rich_text_field_line_break,
+                    paragraph_span, paragraph_span_text, paragraph_link};
+
+  ASSERT_TRUE(tree.Unserialize(update_2)) << tree.error();
+  ASSERT_EQ(2u, tree.root()->children().size());
+
+  if (GetParam() == TestEncoding::kUTF8) {
+    EXPECT_EQ("Line 1span textLink text", tree.root()->GetTextContentUTF8());
+    EXPECT_EQ(24, tree.root()->GetTextContentLengthUTF8());
+  } else if (GetParam() == TestEncoding::kUTF16) {
+    EXPECT_EQ(u"Line 1span textLink text", tree.root()->GetTextContentUTF16());
+    EXPECT_EQ(24, tree.root()->GetTextContentLengthUTF16());
+  }
+
+  if (GetParam() == TestEncoding::kUTF8) {
+    EXPECT_EQ("Line 1", tree.root()->GetChildAtIndex(0)->GetTextContentUTF8());
+    EXPECT_EQ(6, tree.root()->GetChildAtIndex(0)->GetTextContentLengthUTF8());
+  } else if (GetParam() == TestEncoding::kUTF16) {
+    EXPECT_EQ(u"Line 1",
+              tree.root()->GetChildAtIndex(0)->GetTextContentUTF16());
+    EXPECT_EQ(6, tree.root()->GetChildAtIndex(0)->GetTextContentLengthUTF16());
+  }
+
+  if (GetParam() == TestEncoding::kUTF8) {
+    EXPECT_EQ("span textLink text",
+              tree.root()->GetChildAtIndex(1)->GetTextContentUTF8());
+    EXPECT_EQ(18, tree.root()->GetChildAtIndex(1)->GetTextContentLengthUTF8());
+  } else if (GetParam() == TestEncoding::kUTF16) {
+    EXPECT_EQ(u"span textLink text",
+              tree.root()->GetChildAtIndex(1)->GetTextContentUTF16());
+    EXPECT_EQ(18, tree.root()->GetChildAtIndex(1)->GetTextContentLengthUTF16());
+  }
+
+  const std::vector<std::string>& change_log =
+      test_observer.attribute_change_log();
+  EXPECT_THAT(change_log,
+              ElementsAre("IsIgnored changed on node ID 5 to true",
+                          "IsIgnored changed on node ID 8 to false",
+                          "IsIgnored changed on node ID 9 to false",
+                          "IsIgnored changed on node ID 10 to true"));
+}
+
+INSTANTIATE_TEST_SUITE_P(MultipleUTFEncodingTest,
+                         AXTreeTestWithMultipleUTFEncodings,
+                         ::testing::Values(TestEncoding::kUTF8,
+                                           TestEncoding::kUTF16));
 
 // Tests GetPosInSet and GetSetSize return the assigned int attribute values.
 TEST(AXTreeTest, SetSizePosInSetAssigned) {
@@ -4822,6 +5061,196 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
       "AXTree\n"
       "id=1 rootWebArea (0, 0)-(0, 0)\n",
       tree.ToString());
+}
+
+TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
+  AXTree::SetFocusedNodeShouldNeverBeIgnored();
+
+  AXNodeData root;
+  AXNodeData text_field;
+  AXNodeData button_1;
+  AXNodeData button_2;
+  root.id = 1;
+  text_field.id = 2;
+  button_1.id = 3;
+  button_2.id = 4;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {text_field.id, button_1.id, button_2.id};
+
+  text_field.role = ax::mojom::Role::kTextField;
+  text_field.AddState(ax::mojom::State::kEditable);
+
+  button_1.role = ax::mojom::Role::kButton;
+  button_1.AddState(ax::mojom::State::kIgnored);
+
+  button_2.role = ax::mojom::Role::kButton;
+  button_2.AddState(ax::mojom::State::kIgnored);
+
+  AXTreeUpdate update;
+  update.root_id = root.id;
+  update.nodes = {root, text_field, button_1, button_2};
+
+  AXTree tree(update);
+  TestAXTreeObserver test_observer(&tree);
+
+  ASSERT_NE(nullptr, tree.root());
+  ASSERT_EQ(3u, tree.root()->children().size());
+  EXPECT_EQ(1u, tree.root()->GetUnignoredChildCount());
+  EXPECT_EQ(0u, tree.root()->children()[0]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[1]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[2]->GetUnignoredIndexInParent());
+  EXPECT_FALSE(tree.root()->children()[0]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[1]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[2]->IsIgnored());
+
+  EXPECT_EQ(
+      "AXTree\n"
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
+      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
+      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
+      tree.ToString());
+
+  //
+  // Focus the first button which should change its ignored state.
+  //
+
+  AXTreeData tree_data = tree.data();
+  tree_data.focus_id = button_1.id;
+  AXTreeUpdate update_2;
+  update_2.has_tree_data = true;
+  update_2.tree_data = tree_data;
+  update_2.nodes = {button_1};
+
+  ASSERT_TRUE(tree.Unserialize(update_2)) << tree.error();
+  ASSERT_EQ(3u, tree.root()->children().size());
+  EXPECT_EQ(2u, tree.root()->GetUnignoredChildCount());
+  EXPECT_EQ(0u, tree.root()->children()[0]->GetUnignoredIndexInParent());
+  EXPECT_EQ(1u, tree.root()->children()[1]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[2]->GetUnignoredIndexInParent());
+  EXPECT_FALSE(tree.root()->children()[0]->IsIgnored());
+  EXPECT_FALSE(tree.root()->children()[1]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[2]->IsIgnored());
+
+  EXPECT_EQ(
+      "AXTree focus_id=3\n"
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
+      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
+      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
+      tree.ToString());
+
+  {
+    const std::vector<std::string>& change_log =
+        test_observer.attribute_change_log();
+    ASSERT_EQ(1U, change_log.size());
+    // Button_1 has an ID of 3.
+    EXPECT_EQ("IsIgnored changed on node ID 3 to false", change_log[0]);
+  }
+
+  //
+  // Focus the second button which should change its ignored state.
+  //
+
+  tree_data.focus_id = button_2.id;
+  update_2.has_tree_data = true;
+  update_2.tree_data = tree_data;
+  update_2.nodes = {button_1, button_2};
+
+  ASSERT_TRUE(tree.Unserialize(update_2)) << tree.error();
+  ASSERT_EQ(3u, tree.root()->children().size());
+  EXPECT_EQ(2u, tree.root()->GetUnignoredChildCount());
+  EXPECT_EQ(0u, tree.root()->children()[0]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[1]->GetUnignoredIndexInParent());
+  EXPECT_EQ(1u, tree.root()->children()[2]->GetUnignoredIndexInParent());
+  EXPECT_FALSE(tree.root()->children()[0]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[1]->IsIgnored());
+  EXPECT_FALSE(tree.root()->children()[2]->IsIgnored());
+
+  EXPECT_EQ(
+      "AXTree focus_id=4\n"
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
+      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
+      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
+      tree.ToString());
+
+  {
+    const std::vector<std::string>& change_log =
+        test_observer.attribute_change_log();
+    ASSERT_EQ(3U, change_log.size());
+    // Button_1 has an ID of 3 and button_2 an ID of 4.
+    EXPECT_EQ("IsIgnored changed on node ID 3 to true", change_log[1]);
+    EXPECT_EQ("IsIgnored changed on node ID 4 to false", change_log[2]);
+  }
+
+  //
+  // Remove the focus completely, which should reset the ignored state of both
+  // buttons.
+  //
+
+  tree_data.focus_id = kInvalidAXNodeID;
+  update_2.has_tree_data = true;
+  update_2.tree_data = tree_data;
+  update_2.nodes = {button_1, button_2};
+
+  ASSERT_TRUE(tree.Unserialize(update_2)) << tree.error();
+  ASSERT_EQ(3u, tree.root()->children().size());
+  EXPECT_EQ(1u, tree.root()->GetUnignoredChildCount());
+  EXPECT_EQ(0u, tree.root()->children()[0]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[1]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[2]->GetUnignoredIndexInParent());
+  EXPECT_FALSE(tree.root()->children()[0]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[1]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[2]->IsIgnored());
+
+  EXPECT_EQ(
+      "AXTree\n"
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
+      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
+      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
+      tree.ToString());
+
+  {
+    const std::vector<std::string>& change_log =
+        test_observer.attribute_change_log();
+    ASSERT_EQ(4U, change_log.size());
+    EXPECT_EQ("IsIgnored changed on node ID 4 to true", change_log[3]);
+  }
+
+  //
+  // Focus the first button using a special "...ForTesting" method in AXTree.
+  //
+
+  tree_data.focus_id = button_1.id;
+
+  tree.UpdateDataForTesting(tree_data);
+  ASSERT_EQ(3u, tree.root()->children().size());
+  EXPECT_EQ(2u, tree.root()->GetUnignoredChildCount());
+  EXPECT_EQ(0u, tree.root()->children()[0]->GetUnignoredIndexInParent());
+  EXPECT_EQ(1u, tree.root()->children()[1]->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, tree.root()->children()[2]->GetUnignoredIndexInParent());
+  EXPECT_FALSE(tree.root()->children()[0]->IsIgnored());
+  EXPECT_FALSE(tree.root()->children()[1]->IsIgnored());
+  EXPECT_TRUE(tree.root()->children()[2]->IsIgnored());
+
+  EXPECT_EQ(
+      "AXTree focus_id=3\n"
+      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
+      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
+      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
+      tree.ToString());
+
+  {
+    const std::vector<std::string>& change_log =
+        test_observer.attribute_change_log();
+    ASSERT_EQ(5U, change_log.size());
+    // Button_1 has an ID of 3.
+    EXPECT_EQ("IsIgnored changed on node ID 3 to false", change_log[4]);
+  }
 }
 
 // Tests that the IsInListMarker() method returns true if the current node is a

@@ -12,6 +12,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -21,12 +22,17 @@ namespace ash {
 class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
  public:
   IMEFeaturePodControllerTest() = default;
+
+  IMEFeaturePodControllerTest(const IMEFeaturePodControllerTest&) = delete;
+  IMEFeaturePodControllerTest& operator=(const IMEFeaturePodControllerTest&) =
+      delete;
+
   ~IMEFeaturePodControllerTest() override = default;
 
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
 
-    tray_model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
+    tray_model_ = base::MakeRefCounted<UnifiedSystemTrayModel>(nullptr);
     tray_controller_ =
         std::make_unique<UnifiedSystemTrayController>(tray_model_.get());
   }
@@ -41,8 +47,7 @@ class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
 
  protected:
   void SetUpButton() {
-    controller_ =
-        std::make_unique<IMEFeaturePodController>(tray_controller());
+    controller_ = std::make_unique<IMEFeaturePodController>(tray_controller());
     button_.reset(controller_->CreateButton());
   }
 
@@ -74,7 +79,7 @@ class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
   }
 
  private:
-  std::unique_ptr<UnifiedSystemTrayModel> tray_model_;
+  scoped_refptr<UnifiedSystemTrayModel> tray_model_;
   std::unique_ptr<UnifiedSystemTrayController> tray_controller_;
   std::unique_ptr<IMEFeaturePodController> controller_;
   std::unique_ptr<FeaturePodButton> button_;
@@ -83,8 +88,6 @@ class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
   ImeInfo current_ime_;
   std::vector<ImeInfo> available_imes_;
   std::vector<ImeMenuItem> menu_items_;
-
-  DISALLOW_COPY_AND_ASSIGN(IMEFeaturePodControllerTest);
 };
 
 // Tests that if the pod button is hidden if less than 2 IMEs are present.

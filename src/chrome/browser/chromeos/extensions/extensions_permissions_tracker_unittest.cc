@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/extensions_permissions_tracker.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -78,6 +78,11 @@ class ExtensionsPermissionsTrackerTest : public testing::Test {
         registry_(ExtensionRegistry::Get(&profile_)),
         testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
+  ExtensionsPermissionsTrackerTest(const ExtensionsPermissionsTrackerTest&) =
+      delete;
+  ExtensionsPermissionsTrackerTest& operator=(
+      const ExtensionsPermissionsTrackerTest&) = delete;
+
   base::Value SetupForceList() {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey(kExtensionId1, base::Value(kExtensionUrl1));
@@ -117,8 +122,6 @@ class ExtensionsPermissionsTrackerTest : public testing::Test {
   ExtensionRegistry* registry_;
   ScopedTestingLocalState testing_local_state_;
   std::unique_ptr<MockExtensionsPermissionsTracker> permissions_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsPermissionsTrackerTest);
 };
 
 TEST_F(ExtensionsPermissionsTrackerTest, EmptyForceList) {

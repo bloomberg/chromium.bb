@@ -15,17 +15,16 @@
 #include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "fxjs/cfxjs_engine.h"
-#include "fxjs/cjs_eventrecorder.h"
+#include "fxjs/cjs_event_context.h"
 #include "fxjs/ijs_runtime.h"
 
-class CJS_EventContext;
 class CPDFSDK_FormFillEnvironment;
 
 class CJS_Runtime final : public IJS_Runtime,
                           public CFXJS_Engine,
                           public Observable {
  public:
-  using FieldEvent = std::pair<WideString, JS_EVENT_T>;
+  using FieldEvent = std::pair<WideString, CJS_EventContext::Kind>;
 
   explicit CJS_Runtime(CPDFSDK_FormFillEnvironment* pFormFillEnv);
   ~CJS_Runtime() override;
@@ -35,7 +34,7 @@ class CJS_Runtime final : public IJS_Runtime,
   IJS_EventContext* NewEventContext() override;
   void ReleaseEventContext(IJS_EventContext* pContext) override;
   CPDFSDK_FormFillEnvironment* GetFormFillEnv() const override;
-  Optional<IJS_Runtime::JS_Error> ExecuteScript(
+  absl::optional<IJS_Runtime::JS_Error> ExecuteScript(
       const WideString& script) override;
 
   CJS_EventContext* GetCurrentEventContext() const;
@@ -53,8 +52,7 @@ class CJS_Runtime final : public IJS_Runtime,
   // value will be returned, otherwise |value| is returned.
   v8::Local<v8::Value> MaybeCoerceToNumber(v8::Local<v8::Value> value);
 
-  bool GetValueByNameFromGlobalObject(ByteStringView utf8Name,
-                                      v8::Local<v8::Value>* pValue);
+  v8::Local<v8::Value> GetValueByNameFromGlobalObject(ByteStringView utf8Name);
   bool SetValueByNameInGlobalObject(ByteStringView utf8Name,
                                     v8::Local<v8::Value> pValue);
 

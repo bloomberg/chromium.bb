@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEVICE_DISABLED_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEVICE_DISABLED_SCREEN_HANDLER_H_
 
-#include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -36,6 +35,11 @@ class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
   using TView = DeviceDisabledScreenView;
 
   explicit DeviceDisabledScreenHandler(JSCallsContainer* js_calls_container);
+
+  DeviceDisabledScreenHandler(const DeviceDisabledScreenHandler&) = delete;
+  DeviceDisabledScreenHandler& operator=(const DeviceDisabledScreenHandler&) =
+      delete;
+
   ~DeviceDisabledScreenHandler() override;
 
   // DeviceDisabledScreenActor:
@@ -56,16 +60,14 @@ class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
   void RegisterMessages() override;
 
   ash::DeviceDisabledScreen* screen_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreenHandler);
 };
 
 }  // namespace chromeos
 
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
+using ::chromeos::DeviceDisabledScreenHandler;
 using ::chromeos::DeviceDisabledScreenView;
 }
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEVICE_DISABLED_SCREEN_HANDLER_H_
-

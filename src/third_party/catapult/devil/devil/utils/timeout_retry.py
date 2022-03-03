@@ -162,7 +162,7 @@ def Run(func,
             watcher=thread_group.GetWatcher(),
             timeout=60,
             error_log_func=error_log_func)
-        if thread_group.IsAlive():
+        if thread_group.is_alive():
           logger.info('Still working on %s', desc)
         else:
           return thread_group.GetAllReturnValues()[0]
@@ -175,5 +175,5 @@ def Run(func,
       if num_try > retries or not retry_if_func(e):
         raise
       error_log_func('(%s) Exception on %s, attempt %d of %d: %r', thread_name,
-                     desc, num_try, retries + 1, e)
+                     desc, num_try, retries + 1, e, exc_info=True)
     num_try += 1

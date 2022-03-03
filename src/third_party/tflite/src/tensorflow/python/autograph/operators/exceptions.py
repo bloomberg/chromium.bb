@@ -14,10 +14,6 @@
 # ==============================================================================
 """Exception handling statements: assert, etc."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import tensor_util
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.util import tf_inspect
@@ -53,7 +49,7 @@ def assert_stmt(expression1, expression2):
   if args or keywords:
     raise ValueError('{} may not have any arguments'.format(expression2))
 
-  if tensor_util.is_tensor(expression1):
+  if tensor_util.is_tf_type(expression1):
     return _tf_assert_stmt(expression1, expression2)
   else:
     return _py_assert_stmt(expression1, expression2)

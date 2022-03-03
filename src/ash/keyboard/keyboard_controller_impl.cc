@@ -6,11 +6,11 @@
 
 #include <utility>
 
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -19,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -72,8 +73,7 @@ bool GetVirtualKeyboardFeatureValue(PrefService* prefs,
   if (!features)
     return false;
 
-  bool feature_value = false;
-  return features->GetBoolean(feature_path, &feature_value) && feature_value;
+  return features->FindBoolPath(feature_path).value_or(false);
 }
 
 }  // namespace
@@ -117,17 +117,6 @@ void KeyboardControllerImpl::CreateVirtualKeyboard(
   DCHECK(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
   keyboard_ui_controller_->Initialize(std::move(keyboard_ui_factory), this);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          keyboard::switches::kEnableVirtualKeyboard)) {
-    keyboard_ui_controller_->SetEnableFlag(
-        KeyboardEnableFlag::kCommandLineEnabled);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          keyboard::switches::kDisableVirtualKeyboard)) {
-    keyboard_ui_controller_->SetEnableFlag(
-        KeyboardEnableFlag::kCommandLineDisabled);
-  }
 }
 
 void KeyboardControllerImpl::DestroyVirtualKeyboard() {
@@ -285,14 +274,14 @@ KeyRepeatSettings KeyboardControllerImpl::GetKeyRepeatSettings() {
   bool enabled = prefs->GetBoolean(ash::prefs::kXkbAutoRepeatEnabled);
   int delay_in_ms = prefs->GetInteger(ash::prefs::kXkbAutoRepeatDelay);
   int interval_in_ms = prefs->GetInteger(ash::prefs::kXkbAutoRepeatInterval);
-  return KeyRepeatSettings{enabled,
-                           base::TimeDelta::FromMilliseconds(delay_in_ms),
-                           base::TimeDelta::FromMilliseconds(interval_in_ms)};
+  return KeyRepeatSettings{enabled, base::Milliseconds(delay_in_ms),
+                           base::Milliseconds(interval_in_ms)};
 }
 
 // SessionObserver
 void KeyboardControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
+  SetEnableFlagFromCommandLine();
   if (!keyboard_ui_controller_->IsEnabled())
     return;
 
@@ -459,6 +448,19 @@ void KeyboardControllerImpl::OnKeyboardEnableFlagsChanged(
 void KeyboardControllerImpl::OnKeyboardEnabledChanged(bool is_enabled) {
   for (auto& observer : observers_)
     observer.OnKeyboardEnabledChanged(is_enabled);
+}
+
+void KeyboardControllerImpl::SetEnableFlagFromCommandLine() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          keyboard::switches::kEnableVirtualKeyboard)) {
+    keyboard_ui_controller_->SetEnableFlag(
+        KeyboardEnableFlag::kCommandLineEnabled);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          keyboard::switches::kDisableVirtualKeyboard)) {
+    keyboard_ui_controller_->SetEnableFlag(
+        KeyboardEnableFlag::kCommandLineDisabled);
+  }
 }
 
 }  // namespace ash

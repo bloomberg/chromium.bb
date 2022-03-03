@@ -6,6 +6,10 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+from collections import namedtuple
+from six import StringIO
+import pickle
+
 from dashboard.pinpoint.models.change import change
 from dashboard.pinpoint.models.change import commit
 from dashboard.pinpoint.models.change import commit_test
@@ -13,7 +17,11 @@ from dashboard.pinpoint.models.change import patch_test
 from dashboard.pinpoint import test
 
 
-def Change(chromium=None, catapult=None, another_repo=None, patch=False):
+def Change(chromium=None,
+           catapult=None,
+           another_repo=None,
+           patch=False,
+           variant=None):
   commits = []
   if chromium is not None:
     commits.append(commit_test.Commit(chromium))
@@ -21,7 +29,8 @@ def Change(chromium=None, catapult=None, another_repo=None, patch=False):
     commits.append(commit_test.Commit(catapult, repository='catapult'))
   if another_repo is not None:
     commits.append(commit_test.Commit(another_repo, repository='another_repo'))
-  return change.Change(commits, patch=patch_test.Patch() if patch else None)
+  return change.Change(
+      commits, patch=patch_test.Patch() if patch else None, variant=variant)
 
 
 class ChangeTest(test.TestCase):
@@ -45,6 +54,28 @@ class ChangeTest(test.TestCase):
     self.assertEqual(c.deps, (dep,))
     self.assertEqual(c.commits, (base_commit, dep))
     self.assertEqual(c.patch, patch_test.Patch())
+
+  def testChangeWithVariant(self):
+    base_commit = commit.Commit('chromium', 'aaa7336c821888839f759c6c0a36b56c')
+    dep = commit.Commit('catapult', 'e0a2efbb3d1a81aac3c90041eefec24f066d26ba')
+
+    # Also test the deps conversion to tuple.
+    c = change.Change([base_commit, dep], patch_test.Patch(), variant=1)
+
+    self.assertEqual(
+        c, change.Change((base_commit, dep), patch_test.Patch(), variant=1))
+    string = 'chromium@aaa7336 catapult@e0a2efb + abc123 (Variant: 1)'
+    id_string = ('catapult@e0a2efbb3d1a81aac3c90041eefec24f066d26ba '
+                 'chromium@aaa7336c821888839f759c6c0a36b56c + '
+                 'https://codereview.com/repo~branch~id/abc123')
+    self.assertEqual(str(c), string)
+    self.assertEqual(c.id_string, id_string)
+    self.assertEqual(c.base_commit, base_commit)
+    self.assertEqual(c.last_commit, dep)
+    self.assertEqual(c.deps, (dep,))
+    self.assertEqual(c.commits, (base_commit, dep))
+    self.assertEqual(c.patch, patch_test.Patch())
+    self.assertEqual(c.variant, 1)
 
   def testUpdate(self):
     old_commit = commit.Commit('chromium', 'aaaaaaaa')
@@ -71,6 +102,8 @@ class ChangeTest(test.TestCase):
             {
                 'author':
                     'author@chromium.org',
+                'commit_branch':
+                    'refs/heads/master',
                 'commit_position':
                     123456,
                 'git_hash':
@@ -96,6 +129,8 @@ class ChangeTest(test.TestCase):
             {
                 'author':
                     'author@chromium.org',
+                'commit_branch':
+                    'refs/heads/master',
                 'commit_position':
                     123456,
                 'git_hash':
@@ -131,6 +166,44 @@ class ChangeTest(test.TestCase):
                        'Change-Id: I0123456789abcdef',
         },
     }
+    self.maxDiff = None
+    self.assertEqual(c.AsDict(), expected)
+
+  def testAsDictWithVariant(self):
+    c = Change(chromium=123, patch=False, variant=0)
+
+    expected = {
+        'variant':
+            0,
+        'commits': [{
+            'author':
+                'author@chromium.org',
+            'commit_branch':
+                'refs/heads/master',
+            'commit_position':
+                123456,
+            'git_hash':
+                'commit_123',
+            'repository':
+                'chromium',
+            'created':
+                '2018-01-01T00:01:00',
+            'url':
+                u'https://chromium.googlesource.com/chromium/src/+/commit_123',
+            'subject':
+                'Subject.',
+            'review_url':
+                'https://foo.bar/+/123456',
+            'change_id':
+                'If32lalatdfg325simon8943washere98j589',
+            'message':
+                'Subject.\n\nCommit message.\n'
+                'Reviewed-on: https://foo.bar/+/123456\n'
+                'Change-Id: If32lalatdfg325simon8943washere98j589\n'
+                'Cr-Commit-Position: refs/heads/master@{#123456}',
+        },],
+    }
+    self.maxDiff = None
     self.assertEqual(c.AsDict(), expected)
 
   def testFromDataUrl(self):
@@ -172,6 +245,7 @@ class ChangeTest(test.TestCase):
     }
 
     c = change.Change.FromDict({
+        'variant': 1,
         'commits': (
             {
                 'repository': 'chromium',
@@ -189,7 +263,7 @@ class ChangeTest(test.TestCase):
         },
     })
 
-    expected = Change(chromium=123, catapult=456, patch=True)
+    expected = Change(chromium=123, catapult=456, patch=True, variant=1)
     self.assertEqual(c, expected)
 
   def testFromDictWithNonePatch(self):
@@ -216,6 +290,43 @@ class ChangeTest(test.TestCase):
 
     expected = Change(chromium=123, catapult=456, patch=False)
     self.assertEqual(c, expected)
+
+
+OldChange = namedtuple('OldChange', ('commits', 'patch'))
+
+
+class CustomUnpickler(pickle.Unpickler):
+
+  def find_class(self, module, name):
+    # If we see the Change types we're looking for, we should make it load the
+    # actual Change name.
+    if name == 'OldChange':
+      return change.Change
+    return pickle.Unpickler.find_class(self, module, name)
+
+
+class PickleTest(test.TestCase):
+
+  def setUp(self):
+    super(PickleTest, self).setUp()
+    self.maxDiff = None
+
+  def testBackwardsCompatibility(self):
+    old_commit = commit.Commit('chromium', 'aaaaaaaa')
+    old = OldChange([old_commit], None)
+    string_io = StringIO()
+    p = pickle.Pickler(string_io)
+    p.dump(old)
+
+    # Now attempt to unpickle into the current definition, and ensure it works
+    # just fine.
+    pickled_data = string_io.getvalue()
+    new = CustomUnpickler(StringIO(pickled_data)).load()
+    self.assertEqual(old.patch, new.patch)
+    self.assertEqual(len(old.commits), len(new.commits))
+    self.assertIsNone(new.change_label)
+    self.assertIsNone(new.change_args)
+    self.assertEqual(type(new), change.Change)
 
 
 class MidpointTest(test.TestCase):

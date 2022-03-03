@@ -5,7 +5,7 @@
 #ifndef CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_
 #define CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -21,6 +21,10 @@ class InProcessGpuThread : public base::Thread {
  public:
   explicit InProcessGpuThread(const InProcessChildThreadParams& params,
                               const gpu::GpuPreferences& gpu_preferences);
+
+  InProcessGpuThread(const InProcessGpuThread&) = delete;
+  InProcessGpuThread& operator=(const InProcessGpuThread&) = delete;
+
   ~InProcessGpuThread() override;
 
  protected:
@@ -31,11 +35,9 @@ class InProcessGpuThread : public base::Thread {
   InProcessChildThreadParams params_;
 
   // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
-  GpuProcess* gpu_process_;
+  raw_ptr<GpuProcess> gpu_process_;
 
   gpu::GpuPreferences gpu_preferences_;
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessGpuThread);
 };
 
 CONTENT_EXPORT base::Thread* CreateInProcessGpuThread(

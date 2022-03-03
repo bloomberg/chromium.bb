@@ -7,7 +7,10 @@
 #include <algorithm>
 
 #include "../../third_party/inspector_protocol/crdtp/json.h"
+#include "include/v8-context.h"
+#include "include/v8-function.h"
 #include "include/v8-inspector.h"
+#include "include/v8-microtask-queue.h"
 #include "src/base/safe_conversions.h"
 #include "src/debug/debug-interface.h"
 #include "src/inspector/injected-script.h"
@@ -271,7 +274,6 @@ String16 scopeType(v8::debug::ScopeIterator::ScopeType type) {
       return Scope::TypeEnum::WasmExpressionStack;
   }
   UNREACHABLE();
-  return String16();
 }
 
 Response buildScopes(v8::Isolate* isolate, v8::debug::ScopeIterator* iterator,
@@ -349,6 +351,17 @@ Response isValidRangeOfPositions(std::vector<std::pair<int, int>>& positions) {
   }
   return Response::Success();
 }
+
+bool hitBreakReasonEncodedAsOther(v8::debug::BreakReasons breakReasons) {
+  // The listed break reasons are not explicitly encoded in CDP when
+  // reporting the break. They are summarized as 'other'.
+  v8::debug::BreakReasons otherBreakReasons(
+      {v8::debug::BreakReason::kStep,
+       v8::debug::BreakReason::kDebuggerStatement,
+       v8::debug::BreakReason::kScheduled, v8::debug::BreakReason::kAsyncStep,
+       v8::debug::BreakReason::kAlreadyPaused});
+  return breakReasons.contains_any(otherBreakReasons);
+}
 }  // namespace
 
 V8DebuggerAgentImpl::V8DebuggerAgentImpl(
@@ -380,7 +393,8 @@ void V8DebuggerAgentImpl::enableImpl() {
 
   if (isPaused()) {
     didPause(0, v8::Local<v8::Value>(), std::vector<v8::debug::BreakpointId>(),
-             v8::debug::kException, false, false, false);
+             v8::debug::kException, false,
+             v8::debug::BreakReasons({v8::debug::BreakReason::kAlreadyPaused}));
   }
 }
 
@@ -426,6 +440,7 @@ Response V8DebuggerAgentImpl::disable() {
   for (const auto& it : m_debuggerBreakpointIdToBreakpointId) {
     v8::debug::RemoveBreakpoint(m_isolate, it.first);
   }
+  m_breakpointsOnScriptRun.clear();
   m_breakpointIdToDebuggerBreakpointIds.clear();
   m_debuggerBreakpointIdToBreakpointId.clear();
   m_debugger->setAsyncCallStackDepth(this, 0);
@@ -579,7 +594,8 @@ Response V8DebuggerAgentImpl::setBreakpointByUrl(
     std::unique_ptr<protocol::Debugger::Location> location = setBreakpointImpl(
         breakpointId, script.first, condition, lineNumber, columnNumber);
     if (location && type != BreakpointType::kByUrlRegex) {
-      hint = breakpointHint(*script.second, lineNumber, columnNumber);
+      hint = breakpointHint(*script.second, location->getLineNumber(),
+                            location->getColumnNumber(columnNumber));
     }
     if (location) (*locations)->emplace_back(std::move(location));
   }
@@ -730,6 +746,7 @@ void V8DebuggerAgentImpl::removeBreakpointImpl(
 #endif  // V8_ENABLE_WEBASSEMBLY
     v8::debug::RemoveBreakpoint(m_isolate, id);
     m_debuggerBreakpointIdToBreakpointId.erase(id);
+    m_breakpointsOnScriptRun.erase(id);
   }
   m_breakpointIdToDebuggerBreakpointIds.erase(breakpointId);
 }
@@ -1123,14 +1140,14 @@ void V8DebuggerAgentImpl::cancelPauseOnNextStatement() {
 Response V8DebuggerAgentImpl::pause() {
   if (!enabled()) return Response::ServerError(kDebuggerNotEnabled);
   if (isPaused()) return Response::Success();
+
+  pushBreakDetails(protocol::Debugger::Paused::ReasonEnum::Other, nullptr);
   if (m_debugger->canBreakProgram()) {
     m_debugger->interruptAndBreak(m_session->contextGroupId());
   } else {
-    if (m_breakReason.empty()) {
-      m_debugger->setPauseOnNextCall(true, m_session->contextGroupId());
-    }
-    pushBreakDetails(protocol::Debugger::Paused::ReasonEnum::Other, nullptr);
+    m_debugger->setPauseOnNextCall(true, m_session->contextGroupId());
   }
+
   return Response::Success();
 }
 
@@ -1618,7 +1635,7 @@ void V8DebuggerAgentImpl::didParseSource(
       hasSourceURLComment ? &hasSourceURLComment : nullptr;
   const bool* isModuleParam = isModule ? &isModule : nullptr;
   std::unique_ptr<V8StackTraceImpl> stack =
-      V8StackTraceImpl::capture(m_inspector->debugger(), contextGroupId, 1);
+      V8StackTraceImpl::capture(m_inspector->debugger(), 1);
   std::unique_ptr<protocol::Runtime::StackTrace> stackTrace =
       stack && !stack->isEmpty()
           ? stack->buildInspectorObjectImpl(m_debugger, 0)
@@ -1739,19 +1756,19 @@ void V8DebuggerAgentImpl::setScriptInstrumentationBreakpointIfNeeded(
 void V8DebuggerAgentImpl::didPause(
     int contextId, v8::Local<v8::Value> exception,
     const std::vector<v8::debug::BreakpointId>& hitBreakpoints,
-    v8::debug::ExceptionType exceptionType, bool isUncaught, bool isOOMBreak,
-    bool isAssert) {
+    v8::debug::ExceptionType exceptionType, bool isUncaught,
+    v8::debug::BreakReasons breakReasons) {
   v8::HandleScope handles(m_isolate);
 
   std::vector<BreakReason> hitReasons;
 
-  if (isOOMBreak) {
+  if (breakReasons.contains(v8::debug::BreakReason::kOOM)) {
     hitReasons.push_back(
         std::make_pair(protocol::Debugger::Paused::ReasonEnum::OOM, nullptr));
-  } else if (isAssert) {
+  } else if (breakReasons.contains(v8::debug::BreakReason::kAssert)) {
     hitReasons.push_back(std::make_pair(
         protocol::Debugger::Paused::ReasonEnum::Assert, nullptr));
-  } else if (!exception.IsEmpty()) {
+  } else if (breakReasons.contains(v8::debug::BreakReason::kException)) {
     InjectedScript* injectedScript = nullptr;
     m_session->findInjectedScript(contextId, injectedScript);
     if (injectedScript) {
@@ -1776,14 +1793,23 @@ void V8DebuggerAgentImpl::didPause(
   }
 
   auto hitBreakpointIds = std::make_unique<Array<String16>>();
-
+  bool hitInstrumentationBreakpoint = false;
+  bool hitRegularBreakpoint = false;
   for (const auto& id : hitBreakpoints) {
     auto it = m_breakpointsOnScriptRun.find(id);
     if (it != m_breakpointsOnScriptRun.end()) {
-      hitReasons.push_back(std::make_pair(
-          protocol::Debugger::Paused::ReasonEnum::Instrumentation,
-          std::move(it->second)));
-      m_breakpointsOnScriptRun.erase(it);
+      if (!hitInstrumentationBreakpoint) {
+        // We may hit several instrumentation breakpoints: 1. they are
+        // kept around, and 2. each session may set their own.
+        // Only report one.
+        // TODO(kimanh): This will not be needed anymore if we
+        // make sure that we can only hit an instrumentation
+        // breakpoint once. This workaround is currently for wasm.
+        hitInstrumentationBreakpoint = true;
+        hitReasons.push_back(std::make_pair(
+            protocol::Debugger::Paused::ReasonEnum::Instrumentation,
+            std::move(it->second)));
+      }
       continue;
     }
     auto breakpointIterator = m_debuggerBreakpointIdToBreakpointId.find(id);
@@ -1794,9 +1820,12 @@ void V8DebuggerAgentImpl::didPause(
     hitBreakpointIds->emplace_back(breakpointId);
     BreakpointType type;
     parseBreakpointId(breakpointId, &type);
-    if (type != BreakpointType::kDebugCommand) continue;
-    hitReasons.push_back(std::make_pair(
-        protocol::Debugger::Paused::ReasonEnum::DebugCommand, nullptr));
+    if (type == BreakpointType::kDebugCommand) {
+      hitReasons.push_back(std::make_pair(
+          protocol::Debugger::Paused::ReasonEnum::DebugCommand, nullptr));
+    } else {
+      hitRegularBreakpoint = true;
+    }
   }
 
   for (size_t i = 0; i < m_breakReason.size(); ++i) {
@@ -1804,6 +1833,22 @@ void V8DebuggerAgentImpl::didPause(
   }
   clearBreakDetails();
 
+  // Make sure that we only include (other: nullptr) once.
+  const BreakReason otherHitReason =
+      std::make_pair(protocol::Debugger::Paused::ReasonEnum::Other, nullptr);
+  const bool otherBreakReasons =
+      hitRegularBreakpoint || hitBreakReasonEncodedAsOther(breakReasons);
+  if (otherBreakReasons && std::find(hitReasons.begin(), hitReasons.end(),
+                                     otherHitReason) == hitReasons.end()) {
+    hitReasons.push_back(
+        std::make_pair(protocol::Debugger::Paused::ReasonEnum::Other, nullptr));
+  }
+
+  // We should always know why we pause: either the pause relates to this agent
+  // (`hitReason` is non empty), or it relates to another agent (hit a
+  // breakpoint there, or a triggered pause was scheduled by other agent).
+  DCHECK(hitReasons.size() > 0 || !hitBreakpoints.empty() ||
+         breakReasons.contains(v8::debug::BreakReason::kAgent));
   String16 breakReason = protocol::Debugger::Paused::ReasonEnum::Other;
   std::unique_ptr<protocol::DictionaryValue> breakAuxData;
   if (hitReasons.size() == 1) {
@@ -1912,6 +1957,17 @@ void V8DebuggerAgentImpl::ScriptCollected(const V8DebuggerScript* script) {
     m_scripts.erase(scriptId);
     m_cachedScriptIds.pop_front();
   }
+}
+
+std::vector<v8::debug::BreakpointId>
+V8DebuggerAgentImpl::instrumentationBreakpointIdsMatching(
+    const std::vector<v8::debug::BreakpointId>& ids) {
+  std::vector<v8::debug::BreakpointId> instrumentationBreakpointIds;
+  for (const v8::debug::BreakpointId& id : ids) {
+    if (m_breakpointsOnScriptRun.count(id) > 0)
+      instrumentationBreakpointIds.push_back(id);
+  }
+  return instrumentationBreakpointIds;
 }
 
 Response V8DebuggerAgentImpl::processSkipList(

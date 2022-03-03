@@ -12,12 +12,9 @@ rootWebArea
 ++++++++staticText name='Number: '
 ++++++++++inlineTextBox name='Number: '
 ++++++++spinButton editable name='Number:' value='3' valueForRange=3.00
-++++++++++genericContainer ignored
-++++++++++++genericContainer ignored
-++++++++++++++genericContainer editable
-++++++++++++++++staticText editable name='3'
-++++++++++++++++++inlineTextBox editable name='3'
-++++++++++++genericContainer ignored
+++++++++++genericContainer editable
+++++++++++++staticText editable name='3'
+++++++++++++++inlineTextBox editable name='3'
 ++++++labelText
 ++++++++staticText name='Password: '
 ++++++++++inlineTextBox name='Password: '
@@ -29,12 +26,9 @@ rootWebArea
 ++++++++staticText name='Search: '
 ++++++++++inlineTextBox name='Search: '
 ++++++++searchBox editable name='Search:' value='search'
-++++++++++genericContainer ignored
-++++++++++++genericContainer ignored
-++++++++++++++genericContainer editable
-++++++++++++++++staticText editable name='search'
-++++++++++++++++++inlineTextBox editable name='search'
-++++++++++++genericContainer ignored
+++++++++++genericContainer editable
+++++++++++++staticText editable name='search'
+++++++++++++++inlineTextBox editable name='search'
 ++++++labelText
 ++++++++staticText name='Tel: '
 ++++++++++inlineTextBox name='Tel: '
@@ -63,15 +57,15 @@ rootWebArea
 ++++++++++genericContainer editable
 ++++++++++++staticText editable name='Sometext'
 ++++++++++++++inlineTextBox editable name='Sometext'
-++++++genericContainer editable multiline value='Plain contenteditable' contentEditableRoot=true
+++++++genericContainer editable multiline value='Plain contenteditable' nonAtomicTextFieldRoot=true
 ++++++++staticText editable name='Plain contenteditable'
 ++++++++++inlineTextBox editable name='Plain contenteditable'
-++++++genericContainer editable multiline richlyEditable value='Rich contenteditable' contentEditableRoot=true
+++++++genericContainer editable multiline richlyEditable value='Rich contenteditable' nonAtomicTextFieldRoot=true
 ++++++++staticText editable richlyEditable name='Rich contenteditable'
 ++++++++++inlineTextBox editable richlyEditable name='Rich contenteditable'
-++++++textField editable multiline value='Plain contenteditable' contentEditableRoot=true
+++++++textField editable multiline value='Plain contenteditable' nonAtomicTextFieldRoot=true
 ++++++++staticText editable name='Plain contenteditable'
 ++++++++++inlineTextBox editable name='Plain contenteditable'
-++++++textField editable multiline richlyEditable value='Rich contenteditable' contentEditableRoot=true
+++++++textField editable multiline richlyEditable value='Rich contenteditable' nonAtomicTextFieldRoot=true
 ++++++++staticText editable richlyEditable name='Rich contenteditable'
 ++++++++++inlineTextBox editable richlyEditable name='Rich contenteditable'

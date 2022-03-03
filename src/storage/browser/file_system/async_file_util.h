@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/file_system/file_system_operation.h"
 
@@ -76,7 +75,7 @@ class AsyncFileUtil {
 
   using CopyFileProgressCallback = base::RepeatingCallback<void(int64_t size)>;
 
-  using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
+  using CopyOrMoveOptionSet = FileSystemOperation::CopyOrMoveOptionSet;
   using GetMetadataField = FileSystemOperation::GetMetadataField;
 
   // Creates an AsyncFileUtil instance which performs file operations on local
@@ -85,8 +84,10 @@ class AsyncFileUtil {
   COMPONENT_EXPORT(STORAGE_BROWSER)
   static AsyncFileUtil* CreateForLocalFileSystem();
 
-  AsyncFileUtil() {}
-  virtual ~AsyncFileUtil() {}
+  AsyncFileUtil() = default;
+  AsyncFileUtil(const AsyncFileUtil&) = delete;
+  AsyncFileUtil& operator=(const AsyncFileUtil&) = delete;
+  virtual ~AsyncFileUtil() = default;
 
   // Creates or opens a file with the given flags.
   // If File::FLAG_CREATE is set in |file_flags| it always tries to create
@@ -226,7 +227,7 @@ class AsyncFileUtil {
       std::unique_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
-      CopyOrMoveOption option,
+      CopyOrMoveOptionSet options,
       CopyFileProgressCallback progress_callback,
       StatusCallback callback) = 0;
 
@@ -249,7 +250,7 @@ class AsyncFileUtil {
       std::unique_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
-      CopyOrMoveOption option,
+      CopyOrMoveOptionSet options,
       StatusCallback callback) = 0;
 
   // Copies in a single file from a different filesystem.
@@ -350,9 +351,6 @@ class AsyncFileUtil {
       std::unique_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       CreateSnapshotFileCallback callback) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AsyncFileUtil);
 };
 
 }  // namespace storage

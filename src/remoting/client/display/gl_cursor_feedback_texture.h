@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 
 namespace remoting {
@@ -20,6 +19,9 @@ class GlCursorFeedbackTexture {
 
   static GlCursorFeedbackTexture* GetInstance();
 
+  GlCursorFeedbackTexture(const GlCursorFeedbackTexture&) = delete;
+  GlCursorFeedbackTexture& operator=(const GlCursorFeedbackTexture&) = delete;
+
   const std::vector<uint8_t>& GetTexture() const;
 
  private:
@@ -29,8 +31,6 @@ class GlCursorFeedbackTexture {
   friend struct base::DefaultSingletonTraits<GlCursorFeedbackTexture>;
 
   std::vector<uint8_t> texture_;
-
-  DISALLOW_COPY_AND_ASSIGN(GlCursorFeedbackTexture);
 };
 
 }  // namespace remoting

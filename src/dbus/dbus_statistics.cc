@@ -8,7 +8,6 @@
 #include <tuple>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -47,6 +46,9 @@ class DBusStatistics {
       : start_time_(base::Time::Now()),
         origin_thread_id_(base::PlatformThread::CurrentId()) {
   }
+
+  DBusStatistics(const DBusStatistics&) = delete;
+  DBusStatistics& operator=(const DBusStatistics&) = delete;
 
   ~DBusStatistics() {
     DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
@@ -107,8 +109,6 @@ class DBusStatistics {
   StatMap stats_;
   base::Time start_time_;
   base::PlatformThreadId origin_thread_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DBusStatistics);
 };
 
 DBusStatistics* g_dbus_statistics = nullptr;

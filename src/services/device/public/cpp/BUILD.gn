@@ -31,6 +31,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "test/fake_device_posture_provider.cc",
+    "test/fake_device_posture_provider.h",
     "test/fake_geolocation_manager.cc",
     "test/fake_geolocation_manager.h",
     "test/fake_sensor_and_provider.cc",
@@ -52,6 +54,13 @@ source_set("test_support") {
     "test/test_wake_lock_provider.cc",
     "test/test_wake_lock_provider.h",
   ]
+
+  if (is_android) {
+    sources += [
+      "test/scoped_nfc_overrider.cc",
+      "test/scoped_nfc_overrider.h",
+    ]
+  }
 
   public_deps = [
     "//base",

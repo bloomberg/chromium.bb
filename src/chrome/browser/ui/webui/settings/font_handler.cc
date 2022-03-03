@@ -12,6 +12,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -36,7 +38,7 @@ FontHandler::FontHandler(Profile* profile) {
 FontHandler::~FontHandler() {}
 
 void FontHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "fetchFontsData", base::BindRepeating(&FontHandler::HandleFetchFontsData,
                                             base::Unretained(this)));
 }
@@ -46,9 +48,8 @@ void FontHandler::OnJavascriptAllowed() {}
 void FontHandler::OnJavascriptDisallowed() {}
 
 void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  CHECK_EQ(1U, args->GetList().size());
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   AllowJavascript();
   content::GetFontListAsync(base::BindOnce(&FontHandler::FontListHasLoaded,
@@ -58,22 +59,21 @@ void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
 
 void FontHandler::FontListHasLoaded(std::string callback_id,
                                     std::unique_ptr<base::ListValue> list) {
+  base::Value::ListView list_view = list->GetList();
   // Font list. Selects the directionality for the fonts in the given list.
-  for (size_t i = 0; i < list->GetSize(); i++) {
-    base::ListValue* font;
-    bool has_font = list->GetList(i, &font);
-    DCHECK(has_font);
+  for (auto& i : list_view) {
+    DCHECK(i.is_list());
+    base::Value::ConstListView font = i.GetList();
 
-    std::u16string value;
-    bool has_value = font->GetString(1, &value);
-    DCHECK(has_value);
+    DCHECK(font.size() >= 2u && font[1].is_string());
+    std::u16string value = base::UTF8ToUTF16(font[1].GetString());
 
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(value);
-    font->AppendString(has_rtl_chars ? "rtl" : "ltr");
+    i.Append(has_rtl_chars ? "rtl" : "ltr");
   }
 
   base::DictionaryValue response;
-  response.Set("fontList", std::move(list));
+  response.SetKey("fontList", base::Value::FromUniquePtrValue(std::move(list)));
 
   ResolveJavascriptCallback(base::Value(callback_id), response);
 }

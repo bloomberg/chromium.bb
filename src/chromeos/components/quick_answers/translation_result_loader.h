@@ -8,22 +8,22 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
 #include "chromeos/components/quick_answers/result_loader.h"
 #include "chromeos/components/quick_answers/translation_response_parser.h"
 
 namespace network {
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
+class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 class TranslationResultLoader : public ResultLoader {
  public:
-  TranslationResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
-                          ResultLoaderDelegate* delegate);
+  TranslationResultLoader(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      ResultLoaderDelegate* delegate);
 
   TranslationResultLoader(const TranslationResultLoader&) = delete;
   TranslationResultLoader& operator=(const TranslationResultLoader&) = delete;
@@ -47,6 +47,6 @@ class TranslationResultLoader : public ResultLoader {
 };
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_TRANSLATION_RESULT_LOADER_H_

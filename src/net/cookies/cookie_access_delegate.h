@@ -5,10 +5,15 @@
 #ifndef NET_COOKIES_COOKIE_ACCESS_DELEGATE_H_
 #define NET_COOKIES_COOKIE_ACCESS_DELEGATE_H_
 
+#include <set>
+
 #include "base/containers/flat_map.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/same_party_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -19,6 +24,10 @@ class SiteForCookies;
 class NET_EXPORT CookieAccessDelegate {
  public:
   CookieAccessDelegate();
+
+  CookieAccessDelegate(const CookieAccessDelegate&) = delete;
+  CookieAccessDelegate& operator=(const CookieAccessDelegate&) = delete;
+
   virtual ~CookieAccessDelegate();
 
   // Returns true if the passed in |url| should be permitted to access secure
@@ -38,12 +47,12 @@ class NET_EXPORT CookieAccessDelegate {
       const GURL& url,
       const SiteForCookies& site_for_cookies) const = 0;
 
-  // Returns whether `site` is same-party with `party_context` and
-  // `top_frame_site`. If `top_frame_site` is nullopt, then `site` will be
-  // checked only against `party_context`.
-  virtual bool IsContextSamePartyWithSite(
+  // Returns the SamePartyContext indicating whether `site` is same-party
+  // with `party_context` and `top_frame_site`. If `top_frame_site` is nullptr,
+  // then `site` will be checked only against `party_context`.
+  virtual SamePartyContext ComputeSamePartyContext(
       const net::SchemefulSite& site,
-      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context) const = 0;
 
   // Returns whether `site` belongs to a non-singleton First-Party Set.
@@ -55,12 +64,30 @@ class NET_EXPORT CookieAccessDelegate {
       const absl::optional<SchemefulSite>& top_frame_site,
       const std::set<SchemefulSite>& party_context) const = 0;
 
+  // Returns the owner of a `site`'s First-Party Set if `site` is in a
+  // non-trivial set. Returns nullopt otherwise.
+  virtual absl::optional<net::SchemefulSite> FindFirstPartySetOwner(
+      const net::SchemefulSite& site) const = 0;
+
+  // Creates a CookiePartitionKey that takes whether the top-frame site is in a
+  // First-Party Set into account. If FPS are not enabled, it returns a cookie
+  // partition key that does not take FPS into account.
+  //
+  // Should always return nullopt if partitioned cookies are disabled or if
+  // the NIK has no top-frame site.
+  static absl::optional<CookiePartitionKey> CreateCookiePartitionKey(
+      const CookieAccessDelegate* delegate,
+      const NetworkIsolationKey& network_isolation_key);
+
+  // Converts the CookiePartitionKey's site to its First-Party Set owner if
+  // the site is in a nontrivial set.
+  static absl::optional<CookiePartitionKey> FirstPartySetifyPartitionKey(
+      const CookieAccessDelegate* delegate,
+      const CookiePartitionKey& cookie_partition_key);
+
   // Returns the First-Party Sets.
   virtual base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
   RetrieveFirstPartySets() const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CookieAccessDelegate);
 };
 
 }  // namespace net

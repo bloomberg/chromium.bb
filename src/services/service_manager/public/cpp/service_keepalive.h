@@ -6,7 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_KEEPALIVE_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -60,6 +60,10 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceKeepalive {
   // maintain an internal ref-count which the consumer can query.
   ServiceKeepalive(ServiceReceiver* receiver,
                    absl::optional<base::TimeDelta> idle_timeout);
+
+  ServiceKeepalive(const ServiceKeepalive&) = delete;
+  ServiceKeepalive& operator=(const ServiceKeepalive&) = delete;
+
   ~ServiceKeepalive();
 
   // Constructs a new ServiceKeepaliveRef associated with this ServiceKeepalive.
@@ -82,14 +86,12 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceKeepalive {
 
   void OnTimerExpired();
 
-  ServiceReceiver* const receiver_;
+  const raw_ptr<ServiceReceiver> receiver_;
   const absl::optional<base::TimeDelta> idle_timeout_;
   absl::optional<base::OneShotTimer> idle_timer_;
   base::ObserverList<Observer> observers_;
   int ref_count_ = 0;
   base::WeakPtrFactory<ServiceKeepalive> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceKeepalive);
 };
 
 // Objects which can be created by a |ServiceKeepalive| and cloned from each

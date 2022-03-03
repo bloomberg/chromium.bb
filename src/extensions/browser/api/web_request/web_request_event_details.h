@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/common/extension_id.h"
@@ -49,6 +48,10 @@ class WebRequestEventDetails {
   // - type
   // - url
   WebRequestEventDetails(const WebRequestInfo& request, int extra_info_spec);
+
+  WebRequestEventDetails(const WebRequestEventDetails&) = delete;
+  WebRequestEventDetails& operator=(const WebRequestEventDetails&) = delete;
+
   ~WebRequestEventDetails();
 
   // Sets the following key:
@@ -128,8 +131,6 @@ class WebRequestEventDetails {
   int extra_info_spec_;
 
   int render_process_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRequestEventDetails);
 };
 
 }  // namespace extensions

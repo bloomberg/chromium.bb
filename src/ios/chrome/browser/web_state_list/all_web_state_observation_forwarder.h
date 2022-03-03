@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_ALL_WEB_STATE_OBSERVATION_FORWARDER_H_
 #define IOS_CHROME_BROWSER_WEB_STATE_LIST_ALL_WEB_STATE_OBSERVATION_FORWARDER_H_
 
-#include "base/macros.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -23,6 +22,12 @@ class AllWebStateObservationForwarder : public WebStateListObserver {
   // |observer| must both outlive this object.
   AllWebStateObservationForwarder(WebStateList* web_state_list,
                                   web::WebStateObserver* observer);
+
+  AllWebStateObservationForwarder(const AllWebStateObservationForwarder&) =
+      delete;
+  AllWebStateObservationForwarder& operator=(
+      const AllWebStateObservationForwarder&) = delete;
+
   ~AllWebStateObservationForwarder() override;
 
   // WebStateListObserver.
@@ -43,8 +48,6 @@ class AllWebStateObservationForwarder : public WebStateListObserver {
       web_state_list_observation_{this};
   base::ScopedMultiSourceObservation<web::WebState, web::WebStateObserver>
       web_state_observations_;
-
-  DISALLOW_COPY_AND_ASSIGN(AllWebStateObservationForwarder);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_ALL_WEB_STATE_OBSERVATION_FORWARDER_H_

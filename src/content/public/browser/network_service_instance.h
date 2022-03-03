@@ -97,6 +97,14 @@ GetCertVerifierParams(cert_verifier::mojom::CertVerifierCreationParamsPtr
 CONTENT_EXPORT void SetCertVerifierServiceFactoryForTesting(
     cert_verifier::mojom::CertVerifierServiceFactory* service_factory);
 
+// Convenience function to create a NetworkContext from the given set of
+// |params|. Any creation of network contexts should be done through this
+// function.
+// This must be called on the UI thread.
+CONTENT_EXPORT void CreateNetworkContextInNetworkService(
+    mojo::PendingReceiver<network::mojom::NetworkContext> context,
+    network::mojom::NetworkContextParamsPtr params);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_NETWORK_SERVICE_INSTANCE_H_

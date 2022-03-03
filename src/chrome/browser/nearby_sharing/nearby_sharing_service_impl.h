@@ -15,9 +15,9 @@
 #include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/nearby_sharing/attachment_info.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
+#include "chrome/browser/nearby_sharing/fast_initiation/fast_initiation_scanner_feature_usage_metrics.h"
 #include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
 #include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
@@ -48,7 +49,8 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "net/base/network_change_notifier.h"
 
-class FastInitiationManager;
+class FastInitiationAdvertiser;
+class FastInitiationScanner;
 class NearbyConnectionsManager;
 class NearbyShareContactManager;
 class NearbyShareCertificateManager;
@@ -123,8 +125,11 @@ class NearbySharingServiceImpl
   void Open(const ShareTarget& share_target,
             StatusCodesCallback status_codes_callback) override;
   void OpenURL(GURL url) override;
+  void SetArcTransferCleanupCallback(
+      base::OnceCallback<void()> callback) override;
   NearbyNotificationDelegate* GetNotificationDelegate(
       const std::string& notification_id) override;
+  void RecordFastInitiationNotificationUsage(bool success) override;
   NearbyShareSettings* GetSettings() override;
   NearbyShareHttpNotifier* GetHttpNotifier() override;
   NearbyShareLocalDeviceDataManager* GetLocalDeviceDataManager() override;
@@ -151,11 +156,15 @@ class NearbySharingServiceImpl
 
   // nearby_share::mojom::NearbyShareSettingsObserver:
   void OnEnabledChanged(bool enabled) override;
+  void OnFastInitiationNotificationStateChanged(
+      nearby_share::mojom::FastInitiationNotificationState state) override;
+  void OnIsFastInitiationHardwareSupportedChanged(bool is_supported) override {}
   void OnDeviceNameChanged(const std::string& device_name) override;
   void OnDataUsageChanged(nearby_share::mojom::DataUsage data_usage) override;
   void OnVisibilityChanged(nearby_share::mojom::Visibility visibility) override;
   void OnAllowedContactsChanged(
       const std::vector<std::string>& allowed_contacts) override;
+  void OnIsOnboardingCompleteChanged(bool is_complete) override {}
 
   // NearbyShareCertificateManager::Observer:
   void OnPublicCertificatesDownloaded() override;
@@ -230,6 +239,13 @@ class NearbySharingServiceImpl
   void StartScanning();
   StatusCodes StopScanning();
   void StopAdvertisingAndInvalidateSurfaceState();
+
+  void InvalidateFastInitiationScanning();
+  void StartFastInitiationScanning();
+  void OnFastInitiationDevicesDetected();
+  void OnFastInitiationDevicesNotDetected();
+  void StopFastInitiationScanning();
+
   void ScheduleRotateBackgroundAdvertisementTimer();
   void OnRotateBackgroundAdvertisementTimerFired();
   void RemoveOutgoingShareTargetWithEndpointId(const std::string& endpoint_id);
@@ -402,7 +418,12 @@ class NearbySharingServiceImpl
       process_reference_;
   std::unique_ptr<PowerClient> power_client_;
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-  std::unique_ptr<FastInitiationManager> fast_initiation_manager_;
+  // Advertiser which is non-null when we are attempting to share and
+  // broadcasting Fast Initiation advertisements.
+  std::unique_ptr<FastInitiationAdvertiser> fast_initiation_advertiser_;
+  // Scanner which is non-null when we are performing a background scan for
+  // remote devices that are attempting to share.
+  std::unique_ptr<FastInitiationScanner> fast_initiation_scanner_;
   std::unique_ptr<NearbyNotificationManager> nearby_notification_manager_;
   NearbyShareHttpNotifier nearby_share_http_notifier_;
   std::unique_ptr<NearbyShareClientFactory> http_client_factory_;
@@ -412,6 +433,8 @@ class NearbySharingServiceImpl
   std::unique_ptr<NearbyShareCertificateManager> certificate_manager_;
   NearbyShareSettings settings_;
   NearbyShareFeatureUsageMetrics feature_usage_metrics_;
+  std::unique_ptr<FastInitiationScannerFeatureUsageMetrics>
+      fast_initiation_scanning_metrics_;
   NearbyFileHandler file_handler_;
   bool is_screen_locked_ = false;
   base::OneShotTimer rotate_background_advertisement_timer_;
@@ -422,7 +445,7 @@ class NearbySharingServiceImpl
   base::ObserverList<NearbySharingService::Observer> observers_;
   // A list of foreground receivers.
   base::ObserverList<TransferUpdateCallback> foreground_receive_callbacks_;
-  // A list of foreground receivers.
+  // A list of background receivers.
   base::ObserverList<TransferUpdateCallback> background_receive_callbacks_;
   // A list of foreground receivers for transfer updates on the send surface.
   base::ObserverList<TransferUpdateCallback>
@@ -514,7 +537,6 @@ class NearbySharingServiceImpl
   // the time between an incoming share being accepted and the first payload
   // byte being processed.
   base::TimeTicks incoming_share_accepted_timestamp_;
-
   int recent_nearby_process_unexpected_shutdown_count_ = 0;
   base::OneShotTimer clear_recent_nearby_process_shutdown_count_timer_;
 
@@ -534,6 +556,9 @@ class NearbySharingServiceImpl
 
   mojo::Receiver<nearby_share::mojom::NearbyShareSettingsObserver>
       settings_receiver_{this};
+
+  // Called when cleanup for ARC is needed as part of the transfer.
+  base::OnceCallback<void()> arc_transfer_cleanup_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

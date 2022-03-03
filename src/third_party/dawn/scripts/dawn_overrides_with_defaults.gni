@@ -63,8 +63,11 @@ if (!defined(dawn_swiftshader_dir)) {
 }
 
 if (!defined(dawn_vulkan_loader_dir)) {
-  # Default to the Vulkan loader not being available.
+  # Default to the Vulkan loader not being available except in standalone.
   dawn_vulkan_loader_dir = ""
+  if (dawn_standalone) {
+    dawn_vulkan_loader_dir = "//third_party/vulkan-deps/vulkan-loader/src"
+  }
 }
 
 if (!defined(dawn_vulkan_validation_layers_dir)) {
@@ -75,4 +78,8 @@ if (!defined(dawn_vulkan_validation_layers_dir)) {
 if (!defined(dawn_tint_dir)) {
   # Default to Tint being Dawn's DEPS
   dawn_tint_dir = "${dawn_root}/third_party/tint"
+}
+
+if (!defined(dawn_abseil_dir)) {
+  dawn_abseil_dir = "//third_party/abseil-cpp"
 }

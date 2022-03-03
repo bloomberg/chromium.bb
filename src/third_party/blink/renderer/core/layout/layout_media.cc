@@ -42,6 +42,11 @@ LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
 
 LayoutMedia::~LayoutMedia() = default;
 
+void LayoutMedia::Trace(Visitor* visitor) const {
+  visitor->Trace(children_);
+  LayoutImage::Trace(visitor);
+}
+
 HTMLMediaElement* LayoutMedia::MediaElement() const {
   NOT_DESTROYED();
   return To<HTMLMediaElement>(GetNode());
@@ -182,17 +187,17 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // On desktop, this will include scrollbars when they stay visible.
   const LayoutUnit visible_width(page->GetVisualViewport().VisibleWidth());
   // The bottom left corner of the video.
-  const FloatPoint bottom_left_point(
-      LocalToAbsoluteFloatPoint(FloatPoint(media_rect.X(), media_rect.MaxY()),
-                                kTraverseDocumentBoundaries));
+  const gfx::PointF bottom_left_point(
+      LocalToAbsolutePoint(gfx::PointF(media_rect.X(), media_rect.MaxY()),
+                           kTraverseDocumentBoundaries));
   // The bottom right corner of the video.
-  const FloatPoint bottom_right_point(LocalToAbsoluteFloatPoint(
-      FloatPoint(media_rect.MaxX(), media_rect.MaxY()),
-      kTraverseDocumentBoundaries));
+  const gfx::PointF bottom_right_point(
+      LocalToAbsolutePoint(gfx::PointF(media_rect.MaxX(), media_rect.MaxY()),
+                           kTraverseDocumentBoundaries));
 
-  const bool bottom_left_corner_visible = bottom_left_point.X() < visible_width;
+  const bool bottom_left_corner_visible = bottom_left_point.x() < visible_width;
   const bool bottom_right_corner_visible =
-      bottom_right_point.X() < visible_width;
+      bottom_right_point.x() < visible_width;
 
   // If both corners are visible, then we can see the whole panel.
   if (bottom_left_corner_visible && bottom_right_corner_visible)
@@ -217,18 +222,15 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // we'll calculate the point where the panel intersects the right edge of the
   // page and then calculate the visible width of the panel from the distance
   // between the visible point and the edge intersection point.
-  const float slope = (bottom_right_point.Y() - bottom_left_point.Y()) /
-                      (bottom_right_point.X() - bottom_left_point.X());
+  const float slope = (bottom_right_point.y() - bottom_left_point.y()) /
+                      (bottom_right_point.x() - bottom_left_point.x());
   const float edge_intersection_y =
-      bottom_left_point.Y() + ((visible_width - bottom_left_point.X()) * slope);
+      bottom_left_point.y() + ((visible_width - bottom_left_point.x()) * slope);
 
-  const FloatPoint edge_intersection_point(visible_width, edge_intersection_y);
+  const gfx::PointF edge_intersection_point(visible_width, edge_intersection_y);
 
   // Calculate difference.
-  FloatPoint difference_vector = edge_intersection_point;
-  difference_vector.Move(-bottom_left_point.X(), -bottom_left_point.Y());
-
-  return LayoutUnit(difference_vector.length());
+  return LayoutUnit((edge_intersection_point - bottom_left_point).Length());
 }
 
 }  // namespace blink

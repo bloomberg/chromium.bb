@@ -37,12 +37,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const os = __importStar(require("os"));
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
+const assert_js_1 = require("../common/assert.js");
 const BrowserFetcher_js_1 = require("./BrowserFetcher.js");
 const Browser_js_1 = require("../common/Browser.js");
 const BrowserRunner_js_1 = require("./BrowserRunner.js");
 const util_1 = require("util");
-const mkdtempAsync = util_1.promisify(fs.mkdtemp);
-const writeFileAsync = util_1.promisify(fs.writeFile);
+const mkdtempAsync = (0, util_1.promisify)(fs.mkdtemp);
+const writeFileAsync = (0, util_1.promisify)(fs.writeFile);
+const tmpDir = () => process.env.PUPPETEER_TMP_DIR || os.tmpdir();
 /**
  * @internal
  */
@@ -53,8 +55,8 @@ class ChromeLauncher {
         this._isPuppeteerCore = isPuppeteerCore;
     }
     async launch(options = {}) {
-        const { ignoreDefaultArgs = false, args = [], dumpio = false, executablePath = null, pipe = false, env = process.env, handleSIGINT = true, handleSIGTERM = true, handleSIGHUP = true, ignoreHTTPSErrors = false, defaultViewport = { width: 800, height: 600 }, slowMo = 0, timeout = 30000, } = options;
-        const profilePath = path.join(os.tmpdir(), 'puppeteer_dev_chrome_profile-');
+        const { ignoreDefaultArgs = false, args = [], dumpio = false, channel = null, executablePath = null, pipe = false, env = process.env, handleSIGINT = true, handleSIGTERM = true, handleSIGHUP = true, ignoreHTTPSErrors = false, defaultViewport = { width: 800, height: 600 }, slowMo = 0, timeout = 30000, waitForInitialPage = true, debuggingPort = null, } = options;
+        const profilePath = path.join(tmpDir(), 'puppeteer_dev_chrome_profile-');
         const chromeArguments = [];
         if (!ignoreDefaultArgs)
             chromeArguments.push(...this.defaultArgs(options));
@@ -63,14 +65,26 @@ class ChromeLauncher {
         else
             chromeArguments.push(...args);
         let temporaryUserDataDir = null;
-        if (!chromeArguments.some((argument) => argument.startsWith('--remote-debugging-')))
-            chromeArguments.push(pipe ? '--remote-debugging-pipe' : '--remote-debugging-port=0');
+        if (!chromeArguments.some((argument) => argument.startsWith('--remote-debugging-'))) {
+            if (pipe) {
+                (0, assert_js_1.assert)(debuggingPort === null, 'Browser should be launched with either pipe or debugging port - not both.');
+                chromeArguments.push('--remote-debugging-pipe');
+            }
+            else {
+                chromeArguments.push(`--remote-debugging-port=${debuggingPort || 0}`);
+            }
+        }
         if (!chromeArguments.some((arg) => arg.startsWith('--user-data-dir'))) {
             temporaryUserDataDir = await mkdtempAsync(profilePath);
             chromeArguments.push(`--user-data-dir=${temporaryUserDataDir}`);
         }
         let chromeExecutable = executablePath;
-        if (!executablePath) {
+        if (channel) {
+            // executablePath is detected by channel, so it should not be specified by user.
+            (0, assert_js_1.assert)(!executablePath, '`executablePath` must not be specified when `channel` is given.');
+            chromeExecutable = executablePathForChannel(channel);
+        }
+        else if (!executablePath) {
             // Use Intel x86 builds on Apple M1 until native macOS arm64
             // Chromium builds are available.
             if (os.platform() !== 'darwin' && os.arch() === 'arm64') {
@@ -101,7 +115,8 @@ class ChromeLauncher {
                 preferredRevision: this._preferredRevision,
             });
             const browser = await Browser_js_1.Browser.create(connection, [], ignoreHTTPSErrors, defaultViewport, runner.proc, runner.close.bind(runner));
-            await browser.waitForTarget((t) => t.type() === 'page');
+            if (waitForInitialPage)
+                await browser.waitForTarget((t) => t.type() === 'page', { timeout });
             return browser;
         }
         catch (error) {
@@ -137,6 +152,7 @@ class ChromeLauncher {
             // TODO(sadym): remove '--enable-blink-features=IdleDetection'
             // once IdleDetection is turned on by default.
             '--enable-blink-features=IdleDetection',
+            '--export-tagged-pdf',
         ];
         const { devtools = false, headless = !devtools, args = [], userDataDir = null, } = options;
         if (userDataDir)
@@ -151,8 +167,13 @@ class ChromeLauncher {
         chromeArguments.push(...args);
         return chromeArguments;
     }
-    executablePath() {
-        return resolveExecutablePath(this).executablePath;
+    executablePath(channel) {
+        if (channel) {
+            return executablePathForChannel(channel);
+        }
+        else {
+            return resolveExecutablePath(this).executablePath;
+        }
     }
     get product() {
         return 'chrome';
@@ -168,7 +189,7 @@ class FirefoxLauncher {
         this._isPuppeteerCore = isPuppeteerCore;
     }
     async launch(options = {}) {
-        const { ignoreDefaultArgs = false, args = [], dumpio = false, executablePath = null, pipe = false, env = process.env, handleSIGINT = true, handleSIGTERM = true, handleSIGHUP = true, ignoreHTTPSErrors = false, defaultViewport = { width: 800, height: 600 }, slowMo = 0, timeout = 30000, extraPrefsFirefox = {}, } = options;
+        const { ignoreDefaultArgs = false, args = [], dumpio = false, executablePath = null, pipe = false, env = process.env, handleSIGINT = true, handleSIGTERM = true, handleSIGHUP = true, ignoreHTTPSErrors = false, defaultViewport = { width: 800, height: 600 }, slowMo = 0, timeout = 30000, extraPrefsFirefox = {}, waitForInitialPage = true, debuggingPort = null, } = options;
         const firefoxArguments = [];
         if (!ignoreDefaultArgs)
             firefoxArguments.push(...this.defaultArgs(options));
@@ -176,8 +197,12 @@ class FirefoxLauncher {
             firefoxArguments.push(...this.defaultArgs(options).filter((arg) => !ignoreDefaultArgs.includes(arg)));
         else
             firefoxArguments.push(...args);
-        if (!firefoxArguments.some((argument) => argument.startsWith('--remote-debugging-')))
-            firefoxArguments.push('--remote-debugging-port=0');
+        if (!firefoxArguments.some((argument) => argument.startsWith('--remote-debugging-'))) {
+            if (pipe) {
+                (0, assert_js_1.assert)(debuggingPort === null, 'Browser should be launched with either pipe or debugging port - not both.');
+            }
+            firefoxArguments.push(`--remote-debugging-port=${debuggingPort || 0}`);
+        }
         let temporaryUserDataDir = null;
         if (!firefoxArguments.includes('-profile') &&
             !firefoxArguments.includes('--profile')) {
@@ -210,7 +235,8 @@ class FirefoxLauncher {
                 preferredRevision: this._preferredRevision,
             });
             const browser = await Browser_js_1.Browser.create(connection, [], ignoreHTTPSErrors, defaultViewport, runner.proc, runner.close.bind(runner));
-            await browser.waitForTarget((t) => t.type() === 'page');
+            if (waitForInitialPage)
+                await browser.waitForTarget((t) => t.type() === 'page', { timeout });
             return browser;
         }
         catch (error) {
@@ -255,7 +281,7 @@ class FirefoxLauncher {
         return firefoxArguments;
     }
     async _createProfile(extraPrefs) {
-        const profilePath = await mkdtempAsync(path.join(os.tmpdir(), 'puppeteer_dev_firefox_profile-'));
+        const profilePath = await mkdtempAsync(path.join(tmpDir(), 'puppeteer_dev_firefox_profile-'));
         const prefsJS = [];
         const userJS = [];
         const server = 'dummy.test';
@@ -355,8 +381,10 @@ class FirefoxLauncher {
             'extensions.update.notifyUser': false,
             // Make sure opening about:addons will not hit the network
             'extensions.webservice.discoverURL': `http://${server}/dummy/discoveryURL`,
-            // Force disable Fission until the Remote Agent is compatible
-            'fission.autostart': false,
+            // Temporarily force disable BFCache in parent (https://bit.ly/bug-1732263)
+            'fission.bfcacheInParent': false,
+            // Force all web content to use a single content process
+            'fission.webContentIsolationStrategy': 0,
             // Allow the application to have focus even it runs in the background
             'focusmanager.testmode': true,
             // Disable useragent updates
@@ -389,8 +417,8 @@ class FirefoxLauncher {
             // Disable Flash.
             'plugin.state.flash': 0,
             'privacy.trackingprotection.enabled': false,
-            // Enable Remote Agent
-            // https://bugzilla.mozilla.org/show_bug.cgi?id=1544393
+            // Can be removed once Firefox 89 is no longer supported
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=1710839
             'remote.enabled': true,
             // Don't do network connections for mitm priming
             'security.certerrors.mitm.priming.enabled': false,
@@ -423,6 +451,72 @@ class FirefoxLauncher {
         await writeFileAsync(path.join(profilePath, 'prefs.js'), prefsJS.join('\n'));
         return profilePath;
     }
+}
+function executablePathForChannel(channel) {
+    const platform = os.platform();
+    let chromePath;
+    switch (platform) {
+        case 'win32':
+            switch (channel) {
+                case 'chrome':
+                    chromePath = `${process.env.PROGRAMFILES}\\Google\\Chrome\\Application\\chrome.exe`;
+                    break;
+                case 'chrome-beta':
+                    chromePath = `${process.env.PROGRAMFILES}\\Google\\Chrome Beta\\Application\\chrome.exe`;
+                    break;
+                case 'chrome-canary':
+                    chromePath = `${process.env.PROGRAMFILES}\\Google\\Chrome SxS\\Application\\chrome.exe`;
+                    break;
+                case 'chrome-dev':
+                    chromePath = `${process.env.PROGRAMFILES}\\Google\\Chrome Dev\\Application\\chrome.exe`;
+                    break;
+            }
+            break;
+        case 'darwin':
+            switch (channel) {
+                case 'chrome':
+                    chromePath =
+                        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+                    break;
+                case 'chrome-beta':
+                    chromePath =
+                        '/Applications/Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta';
+                    break;
+                case 'chrome-canary':
+                    chromePath =
+                        '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary';
+                    break;
+                case 'chrome-dev':
+                    chromePath =
+                        '/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev';
+                    break;
+            }
+            break;
+        case 'linux':
+            switch (channel) {
+                case 'chrome':
+                    chromePath = '/opt/google/chrome/chrome';
+                    break;
+                case 'chrome-beta':
+                    chromePath = '/opt/google/chrome-beta/chrome';
+                    break;
+                case 'chrome-dev':
+                    chromePath = '/opt/google/chrome-unstable/chrome';
+                    break;
+            }
+            break;
+    }
+    if (!chromePath) {
+        throw new Error(`Unable to detect browser executable path for '${channel}' on ${platform}.`);
+    }
+    // Check if Chrome exists and is accessible.
+    try {
+        fs.accessSync(chromePath);
+    }
+    catch (error) {
+        throw new Error(`Could not find Google Chrome executable for channel '${channel}' at '${chromePath}'.`);
+    }
+    return chromePath;
 }
 function resolveExecutablePath(launcher) {
     let downloadPath;

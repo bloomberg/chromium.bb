@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/views/extensions/expandable_container_view.h"
 #include "chrome/browser/ui/views/extensions/extension_permissions_view.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -30,6 +32,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,9 +47,11 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/separator.h"
+#include "ui/views/controls/textarea/textarea.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/table_layout.h"
 #include "ui/views/widget/widget.h"
 
 using content::OpenURLParams;
@@ -171,7 +176,7 @@ class CustomScrollableView : public views::View {
  private:
   // This view is an child of the dialog view (via |scroll_view_|) and thus will
   // not outlive it.
-  ExtensionInstallDialogView* parent_;
+  raw_ptr<ExtensionInstallDialogView> parent_;
 };
 
 BEGIN_METADATA(CustomScrollableView, views::View)
@@ -204,6 +209,51 @@ void AddPermissions(ExtensionInstallPrompt::Prompt* prompt,
 
 }  // namespace
 
+// A custom view for the justification section of the extension info. It
+// contains a text field into which users can enter their justification for
+// requesting an extension.
+class ExtensionInstallDialogView::ExtensionJustificationView
+    : public views::View {
+ public:
+  ExtensionJustificationView() {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+    auto header_label = std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(
+            IDS_ENTERPRISE_EXTENSION_REQUEST_JUSTIFICATION),
+        views::style::CONTEXT_DIALOG_BODY_TEXT);
+    header_label->SetMultiLine(true);
+    header_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(std::move(header_label));
+
+    auto justification_field = std::make_unique<views::Textarea>();
+    justification_field->SetPreferredSize(gfx::Size(0, 60));
+    justification_field->SetPlaceholderText(l10n_util::GetStringUTF16(
+        IDS_ENTERPRISE_EXTENSION_REQUEST_JUSTIFICATION_PLACEHOLDER));
+    justification_field_ = AddChildView(std::move(justification_field));
+  }
+  ExtensionJustificationView(const ExtensionJustificationView&) = delete;
+  ExtensionJustificationView& operator=(const ExtensionJustificationView&) =
+      delete;
+  ~ExtensionJustificationView() override = default;
+
+  // Get the text currently present in the justification text field.
+  std::u16string GetJustificationText() {
+    DCHECK(justification_field_);
+    return justification_field_->GetText();
+  }
+
+  void ChildPreferredSizeChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
+ private:
+  raw_ptr<views::Textfield> justification_field_;
+};
+
 ExtensionInstallDialogView::ExtensionInstallDialogView(
     std::unique_ptr<ExtensionInstallPromptShowParams> show_params,
     ExtensionInstallPrompt::DoneCallback done_callback,
@@ -226,6 +276,12 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   DCHECK(buttons & ui::DIALOG_BUTTON_CANCEL);
 
   int default_button = ui::DIALOG_BUTTON_CANCEL;
+
+  // If the prompt is related to requesting an extension, set the default button
+  // to OK.
+  if (prompt_->type() ==
+      ExtensionInstallPrompt::PromptType::EXTENSION_REQUEST_PROMPT)
+    default_button = ui::DIALOG_BUTTON_OK;
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // When we require parent permission next, we
@@ -287,6 +343,10 @@ void ExtensionInstallDialogView::SetInstallButtonDelayForTesting(
   g_install_delay_in_ms = delay_in_ms;
 }
 
+bool ExtensionInstallDialogView::IsJustificationFieldVisibleForTesting() {
+  return justification_view_ != nullptr;
+}
+
 void ExtensionInstallDialogView::ResizeWidget() {
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
@@ -301,7 +361,7 @@ void ExtensionInstallDialogView::VisibilityChanged(views::View* starting_from,
       // This base::Unretained is safe because the task is owned by the timer,
       // which is in turn owned by this object.
       enable_install_timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMilliseconds(g_install_delay_in_ms),
+          FROM_HERE, base::Milliseconds(g_install_delay_in_ms),
           base::BindOnce(&ExtensionInstallDialogView::EnableInstallButton,
                          base::Unretained(this)));
     }
@@ -312,24 +372,23 @@ void ExtensionInstallDialogView::AddedToWidget() {
   auto title_container = std::make_unique<views::View>();
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  views::GridLayout* layout =
-      title_container->SetLayoutManager(std::make_unique<views::GridLayout>());
-  constexpr int kTitleColumnSetId = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(kTitleColumnSetId);
+  views::TableLayout* layout =
+      title_container->SetLayoutManager(std::make_unique<views::TableLayout>());
   constexpr int icon_size = extension_misc::EXTENSION_ICON_SMALL;
-  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                        views::GridLayout::kFixedSize,
-                        views::GridLayout::ColumnSize::kFixed, icon_size, 0);
+  layout->AddColumn(views::LayoutAlignment::kCenter,
+                    views::LayoutAlignment::kStart,
+                    views::TableLayout::kFixedSize,
+                    views::TableLayout::ColumnSize::kFixed, icon_size, 0);
 
   // Equalize padding on the left and the right of the icon.
-  column_set->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
+  layout->AddPaddingColumn(
+      views::TableLayout::kFixedSize,
       provider->GetInsetsMetric(views::INSETS_DIALOG).left());
   // Set a resize weight so that the title label will be expanded to the
   // available width.
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
-                        1.0, views::GridLayout::ColumnSize::kUsePreferred, 0,
-                        0);
+  layout->AddColumn(views::LayoutAlignment::kStretch,
+                    views::LayoutAlignment::kStart, 1.0f,
+                    views::TableLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
   const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
@@ -339,13 +398,13 @@ void ExtensionInstallDialogView::AddedToWidget() {
   icon->SetImageSize(size);
   icon->SetImage(*image);
 
-  layout->StartRow(views::GridLayout::kFixedSize, kTitleColumnSetId);
-  layout->AddView(std::move(icon));
+  layout->AddRows(1, views::GridLayout::kFixedSize);
+  title_container->AddChildView(std::move(icon));
 
   std::unique_ptr<views::Label> title_label =
       views::BubbleFrameView::CreateDefaultTitleLabel(title_);
   // Setting the title's preferred size to 0 ensures it won't influence the
-  // overall size of the dialog. It will be expanded by GridLayout.
+  // overall size of the dialog. It will be expanded by TableLayout.
   title_label->SetPreferredSize(gfx::Size(0, 0));
   if (prompt_->has_webstore_data()) {
     auto webstore_data_container = std::make_unique<views::View>();
@@ -379,9 +438,9 @@ void ExtensionInstallDialogView::AddedToWidget() {
     user_count->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     webstore_data_container->AddChildView(std::move(user_count));
 
-    layout->AddView(std::move(webstore_data_container));
+    title_container->AddChildView(std::move(webstore_data_container));
   } else {
-    layout->AddView(std::move(title_label));
+    title_container->AddChildView(std::move(title_label));
   }
 
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
@@ -390,13 +449,31 @@ void ExtensionInstallDialogView::AddedToWidget() {
 void ExtensionInstallDialogView::OnDialogCanceled() {
   DCHECK(done_callback_);
 
+  // The dialog will be closed, so stop observing for any extension changes
+  // that could potentially crop up during that process (like the extension
+  // being uninstalled).
+  extension_registry_observation_.Reset();
+
   UpdateInstallResultHistogram(false);
   prompt_->OnDialogCanceled();
-  std::move(done_callback_).Run(ExtensionInstallPrompt::Result::USER_CANCELED);
+  std::move(done_callback_)
+      .Run(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::USER_CANCELED));
 }
 
 void ExtensionInstallDialogView::OnDialogAccepted() {
   DCHECK(done_callback_);
+
+  // The dialog will be closed, so stop observing for any extension changes
+  // that could potentially crop up during that process (like the extension
+  // being uninstalled).
+  extension_registry_observation_.Reset();
+
+  bool expect_justification =
+      prompt_->type() ==
+          ExtensionInstallPrompt::PromptType::EXTENSION_REQUEST_PROMPT &&
+      base::FeatureList::IsEnabled(features::kExtensionWorkflowJustification);
+  DCHECK(expect_justification == !!justification_view_);
 
   UpdateInstallResultHistogram(true);
   prompt_->OnDialogAccepted();
@@ -407,7 +484,13 @@ void ExtensionInstallDialogView::OnDialogAccepted() {
               withhold_permissions_checkbox_->GetChecked()
           ? ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED
           : ExtensionInstallPrompt::Result::ACCEPTED;
-  std::move(done_callback_).Run(result);
+
+  std::move(done_callback_)
+      .Run(ExtensionInstallPrompt::DoneCallbackPayload(
+          result,
+          justification_view_
+              ? base::UTF16ToUTF8(justification_view_->GetJustificationText())
+              : std::string()));
 }
 
 bool ExtensionInstallDialogView::IsDialogButtonEnabled(
@@ -429,6 +512,11 @@ void ExtensionInstallDialogView::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
+  // Extra checks for https://crbug.com/1259043.
+  // TODO(devlin): Remove these when we've validated there's no longer a crash.
+  CHECK(extension);
+  CHECK(prompt_);
+  CHECK(prompt_->extension());
   // Close the dialog if the extension is uninstalled.
   if (extension->id() != prompt_->extension()->id())
     return;
@@ -509,7 +597,11 @@ void ExtensionInstallDialogView::CreateContents() {
          std::make_unique<ExpandableContainerView>(details, content_width)});
   }
 
-  if (sections.empty()) {
+  const bool is_justification_field_enabled =
+      prompt_->type() ==
+          ExtensionInstallPrompt::PromptType::EXTENSION_REQUEST_PROMPT &&
+      base::FeatureList::IsEnabled(features::kExtensionWorkflowJustification);
+  if (sections.empty() && !is_justification_field_enabled) {
     // Use a smaller margin between the title area and buttons, since there
     // isn't any content.
     set_margins(gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -532,6 +624,19 @@ void ExtensionInstallDialogView::CreateContents() {
       extension_info_container->AddChildView(section.contents_view.release());
   }
 
+  // Add separate section for user justification. This section isn't added to
+  // the |sections| vector since it is later referenced to extract the textfield
+  // string.
+  if (is_justification_field_enabled) {
+    std::unique_ptr<views::Separator> separator =
+        std::make_unique<views::Separator>();
+    separator->SetColor(SK_ColorTRANSPARENT);
+    extension_info_container->AddChildView(std::move(separator));
+
+    justification_view_ = extension_info_container->AddChildView(
+        std::make_unique<ExtensionJustificationView>());
+  }
+
   scroll_view_ = new views::ScrollView();
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
@@ -539,7 +644,7 @@ void ExtensionInstallDialogView::CreateContents() {
   scroll_view_->ClipHeightTo(
       0, provider->GetDistanceMetric(
              views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
-  AddChildView(scroll_view_);
+  AddChildView(scroll_view_.get());
 }
 
 void ExtensionInstallDialogView::EnableInstallButton() {

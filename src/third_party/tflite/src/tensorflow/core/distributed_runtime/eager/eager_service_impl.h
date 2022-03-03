@@ -90,7 +90,8 @@ class EagerServiceImpl {
   static constexpr uint64 kInvalidStreamId = 0;
 
   // Used by both Enqueue and StreamingEnqueue RPCs.
-  Status Enqueue(const EnqueueRequest* request, EnqueueResponse* response,
+  Status Enqueue(CallOptions* call_opts, const EnqueueRequest* request,
+                 EnqueueResponse* response,
                  uint64 stream_id = kInvalidStreamId);
 
   Status WaitQueueDone(const WaitQueueDoneRequest* request,
@@ -120,7 +121,7 @@ class EagerServiceImpl {
     }
 
     explicit ServerContext(tensorflow::EagerContext* ctx,
-                           int64 destroy_after_secs, const WorkerEnv* env,
+                           int64_t destroy_after_secs, const WorkerEnv* env,
                            const bool is_master = false)
         : ctx_(ctx), env_(env), is_master_(is_master) {
       ctx->Ref();
@@ -148,9 +149,9 @@ class EagerServiceImpl {
 
     bool IsStale() {
       mutex_lock l(last_accessed_mu_);
-      return (destroy_after_micros_ > 0 &&
-              (env_->env->NowMicros() - last_accessed_micros_) >
-                  destroy_after_micros_);
+      const int64_t time_passed =
+          env_->env->NowMicros() - last_accessed_micros_;
+      return (destroy_after_micros_ > 0 && time_passed > destroy_after_micros_);
     }
 
    private:
@@ -160,8 +161,8 @@ class EagerServiceImpl {
     const WorkerEnv* const env_;  // Not owned.
 
     mutex last_accessed_mu_;
-    int64 last_accessed_micros_ TF_GUARDED_BY(last_accessed_mu_);
-    int64 destroy_after_micros_;
+    int64_t last_accessed_micros_ TF_GUARDED_BY(last_accessed_mu_);
+    int64_t destroy_after_micros_;
 
     const bool is_master_;
   };
@@ -208,8 +209,8 @@ class EagerServiceImpl {
   };
 
  private:
-  Status ExecuteOp(const Operation& operation, EagerContext* eager_context,
-                   EagerExecutor* eager_executor,
+  Status ExecuteOp(CallOptions* call_opts, const Operation& operation,
+                   EagerContext* eager_context, EagerExecutor* eager_executor,
                    QueueResponse* queue_response);
   Status SendTensor(const SendTensorOp& send_tensor,
                     EagerContext* eager_context);

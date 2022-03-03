@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/test/test_pending_task.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 
@@ -28,6 +28,9 @@ typedef base::TestPendingTask PostedTask;
 class TestTaskRunner : public base::SequencedTaskRunner {
  public:
   explicit TestTaskRunner(quic::MockClock* clock);
+
+  TestTaskRunner(const TestTaskRunner&) = delete;
+  TestTaskRunner& operator=(const TestTaskRunner&) = delete;
 
   // base::TaskRunner implementation.
   bool PostDelayedTask(const base::Location& from_here,
@@ -64,10 +67,8 @@ class TestTaskRunner : public base::SequencedTaskRunner {
  private:
   std::vector<PostedTask>::iterator FindNextTask();
 
-  quic::MockClock* const clock_;
+  const raw_ptr<quic::MockClock> clock_;
   std::vector<PostedTask> tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTaskRunner);
 };
 
 }  // namespace test

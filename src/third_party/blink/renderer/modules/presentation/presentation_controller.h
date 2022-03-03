@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
@@ -16,7 +17,6 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -35,6 +35,10 @@ class MODULES_EXPORT PresentationController
   static const char kSupplementName[];
 
   explicit PresentationController(LocalDOMWindow&);
+
+  PresentationController(const PresentationController&) = delete;
+  PresentationController& operator=(const PresentationController&) = delete;
+
   ~PresentationController() override;
 
   static PresentationController* From(LocalDOMWindow&);
@@ -105,8 +109,6 @@ class MODULES_EXPORT PresentationController
   // to |presentation_service_|'s implementation.
   HeapMojoReceiver<mojom::blink::PresentationController, PresentationController>
       presentation_controller_receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PresentationController);
 };
 
 }  // namespace blink

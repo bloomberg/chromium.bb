@@ -11,6 +11,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -62,6 +63,7 @@ class URLPattern {
     SCHEME_WSS = 1 << 8,
     SCHEME_DATA = 1 << 9,
     SCHEME_URN = 1 << 10,
+    SCHEME_UUID_IN_PACKAGE = 1 << 11,
 
     // IMPORTANT!
     // SCHEME_ALL will match every scheme, including chrome://, chrome-

@@ -21,10 +21,13 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/export.h"
+#include "perfetto/base/status.h"
 #include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/utils.h"
 
 namespace perfetto {
@@ -77,6 +80,21 @@ bool Rmdir(const std::string& path);
 
 // Wrapper around access(path, F_OK).
 bool FileExists(const std::string& path);
+
+// Gets the extension for a filename. If the file has two extensions, returns
+// only the last one (foo.pb.gz => .gz). Returns empty string if there is no
+// extension.
+std::string GetFileExtension(const std::string& filename);
+
+// Puts the path to all files under |dir_path| in |output|, recursively walking
+// subdirectories. File paths are relative to |dir_path|. Only files are
+// included, not directories. Path separator is always '/', even on windows (not
+// '\').
+base::Status ListFilesRecursive(const std::string& dir_path,
+                                std::vector<std::string>& output);
+
+// Returns the size of the file at `path` or nullopt in case of error.
+Optional<size_t> GetFileSize(const std::string& path);
 
 }  // namespace base
 }  // namespace perfetto

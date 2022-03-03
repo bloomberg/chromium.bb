@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "components/feed/core/proto/v2/wire/consistency_token.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
@@ -76,7 +77,7 @@ struct ListWebFeedsDiscoverApi {
   using Response = feedwire::webfeed::ListWebFeedsResponse;
   static constexpr NetworkRequestType kRequestType =
       NetworkRequestType::kListWebFeeds;
-  static base::StringPiece Method() { return "GET"; }
+  static base::StringPiece Method() { return "POST"; }
   static base::StringPiece RequestPath(const Request&) { return "v1/webFeeds"; }
 };
 
@@ -85,7 +86,7 @@ struct ListRecommendedWebFeedDiscoverApi {
   using Response = feedwire::webfeed::ListRecommendedWebFeedsResponse;
   static constexpr NetworkRequestType kRequestType =
       NetworkRequestType::kListRecommendedWebFeeds;
-  static base::StringPiece Method() { return "GET"; }
+  static base::StringPiece Method() { return "POST"; }
   static base::StringPiece RequestPath(const Request&) {
     return "v1/recommendedWebFeeds";
   }
@@ -186,8 +187,9 @@ class FeedNetwork {
   virtual void CancelRequests() = 0;
 
  protected:
-  static void ParseAndForwardApiResponseBegin(NetworkRequestType request_type,
-                                              const RawResponse& raw_response);
+  static void ParseAndForwardApiResponseStarted(
+      NetworkRequestType request_type,
+      const RawResponse& raw_response);
   virtual void SendDiscoverApiRequest(
       NetworkRequestType request_type,
       base::StringPiece api_path,
@@ -201,7 +203,7 @@ class FeedNetwork {
       base::OnceCallback<void(FeedNetwork::ApiResult<typename API::Response>)>
           result_callback,
       RawResponse raw_response) {
-    ParseAndForwardApiResponseBegin(API::kRequestType, raw_response);
+    ParseAndForwardApiResponseStarted(API::kRequestType, raw_response);
     FeedNetwork::ApiResult<typename API::Response> result;
     result.response_info = raw_response.response_info;
     if (result.response_info.status_code == 200) {

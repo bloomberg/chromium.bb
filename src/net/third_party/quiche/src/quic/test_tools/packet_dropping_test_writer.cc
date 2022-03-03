@@ -18,7 +18,7 @@ const int32_t kMinSuccesfulWritesAfterPacketLoss = 2;
 
 // An alarm that is scheduled if a blocked socket is simulated to indicate
 // it's writable again.
-class WriteUnblockedAlarm : public QuicAlarm::Delegate {
+class WriteUnblockedAlarm : public QuicAlarm::DelegateWithoutContext {
  public:
   explicit WriteUnblockedAlarm(PacketDroppingTestWriter* writer)
       : writer_(writer) {}
@@ -34,7 +34,7 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
 
 // An alarm that is scheduled every time a new packet is to be written at a
 // later point.
-class DelayAlarm : public QuicAlarm::Delegate {
+class DelayAlarm : public QuicAlarm::DelegateWithoutContext {
  public:
   explicit DelayAlarm(PacketDroppingTestWriter* writer) : writer_(writer) {}
 
@@ -68,7 +68,14 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
   simple_random_.set_seed(seed);
 }
 
-PacketDroppingTestWriter::~PacketDroppingTestWriter() = default;
+PacketDroppingTestWriter::~PacketDroppingTestWriter() {
+  if (write_unblocked_alarm_ != nullptr) {
+    write_unblocked_alarm_->PermanentCancel();
+  }
+  if (delay_alarm_ != nullptr) {
+    delay_alarm_->PermanentCancel();
+  }
+}
 
 void PacketDroppingTestWriter::Initialize(
     QuicConnectionHelperInterface* helper,

@@ -26,15 +26,12 @@ namespace ast {
 class I32 : public Castable<I32, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
-  I32(ProgramID program_id, const Source& source);
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
+  I32(ProgramID pid, const Source& src);
   /// Move constructor
   I32(I32&&);
   ~I32() override;
-
-  /// @returns the name for this type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -44,7 +41,7 @@ class I32 : public Castable<I32, Type> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  I32* Clone(CloneContext* ctx) const override;
+  const I32* Clone(CloneContext* ctx) const override;
 };
 
 }  // namespace ast

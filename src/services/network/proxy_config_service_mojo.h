@@ -6,7 +6,6 @@
 #define SERVICES_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -42,6 +41,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
           proxy_config_client_receiver,
       absl::optional<net::ProxyConfigWithAnnotation> initial_proxy_config,
       mojo::PendingRemote<mojom::ProxyConfigPollerClient> proxy_poller_client);
+
+  ProxyConfigServiceMojo(const ProxyConfigServiceMojo&) = delete;
+  ProxyConfigServiceMojo& operator=(const ProxyConfigServiceMojo&) = delete;
+
   ~ProxyConfigServiceMojo() override;
 
   // net::ProxyConfigService implementation:
@@ -65,8 +68,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
   mojo::Receiver<mojom::ProxyConfigClient> receiver_{this};
 
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceMojo);
 };
 
 }  // namespace network

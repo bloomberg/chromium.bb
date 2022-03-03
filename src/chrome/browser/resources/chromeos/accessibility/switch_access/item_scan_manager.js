@@ -311,7 +311,6 @@ export class ItemScanManager extends ItemNavigatorInterface {
       return;
     }
 
-
     if (this.node_.isEquivalentTo(event.target)) {
       return;
     }
@@ -384,32 +383,38 @@ export class ItemScanManager extends ItemNavigatorInterface {
 
   /** @private */
   init_() {
-    this.group_.onFocus();
-    this.node_.onFocus();
+    chrome.automation.getFocus(focus => {
+      if (focus && this.history_.buildFromAutomationNode(focus)) {
+        this.restoreFromHistory_();
+      } else {
+        this.group_.onFocus();
+        this.node_.onFocus();
+      }
+    });
 
     new RepeatedEventHandler(
         this.desktop_, chrome.automation.EventType.FOCUS,
-        this.onFocusChange_.bind(this));
+        event => this.onFocusChange_(event));
 
     // ARC++ fires SCROLL_POSITION_CHANGED.
     new RepeatedEventHandler(
         this.desktop_, chrome.automation.EventType.SCROLL_POSITION_CHANGED,
-        this.onScrollChange_.bind(this));
+        () => this.onScrollChange_());
 
     // Web and Views use AXEventGenerator, which fires
     // separate horizontal and vertical events.
     new RepeatedEventHandler(
         this.desktop_,
         chrome.automation.EventType.SCROLL_HORIZONTAL_POSITION_CHANGED,
-        this.onScrollChange_.bind(this));
+        () => this.onScrollChange_());
     new RepeatedEventHandler(
         this.desktop_,
         chrome.automation.EventType.SCROLL_VERTICAL_POSITION_CHANGED,
-        this.onScrollChange_.bind(this));
+        () => this.onScrollChange_());
 
     new RepeatedTreeChangeHandler(
         chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,
-        this.onTreeChange_.bind(this), {
+        treeChange => this.onTreeChange_(treeChange), {
           predicate: (treeChange) =>
               this.group_.findChild(treeChange.target) != null ||
               this.group_.isEquivalentTo(treeChange.target)
@@ -422,7 +427,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
           chrome.automation.EventType.MENU_START,
           chrome.automation.EventType.SHOW
         ],
-        this.onModalDialog_.bind(this))
+        event => this.onModalDialog_(event))
         .start();
   }
 
@@ -517,6 +522,38 @@ export class ItemScanManager extends ItemNavigatorInterface {
       this.moveToValidNode();
       return;
     }
+
+    // Check to see if the new node requires we try and focus a new window.
+    chrome.automation.getFocus(currentAutomationFocus => {
+      const newAutomationNode = node.automationNode;
+      if (!newAutomationNode || !currentAutomationFocus) {
+        return;
+      }
+
+      // First, if the current focus is a descendant of the new node or vice
+      // versa, then we're done here.
+      if (AutomationUtil.isDescendantOf(
+              currentAutomationFocus, newAutomationNode) ||
+          AutomationUtil.isDescendantOf(
+              newAutomationNode, currentAutomationFocus)) {
+        return;
+      }
+
+      // The current focus and new node do not have one another in their
+      // ancestry; try to focus an ancestor window of the new node. In
+      // particular, the parenting aura::Window of the views::Widget.
+      let widget = newAutomationNode;
+      while (widget &&
+             (widget.role !== chrome.automation.RoleType.WINDOW ||
+              widget.className !== 'Widget')) {
+        widget = widget.parent;
+      }
+
+      if (widget && widget.parent) {
+        widget.parent.focus();
+      }
+    });
+
     this.setNode_(node);
   }
 

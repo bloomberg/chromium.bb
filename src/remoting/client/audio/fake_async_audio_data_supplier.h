@@ -9,7 +9,6 @@
 #include <list>
 #include <memory>
 
-#include "base/macros.h"
 #include "remoting/client/audio/async_audio_data_supplier.h"
 
 namespace remoting {
@@ -21,6 +20,11 @@ class FakeAsyncAudioDataSupplier : public AsyncAudioDataSupplier {
   const uint8_t kDummyAudioData = 0x8b;
 
   FakeAsyncAudioDataSupplier();
+
+  FakeAsyncAudioDataSupplier(const FakeAsyncAudioDataSupplier&) = delete;
+  FakeAsyncAudioDataSupplier& operator=(const FakeAsyncAudioDataSupplier&) =
+      delete;
+
   ~FakeAsyncAudioDataSupplier() override;
 
   // AsyncAudioDataSupplier implementations.
@@ -55,8 +59,6 @@ class FakeAsyncAudioDataSupplier : public AsyncAudioDataSupplier {
   bool fulfill_requests_immediately_ = false;
   std::list<std::unique_ptr<GetDataRequest>> pending_requests_;
   size_t fulfilled_requests_count_ = 0u;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAsyncAudioDataSupplier);
 };
 
 }  // namespace remoting

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "core/fxcrt/fx_codepage.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,11 +20,13 @@
 class CFGAS_RTFBreakTest : public testing::Test {
  public:
   void SetUp() override {
-    font_ = CFGAS_GEFont::LoadFont(L"Arial Black", 0, 0);
+    const wchar_t kFontFamily[] = L"Arimo Bold";
+    font_ = CFGAS_GEFont::LoadFont(kFontFamily, 0, FX_CodePage::kDefANSI);
     ASSERT_TRUE(font_);
   }
 
-  std::unique_ptr<CFGAS_RTFBreak> CreateBreak(uint32_t layout_styles) {
+  std::unique_ptr<CFGAS_RTFBreak> CreateBreak(
+      Mask<CFGAS_Break::LayoutStyle> layout_styles) {
     auto rtf_break = std::make_unique<CFGAS_RTFBreak>(layout_styles);
     rtf_break->SetFont(font_);
     return rtf_break;
@@ -37,8 +40,7 @@ class CFGAS_RTFBreakTest : public testing::Test {
 // and must be consumed before you get any more characters ....
 
 TEST_F(CFGAS_RTFBreakTest, AddChars) {
-  auto rtf_break = CreateBreak(FX_LAYOUTSTYLE_ExpandTab);
-
+  auto rtf_break = CreateBreak(CFGAS_Break::LayoutStyle::kExpandTab);
   WideString str(L"Input String.");
   for (wchar_t ch : str)
     EXPECT_EQ(CFGAS_Char::BreakType::kNone, rtf_break->AppendChar(ch));
@@ -62,12 +64,11 @@ TEST_F(CFGAS_RTFBreakTest, AddChars) {
 }
 
 TEST_F(CFGAS_RTFBreakTest, ControlCharacters) {
-  auto rtf_break = CreateBreak(FX_LAYOUTSTYLE_ExpandTab);
+  auto rtf_break = CreateBreak(CFGAS_Break::LayoutStyle::kExpandTab);
   EXPECT_EQ(CFGAS_Char::BreakType::kLine, rtf_break->AppendChar(L'\v'));
   EXPECT_EQ(CFGAS_Char::BreakType::kPage, rtf_break->AppendChar(L'\f'));
-  const wchar_t kUnicodeParagraphSeparator = 0x2029;
   EXPECT_EQ(CFGAS_Char::BreakType::kParagraph,
-            rtf_break->AppendChar(kUnicodeParagraphSeparator));
+            rtf_break->AppendChar(pdfium::unicode::kParagraphSeparator));
   EXPECT_EQ(CFGAS_Char::BreakType::kParagraph, rtf_break->AppendChar(L'\n'));
 
   ASSERT_EQ(1, rtf_break->CountBreakPieces());
@@ -75,7 +76,7 @@ TEST_F(CFGAS_RTFBreakTest, ControlCharacters) {
 }
 
 TEST_F(CFGAS_RTFBreakTest, BidiLine) {
-  auto rtf_break = CreateBreak(FX_LAYOUTSTYLE_ExpandTab);
+  auto rtf_break = CreateBreak(CFGAS_Break::LayoutStyle::kExpandTab);
   rtf_break->SetLineBreakTolerance(1);
   rtf_break->SetFontSize(12);
 

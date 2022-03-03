@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 
 namespace base {
 class ListValue;
@@ -21,6 +20,11 @@ class PairingRegistryDelegateLinux
     : public protocol::PairingRegistry::Delegate {
  public:
   PairingRegistryDelegateLinux();
+
+  PairingRegistryDelegateLinux(const PairingRegistryDelegateLinux&) = delete;
+  PairingRegistryDelegateLinux& operator=(const PairingRegistryDelegateLinux&) =
+      delete;
+
   ~PairingRegistryDelegateLinux() override;
 
   // PairingRegistry::Delegate interface
@@ -43,8 +47,6 @@ class PairingRegistryDelegateLinux
   void SetRegistryPathForTesting(const base::FilePath& registry_path);
 
   base::FilePath registry_path_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(PairingRegistryDelegateLinux);
 };
 
 }  // namespace remoting

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 TEST(PDF417HighLevelEncoderTest, EncodeHighLevel) {
   static constexpr struct EncodeHighLevelCase {
@@ -44,7 +44,7 @@ TEST(PDF417HighLevelEncoderTest, EncodeHighLevel) {
     const EncodeHighLevelCase& testcase = kEncodeHighLevelCases[i];
     WideStringView input(testcase.input);
     WideString expected(testcase.expected, testcase.expected_length);
-    Optional<WideString> result =
+    absl::optional<WideString> result =
         CBC_PDF417HighLevelEncoder::EncodeHighLevel(input);
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(expected, result.value()) << " for case number " << i;

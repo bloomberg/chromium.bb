@@ -33,7 +33,8 @@ ConnectionHelpTabHelper::~ConnectionHelpTabHelper() {}
 
 void ConnectionHelpTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() &&
+  // Ignore pre-rendering navigations.
+  if (navigation_handle->IsInPrimaryMainFrame() &&
       (web_contents()->GetURL().EqualsIgnoringRef(GetHelpCenterURL()) ||
        web_contents()->GetURL().EqualsIgnoringRef(GURL(kSymantecSupportUrl))) &&
       navigation_handle->IsErrorPage() &&
@@ -48,7 +49,8 @@ void ConnectionHelpTabHelper::SetHelpCenterUrlForTesting(const GURL& url) {
 
 ConnectionHelpTabHelper::ConnectionHelpTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ConnectionHelpTabHelper>(*web_contents) {}
 
 GURL ConnectionHelpTabHelper::GetHelpCenterURL() {
   if (testing_url_.is_valid())
@@ -56,4 +58,4 @@ GURL ConnectionHelpTabHelper::GetHelpCenterURL() {
   return GURL(kHelpCenterConnectionHelpUrl);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ConnectionHelpTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ConnectionHelpTabHelper);

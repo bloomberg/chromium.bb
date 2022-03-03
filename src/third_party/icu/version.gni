@@ -6,5 +6,5 @@ declare_args() {
   # Contains the major version number of the ICU library, for dependencies that
   # need different configuration based on the library version. Currently this
   # is only useful in Fuchsia.
-  icu_major_version_number = "69"
+  icu_major_version_number = "70"
 }

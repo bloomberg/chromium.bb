@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -30,11 +29,6 @@ class Profile;
 namespace base {
 class CommandLine;
 }
-
-namespace chromeos {
-class KioskAutoLaunchViewsTest;
-class KioskTest;
-}  // namespace chromeos
 
 namespace extensions {
 class Extension;
@@ -79,11 +73,11 @@ class KioskAppManager : public KioskAppManagerBase,
         chromeos::ExternalCacheDelegate* delegate,
         bool always_check_updates) = 0;
 
-    // Creates an AppSession object that will mantain a started kiosk app
+    // Creates an AppSessionAsh object that will maintain a started kiosk app
     // session.
     // Called when the KioskAppManager initializes the session.
     // It can return nullptr.
-    virtual std::unique_ptr<AppSession> CreateAppSession() = 0;
+    virtual std::unique_ptr<AppSessionAsh> CreateAppSession() = 0;
   };
 
   // Name of a dictionary that holds kiosk app info in Local State.
@@ -253,8 +247,8 @@ class KioskAppManager : public KioskAppManagerBase,
   friend struct base::LazyInstanceTraitsBase<KioskAppManager>;
   friend std::default_delete<KioskAppManager>;
   friend class KioskAppManagerTest;
-  friend class chromeos::KioskAutoLaunchViewsTest;
-  friend class chromeos::KioskTest;
+  friend class KioskAutoLaunchViewsTest;
+  friend class KioskTest;
 
   enum class AutoLoginState {
     kNone = 0,
@@ -264,6 +258,8 @@ class KioskAppManager : public KioskAppManagerBase,
   };
 
   KioskAppManager();
+  KioskAppManager(const KioskAppManager&) = delete;
+  KioskAppManager& operator=(const KioskAppManager&) = delete;
   ~KioskAppManager() override;
 
   // Stop all data loading and remove its dependency on CrosSettings.
@@ -342,8 +338,6 @@ class KioskAppManager : public KioskAppManagerBase,
 
   // Callback registered using SetSecondaryAppsLoaderPrefsChangedHandler().
   base::RepeatingClosure secondary_apps_changed_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskAppManager);
 };
 
 }  // namespace ash

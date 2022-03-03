@@ -13,8 +13,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/base/net_errors.h"
@@ -25,7 +25,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace ash {
 namespace {
+
 constexpr char kAccountEmail[] = "user@gmail.com";
 constexpr char kSecondaryEmail[] = "secondary@gmail.com";
 constexpr char kParentObfuscatedGaiaId[] = "parent-obfuscated-gaia-id";
@@ -67,7 +69,7 @@ class SecondaryAccountConsentLoggerTest : public testing::Test {
 
   void SetUp() {
     SecondaryAccountConsentLogger::RegisterPrefs(local_state_.registry());
-    local_state_.SetUserPref(ash::prefs::kEduCoexistenceId,
+    local_state_.SetUserPref(prefs::kEduCoexistenceId,
                              std::make_unique<base::Value>(kChromeSyncId));
   }
 
@@ -95,11 +97,13 @@ class SecondaryAccountConsentLoggerTest : public testing::Test {
   }
 
   CoreAccountInfo SetPrimaryAccount() {
-    return identity_test_env_.SetUnconsentedPrimaryAccount(kAccountEmail);
+    return identity_test_env_.SetPrimaryAccount(kAccountEmail,
+                                                signin::ConsentLevel::kSync);
   }
 
   void IssueRefreshTokenForPrimaryAccount() {
-    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kAccountEmail);
+    identity_test_env_.MakePrimaryAccountAvailable(kAccountEmail,
+                                                   signin::ConsentLevel::kSync);
   }
 
   void SendResponse(int net_error, int response_code) {
@@ -109,8 +113,8 @@ class SecondaryAccountConsentLoggerTest : public testing::Test {
   void WaitForAccessTokenRequestAndIssueToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         identity_test_env_.identity_manager()->GetPrimaryAccountId(
-            signin::ConsentLevel::kSignin),
-        "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+            signin::ConsentLevel::kSync),
+        "access_token", base::Time::Now() + base::Hours(1));
   }
 
   base::DictionaryValue CreateRequestBody() {
@@ -163,7 +167,7 @@ TEST_F(SecondaryAccountConsentLoggerTest, TokenError) {
                          SecondaryAccountConsentLogger::Result::kTokenError));
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       identity_test_env_.identity_manager()->GetPrimaryAccountId(
-          signin::ConsentLevel::kSignin),
+          signin::ConsentLevel::kSync),
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 
@@ -223,3 +227,5 @@ TEST_F(SecondaryAccountConsentLoggerTest, RequestBody) {
   base::DictionaryValue request_body = CreateRequestBody();
   EXPECT_EQ(test_request_body.value(), request_body);
 }
+
+}  // namespace ash

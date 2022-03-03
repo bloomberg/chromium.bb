@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_BUBBLE_HANDLER_IMPL_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_BUBBLE_HANDLER_IMPL_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
@@ -31,6 +31,11 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
  public:
   AutofillBubbleHandlerImpl(Browser* browser,
                             ToolbarButtonProvider* toolbar_button_provider);
+
+  AutofillBubbleHandlerImpl(const AutofillBubbleHandlerImpl&) = delete;
+  AutofillBubbleHandlerImpl& operator=(const AutofillBubbleHandlerImpl&) =
+      delete;
+
   ~AutofillBubbleHandlerImpl() override;
 
   // AutofillBubbleHandler:
@@ -77,9 +82,9 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
   // Executes highlight animation on toolbar's avatar icon.
   void ShowAvatarHighlightAnimation();
 
-  Browser* browser_ = nullptr;
+  raw_ptr<Browser> browser_ = nullptr;
 
-  ToolbarButtonProvider* toolbar_button_provider_ = nullptr;
+  raw_ptr<ToolbarButtonProvider> toolbar_button_provider_ = nullptr;
 
   // Whether a save local card sign in promo bubble could pop up from the avatar
   // button after the highlight animation finishes.
@@ -89,8 +94,6 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
       personal_data_manager_observation_{this};
   base::ScopedObservation<AvatarToolbarButton, AvatarToolbarButton::Observer>
       avatar_toolbar_button_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillBubbleHandlerImpl);
 };
 
 }  // namespace autofill

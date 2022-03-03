@@ -32,13 +32,11 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
                         text_origin,
                         text_frame_rect,
                         horizontal),
-        run_(run),
-        combined_text_(nullptr) {}
+        run_(run) {}
   ~TextPainter() = default;
 
   void SetCombinedText(LayoutTextCombine* combined_text) {
     combined_text_ = combined_text;
-    has_combined_text_ = combined_text_ ? true : false;
   }
 
   void ClipDecorationsStripe(float upper,
@@ -48,7 +46,8 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
              unsigned end_offset,
              unsigned length,
              const TextPaintStyle&,
-             DOMNodeId node_id);
+             DOMNodeId node_id,
+             const AutoDarkMode& auto_dark_mode);
 
   void PaintDecorationsExceptLineThrough(const TextDecorationOffsetBase&,
                                          TextDecorationInfo&,
@@ -66,18 +65,18 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
   void PaintInternalRun(TextRunPaintInfo&,
                         unsigned from,
                         unsigned to,
-                        DOMNodeId node_id);
+                        DOMNodeId node_id,
+                        const AutoDarkMode& auto_dark_mode);
 
   template <PaintInternalStep step>
   void PaintInternal(unsigned start_offset,
                      unsigned end_offset,
                      unsigned truncation_point,
-                     DOMNodeId node_id);
-
-  void PaintEmphasisMarkForCombinedText();
+                     DOMNodeId node_id,
+                     const AutoDarkMode& auto_dark_mode);
 
   const TextRun& run_;
-  LayoutTextCombine* combined_text_;
+  LayoutTextCombine* combined_text_ = nullptr;
 };
 
 }  // namespace blink

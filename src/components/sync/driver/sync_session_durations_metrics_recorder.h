@@ -6,8 +6,8 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_SESSION_DURATIONS_METRICS_RECORDER_H_
 
 #include <memory>
-#include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -27,6 +27,12 @@ class SyncSessionDurationsMetricsRecorder
   SyncSessionDurationsMetricsRecorder(
       SyncService* sync_service,
       signin::IdentityManager* identity_manager);
+
+  SyncSessionDurationsMetricsRecorder(
+      const SyncSessionDurationsMetricsRecorder&) = delete;
+  SyncSessionDurationsMetricsRecorder& operator=(
+      const SyncSessionDurationsMetricsRecorder&) = delete;
+
   ~SyncSessionDurationsMetricsRecorder() override;
 
   // Informs this service that a session started at |session_start| time.
@@ -78,8 +84,8 @@ class SyncSessionDurationsMetricsRecorder
   // Determines the syns status..
   FeatureState DetermineSyncStatus() const;
 
-  SyncService* const sync_service_;
-  signin::IdentityManager* const identity_manager_;
+  const raw_ptr<SyncService> sync_service_;
+  const raw_ptr<signin::IdentityManager> identity_manager_;
 
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_observation_{this};
@@ -103,8 +109,6 @@ class SyncSessionDurationsMetricsRecorder
   // Tracks the elapsed active session time in the current sync and account
   // status. The timer is absent if there's no active session.
   std::unique_ptr<base::ElapsedTimer> sync_account_session_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncSessionDurationsMetricsRecorder);
 };
 
 }  // namespace syncer

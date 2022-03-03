@@ -14,12 +14,12 @@
   }
 
   #addManualPrinterIcon {
-    --cr-icon-button-fill-color: rgb(138, 180, 248);
+    --cr-icon-button-fill-color: var(--cros-button-icon-color-secondary);
     --cr-icon-button-margin-end: 0;
   }
 
   #cloudOffIcon {
-    --iron-icon-fill-color: rgb(95, 99, 104);
+    --iron-icon-fill-color: var(--cros-icon-color-secondary);
     margin-top: 10px;
   }
 
@@ -42,6 +42,10 @@
 
   #savedPrintersContainer {
     border-bottom: var(--cr-separator-line);
+  }
+
+  #enterprisePrintersContainer {
+    border-top: var(--cr-separator-line);
   }
 
   :host(:not([can-add-printer])) #addPrinterSection,
@@ -85,10 +89,10 @@
     <div aria-label$="[[nearbyPrintersAriaLabel_]]">
       $i18n{nearbyPrintersListTitle}
     </div>
-    <settings-localized-link class="secondary"
+    <localized-link class="secondary"
         localized-string="$i18n{nearbyPrintersListDescription}"
         link-url="$i18n{printingCUPSPrintLearnMoreUrl}">
-    </settings-localized-link>
+    </localized-link>
     <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter,
       prefs.native_printing.user_native_printers_allowed.value)]]">
       <cr-policy-pref-indicator
@@ -104,7 +108,7 @@
         $i18n{addCupsPrinter}
       </div>
       <cr-icon-button class="action-button" id="addManualPrinterIcon"
-          iron-icon="settings20:printer-add"
+          iron-icon="os-settings:printer-add"
           on-click="onAddPrinterTap_"
           disabled="[[!addPrinterButtonActive_(canAddPrinter,
               prefs.native_printing.user_native_printers_allowed.value)]]"
@@ -116,10 +120,32 @@
 
   <template is="dom-if" if="[[canAddPrinter]]" restamp>
     <settings-cups-nearby-printers search-term="[[searchTerm]]"
+        user-printers-allowed="[[!prefs.native_printing.
+            user_native_printers_allowed.value]]"
         active-printer="{{activePrinter}}"
         printers-count="{{nearbyPrinterCount_}}">
     </settings-cups-nearby-printers>
   </template>
+</template>
+
+<template is="dom-if"
+    if="[[doesAccountHaveEnterprisePrinters_(enterprisePrinters_)]]"
+    restamp>
+  <div id="enterprisePrintersContainer">
+    <div class="settings-box first">
+      <div class="start">
+        <span aria-label$="[[enterprisePrintersAriaLabel_]]">
+          $i18n{enterprisePrintersTitle}
+        </span>
+      </div>
+    </div>
+    <settings-cups-enterprise-printers
+        id="enterprisePrinters"
+        active-printer="{{activePrinter}}"
+        search-term="[[searchTerm]]"
+        printers-count="{{enterprisePrinterCount_}}">
+    </settings-cups-enterprise-printers>
+  </div>
 </template>
 
 <settings-cups-add-printer-dialog id="addPrinterDialog"

@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
  * mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class CustomTabActivityIncognitoMetricTest {
     private static final String UMA_KEY = "CustomTabs.IncognitoCCTCallerId";
     private static final String FIRST_PARTY_UMA_KEY = "CustomTabs.ClientAppId.Incognito";
@@ -85,7 +85,7 @@ public class CustomTabActivityIncognitoMetricTest {
         assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(UMA_KEY));
         Intent intent = createMinimalIncognitoCustomTabIntent();
         CustomTabIntentDataProvider.addReaderModeUIExtras(intent);
-        IncognitoCustomTabIntentDataProvider.addIncongitoExtrasForChromeFeatures(
+        IncognitoCustomTabIntentDataProvider.addIncognitoExtrasForChromeFeatures(
                 intent, IntentHandler.IncognitoCCTCallerId.READER_MODE);
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);

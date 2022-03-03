@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -72,6 +73,8 @@ class ChromeWebAuthenticationDelegate
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   absl::optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride(
       content::RenderFrameHost* render_frame_host) override;
+  content::WebAuthenticationRequestProxy* MaybeGetRequestProxy(
+      content::BrowserContext* browser_context) override;
 };
 
 class ChromeAuthenticatorRequestDelegate
@@ -99,6 +102,12 @@ class ChromeAuthenticatorRequestDelegate
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
+
+  ChromeAuthenticatorRequestDelegate(
+      const ChromeAuthenticatorRequestDelegate&) = delete;
+  ChromeAuthenticatorRequestDelegate& operator=(
+      const ChromeAuthenticatorRequestDelegate&) = delete;
+
   ~ChromeAuthenticatorRequestDelegate() override;
 
   // SetGlobalObserverForTesting sets the single |TestObserver| that is active
@@ -187,7 +196,7 @@ class ChromeAuthenticatorRequestDelegate
 
   void HandleCablePairingEvent(device::cablev2::PairingEvent pairing);
 
-  const content::GlobalFrameRoutingId render_frame_host_id_;
+  const content::GlobalRenderFrameHostId render_frame_host_id_;
   // Holds ownership of AuthenticatorRequestDialogModel until
   // OnTransportAvailabilityEnumerated() is invoked, at which point the
   // ownership of the model is transferred to AuthenticatorRequestDialogView and
@@ -195,7 +204,7 @@ class ChromeAuthenticatorRequestDelegate
   // |weak_dialog_model_|.
   std::unique_ptr<AuthenticatorRequestDialogModel>
       transient_dialog_model_holder_;
-  AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
+  raw_ptr<AuthenticatorRequestDialogModel> weak_dialog_model_ = nullptr;
   base::OnceClosure cancel_callback_;
   base::RepeatingClosure start_over_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
@@ -216,8 +225,6 @@ class ChromeAuthenticatorRequestDelegate
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAuthenticatorRequestDelegate);
 };
 
 #endif  // CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_

@@ -11,11 +11,12 @@
 #include "base/bind.h"
 #include "base/dcheck_is_on.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -147,13 +148,13 @@ void LogUma(bool success,
   // anything waiting on user action. As such, we can't always assume that a
   // long execution time equates to a poorly-performing function.
   if (success) {
-    if (elapsed_time < base::TimeDelta::FromMilliseconds(1)) {
+    if (elapsed_time < base::Milliseconds(1)) {
       base::UmaHistogramSparse("Extensions.Functions.SucceededTime.LessThan1ms",
                                histogram_value);
-    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(5)) {
+    } else if (elapsed_time < base::Milliseconds(5)) {
       base::UmaHistogramSparse("Extensions.Functions.SucceededTime.1msTo5ms",
                                histogram_value);
-    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(10)) {
+    } else if (elapsed_time < base::Milliseconds(10)) {
       base::UmaHistogramSparse("Extensions.Functions.SucceededTime.5msTo10ms",
                                histogram_value);
     } else {
@@ -163,13 +164,13 @@ void LogUma(bool success,
     UMA_HISTOGRAM_TIMES("Extensions.Functions.SucceededTotalExecutionTime",
                         elapsed_time);
   } else {
-    if (elapsed_time < base::TimeDelta::FromMilliseconds(1)) {
+    if (elapsed_time < base::Milliseconds(1)) {
       base::UmaHistogramSparse("Extensions.Functions.FailedTime.LessThan1ms",
                                histogram_value);
-    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(5)) {
+    } else if (elapsed_time < base::Milliseconds(5)) {
       base::UmaHistogramSparse("Extensions.Functions.FailedTime.1msTo5ms",
                                histogram_value);
-    } else if (elapsed_time < base::TimeDelta::FromMilliseconds(10)) {
+    } else if (elapsed_time < base::Milliseconds(10)) {
       base::UmaHistogramSparse("Extensions.Functions.FailedTime.5msTo10ms",
                                histogram_value);
     } else {
@@ -185,9 +186,8 @@ void LogBadMessage(extensions::functions::HistogramValue histogram_value) {
   base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
   // Track the specific function's |histogram_value|, as this may indicate a
   // bug in that API's implementation.
-  UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",
-                            histogram_value,
-                            extensions::functions::ENUM_BOUNDARY);
+  base::UmaHistogramSparse("Extensions.BadMessageFunctionName",
+                           histogram_value);
 }
 
 template <class T>
@@ -360,8 +360,8 @@ void ExtensionFunction::EnsureShutdownNotifierFactoryBuilt() {
 void ExtensionFunction::ResponseValueObject::SetFunctionResults(
     ExtensionFunction* function,
     base::Value results) {
-  DCHECK(!function->results_) << "Function " << function->name_
-                              << "already has results set.";
+  DCHECK(!function->results_)
+      << "Function " << function->name_ << " already has results set.";
   function->results_ =
       base::ListValue::From(base::Value::ToUniquePtrValue(std::move(results)));
 }
@@ -391,6 +391,9 @@ class ExtensionFunction::RenderFrameHostTracker
             WebContents::FromRenderFrameHost(function->render_frame_host())),
         function_(function) {}
 
+  RenderFrameHostTracker(const RenderFrameHostTracker&) = delete;
+  RenderFrameHostTracker& operator=(const RenderFrameHostTracker&) = delete;
+
  private:
   // content::WebContentsObserver:
   void RenderFrameDeleted(
@@ -405,9 +408,7 @@ class ExtensionFunction::RenderFrameHostTracker
         function_->OnMessageReceived(message);
   }
 
-  ExtensionFunction* function_;  // Owns us.
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostTracker);
+  raw_ptr<ExtensionFunction> function_;  // Owns us.
 };
 
 ExtensionFunction::ExtensionFunction() {
@@ -523,8 +524,8 @@ void ExtensionFunction::OnQuotaExceeded(std::string violation_error) {
 
 void ExtensionFunction::SetArgs(base::Value args) {
   DCHECK(args.is_list());
-  DCHECK(!args_.get());  // Should only be called once.
-  args_ = base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
+  DCHECK(!args_.has_value());
+  args_ = std::move(args).TakeList();
 }
 
 const base::ListValue* ExtensionFunction::GetResultList() const {
@@ -593,6 +594,9 @@ void ExtensionFunction::SetDispatcher(
 }
 
 void ExtensionFunction::Shutdown() {
+  // Allow the extension function to perform any cleanup before nulling out
+  // `browser_context_`.
+  OnBrowserContextShutdown();
   browser_context_ = nullptr;
 }
 
@@ -750,8 +754,8 @@ void ExtensionFunction::OnResponded() {
 }
 
 bool ExtensionFunction::HasOptionalArgument(size_t index) {
-  base::Value* value;
-  return args_->Get(index, &value) && !value->is_none();
+  DCHECK(args_);
+  return index < args_->size() && !(*args_)[index].is_none();
 }
 
 void ExtensionFunction::WriteToConsole(blink::mojom::ConsoleMessageLevel level,
@@ -760,10 +764,7 @@ void ExtensionFunction::WriteToConsole(blink::mojom::ConsoleMessageLevel level,
   // RenderFrameHost.
   if (!render_frame_host_)
     return;
-  // Only the main frame handles dev tools messages.
-  WebContents::FromRenderFrameHost(render_frame_host_)
-      ->GetMainFrame()
-      ->AddMessageToConsole(level, message);
+  render_frame_host_->AddMessageToConsole(level, message);
 }
 
 void ExtensionFunction::SetTransferredBlobUUIDs(
@@ -788,7 +789,15 @@ void ExtensionFunction::SendResponseImpl(bool success) {
   if (!results_)
     results_ = std::make_unique<base::ListValue>();
 
-  std::move(response_callback_).Run(response, *results_, GetError());
+  base::Value results;
+  if (preserve_results_for_testing_) {
+    // Keep |results_| untouched.
+    results = results_->Clone();
+  } else {
+    results = std::move(*results_);
+  }
+
+  std::move(response_callback_).Run(response, std::move(results), GetError());
   LogUma(success, timer_.Elapsed(), histogram_value_);
 
   OnResponded();

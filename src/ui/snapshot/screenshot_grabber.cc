@@ -14,10 +14,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
-#include "base/task_runner.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/snapshot/snapshot.h"
@@ -51,6 +52,9 @@ class ScreenshotGrabber::ScopedCursorHider {
         base::WrapUnique(new ScopedCursorHider(window)));
   }
 
+  ScopedCursorHider(const ScopedCursorHider&) = delete;
+  ScopedCursorHider& operator=(const ScopedCursorHider&) = delete;
+
   ~ScopedCursorHider() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(window_);
@@ -59,9 +63,7 @@ class ScreenshotGrabber::ScopedCursorHider {
 
  private:
   explicit ScopedCursorHider(aura::Window* window) : window_(window) {}
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCursorHider);
+  raw_ptr<aura::Window> window_;
 };
 #endif
 
@@ -98,7 +100,7 @@ void ScreenshotGrabber::TakeScreenshot(gfx::NativeWindow window,
 bool ScreenshotGrabber::CanTakeScreenshot() {
   return last_screenshot_timestamp_.is_null() ||
          base::TimeTicks::Now() - last_screenshot_timestamp_ >
-             base::TimeDelta::FromMilliseconds(kScreenshotMinimumIntervalInMS);
+             base::Milliseconds(kScreenshotMinimumIntervalInMS);
 }
 
 void ScreenshotGrabber::GrabWindowSnapshotAsyncCallback(

@@ -5,7 +5,6 @@
 #ifndef PPAPI_PROXY_FLASH_FULLSCREEN_RESOURCE_H_
 #define PPAPI_PROXY_FLASH_FULLSCREEN_RESOURCE_H_
 
-#include "base/macros.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/thunk/ppb_flash_fullscreen_api.h"
@@ -19,6 +18,10 @@ class FlashFullscreenResource
  public:
   FlashFullscreenResource(Connection connection,
                           PP_Instance instance);
+
+  FlashFullscreenResource(const FlashFullscreenResource&) = delete;
+  FlashFullscreenResource& operator=(const FlashFullscreenResource&) = delete;
+
   ~FlashFullscreenResource() override;
 
   // Resource overrides.
@@ -32,8 +35,6 @@ class FlashFullscreenResource
 
  private:
   PP_Bool is_fullscreen_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlashFullscreenResource);
 };
 
 }  // namespace proxy

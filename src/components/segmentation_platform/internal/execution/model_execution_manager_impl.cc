@@ -12,12 +12,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/sequenced_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
-#include "components/optimization_guide/core/model_executor.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
@@ -73,7 +73,7 @@ struct ModelExecutionManagerImpl::ExecutionState {
   std::unique_ptr<ModelExecutionTraceEvent> trace_event;
 
   OptimizationTarget segment_id;
-  SegmentationModelHandler* model_handler = nullptr;
+  raw_ptr<SegmentationModelHandler> model_handler = nullptr;
   ModelExecutionCallback callback;
   base::TimeDelta bucket_duration;
   std::deque<proto::Feature> features;
@@ -113,7 +113,7 @@ struct ModelExecutionManagerImpl::FeatureState {
 };
 
 ModelExecutionManagerImpl::ModelExecutionManagerImpl(
-    std::vector<OptimizationTarget> segment_ids,
+    const base::flat_set<OptimizationTarget>& segment_ids,
     ModelHandlerCreator model_handler_creator,
     base::Clock* clock,
     SegmentInfoDatabase* segment_database,
@@ -322,6 +322,12 @@ void ModelExecutionManagerImpl::ExecuteModel(
     return;
   }
 
+  if (VLOG_IS_ON(1)) {
+    std::stringstream log_input;
+    for (unsigned i = 0; i < state->input_tensor.size(); ++i)
+      log_input << " feature " << i << ": " << state->input_tensor[i];
+    VLOG(1) << "Segmentation model input: " << log_input.str();
+  }
   const std::vector<float>& const_input_tensor = std::move(state->input_tensor);
   stats::RecordModelExecutionZeroValuePercent(state->segment_id,
                                               const_input_tensor);
@@ -341,10 +347,12 @@ void ModelExecutionManagerImpl::OnModelExecutionComplete(
       state->segment_id, result.has_value(),
       clock_->Now() - state->model_execution_start_time);
   if (result.has_value()) {
+    VLOG(1) << "Segmentation model result: " << *result;
     stats::RecordModelExecutionResult(state->segment_id, result.value());
     RunModelExecutionCallback(std::move(state), *result,
                               ModelExecutionStatus::kSuccess);
   } else {
+    VLOG(1) << "Segmentation model returned no result.";
     RunModelExecutionCallback(std::move(state), 0,
                               ModelExecutionStatus::kExecutionError);
   }

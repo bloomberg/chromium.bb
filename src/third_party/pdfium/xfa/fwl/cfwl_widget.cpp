@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 #include "v8/include/cppgc/visitor.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fwl/cfwl_app.h"
@@ -30,9 +29,13 @@
 #include "xfa/fwl/cfwl_widgetmgr.h"
 #include "xfa/fwl/ifwl_themeprovider.h"
 
-#define FWL_WGT_CalcHeight 2048
-#define FWL_WGT_CalcWidth 2048
-#define FWL_WGT_CalcMultiLineDefWidth 120.0f
+namespace {
+
+constexpr float kCalcHeight = 2048.0f;
+constexpr float kCalcWidth = 2048.0f;
+constexpr float kCalcMultiLineDefWidth = 120.0f;
+
+}  // namespace
 
 CFWL_Widget::CFWL_Widget(CFWL_App* app,
                          const Properties& properties,
@@ -94,10 +97,10 @@ void CFWL_Widget::ModifyStyles(uint32_t dwStylesAdded,
   m_Properties.m_dwStyles |= dwStylesAdded;
 }
 
-void CFWL_Widget::ModifyStylesEx(uint32_t dwStylesExAdded,
-                                 uint32_t dwStylesExRemoved) {
-  m_Properties.m_dwStyleExes &= ~dwStylesExRemoved;
-  m_Properties.m_dwStyleExes |= dwStylesExAdded;
+void CFWL_Widget::ModifyStyleExts(uint32_t dwStyleExtsAdded,
+                                  uint32_t dwStyleExtsRemoved) {
+  m_Properties.m_dwStyleExts &= ~dwStyleExtsRemoved;
+  m_Properties.m_dwStyleExts |= dwStyleExtsAdded;
 }
 
 static void NotifyHideChildWidget(CFWL_WidgetMgr* widgetMgr,
@@ -174,28 +177,28 @@ IFWL_ThemeProvider* CFWL_Widget::GetThemeProvider() const {
 }
 
 bool CFWL_Widget::IsEnabled() const {
-  return (m_Properties.m_dwStates & FWL_WGTSTATE_Disabled) == 0;
+  return (m_Properties.m_dwStates & FWL_STATE_WGT_Disabled) == 0;
 }
 
 bool CFWL_Widget::HasBorder() const {
-  return !!(m_Properties.m_dwStyles & FWL_WGTSTYLE_Border);
+  return !!(m_Properties.m_dwStyles & FWL_STYLE_WGT_Border);
 }
 
 bool CFWL_Widget::IsVisible() const {
-  return !(m_Properties.m_dwStates & FWL_WGTSTATE_Invisible);
+  return !(m_Properties.m_dwStates & FWL_STATE_WGT_Invisible);
 }
 
 bool CFWL_Widget::IsOverLapper() const {
-  return (m_Properties.m_dwStyles & FWL_WGTSTYLE_WindowTypeMask) ==
-         FWL_WGTSTYLE_OverLapper;
+  return (m_Properties.m_dwStyles & FWL_STYLE_WGT_WindowTypeMask) ==
+         FWL_STYLE_WGT_OverLapper;
 }
 
 bool CFWL_Widget::IsPopup() const {
-  return !!(m_Properties.m_dwStyles & FWL_WGTSTYLE_Popup);
+  return !!(m_Properties.m_dwStyles & FWL_STYLE_WGT_Popup);
 }
 
 bool CFWL_Widget::IsChild() const {
-  return !!(m_Properties.m_dwStyles & FWL_WGTSTYLE_Child);
+  return !!(m_Properties.m_dwStyles & FWL_STYLE_WGT_Child);
 }
 
 CFWL_Widget* CFWL_Widget::GetOutmost() const {
@@ -233,8 +236,8 @@ CFX_SizeF CFWL_Widget::CalcTextSize(const WideString& wsText, bool bMultiLine) {
     calPart.m_dwTTOStyles.single_line_ = true;
 
   calPart.m_iTTOAlign = FDE_TextAlignment::kTopLeft;
-  float fWidth = bMultiLine ? FWL_WGT_CalcMultiLineDefWidth : FWL_WGT_CalcWidth;
-  CFX_RectF rect(0, 0, fWidth, FWL_WGT_CalcHeight);
+  float fWidth = bMultiLine ? kCalcMultiLineDefWidth : kCalcWidth;
+  CFX_RectF rect(0, 0, fWidth, kCalcHeight);
   GetThemeProvider()->CalcTextRect(calPart, &rect);
   return CFX_SizeF(rect.width, rect.height);
 }
@@ -253,11 +256,6 @@ void CFWL_Widget::CalcTextRect(const WideString& wsText,
 void CFWL_Widget::SetGrab(bool bSet) {
   CFWL_NoteDriver* pDriver = GetFWLApp()->GetNoteDriver();
   pDriver->SetGrab(bSet ? this : nullptr);
-}
-
-void CFWL_Widget::RegisterEventTarget(CFWL_Widget* pEventSource) {
-  CFWL_NoteDriver* pNoteDriver = GetFWLApp()->GetNoteDriver();
-  pNoteDriver->RegisterEventTarget(this, pEventSource);
 }
 
 void CFWL_Widget::UnregisterEventTarget() {
@@ -279,7 +277,7 @@ void CFWL_Widget::RepaintRect(const CFX_RectF& pRect) {
 }
 
 void CFWL_Widget::DrawBackground(CFGAS_GEGraphics* pGraphics,
-                                 CFWL_Part iPartBk,
+                                 CFWL_ThemePart::Part iPartBk,
                                  const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground param(this, pGraphics);
   param.m_iPart = iPartBk;
@@ -289,7 +287,7 @@ void CFWL_Widget::DrawBackground(CFGAS_GEGraphics* pGraphics,
 }
 
 void CFWL_Widget::DrawBorder(CFGAS_GEGraphics* pGraphics,
-                             CFWL_Part iPartBorder,
+                             CFWL_ThemePart::Part iPartBorder,
                              const CFX_Matrix& matrix) {
   CFWL_ThemeBackground param(this, pGraphics);
   param.m_iPart = iPartBorder;
@@ -346,9 +344,6 @@ void CFWL_Widget::OnProcessMessage(CFWL_Message* pMessage) {
 }
 
 void CFWL_Widget::OnProcessEvent(CFWL_Event* pEvent) {}
-
-void CFWL_Widget::OnDrawWidget(CFGAS_GEGraphics* pGraphics,
-                               const CFX_Matrix& matrix) {}
 
 CFWL_Widget::ScopedUpdateLock::ScopedUpdateLock(CFWL_Widget* widget)
     : widget_(widget) {

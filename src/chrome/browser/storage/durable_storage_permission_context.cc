@@ -67,8 +67,8 @@ void DurableStoragePermissionContext::DecidePermission(
   // Don't grant durable for session-only storage, since it won't be persisted
   // anyway. Don't grant durable if we can't write cookies.
   if (cookie_settings->IsCookieSessionOnly(requesting_origin) ||
-      !cookie_settings->IsCookieAccessAllowed(requesting_origin,
-                                              requesting_origin)) {
+      !cookie_settings->IsFullCookieAccessAllowed(requesting_origin,
+                                                  requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin,
                         std::move(callback), /*persist=*/false,
                         CONTENT_SETTING_DEFAULT, /*is_one_time=*/false);
@@ -119,8 +119,9 @@ void DurableStoragePermissionContext::UpdateContentSetting(
     ContentSetting content_setting,
     bool is_one_time) {
   DCHECK(!is_one_time);
-  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
-  DCHECK_EQ(embedding_origin_ignored, embedding_origin_ignored.GetOrigin());
+  DCHECK_EQ(requesting_origin, requesting_origin.DeprecatedGetOriginAsURL());
+  DCHECK_EQ(embedding_origin_ignored,
+            embedding_origin_ignored.DeprecatedGetOriginAsURL());
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
 

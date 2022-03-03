@@ -5,11 +5,13 @@
 #ifndef SERVICES_NETWORK_RESTRICTED_COOKIE_MANAGER_H_
 #define SERVICES_NETWORK_RESTRICTED_COOKIE_MANAGER_H_
 
+#include <set>
 #include <string>
+#include <tuple>
 
 #include "base/component_export.h"
 #include "base/containers/linked_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -26,9 +28,22 @@
 
 namespace net {
 class CookieStore;
+class SiteForCookies;
 }  // namespace net
 
 namespace network {
+
+struct CookieWithAccessResultComparer {
+  bool operator()(
+      const net::CookieWithAccessResult& cookie_with_access_result1,
+      const net::CookieWithAccessResult& cookie_with_access_result2) const;
+};
+
+using CookieAccesses =
+    std::set<net::CookieWithAccessResult, CookieWithAccessResultComparer>;
+using CookieAccessesByURLAndSite =
+    std::map<std::pair<GURL, net::SiteForCookies>,
+             std::unique_ptr<CookieAccesses>>;
 
 class CookieSettings;
 
@@ -54,10 +69,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   RestrictedCookieManager(
       mojom::RestrictedCookieManagerRole role,
       net::CookieStore* cookie_store,
-      const CookieSettings* cookie_settings,
+      const CookieSettings& cookie_settings,
       const url::Origin& origin,
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer);
+
+  RestrictedCookieManager(const RestrictedCookieManager&) = delete;
+  RestrictedCookieManager& operator=(const RestrictedCookieManager&) = delete;
 
   ~RestrictedCookieManager() override;
 
@@ -67,9 +85,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   void OverrideIsolationInfoForTesting(
       const net::IsolationInfo& new_isolation_info) {
     isolation_info_ = new_isolation_info;
+    ComputeCookiePartitionKey();
   }
 
-  const CookieSettings* cookie_settings() const { return cookie_settings_; }
+  const CookieSettings& cookie_settings() const { return cookie_settings_; }
 
   void GetAllForUrl(const GURL& url,
                     const net::SiteForCookies& site_for_cookies,
@@ -108,6 +127,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
  private:
   // The state associated with a CookieChangeListener.
   class Listener;
+
+  // Computes the cookie partition key that this instance will have access to.
+  // Should only be called in the constructor or in ...ForTesting methods.
+  void ComputeCookiePartitionKey();
 
   // Feeds a net::CookieList to a GetAllForUrl() callback.
   void CookieListToGetAllForUrlCallback(
@@ -156,9 +179,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     return isolation_info_.top_frame_origin().value();
   }
 
+  CookieAccesses* GetCookieAccessesForURLAndSite(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies);
+
+  // Returns true if the RCM should skip sending a cookie access notification
+  // to the |cookie_observer_| for the cookie in |cookie_item|.
+  bool SkipAccessNotificationForCookieItem(
+      CookieAccesses* cookie_accesses,
+      const net::CookieWithAccessResult& cookie_item);
+
   const mojom::RestrictedCookieManagerRole role_;
-  net::CookieStore* const cookie_store_;
-  const CookieSettings* const cookie_settings_;
+  const raw_ptr<net::CookieStore> cookie_store_;
+  const CookieSettings& cookie_settings_;
 
   url::Origin origin_;
 
@@ -173,9 +206,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_{this};
+  // Cookie partition key that the instance of RestrictedCookieManager will have
+  // access to.
+  absl::optional<net::CookiePartitionKey> cookie_partition_key_;
+  // CookiePartitionKeyCollection that is either empty if
+  // `cookie_partition_key_` is nullopt. If `cookie_partition_key_` is not null,
+  // the key collection contains its value.
+  net::CookiePartitionKeyCollection cookie_partition_key_collection_;
 
-  DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManager);
+  // Contains a mapping of url/site -> recent cookie updates for duplicate
+  // update filtering.
+  CookieAccessesByURLAndSite recent_cookie_accesses_;
+
+  base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_{this};
 };
 
 }  // namespace network

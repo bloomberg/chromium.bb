@@ -12,9 +12,9 @@
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_availability_tracker.h"
 #include "components/cast_channel/cast_message_util.h"
@@ -80,6 +80,11 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
                               cast_channel::CastSocketService* socket_service,
                               MediaSinkServiceBase* media_sink_service,
                               const base::TickClock* clock);
+
+  CastAppDiscoveryServiceImpl(const CastAppDiscoveryServiceImpl&) = delete;
+  CastAppDiscoveryServiceImpl& operator=(const CastAppDiscoveryServiceImpl&) =
+      delete;
+
   ~CastAppDiscoveryServiceImpl() override;
 
   // CastAppDiscoveryService implementation.
@@ -109,14 +114,14 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
   // |sink_id| via |socket|.
   void RequestAppAvailability(cast_channel::CastSocket* socket,
                               const std::string& app_id,
-                              const MediaSink::Id& sink_id);
+                              const MediaSinkInternal& sink);
 
   // Updates the availability result for |sink_id| and |app_id| with |result|,
   // and notifies callbacks with updated sink query results.
   // |start_time| is the time when the app availability request was made, and
   // is used for metrics.
   void UpdateAppAvailability(base::TimeTicks start_time,
-                             const MediaSink::Id& sink_id,
+                             const MediaSinkInternal& sink,
                              const std::string& app_id,
                              cast_channel::GetAppAvailabilityResult result);
 
@@ -142,13 +147,13 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
   base::flat_map<MediaSource::Id, std::unique_ptr<SinkQueryCallbackList>>
       sink_queries_;
 
-  cast_channel::CastMessageHandler* const message_handler_;
-  cast_channel::CastSocketService* const socket_service_;
-  MediaSinkServiceBase* const media_sink_service_;
+  const raw_ptr<cast_channel::CastMessageHandler> message_handler_;
+  const raw_ptr<cast_channel::CastSocketService> socket_service_;
+  const raw_ptr<MediaSinkServiceBase> media_sink_service_;
 
   CastAppAvailabilityTracker availability_tracker_;
 
-  const base::TickClock* const clock_;
+  const raw_ptr<const base::TickClock> clock_;
   // Mojo Remote to the logger owned by the Media Router. The Remote is not
   // bound until |BindLogger()| is called. Always check if |logger_.is_bound()|
   // is true before using.
@@ -156,7 +161,6 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastAppDiscoveryServiceImpl> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(CastAppDiscoveryServiceImpl);
 };
 
 }  // namespace media_router

@@ -103,7 +103,7 @@ void MovableReferences::AddOrFilter(MovableReference* slot) {
   // The following cases are not compacted and do not require recording:
   // - Compactable object on large pages.
   // - Compactable object on non-compactable spaces.
-  if (value_page->is_large() || !value_page->space()->is_compactable()) return;
+  if (value_page->is_large() || !value_page->space().is_compactable()) return;
 
   // Slots must reside in and values must point to live objects at this
   // point. |value| usually points to a separate object but can also point
@@ -124,7 +124,7 @@ void MovableReferences::AddOrFilter(MovableReference* slot) {
   movable_references_.emplace(value, slot);
 
   // Check whether the slot itself resides on a page that is compacted.
-  if (V8_LIKELY(!slot_page->space()->is_compactable())) return;
+  if (V8_LIKELY(!slot_page->space().is_compactable())) return;
 
   CHECK_EQ(interior_movable_references_.end(),
            interior_movable_references_.find(slot));
@@ -227,7 +227,7 @@ class CompactionState final {
       : space_(space), movable_references_(movable_references) {}
 
   void AddPage(NormalPage* page) {
-    DCHECK_EQ(space_, page->space());
+    DCHECK_EQ(space_, &page->space());
     // If not the first page, add |page| onto the available pages chain.
     if (!current_page_)
       current_page_ = page;
@@ -296,7 +296,7 @@ class CompactionState final {
 
  private:
   void ReturnCurrentPageToSpace() {
-    DCHECK_EQ(space_, current_page_->space());
+    DCHECK_EQ(space_, &current_page_->space());
     space_->AddPage(current_page_);
     if (used_bytes_in_current_page_ != current_page_->PayloadSize()) {
       // Put the remainder of the page onto the free list.
@@ -362,6 +362,9 @@ void CompactPage(NormalPage* page, CompactionState& compaction_state) {
 #if !defined(CPPGC_YOUNG_GENERATION)
     header->Unmark();
 #endif
+    // Potentially unpoison the live object as well as it is the source of
+    // the copy.
+    ASAN_UNPOISON_MEMORY_REGION(header->ObjectStart(), header->ObjectSize());
     compaction_state.RelocateObject(page, header_address, size);
     header_address += size;
   }
@@ -374,7 +377,7 @@ void CompactSpace(NormalPageSpace* space,
   using Pages = NormalPageSpace::Pages;
 
 #ifdef V8_USE_ADDRESS_SANITIZER
-  UnmarkedObjectsPoisoner().Traverse(space);
+  UnmarkedObjectsPoisoner().Traverse(*space);
 #endif  // V8_USE_ADDRESS_SANITIZER
 
   DCHECK(space->is_compactable());
@@ -471,6 +474,7 @@ void Compactor::InitializeIfShouldCompact(
   compaction_worklists_ = std::make_unique<CompactionWorklists>();
 
   is_enabled_ = true;
+  is_cancelled_ = false;
 }
 
 bool Compactor::CancelIfShouldNotCompact(
@@ -478,15 +482,16 @@ bool Compactor::CancelIfShouldNotCompact(
     GarbageCollector::Config::StackState stack_state) {
   if (!is_enabled_ || ShouldCompact(marking_type, stack_state)) return false;
 
-  DCHECK_NOT_NULL(compaction_worklists_);
-  compaction_worklists_->movable_slots_worklist()->Clear();
-  compaction_worklists_.reset();
-
+  is_cancelled_ = true;
   is_enabled_ = false;
   return true;
 }
 
 Compactor::CompactableSpaceHandling Compactor::CompactSpacesIfEnabled() {
+  if (is_cancelled_ && compaction_worklists_) {
+    compaction_worklists_->movable_slots_worklist()->Clear();
+    compaction_worklists_.reset();
+  }
   if (!is_enabled_) return CompactableSpaceHandling::kSweep;
 
   StatsCollector::EnabledScope stats_scope(heap_.heap()->stats_collector(),

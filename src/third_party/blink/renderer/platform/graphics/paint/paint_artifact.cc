@@ -28,4 +28,35 @@ sk_sp<PaintRecord> PaintArtifact::GetPaintRecord(
       ->ReleaseAsRecord();
 }
 
+void PaintArtifact::RecordDebugInfo(DisplayItemClientId client_id,
+                                    const String& name,
+                                    DOMNodeId owner_node_id) {
+  debug_info_.insert(client_id, ClientDebugInfo({name, owner_node_id}));
+}
+
+String PaintArtifact::ClientDebugName(DisplayItemClientId client_id) const {
+  auto iterator = debug_info_.find(client_id);
+  if (iterator == debug_info_.end())
+    return "";
+  return iterator->value.name;
+}
+
+DOMNodeId PaintArtifact::ClientOwnerNodeId(
+    DisplayItemClientId client_id) const {
+  auto iterator = debug_info_.find(client_id);
+  if (iterator == debug_info_.end())
+    return kInvalidDOMNodeId;
+  return iterator->value.owner_node_id;
+}
+
+String PaintArtifact::IdAsString(const DisplayItem::Id& id) const {
+#if DCHECK_IS_ON()
+  return String::Format(
+      "%s:%s:%d", ClientDebugName(id.client_id).Utf8().c_str(),
+      DisplayItem::TypeAsDebugString(id.type).Utf8().c_str(), id.fragment);
+#else
+  return id.ToString();
+#endif
+}
+
 }  // namespace blink

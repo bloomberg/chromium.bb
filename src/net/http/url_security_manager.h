@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 
 class GURL;
@@ -21,6 +20,10 @@ class HttpAuthFilter;
 class NET_EXPORT_PRIVATE URLSecurityManager {
  public:
   URLSecurityManager() {}
+
+  URLSecurityManager(const URLSecurityManager&) = delete;
+  URLSecurityManager& operator=(const URLSecurityManager&) = delete;
+
   virtual ~URLSecurityManager() {}
 
   // Creates a platform-dependent instance of URLSecurityManager.
@@ -55,14 +58,16 @@ class NET_EXPORT_PRIVATE URLSecurityManager {
       std::unique_ptr<HttpAuthFilter> allowlist_default) = 0;
   virtual void SetDelegateAllowlist(
       std::unique_ptr<HttpAuthFilter> allowlist_delegate) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLSecurityManager);
 };
 
 class URLSecurityManagerAllowlist : public URLSecurityManager {
  public:
   URLSecurityManagerAllowlist();
+
+  URLSecurityManagerAllowlist(const URLSecurityManagerAllowlist&) = delete;
+  URLSecurityManagerAllowlist& operator=(const URLSecurityManagerAllowlist&) =
+      delete;
+
   ~URLSecurityManagerAllowlist() override;
 
   // URLSecurityManager methods.
@@ -79,8 +84,6 @@ class URLSecurityManagerAllowlist : public URLSecurityManager {
  private:
   std::unique_ptr<const HttpAuthFilter> allowlist_default_;
   std::unique_ptr<const HttpAuthFilter> allowlist_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLSecurityManagerAllowlist);
 };
 
 }  // namespace net

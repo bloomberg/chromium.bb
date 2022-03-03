@@ -20,6 +20,7 @@
 #include "chassis.h"
 #include "layer_chassis_dispatch.h"
 #include "state_tracker.h"
+#include "descriptor_sets.h"
 #include "shader_validation.h"
 #include "spirv-tools/libspirv.h"
 #include "spirv-tools/optimizer.hpp"
@@ -480,7 +481,7 @@ bool GetLineAndFilename(const std::string string, uint32_t *linenumber, std::str
         // Remove enclosing double quotes.  The regex guarantees the quotes and at least one char.
         filename = captures[3].str().substr(1, captures[3].str().size() - 2);
     }
-    *linenumber = std::stoul(captures[1]);
+    *linenumber = (uint32_t)std::stoul(captures[1]);
     return true;
 }
 #endif  // GCC_VERSION
@@ -492,8 +493,7 @@ void UtilGenerateSourceMessages(const std::vector<unsigned int> &pgm, const uint
     using namespace spvtools;
     std::ostringstream filename_stream;
     std::ostringstream source_stream;
-    SHADER_MODULE_STATE shader;
-    shader.words = pgm;
+    SHADER_MODULE_STATE shader(pgm);
     // Find the OpLine just before the failing instruction indicated by the debug info.
     // SPIR-V can only be iterated in the forward direction due to its opcode/length encoding.
     uint32_t instruction_index = 0;

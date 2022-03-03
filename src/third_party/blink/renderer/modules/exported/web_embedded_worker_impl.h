@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_embedded_worker.h"
@@ -59,6 +58,10 @@ struct CrossThreadFetchClientSettingsObjectData;
 class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
  public:
   explicit WebEmbeddedWorkerImpl(WebServiceWorkerContextClient*);
+
+  WebEmbeddedWorkerImpl(const WebEmbeddedWorkerImpl&) = delete;
+  WebEmbeddedWorkerImpl& operator=(const WebEmbeddedWorkerImpl&) = delete;
+
   ~WebEmbeddedWorkerImpl() override;
 
   // WebEmbeddedWorker overrides.
@@ -103,8 +106,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   std::unique_ptr<ServiceWorkerThread> worker_thread_;
 
   bool asked_to_terminate_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(WebEmbeddedWorkerImpl);
 };
 
 }  // namespace blink

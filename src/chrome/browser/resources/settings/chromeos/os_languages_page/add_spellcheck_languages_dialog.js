@@ -11,6 +11,7 @@ import '//resources/cr_elements/cr_search_field/cr_search_field.js';
 import '//resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
+import './cr_checkbox_with_policy.js';
 import './shared_style.m.js';
 import '../../settings_shared_css.js';
 
@@ -18,8 +19,10 @@ import {CrScrollableBehavior} from '//resources/cr_elements/cr_scrollable_behavi
 import {FindShortcutBehavior} from '//resources/cr_elements/find_shortcut_behavior.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsBehavior} from '../../prefs/prefs_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
+import {PrefsBehavior} from '../prefs_behavior.js';
+
+import {LanguageHelper, LanguagesModel, SpellCheckLanguageState} from './languages_types.js';
 
 Polymer({
   is: 'os-settings-add-spellcheck-languages-dialog',

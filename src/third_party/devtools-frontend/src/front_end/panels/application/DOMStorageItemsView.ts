@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -61,22 +59,31 @@ const UIStrings = {
   *@description Text in DOMStorage Items View of the Application panel
   */
   selectAValueToPreview: 'Select a value to preview',
+  /**
+   *@description Text for announcing a DOM Storage key/value item has been deleted
+   */
+  domStorageItemDeleted: 'The storage item was deleted.',
+  /**
+   *@description Text for announcing number of entries after filtering
+   *@example {5} PH1
+   */
+  domStorageNumberEntries: 'Number of entries shown in table: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/DOMStorageItemsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class DOMStorageItemsView extends StorageItemsView {
-  _domStorage: DOMStorage;
-  _dataGrid: DataGrid.DataGrid.DataGridImpl<unknown>;
-  _splitWidget: UI.SplitWidget.SplitWidget;
-  _previewPanel: UI.Widget.VBox;
-  _preview: UI.Widget.Widget|null;
-  _previewValue: string|null;
-  _eventListeners: Common.EventTarget.EventDescriptor[];
+  private domStorage: DOMStorage;
+  private dataGrid: DataGrid.DataGrid.DataGridImpl<unknown>;
+  private readonly splitWidget: UI.SplitWidget.SplitWidget;
+  private readonly previewPanel: UI.Widget.VBox;
+  private preview: UI.Widget.Widget|null;
+  private previewValue: string|null;
+  private eventListeners: Common.EventTarget.EventDescriptor[];
 
   constructor(domStorage: DOMStorage) {
     super(i18nString(UIStrings.domStorage), 'domStoragePanel');
 
-    this._domStorage = domStorage;
+    this.domStorage = domStorage;
 
     this.element.classList.add('storage-view', 'table');
 
@@ -84,73 +91,74 @@ export class DOMStorageItemsView extends StorageItemsView {
       {id: 'key', title: i18nString(UIStrings.key), sortable: false, editable: true, longText: true, weight: 50},
       {id: 'value', title: i18nString(UIStrings.value), sortable: false, editable: true, longText: true, weight: 50},
     ] as DataGrid.DataGrid.ColumnDescriptor[]);
-    this._dataGrid = new DataGrid.DataGrid.DataGridImpl({
+    this.dataGrid = new DataGrid.DataGrid.DataGridImpl({
       displayName: i18nString(UIStrings.domStorageItems),
       columns,
-      editCallback: this._editingCallback.bind(this),
-      deleteCallback: this._deleteCallback.bind(this),
+      editCallback: this.editingCallback.bind(this),
+      deleteCallback: this.deleteCallback.bind(this),
       refreshCallback: this.refreshItems.bind(this),
     });
-    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
-      this._previewEntry((event.data as DataGrid.DataGrid.DataGridNode<unknown>));
+    this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
+      this.previewEntry(event.data);
     });
-    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, _event => {
-      this._previewEntry(null);
+    this.dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, () => {
+      this.previewEntry(null);
     });
-    this._dataGrid.setStriped(true);
-    this._dataGrid.setName('DOMStorageItemsView');
+    this.dataGrid.setStriped(true);
+    this.dataGrid.setName('DOMStorageItemsView');
 
-    this._splitWidget = new UI.SplitWidget.SplitWidget(
+    this.splitWidget = new UI.SplitWidget.SplitWidget(
         /* isVertical: */ false, /* secondIsSidebar: */ true, 'domStorageSplitViewState');
-    this._splitWidget.show(this.element);
+    this.splitWidget.show(this.element);
 
-    this._previewPanel = new UI.Widget.VBox();
-    this._previewPanel.setMinimumSize(0, 50);
-    const resizer = this._previewPanel.element.createChild('div', 'preview-panel-resizer');
-    const dataGridWidget = this._dataGrid.asWidget();
+    this.previewPanel = new UI.Widget.VBox();
+    this.previewPanel.setMinimumSize(0, 50);
+    const resizer = this.previewPanel.element.createChild('div', 'preview-panel-resizer');
+    const dataGridWidget = this.dataGrid.asWidget();
     dataGridWidget.setMinimumSize(0, 50);
-    this._splitWidget.setMainWidget(dataGridWidget);
-    this._splitWidget.setSidebarWidget(this._previewPanel);
-    this._splitWidget.installResizer(resizer);
+    this.splitWidget.setMainWidget(dataGridWidget);
+    this.splitWidget.setSidebarWidget(this.previewPanel);
+    this.splitWidget.installResizer(resizer);
 
-    this._preview = null;
-    this._previewValue = null;
+    this.preview = null;
+    this.previewValue = null;
 
-    this._showPreview(null, null);
+    this.showPreview(null, null);
 
-    this._eventListeners = [];
+    this.eventListeners = [];
     this.setStorage(domStorage);
   }
 
   setStorage(domStorage: DOMStorage): void {
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
-    this._domStorage = domStorage;
-    this._eventListeners = [
-      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemsCleared, this._domStorageItemsCleared, this),
-      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemRemoved, this._domStorageItemRemoved, this),
-      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemAdded, this._domStorageItemAdded, this),
-      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemUpdated, this._domStorageItemUpdated, this),
+    Common.EventTarget.removeEventListeners(this.eventListeners);
+    this.domStorage = domStorage;
+    this.eventListeners = [
+      this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemsCleared, this.domStorageItemsCleared, this),
+      this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemRemoved, this.domStorageItemRemoved, this),
+      this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemAdded, this.domStorageItemAdded, this),
+      this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemUpdated, this.domStorageItemUpdated, this),
     ];
     this.refreshItems();
   }
 
-  _domStorageItemsCleared(): void {
-    if (!this.isShowing() || !this._dataGrid) {
+  private domStorageItemsCleared(): void {
+    if (!this.isShowing() || !this.dataGrid) {
       return;
     }
 
-    this._dataGrid.rootNode().removeChildren();
-    this._dataGrid.addCreationNode(false);
+    this.dataGrid.rootNode().removeChildren();
+    this.dataGrid.addCreationNode(false);
     this.setCanDeleteSelected(false);
   }
 
-  _domStorageItemRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    if (!this.isShowing() || !this._dataGrid) {
+  private domStorageItemRemoved(event: Common.EventTarget.EventTargetEvent<DOMStorage.DOMStorageItemRemovedEvent>):
+      void {
+    if (!this.isShowing() || !this.dataGrid) {
       return;
     }
 
     const storageData = event.data;
-    const rootNode = this._dataGrid.rootNode();
+    const rootNode = this.dataGrid.rootNode();
     const children = rootNode.children;
 
     for (let i = 0; i < children.length; ++i) {
@@ -163,13 +171,13 @@ export class DOMStorageItemsView extends StorageItemsView {
     }
   }
 
-  _domStorageItemAdded(event: Common.EventTarget.EventTargetEvent): void {
-    if (!this.isShowing() || !this._dataGrid) {
+  private domStorageItemAdded(event: Common.EventTarget.EventTargetEvent<DOMStorage.DOMStorageItemAddedEvent>): void {
+    if (!this.isShowing() || !this.dataGrid) {
       return;
     }
 
     const storageData = event.data;
-    const rootNode = this._dataGrid.rootNode();
+    const rootNode = this.dataGrid.rootNode();
     const children = rootNode.children;
 
     for (let i = 0; i < children.length; ++i) {
@@ -182,13 +190,14 @@ export class DOMStorageItemsView extends StorageItemsView {
     rootNode.insertChild(childNode, children.length - 1);
   }
 
-  _domStorageItemUpdated(event: Common.EventTarget.EventTargetEvent): void {
-    if (!this.isShowing() || !this._dataGrid) {
+  private domStorageItemUpdated(event: Common.EventTarget.EventTargetEvent<DOMStorage.DOMStorageItemUpdatedEvent>):
+      void {
+    if (!this.isShowing() || !this.dataGrid) {
       return;
     }
 
     const storageData = event.data;
-    const childNode = this._dataGrid.rootNode().children.find(
+    const childNode = this.dataGrid.rootNode().children.find(
         (child: DataGrid.DataGrid.DataGridNode<unknown>) => child.data.key === storageData.key);
     if (!childNode || childNode.data.value === storageData.value) {
       return;
@@ -199,12 +208,12 @@ export class DOMStorageItemsView extends StorageItemsView {
     if (!childNode.selected) {
       return;
     }
-    this._previewEntry(childNode);
+    this.previewEntry(childNode);
     this.setCanDeleteSelected(true);
   }
 
-  _showDOMStorageItems(items: string[][]): void {
-    const rootNode = this._dataGrid.rootNode();
+  private showDOMStorageItems(items: string[][]): void {
+    const rootNode = this.dataGrid.rootNode();
     let selectedKey: null = null;
     for (const node of rootNode.children) {
       if (!node.selected) {
@@ -216,7 +225,8 @@ export class DOMStorageItemsView extends StorageItemsView {
     rootNode.removeChildren();
     let selectedNode: DataGrid.DataGrid.DataGridNode<unknown>|null = null;
     const filteredItems = (item: string[]): string => `${item[0]} ${item[1]}`;
-    for (const item of this.filter(items, filteredItems)) {
+    const filteredList = this.filter(items, filteredItems);
+    for (const item of filteredList) {
       const key = item[0];
       const value = item[1];
       const node = new DataGrid.DataGrid.DataGridNode({key: key, value: value}, false);
@@ -229,45 +239,46 @@ export class DOMStorageItemsView extends StorageItemsView {
     if (selectedNode) {
       selectedNode.selected = true;
     }
-    this._dataGrid.addCreationNode(false);
+    this.dataGrid.addCreationNode(false);
     this.setCanDeleteSelected(Boolean(selectedNode));
+    UI.ARIAUtils.alert(i18nString(UIStrings.domStorageNumberEntries, {PH1: filteredList.length}));
   }
 
   deleteSelectedItem(): void {
-    if (!this._dataGrid || !this._dataGrid.selectedNode) {
+    if (!this.dataGrid || !this.dataGrid.selectedNode) {
       return;
     }
 
-    this._deleteCallback(this._dataGrid.selectedNode);
+    this.deleteCallback(this.dataGrid.selectedNode);
   }
 
   refreshItems(): void {
-    this._domStorage.getItems().then(items => items && this._showDOMStorageItems(items));
+    this.domStorage.getItems().then(items => items && this.showDOMStorageItems(items));
   }
 
   deleteAllItems(): void {
-    this._domStorage.clear();
+    this.domStorage.clear();
     // explicitly clear the view because the event won't be fired when it has no items
-    this._domStorageItemsCleared();
+    this.domStorageItemsCleared();
   }
 
-  _editingCallback(
+  private editingCallback(
       editingNode: DataGrid.DataGrid.DataGridNode<unknown>, columnIdentifier: string, oldText: string,
       newText: string): void {
-    const domStorage = this._domStorage;
+    const domStorage = this.domStorage;
     if (columnIdentifier === 'key') {
       if (typeof oldText === 'string') {
         domStorage.removeItem(oldText);
       }
       domStorage.setItem(newText, editingNode.data.value || '');
-      this._removeDupes(editingNode);
+      this.removeDupes(editingNode);
     } else {
       domStorage.setItem(editingNode.data.key || '', newText);
     }
   }
 
-  _removeDupes(masterNode: DataGrid.DataGrid.DataGridNode<unknown>): void {
-    const rootNode = this._dataGrid.rootNode();
+  private removeDupes(masterNode: DataGrid.DataGrid.DataGridNode<unknown>): void {
+    const rootNode = this.dataGrid.rootNode();
     const children = rootNode.children;
     for (let i = children.length - 1; i >= 0; --i) {
       const childNode = children[i];
@@ -277,45 +288,47 @@ export class DOMStorageItemsView extends StorageItemsView {
     }
   }
 
-  _deleteCallback(node: DataGrid.DataGrid.DataGridNode<unknown>): void {
+  private deleteCallback(node: DataGrid.DataGrid.DataGridNode<unknown>): void {
     if (!node || node.isCreationNode) {
       return;
     }
 
-    if (this._domStorage) {
-      this._domStorage.removeItem(node.data.key);
+    if (this.domStorage) {
+      this.domStorage.removeItem(node.data.key);
     }
+
+    UI.ARIAUtils.alert(i18nString(UIStrings.domStorageItemDeleted));
   }
 
-  _showPreview(preview: UI.Widget.Widget|null, value: string|null): void {
-    if (this._preview && this._previewValue === value) {
+  private showPreview(preview: UI.Widget.Widget|null, value: string|null): void {
+    if (this.preview && this.previewValue === value) {
       return;
     }
-    if (this._preview) {
-      this._preview.detach();
+    if (this.preview) {
+      this.preview.detach();
     }
     if (!preview) {
       preview = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.selectAValueToPreview));
     }
-    this._previewValue = value;
-    this._preview = preview;
-    preview.show(this._previewPanel.contentElement);
+    this.previewValue = value;
+    this.preview = preview;
+    preview.show(this.previewPanel.contentElement);
   }
 
-  async _previewEntry(entry: DataGrid.DataGrid.DataGridNode<unknown>|null): Promise<void> {
+  private async previewEntry(entry: DataGrid.DataGrid.DataGridNode<unknown>|null): Promise<void> {
     const value = entry && entry.data && entry.data.value;
     if (entry && entry.data && entry.data.value) {
-      const protocol = this._domStorage.isLocalStorage ? 'localstorage' : 'sessionstorage';
+      const protocol = this.domStorage.isLocalStorage ? 'localstorage' : 'sessionstorage';
       const url = `${protocol}://${entry.key}`;
       const provider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(
           url, Common.ResourceType.resourceTypes.XHR, (value as string));
       const preview = await SourceFrame.PreviewFactory.PreviewFactory.createPreview(provider, 'text/plain');
       // Selection could've changed while the preview was loaded
       if (entry.selected) {
-        this._showPreview(preview, value);
+        this.showPreview(preview, value);
       }
     } else {
-      this._showPreview(null, value);
+      this.showPreview(null, value);
     }
   }
 }

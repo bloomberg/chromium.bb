@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/proxy_server.h"
 #include "net/http/proxy_client_socket.h"
@@ -39,6 +40,9 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
       const NetLogWithSource& net_log,
       HttpAuthController* auth_controller,
       ProxyDelegate* proxy_delegate);
+
+  QuicProxyClientSocket(const QuicProxyClientSocket&) = delete;
+  QuicProxyClientSocket& operator=(const QuicProxyClientSocket&) = delete;
 
   // On destruction Disconnect() is called.
   ~QuicProxyClientSocket() override;
@@ -121,7 +125,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   // Stores the callback for Read().
   CompletionOnceCallback read_callback_;
   // Stores the read buffer pointer for Read().
-  IOBuffer* read_buf_;
+  raw_ptr<IOBuffer> read_buf_;
   // Stores the callback for Write().
   CompletionOnceCallback write_callback_;
   // Stores the write buffer length for Write().
@@ -141,7 +145,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   const ProxyServer proxy_server_;
 
   // This delegate must outlive this proxy client socket.
-  ProxyDelegate* const proxy_delegate_;
+  const raw_ptr<ProxyDelegate> proxy_delegate_;
 
   std::string user_agent_;
 
@@ -149,8 +153,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
 
   // The default weak pointer factory.
   base::WeakPtrFactory<QuicProxyClientSocket> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuicProxyClientSocket);
 };
 
 }  // namespace net

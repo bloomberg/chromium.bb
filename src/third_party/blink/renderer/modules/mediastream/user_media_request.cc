@@ -33,7 +33,6 @@
 
 #include <type_traits>
 
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_boolean_mediatrackconstraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
@@ -48,11 +48,13 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -114,6 +116,10 @@ class FeatureCounter {
  public:
   explicit FeatureCounter(ExecutionContext* context)
       : context_(context), is_unconstrained_(true) {}
+
+  FeatureCounter(const FeatureCounter&) = delete;
+  FeatureCounter& operator=(const FeatureCounter&) = delete;
+
   void Count(WebFeature feature) {
     UseCounter::Count(context_, feature);
     is_unconstrained_ = false;
@@ -123,8 +129,6 @@ class FeatureCounter {
  private:
   Persistent<ExecutionContext> context_;
   bool is_unconstrained_;
-
-  DISALLOW_COPY_AND_ASSIGN(FeatureCounter);
 };
 
 void CountAudioConstraintUses(ExecutionContext* context,
@@ -279,24 +283,26 @@ void CountVideoConstraintUses(ExecutionContext* context,
   }
 }
 
-MediaConstraints ParseOptions(ExecutionContext* context,
-                              const BooleanOrMediaTrackConstraints& options,
-                              MediaErrorState& error_state) {
-  MediaConstraints constraints;
-
-  if (options.IsNull()) {
-    // Do nothing.
-  } else if (options.IsMediaTrackConstraints()) {
-    constraints = media_constraints_impl::Create(
-        context, options.GetAsMediaTrackConstraints(), error_state);
-  } else {
-    DCHECK(options.IsBoolean());
-    if (options.GetAsBoolean()) {
-      constraints = media_constraints_impl::Create();
-    }
+MediaConstraints ParseOptions(
+    ExecutionContext* execution_context,
+    const V8UnionBooleanOrMediaTrackConstraints* options,
+    MediaErrorState& error_state) {
+  if (!options)
+    return MediaConstraints();
+  switch (options->GetContentType()) {
+    case V8UnionBooleanOrMediaTrackConstraints::ContentType::kBoolean:
+      if (options->GetAsBoolean())
+        return media_constraints_impl::Create();
+      else
+        return MediaConstraints();
+    case V8UnionBooleanOrMediaTrackConstraints::ContentType::
+        kMediaTrackConstraints:
+      return media_constraints_impl::Create(
+          execution_context, options->GetAsMediaTrackConstraints(),
+          error_state);
   }
-
-  return constraints;
+  NOTREACHED();
+  return MediaConstraints();
 }
 
 }  // namespace
@@ -314,21 +320,13 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
     UserMediaRequest::Callbacks::Trace(visitor);
   }
 
-  void OnSuccess(ScriptWrappable* callback_this_value,
-                 MediaStream* stream) override {
-    success_callback_->InvokeAndReportException(callback_this_value, stream);
+  void OnSuccess(MediaStream* stream) override {
+    success_callback_->InvokeAndReportException(nullptr, stream);
   }
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void OnError(ScriptWrappable* callback_this_value,
                const V8MediaStreamError* error) override {
     error_callback_->InvokeAndReportException(callback_this_value, error);
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void OnError(ScriptWrappable* callback_this_value,
-               DOMExceptionOrOverconstrainedError error) override {
-    error_callback_->InvokeAndReportException(callback_this_value, error);
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
  private:
   Member<V8NavigatorUserMediaSuccessCallback> success_callback_;
@@ -365,9 +363,7 @@ UserMediaRequest* UserMediaRequest::Create(
       error_state.ThrowTypeError("Mandatory zoom constraint is not supported");
       return nullptr;
     }
-  } else if (media_type == UserMediaRequest::MediaType::kDisplayMedia ||
-             media_type ==
-                 UserMediaRequest::MediaType::kGetCurrentBrowsingContextMedia) {
+  } else if (media_type == UserMediaRequest::MediaType::kDisplayMedia) {
     // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
     // MediaDevices Additions
     // The user agent MUST reject audio-only requests.
@@ -403,9 +399,10 @@ UserMediaRequest* UserMediaRequest::Create(
       return nullptr;
     }
     if (audio.IsNull() && video.IsNull()) {
-      video = ParseOptions(context,
-                           BooleanOrMediaTrackConstraints::FromBoolean(true),
-                           error_state);
+      video = ParseOptions(
+          context,
+          MakeGarbageCollected<V8UnionBooleanOrMediaTrackConstraints>(true),
+          error_state);
       if (error_state.HadException())
         return nullptr;
     }
@@ -423,7 +420,10 @@ UserMediaRequest* UserMediaRequest::Create(
     CountVideoConstraintUses(context, video);
 
   return MakeGarbageCollected<UserMediaRequest>(
-      context, controller, media_type, audio, video, callbacks, surface);
+      context, controller, media_type, audio, video,
+      options->preferCurrentTab(),
+      RuntimeEnabledFeatures::RegionCaptureEnabled(context), callbacks,
+      surface);
 }
 
 UserMediaRequest* UserMediaRequest::Create(
@@ -445,6 +445,7 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
       nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
+      /*should_prefer_current_tab=*/false, /*region_capture_capable=*/false,
       nullptr, IdentifiableSurface());
 }
 
@@ -453,12 +454,16 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    UserMediaRequest::MediaType media_type,
                                    MediaConstraints audio,
                                    MediaConstraints video,
+                                   bool should_prefer_current_tab,
+                                   bool region_capture_capable,
                                    Callbacks* callbacks,
                                    IdentifiableSurface surface)
     : ExecutionContextLifecycleObserver(context),
       media_type_(media_type),
       audio_(audio),
       video_(video),
+      should_prefer_current_tab_(should_prefer_current_tab),
+      region_capture_capable_(region_capture_capable),
       should_disable_hardware_noise_suppression_(
           RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
               context)),
@@ -567,8 +572,11 @@ void UserMediaRequest::OnMediaStreamInitialized(MediaStream* stream) {
 
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(g_empty_string));
+  if (auto* window = GetWindow()) {
+    PeerConnectionTracker::From(*window).TrackGetUserMediaSuccess(this, stream);
+  }
   // After this call, the execution context may be invalid.
-  callbacks_->OnSuccess(nullptr, stream);
+  callbacks_->OnSuccess(stream);
   is_resolved_ = true;
 }
 
@@ -580,16 +588,14 @@ void UserMediaRequest::FailConstraint(const String& constraint_name,
     return;
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
+  if (auto* window = GetWindow()) {
+    PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
+        this, "OverConstrainedError", message);
+  }
   // After this call, the execution context may be invalid.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   callbacks_->OnError(
       nullptr, MakeGarbageCollected<V8MediaStreamError>(
                    OverconstrainedError::Create(constraint_name, message)));
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  callbacks_->OnError(
-      nullptr, DOMExceptionOrOverconstrainedError::FromOverconstrainedError(
-                   OverconstrainedError::Create(constraint_name, message)));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   is_resolved_ = true;
 }
 
@@ -617,6 +623,7 @@ void UserMediaRequest::Fail(Error name, const String& message) {
       exception_code = DOMExceptionCode::kAbortError;
       break;
     case Error::kTrackStart:
+    case Error::kDeviceInUse:
       exception_code = DOMExceptionCode::kNotReadableError;
       break;
     case Error::kNotSupported:
@@ -630,17 +637,16 @@ void UserMediaRequest::Fail(Error name, const String& message) {
   }
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
+
+  if (auto* window = GetWindow()) {
+    PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
+        this, DOMException::GetErrorName(exception_code), message);
+  }
+
   // After this call, the execution context may be invalid.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
                                    MakeGarbageCollected<DOMException>(
                                        exception_code, message)));
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  callbacks_->OnError(
-      nullptr,
-      DOMExceptionOrOverconstrainedError::FromDOMException(
-          MakeGarbageCollected<DOMException>(exception_code, message)));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   is_resolved_ = true;
 }
 
@@ -655,18 +661,10 @@ void UserMediaRequest::ContextDestroyed() {
           "audio constraints=%s, video constraints=%s",
           AudioConstraints().ToString().Utf8().c_str(),
           VideoConstraints().ToString().Utf8().c_str()));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
                                        MakeGarbageCollected<DOMException>(
                                            DOMExceptionCode::kAbortError,
                                            "Context destroyed")));
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      callbacks_->OnError(
-          nullptr,
-          DOMExceptionOrOverconstrainedError::FromDOMException(
-              MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                                 "Context destroyed")));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     }
     controller_ = nullptr;
   }

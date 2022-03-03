@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 // Data structures that represent the non-pixel contents of a jpeg file.
 
@@ -23,7 +14,7 @@
 #include <array>
 #include <vector>
 
-#include "lib/jxl/common.h"
+#include "lib/jxl/common.h"  // JPEGXL_ENABLE_TRANSCODE_JPEG
 #include "lib/jxl/fields.h"
 
 namespace jxl {
@@ -226,9 +217,15 @@ struct JPEGData : public Fields {
         has_zero_padding_bit(false) {}
 
   const char* Name() const override { return "JPEGData"; }
+#if JPEGXL_ENABLE_TRANSCODE_JPEG
   // Doesn't serialize everything - skips brotli-encoded data and what is
   // already encoded in the codestream.
   Status VisitFields(Visitor* visitor) override;
+#else
+  Status VisitFields(Visitor* /* visitor */) override {
+    JXL_ABORT("JPEG transcoding support not enabled");
+  }
+#endif  // JPEGXL_ENABLE_TRANSCODE_JPEG
 
   void CalculateMcuSize(const JPEGScanInfo& scan, int* MCUs_per_row,
                         int* MCU_rows) const;
@@ -254,8 +251,15 @@ struct JPEGData : public Fields {
   std::vector<uint8_t> padding_bits;
 };
 
+#if JPEGXL_ENABLE_TRANSCODE_JPEG
 // Set ICC profile in jpeg_data.
 Status SetJPEGDataFromICC(const PaddedBytes& icc, jpeg::JPEGData* jpeg_data);
+#else
+static JXL_INLINE Status SetJPEGDataFromICC(const PaddedBytes& /* icc */,
+                                            jpeg::JPEGData* /* jpeg_data */) {
+  JXL_ABORT("JPEG transcoding support not enabled");
+}
+#endif  // JPEGXL_ENABLE_TRANSCODE_JPEG
 
 }  // namespace jpeg
 }  // namespace jxl

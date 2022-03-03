@@ -10,9 +10,9 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -40,6 +40,10 @@ class IceConnectionToClient : public ConnectionToClient,
       scoped_refptr<TransportContext> transport_context,
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
+
+  IceConnectionToClient(const IceConnectionToClient&) = delete;
+  IceConnectionToClient& operator=(const IceConnectionToClient&) = delete;
+
   ~IceConnectionToClient() override;
 
   // ConnectionToClient interface.
@@ -81,7 +85,7 @@ class IceConnectionToClient : public ConnectionToClient,
   base::ThreadChecker thread_checker_;
 
   // Event handler for handling events sent from this object.
-  ConnectionToClient::EventHandler* event_handler_;
+  raw_ptr<ConnectionToClient::EventHandler> event_handler_;
 
   std::unique_ptr<Session> session_;
 
@@ -94,8 +98,6 @@ class IceConnectionToClient : public ConnectionToClient,
   std::unique_ptr<HostEventDispatcher> event_dispatcher_;
   std::unique_ptr<HostVideoDispatcher> video_dispatcher_;
   std::unique_ptr<AudioWriter> audio_writer_;
-
-  DISALLOW_COPY_AND_ASSIGN(IceConnectionToClient);
 };
 
 }  // namespace protocol

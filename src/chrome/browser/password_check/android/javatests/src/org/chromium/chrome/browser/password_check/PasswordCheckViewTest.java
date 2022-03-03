@@ -107,23 +107,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PasswordCheckViewTest {
     private static final CompromisedCredential ANA = new CompromisedCredential(
             "https://some-url.com/signin", new GURL("https://some-url.com/"), "Ana", "some-url.com",
-            "Ana", "password", "https://some-url.com/.well-known/change-password", "", 1, true,
+            "Ana", "password", "https://some-url.com/.well-known/change-password", "", 1, 1, true,
             false, false, false);
     private static final CompromisedCredential PHISHED = new CompromisedCredential(
             "http://example.com/signin", new GURL("http://example.com/"), "", "http://example.com",
             "(No username)", "DoSomething", "http://example.com/.well-known/change-password", "", 1,
-            false, true, false, false);
-    private static final CompromisedCredential LEAKED =
-            new CompromisedCredential("https://some-other-url.com/signin",
-                    new GURL("https://some-other-url.com/"), "AZiegler", "some-other-url.com",
-                    "AZiegler", "N0M3rcy", "", "com.other.package", 1, true, false, false, false);
+            1, false, true, false, false);
+    private static final CompromisedCredential LEAKED = new CompromisedCredential(
+            "https://some-other-url.com/signin", new GURL("https://some-other-url.com/"),
+            "AZiegler", "some-other-url.com", "AZiegler", "N0M3rcy", "", "com.other.package", 1, 1,
+            true, false, false, false);
     private static final CompromisedCredential LEAKED_AND_PHISHED =
             new CompromisedCredential("https://super-important.com/signin",
                     new GURL("https://super-important.com/"), "HSong", "super-important.com",
-                    "HSong", "N3rfTh1s", "", "com.important.super", 1, true, true, false, false);
+                    "HSong", "N3rfTh1s", "", "com.important.super", 1, 1, true, true, false, false);
     private static final CompromisedCredential SCRIPTED = new CompromisedCredential(
             "https://script.com/signin", new GURL("https://script.com/"), "Charlie", "script.com",
-            "Charlie", "secret", "https://script.com/.well-known/change-password", "", 1, true,
+            "Charlie", "secret", "https://script.com/.well-known/change-password", "", 1, 1, true,
             false, true, true);
 
     private static final int LEAKS_COUNT = 2;
@@ -133,7 +133,7 @@ public class PasswordCheckViewTest {
     private static final long H_TO_MS = 60 * MIN_TO_MS;
     private static final long DAY_TO_MS = 24 * H_TO_MS;
 
-    private PropertyModel mModel = PasswordCheckProperties.createDefaultModel();
+    private PropertyModel mModel;
     private PasswordCheckFragmentView mPasswordCheckView;
 
     @Mock
@@ -161,6 +161,7 @@ public class PasswordCheckViewTest {
                 });
         setUpUiLaunchedFromSettings();
         runOnUiThreadBlocking(() -> {
+            mModel = PasswordCheckProperties.createDefaultModel();
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mPasswordCheckView);
         });
     }
@@ -636,8 +637,11 @@ public class PasswordCheckViewTest {
                         recordedConfirmation.incrementAndGet();
                     }
                 };
-        mModel.set(DELETION_ORIGIN, ANA.getDisplayOrigin());
-        runOnUiThreadBlocking(() -> mModel.set(DELETION_CONFIRMATION_HANDLER, fakeHandler));
+
+        runOnUiThreadBlocking(() -> {
+            mModel.set(DELETION_ORIGIN, ANA.getDisplayOrigin());
+            mModel.set(DELETION_CONFIRMATION_HANDLER, fakeHandler);
+        });
 
         onView(withText(R.string.password_entry_edit_delete_credential_dialog_confirm))
                 .inRoot(withDecorView(
@@ -660,8 +664,10 @@ public class PasswordCheckViewTest {
         ReauthenticationManager.recordLastReauth(
                 System.currentTimeMillis(), ReauthScope.ONE_AT_A_TIME);
 
-        mModel.set(VIEW_CREDENTIAL, ANA);
-        runOnUiThreadBlocking(() -> mModel.set(VIEW_DIALOG_HANDLER, fakeHandler));
+        runOnUiThreadBlocking(() -> {
+            mModel.set(VIEW_CREDENTIAL, ANA);
+            mModel.set(VIEW_DIALOG_HANDLER, fakeHandler);
+        });
         onView(withId(R.id.view_dialog_copy_button)).perform(click());
 
         ClipboardManager clipboard = (ClipboardManager) mPasswordCheckView.getActivity()
@@ -687,8 +693,10 @@ public class PasswordCheckViewTest {
         ReauthenticationManager.recordLastReauth(
                 System.currentTimeMillis(), ReauthScope.ONE_AT_A_TIME);
 
-        mModel.set(VIEW_CREDENTIAL, ANA);
-        runOnUiThreadBlocking(() -> mModel.set(VIEW_DIALOG_HANDLER, fakeHandler));
+        runOnUiThreadBlocking(() -> {
+            mModel.set(VIEW_CREDENTIAL, ANA);
+            mModel.set(VIEW_DIALOG_HANDLER, fakeHandler);
+        });
 
         onView(withText(R.string.close))
                 .inRoot(withDecorView(
@@ -714,8 +722,10 @@ public class PasswordCheckViewTest {
         ReauthenticationManager.recordLastReauth(
                 System.currentTimeMillis(), ReauthScope.ONE_AT_A_TIME);
 
-        mModel.set(VIEW_CREDENTIAL, ANA);
-        runOnUiThreadBlocking(() -> mModel.set(VIEW_DIALOG_HANDLER, fakeHandler));
+        runOnUiThreadBlocking(() -> {
+            mModel.set(VIEW_CREDENTIAL, ANA);
+            mModel.set(VIEW_DIALOG_HANDLER, fakeHandler);
+        });
 
         ReauthenticationManager.recordLastReauth(
                 System.currentTimeMillis() - VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS,

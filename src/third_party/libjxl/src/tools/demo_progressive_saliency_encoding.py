@@ -1,18 +1,9 @@
 #!/usr/bin/env python3
 
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 """Produces demos for how progressive-saliency encoding would look like.
 
@@ -143,7 +134,7 @@ def generate_demo_image(config, input_filename, output_filename):
               data_sizes[-1]) for size in data_sizes]
     time_delays = [t_next - t_prev
                    for t_next, t_prev in zip(time_offsets[1:], time_offsets)]
-    # Add a fake white initial image. As long as no useable image data is
+    # Add a fake white initial image. As long as no usable image data is
     # available, the user will see a white background.
     subprocess.call(['convert',
                      output_filename + '._step1.png',

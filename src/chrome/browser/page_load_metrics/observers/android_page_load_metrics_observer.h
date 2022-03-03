@@ -7,8 +7,9 @@
 
 #include <jni.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace network {
 class NetworkQualityTracker;
@@ -21,6 +22,11 @@ class AndroidPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   AndroidPageLoadMetricsObserver();
+
+  AndroidPageLoadMetricsObserver(const AndroidPageLoadMetricsObserver&) =
+      delete;
+  AndroidPageLoadMetricsObserver& operator=(
+      const AndroidPageLoadMetricsObserver&) = delete;
 
   // page_load_metrics::PageLoadMetricsObserver:
   // PageLoadMetricsObserver lifecycle callbacks
@@ -85,9 +91,7 @@ class AndroidPageLoadMetricsObserver
   bool reported_buffered_metrics_ = false;
   int64_t navigation_id_ = -1;
 
-  network::NetworkQualityTracker* network_quality_tracker_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AndroidPageLoadMetricsObserver);
+  raw_ptr<network::NetworkQualityTracker> network_quality_tracker_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_ANDROID_PAGE_LOAD_METRICS_OBSERVER_H_

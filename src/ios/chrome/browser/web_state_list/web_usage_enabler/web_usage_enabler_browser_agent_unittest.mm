@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 
-#include "base/macros.h"
 #include "base/test/task_environment.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -32,6 +31,11 @@ class WebUsageEnablerBrowserAgentTest : public PlatformTest {
     enabler_ = WebUsageEnablerBrowserAgent::FromBrowser(browser_.get());
     enabler_->SetWebUsageEnabled(false);
   }
+
+  WebUsageEnablerBrowserAgentTest(const WebUsageEnablerBrowserAgentTest&) =
+      delete;
+  WebUsageEnablerBrowserAgentTest& operator=(
+      const WebUsageEnablerBrowserAgentTest&) = delete;
 
  protected:
   base::test::TaskEnvironment task_environment_;
@@ -74,9 +78,6 @@ class WebUsageEnablerBrowserAgentTest : public PlatformTest {
       EXPECT_EQ(web_state->IsWebUsageEnabled(), enabled);
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebUsageEnablerBrowserAgentTest);
 };
 
 // Tests that calling SetWebUsageEnabled() updates web usage enabled state for

@@ -13,13 +13,13 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
@@ -32,6 +32,10 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                 public ui::SimpleMenuModel::Delegate {
  public:
   AppListTestViewDelegate();
+
+  AppListTestViewDelegate(const AppListTestViewDelegate&) = delete;
+  AppListTestViewDelegate& operator=(const AppListTestViewDelegate&) = delete;
+
   ~AppListTestViewDelegate() override;
 
   int dismiss_count() const { return dismiss_count_; }
@@ -58,8 +62,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void SetShouldShowSuggestedContentInfo(bool should_show);
 
   // AppListViewDelegate overrides:
-  AppListModel* GetModel() override;
-  SearchModel* GetSearchModel() override;
   bool KeyboardTraversalEngaged() override;
   void StartAssistant() override {}
   void StartSearch(const std::u16string& raw_query) override {}
@@ -71,19 +73,19 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                         int suggestion_index,
                         bool launch_as_default) override;
   void InvokeSearchResultAction(const std::string& result_id,
-                                int action_index) override {}
+                                SearchResultActionType action) override {}
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
   void ViewShown(int64_t display_id) override {}
   void DismissAppList() override;
   void ViewClosing() override {}
-  void ViewClosed() override {}
   const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
                     ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
+                           bool add_sort_options,
                            GetContextMenuModelCallback callback) override;
   ui::ImplicitAnimationObserver* GetAnimationObserver(
       ash::AppListViewState target_state) override;
@@ -104,7 +106,11 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool ShouldShowSuggestedContentInfo() const override;
   void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
-      ash::AppListViewState state) override;
+      AppListViewState state,
+      bool was_animation_interrupted) override;
+  AppListState GetCurrentAppListPage() const override;
+  void OnAppListPageChanged(AppListState page) override;
+  AppListViewState GetAppListViewState() const override;
   void OnViewStateChanged(AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
@@ -114,6 +120,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool IsInTabletMode() override;
   AppListNotifier* GetNotifier() override;
   int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
+  void LoadIcon(const std::string& app_id) override {}
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -136,14 +143,15 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   int open_assistant_ui_count_ = 0;
   int next_profile_app_count_ = 0;
   int show_wallpaper_context_menu_count_ = 0;
+  AppListState app_list_page_ = AppListState::kInvalidState;
+  AppListViewState app_list_view_state_ = AppListViewState::kClosed;
   bool is_tablet_mode_ = false;
   bool should_show_suggested_content_info_ = false;
   std::map<size_t, int> open_search_result_counts_;
+  AppListModelProvider model_provider_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
   std::vector<SkColor> wallpaper_prominent_colors_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };
 
 }  // namespace test

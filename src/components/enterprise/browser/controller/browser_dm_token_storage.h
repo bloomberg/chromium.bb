@@ -9,17 +9,15 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/policy/core/common/cloud/dm_token.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TaskRunner;
@@ -64,6 +62,10 @@ class BrowserDMTokenStorage {
   // Returns the global singleton object. Must be called from the UI thread. The
   // first caller must set the platform-specific delegate via SetDelegate().
   static BrowserDMTokenStorage* Get();
+
+  BrowserDMTokenStorage(const BrowserDMTokenStorage&) = delete;
+  BrowserDMTokenStorage& operator=(const BrowserDMTokenStorage&) = delete;
+
   // Sets the delegate to use for platform-specific operations.
   static void SetDelegate(std::unique_ptr<Delegate> delegate);
 
@@ -134,8 +136,6 @@ class BrowserDMTokenStorage {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BrowserDMTokenStorage> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorage);
 };
 
 }  // namespace policy

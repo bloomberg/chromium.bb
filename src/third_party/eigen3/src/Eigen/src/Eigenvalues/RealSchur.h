@@ -13,6 +13,8 @@
 
 #include "./HessenbergDecomposition.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \eigenvalues_module \ingroup Eigenvalues_Module
@@ -22,7 +24,7 @@ namespace Eigen {
   *
   * \brief Performs a real Schur decomposition of a square matrix
   *
-  * \tparam _MatrixType the type of the matrix of which we are computing the
+  * \tparam MatrixType_ the type of the matrix of which we are computing the
   * real Schur decomposition; this is expected to be an instantiation of the
   * Matrix class template.
   *
@@ -51,10 +53,10 @@ namespace Eigen {
   *
   * \sa class ComplexSchur, class EigenSolver, class ComplexEigenSolver
   */
-template<typename _MatrixType> class RealSchur
+template<typename MatrixType_> class RealSchur
 {
   public:
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     enum {
       RowsAtCompileTime = MatrixType::RowsAtCompileTime,
       ColsAtCompileTime = MatrixType::ColsAtCompileTime,

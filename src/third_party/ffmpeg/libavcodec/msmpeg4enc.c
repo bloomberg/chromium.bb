@@ -32,7 +32,7 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/avutil.h"
-#include "libavutil/mem.h"
+#include "libavutil/thread.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "internal.h"
@@ -46,13 +46,11 @@
 static uint8_t rl_length[NB_RL_TABLES][MAX_LEVEL+1][MAX_RUN+1][2];
 
 /* build the table which associate a (x,y) motion vector to a vlc */
-static av_cold int init_mv_table(MVTable *tab)
+static av_cold void init_mv_table(MVTable *tab, uint16_t table_mv_index[4096])
 {
     int i, x, y;
 
-    tab->table_mv_index = av_malloc(sizeof(uint16_t) * 4096);
-    if (!tab->table_mv_index)
-        return AVERROR(ENOMEM);
+    tab->table_mv_index = table_mv_index;
 
     /* mark all entries as not used */
     for(i=0;i<4096;i++)
@@ -63,8 +61,6 @@ static av_cold int init_mv_table(MVTable *tab)
         y = tab->table_mvy[i];
         tab->table_mv_index[(x << 6) | y] = i;
     }
-
-    return 0;
 }
 
 void ff_msmpeg4_code012(PutBitContext *pb, int n)
@@ -77,7 +73,9 @@ void ff_msmpeg4_code012(PutBitContext *pb, int n)
     }
 }
 
-static int get_size_of_code(MpegEncContext * s, RLTable *rl, int last, int run, int level, int intra){
+static int get_size_of_code(const RLTable *rl, int last, int run,
+                            int level, int intra)
+{
     int size=0;
     int code;
     int run_diff= intra ? 0 : 1;
@@ -118,42 +116,35 @@ static int get_size_of_code(MpegEncContext * s, RLTable *rl, int last, int run, 
     return size;
 }
 
-av_cold int ff_msmpeg4_encode_init(MpegEncContext *s)
+static av_cold void msmpeg4_encode_init_static(void)
 {
-    static int init_done=0;
-    int i, ret;
+    static uint16_t mv_index_tables[2][4096];
+    init_mv_table(&ff_mv_tables[0], mv_index_tables[0]);
+    init_mv_table(&ff_mv_tables[1], mv_index_tables[1]);
 
-    ff_msmpeg4_common_init(s);
-    if(s->msmpeg4_version>=4){
-        s->min_qcoeff= -255;
-        s->max_qcoeff=  255;
-    }
-
-    if (!init_done) {
-        /* init various encoding tables */
-        init_done = 1;
-        if ((ret = init_mv_table(&ff_mv_tables[0])) < 0)
-            return ret;
-        if ((ret = init_mv_table(&ff_mv_tables[1])) < 0)
-            return ret;
-        for(i=0;i<NB_RL_TABLES;i++)
-            ff_rl_init(&ff_rl_table[i], ff_static_rl_table_store[i]);
-
-        for(i=0; i<NB_RL_TABLES; i++){
-            int level;
-            for (level = 1; level <= MAX_LEVEL; level++) {
-                int run;
-                for(run=0; run<=MAX_RUN; run++){
-                    int last;
-                    for(last=0; last<2; last++){
-                        rl_length[i][level][run][last]= get_size_of_code(s, &ff_rl_table[  i], last, run, level, 0);
-                    }
+    for (int i = 0; i < NB_RL_TABLES; i++) {
+        for (int level = 1; level <= MAX_LEVEL; level++) {
+            for (int run = 0; run <= MAX_RUN; run++) {
+                for (int last = 0; last < 2; last++) {
+                    rl_length[i][level][run][last] = get_size_of_code(&ff_rl_table[i], last, run, level, 0);
                 }
             }
         }
     }
+}
 
-    return 0;
+av_cold void ff_msmpeg4_encode_init(MpegEncContext *s)
+{
+    static AVOnce init_static_once = AV_ONCE_INIT;
+
+    ff_msmpeg4_common_init(s);
+    if (s->msmpeg4_version >= 4) {
+        s->min_qcoeff = -255;
+        s->max_qcoeff =  255;
+    }
+
+    /* init various encoding tables */
+    ff_thread_once(&init_static_once, msmpeg4_encode_init_static);
 }
 
 static void find_best_tables(MpegEncContext * s)
@@ -499,8 +490,7 @@ void ff_msmpeg4_encode_mb(MpegEncContext * s,
 static void msmpeg4_encode_dc(MpegEncContext * s, int level, int n, int *dir_ptr)
 {
     int sign, code;
-    int pred, av_uninit(extquant);
-    int extrabits = 0;
+    int pred;
 
     int16_t *dc_val;
     pred = ff_msmpeg4_pred_dc(s, n, &dc_val, dir_ptr);
@@ -534,15 +524,6 @@ static void msmpeg4_encode_dc(MpegEncContext * s, int level, int n, int *dir_ptr
         code = level;
         if (code > DC_MAX)
             code = DC_MAX;
-        else if( s->msmpeg4_version>=6 ) {
-            if( s->qscale == 1 ) {
-                extquant = (level + 3) & 0x3;
-                code  = ((level+3)>>2);
-            } else if( s->qscale == 2 ) {
-                extquant = (level + 1) & 0x1;
-                code  = ((level+1)>>1);
-            }
-        }
 
         if (s->dc_table_index == 0) {
             if (n < 4) {
@@ -558,13 +539,8 @@ static void msmpeg4_encode_dc(MpegEncContext * s, int level, int n, int *dir_ptr
             }
         }
 
-        if(s->msmpeg4_version>=6 && s->qscale<=2)
-            extrabits = 3 - s->qscale;
-
         if (code == DC_MAX)
-            put_bits(&s->pb, 8 + extrabits, level);
-        else if(extrabits > 0)//== VC1 && s->qscale<=2
-            put_bits(&s->pb, extrabits, extquant);
+            put_bits(&s->pb, 8, level);
 
         if (level != 0) {
             put_bits(&s->pb, 1, sign);
@@ -603,7 +579,7 @@ void ff_msmpeg4_encode_block(MpegEncContext * s, int16_t * block, int n)
     }
 
     /* recalculate block_last_index for M$ wmv1 */
-    if(s->msmpeg4_version>=4 && s->msmpeg4_version<6 && s->block_last_index[n]>0){
+    if (s->msmpeg4_version >= 4 && s->block_last_index[n] > 0) {
         for(last_index=63; last_index>=0; last_index--){
             if(block[scantable[last_index]]) break;
         }
@@ -663,7 +639,7 @@ void ff_msmpeg4_encode_block(MpegEncContext * s, int16_t * block, int n)
                                 s->esc3_run_length= 6;
                                 //ESCLVLSZ + ESCRUNSZ
                                 if(s->qscale<8)
-                                    put_bits(&s->pb, 6 + (s->msmpeg4_version>=6), 3);
+                                    put_bits(&s->pb, 6, 3);
                                 else
                                     put_bits(&s->pb, 8, 3);
                             }

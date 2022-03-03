@@ -17,10 +17,13 @@ limitations under the License.
 #define TENSORFLOW_STREAM_EXECUTOR_TPU_TPU_EXECUTOR_H_
 
 #include "absl/container/flat_hash_map.h"
+#include "tensorflow/core/platform/casts.h"
+#include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/stream_executor/device_memory.h"
 #include "tensorflow/stream_executor/device_options.h"
 #include "tensorflow/stream_executor/event.h"
+#include "tensorflow/stream_executor/lib/status.h"
 #include "tensorflow/stream_executor/lib/statusor.h"
 #include "tensorflow/stream_executor/stream.h"
 #include "tensorflow/stream_executor/stream_executor.h"
@@ -31,8 +34,10 @@ limitations under the License.
 #include "tensorflow/stream_executor/tpu/tpu_executor_interface.h"
 #include "tensorflow/stream_executor/tpu/tpu_platform.h"
 #include "tensorflow/stream_executor/tpu/tpu_platform_interface.h"
+#include "tensorflow/stream_executor/tpu/tpu_stream.h"
 
 namespace tensorflow {
+namespace tpu {
 
 class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
  public:
@@ -61,10 +66,7 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
   Status Init(int device_ordinal,
               ::stream_executor::DeviceOptions device_options) override;
 
-  DeviceMemoryBase Allocate(uint64 size, int64 memory_space) override;
-
-  StatusOr<DeviceMemoryBase> AllocateDeviceMemoryBase(uint64 size,
-                                                      int64 memory_space);
+  DeviceMemoryBase Allocate(uint64_t size, int64_t memory_space) override;
 
   Status AllocateEvent(Event* event) override;
 
@@ -91,15 +93,17 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
 
   void DeallocateTimer(Timer* timer) override;
 
-  bool DeviceMemoryUsage(int64* free, int64* total) const override;
+  bool DeviceMemoryUsage(int64_t* free, int64_t* total) const override;
 
-  void DequeueOutfeed(int32 outfeed_queue_index, absl::Span<uint8> bytes,
+  void DequeueOutfeed(int32_t outfeed_queue_index, absl::Span<uint8> bytes,
                       StatusCallback done);
 
-  Status EnqueueInfeed(int32 infeed_queue_index,
+  Status EnqueueInfeed(int32_t infeed_queue_index,
                        absl::Span<const uint8> bytes);
 
   absl::optional<stream_executor::AllocatorStats> GetAllocatorStats() override;
+
+  tpu::TpuCoreLocationExternal GetCoreLocationExternal() const override;
 
   Status GetStatus(Stream* stream) override;
 
@@ -116,28 +120,28 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
 
   bool Memcpy(Stream* stream, void* host_dst,
               const ::stream_executor::DeviceMemoryBase& device_src,
-              uint64 size) override;
+              uint64_t size) override;
 
   bool Memcpy(Stream* stream, ::stream_executor::DeviceMemoryBase* device_dst,
-              const void* host_src, uint64 size) override;
+              const void* host_src, uint64_t size) override;
 
   bool MemcpyDeviceToDevice(Stream* stream,
                             ::stream_executor::DeviceMemoryBase* gpu_dst,
                             const ::stream_executor::DeviceMemoryBase& host_src,
-                            uint64 size) override;
+                            uint64_t size) override;
 
   void SyncAndForgetFailedStreams();
   bool SynchronizeAllActivity() override;
 
   Status SynchronousMemcpy(::stream_executor::DeviceMemoryBase* device_dst,
-                           const void* host_src, uint64 size) override;
+                           const void* host_src, uint64_t size) override;
   Status SynchronousMemcpy(
       void* host_dst, const ::stream_executor::DeviceMemoryBase& device_src,
-      uint64 size) override;
+      uint64_t size) override;
   Status SynchronousMemcpyDeviceToDevice(
       ::stream_executor::DeviceMemoryBase* device_dst,
       const ::stream_executor::DeviceMemoryBase& device_src,
-      uint64 size) override;
+      uint64_t size) override;
 
   int PlatformDeviceCount() override;
 
@@ -148,9 +152,13 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
   bool StartTimer(Stream* stream, ::stream_executor::Timer* timer) override;
   bool StopTimer(Stream* stream, ::stream_executor::Timer* timer) override;
 
-  Status WaitForInfeedReady(int32 infeed_queue_index);
+  Status WaitForInfeedReady(int32_t infeed_queue_index);
 
-  Status WaitForOutfeedReady(int32 outfeed_queue_index);
+  Status WaitForOutfeedReady(int32_t outfeed_queue_index);
+
+  Status UnloadAllPrograms() override;
+
+  Status EnqueueCompactionOnStreamForHbm(Stream* compaction_stream) override;
 
   const ::tensorflow::tpu::TpuPlatformInterface& platform() const override {
     return *platform_;
@@ -164,8 +172,8 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
   // to TpuExecutorInterface.
   StatusOr<std::unique_ptr<
       tensorflow::tpu::TpuExecutorInterface::TemporaryDeviceMemory>>
-  CreateTemporaryDeviceMemory(int64 memory_space, int64 byte_offset,
-                              int64 size) override {
+  CreateTemporaryDeviceMemory(int64_t memory_space, int64_t byte_offset,
+                              int64_t size) override {
     LOG(FATAL) << "Unimplemented.";
   }
 
@@ -175,20 +183,16 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
     LOG(FATAL) << "Not yet implemented";
   }
 
-  stream_executor::SharedMemoryConfig GetDeviceSharedMemoryConfig() override {
-    LOG(FATAL) << "not yet implemented";
-  }
-
-  void* GetSubBuffer(DeviceMemoryBase* parent, uint64 offset,
-                     uint64 size) override {
+  void* GetSubBuffer(DeviceMemoryBase* parent, uint64_t offset,
+                     uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
   Status MemZero(Stream* stream, DeviceMemoryBase* location,
-                 uint64 size) override {
+                 uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
   Status Memset32(Stream* stream, DeviceMemoryBase* location, uint32 pattern,
-                  uint64 size) override {
+                  uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
   Status EnablePeerAccessTo(StreamExecutorInterface* other) override {
@@ -197,45 +201,50 @@ class TpuExecutor : public tensorflow::tpu::TpuExecutorInterface {
   bool CanEnablePeerAccessTo(StreamExecutorInterface* other) override {
     LOG(FATAL) << "not yet implemented";
   }
-  Status SetDeviceSharedMemoryConfig(
-      stream_executor::SharedMemoryConfig config) override {
-    LOG(FATAL) << "not yet implemented";
-  }
-  void* HostMemoryAllocate(uint64 size) override {
+
+  void* HostMemoryAllocate(uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
   void HostMemoryDeallocate(void* mem) override {
     LOG(FATAL) << "not yet implemented";
   }
-  bool HostMemoryRegister(void* mem, uint64 size) override {
+  bool HostMemoryRegister(void* mem, uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
   bool HostMemoryUnregister(void* mem) override {
     LOG(FATAL) << "not yet implemented";
   }
-  Status SynchronousMemZero(DeviceMemoryBase* location, uint64 size) override {
+  Status SynchronousMemZero(DeviceMemoryBase* location,
+                            uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
   Status SynchronousMemSet(DeviceMemoryBase* location, int value,
-                           uint64 size) override {
+                           uint64_t size) override {
     LOG(FATAL) << "not yet implemented";
   }
 
+  SE_StreamExecutor* se_executor() { return executor_; }
+
  private:
-  TimerMap timer_map_;
+  TpuPlatform& tpu_platform() {
+    return *(tensorflow::down_cast<TpuPlatform*>(platform_));
+  }
 
   TpuPlatform::StreamMap& stream_map() {
-    return *(static_cast<TpuPlatform*>(platform_)->stream_map());
+    return *(tpu_platform().stream_map());
   }
 
-  TpuPlatform::EventMap& event_map() {
-    return *(static_cast<TpuPlatform*>(platform_)->event_map());
+  SE_Stream* get_stream(StreamInterface* ptr) {
+    tensorflow::mutex_lock m(tpu_platform().mutex());
+    return stream_map()[ptr];
   }
 
-  ::tensorflow::tpu::TpuPlatformInterface* platform_;
+  TimerMap timer_map_;
+  tensorflow::tpu::TpuPlatformInterface* platform_;
   SE_StreamExecutor* executor_;
 };
 
+}  // namespace tpu
 }  // namespace tensorflow
 
 #endif  // TENSORFLOW_STREAM_EXECUTOR_TPU_TPU_EXECUTOR_H_

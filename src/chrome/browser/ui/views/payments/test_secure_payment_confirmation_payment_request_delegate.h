@@ -25,7 +25,8 @@ class TestSecurePaymentConfirmationPaymentRequestDelegate
   TestSecurePaymentConfirmationPaymentRequestDelegate(
       content::RenderFrameHost* render_frame_host,
       base::WeakPtr<SecurePaymentConfirmationModel> model,
-      SecurePaymentConfirmationDialogView::ObserverForTest* observer);
+      base::WeakPtr<SecurePaymentConfirmationDialogView::ObserverForTest>
+          observer);
   ~TestSecurePaymentConfirmationPaymentRequestDelegate() override;
 
   // ChromePaymentRequestDelegate:
@@ -37,7 +38,7 @@ class TestSecurePaymentConfirmationPaymentRequestDelegate
   }
 
  private:
-  const content::GlobalFrameRoutingId frame_routing_id_;
+  const content::GlobalRenderFrameHostId frame_routing_id_;
   base::WeakPtr<SecurePaymentConfirmationModel> model_;
   base::WeakPtr<SecurePaymentConfirmationDialogView> dialog_view_;
 };

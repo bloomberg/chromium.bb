@@ -4,7 +4,6 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
@@ -41,6 +40,10 @@ void OnReceivedFormDataFromRenderer(base::OnceClosure quit_closure,
 class AutofillBrowserTest : public WebLayerBrowserTest {
  public:
   AutofillBrowserTest() = default;
+
+  AutofillBrowserTest(const AutofillBrowserTest&) = delete;
+  AutofillBrowserTest& operator=(const AutofillBrowserTest&) = delete;
+
   ~AutofillBrowserTest() override = default;
 
   void SetUp() override {
@@ -50,9 +53,6 @@ class AutofillBrowserTest : public WebLayerBrowserTest {
 
     WebLayerBrowserTest::SetUp();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillBrowserTest);
 };
 
 // Tests that the renderer detects a password form and passes the appropriate

@@ -11,7 +11,6 @@ extern class JSReceiver extends HeapObject {
 
 type Constructor extends JSReceiver;
 
-@generateCppClass
 @apiExposedInstanceTypeValue(0x421)
 @highestInstanceTypeWithinParentClassRange
 extern class JSObject extends JSReceiver {
@@ -42,13 +41,11 @@ macro NewJSObject(implicit context: Context)(): JSObject {
 }
 
 @abstract
-@generateCppClass
 @lowestInstanceTypeWithinParentClassRange
 extern class JSCustomElementsObject extends JSObject {
 }
 
 @abstract
-@generateCppClass
 @lowestInstanceTypeWithinParentClassRange
 extern class JSSpecialObject extends JSCustomElementsObject {
 }
@@ -58,7 +55,7 @@ macro GetDerivedMap(implicit context: Context)(
   try {
     const constructor =
         Cast<JSFunctionWithPrototypeSlot>(newTarget) otherwise SlowPath;
-    assert(IsConstructor(constructor));
+    dcheck(IsConstructor(constructor));
     const map =
         Cast<Map>(constructor.prototype_or_initial_map) otherwise SlowPath;
     if (LoadConstructorOrBackPointer(map) != target) {
@@ -93,7 +90,6 @@ macro AllocateFastOrSlowJSObjectFromMap(implicit context: Context)(map: Map):
       SlackTrackingMode::kWithSlackTracking);
 }
 
-@generateCppClass
 extern class JSGlobalProxy extends JSSpecialObject {
   // [native_context]: the owner native context of this global proxy object.
   // It is null value if this object is not used by any context.
@@ -101,20 +97,23 @@ extern class JSGlobalProxy extends JSSpecialObject {
 }
 
 extern class JSGlobalObject extends JSSpecialObject {
+  // [native context]: the natives corresponding to this global object.
   native_context: NativeContext;
+
+  // [global proxy]: the global proxy object of the context
   global_proxy: JSGlobalProxy;
 }
 
-@generateCppClass
-extern class JSPrimitiveWrapper extends JSCustomElementsObject {
-  value: JSAny;
-}
+extern class JSPrimitiveWrapper extends JSCustomElementsObject { value: JSAny; }
 
 extern class JSMessageObject extends JSObject {
   // Tagged fields.
   message_type: Smi;
-  arguments: Object;
+  // [argument]: the arguments for formatting the error message.
+  argument: Object;
+  // [script]: the script from which the error message originated.
   script: Script;
+  // [stack_frames]: an array of stack frames for this error object.
   stack_frames: Object;
   shared_info: SharedFunctionInfo|Undefined;
 
@@ -126,7 +125,6 @@ extern class JSMessageObject extends JSObject {
   error_level: Smi;
 }
 
-@generateCppClass
 extern class JSDate extends JSObject {
   // If one component is NaN, all of them are, indicating a NaN time value.
 
@@ -147,7 +145,6 @@ extern class JSDate extends JSObject {
   cache_stamp: Undefined|Smi|NaN;
 }
 
-@generateCppClass
 extern class JSAsyncFromSyncIterator extends JSObject {
   sync_iterator: JSReceiver;
   // The "next" method is loaded during GetIterator, and is not reloaded for
@@ -155,7 +152,6 @@ extern class JSAsyncFromSyncIterator extends JSObject {
   next: Object;
 }
 
-@generateCppClass
 extern class JSStringIterator extends JSObject {
   // The [[IteratedString]] slot.
   string: String;

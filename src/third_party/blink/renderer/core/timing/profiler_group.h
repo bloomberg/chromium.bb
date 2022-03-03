@@ -5,12 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PROFILER_GROUP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PROFILER_GROUP_H_
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8-profiler.h"
@@ -47,6 +46,8 @@ class CORE_EXPORT ProfilerGroup
   static base::TimeDelta GetBaseSampleInterval();
 
   ProfilerGroup(v8::Isolate* isolate);
+  ProfilerGroup(const ProfilerGroup&) = delete;
+  ProfilerGroup& operator=(const ProfilerGroup&) = delete;
   ~ProfilerGroup() override;
 
   Profiler* CreateProfiler(ScriptState* script_state,
@@ -93,8 +94,6 @@ class CORE_EXPORT ProfilerGroup
   // A set of observers, one for each ExecutionContext that has profiling
   // enabled.
   HeapHashSet<Member<ProfilingContextObserver>> context_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfilerGroup);
 };
 
 class DiscardedSamplesDelegate : public v8::DiscardedSamplesDelegate {

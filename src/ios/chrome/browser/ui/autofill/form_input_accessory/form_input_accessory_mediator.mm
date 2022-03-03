@@ -16,15 +16,14 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
-#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_chromium_text_data.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
-#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/commands/security_alert_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -33,6 +32,7 @@
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
 #include "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -48,8 +48,15 @@
 
 using base::UmaHistogramEnumeration;
 
-@interface FormInputAccessoryMediator () <AppStateObserver,
-                                          FormActivityObserver,
+namespace {
+
+// Kill switch guarding a workaround for keyboard flicker, see crbug.com/1253561
+const base::Feature kFormInputKeyboardReloadInputViews{
+    "FormInputKeyboardReloadInputViews", base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
+
+@interface FormInputAccessoryMediator () <FormActivityObserver,
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
                                           KeyboardObserverHelperConsumer,
@@ -60,18 +67,15 @@ using base::UmaHistogramEnumeration;
 // The main consumer for this mediator.
 @property(nonatomic, weak) id<FormInputAccessoryConsumer> consumer;
 
-// The delegate for this object.
-@property(nonatomic, weak) id<FormInputAccessoryMediatorDelegate> delegate;
+// The handler for this object.
+@property(nonatomic, weak) id<FormInputAccessoryMediatorHandler> handler;
 
 // The object that manages the currently-shown custom accessory view.
 @property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
 
-// YES if the first responder is valid.
-@property(nonatomic, assign) BOOL firstResponderIsValid;
-
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
-    FormInputAccessoryViewHandler* formInputAccessoryHandler;
+    FormInputAccessoryViewHandler* formNavigationHandler;
 
 // The observer to determine when the keyboard dissapears and when it stays.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
@@ -92,10 +96,6 @@ using base::UmaHistogramEnumeration;
 
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
-
-// Contains information about the application state, for example the last window
-// that was tapped.
-@property(nonatomic, weak) AppState* appState;
 
 // Reauthentication Module used for re-authentication.
 @property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
@@ -140,19 +140,19 @@ using base::UmaHistogramEnumeration;
 
 - (instancetype)
           initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
-                  delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
+                   handler:(id<FormInputAccessoryMediatorHandler>)handler
               webStateList:(WebStateList*)webStateList
        personalDataManager:(autofill::PersonalDataManager*)personalDataManager
              passwordStore:
-                 (scoped_refptr<password_manager::PasswordStore>)passwordStore
-                  appState:(AppState*)appState
+                 (scoped_refptr<password_manager::PasswordStoreInterface>)
+                     passwordStore
       securityAlertHandler:(id<SecurityAlertCommands>)securityAlertHandler
     reauthenticationModule:(ReauthenticationModule*)reauthenticationModule {
   self = [super init];
   if (self) {
     _consumer = consumer;
     _consumer.navigationDelegate = self;
-    _delegate = delegate;
+    _handler = handler;
     if (webStateList) {
       _webStateList = webStateList;
       _webStateListObserver =
@@ -174,25 +174,13 @@ using base::UmaHistogramEnumeration;
         webState->AddObserver(_webStateObserverBridge.get());
       }
     }
-    _formInputAccessoryHandler = [[FormInputAccessoryViewHandler alloc] init];
-    _formInputAccessoryHandler.webState = _webState;
+    _formNavigationHandler = [[FormInputAccessoryViewHandler alloc] init];
+    _formNavigationHandler.webState = _webState;
 
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
-                      selector:@selector(handleTextInputDidBeginEditing:)
-                          name:UITextFieldTextDidBeginEditingNotification
-                        object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(handleTextInputDidEndEditing:)
-                          name:UITextFieldTextDidEndEditingNotification
-                        object:nil];
-    [defaultCenter addObserver:self
                       selector:@selector(applicationDidEnterBackground:)
                           name:UIApplicationDidEnterBackgroundNotification
-                        object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(windowDidBecomeKey:)
-                          name:UIWindowDidBecomeKeyNotification
                         object:nil];
 
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
@@ -225,12 +213,12 @@ using base::UmaHistogramEnumeration;
       consumer.creditCardButtonHidden = YES;
       consumer.addressButtonHidden = YES;
     }
-    _appState = appState;
-    if (!base::ios::IsRunningOnIOS14OrLater()) {
-      [_appState addObserver:self];
-    }
     _reauthenticationModule = reauthenticationModule;
     _securityAlertHandler = securityAlertHandler;
+
+    // Prevent a flicker from happening by starting with valid activity. This
+    // will get updated as soon as a form is interacted.
+    _validActivityForAccessoryView = YES;
   }
   return self;
 }
@@ -255,9 +243,6 @@ using base::UmaHistogramEnumeration;
     _webStateListObserver.reset();
     _webStateList = nullptr;
   }
-  if (!base::ios::IsRunningOnIOS14OrLater()) {
-    [_appState removeObserver:self];
-  }
 }
 
 - (void)detachFromWebState {
@@ -276,18 +261,9 @@ using base::UmaHistogramEnumeration;
 
 #pragma mark - KeyboardObserverHelperConsumer
 
-- (void)keyboardDidStayOnScreen {
-  [self.consumer removeAnimationsOnKeyboardView];
-}
-
 - (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
   if (keyboardState.isVisible) {
-    [self verifyFirstResponderAndUpdateCustomKeyboardView];
     [self updateSuggestionsIfNeeded];
-  }
-  [self.consumer keyboardWillChangeToState:keyboardState];
-  if (!keyboardState.isVisible) {
-    [self.delegate mediatorDidDetectKeyboardHide:self];
   }
 }
 
@@ -308,12 +284,12 @@ using base::UmaHistogramEnumeration;
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
   if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
+    [self reset];
     return;
   }
 
   // Return early, pause and reset if the url is not HTML.
   if (!web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
-    [self pauseCustomKeyboardView];
     [self reset];
     return;
   }
@@ -324,8 +300,18 @@ using base::UmaHistogramEnumeration;
     return;
   }
 
+  // Return early and reset if element is a picker.
+  if (params.field_type == "select-one") {
+    [self reset];
+    return;
+  }
+
   self.validActivityForAccessoryView = YES;
-  [self continueCustomKeyboardView];
+  static bool form_input_keyboard_reload_input_views_workaround =
+      base::FeatureList::IsEnabled(kFormInputKeyboardReloadInputViews);
+  if (!form_input_keyboard_reload_input_views_workaround) {
+    [GetFirstResponder() reloadInputViews];
+  }
 
   NSString* frameID;
   if (frame) {
@@ -333,7 +319,7 @@ using base::UmaHistogramEnumeration;
   }
   DCHECK(frameID.length);
 
-  [self.formInputAccessoryHandler setLastFocusFormActivityWebFrameID:frameID];
+  [self.formNavigationHandler setLastFocusFormActivityWebFrameID:frameID];
   [self synchronizeNavigationControls];
 
   // Don't look for suggestions in the next events.
@@ -341,42 +327,51 @@ using base::UmaHistogramEnumeration;
       params.type == "form_changed") {
     return;
   }
+
+  if (form_input_keyboard_reload_input_views_workaround &&
+      _lastSeenParams.field_type != params.field_type) {
+    [GetFirstResponder() reloadInputViews];
+  }
   _lastSeenParams = params;
   _hasLastSeenParams = YES;
-  [self.consumer prepareToShowSuggestions];
   [self retrieveSuggestionsForForm:params webState:webState];
 }
 
 #pragma mark - FormInputAccessoryViewDelegate
 
 - (void)formInputAccessoryViewDidTapNextButton:(FormInputAccessoryView*)sender {
-  [self.formInputAccessoryHandler selectNextElementWithButtonPress];
+  [self.formNavigationHandler selectNextElementWithButtonPress];
 }
 
 - (void)formInputAccessoryViewDidTapPreviousButton:
     (FormInputAccessoryView*)sender {
-  [self.formInputAccessoryHandler selectPreviousElementWithButtonPress];
+  [self.formNavigationHandler selectPreviousElementWithButtonPress];
 }
 
 - (void)formInputAccessoryViewDidTapCloseButton:
     (FormInputAccessoryView*)sender {
-  [self.formInputAccessoryHandler closeKeyboardWithButtonPress];
+  [self.formNavigationHandler closeKeyboardWithButtonPress];
+}
+
+- (FormInputAccessoryViewTextData*)textDataforFormInputAccessoryView:
+    (FormInputAccessoryView*)sender {
+  return ChromiumAccessoryViewTextData();
 }
 
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self continueCustomKeyboardView];
   [self updateSuggestionsIfNeeded];
 }
 
 - (void)webStateWasHidden:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self pauseCustomKeyboardView];
+  [self reset];
 }
 
-- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
   DCHECK_EQ(_webState, webState);
   [self reset];
 }
@@ -408,6 +403,27 @@ using base::UmaHistogramEnumeration;
   [self updateSuggestionsIfNeeded];
 }
 
+- (BOOL)isInputAccessoryViewActive {
+  // Return early if there is no WebState.
+  if (!_webState) {
+    return NO;
+  }
+
+  // Return early if the URL can't be verified.
+  web::URLVerificationTrustLevel trustLevel;
+  const GURL pageURL(_webState->GetCurrentURL(&trustLevel));
+  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
+    return NO;
+  }
+
+  // Return early if the url is not HTML.
+  if (!web::UrlHasWebScheme(pageURL) || !_webState->ContentIsHTML()) {
+    return NO;
+  }
+
+  return self.validActivityForAccessoryView;
+}
+
 #pragma mark - Setters
 
 - (void)setCurrentProvider:(id<FormInputSuggestionsProvider>)currentProvider {
@@ -416,7 +432,7 @@ using base::UmaHistogramEnumeration;
   }
   [_currentProvider inputAccessoryViewControllerDidReset];
   _currentProvider = currentProvider;
-  _currentProvider.formInputNavigator = self.formInputAccessoryHandler;
+  _currentProvider.formInputNavigator = self.formNavigationHandler;
 }
 
 #pragma mark - Private
@@ -427,37 +443,11 @@ using base::UmaHistogramEnumeration;
   }
 }
 
-// Tells the consumer to pause the custom keyboard view.
-- (void)pauseCustomKeyboardView {
-  [self.consumer pauseCustomKeyboardView];
-}
-
-// Tells the consumer to continue the custom keyboard view if the last activity
-// is valid, the web state is visible, and there is no other text input.
-- (void)continueCustomKeyboardView {
-  // Return early if the form is not a supported one.
-  if (!self.validActivityForAccessoryView) {
-    return;
-  }
-
-  // Return early if the current webstate is not visible.
-  if (!self.webState || !self.webState->IsVisible()) {
-    return;
-  }
-
-  // Return early if the current input is not valid.
-  if (!self.firstResponderIsValid) {
-    return;
-  }
-
-  [self.consumer continueCustomKeyboardView];
-}
-
 // Update the status of the consumer form navigation buttons to match the
 // handler state.
 - (void)synchronizeNavigationControls {
   __weak __typeof(self) weakSelf = self;
-  [self.formInputAccessoryHandler
+  [self.formNavigationHandler
       fetchPreviousAndNextElementsPresenceWithCompletionHandler:^(
           bool previousButtonEnabled, bool nextButtonEnabled) {
         weakSelf.consumer.formInputNextButtonEnabled = nextButtonEnabled;
@@ -483,7 +473,7 @@ using base::UmaHistogramEnumeration;
     if (tabHelper) {
       self.provider = tabHelper->GetAccessoryViewProvider();
     }
-    _formInputAccessoryHandler.webState = webState;
+    _formNavigationHandler.webState = webState;
   } else {
     self.webState = nullptr;
     self.provider = nil;
@@ -495,9 +485,10 @@ using base::UmaHistogramEnumeration;
 - (void)reset {
   _lastSeenParams = autofill::FormActivityParams();
   _hasLastSeenParams = NO;
+  [self.consumer showAccessorySuggestions:@[]];
 
-  [self.consumer restoreOriginalKeyboardView];
-  [self.formInputAccessoryHandler reset];
+  [self.handler resetFormInputView];
+  [self.formNavigationHandler reset];
 
   self.suggestionsDisabled = NO;
   self.currentProvider = nil;
@@ -547,77 +538,9 @@ using base::UmaHistogramEnumeration;
   }
 }
 
-// Inform the delegate that the app went to the background.
+// Handle applicationDidEnterBackground NSNotification.
 - (void)applicationDidEnterBackground:(NSNotification*)notification {
-  [self.delegate mediatorDidDetectMovingToBackground:self];
-}
-
-- (void)windowDidBecomeKey:(NSNotification*)notification {
-  [self verifyFirstResponderAndUpdateCustomKeyboardView];
-}
-
-// Verifies that the first responder is a child of WKWebView and that is is not
-// a child of SSOSignInViewController. Pause or try to continue the keyboard
-// custom view depending on the validity of the first responder.
-- (void)verifyFirstResponderAndUpdateCustomKeyboardView {
-  if (!self.webState) {
-    self.firstResponderIsValid = NO;
-    [self pauseCustomKeyboardView];
-    return;
-  }
-
-  BOOL ancestorIsSSOSignInViewController = NO;
-  BOOL ancestorIsWkWebView = NO;
-
-  UIView* webStateContainerView = self.webState->GetView();
-  BOOL webStateInKeyWindow = webStateContainerView.window.isKeyWindow;
-  if (!base::ios::IsRunningOnIOS14OrLater()) {
-    // This is a workaround for a bug in iOS multiwindow, in which you can touch
-    // a webView without the window getting the keyboard focus. The result is
-    // that you focus a field in the new window gains focus, but keyboard typing
-    // continue to happen in the other window.
-    // TODO(crbug.com/1109124): Remove this workaround.
-    webStateInKeyWindow =
-        webStateInKeyWindow &&
-        webStateContainerView.window == self.appState.lastTappedWindow;
-  }
-  if (webStateInKeyWindow) {
-    UIResponder* firstResponder = GetFirstResponder();
-    while (firstResponder) {
-      if ([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")]) {
-        ancestorIsWkWebView = YES;
-      }
-      if ([firstResponder
-              isKindOfClass:NSClassFromString(@"SSOSignInViewController")]) {
-        ancestorIsSSOSignInViewController = YES;
-        break;
-      }
-      firstResponder = firstResponder.nextResponder;
-    }
-  }
-  self.firstResponderIsValid = webStateInKeyWindow && ancestorIsWkWebView &&
-                               !ancestorIsSSOSignInViewController;
-  if (self.firstResponderIsValid) {
-    [self continueCustomKeyboardView];
-  } else {
-    [self pauseCustomKeyboardView];
-  }
-}
-
-#pragma mark - Keyboard Notifications
-
-// When any text field or text view (e.g. omnibox, settings search bar)
-// begins editing, pause the consumer so it doesn't present the custom view over
-// the keyboard.
-- (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
-  self.firstResponderIsValid = NO;
-  [self pauseCustomKeyboardView];
-}
-
-// When any text field or text view (e.g. omnibox, settings, card unmask dialog)
-// ends editing, continue presenting.
-- (void)handleTextInputDidEndEditing:(NSNotification*)notification {
-  [self verifyFirstResponderAndUpdateCustomKeyboardView];
+  [self.handler resetFormInputView];
 }
 
 #pragma mark - FormSuggestionClient
@@ -682,11 +605,6 @@ using base::UmaHistogramEnumeration;
 
   self.consumer.addressButtonHidden =
       _personalDataManager->GetProfilesToSuggest().empty();
-}
-
-#pragma mark - AppStateObserver
-- (void)appState:(AppState*)appState lastTappedWindowChanged:(UIWindow*)window {
-  [self verifyFirstResponderAndUpdateCustomKeyboardView];
 }
 
 #pragma mark - Tests

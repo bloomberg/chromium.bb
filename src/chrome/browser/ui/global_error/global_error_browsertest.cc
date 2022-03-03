@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -86,8 +87,11 @@ class GlobalErrorWaiter : public GlobalErrorObserver {
  public:
   explicit GlobalErrorWaiter(Profile* profile)
       : service_(GlobalErrorServiceFactory::GetForProfile(profile)) {
-    scoped_observation_.Observe(service_);
+    scoped_observation_.Observe(service_.get());
   }
+
+  GlobalErrorWaiter(const GlobalErrorWaiter&) = delete;
+  GlobalErrorWaiter& operator=(const GlobalErrorWaiter&) = delete;
 
   ~GlobalErrorWaiter() override = default;
 
@@ -101,11 +105,9 @@ class GlobalErrorWaiter : public GlobalErrorObserver {
 
  private:
   base::RunLoop run_loop_;
-  GlobalErrorService* service_;
+  raw_ptr<GlobalErrorService> service_;
   base::ScopedObservation<GlobalErrorService, GlobalErrorObserver>
       scoped_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalErrorWaiter);
 };
 
 }  // namespace
@@ -116,11 +118,11 @@ class GlobalErrorBubbleTest : public DialogBrowserTest {
     extensions::ExtensionPrefs::SetRunAlertsInFirstRunForTest();
   }
 
+  GlobalErrorBubbleTest(const GlobalErrorBubbleTest&) = delete;
+  GlobalErrorBubbleTest& operator=(const GlobalErrorBubbleTest&) = delete;
+
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleTest);
 };
 
 void GlobalErrorBubbleTest::ShowUi(const std::string& name) {

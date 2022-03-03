@@ -8,18 +8,16 @@
 #include <memory>
 #include <string>
 
+#include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-
-namespace base {
-template <typename T>
-class NoDestructor;
-}  // namespace base
 
 namespace crashpad {
 class CrashReportDatabase;
 }  // namespace crashpad
 
 namespace updater {
+
+enum class UpdaterScope;
 
 // This class manages interaction with the crash reporter.
 class CrashClient {
@@ -37,11 +35,11 @@ class CrashClient {
   static bool IsUploadEnabled();
 
   // Initializes collection and upload of crash reports.
-  bool InitializeCrashReporting();
+  bool InitializeCrashReporting(UpdaterScope updater_scope);
 
   // Initializes the crash database only. Used in the crash reporter, which
   // cannot connect to itself to upload its own crashes.
-  bool InitializeDatabaseOnly();
+  bool InitializeDatabaseOnly(UpdaterScope updater_scope);
 
   crashpad::CrashReportDatabase* database() { return database_.get(); }
 

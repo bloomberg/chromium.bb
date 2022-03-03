@@ -5,6 +5,8 @@
 #include "components/sync/driver/sync_session_durations_metrics_recorder.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -17,21 +19,27 @@
 namespace syncer {
 namespace {
 
-constexpr base::TimeDelta kSessionTime = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kSessionTime = base::Seconds(10);
 
 class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
  public:
   SyncSessionDurationsMetricsRecorderTest()
       : identity_test_env_(&test_url_loader_factory_) {
-    sync_service_.SetIsAuthenticatedAccountPrimary(false);
+    sync_service_.SetHasSyncConsent(false);
     sync_service_.SetDisableReasons(SyncService::DISABLE_REASON_NOT_SIGNED_IN);
   }
 
-  ~SyncSessionDurationsMetricsRecorderTest() override {}
+  SyncSessionDurationsMetricsRecorderTest(
+      const SyncSessionDurationsMetricsRecorderTest&) = delete;
+  SyncSessionDurationsMetricsRecorderTest& operator=(
+      const SyncSessionDurationsMetricsRecorderTest&) = delete;
+
+  ~SyncSessionDurationsMetricsRecorderTest() override = default;
 
   void EnableSync() {
-    identity_test_env_.MakePrimaryAccountAvailable("foo@gmail.com");
-    sync_service_.SetIsAuthenticatedAccountPrimary(true);
+    identity_test_env_.MakePrimaryAccountAvailable("foo@gmail.com",
+                                                   signin::ConsentLevel::kSync);
+    sync_service_.SetHasSyncConsent(true);
     sync_service_.SetDisableReasons(SyncService::DisableReasonSet());
     sync_service_.FireStateChanged();
   }
@@ -89,12 +97,10 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
   TestSyncService sync_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncSessionDurationsMetricsRecorderTest);
 };
 
 TEST_F(SyncSessionDurationsMetricsRecorderTest, WebSignedOut) {

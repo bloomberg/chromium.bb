@@ -7,15 +7,15 @@
 
 #include "src/sksl/ir/SkSLVariableReference.h"
 
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/ir/SkSLConstructor.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLSetting.h"
+#include "src/sksl/ir/SkSLVariable.h"
 
 namespace SkSL {
 
-VariableReference::VariableReference(int offset, const Variable* variable, RefKind refKind)
-    : INHERITED(offset, kExpressionKind, &variable->type())
+VariableReference::VariableReference(int line, const Variable* variable, RefKind refKind)
+    : INHERITED(line, kExpressionKind, &variable->type())
     , fVariable(variable)
     , fRefKind(refKind) {
     SkASSERT(this->variable());
@@ -36,7 +36,7 @@ bool VariableReference::isConstantOrUniform() const {
 }
 
 String VariableReference::description() const {
-    return this->variable()->name();
+    return String(this->variable()->name());
 }
 
 void VariableReference::setRefKind(RefKind refKind) {

@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Test configs for conv with activations."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow.compat.v1 as tf
 from tensorflow.lite.testing.zip_test_utils import create_tensor_data
@@ -40,6 +36,7 @@ def make_conv_activation_tests(activation_op):
             "constant_filter": [True, False],
             "channel_multiplier": [1, 2],
             "fully_quantize": [False],
+            "quant_16x8": [False],
             "dynamic_range_quantize": [False],
         },
         # TODO(b/134702301): The fully_quantize param is just ignored by the
@@ -47,14 +44,15 @@ def make_conv_activation_tests(activation_op):
         # these tests or handle it properly in the mlir_convert() function.
         {
             "input_shape": [[1, 3, 4, 3], [4, 6, 6, 1]],
-            "filter_shape": [[1, 1], [2, 3], [3, 3]],
+            "filter_shape": [[1, 1], [2, 3]],
             "strides": [[1, 1, 1, 1], [1, 2, 3, 1]],
-            "dilations": [[1, 1, 1, 1], [1, 3, 2, 1], [1, 2, 2, 1]],
+            "dilations": [[1, 1, 1, 1], [1, 3, 2, 1]],
             "padding": ["SAME", "VALID"],
             "data_format": ["NHWC"],  # TODO(aselle): NCHW  would be good
             "constant_filter": [True],
             "channel_multiplier": [1, 2],
             "fully_quantize": [True],
+            "quant_16x8": [False, True],
             "dynamic_range_quantize": [False],
         },
         {
@@ -67,6 +65,7 @@ def make_conv_activation_tests(activation_op):
             "constant_filter": [True],
             "channel_multiplier": [1, 2],
             "fully_quantize": [False],
+            "quant_16x8": [False],
             "dynamic_range_quantize": [True],
         },
     ]
@@ -123,7 +122,7 @@ def make_conv_activation_tests(activation_op):
         test_parameters,
         build_graph,
         build_inputs,
-        expected_tf_failures=60)
+        expected_tf_failures=48)
 
   return f
 

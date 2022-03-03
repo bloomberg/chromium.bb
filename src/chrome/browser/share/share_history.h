@@ -11,6 +11,7 @@
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "chrome/browser/share/proto/share_history_message.pb.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
@@ -38,17 +39,41 @@ class ShareHistory : public base::SupportsUserData::Data {
                         std::unique_ptr<BackingDb> backing_db = nullptr);
   ~ShareHistory() override;
 
-  void AddShareEntry(const std::string& component_name);
+  virtual void AddShareEntry(const std::string& component_name);
 
   // Returns the flattened share history. Each entry in this list contains
   // the total count of shares the corresponding target has received over
   // the past |window| days. It is required that |window| <= the backend's
   // WINDOW value. A window of -1 means all available history.
-  void GetFlatShareHistory(GetFlatHistoryCallback callback, int window = -1);
+  virtual void GetFlatShareHistory(GetFlatHistoryCallback callback,
+                                   int window = -1);
+
+  virtual void Clear(const base::Time& start = base::Time(),
+                     const base::Time& end = base::Time());
+
+  // Don't call this.
+  //
+  // TODO(ellyjones): There should be a better way to deal with this - it's used
+  // to deal with the fact that ShareHistory's destruction order wrt
+  // ShareRanking is undefined, so ShareHistory can get torn down while
+  // ShareRanking has a pending async call to it, after the pending call's reply
+  // has been posted but before the posted response has been run.
+  base::WeakPtr<ShareHistory> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ protected:
+  // Constructor for test fakes only - this constructor leaves this object in an
+  // invalid state, so you had better override the public methods with their own
+  // implementations that don't rely on the base ones!
+  ShareHistory();
 
  private:
   void Init();
   void OnInitDone(leveldb_proto::Enums::InitStatus status);
+  void OnInitialReadDone(bool ok, std::unique_ptr<mojom::ShareHistory> history);
+
+  void FlushToBackingDb();
 
   // These two methods get or create entries in the in-memory protobuf; they do
   // not actually write back to the DB.

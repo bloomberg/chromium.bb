@@ -19,7 +19,6 @@ import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.test.filters.MediumTest;
 import android.view.Gravity;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
@@ -29,6 +28,7 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,7 +43,6 @@ import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
-import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -61,7 +60,6 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAcces
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -71,8 +69,8 @@ import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 import org.chromium.ui.test.util.NightModeTestUtils;
+import org.chromium.ui.test.util.ViewUtils;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -82,7 +80,6 @@ import java.util.List;
  */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@Batch(Batch.PER_CLASS)
 @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AccessorySheetRenderTest {
@@ -129,6 +126,9 @@ public class AccessorySheetRenderTest {
         NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         FaviconHelper.setCreationStrategy(TestFaviconHelper::new);
         mActivityTestRule.launchActivity(null);
+        // Calling #setTheme() explicitly because the test rule doesn't have the @Rule annotation
+        // and won't apply the theme.
+        mActivityTestRule.getActivity().setTheme(R.style.ColorOverlay_ChromiumAndroid);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ViewStub sheetStub = initializeContentViewWithSheetStub();
 
@@ -144,8 +144,7 @@ public class AccessorySheetRenderTest {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                NightModeTestUtils::tearDownNightModeForDummyUiActivity);
+        NightModeTestUtils.tearDownNightModeForDummyUiActivity();
         setRtlForTesting(false);
         try {
             ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
@@ -157,12 +156,12 @@ public class AccessorySheetRenderTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testAddingPasswordTabToModelRendersTabsView() throws IOException {
+    public void testAddingPasswordTabToModelRendersTabsView() throws Exception {
         final KeyboardAccessoryData.AccessorySheetData sheet =
                 new KeyboardAccessoryData.AccessorySheetData(
                         AccessoryTabType.PASSWORDS, "Passwords", "");
         sheet.getUserInfoList().add(
-                new KeyboardAccessoryData.UserInfo("http://psl.origin.com/", false));
+                new KeyboardAccessoryData.UserInfo("http://psl.origin.com/", true));
         sheet.getUserInfoList().get(0).addField(
                 new UserInfoField("No username", "No username", "", false, null));
         sheet.getUserInfoList().get(0).addField(
@@ -172,22 +171,23 @@ public class AccessorySheetRenderTest {
         sheet.getFooterCommands().add(
                 new KeyboardAccessoryData.FooterCommand("Manage Passwords", cb -> {}));
 
-        showSheetTab(new PasswordAccessorySheetCoordinator(mActivityTestRule.getActivity(), null),
-                sheet);
+        PasswordAccessorySheetCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new PasswordAccessorySheetCoordinator(mActivityTestRule.getActivity(), null));
+        showSheetTab(coordinator, sheet);
 
         mRenderTestRule.render(mContentView, "Passwords");
     }
 
+    // Tests rendering of Payments tab with both credit cards and promo code offers.
+    // Promo code offers should appear above the credit cards.
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testAddingCreditCardToModelRendersTabsView() throws IOException {
-        // Construct a sheet with a few data fields. Leave gaps so that the footer is visible in the
-        // screenshot (but supply the fields itself since the field count should be fixed).
+    public void testAddingCreditCardAndPromoCodeToModelRendersTabsView() throws Exception {
         final KeyboardAccessoryData.AccessorySheetData sheet =
                 new KeyboardAccessoryData.AccessorySheetData(
                         AccessoryTabType.CREDIT_CARDS, "Payments", "");
-        sheet.getUserInfoList().add(new KeyboardAccessoryData.UserInfo("", false));
+        sheet.getUserInfoList().add(new KeyboardAccessoryData.UserInfo("", true));
         sheet.getUserInfoList().get(0).addField(
                 new UserInfoField("**** 9219", "Card for Todd Tester", "1", false, result -> {}));
         sheet.getUserInfoList().get(0).addField(
@@ -198,36 +198,33 @@ public class AccessorySheetRenderTest {
                 new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));
         sheet.getUserInfoList().get(0).addField(
                 new UserInfoField("123", "123", "-1", false, result -> {}));
-        sheet.getUserInfoList().add(new KeyboardAccessoryData.UserInfo("", false));
-        sheet.getUserInfoList().get(1).addField(
-                new UserInfoField("**** 8012", "Card for Maya Park", "1", false, result -> {}));
-        sheet.getUserInfoList().get(1).addField( // Unused expiration month field.
-                new UserInfoField("", "", "-1", false, result -> {}));
-        sheet.getUserInfoList().get(1).addField( // Unused expiration year field.
-                new UserInfoField("", "", "-1", false, result -> {}));
-        sheet.getUserInfoList().get(1).addField( // Unused card holder field.
-                new UserInfoField("", "", "1", false, result -> {}));
-        sheet.getUserInfoList().get(1).addField(
-                new UserInfoField("", "", "-1", false, result -> {}));
+        sheet.getPromoCodeInfoList().add(new KeyboardAccessoryData.PromoCodeInfo());
+        sheet.getPromoCodeInfoList().get(0).setPromoCode(new UserInfoField(
+                "50$OFF", "Promo Code for Todd Tester", "1", false, result -> {}));
+        sheet.getPromoCodeInfoList().get(0).setDetailsText(
+                "Get $50 off when you use this code at checkout.");
         sheet.getFooterCommands().add(
                 new KeyboardAccessoryData.FooterCommand("Manage payment methods", cb -> {}));
 
-        showSheetTab(new CreditCardAccessorySheetCoordinator(mActivityTestRule.getActivity(), null),
-                sheet);
+        CreditCardAccessorySheetCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> new CreditCardAccessorySheetCoordinator(
+                                mActivityTestRule.getActivity(), null));
+        showSheetTab(coordinator, sheet);
 
-        mRenderTestRule.render(mContentView, "Payments");
+        mRenderTestRule.render(mContentView, "credit_cards_and_promo_codes");
     }
 
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testAddingAddressToModelRendersTabsView() throws IOException {
+    public void testAddingAddressToModelRendersTabsView() throws Exception {
         // Construct a sheet with a few data fields. Leave gaps so that the footer is visible in the
         // screenshot (but supply the fields itself since the field count should be fixed).
         final KeyboardAccessoryData.AccessorySheetData sheet =
                 new KeyboardAccessoryData.AccessorySheetData(
                         AccessoryTabType.ADDRESSES, "Addresses", "");
-        sheet.getUserInfoList().add(new KeyboardAccessoryData.UserInfo("", false));
+        sheet.getUserInfoList().add(new KeyboardAccessoryData.UserInfo("", true));
         sheet.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd Tester", "Todd Tester", "", false, item -> {}));
         sheet.getUserInfoList().get(0).addField( // Unused company name field.
@@ -251,8 +248,9 @@ public class AccessorySheetRenderTest {
         sheet.getFooterCommands().add(
                 new KeyboardAccessoryData.FooterCommand("Manage addresses", cb -> {}));
 
-        showSheetTab(
-                new AddressAccessorySheetCoordinator(mActivityTestRule.getActivity(), null), sheet);
+        AddressAccessorySheetCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AddressAccessorySheetCoordinator(mActivityTestRule.getActivity(), null));
+        showSheetTab(coordinator, sheet);
 
         mRenderTestRule.render(mContentView, "Addresses");
     }
@@ -293,12 +291,14 @@ public class AccessorySheetRenderTest {
 
     private void showSheetTab(AccessorySheetTabCoordinator sheetComponent,
             KeyboardAccessoryData.AccessorySheetData sheetData) {
-        mSheetModel.get(TABS).add(sheetComponent.getTab());
-        Provider<KeyboardAccessoryData.AccessorySheetData> provider = new PropertyProvider<>();
-        sheetComponent.registerDataProvider(provider);
-        provider.notifyObservers(sheetData);
-        mSheetModel.set(ACTIVE_TAB_INDEX, 0);
-        TestThreadUtils.runOnUiThreadBlocking(() -> mSheetModel.set(VISIBLE, true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSheetModel.get(TABS).add(sheetComponent.getTab());
+            Provider<KeyboardAccessoryData.AccessorySheetData> provider = new PropertyProvider<>();
+            sheetComponent.registerDataProvider(provider);
+            provider.notifyObservers(sheetData);
+            mSheetModel.set(ACTIVE_TAB_INDEX, 0);
+            mSheetModel.set(VISIBLE, true);
+        });
         ViewUtils.waitForView(mContentView, withId(R.id.keyboard_accessory_sheet));
     }
 }

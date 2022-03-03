@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/public/cpp/system_tray.h"
-#include "base/macros.h"
 
 namespace ash {
 
@@ -16,6 +15,7 @@ class ActiveNetworkIcon;
 class ClockModel;
 class EnterpriseDomainModel;
 class LocaleModel;
+struct RelaunchNotificationState;
 class SessionLengthLimitModel;
 class SystemTrayClient;
 class TracingModel;
@@ -27,6 +27,10 @@ class VirtualKeyboardModel;
 class SystemTrayModel : public SystemTray {
  public:
   SystemTrayModel();
+
+  SystemTrayModel(const SystemTrayModel&) = delete;
+  SystemTrayModel& operator=(const SystemTrayModel&) = delete;
+
   ~SystemTrayModel() override;
 
   // SystemTray:
@@ -45,16 +49,14 @@ class SystemTrayModel : public SystemTray {
                       bool factory_reset_required,
                       bool rollback,
                       UpdateType update_type) override;
-  void SetUpdateNotificationState(
-      NotificationStyle style,
-      const std::u16string& notification_title,
-      const std::u16string& notification_body) override;
+  void SetRelaunchNotificationState(
+      const RelaunchNotificationState& relaunch_notification_state) override;
   void ResetUpdateState() override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
   void ShowVolumeSliderBubble() override;
   void ShowNetworkDetailedViewBubble() override;
   void SetPhoneHubManager(
-      chromeos::phonehub::PhoneHubManager* phone_hub_manager) override;
+      phonehub::PhoneHubManager* phone_hub_manager) override;
 
   ClockModel* clock() { return clock_.get(); }
   EnterpriseDomainModel* enterprise_domain() {
@@ -86,13 +88,8 @@ class SystemTrayModel : public SystemTray {
   std::unique_ptr<TrayNetworkStateModel> network_state_model_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
 
-  // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
-  // * BluetoothModel
-
   // Client interface in chrome browser. May be null in tests.
   SystemTrayClient* client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayModel);
 };
 
 }  // namespace ash

@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICES_SPEECH_SODA_SODA_CLIENT_H_
 #define CHROME_SERVICES_SPEECH_SODA_SODA_CLIENT_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_native_library.h"
 #include "chrome/services/speech/soda/soda_async_impl.h"
 
@@ -27,6 +28,10 @@ class SodaClient {
  public:
   // Takes in the fully-qualified path to the SODA binary.
   explicit SodaClient(base::FilePath library_path);
+
+  SodaClient(const SodaClient&) = delete;
+  SodaClient& operator=(const SodaClient&) = delete;
+
   ~SodaClient();
 
   // Feeds raw audio to SODA in the form of a contiguous stream of characters.
@@ -64,14 +69,12 @@ class SodaClient {
   SodaStartFunction soda_start_func_;
 
   // An opaque handle to the SODA async instance.
-  void* soda_async_handle_;
+  raw_ptr<void> soda_async_handle_;
 
   LoadSodaResultValue load_soda_result_ = LoadSodaResultValue::kUnknown;
   bool is_initialized_;
   int sample_rate_;
   int channel_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(SodaClient);
 };
 
 }  // namespace soda

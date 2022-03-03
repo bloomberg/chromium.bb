@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_LABELS_SERVICE_H_
 #define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_LABELS_SERVICE_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -45,6 +46,10 @@ class AccessibilityLabelsService
 {
 
  public:
+  AccessibilityLabelsService(const AccessibilityLabelsService&) = delete;
+  AccessibilityLabelsService& operator=(const AccessibilityLabelsService&) =
+      delete;
+
   ~AccessibilityLabelsService() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -92,7 +97,7 @@ class AccessibilityLabelsService
   void UpdateAccessibilityLabelsHistograms();
 
   // Owns us via the KeyedService mechanism.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
@@ -101,8 +106,6 @@ class AccessibilityLabelsService
   mojo::Remote<image_annotation::mojom::ImageAnnotationService> remote_service_;
 
   base::WeakPtrFactory<AccessibilityLabelsService> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityLabelsService);
 };
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_LABELS_SERVICE_H_

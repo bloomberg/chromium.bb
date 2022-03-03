@@ -10,18 +10,19 @@
 
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/webui/network_ui/network_diagnostics_resource_provider.h"
+#include "ash/webui/network_ui/network_health_resource_provider.h"
+#include "ash/webui/network_ui/traffic_counters_resource_provider.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/net/network_health/network_health_service.h"
+#include "chrome/browser/ash/net/network_health/network_health_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_logs_message_handler.h"
 #include "chrome/browser/ui/webui/chromeos/onc_import_message_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -30,15 +31,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/network_ui_resources.h"
 #include "chrome/grit/network_ui_resources_map.h"
-#include "chromeos/components/network_ui/network_diagnostics_resource_provider.h"
-#include "chromeos/components/network_ui/network_health_resource_provider.h"
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
@@ -53,6 +52,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/network_element_localized_strings_provider.h"
 
 namespace chromeos {
 
@@ -109,7 +109,7 @@ class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
   ~NetworkDiagnosticsMessageHandler() override = default;
 
   void RegisterMessages() override {
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         "OpenFeedbackDialog",
         base::BindRepeating(
             &NetworkDiagnosticsMessageHandler::OpenFeedbackDialog,
@@ -118,67 +118,73 @@ class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
 
  private:
   void OpenFeedbackDialog(const base::ListValue* value) {
-    const std::string result = value->GetList()[0].GetString();
     chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceNetworkHealthPage,
                              "" /*description_template*/,
                              "" /*description_template_placeholder*/,
-                             "network-health", result);
+                             "network-health", "" /*extra_diagnostics*/);
   }
 };
 
 }  // namespace
 
+namespace network_ui {
+
 class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
  public:
   NetworkConfigMessageHandler() {}
+
+  NetworkConfigMessageHandler(const NetworkConfigMessageHandler&) = delete;
+  NetworkConfigMessageHandler& operator=(const NetworkConfigMessageHandler&) =
+      delete;
+
   ~NetworkConfigMessageHandler() override {}
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override {
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kAddNetwork,
         base::BindRepeating(&NetworkConfigMessageHandler::AddNetwork,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kGetNetworkProperties,
         base::BindRepeating(
             &NetworkConfigMessageHandler::GetShillNetworkProperties,
             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kGetDeviceProperties,
         base::BindRepeating(
             &NetworkConfigMessageHandler::GetShillDeviceProperties,
             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kGetEthernetEAP,
         base::BindRepeating(&NetworkConfigMessageHandler::GetShillEthernetEAP,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kOpenCellularActivationUi,
         base::BindRepeating(
             &NetworkConfigMessageHandler::OpenCellularActivationUi,
             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kResetESimCache,
         base::BindRepeating(&NetworkConfigMessageHandler::ResetESimCache,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kShowNetworkDetails,
         base::BindRepeating(&NetworkConfigMessageHandler::ShowNetworkDetails,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kShowNetworkConfig,
         base::BindRepeating(&NetworkConfigMessageHandler::ShowNetworkConfig,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kShowAddNewWifiNetworkDialog,
         base::BindRepeating(&NetworkConfigMessageHandler::ShowAddNewWifi,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kGetHostname,
         base::BindRepeating(&NetworkConfigMessageHandler::GetHostname,
                             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
+    web_ui()->RegisterDeprecatedMessageCallback(
         kSetHostname,
         base::BindRepeating(&NetworkConfigMessageHandler::SetHostname,
                             base::Unretained(this)));
@@ -191,10 +197,9 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void GetShillNetworkProperties(const base::ListValue* arg_list) {
-    CHECK_EQ(2u, arg_list->GetSize());
-    std::string callback_id, guid;
-    CHECK(arg_list->GetString(0, &callback_id));
-    CHECK(arg_list->GetString(1, &guid));
+    CHECK_EQ(2u, arg_list->GetList().size());
+    std::string callback_id = arg_list->GetList()[0].GetString();
+    std::string guid = arg_list->GetList()[1].GetString();
 
     std::string service_path;
     if (!GetServicePathFromGuid(guid, &service_path)) {
@@ -227,10 +232,9 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void GetShillDeviceProperties(const base::ListValue* arg_list) {
-    CHECK_EQ(2u, arg_list->GetSize());
-    std::string callback_id, type;
-    CHECK(arg_list->GetString(0, &callback_id));
-    CHECK(arg_list->GetString(1, &type));
+    CHECK_EQ(2u, arg_list->GetList().size());
+    std::string callback_id = arg_list->GetList()[0].GetString();
+    std::string type = arg_list->GetList()[1].GetString();
 
     const DeviceState* device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
@@ -247,9 +251,8 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void GetShillEthernetEAP(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string callback_id;
-    CHECK(arg_list->GetString(0, &callback_id));
+    CHECK_EQ(1u, arg_list->GetList().size());
+    std::string callback_id = arg_list->GetList()[0].GetString();
 
     NetworkStateHandler::NetworkStateList list;
     NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
@@ -272,16 +275,16 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void OpenCellularActivationUi(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string callback_id;
-    CHECK(arg_list->GetString(0, &callback_id));
+    CHECK_EQ(1u, arg_list->GetList().size());
+    std::string callback_id = arg_list->GetList()[0].GetString();
 
     const NetworkState* cellular_network =
         NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
             NetworkTypePattern::Cellular());
-    if (cellular_network)
-      cellular_setup::OpenCellularSetupDialog(cellular_network->guid());
-
+    if (cellular_network) {
+      SystemTrayClientImpl::Get()->ShowSettingsCellularSetup(
+          /*show_psim_flow=*/true);
+    }
     base::Value response(base::Value::Type::LIST);
     response.Append(base::Value(cellular_network != nullptr));
     Respond(callback_id, response);
@@ -299,17 +302,15 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void ShowNetworkDetails(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string guid;
-    CHECK(arg_list->GetString(0, &guid));
+    CHECK_EQ(1u, arg_list->GetList().size());
+    std::string guid = arg_list->GetList()[0].GetString();
 
     InternetDetailDialog::ShowDialog(guid);
   }
 
   void ShowNetworkConfig(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string guid;
-    CHECK(arg_list->GetString(0, &guid));
+    CHECK_EQ(1u, arg_list->GetList().size());
+    std::string guid = arg_list->GetList()[0].GetString();
 
     InternetConfigDialog::ShowDialogForNetworkId(guid);
   }
@@ -337,18 +338,16 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void GetHostname(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string callback_id;
-    CHECK(arg_list->GetString(0, &callback_id));
+    CHECK_EQ(1u, arg_list->GetList().size());
+    std::string callback_id = arg_list->GetList()[0].GetString();
     std::string hostname =
         NetworkHandler::Get()->network_state_handler()->hostname();
     Respond(callback_id, base::Value(hostname));
   }
 
   void SetHostname(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string hostname;
-    CHECK(arg_list->GetString(0, &hostname));
+    CHECK_EQ(1u, arg_list->GetList().size());
+    std::string hostname = arg_list->GetList()[0].GetString();
     NET_LOG(USER) << "SET HOSTNAME: " << hostname;
     NetworkHandler::Get()->network_state_handler()->SetHostname(hostname);
   }
@@ -378,15 +377,15 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void AddNetwork(const base::ListValue* args) {
-    std::string onc_type;
-    args->GetString(0, &onc_type);
+    DCHECK(!args->GetList().empty());
+    std::string onc_type = args->GetList()[0].GetString();
     InternetConfigDialog::ShowDialogForNetworkType(onc_type);
   }
 
   base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkConfigMessageHandler);
 };
+
+}  // namespace network_ui
 
 // static
 void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
@@ -546,7 +545,8 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
-  web_ui->AddMessageHandler(std::make_unique<NetworkConfigMessageHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<network_ui::NetworkConfigMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<OncImportMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<NetworkLogsMessageHandler>());
   web_ui->AddMessageHandler(
@@ -568,8 +568,9 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   network_diagnostics::AddResources(html);
   cellular_setup::AddLocalizedStrings(html);
   cellular_setup::AddNonStringLoadTimeData(html);
-  network_element::AddLocalizedStrings(html);
-  network_element::AddOncLocalizedStrings(html);
+  ui::network_element::AddLocalizedStrings(html);
+  ui::network_element::AddOncLocalizedStrings(html);
+  traffic_counters::AddResources(html);
   html->UseStringsJs();
 
   webui::SetupWebUIDataSource(

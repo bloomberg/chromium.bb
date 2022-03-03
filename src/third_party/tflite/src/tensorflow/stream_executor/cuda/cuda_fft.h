@@ -50,7 +50,8 @@ class CUDAFftPlan : public fft::Plan {
         fft_type_(fft::Type::kInvalid),
         scratch_(nullptr),
         scratch_size_bytes_(0),
-        is_initialized_(false) {}
+        is_initialized_(false),
+        scratch_allocator_(nullptr) {}
   ~CUDAFftPlan() override;
 
   // Get FFT direction in cuFFT based on FFT type.
@@ -65,19 +66,21 @@ class CUDAFftPlan : public fft::Plan {
 
   // Initialize function for batched plan
   port::Status Initialize(GpuExecutor* parent, Stream* stream, int rank,
-                          uint64* elem_count, uint64* input_embed,
-                          uint64 input_stride, uint64 input_distance,
-                          uint64* output_embed, uint64 output_stride,
-                          uint64 output_distance, fft::Type type,
+                          uint64_t* elem_count, uint64_t* input_embed,
+                          uint64_t input_stride, uint64 input_distance,
+                          uint64_t* output_embed, uint64_t output_stride,
+                          uint64_t output_distance, fft::Type type,
                           int batch_count, ScratchAllocator* scratch_allocator);
 
   // Initialize function for 1d,2d, and 3d plan
   port::Status Initialize(GpuExecutor* parent, Stream* stream, int rank,
-                          uint64* elem_count, fft::Type type,
+                          uint64_t* elem_count, fft::Type type,
                           ScratchAllocator* scratch_allocator);
 
   port::Status UpdateScratchAllocator(Stream *stream,
                                       ScratchAllocator *scratch_allocator);
+
+  ScratchAllocator* GetScratchAllocator() const { return scratch_allocator_; }
 
  protected:
   bool IsInitialized() const { return is_initialized_; }
@@ -89,6 +92,7 @@ class CUDAFftPlan : public fft::Plan {
   DeviceMemory<uint8> scratch_;
   size_t scratch_size_bytes_;
   bool is_initialized_;
+  ScratchAllocator* scratch_allocator_;
 };
 
 // FFT support for CUDA platform via cuFFT library.

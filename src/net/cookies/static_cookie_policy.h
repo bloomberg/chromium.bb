@@ -5,7 +5,6 @@
 #ifndef NET_COOKIES_STATIC_COOKIE_POLICY_H_
 #define NET_COOKIES_STATIC_COOKIE_POLICY_H_
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 
 class GURL;
@@ -33,6 +32,9 @@ class NET_EXPORT StaticCookiePolicy {
 
   explicit StaticCookiePolicy(Type type) : type_(type) {}
 
+  StaticCookiePolicy(const StaticCookiePolicy&) = delete;
+  StaticCookiePolicy& operator=(const StaticCookiePolicy&) = delete;
+
   // Sets the current policy to enforce. This should be called when the user's
   // preferences change.
   void set_type(Type type) { type_ = type; }
@@ -45,8 +47,6 @@ class NET_EXPORT StaticCookiePolicy {
 
  private:
   Type type_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticCookiePolicy);
 };
 
 }  // namespace net

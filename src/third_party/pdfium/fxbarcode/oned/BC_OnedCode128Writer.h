@@ -7,10 +7,12 @@
 #ifndef FXBARCODE_ONED_BC_ONEDCODE128WRITER_H_
 #define FXBARCODE_ONED_BC_ONEDCODE128WRITER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
+#include "fxbarcode/BC_Library.h"
 #include "fxbarcode/oned/BC_OneDimWriter.h"
 
 class CBC_OnedCode128Writer final : public CBC_OneDimWriter {
@@ -26,14 +28,14 @@ class CBC_OnedCode128Writer final : public CBC_OneDimWriter {
 
   // CBC_OneDimWriter
   uint8_t* EncodeWithHint(const ByteString& contents,
-                          BCFORMAT format,
+                          BC_TYPE format,
                           int32_t& outWidth,
                           int32_t& outHeight,
                           int32_t hints) override;
   uint8_t* EncodeImpl(const ByteString& contents, int32_t& outLength) override;
   bool CheckContentValidity(WideStringView contents) override;
   WideString FilterContents(WideStringView contents) override;
-  bool SetTextLocation(BC_TEXT_LOC location) override;
+  void SetTextLocation(BC_TEXT_LOC location) override;
 
   BC_TYPE GetType() const { return m_codeFormat; }
 

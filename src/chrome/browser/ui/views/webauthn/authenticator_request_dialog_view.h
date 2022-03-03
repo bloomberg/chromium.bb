@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -60,8 +60,8 @@ class AuthenticatorRequestDialogView
   // Shows or hides the "Choose another option" button based on whether the
   // current sheet model defines a model for the other transports popup menu,
   // and whether it has at least one element.
-  void ToggleOtherTransportsButtonVisibility();
-  bool ShouldOtherTransportsButtonBeVisible() const;
+  void ToggleOtherMechanismsButtonVisibility();
+  bool ShouldOtherMechanismsButtonBeVisible() const;
 
   AuthenticatorRequestSheetView* sheet() const {
     DCHECK(sheet_);
@@ -80,6 +80,7 @@ class AuthenticatorRequestDialogView
   void OnStepTransition() override;
   void OnSheetModelChanged() override;
 
+  // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
 
  private:
@@ -96,15 +97,15 @@ class AuthenticatorRequestDialogView
   // Shows the dialog after creation or after being hidden.
   void Show();
 
-  void OtherTransportsButtonPressed();
+  void OtherMechanismsButtonPressed();
 
   void OnDialogClosing();
 
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
 
-  AuthenticatorRequestSheetView* sheet_ = nullptr;
-  views::View* other_transports_button_ = nullptr;
-  std::unique_ptr<views::MenuRunner> other_transports_menu_runner_;
+  raw_ptr<AuthenticatorRequestSheetView> sheet_ = nullptr;
+  raw_ptr<views::View> other_mechanisms_button_ = nullptr;
+  std::unique_ptr<views::MenuRunner> other_mechanisms_menu_runner_;
   bool first_shown_ = false;
 
   // web_contents_hidden_ is true if the |WebContents| that this dialog should

@@ -25,11 +25,12 @@
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/platform_cursor.h"
-#include "ui/base/cursor/win/win_cursor.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/event_creation_utils.h"
 #include "ui/base/win/shell.h"
+#include "ui/base/win/win_cursor.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
@@ -66,6 +67,14 @@ namespace views {
 
 namespace {
 
+// While the mouse is locked we want the invisible mouse to stay within the
+// confines of the screen so we keep it in a capture region the size of the
+// screen.  However, on windows when the mouse hits the edge of the screen some
+// events trigger and cause strange issues to occur. To stop those events from
+// occurring we add a small border around the edge of the capture region.
+// This constant controls how many pixels wide that border is.
+const int kMouseCaptureRegionBorder = 5;
+
 gfx::Size GetExpandedWindowSize(bool is_translucent, gfx::Size size) {
   if (!is_translucent || !ui::win::IsAeroGlassEnabled())
     return size;
@@ -78,6 +87,24 @@ gfx::Size GetExpandedWindowSize(bool is_translucent, gfx::Size size) {
 
 void InsetBottomRight(gfx::Rect* rect, const gfx::Vector2d& vector) {
   rect->Inset(0, 0, vector.x(), vector.y());
+}
+
+// Updates the cursor clip region. Used for mouse locking.
+void UpdateMouseLockRegion(aura::Window* window, bool locked) {
+  if (!locked) {
+    ::ClipCursor(nullptr);
+    return;
+  }
+
+  RECT window_rect =
+      display::Screen::GetScreen()
+          ->DIPToScreenRectInWindow(window, window->GetBoundsInScreen())
+          .ToRECT();
+  window_rect.left += kMouseCaptureRegionBorder;
+  window_rect.right -= kMouseCaptureRegionBorder;
+  window_rect.top += kMouseCaptureRegionBorder;
+  window_rect.bottom -= kMouseCaptureRegionBorder;
+  ::ClipCursor(&window_rect);
 }
 
 }  // namespace
@@ -124,10 +151,20 @@ aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
   return host ? host->window()->GetProperty(kContentWindowForRootWindow) : NULL;
 }
 
-void DesktopWindowTreeHostWin::SetInTouchDrag(bool in_touch_drag) {
-  in_touch_drag_ = in_touch_drag;
+void DesktopWindowTreeHostWin::StartTouchDrag(gfx::Point screen_point) {
+  // Send a mouse down and mouse move before do drag drop runs its own event
+  // loop. This is required for ::DoDragDrop to start the drag.
+  ui::SendMouseEvent(screen_point, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_ABSOLUTE);
+  ui::SendMouseEvent(screen_point, MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE);
+  in_touch_drag_ = true;
 }
 
+void DesktopWindowTreeHostWin::FinishTouchDrag(gfx::Point screen_point) {
+  if (in_touch_drag_) {
+    in_touch_drag_ = false;
+    ui::SendMouseEvent(screen_point, MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE);
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, DesktopWindowTreeHost implementation:
 
@@ -155,7 +192,7 @@ void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
   gfx::Rect pixel_bounds =
       display::win::ScreenWin::DIPToScreenRect(nullptr, params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
-  CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
+  CreateCompositor(params.force_software_compositing);
   OnAcceleratedWidgetAvailable();
   InitHost();
   window()->Show();
@@ -189,13 +226,13 @@ std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
 
   DCHECK(!tooltip_);
   tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
-  return base::WrapUnique(tooltip_);
+  return base::WrapUnique(tooltip_.get());
 }
 
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostWin::CreateDragDropClient() {
   drag_drop_client_ = new DesktopDragDropClientWin(window(), GetHWND(), this);
-  return base::WrapUnique(drag_drop_client_);
+  return base::WrapUnique(drag_drop_client_.get());
 }
 
 void DesktopWindowTreeHostWin::Close() {
@@ -226,13 +263,16 @@ aura::WindowTreeHost* DesktopWindowTreeHostWin::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostWin::Show(ui::WindowShowState show_state,
                                     const gfx::Rect& restore_bounds) {
-  if (compositor())
-    compositor()->SetVisible(true);
+  OnAcceleratedWidgetMadeVisible(true);
 
   gfx::Rect pixel_restore_bounds;
   if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+    // The window parameter is intentionally passed as nullptr because a
+    // non-null window parameter causes errors when restoring windows to saved
+    // positions in variable-DPI situations. See https://crbug.com/1252564 for
+    // details.
     pixel_restore_bounds =
-        display::win::ScreenWin::DIPToScreenRect(GetHWND(), restore_bounds);
+        display::win::ScreenWin::DIPToScreenRect(nullptr, restore_bounds);
   }
   message_handler_->Show(show_state, pixel_restore_bounds);
 
@@ -475,8 +515,7 @@ void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   // directly. Instead of this should listen for visibility changes and then
   // update window.
   if (message_handler_->IsVisible() && !content_window()->TargetVisibility()) {
-    if (compositor())
-      compositor()->SetVisible(true);
+    OnAcceleratedWidgetMadeVisible(true);
     content_window()->Show();
   }
   desktop_native_widget_aura_->UpdateWindowTransparency();
@@ -597,6 +636,20 @@ void DesktopWindowTreeHostWin::SetBoundsInPixels(const gfx::Rect& bounds) {
   message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
 }
 
+gfx::Rect
+DesktopWindowTreeHostWin::GetBoundsInAcceleratedWidgetPixelCoordinates() {
+  if (message_handler_->IsMinimized())
+    return gfx::Rect();
+  const gfx::Rect client_bounds =
+      message_handler_->GetClientAreaBoundsInScreen();
+  const gfx::Rect window_bounds = message_handler_->GetWindowBoundsInScreen();
+  if (window_bounds == client_bounds)
+    return gfx::Rect(window_bounds.size());
+  const gfx::Vector2d offset = client_bounds.origin() - window_bounds.origin();
+  DCHECK(offset.x() >= 0 && offset.y() >= 0);
+  return gfx::Rect(gfx::Point() + offset, client_bounds.size());
+}
+
 gfx::Point DesktopWindowTreeHostWin::GetLocationOnScreenInPixels() const {
   return GetBoundsInPixels().origin();
 }
@@ -661,6 +714,16 @@ void DesktopWindowTreeHostWin::MoveCursorToScreenLocationInPixels(
 std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
 DesktopWindowTreeHostWin::RequestUnadjustedMovement() {
   return message_handler_->RegisterUnadjustedMouseEvent();
+}
+
+void DesktopWindowTreeHostWin::LockMouse(aura::Window* window) {
+  UpdateMouseLockRegion(window, true /*locked*/);
+  WindowTreeHost::LockMouse(window);
+}
+
+void DesktopWindowTreeHostWin::UnlockMouse(aura::Window* window) {
+  UpdateMouseLockRegion(window, false /*locked*/);
+  WindowTreeHost::UnlockMouse(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -892,10 +955,6 @@ void DesktopWindowTreeHostWin::HandleWorkAreaChanged() {
   GetWidget()->widget_delegate()->OnWorkAreaChanged();
 }
 
-void DesktopWindowTreeHostWin::HandleVisibilityChanging(bool visible) {
-  native_widget_delegate_->OnNativeWidgetVisibilityChanging(visible);
-}
-
 void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
@@ -987,7 +1046,6 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
   // by the time we attempt to process them.
   if (!GetWidget()->GetNativeView())
     return;
-
   if (in_touch_drag_) {
     POINT event_point;
     event_point.x = event->location().x();
@@ -999,10 +1057,19 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
     if (event->type() == ui::ET_TOUCH_MOVED) {
       ui::SendMouseEvent(screen_point, MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE);
     } else if (event->type() == ui::ET_TOUCH_RELEASED) {
-      ui::SendMouseEvent(screen_point,
-                         MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_ABSOLUTE);
+      FinishTouchDrag(screen_point);
     }
   }
+  // TODO(crbug.com/229301) Calling ::SetCursorPos for ui::ET_TOUCH_PRESSED
+  // events here would fix web ui tab strip drags when the cursor is not over
+  // the Chrome window - The TODO is to figure out if that's reasonable, since
+  // it would change the cursor pos on every touch event. Or figure out if there
+  // is a less intrusive way of fixing the cursor position. If we can do that,
+  // we can remove the call to ::SetCursorPos in
+  // DesktopDragDropClientWin::StartDragAndDrop. Note that calling SetCursorPos
+  // at the start of StartDragAndDrop breaks touch drag and drop, so it has to
+  // be called some time before we get to StartDragAndDrop.
+
   // Currently we assume the window that has capture gets touch events too.
   aura::WindowTreeHost* host =
       aura::WindowTreeHost::GetForAcceleratedWidget(GetCapture());
@@ -1037,7 +1104,7 @@ bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
     return true;
   }
 
-  MSG msg = {};
+  CHROME_MSG msg = {};
   msg.hwnd = GetHWND();
   msg.message = message;
   msg.wParam = w_param;

@@ -9,9 +9,11 @@
 #include "include/effects/SkHighContrastFilter.h"
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/private/SkTPin.h"
+#include "src/core/SkColorFilterPriv.h"
 #include "src/core/SkRuntimeEffectPriv.h"
 
 sk_sp<SkColorFilter> SkHighContrastFilter::Make(const SkHighContrastConfig& config) {
+#ifdef SK_ENABLE_SKSL
     if (!config.isValid()) {
         return nullptr;
     }
@@ -59,8 +61,12 @@ sk_sp<SkColorFilter> SkHighContrastFilter::Make(const SkHighContrastConfig& conf
 
     skcms_TransferFunction linear = SkNamedTransferFn::kLinear;
     SkAlphaType          unpremul = kUnpremul_SkAlphaType;
-    return SkColorFilters::WithWorkingFormat(
+    return SkColorFilterPriv::WithWorkingFormat(
             effect->makeColorFilter(SkData::MakeWithCopy(&uniforms,sizeof(uniforms))),
             &linear, nullptr/*use dst gamut*/, &unpremul);
+#else
+    // TODO(skia:12197)
+    return nullptr;
+#endif
 }
 

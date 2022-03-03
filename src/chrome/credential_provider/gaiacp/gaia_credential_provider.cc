@@ -9,9 +9,10 @@
 #include <string>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version.h"
@@ -132,8 +133,8 @@ class BackgroundTokenHandleUpdater {
   // to notify that token handle validity has changed. Any instance of this
   // class should be owned by the CGaiaCredentialProvider to ensure that
   // this pointer outlives the updater.
-  ICredentialUpdateEventsHandler* event_handler_;
-  const std::vector<std::wstring>* reauth_sids_;
+  raw_ptr<ICredentialUpdateEventsHandler> event_handler_;
+  raw_ptr<const std::vector<std::wstring>> reauth_sids_;
 
   base::win::ScopedHandle token_update_thread_;
   base::WaitableEvent token_update_quit_event_;
@@ -387,8 +388,6 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     GaiaCredentialComPtrStorage* auto_logon_credential) {
   std::map<std::wstring, std::pair<std::wstring, std::wstring>> sid_to_username;
 
-  OSUserManager* manager = OSUserManager::Get();
-
   // Get the SIDs of all users being shown in the logon UI.
   if (!users) {
     LOGFN(ERROR) << "hr=" << putHR(E_INVALIDARG);
@@ -433,8 +432,9 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     wchar_t username[kWindowsUsernameBufferLength];
     wchar_t domain[kWindowsDomainBufferLength];
 
-    hr = manager->FindUserBySID(sid.c_str(), username, base::size(username),
-                                domain, base::size(domain));
+    hr = OSUserManager::Get()->FindUserBySidWithFallback(
+        sid.c_str(), username, base::size(username), domain,
+        base::size(domain));
     if (FAILED(hr)) {
       LOGFN(ERROR) << "Can't get sid or username hr=" << putHR(hr);
       continue;
@@ -476,8 +476,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     }
 
     GaiaCredentialComPtrStorage cred;
-    HRESULT hr =
-        CreateCredentialObject<CReauthCredential>(reauth_cred_creator_, &cred);
+    hr = CreateCredentialObject<CReauthCredential>(reauth_cred_creator_, &cred);
     if (FAILED(hr)) {
       LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
       return hr;

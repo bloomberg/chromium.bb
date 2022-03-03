@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 
@@ -13,10 +11,13 @@ let eventListenerBreakpointsSidebarPaneInstance: EventListenerBreakpointsSidebar
 
 export class EventListenerBreakpointsSidebarPane extends CategorizedBreakpointsSidebarPane {
   private constructor() {
-    const categories = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints().map(
-        breakpoint => breakpoint.category());
+    let breakpoints: SDK.CategorizedBreakpoint.CategorizedBreakpoint[] =
+        SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints();
+    const nonDomBreakpoints = SDK.EventBreakpointsModel.EventBreakpointsManager.instance().eventListenerBreakpoints();
+    breakpoints = breakpoints.concat(nonDomBreakpoints);
+
+    const categories = breakpoints.map(breakpoint => breakpoint.category());
     categories.sort();
-    const breakpoints = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints();
     super(
         categories, breakpoints, 'sources.eventListenerBreakpoints', Protocol.Debugger.PausedEventReason.EventListener);
   }
@@ -28,11 +29,16 @@ export class EventListenerBreakpointsSidebarPane extends CategorizedBreakpointsS
     return eventListenerBreakpointsSidebarPaneInstance;
   }
 
-  _getBreakpointFromPausedDetails(details: SDK.DebuggerModel.DebuggerPausedDetails):
-      SDK.DOMDebuggerModel.CategorizedBreakpoint|null {
-    return SDK.DOMDebuggerModel.DOMDebuggerManager.instance().resolveEventListenerBreakpoint(details.auxData as {
+  getBreakpointFromPausedDetails(details: SDK.DebuggerModel.DebuggerPausedDetails):
+      SDK.CategorizedBreakpoint.CategorizedBreakpoint|null {
+    const auxData = details.auxData as {
       eventName: string,
       targetName: string,
-    });
+    };
+    const domBreakpoint = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().resolveEventListenerBreakpoint(auxData);
+    if (domBreakpoint) {
+      return domBreakpoint;
+    }
+    return SDK.EventBreakpointsModel.EventBreakpointsManager.instance().resolveEventListenerBreakpoint(auxData);
   }
 }

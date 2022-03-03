@@ -6,6 +6,12 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
+#include "build/buildflag.h"
+#include "chromeos/assistant/buildflags.h"
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#include "chromeos/assistant/internal/buildflags.h"
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 
 namespace chromeos {
 namespace assistant {
@@ -17,26 +23,14 @@ const base::Feature kAssistantAudioEraser{"AssistantAudioEraser",
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAssistantBetterOnboarding{
-    "AssistantBetterOnboarding", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAssistantConversationStartersV2{
-    "AssistantConversationStartersV2", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kAssistantDebugging{"AssistantDebugging",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAssistantLauncherChipIntegration{
-    "AssistantLauncherChipIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantWaitScheduling{"AssistantWaitScheduling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableBetterAssistant{"EnableBetterAssistant",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -50,12 +44,15 @@ const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
 const base::Feature kEnableLibAssistantBetaBackend{
     "LibAssistantBetaBackend", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableMediaSessionIntegration{
-    "AssistantEnableMediaSessionIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Disable voice match for test purpose.
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLibAssistantSandbox{
+    "LibAssistantSandbox", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLibAssistantV2{"LibAssistantV2",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
@@ -66,32 +63,12 @@ bool IsAudioEraserEnabled() {
   return base::FeatureList::IsEnabled(kAssistantAudioEraser);
 }
 
-bool IsBetterAssistantEnabled() {
-  return base::FeatureList::IsEnabled(kEnableBetterAssistant);
-}
-
-bool IsBetterOnboardingEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantBetterOnboarding);
-}
-
-bool IsConversationStartersV2Enabled() {
-  return base::FeatureList::IsEnabled(kAssistantConversationStartersV2);
-}
-
 bool IsAssistantDebuggingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantDebugging);
 }
 
 bool IsDspHotwordEnabled() {
   return base::FeatureList::IsEnabled(kEnableDspHotword);
-}
-
-bool IsLauncherChipIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantLauncherChipIntegration);
-}
-
-bool IsMediaSessionIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(kEnableMediaSessionIntegration);
 }
 
 bool IsPowerManagerEnabled() {
@@ -118,6 +95,24 @@ bool IsVoiceMatchDisabled() {
 
 bool IsWaitSchedulingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantWaitScheduling);
+}
+
+bool IsLibAssistantSandboxEnabled() {
+  return base::FeatureList::IsEnabled(kEnableLibAssistantSandbox);
+}
+
+bool IsLibAssistantV2Enabled() {
+  const bool enabled_v2 = base::FeatureList::IsEnabled(kEnableLibAssistantV2);
+// Enforce V2 when using the prebuilt library.
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#if BUILDFLAG(IS_PREBUILT_LIBASSISTANT)
+  return true;
+#else
+  return enabled_v2;
+#endif  // BUILDFLAG(IS_PREBUILT_LIBASSISTANT)
+#else
+  return enabled_v2;
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 }
 
 }  // namespace features

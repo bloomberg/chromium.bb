@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
-#include "base/macros.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace android_webview {
@@ -19,6 +18,11 @@ class ScopedAppGLStateRestoreImpl : public ScopedAppGLStateRestore::Impl {
  public:
   ScopedAppGLStateRestoreImpl(ScopedAppGLStateRestore::CallMode mode,
                               bool save_restore);
+
+  ScopedAppGLStateRestoreImpl(const ScopedAppGLStateRestoreImpl&) = delete;
+  ScopedAppGLStateRestoreImpl& operator=(const ScopedAppGLStateRestoreImpl&) =
+      delete;
+
   ~ScopedAppGLStateRestoreImpl() override;
 
  protected:
@@ -96,8 +100,6 @@ class ScopedAppGLStateRestoreImpl : public ScopedAppGLStateRestore::Impl {
   std::vector<TextureBindings> texture_bindings_;
 
   GLint vertex_array_bindings_oes_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAppGLStateRestoreImpl);
 };
 
 }  // namespace internal

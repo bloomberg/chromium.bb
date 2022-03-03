@@ -51,7 +51,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -86,13 +86,6 @@ EventSource* EventSource::Create(ExecutionContext* context,
   UseCounter::Count(context, context->IsWindow()
                                  ? WebFeature::kEventSourceDocument
                                  : WebFeature::kEventSourceWorker);
-
-  if (url.IsEmpty()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "Cannot open an EventSource to an empty URL.");
-    return nullptr;
-  }
 
   KURL full_url = context->CompleteURL(url);
   if (!full_url.IsValid()) {
@@ -172,8 +165,7 @@ void EventSource::NetworkRequestEnded() {
 
 void EventSource::ScheduleReconnect() {
   state_ = kConnecting;
-  connect_timer_.StartOneShot(
-      base::TimeDelta::FromMilliseconds(reconnect_delay_), FROM_HERE);
+  connect_timer_.StartOneShot(base::Milliseconds(reconnect_delay_), FROM_HERE);
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
@@ -298,7 +290,7 @@ void EventSource::DidFinishLoading(uint64_t) {
   NetworkRequestEnded();
 }
 
-void EventSource::DidFail(const ResourceError& error) {
+void EventSource::DidFail(uint64_t, const ResourceError& error) {
   DCHECK(loader_);
   if (error.IsCancellation() && state_ == kClosed) {
     NetworkRequestEnded();
@@ -321,7 +313,7 @@ void EventSource::DidFail(const ResourceError& error) {
   NetworkRequestEnded();
 }
 
-void EventSource::DidFailRedirectCheck() {
+void EventSource::DidFailRedirectCheck(uint64_t) {
   DCHECK(loader_);
 
   AbortConnectionAttempt();

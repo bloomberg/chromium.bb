@@ -275,4 +275,25 @@ TEST_F(StyleAdjusterTest, OverflowClipUseCount) {
       GetDocument().IsUseCounted(WebFeature::kOverflowClipAlongEitherAxis));
 }
 
+// crbug.com/1216721
+TEST_F(StyleAdjusterTest, AdjustForSVGCrash) {
+  SetBodyInnerHTML(R"HTML(
+<style>
+.class1 { dominant-baseline: hanging; }
+</style>
+<svg>
+<tref>
+<text id="text5" style="dominant-baseline: no-change;"/>
+</svg>
+<svg>
+<use id="use1" xlink:href="#text5" class="class1" />
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  Element* text =
+      GetDocument().getElementById("use1")->GetShadowRoot()->getElementById(
+          "text5");
+  EXPECT_EQ(EDominantBaseline::kHanging,
+            text->GetComputedStyle()->CssDominantBaseline());
+}
+
 }  // namespace blink

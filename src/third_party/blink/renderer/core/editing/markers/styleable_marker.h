@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/base/ime/mojom/ime_types.mojom-blink.h"
 
@@ -22,6 +23,8 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
                   ui::mojom::ImeTextSpanUnderlineStyle,
                   Color text_color,
                   Color background_color);
+  StyleableMarker(const StyleableMarker&) = delete;
+  StyleableMarker& operator=(const StyleableMarker&) = delete;
 
   // StyleableMarker-specific
   Color UnderlineColor() const;
@@ -39,8 +42,6 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
   const ui::mojom::ImeTextSpanThickness thickness_;
   const ui::mojom::ImeTextSpanUnderlineStyle underline_style_;
   const Color text_color_;
-
-  DISALLOW_COPY_AND_ASSIGN(StyleableMarker);
 };
 
 bool CORE_EXPORT IsStyleableMarker(const DocumentMarker&);

@@ -33,34 +33,39 @@ constexpr int kHorizontalOffset = 3;
 constexpr int kVerticalOffset = 3;
 
 // Compound prediction output ranges from ConvolveTest.ShowRange.
+// In some cases, the horizontal or vertical filter will be omitted. This table
+// shows the general case, where the downscaled horizontal output is input to
+// the vertical filter via the |intermediate_result| array. The final output is
+// either Pixel or compound values, depending on the |is_compound| variable.
 // Bitdepth:  8 Input range:            [       0,      255]
-//   intermediate range:                [   -7140,    23460]
-//   first pass output range:           [   -1785,     5865]
-//   intermediate range:                [ -328440,   589560]
-//   second pass output range:          [       0,      255]
-//   compound second pass output range: [   -5132,     9212]
+//   Horizontal upscaled range:         [   -7140,    23460]
+//   Horizontal downscaled range:       [   -1785,     5865]
+//   Vertical upscaled range:           [ -328440,   589560]
+//   Pixel output range:                [       0,      255]
+//   Compound output range:             [   -5132,     9212]
 //
 // Bitdepth: 10 Input range:            [       0,     1023]
-//   intermediate range:                [  -28644,    94116]
-//   first pass output range:           [   -7161,    23529]
-//   intermediate range:                [-1317624,  2365176]
-//   second pass output range:          [       0,     1023]
-//   compound second pass output range: [    3988,    61532]
+//   Horizontal upscaled range:         [  -28644,    94116]
+//   Horizontal downscaled range:       [   -7161,    23529]
+//   Vertical upscaled range:           [-1317624,  2365176]
+//   Pixel output range:                [       0,     1023]
+//   Compound output range:             [    3988,    61532]
 //
 // Bitdepth: 12 Input range:            [       0,     4095]
-//   intermediate range:                [ -114660,   376740]
-//   first pass output range:           [   -7166,    23546]
-//   intermediate range:                [-1318560,  2366880]
-//   second pass output range:          [       0,     4095]
-//   compound second pass output range: [    3974,    61559]
+//   Horizontal upscaled range:         [ -114660,   376740]
+//   Horizontal downscaled range:       [   -7166,    23546]
+//   Vertical upscaled range:           [-1318560,  2366880]
+//   Pixel output range:                [       0,     4095]
+//   Compound output range:             [    3974,    61559]
 
 template <int bitdepth, typename Pixel>
-void ConvolveScale2D_C(const void* const reference,
+void ConvolveScale2D_C(const void* LIBGAV1_RESTRICT const reference,
                        const ptrdiff_t reference_stride,
                        const int horizontal_filter_index,
                        const int vertical_filter_index, const int subpixel_x,
                        const int subpixel_y, const int step_x, const int step_y,
-                       const int width, const int height, void* prediction,
+                       const int width, const int height,
+                       void* LIBGAV1_RESTRICT prediction,
                        const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
@@ -137,14 +142,12 @@ void ConvolveScale2D_C(const void* const reference,
 }
 
 template <int bitdepth, typename Pixel>
-void ConvolveCompoundScale2D_C(const void* const reference,
-                               const ptrdiff_t reference_stride,
-                               const int horizontal_filter_index,
-                               const int vertical_filter_index,
-                               const int subpixel_x, const int subpixel_y,
-                               const int step_x, const int step_y,
-                               const int width, const int height,
-                               void* prediction, const ptrdiff_t pred_stride) {
+void ConvolveCompoundScale2D_C(
+    const void* LIBGAV1_RESTRICT const reference,
+    const ptrdiff_t reference_stride, const int horizontal_filter_index,
+    const int vertical_filter_index, const int subpixel_x, const int subpixel_y,
+    const int step_x, const int step_y, const int width, const int height,
+    void* LIBGAV1_RESTRICT prediction, const ptrdiff_t pred_stride) {
   // All compound functions output to the predictor buffer with |pred_stride|
   // equal to |width|.
   assert(pred_stride == width);
@@ -223,13 +226,13 @@ void ConvolveCompoundScale2D_C(const void* const reference,
 }
 
 template <int bitdepth, typename Pixel>
-void ConvolveCompound2D_C(const void* const reference,
+void ConvolveCompound2D_C(const void* LIBGAV1_RESTRICT const reference,
                           const ptrdiff_t reference_stride,
                           const int horizontal_filter_index,
                           const int vertical_filter_index,
                           const int horizontal_filter_id,
                           const int vertical_filter_id, const int width,
-                          const int height, void* prediction,
+                          const int height, void* LIBGAV1_RESTRICT prediction,
                           const ptrdiff_t pred_stride) {
   // All compound functions output to the predictor buffer with |pred_stride|
   // equal to |width|.
@@ -307,11 +310,13 @@ void ConvolveCompound2D_C(const void* const reference,
 // The output is the single prediction of the block, clipped to valid pixel
 // range.
 template <int bitdepth, typename Pixel>
-void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
+void Convolve2D_C(const void* LIBGAV1_RESTRICT const reference,
+                  const ptrdiff_t reference_stride,
                   const int horizontal_filter_index,
                   const int vertical_filter_index,
                   const int horizontal_filter_id, const int vertical_filter_id,
-                  const int width, const int height, void* prediction,
+                  const int width, const int height,
+                  void* LIBGAV1_RESTRICT prediction,
                   const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
@@ -385,13 +390,13 @@ void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
 // The output is the single prediction of the block, clipped to valid pixel
 // range.
 template <int bitdepth, typename Pixel>
-void ConvolveHorizontal_C(const void* const reference,
+void ConvolveHorizontal_C(const void* LIBGAV1_RESTRICT const reference,
                           const ptrdiff_t reference_stride,
                           const int horizontal_filter_index,
                           const int /*vertical_filter_index*/,
                           const int horizontal_filter_id,
                           const int /*vertical_filter_id*/, const int width,
-                          const int height, void* prediction,
+                          const int height, void* LIBGAV1_RESTRICT prediction,
                           const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
@@ -427,13 +432,13 @@ void ConvolveHorizontal_C(const void* const reference,
 // The output is the single prediction of the block, clipped to valid pixel
 // range.
 template <int bitdepth, typename Pixel>
-void ConvolveVertical_C(const void* const reference,
+void ConvolveVertical_C(const void* LIBGAV1_RESTRICT const reference,
                         const ptrdiff_t reference_stride,
                         const int /*horizontal_filter_index*/,
                         const int vertical_filter_index,
                         const int /*horizontal_filter_id*/,
                         const int vertical_filter_id, const int width,
-                        const int height, void* prediction,
+                        const int height, void* LIBGAV1_RESTRICT prediction,
                         const ptrdiff_t pred_stride) {
   const int filter_index = GetFilterIndex(vertical_filter_index, height);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
@@ -464,13 +469,13 @@ void ConvolveVertical_C(const void* const reference,
 }
 
 template <int bitdepth, typename Pixel>
-void ConvolveCopy_C(const void* const reference,
+void ConvolveCopy_C(const void* LIBGAV1_RESTRICT const reference,
                     const ptrdiff_t reference_stride,
                     const int /*horizontal_filter_index*/,
                     const int /*vertical_filter_index*/,
                     const int /*horizontal_filter_id*/,
                     const int /*vertical_filter_id*/, const int width,
-                    const int height, void* prediction,
+                    const int height, void* LIBGAV1_RESTRICT prediction,
                     const ptrdiff_t pred_stride) {
   const auto* src = static_cast<const uint8_t*>(reference);
   auto* dest = static_cast<uint8_t*>(prediction);
@@ -483,13 +488,13 @@ void ConvolveCopy_C(const void* const reference,
 }
 
 template <int bitdepth, typename Pixel>
-void ConvolveCompoundCopy_C(const void* const reference,
+void ConvolveCompoundCopy_C(const void* LIBGAV1_RESTRICT const reference,
                             const ptrdiff_t reference_stride,
                             const int /*horizontal_filter_index*/,
                             const int /*vertical_filter_index*/,
                             const int /*horizontal_filter_id*/,
                             const int /*vertical_filter_id*/, const int width,
-                            const int height, void* prediction,
+                            const int height, void* LIBGAV1_RESTRICT prediction,
                             const ptrdiff_t pred_stride) {
   // All compound functions output to the predictor buffer with |pred_stride|
   // equal to |width|.
@@ -523,11 +528,11 @@ void ConvolveCompoundCopy_C(const void* const reference,
 // blended with another predictor to generate the final prediction of the block.
 template <int bitdepth, typename Pixel>
 void ConvolveCompoundHorizontal_C(
-    const void* const reference, const ptrdiff_t reference_stride,
-    const int horizontal_filter_index, const int /*vertical_filter_index*/,
-    const int horizontal_filter_id, const int /*vertical_filter_id*/,
-    const int width, const int height, void* prediction,
-    const ptrdiff_t pred_stride) {
+    const void* LIBGAV1_RESTRICT const reference,
+    const ptrdiff_t reference_stride, const int horizontal_filter_index,
+    const int /*vertical_filter_index*/, const int horizontal_filter_id,
+    const int /*vertical_filter_id*/, const int width, const int height,
+    void* LIBGAV1_RESTRICT prediction, const ptrdiff_t pred_stride) {
   // All compound functions output to the predictor buffer with |pred_stride|
   // equal to |width|.
   assert(pred_stride == width);
@@ -567,14 +572,12 @@ void ConvolveCompoundHorizontal_C(
 // The output is not clipped to valid pixel range. Its output will be
 // blended with another predictor to generate the final prediction of the block.
 template <int bitdepth, typename Pixel>
-void ConvolveCompoundVertical_C(const void* const reference,
-                                const ptrdiff_t reference_stride,
-                                const int /*horizontal_filter_index*/,
-                                const int vertical_filter_index,
-                                const int /*horizontal_filter_id*/,
-                                const int vertical_filter_id, const int width,
-                                const int height, void* prediction,
-                                const ptrdiff_t pred_stride) {
+void ConvolveCompoundVertical_C(
+    const void* LIBGAV1_RESTRICT const reference,
+    const ptrdiff_t reference_stride, const int /*horizontal_filter_index*/,
+    const int vertical_filter_index, const int /*horizontal_filter_id*/,
+    const int vertical_filter_id, const int width, const int height,
+    void* LIBGAV1_RESTRICT prediction, const ptrdiff_t pred_stride) {
   // All compound functions output to the predictor buffer with |pred_stride|
   // equal to |width|.
   assert(pred_stride == width);
@@ -615,14 +618,12 @@ void ConvolveCompoundVertical_C(const void* const reference,
 // The output is the single prediction of the block, clipped to valid pixel
 // range.
 template <int bitdepth, typename Pixel>
-void ConvolveIntraBlockCopy2D_C(const void* const reference,
-                                const ptrdiff_t reference_stride,
-                                const int /*horizontal_filter_index*/,
-                                const int /*vertical_filter_index*/,
-                                const int /*horizontal_filter_id*/,
-                                const int /*vertical_filter_id*/,
-                                const int width, const int height,
-                                void* prediction, const ptrdiff_t pred_stride) {
+void ConvolveIntraBlockCopy2D_C(
+    const void* LIBGAV1_RESTRICT const reference,
+    const ptrdiff_t reference_stride, const int /*horizontal_filter_index*/,
+    const int /*vertical_filter_index*/, const int /*horizontal_filter_id*/,
+    const int /*vertical_filter_id*/, const int width, const int height,
+    void* LIBGAV1_RESTRICT prediction, const ptrdiff_t pred_stride) {
   assert(width >= 4 && width <= kMaxSuperBlockSizeInPixels);
   assert(height >= 4 && height <= kMaxSuperBlockSizeInPixels);
   const auto* src = static_cast<const Pixel*>(reference);
@@ -670,14 +671,12 @@ void ConvolveIntraBlockCopy2D_C(const void* const reference,
 // The filtering of intra block copy is simply the average of current and
 // the next pixel.
 template <int bitdepth, typename Pixel, bool is_horizontal>
-void ConvolveIntraBlockCopy1D_C(const void* const reference,
-                                const ptrdiff_t reference_stride,
-                                const int /*horizontal_filter_index*/,
-                                const int /*vertical_filter_index*/,
-                                const int /*horizontal_filter_id*/,
-                                const int /*vertical_filter_id*/,
-                                const int width, const int height,
-                                void* prediction, const ptrdiff_t pred_stride) {
+void ConvolveIntraBlockCopy1D_C(
+    const void* LIBGAV1_RESTRICT const reference,
+    const ptrdiff_t reference_stride, const int /*horizontal_filter_index*/,
+    const int /*vertical_filter_index*/, const int /*horizontal_filter_id*/,
+    const int /*vertical_filter_id*/, const int width, const int height,
+    void* LIBGAV1_RESTRICT prediction, const ptrdiff_t pred_stride) {
   assert(width >= 4 && width <= kMaxSuperBlockSizeInPixels);
   assert(height >= 4 && height <= kMaxSuperBlockSizeInPixels);
   const auto* src = static_cast<const Pixel*>(reference);

@@ -48,8 +48,20 @@ message CriticalPersistedTabDataProto {
     FROM_START_SURFACE = 12;
     FROM_TAB_GROUP_UI = 13;
     FROM_LONGPRESS_BACKGROUND_IN_GROUP = 14;
-    SIZE = 15;
-    UNKNOWN = 16;
+    FROM_APP_WIDGET = 15;
+    SIZE = 16;
+    UNKNOWN = 17;
   }
   optional LaunchTypeAtCreation launch_type_at_creation = 8;
+
+  // User agent.
+  // Cannot define two same enum name in the same proto file.
+  enum UserAgentType {
+    DEFAULT = 0;
+    MOBILE = 1;
+    DESKTOP = 2;
+    UNSET = 3;
+    USER_AGENT_SIZE = 4;
+  }
+  optional UserAgentType user_agent = 9;
 }

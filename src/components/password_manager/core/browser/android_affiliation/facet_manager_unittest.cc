@@ -11,10 +11,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/clock.h"
@@ -46,6 +47,9 @@ class TestFacetManagerNotifier {
         task_runner_(task_runner),
         facet_manager_(nullptr) {}
 
+  TestFacetManagerNotifier(const TestFacetManagerNotifier&) = delete;
+  TestFacetManagerNotifier& operator=(const TestFacetManagerNotifier&) = delete;
+
   void Notify(base::Time time) {
     base::TimeDelta delay = time - task_runner_->Now();
     if (accuracy_ == NotificationAccuracy::TOO_LATE) {
@@ -54,7 +58,7 @@ class TestFacetManagerNotifier {
       // This formula is a simple stateless solution for notifying FacetManagers
       // prematurely multiple times in a row while also ensuring that the tests
       // are still fast, with no more than log2(delay.InSeconds()) repetitions.
-      delay = std::min(delay, delay / 2 + base::TimeDelta::FromSeconds(1));
+      delay = std::min(delay, delay / 2 + base::Seconds(1));
     } else if (accuracy_ == NotificationAccuracy::NEVER_CALLED) {
       return;
     }
@@ -74,9 +78,7 @@ class TestFacetManagerNotifier {
   NotificationAccuracy accuracy_;
   const base::TimeDelta too_late_delay_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  FacetManager* facet_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestFacetManagerNotifier);
+  raw_ptr<FacetManager> facet_manager_;
 };
 
 // Stub/mock implementation for FacetManagerHost.
@@ -84,6 +86,9 @@ class MockFacetManagerHost : public FacetManagerHost {
  public:
   explicit MockFacetManagerHost(TestFacetManagerNotifier* notifier)
       : notifier_(notifier) {}
+
+  MockFacetManagerHost(const MockFacetManagerHost&) = delete;
+  MockFacetManagerHost& operator=(const MockFacetManagerHost&) = delete;
 
   // Sets the |facet_uri| that will be expected to appear in calls coming from
   // the FacetManager under test.
@@ -138,13 +143,11 @@ class MockFacetManagerHost : public FacetManagerHost {
     notifier_->Notify(time);
   }
 
-  TestFacetManagerNotifier* notifier_;
+  raw_ptr<TestFacetManagerNotifier> notifier_;
 
   FacetURI expected_facet_uri_;
   AffiliatedFacetsWithUpdateTime fake_database_content_;
   bool signaled_need_network_request_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockFacetManagerHost);
 };
 
 const bool kFalseTrue[] = {false, true};
@@ -170,20 +173,20 @@ AffiliatedFacetsWithUpdateTime GetTestEquivalenceClassWithUpdateTime(
 }
 
 base::TimeDelta GetCacheHardExpiryPeriod() {
-  return base::TimeDelta::FromHours(FacetManager::kCacheHardExpiryInHours);
+  return base::Hours(FacetManager::kCacheHardExpiryInHours);
 }
 
 base::TimeDelta GetCacheSoftExpiryPeriod() {
-  return base::TimeDelta::FromHours(FacetManager::kCacheSoftExpiryInHours);
+  return base::Hours(FacetManager::kCacheSoftExpiryInHours);
 }
 
 base::TimeDelta GetShortTestPeriod() {
-  return base::TimeDelta::FromHours(1);
+  return base::Hours(1);
 }
 
 // Returns a smallest time difference that this test cares about.
 base::TimeDelta Epsilon() {
-  return base::TimeDelta::FromMicroseconds(1);
+  return base::Microseconds(1);
 }
 
 // Returns |time| + |delay| or the maximum time if |delay| is the maximum delta.
@@ -201,7 +204,7 @@ base::Time SafeAdd(base::Time time, base::TimeDelta delay) {
 // if |duration| is of length zero.
 std::vector<base::TimeDelta> SamplingPoints(base::TimeDelta duration) {
   std::vector<base::TimeDelta> deltas;
-  if (duration > base::TimeDelta()) {
+  if (duration.is_positive()) {
     while (duration > Epsilon()) {
       deltas.push_back(std::min(GetShortTestPeriod(), duration - Epsilon()));
       duration -= deltas.back();
@@ -222,6 +225,9 @@ class FacetManagerTest : public testing::Test {
         main_task_runner_(new base::TestMockTimeTaskRunner),
         facet_manager_notifier_(main_task_runner_, GetShortTestPeriod()),
         facet_manager_host_(&facet_manager_notifier_) {}
+
+  FacetManagerTest(const FacetManagerTest&) = delete;
+  FacetManagerTest& operator=(const FacetManagerTest&) = delete;
 
  protected:
   struct ExpectedFetchDetails {
@@ -418,8 +424,6 @@ class FacetManagerTest : public testing::Test {
 
   std::unique_ptr<FacetManager> facet_manager_;
   base::Time facet_manager_creation_;
-
-  DISALLOW_COPY_AND_ASSIGN(FacetManagerTest);
 };
 
 // Tests ----------------------------------------------------------------------

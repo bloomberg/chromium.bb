@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/common/extension.h"
 
@@ -19,6 +18,10 @@ namespace extensions {
 class AppSorting {
  public:
   AppSorting() {}
+
+  AppSorting(const AppSorting&) = delete;
+  AppSorting& operator=(const AppSorting&) = delete;
+
   virtual ~AppSorting() {}
 
   // Signals that ordinals for the WebAppProvider system should (or can) be
@@ -113,9 +116,6 @@ class AppSorting {
   // extension visible.
   virtual void SetExtensionVisible(const std::string& extension_id,
                                    bool visible) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppSorting);
 };
 
 }  // namespace extensions

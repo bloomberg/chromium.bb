@@ -240,6 +240,11 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @CalledByNative
+    private void getOrCreatePageForNavigation(NavigationImpl navigation) throws RemoteException {
+        navigation.getPage();
+    }
+
+    @CalledByNative
     private void navigationCompleted(NavigationImpl navigation) throws RemoteException {
         mNavigationControllerClient.navigationCompleted(navigation.getClientNavigation());
     }
@@ -250,9 +255,9 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @CalledByNative
-    private void loadStateChanged(boolean isLoading, boolean toDifferentDocument)
+    private void loadStateChanged(boolean isLoading, boolean shouldShowLoadingUi)
             throws RemoteException {
-        mNavigationControllerClient.loadStateChanged(isLoading, toDifferentDocument);
+        mNavigationControllerClient.loadStateChanged(isLoading, shouldShowLoadingUi);
     }
 
     @CalledByNative
@@ -288,6 +293,13 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     @CalledByNative
     private void onOldPageNoLongerRendered(String uri) throws RemoteException {
         mNavigationControllerClient.onOldPageNoLongerRendered(uri);
+    }
+
+    @CalledByNative
+    private void onPageLanguageDetermined(PageImpl page, String language) throws RemoteException {
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 93) return;
+
+        mNavigationControllerClient.onPageLanguageDetermined(page.getClientPage(), language);
     }
 
     private long getNativeTickOffsetUs() {

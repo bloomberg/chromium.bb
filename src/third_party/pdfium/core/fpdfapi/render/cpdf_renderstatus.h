@@ -21,7 +21,7 @@
 #include "core/fxge/dib/fx_dib.h"
 
 class CFX_DIBitmap;
-class CFX_PathData;
+class CFX_Path;
 class CFX_RenderDevice;
 class CPDF_Color;
 class CPDF_Font;
@@ -38,7 +38,6 @@ class CPDF_ShadingObject;
 class CPDF_ShadingPattern;
 class CPDF_TilingPattern;
 class CPDF_TransferFunc;
-class CPDF_Type3Cache;
 class CPDF_Type3Char;
 class CPDF_Type3Font;
 class PauseIndicatorIface;
@@ -102,12 +101,8 @@ class CPDF_RenderStatus {
   RetainPtr<CPDF_TransferFunc> GetTransferFunc(
       const CPDF_Object* pObject) const;
 
-  FX_ARGB GetFillArgb(CPDF_PageObject* pObj) const {
-    return GetFillArgbInternal(pObj, false);
-  }
-  FX_ARGB GetFillArgbForType3(CPDF_PageObject* pObj) const {
-    return GetFillArgbInternal(pObj, true);
-  }
+  FX_ARGB GetFillArgb(CPDF_PageObject* pObj) const;
+  FX_ARGB GetFillArgbForType3(CPDF_PageObject* pObj) const;
 
   void DrawTilingPattern(CPDF_TilingPattern* pPattern,
                          CPDF_PageObject* pPageObj,
@@ -130,7 +125,6 @@ class CPDF_RenderStatus {
       bool stroke);
 
  private:
-  FX_ARGB GetFillArgbInternal(CPDF_PageObject* pObj, bool bType3) const;
   bool ProcessTransparency(CPDF_PageObject* PageObj,
                            const CFX_Matrix& mtObj2Device);
   void ProcessObjectNoClip(CPDF_PageObject* pObj,
@@ -161,7 +155,7 @@ class CPDF_RenderStatus {
                         const CFX_Matrix& mtObj2Device);
   bool ProcessText(CPDF_TextObject* textobj,
                    const CFX_Matrix& mtObj2Device,
-                   CFX_PathData* clipping_path);
+                   CFX_Path* clipping_path);
   void DrawTextPathWithPattern(const CPDF_TextObject* textobj,
                                const CFX_Matrix& mtObj2Device,
                                CPDF_Font* pFont,
@@ -171,11 +165,10 @@ class CPDF_RenderStatus {
                                bool stroke);
   bool ProcessForm(const CPDF_FormObject* pFormObj,
                    const CFX_Matrix& mtObj2Device);
+  FX_RECT GetClippedBBox(const FX_RECT& rect) const;
   RetainPtr<CFX_DIBitmap> GetBackdrop(const CPDF_PageObject* pObj,
                                       const FX_RECT& rect,
-                                      bool bBackAlphaRequired,
-                                      int* left,
-                                      int* top);
+                                      bool bBackAlphaRequired);
   RetainPtr<CFX_DIBitmap> LoadSMask(CPDF_Dictionary* pSMaskDict,
                                     FX_RECT* pClipRect,
                                     const CFX_Matrix& mtMatrix);

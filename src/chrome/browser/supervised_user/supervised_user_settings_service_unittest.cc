@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "base/test/mock_callback.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/sync/model/sync_change.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/managed_user_setting_specifics.pb.h"
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
@@ -26,6 +28,10 @@ namespace {
 class MockSyncErrorFactory : public syncer::SyncErrorFactory {
  public:
   explicit MockSyncErrorFactory(syncer::ModelType type);
+
+  MockSyncErrorFactory(const MockSyncErrorFactory&) = delete;
+  MockSyncErrorFactory& operator=(const MockSyncErrorFactory&) = delete;
+
   ~MockSyncErrorFactory() override;
 
   // SyncErrorFactory implementation:
@@ -34,8 +40,6 @@ class MockSyncErrorFactory : public syncer::SyncErrorFactory {
 
  private:
   syncer::ModelType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockSyncErrorFactory);
 };
 
 MockSyncErrorFactory::MockSyncErrorFactory(syncer::ModelType type)
@@ -46,9 +50,7 @@ MockSyncErrorFactory::~MockSyncErrorFactory() {}
 syncer::SyncError MockSyncErrorFactory::CreateAndUploadError(
     const base::Location& location,
     const std::string& message) {
-  return syncer::SyncError(location,
-                           syncer::SyncError::DATATYPE_ERROR,
-                           message,
+  return syncer::SyncError(location, syncer::SyncError::DATATYPE_ERROR, message,
                            type_);
 }
 
@@ -105,7 +107,8 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
                                    base::CompareCase::SENSITIVE));
       std::string key =
           supervised_user_setting.name().substr(strlen(kSplitItemName) + 1);
-      EXPECT_TRUE(split_items_.GetWithoutPathExpansion(key, &expected_value));
+      expected_value = split_items_.FindKey(key);
+      EXPECT_TRUE(expected_value);
     }
 
     std::unique_ptr<base::Value> value =
@@ -150,7 +153,8 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
   StartSyncing(syncer::SyncDataList());
   ASSERT_TRUE(settings_);
   const base::Value* value = nullptr;
-  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  value = settings_->FindKey(kSettingsName);
+  EXPECT_FALSE(value);
 
   settings_.reset();
   syncer::SyncData data =
@@ -163,7 +167,8 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
-  ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  value = settings_->FindKey(kSettingsName);
+  ASSERT_TRUE(value);
   std::string string_value;
   EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_EQ(kSettingsValue, string_value);
@@ -173,7 +178,8 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
   StartSyncing(syncer::SyncDataList());
   ASSERT_TRUE(settings_);
   const base::Value* value = nullptr;
-  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  value = settings_->FindKey(kSettingsName);
+  EXPECT_FALSE(value);
 
   base::DictionaryValue dict;
   dict.SetString("foo", "bar");
@@ -195,10 +201,55 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
-  ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  value = settings_->FindKey(kSettingsName);
+  ASSERT_TRUE(value);
   const base::DictionaryValue* dict_value = nullptr;
   ASSERT_TRUE(value->GetAsDictionary(&dict_value));
   EXPECT_TRUE(dict_value->Equals(&dict));
+}
+
+TEST_F(SupervisedUserSettingsServiceTest, NotifyForWebsiteApprovals) {
+  base::MockCallback<SupervisedUserSettingsService::WebsiteApprovalCallback>
+      mock_callback;
+  auto subscription =
+      settings_service_.SubscribeForNewWebsiteApproval(mock_callback.Get());
+
+  StartSyncing(syncer::SyncDataList());
+  ASSERT_TRUE(settings_);
+  settings_.reset();
+
+  syncer::SyncData dataForAllowedHost =
+      SupervisedUserSettingsService::CreateSyncDataForSetting(
+          SupervisedUserSettingsService::MakeSplitSettingKey(
+              supervised_users::kContentPackManualBehaviorHosts, "allowedhost"),
+          base::Value(true));
+  syncer::SyncData dataForBlockedHost =
+      SupervisedUserSettingsService::CreateSyncDataForSetting(
+          SupervisedUserSettingsService::MakeSplitSettingKey(
+              supervised_users::kContentPackManualBehaviorHosts, "blockedhost"),
+          base::Value(false));
+
+  syncer::SyncChangeList change_list;
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_ADD, dataForAllowedHost));
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_ADD, dataForBlockedHost));
+  // Expect subscribers to be notified for the newly allowed host and NOT the
+  // newly blocked host.
+  EXPECT_CALL(mock_callback, Run("allowedhost")).Times(1);
+  EXPECT_CALL(mock_callback, Run("blockedhost")).Times(0);
+  settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
+
+  change_list.clear();
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_DELETE, dataForAllowedHost));
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_DELETE, dataForBlockedHost));
+  // Expect subscribers to be notified for the previously blocked host and NOT
+  // the previously allowed host.
+  EXPECT_CALL(mock_callback, Run("allowedhost")).Times(0);
+  EXPECT_CALL(mock_callback, Run("blockedhost")).Times(1);
+  settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
 }
 
 TEST_F(SupervisedUserSettingsServiceTest, Merge) {
@@ -208,8 +259,7 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
                   .empty());
 
   ASSERT_TRUE(settings_);
-  const base::Value* value = nullptr;
-  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  EXPECT_FALSE(settings_->FindKey(kSettingsName));
 
   settings_.reset();
 
@@ -269,13 +319,15 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
 
 TEST_F(SupervisedUserSettingsServiceTest, SetLocalSetting) {
   const base::Value* value = nullptr;
-  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  value = settings_->FindKey(kSettingsName);
+  EXPECT_FALSE(value);
 
   settings_.reset();
   settings_service_.SetLocalSetting(
       kSettingsName, std::make_unique<base::Value>(kSettingsValue));
   ASSERT_TRUE(settings_);
-  ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
+  value = settings_->FindKey(kSettingsName);
+  ASSERT_TRUE(value);
   std::string string_value;
   EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_EQ(kSettingsValue, string_value);
@@ -348,9 +400,8 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
     VerifySyncDataItem(sync_data_item);
 
   // The uploaded items should not show up as settings.
-  const base::Value* value = nullptr;
-  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kAtomicItemName, &value));
-  EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSplitItemName, &value));
+  EXPECT_FALSE(settings_->FindKey(kAtomicItemName));
+  EXPECT_FALSE(settings_->FindKey(kSplitItemName));
 
   // Restarting sync should not create any new changes.
   settings_service_.StopSyncing(syncer::SUPERVISED_USER_SETTINGS);

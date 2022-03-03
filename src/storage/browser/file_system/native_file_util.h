@@ -12,7 +12,6 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "storage/browser/file_system/file_system_file_util.h"
 
 namespace base {
@@ -34,6 +33,10 @@ namespace storage {
 class COMPONENT_EXPORT(STORAGE_BROWSER) NativeFileUtil {
  public:
   enum CopyOrMoveMode { COPY_NOSYNC, COPY_SYNC, MOVE };
+
+  NativeFileUtil() = delete;
+  NativeFileUtil(const NativeFileUtil&) = delete;
+  NativeFileUtil& operator=(const NativeFileUtil&) = delete;
 
   static CopyOrMoveMode CopyOrMoveModeForDestination(
       const FileSystemURL& dest_url,
@@ -58,13 +61,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) NativeFileUtil {
   static base::File::Error CopyOrMoveFile(
       const base::FilePath& src_path,
       const base::FilePath& dest_path,
-      FileSystemOperation::CopyOrMoveOption option,
+      FileSystemOperation::CopyOrMoveOptionSet options,
       CopyOrMoveMode mode);
   static base::File::Error DeleteFile(const base::FilePath& path);
   static base::File::Error DeleteDirectory(const base::FilePath& path);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(NativeFileUtil);
 };
 
 }  // namespace storage

@@ -63,6 +63,9 @@ struct InterfaceInfo {
   IPAddress GetIpAddressV4() const;
   IPAddress GetIpAddressV6() const;
 
+  // Returns true if |hardware_address| is non-zero.
+  bool HasHardwareAddress() const;
+
   InterfaceInfo();
   InterfaceInfo(NetworkInterfaceIndex index,
                 const uint8_t hardware_address[6],

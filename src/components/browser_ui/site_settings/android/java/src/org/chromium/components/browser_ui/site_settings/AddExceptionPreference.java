@@ -23,10 +23,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -83,10 +85,11 @@ public class AddExceptionPreference
 
         setKey(key);
         Resources resources = getContext().getResources();
-        mPrefAccentColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.default_control_color_active);
+        mPrefAccentColor = SemanticColorUtils.getDefaultControlColorActive(getContext());
         mErrorColor = resources.getColor(R.color.default_red);
-        mDefaultColor = resources.getColor(R.color.default_text_color);
+        mDefaultColor =
+                AppCompatResources.getColorStateList(getContext(), R.color.default_text_color_list)
+                        .getDefaultColor();
 
         Drawable plusIcon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.plus);
         plusIcon.mutate();

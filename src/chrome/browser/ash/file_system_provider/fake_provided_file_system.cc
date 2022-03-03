@@ -13,8 +13,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "net/base/io_buffer.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 namespace {
 
@@ -22,7 +23,7 @@ const char kFakeFileName[] = "hello.txt";
 const char kFakeFileText[] =
     "This is a testing file. Lorem ipsum dolor sit amet est.";
 const size_t kFakeFileSize = sizeof(kFakeFileText) - 1u;
-const char kFakeFileModificationTime[] = "Fri Apr 25 01:47:53 UTC 2014";
+const char kFakeFileModificationTime[] = "Fri, 25 Apr 2014 01:47:53";
 const char kFakeFileMimeType[] = "text/plain";
 
 constexpr base::FilePath::CharType kBadFakeEntryPath1[] =
@@ -54,7 +55,8 @@ FakeProvidedFileSystem::FakeProvidedFileSystem(
            "", "");
 
   base::Time modification_time;
-  DCHECK(base::Time::FromString(kFakeFileModificationTime, &modification_time));
+  EXPECT_TRUE(
+      base::Time::FromUTCString(kFakeFileModificationTime, &modification_time));
   AddEntry(base::FilePath(kFakeFilePath), false, kFakeFileName, kFakeFileSize,
            modification_time, kFakeFileMimeType, kFakeFileText);
 
@@ -457,4 +459,4 @@ void FakeProvidedFileSystem::AbortMany(const std::vector<int>& task_ids) {
 }
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

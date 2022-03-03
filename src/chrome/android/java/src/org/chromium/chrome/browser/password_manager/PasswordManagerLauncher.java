@@ -8,12 +8,8 @@ import android.app.Activity;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.sync.ModelType;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -27,16 +23,19 @@ public class PasswordManagerLauncher {
 
     /**
      * Launches the password settings.
+     *
      * @param activity used to show the UI to manage passwords.
      */
     public static void showPasswordSettings(
             Activity activity, @ManagePasswordsReferrer int referrer) {
-        if (isSyncingPasswordsWithoutCustomPassphrase()
+        SyncService syncService = SyncService.get();
+        if (PasswordManagerHelper.hasChosenToSyncPasswordsWithNoCustomPassphrase(syncService)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_SCRIPTS_FETCHING)) {
             PasswordScriptsFetcherBridge.prewarmCache();
         }
-
-        PasswordManagerHelper.showPasswordSettings(activity, referrer, new SettingsLauncherImpl());
+        CredentialManagerLauncher credentialManagerLauncher = null;
+        PasswordManagerHelper.showPasswordSettings(activity, referrer, new SettingsLauncherImpl(),
+                CredentialManagerLauncherFactory.getInstance().createLauncher(), syncService);
     }
 
     @CalledByNative
@@ -46,21 +45,5 @@ public class PasswordManagerLauncher {
         if (window == null) return;
         WeakReference<Activity> currentActivity = window.getActivity();
         showPasswordSettings(currentActivity.get(), referrer);
-    }
-
-    public static boolean isSyncingPasswordsWithoutCustomPassphrase() {
-        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
-                Profile.getLastUsedRegularProfile());
-        if (!identityManager.hasPrimaryAccount()) return false;
-
-        ProfileSyncService profileSyncService = ProfileSyncService.get();
-        if (profileSyncService == null
-                || !profileSyncService.getActiveDataTypes().contains(ModelType.PASSWORDS)) {
-            return false;
-        }
-
-        if (profileSyncService.isUsingExplicitPassphrase()) return false;
-
-        return true;
     }
 }

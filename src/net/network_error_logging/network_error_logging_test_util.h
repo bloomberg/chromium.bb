@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/network_error_logging/network_error_logging_service.h"
@@ -39,6 +38,12 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
   };
 
   TestNetworkErrorLoggingService();
+
+  TestNetworkErrorLoggingService(const TestNetworkErrorLoggingService&) =
+      delete;
+  TestNetworkErrorLoggingService& operator=(
+      const TestNetworkErrorLoggingService&) = delete;
+
   ~TestNetworkErrorLoggingService() override;
 
   const std::vector<Header>& headers() { return headers_; }
@@ -58,8 +63,6 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
  private:
   std::vector<Header> headers_;
   std::vector<RequestDetails> errors_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkErrorLoggingService);
 };
 
 }  // namespace net
