@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_delegate.h"
@@ -41,7 +41,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
-#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_animator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
@@ -121,14 +120,14 @@
 
   // Create the table.
   self.tableViewController = [[ReadingListTableViewController alloc] init];
+  // Browser needs to be set before dataSource since the latter triggers a
+  // reloadData call.
+  self.tableViewController.browser = self.browser;
   self.tableViewController.delegate = self;
   self.tableViewController.audience = self;
   self.tableViewController.dataSource = self.mediator;
-  self.tableViewController.browser = self.browser;
 
-  if (@available(iOS 13.0, *)) {
-    self.tableViewController.menuProvider = self;
-  }
+  self.tableViewController.menuProvider = self;
 
   itemFactory.accessibilityDelegate = self.tableViewController;
 
@@ -151,17 +150,11 @@
   [self readingListHasItems:self.mediator.hasElements];
 
   BOOL useCustomPresentation = YES;
-  if (IsCollectionsCardPresentationStyleEnabled()) {
-    if (@available(iOS 13, *)) {
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
       [self.navigationController
           setModalPresentationStyle:UIModalPresentationFormSheet];
       self.navigationController.presentationController.delegate =
           self.tableViewController;
       useCustomPresentation = NO;
-#endif
-    }
-  }
 
   if (useCustomPresentation) {
     self.navigationController.transitioningDelegate = self;
@@ -394,7 +387,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
            incognito:(BOOL)incognito {
   // Only open a new incognito tab when incognito is authenticated. Prompt for
   // auth otherwise.
-  if (base::FeatureList::IsEnabled(kIncognitoAuthentication) && incognito) {
+  if (incognito) {
     IncognitoReauthSceneAgent* reauthAgent = [IncognitoReauthSceneAgent
         agentFromScene:SceneStateBrowserAgent::FromBrowser(self.browser)
                            ->GetSceneState()];
@@ -460,8 +453,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
                                    (id<ReadingListListItem>)item
-                                                      withView:(UIView*)view
-    API_AVAILABLE(ios(13.0)) {
+                                                      withView:(UIView*)view {
   __weak id<ReadingListListItemAccessibilityDelegate> accessibilityDelegate =
       self.tableViewController;
   __weak __typeof(self) weakSelf = self;
@@ -478,7 +470,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
         // Record that this context menu was shown to the user.
         RecordMenuShown(MenuScenario::kReadingListEntry);
 
-        ActionFactory* actionFactory = [[ActionFactory alloc]
+        BrowserActionFactory* actionFactory = [[BrowserActionFactory alloc]
             initWithBrowser:strongSelf.browser
                    scenario:MenuScenario::kReadingListEntry];
 

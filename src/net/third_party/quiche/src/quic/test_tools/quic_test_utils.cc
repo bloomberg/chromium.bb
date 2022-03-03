@@ -88,9 +88,7 @@ std::vector<uint8_t> CreateStatelessResetTokenForTest() {
                                   sizeof(kStatelessResetTokenDataForTest));
 }
 
-std::string TestHostname() {
-  return "test.example.org";
-}
+std::string TestHostname() { return "test.example.com"; }
 
 QuicServerId TestServerId() {
   return QuicServerId(TestHostname(), kTestPort);
@@ -191,7 +189,11 @@ std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
   EncryptionLevel level = HeaderToEncryptionLevel(header);
   size_t length =
       framer->BuildDataPacket(header, frames, buffer, packet_size, level);
-  QUICHE_DCHECK_NE(0u, length);
+
+  if (length == 0) {
+    delete[] buffer;
+    return nullptr;
+  }
   // Re-construct the data packet with data ownership.
   return std::make_unique<QuicPacket>(
       buffer, length, /* owns_buffer */ true,
@@ -1308,25 +1310,13 @@ StreamType DetermineStreamType(QuicStreamId id,
              : default_type;
 }
 
-QuicMemSliceSpan MakeSpan(QuicBufferAllocator* allocator,
-                          absl::string_view message_data,
-                          QuicMemSliceStorage* storage) {
-  if (message_data.length() == 0) {
-    *storage =
-        QuicMemSliceStorage(nullptr, 0, allocator, kMaxOutgoingPacketSize);
-    return storage->ToSpan();
-  }
-  struct iovec iov = {const_cast<char*>(message_data.data()),
-                      message_data.length()};
-  *storage = QuicMemSliceStorage(&iov, 1, allocator, kMaxOutgoingPacketSize);
-  return storage->ToSpan();
-}
-
 QuicMemSlice MemSliceFromString(absl::string_view data) {
+  if (data.empty()) {
+    return QuicMemSlice();
+  }
+
   static SimpleBufferAllocator* allocator = new SimpleBufferAllocator();
-  QuicUniqueBufferPtr buffer = MakeUniqueBuffer(allocator, data.size());
-  memcpy(buffer.get(), data.data(), data.size());
-  return QuicMemSlice(std::move(buffer), data.size());
+  return QuicMemSlice(QuicBuffer::Copy(allocator, data));
 }
 
 bool TaggingEncrypter::EncryptPacket(uint64_t /*packet_number*/,
@@ -1591,18 +1581,18 @@ bool ParseClientVersionNegotiationProbePacket(
   QuicEncryptedPacket encrypted_packet(packet_bytes, packet_length);
   PacketHeaderFormat format;
   QuicLongHeaderType long_packet_type;
-  bool version_present, has_length_prefix, retry_token_present;
+  bool version_present, has_length_prefix;
   QuicVersionLabel version_label;
   ParsedQuicVersion parsed_version = ParsedQuicVersion::Unsupported();
   QuicConnectionId destination_connection_id, source_connection_id;
-  absl::string_view retry_token;
+  absl::optional<absl::string_view> retry_token;
   std::string detailed_error;
   QuicErrorCode error = QuicFramer::ParsePublicHeaderDispatcher(
       encrypted_packet,
       /*expected_destination_connection_id_length=*/0, &format,
       &long_packet_type, &version_present, &has_length_prefix, &version_label,
       &parsed_version, &destination_connection_id, &source_connection_id,
-      &retry_token_present, &retry_token, &detailed_error);
+      &retry_token, &detailed_error);
   if (error != QUIC_NO_ERROR) {
     QUIC_BUG(quic_bug_10256_9) << "Failed to parse packet: " << detailed_error;
     return false;

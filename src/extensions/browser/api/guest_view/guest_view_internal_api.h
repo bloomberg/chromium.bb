@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_GUEST_VIEW_GUEST_VIEW_INTERNAL_API_H_
 #define EXTENSIONS_BROWSER_API_GUEST_VIEW_GUEST_VIEW_INTERNAL_API_H_
 
-#include "base/macros.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -16,6 +15,11 @@ class GuestViewInternalCreateGuestFunction : public ExtensionFunction {
                              GUESTVIEWINTERNAL_CREATEGUEST)
   GuestViewInternalCreateGuestFunction();
 
+  GuestViewInternalCreateGuestFunction(
+      const GuestViewInternalCreateGuestFunction&) = delete;
+  GuestViewInternalCreateGuestFunction& operator=(
+      const GuestViewInternalCreateGuestFunction&) = delete;
+
  protected:
   ~GuestViewInternalCreateGuestFunction() override {}
 
@@ -24,7 +28,6 @@ class GuestViewInternalCreateGuestFunction : public ExtensionFunction {
 
  private:
   void CreateGuestCallback(content::WebContents* guest_web_contents);
-  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalCreateGuestFunction);
 };
 
 class GuestViewInternalDestroyGuestFunction : public ExtensionFunction {
@@ -32,6 +35,11 @@ class GuestViewInternalDestroyGuestFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("guestViewInternal.destroyGuest",
                              GUESTVIEWINTERNAL_DESTROYGUEST)
   GuestViewInternalDestroyGuestFunction();
+
+  GuestViewInternalDestroyGuestFunction(
+      const GuestViewInternalDestroyGuestFunction&) = delete;
+  GuestViewInternalDestroyGuestFunction& operator=(
+      const GuestViewInternalDestroyGuestFunction&) = delete;
 
  protected:
   ~GuestViewInternalDestroyGuestFunction() override;
@@ -41,7 +49,6 @@ class GuestViewInternalDestroyGuestFunction : public ExtensionFunction {
 
  private:
   void DestroyGuestCallback(content::WebContents* guest_web_contents);
-  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalDestroyGuestFunction);
 };
 
 class GuestViewInternalSetSizeFunction : public ExtensionFunction {
@@ -51,14 +58,16 @@ class GuestViewInternalSetSizeFunction : public ExtensionFunction {
 
   GuestViewInternalSetSizeFunction();
 
+  GuestViewInternalSetSizeFunction(const GuestViewInternalSetSizeFunction&) =
+      delete;
+  GuestViewInternalSetSizeFunction& operator=(
+      const GuestViewInternalSetSizeFunction&) = delete;
+
  protected:
   ~GuestViewInternalSetSizeFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() final;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalSetSizeFunction);
 };
 
 }  // namespace extensions

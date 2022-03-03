@@ -15,7 +15,8 @@ class OmniboxChipButton : public views::MdTextButton {
  public:
   METADATA_HEADER(OmniboxChipButton);
   explicit OmniboxChipButton(PressedCallback callback,
-                             const gfx::VectorIcon& icon,
+                             const gfx::VectorIcon& icon_on,
+                             const gfx::VectorIcon& icon_off,
                              std::u16string message,
                              bool is_prominent);
   OmniboxChipButton(const OmniboxChipButton& button) = delete;
@@ -25,8 +26,8 @@ class OmniboxChipButton : public views::MdTextButton {
   // Icon, text, and background colors that should be used for different types
   // of Chip.
   enum class Theme {
-    kBlue,
-    // TODO(crbug.com/1177760): Other themes will follow.
+    kNormalVisibility,
+    kLowVisibility,
   };
 
   void AnimateCollapse();
@@ -36,6 +37,7 @@ class OmniboxChipButton : public views::MdTextButton {
       base::RepeatingCallback<void()> callback);
   bool is_fully_collapsed() const { return fully_collapsed_; }
   bool is_animating() const { return animation_->is_animating(); }
+  gfx::SlideAnimation* animation_for_testing() { return animation_.get(); }
 
   // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -44,43 +46,40 @@ class OmniboxChipButton : public views::MdTextButton {
   // views::MdTextButton:
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
+  void UpdateBackgroundColor() override;
 
   // Set the button theme.
   void SetTheme(Theme theme);
   void SetForceExpandedForTesting(bool force_expanded_for_testing);
 
+  void SetShowBlockedIcon(bool show_blocked_icon);
+
+  Theme get_theme_for_testing() { return theme_; }
+
  private:
   int GetIconSize() const;
 
-  // Apply colors to text, icon and background of the button.
-  void UpdateColors();
+  // Updates the icon, and then updates text, icon, and background colors from
+  // the theme.
+  void UpdateIconAndColors();
 
-  // Returns the primary theme color.
-  SkColor GetMainColor();
+  SkColor GetTextAndIconColor();
 
-  // Returns the color that is used for the prominent button's text and icon, or
-  // the non-prominent button's background. The return color matches the toolbar
-  // color.
-  SkColor GetNeutralColor();
-
-  // Get the color for the text and icon.
-  SkColor GetForegroundColor();
-
-  // If button is prominent, the background will be filled in theme color,
-  // otherwise the background will have the neutral color with a theme-colored
-  // border stroke.
   SkColor GetBackgroundColor();
 
   // An animation used for expanding and collapsing the chip.
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
-  Theme theme_ = Theme::kBlue;
+  Theme theme_ = Theme::kNormalVisibility;
 
   // If chip is collapsed. In the collapsed state, only an icon is visible,
   // without text.
   bool fully_collapsed_ = false;
 
-  const gfx::VectorIcon& icon_;
+  const gfx::VectorIcon& icon_on_;
+  const gfx::VectorIcon& icon_off_;
+
+  bool show_blocked_icon_ = false;
 
   base::RepeatingCallback<void()> expand_animation_ended_callback_;
 

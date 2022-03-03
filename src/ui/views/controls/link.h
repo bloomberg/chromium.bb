@@ -5,11 +5,11 @@
 #ifndef UI_VIEWS_CONTROLS_LINK_H_
 #define UI_VIEWS_CONTROLS_LINK_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
@@ -38,6 +38,10 @@ class VIEWS_EXPORT Link : public Label {
   explicit Link(const std::u16string& title = std::u16string(),
                 int text_context = style::CONTEXT_LABEL,
                 int text_style = style::STYLE_LINK);
+
+  Link(const Link&) = delete;
+  Link& operator=(const Link&) = delete;
+
   ~Link() override;
 
   // Allow providing callbacks that expect either zero or one args, since many
@@ -101,11 +105,34 @@ class VIEWS_EXPORT Link : public Label {
   // Whether the link text should use underline style regardless of enabled or
   // focused state.
   bool force_underline_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(Link);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Link, Label)
+BuilderT& SetCallback(base::RepeatingClosure callback) & {
+  auto setter = std::make_unique<::views::internal::PropertySetter<
+      ViewClass_, base::RepeatingClosure,
+      decltype((static_cast<void (ViewClass_::*)(base::RepeatingClosure)>(
+          &ViewClass_::SetCallback))),
+      &Link::SetCallback>>(std::move(callback));
+  ::views::internal::ViewBuilderCore::AddPropertySetter(std::move(setter));
+  return *static_cast<BuilderT*>(this);
+}
+BuilderT&& SetCallback(base::RepeatingClosure callback) && {
+  return std::move(this->SetCallback(std::move(callback)));
+}
+BuilderT& SetCallback(Link::ClickedCallback callback) & {
+  auto setter = std::make_unique<::views::internal::PropertySetter<
+      ViewClass_, Link::ClickedCallback,
+      decltype((static_cast<void (ViewClass_::*)(Link::ClickedCallback)>(
+          &ViewClass_::SetCallback))),
+      &Link::SetCallback>>(std::move(callback));
+  ::views::internal::ViewBuilderCore::AddPropertySetter(std::move(setter));
+  return *static_cast<BuilderT*>(this);
+}
+BuilderT&& SetCallback(Link::ClickedCallback callback) && {
+  return std::move(this->SetCallback(std::move(callback)));
+}
+VIEW_BUILDER_PROPERTY(bool, ForceUnderline)
 END_VIEW_BUILDER
 
 }  // namespace views

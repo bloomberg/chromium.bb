@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -61,6 +61,13 @@ unsigned History::length(ExceptionState& exception_state) const {
         "fully active");
     return 0;
   }
+
+  // TODO(crbug.com/1277593): Remove this condition when Fenced Frames
+  // transition to MPArch completely
+  if (DomWindow()->GetFrame()->IsInFencedFrameTree()) {
+    return 1;
+  }
+
   return DomWindow()->GetFrame()->Client()->BackForwardLength();
 }
 
@@ -211,13 +218,13 @@ void History::pushState(v8::Isolate* isolate,
                         const String& url,
                         ExceptionState& exception_state) {
   WebFrameLoadType load_type = WebFrameLoadType::kStandard;
-  // Navigations in portal contexts do not create back/forward entries.
-  if (DomWindow() && DomWindow()->GetFrame()->GetPage()->InsidePortal()) {
+  if (DomWindow() &&
+      DomWindow()->GetFrame()->ShouldMaintainTrivialSessionHistory()) {
     DomWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Use of history.pushState in a portal context "
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Use of history.pushState in a prerender context "
             "is treated as history.replaceState."),
         /* discard_duplicates */ true);
     load_type = WebFrameLoadType::kReplaceCurrentItem;
@@ -302,15 +309,17 @@ void History::StateObjectAdded(
   }
 
   if (auto* app_history = AppHistory::appHistory(*DomWindow())) {
-    if (!app_history->DispatchNavigateEvent(
+    if (app_history->DispatchNavigateEvent(
             full_url, nullptr, NavigateEventType::kHistoryApi, type,
-            UserNavigationInvolvement::kNone, data.get())) {
+            UserNavigationInvolvement::kNone,
+            data.get()) != AppHistory::DispatchResult::kContinue) {
       return;
     }
   }
 
   DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
-      full_url, std::move(data), type, restoration_type);
+      full_url, mojom::blink::SameDocumentNavigationType::kHistoryApi,
+      std::move(data), type, restoration_type);
 }
 
 }  // namespace blink

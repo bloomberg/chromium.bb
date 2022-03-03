@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -48,6 +47,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
                    CtapGetAssertionRequest request,
                    CtapGetAssertionOptions options,
                    GetAssertionTaskCallback callback);
+
+  GetAssertionTask(const GetAssertionTask&) = delete;
+  GetAssertionTask& operator=(const GetAssertionTask&) = delete;
+
   ~GetAssertionTask() override;
 
   // FidoTask:
@@ -107,8 +110,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   bool canceled_ = false;
 
   base::WeakPtrFactory<GetAssertionTask> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GetAssertionTask);
 };
 
 }  // namespace device

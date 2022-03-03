@@ -5,9 +5,8 @@
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context_base.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlcanvaselement_offscreencanvas.h"
-#include "third_party/blink/renderer/bindings/modules/v8/html_canvas_element_or_offscreen_canvas.h"
-#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/image_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -21,13 +20,12 @@ namespace blink {
 ImageBitmapRenderingContextBase::ImageBitmapRenderingContextBase(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs)
-    : CanvasRenderingContext(host, attrs),
+    : CanvasRenderingContext(host, attrs, CanvasRenderingAPI::kBitmaprenderer),
       image_layer_bridge_(MakeGarbageCollected<ImageLayerBridge>(
           attrs.alpha ? kNonOpaque : kOpaque)) {}
 
 ImageBitmapRenderingContextBase::~ImageBitmapRenderingContextBase() = default;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8UnionHTMLCanvasElementOrOffscreenCanvas*
 ImageBitmapRenderingContextBase::getHTMLOrOffscreenCanvas() const {
   if (Host()->IsOffscreenCanvas()) {
@@ -37,16 +35,6 @@ ImageBitmapRenderingContextBase::getHTMLOrOffscreenCanvas() const {
   return MakeGarbageCollected<V8UnionHTMLCanvasElementOrOffscreenCanvas>(
       static_cast<HTMLCanvasElement*>(Host()));
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void ImageBitmapRenderingContextBase::getHTMLOrOffscreenCanvas(
-    HTMLCanvasElementOrOffscreenCanvas& result) const {
-  if (Host()->IsOffscreenCanvas()) {
-    result.SetOffscreenCanvas(static_cast<OffscreenCanvas*>(Host()));
-  } else {
-    result.SetHTMLCanvasElement(static_cast<HTMLCanvasElement*>(Host()));
-  }
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void ImageBitmapRenderingContextBase::Stop() {
   image_layer_bridge_->Dispose();
@@ -75,7 +63,7 @@ void ImageBitmapRenderingContextBase::SetImage(ImageBitmap* image_bitmap) {
   else
     ResetInternalBitmapToBlackTransparent(Host()->width(), Host()->height());
 
-  DidDraw();
+  DidDraw(CanvasPerformanceMonitor::DrawType::kOther);
 
   if (image_bitmap)
     image_bitmap->close();
@@ -97,8 +85,8 @@ ImageBitmapRenderingContextBase::GetImageAndResetInternal() {
   return copy_image;
 }
 
-void ImageBitmapRenderingContextBase::SetUV(const FloatPoint& left_top,
-                                            const FloatPoint& right_bottom) {
+void ImageBitmapRenderingContextBase::SetUV(const gfx::PointF& left_top,
+                                            const gfx::PointF& right_bottom) {
   image_layer_bridge_->SetUV(left_top, right_bottom);
 }
 
@@ -133,6 +121,9 @@ bool ImageBitmapRenderingContextBase::PushFrame() {
     return false;
 
   scoped_refptr<StaticBitmapImage> image = image_layer_bridge_->GetImage();
+  if (!image) {
+    return false;
+  }
   cc::PaintFlags paint_flags;
   paint_flags.setBlendMode(SkBlendMode::kSrc);
   Host()->ResourceProvider()->Canvas()->drawImage(
@@ -142,8 +133,8 @@ bool ImageBitmapRenderingContextBase::PushFrame() {
       Host()->ResourceProvider()->ProduceCanvasResource();
   Host()->PushFrame(
       std::move(resource),
-      SkIRect::MakeWH(image_layer_bridge_->GetImage()->Size().Width(),
-                      image_layer_bridge_->GetImage()->Size().Height()));
+      SkIRect::MakeWH(image_layer_bridge_->GetImage()->Size().width(),
+                      image_layer_bridge_->GetImage()->Size().height()));
   return true;
 }
 

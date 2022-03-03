@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -26,6 +25,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketThread
     : public base::RefCountedThreadSafe<BluetoothSocketThread> {
  public:
   static scoped_refptr<BluetoothSocketThread> Get();
+
+  BluetoothSocketThread(const BluetoothSocketThread&) = delete;
+  BluetoothSocketThread& operator=(const BluetoothSocketThread&) = delete;
+
   static void CleanupForTesting();
 
   void OnSocketActivate();
@@ -44,8 +47,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketThread
   int active_socket_count_;
   std::unique_ptr<base::Thread> thread_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketThread);
 };
 
 }  // namespace device

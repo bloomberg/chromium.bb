@@ -9,10 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/login_types.h"
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/public/cpp/session/user_info.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -23,21 +21,18 @@
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chrome/browser/ash/login/user_online_signin_notifier.h"
 #include "chrome/browser/ash/system/system_clock.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 class AccountId;
 
-namespace chromeos {
-class UserBoardView;
-}
-
 namespace ash {
+struct LoginUserInfo;
+class UserBoardView;
 
 enum class DisplayedScreen { SIGN_IN_SCREEN, USER_ADDING_SCREEN, LOCK_SCREEN };
 
@@ -49,9 +44,13 @@ class UserSelectionScreen
       public UserOnlineSigninNotifier::Observer {
  public:
   explicit UserSelectionScreen(DisplayedScreen display_type);
+
+  UserSelectionScreen(const UserSelectionScreen&) = delete;
+  UserSelectionScreen& operator=(const UserSelectionScreen&) = delete;
+
   ~UserSelectionScreen() override;
 
-  void SetView(chromeos::UserBoardView* view);
+  void SetView(UserBoardView* view);
 
   static const user_manager::UserList PrepareUserListForSending(
       const user_manager::UserList& users,
@@ -78,9 +77,13 @@ class UserSelectionScreen
                          bool is_warning) override;
   void ShowUserPodCustomIcon(
       const AccountId& account_id,
-      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions& icon)
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconInfo& icon_info)
       override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
+  void SetSmartLockState(const AccountId& account_id,
+                         SmartLockState state) override;
+  void NotifySmartLockAuthResult(const AccountId& account_id,
+                                 bool success) override;
 
   void EnableInput() override;
   void SetAuthType(const AccountId& account_id,
@@ -114,7 +117,7 @@ class UserSelectionScreen
   void SetUsersLoaded(bool loaded);
 
  protected:
-  chromeos::UserBoardView* view_ = nullptr;
+  UserBoardView* view_ = nullptr;
 
   // Map from public session account IDs to recommended locales set by policy.
   std::map<AccountId, std::vector<std::string>>
@@ -184,8 +187,6 @@ class UserSelectionScreen
       scoped_observation_{this};
 
   base::WeakPtrFactory<UserSelectionScreen> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UserSelectionScreen);
 };
 
 }  // namespace ash

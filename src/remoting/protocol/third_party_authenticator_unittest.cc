@@ -6,11 +6,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/authenticator_test_base.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
@@ -60,7 +60,12 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
     void OnTokenFetched(const std::string& token,
                         const std::string& shared_secret) {
       ASSERT_FALSE(on_token_fetched_.is_null());
-      std::move(on_token_fetched_).Run(token, shared_secret);
+      if (!shared_secret.empty()) {
+        std::move(on_token_fetched_).Run(token, shared_secret);
+      } else {
+        std::move(on_token_fetched_)
+            .Run(token, Authenticator::RejectionReason::INVALID_CREDENTIALS);
+      }
     }
 
    private:
@@ -84,7 +89,12 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
     void OnTokenValidated(const std::string& shared_secret) {
       ASSERT_FALSE(on_token_validated_.is_null());
-      std::move(on_token_validated_).Run(shared_secret);
+      if (!shared_secret.empty()) {
+        std::move(on_token_validated_).Run(shared_secret);
+      } else {
+        std::move(on_token_validated_)
+            .Run(Authenticator::RejectionReason::INVALID_CREDENTIALS);
+      }
     }
 
     const GURL& token_url() const override { return token_url_; }
@@ -94,12 +104,16 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
    private:
     GURL token_url_;
     std::string token_scope_;
-    base::OnceCallback<void(const std::string& shared_secret)>
-        on_token_validated_;
+    TokenValidatedCallback on_token_validated_;
   };
 
  public:
   ThirdPartyAuthenticatorTest() = default;
+
+  ThirdPartyAuthenticatorTest(const ThirdPartyAuthenticatorTest&) = delete;
+  ThirdPartyAuthenticatorTest& operator=(const ThirdPartyAuthenticatorTest&) =
+      delete;
+
   ~ThirdPartyAuthenticatorTest() override = default;
 
  protected:
@@ -117,9 +131,6 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
   FakeTokenFetcher token_fetcher_;
   FakeTokenValidator* token_validator_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyAuthenticatorTest);
 };
 
 TEST_F(ThirdPartyAuthenticatorTest, SuccessfulAuth) {

@@ -32,9 +32,6 @@ std::vector<Error> MapErrors(const valijson::ValidationResults& results) {
     errors.emplace_back(Error::Code::kJsonParseError,
                         StringPrintf("Node: %s, Message: %s", context.c_str(),
                                      result.description.c_str()));
-
-    OSP_DVLOG << "JsonCpp validation error: "
-              << errors.at(errors.size() - 1).message();
   }
   return errors;
 }

@@ -6,9 +6,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/task/updateable_sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -121,7 +121,8 @@ void AccessContextAuditService::RecordStorageAPIAccess(
     const url::Origin& storage_origin,
     AccessContextAuditDatabase::StorageAPIType type,
     const url::Origin& top_frame_origin) {
-  // Opaque top frame origins are not supported.
+  // Opaque top frame origins are only supported for storing cross-site storage
+  // access records after history deletions.
   if (top_frame_origin.opaque())
     return;
   DCHECK(!storage_origin.opaque());
@@ -240,8 +241,6 @@ void AccessContextAuditService::OnOriginDataCleared(
     const base::Time end) {
   std::set<AccessContextAuditDatabase::StorageAPIType> types;
 
-  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_APPCACHE)
-    types.insert(AccessContextAuditDatabase::StorageAPIType::kAppCache);
   if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
     types.insert(AccessContextAuditDatabase::StorageAPIType::kFileSystem);
   if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
@@ -259,7 +258,7 @@ void AccessContextAuditService::OnOriginDataCleared(
     return;
 
   DCHECK_EQ(AccessContextAuditDatabase::StorageAPIType::kMaxValue,
-            AccessContextAuditDatabase::StorageAPIType::kAppCache)
+            AccessContextAuditDatabase::StorageAPIType::kAppCacheDeprecated)
       << "Unexpected number of storage types. Ensure that all storage types "
          "are accounted for when checking |remove_mask|.";
   bool all_origin_storage_types = types.size() == 7;
@@ -318,8 +317,9 @@ void AccessContextAuditService::OnURLsDeleted(
     const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
     database_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::RemoveAllRecords,
-                                  database_));
+        FROM_HERE,
+        base::BindOnce(&AccessContextAuditDatabase::RemoveAllRecordsHistory,
+                       database_));
     return;
   }
 
@@ -332,7 +332,7 @@ void AccessContextAuditService::OnURLsDeleted(
     database_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
-            &AccessContextAuditDatabase::RemoveAllRecordsForTimeRange,
+            &AccessContextAuditDatabase::RemoveAllRecordsForTimeRangeHistory,
             database_, deletion_info.time_range().begin(),
             deletion_info.time_range().end()));
   }

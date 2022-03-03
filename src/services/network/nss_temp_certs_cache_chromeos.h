@@ -6,7 +6,6 @@
 #define SERVICES_NETWORK_NSS_TEMP_CERTS_CACHE_CHROMEOS_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 
@@ -17,6 +16,11 @@ namespace network {
 class COMPONENT_EXPORT(NETWORK_SERVICE) NSSTempCertsCacheChromeOS {
  public:
   explicit NSSTempCertsCacheChromeOS(const net::CertificateList& certificates);
+
+  NSSTempCertsCacheChromeOS(const NSSTempCertsCacheChromeOS&) = delete;
+  NSSTempCertsCacheChromeOS& operator=(const NSSTempCertsCacheChromeOS&) =
+      delete;
+
   ~NSSTempCertsCacheChromeOS();
 
  private:
@@ -30,8 +34,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NSSTempCertsCacheChromeOS {
   // However, this is not an issue, as these certificates are not imported into
   // permanent databases, nor are the trust settings mutated to trust them.
   net::ScopedCERTCertificateList temp_certs_;
-
-  DISALLOW_COPY_AND_ASSIGN(NSSTempCertsCacheChromeOS);
 };
 
 }  // namespace network

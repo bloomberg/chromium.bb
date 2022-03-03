@@ -13,31 +13,39 @@
 // limitations under the License.
 
 import {assertExists} from '../base/logging';
-import {DeferredAction} from '../common/actions';
+import {Actions, DeferredAction} from '../common/actions';
 import {AggregateData} from '../common/aggregation_data';
 import {Args, ArgsTree} from '../common/arg_types';
 import {
   ConversionJobName,
   ConversionJobStatus
 } from '../common/conversion_jobs';
+import {createEmptyState} from '../common/empty_state';
+import {Engine} from '../common/engine';
 import {MetricResult} from '../common/metric_data';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
-import {CallsiteInfo, createEmptyState, State} from '../common/state';
+import {CallsiteInfo, State} from '../common/state';
 import {fromNs, toNs} from '../common/time';
 
 import {Analytics, initAnalytics} from './analytics';
 import {FrontendLocalState} from './frontend_local_state';
+import {PivotTableHelper} from './pivot_table_helper';
 import {RafScheduler} from './raf_scheduler';
+import {Router} from './router';
 import {ServiceWorkerController} from './service_worker_controller';
 
 type Dispatch = (action: DeferredAction) => void;
 type TrackDataStore = Map<string, {}>;
-type QueryResultsStore = Map<string, {}>;
+type QueryResultsStore = Map<string, {}|undefined>;
+type PivotTableHelperStore = Map<string, PivotTableHelper>;
 type AggregateDataStore = Map<string, AggregateData>;
 type Description = Map<string, string>;
+
 export interface SliceDetails {
   ts?: number;
   dur?: number;
+  thread_ts?: number;
+  thread_dur?: number;
   priority?: number;
   endState?: string;
   cpu?: number;
@@ -81,6 +89,7 @@ export interface CounterDetails {
   value?: number;
   delta?: number;
   duration?: number;
+  name?: string;
 }
 
 export interface ThreadStateDetails {
@@ -93,17 +102,20 @@ export interface ThreadStateDetails {
   blockedFunction?: string;
 }
 
-export interface HeapProfileDetails {
+export interface FlamegraphDetails {
   type?: string;
   id?: number;
-  ts?: number;
-  tsNs?: number;
-  pid?: number;
-  upid?: number;
+  startNs?: number;
+  durNs?: number;
+  pids?: number[];
+  upids?: number[];
   flamegraph?: CallsiteInfo[];
   expandedCallsite?: CallsiteInfo;
   viewingOption?: string;
   expandedId?: number;
+  // isInAreaSelection is true if a flamegraph is part of the current area
+  // selection.
+  isInAreaSelection?: boolean;
 }
 
 export interface CpuProfileDetails {
@@ -133,7 +145,14 @@ type ThreadMap = Map<number, ThreadDesc>;
 function getRoot() {
   // Works out the root directory where the content should be served from
   // e.g. `http://origin/v1.2.3/`.
-  let root = (document.currentScript as HTMLScriptElement).src;
+  const script = document.currentScript as HTMLScriptElement;
+
+  // Needed for DOM tests, that do not have script element.
+  if (script === null) {
+    return '';
+  }
+
+  let root = script.src;
   root = root.substr(0, root.lastIndexOf('/') + 1);
   return root;
 }
@@ -144,19 +163,19 @@ function getRoot() {
 class Globals {
   readonly root = getRoot();
 
+  private _testing = false;
   private _dispatch?: Dispatch = undefined;
-  private _controllerWorker?: Worker = undefined;
   private _state?: State = undefined;
   private _frontendLocalState?: FrontendLocalState = undefined;
   private _rafScheduler?: RafScheduler = undefined;
   private _serviceWorkerController?: ServiceWorkerController = undefined;
   private _logging?: Analytics = undefined;
   private _isInternalUser: boolean|undefined = undefined;
-  private _channel: string|undefined = undefined;
 
   // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
   private _trackDataStore?: TrackDataStore = undefined;
   private _queryResults?: QueryResultsStore = undefined;
+  private _pivotTableHelper?: PivotTableHelperStore = undefined;
   private _overviewStore?: OverviewStore = undefined;
   private _aggregateDataStore?: AggregateDataStore = undefined;
   private _threadMap?: ThreadMap = undefined;
@@ -166,7 +185,7 @@ class Globals {
   private _selectedFlows?: Flow[] = undefined;
   private _visibleFlowCategories?: Map<string, boolean> = undefined;
   private _counterDetails?: CounterDetails = undefined;
-  private _heapProfileDetails?: HeapProfileDetails = undefined;
+  private _flamegraphDetails?: FlamegraphDetails = undefined;
   private _cpuProfileDetails?: CpuProfileDetails = undefined;
   private _numQueriesQueued = 0;
   private _bufferUsage?: number = undefined;
@@ -176,11 +195,15 @@ class Globals {
   private _metricResult?: MetricResult = undefined;
   private _hasFtrace?: boolean = undefined;
   private _jobStatus?: Map<ConversionJobName, ConversionJobStatus> = undefined;
+  private _router?: Router = undefined;
+
+  // TODO(hjd): Remove once we no longer need to update UUID on redraw.
+  private _publishRedraw?: () => void = undefined;
 
   private _currentSearchResults: CurrentSearchResults = {
-    sliceIds: [],
-    tsStarts: [],
-    utids: [],
+    sliceIds: new Float64Array(0),
+    tsStarts: new Float64Array(0),
+    utids: new Float64Array(0),
     trackIds: [],
     sources: [],
     totalResults: 0,
@@ -191,18 +214,23 @@ class Globals {
     count: new Uint8Array(0),
   };
 
-  initialize(dispatch: Dispatch, controllerWorker: Worker) {
+  engines = new Map<string, Engine>();
+
+  initialize(dispatch: Dispatch, router: Router) {
     this._dispatch = dispatch;
-    this._controllerWorker = controllerWorker;
+    this._router = router;
     this._state = createEmptyState();
     this._frontendLocalState = new FrontendLocalState();
     this._rafScheduler = new RafScheduler();
     this._serviceWorkerController = new ServiceWorkerController();
+    this._testing =
+        self.location && self.location.search.indexOf('testing=1') >= 0;
     this._logging = initAnalytics();
 
     // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
     this._trackDataStore = new Map<string, {}>();
     this._queryResults = new Map<string, {}>();
+    this._pivotTableHelper = new Map<string, PivotTableHelper>();
     this._overviewStore = new Map<string, QuantizedLoad[]>();
     this._aggregateDataStore = new Map<string, AggregateData>();
     this._threadMap = new Map<number, ThreadDesc>();
@@ -212,8 +240,21 @@ class Globals {
     this._visibleFlowCategories = new Map<string, boolean>();
     this._counterDetails = {};
     this._threadStateDetails = {};
-    this._heapProfileDetails = {};
+    this._flamegraphDetails = {};
     this._cpuProfileDetails = {};
+    this.engines.clear();
+  }
+
+  get router(): Router {
+    return assertExists(this._router);
+  }
+
+  get publishRedraw(): () => void {
+    return this._publishRedraw || (() => {});
+  }
+
+  set publishRedraw(f: () => void) {
+    this._publishRedraw = f;
   }
 
   get state(): State {
@@ -255,6 +296,10 @@ class Globals {
 
   get queryResults(): QueryResultsStore {
     return assertExists(this._queryResults);
+  }
+
+  get pivotTableHelper(): PivotTableHelperStore {
+    return assertExists(this._pivotTableHelper);
   }
 
   get threads() {
@@ -313,12 +358,12 @@ class Globals {
     return assertExists(this._aggregateDataStore);
   }
 
-  get heapProfileDetails() {
-    return assertExists(this._heapProfileDetails);
+  get flamegraphDetails() {
+    return assertExists(this._flamegraphDetails);
   }
 
-  set heapProfileDetails(click: HeapProfileDetails) {
-    this._heapProfileDetails = assertExists(click);
+  set flamegraphDetails(click: FlamegraphDetails) {
+    this._flamegraphDetails = assertExists(click);
   }
 
   get traceErrors() {
@@ -454,9 +499,9 @@ class Globals {
 
   makeSelection(action: DeferredAction<{}>, tabToOpen = 'current_selection') {
     // A new selection should cancel the current search selection.
-    globals.frontendLocalState.searchIndex = -1;
-    globals.frontendLocalState.currentTab =
-        action.type === 'deselect' ? undefined : tabToOpen;
+    globals.dispatch(Actions.setSearchIndex({index: -1}));
+    const tab = action.type === 'deselect' ? undefined : tabToOpen;
+    globals.dispatch(Actions.setCurrentTab({tab}));
     globals.dispatch(action);
   }
 
@@ -470,6 +515,7 @@ class Globals {
     // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
     this._trackDataStore = undefined;
     this._queryResults = undefined;
+    this._pivotTableHelper = undefined;
     this._overviewStore = undefined;
     this._threadMap = undefined;
     this._sliceDetails = undefined;
@@ -478,9 +524,9 @@ class Globals {
     this._numQueriesQueued = 0;
     this._metricResult = undefined;
     this._currentSearchResults = {
-      sliceIds: [],
-      tsStarts: [],
-      utids: [],
+      sliceIds: new Float64Array(0),
+      tsStarts: new Float64Array(0),
+      utids: new Float64Array(0),
       trackIds: [],
       sources: [],
       totalResults: 0,
@@ -505,11 +551,8 @@ class Globals {
     this._isInternalUser = value;
   }
 
-  get channel() {
-    if (this._channel === undefined) {
-      this._channel = localStorage.getItem('perfettoUiChannel') || 'stable';
-    }
-    return this._channel;
+  get testing() {
+    return this._testing;
   }
 
   // Used when switching to the legacy TraceViewer UI.
@@ -517,7 +560,6 @@ class Globals {
   // however pending RAFs and workers seem to outlive the |window| and need to
   // be cleaned up explicitly.
   shutdown() {
-    this._controllerWorker!.terminate();
     this._rafScheduler!.shutdown();
   }
 }

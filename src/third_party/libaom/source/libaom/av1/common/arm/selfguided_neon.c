@@ -17,14 +17,14 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/txfm_common.h"
+#include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "av1/common/av1_common_int.h"
 #include "av1/common/common.h"
 #include "av1/common/resize.h"
 #include "av1/common/restoration.h"
-#include "av1/common/arm/mem_neon.h"
-#include "av1/common/arm/transpose_neon.h"
 
 // Constants used for right shift in final_filter calculation.
 #define NB_EVEN 5

@@ -7,8 +7,9 @@
 #ifndef FXBARCODE_ONED_BC_ONEDCODABARWRITER_H_
 #define FXBARCODE_ONED_BC_ONEDCODABARWRITER_H_
 
+#include <stdint.h>
+
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "fxbarcode/BC_Library.h"
 #include "fxbarcode/oned/BC_OneDimWriter.h"
 
@@ -20,7 +21,7 @@ class CBC_OnedCodaBarWriter final : public CBC_OneDimWriter {
   // CBC_OneDimWriter
   uint8_t* EncodeImpl(const ByteString& contents, int32_t& outLength) override;
   uint8_t* EncodeWithHint(const ByteString& contents,
-                          BCFORMAT format,
+                          BC_TYPE format,
                           int32_t& outWidth,
                           int32_t& outHeight,
                           int32_t hints) override;
@@ -30,7 +31,7 @@ class CBC_OnedCodaBarWriter final : public CBC_OneDimWriter {
   bool CheckContentValidity(WideStringView contents) override;
   WideString FilterContents(WideStringView contents) override;
   void SetDataLength(int32_t length) override;
-  bool SetTextLocation(BC_TEXT_LOC location) override;
+  void SetTextLocation(BC_TEXT_LOC location) override;
   bool SetWideNarrowRatio(int8_t ratio) override;
   bool SetStartChar(char start) override;
   bool SetEndChar(char end) override;

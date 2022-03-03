@@ -421,7 +421,7 @@ static void SetupOptions(int argc, const char* argv[], Options* options) {
   if (!isBreakpadUpload && hasCodeFile && !hasDebugID &&
       ([options->type isEqualToString:kMachOSymbolType] ||
        [options->type isEqualToString:kDSYMSymbolType])) {
-    DumpSymbols dump_symbols(NO_CFI, false);
+    DumpSymbols dump_symbols(SYMBOLS_AND_FILES | INLINES, false);
     if (dump_symbols.Read(argv[optind])) {
       std::string identifier = dump_symbols.Identifier();
       if (identifier.empty()) {

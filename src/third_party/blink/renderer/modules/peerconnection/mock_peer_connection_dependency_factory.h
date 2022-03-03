@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -166,6 +165,12 @@ class MockPeerConnectionDependencyFactory
     : public blink::PeerConnectionDependencyFactory {
  public:
   MockPeerConnectionDependencyFactory();
+
+  MockPeerConnectionDependencyFactory(
+      const MockPeerConnectionDependencyFactory&) = delete;
+  MockPeerConnectionDependencyFactory& operator=(
+      const MockPeerConnectionDependencyFactory&) = delete;
+
   ~MockPeerConnectionDependencyFactory() override;
 
   scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
@@ -196,8 +201,6 @@ class MockPeerConnectionDependencyFactory
   // TODO(crbug.com/787254): Replace with the appropriate Blink class.
   base::Thread signaling_thread_;
   bool fail_to_create_session_description_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionDependencyFactory);
 };
 
 }  // namespace blink

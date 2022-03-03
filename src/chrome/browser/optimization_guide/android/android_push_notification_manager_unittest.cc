@@ -7,12 +7,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/optimization_guide/android/native_j_unittests_jni_headers/OptimizationGuidePushNotificationTestHelper_jni.h"
 #include "chrome/browser/optimization_guide/android/optimization_guide_bridge.h"
-#include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
+#include "chrome/browser/optimization_guide/chrome_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,7 +30,11 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
+using ::testing::SaveArg;
 
 namespace optimization_guide {
 namespace android {
@@ -79,6 +84,16 @@ class TestDelegate : public PushNotificationManager::Delegate {
   bool run_success_callbacks_ = true;
 };
 
+class MockObserver : public PushNotificationManager::Observer {
+ public:
+  MockObserver() = default;
+  ~MockObserver() override = default;
+  MOCK_METHOD(void,
+              OnNotificationPayload,
+              (proto::OptimizationType, const optimization_guide::proto::Any&),
+              (override));
+};
+
 const int kOverflowSize = 5;
 
 class AndroidPushNotificationManagerJavaTest : public testing::Test {
@@ -98,6 +113,8 @@ class AndroidPushNotificationManagerJavaTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp(temp_dir_.GetPath()));
     profile_ = profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
 
+    Java_OptimizationGuidePushNotificationTestHelper_setUpMocks(env_, j_test_);
+
     service_ = static_cast<OptimizationGuideKeyedService*>(
         OptimizationGuideKeyedServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(
@@ -105,8 +122,8 @@ class AndroidPushNotificationManagerJavaTest : public testing::Test {
                 base::BindRepeating(&AndroidPushNotificationManagerJavaTest::
                                         CreateServiceForProfile,
                                     base::Unretained(this))));
-
-    Java_OptimizationGuidePushNotificationTestHelper_setUpMocks(env_, j_test_);
+    service_->GetHintsManager()->push_notification_manager()->AddObserver(
+        &observer_);
 
     // It takes two session starts for experimental params and feature flags to
     // be picked up by Java, so override them manually.
@@ -177,9 +194,11 @@ class AndroidPushNotificationManagerJavaTest : public testing::Test {
 
   OptimizationGuideKeyedService* service() { return service_; }
 
-  OptimizationGuideHintsManager* hints_manager() {
+  optimization_guide::ChromeHintsManager* hints_manager() {
     return service()->GetHintsManager();
   }
+
+  MockObserver* observer() { return &observer_; }
 
   JNIEnv* env() { return env_; }
 
@@ -191,10 +210,11 @@ class AndroidPushNotificationManagerJavaTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
   base::android::ScopedJavaGlobalRef<jobject> j_test_;
-  JNIEnv* env_;
+  raw_ptr<JNIEnv> env_;
   TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
-  OptimizationGuideKeyedService* service_;
+  raw_ptr<TestingProfile> profile_;
+  MockObserver observer_;
+  raw_ptr<OptimizationGuideKeyedService> service_;
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -539,7 +559,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, Pushed_URL_SuccessCase) {
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -557,6 +577,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, Pushed_URL_SuccessCase) {
 
   EXPECT_TRUE(hints_manager()->hint_cache()->HasHint(url.host()));
   EXPECT_TRUE(hints_manager()->hint_cache()->HasURLKeyedEntryForURL(url));
+  EXPECT_CALL(*observer(), OnNotificationPayload(_, _)).Times(0);
 
   proto::HintNotificationPayload notification;
   notification.set_optimization_type(
@@ -584,7 +605,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, Pushed_Host_SuccessCase) {
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -602,6 +623,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, Pushed_Host_SuccessCase) {
 
   EXPECT_TRUE(hints_manager()->hint_cache()->HasHint(url.host()));
   EXPECT_TRUE(hints_manager()->hint_cache()->HasURLKeyedEntryForURL(url));
+  EXPECT_CALL(*observer(), OnNotificationPayload(_, _)).Times(0);
 
   proto::HintNotificationPayload notification;
   notification.set_optimization_type(
@@ -629,7 +651,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, PushedJava_URL_SuccessCase) {
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -647,6 +669,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, PushedJava_URL_SuccessCase) {
 
   EXPECT_TRUE(hints_manager()->hint_cache()->HasHint(url.host()));
   EXPECT_TRUE(hints_manager()->hint_cache()->HasURLKeyedEntryForURL(url));
+  EXPECT_CALL(*observer(), OnNotificationPayload(_, _)).Times(0);
 
   proto::HintNotificationPayload notification;
   notification.set_optimization_type(
@@ -674,7 +697,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, PushedJava_Host_SuccessCase) {
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -692,6 +715,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, PushedJava_Host_SuccessCase) {
 
   EXPECT_TRUE(hints_manager()->hint_cache()->HasHint(url.host()));
   EXPECT_TRUE(hints_manager()->hint_cache()->HasURLKeyedEntryForURL(url));
+  EXPECT_CALL(*observer(), OnNotificationPayload(_, _)).Times(0);
 
   proto::HintNotificationPayload notification;
   notification.set_optimization_type(
@@ -720,7 +744,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest,
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -765,7 +789,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest,
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -808,7 +832,7 @@ TEST_F(AndroidPushNotificationManagerJavaTest, Pushed_HintKeyRequired) {
   hint->set_key_representation(proto::FULL_URL);
   hint->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint = hint->add_page_hints();
-  page_hint->add_whitelisted_optimizations()->set_optimization_type(
+  page_hint->add_allowlisted_optimizations()->set_optimization_type(
       proto::PERFORMANCE_HINTS);
   page_hint->set_page_pattern("whatever/*");
 
@@ -837,6 +861,58 @@ TEST_F(AndroidPushNotificationManagerJavaTest, Pushed_HintKeyRequired) {
 
   EXPECT_TRUE(hints_manager()->hint_cache()->HasHint(url.host()));
   EXPECT_TRUE(hints_manager()->hint_cache()->HasURLKeyedEntryForURL(url));
+}
+
+// Send non-empty HintNotificationPayload.payload and valid hints data in the
+// HintNotificationPayload proto, observer should receive
+// the optimization_guide::proto::Any.
+TEST_F(AndroidPushNotificationManagerJavaTest, PayloadDispatched_WithHintsKey) {
+  base::HistogramTester histogram_tester;
+  optimization_guide::proto::Any payload_to_observer;
+  EXPECT_CALL(*observer(),
+              OnNotificationPayload(proto::OptimizationType::PRICE_TRACKING, _))
+      .WillOnce(SaveArg<1>(&payload_to_observer));
+
+  proto::HintNotificationPayload notification;
+  notification.set_optimization_type(proto::OptimizationType::PRICE_TRACKING);
+  notification.set_key_representation(proto::KeyRepresentation::HOST);
+  GURL url("https://host.com/r/cats");
+  notification.set_hint_key(url.host());
+  optimization_guide::proto::Any* payload = new optimization_guide::proto::Any;
+  payload->set_type_url("type_url");
+  payload->set_value("value");
+  notification.set_allocated_payload(payload);
+  PushNotificationNative(notification);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(payload_to_observer.type_url(), "type_url");
+  EXPECT_EQ(payload_to_observer.value(), "value");
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PushNotifications.ReceivedNotificationType",
+      proto::OptimizationType::PRICE_TRACKING, 1);
+}
+
+// Send non-empty HintNotificationPayload.payload and empty hints key in the
+// HintNotificationPayload proto, observer should not receive
+// optimization_guide::proto::Any.
+TEST_F(AndroidPushNotificationManagerJavaTest,
+       PayloadNotDispatched_InvalidPayload) {
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*observer(), OnNotificationPayload(_, _)).Times(0);
+
+  // No hints key.
+  proto::HintNotificationPayload notification;
+  optimization_guide::proto::Any* payload = new optimization_guide::proto::Any;
+  notification.set_optimization_type(proto::OptimizationType::PRICE_TRACKING);
+  payload->set_type_url("type_url");
+  payload->set_value("value");
+  notification.set_allocated_payload(payload);
+  PushNotificationNative(notification);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PushNotifications.ReceivedNotificationType",
+      proto::OptimizationType::PRICE_TRACKING, 0);
 }
 
 }  // namespace android

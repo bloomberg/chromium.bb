@@ -30,7 +30,7 @@ Test various validation behaviors when a resolveTarget is provided.
 - resolve source and target have different sizes.
 `
   )
-  .params([
+  .paramsSimple([
     // control case should be valid
     { _valid: true },
     // a single sampled resolve source should cause a validation error.
@@ -132,7 +132,7 @@ Test various validation behaviors when a resolveTarget is provided.
           renderPassColorAttachmentDescriptors.push({
             view: resolveSourceColorAttachment.createView(),
             loadValue: 'load',
-            storeOp: 'clear',
+            storeOp: 'discard',
             resolveTarget: resolveTarget.createView({
               dimension: resolveTargetViewArrayLayerCount === 1 ? '2d' : '2d-array',
               mipLevelCount: resolveTargetViewMipCount,
@@ -169,7 +169,7 @@ Test various validation behaviors when a resolveTarget is provided.
           renderPassColorAttachmentDescriptors.push({
             view: colorAttachment.createView(),
             loadValue: 'load',
-            storeOp: 'clear',
+            storeOp: 'discard',
             resolveTarget: resolveTarget.createView(),
           });
         }

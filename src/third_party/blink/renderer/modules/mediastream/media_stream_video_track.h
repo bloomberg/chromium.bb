@@ -5,11 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
@@ -18,6 +15,7 @@
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -26,7 +24,6 @@
 namespace blink {
 
 class MediaStreamVideoTrackSignalObserver;
-class VideoTrackAdapterSettings;
 
 // MediaStreamVideoTrack is a video-specific representation of a
 // MediaStreamTrackPlatform. It is owned by a MediaStreamComponent
@@ -77,6 +74,10 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
       bool pan_tilt_zoom_allowed,
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
+
+  MediaStreamVideoTrack(const MediaStreamVideoTrack&) = delete;
+  MediaStreamVideoTrack& operator=(const MediaStreamVideoTrack&) = delete;
+
   ~MediaStreamVideoTrack() override;
 
   // MediaStreamTrack overrides.
@@ -85,6 +86,7 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
       WebMediaStreamTrack::ContentHintType content_hint) override;
   void StopAndNotify(base::OnceClosure callback) override;
   void GetSettings(MediaStreamTrackPlatform::Settings& settings) override;
+  MediaStreamTrackPlatform::CaptureHandle GetCaptureHandle() override;
 
   // Add |sink| to receive state changes on the main render thread and video
   // frames in the |callback| method on the IO-thread.
@@ -122,7 +124,7 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
     return max_frame_rate_;
   }
   const VideoTrackAdapterSettings& adapter_settings() const {
-    return *adapter_settings_;
+    return adapter_settings_;
   }
   const absl::optional<double>& pan() const { return pan_; }
   const absl::optional<double>& tilt() const { return tilt_; }
@@ -146,8 +148,6 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
     computed_frame_rate_ = frame_rate;
   }
 
-  void SetMinimumFrameRate(double min_frame_rate);
-
   // Setting information about the source format. The format is computed based
   // on incoming frames and it's used for applying constraints for remote video
   // tracks. Passed as callback on MediaStreamVideoTrack::AddTrack, and run from
@@ -156,7 +156,14 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
     computed_source_format_ = format;
   }
 
+  // Track constraints setup.
+  void SetMinimumFrameRate(double min_frame_rate);
   void SetTrackAdapterSettings(const VideoTrackAdapterSettings& settings);
+
+  // Signals that track configuration with
+  // SetMinimumFrameRate/SetTrackAdapterSettings is complete. Notifies sinks on
+  // new constraints.
+  void NotifyConstraintsConfigurationComplete();
 
   media::VideoCaptureFormat GetComputedSourceFormat();
 
@@ -201,8 +208,7 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
   class FrameDeliverer;
   scoped_refptr<FrameDeliverer> frame_deliverer_;
 
-  // TODO(guidou): Make this field a regular field instead of a unique_ptr.
-  std::unique_ptr<VideoTrackAdapterSettings> adapter_settings_;
+  VideoTrackAdapterSettings adapter_settings_;
   absl::optional<bool> noise_reduction_;
   bool is_screencast_;
   absl::optional<double> min_frame_rate_;
@@ -220,6 +226,7 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
 
   // This is used for tracking if no connected video use alpha.
   HashSet<WebMediaStreamSink*> alpha_using_sinks_;
+  HashSet<WebMediaStreamSink*> alpha_discarding_sinks_;
 
   // Remembering our desired video size and frame rate.
   int width_ = 0;
@@ -232,8 +239,6 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
   WeakPersistent<MediaStreamVideoTrackSignalObserver> signal_observer_;
 
   base::WeakPtrFactory<MediaStreamVideoTrack> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };
 
 }  // namespace blink

@@ -146,17 +146,6 @@ class URLIndexPrivateData
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
-  // Returns true if |row| is indexed.
-  bool IsUrlRowIndexed(const history::URLRow& row) const;
-
-  // Returns true if a visit with |transition| should not be returned.
-  static bool ShouldExcludeBecauseOfCctTransition(
-      ui::PageTransition transition);
-
-  // Returns true |visits| should be excluded (not shown).
-  static bool ShouldExcludeBecauseOfCctVisits(
-      const history::VisitVector& visits);
-
  private:
   friend class base::RefCountedThreadSafe<URLIndexPrivateData>;
   ~URLIndexPrivateData();
@@ -169,7 +158,8 @@ class URLIndexPrivateData
                            CalculateWordStartsOffsetsUnderscore);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ReadVisitsFromHistory);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexDisabledTest,
+                           RebuildFromHistoryIfCacheOld);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TrimHistoryIds);

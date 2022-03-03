@@ -12,7 +12,7 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfdoc/cpdf_filespec.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -140,10 +140,10 @@ std::vector<const CPDF_Object*> CPDF_Action::GetAllFields() const {
   return result;
 }
 
-Optional<WideString> CPDF_Action::MaybeGetJavaScript() const {
+absl::optional<WideString> CPDF_Action::MaybeGetJavaScript() const {
   const CPDF_Object* pObject = GetJavaScriptObject();
   if (!pObject)
-    return pdfium::nullopt;
+    return absl::nullopt;
   return pObject->GetUnicodeText();
 }
 

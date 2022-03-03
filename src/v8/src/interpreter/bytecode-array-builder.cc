@@ -841,13 +841,6 @@ BytecodeArrayBuilder& BytecodeArrayBuilder::LoadNamedPropertyFromSuper(
   return *this;
 }
 
-BytecodeArrayBuilder& BytecodeArrayBuilder::LoadNamedPropertyNoFeedback(
-    Register object, const AstRawString* name) {
-  size_t name_index = GetConstantPoolEntry(name);
-  OutputLdaNamedPropertyNoFeedback(object, name_index);
-  return *this;
-}
-
 BytecodeArrayBuilder& BytecodeArrayBuilder::LoadKeyedProperty(
     Register object, int feedback_slot) {
   OutputLdaKeyedProperty(object, feedback_slot);
@@ -904,14 +897,6 @@ BytecodeArrayBuilder& BytecodeArrayBuilder::StoreNamedProperty(
   return StoreNamedProperty(object, name_index, feedback_slot, language_mode);
 }
 
-BytecodeArrayBuilder& BytecodeArrayBuilder::StoreNamedPropertyNoFeedback(
-    Register object, const AstRawString* name, LanguageMode language_mode) {
-  size_t name_index = GetConstantPoolEntry(name);
-  OutputStaNamedPropertyNoFeedback(object, name_index,
-                                   static_cast<uint8_t>(language_mode));
-  return *this;
-}
-
 BytecodeArrayBuilder& BytecodeArrayBuilder::StoreNamedOwnProperty(
     Register object, const AstRawString* name, int feedback_slot) {
   size_t name_index = GetConstantPoolEntry(name);
@@ -931,6 +916,17 @@ BytecodeArrayBuilder& BytecodeArrayBuilder::StoreKeyedProperty(
                 FeedbackVector::ToSlot(feedback_slot))),
             language_mode);
   OutputStaKeyedProperty(object, key, feedback_slot);
+  return *this;
+}
+
+BytecodeArrayBuilder& BytecodeArrayBuilder::DefineKeyedProperty(
+    Register object, Register key, int feedback_slot) {
+  // Ensure that the IC uses a strict language mode, as this is the only
+  // supported mode for this use case.
+  DCHECK_EQ(GetLanguageModeFromSlotKind(feedback_vector_spec()->GetKind(
+                FeedbackVector::ToSlot(feedback_slot))),
+            LanguageMode::kStrict);
+  OutputStaKeyedPropertyAsDefine(object, key, feedback_slot);
   return *this;
 }
 
@@ -1444,12 +1440,6 @@ BytecodeArrayBuilder& BytecodeArrayBuilder::CallAnyReceiver(Register callable,
                                                             RegisterList args,
                                                             int feedback_slot) {
   OutputCallAnyReceiver(callable, args, args.register_count(), feedback_slot);
-  return *this;
-}
-
-BytecodeArrayBuilder& BytecodeArrayBuilder::CallNoFeedback(Register callable,
-                                                           RegisterList args) {
-  OutputCallNoFeedback(callable, args, args.register_count());
   return *this;
 }
 

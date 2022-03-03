@@ -9,6 +9,10 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_file_system_instance.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -17,14 +21,11 @@
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_file_system_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 
 using File = arc::FakeFileSystemInstance::File;
@@ -46,6 +47,12 @@ std::unique_ptr<KeyedService> CreateArcFileSystemOperationRunnerForTesting(
 class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
  public:
   ArcContentFileSystemAsyncFileUtilTest() = default;
+
+  ArcContentFileSystemAsyncFileUtilTest(
+      const ArcContentFileSystemAsyncFileUtilTest&) = delete;
+  ArcContentFileSystemAsyncFileUtilTest& operator=(
+      const ArcContentFileSystemAsyncFileUtilTest&) = delete;
+
   ~ArcContentFileSystemAsyncFileUtilTest() override = default;
 
   void SetUp() override {
@@ -74,27 +81,23 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
  protected:
   storage::FileSystemURL ExternalFileURLToFileSystemURL(const GURL& url) {
     base::FilePath mount_point_virtual_path =
-        base::FilePath::FromUTF8Unsafe(kContentFileSystemMountPointName);
+        base::FilePath::FromASCII(kContentFileSystemMountPointName);
     base::FilePath virtual_path = chromeos::ExternalFileURLToVirtualPath(url);
     base::FilePath path(kContentFileSystemMountPointPath);
     EXPECT_TRUE(
         mount_point_virtual_path.AppendRelativePath(virtual_path, &path));
     return storage::FileSystemURL::CreateForTest(
-        url::Origin(),  // origin
-        storage::kFileSystemTypeArcContent, path);
+        blink::StorageKey(), storage::kFileSystemTypeArcContent, path);
   }
 
   content::BrowserTaskEnvironment task_environment_;
   FakeFileSystemInstance fake_file_system_;
 
   // Use the same initialization/destruction order as
-  // ChromeBrowserMainPartsChromeos.
+  // `ChromeBrowserMainPartsAsh`.
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcContentFileSystemAsyncFileUtil> async_file_util_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcContentFileSystemAsyncFileUtilTest);
 };
 
 }  // namespace

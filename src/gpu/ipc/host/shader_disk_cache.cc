@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
@@ -51,6 +51,10 @@ class ShaderDiskCacheEntry : public base::ThreadChecker {
   ShaderDiskCacheEntry(ShaderDiskCache* cache,
                        const std::string& key,
                        const std::string& shader);
+
+  ShaderDiskCacheEntry(const ShaderDiskCacheEntry&) = delete;
+  ShaderDiskCacheEntry& operator=(const ShaderDiskCacheEntry&) = delete;
+
   ~ShaderDiskCacheEntry();
 
   void Cache();
@@ -68,15 +72,13 @@ class ShaderDiskCacheEntry : public base::ThreadChecker {
   int WriteCallback(int rv);
   int IOComplete(int rv);
 
-  ShaderDiskCache* cache_;
+  raw_ptr<ShaderDiskCache> cache_;
   OpType op_type_;
   std::string key_;
   std::string shader_;
-  disk_cache::Entry* entry_;
+  raw_ptr<disk_cache::Entry> entry_;
   base::WeakPtr<ShaderDiskCacheEntry> weak_ptr_;
   base::WeakPtrFactory<ShaderDiskCacheEntry> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShaderDiskCacheEntry);
 };
 
 // ShaderDiskReadHelper is used to load all of the cached shaders from the
@@ -86,6 +88,10 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
   using ShaderLoadedCallback = ShaderDiskCache::ShaderLoadedCallback;
   ShaderDiskReadHelper(ShaderDiskCache* cache,
                        const ShaderLoadedCallback& callback);
+
+  ShaderDiskReadHelper(const ShaderDiskReadHelper&) = delete;
+  ShaderDiskReadHelper& operator=(const ShaderDiskReadHelper&) = delete;
+
   ~ShaderDiskReadHelper();
 
   void LoadCache();
@@ -106,15 +112,13 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
   int ReadComplete(int rv);
   int IterationComplete(int rv);
 
-  ShaderDiskCache* cache_;
+  raw_ptr<ShaderDiskCache> cache_;
   ShaderLoadedCallback shader_loaded_callback_;
   OpType op_type_;
   std::unique_ptr<disk_cache::Backend::Iterator> iter_;
   scoped_refptr<net::IOBufferWithSize> buf_;
-  disk_cache::Entry* entry_;
+  raw_ptr<disk_cache::Entry> entry_;
   base::WeakPtrFactory<ShaderDiskReadHelper> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShaderDiskReadHelper);
 };
 
 class ShaderClearHelper : public base::ThreadChecker {
@@ -125,6 +129,10 @@ class ShaderClearHelper : public base::ThreadChecker {
                     const base::Time& delete_begin,
                     const base::Time& delete_end,
                     base::OnceClosure callback);
+
+  ShaderClearHelper(const ShaderClearHelper&) = delete;
+  ShaderClearHelper& operator=(const ShaderClearHelper&) = delete;
+
   ~ShaderClearHelper();
 
   void Clear();
@@ -134,7 +142,7 @@ class ShaderClearHelper : public base::ThreadChecker {
 
   void DoClearShaderCache(int rv);
 
-  ShaderCacheFactory* factory_;
+  raw_ptr<ShaderCacheFactory> factory_;
   scoped_refptr<ShaderDiskCache> cache_;
   OpType op_type_;
   base::FilePath path_;
@@ -142,8 +150,6 @@ class ShaderClearHelper : public base::ThreadChecker {
   base::Time delete_end_;
   base::OnceClosure callback_;
   base::WeakPtrFactory<ShaderClearHelper> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShaderClearHelper);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

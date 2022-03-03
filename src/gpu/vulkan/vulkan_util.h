@@ -7,7 +7,7 @@
 #ifndef GPU_VULKAN_VULKAN_UTIL_H_
 #define GPU_VULKAN_VULKAN_UTIL_H_
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #include <memory>
 #include <vector>
@@ -79,12 +79,6 @@ COMPONENT_EXPORT(VULKAN)
 std::string VkVersionToString(uint32_t version);
 
 COMPONENT_EXPORT(VULKAN)
-VKAPI_ATTR VkResult VKAPI_CALL QueueSubmitHook(VkQueue queue,
-                                               uint32_t submitCount,
-                                               const VkSubmitInfo* pSubmits,
-                                               VkFence fence);
-
-COMPONENT_EXPORT(VULKAN)
 VKAPI_ATTR VkResult VKAPI_CALL
 CreateGraphicsPipelinesHook(VkDevice device,
                             VkPipelineCache pipelineCache,
@@ -93,12 +87,16 @@ CreateGraphicsPipelinesHook(VkDevice device,
                             const VkAllocationCallbacks* pAllocator,
                             VkPipeline* pPipelines);
 
-COMPONENT_EXPORT(VULKAN) void ReportUMAPerSwapBuffers();
-
 COMPONENT_EXPORT(VULKAN)
 bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
                               const GPUInfo& gpu_info,
                               std::string enable_by_device_name);
+
+COMPONENT_EXPORT(VULKAN)
+VkImageLayout GLImageLayoutToVkImageLayout(uint32_t layout);
+
+COMPONENT_EXPORT(VULKAN)
+uint32_t VkImageLayoutToGLImageLayout(VkImageLayout layout);
 
 }  // namespace gpu
 

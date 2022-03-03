@@ -11,11 +11,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -42,6 +41,10 @@ namespace {
 class PasswordsPrivateApiTest : public ExtensionApiTest {
  public:
   PasswordsPrivateApiTest() = default;
+
+  PasswordsPrivateApiTest(const PasswordsPrivateApiTest&) = delete;
+  PasswordsPrivateApiTest& operator=(const PasswordsPrivateApiTest&) = delete;
+
   ~PasswordsPrivateApiTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -60,9 +63,8 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
  protected:
   bool RunPasswordsSubtest(const std::string& subtest) {
     const std::string page_url = "main.html?" + subtest;
-    return RunExtensionTest(
-        {.name = "passwords_private", .page_url = page_url.c_str()},
-        {.load_as_component = true});
+    return RunExtensionTest("passwords_private", {.page_url = page_url.c_str()},
+                            {.load_as_component = true});
   }
 
   bool importPasswordsWasTriggered() {
@@ -104,17 +106,52 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     s_test_delegate_->AddCompromisedCredential(id);
   }
 
+  void SetIsAccountStoreDefault(bool is_default) {
+    s_test_delegate_->SetIsAccountStoreDefault(is_default);
+  }
+
   const std::vector<int>& last_moved_passwords() const {
     return s_test_delegate_->last_moved_passwords();
   }
 
  private:
-  TestPasswordsPrivateDelegate* s_test_delegate_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateApiTest);
+  raw_ptr<TestPasswordsPrivateDelegate> s_test_delegate_ = nullptr;
 };
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       IsAccountStoreDefaultWhenFalse) {
+  EXPECT_TRUE(RunPasswordsSubtest("isAccountStoreDefaultWhenFalse"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsAccountStoreDefaultWhenTrue) {
+  SetIsAccountStoreDefault(true);
+  EXPECT_TRUE(RunPasswordsSubtest("isAccountStoreDefaultWhenTrue")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       GetUrlCollectionWhenUrlValidSucceeds) {
+  EXPECT_TRUE(RunPasswordsSubtest("getUrlCollectionWhenUrlValidSucceeds"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       GetUrlCollectionWhenUrlInvalidFails) {
+  EXPECT_TRUE(RunPasswordsSubtest("getUrlCollectionWhenUrlInvalidFails"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       AddPasswordWhenOperationSucceeds) {
+  EXPECT_TRUE(RunPasswordsSubtest("addPasswordWhenOperationSucceeds"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, AddPasswordWhenOperationFails) {
+  EXPECT_TRUE(RunPasswordsSubtest("addPasswordWhenOperationFails")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ChangeSavedPasswordSucceeds) {
   EXPECT_TRUE(RunPasswordsSubtest("changeSavedPasswordSucceeds")) << message_;

@@ -9,14 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/phonehub/onboarding_ui_tracker.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/pill_button.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/phonehub/interstitial_view_button.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
 #include "ash/system/phonehub/phone_hub_interstitial_view.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
@@ -24,9 +25,8 @@
 #include "ash/system/phonehub/phone_hub_view_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_bubble_view.h"
-#include "ash/system/unified/rounded_label_button.h"
+#include "base/bind.h"
 #include "base/strings/strcat.h"
-#include "chromeos/components/phonehub/onboarding_ui_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -44,10 +44,9 @@ using phone_hub_metrics::Screen;
 // to enable this feature or dismiss the screen.
 class OnboardingMainView : public PhoneHubInterstitialView {
  public:
-  OnboardingMainView(
-      chromeos::phonehub::OnboardingUiTracker* onboarding_ui_tracker,
-      OnboardingView* parent_view,
-      OnboardingView::OnboardingFlow onboarding_flow)
+  OnboardingMainView(phonehub::OnboardingUiTracker* onboarding_ui_tracker,
+                     OnboardingView* parent_view,
+                     OnboardingView::OnboardingFlow onboarding_flow)
       : PhoneHubInterstitialView(/*show_progress=*/false),
         onboarding_ui_tracker_(onboarding_ui_tracker),
         parent_view_(parent_view),
@@ -68,7 +67,6 @@ class OnboardingMainView : public PhoneHubInterstitialView {
 
  private:
   void InitLayout() {
-    // TODO(crbug.com/1127996): Replace PNG file with vector icon.
     gfx::ImageSkia* image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_PHONE_HUB_ONBOARDING_IMAGE);
@@ -79,23 +77,21 @@ class OnboardingMainView : public PhoneHubInterstitialView {
         IDS_ASH_PHONE_HUB_ONBOARDING_DIALOG_DESCRIPTION));
 
     // Add "Dismiss" and "Get started" buttons.
-    auto dismiss = std::make_unique<InterstitialViewButton>(
+    auto dismiss = std::make_unique<PillButton>(
         base::BindRepeating(&OnboardingMainView::DismissButtonPressed,
                             base::Unretained(this)),
         l10n_util::GetStringUTF16(
             IDS_ASH_PHONE_HUB_ONBOARDING_DIALOG_DISMISS_BUTTON),
-        /*paint_background=*/false);
-    dismiss->SetEnabledTextColors(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
+        PillButton::Type::kIconlessFloating, /*icon=*/nullptr);
     dismiss->SetID(PhoneHubViewID::kOnboardingDismissButton);
     AddButton(std::move(dismiss));
 
-    auto get_started = std::make_unique<InterstitialViewButton>(
+    auto get_started = std::make_unique<PillButton>(
         base::BindRepeating(&OnboardingMainView::GetStartedButtonPressed,
                             base::Unretained(this)),
         l10n_util::GetStringUTF16(
             IDS_ASH_PHONE_HUB_ONBOARDING_DIALOG_GET_STARTED_BUTTON),
-        /*paint_background=*/true);
+        PillButton::Type::kIconless, /*icon=*/nullptr);
     get_started->SetID(PhoneHubViewID::kOnboardingGetStartedButton);
     AddButton(std::move(get_started));
   }
@@ -110,7 +106,7 @@ class OnboardingMainView : public PhoneHubInterstitialView {
     parent_view_->ShowDismissPrompt();
   }
 
-  chromeos::phonehub::OnboardingUiTracker* onboarding_ui_tracker_ = nullptr;
+  phonehub::OnboardingUiTracker* onboarding_ui_tracker_ = nullptr;
   OnboardingView* parent_view_ = nullptr;
   const OnboardingView::OnboardingFlow onboarding_flow_;
 };
@@ -122,7 +118,7 @@ class OnboardingMainView : public PhoneHubInterstitialView {
 class OnboardingDismissPromptView : public PhoneHubInterstitialView {
  public:
   explicit OnboardingDismissPromptView(
-      chromeos::phonehub::OnboardingUiTracker* onboarding_ui_tracker)
+      phonehub::OnboardingUiTracker* onboarding_ui_tracker)
       : PhoneHubInterstitialView(/*show_progress=*/false, /*show_image=*/false),
         onboarding_ui_tracker_(onboarding_ui_tracker) {
     SetID(PhoneHubViewID::kOnboardingDismissPromptView);
@@ -142,12 +138,12 @@ class OnboardingDismissPromptView : public PhoneHubInterstitialView {
     SetDescription(base::StrCat({part1, u"\n\n", part2}));
 
     // Adds "Ok, got it" button.
-    auto ack_button = std::make_unique<InterstitialViewButton>(
+    auto ack_button = std::make_unique<PillButton>(
         base::BindRepeating(&OnboardingDismissPromptView::ButtonPressed,
                             base::Unretained(this)),
         l10n_util::GetStringUTF16(
             IDS_ASH_PHONE_HUB_ONBOARDING_DISMISS_DIALOG_OK_BUTTON),
-        /*paint_background=*/true);
+        PillButton::Type::kIconless, /*icon=*/nullptr);
     ack_button->SetID(PhoneHubViewID::kOnboardingDismissAckButton);
     AddButton(std::move(ack_button));
   }
@@ -178,12 +174,12 @@ class OnboardingDismissPromptView : public PhoneHubInterstitialView {
     return Screen::kOnboardingDismissPrompt;
   }
 
-  chromeos::phonehub::OnboardingUiTracker* onboarding_ui_tracker_ = nullptr;
+  phonehub::OnboardingUiTracker* onboarding_ui_tracker_ = nullptr;
 };
 
 // OnboardingView -------------------------------------------------------------
 OnboardingView::OnboardingView(
-    chromeos::phonehub::OnboardingUiTracker* onboarding_ui_tracker,
+    phonehub::OnboardingUiTracker* onboarding_ui_tracker,
     Delegate* delegate,
     OnboardingFlow onboarding_flow)
     : onboarding_ui_tracker_(onboarding_ui_tracker), delegate_(delegate) {
@@ -211,7 +207,7 @@ void OnboardingView::ShowDismissPrompt() {
 
   LogInterstitialScreenEvent(InterstitialScreenEvent::kShown);
 
-  RemoveChildView(main_view_);
+  RemoveChildViewT(main_view_);
   main_view_ = AddChildView(
       std::make_unique<OnboardingDismissPromptView>(onboarding_ui_tracker_));
 

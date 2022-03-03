@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_init.h"
+#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -14,15 +16,14 @@ namespace {
 
 class EncodedVideoChunkTest : public testing::Test {
  public:
-  ArrayBufferOrArrayBufferView StringToBuffer(std::string data) {
-    ArrayBufferOrArrayBufferView result;
-    result.SetArrayBuffer(DOMArrayBuffer::Create(data.data(), data.size()));
-    return result;
+  AllowSharedBufferSource* StringToBuffer(std::string data) {
+    return MakeGarbageCollected<AllowSharedBufferSource>(
+        DOMArrayBuffer::Create(data.data(), data.size()));
   }
 
-  std::string BufferToString(DOMArrayBuffer* buffer) {
-    return std::string(static_cast<char*>(buffer->Data()),
-                       buffer->ByteLength());
+  std::string BufferToString(const media::DecoderBuffer& buffer) {
+    return std::string(reinterpret_cast<const char*>(buffer.data()),
+                       buffer.data_size());
   }
 };
 
@@ -38,7 +39,7 @@ TEST_F(EncodedVideoChunkTest, ConstructorAndAttributes) {
 
   EXPECT_EQ(type, encoded->type());
   EXPECT_EQ(timestamp, encoded->timestamp());
-  EXPECT_EQ(data, BufferToString(encoded->data()));
+  EXPECT_EQ(data, BufferToString(*encoded->buffer()));
   EXPECT_FALSE(encoded->duration().has_value());
 }
 
@@ -56,7 +57,7 @@ TEST_F(EncodedVideoChunkTest, ConstructorWithDuration) {
 
   EXPECT_EQ(type, encoded->type());
   EXPECT_EQ(timestamp, encoded->timestamp());
-  EXPECT_EQ(data, BufferToString(encoded->data()));
+  EXPECT_EQ(data, BufferToString(*encoded->buffer()));
   ASSERT_TRUE(encoded->duration().has_value());
   EXPECT_EQ(duration, encoded->duration().value());
 }

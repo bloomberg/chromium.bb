@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/geolocation/wifi_data_provider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
@@ -42,6 +41,10 @@ class NetworkLocationRequest {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key,
       LocationResponseCallback callback);
+
+  NetworkLocationRequest(const NetworkLocationRequest&) = delete;
+  NetworkLocationRequest& operator=(const NetworkLocationRequest&) = delete;
+
   ~NetworkLocationRequest();
 
   // Makes a new request using the specified |wifi_data|. Returns true if the
@@ -69,8 +72,6 @@ class NetworkLocationRequest {
   // when the response arrives.
   WifiData wifi_data_;
   base::Time wifi_timestamp_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkLocationRequest);
 };
 
 }  // namespace device

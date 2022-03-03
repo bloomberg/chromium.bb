@@ -5,11 +5,11 @@
 #include "chrome/browser/ash/login/quick_unlock/auth_token.h"
 
 #include "base/bind.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/login/auth/user_context.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_unlock {
 
 const int AuthToken::kTokenExpirationSeconds = 5 * 60;
@@ -20,7 +20,7 @@ AuthToken::AuthToken(const chromeos::UserContext& user_context)
       user_context_(std::make_unique<chromeos::UserContext>(user_context)) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&AuthToken::Reset, weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kTokenExpirationSeconds));
+      base::Seconds(kTokenExpirationSeconds));
 }
 
 AuthToken::~AuthToken() = default;
@@ -44,4 +44,4 @@ void AuthToken::Reset() {
 }
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash

@@ -8,7 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -33,6 +33,11 @@ class FilteredOfflineItemObserver : public OfflineContentProvider::Observer {
   };
 
   FilteredOfflineItemObserver(OfflineContentProvider* provider);
+
+  FilteredOfflineItemObserver(const FilteredOfflineItemObserver&) = delete;
+  FilteredOfflineItemObserver& operator=(const FilteredOfflineItemObserver&) =
+      delete;
+
   ~FilteredOfflineItemObserver() override;
 
   void AddObserver(const ContentId& id, Observer* observer);
@@ -50,13 +55,11 @@ class FilteredOfflineItemObserver : public OfflineContentProvider::Observer {
                      const absl::optional<UpdateDelta>& update_delta) override;
   void OnContentProviderGoingDown() override;
 
-  OfflineContentProvider* provider_;
+  raw_ptr<OfflineContentProvider> provider_;
   base::ScopedObservation<OfflineContentProvider,
                           OfflineContentProvider::Observer>
       observation_{this};
   ObserversMap observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilteredOfflineItemObserver);
 };
 
 }  // namespace offline_items_collection

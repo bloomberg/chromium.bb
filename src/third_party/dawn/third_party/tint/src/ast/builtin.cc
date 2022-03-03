@@ -39,10 +39,6 @@ std::ostream& operator<<(std::ostream& out, Builtin builtin) {
       out << "front_facing";
       break;
     }
-    case Builtin::kFragCoord: {
-      out << "frag_coord";
-      break;
-    }
     case Builtin::kFragDepth: {
       out << "frag_depth";
       break;
@@ -63,20 +59,16 @@ std::ostream& operator<<(std::ostream& out, Builtin builtin) {
       out << "workgroup_id";
       break;
     }
+    case Builtin::kNumWorkgroups: {
+      out << "num_workgroups";
+      break;
+    }
     case Builtin::kSampleIndex: {
       out << "sample_index";
       break;
     }
     case Builtin::kSampleMask: {
       out << "sample_mask";
-      break;
-    }
-    case Builtin::kSampleMaskIn: {
-      out << "sample_mask_in";
-      break;
-    }
-    case Builtin::kSampleMaskOut: {
-      out << "sample_mask_out";
       break;
     }
     case Builtin::kPointSize: {

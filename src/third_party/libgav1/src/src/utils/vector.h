@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iterator>
+#include <new>
 #include <type_traits>
 #include <utility>
 

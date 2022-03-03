@@ -39,6 +39,25 @@ directory_test(async (t, root) => {
 }, 'removeEntry() on a non-empty directory should fail');
 
 directory_test(async (t, root) => {
+  // root
+  // ├──file-to-keep
+  // ├──dir-to-remove
+  //    ├── file0
+  //    ├── dir1-in-dir
+  //    │   └── file1
+  //    └── dir2
+  const dir = await root.getDirectoryHandle('dir-to-remove', {create: true});
+  await createFileWithContents(t, 'file-to-keep', 'abc', root);
+  await createEmptyFile(t, 'file0', dir);
+  const dir1_in_dir = await createDirectory(t, 'dir1-in-dir', dir);
+  await createEmptyFile(t, 'file1', dir1_in_dir);
+  await createDirectory(t, 'dir2-in-dir', dir);
+
+  await root.removeEntry('dir-to-remove', {recursive: true});
+  assert_array_equals(await getSortedDirectoryEntries(root), ['file-to-keep']);
+}, 'removeEntry() on a directory recursively should delete all sub-items');
+
+directory_test(async (t, root) => {
   const dir = await createDirectory(t, 'dir', root);
   await promise_rejects_js(t, TypeError, dir.removeEntry(''));
 }, 'removeEntry() with empty name should fail');
@@ -67,3 +86,18 @@ directory_test(async (t, root) => {
         `removeEntry() must reject names containing "${kPathSeparators[i]}"`);
   }
 }, 'removeEntry() with a path separator should fail.');
+
+directory_test(async (t, root) => {
+  const handle =
+      await createFileWithContents(t, 'file-to-remove', '12345', root);
+  await createFileWithContents(t, 'file-to-keep', 'abc', root);
+
+  const writable = await handle.createWritable();
+  await root.removeEntry('file-to-remove');
+  await promise_rejects_dom(t, 'NotFoundError', getFileContents(handle));
+
+  await writable.close();
+  assert_array_equals(
+      await getSortedDirectoryEntries(root),
+      ['file-to-keep', 'file-to-remove']);
+}, 'removeEntry() while the file has an open writable succeeds');

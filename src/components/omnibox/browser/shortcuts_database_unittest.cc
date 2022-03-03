@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include "base/cxx17_backports.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -180,8 +180,7 @@ ShortcutsDatabase::Shortcut ShortcutsDatabaseTest::ShortcutFromTestInfo(
           info.document_type, ASCIIToUTF16(info.contents), info.contents_class,
           ASCIIToUTF16(info.description), info.description_class,
           info.transition, info.type, ASCIIToUTF16(info.keyword)),
-      base::Time::Now() - base::TimeDelta::FromDays(info.days_from_now),
-      info.number_of_hits);
+      base::Time::Now() - base::Days(info.days_from_now), info.number_of_hits);
 }
 
 void ShortcutsDatabaseTest::AddAll() {

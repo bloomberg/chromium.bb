@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 libangle_common_sources = [
+  "src/common/CircularBuffer.h",
   "src/common/Color.h",
   "src/common/Color.inc",
   "src/common/FastVector.h",
@@ -19,6 +20,8 @@ libangle_common_sources = [
   "src/common/PackedGLEnums_autogen.h",
   "src/common/PoolAlloc.cpp",
   "src/common/PoolAlloc.h",
+  "src/common/Spinlock.h",
+  "src/common/SynchronizedValue.h",
   "src/common/aligned_memory.cpp",
   "src/common/aligned_memory.h",
   "src/common/android_util.cpp",
@@ -48,10 +51,19 @@ libangle_common_sources = [
   "src/common/third_party/base/anglebase/logging.h",
   "src/common/third_party/base/anglebase/macros.h",
   "src/common/third_party/base/anglebase/no_destructor.h",
+  "src/common/third_party/base/anglebase/numerics/checked_math.h",
+  "src/common/third_party/base/anglebase/numerics/checked_math_impl.h",
+  "src/common/third_party/base/anglebase/numerics/clamped_math.h",
+  "src/common/third_party/base/anglebase/numerics/clamped_math_impl.h",
+  "src/common/third_party/base/anglebase/numerics/math_constants.h",
+  "src/common/third_party/base/anglebase/numerics/ranges.h",
   "src/common/third_party/base/anglebase/numerics/safe_conversions.h",
+  "src/common/third_party/base/anglebase/numerics/safe_conversions_arm_impl.h",
   "src/common/third_party/base/anglebase/numerics/safe_conversions_impl.h",
   "src/common/third_party/base/anglebase/numerics/safe_math.h",
-  "src/common/third_party/base/anglebase/numerics/safe_math_impl.h",
+  "src/common/third_party/base/anglebase/numerics/safe_math_arm_impl.h",
+  "src/common/third_party/base/anglebase/numerics/safe_math_clang_gcc_impl.h",
+  "src/common/third_party/base/anglebase/numerics/safe_math_shared_impl.h",
   "src/common/third_party/base/anglebase/sha1.cc",
   "src/common/third_party/base/anglebase/sha1.h",
   "src/common/third_party/base/anglebase/sys_byteorder.h",
@@ -115,6 +127,7 @@ libangle_image_util_headers = [
   "src/image_util/imageformats.h",
   "src/image_util/loadimage.h",
   "src/image_util/loadimage.inc",
+  "src/image_util/loadtextureborder.h",
 ]
 
 libangle_image_util_sources = [
@@ -122,6 +135,7 @@ libangle_image_util_sources = [
   "src/image_util/imageformats.cpp",
   "src/image_util/loadimage.cpp",
   "src/image_util/loadimage_etc.cpp",
+  "src/image_util/loadtextureborder.cpp",
 ]
 
 libangle_gpu_info_util_sources = [
@@ -171,20 +185,14 @@ libangle_includes = [
   "include/GLES/gl.h",
   "include/GLES/glplatform.h",
   "include/GLES/glext.h",
-  "include/GLES/glext_angle.h",
-  "include/GLES/glext_explicit_context_autogen.inc",
   "include/GLES2/gl2.h",
   "include/GLES2/gl2ext.h",
   "include/GLES2/gl2ext_angle.h",
-  "include/GLES2/gl2ext_explicit_context_autogen.inc",
   "include/GLES2/gl2platform.h",
   "include/GLES3/gl3.h",
-  "include/GLES3/gl3ext_explicit_context_autogen.inc",
   "include/GLES3/gl3platform.h",
   "include/GLES3/gl31.h",
-  "include/GLES3/gl31ext_explicit_context_autogen.inc",
   "include/GLES3/gl32.h",
-  "include/GLES3/gl32ext_explicit_context_autogen.inc",
   "include/KHR/khrplatform.h",
   "include/WGL/wgl.h",
   "include/platform/Feature.h",
@@ -277,6 +285,7 @@ libangle_headers = [
   "src/libANGLE/entry_points_utils.h",
   "src/libANGLE/features.h",
   "src/libANGLE/formatutils.h",
+  "src/libANGLE/gles_extensions_autogen.h",
   "src/libANGLE/histogram_macros.h",
   "src/libANGLE/queryconversions.h",
   "src/libANGLE/queryutils.h",
@@ -296,6 +305,7 @@ libangle_headers = [
   "src/libANGLE/renderer/FramebufferAttachmentObjectImpl.h",
   "src/libANGLE/renderer/FramebufferImpl.h",
   "src/libANGLE/renderer/GLImplFactory.h",
+  "src/libANGLE/renderer/gl/functionsgl_enums.h",
   "src/libANGLE/renderer/ImageImpl.h",
   "src/libANGLE/renderer/MemoryObjectImpl.h",
   "src/libANGLE/renderer/OverlayImpl.h",
@@ -316,6 +326,7 @@ libangle_headers = [
   "src/libANGLE/renderer/copyvertex.h",
   "src/libANGLE/renderer/copyvertex.inc.h",
   "src/libANGLE/renderer/load_functions_table.h",
+  "src/libANGLE/renderer/load_texture_border_functions_table.h",
   "src/libANGLE/renderer/renderer_utils.h",
   "src/libANGLE/renderer/serial_utils.h",
   "src/libANGLE/validationEGL.h",
@@ -399,6 +410,7 @@ libangle_sources = [
   "src/libANGLE/format_map_autogen.cpp",
   "src/libANGLE/format_map_desktop.cpp",
   "src/libANGLE/formatutils.cpp",
+  "src/libANGLE/gles_extensions_autogen.cpp",
   "src/libANGLE/queryconversions.cpp",
   "src/libANGLE/queryutils.cpp",
   "src/libANGLE/renderer/BufferImpl.cpp",
@@ -408,6 +420,7 @@ libangle_sources = [
   "src/libANGLE/renderer/EGLReusableSync.cpp",
   "src/libANGLE/renderer/EGLSyncImpl.cpp",
   "src/libANGLE/renderer/Format_table_autogen.cpp",
+  "src/libANGLE/renderer/ImageImpl.cpp",
   "src/libANGLE/renderer/ProgramPipelineImpl.cpp",
   "src/libANGLE/renderer/QueryImpl.cpp",
   "src/libANGLE/renderer/ShaderImpl.cpp",
@@ -415,6 +428,7 @@ libangle_sources = [
   "src/libANGLE/renderer/TextureImpl.cpp",
   "src/libANGLE/renderer/driver_utils.cpp",
   "src/libANGLE/renderer/load_functions_table_autogen.cpp",
+  "src/libANGLE/renderer/load_texture_border_functions_table_autogen.cpp",
   "src/libANGLE/renderer/renderer_utils.cpp",
   "src/libANGLE/validationEGL.cpp",
   "src/libANGLE/validationES.cpp",
@@ -453,10 +467,13 @@ cl_includes = [
 ]
 
 libangle_cl_headers = [
+  "src/libANGLE/CLBitField.h",
+  "src/libANGLE/CLBuffer.h",
   "src/libANGLE/CLCommandQueue.h",
   "src/libANGLE/CLContext.h",
   "src/libANGLE/CLDevice.h",
   "src/libANGLE/CLEvent.h",
+  "src/libANGLE/CLImage.h",
   "src/libANGLE/CLKernel.h",
   "src/libANGLE/CLMemory.h",
   "src/libANGLE/CLObject.h",
@@ -465,27 +482,46 @@ libangle_cl_headers = [
   "src/libANGLE/CLRefPointer.h",
   "src/libANGLE/CLSampler.h",
   "src/libANGLE/CLtypes.h",
+  "src/libANGLE/cl_utils.h",
+  "src/libANGLE/renderer/CLCommandQueueImpl.h",
   "src/libANGLE/renderer/CLContextImpl.h",
   "src/libANGLE/renderer/CLDeviceImpl.h",
+  "src/libANGLE/renderer/CLEventImpl.h",
+  "src/libANGLE/renderer/CLExtensions.h",
+  "src/libANGLE/renderer/CLKernelImpl.h",
+  "src/libANGLE/renderer/CLMemoryImpl.h",
   "src/libANGLE/renderer/CLPlatformImpl.h",
+  "src/libANGLE/renderer/CLProgramImpl.h",
+  "src/libANGLE/renderer/CLSamplerImpl.h",
   "src/libANGLE/renderer/CLtypes.h",
   "src/libANGLE/validationCL.h",
   "src/libANGLE/validationCL_autogen.h",
 ]
 
 libangle_cl_sources = [
+  "src/libANGLE/CLBuffer.cpp",
   "src/libANGLE/CLCommandQueue.cpp",
   "src/libANGLE/CLContext.cpp",
   "src/libANGLE/CLDevice.cpp",
   "src/libANGLE/CLEvent.cpp",
+  "src/libANGLE/CLImage.cpp",
   "src/libANGLE/CLKernel.cpp",
   "src/libANGLE/CLMemory.cpp",
+  "src/libANGLE/CLObject.cpp",
   "src/libANGLE/CLPlatform.cpp",
   "src/libANGLE/CLProgram.cpp",
   "src/libANGLE/CLSampler.cpp",
+  "src/libANGLE/cl_utils.cpp",
+  "src/libANGLE/renderer/CLCommandQueueImpl.cpp",
   "src/libANGLE/renderer/CLContextImpl.cpp",
   "src/libANGLE/renderer/CLDeviceImpl.cpp",
+  "src/libANGLE/renderer/CLEventImpl.cpp",
+  "src/libANGLE/renderer/CLExtensions.cpp",
+  "src/libANGLE/renderer/CLKernelImpl.cpp",
+  "src/libANGLE/renderer/CLMemoryImpl.cpp",
   "src/libANGLE/renderer/CLPlatformImpl.cpp",
+  "src/libANGLE/renderer/CLProgramImpl.cpp",
+  "src/libANGLE/renderer/CLSamplerImpl.cpp",
   "src/libANGLE/validationCL.cpp",
 ]
 
@@ -528,6 +564,7 @@ libangle_capture_sources = [
   "src/libANGLE/capture/frame_capture_utils_autogen.cpp",
   "src/libANGLE/capture/gl_enum_utils.cpp",
   "src/libANGLE/capture/gl_enum_utils_autogen.cpp",
+  "src/third_party/ceval/ceval.h",
 ]
 
 libgl_sources = [
@@ -592,14 +629,11 @@ libglesv2_cl_sources = [
   "src/libGLESv2/cl_stubs_autogen.h",
   "src/libGLESv2/entry_points_cl_autogen.cpp",
   "src/libGLESv2/entry_points_cl_autogen.h",
+  "src/libGLESv2/entry_points_cl_utils.cpp",
   "src/libGLESv2/entry_points_cl_utils.h",
   "src/libGLESv2/proc_table_cl.h",
   "src/libGLESv2/proc_table_cl_autogen.cpp",
 ]
-
-if (is_win) {
-  libglesv2_sources += [ "src/libGLESv2/libGLESv2.rc" ]
-}
 
 libglesv1_cm_sources = [
   "src/libGLESv1_CM/libGLESv1_CM.cpp",
@@ -617,7 +651,3 @@ libegl_sources = [
   "src/libGLESv2/entry_points_egl_autogen.h",
   "src/libGLESv2/entry_points_egl_ext_autogen.h",
 ]
-
-if (is_win) {
-  libegl_sources += [ "src/libEGL/libEGL.rc" ]
-}

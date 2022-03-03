@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <string>
-#include <vector>
 
 #include "base/values.h"
 #include "build/build_config.h"
@@ -52,7 +51,7 @@ TEST_F(ContentSettingsRegistryTest, GetPlatformDependent) {
 #endif
 
 // Protected media identifier only registered on Android, Chrome OS and Windows.
-#if defined(ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if defined(ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
   EXPECT_TRUE(registry()->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER));
 #else
   EXPECT_FALSE(
@@ -130,6 +129,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
       ContentSettingsType::LEGACY_COOKIE_ACCESS,
       ContentSettingsType::STORAGE_ACCESS,
       ContentSettingsType::INSECURE_PRIVATE_NETWORK,
+      ContentSettingsType::REQUEST_DESKTOP_SITE,
   };
 
   for (const ContentSettingsInfo* info : *registry()) {

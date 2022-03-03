@@ -7,6 +7,8 @@
 #ifndef CORE_FPDFAPI_FONT_CPDF_FONT_H_
 #define CORE_FPDFAPI_FONT_CPDF_FONT_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -15,7 +17,6 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -25,7 +26,6 @@ class CFX_DIBitmap;
 class CFX_SubstFont;
 class CPDF_CIDFont;
 class CPDF_Document;
-class CPDF_Object;
 class CPDF_TrueTypeFont;
 class CPDF_Type1Font;
 class CPDF_Type3Char;
@@ -42,7 +42,7 @@ class CPDF_Font : public Retainable, public Observable {
     virtual void ParseContentForType3Char(CPDF_Type3Char* pChar) = 0;
     virtual bool HasPageObjects() const = 0;
     virtual CFX_FloatRect CalcBoundingBox() const = 0;
-    virtual Optional<std::pair<RetainPtr<CFX_DIBitmap>, CFX_Matrix>>
+    virtual absl::optional<std::pair<RetainPtr<CFX_DIBitmap>, CFX_Matrix>>
     GetBitmapAndMatrixFromSoleImageOfForm() const = 0;
   };
 
@@ -83,7 +83,7 @@ class CPDF_Font : public Retainable, public Observable {
 
   virtual void WillBeDestroyed();
   virtual bool IsVertWriting() const;
-  virtual bool IsUnicodeCompatible() const;
+  virtual bool IsUnicodeCompatible() const = 0;
   virtual uint32_t GetNextChar(ByteStringView pString, size_t* pOffset) const;
   virtual size_t CountChar(ByteStringView pString) const;
   virtual int AppendChar(char* buf, uint32_t charcode) const;
@@ -111,6 +111,7 @@ class CPDF_Font : public Retainable, public Observable {
   uint32_t FallbackFontFromCharcode(uint32_t charcode);
   int FallbackGlyphFromCharcode(int fallbackFont, uint32_t charcode);
   int GetFontFlags() const { return m_Flags; }
+  int GetItalicAngle() const { return m_ItalicAngle; }
   int GetFontWeight() const;
 
   virtual int GetCharWidthF(uint32_t charcode) = 0;

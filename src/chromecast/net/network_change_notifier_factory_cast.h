@@ -6,7 +6,6 @@
 #define CHROMECAST_NET_NETWORK_CHANGE_NOTIFIER_FACTORY_CAST_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "net/base/network_change_notifier_factory.h"
 
 namespace chromecast {
@@ -15,13 +14,16 @@ class NetworkChangeNotifierFactoryCast
     : public net::NetworkChangeNotifierFactory {
  public:
   NetworkChangeNotifierFactoryCast() {}
+
+  NetworkChangeNotifierFactoryCast(const NetworkChangeNotifierFactoryCast&) =
+      delete;
+  NetworkChangeNotifierFactoryCast& operator=(
+      const NetworkChangeNotifierFactoryCast&) = delete;
+
   ~NetworkChangeNotifierFactoryCast() override;
 
   // net::NetworkChangeNotifierFactory implementation:
   std::unique_ptr<net::NetworkChangeNotifier> CreateInstance() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierFactoryCast);
 };
 
 }  // namespace chromecast

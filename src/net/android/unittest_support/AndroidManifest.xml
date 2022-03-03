@@ -26,11 +26,18 @@ found in the LICENSE file.
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    <!-- Explicitly set the attribute requestLegacyExternalStorage to "true"
+         since it is "false" by default on apps targeting Android 10, and that
+         breaks test listing. See
+         https://developer.android.com/training/data-storage#scoped-storage and
+         https://developer.android.com/training/data-storage/compatibility. -->
     <application android:label="NativeTests"
+            android:requestLegacyExternalStorage="true"
             android:name="org.chromium.native_test.NativeTestApplication">
         <activity android:name=".NativeUnitTestActivity"
                 android:label="NativeTest"
                 android:configChanges="orientation|keyboardHidden"
+                android:exported="true"
                 android:process=":test_process">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

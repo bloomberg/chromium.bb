@@ -20,6 +20,8 @@
 #include "src/ast/assignment_statement.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
+#include "src/ast/builtin.h"
+#include "src/ast/builtin_decoration.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
@@ -32,6 +34,7 @@
 #include "src/ast/unary_op_expression.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/sem/depth_texture_type.h"
+#include "src/sem/intrinsic_type.h"
 #include "src/sem/sampled_texture_type.h"
 
 // Terms:
@@ -153,8 +156,10 @@ bool GetUnaryOp(SpvOp opcode, ast::UnaryOp* ast_unary_op) {
       *ast_unary_op = ast::UnaryOp::kNegation;
       return true;
     case SpvOpLogicalNot:
-    case SpvOpNot:
       *ast_unary_op = ast::UnaryOp::kNot;
+      return true;
+    case SpvOpNot:
+      *ast_unary_op = ast::UnaryOp::kComplement;
       return true;
     default:
       break;
@@ -208,7 +213,7 @@ ast::BinaryOp ConvertBinaryOp(SpvOp opcode) {
       return ast::BinaryOp::kDivide;
     case SpvOpUMod:
     case SpvOpSMod:
-    case SpvOpFMod:
+    case SpvOpFRem:
       return ast::BinaryOp::kModulo;
     case SpvOpLogicalEqual:
     case SpvOpIEqual:
@@ -225,9 +230,9 @@ ast::BinaryOp ConvertBinaryOp(SpvOp opcode) {
     case SpvOpBitwiseXor:
       return ast::BinaryOp::kXor;
     case SpvOpLogicalAnd:
-      return ast::BinaryOp::kLogicalAnd;
+      return ast::BinaryOp::kAnd;
     case SpvOpLogicalOr:
-      return ast::BinaryOp::kLogicalOr;
+      return ast::BinaryOp::kOr;
     case SpvOpUGreaterThan:
     case SpvOpSGreaterThan:
     case SpvOpFOrdGreaterThan:
@@ -361,6 +366,8 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
       return "sign";
     case GLSLstd450Reflect:
       return "reflect";
+    case GLSLstd450Refract:
+      return "refract";
     case GLSLstd450Round:
     case GLSLstd450RoundEven:
       return "round";
@@ -392,8 +399,9 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
       return "unpack2x16float";
 
     default:
-    // TODO(dneto) - The following are not implemented.
-    // They are grouped semantically, as in GLSL.std.450.h.
+      // TODO(dneto) - The following are not implemented.
+      // They are grouped semantically, as in GLSL.std.450.h.
+
     case GLSLstd450SSign:
 
     case GLSLstd450Radians:
@@ -414,8 +422,6 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
 
     case GLSLstd450PackDouble2x32:
     case GLSLstd450UnpackDouble2x32:
-
-    case GLSLstd450Refract:
 
     case GLSLstd450FindILsb:
     case GLSLstd450FindSMsb:
@@ -472,12 +478,16 @@ bool IsSampledImageAccess(SpvOp opcode) {
     case SpvOpImageSampleExplicitLod:
     case SpvOpImageSampleDrefImplicitLod:
     case SpvOpImageSampleDrefExplicitLod:
+    // WGSL doesn't have *Proj* texturing; spirv reader emulates it.
+    case SpvOpImageSampleProjImplicitLod:
+    case SpvOpImageSampleProjExplicitLod:
+    case SpvOpImageSampleProjDrefImplicitLod:
+    case SpvOpImageSampleProjDrefExplicitLod:
     case SpvOpImageGather:
     case SpvOpImageDrefGather:
     case SpvOpImageQueryLod:
       return true;
     default:
-      // WGSL doesn't have *Proj* texturing.
       break;
   }
   return false;
@@ -491,9 +501,13 @@ bool IsImageSampling(SpvOp opcode) {
     case SpvOpImageSampleExplicitLod:
     case SpvOpImageSampleDrefImplicitLod:
     case SpvOpImageSampleDrefExplicitLod:
+      // WGSL doesn't have *Proj* texturing; spirv reader emulates it.
+    case SpvOpImageSampleProjImplicitLod:
+    case SpvOpImageSampleProjExplicitLod:
+    case SpvOpImageSampleProjDrefImplicitLod:
+    case SpvOpImageSampleProjDrefExplicitLod:
       return true;
     default:
-      // WGSL doesn't have *Proj* texturing.
       break;
   }
   return false;
@@ -627,11 +641,12 @@ struct SwitchStatementBuilder
     : public Castable<SwitchStatementBuilder, StatementBuilder> {
   /// Constructor
   /// @param cond the switch statement condition
-  explicit SwitchStatementBuilder(ast::Expression* cond) : condition(cond) {}
+  explicit SwitchStatementBuilder(const ast::Expression* cond)
+      : condition(cond) {}
 
   /// @param builder the program builder
   /// @returns the built ast::SwitchStatement
-  ast::SwitchStatement* Build(ProgramBuilder* builder) const override {
+  const ast::SwitchStatement* Build(ProgramBuilder* builder) const override {
     // We've listed cases in reverse order in the switch statement.
     // Reorder them to match the presentation order in WGSL.
     auto reversed_cases = cases;
@@ -642,7 +657,7 @@ struct SwitchStatementBuilder
   }
 
   /// Switch statement condition
-  ast::Expression* const condition;
+  const ast::Expression* const condition;
   /// Switch statement cases
   ast::CaseStatementList cases;
 };
@@ -653,18 +668,18 @@ struct IfStatementBuilder
     : public Castable<IfStatementBuilder, StatementBuilder> {
   /// Constructor
   /// @param c the if-statement condition
-  explicit IfStatementBuilder(ast::Expression* c) : cond(c) {}
+  explicit IfStatementBuilder(const ast::Expression* c) : cond(c) {}
 
   /// @param builder the program builder
   /// @returns the built ast::IfStatement
-  ast::IfStatement* Build(ProgramBuilder* builder) const override {
+  const ast::IfStatement* Build(ProgramBuilder* builder) const override {
     return builder->create<ast::IfStatement>(Source{}, cond, body, else_stmts);
   }
 
   /// If-statement condition
-  ast::Expression* const cond;
+  const ast::Expression* const cond;
   /// If-statement block body
-  ast::BlockStatement* body = nullptr;
+  const ast::BlockStatement* body = nullptr;
   /// Optional if-statement else statements
   ast::ElseStatementList else_stmts;
 };
@@ -680,10 +695,24 @@ struct LoopStatementBuilder
   }
 
   /// Loop-statement block body
-  ast::BlockStatement* body = nullptr;
+  const ast::BlockStatement* body = nullptr;
   /// Loop-statement continuing body
-  ast::BlockStatement* continuing = nullptr;
+  /// @note the mutable keyword here is required as all non-StatementBuilders
+  /// `ast::Node`s are immutable and are referenced with `const` pointers.
+  /// StatementBuilders however exist to provide mutable state while the
+  /// FunctionEmitter is building the function. All StatementBuilders are
+  /// replaced with immutable AST nodes when Finalize() is called.
+  mutable const ast::BlockStatement* continuing = nullptr;
 };
+
+/// @param decos a list of parsed decorations
+/// @returns true if the decorations include a SampleMask builtin
+bool HasBuiltinSampleMask(const ast::DecorationList& decos) {
+  if (auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(decos)) {
+    return builtin->builtin == ast::Builtin::kSampleMask;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -701,12 +730,6 @@ DefInfo::~DefInfo() = default;
 
 ast::Node* StatementBuilder::Clone(CloneContext*) const {
   return nullptr;
-}
-void StatementBuilder::to_str(const sem::Info&,
-                              std::ostream& out,
-                              size_t indent) const {
-  make_indent(out, indent);
-  out << "StatementBuilder" << std::endl;
 }
 
 FunctionEmitter::FunctionEmitter(ParserImpl* pi,
@@ -766,7 +789,7 @@ FunctionEmitter::StatementBlock::StatementBlock(StatementBlock&& other) =
 FunctionEmitter::StatementBlock::~StatementBlock() = default;
 
 void FunctionEmitter::StatementBlock::Finalize(ProgramBuilder* pb) {
-  TINT_ASSERT(!finalized_ /* Finalize() must only be called once */);
+  TINT_ASSERT(Reader, !finalized_ /* Finalize() must only be called once */);
 
   for (size_t i = 0; i < statements_.size(); i++) {
     if (auto* sb = statements_[i]->As<StatementBuilder>()) {
@@ -781,8 +804,9 @@ void FunctionEmitter::StatementBlock::Finalize(ProgramBuilder* pb) {
   finalized_ = true;
 }
 
-void FunctionEmitter::StatementBlock::Add(ast::Statement* statement) {
-  TINT_ASSERT(!finalized_ /* Add() must not be called after Finalize() */);
+void FunctionEmitter::StatementBlock::Add(const ast::Statement* statement) {
+  TINT_ASSERT(Reader,
+              !finalized_ /* Add() must not be called after Finalize() */);
   statements_.emplace_back(statement);
 }
 
@@ -794,8 +818,8 @@ void FunctionEmitter::PushNewStatementBlock(const Construct* construct,
 
 void FunctionEmitter::PushGuard(const std::string& guard_name,
                                 uint32_t end_id) {
-  TINT_ASSERT(!statements_stack_.empty());
-  TINT_ASSERT(!guard_name.empty());
+  TINT_ASSERT(Reader, !statements_stack_.empty());
+  TINT_ASSERT(Reader, !guard_name.empty());
   // Guard control flow by the guard variable.  Introduce a new
   // if-selection with a then-clause ending at the same block
   // as the statement block at the top of the stack.
@@ -812,7 +836,7 @@ void FunctionEmitter::PushGuard(const std::string& guard_name,
 }
 
 void FunctionEmitter::PushTrueGuard(uint32_t end_id) {
-  TINT_ASSERT(!statements_stack_.empty());
+  TINT_ASSERT(Reader, !statements_stack_.empty());
   const auto& top = statements_stack_.back();
 
   auto* cond = MakeTrue(Source{});
@@ -825,24 +849,25 @@ void FunctionEmitter::PushTrueGuard(uint32_t end_id) {
 }
 
 const ast::StatementList FunctionEmitter::ast_body() {
-  TINT_ASSERT(!statements_stack_.empty());
+  TINT_ASSERT(Reader, !statements_stack_.empty());
   auto& entry = statements_stack_[0];
   entry.Finalize(&builder_);
   return entry.GetStatements();
 }
 
-ast::Statement* FunctionEmitter::AddStatement(ast::Statement* statement) {
-  TINT_ASSERT(!statements_stack_.empty());
+const ast::Statement* FunctionEmitter::AddStatement(
+    const ast::Statement* statement) {
+  TINT_ASSERT(Reader, !statements_stack_.empty());
   if (statement != nullptr) {
     statements_stack_.back().Add(statement);
   }
   return statement;
 }
 
-ast::Statement* FunctionEmitter::LastStatement() {
-  TINT_ASSERT(!statements_stack_.empty());
+const ast::Statement* FunctionEmitter::LastStatement() {
+  TINT_ASSERT(Reader, !statements_stack_.empty());
   auto& statement_list = statements_stack_.back().GetStatements();
-  TINT_ASSERT(!statement_list.empty());
+  TINT_ASSERT(Reader, !statement_list.empty());
   return statement_list.back();
 }
 
@@ -864,13 +889,8 @@ bool FunctionEmitter::Emit() {
 
   bool make_body_function = true;
   if (ep_info_) {
-    if (ep_info_->inner_name.empty()) {
-      // This is an entry point, and we don't want to emit it as a wrapper
-      // around its own body.  Emit it as one function.
-      decl.name = ep_info_->name;
-      decl.decorations.emplace_back(
-          create<ast::StageDecoration>(Source{}, ep_info_->stage));
-    } else if (ep_info_->owns_inner_implementation) {
+    TINT_ASSERT(Reader, !ep_info_->inner_name.empty());
+    if (ep_info_->owns_inner_implementation) {
       // This is an entry point, and we want to emit it as a wrapper around
       // an implementation function.
       decl.name = ep_info_->inner_name;
@@ -900,8 +920,8 @@ bool FunctionEmitter::Emit() {
   return success();
 }
 
-ast::BlockStatement* FunctionEmitter::MakeFunctionBody() {
-  TINT_ASSERT(statements_stack_.size() == 1);
+const ast::BlockStatement* FunctionEmitter::MakeFunctionBody() {
+  TINT_ASSERT(Reader, statements_stack_.size() == 1);
 
   if (!EmitBody()) {
     return nullptr;
@@ -926,6 +946,259 @@ ast::BlockStatement* FunctionEmitter::MakeFunctionBody() {
   return body;
 }
 
+bool FunctionEmitter::EmitPipelineInput(std::string var_name,
+                                        const Type* var_type,
+                                        ast::DecorationList* decos,
+                                        std::vector<int> index_prefix,
+                                        const Type* tip_type,
+                                        const Type* forced_param_type,
+                                        ast::VariableList* params,
+                                        ast::StatementList* statements) {
+  // TODO(dneto): Handle structs where the locations are annotated on members.
+  tip_type = tip_type->UnwrapAlias();
+  if (auto* ref_type = tip_type->As<Reference>()) {
+    tip_type = ref_type->type;
+  }
+
+  // Recursively flatten matrices, arrays, and structures.
+  if (auto* matrix_type = tip_type->As<Matrix>()) {
+    index_prefix.push_back(0);
+    const auto num_columns = static_cast<int>(matrix_type->columns);
+    const Type* vec_ty = ty_.Vector(matrix_type->type, matrix_type->rows);
+    for (int col = 0; col < num_columns; col++) {
+      index_prefix.back() = col;
+      if (!EmitPipelineInput(var_name, var_type, decos, index_prefix, vec_ty,
+                             forced_param_type, params, statements)) {
+        return false;
+      }
+    }
+    return success();
+  } else if (auto* array_type = tip_type->As<Array>()) {
+    if (array_type->size == 0) {
+      return Fail() << "runtime-size array not allowed on pipeline IO";
+    }
+    index_prefix.push_back(0);
+    const Type* elem_ty = array_type->type;
+    for (int i = 0; i < static_cast<int>(array_type->size); i++) {
+      index_prefix.back() = i;
+      if (!EmitPipelineInput(var_name, var_type, decos, index_prefix, elem_ty,
+                             forced_param_type, params, statements)) {
+        return false;
+      }
+    }
+    return success();
+  } else if (auto* struct_type = tip_type->As<Struct>()) {
+    const auto& members = struct_type->members;
+    index_prefix.push_back(0);
+    for (int i = 0; i < static_cast<int>(members.size()); ++i) {
+      index_prefix.back() = i;
+      ast::DecorationList member_decos(*decos);
+      if (!parser_impl_.ConvertPipelineDecorations(
+              struct_type,
+              parser_impl_.GetMemberPipelineDecorations(*struct_type, i),
+              &member_decos)) {
+        return false;
+      }
+      if (!EmitPipelineInput(var_name, var_type, &member_decos, index_prefix,
+                             members[i], forced_param_type, params,
+                             statements)) {
+        return false;
+      }
+      // Copy the location as updated by nested expansion of the member.
+      parser_impl_.SetLocation(decos, GetLocation(member_decos));
+    }
+    return success();
+  }
+
+  const bool is_builtin = ast::HasDecoration<ast::BuiltinDecoration>(*decos);
+
+  const Type* param_type = is_builtin ? forced_param_type : tip_type;
+
+  const auto param_name = namer_.MakeDerivedName(var_name + "_param");
+  // Create the parameter.
+  // TODO(dneto): Note: If the parameter has non-location decorations,
+  // then those decoration AST nodes will be reused between multiple elements
+  // of a matrix, array, or structure.  Normally that's disallowed but currently
+  // the SPIR-V reader will make duplicates when the entire AST is cloned
+  // at the top level of the SPIR-V reader flow.  Consider rewriting this
+  // to avoid this node-sharing.
+  params->push_back(
+      builder_.Param(param_name, param_type->Build(builder_), *decos));
+
+  // Add a body statement to copy the parameter to the corresponding private
+  // variable.
+  const ast::Expression* param_value = builder_.Expr(param_name);
+  const ast::Expression* store_dest = builder_.Expr(var_name);
+
+  // Index into the LHS as needed.
+  auto* current_type = var_type->UnwrapAlias()->UnwrapRef()->UnwrapAlias();
+  for (auto index : index_prefix) {
+    if (auto* matrix_type = current_type->As<Matrix>()) {
+      store_dest = builder_.IndexAccessor(store_dest, builder_.Expr(index));
+      current_type = ty_.Vector(matrix_type->type, matrix_type->rows);
+    } else if (auto* array_type = current_type->As<Array>()) {
+      store_dest = builder_.IndexAccessor(store_dest, builder_.Expr(index));
+      current_type = array_type->type->UnwrapAlias();
+    } else if (auto* struct_type = current_type->As<Struct>()) {
+      store_dest = builder_.MemberAccessor(
+          store_dest,
+          builder_.Expr(parser_impl_.GetMemberName(*struct_type, index)));
+      current_type = struct_type->members[index];
+    }
+  }
+
+  if (is_builtin && (tip_type != forced_param_type)) {
+    // The parameter will have the WGSL type, but we need bitcast to
+    // the variable store type.
+    param_value =
+        create<ast::BitcastExpression>(tip_type->Build(builder_), param_value);
+  }
+
+  statements->push_back(builder_.Assign(store_dest, param_value));
+
+  // Increment the location attribute, in case more parameters will follow.
+  IncrementLocation(decos);
+
+  return success();
+}
+
+void FunctionEmitter::IncrementLocation(ast::DecorationList* decos) {
+  for (auto*& deco : *decos) {
+    if (auto* loc_deco = deco->As<ast::LocationDecoration>()) {
+      // Replace this location decoration with a new one with one higher index.
+      // The old one doesn't leak because it's kept in the builder's AST node
+      // list.
+      deco = builder_.Location(loc_deco->source, loc_deco->value + 1);
+    }
+  }
+}
+
+const ast::Decoration* FunctionEmitter::GetLocation(
+    const ast::DecorationList& decos) {
+  for (auto* const& deco : decos) {
+    if (deco->Is<ast::LocationDecoration>()) {
+      return deco;
+    }
+  }
+  return nullptr;
+}
+
+bool FunctionEmitter::EmitPipelineOutput(std::string var_name,
+                                         const Type* var_type,
+                                         ast::DecorationList* decos,
+                                         std::vector<int> index_prefix,
+                                         const Type* tip_type,
+                                         const Type* forced_member_type,
+                                         ast::StructMemberList* return_members,
+                                         ast::ExpressionList* return_exprs) {
+  tip_type = tip_type->UnwrapAlias();
+  if (auto* ref_type = tip_type->As<Reference>()) {
+    tip_type = ref_type->type;
+  }
+
+  // Recursively flatten matrices, arrays, and structures.
+  if (auto* matrix_type = tip_type->As<Matrix>()) {
+    index_prefix.push_back(0);
+    const auto num_columns = static_cast<int>(matrix_type->columns);
+    const Type* vec_ty = ty_.Vector(matrix_type->type, matrix_type->rows);
+    for (int col = 0; col < num_columns; col++) {
+      index_prefix.back() = col;
+      if (!EmitPipelineOutput(var_name, var_type, decos, index_prefix, vec_ty,
+                              forced_member_type, return_members,
+                              return_exprs)) {
+        return false;
+      }
+    }
+    return success();
+  } else if (auto* array_type = tip_type->As<Array>()) {
+    if (array_type->size == 0) {
+      return Fail() << "runtime-size array not allowed on pipeline IO";
+    }
+    index_prefix.push_back(0);
+    const Type* elem_ty = array_type->type;
+    for (int i = 0; i < static_cast<int>(array_type->size); i++) {
+      index_prefix.back() = i;
+      if (!EmitPipelineOutput(var_name, var_type, decos, index_prefix, elem_ty,
+                              forced_member_type, return_members,
+                              return_exprs)) {
+        return false;
+      }
+    }
+    return success();
+  } else if (auto* struct_type = tip_type->As<Struct>()) {
+    const auto& members = struct_type->members;
+    index_prefix.push_back(0);
+    for (int i = 0; i < static_cast<int>(members.size()); ++i) {
+      index_prefix.back() = i;
+      ast::DecorationList member_decos(*decos);
+      if (!parser_impl_.ConvertPipelineDecorations(
+              struct_type,
+              parser_impl_.GetMemberPipelineDecorations(*struct_type, i),
+              &member_decos)) {
+        return false;
+      }
+      if (!EmitPipelineOutput(var_name, var_type, &member_decos, index_prefix,
+                              members[i], forced_member_type, return_members,
+                              return_exprs)) {
+        return false;
+      }
+      // Copy the location as updated by nested expansion of the member.
+      parser_impl_.SetLocation(decos, GetLocation(member_decos));
+    }
+    return success();
+  }
+
+  const bool is_builtin = ast::HasDecoration<ast::BuiltinDecoration>(*decos);
+
+  const Type* member_type = is_builtin ? forced_member_type : tip_type;
+  // Derive the member name directly from the variable name.  They can't
+  // collide.
+  const auto member_name = namer_.MakeDerivedName(var_name);
+  // Create the member.
+  // TODO(dneto): Note: If the parameter has non-location decorations,
+  // then those decoration AST nodes  will be reused between multiple elements
+  // of a matrix, array, or structure.  Normally that's disallowed but currently
+  // the SPIR-V reader will make duplicates when the entire AST is cloned
+  // at the top level of the SPIR-V reader flow.  Consider rewriting this
+  // to avoid this node-sharing.
+  return_members->push_back(
+      builder_.Member(member_name, member_type->Build(builder_), *decos));
+
+  // Create an expression to evaluate the part of the variable indexed by
+  // the index_prefix.
+  const ast::Expression* load_source = builder_.Expr(var_name);
+
+  // Index into the variable as needed to pick out the flattened member.
+  auto* current_type = var_type->UnwrapAlias()->UnwrapRef()->UnwrapAlias();
+  for (auto index : index_prefix) {
+    if (auto* matrix_type = current_type->As<Matrix>()) {
+      load_source = builder_.IndexAccessor(load_source, builder_.Expr(index));
+      current_type = ty_.Vector(matrix_type->type, matrix_type->rows);
+    } else if (auto* array_type = current_type->As<Array>()) {
+      load_source = builder_.IndexAccessor(load_source, builder_.Expr(index));
+      current_type = array_type->type->UnwrapAlias();
+    } else if (auto* struct_type = current_type->As<Struct>()) {
+      load_source = builder_.MemberAccessor(
+          load_source,
+          builder_.Expr(parser_impl_.GetMemberName(*struct_type, index)));
+      current_type = struct_type->members[index];
+    }
+  }
+
+  if (is_builtin && (tip_type != forced_member_type)) {
+    // The member will have the WGSL type, but we need bitcast to
+    // the variable store type.
+    load_source = create<ast::BitcastExpression>(
+        forced_member_type->Build(builder_), load_source);
+  }
+  return_exprs->push_back(load_source);
+
+  // Increment the location attribute, in case more parameters will follow.
+  IncrementLocation(decos);
+
+  return success();
+}
+
 bool FunctionEmitter::EmitEntryPointAsWrapper() {
   Source source;
 
@@ -935,20 +1208,20 @@ bool FunctionEmitter::EmitEntryPointAsWrapper() {
   FunctionDeclaration decl;
   decl.source = source;
   decl.name = ep_info_->name;
-  ast::Type* return_type = nullptr;  // Populated below.
+  const ast::Type* return_type = nullptr;  // Populated below.
 
   // Pipeline inputs become parameters to the wrapper function, and
   // their values are saved into the corresponding private variables that
   // have already been created.
   for (uint32_t var_id : ep_info_->inputs) {
     const auto* var = def_use_mgr_->GetDef(var_id);
-    TINT_ASSERT(var != nullptr);
-    TINT_ASSERT(var->opcode() == SpvOpVariable);
+    TINT_ASSERT(Reader, var != nullptr);
+    TINT_ASSERT(Reader, var->opcode() == SpvOpVariable);
     auto* store_type = GetVariableStoreType(*var);
-    auto* forced_store_type = store_type;
+    auto* forced_param_type = store_type;
     ast::DecorationList param_decos;
-    if (!parser_impl_.ConvertDecorationsForVariable(var_id, &forced_store_type,
-                                                    &param_decos)) {
+    if (!parser_impl_.ConvertDecorationsForVariable(var_id, &forced_param_type,
+                                                    &param_decos, true)) {
       // This occurs, and is not an error, for the PointSize builtin.
       if (!success()) {
         // But exit early if an error was logged.
@@ -957,32 +1230,29 @@ bool FunctionEmitter::EmitEntryPointAsWrapper() {
       continue;
     }
 
+    // We don't have to handle initializers because in Vulkan SPIR-V, Input
+    // variables must not have them.
+
     const auto var_name = namer_.GetName(var_id);
-    const auto var_sym = builder_.Symbols().Register(var_name);
-    const auto param_name = namer_.MakeDerivedName(var_name + "_param");
-    const auto param_sym = builder_.Symbols().Register(param_name);
-    auto* param = create<ast::Variable>(
-        source, param_sym, ast::StorageClass::kNone,
-        forced_store_type->Build(builder_), true /* is const */,
-        nullptr /* no constructor */, param_decos);
-    decl.params.push_back(param);
 
-    // Add a body statement to copy the parameter to the corresponding private
-    // variable.
-    ast::Expression* param_value =
-        create<ast::IdentifierExpression>(source, param_sym);
-    if (forced_store_type != store_type) {
-      // Insert a bitcast if needed.
-      const auto cast_name = namer_.MakeDerivedName(param_name + "_cast");
-      const auto cast_sym = builder_.Symbols().Register(cast_name);
-
-      param_value = create<ast::BitcastExpression>(
-          source, forced_store_type->Build(builder_), param_value);
+    bool ok = true;
+    if (HasBuiltinSampleMask(param_decos)) {
+      // In Vulkan SPIR-V, the sample mask is an array. In WGSL it's a scalar.
+      // Use the first element only.
+      auto* sample_mask_array_type =
+          store_type->UnwrapRef()->UnwrapAlias()->As<Array>();
+      TINT_ASSERT(Reader, sample_mask_array_type);
+      ok = EmitPipelineInput(var_name, store_type, &param_decos, {0},
+                             sample_mask_array_type->type, forced_param_type,
+                             &(decl.params), &stmts);
+    } else {
+      // The normal path.
+      ok = EmitPipelineInput(var_name, store_type, &param_decos, {}, store_type,
+                             forced_param_type, &(decl.params), &stmts);
     }
-
-    stmts.push_back(create<ast::AssignmentStatement>(
-        source, create<ast::IdentifierExpression>(source, var_sym),
-        param_value));
+    if (!ok) {
+      return false;
+    }
   }
 
   // Call the inner function.  It has no parameters.
@@ -994,7 +1264,9 @@ bool FunctionEmitter::EmitEntryPointAsWrapper() {
               source, builder_.Symbols().Register(ep_info_->inner_name)),
           ast::ExpressionList{})));
 
+  // Pipeline outputs are mapped to the return value.
   if (ep_info_->outputs.empty()) {
+    // There is nothing to return.
     return_type = ty_.Void()->Build(builder_);
   } else {
     // Pipeline outputs are converted to a structure that is written
@@ -1006,56 +1278,99 @@ bool FunctionEmitter::EmitEntryPointAsWrapper() {
         builder_.Symbols().Register(return_struct_name);
 
     // Define the structure.
+    std::vector<const ast::StructMember*> return_members;
     ast::ExpressionList return_exprs;
-    std::vector<ast::StructMember*> return_members;
+
+    const auto& builtin_position_info = parser_impl_.GetBuiltInPositionInfo();
+
     for (uint32_t var_id : ep_info_->outputs) {
-      const auto* var = def_use_mgr_->GetDef(var_id);
-      TINT_ASSERT(var != nullptr);
-      TINT_ASSERT(var->opcode() == SpvOpVariable);
-      const auto* store_type = GetVariableStoreType(*var);
-      const auto* forced_store_type = store_type;
-      ast::DecorationList out_decos;
-      if (!parser_impl_.ConvertDecorationsForVariable(
-              var_id, &forced_store_type, &out_decos)) {
-        // This occurs, and is not an error, for the PointSize builtin.
-        continue;
+      if (var_id == builtin_position_info.per_vertex_var_id) {
+        // The SPIR-V gl_PerVertex variable has already been remapped to
+        // a gl_Position variable.  Substitute the type.
+        const Type* param_type = ty_.Vector(ty_.F32(), 4);
+        ast::DecorationList out_decos{
+            create<ast::BuiltinDecoration>(source, ast::Builtin::kPosition)};
+
+        const auto var_name = namer_.GetName(var_id);
+        return_members.push_back(
+            builder_.Member(var_name, param_type->Build(builder_), out_decos));
+        return_exprs.push_back(builder_.Expr(var_name));
+
+      } else {
+        const auto* var = def_use_mgr_->GetDef(var_id);
+        TINT_ASSERT(Reader, var != nullptr);
+        TINT_ASSERT(Reader, var->opcode() == SpvOpVariable);
+        const Type* store_type = GetVariableStoreType(*var);
+        const Type* forced_member_type = store_type;
+        ast::DecorationList out_decos;
+        if (!parser_impl_.ConvertDecorationsForVariable(
+                var_id, &forced_member_type, &out_decos, true)) {
+          // This occurs, and is not an error, for the PointSize builtin.
+          if (!success()) {
+            // But exit early if an error was logged.
+            return false;
+          }
+          continue;
+        }
+
+        const auto var_name = namer_.GetName(var_id);
+        bool ok = true;
+        if (HasBuiltinSampleMask(out_decos)) {
+          // In Vulkan SPIR-V, the sample mask is an array. In WGSL it's a
+          // scalar. Use the first element only.
+          auto* sample_mask_array_type =
+              store_type->UnwrapRef()->UnwrapAlias()->As<Array>();
+          TINT_ASSERT(Reader, sample_mask_array_type);
+          ok = EmitPipelineOutput(var_name, store_type, &out_decos, {0},
+                                  sample_mask_array_type->type,
+                                  forced_member_type, &return_members,
+                                  &return_exprs);
+        } else {
+          // The normal path.
+          ok = EmitPipelineOutput(var_name, store_type, &out_decos, {},
+                                  store_type, forced_member_type,
+                                  &return_members, &return_exprs);
+        }
+        if (!ok) {
+          return false;
+        }
       }
-
-      // TODO(dneto): flatten structs and arrays to vectors or scalars.
-      // The Per-vertex structure is already flattened.
-
-      // The member name is the same as the variable name, which is already
-      // unique across all module-scope declarations.
-      const auto var_name = namer_.GetName(var_id);
-      const auto var_sym = builder_.Symbols().Register(var_name);
-
-      // Form the member type.
-      // Reuse the var name for the member name. They can't clash.
-      ast::StructMember* return_member = create<ast::StructMember>(
-          Source{}, var_sym, forced_store_type->Build(builder_),
-          std::move(out_decos));
-      return_members.push_back(return_member);
-
-      // Save the expression.
-      return_exprs.push_back(
-          create<ast::IdentifierExpression>(source, var_sym));
     }
 
-    // Create and register the result type.
-    return_type = create<ast::Struct>(Source{}, return_struct_sym,
+    if (return_members.empty()) {
+      // This can occur if only the PointSize member is accessed, because we
+      // never emit it.
+      return_type = ty_.Void()->Build(builder_);
+    } else {
+      // Create and register the result type.
+      auto* str = create<ast::Struct>(Source{}, return_struct_sym,
                                       return_members, ast::DecorationList{});
-    parser_impl_.AddConstructedType(return_struct_sym,
-                                    return_type->As<ast::NamedType>());
+      parser_impl_.AddTypeDecl(return_struct_sym, str);
+      return_type = builder_.ty.Of(str);
 
-    // Add the return-value statement.
-    stmts.push_back(create<ast::ReturnStatement>(
-        source, create<ast::TypeConstructorExpression>(
-                    source, return_type, std::move(return_exprs))));
+      // Add the return-value statement.
+      stmts.push_back(create<ast::ReturnStatement>(
+          source,
+          builder_.Construct(source, return_type, std::move(return_exprs))));
+    }
   }
 
   auto* body = create<ast::BlockStatement>(source, stmts);
   ast::DecorationList fn_decos;
   fn_decos.emplace_back(create<ast::StageDecoration>(source, ep_info_->stage));
+
+  if (ep_info_->stage == ast::PipelineStage::kCompute) {
+    auto& size = ep_info_->workgroup_size;
+    if (size.x != 0 && size.y != 0 && size.z != 0) {
+      const ast::Expression* x = builder_.Expr(static_cast<int>(size.x));
+      const ast::Expression* y =
+          size.y ? builder_.Expr(static_cast<int>(size.y)) : nullptr;
+      const ast::Expression* z =
+          size.z ? builder_.Expr(static_cast<int>(size.z)) : nullptr;
+      fn_decos.emplace_back(
+          create<ast::WorkgroupDecoration>(Source{}, x, y, z));
+    }
+  }
 
   builder_.AST().AddFunction(
       create<ast::Function>(source, builder_.Symbols().Register(ep_info_->name),
@@ -1116,20 +1431,16 @@ bool FunctionEmitter::ParseFunctionDeclaration(FunctionDeclaration* decl) {
 const Type* FunctionEmitter::GetVariableStoreType(
     const spvtools::opt::Instruction& var_decl_inst) {
   const auto type_id = var_decl_inst.type_id();
-  auto* var_ref_type = type_mgr_->GetType(type_id);
-  if (!var_ref_type) {
-    Fail() << "internal error: variable type id " << type_id
-           << " has no registered type";
-    return nullptr;
-  }
-  auto* var_ref_ptr_type = var_ref_type->AsPointer();
-  if (!var_ref_ptr_type) {
-    Fail() << "internal error: variable type id " << type_id
-           << " is not a pointer type";
-    return nullptr;
-  }
-  auto var_store_type_id = type_mgr_->GetId(var_ref_ptr_type->pointee_type());
-  return parser_impl_.ConvertType(var_store_type_id);
+  // Normally we use the SPIRV-Tools optimizer to manage types.
+  // But when two struct types have the same member types and decorations,
+  // but differ only in member names, the two struct types will be
+  // represented by a single common internal struct type.
+  // So avoid the optimizer's representation and instead follow the
+  // SPIR-V instructions themselves.
+  const auto* ptr_ty = def_use_mgr_->GetDef(type_id);
+  const auto store_ty_id = ptr_ty->GetSingleWordInOperand(1);
+  const auto* result = parser_impl_.ConvertType(store_ty_id);
+  return result;
 }
 
 bool FunctionEmitter::EmitBody() {
@@ -1321,6 +1632,9 @@ void FunctionEmitter::ComputeBlockOrderAndPositions() {
   for (uint32_t i = 0; i < block_order_.size(); ++i) {
     GetBlockInfo(block_order_[i])->pos = i;
   }
+  // The invalid block position is not the position of any block that is in the
+  // order.
+  assert(block_order_.size() <= kInvalidBlockPos);
 }
 
 bool FunctionEmitter::VerifyHeaderContinueMergeOrder() {
@@ -1421,7 +1735,7 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
   //      block. Also mark the the most recent continue target for which we
   //      haven't reached the backedge block.
 
-  TINT_ASSERT(block_order_.size() > 0);
+  TINT_ASSERT(Reader, block_order_.size() > 0);
   constructs_.clear();
   const auto entry_id = block_order_[0];
 
@@ -1442,8 +1756,8 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
     // A loop construct is added right after its associated continue construct.
     // In that case, adjust the parent up.
     if (k == Construct::kLoop) {
-      TINT_ASSERT(parent);
-      TINT_ASSERT(parent->kind == Construct::kContinue);
+      TINT_ASSERT(Reader, parent);
+      TINT_ASSERT(Reader, parent->kind == Construct::kContinue);
       scope_end_pos = parent->end_pos;
       parent = parent->parent;
     }
@@ -1462,9 +1776,9 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
 
   for (uint32_t i = 0; i < block_order_.size(); ++i) {
     const auto block_id = block_order_[i];
-    TINT_ASSERT(block_id > 0);
+    TINT_ASSERT(Reader, block_id > 0);
     auto* block_info = GetBlockInfo(block_id);
-    TINT_ASSERT(block_info);
+    TINT_ASSERT(Reader, block_info);
 
     if (enclosing.empty()) {
       return Fail() << "internal error: too many merge blocks before block "
@@ -1538,7 +1852,7 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
       }
     }
 
-    TINT_ASSERT(top);
+    TINT_ASSERT(Reader, top);
     block_info->construct = top;
   }
 
@@ -1747,9 +2061,9 @@ bool FunctionEmitter::ClassifyCFGEdges() {
   //    NEC(S) is the parent of NEC(T).
 
   for (const auto src : block_order_) {
-    TINT_ASSERT(src > 0);
+    TINT_ASSERT(Reader, src > 0);
     auto* src_info = GetBlockInfo(src);
-    TINT_ASSERT(src_info);
+    TINT_ASSERT(Reader, src_info);
     const auto src_pos = src_info->pos;
     const auto& src_construct = *(src_info->construct);
 
@@ -1787,7 +2101,7 @@ bool FunctionEmitter::ClassifyCFGEdges() {
     for (const auto dest : successors) {
       const auto* dest_info = GetBlockInfo(dest);
       // We've already checked terminators are valid.
-      TINT_ASSERT(dest_info);
+      TINT_ASSERT(Reader, dest_info);
       const auto dest_pos = dest_info->pos;
 
       // Insert the edge kind entry and keep a handle to update
@@ -1812,7 +2126,7 @@ bool FunctionEmitter::ClassifyCFGEdges() {
                         << " (violates post-dominance rule)";
         }
         const auto* ct_info = GetBlockInfo(continue_construct->begin_id);
-        TINT_ASSERT(ct_info);
+        TINT_ASSERT(Reader, ct_info);
         if (ct_info->header_for_continue != dest) {
           return Fail()
                  << "Invalid backedge (" << src << "->" << dest
@@ -2104,7 +2418,7 @@ bool FunctionEmitter::FindIfSelectionInternalHeaders() {
       // The first clause might be a then-clause or an else-clause.
       const auto second_head = std::max(true_head_pos, false_head_pos);
       const auto end_first_clause_pos = second_head - 1;
-      TINT_ASSERT(end_first_clause_pos < block_order_.size());
+      TINT_ASSERT(Reader, end_first_clause_pos < block_order_.size());
       const auto end_first_clause = block_order_[end_first_clause_pos];
       uint32_t premerge_id = 0;
       uint32_t if_break_id = 0;
@@ -2180,7 +2494,7 @@ bool FunctionEmitter::EmitFunctionVariables() {
     if (failed()) {
       return false;
     }
-    ast::Expression* constructor = nullptr;
+    const ast::Expression* constructor = nullptr;
     if (inst.NumInOperands() > 1) {
       // SPIR-V initializers are always constants.
       // (OpenCL also allows the ID of an OpVariable, but we don't handle that
@@ -2188,6 +2502,9 @@ bool FunctionEmitter::EmitFunctionVariables() {
       constructor =
           parser_impl_.MakeConstantExpression(inst.GetSingleWordInOperand(1))
               .expr;
+      if (!constructor) {
+        return false;
+      }
     }
     auto* var = parser_impl_.MakeVariable(
         inst.result_id(), ast::StorageClass::kNone, var_store_type, false,
@@ -2198,6 +2515,19 @@ bool FunctionEmitter::EmitFunctionVariables() {
     identifier_types_.emplace(inst.result_id(), var_type);
   }
   return success();
+}
+
+TypedExpression FunctionEmitter::AddressOfIfNeeded(
+    TypedExpression expr,
+    const spvtools::opt::Instruction* inst) {
+  if (inst && expr) {
+    if (auto* spirv_type = type_mgr_->GetType(inst->type_id())) {
+      if (expr.type->Is<Reference>() && spirv_type->AsPointer()) {
+        return AddressOf(expr);
+      }
+    }
+  }
+  return expr;
 }
 
 TypedExpression FunctionEmitter::MakeExpression(uint32_t id) {
@@ -2211,27 +2541,17 @@ TypedExpression FunctionEmitter::MakeExpression(uint32_t id) {
       Fail() << "internal error: unhandled use of opaque object with ID: "
              << id;
       return {};
+    case SkipReason::kSinkPointerIntoUse: {
+      // Replace the pointer with its source reference expression.
+      auto source_expr = GetDefInfo(id)->sink_pointer_source_expr;
+      TINT_ASSERT(Reader, source_expr.type->Is<Reference>());
+      return source_expr;
+    }
     case SkipReason::kPointSizeBuiltinValue: {
-      return {ty_.F32(),
-              create<ast::ScalarConstructorExpression>(
-                  Source{}, create<ast::FloatLiteral>(Source{}, 1.0f))};
+      return {ty_.F32(), create<ast::FloatLiteralExpression>(Source{}, 1.0f)};
     }
     case SkipReason::kPointSizeBuiltinPointer:
       Fail() << "unhandled use of a pointer to the PointSize builtin, with ID: "
-             << id;
-      return {};
-    case SkipReason::kSampleIdBuiltinPointer:
-      Fail() << "unhandled use of a pointer to the SampleId builtin, with ID: "
-             << id;
-      return {};
-    case SkipReason::kVertexIndexBuiltinPointer:
-      Fail()
-          << "unhandled use of a pointer to the VertexIndex builtin, with ID: "
-          << id;
-      return {};
-    case SkipReason::kInstanceIndexBuiltinPointer:
-      Fail() << "unhandled use of a pointer to the InstanceIndex builtin, with "
-                "ID: "
              << id;
       return {};
     case SkipReason::kSampleMaskInBuiltinPointer:
@@ -2239,12 +2559,13 @@ TypedExpression FunctionEmitter::MakeExpression(uint32_t id) {
           << "unhandled use of a pointer to the SampleMask builtin, with ID: "
           << id;
       return {};
-    case SkipReason::kSampleMaskOutBuiltinPointer:
+    case SkipReason::kSampleMaskOutBuiltinPointer: {
       // The result type is always u32.
       auto name = namer_.Name(sample_mask_out_id);
       return TypedExpression{ty_.U32(),
                              create<ast::IdentifierExpression>(
                                  Source{}, builder_.Symbols().Register(name))};
+    }
   }
   auto type_it = identifier_types_.find(id);
   if (type_it != identifier_types_.end()) {
@@ -2294,6 +2615,17 @@ TypedExpression FunctionEmitter::MakeExpression(uint32_t id) {
     default:
       break;
   }
+  if (const spvtools::opt::BasicBlock* const bb =
+          ir_context_.get_instr_block(id)) {
+    if (auto* block = GetBlockInfo(bb->id())) {
+      if (block->pos == kInvalidBlockPos) {
+        // The value came from a block not in the block order.
+        // Substitute a null value.
+        return parser_impl_.MakeNullExpression(
+            parser_impl_.ConvertType(inst->type_id()));
+      }
+    }
+  }
   Fail() << "unhandled expression for ID " << id << "\n" << inst->PrettyPrint();
   return {};
 }
@@ -2310,15 +2642,15 @@ bool FunctionEmitter::EmitFunctionBodyStatements() {
 
   // Upon entry, the statement stack has one entry representing the whole
   // function.
-  TINT_ASSERT(!constructs_.empty());
+  TINT_ASSERT(Reader, !constructs_.empty());
   Construct* function_construct = constructs_[0].get();
-  TINT_ASSERT(function_construct != nullptr);
-  TINT_ASSERT(function_construct->kind == Construct::kFunction);
+  TINT_ASSERT(Reader, function_construct != nullptr);
+  TINT_ASSERT(Reader, function_construct->kind == Construct::kFunction);
   // Make the first entry valid by filling in the construct field, which
   // had not been computed at the time the entry was first created.
   // TODO(dneto): refactor how the first construct is created vs.
   // this statements stack entry is populated.
-  TINT_ASSERT(statements_stack_.size() == 1);
+  TINT_ASSERT(Reader, statements_stack_.size() == 1);
   statements_stack_[0].SetConstruct(function_construct);
 
   for (auto block_id : block_order()) {
@@ -2517,8 +2849,8 @@ bool FunctionEmitter::EmitBasicBlock(const BlockInfo& block_info) {
 bool FunctionEmitter::EmitIfStart(const BlockInfo& block_info) {
   // The block is the if-header block.  So its construct is the if construct.
   auto* construct = block_info.construct;
-  TINT_ASSERT(construct->kind == Construct::kIfSelection);
-  TINT_ASSERT(construct->begin_id == block_info.id);
+  TINT_ASSERT(Reader, construct->kind == Construct::kIfSelection);
+  TINT_ASSERT(Reader, construct->begin_id == block_info.id);
 
   const uint32_t true_head = block_info.true_head;
   const uint32_t false_head = block_info.false_head;
@@ -2528,9 +2860,7 @@ bool FunctionEmitter::EmitIfStart(const BlockInfo& block_info) {
   if (!guard_name.empty()) {
     // Declare the guard variable just before the "if", initialized to true.
     auto* guard_var =
-        create<ast::Variable>(Source{}, builder_.Symbols().Register(guard_name),
-                              ast::StorageClass::kNone, builder_.ty.bool_(),
-                              false, MakeTrue(Source{}), ast::DecorationList{});
+        builder_.Var(guard_name, builder_.ty.bool_(), MakeTrue(Source{}));
     auto* guard_decl = create<ast::VariableDeclStatement>(Source{}, guard_var);
     AddStatement(guard_decl);
   }
@@ -2664,8 +2994,8 @@ bool FunctionEmitter::EmitIfStart(const BlockInfo& block_info) {
 bool FunctionEmitter::EmitSwitchStart(const BlockInfo& block_info) {
   // The block is the if-header block.  So its construct is the if construct.
   auto* construct = block_info.construct;
-  TINT_ASSERT(construct->kind == Construct::kSwitchSelection);
-  TINT_ASSERT(construct->begin_id == block_info.id);
+  TINT_ASSERT(Reader, construct->kind == Construct::kSwitchSelection);
+  TINT_ASSERT(Reader, construct->begin_id == block_info.id);
   const auto* branch = block_info.basic_block->terminator();
 
   const auto selector_id = branch->GetSingleWordInOperand(0);
@@ -2713,7 +3043,7 @@ bool FunctionEmitter::EmitSwitchStart(const BlockInfo& block_info) {
       clause_heads[w] = clause_heads[r];
     }
     // We know it's not empty because it always has at least a default clause.
-    TINT_ASSERT(!clause_heads.empty());
+    TINT_ASSERT(Reader, !clause_heads.empty());
     clause_heads.resize(w + 1);
   }
 
@@ -2733,9 +3063,11 @@ bool FunctionEmitter::EmitSwitchStart(const BlockInfo& block_info) {
         // The Tint AST handles 32-bit values.
         const uint32_t value32 = uint32_t(value & 0xFFFFFFFF);
         if (selector.type->IsUnsignedScalarOrVector()) {
-          selectors.emplace_back(create<ast::UintLiteral>(Source{}, value32));
+          selectors.emplace_back(
+              create<ast::UintLiteralExpression>(Source{}, value32));
         } else {
-          selectors.emplace_back(create<ast::SintLiteral>(Source{}, value32));
+          selectors.emplace_back(
+              create<ast::SintLiteralExpression>(Source{}, value32));
         }
       }
     }
@@ -2909,7 +3241,7 @@ bool FunctionEmitter::EmitNormalTerminator(const BlockInfo& block_info) {
   return success();
 }
 
-ast::Statement* FunctionEmitter::MakeBranchDetailed(
+const ast::Statement* FunctionEmitter::MakeBranchDetailed(
     const BlockInfo& src_info,
     const BlockInfo& dest_info,
     bool forced,
@@ -2926,9 +3258,10 @@ ast::Statement* FunctionEmitter::MakeBranchDetailed(
       // Unless forced, don't bother with a break at the end of a case/default
       // clause.
       const auto header = dest_info.header_for_merge;
-      TINT_ASSERT(header != 0);
+      TINT_ASSERT(Reader, header != 0);
       const auto* exiting_construct = GetBlockInfo(header)->construct;
-      TINT_ASSERT(exiting_construct->kind == Construct::kSwitchSelection);
+      TINT_ASSERT(Reader,
+                  exiting_construct->kind == Construct::kSwitchSelection);
       const auto candidate_next_case_pos = src_info.pos + 1;
       // Leaving the last block from the last case?
       if (candidate_next_case_pos == dest_info.pos) {
@@ -2986,9 +3319,10 @@ ast::Statement* FunctionEmitter::MakeBranchDetailed(
   return nullptr;
 }
 
-ast::Statement* FunctionEmitter::MakeSimpleIf(ast::Expression* condition,
-                                              ast::Statement* then_stmt,
-                                              ast::Statement* else_stmt) const {
+const ast::Statement* FunctionEmitter::MakeSimpleIf(
+    const ast::Expression* condition,
+    const ast::Statement* then_stmt,
+    const ast::Statement* else_stmt) const {
   if ((then_stmt == nullptr) && (else_stmt == nullptr)) {
     return nullptr;
   }
@@ -3011,7 +3345,7 @@ ast::Statement* FunctionEmitter::MakeSimpleIf(ast::Expression* condition,
 
 bool FunctionEmitter::EmitConditionalCaseFallThrough(
     const BlockInfo& src_info,
-    ast::Expression* cond,
+    const ast::Expression* cond,
     EdgeKind other_edge_kind,
     const BlockInfo& other_dest,
     bool fall_through_is_true_branch) {
@@ -3072,7 +3406,7 @@ bool FunctionEmitter::EmitStatementsInBasicBlock(const BlockInfo& block_info,
   // Emit declarations of hoisted variables, in index order.
   for (auto id : sorted_by_index(block_info.hoisted_ids)) {
     const auto* def_inst = def_use_mgr_->GetDef(id);
-    TINT_ASSERT(def_inst);
+    TINT_ASSERT(Reader, def_inst);
     auto* storage_type =
         RemapStorageClass(parser_impl_.ConvertType(def_inst->type_id()), id);
     AddStatement(create<ast::VariableDeclStatement>(
@@ -3085,14 +3419,12 @@ bool FunctionEmitter::EmitStatementsInBasicBlock(const BlockInfo& block_info,
   // Emit declarations of phi state variables, in index order.
   for (auto id : sorted_by_index(block_info.phis_needing_state_vars)) {
     const auto* def_inst = def_use_mgr_->GetDef(id);
-    TINT_ASSERT(def_inst);
+    TINT_ASSERT(Reader, def_inst);
     const auto phi_var_name = GetDefInfo(id)->phi_var;
-    TINT_ASSERT(!phi_var_name.empty());
-    auto* var = create<ast::Variable>(
-        Source{}, builder_.Symbols().Register(phi_var_name),
-        ast::StorageClass::kNone,
-        parser_impl_.ConvertType(def_inst->type_id())->Build(builder_), false,
-        nullptr, ast::DecorationList{});
+    TINT_ASSERT(Reader, !phi_var_name.empty());
+    auto* var = builder_.Var(
+        phi_var_name,
+        parser_impl_.ConvertType(def_inst->type_id())->Build(builder_));
     AddStatement(create<ast::VariableDeclStatement>(Source{}, var));
   }
 
@@ -3144,11 +3476,13 @@ bool FunctionEmitter::EmitConstDefinition(
   if (!expr) {
     return false;
   }
-  if (expr.type->Is<Reference>()) {
-    // `let` declarations cannot hold references, so we need to take the address
-    // of the RHS, and make the `let` be a pointer.
-    expr = AddressOf(expr);
+
+  // Do not generate pointers that we want to sink.
+  if (GetDefInfo(inst.result_id())->skip == SkipReason::kSinkPointerIntoUse) {
+    return true;
   }
+
+  expr = AddressOfIfNeeded(expr, &inst);
   auto* ast_const = parser_impl_.MakeVariable(
       inst.result_id(), ast::StorageClass::kNone, expr.type, true, expr.expr,
       ast::DecorationList{});
@@ -3163,6 +3497,11 @@ bool FunctionEmitter::EmitConstDefinition(
 bool FunctionEmitter::EmitConstDefOrWriteToHoistedVar(
     const spvtools::opt::Instruction& inst,
     TypedExpression expr) {
+  return WriteIfHoistedVar(inst, expr) || EmitConstDefinition(inst, expr);
+}
+
+bool FunctionEmitter::WriteIfHoistedVar(const spvtools::opt::Instruction& inst,
+                                        TypedExpression expr) {
   const auto result_id = inst.result_id();
   const auto* def_info = GetDefInfo(result_id);
   if (def_info && def_info->requires_hoisted_def) {
@@ -3175,7 +3514,7 @@ bool FunctionEmitter::EmitConstDefOrWriteToHoistedVar(
         expr.expr));
     return true;
   }
-  return EmitConstDefinition(inst, expr);
+  return false;
 }
 
 bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
@@ -3206,6 +3545,9 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
     TypedExpression combinatorial_expr;
     if (def_info->skip == SkipReason::kDontSkip) {
       combinatorial_expr = MaybeEmitCombinatorialValue(inst);
+      if (!success()) {
+        return false;
+      }
     }
     // An access chain or OpCopyObject can generate a skip.
     if (def_info->skip != SkipReason::kDontSkip) {
@@ -3259,39 +3601,47 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
         return false;
       }
 
+      TypedExpression lhs;
+
       // Handle exceptional cases
       switch (GetSkipReason(ptr_id)) {
         case SkipReason::kPointSizeBuiltinPointer:
-          if (const auto* c = constant_mgr_->FindDeclaredConstant(value_id)) {
-            // If we're writing a constant 1.0, then skip the write.  That's all
-            // that WebGPU handles.
-            auto* ct = c->type();
-            if (ct->AsFloat() && (ct->AsFloat()->width() == 32) &&
-                (c->GetFloat() == 1.0f)) {
-              // Don't store to PointSize
-              return true;
-            }
+          if (IsFloatOne(value_id)) {
+            // Don't store to PointSize
+            return true;
           }
           return Fail() << "cannot store a value other than constant 1.0 to "
                            "PointSize builtin: "
                         << inst.PrettyPrint();
 
         case SkipReason::kSampleMaskOutBuiltinPointer:
-          ptr_id = sample_mask_out_id;
-          if (!rhs.type->Is<U32>()) {
-            // WGSL requires sample_mask_out to be signed.
-            rhs = TypedExpression{ty_.U32(),
-                                  create<ast::TypeConstructorExpression>(
-                                      Source{}, builder_.ty.u32(),
-                                      ast::ExpressionList{rhs.expr})};
+          lhs = MakeExpression(sample_mask_out_id);
+          if (lhs.type->Is<Pointer>()) {
+            // LHS of an assignment must be a reference type.
+            // Convert the LHS to a reference by dereferencing it.
+            lhs = Dereference(lhs);
           }
+          // The private variable is an array whose element type is already of
+          // the same type as the value being stored into it.  Form the
+          // reference into the first element.
+          lhs.expr = create<ast::IndexAccessorExpression>(
+              Source{}, lhs.expr, parser_impl_.MakeNullValue(ty_.I32()));
+          if (auto* ref = lhs.type->As<Reference>()) {
+            lhs.type = ref->type;
+          }
+          if (auto* arr = lhs.type->As<Array>()) {
+            lhs.type = arr->type;
+          }
+          TINT_ASSERT(Reader, lhs.type);
           break;
         default:
           break;
       }
 
       // Handle an ordinary store as an assignment.
-      auto lhs = MakeExpression(ptr_id);
+      if (!lhs) {
+        lhs = MakeExpression(ptr_id);
+      }
       if (!lhs) {
         return false;
       }
@@ -3312,47 +3662,31 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
       // So represent a load by a new const definition.
       const auto ptr_id = inst.GetSingleWordInOperand(0);
       const auto skip_reason = GetSkipReason(ptr_id);
+
       switch (skip_reason) {
         case SkipReason::kPointSizeBuiltinPointer:
           GetDefInfo(inst.result_id())->skip =
               SkipReason::kPointSizeBuiltinValue;
           return true;
-        case SkipReason::kSampleIdBuiltinPointer:
-        case SkipReason::kVertexIndexBuiltinPointer:
-        case SkipReason::kInstanceIndexBuiltinPointer: {
-          // The SPIR-V variable is i32, but WGSL requires u32.
-          auto name = NameForSpecialInputBuiltin(skip_reason);
-          if (name.empty()) {
-            return Fail() << "internal error: unhandled special input builtin "
-                             "variable: "
-                          << inst.PrettyPrint();
-          }
-          ast::Expression* id_expr = create<ast::IdentifierExpression>(
-              Source{}, builder_.Symbols().Register(name));
-          auto expr = TypedExpression{
-              ty_.I32(),
-              create<ast::TypeConstructorExpression>(
-                  Source{}, builder_.ty.i32(), ast::ExpressionList{id_expr})};
-          return EmitConstDefinition(inst, expr);
-        }
         case SkipReason::kSampleMaskInBuiltinPointer: {
           auto name = namer_.Name(sample_mask_in_id);
-          ast::Expression* id_expr = create<ast::IdentifierExpression>(
+          const ast::Expression* id_expr = create<ast::IdentifierExpression>(
               Source{}, builder_.Symbols().Register(name));
-          auto* load_result_type = parser_impl_.ConvertType(inst.type_id());
-          ast::Expression* ast_expr = nullptr;
-          if (load_result_type->Is<I32>()) {
-            ast_expr = create<ast::TypeConstructorExpression>(
-                Source{}, builder_.ty.i32(), ast::ExpressionList{id_expr});
-          } else if (load_result_type->Is<U32>()) {
-            ast_expr = id_expr;
-          } else {
+          // SampleMask is an array in Vulkan SPIR-V. Always access the first
+          // element.
+          id_expr = create<ast::IndexAccessorExpression>(
+              Source{}, id_expr, parser_impl_.MakeNullValue(ty_.I32()));
+
+          auto* loaded_type = parser_impl_.ConvertType(inst.type_id());
+
+          if (!loaded_type->IsIntegerScalar()) {
             return Fail() << "loading the whole SampleMask input array is not "
                              "supported: "
                           << inst.PrettyPrint();
           }
-          return EmitConstDefinition(
-              inst, TypedExpression{load_result_type, ast_expr});
+
+          auto expr = TypedExpression{loaded_type, id_expr};
+          return EmitConstDefinition(inst, expr);
         }
         default:
           break;
@@ -3413,16 +3747,13 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
       const auto skip = GetSkipReason(value_id);
       if (skip != SkipReason::kDontSkip) {
         GetDefInfo(inst.result_id())->skip = skip;
+        GetDefInfo(inst.result_id())->sink_pointer_source_expr =
+            GetDefInfo(value_id)->sink_pointer_source_expr;
         return true;
       }
-      auto expr = MakeExpression(value_id);
+      auto expr = AddressOfIfNeeded(MakeExpression(value_id), &inst);
       if (!expr) {
         return false;
-      }
-      if (expr.type->Is<Reference>()) {
-        // If the source is a reference, then we need to take the address of the
-        // expression.
-        expr = AddressOf(expr);
       }
       expr.type = RemapStorageClass(expr.type, result_id);
       return EmitConstDefOrWriteToHoistedVar(inst, expr);
@@ -3461,6 +3792,14 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
       }
       break;
 
+    case SpvOpIAddCarry:
+    case SpvOpISubBorrow:
+    case SpvOpUMulExtended:
+    case SpvOpSMulExtended:
+      return Fail() << "extended arithmetic is not finalized for WGSL: "
+                       "https://github.com/gpuweb/gpuweb/issues/1565: "
+                    << inst.PrettyPrint();
+
     default:
       break;
   }
@@ -3468,36 +3807,29 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
                 << inst.PrettyPrint();
 }
 
-std::string FunctionEmitter::NameForSpecialInputBuiltin(
-    SkipReason skip_reason) {
-  SpvBuiltIn spv_builtin = SpvBuiltIn(0);
-  switch (skip_reason) {
-    case SkipReason::kSampleIdBuiltinPointer:
-      spv_builtin = SpvBuiltInSampleId;
-      break;
-    case SkipReason::kVertexIndexBuiltinPointer:
-      spv_builtin = SpvBuiltInVertexIndex;
-      break;
-    case SkipReason::kInstanceIndexBuiltinPointer:
-      spv_builtin = SpvBuiltInInstanceIndex;
-      break;
-    default:
-      // Invalid. Issue the error in the caller.
-      return "";
-  }
-  // The SPIR-V variable is i32, but WGSL requires u32.
-  auto var_id = parser_impl_.IdForSpecialBuiltIn(spv_builtin);
-  return namer_.Name(var_id);
-}
-
 TypedExpression FunctionEmitter::MakeOperand(
     const spvtools::opt::Instruction& inst,
     uint32_t operand_index) {
-  auto expr = this->MakeExpression(inst.GetSingleWordInOperand(operand_index));
+  auto expr = MakeExpression(inst.GetSingleWordInOperand(operand_index));
   if (!expr) {
     return {};
   }
   return parser_impl_.RectifyOperandSignedness(inst, std::move(expr));
+}
+
+TypedExpression FunctionEmitter::InferFunctionStorageClass(
+    TypedExpression expr) {
+  TypedExpression result(expr);
+  if (const auto* ref = expr.type->UnwrapAlias()->As<Reference>()) {
+    if (ref->storage_class == ast::StorageClass::kNone) {
+      expr.type = ty_.Reference(ref->type, ast::StorageClass::kFunction);
+    }
+  } else if (const auto* ptr = expr.type->UnwrapAlias()->As<Pointer>()) {
+    if (ptr->storage_class == ast::StorageClass::kNone) {
+      expr.type = ty_.Pointer(ptr->type, ast::StorageClass::kFunction);
+    }
+  }
+  return expr;
 }
 
 TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
@@ -3508,14 +3840,23 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
 
   const auto opcode = inst.opcode();
 
-  const Type* ast_type =
-      inst.type_id() != 0 ? parser_impl_.ConvertType(inst.type_id()) : nullptr;
+  const Type* ast_type = nullptr;
+  if (inst.type_id()) {
+    ast_type = parser_impl_.ConvertType(inst.type_id());
+    if (!ast_type) {
+      Fail() << "couldn't convert result type for: " << inst.PrettyPrint();
+      return {};
+    }
+  }
 
   auto binary_op = ConvertBinaryOp(opcode);
   if (binary_op != ast::BinaryOp::kNone) {
     auto arg0 = MakeOperand(inst, 0);
     auto arg1 = parser_impl_.RectifySecondOperandSignedness(
         inst, arg0.type, MakeOperand(inst, 1));
+    if (!arg0 || !arg1) {
+      return {};
+    }
     auto* binary_expr = create<ast::BinaryExpression>(Source{}, binary_op,
                                                       arg0.expr, arg1.expr);
     TypedExpression result{ast_type, binary_expr};
@@ -3546,6 +3887,10 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
   const auto intrinsic = GetIntrinsic(opcode);
   if (intrinsic != sem::IntrinsicType::kNone) {
     return MakeIntrinsicCall(inst);
+  }
+
+  if (opcode == SpvOpFMod) {
+    return MakeFMod(inst);
   }
 
   if (opcode == SpvOpAccessChain || opcode == SpvOpInBoundsAccessChain) {
@@ -3615,9 +3960,8 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
     for (uint32_t iarg = 0; iarg < inst.NumInOperands(); ++iarg) {
       operands.emplace_back(MakeOperand(inst, iarg).expr);
     }
-    return {ast_type,
-            create<ast::TypeConstructorExpression>(
-                Source{}, ast_type->Build(builder_), std::move(operands))};
+    return {ast_type, builder_.Construct(Source{}, ast_type->Build(builder_),
+                                         std::move(operands))};
   }
 
   if (opcode == SpvOpCompositeExtract) {
@@ -3629,7 +3973,7 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
   }
 
   if (opcode == SpvOpVectorExtractDynamic) {
-    return {ast_type, create<ast::ArrayAccessorExpression>(
+    return {ast_type, create<ast::IndexAccessorExpression>(
                           Source{}, MakeOperand(inst, 0).expr,
                           MakeOperand(inst, 1).expr)};
   }
@@ -3674,14 +4018,132 @@ TypedExpression FunctionEmitter::EmitGlslStd450ExtInst(
     const spvtools::opt::Instruction& inst) {
   const auto ext_opcode = inst.GetSingleWordInOperand(1);
 
+  if (ext_opcode == GLSLstd450Ldexp) {
+    // WGSL requires the second argument to be signed.
+    // Use a type constructor to convert it, which is the same as a bitcast.
+    // If the value would go from very large positive to negative, then the
+    // original result would have been infinity.  And since WGSL
+    // implementations may assume that infinities are not present, then we
+    // don't have to worry about that case.
+    auto e1 = MakeOperand(inst, 2);
+    auto e2 = ToSignedIfUnsigned(MakeOperand(inst, 3));
+
+    return {e1.type, builder_.Call(Source{}, "ldexp",
+                                   ast::ExpressionList{e1.expr, e2.expr})};
+  }
+
   auto* result_type = parser_impl_.ConvertType(inst.type_id());
 
-  if ((ext_opcode == GLSLstd450Normalize) && result_type->IsScalar()) {
-    // WGSL does not have scalar form of the normalize builtin.
-    // The answer would be 1 anyway, so return that directly.
-    return {ty_.F32(),
-            create<ast::ScalarConstructorExpression>(
-                Source{}, create<ast::FloatLiteral>(Source{}, 1.0f))};
+  if (result_type->IsScalar()) {
+    // Some GLSLstd450 builtins have scalar forms not supported by WGSL.
+    // Emulate them.
+    switch (ext_opcode) {
+      case GLSLstd450Normalize:
+        // WGSL does not have scalar form of the normalize builtin.
+        // The answer would be 1 anyway, so return that directly.
+        return {ty_.F32(), builder_.Expr(1.0f)};
+
+      case GLSLstd450FaceForward: {
+        // If dot(Nref, Incident) < 0, the result is Normal, otherwise -Normal.
+        // Also: select(-normal,normal, Incident*Nref < 0)
+        // (The dot product of scalars is their product.)
+        // Use a multiply instead of comparing floating point signs. It should
+        // be among the fastest operations on a GPU.
+        auto normal = MakeOperand(inst, 2);
+        auto incident = MakeOperand(inst, 3);
+        auto nref = MakeOperand(inst, 4);
+        TINT_ASSERT(Reader, normal.type->Is<F32>());
+        TINT_ASSERT(Reader, incident.type->Is<F32>());
+        TINT_ASSERT(Reader, nref.type->Is<F32>());
+        return {ty_.F32(),
+                builder_.Call(
+                    Source{}, "select",
+                    ast::ExpressionList{
+                        create<ast::UnaryOpExpression>(
+                            Source{}, ast::UnaryOp::kNegation, normal.expr),
+                        normal.expr,
+                        create<ast::BinaryExpression>(
+                            Source{}, ast::BinaryOp::kLessThan,
+                            builder_.Mul({}, incident.expr, nref.expr),
+                            builder_.Expr(0.0f))})};
+      }
+
+      case GLSLstd450Reflect: {
+        // Compute  Incident - 2 * Normal * Normal * Incident
+        auto incident = MakeOperand(inst, 2);
+        auto normal = MakeOperand(inst, 3);
+        TINT_ASSERT(Reader, incident.type->Is<F32>());
+        TINT_ASSERT(Reader, normal.type->Is<F32>());
+        return {
+            ty_.F32(),
+            builder_.Sub(
+                incident.expr,
+                builder_.Mul(2.0f, builder_.Mul(normal.expr,
+                                                builder_.Mul(normal.expr,
+                                                             incident.expr))))};
+      }
+
+      case GLSLstd450Refract: {
+        // It's a complicated expression. Compute it in two dimensions, but
+        // with a 0-valued y component in both the incident and normal vectors,
+        // then take the x component of that result.
+        auto incident = MakeOperand(inst, 2);
+        auto normal = MakeOperand(inst, 3);
+        auto eta = MakeOperand(inst, 4);
+        TINT_ASSERT(Reader, incident.type->Is<F32>());
+        TINT_ASSERT(Reader, normal.type->Is<F32>());
+        TINT_ASSERT(Reader, eta.type->Is<F32>());
+        if (!success()) {
+          return {};
+        }
+        const Type* f32 = eta.type;
+        return {f32,
+                builder_.MemberAccessor(
+                    builder_.Call(
+                        Source{}, "refract",
+                        ast::ExpressionList{
+                            builder_.vec2<float>(incident.expr, 0.0f),
+                            builder_.vec2<float>(normal.expr, 0.0f), eta.expr}),
+                    "x")};
+      }
+      default:
+        break;
+    }
+  }
+
+  // Some GLSLStd450 builtins don't have a WGSL equivalent. Polyfill them.
+  switch (ext_opcode) {
+    case GLSLstd450Radians: {
+      auto degrees = MakeOperand(inst, 2);
+      TINT_ASSERT(Reader, degrees.type->IsFloatScalarOrVector());
+
+      constexpr auto kPiOver180 = static_cast<float>(3.141592653589793 / 180.0);
+      auto* factor = builder_.Expr(kPiOver180);
+      if (degrees.type->Is<F32>()) {
+        return {degrees.type, builder_.Mul(degrees.expr, factor)};
+      } else {
+        uint32_t size = degrees.type->As<Vector>()->size;
+        return {degrees.type,
+                builder_.Mul(degrees.expr,
+                             builder_.vec(builder_.ty.f32(), size, factor))};
+      }
+    }
+
+    case GLSLstd450Degrees: {
+      auto radians = MakeOperand(inst, 2);
+      TINT_ASSERT(Reader, radians.type->IsFloatScalarOrVector());
+
+      constexpr auto k180OverPi = static_cast<float>(180.0 / 3.141592653589793);
+      auto* factor = builder_.Expr(k180OverPi);
+      if (radians.type->Is<F32>()) {
+        return {radians.type, builder_.Mul(radians.expr, factor)};
+      } else {
+        uint32_t size = radians.type->As<Vector>()->size;
+        return {radians.type,
+                builder_.Mul(radians.expr,
+                             builder_.vec(builder_.ty.f32(), size, factor))};
+      }
+    }
   }
 
   const auto name = GetGlslStd450FuncName(ext_opcode);
@@ -3737,6 +4199,21 @@ ast::IdentifierExpression* FunctionEmitter::PrefixSwizzle(uint32_t n) {
   return nullptr;
 }
 
+TypedExpression FunctionEmitter::MakeFMod(
+    const spvtools::opt::Instruction& inst) {
+  auto x = MakeOperand(inst, 0);
+  auto y = MakeOperand(inst, 1);
+  if (!x || !y) {
+    return {};
+  }
+  // Emulated with: x - y * floor(x / y)
+  auto* div = builder_.Div(x.expr, y.expr);
+  auto* floor = builder_.Call("floor", div);
+  auto* y_floor = builder_.Mul(y.expr, floor);
+  auto* res = builder_.Sub(x.expr, y_floor);
+  return {x.type, res};
+}
+
 TypedExpression FunctionEmitter::MakeAccessChain(
     const spvtools::opt::Instruction& inst) {
   if (inst.NumInOperands() < 1) {
@@ -3750,6 +4227,8 @@ TypedExpression FunctionEmitter::MakeAccessChain(
   if (base_skip != SkipReason::kDontSkip) {
     // This can occur for AccessChain with no indices.
     GetDefInfo(inst.result_id())->skip = base_skip;
+    GetDefInfo(inst.result_id())->sink_pointer_source_expr =
+        GetDefInfo(base_id)->sink_pointer_source_expr;
     return {};
   }
 
@@ -3757,6 +4236,7 @@ TypedExpression FunctionEmitter::MakeAccessChain(
   uint32_t first_index = 1;
   const auto num_in_operands = inst.NumInOperands();
 
+  bool sink_pointer = false;
   TypedExpression current_expr;
 
   // If the variable was originally gl_PerVertex, then in the AST we
@@ -3829,7 +4309,10 @@ TypedExpression FunctionEmitter::MakeAccessChain(
   // ever-deeper nested indexing expressions. Start off with an expression
   // for the base, and then bury that inside nested indexing expressions.
   if (!current_expr) {
-    current_expr = MakeOperand(inst, 0);
+    current_expr = InferFunctionStorageClass(MakeOperand(inst, 0));
+    if (current_expr.type->Is<Pointer>()) {
+      current_expr = Dereference(current_expr);
+    }
   }
   const auto constants = constant_mgr_->GetOperandConstants(&inst);
 
@@ -3851,7 +4334,7 @@ TypedExpression FunctionEmitter::MakeAccessChain(
         constants[index] ? constants[index]->AsIntConstant() : nullptr;
     const int64_t index_const_val =
         index_const ? index_const->GetSignExtendedValue() : 0;
-    ast::Expression* next_expr = nullptr;
+    const ast::Expression* next_expr = nullptr;
 
     const auto* pointee_type_inst = def_use_mgr_->GetDef(pointee_type_id);
     if (!pointee_type_inst) {
@@ -3880,26 +4363,28 @@ TypedExpression FunctionEmitter::MakeAccessChain(
               Source{}, current_expr.expr, Swizzle(uint32_t(index_const_val)));
         } else {
           // Non-constant index. Use array syntax
-          next_expr = create<ast::ArrayAccessorExpression>(
+          next_expr = create<ast::IndexAccessorExpression>(
               Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         }
         // All vector components are the same type.
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
+        // Sink pointers to vector components.
+        sink_pointer = true;
         break;
       case SpvOpTypeMatrix:
         // Use array syntax.
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         // All matrix components are the same type.
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
         break;
       case SpvOpTypeArray:
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
         break;
       case SpvOpTypeRuntimeArray:
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
         break;
@@ -3937,9 +4422,16 @@ TypedExpression FunctionEmitter::MakeAccessChain(
     const auto pointer_type_id =
         type_mgr_->FindPointerToType(pointee_type_id, storage_class);
     auto* type = parser_impl_.ConvertType(pointer_type_id, PtrAs::Ref);
-    TINT_ASSERT(type && type->Is<Reference>());
+    TINT_ASSERT(Reader, type && type->Is<Reference>());
     current_expr = TypedExpression{type, next_expr};
   }
+
+  if (sink_pointer) {
+    // Capture the reference so that we can sink it into the point of use.
+    GetDefInfo(inst.result_id())->skip = SkipReason::kSinkPointerIntoUse;
+    GetDefInfo(inst.result_id())->sink_pointer_source_expr = current_expr;
+  }
+
   return current_expr;
 }
 
@@ -3951,6 +4443,10 @@ TypedExpression FunctionEmitter::MakeCompositeExtract(
   auto composite_index = 0;
   auto first_index_position = 1;
   TypedExpression current_expr(MakeOperand(inst, composite_index));
+  if (!current_expr) {
+    return {};
+  }
+
   const auto composite_id = inst.GetSingleWordInOperand(composite_index);
   auto current_type_id = def_use_mgr_->GetDef(composite_id)->type_id();
 
@@ -3980,8 +4476,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
   auto current_type_id = composite_type_id;
 
   auto make_index = [this](uint32_t literal) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::UintLiteral>(Source{}, literal));
+    return create<ast::UintLiteralExpression>(Source{}, literal);
   };
 
   // Build up a nested expression for the decomposition by walking down the type
@@ -4010,7 +4505,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
         Fail() << "internal error: unhandled " << inst.PrettyPrint();
         return {};
     }
-    ast::Expression* next_expr = nullptr;
+    const ast::Expression* next_expr = nullptr;
     switch (current_type_inst->opcode()) {
       case SpvOpTypeVector: {
         // Try generating a MemberAccessor expression. That result in something
@@ -4026,6 +4521,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
         if (index_val >= kMaxVectorLen) {
           Fail() << "internal error: swizzle index " << index_val
                  << " is too big. Max handled index is " << kMaxVectorLen - 1;
+          return {};
         }
         next_expr = create<ast::MemberAccessorExpression>(
             Source{}, current_expr.expr, Swizzle(index_val));
@@ -4048,7 +4544,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
                  << " is too big. Max handled index is " << kMaxVectorLen - 1;
         }
         // Use array syntax.
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, make_index(index_val));
         // All matrix components are the same type.
         current_type_id = current_type_inst->GetSingleWordInOperand(0);
@@ -4058,7 +4554,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
         // The array size could be a spec constant, and so it's not always
         // statically checkable.  Instead, rely on a runtime index clamp
         // or runtime check to keep this safe.
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, make_index(index_val));
         current_type_id = current_type_inst->GetSingleWordInOperand(0);
         break;
@@ -4095,14 +4591,12 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
   return current_expr;
 }
 
-ast::Expression* FunctionEmitter::MakeTrue(const Source& source) const {
-  return create<ast::ScalarConstructorExpression>(
-      source, create<ast::BoolLiteral>(source, true));
+const ast::Expression* FunctionEmitter::MakeTrue(const Source& source) const {
+  return create<ast::BoolLiteralExpression>(source, true);
 }
 
-ast::Expression* FunctionEmitter::MakeFalse(const Source& source) const {
-  return create<ast::ScalarConstructorExpression>(
-      source, create<ast::BoolLiteral>(source, false));
+const ast::Expression* FunctionEmitter::MakeFalse(const Source& source) const {
+  return create<ast::BoolLiteralExpression>(source, false);
 }
 
 TypedExpression FunctionEmitter::MakeVectorShuffle(
@@ -4135,7 +4629,7 @@ TypedExpression FunctionEmitter::MakeVectorShuffle(
           source, expr.expr, Swizzle(index)));
     } else if (index < vec0_len + vec1_len) {
       const auto sub_index = index - vec0_len;
-      TINT_ASSERT(sub_index < kMaxVectorLen);
+      TINT_ASSERT(Reader, sub_index < kMaxVectorLen);
       auto expr = MakeExpression(vec1_id);
       if (!expr) {
         return {};
@@ -4151,8 +4645,8 @@ TypedExpression FunctionEmitter::MakeVectorShuffle(
       return {};
     }
   }
-  return {result_type, create<ast::TypeConstructorExpression>(
-                           source, result_type->Build(builder_), values)};
+  return {result_type,
+          builder_.Construct(source, result_type->Build(builder_), values)};
 }
 
 bool FunctionEmitter::RegisterSpecialBuiltInVariables() {
@@ -4168,15 +4662,6 @@ bool FunctionEmitter::RegisterSpecialBuiltInVariables() {
       case SpvBuiltInPointSize:
         def->skip = SkipReason::kPointSizeBuiltinPointer;
         break;
-      case SpvBuiltInSampleId:
-        def->skip = SkipReason::kSampleIdBuiltinPointer;
-        break;
-      case SpvBuiltInVertexIndex:
-        def->skip = SkipReason::kVertexIndexBuiltinPointer;
-        break;
-      case SpvBuiltInInstanceIndex:
-        def->skip = SkipReason::kInstanceIndexBuiltinPointer;
-        break;
       case SpvBuiltInSampleMask: {
         // Distinguish between input and output variable.
         const auto storage_class =
@@ -4190,6 +4675,15 @@ bool FunctionEmitter::RegisterSpecialBuiltInVariables() {
         }
         break;
       }
+      case SpvBuiltInSampleId:
+      case SpvBuiltInInstanceIndex:
+      case SpvBuiltInVertexIndex:
+      case SpvBuiltInLocalInvocationIndex:
+      case SpvBuiltInLocalInvocationId:
+      case SpvBuiltInGlobalInvocationId:
+      case SpvBuiltInWorkgroupId:
+      case SpvBuiltInNumWorkgroups:
+        break;
       default:
         return Fail() << "unrecognized special builtin: " << int(builtin);
     }
@@ -4227,6 +4721,8 @@ bool FunctionEmitter::RegisterLocallyDefinedValues() {
           }
           switch (inst.opcode()) {
             case SpvOpUndef:
+              return Fail()
+                     << "undef pointer is not valid: " << inst.PrettyPrint();
             case SpvOpVariable:
               // Keep the default decision based on the result type.
               break;
@@ -4263,7 +4759,10 @@ bool FunctionEmitter::RegisterLocallyDefinedValues() {
 ast::StorageClass FunctionEmitter::GetStorageClassForPointerValue(uint32_t id) {
   auto where = def_info_.find(id);
   if (where != def_info_.end()) {
-    return where->second.get()->storage_class;
+    auto candidate = where->second.get()->storage_class;
+    if (candidate != ast::StorageClass::kInvalid) {
+      return candidate;
+    }
   }
   const auto type_id = def_use_mgr_->GetDef(id)->type_id();
   if (type_id) {
@@ -4291,18 +4790,37 @@ const Type* FunctionEmitter::RemapStorageClass(const Type* type,
 void FunctionEmitter::FindValuesNeedingNamedOrHoistedDefinition() {
   // Mark vector operands of OpVectorShuffle as needing a named definition,
   // but only if they are defined in this function as well.
+  auto require_named_const_def = [&](const spvtools::opt::Instruction& inst,
+                                     int in_operand_index) {
+    const auto id = inst.GetSingleWordInOperand(in_operand_index);
+    auto* const operand_def = GetDefInfo(id);
+    if (operand_def) {
+      operand_def->requires_named_const_def = true;
+    }
+  };
   for (auto& id_def_info_pair : def_info_) {
     const auto& inst = id_def_info_pair.second->inst;
     const auto opcode = inst.opcode();
     if ((opcode == SpvOpVectorShuffle) || (opcode == SpvOpOuterProduct)) {
       // We might access the vector operands multiple times. Make sure they
       // are evaluated only once.
-      for (auto vector_arg : std::array<uint32_t, 2>{0, 1}) {
-        auto id = inst.GetSingleWordInOperand(vector_arg);
-        auto* operand_def = GetDefInfo(id);
-        if (operand_def) {
-          operand_def->requires_named_const_def = true;
-        }
+      require_named_const_def(inst, 0);
+      require_named_const_def(inst, 1);
+    }
+    if (parser_impl_.IsGlslExtendedInstruction(inst)) {
+      // Some emulations of GLSLstd450 instructions evaluate certain operands
+      // multiple times. Ensure their expressions are evaluated only once.
+      switch (inst.GetSingleWordInOperand(1)) {
+        case GLSLstd450FaceForward:
+          // The "normal" operand expression is used twice in code generation.
+          require_named_const_def(inst, 2);
+          break;
+        case GLSLstd450Reflect:
+          require_named_const_def(inst, 2);  // Incident
+          require_named_const_def(inst, 3);  // Normal
+          break;
+        default:
+          break;
       }
     }
   }
@@ -4351,7 +4869,7 @@ void FunctionEmitter::FindValuesNeedingNamedOrHoistedDefinition() {
           auto* pred_block_info = GetBlockInfo(pred_block_id);
           // The predecessor might not be in the block order at all, so we
           // need this guard.
-          if (pred_block_info) {
+          if (IsInBlockOrder(pred_block_info)) {
             // Record the assignment that needs to occur at the end
             // of the predecessor block.
             pred_block_info->phi_assignments.push_back({phi_id, value_id});
@@ -4413,7 +4931,7 @@ void FunctionEmitter::FindValuesNeedingNamedOrHoistedDefinition() {
       // Avoid moving combinatorial values across constructs.  This is a
       // simple heuristic to avoid changing the cost of an operation
       // by moving it into or out of a loop, for example.
-      if ((def_info->storage_class == ast::StorageClass::kNone) &&
+      if ((def_info->storage_class == ast::StorageClass::kInvalid) &&
           def_info->used_in_another_construct) {
         should_hoist = true;
       }
@@ -4440,7 +4958,7 @@ const Construct* FunctionEmitter::GetEnclosingScope(uint32_t first_pos,
                                                     uint32_t last_pos) const {
   const auto* enclosing_construct =
       GetBlockInfo(block_order_[first_pos])->construct;
-  TINT_ASSERT(enclosing_construct != nullptr);
+  TINT_ASSERT(Reader, enclosing_construct != nullptr);
   // Constructs are strictly nesting, so follow parent pointers
   while (enclosing_construct &&
          !enclosing_construct->ScopeContainsPos(last_pos)) {
@@ -4452,7 +4970,7 @@ const Construct* FunctionEmitter::GetEnclosingScope(uint32_t first_pos,
         sibling_loop ? sibling_loop : enclosing_construct->parent;
   }
   // At worst, we go all the way out to the function construct.
-  TINT_ASSERT(enclosing_construct != nullptr);
+  TINT_ASSERT(Reader, enclosing_construct != nullptr);
   return enclosing_construct;
 }
 
@@ -4464,6 +4982,7 @@ TypedExpression FunctionEmitter::MakeNumericConversion(
   if (!arg_expr) {
     return {};
   }
+  arg_expr.type = arg_expr.type->UnwrapRef();
 
   const Type* expr_type = nullptr;
   if ((opcode == SpvOpConvertSToF) || (opcode == SpvOpConvertUToF)) {
@@ -4471,21 +4990,24 @@ TypedExpression FunctionEmitter::MakeNumericConversion(
       expr_type = requested_type;
     } else {
       Fail() << "operand for conversion to floating point must be integral "
-                "scalar or vector";
+                "scalar or vector: "
+             << inst.PrettyPrint();
     }
   } else if (inst.opcode() == SpvOpConvertFToU) {
     if (arg_expr.type->IsFloatScalarOrVector()) {
       expr_type = parser_impl_.GetUnsignedIntMatchingShape(arg_expr.type);
     } else {
       Fail() << "operand for conversion to unsigned integer must be floating "
-                "point scalar or vector";
+                "point scalar or vector: "
+             << inst.PrettyPrint();
     }
   } else if (inst.opcode() == SpvOpConvertFToS) {
     if (arg_expr.type->IsFloatScalarOrVector()) {
       expr_type = parser_impl_.GetSignedIntMatchingShape(arg_expr.type);
     } else {
       Fail() << "operand for conversion to signed integer must be floating "
-                "point scalar or vector";
+                "point scalar or vector: "
+             << inst.PrettyPrint();
     }
   }
   if (expr_type == nullptr) {
@@ -4496,15 +5018,16 @@ TypedExpression FunctionEmitter::MakeNumericConversion(
   ast::ExpressionList params;
   params.push_back(arg_expr.expr);
   TypedExpression result{
-      expr_type, create<ast::TypeConstructorExpression>(
-                     Source{}, expr_type->Build(builder_), std::move(params))};
+      expr_type,
+      builder_.Construct(GetSourceForInst(inst), expr_type->Build(builder_),
+                         std::move(params))};
 
   if (requested_type == expr_type) {
     return result;
   }
-  return {requested_type,
-          create<ast::BitcastExpression>(
-              Source{}, requested_type->Build(builder_), result.expr)};
+  return {requested_type, create<ast::BitcastExpression>(
+                              GetSourceForInst(inst),
+                              requested_type->Build(builder_), result.expr)};
 }
 
 bool FunctionEmitter::EmitFunctionCall(const spvtools::opt::Instruction& inst) {
@@ -4519,11 +5042,10 @@ bool FunctionEmitter::EmitFunctionCall(const spvtools::opt::Instruction& inst) {
     if (!expr) {
       return false;
     }
-    if (expr.type->Is<Reference>()) {
-      // Functions cannot use references as parameters, so we need to pass by
-      // pointer.
-      expr = AddressOf(expr);
-    }
+    // Functions cannot use references as parameters, so we need to pass by
+    // pointer if the operand is of pointer type.
+    expr = AddressOfIfNeeded(
+        expr, def_use_mgr_->GetDef(inst.GetSingleWordInOperand(iarg)));
     args.emplace_back(expr.expr);
   }
   if (failed()) {
@@ -4593,9 +5115,7 @@ bool FunctionEmitter::EmitControlBarrier(
 TypedExpression FunctionEmitter::MakeIntrinsicCall(
     const spvtools::opt::Instruction& inst) {
   const auto intrinsic = GetIntrinsic(inst.opcode());
-  std::ostringstream ss;
-  ss << intrinsic;
-  auto name = ss.str();
+  auto* name = sem::str(intrinsic);
   auto* ident = create<ast::IdentifierExpression>(
       Source{}, builder_.Symbols().Register(name));
 
@@ -4623,28 +5143,27 @@ TypedExpression FunctionEmitter::MakeIntrinsicCall(
 TypedExpression FunctionEmitter::MakeSimpleSelect(
     const spvtools::opt::Instruction& inst) {
   auto condition = MakeOperand(inst, 0);
-  auto operand1 = MakeOperand(inst, 1);
-  auto operand2 = MakeOperand(inst, 2);
+  auto true_value = MakeOperand(inst, 1);
+  auto false_value = MakeOperand(inst, 2);
 
   // SPIR-V validation requires:
   // - the condition to be bool or bool vector, so we don't check it here.
-  // - operand1, operand2, and result type to match.
+  // - true_value false_value, and result type to match.
   // - you can't select over pointers or pointer vectors, unless you also have
   //   a VariablePointers* capability, which is not allowed in by WebGPU.
-  auto* op_ty = operand1.type;
+  auto* op_ty = true_value.type;
   if (op_ty->Is<Vector>() || op_ty->IsFloatScalar() ||
       op_ty->IsIntegerScalar() || op_ty->Is<Bool>()) {
     ast::ExpressionList params;
-    params.push_back(operand1.expr);
-    params.push_back(operand2.expr);
+    params.push_back(false_value.expr);
+    params.push_back(true_value.expr);
     // The condition goes last.
     params.push_back(condition.expr);
-    return {operand1.type,
-            create<ast::CallExpression>(
-                Source{},
-                create<ast::IdentifierExpression>(
-                    Source{}, builder_.Symbols().Register("select")),
-                std::move(params))};
+    return {op_ty, create<ast::CallExpression>(
+                       Source{},
+                       create<ast::IdentifierExpression>(
+                           Source{}, builder_.Symbols().Register("select")),
+                       std::move(params))};
   }
   return {};
 }
@@ -4690,7 +5209,7 @@ const Texture* FunctionEmitter::GetImageType(
   return result;
 }
 
-ast::Expression* FunctionEmitter::GetImageExpression(
+const ast::Expression* FunctionEmitter::GetImageExpression(
     const spvtools::opt::Instruction& inst) {
   auto* image = GetImage(inst);
   if (!image) {
@@ -4701,7 +5220,7 @@ ast::Expression* FunctionEmitter::GetImageExpression(
                                            builder_.Symbols().Register(name));
 }
 
-ast::Expression* FunctionEmitter::GetSamplerExpression(
+const ast::Expression* FunctionEmitter::GetSamplerExpression(
     const spvtools::opt::Instruction& inst) {
   // The sampled image operand is always the first operand.
   const auto image_or_sampled_image_operand_id = inst.GetSingleWordInOperand(0);
@@ -4769,11 +5288,15 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
   switch (opcode) {
     case SpvOpImageSampleImplicitLod:
     case SpvOpImageSampleExplicitLod:
+    case SpvOpImageSampleProjImplicitLod:
+    case SpvOpImageSampleProjExplicitLod:
       is_non_dref_sample = true;
       builtin_name = "textureSample";
       break;
     case SpvOpImageSampleDrefImplicitLod:
     case SpvOpImageSampleDrefExplicitLod:
+    case SpvOpImageSampleProjDrefImplicitLod:
+    case SpvOpImageSampleProjDrefExplicitLod:
       is_dref_sample = true;
       builtin_name = "textureSampleCompare";
       if (arg_index < num_args) {
@@ -4789,12 +5312,8 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     case SpvOpImageDrefGather:
       return Fail() << " image gather is not yet supported";
     case SpvOpImageFetch:
-      // Read a single texel from a sampled image.
-      builtin_name = "textureLoad";
-      use_level_of_detail_suffix = false;
-      break;
     case SpvOpImageRead:
-      // Read a single texel from a storage image.
+      // Read a single texel from a sampled or storage image.
       builtin_name = "textureLoad";
       use_level_of_detail_suffix = false;
       break;
@@ -4817,7 +5336,8 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
       }
       break;
     default:
-      return Fail() << "internal error: sampled image access";
+      return Fail() << "internal error: unrecognized image access: "
+                    << inst.PrettyPrint();
   }
 
   // Loop over the image operands, looking for extra operands to the builtin.
@@ -4843,20 +5363,33 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     if (use_level_of_detail_suffix) {
       builtin_name += "Level";
     }
-    TypedExpression lod = MakeOperand(inst, arg_index);
-    // When sampling from a depth texture, the Lod operand must be an I32.
-    if (texture_type->Is<DepthTexture>()) {
-      // Convert it to a signed integer type.
-      lod = ToI32(lod);
+    if (is_dref_sample) {
+      // Metal only supports Lod = 0 for comparison sampling without
+      // derivatives.
+      if (!IsFloatZero(inst.GetSingleWordInOperand(arg_index))) {
+        return Fail() << "WGSL comparison sampling without derivatives "
+                         "requires level-of-detail 0.0"
+                      << inst.PrettyPrint();
+      }
+      // Don't generate the Lod argument.
+    } else {
+      // Generate the Lod argument.
+      TypedExpression lod = MakeOperand(inst, arg_index);
+      // When sampling from a depth texture, the Lod operand must be an I32.
+      if (texture_type->Is<DepthTexture>()) {
+        // Convert it to a signed integer type.
+        lod = ToI32(lod);
+      }
+      params.push_back(lod.expr);
     }
-    params.push_back(lod.expr);
+
     image_operands_mask ^= SpvImageOperandsLodMask;
     arg_index++;
-  } else if ((opcode == SpvOpImageFetch) &&
-             (texture_type->Is<SampledTexture>() ||
-              texture_type->Is<DepthTexture>())) {
-    // textureLoad on sampled texture and depth texture requires an explicit
-    // level-of-detail parameter.
+  } else if ((opcode == SpvOpImageFetch || opcode == SpvOpImageRead) &&
+             !texture_type
+                  ->IsAnyOf<DepthMultisampledTexture, MultisampledTexture>()) {
+    // textureLoad requires an explicit level-of-detail parameter for
+    // non-multisampled texture types.
     params.push_back(parser_impl_.MakeNullValue(ty_.I32()));
   }
   if (arg_index + 1 < num_args &&
@@ -4912,7 +5445,7 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
 
   if (inst.type_id() != 0) {
     // It returns a value.
-    ast::Expression* value = call_expr;
+    const ast::Expression* value = call_expr;
 
     // The result type, derived from the SPIR-V instruction.
     auto* result_type = parser_impl_.ConvertType(inst.type_id());
@@ -4932,9 +5465,9 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     //   dref gather         vec4  ImageFetch           vec4 TODO(dneto)
     // Construct a 4-element vector with the result from the builtin in the
     // first component.
-    if (texture_type->Is<DepthTexture>()) {
+    if (texture_type->IsAnyOf<DepthTexture, DepthMultisampledTexture>()) {
       if (is_non_dref_sample || (opcode == SpvOpImageFetch)) {
-        value = create<ast::TypeConstructorExpression>(
+        value = builder_.Construct(
             Source{},
             result_type->Build(builder_),  // a vec4
             ast::ExpressionList{
@@ -5002,7 +5535,7 @@ bool FunctionEmitter::EmitImageQuery(const spvtools::opt::Instruction& inst) {
       if (opcode == SpvOpImageQuerySizeLod) {
         dims_args.push_back(ToI32(MakeOperand(inst, 1)).expr);
       }
-      ast::Expression* dims_call =
+      const ast::Expression* dims_call =
           create<ast::CallExpression>(Source{}, dims_ident, dims_args);
       auto dims = texture_type->dims;
       if ((dims == ast::TextureDimension::kCube) ||
@@ -5021,8 +5554,8 @@ bool FunctionEmitter::EmitImageQuery(const spvtools::opt::Instruction& inst) {
       }
       auto* result_type = parser_impl_.ConvertType(inst.type_id());
       TypedExpression expr = {
-          result_type, create<ast::TypeConstructorExpression>(
-                           Source{}, result_type->Build(builder_), exprs)};
+          result_type,
+          builder_.Construct(Source{}, result_type->Build(builder_), exprs)};
       return EmitConstDefOrWriteToHoistedVar(inst, expr);
     }
     case SpvOpImageQueryLod:
@@ -5036,16 +5569,15 @@ bool FunctionEmitter::EmitImageQuery(const spvtools::opt::Instruction& inst) {
                              : "textureNumSamples";
       auto* levels_ident = create<ast::IdentifierExpression>(
           Source{}, builder_.Symbols().Register(name));
-      ast::Expression* ast_expr = create<ast::CallExpression>(
+      const ast::Expression* ast_expr = create<ast::CallExpression>(
           Source{}, levels_ident,
           ast::ExpressionList{GetImageExpression(inst)});
       auto* result_type = parser_impl_.ConvertType(inst.type_id());
       // The SPIR-V result type must be integer scalar. The WGSL bulitin
       // returns i32. If they aren't the same then convert the result.
       if (!result_type->Is<I32>()) {
-        ast_expr = create<ast::TypeConstructorExpression>(
-            Source{}, result_type->Build(builder_),
-            ast::ExpressionList{ast_expr});
+        ast_expr = builder_.Construct(Source{}, result_type->Build(builder_),
+                                      ast::ExpressionList{ast_expr});
       }
       TypedExpression expr{result_type, ast_expr};
       return EmitConstDefOrWriteToHoistedVar(inst, expr);
@@ -5101,7 +5633,20 @@ ast::ExpressionList FunctionEmitter::MakeCoordinateOperandsForImageAccess(
            << texture_type->TypeInfo().name << " prompted by "
            << inst.PrettyPrint();
   }
-  const auto num_coords_required = num_axes + (is_arrayed ? 1 : 0);
+  bool is_proj = false;
+  switch (inst.opcode()) {
+    case SpvOpImageSampleProjImplicitLod:
+    case SpvOpImageSampleProjExplicitLod:
+    case SpvOpImageSampleProjDrefImplicitLod:
+    case SpvOpImageSampleProjDrefExplicitLod:
+      is_proj = true;
+      break;
+    default:
+      break;
+  }
+
+  const auto num_coords_required =
+      num_axes + (is_arrayed ? 1 : 0) + (is_proj ? 1 : 0);
   uint32_t num_coords_supplied = 0;
   auto* component_type = raw_coords.type;
   if (component_type->IsFloatScalar() || component_type->IsIntegerScalar()) {
@@ -5129,13 +5674,20 @@ ast::ExpressionList FunctionEmitter::MakeCoordinateOperandsForImageAccess(
   // it to a signed value of the same shape (scalar or vector).
   // Use a lambda to make it easy to only generate the expressions when we
   // will actually use them.
-  auto prefix_swizzle_expr = [this, num_axes, component_type,
-                              raw_coords]() -> ast::Expression* {
+  auto prefix_swizzle_expr = [this, num_axes, component_type, is_proj,
+                              raw_coords]() -> const ast::Expression* {
     auto* swizzle_type =
         (num_axes == 1) ? component_type : ty_.Vector(component_type, num_axes);
     auto* swizzle = create<ast::MemberAccessorExpression>(
         Source{}, raw_coords.expr, PrefixSwizzle(num_axes));
-    return ToSignedIfUnsigned({swizzle_type, swizzle}).expr;
+    if (is_proj) {
+      auto* q = create<ast::MemberAccessorExpression>(Source{}, raw_coords.expr,
+                                                      Swizzle(num_axes));
+      auto* proj_div = builder_.Div(swizzle, q);
+      return ToSignedIfUnsigned({swizzle_type, proj_div}).expr;
+    } else {
+      return ToSignedIfUnsigned({swizzle_type, swizzle}).expr;
+    }
   };
 
   if (is_arrayed) {
@@ -5145,12 +5697,19 @@ ast::ExpressionList FunctionEmitter::MakeCoordinateOperandsForImageAccess(
     result.push_back(prefix_swizzle_expr());
 
     // Now get the array index.
-    ast::Expression* array_index = create<ast::MemberAccessorExpression>(
-        Source{}, raw_coords.expr, Swizzle(num_axes));
-    // Convert it to a signed integer type, if needed
+    const ast::Expression* array_index =
+        builder_.MemberAccessor(raw_coords.expr, Swizzle(num_axes));
+    if (component_type->IsFloatScalar()) {
+      // When converting from a float array layer to integer, Vulkan requires
+      // round-to-nearest, with preference for round-to-nearest-even.
+      // But i32(f32) in WGSL has unspecified rounding mode, so we have to
+      // explicitly specify the rounding.
+      array_index = builder_.Call("round", array_index);
+    }
+    // Convert it to a signed integer type, if needed.
     result.push_back(ToI32({component_type, array_index}).expr);
   } else {
-    if (num_coords_supplied == num_coords_required) {
+    if (num_coords_supplied == num_coords_required && !is_proj) {
       // Pass the value through, with possible unsigned->signed conversion.
       result.push_back(ToSignedIfUnsigned(raw_coords).expr);
     } else {
@@ -5163,7 +5722,7 @@ ast::ExpressionList FunctionEmitter::MakeCoordinateOperandsForImageAccess(
   return result;
 }
 
-ast::Expression* FunctionEmitter::ConvertTexelForStorage(
+const ast::Expression* FunctionEmitter::ConvertTexelForStorage(
     const spvtools::opt::Instruction& inst,
     TypedExpression texel,
     const Texture* texture_type) {
@@ -5182,11 +5741,11 @@ ast::Expression* FunctionEmitter::ConvertTexelForStorage(
 
   // The texel type is always a 4-element vector.
   const uint32_t dest_count = 4u;
-  TINT_ASSERT(dest_type->Is<Vector>() &&
-              dest_type->As<Vector>()->size == dest_count);
-  TINT_ASSERT(dest_type->IsFloatVector() ||
-              dest_type->IsUnsignedIntegerVector() ||
-              dest_type->IsSignedIntegerVector());
+  TINT_ASSERT(Reader, dest_type->Is<Vector>() &&
+                          dest_type->As<Vector>()->size == dest_count);
+  TINT_ASSERT(Reader, dest_type->IsFloatVector() ||
+                          dest_type->IsUnsignedIntegerVector() ||
+                          dest_type->IsSignedIntegerVector());
 
   if (src_type == dest_type) {
     return texel.expr;
@@ -5206,7 +5765,7 @@ ast::Expression* FunctionEmitter::ConvertTexelForStorage(
   }
 
   const auto required_count = parser_impl_.GetChannelCountForFormat(format);
-  TINT_ASSERT(0 < required_count && required_count <= 4);
+  TINT_ASSERT(Reader, 0 < required_count && required_count <= 4);
 
   const uint32_t src_count =
       src_type->IsScalar() ? 1 : src_type->As<Vector>()->size;
@@ -5230,8 +5789,8 @@ ast::Expression* FunctionEmitter::ConvertTexelForStorage(
     for (auto i = src_count; i < dest_count; i++) {
       exprs.push_back(parser_impl_.MakeNullExpression(component_type).expr);
     }
-    texel.expr = create<ast::TypeConstructorExpression>(
-        Source{}, texel.type->Build(builder_), std::move(exprs));
+    texel.expr = builder_.Construct(Source{}, texel.type->Build(builder_),
+                                    std::move(exprs));
   }
 
   return texel.expr;
@@ -5241,9 +5800,8 @@ TypedExpression FunctionEmitter::ToI32(TypedExpression value) {
   if (!value || value.type->Is<I32>()) {
     return value;
   }
-  return {ty_.I32(),
-          create<ast::TypeConstructorExpression>(
-              Source{}, builder_.ty.i32(), ast::ExpressionList{value.expr})};
+  return {ty_.I32(), builder_.Construct(Source{}, builder_.ty.i32(),
+                                        ast::ExpressionList{value.expr})};
 }
 
 TypedExpression FunctionEmitter::ToSignedIfUnsigned(TypedExpression value) {
@@ -5280,23 +5838,21 @@ TypedExpression FunctionEmitter::MakeArrayLength(
     return {};
   }
 
-  auto* member_ident = create<ast::IdentifierExpression>(
-      Source{}, builder_.Symbols().Register(field_name));
   auto member_expr = MakeExpression(struct_ptr_id);
   if (!member_expr) {
     return {};
   }
+  if (member_expr.type->Is<Pointer>()) {
+    member_expr = Dereference(member_expr);
+  }
+  auto* member_ident = create<ast::IdentifierExpression>(
+      Source{}, builder_.Symbols().Register(field_name));
   auto* member_access = create<ast::MemberAccessorExpression>(
       Source{}, member_expr.expr, member_ident);
 
   // Generate the intrinsic function call.
-  std::string call_ident_str = "arrayLength";
-  auto* call_ident = create<ast::IdentifierExpression>(
-      Source{}, builder_.Symbols().Register(call_ident_str));
-
-  ast::ExpressionList params{member_access};
   auto* call_expr =
-      create<ast::CallExpression>(Source{}, call_ident, std::move(params));
+      builder_.Call(Source{}, "arrayLength", builder_.AddressOf(member_access));
 
   return {parser_impl_.ConvertType(inst.type_id()), call_expr};
 }
@@ -5338,92 +5894,136 @@ TypedExpression FunctionEmitter::MakeOuterProduct(
           Source{}, ast::BinaryOp::kMultiply, row_factor, column_factor);
       result_row.push_back(elem);
     }
-    result_columns.push_back(create<ast::TypeConstructorExpression>(
-        Source{}, col_ty->Build(builder_), result_row));
+    result_columns.push_back(
+        builder_.Construct(Source{}, col_ty->Build(builder_), result_row));
   }
-  return {result_ty, create<ast::TypeConstructorExpression>(
-                         Source{}, result_ty->Build(builder_), result_columns)};
+  return {result_ty, builder_.Construct(Source{}, result_ty->Build(builder_),
+                                        result_columns)};
 }
 
 bool FunctionEmitter::MakeVectorInsertDynamic(
     const spvtools::opt::Instruction& inst) {
   // For
   //    %result = OpVectorInsertDynamic %type %src_vector %component %index
-  // generate statements like this:
+  // there are two cases.
+  //
+  // Case 1:
+  //   The %src_vector value has already been hoisted into a variable.
+  //   In this case, assign %src_vector to that variable, then write the
+  //   component into the right spot:
+  //
+  //    hoisted = src_vector;
+  //    hoisted[index] = component;
+  //
+  // Case 2:
+  //   The %src_vector value is not hoisted. In this case, make a temporary
+  //   variable with the %src_vector contents, then write the component,
+  //   and then make a let-declaration that reads the value out:
   //
   //    var temp : type = src_vector;
   //    temp[index] = component;
   //    let result : type = temp;
   //
-  // Then use result everywhere the original SPIR-V id is used.  Using a const
-  // like this avoids constantly reloading the value many times.
+  //   Then use result everywhere the original SPIR-V id is used.  Using a const
+  //   like this avoids constantly reloading the value many times.
 
-  auto* ast_type = parser_impl_.ConvertType(inst.type_id());
+  auto* type = parser_impl_.ConvertType(inst.type_id());
   auto src_vector = MakeOperand(inst, 0);
   auto component = MakeOperand(inst, 1);
   auto index = MakeOperand(inst, 2);
 
-  // Synthesize the temporary variable.
-  // It doesn't correspond to a SPIR-V ID, so we don't use the ordinary
-  // API in parser_impl_.
-  auto result_name = namer_.Name(inst.result_id());
-  auto temp_name = namer_.MakeDerivedName(result_name);
-  auto registered_temp_name = builder_.Symbols().Register(temp_name);
+  std::string var_name;
+  auto original_value_name = namer_.Name(inst.result_id());
+  const bool hoisted = WriteIfHoistedVar(inst, src_vector);
+  if (hoisted) {
+    // The variable was already declared in an earlier block.
+    var_name = original_value_name;
+    // Assign the source vector value to it.
+    builder_.Assign({}, builder_.Expr(var_name), src_vector.expr);
+  } else {
+    // Synthesize the temporary variable.
+    // It doesn't correspond to a SPIR-V ID, so we don't use the ordinary
+    // API in parser_impl_.
+    var_name = namer_.MakeDerivedName(original_value_name);
 
-  auto* temp_var = create<ast::Variable>(
-      Source{}, registered_temp_name, ast::StorageClass::kNone,
-      ast_type->Build(builder_), false, src_vector.expr, ast::DecorationList{});
-  AddStatement(create<ast::VariableDeclStatement>(Source{}, temp_var));
+    auto* temp_var = builder_.Var(var_name, type->Build(builder_),
+                                  ast::StorageClass::kNone, src_vector.expr);
 
-  auto* lhs = create<ast::ArrayAccessorExpression>(
-      Source{}, create<ast::IdentifierExpression>(registered_temp_name),
-      index.expr);
+    AddStatement(builder_.Decl({}, temp_var));
+  }
 
-  AddStatement(create<ast::AssignmentStatement>(Source{}, lhs, component.expr));
+  auto* lhs = create<ast::IndexAccessorExpression>(
+      Source{}, builder_.Expr(var_name), index.expr);
+  if (!lhs) {
+    return false;
+  }
 
-  return EmitConstDefinition(
-      inst,
-      {ast_type, create<ast::IdentifierExpression>(registered_temp_name)});
+  AddStatement(builder_.Assign(lhs, component.expr));
+
+  if (hoisted) {
+    // The hoisted variable itself stands for this result ID.
+    return success();
+  }
+  // Create a new let-declaration that is initialized by the contents
+  // of the temporary variable.
+  return EmitConstDefinition(inst, {type, builder_.Expr(var_name)});
 }
 
 bool FunctionEmitter::MakeCompositeInsert(
     const spvtools::opt::Instruction& inst) {
   // For
   //    %result = OpCompositeInsert %type %object %composite 1 2 3 ...
-  // generate statements like this:
+  // there are two cases.
+  //
+  // Case 1:
+  //   The %composite value has already been hoisted into a variable.
+  //   In this case, assign %composite to that variable, then write the
+  //   component into the right spot:
+  //
+  //    hoisted = composite;
+  //    hoisted[index].x = object;
+  //
+  // Case 2:
+  //   The %composite value is not hoisted. In this case, make a temporary
+  //   variable with the %composite contents, then write the component,
+  //   and then make a let-declaration that reads the value out:
   //
   //    var temp : type = composite;
   //    temp[index].x = object;
   //    let result : type = temp;
   //
-  // Then use result everywhere the original SPIR-V id is used.  Using a const
-  // like this avoids constantly reloading the value many times.
+  //   Then use result everywhere the original SPIR-V id is used.  Using a const
+  //   like this avoids constantly reloading the value many times.
   //
-  // This technique is a combination of:
-  // - making a temporary variable and constant declaration, like  what we do
-  //   for VectorInsertDynamic, and
-  // - building up an access-chain like access like for CompositeExtract, but
-  //   on the left-hand side of the assignment.
+  //   This technique is a combination of:
+  //   - making a temporary variable and constant declaration, like what we do
+  //     for VectorInsertDynamic, and
+  //   - building up an access-chain like access like for CompositeExtract, but
+  //     on the left-hand side of the assignment.
 
-  auto* ast_type = parser_impl_.ConvertType(inst.type_id());
+  auto* type = parser_impl_.ConvertType(inst.type_id());
   auto component = MakeOperand(inst, 0);
   auto src_composite = MakeOperand(inst, 1);
 
-  // Synthesize the temporary variable.
-  // It doesn't correspond to a SPIR-V ID, so we don't use the ordinary
-  // API in parser_impl_.
-  auto result_name = namer_.Name(inst.result_id());
-  auto temp_name = namer_.MakeDerivedName(result_name);
-  auto registered_temp_name = builder_.Symbols().Register(temp_name);
+  std::string var_name;
+  auto original_value_name = namer_.Name(inst.result_id());
+  const bool hoisted = WriteIfHoistedVar(inst, src_composite);
+  if (hoisted) {
+    // The variable was already declared in an earlier block.
+    var_name = original_value_name;
+    // Assign the source composite value to it.
+    builder_.Assign({}, builder_.Expr(var_name), src_composite.expr);
+  } else {
+    // Synthesize a temporary variable.
+    // It doesn't correspond to a SPIR-V ID, so we don't use the ordinary
+    // API in parser_impl_.
+    var_name = namer_.MakeDerivedName(original_value_name);
+    auto* temp_var = builder_.Var(var_name, type->Build(builder_),
+                                  ast::StorageClass::kNone, src_composite.expr);
+    AddStatement(builder_.Decl({}, temp_var));
+  }
 
-  auto* temp_var =
-      create<ast::Variable>(Source{}, registered_temp_name,
-                            ast::StorageClass::kNone, ast_type->Build(builder_),
-                            false, src_composite.expr, ast::DecorationList{});
-  AddStatement(create<ast::VariableDeclStatement>(Source{}, temp_var));
-
-  TypedExpression seed_expr{ast_type, create<ast::IdentifierExpression>(
-                                          Source{}, registered_temp_name)};
+  TypedExpression seed_expr{type, builder_.Expr(var_name)};
 
   // The left-hand side of the assignment *looks* like a decomposition.
   TypedExpression lhs =
@@ -5432,12 +6032,15 @@ bool FunctionEmitter::MakeCompositeInsert(
     return false;
   }
 
-  AddStatement(
-      create<ast::AssignmentStatement>(Source{}, lhs.expr, component.expr));
+  AddStatement(builder_.Assign(lhs.expr, component.expr));
 
-  return EmitConstDefinition(
-      inst,
-      {ast_type, create<ast::IdentifierExpression>(registered_temp_name)});
+  if (hoisted) {
+    // The hoisted variable itself stands for this result ID.
+    return success();
+  }
+  // Create a new let-declaration that is initialized by the contents
+  // of the temporary variable.
+  return EmitConstDefinition(inst, {type, builder_.Expr(var_name)});
 }
 
 TypedExpression FunctionEmitter::AddressOf(TypedExpression expr) {
@@ -5464,6 +6067,28 @@ TypedExpression FunctionEmitter::Dereference(TypedExpression expr) {
       create<ast::UnaryOpExpression>(Source{}, ast::UnaryOp::kIndirection,
                                      expr.expr),
   };
+}
+
+bool FunctionEmitter::IsFloatZero(uint32_t value_id) {
+  if (const auto* c = constant_mgr_->FindDeclaredConstant(value_id)) {
+    if (const auto* float_const = c->AsFloatConstant()) {
+      return 0.0f == float_const->GetFloatValue();
+    }
+    if (c->AsNullConstant()) {
+      // Valid SPIR-V requires it to be a float value anyway.
+      return true;
+    }
+  }
+  return false;
+}
+
+bool FunctionEmitter::IsFloatOne(uint32_t value_id) {
+  if (const auto* c = constant_mgr_->FindDeclaredConstant(value_id)) {
+    if (const auto* float_const = c->AsFloatConstant()) {
+      return 1.0f == float_const->GetFloatValue();
+    }
+  }
+  return false;
 }
 
 FunctionEmitter::FunctionDeclaration::FunctionDeclaration() = default;

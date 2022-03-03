@@ -9,13 +9,13 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -109,10 +109,9 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
       base::BindRepeating(&FrameSinkVideoCaptureDevice::CreateCapturer,
                           base::Unretained(this)));
 
-  capturer_->SetFormat(capture_params_.requested_format.pixel_format,
-                       gfx::ColorSpace::CreateREC709());
+  capturer_->SetFormat(capture_params_.requested_format.pixel_format);
   capturer_->SetMinCapturePeriod(
-      base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
+      base::Microseconds(base::saturated_cast<int64_t>(
           base::Time::kMicrosecondsPerSecond /
           capture_params_.requested_format.frame_rate)));
   const auto& constraints = capture_params_.SuggestConstraints();
@@ -120,8 +119,8 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
                                       constraints.max_frame_size,
                                       constraints.fixed_aspect_ratio);
 
-  if (target_.is_valid()) {
-    capturer_->ChangeTarget(target_, viz::SubtreeCaptureId());
+  if (target_) {
+    capturer_->ChangeTarget(target_);
   }
 
 #if !defined(OS_ANDROID)
@@ -174,6 +173,16 @@ void FrameSinkVideoCaptureDevice::Resume() {
   MaybeStartConsuming();
 }
 
+void FrameSinkVideoCaptureDevice::Crop(
+    const base::Token& crop_id,
+    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(callback);
+
+  std::move(callback).Run(
+      media::mojom::CropRequestResult::kUnsupportedCaptureDevice);
+}
+
 void FrameSinkVideoCaptureDevice::StopAndDeAllocate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -210,7 +219,7 @@ void FrameSinkVideoCaptureDevice::OnUtilizationReport(
 }
 
 void FrameSinkVideoCaptureDevice::OnFrameCaptured(
-    base::ReadOnlySharedMemoryRegion data,
+    media::mojom::VideoBufferHandlePtr data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
@@ -221,7 +230,7 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
       callbacks_remote(std::move(callbacks));
 
-  if (!receiver_ || !data.IsValid()) {
+  if (!receiver_ || !data) {
     callbacks_remote->Done();
     return;
   }
@@ -258,9 +267,7 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   // Pass the video frame to the VideoFrameReceiver. This is done by first
   // passing the shared memory buffer handle and then notifying it that a new
   // frame is ready to be read from the buffer.
-  receiver_->OnNewBuffer(
-      buffer_id,
-      media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(std::move(data)));
+  receiver_->OnNewBuffer(buffer_id, std::move(data));
   receiver_->OnFrameReadyInBuffer(
       media::ReadyFrameInBuffer(
           buffer_id, buffer_id,
@@ -298,22 +305,17 @@ void FrameSinkVideoCaptureDevice::OnLog(const std::string& message) {
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetChanged(
-    const viz::FrameSinkId& frame_sink_id) {
+    const absl::optional<viz::VideoCaptureTarget>& target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  target_ = frame_sink_id;
+  target_ = target;
   if (capturer_) {
-    capturer_->ChangeTarget(target_.is_valid()
-                                ? absl::make_optional<viz::FrameSinkId>(target_)
-                                : absl::nullopt,
-                            viz::SubtreeCaptureId());
+    capturer_->ChangeTarget(target_);
   }
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  OnTargetChanged(viz::FrameSinkId());
+  OnTargetChanged(absl::nullopt);
   OnFatalError("Capture target has been permanently lost.");
 }
 
@@ -351,7 +353,7 @@ void FrameSinkVideoCaptureDevice::MaybeStartConsuming() {
     return;
   }
 
-  capturer_->Start(this);
+  capturer_->Start(this, viz::mojom::BufferFormatPreference::kDefault);
 }
 
 void FrameSinkVideoCaptureDevice::MaybeStopConsuming() {

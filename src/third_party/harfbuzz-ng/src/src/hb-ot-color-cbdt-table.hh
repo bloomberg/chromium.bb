@@ -508,8 +508,8 @@ struct IndexSubtableRecord
 						   offset, length, format);
   }
 
-  HBGlyphID			firstGlyphIndex;
-  HBGlyphID			lastGlyphIndex;
+  HBGlyphID16			firstGlyphIndex;
+  HBGlyphID16			lastGlyphIndex;
   Offset32To<IndexSubtable>	offsetToSubtable;
   public:
   DEFINE_SIZE_STATIC (8);
@@ -679,8 +679,8 @@ struct BitmapSizeTable
   HBUINT32		colorRef;
   SBitLineMetrics	horizontal;
   SBitLineMetrics	vertical;
-  HBGlyphID		startGlyphIndex;
-  HBGlyphID		endGlyphIndex;
+  HBGlyphID16		startGlyphIndex;
+  HBGlyphID16		endGlyphIndex;
   HBUINT8		ppemX;
   HBUINT8		ppemY;
   HBUINT8		bitDepth;
@@ -738,7 +738,7 @@ struct CBLC
 						 cbdt_prime->length,
 						 HB_MEMORY_MODE_WRITABLE,
 						 cbdt_prime->arrayZ,
-						 free);
+						 hb_free);
     cbdt_prime->init ();  // Leak arrayZ to the blob.
     bool ret = c->plan->add_table (HB_OT_TAG_CBDT, cbdt_prime_blob);
     hb_blob_destroy (cbdt_prime_blob);

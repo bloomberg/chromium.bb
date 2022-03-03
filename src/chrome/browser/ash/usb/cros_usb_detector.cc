@@ -9,12 +9,17 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/disks/disk.h"
+#include "ash/components/disks/disk_mount_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
@@ -29,9 +34,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/disks/disk.h"
-#include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/arc_util.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/device_service.h"
@@ -39,12 +41,13 @@
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
 constexpr uint32_t kAllInterfacesMask = ~0U;
 const char16_t kParallelsShortName[] = u"Parallels";
+const char16_t kParallelsName[] = u"Parallels Desktop";
 
 // Not owned locally.
 static CrosUsbDetector* g_cros_usb_detector = nullptr;
@@ -151,6 +154,10 @@ class CrosUsbNotificationDelegate
         settings_sub_page_(std::move(settings_sub_page)),
         disposition_(CrosUsbNotificationClosed::kUnknown) {}
 
+  CrosUsbNotificationDelegate(const CrosUsbNotificationDelegate&) = delete;
+  CrosUsbNotificationDelegate& operator=(const CrosUsbNotificationDelegate&) =
+      delete;
+
   void Click(const absl::optional<int>& button_index,
              const absl::optional<std::u16string>& reply) override {
     disposition_ = CrosUsbNotificationClosed::kUnknown;
@@ -163,14 +170,14 @@ class CrosUsbNotificationDelegate
 
   void Close(bool by_user) override {
     if (by_user)
-      disposition_ = chromeos::CrosUsbNotificationClosed::kByUser;
+      disposition_ = CrosUsbNotificationClosed::kByUser;
   }
 
  private:
   ~CrosUsbNotificationDelegate() override = default;
   void HandleConnectToVm(const std::string& vm_name) {
     disposition_ = CrosUsbNotificationClosed::kConnectToLinux;
-    chromeos::CrosUsbDetector* detector = chromeos::CrosUsbDetector::Get();
+    CrosUsbDetector* detector = CrosUsbDetector::Get();
     if (detector) {
       detector->AttachUsbDeviceToVm(vm_name, guid_, base::DoNothing());
       return;
@@ -190,8 +197,6 @@ class CrosUsbNotificationDelegate
   std::string settings_sub_page_;
   CrosUsbNotificationClosed disposition_;
   base::WeakPtrFactory<CrosUsbNotificationDelegate> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrosUsbNotificationDelegate);
 };
 
 // List of class codes to handle / not handle.
@@ -227,12 +232,34 @@ device::mojom::UsbDeviceFilterPtr UsbFilterByClassCode(
   return filter;
 }
 
+std::u16string CombineVmNames(const std::vector<std::u16string>& vm_names) {
+  std::u16string res;
+  int pos = 0;
+  while (pos < vm_names.size()) {
+    res.append(vm_names[pos]);
+    pos++;
+    if (pos < vm_names.size()) {
+      res.append(u" ");
+      res.append(l10n_util::GetStringUTF16(IDS_CROSUSB_NOTIFICATION_OR));
+      res.append(u" ");
+    }
+  }
+  return res;
+}
+
+// Returns true if user enables ARC on ARCVM enabled devices.
+bool IsPlayStoreEnabledWithArcVmForProfile(const Profile* profile) {
+  return arc::IsArcPlayStoreEnabledForProfile(profile) && arc::IsArcVmEnabled();
+}
+
 void ShowNotificationForDevice(const std::string& guid,
                                const std::u16string& label) {
   message_center::RichNotificationData rich_notification_data;
   std::vector<std::string> vm_names;
   std::string settings_sub_page;
   std::u16string vm_name;
+  std::u16string vm_name_button_text;
+  std::vector<std::u16string> vm_names_in_notification;
   rich_notification_data.small_image = gfx::Image(
       gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64, gfx::kGoogleBlue800));
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
@@ -243,29 +270,45 @@ void ShowNotificationForDevice(const std::string& guid,
         message_center::ButtonInfo(l10n_util::GetStringFUTF16(
             IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_VM, vm_name)));
     vm_names.emplace_back(crostini::kCrostiniDefaultVmName);
+    vm_names_in_notification.emplace_back(vm_name);
     settings_sub_page =
         chromeos::settings::mojom::kCrostiniUsbPreferencesSubpagePath;
   }
   if (plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile())) {
-    vm_name = kParallelsShortName;
+    vm_name = kParallelsName;
+    vm_name_button_text = kParallelsShortName;
     rich_notification_data.buttons.emplace_back(
         message_center::ButtonInfo(l10n_util::GetStringFUTF16(
-            IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_VM, vm_name)));
+            IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_VM,
+            vm_name_button_text)));
     vm_names.emplace_back(plugin_vm::kPluginVmName);
+    vm_names_in_notification.emplace_back(vm_name);
     settings_sub_page =
         chromeos::settings::mojom::kPluginVmUsbPreferencesSubpagePath;
   }
 
-  std::u16string message;
-  if (vm_names.size() == 1) {
-    message = l10n_util::GetStringFUTF16(
-        IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION, label, vm_name);
-  } else {
-    // Note: we assume right now that multi-VM is Linux and Plugin VM.
-    message = l10n_util::GetStringFUTF16(
-        IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION_LINUX_PLUGIN_VM, label);
-    settings_sub_page = std::string();
+  if (IsPlayStoreEnabledWithArcVmForProfile(profile()) &&
+      base::FeatureList::IsEnabled(arc::kUsbDeviceDefaultAttachToArcVm)) {
+    vm_name = l10n_util::GetStringUTF16(IDS_CROSUSB_NOTIFICATION_ARCVM);
+    vm_name_button_text =
+        l10n_util::GetStringUTF16(IDS_CROSUSB_NOTIFICATION_ARCVM_BUTTON);
+    rich_notification_data.buttons.emplace_back(
+        message_center::ButtonInfo(l10n_util::GetStringFUTF16(
+            IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_VM,
+            vm_name_button_text)));
+    vm_names.emplace_back(arc::kArcVmName);
+    vm_names_in_notification.emplace_back(vm_name);
+    settings_sub_page =
+        chromeos::settings::mojom::kArcVmUsbPreferencesSubpagePath;
   }
+
+  DCHECK(vm_names_in_notification.size());
+  std::u16string message = l10n_util::GetStringFUTF16(
+      IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION, label,
+      CombineVmNames(vm_names_in_notification));
+
+  if (vm_names.size() > 1)
+    settings_sub_page = std::string();
 
   std::string notification_id = CrosUsbDetector::MakeNotificationId(guid);
   message_center::Notification notification(
@@ -336,6 +379,10 @@ CrosUsbDeviceInfo::~CrosUsbDeviceInfo() = default;
 std::string CrosUsbDetector::MakeNotificationId(const std::string& guid) {
   return "cros:" + guid;
 }
+
+CrosUsbDetector::DeviceClaim::DeviceClaim() = default;
+
+CrosUsbDetector::DeviceClaim::~DeviceClaim() = default;
 
 // static
 CrosUsbDetector* CrosUsbDetector::Get() {
@@ -457,7 +504,9 @@ void CrosUsbDetector::ConnectToDeviceManager() {
 
 bool CrosUsbDetector::ShouldShowNotification(const UsbDevice& device) {
   if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile()) &&
-      !plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile())) {
+      !plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile()) &&
+      !(IsPlayStoreEnabledWithArcVmForProfile(profile()) &&
+        base::FeatureList::IsEnabled(arc::kUsbDeviceDefaultAttachToArcVm))) {
     return false;
   }
   if (!device.shareable) {
@@ -508,7 +557,7 @@ void CrosUsbDetector::OnMountEvent(
     return;
   }
 
-  const chromeos::disks::Disk* disk =
+  const auto* disk =
       disks::DiskMountManager::GetInstance()->FindDiskBySourcePath(
           mount_info.source_path);
 
@@ -541,9 +590,9 @@ void CrosUsbDetector::OnDeviceChecked(
     bool hide_notification,
     bool allowed) {
   if (!allowed) {
-    LOG(WARNING) << "Device not allowed by Permission Broker. product:"
-                 << device_info->product_id
-                 << " vendor:" << device_info->vendor_id;
+    LOG(WARNING) << "Device not allowed by Permission Broker. vendor: 0x"
+                 << std::hex << device_info->vendor_id << " product: 0x"
+                 << device_info->product_id;
     return;
   }
 
@@ -570,7 +619,7 @@ void CrosUsbDetector::OnDeviceChecked(
     }
   }
 
-  // Copy strings prior to moving |device_info| and |new_device|.
+  // Copy fields prior to moving |device_info| and |new_device|.
   std::string guid = device_info->guid;
   std::u16string label = new_device.label;
 
@@ -819,10 +868,9 @@ void CrosUsbDetector::AttachAfterDetach(
 
   auto claim_it = devices_claimed_.find(guid);
   if (claim_it != devices_claimed_.end()) {
-    if (claim_it->second.device_file.IsValid()) {
+    if (claim_it->second.device_file.is_valid()) {
       // We take a dup here which will be closed if DoVmAttach fails.
-      base::ScopedFD device_fd(
-          claim_it->second.device_file.Duplicate().TakePlatformFile());
+      base::ScopedFD device_fd(dup(claim_it->second.device_file.get()));
       DoVmAttach(vm_name, device.info.Clone(), std::move(device_fd),
                  std::move(callback));
     } else {
@@ -843,7 +891,7 @@ void CrosUsbDetector::AttachAfterDetach(
   }
 
   VLOG(1) << "Saving lifeline_fd " << write_end.get();
-  devices_claimed_[guid].lifeline_file = base::File(std::move(write_end));
+  devices_claimed_[guid].lifeline_file = std::move(write_end);
 
   // Open a file descriptor to pass to CrostiniManager & Concierge.
   device_manager_->OpenFileDescriptor(
@@ -869,7 +917,8 @@ void CrosUsbDetector::OnAttachUsbDeviceOpened(
     std::move(callback).Run(/*success=*/false);
     return;
   }
-  devices_claimed_[device_info->guid].device_file = file.Duplicate();
+  devices_claimed_[device_info->guid].device_file =
+      base::ScopedFD(file.Duplicate().TakePlatformFile());
   if (!manager()) {
     LOG(ERROR) << "Attaching device without Crostini manager instance";
     std::move(callback).Run(/*success=*/false);
@@ -958,12 +1007,11 @@ void CrosUsbDetector::OnUsbDeviceDetachFinished(
 void CrosUsbDetector::RelinquishDeviceClaim(const std::string& guid) {
   auto it = devices_claimed_.find(guid);
   if (it != devices_claimed_.end()) {
-    VLOG(1) << "Closing lifeline_fd "
-            << it->second.lifeline_file.GetPlatformFile();
+    VLOG(1) << "Closing lifeline_fd " << it->second.lifeline_file.get();
     devices_claimed_.erase(it);
   } else {
     LOG(ERROR) << "Relinquishing device with no prior claim: " << guid;
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

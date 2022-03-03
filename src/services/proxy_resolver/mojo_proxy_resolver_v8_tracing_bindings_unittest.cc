@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +16,11 @@ namespace proxy_resolver {
 class MojoProxyResolverV8TracingBindingsTest : public testing::Test {
  public:
   MojoProxyResolverV8TracingBindingsTest() = default;
+
+  MojoProxyResolverV8TracingBindingsTest(
+      const MojoProxyResolverV8TracingBindingsTest&) = delete;
+  MojoProxyResolverV8TracingBindingsTest& operator=(
+      const MojoProxyResolverV8TracingBindingsTest&) = delete;
 
   void Alert(const std::string& message) { alerts_.push_back(message); }
 
@@ -36,9 +40,6 @@ class MojoProxyResolverV8TracingBindingsTest : public testing::Test {
 
   std::vector<std::string> alerts_;
   std::vector<std::pair<int, std::string>> errors_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverV8TracingBindingsTest);
 };
 
 TEST_F(MojoProxyResolverV8TracingBindingsTest, Basic) {

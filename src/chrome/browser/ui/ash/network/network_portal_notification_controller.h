@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -38,6 +37,12 @@ class NetworkPortalNotificationController
 
   explicit NetworkPortalNotificationController(
       NetworkPortalDetector* network_portal_dectector);
+
+  NetworkPortalNotificationController(
+      const NetworkPortalNotificationController&) = delete;
+  NetworkPortalNotificationController& operator=(
+      const NetworkPortalNotificationController&) = delete;
+
   ~NetworkPortalNotificationController() override;
 
   // Creates NetworkPortalWebDialog.
@@ -87,8 +92,6 @@ class NetworkPortalNotificationController
   bool ignore_no_network_for_testing_ = false;
 
   base::WeakPtrFactory<NetworkPortalNotificationController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationController);
 };
 
 }  // namespace chromeos

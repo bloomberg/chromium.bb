@@ -12,8 +12,11 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/memory/raw_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
@@ -151,7 +154,7 @@ class AnimatingLayoutManager::AnimationDelegate
     }
 
    private:
-    AnimationDelegate* const animation_delegate_;
+    const raw_ptr<AnimationDelegate> animation_delegate_;
   };
   friend class Observer;
 
@@ -162,7 +165,7 @@ class AnimatingLayoutManager::AnimationDelegate
 
   bool ready_to_animate_ = false;
   bool resetting_animation_ = false;
-  AnimatingLayoutManager* const target_layout_manager_;
+  const raw_ptr<AnimatingLayoutManager> target_layout_manager_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
   ViewWidgetObserver view_widget_observer_{this};
   base::ScopedObservation<View, ViewObserver> scoped_observation_{
@@ -464,7 +467,7 @@ bool AnimatingLayoutManager::OnViewRemoved(View* host, View* view) {
 
 void AnimatingLayoutManager::PostOrQueueAction(base::OnceClosure action) {
   queued_actions_.push_back(std::move(action));
-  if (!is_animating())
+  if (!is_animating() && !hold_queued_actions_for_layout_)
     PostQueuedActions();
 }
 
@@ -577,15 +580,19 @@ void AnimatingLayoutManager::LayoutImpl() {
   // Send animating stopped events on layout so the current layout during the
   // event represents the final state instead of an intermediate state.
   if (is_animating_ && current_offset_ == 1.0)
-    OnAnimationEnded();
+    EndAnimation();
+
+  if (hold_queued_actions_for_layout_ && !is_animating_) {
+    hold_queued_actions_for_layout_ = false;
+    PostQueuedActions();
+  }
 }
 
-void AnimatingLayoutManager::OnAnimationEnded() {
-  DCHECK(is_animating_);
-  is_animating_ = false;
+void AnimatingLayoutManager::EndAnimation() {
   fade_infos_.clear();
-  PostQueuedActions();
-  NotifyIsAnimatingChanged();
+  hold_queued_actions_for_layout_ = true;
+  if (std::exchange(is_animating_, false))
+    NotifyIsAnimatingChanged();
 }
 
 void AnimatingLayoutManager::ResetLayoutToTargetSize() {
@@ -601,12 +608,9 @@ void AnimatingLayoutManager::ResetLayoutToSize(const gfx::Size& target_size) {
   target_layout_ = target_layout_manager()->GetProposedLayout(target_size);
   current_layout_ = target_layout_;
   starting_layout_ = current_layout_;
-  fade_infos_.clear();
   current_offset_ = 1.0;
   set_cached_layout_size(target_size);
-
-  if (is_animating_)
-    OnAnimationEnded();
+  EndAnimation();
 }
 
 bool AnimatingLayoutManager::RecalculateTarget() {
@@ -656,7 +660,15 @@ bool AnimatingLayoutManager::RecalculateTarget() {
     return false;
   }
   CalculateFadeInfos();
-  UpdateCurrentLayout(0.0);
+
+  // We've calculated all of the targets and fades. Start the layout process if
+  // we are animating, but if animations are disabled, snap to the final
+  // layout.
+  if (gfx::Animation::ShouldRenderRichAnimation()) {
+    UpdateCurrentLayout(0.0);
+  } else {
+    ResetLayoutToSize(target_size);
+  }
 
   return true;
 }
@@ -701,7 +713,7 @@ void AnimatingLayoutManager::PostQueuedActions() {
 
   // Post to self (instead of posting the queued actions directly) which lets
   // us:
-  // * Keep "AnimatingLayoutManager::RunDelayedActions" in the stack frame.
+  // * Keep "AnimatingLayoutManager::RunQueuedActions" in the stack frame.
   // * Tie the task lifetimes to AnimatingLayoutManager.
   run_queued_actions_is_pending_ =
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -969,9 +981,9 @@ ChildLayout AnimatingLayoutManager::CalculateScaleFade(
   }
   trailing_reference_point -= fade_info.offsets.trailing();
 
-  const int new_size =
-      std::min(int{scale_percent * fade_info.reference_bounds.size_main()},
-               trailing_reference_point - leading_reference_point);
+  const int new_size = std::min(
+      base::ClampRound(scale_percent * fade_info.reference_bounds.size_main()),
+      trailing_reference_point - leading_reference_point);
 
   child_layout.child_view = fade_info.child_view;
   if (new_size > 0 &&

@@ -15,6 +15,7 @@
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 
 #include "common/BitSetIterator.h"
+#include "dawn_native/ExternalTexture.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
 #include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
@@ -39,7 +40,7 @@ namespace dawn_native { namespace d3d12 {
 
         mCPUViewAllocation = viewAllocation;
 
-        const auto& bindingOffsets = bgl->GetBindingOffsets();
+        const auto& descriptorHeapOffsets = bgl->GetDescriptorHeapOffsets();
 
         ID3D12Device* d3d12Device = device->GetD3D12Device();
 
@@ -68,18 +69,18 @@ namespace dawn_native { namespace d3d12 {
                     switch (bindingInfo.buffer.type) {
                         case wgpu::BufferBindingType::Uniform: {
                             D3D12_CONSTANT_BUFFER_VIEW_DESC desc;
-                            // TODO(enga@google.com): investigate if this needs to be a constraint
-                            // at the API level
-                            desc.SizeInBytes = Align(binding.size, 256);
+                            desc.SizeInBytes =
+                                Align(binding.size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
                             desc.BufferLocation =
                                 ToBackend(binding.buffer)->GetVA() + binding.offset;
 
                             d3d12Device->CreateConstantBufferView(
-                                &desc, viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                                 bindingOffsets[bindingIndex]));
+                                &desc, viewAllocation.OffsetFrom(
+                                           viewSizeIncrement, descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
-                        case wgpu::BufferBindingType::Storage: {
+                        case wgpu::BufferBindingType::Storage:
+                        case kInternalStorageBufferBinding: {
                             // Since SPIRV-Cross outputs HLSL shaders with RWByteAddressBuffer,
                             // we must use D3D12_BUFFER_UAV_FLAG_RAW when making the
                             // UNORDERED_ACCESS_VIEW_DESC. Using D3D12_BUFFER_UAV_FLAG_RAW requires
@@ -99,7 +100,7 @@ namespace dawn_native { namespace d3d12 {
                             d3d12Device->CreateUnorderedAccessView(
                                 resource, nullptr, &desc,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
                         case wgpu::BufferBindingType::ReadOnlyStorage: {
@@ -118,7 +119,7 @@ namespace dawn_native { namespace d3d12 {
                             d3d12Device->CreateShaderResourceView(
                                 resource, &desc,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
                         case wgpu::BufferBindingType::Undefined:
@@ -142,7 +143,8 @@ namespace dawn_native { namespace d3d12 {
 
                     d3d12Device->CreateShaderResourceView(
                         resource, &srv,
-                        viewAllocation.OffsetFrom(viewSizeIncrement, bindingOffsets[bindingIndex]));
+                        viewAllocation.OffsetFrom(viewSizeIncrement,
+                                                  descriptorHeapOffsets[bindingIndex]));
                     break;
                 }
 
@@ -158,23 +160,12 @@ namespace dawn_native { namespace d3d12 {
                     }
 
                     switch (bindingInfo.storageTexture.access) {
-                        case wgpu::StorageTextureAccess::ReadOnly: {
-                            // Readonly storage is implemented as SRV so it can be used at the same
-                            // time as a sampled texture.
-                            auto& srv = view->GetSRVDescriptor();
-                            d3d12Device->CreateShaderResourceView(
-                                resource, &srv,
-                                viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
-                            break;
-                        }
-
                         case wgpu::StorageTextureAccess::WriteOnly: {
                             D3D12_UNORDERED_ACCESS_VIEW_DESC uav = view->GetUAVDescriptor();
                             d3d12Device->CreateUnorderedAccessView(
                                 resource, nullptr, &uav,
                                 viewAllocation.OffsetFrom(viewSizeIncrement,
-                                                          bindingOffsets[bindingIndex]));
+                                                          descriptorHeapOffsets[bindingIndex]));
                             break;
                         }
 
@@ -185,15 +176,53 @@ namespace dawn_native { namespace d3d12 {
                     break;
                 }
 
+                case BindingInfoType::ExternalTexture: {
+                    const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>& views =
+                        GetBindingAsExternalTexture(bindingIndex)->GetTextureViews();
+
+                    // Only single-plane formats are supported right now, so assert only one view
+                    // exists.
+                    ASSERT(views[1].Get() == nullptr);
+                    ASSERT(views[2].Get() == nullptr);
+
+                    auto& srv = ToBackend(views[0])->GetSRVDescriptor();
+
+                    ID3D12Resource* resource =
+                        ToBackend(views[0]->GetTexture())->GetD3D12Resource();
+
+                    d3d12Device->CreateShaderResourceView(
+                        resource, &srv,
+                        viewAllocation.OffsetFrom(viewSizeIncrement,
+                                                  descriptorHeapOffsets[bindingIndex]));
+                    break;
+                }
+
                 case BindingInfoType::Sampler: {
                     // No-op as samplers will be later initialized by CreateSamplers().
                     break;
                 }
             }
         }
+
+        // Loop through the dynamic storage buffers and build a flat map from the index of the
+        // dynamic storage buffer to its binding size. The index |dynamicStorageBufferIndex|
+        // means that it is the i'th buffer that is both dynamic and storage, in increasing order
+        // of BindingNumber.
+        mDynamicStorageBufferLengths.resize(bgl->GetBindingCountInfo().dynamicStorageBufferCount);
+        uint32_t dynamicStorageBufferIndex = 0;
+        for (BindingIndex bindingIndex(0); bindingIndex < bgl->GetDynamicBufferCount();
+             ++bindingIndex) {
+            if (bgl->IsStorageBufferBinding(bindingIndex)) {
+                mDynamicStorageBufferLengths[dynamicStorageBufferIndex++] =
+                    GetBindingAsBufferBinding(bindingIndex).size;
+            }
+        }
     }
 
-    BindGroup::~BindGroup() {
+    BindGroup::~BindGroup() = default;
+
+    void BindGroup::DestroyImpl() {
+        BindGroupBase::DestroyImpl();
         ToBackend(GetLayout())->DeallocateBindGroup(this, &mCPUViewAllocation);
         ASSERT(!mCPUViewAllocation.IsValid());
     }
@@ -247,4 +276,10 @@ namespace dawn_native { namespace d3d12 {
     void BindGroup::SetSamplerAllocationEntry(Ref<SamplerHeapCacheEntry> entry) {
         mSamplerAllocationEntry = std::move(entry);
     }
+
+    const BindGroup::DynamicStorageBufferLengths& BindGroup::GetDynamicStorageBufferLengths()
+        const {
+        return mDynamicStorageBufferLengths;
+    }
+
 }}  // namespace dawn_native::d3d12

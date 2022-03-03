@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -46,6 +47,10 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_types.h"
+#endif
+
 using content::PluginService;
 
 // PluginObserver -------------------------------------------------------------
@@ -71,12 +76,25 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
   }
 
  private:
-  PluginObserver* observer_;
+  raw_ptr<PluginObserver> observer_;
   mojo::Remote<chrome::mojom::PluginRenderer> plugin_renderer_remote_;
 };
 
+void PluginObserver::BindPluginHost(
+    mojo::PendingAssociatedReceiver<chrome::mojom::PluginHost> receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* plugin_helper = PluginObserver::FromWebContents(web_contents);
+  if (!plugin_helper)
+    return;
+  plugin_helper->plugin_host_receivers_.Bind(rfh, std::move(receiver));
+}
+
 PluginObserver::PluginObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PluginObserver>(*web_contents),
       plugin_host_receivers_(web_contents, this) {}
 
 PluginObserver::~PluginObserver() {
@@ -169,12 +187,6 @@ void PluginObserver::RemovePluginPlaceholderHost(
   plugin_placeholders_.erase(placeholder);
 }
 
-void PluginObserver::ShowFlashPermissionBubble() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // TODO(tommycli): This is a no-op now. Delete this method in a followup.
-}
-
 void PluginObserver::CouldNotLoadPlugin(const base::FilePath& plugin_path) {
   g_browser_process->GetMetricsServicesManager()->OnPluginLoadingError(
       plugin_path);
@@ -199,7 +211,7 @@ void PluginObserver::OpenPDF(const GURL& url) {
   }
 
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url, content::Referrer(web_contents()->GetURL(),
+      url, content::Referrer(web_contents()->GetLastCommittedURL(),
                              network::mojom::ReferrerPolicy::kDefault));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -249,4 +261,4 @@ void PluginObserver::OpenPDF(const GURL& url) {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PluginObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PluginObserver);

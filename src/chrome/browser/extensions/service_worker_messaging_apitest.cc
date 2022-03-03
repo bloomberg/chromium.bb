@@ -69,6 +69,11 @@ base::FilePath WriteServiceWorkerExtensionToDir(TestExtensionDir* test_dir) {
 class ServiceWorkerMessagingTest : public ExtensionApiTest {
  public:
   ServiceWorkerMessagingTest() = default;
+
+  ServiceWorkerMessagingTest(const ServiceWorkerMessagingTest&) = delete;
+  ServiceWorkerMessagingTest& operator=(const ServiceWorkerMessagingTest&) =
+      delete;
+
   ~ServiceWorkerMessagingTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -92,9 +97,14 @@ class ServiceWorkerMessagingTest : public ExtensionApiTest {
   }
 
   extensions::ScopedTestNativeMessagingHost test_host_;
+};
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMessagingTest);
+class ServiceWorkerMessagingTestWithActivityLog
+    : public ServiceWorkerMessagingTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
+    ServiceWorkerMessagingTest::SetUpCommandLine(command_line);
+  }
 };
 
 // Tests one-way message from content script to SW extension using
@@ -194,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
 
   GURL url =
       embedded_test_server()->GetURL("example.com", "/extensions/body1.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Wait for the content script to connect to the worker's port.
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -236,6 +246,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, WorkerToTab) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionTest("service_worker/messaging/send_message_worker_to_tab"))
+      << message_;
+}
+
+// Tests that chrome.tabs.sendMessage from SW extension without specifying
+// callback doesn't crash.
+//
+// Regression test for https://crbug.com/1218569.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
+                       TabsSendMessageWithoutCallback) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/messaging/tabs_send_message_without_callback"))
       << message_;
 }
 
@@ -342,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
   // content script to connect to its background's port.
   GURL url =
       embedded_test_server()->GetURL("example.com", "/extensions/body1.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   EXPECT_TRUE(content_script_connected_catcher.GetNextResult())
       << content_script_connected_catcher.message();
 
@@ -369,6 +391,28 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
     StopServiceWorker(*service_worker_extension);
     unregister_worker_observer.WaitForUnregister();
   }
+}
+
+// Tests ActiviyLog from SW based extension.
+// Regression test for https://crbug.com/1213074, https://crbug.com/1217343.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTestWithActivityLog, ActivityLog) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  const Extension* friend_extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/messaging/connect_to_worker/connect_and_disconnect"));
+  ASSERT_TRUE(friend_extension);
+  {
+    ResultCatcher catcher;
+    content::WebContents* new_web_contents = browsertest_util::AddTab(
+        browser(),
+        embedded_test_server()->GetURL("/extensions/test_file.html"));
+    EXPECT_TRUE(new_web_contents);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
+  // The test passes when /activiy_log/ extension sees activities from
+  // |friend_extension|.
+  ASSERT_TRUE(RunExtensionTest("service_worker/messaging/activity_log/"));
 }
 
 }  // namespace extensions

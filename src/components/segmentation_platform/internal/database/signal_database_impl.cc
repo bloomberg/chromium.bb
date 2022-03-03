@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -35,7 +36,8 @@ bool FilterKeyBasedOnRange(proto::SignalType signal_type,
                            const std::string& signal_key) {
   DCHECK(start_time <= end_time);
   SignalKey key;
-  SignalKey::FromBinary(signal_key, &key);
+  if (!SignalKey::FromBinary(signal_key, &key))
+    return false;
   DCHECK(key.IsValid());
   if (key.kind() != metadata_utils::SignalTypeToSignalKind(signal_type) ||
       key.name_hash() != name_hash) {
@@ -44,6 +46,30 @@ bool FilterKeyBasedOnRange(proto::SignalType signal_type,
 
   // Check if the key range is contained within the given range.
   return key.range_end() <= end_time && start_time <= key.range_start();
+}
+
+leveldb_proto::Enums::KeyIteratorAction GetSamplesIteratorController(
+    const SignalKey& start_key,
+    base::Time end_time,
+    const std::string& key_bytes) {
+  SignalKey key;
+  if (!SignalKey::FromBinary(key_bytes, &key))
+    return leveldb_proto::Enums::kSkipAndStop;
+  DCHECK(key.IsValid());
+  if (start_key.kind() != key.kind() ||
+      start_key.name_hash() != key.name_hash()) {
+    // This key is for a different signal.
+    return leveldb_proto::Enums::kSkipAndStop;
+  }
+  if (key.range_start() > end_time) {
+    // All samples under this key are too fresh.
+    return leveldb_proto::Enums::kSkipAndStop;
+  }
+  if (key.range_end() > end_time) {
+    // This is the last key with relevant samples.
+    return leveldb_proto::Enums::kLoadAndStop;
+  }
+  return leveldb_proto::Enums::kLoadAndContinue;
 }
 
 }  // namespace
@@ -105,13 +131,12 @@ void SignalDatabaseImpl::GetSamples(proto::SignalType signal_type,
                                     SamplesCallback callback) {
   TRACE_EVENT("segmentation_platform", "SignalDatabaseImpl::GetSamples");
   DCHECK(initialized_);
-  SignalKey dummy_key(metadata_utils::SignalTypeToSignalKind(signal_type),
-                      name_hash, base::Time(), base::Time());
-  std::string key_prefix = dummy_key.GetPrefixInBinary();
-  database_->LoadKeysAndEntriesWithFilter(
-      base::BindRepeating(&FilterKeyBasedOnRange, signal_type, name_hash,
-                          end_time, start_time),
-      leveldb::ReadOptions(), key_prefix,
+  DCHECK_LE(start_time, end_time);
+  const SignalKey start_key(metadata_utils::SignalTypeToSignalKind(signal_type),
+                            name_hash, start_time, base::Time());
+  database_->LoadKeysAndEntriesWhile(
+      start_key.GetPrefixInBinary(),
+      base::BindRepeating(&GetSamplesIteratorController, start_key, end_time),
       base::BindOnce(&SignalDatabaseImpl::OnGetSamples,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      start_time, end_time));
@@ -136,15 +161,15 @@ void SignalDatabaseImpl::OnGetSamples(
       entries.get()->size());
   for (const auto& pair : *entries.get()) {
     SignalKey key;
-    SignalKey::FromBinary(pair.first, &key);
+    if (!SignalKey::FromBinary(pair.first, &key))
+      continue;
     DCHECK(key.IsValid());
     // TODO(shaktisahu): Remove DCHECK and collect UMA.
     const auto& signal_data = pair.second;
     base::Time midnight = key.range_start().UTCMidnight();
     for (int i = 0; i < signal_data.samples_size(); ++i) {
       const auto& sample = signal_data.samples(i);
-      base::Time timestamp =
-          midnight + base::TimeDelta::FromSeconds(sample.time_sec_delta());
+      base::Time timestamp = midnight + base::Seconds(sample.time_sec_delta());
       if (timestamp < start_time || timestamp > end_time)
         continue;
 
@@ -207,8 +232,7 @@ void SignalDatabaseImpl::CompactSamplesForDay(proto::SignalType signal_type,
   DCHECK(initialized_);
   // Compact the signals between 00:00:00AM to 23:59:59PM.
   day_start_time = day_start_time.UTCMidnight();
-  base::Time day_end_time = day_start_time + base::TimeDelta::FromDays(1) -
-                            base::TimeDelta::FromSeconds(1);
+  base::Time day_end_time = day_start_time + base::Days(1) - base::Seconds(1);
   SignalKey compact_key(metadata_utils::SignalTypeToSignalKind(signal_type),
                         name_hash, day_end_time, day_start_time);
   database_->LoadKeysAndEntriesWithFilter(
@@ -264,7 +288,7 @@ void SignalDatabaseImpl::OnDatabaseInitialized(
 
 void SignalDatabaseImpl::CleanupStaleCachedEntries(
     base::Time current_timestamp) {
-  base::Time prev_second = current_timestamp - base::TimeDelta::FromSeconds(1);
+  base::Time prev_second = current_timestamp - base::Seconds(1);
   std::vector<SignalKey> keys_to_delete;
   for (const auto& entry : recently_added_signals_) {
     if (entry.first.range_end() < prev_second)

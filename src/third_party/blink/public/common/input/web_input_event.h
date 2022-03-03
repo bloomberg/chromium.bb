@@ -37,10 +37,10 @@
 
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/input/input_event.mojom-shared.h"
 #include "ui/events/types/event_type.h"
-#include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -331,10 +331,6 @@ class BLINK_COMMON_EXPORT WebInputEvent {
 
   // Merge the current event with attributes from |event|.
   virtual void Coalesce(const WebInputEvent& event) = 0;
-
-  // Returns the scroll input type if this is a scroll event; otherwise,
-  // returns absl::nullopt.
-  virtual absl::optional<ui::ScrollInputType> GetScrollInputType() const;
 
   // Convert this WebInputEvent::Type to a ui::EventType. Note that this is
   // not a 1:1 relationship. Multiple blink types convert to the same

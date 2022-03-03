@@ -121,7 +121,7 @@ export type FormatterFunction<T> = (input: string|{description: string}|undefine
 
 export const format = function<T, U>(
     formatString: string, substitutions: ArrayLike<U>|null, formatters: Record<string, FormatterFunction<U>>,
-    initialValue: T, append: (initialValue: T, newString?: string) => T, tokenizedFormat?: FormatterToken[]): {
+    initialValue: T, append: (initialValue: T, newString: string) => T, tokenizedFormat?: FormatterToken[]): {
   formattedResult: T,
   unusedSubstitutions: ArrayLike<U>|null,
 } {
@@ -225,6 +225,66 @@ export const standardFormatters = {
   },
 };
 
+const toHexadecimal = (charCode: number, padToLength: number): string => {
+  return charCode.toString(16).toUpperCase().padStart(padToLength, '0');
+};
+
+// Remember to update the third group in the regexps patternsToEscape and
+// patternsToEscapePlusSingleQuote when adding new entries in this map.
+const escapedReplacements = new Map([
+  ['\b', '\\b'],
+  ['\f', '\\f'],
+  ['\n', '\\n'],
+  ['\r', '\\r'],
+  ['\t', '\\t'],
+  ['\v', '\\v'],
+  ['\'', '\\\''],
+  ['\\', '\\\\'],
+  ['<!--', '\\x3C!--'],
+  ['<script', '\\x3Cscript'],
+  ['</script', '\\x3C/script'],
+]);
+
+export const formatAsJSLiteral = (content: string): string => {
+  const patternsToEscape = /(\\|<(?:!--|\/?script))|(\p{Control})|(\p{Surrogate})/gu;
+  const patternsToEscapePlusSingleQuote = /(\\|'|<(?:!--|\/?script))|(\p{Control})|(\p{Surrogate})/gu;
+  const escapePattern = (match: string, pattern: string, controlChar: string, loneSurrogate: string): string => {
+    if (controlChar) {
+      if (escapedReplacements.has(controlChar)) {
+        // @ts-ignore https://github.com/microsoft/TypeScript/issues/13086
+        return escapedReplacements.get(controlChar);
+      }
+      const twoDigitHex = toHexadecimal(controlChar.charCodeAt(0), 2);
+      return '\\x' + twoDigitHex;
+    }
+    if (loneSurrogate) {
+      const fourDigitHex = toHexadecimal(loneSurrogate.charCodeAt(0), 4);
+      return '\\u' + fourDigitHex;
+    }
+    if (pattern) {
+      return escapedReplacements.get(pattern) || '';
+    }
+    return match;
+  };
+
+  let escapedContent = '';
+  let quote = '';
+  if (!content.includes('\'')) {
+    quote = '\'';
+    escapedContent = content.replaceAll(patternsToEscape, escapePattern);
+  } else if (!content.includes('"')) {
+    quote = '"';
+    escapedContent = content.replaceAll(patternsToEscape, escapePattern);
+  } else if (!content.includes('`') && !content.includes('${')) {
+    quote = '`';
+    escapedContent = content.replaceAll(patternsToEscape, escapePattern);
+  } else {
+    quote = '\'';
+    escapedContent = content.replaceAll(patternsToEscapePlusSingleQuote, escapePattern);
+  }
+  return `${quote}${escapedContent}${quote}`;
+};
+
 export const vsprintf = function(formatString: string, substitutions: unknown[]): string {
   return format(formatString, substitutions, standardFormatters, '', (a, b) => a + b).formattedResult;
 };
@@ -232,7 +292,6 @@ export const vsprintf = function(formatString: string, substitutions: unknown[])
 export const sprintf = function(format: string, ...varArg: unknown[]): string {
   return vsprintf(format, varArg);
 };
-
 
 export const toBase64 = (inputString: string): string => {
   /* note to the reader: we can't use btoa here because we need to
@@ -391,7 +450,7 @@ export const createSearchRegex = function(query: string, caseSensitive: boolean,
   }
 
   if (!regexObject) {
-    regexObject = self.createPlainTextSearchRegex(query, regexFlags);
+    regexObject = createPlainTextSearchRegex(query, regexFlags);
   }
 
   return regexObject;
@@ -519,4 +578,40 @@ export const base64ToSize = function(content: string|null): number {
     size--;
   }
   return size;
+};
+
+export const SINGLE_QUOTE = '\'';
+export const DOUBLE_QUOTE = '"';
+const BACKSLASH = '\\';
+
+export const findUnclosedCssQuote = function(str: string): string {
+  let unmatchedQuote = '';
+  for (let i = 0; i < str.length; ++i) {
+    const char = str[i];
+    if (char === BACKSLASH) {
+      i++;
+      continue;
+    }
+    if (char === SINGLE_QUOTE || char === DOUBLE_QUOTE) {
+      if (unmatchedQuote === char) {
+        unmatchedQuote = '';
+      } else if (unmatchedQuote === '') {
+        unmatchedQuote = char;
+      }
+    }
+  }
+  return unmatchedQuote;
+};
+
+export const createPlainTextSearchRegex = function(query: string, flags?: string): RegExp {
+  // This should be kept the same as the one in StringUtil.cpp.
+  let regex = '';
+  for (let i = 0; i < query.length; ++i) {
+    const c = query.charAt(i);
+    if (regexSpecialCharacters().indexOf(c) !== -1) {
+      regex += '\\';
+    }
+    regex += c;
+  }
+  return new RegExp(regex, flags || '');
 };

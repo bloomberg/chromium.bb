@@ -19,8 +19,7 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const char kSAMLUserId1[] = "12345";
@@ -28,11 +27,9 @@ const char kSAMLUserEmail1[] = "alice@corp.example.com";
 
 const char kSyncToken[] = "sync-token-1";
 
-constexpr base::TimeDelta kSyncTokenCheckInterval =
-    base::TimeDelta::FromMinutes(6);
+constexpr base::TimeDelta kSyncTokenCheckInterval = base::Minutes(6);
 
-constexpr base::TimeDelta kSyncTokenCheckBelowInterval =
-    base::TimeDelta::FromMinutes(4);
+constexpr base::TimeDelta kSyncTokenCheckBelowInterval = base::Minutes(4);
 
 class FakeUserManagerWithLocalState : public FakeChromeUserManager {
  public:
@@ -77,6 +74,7 @@ class PasswordSyncTokenVerifierTest : public testing::Test {
   FakeChromeUserManager* user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<PasswordSyncTokenVerifier> verifier_;
+  std::unique_ptr<user_manager::KnownUser> known_user_;
 };
 
 PasswordSyncTokenVerifierTest::PasswordSyncTokenVerifierTest() {
@@ -87,6 +85,8 @@ PasswordSyncTokenVerifierTest::PasswordSyncTokenVerifierTest() {
 
   user_manager_ =
       static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
+  known_user_ =
+      std::make_unique<user_manager::KnownUser>(user_manager_->GetLocalState());
 }
 
 PasswordSyncTokenVerifierTest::~PasswordSyncTokenVerifierTest() {
@@ -132,8 +132,7 @@ TEST_F(PasswordSyncTokenVerifierTest, EmptySyncToken) {
 }
 
 TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationPassed) {
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 kSyncToken);
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, kSyncToken);
   CreatePasswordSyncTokenVerifier();
   verifier_->CheckForPasswordNotInSync();
   OnTokenVerified(true);
@@ -141,8 +140,7 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationPassed) {
 }
 
 TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationFailed) {
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 kSyncToken);
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, kSyncToken);
   CreatePasswordSyncTokenVerifier();
   verifier_->CheckForPasswordNotInSync();
   OnTokenVerified(false);
@@ -150,8 +148,7 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationFailed) {
 }
 
 TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationAfterDelay) {
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 kSyncToken);
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, kSyncToken);
   CreatePasswordSyncTokenVerifier();
   verifier_->CheckForPasswordNotInSync();
   OnTokenVerified(true);
@@ -162,14 +159,12 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationAfterDelay) {
 }
 
 TEST_F(PasswordSyncTokenVerifierTest, SyncTokenNoRecheckExecuted) {
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 kSyncToken);
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, kSyncToken);
   CreatePasswordSyncTokenVerifier();
   verifier_->CheckForPasswordNotInSync();
   OnTokenVerified(true);
   EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 std::string());
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, std::string());
   test_environment_.FastForwardBy(kSyncTokenCheckBelowInterval);
   EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
 }
@@ -177,13 +172,11 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenNoRecheckExecuted) {
 TEST_F(PasswordSyncTokenVerifierTest, PasswordChangePolicyNotSet) {
   primary_profile_->GetPrefs()->SetBoolean(
       prefs::kSamlInSessionPasswordChangeEnabled, false);
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 kSyncToken);
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, kSyncToken);
   CreatePasswordSyncTokenVerifier();
   verifier_->CheckForPasswordNotInSync();
   OnTokenVerified(true);
-  user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
-                                                 std::string());
+  known_user_->SetPasswordSyncToken(saml_login_account_id_, std::string());
   test_environment_.FastForwardBy(kSyncTokenCheckInterval);
   EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
 }
@@ -192,9 +185,8 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenNotSet) {
   CreatePasswordSyncTokenVerifier();
   verifier_->FetchSyncTokenOnReauth();
   verifier_->OnTokenFetched(kSyncToken);
-  EXPECT_EQ(
-      user_manager::known_user::GetPasswordSyncToken(saml_login_account_id_),
-      kSyncToken);
+  EXPECT_EQ(known_user_->GetPasswordSyncToken(saml_login_account_id_),
+            kSyncToken);
   EXPECT_EQ(
       primary_profile_->GetPrefs()->GetString(prefs::kSamlPasswordSyncToken),
       kSyncToken);
@@ -205,9 +197,8 @@ TEST_F(PasswordSyncTokenVerifierTest, InitialSyncTokenListEmpty) {
   verifier_->FetchSyncTokenOnReauth();
   verifier_->OnApiCallFailed(PasswordSyncTokenFetcher::ErrorType::kGetNoList);
   verifier_->OnTokenCreated(kSyncToken);
-  EXPECT_EQ(
-      user_manager::known_user::GetPasswordSyncToken(saml_login_account_id_),
-      kSyncToken);
+  EXPECT_EQ(known_user_->GetPasswordSyncToken(saml_login_account_id_),
+            kSyncToken);
   EXPECT_EQ(
       primary_profile_->GetPrefs()->GetString(prefs::kSamlPasswordSyncToken),
       kSyncToken);
@@ -219,9 +210,8 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenInitForUser) {
   // Token API not initilized for the user - request token creation.
   verifier_->OnTokenFetched(std::string());
   verifier_->OnTokenCreated(kSyncToken);
-  EXPECT_EQ(
-      user_manager::known_user::GetPasswordSyncToken(saml_login_account_id_),
-      kSyncToken);
+  EXPECT_EQ(known_user_->GetPasswordSyncToken(saml_login_account_id_),
+            kSyncToken);
   EXPECT_EQ(
       primary_profile_->GetPrefs()->GetString(prefs::kSamlPasswordSyncToken),
       kSyncToken);
@@ -251,4 +241,4 @@ TEST_F(PasswordSyncTokenVerifierTest, ValidateSyncTokenHistogram) {
       "ChromeOS.SAML.InSessionPasswordSyncEvent", 0, 1);
 }
 
-}  // namespace chromeos
+}  // namespace ash

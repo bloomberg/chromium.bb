@@ -7,9 +7,7 @@
 
 #include <memory>
 #include <set>
-#include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -39,6 +37,20 @@ class WebSocketTransportConnectSubJob;
 // logging), and provide performance information to SocketPerformanceWatcher.
 class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
  public:
+  class NET_EXPORT_PRIVATE Factory {
+   public:
+    Factory() = default;
+    virtual ~Factory() = default;
+
+    virtual std::unique_ptr<WebSocketTransportConnectJob> Create(
+        RequestPriority priority,
+        const SocketTag& socket_tag,
+        const CommonConnectJobParams* common_connect_job_params,
+        const scoped_refptr<TransportSocketParams>& params,
+        Delegate* delegate,
+        const NetLogWithSource* net_log);
+  };
+
   WebSocketTransportConnectJob(
       RequestPriority priority,
       const SocketTag& socket_tag,
@@ -46,6 +58,11 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
       const scoped_refptr<TransportSocketParams>& params,
       Delegate* delegate,
       const NetLogWithSource* net_log);
+
+  WebSocketTransportConnectJob(const WebSocketTransportConnectJob&) = delete;
+  WebSocketTransportConnectJob& operator=(const WebSocketTransportConnectJob&) =
+      delete;
+
   ~WebSocketTransportConnectJob() override;
 
   // ConnectJob methods.
@@ -110,8 +127,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
   ResolveErrorInfo resolve_error_info_;
 
   base::WeakPtrFactory<WebSocketTransportConnectJob> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketTransportConnectJob);
 };
 
 }  // namespace net

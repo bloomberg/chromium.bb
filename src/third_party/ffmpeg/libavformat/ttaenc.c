@@ -30,7 +30,7 @@
 
 typedef struct TTAMuxContext {
     AVIOContext *seek_table;
-    AVPacketList *queue, *queue_end;
+    PacketList *queue, *queue_end;
     uint32_t nb_samples;
     int frame_size;
     int last_frame;
@@ -123,12 +123,12 @@ static int tta_write_packet(AVFormatContext *s, AVPacket *pkt)
 static void tta_queue_flush(AVFormatContext *s)
 {
     TTAMuxContext *tta = s->priv_data;
-    AVPacket pkt;
+    AVPacket *const pkt = ffformatcontext(s)->pkt;
 
     while (tta->queue) {
-        avpriv_packet_list_get(&tta->queue, &tta->queue_end, &pkt);
-        avio_write(s->pb, pkt.data, pkt.size);
-        av_packet_unref(&pkt);
+        avpriv_packet_list_get(&tta->queue, &tta->queue_end, pkt);
+        avio_write(s->pb, pkt->data, pkt->size);
+        av_packet_unref(pkt);
     }
 }
 
@@ -165,7 +165,7 @@ static void tta_deinit(AVFormatContext *s)
     avpriv_packet_list_free(&tta->queue, &tta->queue_end);
 }
 
-AVOutputFormat ff_tta_muxer = {
+const AVOutputFormat ff_tta_muxer = {
     .name              = "tta",
     .long_name         = NULL_IF_CONFIG_SMALL("TTA (True Audio)"),
     .mime_type         = "audio/x-tta",

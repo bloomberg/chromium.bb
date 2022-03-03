@@ -27,8 +27,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceConfig;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType;
@@ -74,7 +77,14 @@ public class PriceMessageServiceUnitTest {
         doNothing().when(mMessageObserver).messageReady(anyInt(), any());
         doNothing().when(mMessageObserver).messageInvalidate(anyInt());
 
-        PriceTrackingUtilities.ENABLE_PRICE_NOTIFICATION.setForTesting(true);
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING, true);
+        testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
+                PriceTrackingUtilities.PRICE_NOTIFICATION_PARAM, "true");
+        testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
+                CommerceSubscriptionsServiceConfig.IMPLICIT_SUBSCRIPTIONS_ENABLED_PARAM, "true");
+        FeatureList.setTestValues(testValues);
+
         PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
         PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
                 PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, true);
@@ -109,18 +119,20 @@ public class PriceMessageServiceUnitTest {
     @Test
     public void testPrepareMessage_PriceWelcome_ExceedMaxShowCount() {
         PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeInt(
-                PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD_SHOW_COUNT, MAX_SHOW_COUNT - 1);
+                PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD_SHOW_COUNT, MAX_SHOW_COUNT);
         mMessageService.preparePriceMessage(PriceMessageType.PRICE_WELCOME, mPriceTabData);
-        assertEquals(MAX_SHOW_COUNT, PriceTrackingUtilities.getPriceWelcomeMessageCardShowCount());
+        assertEquals(
+                MAX_SHOW_COUNT + 1, PriceTrackingUtilities.getPriceWelcomeMessageCardShowCount());
         assertFalse(PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled());
     }
 
     @Test
     public void testPrepareMessage_PriceAlerts_ExceedMaxShowCount() {
         PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeInt(
-                PriceTrackingUtilities.PRICE_ALERTS_MESSAGE_CARD_SHOW_COUNT, MAX_SHOW_COUNT - 1);
+                PriceTrackingUtilities.PRICE_ALERTS_MESSAGE_CARD_SHOW_COUNT, MAX_SHOW_COUNT);
         mMessageService.preparePriceMessage(PriceMessageType.PRICE_ALERTS, null);
-        assertEquals(MAX_SHOW_COUNT, PriceTrackingUtilities.getPriceAlertsMessageCardShowCount());
+        assertEquals(
+                MAX_SHOW_COUNT + 1, PriceTrackingUtilities.getPriceAlertsMessageCardShowCount());
         assertFalse(PriceTrackingUtilities.isPriceAlertsMessageCardEnabled());
     }
 

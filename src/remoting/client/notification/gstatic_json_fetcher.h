@@ -6,12 +6,10 @@
 #define REMOTING_CLIENT_NOTIFICATION_GSTATIC_JSON_FETCHER_H_
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/client/notification/json_fetcher.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace remoting {
@@ -25,6 +23,10 @@ class GstaticJsonFetcher final : public JsonFetcher,
  public:
   explicit GstaticJsonFetcher(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
+
+  GstaticJsonFetcher(const GstaticJsonFetcher&) = delete;
+  GstaticJsonFetcher& operator=(const GstaticJsonFetcher&) = delete;
+
   ~GstaticJsonFetcher() override;
 
   // JsonFetcher implementation.
@@ -44,8 +46,6 @@ class GstaticJsonFetcher final : public JsonFetcher,
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
   base::flat_map<std::unique_ptr<net::URLFetcher>, FetchJsonFileCallback>
       fetcher_callback_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(GstaticJsonFetcher);
 };
 
 }  // namespace remoting

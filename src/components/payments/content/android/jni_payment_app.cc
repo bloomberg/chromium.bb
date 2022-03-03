@@ -156,18 +156,6 @@ void JniPaymentApp::AbortPaymentApp(JNIEnv* env,
       base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
-bool JniPaymentApp::IsReadyForMinimalUI(JNIEnv* env) {
-  return payment_app_->IsReadyForMinimalUI();
-}
-
-ScopedJavaLocalRef<jstring> JniPaymentApp::AccountBalance(JNIEnv* env) {
-  return ConvertUTF8ToJavaString(env, payment_app_->GetAccountBalance());
-}
-
-void JniPaymentApp::DisableShowingOwnUI(JNIEnv* env) {
-  payment_app_->DisableShowingOwnUI();
-}
-
 ScopedJavaLocalRef<jstring> JniPaymentApp::GetApplicationIdentifierToHide(
     JNIEnv* env) {
   return ConvertUTF8ToJavaString(
@@ -192,6 +180,20 @@ void JniPaymentApp::SetPaymentHandlerHost(
   payment_app_->SetPaymentHandlerHost(
       android::PaymentHandlerHost::FromJavaPaymentHandlerHost(
           env, jpayment_handler_host));
+}
+
+base::android::ScopedJavaLocalRef<jbyteArray>
+JniPaymentApp::SetAppSpecificResponseFields(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jpayment_response) {
+  mojom::PaymentResponsePtr response;
+  bool success =
+      android::DeserializeFromJavaByteBuffer(env, jpayment_response, &response);
+  DCHECK(success);
+  mojom::PaymentResponsePtr result =
+      payment_app_->SetAppSpecificResponseFields(std::move(response));
+  return base::android::ToJavaByteArray(
+      env, mojom::PaymentResponse::Serialize(&result));
 }
 
 void JniPaymentApp::FreeNativeObject(JNIEnv* env) {

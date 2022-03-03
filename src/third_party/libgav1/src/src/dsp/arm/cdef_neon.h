@@ -33,6 +33,9 @@ void CdefInit_NEON();
 #if LIBGAV1_ENABLE_NEON
 #define LIBGAV1_Dsp8bpp_CdefDirection LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_CdefFilters LIBGAV1_CPU_NEON
+
+#define LIBGAV1_Dsp10bpp_CdefDirection LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp10bpp_CdefFilters LIBGAV1_CPU_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_CDEF_NEON_H_

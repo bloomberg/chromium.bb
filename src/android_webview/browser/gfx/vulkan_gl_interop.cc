@@ -62,6 +62,11 @@ class VulkanGLInterop::GLNonOwnedCompatibilityContext
     g_gl_context = this;
   }
 
+  GLNonOwnedCompatibilityContext(const GLNonOwnedCompatibilityContext&) =
+      delete;
+  GLNonOwnedCompatibilityContext& operator=(
+      const GLNonOwnedCompatibilityContext&) = delete;
+
   bool MakeCurrentImpl(gl::GLSurface* surface) override {
     // A GLNonOwnedCompatibilityContext may have set the GetRealCurrent()
     // pointer to itself, while re-using our EGL context. In these cases just
@@ -95,8 +100,6 @@ class VulkanGLInterop::GLNonOwnedCompatibilityContext
   }
 
   scoped_refptr<gl::GLSurface> surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLNonOwnedCompatibilityContext);
 };
 
 VulkanGLInterop::InFlightInteropDraw::InFlightInteropDraw(
@@ -297,7 +300,8 @@ void VulkanGLInterop::DrawVk(sk_sp<GrVkSecondaryCBDrawContext> draw_context,
     auto vulkan_image = gpu::VulkanImage::CreateFromGpuMemoryBufferHandle(
         device_queue, std::move(gmb_handle),
         gfx::Size(params.width, params.height), VK_FORMAT_R8G8B8A8_UNORM,
-        0 /* usage */);
+        /*usage=*/0, /*flags=*/0, /*image_tiling=*/VK_IMAGE_TILING_OPTIMAL,
+        /*queue_family_index=*/VK_QUEUE_FAMILY_EXTERNAL);
     if (!vulkan_image) {
       LOG(ERROR) << "Could not create VkImage from AHB.";
       return;

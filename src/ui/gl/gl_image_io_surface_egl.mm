@@ -39,9 +39,12 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format,
     case gfx::BufferFormat::R_8:
       return {GL_RED, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::R_16:
+      // TODO(https://crbug.com/1233228): This should be GL_RED.
       return {GL_RED_INTEGER, GL_UNSIGNED_SHORT};
     case gfx::BufferFormat::RG_88:
       return {GL_RG, GL_UNSIGNED_BYTE};
+    case gfx::BufferFormat::RG_1616:
+      return {GL_RG, GL_UNSIGNED_SHORT};
     case gfx::BufferFormat::BGRX_8888:
       if (emulate_rgb) {
         return {GL_BGRA_EXT, GL_UNSIGNED_BYTE};
@@ -182,10 +185,7 @@ bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned target,
   // DrawingBuffer::SetupRGBEmulationForBlitFramebuffer to bind an RGBA
   // IOSurface as RGB. We should support this.
 
-  if (texture_bound_) {
-    LOG(ERROR) << "Cannot re-bind already bound IOSurface.";
-    return false;
-  }
+  CHECK(!texture_bound_) << "Cannot re-bind already bound IOSurface.";
 
   GLenum target_getter = TargetGetterFromGLTarget(target);
   EGLint target_egl = EGLTargetFromGLTarget(target);
@@ -212,11 +212,11 @@ bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned target,
     const EGLint attribs[] = {
       EGL_WIDTH,                         size_.width(),
       EGL_HEIGHT,                        size_.height(),
-      EGL_IOSURFACE_PLANE_ANGLE,         io_surface_plane_,
+      EGL_IOSURFACE_PLANE_ANGLE,         static_cast<EGLint>(io_surface_plane_),
       EGL_TEXTURE_TARGET,                texture_target_,
-      EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, formatType.format,
+      EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, static_cast<EGLint>(formatType.format),
       EGL_TEXTURE_FORMAT,                EGL_TEXTURE_RGBA,
-      EGL_TEXTURE_TYPE_ANGLE,            formatType.type,
+      EGL_TEXTURE_TYPE_ANGLE,            static_cast<EGLint>(formatType.type),
       EGL_NONE,                          EGL_NONE,
     };
     // clang-format on

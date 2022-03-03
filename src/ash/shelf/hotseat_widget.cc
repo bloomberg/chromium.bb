@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -402,6 +402,10 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
     SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   }
+
+  DelegateView(const DelegateView&) = delete;
+  DelegateView& operator=(const DelegateView&) = delete;
+
   ~DelegateView() override;
 
   // views::ViewTargetDelegate:
@@ -474,8 +478,6 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   // The most recent color that the |translucent_background_| has been animated
   // to.
   SkColor target_color_ = SK_ColorTRANSPARENT;
-
-  DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
 HotseatWidget::DelegateView::~DelegateView() {
@@ -557,7 +559,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
     DoScopedAnimationSetting(&bounds_animation_setter.value());
   }
 
-  const int radius = hotseat_widget_->GetHotseatSize() / 2;
+  const float radius = hotseat_widget_->GetHotseatSize() / 2.0f;
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
   if (translucent_background_.rounded_corner_radii() != rounded_corners)
     translucent_background_.SetRoundedCornerRadius(rounded_corners);
@@ -663,6 +665,11 @@ HotseatWidget::~HotseatWidget() {
   ShelfConfig::Get()->RemoveObserver(this);
   shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(
       delegate_view_);
+  // Remove ScrollableShelfView to avoid any children accessing NativeWidget
+  // after its destruction in ~Widget() before RootView clears.
+  // TODO(pbos): This is defensive, consider having children observe
+  // destruction and/or check the result of GetNativeWidget() and others.
+  GetContentsView()->RemoveChildViewT(scrollable_shelf_view_);
 }
 
 bool HotseatWidget::ShouldShowHotseatBackground() {
@@ -930,7 +937,7 @@ void HotseatWidget::UpdateLayout(bool animate) {
         shelf_view_layer->GetAnimator());
     animation_setter.SetTransitionDuration(
         animate ? ShelfConfig::Get()->shelf_animation_duration()
-                : base::TimeDelta::FromMilliseconds(0));
+                : base::Milliseconds(0));
     animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

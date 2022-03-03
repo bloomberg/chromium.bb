@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_SCOPED_PROMISE_RESOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_SCOPED_PROMISE_RESOLVER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -17,6 +16,9 @@ class ScopedPromiseResolver {
 
  public:
   explicit ScopedPromiseResolver(ScriptPromiseResolver* resolver);
+
+  ScopedPromiseResolver(const ScopedPromiseResolver&) = delete;
+  ScopedPromiseResolver& operator=(const ScopedPromiseResolver&) = delete;
 
   ~ScopedPromiseResolver();
 
@@ -32,8 +34,6 @@ class ScopedPromiseResolver {
   void OnConnectionError();
 
   Persistent<ScriptPromiseResolver> resolver_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPromiseResolver);
 };
 
 }  // namespace blink

@@ -52,6 +52,9 @@ using unordered_set = robin_hood::unordered_set<Key, Hash, KeyEqual>;
 template <typename Key, typename T, typename Hash = robin_hood::hash<Key>, typename KeyEqual = std::equal_to<Key>>
 using unordered_map = robin_hood::unordered_map<Key, T, Hash, KeyEqual>;
 
+template <typename Key, typename T>
+using map_entry = robin_hood::pair<Key, T>;
+
 // robin_hood-compatible insert_iterator (std:: uses the wrong insert method)
 template <typename T>
 class insert_iterator : public std::iterator<std::output_iterator_tag, void, void, void, void> {
@@ -94,9 +97,19 @@ using unordered_set = std::unordered_set<Key, Hash, KeyEqual>;
 template <typename Key, typename T, typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>>
 using unordered_map = std::unordered_map<Key, T, Hash, KeyEqual>;
 
+template <typename Key, typename T>
+using map_entry = std::pair<Key, T>;
+
 template <typename T>
 using insert_iterator = std::insert_iterator<T>;
 #endif
+
+// Can't alias variadic functions even on C++14, and wrapping the 14 implementation wouldn't gain us anything...
+// leave it in unconditionally and for backwards compatibility
+template<typename T, typename... Args>
+constexpr std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 }  // namespace layer_data
 
@@ -254,7 +267,15 @@ class small_vector {
         return GetWorkingStore()[pos];
     }
 
-    // Like std::vector::back, calling back on an empty container causes undefined behavior
+    // Like std::vector:: calling front or back on an empty container causes undefined behavior
+    reference front() {
+        assert(size_ > 0);
+        return GetWorkingStore()[0];
+    }
+    const_reference front() const {
+        assert(size_ > 0);
+        return GetWorkingStore()[0];
+    }
     reference back() {
         assert(size_ > 0);
         return GetWorkingStore()[size_ - 1];

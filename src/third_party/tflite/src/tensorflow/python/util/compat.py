@@ -43,10 +43,6 @@ sets of python types:
 * `real_types`
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numbers as _numbers
 
 import numpy as _np
@@ -112,10 +108,7 @@ def as_text(bytes_or_text, encoding='utf-8'):
 
 
 def as_str(bytes_or_text, encoding='utf-8'):
-  if _six.PY2:
-    return as_bytes(bytes_or_text, encoding)
-  else:
-    return as_text(bytes_or_text, encoding)
+  return as_text(bytes_or_text, encoding)
 
 tf_export('compat.as_text')(as_text)
 tf_export('compat.as_bytes')(as_bytes)
@@ -178,6 +171,27 @@ def path_to_str(path):
   if hasattr(path, '__fspath__'):
     path = as_str_any(path.__fspath__())
   return path
+
+
+def path_to_bytes(path):
+  r"""Converts input which is a `PathLike` object to `bytes`.
+
+  Converts from any python constant representation of a `PathLike` object
+  or `str` to bytes.
+
+  Args:
+    path: An object that can be converted to path representation.
+
+  Returns:
+    A `bytes` object.
+
+  Usage:
+    In case a simplified `bytes` version of the path is needed from an
+    `os.PathLike` object
+  """
+  if hasattr(path, '__fspath__'):
+    path = path.__fspath__()
+  return as_bytes(path)
 
 
 # Numpy 1.8 scalars don't inherit from numbers.Integral in Python 3, so we

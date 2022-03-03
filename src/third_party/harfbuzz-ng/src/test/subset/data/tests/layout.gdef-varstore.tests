@@ -2,9 +2,8 @@ FONTS:
 AdobeVFPrototype.otf
 
 PROFILES:
-default.txt
-drop-hints.txt
-keep-gdef-gpos.txt
+layout-test.txt
+layout-test-retain-gids.txt
 
 SUBSETS:
 A
@@ -13,4 +12,3 @@ ABC
 BW
 AVW
 ABCW
-

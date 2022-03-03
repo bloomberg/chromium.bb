@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -293,8 +293,8 @@ void ModuleDatabase::RemoveObserver(ModuleDatabaseObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ModuleDatabase::IncreaseInspectionPriority() {
-  module_inspector_.IncreaseInspectionPriority();
+void ModuleDatabase::ForceStartInspection() {
+  module_inspector_.ForceStartInspection();
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

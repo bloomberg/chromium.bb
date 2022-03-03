@@ -11,17 +11,14 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
 #include "chromecast/media/audio/audio_clock_simulator.h"
-#include "chromecast/media/audio/audio_fader.h"
-#include "chromecast/media/audio/audio_provider.h"
-#include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
+#include "chromecast/media/audio/net/common.pb.h"
 #include "chromecast/media/audio/playback_rate_shifter.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -45,6 +42,7 @@ namespace chromecast {
 class IOBufferPool;
 
 namespace media {
+class RateAdjuster;
 class StreamMixer;
 
 namespace mixer_service {
@@ -57,8 +55,7 @@ class OutputStreamParams;
 // on an IO thread. This class manages its own lifetime and should not be
 // externally deleted.
 class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
-                             public MixerInput::Source,
-                             public AudioProvider {
+                             public MixerInput::Source {
  public:
   using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
 
@@ -66,11 +63,15 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
                        std::unique_ptr<mixer_service::MixerSocket> socket,
                        const mixer_service::OutputStreamParams& params);
 
+  MixerInputConnection(const MixerInputConnection&) = delete;
+  MixerInputConnection& operator=(const MixerInputConnection&) = delete;
+
   // Only public to allow task_runner->DeleteSoon() to work.
   ~MixerInputConnection() override;
 
  private:
   friend class MixerServiceReceiver;
+  class TimestampedFader;
 
   enum class State {
     kUninitialized,   // Not initialized by the mixer yet.
@@ -93,7 +94,12 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void OnInactivityTimeout();
   void RestartPlaybackAt(int64_t timestamp, int64_t pts);
   void SetMediaPlaybackRate(double rate);
+  void SetMediaPlaybackRateLocked(double rate) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void SetAudioClockRate(double rate);
+  double ChangeAudioRate(double desired_clock_rate,
+                         double error_slope,
+                         double current_error) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void AdjustTimestamps(int64_t timestamp_adjustment);
   void SetPaused(bool paused);
 
   // MixerInput::Source implementation:
@@ -117,18 +123,22 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void OnOutputUnderrun() override;
   void FinalizeAudioPlayback() override;
 
-  // AudioProvider implementation:
-  int FillFrames(int num_frames,
-                 int64_t playout_timestamp,
-                 float* const* channels)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_) override;
-
-  int FillAudio(int num_frames, float* const* channels)
+  int FillAudio(int num_frames,
+                int64_t expected_playout_time,
+                float* const* channels,
+                bool after_silence) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  int FillTimestampedAudio(int num_frames,
+                           int64_t expected_playout_time,
+                           float* const* channels,
+                           bool after_silence) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  int FillFromQueue(int num_frames, float* const* channels, int write_offset)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void LogUnderrun(int num_frames, int filled) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void WritePcm(scoped_refptr<net::IOBuffer> data);
-  int64_t QueueData(scoped_refptr<net::IOBuffer> data)
+  RenderingDelay QueueData(scoped_refptr<net::IOBuffer> data)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  double ExtraDelayFrames() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void PostPcmCompletion();
   void PostEos();
@@ -150,12 +160,15 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   const int num_channels_;
   const ::media::ChannelLayout channel_layout_;
   const int input_samples_per_second_;
-  const mixer_service::SampleFormat sample_format_;
+  const audio_service::SampleFormat sample_format_;
   const bool primary_;
   const std::string device_id_;
   const AudioContentType content_type_;
   const AudioContentType focus_type_;
   const int playout_channel_;
+  const bool pts_is_timestamp_;
+  const int64_t max_timestamp_error_;
+  const bool never_crop_;
 
   std::atomic<int> effective_playout_channel_;
 
@@ -163,6 +176,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   int start_threshold_frames_;
+  int min_start_threshold_;
 
   scoped_refptr<IOBufferPool> buffer_pool_;
 
@@ -181,11 +195,15 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   base::circular_deque<scoped_refptr<net::IOBuffer>> queue_ GUARDED_BY(lock_);
   int queued_frames_ GUARDED_BY(lock_) = 0;
   RenderingDelay mixer_rendering_delay_ GUARDED_BY(lock_);
-  int64_t next_playback_timestamp_ GUARDED_BY(lock_) = INT64_MIN;
+  RenderingDelay next_delay_ GUARDED_BY(lock_);
   int mixer_read_size_ GUARDED_BY(lock_) = 0;
   int current_buffer_offset_ GUARDED_BY(lock_) = 0;
+  std::unique_ptr<RateAdjuster> rate_adjuster_ GUARDED_BY(lock_);
+  int64_t total_filled_frames_ GUARDED_BY(lock_) = 0;
+  bool filled_some_since_resume_ GUARDED_BY(lock_) = false;
+  const int fade_frames_;
+  std::unique_ptr<TimestampedFader> timestamped_fader_ GUARDED_BY(lock_);
   PlaybackRateShifter rate_shifter_ GUARDED_BY(lock_);
-  AudioFader fader_ GUARDED_BY(lock_);
   AudioClockSimulator audio_clock_simulator_ GUARDED_BY(lock_);
   bool in_underrun_ GUARDED_BY(lock_) = false;
   bool started_ GUARDED_BY(lock_) = false;
@@ -211,8 +229,6 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
 
   base::WeakPtr<MixerInputConnection> weak_this_;
   base::WeakPtrFactory<MixerInputConnection> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MixerInputConnection);
 };
 
 }  // namespace media

@@ -14,18 +14,14 @@
 # ==============================================================================
 """A TensorSpec class."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
-from tensorflow.python import _pywrap_utils
 from tensorflow.python.framework import common_shapes
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import type_spec
+from tensorflow.python.util import _pywrap_utils
 from tensorflow.python.util.tf_export import tf_export
 
 
@@ -55,10 +51,6 @@ class DenseSpec(type_spec.TypeSpec):
       self._shape_tuple = None
     self._dtype = dtypes.as_dtype(dtype)
     self._name = name
-
-  @classmethod
-  def from_spec(cls, spec, name=None):
-    return cls(spec.shape, spec.dtype, name or spec.name)
 
   @property
   def shape(self):
@@ -99,7 +91,8 @@ class DenseSpec(type_spec.TypeSpec):
 
   def most_specific_compatible_type(self, other):
     if (type(self) is not type(other)) or (self._dtype != other.dtype):
-      raise ValueError("Types are not compatible: %r vs %r" % (self, other))
+      raise ValueError(f"Types are not compatible: {self!r} with type of "
+                       f"{type(self)} vs {other!r} with type of {type(other)}.")
     shape = self._shape.most_specific_compatible_shape(other.shape)
     name = self._name if self._name == other.name else None
     return type(self)(shape, self._dtype, name)
@@ -118,6 +111,7 @@ class DenseSpec(type_spec.TypeSpec):
 
 
 @tf_export("TensorSpec")
+@type_spec.register("tf.TensorSpec")
 class TensorSpec(DenseSpec, type_spec.BatchableTypeSpec):
   """Describes a tf.Tensor.
 
@@ -142,25 +136,55 @@ class TensorSpec(DenseSpec, type_spec.BatchableTypeSpec):
     return super(TensorSpec, self).is_compatible_with(spec_or_tensor)
 
   @classmethod
+  def from_spec(cls, spec, name=None):
+    """Returns a `TensorSpec` with the same shape and dtype as `spec`.
+
+    >>> spec = tf.TensorSpec(shape=[8, 3], dtype=tf.int32, name="OriginalName")
+    >>> tf.TensorSpec.from_spec(spec, "NewName")
+    TensorSpec(shape=(8, 3), dtype=tf.int32, name='NewName')
+
+    Args:
+      spec: The `TypeSpec` used to create the new `TensorSpec`.
+      name: The name for the new `TensorSpec`.  Defaults to `spec.name`.
+    """
+    return cls(spec.shape, spec.dtype, name or spec.name)
+
+  @classmethod
   def from_tensor(cls, tensor, name=None):
+    """Returns a `TensorSpec` that describes `tensor`.
+
+    >>> tf.TensorSpec.from_tensor(tf.constant([1, 2, 3]))
+    TensorSpec(shape=(3,), dtype=tf.int32, name=None)
+
+    Args:
+      tensor: The `tf.Tensor` that should be described.
+      name: A name for the `TensorSpec`.  Defaults to `tensor.op.name`.
+
+    Returns:
+      A `TensorSpec` that describes `tensor`.
+    """
     if isinstance(tensor, ops.EagerTensor):
       return TensorSpec(tensor.shape, tensor.dtype, name)
     elif isinstance(tensor, ops.Tensor):
       return TensorSpec(tensor.shape, tensor.dtype, name or tensor.op.name)
     else:
-      raise ValueError("`tensor` should be a tf.Tensor")
+      raise ValueError(
+          f"`tensor` should be a tf.Tensor, but got type {type(tensor)}.")
 
-  value_type = property(lambda self: ops.Tensor)
+  @property
+  def value_type(self):
+    """The Python type for values that are compatible with this TypeSpec."""
+    return ops.Tensor
 
   def _to_components(self, value):
     try:
       value = ops.convert_to_tensor(value, self._dtype)
     except (TypeError, ValueError):
-      raise ValueError("Value %r is not convertible to a tensor with dtype %s "
-                       "and shape %s." % (value, self._dtype, self._shape))
+      raise ValueError(f"Value {value} is not convertible to a tensor with "
+                       f"dtype {self._dtype} and shape {self._shape}.")
     if not value.shape.is_compatible_with(self._shape):
-      raise ValueError("Value %r is not convertible to a tensor with dtype %s "
-                       "and shape %s." % (value, self._dtype, self._shape))
+      raise ValueError(f"Value {value} is not convertible to a tensor with "
+                       f"dtype {self._dtype} and shape {self._shape}.")
     return value
 
   def _from_components(self, components):
@@ -192,8 +216,22 @@ class TensorSpec(DenseSpec, type_spec.BatchableTypeSpec):
       raise ValueError("Unbatching a tensor is only supported for rank >= 1")
     return TensorSpec(self._shape[1:], self._dtype)
 
+  @property
+  def _flat_tensor_specs(self):
+    return [self]
+
+  def _to_tensor_list(self, value):
+    return [self._to_components(value)]
+
+  def _to_batched_tensor_list(self, value):
+    return self._to_tensor_list(value)
+
+  def __tf_tracing_type__(self, signature_context):
+    return ops.TensorType(signature_context, self.shape, self.dtype, self.name)
+
 
 # TODO(b/133606651): Should is_compatible_with should check min/max bounds?
+@type_spec.register("tf.BoundedTensorSpec")
 class BoundedTensorSpec(TensorSpec):
   """A `TensorSpec` that specifies minimum and maximum values.
 
@@ -235,25 +273,26 @@ class BoundedTensorSpec(TensorSpec):
     """
     super(BoundedTensorSpec, self).__init__(shape, dtype, name)
 
-    if minimum is None or maximum is None:
-      raise ValueError("minimum and maximum must be provided; but saw "
-                       "'%s' and '%s'" % (minimum, maximum))
+    if minimum is None:
+      raise ValueError("`minimum` can not be None.")
+    if maximum is None:
+      raise ValueError("`maximum` can not be None.")
 
     try:
       minimum_shape = np.shape(minimum)
       common_shapes.broadcast_shape(
           tensor_shape.TensorShape(minimum_shape), self.shape)
     except ValueError as exception:
-      raise ValueError("minimum is not compatible with shape. "
-                       "Message: {!r}.".format(exception))
+      raise ValueError(f"`minimum` {minimum} is not compatible with shape "
+                       f"{self.shape}. Original error: {exception!r}.")
 
     try:
       maximum_shape = np.shape(maximum)
       common_shapes.broadcast_shape(
           tensor_shape.TensorShape(maximum_shape), self.shape)
     except ValueError as exception:
-      raise ValueError("maximum is not compatible with shape. "
-                       "Message: {!r}.".format(exception))
+      raise ValueError(f"`maximum` {maximum} is not compatible with shape "
+                       f"{self.shape}. Original error: {exception!r}.")
 
     self._minimum = np.array(minimum, dtype=self.dtype.as_numpy_dtype)
     self._minimum.setflags(write=False)
@@ -263,6 +302,21 @@ class BoundedTensorSpec(TensorSpec):
 
   @classmethod
   def from_spec(cls, spec):
+    """Returns a `TensorSpec` with the same shape and dtype as `spec`.
+
+    If `spec` is a `BoundedTensorSpec`, then the new spec's bounds are set to
+    `spec.minimum` and `spec.maximum`; otherwise, the bounds are set to
+    `spec.dtype.min` and `spec.dtype.max`.
+
+    >>> spec = tf.TensorSpec(shape=[8, 3], dtype=tf.int32, name="x")
+    >>> BoundedTensorSpec.from_spec(spec)
+    BoundedTensorSpec(shape=(8, 3), dtype=tf.int32, name='x',
+        minimum=array(-2147483648, dtype=int32),
+        maximum=array(2147483647, dtype=int32))
+
+    Args:
+      spec: The `TypeSpec` used to create the new `BoundedTensorSpec`.
+    """
     dtype = dtypes.as_dtype(spec.dtype)
     minimum = getattr(spec, "minimum", dtype.min)
     maximum = getattr(spec, "maximum", dtype.max)

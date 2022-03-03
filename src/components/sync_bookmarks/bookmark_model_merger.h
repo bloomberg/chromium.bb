@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
 
@@ -42,6 +42,9 @@ class BookmarkModelMerger {
                       bookmarks::BookmarkModel* bookmark_model,
                       favicon::FaviconService* favicon_service,
                       SyncedBookmarkTracker* bookmark_tracker);
+
+  BookmarkModelMerger(const BookmarkModelMerger&) = delete;
+  BookmarkModelMerger& operator=(const BookmarkModelMerger&) = delete;
 
   ~BookmarkModelMerger();
 
@@ -97,6 +100,9 @@ class BookmarkModelMerger {
     RemoteTreeNode();
 
     syncer::UpdateResponseData update_;
+    // Redundant, parsed instance of the unique position in specifics, used
+    // to sort siblings by their position information.
+    syncer::UniquePosition unique_position_;
     std::vector<RemoteTreeNode> children_;
   };
 
@@ -117,7 +123,12 @@ class BookmarkModelMerger {
   // tag. All invalid updates are filtered out, including invalid bookmark
   // specifics as well as tombstones, in the unlikely event that the server
   // sends tombstones as part of the initial download.
-  static RemoteForest BuildRemoteForest(syncer::UpdateResponseDataList updates);
+  // |tracker_for_recording_ignored_updates| must not be null and is exclusively
+  // used to record which updates where ignored because their parent couldn't be
+  // determined.
+  static RemoteForest BuildRemoteForest(
+      syncer::UpdateResponseDataList updates,
+      SyncedBookmarkTracker* tracker_for_recording_ignored_updates);
 
   // Recursively counts and returns the number of descendants for |node|,
   // excluding |node| itself.
@@ -198,15 +209,13 @@ class BookmarkModelMerger {
       size_t index,
       const std::string& suffix) const;
 
-  bookmarks::BookmarkModel* const bookmark_model_;
-  favicon::FaviconService* const favicon_service_;
-  SyncedBookmarkTracker* const bookmark_tracker_;
+  const raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  const raw_ptr<favicon::FaviconService> favicon_service_;
+  const raw_ptr<SyncedBookmarkTracker> bookmark_tracker_;
   // Preprocessed remote nodes in the form a forest where each tree's root is a
   // permanent node. Computed upon construction via BuildRemoteForest().
   const RemoteForest remote_forest_;
   std::unordered_map<base::GUID, GuidMatch, base::GUIDHash> guid_to_match_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelMerger);
 };
 
 }  // namespace sync_bookmarks

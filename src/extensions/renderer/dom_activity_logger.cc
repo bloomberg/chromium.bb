@@ -14,6 +14,7 @@
 #include "extensions/renderer/activity_log_converter_strategy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "v8/include/v8-isolate.h"
 
 using blink::WebString;
 using blink::WebURL;
@@ -110,7 +111,7 @@ void DOMActivityLogger::LogEvent(const WebString& event_name,
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string event_name_utf8 = event_name.Utf8();
   for (int i = 0; i < argc; ++i)
-    args->AppendString(argv[i].Utf8());
+    args->Append(argv[i].Utf8());
   SendDomActionMessage(event_name_utf8, url, title.Utf16(),
                        DomActionType::METHOD, std::move(args));
 }

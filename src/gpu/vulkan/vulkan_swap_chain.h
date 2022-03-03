@@ -5,7 +5,7 @@
 #ifndef GPU_VULKAN_VULKAN_SWAP_CHAIN_H_
 #define GPU_VULKAN_VULKAN_SWAP_CHAIN_H_
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #include <memory>
 #include <vector>
@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -31,6 +32,10 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   class COMPONENT_EXPORT(VULKAN) ScopedWrite {
    public:
     explicit ScopedWrite(VulkanSwapChain* swap_chain);
+
+    ScopedWrite(const ScopedWrite&) = delete;
+    ScopedWrite& operator=(const ScopedWrite&) = delete;
+
     ~ScopedWrite();
 
     bool success() const { return success_; }
@@ -50,11 +55,13 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     VkImageUsageFlags image_usage_ = 0;
     VkSemaphore begin_semaphore_ = VK_NULL_HANDLE;
     VkSemaphore end_semaphore_ = VK_NULL_HANDLE;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWrite);
   };
 
   explicit VulkanSwapChain(uint64_t acquire_next_image_timeout_ns);
+
+  VulkanSwapChain(const VulkanSwapChain&) = delete;
+  VulkanSwapChain& operator=(const VulkanSwapChain&) = delete;
+
   ~VulkanSwapChain();
 
   // min_image_count is the minimum number of presentable images.
@@ -146,7 +153,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
 
   const uint64_t acquire_next_image_timeout_ns_;
 
-  VulkanDeviceQueue* device_queue_ = nullptr;
+  raw_ptr<VulkanDeviceQueue> device_queue_ = nullptr;
   bool is_incremental_present_supported_ = false;
   VkSwapchainKHR swap_chain_ GUARDED_BY(lock_) = VK_NULL_HANDLE;
   gfx::Size size_;
@@ -190,8 +197,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
       GUARDED_BY(lock_);
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(VulkanSwapChain);
 };
 
 }  // namespace gpu

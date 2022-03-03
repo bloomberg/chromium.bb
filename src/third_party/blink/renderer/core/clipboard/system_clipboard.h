@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -16,7 +16,6 @@
 namespace blink {
 
 class DataObject;
-class DocumentFragment;
 class Image;
 class KURL;
 class LocalFrame;
@@ -36,7 +35,7 @@ class CORE_EXPORT SystemClipboard final
   SystemClipboard(const SystemClipboard&) = delete;
   SystemClipboard& operator=(const SystemClipboard&) = delete;
 
-  uint64_t SequenceNumber();
+  ClipboardSequenceNumberToken SequenceNumber();
   bool IsSelectionMode() const;
   void SetSelectionMode(bool);
   Vector<String> ReadAvailableTypes();
@@ -62,7 +61,7 @@ class CORE_EXPORT SystemClipboard final
 
   String ReadRTF();
 
-  SkBitmap ReadImage(mojom::ClipboardBuffer);
+  mojo_base::BigBuffer ReadPng(mojom::blink::ClipboardBuffer);
   String ReadImageAsImageMarkup(mojom::blink::ClipboardBuffer);
 
   // Write the image and its associated tag (bookmark/HTML types).
@@ -82,7 +81,16 @@ class CORE_EXPORT SystemClipboard final
 
   void CopyToFindPboard(const String& text);
 
-  void RecordClipboardImageUrls(DocumentFragment* pasting_fragment);
+  void ReadAvailableCustomAndStandardFormats(
+      mojom::blink::ClipboardHost::ReadAvailableCustomAndStandardFormatsCallback
+          callback);
+  void ReadUnsanitizedCustomFormat(
+      const String& type,
+      mojom::blink::ClipboardHost::ReadUnsanitizedCustomFormatCallback
+          callback);
+
+  void WriteUnsanitizedCustomFormat(const String& type,
+                                    mojo_base::BigBuffer data);
 
   void Trace(Visitor*) const;
 
@@ -97,7 +105,6 @@ class CORE_EXPORT SystemClipboard final
 
   // Whether the selection buffer is available on the underlying platform.
   bool is_selection_buffer_available_ = false;
-
 };
 
 }  // namespace blink

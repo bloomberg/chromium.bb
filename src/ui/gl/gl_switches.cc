@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_switches.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
@@ -132,7 +132,7 @@ const char kEnableSgiVideoSync[] = "enable-sgi-video-sync";
 // the GL output will not be correct but tests will run faster.
 const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
 
-// Forces the use of software GL instead of hardware gpu.
+// Forces the use of software GL instead of hardware gpu for tests.
 const char kOverrideUseSoftwareGLForTests[] =
     "override-use-software-gl-for-tests";
 
@@ -219,9 +219,9 @@ const base::Feature kDirectCompositionLowLatencyPresentation{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow overlay swapchain to present on all GPUs even if they only support
-// software overlays.
+// software overlays. GPU deny lists limit it to NVIDIA only at the moment.
 const base::Feature kDirectCompositionSoftwareOverlays{
-    "DirectCompositionSoftwareOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DirectCompositionSoftwareOverlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Default to using ANGLE's OpenGL backend
 const base::Feature kDefaultANGLEOpenGL{"DefaultANGLEOpenGL",
@@ -240,6 +240,10 @@ const base::Feature kDefaultANGLEVulkan{"DefaultANGLEVulkan",
 // be reliably retrieved with ANGLE backend.
 const base::Feature kTrackCurrentShaders{"TrackCurrentShaders",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable sharing Vulkan device queue with ANGLE's Vulkan backend.
+const base::Feature kVulkanFromANGLE{"VulkanFromANGLE",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsDefaultANGLEVulkan() {
 #if defined(OS_ANDROID)

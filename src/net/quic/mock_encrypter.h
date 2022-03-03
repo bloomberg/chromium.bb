@@ -9,7 +9,6 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -22,6 +21,10 @@ namespace net {
 class MockEncrypter : public quic::QuicEncrypter {
  public:
   explicit MockEncrypter(quic::Perspective perspective);
+
+  MockEncrypter(const MockEncrypter&) = delete;
+  MockEncrypter& operator=(const MockEncrypter&) = delete;
+
   ~MockEncrypter() override {}
 
   // QuicEncrypter implementation
@@ -44,9 +47,6 @@ class MockEncrypter : public quic::QuicEncrypter {
   quic::QuicPacketCount GetConfidentialityLimit() const override;
   absl::string_view GetKey() const override;
   absl::string_view GetNoncePrefix() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockEncrypter);
 };
 
 }  // namespace net

@@ -14,7 +14,6 @@
 #include "base/files/file.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "sql/initialization.h"
@@ -216,7 +215,7 @@ int SandboxedVfs::Randomness(int result_size, char* result) {
 
 int SandboxedVfs::Sleep(int microseconds) {
   DCHECK_GE(microseconds, 0);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(microseconds));
+  base::PlatformThread::Sleep(base::Microseconds(microseconds));
   return SQLITE_OK;
 }
 

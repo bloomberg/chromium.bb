@@ -8,8 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -39,6 +38,10 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   static bool ShouldShowResetProfileBanner(Profile* profile);
 
   explicit ResetSettingsHandler(Profile* profile);
+
+  ResetSettingsHandler(const ResetSettingsHandler&) = delete;
+  ResetSettingsHandler& operator=(const ResetSettingsHandler&) = delete;
+
   ~ResetSettingsHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -93,7 +96,7 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   void OnShowPowerwashDialog(const base::ListValue* args);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
   std::unique_ptr<ProfileResetter> resetter_;
 
@@ -107,8 +110,6 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<ResetSettingsHandler> callback_weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ResetSettingsHandler);
 };
 
 }  // namespace settings

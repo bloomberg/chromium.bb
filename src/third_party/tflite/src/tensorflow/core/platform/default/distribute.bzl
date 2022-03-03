@@ -1,9 +1,5 @@
 """Build rules for tf.distribute testing."""
 
-load(
-    "//tensorflow/core/platform:build_config_root.bzl",
-    "register_extension_info",
-)
 load("//tensorflow/python/tpu:tpu.bzl", _tpu_py_test = "tpu_py_test")
 load("//tensorflow:tensorflow.bzl", "cuda_py_test")
 
@@ -23,6 +19,7 @@ def distribute_py_test(
         disable_v2 = False,
         disable_v3 = False,
         disable_mlir_bridge = True,
+        disable_tpu_use_tfrt = None,
         **kwargs):
     """Generates py_test targets for CPU and GPU.
 
@@ -42,6 +39,9 @@ def distribute_py_test(
         disable_v2: whether tests for TPU version 2 should be generated.
         disable_v3: whether tests for TPU version 3 should be generated.
         disable_mlir_bridge: whether to also run this with the mlir bridge enabled.
+        disable_tpu_use_tfrt: None/bool. Whether generate a unit test on TFRT TPU
+            Runtime.  If it is not specified, we automatically generate TFRT unit
+            tests for targets managed by tensorflow team.
         **kwargs: extra keyword arguments to the non-tpu test.
     """
 
@@ -80,9 +80,5 @@ def distribute_py_test(
             disable_v2 = disable_v2,
             disable_v3 = disable_v3,
             disable_mlir_bridge = disable_mlir_bridge,
+            disable_tfrt = disable_tpu_use_tfrt,
         )
-
-register_extension_info(
-    extension_name = "distribute_py_test",
-    label_regex_for_dep = "{extension_name}",
-)

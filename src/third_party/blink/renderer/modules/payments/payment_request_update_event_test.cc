@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -26,6 +25,10 @@ class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
                            public PaymentRequestDelegate {
  public:
   MockPaymentRequest() = default;
+
+  MockPaymentRequest(const MockPaymentRequest&) = delete;
+  MockPaymentRequest& operator=(const MockPaymentRequest&) = delete;
+
   ~MockPaymentRequest() override = default;
 
   MOCK_METHOD1(OnUpdatePaymentDetails,
@@ -34,9 +37,6 @@ class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
   bool IsInteractive() const override { return true; }
 
   void Trace(Visitor* visitor) const override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPaymentRequest);
 };
 
 TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {

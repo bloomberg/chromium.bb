@@ -13,12 +13,14 @@
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -26,6 +28,10 @@ namespace content {
 struct NativeWebKeyboardEvent;
 class WebContents;
 }  // namespace content
+
+namespace password_manager {
+class ContentPasswordManagerDriver;
+}
 
 namespace ui {
 class AXPlatformNode;
@@ -35,12 +41,17 @@ namespace autofill {
 
 class AutofillPopupDelegate;
 class AutofillPopupView;
+class ContentAutofillDriver;
 
 // This class is a controller for an AutofillPopupView. It implements
 // AutofillPopupController to allow calls from AutofillPopupView. The
 // other, public functions are available to its instantiator.
 class AutofillPopupControllerImpl : public AutofillPopupController {
  public:
+  AutofillPopupControllerImpl(const AutofillPopupControllerImpl&) = delete;
+  AutofillPopupControllerImpl& operator=(const AutofillPopupControllerImpl&) =
+      delete;
+
   // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if the
   // construction arguments are the same. |previous| may be invalidated by this
   // call. The controller will listen for keyboard input routed to
@@ -105,7 +116,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void AcceptSuggestion(int index) override;
   int GetLineCount() const override;
   const Suggestion& GetSuggestionAt(int row) const override;
-  const std::u16string& GetSuggestionValueAt(int row) const override;
+  std::u16string GetSuggestionMainTextAt(int row) const override;
+  std::u16string GetSuggestionMinorTextAt(int row) const override;
   const std::u16string& GetSuggestionLabelAt(int row) const override;
   bool GetRemovalConfirmationText(int list_index,
                                   std::u16string* title,
@@ -147,7 +159,13 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // to find the AXPlatformNode specifically for the autofill text field.
   virtual ui::AXPlatformNode* GetRootAXPlatformNodeForWebContents();
 
+  // Hides |view_| unless it is null and then deletes |this|.
+  virtual void HideViewAndDie();
+
  private:
+  // TODO(crbug.com/1276850, crbug.com/1277218): Remove.
+  enum class SelfStatus { kDestroyed, kAlive };
+
   // The user has accepted the currently selected line. Returns whether there
   // was a selection to accept.
   bool AcceptSelectedLine();
@@ -156,16 +174,30 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // when the popup is reused it doesn't leak values between uses.
   void ClearState();
 
-  // Hides |view_| unless it is null and then deletes |this|.
-  void HideViewAndDie();
+  // Returns true iff the focused frame has a pointer lock, which may be used to
+  // trick the user into accepting some suggestion (crbug.com/1239496). In such
+  // a case, we should hide the popup.
+  bool IsMouseLocked() const;
+
+  // Casts `delegate_->GetDriver()` to ContentAutofillDriver or
+  // ContentPasswordManagerDriver, respectively.
+  absl::variant<ContentAutofillDriver*,
+                password_manager::ContentPasswordManagerDriver*>
+  GetDriver();
+
+  // Conceptually an override of AutofillPopupController::SetSelectedLine(), but
+  // additionally returns a `SelfStatus` to indicate if |this| was destroyed by
+  // this call.
+  // TODO(crbug.com/1276850, crbug.com/1277218): Replace with SetSelectedLine().
+  SelfStatus SetSelectedLineHelper(absl::optional<int> selected_line);
 
   friend class AutofillPopupControllerUnitTest;
   friend class AutofillPopupControllerAccessibilityUnitTest;
   void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 
   PopupControllerCommon controller_common_;
-  content::WebContents* web_contents_;
-  AutofillPopupView* view_ = nullptr;  // Weak reference.
+  raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<AutofillPopupView> view_ = nullptr;  // Weak reference.
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 
   // If set to true, the popup will never be hidden because of stale data or if
@@ -184,8 +216,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   absl::optional<int> selected_line_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillPopupControllerImpl);
 };
 
 }  // namespace autofill

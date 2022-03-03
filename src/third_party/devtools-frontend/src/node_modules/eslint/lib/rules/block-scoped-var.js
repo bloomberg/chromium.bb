@@ -14,7 +14,6 @@ module.exports = {
 
         docs: {
             description: "enforce the use of variables within the scope they are defined",
-            category: "Best Practices",
             recommended: false,
             url: "https://eslint.org/docs/rules/block-scoped-var"
         },
@@ -113,6 +112,8 @@ module.exports = {
             "SwitchStatement:exit": exitScope,
             CatchClause: enterScope,
             "CatchClause:exit": exitScope,
+            StaticBlock: enterScope,
+            "StaticBlock:exit": exitScope,
 
             // Finds and reports references which are outside of valid scope.
             VariableDeclaration: checkForVariables

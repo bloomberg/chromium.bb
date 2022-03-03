@@ -9,7 +9,7 @@
 
 #include <cstdlib>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 
@@ -33,6 +33,10 @@ class MseTrackBuffer {
   MseTrackBuffer(ChunkDemuxerStream* stream,
                  MediaLog* media_log,
                  SourceBufferParseWarningCB parse_warning_cb);
+
+  MseTrackBuffer(const MseTrackBuffer&) = delete;
+  MseTrackBuffer& operator=(const MseTrackBuffer&) = delete;
+
   ~MseTrackBuffer();
 
   // Get/set |last_decode_timestamp_|.
@@ -170,7 +174,7 @@ class MseTrackBuffer {
 
   // Pointer to the stream associated with this track. The stream is not owned
   // by |this|.
-  ChunkDemuxerStream* const stream_;
+  const raw_ptr<ChunkDemuxerStream> stream_;
 
   // Queue of processed frames that have not yet been appended to |stream_|.
   // EnqueueProcessedFrame() adds to this queue, and FlushProcessedFrames()
@@ -178,7 +182,7 @@ class MseTrackBuffer {
   StreamParser::BufferQueue processed_frames_;
 
   // MediaLog for reporting messages and properties to debug content and engine.
-  MediaLog* media_log_;
+  raw_ptr<MediaLog> media_log_;
 
   // Callback for reporting problematic conditions that are not necessarily
   // errors.
@@ -186,8 +190,6 @@ class MseTrackBuffer {
 
   // Counter that limits spam to |media_log_| for MseTrackBuffer warnings.
   int num_keyframe_time_greater_than_dependant_warnings_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MseTrackBuffer);
 };
 
 MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream,
@@ -562,8 +564,8 @@ void FrameProcessor::OnPossibleAudioConfigUpdate(
     return;
 
   current_audio_config_ = config;
-  sample_duration_ = base::TimeDelta::FromSecondsD(
-      1.0 / current_audio_config_.samples_per_second());
+  sample_duration_ =
+      base::Seconds(1.0 / current_audio_config_.samples_per_second());
   has_dependent_audio_frames_ =
       current_audio_config_.profile() == AudioCodecProfile::kXHE_AAC;
   last_audio_pts_for_nonkeyframe_monotonicity_check_ = kNoTimestamp;
@@ -899,7 +901,7 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
     if (track_last_decode_timestamp != kNoDecodeTimestamp()) {
       base::TimeDelta track_dts_delta =
           decode_timestamp - track_last_decode_timestamp;
-      if (track_dts_delta < base::TimeDelta() ||
+      if (track_dts_delta.is_negative() ||
           track_dts_delta > 2 * track_buffer->last_frame_duration()) {
         // 6.1. If mode equals "segments": Set group end timestamp to
         //      presentation timestamp.

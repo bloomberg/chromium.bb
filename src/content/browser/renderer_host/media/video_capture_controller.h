@@ -8,16 +8,18 @@
 #include <list>
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/token.h"
 #include "base/unguessable_token.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/video_capture_device_launcher.h"
+#include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
@@ -49,6 +51,9 @@ class CONTENT_EXPORT VideoCaptureController
       const media::VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
+
+  VideoCaptureController(const VideoCaptureController&) = delete;
+  VideoCaptureController& operator=(const VideoCaptureController&) = delete;
 
   // Warning: This value should not be changed, because doing so would change
   // the meaning of logged UMA events for histograms Media.VideoCapture.Error
@@ -147,6 +152,8 @@ class CONTENT_EXPORT VideoCaptureController
   void TakePhoto(media::VideoCaptureDevice::TakePhotoCallback callback);
   void MaybeSuspend();
   void Resume();
+  void Crop(const base::Token& crop_id,
+            base::OnceCallback<void(media::mojom::CropRequestResult)> callback);
   void RequestRefreshFrame();
   void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
                                       base::OnceClosure done_cb);
@@ -199,7 +206,8 @@ class CONTENT_EXPORT VideoCaptureController
     int buffer_id_;
     bool is_retired_;
     int frame_feedback_id_;
-    media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
+    raw_ptr<media::VideoFrameConsumerFeedbackObserver>
+        consumer_feedback_observer_;
     media::mojom::VideoBufferHandlePtr buffer_handle_;
     media::VideoCaptureFeedback combined_consumer_feedback_;
 
@@ -266,7 +274,7 @@ class CONTENT_EXPORT VideoCaptureController
   std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
   std::unique_ptr<LaunchedVideoCaptureDevice> launched_device_;
-  VideoCaptureDeviceLaunchObserver* device_launch_observer_;
+  raw_ptr<VideoCaptureDeviceLaunchObserver> device_launch_observer_;
 
   std::vector<BufferContext> buffer_contexts_;
 
@@ -291,8 +299,6 @@ class CONTENT_EXPORT VideoCaptureController
   absl::optional<media::VideoCaptureFormat> video_capture_format_;
 
   base::WeakPtrFactory<VideoCaptureController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureController);
 };
 
 }  // namespace content

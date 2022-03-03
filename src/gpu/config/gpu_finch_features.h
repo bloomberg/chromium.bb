@@ -33,6 +33,8 @@ GPU_EXPORT extern const base::Feature kDefaultEnableOopRasterization;
 
 GPU_EXPORT extern const base::Feature kCanvasOopRasterization;
 
+GPU_EXPORT extern const base::Feature kDefaultEnableANGLEValidation;
+
 #if defined(OS_WIN)
 GPU_EXPORT extern const base::Feature kGpuProcessHighPriorityWin;
 #endif
@@ -61,13 +63,22 @@ GPU_EXPORT extern const base::Feature kEnableVkPipelineCache;
 
 GPU_EXPORT extern const base::Feature kReduceOpsTaskSplitting;
 
+GPU_EXPORT extern const base::Feature kEnableDrDc;
+
+GPU_EXPORT extern const base::Feature kWebGPUService;
+
 GPU_EXPORT bool IsUsingVulkan();
+GPU_EXPORT bool IsDrDcEnabled();
+GPU_EXPORT bool NeedThreadSafeAndroidMedia();
+GPU_EXPORT bool IsANGLEValidationEnabled();
+
 #if defined(OS_ANDROID)
 GPU_EXPORT bool IsAImageReaderEnabled();
 GPU_EXPORT bool IsAndroidSurfaceControlEnabled();
 GPU_EXPORT bool LimitAImageReaderMaxSizeToOne();
 GPU_EXPORT bool IsWebViewZeroCopyVideoEnabled();
 GPU_EXPORT bool IncreaseBufferCountForHighFrameRate();
+GPU_EXPORT bool IncreaseBufferCountForWebViewOverlays();
 #endif
 
 }  // namespace features

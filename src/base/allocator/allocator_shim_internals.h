@@ -9,10 +9,13 @@
 
 #if defined(__GNUC__)
 
+#if defined(OS_POSIX)
 #include <sys/cdefs.h>  // for __THROW
+#endif
 
 #ifndef __THROW  // Not a glibc system
-#ifdef _NOEXCEPT  // LLVM libc++ uses noexcept instead
+#if defined(_NOEXCEPT) && !defined(OS_FUCHSIA)
+// LLVM libc++ uses noexcept instead
 #define __THROW _NOEXCEPT
 #else
 #define __THROW

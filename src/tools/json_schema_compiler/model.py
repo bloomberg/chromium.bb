@@ -376,9 +376,15 @@ class Function(object):
 
     returns_async = json.get('returns_async', None)
     if returns_async:
-      if len(returns_async.get('parameters')) > 1:
+      returns_async_params = returns_async.get('parameters')
+      if (returns_async_params is None):
+        raise ValueError(
+            'parameters key not specified on returns_async: %s.%s in %s' %
+            (namespace.name, name, namespace.source_file))
+      if len(returns_async_params) > 1:
         raise ValueError('Only a single parameter can be specific on '
-                         'returns_async: %s.%s' % (namespace.name, name))
+                         'returns_async: %s.%s in %s' %
+                         (namespace.name, name, namespace.source_file))
       self.returns_async = ReturnsAsync(self, returns_async, namespace,
                                         Origin(from_client=True), True)
       # TODO(https://crbug.com/1143032): Returning a synchronous value is
@@ -885,8 +891,12 @@ def _GetPlatforms(json):
     raise ValueError('"platforms" cannot be an empty list')
   platforms = []
   for platform_name in json['platforms']:
-    for platform_enum in _Enum.GetAll(Platforms):
-      if platform_name == platform_enum.name:
-        platforms.append(platform_enum)
+    platform_enum = None
+    for platform in _Enum.GetAll(Platforms):
+      if platform_name == platform.name:
+        platform_enum = platform
         break
+    if not platform_enum:
+      raise ValueError('Invalid platform specified: ' + platform_name)
+    platforms.append(platform_enum)
   return platforms

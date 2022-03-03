@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -137,6 +136,20 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderFrameType(
   if (!render_frame_host) {
     // This happens for extensions. Manifest should be checked for permission.
     allowed = true;
+    check_permission = false;
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), check_permission, allowed));
+    return;
+  }
+
+  if (render_frame_host->GetLifecycleState() ==
+      content::RenderFrameHost::LifecycleState::kPrerendering) {
+    // It's unclear whether we can reach this function during prerendering.
+    // The Mojo binding for blink.mojom.SpeechRecognizer is deferred until
+    // activation, but it's conceivable that callsites that do not originate
+    // from SpeechRecognizer can call this method.
+    allowed = false;
     check_permission = false;
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,

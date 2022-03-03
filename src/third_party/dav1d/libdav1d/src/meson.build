@@ -92,6 +92,7 @@ if is_asm_enabled
 
         libdav1d_sources += files(
             'arm/cpu.c',
+            'arm/refmvs_init.c',
         )
         libdav1d_tmpl_sources += files(
             'arm/cdef_init_tmpl.c',
@@ -109,6 +110,7 @@ if is_asm_enabled
                 'arm/64/itx.S',
                 'arm/64/looprestoration_common.S',
                 'arm/64/msac.S',
+                'arm/64/refmvs.S',
             )
 
             if dav1d_bitdepths.contains('8')
@@ -139,11 +141,13 @@ if is_asm_enabled
                 'arm/32/itx.S',
                 'arm/32/looprestoration_common.S',
                 'arm/32/msac.S',
+                'arm/32/refmvs.S',
             )
 
             if dav1d_bitdepths.contains('8')
                 libdav1d_sources_asm += files(
                     'arm/32/cdef.S',
+                    'arm/32/film_grain.S',
                     'arm/32/ipred.S',
                     'arm/32/loopfilter.S',
                     'arm/32/looprestoration.S',
@@ -154,6 +158,7 @@ if is_asm_enabled
             if dav1d_bitdepths.contains('16')
                 libdav1d_sources_asm += files(
                     'arm/32/cdef16.S',
+                    'arm/32/film_grain16.S',
                     'arm/32/ipred16.S',
                     'arm/32/itx16.S',
                     'arm/32/loopfilter16.S',
@@ -173,6 +178,7 @@ if is_asm_enabled
         libdav1d_sources += files(
             'x86/cpu.c',
             'x86/msac_init.c',
+            'x86/refmvs_init.c',
         )
 
         libdav1d_tmpl_sources += files(
@@ -189,15 +195,21 @@ if is_asm_enabled
         libdav1d_sources_asm = files(
             'x86/cpuid.asm',
             'x86/msac.asm',
+            'x86/refmvs.asm',
             'x86/cdef_avx2.asm',
             'x86/itx_avx2.asm',
             'x86/looprestoration_avx2.asm',
             'x86/cdef_sse.asm',
+            'x86/itx_sse.asm',
         )
 
         if dav1d_bitdepths.contains('8')
             libdav1d_sources_asm += files(
                 'x86/cdef_avx512.asm',
+                'x86/ipred_avx512.asm',
+                'x86/itx_avx512.asm',
+                'x86/loopfilter_avx512.asm',
+                'x86/looprestoration_avx512.asm',
                 'x86/mc_avx512.asm',
                 'x86/mc_avx2.asm',
                 'x86/film_grain_avx2.asm',
@@ -205,7 +217,6 @@ if is_asm_enabled
                 'x86/loopfilter_avx2.asm',
                 'x86/film_grain_sse.asm',
                 'x86/ipred_sse.asm',
-                'x86/itx_sse.asm',
                 'x86/loopfilter_sse.asm',
                 'x86/looprestoration_sse.asm',
                 'x86/mc_sse.asm',
@@ -214,6 +225,8 @@ if is_asm_enabled
 
         if dav1d_bitdepths.contains('16')
             libdav1d_sources_asm += files(
+                'x86/looprestoration16_avx512.asm',
+                'x86/mc16_avx512.asm',
                 'x86/cdef16_avx2.asm',
                 'x86/film_grain16_avx2.asm',
                 'x86/ipred16_avx2.asm',
@@ -222,6 +235,12 @@ if is_asm_enabled
                 'x86/looprestoration16_avx2.asm',
                 'x86/mc16_avx2.asm',
                 'x86/cdef16_sse.asm',
+                'x86/film_grain16_sse.asm',
+                'x86/ipred16_sse.asm',
+                'x86/itx16_sse.asm',
+                'x86/loopfilter16_sse.asm',
+                'x86/looprestoration16_sse.asm',
+                'x86/mc16_sse.asm',
             )
         endif
 
@@ -274,11 +293,11 @@ libdav1d_entrypoints_objs = static_library('dav1d_entrypoint',
     rev_target, config_h_target,
 
     include_directories : dav1d_inc_dirs,
-    dependencies: [stdatomic_dependency],
+    dependencies: [stdatomic_dependencies],
     c_args : [stackalign_flag, stackrealign_flag, api_export_flags],
     install : false,
     build_by_default : false,
-).extract_all_objects()
+).extract_all_objects(recursive: true)
 
 # Helper library for each bitdepth
 libdav1d_bitdepth_objs = []
@@ -287,11 +306,11 @@ foreach bitdepth : dav1d_bitdepths
         'dav1d_bitdepth_@0@'.format(bitdepth),
         libdav1d_tmpl_sources, config_h_target,
         include_directories: dav1d_inc_dirs,
-        dependencies : [stdatomic_dependency],
+        dependencies : [stdatomic_dependencies],
         c_args : ['-DBITDEPTH=@0@'.format(bitdepth)] + stackalign_flag,
         install : false,
         build_by_default : false,
-    ).extract_all_objects()
+    ).extract_all_objects(recursive: true)
 endforeach
 
 # Helper library for each bitdepth and architecture-specific flags
@@ -300,11 +319,11 @@ foreach bitdepth : dav1d_bitdepths
         'dav1d_arch_bitdepth_@0@'.format(bitdepth),
         libdav1d_arch_tmpl_sources, config_h_target,
         include_directories: dav1d_inc_dirs,
-        dependencies : [stdatomic_dependency],
+        dependencies : [stdatomic_dependencies],
         c_args : ['-DBITDEPTH=@0@'.format(bitdepth)] + stackalign_flag + arch_flags,
         install : false,
         build_by_default : false,
-    ).extract_all_objects()
+    ).extract_all_objects(recursive: true)
 endforeach
 
 # The final dav1d library
@@ -326,7 +345,7 @@ libdav1d = library('dav1d',
 
     include_directories : dav1d_inc_dirs,
     dependencies : [
-        stdatomic_dependency,
+        stdatomic_dependencies,
         thread_dependency,
         thread_compat_dep,
         libdl_dependency,

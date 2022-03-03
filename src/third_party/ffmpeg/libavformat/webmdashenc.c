@@ -155,7 +155,8 @@ static int bitstream_switching(AVFormatContext *s, const AdaptationSet *as)
             !av_strstart(track_num->value, gold_track_num->value, NULL) ||
             gold_par->codec_id != par->codec_id ||
             gold_par->extradata_size != par->extradata_size ||
-            memcmp(gold_par->extradata, par->extradata, par->extradata_size)) {
+            (par->extradata_size > 0 &&
+             memcmp(gold_par->extradata, par->extradata, par->extradata_size))) {
             return 0;
         }
     }
@@ -479,7 +480,8 @@ static int webm_dash_manifest_write_header(AVFormatContext *s)
     for (unsigned i = 0; i < s->nb_streams; i++) {
         enum AVCodecID codec_id = s->streams[i]->codecpar->codec_id;
         if (codec_id != AV_CODEC_ID_VP8    && codec_id != AV_CODEC_ID_VP9 &&
-            codec_id != AV_CODEC_ID_VORBIS && codec_id != AV_CODEC_ID_OPUS)
+            codec_id != AV_CODEC_ID_AV1    && codec_id != AV_CODEC_ID_VORBIS &&
+            codec_id != AV_CODEC_ID_OPUS)
             return AVERROR(EINVAL);
     }
 
@@ -536,7 +538,7 @@ static const AVClass webm_dash_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_webm_dash_manifest_muxer = {
+const AVOutputFormat ff_webm_dash_manifest_muxer = {
     .name              = "webm_dash_manifest",
     .long_name         = NULL_IF_CONFIG_SMALL("WebM DASH Manifest"),
     .mime_type         = "application/xml",

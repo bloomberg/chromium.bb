@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
 #include "extensions/common/url_pattern.h"
 
 class GURL;
@@ -80,12 +79,13 @@ class URLPatternSet {
   static URLPatternSet CreateUnion(const URLPatternSet& set1,
                                    const URLPatternSet& set2);
 
-  // Returns the union of all sets in |sets|.
-  static URLPatternSet CreateUnion(const std::vector<URLPatternSet>& sets);
-
   URLPatternSet();
   URLPatternSet(URLPatternSet&& rhs);
   explicit URLPatternSet(const std::set<URLPattern>& patterns);
+
+  URLPatternSet(const URLPatternSet&) = delete;
+  URLPatternSet& operator=(const URLPatternSet&) = delete;
+
   ~URLPatternSet();
 
   URLPatternSet& operator=(URLPatternSet&& rhs);
@@ -149,8 +149,6 @@ class URLPatternSet {
  private:
   // The list of URL patterns that comprise the extent.
   std::set<URLPattern> patterns_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLPatternSet);
 };
 
 std::ostream& operator<<(std::ostream& out,

@@ -8,9 +8,9 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 
@@ -75,7 +75,8 @@ void PrefMemberBase::UpdateValueFromPref(base::OnceClosure callback) const {
     CreateInternal();
   internal()->UpdateValue(
       base::Value::ToUniquePtrValue(pref->GetValue()->Clone()).release(),
-      pref->IsManaged(), pref->IsUserModifiable(), std::move(callback));
+      pref->IsManaged(), pref->IsUserModifiable(), pref->IsDefaultValue(),
+      std::move(callback));
 }
 
 void PrefMemberBase::VerifyPref() const {
@@ -91,10 +92,8 @@ void PrefMemberBase::InvokeUnnamedCallback(
 }
 
 PrefMemberBase::Internal::Internal()
-    : owning_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      is_managed_(false),
-      is_user_modifiable_(false) {}
-PrefMemberBase::Internal::~Internal() { }
+    : owning_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+PrefMemberBase::Internal::~Internal() = default;
 
 bool PrefMemberBase::Internal::IsOnCorrectSequence() const {
   return owning_task_runner_->RunsTasksInCurrentSequence();
@@ -103,6 +102,7 @@ bool PrefMemberBase::Internal::IsOnCorrectSequence() const {
 void PrefMemberBase::Internal::UpdateValue(base::Value* v,
                                            bool is_managed,
                                            bool is_user_modifiable,
+                                           bool is_default_value,
                                            base::OnceClosure callback) const {
   std::unique_ptr<base::Value> value(v);
   base::ScopedClosureRunner closure_runner(std::move(callback));
@@ -111,12 +111,13 @@ void PrefMemberBase::Internal::UpdateValue(base::Value* v,
     DCHECK(rv);
     is_managed_ = is_managed;
     is_user_modifiable_ = is_user_modifiable;
+    is_default_value_ = is_default_value;
   } else {
     bool may_run = owning_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&PrefMemberBase::Internal::UpdateValue, this,
                        value.release(), is_managed, is_user_modifiable,
-                       closure_runner.Release()));
+                       is_default_value, closure_runner.Release()));
     DCHECK(may_run);
   }
 }
@@ -207,7 +208,7 @@ template <>
 bool PrefMember<base::FilePath>::Internal::UpdateValueInternal(
     const base::Value& value)
     const {
-  absl::optional<base::FilePath> path = util::ValueToFilePath(value);
+  absl::optional<base::FilePath> path = base::ValueToFilePath(value);
   if (!path)
     return false;
   value_ = *path;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
@@ -11,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/device_service.h"
@@ -120,7 +120,7 @@ FingerprintSetupScreen::~FingerprintSetupScreen() {
 }
 
 bool FingerprintSetupScreen::MaybeSkip(WizardContext* context) {
-  if (!chromeos::quick_unlock::IsFingerprintEnabled(
+  if (!quick_unlock::IsFingerprintEnabled(
           ProfileManager::GetActiveUserProfile()) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);

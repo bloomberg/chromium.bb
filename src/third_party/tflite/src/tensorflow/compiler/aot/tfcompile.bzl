@@ -312,8 +312,10 @@ def tf_library(
             # TODO(cwhipkey): only depend on kernel code that the model actually
             # needed.
             "//tensorflow/compiler/xla/service/cpu:runtime_conv2d",
+            "//tensorflow/compiler/xla/service/cpu:runtime_custom_call_status",
             "//tensorflow/compiler/xla/service/cpu:runtime_key_value_sort",
             "//tensorflow/compiler/xla/service/cpu:runtime_matmul",
+            "//tensorflow/compiler/xla/service/cpu:runtime_topk",
             "//tensorflow/compiler/xla/service/cpu:runtime_single_threaded_conv2d",
             "//tensorflow/compiler/xla/service/cpu:runtime_single_threaded_matmul",
             "//third_party/eigen3",
@@ -432,7 +434,10 @@ def target_llvm_triple():
         "//tensorflow:ios": "arm64-none-ios",
         "//tensorflow:ios_x86_64": "x86_64-apple-ios",
         "//tensorflow:linux_ppc64le": "ppc64le-ibm-linux-gnu",
-        "//tensorflow:macos": "x86_64-none-darwin",
+        "//tensorflow:macos_x86_64": "x86_64-none-darwin",
+        "//tensorflow:macos_arm64": "aarch64-none-darwin",
         "//tensorflow:windows": "x86_64-none-windows",
+        "//tensorflow:linux_s390x": "systemz-none-linux-gnu",
+        # internal placeholder,
         "//conditions:default": "x86_64-pc-linux",
     })

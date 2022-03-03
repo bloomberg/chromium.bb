@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -45,6 +44,9 @@ enum class AppType {
   kArc,
   kPWA,
   kExtension,
+  kChromeApp,
+  kCrostini,
+  kBorealis,
 };
 
 namespace internal {
@@ -58,6 +60,10 @@ METRICS_EXPORT extern const base::Feature kUkmFeature;
 class METRICS_EXPORT UkmRecorder {
  public:
   UkmRecorder();
+
+  UkmRecorder(const UkmRecorder&) = delete;
+  UkmRecorder& operator=(const UkmRecorder&) = delete;
+
   virtual ~UkmRecorder();
 
   // Provides access to a global UkmRecorder instance for recording metrics.
@@ -73,8 +79,8 @@ class METRICS_EXPORT UkmRecorder {
   // Add an entry to the UkmEntry list.
   virtual void AddEntry(mojom::UkmEntryPtr entry) = 0;
 
-  // Disables sampling for testing purposes.
-  virtual void DisableSamplingForTesting() {}
+  // Controls sampling for testing purposes. Sampling is 1-in-N (N==rate).
+  virtual void SetSamplingForTesting(int rate) {}
 
  protected:
   // Type-safe wrappers for Update<X> functions.
@@ -139,8 +145,6 @@ class METRICS_EXPORT UkmRecorder {
   // SourceUrlRecorderWebContentsObserver when a browser tab or its WebContents
   // are no longer alive. Not to be used through mojo interface.
   virtual void MarkSourceForDeletion(ukm::SourceId source_id) = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(UkmRecorder);
 };
 
 }  // namespace ukm

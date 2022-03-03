@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_NODE_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
@@ -198,10 +199,12 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   }
 
   bool HasLineIfEmpty() const {
-    if (const auto* block = DynamicTo<LayoutBlock>(box_))
+    if (const auto* block = DynamicTo<LayoutBlock>(box_.Get()))
       return block->HasLineIfEmpty();
     return false;
   }
+  LayoutUnit EmptyLineBlockSize(
+      const NGBlockBreakToken* incoming_break_token) const;
 
   // After we run the layout algorithm, this function copies back the fragment
   // position to the layout box.
@@ -210,6 +213,11 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       PhysicalOffset,
       const NGPhysicalBoxFragment& container_fragment,
       const NGBlockBreakToken* previous_container_break_token = nullptr) const;
+
+  // If extra columns are added after a multicol has been written back to
+  // legacy, for example for an OOF positioned element, we need to update the
+  // legacy flow thread to encompass those extra columns.
+  void MakeRoomForExtraColumns(LayoutUnit block_size) const;
 
   String ToString() const;
 
@@ -255,6 +263,8 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
                                      NGBoxFragmentBuilder*) const;
   LayoutUnit AtomicInlineBaselineFromLegacyLayout(
       const NGConstraintSpace&) const;
+
+  void UpdateMarginPaddingInfoIfNeeded(const NGConstraintSpace&) const;
 
   void UpdateShapeOutsideInfoIfNeeded(
       const NGLayoutResult&,

@@ -6,7 +6,6 @@
 #define COMPONENTS_METRICS_STRUCTURED_STRUCTURED_METRICS_PROVIDER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,6 +14,7 @@
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/key_data.h"
 #include "components/metrics/structured/recorder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace metrics {
 namespace structured {
@@ -54,7 +54,7 @@ class ExternalMetrics;
 // On a call to ProvideCurrentSessionData, the cache of unsent logs is added to
 // a ChromeUserMetricsExtension for upload, and is then cleared.
 class StructuredMetricsProvider : public metrics::MetricsProvider,
-                                  public Recorder::Observer {
+                                  public Recorder::RecorderImpl {
  public:
   StructuredMetricsProvider();
   ~StructuredMetricsProvider() override;
@@ -66,29 +66,28 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   friend class Recorder;
   friend class StructuredMetricsProviderTest;
 
-  // State machine for step 4 of initialization. These are stored in two files
-  // that are asynchronously read from disk at startup. When both files have
+  // State machine for step 4 of initialization. These are stored in three files
+  // that are asynchronously read from disk at startup. When all files have
   // been read, the provider has been initialized.
   enum class InitState {
     kUninitialized = 1,
     // Set after we observe the recorder, which happens on construction.
     kProfileAdded = 2,
-    // Set after the key file is read from disk.
-    kKeysInitialized = 3,
-    // Set after the event file is read from disk.
-    kEventsInitialized = 4,
-    // Set after both the key and event files are read from disk.
-    kInitialized = 5,
+    // Set after all key and event files are read from disk.
+    kInitialized = 3,
   };
 
   void OnKeyDataInitialized();
   void OnRead(ReadStatus status);
   void OnWrite(WriteStatus status);
   void OnExternalMetricsCollected(const EventsProto& events);
+  void Purge();
 
-  // Recorder::Observer:
+  // Recorder::RecorderImpl:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnRecord(const EventBase& event) override;
+  void OnReportingStateChanged(bool enabled) override;
+  absl::optional<int> LastKeyRotation(uint64_t project_name_hash) override;
 
   // metrics::MetricsProvider:
   void OnRecordingEnabled() override;
@@ -102,14 +101,24 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
 
   void WriteNowForTest();
   void SetExternalMetricsDirForTest(const base::FilePath& dir);
+  void SetDeviceKeyDataPathForTest(const base::FilePath& path);
 
   // Beyond this number of logging events between successive calls to
   // ProvideCurrentSessionData, we stop recording events.
   static int kMaxEventsPerUpload;
 
-  // The directory used to store unsent logs and keys. Relative to the user's
-  // cryptohome.
-  static char kStorageDirectory[];
+  // The path used to store per-profile keys. Relative to the user's
+  // cryptohome. This file is created by chromium.
+  static char kProfileKeyDataPath[];
+
+  // The path used to store per-device keys. This file is created by tmpfiles.d
+  // on start and has its permissions and ownership set such that it is writable
+  // by chronos.
+  static char kDeviceKeyDataPath[];
+
+  // The directory used to store unsent logs. Relative to the user's cryptohome.
+  // This file is created by chromium.
+  static char kUnsentLogsPath[];
 
   // Whether the metrics provider has completed initialization. Initialization
   // occurs across OnProfileAdded and OnInitializationCompleted. No incoming
@@ -120,12 +129,18 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   //  - OnProfileAdded is called, which constructs |storage_| and
   //    asynchronously reads events and keys.
   //  - OnInitializationCompleted is called once reading from disk is complete,
-  //    which sets |initialized_| to true.
+  //    which sets |init_count_| to kInitialized.
   //
   // The metrics provider does not handle multiprofile: initialization happens
   // only once, for the first-logged-in account aka. primary user.
   //
+  // After a profile is added, three files need to be read from disk:
+  // per-profile keys, per-device keys, and unsent events. |init_count_| tracks
+  // how many of these have been read and, when it reaches 3, we set
+  // |init_state_| to kInitialized.
   InitState init_state_ = InitState::kUninitialized;
+  int init_count_ = 0;
+  static constexpr int kTargetInitCount = 3;
 
   // Tracks the recording state signalled to the metrics provider by
   // OnRecordingEnabled and OnRecordingDisabled. This is false until
@@ -133,10 +148,10 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   // feature flag is enabled.
   bool recording_enabled_ = false;
 
-  // Set by OnRecordingDisabled if |events_| hasn't been initialized yet to
-  // indicate events should be deleted from disk when |events_| is initialized.
-  // See OnRecordingDisabled for more information.
-  bool wipe_events_on_init_ = false;
+  // Set by OnReportingStateChanged if all keys and events should be deleted,
+  // but the files backing that state haven't been initialized yet. If set,
+  // state will be purged upon initialization.
+  bool purge_state_on_init_ = false;
 
   // The last time we provided independent metrics.
   base::Time last_provided_independent_metrics_;
@@ -148,8 +163,14 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   std::unique_ptr<PersistentProto<EventsProto>> events_;
 
   // Storage for all event's keys, and hashing logic for values. This stores
-  // keys on disk.
-  std::unique_ptr<KeyData> key_data_;
+  // keys on disk. |profile_key_data_| stores keys for per-profile projects,
+  // and |device_key_data_| stores keys for per-device projects.
+  std::unique_ptr<KeyData> profile_key_data_;
+  std::unique_ptr<KeyData> device_key_data_;
+
+  // Used to override the otherwise hardcoded path for device keys in unit tests
+  // only.
+  absl::optional<base::FilePath> device_key_data_path_for_test_;
 
   base::WeakPtrFactory<StructuredMetricsProvider> weak_factory_{this};
 };

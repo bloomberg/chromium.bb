@@ -26,9 +26,9 @@
 namespace blink {
 namespace {
 TransformOperation::OperationType GetTypeForRotation(const Rotation& rotation) {
-  float x = rotation.axis.X();
-  float y = rotation.axis.Y();
-  float z = rotation.axis.Z();
+  float x = rotation.axis.x();
+  float y = rotation.axis.y();
+  float z = rotation.axis.z();
   if (x && !y && !z)
     return TransformOperation::kRotateX;
   if (y && !x && !z)
@@ -106,7 +106,7 @@ RotateAroundOriginTransformOperation::RotateAroundOriginTransformOperation(
 
 void RotateAroundOriginTransformOperation::Apply(
     TransformationMatrix& transform,
-    const FloatSize& box_size) const {
+    const gfx::SizeF& box_size) const {
   transform.Translate(origin_x_, origin_y_);
   RotateTransformOperation::Apply(transform, box_size);
   transform.Translate(-origin_x_, -origin_y_);

@@ -22,6 +22,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "v8/include/v8-object.h"
 
 namespace extensions {
 
@@ -58,14 +59,16 @@ v8::Local<v8::Object> ContentSetting::Create(
     APIEventHandler* event_handler,
     APITypeReferenceMap* type_refs,
     const BindingAccessChecker* access_checker) {
-  std::string pref_name;
-  CHECK(property_values->GetString(0u, &pref_name));
-  const base::DictionaryValue* value_spec = nullptr;
-  CHECK(property_values->GetDictionary(1u, &value_spec));
+  base::Value::ConstListView property_values_list = property_values->GetList();
+  CHECK_GE(property_values_list.size(), 2u);
+  std::string pref_name = property_values_list[0].GetString();
+  const base::Value& value_spec = property_values_list[1u];
+  CHECK(value_spec.is_dict());
 
   gin::Handle<ContentSetting> handle = gin::CreateHandle(
-      isolate, new ContentSetting(request_handler, type_refs, access_checker,
-                                  pref_name, *value_spec));
+      isolate, new ContentSetting(
+                   request_handler, type_refs, access_checker, pref_name,
+                   static_cast<const base::DictionaryValue&>(value_spec)));
   return handle.ToV8().As<v8::Object>();
 }
 
@@ -210,10 +213,13 @@ void ContentSetting::HandleFunction(const std::string& method_name,
 
   parse_result.arguments_list->Insert(
       parse_result.arguments_list->GetList().begin(), base::Value(pref_name_));
-  request_handler_->StartRequest(context, "contentSettings." + method_name,
-                                 std::move(parse_result.arguments_list),
-                                 parse_result.callback,
-                                 v8::Local<v8::Function>());
+
+  v8::Local<v8::Promise> promise = request_handler_->StartRequest(
+      context, "contentSettings." + method_name,
+      std::move(parse_result.arguments_list), parse_result.async_type,
+      parse_result.callback, v8::Local<v8::Function>());
+  if (!promise.IsEmpty())
+    arguments->Return(promise);
 }
 
 }  // namespace extensions

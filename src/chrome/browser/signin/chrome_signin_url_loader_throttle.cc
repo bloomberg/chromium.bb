@@ -5,9 +5,11 @@
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace signin {
@@ -23,6 +25,9 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
                              modified_headers,
                              headers_to_remove),
         throttle_(throttle) {}
+
+  ThrottleRequestAdapter(const ThrottleRequestAdapter&) = delete;
+  ThrottleRequestAdapter& operator=(const ThrottleRequestAdapter&) = delete;
 
   ~ThrottleRequestAdapter() override = default;
 
@@ -40,7 +45,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
   }
 
   GURL GetReferrerOrigin() const override {
-    return throttle_->request_referrer_.GetOrigin();
+    return throttle_->request_referrer_.DeprecatedGetOriginAsURL();
   }
 
   void SetDestructionCallback(base::OnceClosure closure) override {
@@ -49,9 +54,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
   }
 
  private:
-  URLLoaderThrottle* const throttle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThrottleRequestAdapter);
+  const raw_ptr<URLLoaderThrottle> throttle_;
 };
 
 class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
@@ -59,6 +62,9 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
   ThrottleResponseAdapter(URLLoaderThrottle* throttle,
                           net::HttpResponseHeaders* headers)
       : throttle_(throttle), headers_(headers) {}
+
+  ThrottleResponseAdapter(const ThrottleResponseAdapter&) = delete;
+  ThrottleResponseAdapter& operator=(const ThrottleResponseAdapter&) = delete;
 
   ~ThrottleResponseAdapter() override = default;
 
@@ -73,7 +79,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
   }
 
   GURL GetOrigin() const override {
-    return throttle_->request_url_.GetOrigin();
+    return throttle_->request_url_.DeprecatedGetOriginAsURL();
   }
 
   const net::HttpResponseHeaders* GetHeaders() const override {
@@ -95,10 +101,8 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
   }
 
  private:
-  URLLoaderThrottle* const throttle_;
-  net::HttpResponseHeaders* headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThrottleResponseAdapter);
+  const raw_ptr<URLLoaderThrottle> throttle_;
+  raw_ptr<net::HttpResponseHeaders> headers_;
 };
 
 // static

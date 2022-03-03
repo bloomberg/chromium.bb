@@ -46,8 +46,6 @@
 
 namespace google_breakpad {
 
-using dwarf2reader::DwarfPointerEncoding;
-using google_breakpad::test_assembler::Endianness;
 using google_breakpad::test_assembler::Label;
 using google_breakpad::test_assembler::Section;
 
@@ -95,10 +93,10 @@ class CFISection: public Section {
   // true, use the .eh_frame format, as described by the Linux
   // Standards Base Core Specification, instead of the DWARF CFI
   // format.
-  CFISection(Endianness endianness, size_t address_size,
+  CFISection(google_breakpad::test_assembler::Endianness endianness, size_t address_size,
              bool eh_frame = false)
       : Section(endianness), address_size_(address_size), eh_frame_(eh_frame),
-        pointer_encoding_(dwarf2reader::DW_EH_PE_absptr),
+        pointer_encoding_(DW_EH_PE_absptr),
         encoded_pointer_bases_(), entry_length_(NULL), in_fde_(false) {
     // The 'start', 'Here', and 'Mark' members of a CFISection all refer
     // to section offsets.

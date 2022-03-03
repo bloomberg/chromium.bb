@@ -12,14 +12,17 @@
 
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space_export.h"
 
 struct skcms_Matrix3x3;
 struct skcms_TransferFunction;
 class SkColorSpace;
-class SkMatrix44;
+enum SkYUVColorSpace : int;
+
+namespace skia {
+class Matrix44;
+}  // namespace skia
 
 // These forward declarations are used to give IPC code friend access to private
 // fields of gfx::ColorSpace for the purpose of serialization and
@@ -36,6 +39,14 @@ struct StructTraits;
 
 // Used to serialize a gfx::ColorSpace through the GPU command buffer.
 struct _GLcolorSpace;
+
+namespace media {
+namespace stable {
+namespace mojom {
+class ColorSpaceDataView;
+}  // namespace mojom
+}  // namespace stable
+}  // namespace media
 
 namespace gfx {
 
@@ -316,7 +327,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
 
   void GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const;
-  void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
+  void GetPrimaryMatrix(skia::Matrix44* to_XYZD50) const;
   bool GetTransferFunction(skcms_TransferFunction* fn) const;
   bool GetInverseTransferFunction(skcms_TransferFunction* fn) const;
 
@@ -331,36 +342,11 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Returns the transfer matrix for |bit_depth|. For most formats, this is the
   // RGB to YUV matrix.
-  void GetTransferMatrix(int bit_depth, SkMatrix44* matrix) const;
+  void GetTransferMatrix(int bit_depth, skia::Matrix44* matrix) const;
 
   // Returns the range adjust matrix that converts from |range_| to full range
   // for |bit_depth|.
-  void GetRangeAdjustMatrix(int bit_depth, SkMatrix44* matrix) const;
-
-  // Returns the range adjust matrix that converts from |range_| to full range
-  // for bit depth 8.
-  //
-  // WARNING: The returned matrix assumes an 8-bit range and isn't entirely
-  // correct for higher bit depths, with a relative error of ~2.9% for 10-bit
-  // and ~3.7% for 12-bit. Use the above GetRangeAdjustMatrix() method instead.
-  //
-  // The limited ranges are [64,940] and [256, 3760] for 10 and 12 bit content
-  // respectively. So the final values end up being:
-  //
-  //   16 /  255 = 0.06274509803921569
-  //   64 / 1023 = 0.06256109481915934
-  //  256 / 4095 = 0.06251526251526252
-  //
-  //  235 /  255 = 0.9215686274509803
-  //  940 / 1023 = 0.9188660801564027
-  // 3760 / 4095 = 0.9181929181929182
-  //
-  // Relative error (same for min/max):
-  //   10 bit: abs(16/235 - 64/1023)/(64/1023)   = 0.0029411764705882222
-  //   12 bit: abs(16/235 - 256/4095)/(256/4095) = 0.003676470588235281
-  void GetRangeAdjustMatrix(SkMatrix44* matrix) const {
-    GetRangeAdjustMatrix(kDefaultBitDepth, matrix);
-  }
+  void GetRangeAdjustMatrix(int bit_depth, skia::Matrix44* matrix) const;
 
   // Returns the current primary ID.
   // Note: if SetCustomPrimaries() has been used, the primary ID returned
@@ -385,7 +371,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   bool Contains(const ColorSpace& other) const;
 
  private:
-  // The default bit depth assumed by GetRangeAdjustMatrix().
+  // The default bit depth assumed by ToSkYUVColorSpace().
   static constexpr int kDefaultBitDepth = 8;
 
   static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);
@@ -413,6 +399,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   friend struct IPC::ParamTraits<gfx::ColorSpace>;
   friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
+                                   gfx::ColorSpace>;
+  friend struct mojo::StructTraits<media::stable::mojom::ColorSpaceDataView,
                                    gfx::ColorSpace>;
 };
 

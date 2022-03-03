@@ -22,7 +22,10 @@ devtools_module("protocol_client") {
 devtools_entrypoint("bundle") {
   entrypoint = "protocol_client.ts"
 
-  deps = [ ":protocol_client" ]
+  deps = [
+    ":protocol_client",
+    "../../generated",
+  ]
 
   visibility = [ "*" ]
 }
@@ -34,6 +37,6 @@ devtools_entrypoint("legacy") {
 
   visibility = [
     "../..:legacy_entrypoints",
-    "../../entrypoints/shell/*",
+    "../../legacy_test_runner/*",
   ]
 }

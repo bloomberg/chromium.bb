@@ -7,8 +7,8 @@
 #include <sstream>
 
 #include "base/i18n/time_formatting.h"
+#include "base/json/values_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/util/values/values_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
@@ -37,7 +37,7 @@ FeatureStatesFromDictionary(const base::Value* dict) {
 
   std::map<multidevice::SoftwareFeature, multidevice::SoftwareFeatureState>
       feature_states;
-  for (const auto& feature_state_pair : dict->DictItems()) {
+  for (const auto feature_state_pair : dict->DictItems()) {
     int feature;
     if (!base::StringToInt(feature_state_pair.first, &feature) ||
         !feature_state_pair.second.is_int()) {
@@ -107,7 +107,7 @@ absl::optional<CryptAuthDevice> CryptAuthDevice::FromDictionary(
   }
 
   absl::optional<base::Time> last_update_time =
-      ::util::ValueToTime(dict.FindKey(kLastUpdateTimeDictKey));
+      ::base::ValueToTime(dict.FindKey(kLastUpdateTimeDictKey));
   if (!last_update_time)
     return absl::nullopt;
 
@@ -167,7 +167,7 @@ base::Value CryptAuthDevice::AsDictionary() const {
   dict.SetKey(kDeviceNameDictKey, util::EncodeAsValueString(device_name));
   dict.SetKey(kDeviceBetterTogetherPublicKeyDictKey,
               util::EncodeAsValueString(device_better_together_public_key));
-  dict.SetKey(kLastUpdateTimeDictKey, ::util::TimeToValue(last_update_time));
+  dict.SetKey(kLastUpdateTimeDictKey, ::base::TimeToValue(last_update_time));
   dict.SetKey(kFeatureStatesDictKey, FeatureStatesToDictionary(feature_states));
   if (better_together_device_metadata) {
     dict.SetKey(kBetterTogetherDeviceMetadataDictKey,
@@ -185,9 +185,6 @@ base::Value CryptAuthDevice::AsReadableDictionary() const {
   dict.SetStringKey("DeviceSync:BetterTogether device public key",
                     cryptauthv2::TruncateStringForLogs(util::EncodeAsString(
                         device_better_together_public_key)));
-  dict.SetStringKey(
-      "Last update time",
-      base::TimeFormatShortDateAndTimeWithTimeZone(last_update_time));
   dict.SetKey("Feature states",
               FeatureStatesToReadableDictionary(feature_states));
   dict.SetKey(

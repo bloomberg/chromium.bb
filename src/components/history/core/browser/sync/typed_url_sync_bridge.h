@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_observer.h"
@@ -32,6 +33,10 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
       HistoryBackend* history_backend,
       TypedURLSyncMetadataDatabase* sync_metadata_store,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+
+  TypedURLSyncBridge(const TypedURLSyncBridge&) = delete;
+  TypedURLSyncBridge& operator=(const TypedURLSyncBridge&) = delete;
+
   ~TypedURLSyncBridge() override;
 
   // syncer::ModelTypeSyncBridge implementation.
@@ -204,9 +209,9 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
   // expired visits that are not deleted by `ExpireHistoryBackend`, etc) by
   // modifying the passed `url` object and `visits` vector. The order of
   // `visits` will be from the oldest to the newest order.
-  // Returns false in two cases.
-  // 1. we could not fetch the visits for the passed URL, DB error.
-  // 2. No visits for the passed url, or all the visits are expired.
+  // Returns false if we could not fetch the visits for the passed URL, DB
+  // error. If there are no visits for the passed url, or all the visits are
+  // expired, it returns true but `visits` is empty.
   bool FixupURLAndGetVisits(URLRow* url, VisitVector* visits);
 
   // Create an EntityData by URL `row` and its visits `visits`.
@@ -231,7 +236,7 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
 
   // A non-owning pointer to the backend, which we're syncing local changes from
   // and sync changes to.
-  HistoryBackend* const history_backend_;
+  const raw_ptr<HistoryBackend> history_backend_;
 
   // Whether we're currently processing changes from the syncer. While this is
   // true, we ignore any local url changes, since we triggered them.
@@ -239,7 +244,7 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
 
   // A non-owning pointer to the database, which is for storing typed urls sync
   // metadata and state.
-  TypedURLSyncMetadataDatabase* sync_metadata_database_;
+  raw_ptr<TypedURLSyncMetadataDatabase> sync_metadata_database_;
 
   // Since HistoryBackend use SequencedTaskRunner, so should use SequenceChecker
   // here.
@@ -249,8 +254,6 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
   // backend.
   base::ScopedObservation<HistoryBackend, HistoryBackendObserver>
       history_backend_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TypedURLSyncBridge);
 };
 
 }  // namespace history

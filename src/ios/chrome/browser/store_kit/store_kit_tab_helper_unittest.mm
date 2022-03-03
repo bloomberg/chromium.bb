@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 
-#include "base/macros.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -15,10 +14,11 @@
 class StoreKitTabHelperTest : public web::WebTestWithWebState {
  public:
   StoreKitTabHelperTest() = default;
-  ~StoreKitTabHelperTest() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(StoreKitTabHelperTest);
+  StoreKitTabHelperTest(const StoreKitTabHelperTest&) = delete;
+  StoreKitTabHelperTest& operator=(const StoreKitTabHelperTest&) = delete;
+
+  ~StoreKitTabHelperTest() override = default;
 };
 
 TEST_F(StoreKitTabHelperTest, Constructor) {

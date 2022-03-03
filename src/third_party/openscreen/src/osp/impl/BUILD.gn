@@ -6,8 +6,9 @@ import("../../osp/build/config/services.gni")
 
 source_set("impl") {
   sources = [
-    "mdns_platform_service.cc",
-    "mdns_platform_service.h",
+    "dns_sd_publisher_client.cc",
+    "dns_sd_publisher_client.h",
+    "dns_sd_service_publisher_factory.cc",
     "message_demuxer.cc",
     "network_service_manager.cc",
     "presentation/presentation_common.cc",
@@ -26,23 +27,13 @@ source_set("impl") {
     "with_destruction_callback.cc",
     "with_destruction_callback.h",
   ]
-
-  if (use_mdns_responder) {
-    sources += [
-      "internal_services.cc",
-      "internal_services.h",
-      "mdns_responder_service.cc",
-      "mdns_responder_service.h",
-      "mdns_service_listener_factory.cc",
-      "mdns_service_publisher_factory.cc",
-    ]
-  }
-
   public_deps = [
     "../msgs",
     "../public",
   ]
   deps = [
+    "../../discovery:dnssd",
+    "../../discovery:public",
     "../../platform",
     "../../third_party/abseil",
     "../../util",
@@ -67,8 +58,14 @@ if (use_chromium_quic) {
       "../../platform",
       "../../third_party/abseil",
       "../../third_party/chromium_quic",
+      "../../third_party/chromium_quic:core",
+      "../../third_party/chromium_quic:platform",
+      "../../third_party/chromium_quic:quartc",
+      "../../third_party/chromium_quic/build/base",
+      "../../third_party/chromium_quic/src/net",
       "../../util",
       "../msgs",
+      "../public",
       "quic",
     ]
   }

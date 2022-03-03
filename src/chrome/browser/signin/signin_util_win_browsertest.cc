@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -53,7 +52,7 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
     std::move(callback).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
   }
   void ShowEnterpriseAccountConfirmation(
-      const std::string& email,
+      const AccountInfo& account_info,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) override {
     std::move(callback).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
   }
@@ -543,11 +542,7 @@ class ExistingWinBrowserProfilesSigninUtilTest
   ExistingWinBrowserProfilesSigninUtilTest()
       : BrowserTestHelper(L"gaia_id_for_foo_gmail.com",
                           L"foo@gmail.com",
-                          "lst-123456") {
-    // TODO(droger): Disable the profile picker using the local state preference
-    // instead.
-    feature_list_.InitAndDisableFeature(features::kNewProfilePicker);
-  }
+                          "lst-123456") {}
 
  protected:
   bool SetUpUserDataDirectory() override {
@@ -578,6 +573,9 @@ class ExistingWinBrowserProfilesSigninUtilTest
 // but before this step ends, |current_profile| is created and browser switches
 // to that profile just to prepare the browser for the next step.
 IN_PROC_BROWSER_TEST_P(ExistingWinBrowserProfilesSigninUtilTest, PRE_PRE_Run) {
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kBrowserShowProfilePickerOnStartup, false);
+
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   Profile* profile = profile_manager->GetLastUsedProfile();

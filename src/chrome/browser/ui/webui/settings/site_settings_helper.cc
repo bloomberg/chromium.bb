@@ -9,10 +9,13 @@
 #include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -25,6 +28,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -43,6 +47,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
@@ -76,7 +81,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // The following ContentSettingsTypes have UI in Content Settings
     // and require a mapping from their Javascript string representation in
     // chrome/browser/resources/settings/site_settings/constants.js to their C++
-    // ContentSettingsType provided here.
+    // ContentSettingsType provided here. These group names are only used by
+    // desktop webui.
     {ContentSettingsType::COOKIES, "cookies"},
     {ContentSettingsType::IMAGES, "images"},
     {ContentSettingsType::JAVASCRIPT, "javascript"},
@@ -113,13 +119,13 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
      kBluetoothChooserDataGroupType},
     {ContentSettingsType::WINDOW_PLACEMENT, "window-placement"},
     {ContentSettingsType::FONT_ACCESS, "font-access"},
-    {ContentSettingsType::FILE_HANDLING, "file-handling"},
     {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA,
      "file-system-access-handles-data"},
 
     // Add new content settings here if a corresponding Javascript string
-    // representation for it is not required. Note some exceptions do have UI in
-    // Content Settings but do not require a separate string.
+    // representation for it is not required, for example if the content setting
+    // is not used for desktop. Note some exceptions do have UI in Content
+    // Settings but do not require a separate string.
     {ContentSettingsType::DEFAULT, nullptr},
     {ContentSettingsType::AUTO_SELECT_CERTIFICATE, nullptr},
     {ContentSettingsType::SSL_CERT_DECISIONS, nullptr},
@@ -154,6 +160,12 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::DISPLAY_CAPTURE, nullptr},
     {ContentSettingsType::FEDERATED_IDENTITY_SHARING, nullptr},
     {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, nullptr},
+    {ContentSettingsType::JAVASCRIPT_JIT, nullptr},
+    {ContentSettingsType::HTTP_ALLOWED, nullptr},
+    {ContentSettingsType::FORMFILL_METADATA, nullptr},
+    {ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, nullptr},
+    {ContentSettingsType::AUTO_DARK_WEB_CONTENT, nullptr},
+    {ContentSettingsType::REQUEST_DESKTOP_SITE, nullptr},
 };
 
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
@@ -173,6 +185,7 @@ const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
     {SiteSettingSource::kDefault, "default"},
     {SiteSettingSource::kEmbargo, "embargo"},
     {SiteSettingSource::kExtension, "extension"},
+    {SiteSettingSource::kHostedApp, "HostedApp"},
     {SiteSettingSource::kInsecureOrigin, "insecure-origin"},
     {SiteSettingSource::kKillSwitch, "kill-switch"},
     {SiteSettingSource::kPolicy, "policy"},
@@ -401,16 +414,64 @@ base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type) {
   return base::StringPiece();
 }
 
-std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
-    const base::Value::ConstListView types) {
-  std::vector<ContentSettingsType> content_types;
-  content_types.reserve(types.size());
-  for (const auto& value : types) {
-    const auto& type = value.GetString();
-    content_types.push_back(
-        site_settings::ContentSettingsTypeFromGroupName(type));
+const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
+  // First build the list of permissions that will be shown regardless of
+  // `origin`. Some categories such as COOKIES store their data in a custom way,
+  // so are not included here.
+  static base::NoDestructor<std::vector<ContentSettingsType>> base_types{{
+      ContentSettingsType::AR,
+      ContentSettingsType::AUTOMATIC_DOWNLOADS,
+      ContentSettingsType::BACKGROUND_SYNC,
+      ContentSettingsType::CLIPBOARD_READ_WRITE,
+      ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::FONT_ACCESS,
+      ContentSettingsType::GEOLOCATION,
+      ContentSettingsType::HID_GUARD,
+      ContentSettingsType::IDLE_DETECTION,
+      ContentSettingsType::IMAGES,
+      ContentSettingsType::JAVASCRIPT,
+      ContentSettingsType::MEDIASTREAM_CAMERA,
+      ContentSettingsType::MEDIASTREAM_MIC,
+      ContentSettingsType::MIDI_SYSEX,
+      ContentSettingsType::MIXEDSCRIPT,
+      ContentSettingsType::NOTIFICATIONS,
+      ContentSettingsType::POPUPS,
+#if defined(IS_CHROMEOS_ASH) || defined(OS_WIN)
+      ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+#endif
+      ContentSettingsType::SENSORS,
+      ContentSettingsType::SERIAL_GUARD,
+      ContentSettingsType::SOUND,
+      ContentSettingsType::USB_GUARD,
+      ContentSettingsType::VR,
+      ContentSettingsType::WINDOW_PLACEMENT,
+  }};
+  static bool initialized = false;
+  if (!initialized) {
+    // The permission categories in this block are only shown when running with
+    // certain flags/switches.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kEnableExperimentalWebPlatformFeatures)) {
+      base_types->push_back(ContentSettingsType::BLUETOOTH_SCANNING);
+    }
+
+    if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps))
+      base_types->push_back(ContentSettingsType::PAYMENT_HANDLER);
+
+    if (base::FeatureList::IsEnabled(
+            features::kWebBluetoothNewPermissionsBackend)) {
+      base_types->push_back(ContentSettingsType::BLUETOOTH_GUARD);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            subresource_filter::kSafeBrowsingSubresourceFilter)) {
+      base_types->push_back(ContentSettingsType::ADS);
+    }
+
+    initialized = true;
   }
-  return content_types;
+
+  return *base_types;
 }
 
 std::string SiteSettingSourceToString(const SiteSettingSource source) {
@@ -441,7 +502,8 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
   exception->SetString(kOrigin, url_pattern);
   exception->SetString(kDisplayName, url_pattern);
   exception->SetString(kEmbeddingOrigin, url_pattern);
-  exception->SetString(kSource, "HostedApp");
+  exception->SetString(
+      kSource, SiteSettingSourceToString(SiteSettingSource::kHostedApp));
   exception->SetBoolean(kIncognito, false);
   exception->SetString(kAppName, app.name());
   exception->SetString(kAppId, app.id());
@@ -473,9 +535,6 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   DCHECK(!setting_string.empty());
   exception->SetString(kSetting, setting_string);
 
-  exception->SetString(site_settings::kSettingDetail,
-                       content_settings::GetPermissionDetailString(
-                           profile, content_type, GURL(pattern.ToString())));
   exception->SetString(kSource, provider_name);
   exception->SetBoolean(kIncognito, incognito);
   exception->SetBoolean(kIsEmbargoed, is_embargoed);
@@ -762,12 +821,11 @@ void GetPolicyAllowedUrls(
   // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
   std::vector<ContentSettingsPattern> patterns;
   for (const auto& entry : policy_urls->GetList()) {
-    std::string url;
-    bool valid_string = entry.GetAsString(&url);
-    if (!valid_string)
+    const std::string* url = entry.GetIfString();
+    if (!url)
       continue;
 
-    ContentSettingsPattern pattern = ContentSettingsPattern::FromString(url);
+    ContentSettingsPattern pattern = ContentSettingsPattern::FromString(*url);
     if (!pattern.IsValid())
       continue;
 

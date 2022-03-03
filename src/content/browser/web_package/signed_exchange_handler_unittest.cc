@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -217,8 +218,7 @@ class SignedExchangeHandlerTest
   void SetUp() override {
     original_client_ = SetBrowserClientForTesting(&browser_client_);
     signed_exchange_utils::SetVerificationTimeForTesting(
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromSeconds(kSignatureHeaderDate));
+        base::Time::UnixEpoch() + base::Seconds(kSignatureHeaderDate));
     feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
 
     source_stream_ = std::make_unique<net::MockSourceStream>();
@@ -367,7 +367,8 @@ class SignedExchangeHandlerTest
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory_), network_isolation_key_,
-        net::LOAD_NORMAL, net::IPEndPoint(),
+        absl::nullopt /* outer_request_isolation_info */, net::LOAD_NORMAL,
+        net::IPEndPoint(),
         std::make_unique<blink::WebPackageRequestMatcher>(
             net::HttpRequestHeaders(), std::string() /* accept_langs */),
         nullptr /* devtools_proxy */, nullptr /* reporter */,
@@ -412,11 +413,11 @@ class SignedExchangeHandlerTest
 
  protected:
   const base::HistogramTester histogram_tester_;
-  MockSignedExchangeCertFetcherFactory* mock_cert_fetcher_factory_;
+  raw_ptr<MockSignedExchangeCertFetcherFactory> mock_cert_fetcher_factory_;
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> mock_ct_policy_enforcer_;
   std::unique_ptr<MockSCTAuditingDelegate> mock_sct_auditing_delegate_;
-  net::MockSourceStream* source_;
+  raw_ptr<net::MockSourceStream> source_;
   std::unique_ptr<SignedExchangeHandler> handler_;
 
  private:
@@ -445,7 +446,7 @@ class SignedExchangeHandlerTest
   base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestBrowserClient browser_client_;
-  ContentBrowserClient* original_client_;
+  raw_ptr<ContentBrowserClient> original_client_;
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
   mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
@@ -634,7 +635,7 @@ TEST_P(SignedExchangeHandlerTest,
 
   signed_exchange_utils::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
+      base::Seconds(kCertValidityPeriodEnforcementDate));
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents("test.example.org.public.pem.cbor"));
@@ -935,8 +936,7 @@ TEST_P(SignedExchangeHandlerTest, ReportUsesNetworkIsolationKey) {
   std::unique_ptr<net::TestURLRequestContext> url_request_context =
       CreateTestURLRequestContext();
   url_request_context->transport_security_state()->AddExpectCT(
-      "test.example.org",
-      base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */,
+      "test.example.org", base::Time::Now() + base::Days(1) /* expiry */,
       false /* include_subdomains */, kReportUri, kNetworkIsolationKey);
   MockExpectCTReporter expect_ct_reporter;
   url_request_context->transport_security_state()->SetExpectCTReporter(

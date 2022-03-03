@@ -4,9 +4,9 @@
 
 #include "ui/gfx/animation/keyframe/keyframe_model.h"
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 
 namespace gfx {
 namespace {
@@ -178,7 +178,7 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
   base::TimeDelta start_offset = curve_->Duration() * iteration_start_;
 
   // Return start offset if we are before the start of the keyframe model
-  if (active_time < base::TimeDelta())
+  if (active_time.is_negative())
     return start_offset;
   // Always return zero if we have no iterations.
   if (!iterations_)

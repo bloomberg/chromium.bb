@@ -19,7 +19,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
@@ -88,6 +88,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                       bool lose_context_when_out_of_memory,
                       bool support_client_side_arrays,
                       GpuControl* gpu_control);
+
+  GLES2Implementation(const GLES2Implementation&) = delete;
+  GLES2Implementation& operator=(const GLES2Implementation&) = delete;
 
   ~GLES2Implementation() override;
 
@@ -369,7 +372,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
     ~DeferErrorCallbacks();
 
    private:
-    GLES2Implementation* gles2_implementation_;
+    raw_ptr<GLES2Implementation> gles2_implementation_;
   };
 
   struct DeferredErrorCallback {
@@ -389,7 +392,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
     ~SingleThreadChecker();
 
    private:
-    GLES2Implementation* gles2_implementation_;
+    raw_ptr<GLES2Implementation> gles2_implementation_;
   };
 
   // ImplementationBase implementation.
@@ -400,7 +403,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   void OnGpuControlLostContextMaybeReentrant() final;
   void OnGpuControlErrorMessage(const char* message, int32_t id) final;
   void OnGpuControlSwapBuffersCompleted(
-      const SwapBuffersCompleteParams& params) final;
+      const SwapBuffersCompleteParams& params,
+      gfx::GpuFenceHandle release_fence) final;
   void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) final;
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
@@ -703,7 +707,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                              PresentationCallback present_callback);
 
   GLES2Util util_;
-  GLES2CmdHelper* helper_;
+  raw_ptr<GLES2CmdHelper> helper_;
   std::string last_error_;
   DebugMarkerManager debug_marker_manager_;
   std::string this_in_hex_;
@@ -871,8 +875,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   gl::GpuPreference active_gpu_heuristic_ = gl::GpuPreference::kDefault;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };
 
 inline bool GLES2Implementation::GetBufferParameteri64vHelper(

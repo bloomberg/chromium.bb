@@ -19,7 +19,9 @@ limitations under the License.
 #include <memory>
 
 #include "tensorflow/compiler/xla/literal_util.h"
+#include "tensorflow/compiler/xla/service/hlo_casting_utils.h"
 #include "tensorflow/compiler/xla/service/hlo_creation_utils.h"
+#include "tensorflow/compiler/xla/service/hlo_instructions.h"
 #include "tensorflow/compiler/xla/service/hlo_matchers.h"
 #include "tensorflow/compiler/xla/service/hlo_opcode.h"
 #include "tensorflow/compiler/xla/service/instruction_fusion.h"
@@ -109,6 +111,7 @@ class TuplePointsToAnalysisTest : public HloTestBase {
         points_to_analysis_->GetBufferDefinedAt(instruction, index)
             .ValueOrDie();
     std::vector<BufferAlias> expected_aliases;
+    expected_aliases.reserve(expected.size());
     for (auto& pair : expected) {
       expected_aliases.push_back(BufferAlias(pair.first, pair.second));
     }
@@ -333,10 +336,10 @@ TEST_F(TuplePointsToAnalysisTest, CopyStartAndCopyDone) {
   auto builder = HloComputation::Builder(TestName());
   auto constant = builder.AddInstruction(
       HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(1.0)));
-  auto copy_start = builder.AddInstruction(HloInstruction::CreateUnary(
+  auto copy_start = builder.AddInstruction(HloInstruction::CreateCopyStart(
       ShapeUtil::MakeTupleShape({constant->shape(), constant->shape(),
                                  ShapeUtil::MakeShape(U32, {})}),
-      HloOpcode::kCopyStart, constant));
+      constant));
   auto copy_done = builder.AddInstruction(HloInstruction::CreateUnary(
       constant->shape(), HloOpcode::kCopyDone, copy_start));
 
@@ -596,7 +599,7 @@ TEST_F(TuplePointsToAnalysisTest, TupleWithBitcast) {
 
 TEST_F(TuplePointsToAnalysisTest, PointsToTupleConstantElements) {
   // Construct a tuple constant and kCopy it. Verify the points-to set of the
-  // copy correctly correctly points into the nested elements of the constant.
+  // copy correctly points into the nested elements of the constant.
   auto builder = HloComputation::Builder(TestName());
   Literal elements[] = {LiteralUtil::CreateR2<float>({{1.0}, {2.0}}),
                         LiteralUtil::CreateR1<float>({2.0, 42})};
@@ -642,6 +645,29 @@ TEST_F(TuplePointsToAnalysisTest, BufferAliases) {
   ExpectHasBufferAliases(tuple, /*index=*/{}, {{tuple, {}}});
 }
 
+TEST_F(TuplePointsToAnalysisTest, CustomCall) {
+  auto builder = HloComputation::Builder(TestName());
+  auto constant = builder.AddInstruction(
+      HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(1.0)));
+  Shape data_shape = ShapeUtil::MakeShape(F32, {});
+  auto ccall = builder.AddInstruction(HloInstruction::CreateCustomCall(
+      ShapeUtil::MakeTupleShape({data_shape, data_shape}), {constant},
+      "TestOp"));
+  Cast<HloCustomCallInstruction>(ccall)->set_output_to_operand_aliasing(
+      {std::pair<ShapeIndex, std::pair<int64_t, ShapeIndex>>{
+          ShapeIndex{1}, std::pair<int64_t, ShapeIndex>(0, {})}});
+  auto gte0 = builder.AddInstruction(
+      HloInstruction::CreateGetTupleElement(data_shape, ccall, 0));
+  auto gte1 = builder.AddInstruction(
+      HloInstruction::CreateGetTupleElement(data_shape, ccall, 1));
+
+  BuildModuleAndRunAnalysis(builder.Build());
+
+  ExpectHasBufferAliases(ccall, /*index=*/{0}, {{gte0, {}}, {ccall, {0}}});
+  ExpectHasBufferAliases(constant, /*index=*/{},
+                         {{constant, {}}, {gte1, {}}, {ccall, {1}}});
+}
+
 class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
  protected:
   // Builds a computation, runs instruction fusion HloPass, runs points-to
@@ -650,9 +676,7 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
   void Run(const bool add_additional_gte0_user) {
     Shape input_shape = ShapeUtil::MakeShape(F32, {8});
     Shape update_shape = ShapeUtil::MakeShape(F32, {3});
-    Shape starts_shape = ShapeUtil::MakeShape(S32, {});
-    Shape tuple_shape =
-        ShapeUtil::MakeTupleShape({input_shape, update_shape, starts_shape});
+    Shape tuple_shape = ShapeUtil::MakeTupleShape({input_shape, update_shape});
 
     auto builder = HloComputation::Builder(TestName());
     // Create tuple-shaped parameter.
@@ -679,9 +703,9 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
           update_shape, HloOpcode::kAdd, update, slice));
     }
 
-    // Create slice 'starts' = GetTupleElement(tuple_param0, 2).
+    // Create slice 'starts' = Constant(0)
     auto starts = builder.AddInstruction(
-        HloInstruction::CreateGetTupleElement(starts_shape, tuple_param0, 2));
+        HloInstruction::CreateConstant(LiteralUtil::CreateR0<int>(0)));
     // Update 'input' with 'update' at dynamic 'starts' indices.
     builder.AddInstruction(HloInstruction::CreateDynamicUpdateSlice(
         input_shape, input, update, {starts}));
@@ -709,9 +733,6 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
     ExpectHasBuffers(
         points_to_analysis_->GetPointsToSet(fusion_param).element({1}),
         {GetBuffer(fusion_param, {1})});
-    ExpectHasBuffers(
-        points_to_analysis_->GetPointsToSet(fusion_param).element({2}),
-        {GetBuffer(fusion_param, {2})});
 
     // Check that Gte at tuple_index = 0 points-to fusion_param({0})
     auto fused_gte0 = GetUniqueFusionParameterUserAt(fusion_param, 0);
@@ -723,11 +744,6 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
     ExpectHasBuffers(
         points_to_analysis_->GetPointsToSet(fused_gte1).element({}),
         {GetBuffer(fusion_param, {1})});
-    // Check that Gte at tuple_index = 2 points-to fusion_param({2})
-    auto fused_gte2 = GetUniqueFusionParameterUserAt(fusion_param, 2);
-    ExpectHasBuffers(
-        points_to_analysis_->GetPointsToSet(fused_gte2).element({}),
-        {GetBuffer(fusion_param, {2})});
 
     // Check buffer aliases of 'fusion_param' at shape index {0}.
     ExpectHasBufferAliases(fusion_param, /*index=*/{0},
@@ -735,9 +751,6 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
     // Check buffer aliases of 'fusion_param' at shape index {1}.
     ExpectHasBufferAliases(fusion_param, /*index=*/{1},
                            {{fusion_param, {1}}, {fused_gte1, {}}});
-    // Check buffer aliases of 'fusion_param' at shape index {2}.
-    ExpectHasBufferAliases(fusion_param, /*index=*/{2},
-                           {{fusion_param, {2}}, {fused_gte2, {}}});
 
     // Check number of users of 'fusion_param' aliases at shape index {0}.
     ExpectNumUsersOfAliases(fusion_param, {0},
@@ -759,7 +772,7 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
 
   // Returns all users of 'fusion_paran' at 'tuple_index'.
   std::vector<HloInstruction*> GetFusionParameterUsersAt(
-      HloInstruction* fusion_param, int64 tuple_index) {
+      HloInstruction* fusion_param, int64_t tuple_index) {
     CHECK(fusion_param->shape().IsTuple());
     std::vector<HloInstruction*> users_at_tuple_index;
     for (auto user : fusion_param->users()) {
@@ -773,7 +786,7 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
 
   // Returns the unique user of 'fusion_param' at 'tuple_index'.
   HloInstruction* GetUniqueFusionParameterUserAt(HloInstruction* fusion_param,
-                                                 int64 tuple_index) {
+                                                 int64_t tuple_index) {
     std::vector<HloInstruction*> users =
         GetFusionParameterUsersAt(fusion_param, tuple_index);
     CHECK_EQ(1, users.size());
@@ -784,9 +797,9 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
   // 'index' match 'expected_num_users'.
   void ExpectNumUsersOfAliases(const HloInstruction* instruction,
                                const ShapeIndex& index,
-                               const int64 expected_num_users) {
+                               const int64_t expected_num_users) {
     const auto* buffer = GetBuffer(instruction, index);
-    int64 num_users = 0;
+    int64_t num_users = 0;
     for (const auto& alias : points_to_analysis_->GetBufferAliases(*buffer)) {
       for (auto user : alias.instruction()->users()) {
         if (user->opcode() == HloOpcode::kGetTupleElement && !index.empty()) {
@@ -810,8 +823,8 @@ class FusionPointsToAnalysisTest : public TuplePointsToAnalysisTest {
 //                  Fusion
 //                 /      \
 //        FusionParam0   FusionParam1
-//        /     |    \       |
-//     Gte(0) Gte(2) Gte(1)  /
+//        /          \       |
+//     Gte(0) Const  Gte(1)  /
 //        \     |      \    /
 //         \    |       Add
 //          \   |        /
@@ -832,11 +845,11 @@ TEST_F(FusionPointsToAnalysisTest, FusionParam0OneUser) {
 //                  Fusion
 //                 /      \
 //        FusionParam0   FusionParam1
-//        /     |    \       |
-//     Gte(2) Gte(0) Gte(1)  /
-//        \     |      \    /
-//         \    |\      Add
-//          \   | \      /
+//              |    \       |
+//            Gte(0) Gte(1)  /
+//              |      \    /
+//              |\      Add
+//        Const | \      /
 //           |  | Slice /
 //           |  |   \  /
 //           |  |   Add

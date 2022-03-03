@@ -32,10 +32,10 @@
 #include <string>
 
 #include "net/http/structured_headers.h"
+#include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -62,30 +62,37 @@ static const char kPragmaHeader[] = "pragma";
 
 }  // namespace
 
-ResourceResponse::SignedCertificateTimestamp::SignedCertificateTimestamp(
-    const blink::WebURLResponse::SignedCertificateTimestamp& sct)
-    : status_(sct.status),
-      origin_(sct.origin),
-      log_description_(sct.log_description),
-      log_id_(sct.log_id),
-      timestamp_(sct.timestamp),
-      hash_algorithm_(sct.hash_algorithm),
-      signature_algorithm_(sct.signature_algorithm),
-      signature_data_(sct.signature_data) {}
-
-ResourceResponse::SignedCertificateTimestamp
-ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
-  return SignedCertificateTimestamp(
-      status_.IsolatedCopy(), origin_.IsolatedCopy(),
-      log_description_.IsolatedCopy(), log_id_.IsolatedCopy(), timestamp_,
-      hash_algorithm_.IsolatedCopy(), signature_algorithm_.IsolatedCopy(),
-      signature_data_.IsolatedCopy());
-}
-
-ResourceResponse::ResourceResponse() : is_null_(true) {}
+ResourceResponse::ResourceResponse()
+    : was_cached_(false),
+      connection_reused_(false),
+      is_null_(true),
+      have_parsed_age_header_(false),
+      have_parsed_date_header_(false),
+      have_parsed_expires_header_(false),
+      have_parsed_last_modified_header_(false),
+      has_major_certificate_errors_(false),
+      is_legacy_tls_version_(false),
+      has_range_requested_(false),
+      timing_allow_passed_(false),
+      was_fetched_via_spdy_(false),
+      was_fetched_via_service_worker_(false),
+      did_service_worker_navigation_preload_(false),
+      async_revalidation_requested_(false),
+      is_signed_exchange_inner_response_(false),
+      was_in_prefetch_cache_(false),
+      was_cookie_in_request_(false),
+      network_accessed_(false),
+      from_archive_(false),
+      was_alternate_protocol_available_(false),
+      was_alpn_negotiated_(false),
+      has_authorization_covered_by_wildcard_on_preflight_(false),
+      is_validated_(false),
+      request_include_credentials_(true) {}
 
 ResourceResponse::ResourceResponse(const KURL& current_request_url)
-    : current_request_url_(current_request_url), is_null_(false) {}
+    : ResourceResponse() {
+  SetCurrentRequestUrl(current_request_url);
+}
 
 ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
@@ -95,6 +102,10 @@ ResourceResponse::~ResourceResponse() = default;
 
 bool ResourceResponse::IsHTTP() const {
   return current_request_url_.ProtocolIsInHTTPFamily();
+}
+
+bool ResourceResponse::ShouldPopulateResourceTiming() const {
+  return IsHTTP() || WebBundleURL().IsValid();
 }
 
 const KURL& ResourceResponse::CurrentRequestUrl() const {
@@ -217,24 +228,10 @@ void ResourceResponse::UpdateHeaderParsedState(const AtomicString& name) {
     have_parsed_last_modified_header_ = false;
 }
 
-void ResourceResponse::SetSecurityDetails(
-    const String& protocol,
-    const String& key_exchange,
-    const String& key_exchange_group,
-    const String& cipher,
-    const String& mac,
-    const String& subject_name,
-    const Vector<String>& san_list,
-    const String& issuer,
-    time_t valid_from,
-    time_t valid_to,
-    const Vector<AtomicString>& certificate,
-    const SignedCertificateTimestampList& sct_list) {
+void ResourceResponse::SetSSLInfo(const net::SSLInfo& ssl_info) {
   DCHECK_NE(security_style_, SecurityStyle::kUnknown);
   DCHECK_NE(security_style_, SecurityStyle::kNeutral);
-  security_details_ = SecurityDetails(
-      protocol, key_exchange, key_exchange_group, cipher, mac, subject_name,
-      san_list, issuer, valid_from, valid_to, certificate, sct_list);
+  ssl_info_ = ssl_info;
 }
 
 bool ResourceResponse::IsCorsSameOrigin() const {
@@ -380,7 +377,7 @@ absl::optional<base::TimeDelta> ResourceResponse::Age() const {
     if (!ok) {
       age_ = absl::nullopt;
     } else {
-      age_ = base::TimeDelta::FromSecondsD(seconds);
+      age_ = base::Seconds(seconds);
     }
     have_parsed_age_header_ = true;
   }
@@ -451,15 +448,6 @@ ResourceLoadTiming* ResourceResponse::GetResourceLoadTiming() const {
 void ResourceResponse::SetResourceLoadTiming(
     scoped_refptr<ResourceLoadTiming> resource_load_timing) {
   resource_load_timing_ = std::move(resource_load_timing);
-}
-
-scoped_refptr<ResourceLoadInfo> ResourceResponse::GetResourceLoadInfo() const {
-  return resource_load_info_.get();
-}
-
-void ResourceResponse::SetResourceLoadInfo(
-    scoped_refptr<ResourceLoadInfo> load_info) {
-  resource_load_info_ = std::move(load_info);
 }
 
 void ResourceResponse::SetCTPolicyCompliance(CTPolicyCompliance compliance) {

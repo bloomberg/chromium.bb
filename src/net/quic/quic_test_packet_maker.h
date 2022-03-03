@@ -8,12 +8,13 @@
 #define NET_QUIC_QUIC_TEST_PACKET_MAKER_H_
 
 #include <stddef.h>
+#include <sys/types.h>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
@@ -51,9 +52,17 @@ class QuicTestPacketMaker {
                       const std::string& host,
                       quic::Perspective perspective,
                       bool client_headers_include_h2_stream_dependency);
+
+  QuicTestPacketMaker(const QuicTestPacketMaker&) = delete;
+  QuicTestPacketMaker& operator=(const QuicTestPacketMaker&) = delete;
+
   ~QuicTestPacketMaker();
 
   void set_hostname(const std::string& host);
+
+  void set_connection_id(const quic::QuicConnectionId& connection_id) {
+    connection_id_ = connection_id;
+  }
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectivityProbingPacket(
       uint64_t num,
@@ -63,6 +72,27 @@ class QuicTestPacketMaker {
       uint64_t num,
       bool include_version);
 
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRetireConnectionIdPacket(
+      uint64_t num,
+      bool include_version,
+      uint64_t sequence_number);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeNewConnectionIdPacket(
+      uint64_t num,
+      bool include_version,
+      const quic::QuicConnectionId& cid,
+      uint64_t sequence_number,
+      uint64_t retire_prior_to);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndNewConnectionIdPacket(
+      uint64_t num,
+      bool include_version,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      const quic::QuicConnectionId& cid,
+      uint64_t sequence_number,
+      uint64_t retire_prior_to);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeDummyCHLOPacket(
       uint64_t packet_num);
 
@@ -71,6 +101,20 @@ class QuicTestPacketMaker {
       bool include_version,
       uint64_t largest_received,
       uint64_t smallest_received);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRetireConnectionIdPacket(
+      uint64_t num,
+      bool include_version,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t sequence_number);
+
+  std::unique_ptr<quic::QuicReceivedPacket>
+  MakeRetransmissionAndRetireConnectionIdPacket(
+      uint64_t num,
+      bool include_version,
+      const std::vector<uint64_t>& original_packet_numbers,
+      uint64_t sequence_number);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeStreamsBlockedPacket(
       uint64_t num,
@@ -290,6 +334,16 @@ class QuicTestPacketMaker {
       bool fin,
       absl::string_view data);
 
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckRetransmissionAndDataPacket(
+      uint64_t packet_number,
+      bool include_version,
+      const std::vector<uint64_t>& original_packet_numbers,
+      quic::QuicStreamId stream_id,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      bool fin,
+      absl::string_view data);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRetransmissionPacket(
       uint64_t packet_number,
       uint64_t first_received,
@@ -460,6 +514,11 @@ class QuicTestPacketMaker {
   // Add frames to current packet.
   void AddQuicPaddingFrame();
   void AddQuicPingFrame();
+  void AddQuicRetireConnectionIdFrame(uint64_t sequence_number);
+  void AddQuicNewConnectionIdFrame(const quic::QuicConnectionId& cid,
+                                   uint64_t sequence_number,
+                                   uint64_t retire_prior_to,
+                                   quic::StatelessResetToken reset_token);
   void AddQuicMaxStreamsFrame(quic::QuicControlFrameId control_frame_id,
                               quic::QuicStreamCount stream_count,
                               bool unidirectional);
@@ -535,7 +594,7 @@ class QuicTestPacketMaker {
   // Parameters used throughout the lifetime of the class.
   quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;
-  const quic::QuicClock* clock_;  // Not owned.
+  raw_ptr<const quic::QuicClock> clock_;  // Not owned.
   std::string host_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
@@ -562,8 +621,6 @@ class QuicTestPacketMaker {
   quic::QuicPacketHeader header_;
   quic::QuicFrames frames_;
   std::unique_ptr<quic::test::SimpleDataProducer> data_producer_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicTestPacketMaker);
 };
 
 }  // namespace test

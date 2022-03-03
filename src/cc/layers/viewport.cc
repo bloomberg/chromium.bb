@@ -12,7 +12,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
-#include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
@@ -256,7 +256,7 @@ void Viewport::PinchEnd(const gfx::Point& anchor, bool snap_to_min) {
     DCHECK(active_tree->InnerViewportScrollNode());
     const float kMaxZoomForSnapToMin = 1.05f;
     const base::TimeDelta kSnapToMinZoomAnimationDuration =
-        base::TimeDelta::FromMilliseconds(200);
+        base::Milliseconds(200);
     float page_scale = active_tree->current_page_scale_factor();
     float min_scale = active_tree->min_page_scale_factor();
 
@@ -267,10 +267,10 @@ void Viewport::PinchEnd(const gfx::Point& anchor, bool snap_to_min) {
           gfx::PointF(anchor + pinch_anchor_adjustment_);
       adjusted_anchor =
           gfx::ScalePoint(adjusted_anchor, min_scale / page_scale);
-      adjusted_anchor += ScrollOffsetToVector2dF(TotalScrollOffset());
-      host_impl_->StartPageScaleAnimation(
-          ToRoundedVector2d(adjusted_anchor.OffsetFromOrigin()), true,
-          min_scale, kSnapToMinZoomAnimationDuration);
+      adjusted_anchor += TotalScrollOffset().OffsetFromOrigin();
+      host_impl_->StartPageScaleAnimation(gfx::ToRoundedPoint(adjusted_anchor),
+                                          true, min_scale,
+                                          kSnapToMinZoomAnimationDuration);
     }
   }
 
@@ -325,29 +325,32 @@ gfx::Vector2dF Viewport::AdjustOverscroll(const gfx::Vector2dF& delta) const {
   return adjusted;
 }
 
-gfx::ScrollOffset Viewport::MaxTotalScrollOffset() const {
-  gfx::ScrollOffset offset;
-
-  offset += scroll_tree().MaxScrollOffset(InnerScrollNode()->id);
+gfx::PointF Viewport::MaxTotalScrollOffset() const {
+  gfx::Vector2dF offset =
+      scroll_tree().MaxScrollOffset(InnerScrollNode()->id).OffsetFromOrigin();
 
   if (auto* outer_node = OuterScrollNode())
-    offset += scroll_tree().MaxScrollOffset(outer_node->id);
+    offset += scroll_tree().MaxScrollOffset(outer_node->id).OffsetFromOrigin();
 
-  return offset;
+  return gfx::PointAtOffsetFromOrigin(offset);
 }
 
-gfx::ScrollOffset Viewport::TotalScrollOffset() const {
-  gfx::ScrollOffset offset;
-
+gfx::PointF Viewport::TotalScrollOffset() const {
   if (!InnerScrollNode())
-    return offset;
+    return gfx::PointF();
 
-  offset += scroll_tree().current_scroll_offset(InnerScrollNode()->element_id);
+  gfx::Vector2dF offset =
+      scroll_tree()
+          .current_scroll_offset(InnerScrollNode()->element_id)
+          .OffsetFromOrigin();
 
-  if (auto* outer_node = OuterScrollNode())
-    offset += scroll_tree().current_scroll_offset(outer_node->element_id);
+  if (auto* outer_node = OuterScrollNode()) {
+    offset += scroll_tree()
+                  .current_scroll_offset(outer_node->element_id)
+                  .OffsetFromOrigin();
+  }
 
-  return offset;
+  return gfx::PointAtOffsetFromOrigin(offset);
 }
 
 ScrollNode* Viewport::InnerScrollNode() const {

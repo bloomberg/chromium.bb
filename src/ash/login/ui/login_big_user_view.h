@@ -11,8 +11,8 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/session/user_info.h"
-#include "ash/public/cpp/wallpaper_controller.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 
 namespace ash {
 
@@ -39,6 +39,10 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView,
       const LoginUserInfo& user,
       const LoginAuthUserView::Callbacks& auth_user_callbacks,
       const LoginPublicAccountUserView::Callbacks& public_account_callbacks);
+
+  LoginBigUserView(const LoginBigUserView&) = delete;
+  LoginBigUserView& operator=(const LoginBigUserView&) = delete;
+
   ~LoginBigUserView() override;
 
   // Base on the user type, call CreateAuthUser or CreatePublicAccount.
@@ -84,8 +88,6 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView,
 
   base::ScopedObservation<WallpaperController, WallpaperControllerObserver>
       observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginBigUserView);
 };
 
 }  // namespace ash

@@ -2,60 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../../../core/common/common.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import * as UI from '../../legacy.js';
 
 import {ColorSwatch} from './ColorSwatch.js';
+import swatchPopoverStyles from './swatchPopover.css.js';
 
-export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
-  _popover: UI.GlassPane.GlassPane;
-  _hideProxy: () => void;
-  _boundOnKeyDown: (event: KeyboardEvent) => void;
-  _boundFocusOut: (event: FocusEvent) => void;
-  _isHidden: boolean;
-  _anchorElement: Element|null;
-  _view?: UI.Widget.Widget;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _hiddenCallback?: ((arg0: boolean) => any);
-  _focusRestorer?: UI.Widget.WidgetFocusRestorer;
+export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+  private readonly popover: UI.GlassPane.GlassPane;
+  private readonly hideProxy: () => void;
+  private readonly boundOnKeyDown: (event: KeyboardEvent) => void;
+  private readonly boundFocusOut: (event: FocusEvent) => void;
+  private isHidden: boolean;
+  private anchorElement: Element|null;
+  private view?: UI.Widget.Widget;
+  private hiddenCallback?: ((arg0: boolean) => void);
+  private focusRestorer?: UI.Widget.WidgetFocusRestorer;
 
   constructor() {
     super();
-    this._popover = new UI.GlassPane.GlassPane();
-    this._popover.registerRequiredCSS(
-        'ui/legacy/components/inline_editor/swatchPopover.css', {enableLegacyPatching: false});
-    this._popover.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
-    this._popover.setMarginBehavior(UI.GlassPane.MarginBehavior.Arrow);
-    this._popover.element.addEventListener('mousedown', e => e.consume(), false);
+    this.popover = new UI.GlassPane.GlassPane();
+    this.popover.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
+    this.popover.setMarginBehavior(UI.GlassPane.MarginBehavior.Arrow);
+    this.popover.element.addEventListener('mousedown', e => e.consume(), false);
 
-    this._hideProxy = this.hide.bind(this, true);
-    this._boundOnKeyDown = this._onKeyDown.bind(this);
-    this._boundFocusOut = this._onFocusOut.bind(this);
-    this._isHidden = true;
-    this._anchorElement = null;
+    this.hideProxy = this.hide.bind(this, true);
+    this.boundOnKeyDown = this.onKeyDown.bind(this);
+    this.boundFocusOut = this.onFocusOut.bind(this);
+    this.isHidden = true;
+    this.anchorElement = null;
   }
 
-  _onFocusOut(event: FocusEvent): void {
+  private onFocusOut(event: FocusEvent): void {
     const relatedTarget = (event.relatedTarget as Element | null);
-    if (this._isHidden || !relatedTarget || !this._view ||
-        relatedTarget.isSelfOrDescendant(this._view.contentElement)) {
+    if (this.isHidden || !relatedTarget || !this.view || relatedTarget.isSelfOrDescendant(this.view.contentElement)) {
       return;
     }
-    this._hideProxy();
+    this.hideProxy();
   }
 
-  isShowing(): boolean {
-    return this._popover.isShowing();
+  setAnchorElement(anchorElement: Element): void {
+    this.anchorElement = anchorElement;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  show(view: UI.Widget.Widget, anchorElement: Element, hiddenCallback?: ((arg0: boolean) => any)): void {
-    if (this._popover.isShowing()) {
-      if (this._anchorElement === anchorElement) {
+  isShowing(view?: UI.Widget.Widget): boolean {
+    return this.popover.isShowing() && ((view && this.view === view) || !view);
+  }
+
+  show(view: UI.Widget.Widget, anchorElement: Element, hiddenCallback?: ((arg0: boolean) => void)): void {
+    if (this.popover.isShowing()) {
+      if (this.anchorElement === anchorElement) {
         return;
       }
 
@@ -63,86 +60,87 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
       this.hide(true);
     }
 
+    this.popover.registerCSSFiles([swatchPopoverStyles]);
     this.dispatchEventToListeners(Events.WillShowPopover);
 
-    this._isHidden = false;
-    this._anchorElement = anchorElement;
-    this._view = view;
-    this._hiddenCallback = hiddenCallback;
+    this.isHidden = false;
+    this.anchorElement = anchorElement;
+    this.view = view;
+    this.hiddenCallback = hiddenCallback;
     this.reposition();
     view.focus();
 
-    const document = this._popover.element.ownerDocument;
-    document.addEventListener('mousedown', this._hideProxy, false);
+    const document = this.popover.element.ownerDocument;
+    document.addEventListener('mousedown', this.hideProxy, false);
     if (document.defaultView) {
-      document.defaultView.addEventListener('resize', this._hideProxy, false);
+      document.defaultView.addEventListener('resize', this.hideProxy, false);
     }
-    this._view.contentElement.addEventListener('keydown', this._boundOnKeyDown, false);
+    this.view.contentElement.addEventListener('keydown', this.boundOnKeyDown, false);
   }
 
   reposition(): void {
     // This protects against trying to reposition the popover after it has been hidden.
-    if (this._isHidden || !this._view) {
+    if (this.isHidden || !this.view) {
       return;
     }
     // Unbind "blur" listener to avoid reenterability: |popover.show()| will hide the popover and trigger it synchronously.
-    this._view.contentElement.removeEventListener('focusout', this._boundFocusOut, false);
-    this._view.show(this._popover.contentElement);
-    if (this._anchorElement) {
-      let anchorBox = this._anchorElement.boxInWindow();
-      if (ColorSwatch.isColorSwatch(this._anchorElement)) {
-        const swatch = (this._anchorElement as ColorSwatch);
+    this.view.contentElement.removeEventListener('focusout', this.boundFocusOut, false);
+    this.view.show(this.popover.contentElement);
+    if (this.anchorElement) {
+      let anchorBox = this.anchorElement.boxInWindow();
+      if (ColorSwatch.isColorSwatch(this.anchorElement)) {
+        const swatch = (this.anchorElement as ColorSwatch);
         if (!swatch.anchorBox) {
           return;
         }
         anchorBox = swatch.anchorBox;
       }
 
-      this._popover.setContentAnchorBox(anchorBox);
-      this._popover.show((this._anchorElement.ownerDocument as Document));
+      this.popover.setContentAnchorBox(anchorBox);
+      this.popover.show((this.anchorElement.ownerDocument as Document));
     }
-    this._view.contentElement.addEventListener('focusout', this._boundFocusOut, false);
-    if (!this._focusRestorer) {
-      this._focusRestorer = new UI.Widget.WidgetFocusRestorer(this._view);
+    this.view.contentElement.addEventListener('focusout', this.boundFocusOut, false);
+    if (!this.focusRestorer) {
+      this.focusRestorer = new UI.Widget.WidgetFocusRestorer(this.view);
     }
   }
 
   hide(commitEdit?: boolean): void {
-    if (this._isHidden) {
+    if (this.isHidden) {
       return;
     }
-    const document = this._popover.element.ownerDocument;
-    this._isHidden = true;
-    this._popover.hide();
+    const document = this.popover.element.ownerDocument;
+    this.isHidden = true;
+    this.popover.hide();
 
-    document.removeEventListener('mousedown', this._hideProxy, false);
+    document.removeEventListener('mousedown', this.hideProxy, false);
     if (document.defaultView) {
-      document.defaultView.removeEventListener('resize', this._hideProxy, false);
+      document.defaultView.removeEventListener('resize', this.hideProxy, false);
     }
 
-    if (this._hiddenCallback) {
-      this._hiddenCallback.call(null, Boolean(commitEdit));
+    if (this.hiddenCallback) {
+      this.hiddenCallback.call(null, Boolean(commitEdit));
     }
 
-    if (this._focusRestorer) {
-      this._focusRestorer.restore();
+    if (this.focusRestorer) {
+      this.focusRestorer.restore();
     }
-    this._anchorElement = null;
-    if (this._view) {
-      this._view.detach();
-      this._view.contentElement.removeEventListener('keydown', this._boundOnKeyDown, false);
-      this._view.contentElement.removeEventListener('focusout', this._boundFocusOut, false);
-      delete this._view;
+    this.anchorElement = null;
+    if (this.view) {
+      this.view.detach();
+      this.view.contentElement.removeEventListener('keydown', this.boundOnKeyDown, false);
+      this.view.contentElement.removeEventListener('focusout', this.boundFocusOut, false);
+      delete this.view;
     }
   }
 
-  _onKeyDown(event: KeyboardEvent): void {
+  private onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
       this.hide(true);
       event.consume(true);
       return;
     }
-    if (event.key === 'Escape') {
+    if (event.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
       this.hide(false);
       event.consume(true);
     }
@@ -154,3 +152,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
 export enum Events {
   WillShowPopover = 'WillShowPopover',
 }
+
+export type EventTypes = {
+  [Events.WillShowPopover]: void,
+};

@@ -9,6 +9,13 @@
 #include <tuple>
 #include <vector>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/fake_arc_session.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -16,7 +23,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
@@ -35,8 +41,8 @@
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/login/ui/fake_login_display_host.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -45,6 +51,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -53,12 +60,6 @@
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -66,6 +67,7 @@
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -88,6 +90,9 @@ class ArcInitialStartHandler : public ArcSessionManagerObserver {
     session_manager->AddObserver(this);
   }
 
+  ArcInitialStartHandler(const ArcInitialStartHandler&) = delete;
+  ArcInitialStartHandler& operator=(const ArcInitialStartHandler&) = delete;
+
   ~ArcInitialStartHandler() override { session_manager_->RemoveObserver(this); }
 
   // ArcSessionManagerObserver:
@@ -102,8 +107,6 @@ class ArcInitialStartHandler : public ArcSessionManagerObserver {
   bool was_called_ = false;
 
   ArcSessionManager* const session_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcInitialStartHandler);
 };
 
 class FileExpansionObserver : public ArcSessionManagerObserver {
@@ -170,6 +173,11 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
             base::BindRepeating(FakeArcSession::Create)));
   }
 
+  ArcSessionManagerInLoginScreenTest(
+      const ArcSessionManagerInLoginScreenTest&) = delete;
+  ArcSessionManagerInLoginScreenTest& operator=(
+      const ArcSessionManagerInLoginScreenTest&) = delete;
+
   ~ArcSessionManagerInLoginScreenTest() override {
     arc_session_manager_->Shutdown();
     arc_session_manager_.reset();
@@ -195,8 +203,6 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerInLoginScreenTest);
 };
 
 // We expect mini instance starts to run if EmitLoginPromptVisible signal is
@@ -245,6 +251,11 @@ class ArcSessionManagerTestBase : public testing::Test {
         test_local_state_(std::make_unique<TestingPrefServiceSimple>()) {
     arc::prefs::RegisterLocalStatePrefs(test_local_state_->registry());
   }
+
+  ArcSessionManagerTestBase(const ArcSessionManagerTestBase&) = delete;
+  ArcSessionManagerTestBase& operator=(const ArcSessionManagerTestBase&) =
+      delete;
+
   ~ArcSessionManagerTestBase() override = default;
 
   void SetUp() override {
@@ -349,13 +360,14 @@ class ArcSessionManagerTestBase : public testing::Test {
   user_manager::ScopedUserManager user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingPrefServiceSimple> test_local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTestBase);
 };
 
 class ArcSessionManagerTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerTest() = default;
+
+  ArcSessionManagerTest(const ArcSessionManagerTest&) = delete;
+  ArcSessionManagerTest& operator=(const ArcSessionManagerTest&) = delete;
 
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
@@ -377,9 +389,6 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
     chromeos::CryptohomeMiscClient::Shutdown();
     ArcSessionManagerTestBase::TearDown();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
@@ -559,10 +568,7 @@ TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 
   // Emulate the preference handling.
-  const bool enable_requested = arc_session_manager()->enable_requested();
-  arc_session_manager()->RequestDisable();
-  if (enable_requested)
-    arc_session_manager()->RequestArcDataRemoval();
+  arc_session_manager()->RequestDisableWithArcDataRemoval();
 
   // Wait until data is removed.
   ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
@@ -782,47 +788,21 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir_Restart) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOn) {
+TEST_F(ArcSessionManagerTest, RegularToChildTransition) {
   // Emulate the situation where a regular user has transitioned to a child
   // account.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::REGULAR_TO_CHILD));
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      kCleanArcDataOnRegularToChildTransitionFeature);
-
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->Initialize();
-  EXPECT_TRUE(
-      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
-  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
-            arc_session_manager()->state());
-
-  arc_session_manager()->Shutdown();
-}
-
-TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOff) {
-  // Emulate the situation where a regular user has transitioned to a child
-  // account, but the feature flag is disabled.
-  profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD));
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      kCleanArcDataOnRegularToChildTransitionFeature);
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
   arc_session_manager()->RequestEnable();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::REGULAR_TO_CHILD),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
@@ -832,8 +812,8 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOff) {
 
 TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::NO_TRANSITION));
 
   // Initialize ARC.
   arc_session_manager()->SetProfile(profile());
@@ -850,29 +830,24 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   arc_session_manager()->OnProvisioningFinished(
       ArcProvisioningResult(std::move(result)));
 
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::NO_TRANSITION),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
 
   // Child started graduation.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::CHILD_TO_REGULAR));
   // Simulate ARC shutdown.
-  const bool enable_requested = arc_session_manager()->enable_requested();
-  arc_session_manager()->RequestDisable();
-  if (enable_requested)
-    arc_session_manager()->RequestArcDataRemoval();
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  arc_session_manager()->RequestDisableWithArcDataRemoval();
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::NO_TRANSITION),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
 
   arc_session_manager()->Shutdown();
 }
 
 TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
-  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
-            arc::GetSupervisionTransition(profile()));
+  EXPECT_EQ(ArcManagementTransition::NO_TRANSITION,
+            arc::GetManagementTransition(profile()));
 
   // Initialize ARC.
   arc_session_manager()->SetProfile(profile());
@@ -889,17 +864,17 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
   arc_session_manager()->OnProvisioningFinished(
       ArcProvisioningResult(std::move(result)));
 
-  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
-            arc::GetSupervisionTransition(profile()));
+  EXPECT_EQ(ArcManagementTransition::NO_TRANSITION,
+            arc::GetManagementTransition(profile()));
 
   // Child started graduation.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::CHILD_TO_REGULAR));
 
   arc_session_manager()->RequestArcDataRemoval();
-  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
-            arc::GetSupervisionTransition(profile()));
+  EXPECT_EQ(ArcManagementTransition::NO_TRANSITION,
+            arc::GetManagementTransition(profile()));
 
   arc_session_manager()->Shutdown();
 }
@@ -1091,6 +1066,26 @@ TEST_F(ArcSessionManagerTest, RequestDisableDoesNotRemoveData) {
   arc_session_manager()->Shutdown();
 }
 
+TEST_F(ArcSessionManagerTest, RequestDisableWithArcDataRemoval) {
+  // Start ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+
+  // Disable ARC and remove ARC data.
+  arc_session_manager()->RequestDisableWithArcDataRemoval();
+
+  // Data removal is requested.
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
 // Tests that |vm_info| is initialized with absl::nullopt.
 TEST_F(ArcSessionManagerTest, GetVmInfo_InitialValue) {
   const auto& vm_info = arc_session_manager()->GetVmInfo();
@@ -1149,13 +1144,15 @@ class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
  public:
   ArcSessionManagerArcAlwaysStartTest() = default;
 
+  ArcSessionManagerArcAlwaysStartTest(
+      const ArcSessionManagerArcAlwaysStartTest&) = delete;
+  ArcSessionManagerArcAlwaysStartTest& operator=(
+      const ArcSessionManagerArcAlwaysStartTest&) = delete;
+
   void SetUp() override {
     SetArcAlwaysStartWithoutPlayStoreForTesting();
     ArcSessionManagerTest::SetUp();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerArcAlwaysStartTest);
 };
 
 ArcProvisioningResult CreateProvisioningResult(
@@ -1306,14 +1303,16 @@ class ArcSessionManagerPolicyTest
     GetFakeUserManager()->LoginUser(account_id);
     // Mocks OOBE environment so that IsArcOobeOptInActive() returns true.
     if (is_oobe_optin()) {
-      GetFakeUserManager()->set_current_user_new(true);
       CreateLoginDisplayHost();
+      TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
+      user_manager::KnownUser::RegisterPrefs(pref_service_.registry());
     }
   }
 
   void TearDown() override {
     if (is_oobe_optin()) {
       fake_login_display_host_.reset();
+      TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     }
     ArcSessionManagerTestBase::TearDown();
   }
@@ -1352,11 +1351,11 @@ class ArcSessionManagerPolicyTest
 
  private:
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
+  TestingPrefServiceSimple pref_service_;
 };
 
 TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
@@ -1380,12 +1379,14 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 
   // Assign test values to the prefs.
   if (backup_restore_pref_value().is_bool()) {
-    prefs->SetManagedPref(prefs::kArcBackupRestoreEnabled,
-                          backup_restore_pref_value().CreateDeepCopy());
+    prefs->SetManagedPref(
+        prefs::kArcBackupRestoreEnabled,
+        base::Value::ToUniquePtrValue(backup_restore_pref_value().Clone()));
   }
   if (location_service_pref_value().is_bool()) {
-    prefs->SetManagedPref(prefs::kArcLocationServiceEnabled,
-                          location_service_pref_value().CreateDeepCopy());
+    prefs->SetManagedPref(
+        prefs::kArcLocationServiceEnabled,
+        base::Value::ToUniquePtrValue(location_service_pref_value().Clone()));
   }
 
   arc_session_manager()->SetProfile(profile());
@@ -1472,6 +1473,10 @@ class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerKioskTest() = default;
 
+  ArcSessionManagerKioskTest(const ArcSessionManagerKioskTest&) = delete;
+  ArcSessionManagerKioskTest& operator=(const ArcSessionManagerKioskTest&) =
+      delete;
+
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
     const AccountId account_id(
@@ -1479,9 +1484,6 @@ class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddArcKioskAppUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerKioskTest);
 };
 
 TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
@@ -1511,6 +1513,11 @@ class ArcSessionManagerPublicSessionTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerPublicSessionTest() = default;
 
+  ArcSessionManagerPublicSessionTest(
+      const ArcSessionManagerPublicSessionTest&) = delete;
+  ArcSessionManagerPublicSessionTest& operator=(
+      const ArcSessionManagerPublicSessionTest&) = delete;
+
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
     const AccountId account_id(
@@ -1518,9 +1525,6 @@ class ArcSessionManagerPublicSessionTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddPublicAccountUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerPublicSessionTest);
 };
 
 TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
@@ -1544,7 +1548,7 @@ TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
   arc_session_manager()->OnProvisioningFinished(
       ArcProvisioningResult(std::move(result)));
   EXPECT_FALSE(terminated);
-  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 }
 
 class ArcSessionOobeOptInNegotiatorTest
@@ -1554,6 +1558,11 @@ class ArcSessionOobeOptInNegotiatorTest
  public:
   ArcSessionOobeOptInNegotiatorTest() = default;
 
+  ArcSessionOobeOptInNegotiatorTest(const ArcSessionOobeOptInNegotiatorTest&) =
+      delete;
+  ArcSessionOobeOptInNegotiatorTest& operator=(
+      const ArcSessionOobeOptInNegotiatorTest&) = delete;
+
   void SetUp() override {
     ArcSessionManagerTest::SetUp();
 
@@ -1561,8 +1570,6 @@ class ArcSessionOobeOptInNegotiatorTest
         true);
     ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
         this);
-
-    GetFakeUserManager()->set_current_user_new(true);
 
     CreateLoginDisplayHost();
 
@@ -1578,6 +1585,9 @@ class ArcSessionOobeOptInNegotiatorTest
     arc_session_manager()->SetProfile(profile());
     arc_session_manager()->Initialize();
 
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
+    user_manager::KnownUser::RegisterPrefs(pref_service_.registry());
+
     if (IsArcPlayStoreEnabledForProfile(profile()))
       arc_session_manager()->RequestEnable();
   }
@@ -1590,6 +1600,7 @@ class ArcSessionOobeOptInNegotiatorTest
         nullptr);
     ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
         false);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     ArcSessionManagerTest::TearDown();
   }
@@ -1611,11 +1622,10 @@ class ArcSessionOobeOptInNegotiatorTest
   }
 
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
-  chromeos::FakeLoginDisplayHost* login_display_host() {
+  ash::FakeLoginDisplayHost* login_display_host() {
     return fake_login_display_host_.get();
   }
 
@@ -1648,9 +1658,8 @@ class ArcSessionOobeOptInNegotiatorTest
 
   base::ObserverList<chromeos::ArcTermsOfServiceScreenViewObserver>::Unchecked
       observer_list_;
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
+  TestingPrefServiceSimple pref_service_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1748,7 +1757,7 @@ ArcSessionRetryTestParam kRetryTestCases[] = {
      ArcStopReason::CRASH},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, true,
      ChromeProvisioningTimeout{}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED, false, false,
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
      arc::mojom::GeneralSignInError::CHROME_SERVER_COMMUNICATION_ERROR},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
      arc::mojom::GeneralSignInError::NO_NETWORK_CONNECTION},
@@ -1759,6 +1768,9 @@ class ArcSessionRetryTest
       public testing::WithParamInterface<ArcSessionRetryTestParam> {
  public:
   ArcSessionRetryTest() = default;
+
+  ArcSessionRetryTest(const ArcSessionRetryTest&) = delete;
+  ArcSessionRetryTest& operator=(const ArcSessionRetryTest&) = delete;
 
   void SetUp() override {
     ArcSessionManagerTest::SetUp();
@@ -1791,9 +1803,6 @@ class ArcSessionRetryTest
     arc_session_manager()->Shutdown();
     ArcSessionManagerTest::TearDown();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionRetryTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -2194,7 +2203,7 @@ TEST_F(ArcSessionManagerPowerwashTest, PowerwashRequestBlocksArcStart) {
       /* create_settings_service=*/false};
   settings_helper.ReplaceDeviceSettingsProviderWithStub();
   settings_helper.SetInteger(
-      chromeos::kDeviceRebootOnUserSignout,
+      ash::kDeviceRebootOnUserSignout,
       enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
 
   // Initialize cryptohome to require powerwash.
@@ -2264,10 +2273,10 @@ TEST_P(ArcTransitionToManagedTest, TransitionFlow) {
   // Verify ARC state and ARC transition value.
   EXPECT_EQ(profile()->GetPrefs()->GetBoolean(prefs::kArcEnabled),
             ShouldArcTransitionToManaged());
-  EXPECT_EQ(arc::GetSupervisionTransition(profile()),
+  EXPECT_EQ(arc::GetManagementTransition(profile()),
             ShouldArcTransitionToManaged()
-                ? arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED
-                : arc::ArcSupervisionTransition::NO_TRANSITION);
+                ? arc::ArcManagementTransition::UNMANAGED_TO_MANAGED
+                : arc::ArcManagementTransition::NO_TRANSITION);
 }
 
 INSTANTIATE_TEST_SUITE_P(

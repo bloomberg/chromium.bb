@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "components/domain_reliability/scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,7 +63,7 @@ class MockTimer : public MockableTime::Timer {
     std::move(task_to_run).Run();
   }
 
-  MockTime* time_;
+  raw_ptr<MockTime> time_;
   bool running_;
   int callback_sequence_number_;
   base::OnceClosure user_task_;
@@ -174,9 +175,9 @@ void MockTime::AdvanceToInternal(base::TimeTicks target_ticks) {
 
 DomainReliabilityScheduler::Params MakeTestSchedulerParams() {
   DomainReliabilityScheduler::Params params;
-  params.minimum_upload_delay = base::TimeDelta::FromMinutes(1);
-  params.maximum_upload_delay = base::TimeDelta::FromMinutes(5);
-  params.upload_retry_interval = base::TimeDelta::FromSeconds(15);
+  params.minimum_upload_delay = base::Minutes(1);
+  params.maximum_upload_delay = base::Minutes(5);
+  params.upload_retry_interval = base::Seconds(15);
   return params;
 }
 

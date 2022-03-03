@@ -6,6 +6,8 @@
 
 #include <objc/runtime.h>
 
+#include <ostream>
+
 #include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/objc_zombie.h"
@@ -60,8 +62,6 @@ void SwizzleUIImageImageNamed() {
   [exceptions addObject:@"glif-google-to-dots_28"];
   // TODO(crbug.com/721338): Add missing image.
   [exceptions addObject:@"voice_icon_keyboard_accessory"];
-  // TODO(crbug.com/754032): Add missing image.
-  [exceptions addObject:@"ios_default_avatar"];
 
   // The original implementation of [UIImage imageNamed:].
   // Called by the new implementation.

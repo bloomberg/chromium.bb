@@ -6,12 +6,15 @@ import("../../../third_party/typescript/typescript.gni")
 
 node_ts_library("elements") {
   sources = [
+    "accessibility-pane_test.ts",
+    "accessibility-tree_test.ts",
     "adornment_test.ts",
     "classes-pane_test.ts",
     "computed-pane-properties_test.ts",
     "element-breadcrumbs_test.ts",
     "flexbox-editor_test.ts",
     "grid-editor_test.ts",
+    "isolation-mode_test.ts",
     "layout-pane_test.ts",
     "pseudo-states_test.ts",
     "reveal-correct-node_test.ts",

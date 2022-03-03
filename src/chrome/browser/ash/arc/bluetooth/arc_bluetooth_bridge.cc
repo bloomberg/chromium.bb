@@ -15,7 +15,10 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/bluetooth/bluetooth_type_converters.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -25,9 +28,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,10 +35,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -51,6 +48,7 @@
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_characteristic_bluez.h"
+#include "device/bluetooth/floss/floss_features.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -76,16 +74,6 @@ using device::BluetoothTransport;
 using device::BluetoothUUID;
 
 namespace {
-
-absl::optional<int> SdkVersion() {
-  constexpr char kVersionKey[] = "CHROMEOS_ARC_ANDROID_SDK_VERSION";
-  int sdk_version;
-  std::string sdk_str;
-  if (!base::SysInfo::GetLsbReleaseValue(kVersionKey, &sdk_str) ||
-      !base::StringToInt(sdk_str, &sdk_version))
-    return absl::nullopt;
-  return sdk_version;
-}
 
 // https://android.googlesource.com/platform/system/bt/+/master/stack/include/gatt_api.h
 constexpr int32_t GATT_CHAR_PROP_BIT_BROADCAST = (1 << 0);
@@ -173,7 +161,7 @@ constexpr uint16_t kServiceClassIDListAttributeID = 0x0001;
 // 120 seconds is used here as the upper bound of the time need to do device
 // discovery once, 20 seconds for inquiry scan and 100 seconds for page scan
 // for 100 new devices.
-constexpr base::TimeDelta kDiscoveryTimeout = base::TimeDelta::FromSeconds(120);
+constexpr base::TimeDelta kDiscoveryTimeout = base::Seconds(120);
 // From https://www.bluetooth.com/specifications/assigned-numbers/baseband
 // The Class of Device for generic computer.
 constexpr uint32_t kBluetoothComputerClass = 0x100;
@@ -192,7 +180,10 @@ constexpr uint32_t kBluetoothComputerClass = 0x100;
 // Chrome, Chrome will take EnableAdapter/DisableAdapter calls as a request from
 // Android to toggle the power state. The power state will be synced on both
 // Chrome and Android, but as a result, Bluetooth will be off.
-constexpr base::TimeDelta kPowerIntentTimeout = base::TimeDelta::FromSeconds(8);
+constexpr base::TimeDelta kPowerIntentTimeout = base::Seconds(8);
+
+// Client name for logging in BLE scanning.
+constexpr char kScanClientName[] = "ARC";
 
 using GattReadCallback =
     base::OnceCallback<void(arc::mojom::BluetoothGattValuePtr)>;
@@ -473,6 +464,11 @@ ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
   arc_bridge_service_->app()->AddObserver(this);
   arc_bridge_service_->intent_helper()->AddObserver(this);
 
+  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled)) {
+    VLOG(1) << "Disabling ArcBluetoothBridge, Floss not yet supported.";
+    return;
+  }
+
   if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
     BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
@@ -680,26 +676,13 @@ void ArcBluetoothBridge::DeviceAdvertisementReceived(
   if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
-  constexpr int kAndroidPSdkVersion = 28;
-  absl::optional<int> sdk_version = SdkVersion();
   mojom::BluetoothAddressPtr addr =
       mojom::BluetoothAddress::From(device->GetAddress());
-  if (!sdk_version)
-    return;
-
-  if (sdk_version.value() >= kAndroidPSdkVersion) {
-    auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_bridge_service_->bluetooth(), OnLEDeviceFound);
-    if (bluetooth_instance)
-      bluetooth_instance->OnLEDeviceFound(std::move(addr), rssi, eir);
-    return;
-  }
 
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->bluetooth(), OnLEDeviceFoundForN);
+      arc_bridge_service_->bluetooth(), OnLEDeviceFound);
   if (bluetooth_instance)
-    bluetooth_instance->OnLEDeviceFoundForN(std::move(addr), rssi,
-                                            GetAdvertisingData(device));
+    bluetooth_instance->OnLEDeviceFound(std::move(addr), rssi, eir);
 }
 
 void ArcBluetoothBridge::DeviceConnectedStateChanged(BluetoothAdapter* adapter,
@@ -1107,7 +1090,7 @@ void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
 
   if (success && discoverable && timeout > 0) {
     discoverable_off_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(timeout),
+        FROM_HERE, base::Seconds(timeout),
         base::BindOnce(&ArcBluetoothBridge::SetDiscoverable,
                        weak_factory_.GetWeakPtr(), false, 0));
   }
@@ -1130,8 +1113,7 @@ void ArcBluetoothBridge::SetDiscoverable(bool discoverable, uint32_t timeout) {
     return;
 
   if (discoverable && currently_discoverable) {
-    if (base::TimeDelta::FromSeconds(timeout) >
-        discoverable_off_timer_.GetCurrentDelay()) {
+    if (base::Seconds(timeout) > discoverable_off_timer_.GetCurrentDelay()) {
       // Restart discoverable_off_timer_ if new timeout is greater
       OnSetDiscoverable(true, true, timeout);
     } else {
@@ -1228,6 +1210,7 @@ void ArcBluetoothBridge::StartDiscoveryImpl() {
   }
 
   bluetooth_adapter_->StartDiscoverySession(
+      kScanClientName,
       base::BindOnce(&ArcBluetoothBridge::OnDiscoveryStarted,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&ArcBluetoothBridge::OnDiscoveryError,
@@ -1259,6 +1242,7 @@ void ArcBluetoothBridge::StartLEScanImpl() {
   bluetooth_adapter_->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(
           device::BLUETOOTH_TRANSPORT_LE),
+      kScanClientName,
       base::BindOnce(&ArcBluetoothBridge::OnLEScanStarted,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&ArcBluetoothBridge::OnLEScanError,
@@ -1378,9 +1362,7 @@ void ArcBluetoothBridge::CreateBond(mojom::BluetoothAddressPtr addr,
 
   // BluetoothPairingDialog will automatically pair the device and handle all
   // the incoming pairing requests.
-  chromeos::BluetoothPairingDialog::ShowDialog(
-      device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
-      device->IsConnected());
+  chromeos::BluetoothPairingDialog::ShowDialog(device->GetAddress());
 }
 
 void ArcBluetoothBridge::RemoveBond(mojom::BluetoothAddressPtr addr) {
@@ -1461,9 +1443,15 @@ void ArcBluetoothBridge::OnGattConnectStateChanged(
   btle_instance->OnLEConnectionStateChange(std::move(addr), connected);
 }
 
-void ArcBluetoothBridge::OnGattConnected(
+void ArcBluetoothBridge::OnGattConnect(
     mojom::BluetoothAddressPtr addr,
-    std::unique_ptr<BluetoothGattConnection> connection) {
+    std::unique_ptr<BluetoothGattConnection> connection,
+    absl::optional<BluetoothDevice::ConnectErrorCode> error_code) {
+  if (error_code.has_value()) {
+    LOG(WARNING) << "GattConnectError: error_code = " << error_code.value();
+    OnGattDisconnected(std::move(addr));
+    return;
+  }
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   const std::string addr_str = addr->To<std::string>();
   GattConnection& conn = gatt_connections_[addr_str];
@@ -1471,13 +1459,6 @@ void ArcBluetoothBridge::OnGattConnected(
   conn.connection = std::move(connection);
   devices_paired_by_arc_.erase(addr_str);
   OnGattConnectStateChanged(std::move(addr), true);
-}
-
-void ArcBluetoothBridge::OnGattConnectError(
-    mojom::BluetoothAddressPtr addr,
-    BluetoothDevice::ConnectErrorCode error_code) {
-  LOG(WARNING) << "GattConnectError: error_code = " << error_code;
-  OnGattDisconnected(std::move(addr));
 }
 
 void ArcBluetoothBridge::OnGattDisconnected(mojom::BluetoothAddressPtr addr) {
@@ -1502,8 +1483,9 @@ void ArcBluetoothBridge::ConnectLEDevice(
 
   if (!device) {
     LOG(ERROR) << "Unknown device " << addr;
-    OnGattConnectError(std::move(remote_addr),
-                       BluetoothDevice::ConnectErrorCode::ERROR_FAILED);
+    OnGattConnect(std::move(remote_addr),
+                  /*connection=*/nullptr,
+                  BluetoothDevice::ConnectErrorCode::ERROR_FAILED);
     return;
   }
 
@@ -1513,8 +1495,9 @@ void ArcBluetoothBridge::ConnectLEDevice(
       bluetooth_instance->OnLEConnectionStateChange(std::move(remote_addr),
                                                     true);
     } else {
-      OnGattConnectError(std::move(remote_addr),
-                         BluetoothDevice::ConnectErrorCode::ERROR_INPROGRESS);
+      OnGattConnect(std::move(remote_addr),
+                    /*connection=*/nullptr,
+                    BluetoothDevice::ConnectErrorCode::ERROR_INPROGRESS);
     }
     return;
   }
@@ -1528,12 +1511,9 @@ void ArcBluetoothBridge::ConnectLEDevice(
   gatt_connections_.emplace(
       addr, GattConnection(GattConnection::ConnectionState::CONNECTING, nullptr,
                            need_hard_disconnect));
-  mojom::BluetoothAddressPtr remote_addr_clone = remote_addr.Clone();
   device->CreateGattConnection(
-      base::BindOnce(&ArcBluetoothBridge::OnGattConnected,
-                     weak_factory_.GetWeakPtr(), std::move(remote_addr)),
-      base::BindOnce(&ArcBluetoothBridge::OnGattConnectError,
-                     weak_factory_.GetWeakPtr(), std::move(remote_addr_clone)));
+      base::BindOnce(&ArcBluetoothBridge::OnGattConnect,
+                     weak_factory_.GetWeakPtr(), std::move(remote_addr)));
 }
 
 void ArcBluetoothBridge::DisconnectLEDevice(
@@ -1725,8 +1705,16 @@ void ArcBluetoothBridge::ReadGattCharacteristic(
     ReadGattCharacteristicCallback callback) {
   BluetoothRemoteGattCharacteristic* characteristic = FindGattCharacteristic(
       std::move(remote_addr), std::move(service_id), std::move(char_id));
-  DCHECK(characteristic);
-  DCHECK(characteristic->GetPermissions() & kGattReadPermission);
+  if (!characteristic) {
+    // TODO(b/201737474): Investigate in what case this could happen.
+    LOG(ERROR) << "Requested GATT characteristic does not exist";
+    OnGattRead(std::move(callback),
+               device::BluetoothGattService::GATT_ERROR_FAILED, /*result=*/{});
+    return;
+  }
+
+  // TODO(b/186866646#comment54): Investigate why
+  // characteristic->GetPermissions() may not have kGattReadPermission here.
 
   characteristic->ReadRemoteCharacteristic(
       base::BindOnce(&OnGattRead, std::move(callback)));
@@ -1809,13 +1797,16 @@ void ArcBluetoothBridge::WriteGattDescriptor(
       descriptor->GetCharacteristic();
   std::string char_id_str = characteristic->GetIdentifier();
   auto it = notification_session_.find(char_id_str);
-  if (it == notification_session_.end()) {
-    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
-    return;
+  if (it != notification_session_.end()) {
+    // Stop the previous session while keeping this client registered.
+    it->second.reset();
   }
+  // If notification session does not exist, a write to gatt descriptor will
+  // only enable peer device to notify us, but our clients won't hear the change
+  // events. Though this use case is not typical, we should still allow the API
+  // to succeed since the public API doesn't disallow this
+  // (https://developer.android.com/reference/android/bluetooth/BluetoothGatt#writeDescriptor(android.bluetooth.BluetoothGattDescriptor)).
 
-  // Stop the previous session while keeping this client registered.
-  it->second.reset();
   switch (value->value[0]) {
     case DISABLE_NOTIFICATION_VALUE:
       std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
@@ -1897,13 +1888,15 @@ void ArcBluetoothBridge::RegisterForGattNotification(
   }
 
   std::string char_id_str = characteristic->GetIdentifier();
-  if (base::Contains(notification_session_, char_id_str)) {
-    // There can be only one notification session per characteristic.
-    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
-    return;
+  // Create an empty notification session object - which will be fully
+  // instantiated by a future call to WriteGattDescriptor - if one does not yet
+  // exist. Note that the notification session object may have been created as
+  // a result of a previous call to WriteGattDescriptor, which can be left
+  // as-is.
+  if (!base::Contains(notification_session_, char_id_str)) {
+    notification_session_.emplace(char_id_str, nullptr);
   }
 
-  notification_session_.emplace(char_id_str, nullptr);
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
 

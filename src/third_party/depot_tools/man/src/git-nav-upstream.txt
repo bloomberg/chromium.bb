@@ -27,7 +27,7 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git up = nav-upstream
+  up = nav-upstream
 ----
 
 SEE ALSO

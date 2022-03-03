@@ -85,15 +85,15 @@ const char kSignedInWithCredentialProvider[] =
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";
 
-// Boolean which stores if the user is allowed to signin to chrome with the
-// current applied policies.
-const char kSigninAllowedByPolicy[] = "signin.allowed_by_policy";
-
 // True if the token service has been prepared for Dice migration.
 const char kTokenServiceDiceCompatible[] = "token_service.dice_compatible";
 
 // Contains last |ListAccounts| data which corresponds to Gaia cookies.
 const char kGaiaCookieLastListAccountsData[] =
     "gaia_cookie.last_list_accounts_data";
+
+// List of patterns to determine the account visibility.
+const char kRestrictAccountsToPatterns[] =
+    "signin.restrict_accounts_to_patterns";
 
 }  // namespace prefs

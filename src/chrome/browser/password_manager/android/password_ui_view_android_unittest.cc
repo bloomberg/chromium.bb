@@ -16,7 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
@@ -58,6 +58,10 @@ class FakeCredentialProvider
     : public password_manager::CredentialProviderInterface {
  public:
   FakeCredentialProvider() = default;
+
+  FakeCredentialProvider(const FakeCredentialProvider&) = delete;
+  FakeCredentialProvider& operator=(const FakeCredentialProvider&) = delete;
+
   ~FakeCredentialProvider() override = default;
 
   // password_manager::CredentialProviderInterface
@@ -71,8 +75,6 @@ class FakeCredentialProvider
 
  private:
   std::vector<std::unique_ptr<PasswordForm>> passwords_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCredentialProvider);
 };
 
 std::vector<std::unique_ptr<PasswordForm>>
@@ -107,8 +109,7 @@ class PasswordUIViewAndroidTest : public ::testing::Test {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
     testing_profile_ =
         testing_profile_manager_.CreateTestingProfile("TestProfile");
-    profiles::SetLastUsedProfile(
-        testing_profile_->GetBaseName().MaybeAsASCII());
+    profiles::SetLastUsedProfile(testing_profile_->GetBaseName());
 
     store_ = CreateAndUseTestPasswordStore(testing_profile_);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -116,9 +117,9 @@ class PasswordUIViewAndroidTest : public ::testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
-  TestingProfile* testing_profile_;
+  raw_ptr<TestingProfile> testing_profile_;
   scoped_refptr<TestPasswordStore> store_;
-  JNIEnv* env_;
+  raw_ptr<JNIEnv> env_;
   base::ScopedTempDir temp_dir_;
 };
 

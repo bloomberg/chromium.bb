@@ -1,5 +1,9 @@
+# Copyright (c) 2017-2021, The Khronos Group Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 /build/
-/build*/
+build*/
 CMakeLists.txt.user
 *.orig
 .*
@@ -31,5 +35,26 @@ out/build/
 CMakeSettings.json
 CppProperties.json
 
-# Don't ignore pipeline stuff
+# Gradle
+.cxx/
+.gradle/
+local.properties
+
+# Don't ignore these things
+!.*.license
 !.azure-pipelines/
+!.azure-pipelines/nuget/NugetTemplate/build
+!.clang-format
+!.clang-tidy
+!.cmake-format.json
+!.editorconfig
+!.git-blame-ignore-revs
+!.git-keep
+!.gitattributes
+!.github
+!.gitignore
+!.gitlab-ci.yml
+!.mailmap
+!.markdownlint.yaml
+!.proclamation.json
+!.reuse

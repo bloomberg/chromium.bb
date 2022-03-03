@@ -114,13 +114,10 @@ IdentityManager::InitParameters BuildIdentityManagerInitParameters(
       BuildProfileOAuth2TokenService(
           params->pref_service, account_tracker_service.get(),
           params->network_connection_tracker, params->account_consistency,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-          params->account_manager,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
           params->account_manager_facade, params->is_regular_profile,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
           params->delete_signin_cookies_on_exit, params->token_web_data,
 #endif
 #if defined(OS_IOS)
@@ -174,14 +171,14 @@ IdentityManager::InitParameters BuildIdentityManagerInitParameters(
       std::move(gaia_cookie_manager_service);
   init_params.primary_account_manager = std::move(primary_account_manager);
   init_params.token_service = std::move(token_service);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  init_params.ash_account_manager = params->account_manager;
-#endif
+  init_params.account_consistency = params->account_consistency;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   init_params.signin_client = params->signin_client;
 #endif
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  init_params.account_manager_facade = params->account_manager_facade;
+#endif
 
-  init_params.allow_access_token_fetch = params->allow_access_token_fetch;
   return init_params;
 }
 

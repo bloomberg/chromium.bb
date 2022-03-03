@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -19,12 +20,12 @@ namespace content {
 
 namespace {
 
-// Used to get async getScreens() info in a list of dictionary values.
+// Used to get async getScreenDetails() info in a list of dictionary values.
 constexpr char kGetScreensScript[] = R"(
   (async () => {
-    const screens = await self.getScreens();
+    const screenDetails = await self.getScreenDetails();
     let result = [];
-    for (let s of screens) {
+    for (let s of screenDetails.screens) {
       result.push({ availHeight: s.availHeight,
                     availLeft: s.availLeft,
                     availTop: s.availTop,
@@ -46,19 +47,14 @@ constexpr char kGetScreensScript[] = R"(
   })();
 )";
 
-// Used to get the async result of isMultiScreen().
-constexpr char kIsMultiScreenScript[] = R"(
-  (async () => { return await self.isMultiScreen(); })();
-)";
-
 // Returns a list of dictionary values from native screen information, intended
 // for comparison with the result of kGetScreensScript.
-base::ListValue GetExpectedScreens() {
-  base::ListValue expected_screens;
+base::Value GetExpectedScreens() {
+  base::Value expected_screens(base::Value::Type::LIST);
   auto* screen = display::Screen::GetScreen();
   size_t id = 0;
   for (const auto& d : screen->GetAllDisplays()) {
-    base::DictionaryValue s;
+    base::Value s(base::Value::Type::DICTIONARY);
     s.SetIntKey("availHeight", d.work_area().height());
     s.SetIntKey("availLeft", d.work_area().x());
     s.SetIntKey("availTop", d.work_area().y());
@@ -107,27 +103,18 @@ class ScreenEnumerationTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, GetScreensNoPermission) {
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
-  ASSERT_EQ(true, EvalJs(shell(), "'getScreens' in self"));
-  // getScreens() rejects its promise without the WindowPlacement permission.
-  EXPECT_FALSE(EvalJs(shell(), "await getScreens()").error.empty());
+  ASSERT_EQ(true, EvalJs(shell(), "'getScreenDetails' in self"));
+  // getScreenDetails() rejects its promise without the WindowPlacement
+  // permission.
+  EXPECT_FALSE(EvalJs(shell(), "await getScreenDetails()").error.empty());
 }
 
 // TODO(crbug.com/1119974): Need content_browsertests permission controls.
 IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, DISABLED_GetScreensBasic) {
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
-  ASSERT_EQ(true, EvalJs(shell(), "'getScreens' in self"));
+  ASSERT_EQ(true, EvalJs(shell(), "'getScreenDetails' in self"));
   auto result = EvalJs(shell(), kGetScreensScript);
-  EXPECT_EQ(GetExpectedScreens(), base::Value::AsListValue(result.value));
-}
-
-// TODO(crbug.com/1205676): Remove this test in favor of IsExtendedBasic.
-// window.isMultiScreen() is deprecated in favor of screen.isExtended.
-IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, IsMultiScreenBasic) {
-  ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
-  ASSERT_EQ(true, EvalJs(shell(), "'isMultiScreen' in self"));
-  auto result = EvalJs(shell(), kIsMultiScreenScript);
-  EXPECT_EQ(display::Screen::GetScreen()->GetNumDisplays() > 1,
-            result.ExtractBool());
+  EXPECT_EQ(GetExpectedScreens(), result.value);
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, IsExtendedBasic) {
@@ -167,9 +154,9 @@ class FakeScreenEnumerationTest : public ScreenEnumerationTest {
   Shell* test_shell() { return test_shell_; }
 
  private:
-  display::Screen* original_screen_ = nullptr;
+  raw_ptr<display::Screen> original_screen_ = nullptr;
   display::ScreenBase screen_;
-  Shell* test_shell_ = nullptr;
+  raw_ptr<Shell> test_shell_ = nullptr;
 };
 
 // TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
@@ -182,7 +169,7 @@ class FakeScreenEnumerationTest : public ScreenEnumerationTest {
 #endif
 IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_GetScreensFaked) {
   ASSERT_TRUE(NavigateToURL(test_shell(), GetTestUrl(nullptr, "empty.html")));
-  ASSERT_EQ(true, EvalJs(test_shell(), "'getScreens' in self"));
+  ASSERT_EQ(true, EvalJs(test_shell(), "'getScreenDetails' in self"));
 
   screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
                                       display::DisplayList::Type::NOT_PRIMARY);
@@ -190,29 +177,7 @@ IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_GetScreensFaked) {
                                       display::DisplayList::Type::NOT_PRIMARY);
 
   auto result = EvalJs(test_shell(), kGetScreensScript);
-  EXPECT_EQ(GetExpectedScreens(), base::Value::AsListValue(result.value));
-}
-
-// TODO(crbug.com/1205676): Remove this test in favor of IsExtendedFaked.
-// window.isMultiScreen() is deprecated in favor of screen.isExtended.
-// TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
-// TODO(crbug.com/1042990): Android requires a GetDisplayNearestView overload.
-#if defined(OS_ANDROID) || defined(OS_WIN)
-#define MAYBE_IsMultiScreenFaked DISABLED_IsMultiScreenFaked
-#else
-#define MAYBE_IsMultiScreenFaked IsMultiScreenFaked
-#endif
-IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_IsMultiScreenFaked) {
-  ASSERT_TRUE(NavigateToURL(test_shell(), GetTestUrl(nullptr, "empty.html")));
-  ASSERT_EQ(true, EvalJs(test_shell(), "'isMultiScreen' in self"));
-  EXPECT_EQ(false, EvalJs(test_shell(), kIsMultiScreenScript));
-
-  screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
-                                      display::DisplayList::Type::NOT_PRIMARY);
-  EXPECT_EQ(true, EvalJs(test_shell(), kIsMultiScreenScript));
-
-  screen()->display_list().RemoveDisplay(1);
-  EXPECT_EQ(false, EvalJs(test_shell(), kIsMultiScreenScript));
+  EXPECT_EQ(GetExpectedScreens(), result.value);
 }
 
 // TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
@@ -354,6 +319,7 @@ IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest,
   EXPECT_EQ("0", EvalJs(test_shell(), "document.title"));
 
   // An event is sent when Screen work area changes.
+  // work_area translates into Screen.available_rect.
   display::Display display = screen()->display_list().displays()[0];
   display.set_work_area(gfx::Rect(101, 102, 903, 904));
   EXPECT_NE(0u, screen()->display_list().UpdateDisplay(display));
