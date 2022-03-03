@@ -20,12 +20,11 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
 
-using content::WebContents;
-using content::WebUIMessageHandler;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::content::WebContents;
+using ::content::WebUIMessageHandler;
 
 constexpr gfx::Insets kMinMargins{64, 64};
 constexpr gfx::Size kMinSize{128, 128};
@@ -57,10 +56,8 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
       delegate_(delegate),
       title_(title),
       url_(url) {
-  if (!parent_window_ && chromeos::LoginDisplayHost::default_host()) {
-    parent_window_ =
-        chromeos::LoginDisplayHost::default_host()->GetNativeWindow();
-  }
+  if (!parent_window_ && LoginDisplayHost::default_host())
+    parent_window_ = LoginDisplayHost::default_host()->GetNativeWindow();
   LOG_IF(WARNING, !parent_window)
       << "No parent window. Dialog sizes could be wrong";
 }
@@ -147,7 +144,7 @@ bool LoginWebDialog::ShouldShowDialogTitle() const {
 }
 
 bool LoginWebDialog::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
@@ -185,4 +182,4 @@ bool LoginWebDialog::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return false;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/platform/animation/animation_translation_util.h"
 
 #include <memory>
-#include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/animation/compositor_transform_operations.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ TEST(AnimationTranslationUtilTest, transformsWork) {
       0.1, 0.2, 0.3, 200000.4, TransformOperation::kRotate3D));
   ops.Operations().push_back(ScaleTransformOperation::Create(
       50.2, 100, -4, TransformOperation::kScale3D));
-  ToCompositorTransformOperations(ops, &out_ops, FloatSize());
+  ToCompositorTransformOperations(ops, &out_ops, gfx::SizeF());
 
   EXPECT_EQ(3UL, out_ops.AsGfxTransformOperations().size());
   const float kErr = 0.0001;
@@ -81,7 +81,7 @@ TEST(AnimationTranslationUtilTest, RelativeTranslate) {
       TransformOperation::kTranslate));
 
   CompositorTransformOperations out_ops;
-  ToCompositorTransformOperations(ops, &out_ops, FloatSize(200, 100));
+  ToCompositorTransformOperations(ops, &out_ops, gfx::SizeF(200, 100));
   ASSERT_EQ(out_ops.AsGfxTransformOperations().size(), 1u);
 
   auto& op0 = out_ops.AsGfxTransformOperations().at(0);
@@ -103,15 +103,14 @@ TEST(AnimationTranslationUtilTest, RelativeInterpolated) {
   TransformOperations ops_c = ops_b.Blend(ops_a, 0.5);
 
   CompositorTransformOperations out_ops;
-  ToCompositorTransformOperations(ops_c, &out_ops, FloatSize(100, 100));
+  ToCompositorTransformOperations(ops_c, &out_ops, gfx::SizeF(100, 100));
   ASSERT_EQ(out_ops.AsGfxTransformOperations().size(), 1u);
 
   auto& op0 = out_ops.AsGfxTransformOperations().at(0);
   gfx::TransformOperations ops_expected;
   ops_expected.AppendTranslate(25, 0, 0);
   EXPECT_EQ(gfx::TransformOperation::TRANSFORM_OPERATION_MATRIX, op0.type);
-  gfx::ExpectTransformationMatrixNear(op0.matrix, ops_expected.at(0).matrix,
-                                      1e-6f);
+  EXPECT_TRANSFORM_NEAR(op0.matrix, ops_expected.at(0).matrix, 1e-6f);
 }
 
 }  // namespace blink

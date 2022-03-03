@@ -9,12 +9,11 @@
 #include <stdint.h>
 
 #include <cstring>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/windows_version.h"
@@ -379,7 +378,7 @@ class RegistryTestHKLM : public ::testing::Test {
 #if defined(_WIN64)
     return true;
 #else
-    return OSInfo::GetInstance()->wow64_status() == OSInfo::WOW64_ENABLED;
+    return OSInfo::GetInstance()->IsWowX86OnAMD64();
 #endif
   }
 

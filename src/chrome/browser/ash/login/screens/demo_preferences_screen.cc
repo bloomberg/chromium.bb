@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
 
 namespace ash {
 namespace {
@@ -105,6 +105,11 @@ void DemoPreferencesScreen::HideImpl() {
 
 void DemoPreferencesScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionContinue) {
+    std::string country(
+        g_browser_process->local_state()->GetString(prefs::kDemoModeCountry));
+    if (country == DemoSession::kCountryNotSelectedId) {
+      return;
+    }
     exit_callback_.Run(Result::COMPLETED);
   } else if (action_id == kUserActionClose) {
     // Restore initial locale and input method if the user pressed back button.

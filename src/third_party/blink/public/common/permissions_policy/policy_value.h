@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PERMISSIONS_POLICY_POLICY_VALUE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_PERMISSIONS_POLICY_POLICY_VALUE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_value.mojom-shared.h"
 
@@ -21,6 +20,8 @@ namespace blink {
 class BLINK_COMMON_EXPORT PolicyValue {
  public:
   PolicyValue();
+  PolicyValue(const PolicyValue&);
+  PolicyValue& operator=(const PolicyValue&);
 
   static PolicyValue CreateBool(bool);
   static PolicyValue CreateDecDouble(double);
@@ -45,9 +46,6 @@ class BLINK_COMMON_EXPORT PolicyValue {
   void SetBoolValue(bool bool_value);
   void SetDoubleValue(double double_value);
   void SetIntValue(int32_t int_value);
-
-  // Operater overrides
-  PolicyValue& operator=(const PolicyValue& rhs);
 
   void SetToMax();
   void SetToMin();

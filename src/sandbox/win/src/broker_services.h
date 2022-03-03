@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -35,6 +35,9 @@ class BrokerServicesBase final : public BrokerServices,
                                  public SingletonBase<BrokerServicesBase> {
  public:
   BrokerServicesBase();
+
+  BrokerServicesBase(const BrokerServicesBase&) = delete;
+  BrokerServicesBase& operator=(const BrokerServicesBase&) = delete;
 
   ~BrokerServicesBase();
 
@@ -65,9 +68,7 @@ class BrokerServicesBase final : public BrokerServices,
 
   // Provides a pool of threads that are used to wait on the IPC calls.
   // Owned by TargetEventsThread which is alive until our destructor.
-  ThreadPool* thread_pool_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
+  raw_ptr<ThreadPool> thread_pool_ = nullptr;
 };
 
 }  // namespace sandbox

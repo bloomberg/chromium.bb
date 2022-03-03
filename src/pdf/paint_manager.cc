@@ -19,8 +19,6 @@
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/graphics.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/module.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -197,6 +195,7 @@ void PaintManager::DoPaint() {
     if (old_size != new_size || !graphics_) {
       graphics_ = client_->CreatePaintGraphics(new_size);
       graphics_need_to_be_bound_ = true;
+      device_scale_ = 1.0f;
 
       // Since we're binding a new one, all of the callbacks have been canceled.
       manual_callback_pending_ = false;
@@ -204,7 +203,7 @@ void PaintManager::DoPaint() {
       weak_factory_.InvalidateWeakPtrs();
     }
 
-    if (pending_device_scale_ != 1.0)
+    if (pending_device_scale_ != device_scale_)
       graphics_->SetScale(1.0 / pending_device_scale_);
     device_scale_ = pending_device_scale_;
 

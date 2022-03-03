@@ -27,6 +27,13 @@
        * @type {?function(!ExtensionDescriptor)}
        */
       this._addExtensionCallback = null;
+
+      /**
+       * @type {!Promise<string>}
+       */
+      this._initialTargetIdPromise = new Promise(resolve => {
+        this._setInitialTargetId = resolve;
+      });
     }
 
     /**
@@ -302,6 +309,13 @@
     }
 
     /**
+     * @param {string} targetId
+     */
+    setInitialTargetId(targetId) {
+      this._setInitialTargetId(targetId);
+    }
+
+    /**
      * @return {string|undefined}
      */
     getInspectedTabId() {
@@ -356,13 +370,12 @@
    * Enum for recordPerformanceHistogram
    * Warning: There is another definition of this enum in the DevTools code
    * base, keep them in sync:
-   * front_end/host/InspectorFrontendHostAPI.js
+   * front_end/core/host/InspectorFrontendHostAPI.ts
    * @readonly
    * @enum {string}
    */
   const EnumeratedHistogram = {
     ActionTaken: 'DevTools.ActionTaken',
-    ColorPickerFixedColor: 'DevTools.ColorPicker.FixedColor',
     PanelClosed: 'DevTools.PanelClosed',
     PanelShown: 'DevTools.PanelShown',
     SidebarPaneShown: 'DevTools.SidebarPaneShown',
@@ -376,11 +389,18 @@
     ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
-    CssEditorOpened: 'DevTools.CssEditorOpened',
     DeveloperResourceLoaded: 'DevTools.DeveloperResourceLoaded',
     DeveloperResourceScheme: 'DevTools.DeveloperResourceScheme',
     LinearMemoryInspectorRevealedFrom: 'DevTools.LinearMemoryInspector.RevealedFrom',
     LinearMemoryInspectorTarget: 'DevTools.LinearMemoryInspector.Target',
+    Language: 'DevTools.Language',
+    ConsoleShowsCorsErrors: 'DevTools.ConsoleShowsCorsErrors',
+    RecordingEdited: 'DevTools.RecordingEdited',
+    RecordingExported: 'DevTools.RecordingExported',
+    RecordingReplayFinished: 'DevTools.RecordingReplayFinished',
+    RecordingReplayStarted: 'DevTools.RecordingReplayStarted',
+    RecordingToggled: 'DevTools.RecordingToggled',
+    SyncSetting: 'DevTools.SyncSetting',
   };
 
   /**
@@ -508,6 +528,15 @@
 
     /**
      * @override
+     * @param {string} name
+     * @param {!{synced: (boolean|undefined)}} options
+     */
+    registerPreference(name, options) {
+      DevToolsAPI.sendMessageToEmbedder('registerPreference', [name, options], null);
+    }
+
+    /**
+     * @override
      * @param {function(!Object<string, string>)} callback
      */
     getPreferences(callback) {
@@ -536,6 +565,14 @@
      */
     clearPreferences() {
       DevToolsAPI.sendMessageToEmbedder('clearPreferences', [], null);
+    }
+
+    /**
+     * @override
+     * @param {!function(!InspectorFrontendHostAPI.SyncInformation):void} callback
+     */
+    getSyncInformation(callback) {
+      DevToolsAPI.sendMessageToEmbedder('getSyncInformation', [], callback);
     }
 
     /**
@@ -942,6 +979,13 @@
     recordPanelShown(panelCode) {
       // Do not record actions, as that may crash the DevTools renderer.
     }
+
+    /**
+     * @return {!Promise<string>}
+     */
+    initialTargetId() {
+      return DevToolsAPI._initialTargetIdPromise;
+    }
   };
 
   window.InspectorFrontendHost = new InspectorFrontendHostImpl();
@@ -1324,30 +1368,6 @@
           this.name = selector;
         }
       });
-
-      function overrideCreateElementWithClass() {
-        window.removeEventListener('DOMContentLoaded', overrideCreateElementWithClass);
-
-        const origCreateElementWithClass = Document.prototype.createElementWithClass;
-        Document.prototype.createElementWithClass = function(tagName, className, ...rest) {
-          if (tagName !== 'button' || (className !== 'soft-dropdown' && className !== 'dropdown-button')) {
-            return origCreateElementWithClass.call(this, tagName, className, ...rest);
-          }
-          const element = origCreateElementWithClass.call(this, 'div', className, ...rest);
-          element.tabIndex = 0;
-          element.role = 'button';
-          return element;
-        };
-      }
-
-      // Document.prototype.createElementWithClass is a DevTools method, so we
-      // need to wait for DOMContentLoaded in order to override it.
-      if (window.document.head &&
-          (window.document.readyState === 'complete' || window.document.readyState === 'interactive')) {
-        overrideCreateElementWithClass();
-      } else {
-        window.addEventListener('DOMContentLoaded', overrideCreateElementWithClass);
-      }
     }
 
     // Custom Elements V0 polyfill
@@ -1470,13 +1490,6 @@
       styleRules.push('* { min-width: 0; min-height: 0; }');
     }
 
-    if (majorVersion <= 51) {
-      // Support for quirky border-image behavior (<M51), see:
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=559258
-      styleRules.push('.cm-breakpoint .CodeMirror-linenumber { border-style: solid !important; }');
-      styleRules.push(
-          '.cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber { border-style: solid !important; }');
-    }
     if (majorVersion <= 71) {
       styleRules.push(
           '.coverage-toolbar-container, .animation-timeline-toolbar-container, .computed-properties { flex-basis: auto; }');

@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/ip_address.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_net_address.h"
@@ -21,6 +20,10 @@ namespace ppapi {
 
 class PPAPI_SHARED_EXPORT NetAddressPrivateImpl {
  public:
+  NetAddressPrivateImpl() = delete;
+  NetAddressPrivateImpl(const NetAddressPrivateImpl&) = delete;
+  NetAddressPrivateImpl& operator=(const NetAddressPrivateImpl&) = delete;
+
   static bool ValidateNetAddress(const PP_NetAddress_Private& addr);
 
   static bool SockaddrToNetAddress(const sockaddr* sa,
@@ -60,9 +63,6 @@ class PPAPI_SHARED_EXPORT NetAddressPrivateImpl {
       PP_NetAddress_IPv6* ipv6_addr);
 
   static const PP_NetAddress_Private kInvalidNetAddress;
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(NetAddressPrivateImpl);
 };
 
 }  // namespace ppapi

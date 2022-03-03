@@ -10,12 +10,6 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "xfa/fxfa/cxfa_fftextedit.h"
 
-enum XFA_DATETIMETYPE {
-  XFA_DATETIMETYPE_Date = 0,
-  XFA_DATETIMETYPE_Time,
-  XFA_DATETIMETYPE_DateAndTime
-};
-
 class CFWL_DateTimePicker;
 class CFWL_Event;
 class CFWL_Widget;
@@ -45,8 +39,8 @@ class CXFA_FFDateTimeEdit final : public CXFA_FFTextEdit {
   bool CanSelectAll() override;
   bool Undo() override;
   bool Redo() override;
-  Optional<WideString> Copy() override;
-  Optional<WideString> Cut() override;
+  absl::optional<WideString> Copy() override;
+  absl::optional<WideString> Cut() override;
   bool Paste(const WideString& wsPaste) override;
   void SelectAll() override;
   void Delete() override;

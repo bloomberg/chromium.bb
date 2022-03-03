@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for tensorflow.kernels.logging_ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 import string
 import sys
@@ -126,7 +122,7 @@ class PrintV2Test(test.TestCase):
   def testPrintOneVariable(self):
     var = variables.Variable(math_ops.range(10))
     if not context.executing_eagerly():
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
     with self.captureWritesToStream(sys.stderr) as printed:
       print_op = logging_ops.print_v2(var)
       self.evaluate(print_op)
@@ -138,7 +134,7 @@ class PrintV2Test(test.TestCase):
     plus_one = var_one.assign_add(1.0)
     var_two = variables.Variable(math_ops.range(10))
     if not context.executing_eagerly():
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
     with self.captureWritesToStream(sys.stderr) as printed:
       self.evaluate(plus_one)
       print_op = logging_ops.print_v2(var_one, {"second": var_two})

@@ -19,6 +19,11 @@ namespace payments {
 namespace {
 
 class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
+ public:
+  PaymentRequestShowPromiseTest(const PaymentRequestShowPromiseTest&) = delete;
+  PaymentRequestShowPromiseTest& operator=(
+      const PaymentRequestShowPromiseTest&) = delete;
+
  protected:
   PaymentRequestShowPromiseTest() {}
   ~PaymentRequestShowPromiseTest() override {}
@@ -40,10 +45,11 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
                                  DialogEvent::SPEC_DONE_UPDATING,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
                                  DialogEvent::DIALOG_OPENED});
-    // The boolean "true" makes the payment method be the URL of the webpage,
+    // buyWithCurrentUrl() uses the URL of the webpage as the payment method,
     // which is necessary because service workers cannot use "basic-card"
     // payment method (the default payment method of the test page).
-    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy(true);"));
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                       "buyWithCurrentUrlMethod();"));
     WaitForObservedEvent();
     EXPECT_TRUE(web_modal::WebContentsModalDialogManager::FromWebContents(
                     GetActiveWebContents())
@@ -116,9 +122,6 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
         {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestShowPromiseTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SingleOptionShipping) {

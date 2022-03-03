@@ -22,6 +22,9 @@ TEST(DisabledSitesTest, AllPaths) {
 }
 
 TEST(DisabledSitesTest, SpecificPages) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndDisableFeature(kSharedHighlightingAmp);
+
   // Paths starting with /amp/ are disabled.
   EXPECT_FALSE(ShouldOfferLinkToText(GURL("https://www.google.com/amp/")));
   EXPECT_FALSE(ShouldOfferLinkToText(GURL("https://www.google.com/amp/foo")));
@@ -43,13 +46,14 @@ TEST(DisabledSitesTest, NonMatchingHost) {
   EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://www.example.com")));
 }
 
-TEST(DisabledSitesTest, FeatureDisabled) {
+TEST(DisabledSitesTest, AmpFeatureEnabled) {
   base::test::ScopedFeatureList feature;
-  feature.InitAndDisableFeature(kSharedHighlightingUseBlocklist);
+  feature.InitWithFeatures({kSharedHighlightingAmp}, {});
 
-  EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://www.youtube.com")));
   EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://www.google.com/amp/")));
-  EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://www.example.com")));
+  EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://www.google.com/amp/foo")));
+  EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://google.com/amp/")));
+  EXPECT_TRUE(ShouldOfferLinkToText(GURL("https://google.com/amp/foo")));
 }
 
 }  // namespace

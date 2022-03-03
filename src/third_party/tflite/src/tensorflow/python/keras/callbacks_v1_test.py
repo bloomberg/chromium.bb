@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Keras callbacks."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 import shutil
 import tempfile
@@ -86,8 +82,6 @@ class TestTensorBoardV1(test.TestCase, parameterized.TestCase):
       model.add(
           layers.Dense(
               NUM_HIDDEN, input_dim=INPUT_DIM, activation='relu'))
-      # non_trainable_weights: moving_variance, moving_mean
-      model.add(layers.BatchNormalization())
       model.add(layers.Dense(NUM_CLASSES, activation='softmax'))
       model.compile(
           loss='categorical_crossentropy',
@@ -280,8 +274,6 @@ class TestTensorBoardV1(test.TestCase, parameterized.TestCase):
       model.add(
           layers.Dense(
               NUM_HIDDEN, input_dim=INPUT_DIM, activation='relu'))
-      # non_trainable_weights: moving_variance, moving_mean
-      model.add(layers.BatchNormalization())
       model.add(layers.Dense(NUM_CLASSES, activation='softmax'))
       model.compile(
           loss='categorical_crossentropy',

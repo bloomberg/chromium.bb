@@ -15,8 +15,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -74,7 +74,7 @@ bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
 
 void InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     DoneRunOnMainThread() {
-  index_->DoneRebuidingPrivateDataFromHistoryDB(succeeded_, data_);
+  index_->DoneRebuildingPrivateDataFromHistoryDB(succeeded_, data_);
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime.RoundTripTime",
                       base::TimeTicks::Now() - task_creation_time_);
 }
@@ -106,7 +106,7 @@ InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
   InitializeSchemeAllowlist(&scheme_allowlist_, client_schemes_to_allowlist);
   // TODO(mrossetti): Register for language change notifications.
   if (history_service_)
-    history_service_observation_.Observe(history_service_);
+    history_service_observation_.Observe(history_service_.get());
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "InMemoryURLIndex", base::ThreadTaskRunnerHandle::Get());
@@ -161,35 +161,14 @@ void InMemoryURLIndex::OnURLVisited(history::HistoryService* history_service,
                                     const history::RedirectList& redirects,
                                     base::Time visit_time) {
   DCHECK_EQ(history_service_, history_service);
-  // If |row| is not known to URLIndexPrivateData and the row is significant,
-  // URLIndexPrivateData will index it. When excluding visits from cct, the row
-  // may be significant, but not indexed. UpdateURL() does not have the full
-  // context to know it should not index the row (it lacks visits). If |row|
-  // has not been indexed, and the visit is from cct, we know it should not be
-  // indexed and should not call to UpdateURL().
-  if (!private_data_->IsUrlRowIndexed(row) &&
-      URLIndexPrivateData::ShouldExcludeBecauseOfCctTransition(transition)) {
-    return;
-  }
   needs_to_be_cached_ |= private_data_->UpdateURL(
       history_service_, row, scheme_allowlist_, &private_data_tracker_);
 }
 
 void InMemoryURLIndex::OnURLsModified(history::HistoryService* history_service,
-                                      const history::URLRows& changed_urls,
-                                      history::UrlsModifiedReason reason) {
+                                      const history::URLRows& changed_urls) {
   DCHECK_EQ(history_service_, history_service);
   for (const auto& row : changed_urls) {
-    // When hiding visits from cct, don't add the entry just because the title
-    // changed. In other words, |row| may qualify (RowQualifiesAsSignificant),
-    // but not be indexed because all visits where excluded. In this case, the
-    // row won't be indexed and we shouldn't add just because the title
-    // changed.
-    if (base::FeatureList::IsEnabled(omnibox::kHideVisitsFromCct) &&
-        !private_data_->IsUrlRowIndexed(row) &&
-        reason == history::UrlsModifiedReason::kTitleChanged) {
-      continue;
-    }
     needs_to_be_cached_ |= private_data_->UpdateURL(
         history_service_, row, scheme_allowlist_, &private_data_tracker_);
   }
@@ -354,7 +333,7 @@ void InMemoryURLIndex::ScheduleRebuildFromHistory() {
       &cache_reader_tracker_);
 }
 
-void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
+void InMemoryURLIndex::DoneRebuildingPrivateDataFromHistoryDB(
     bool succeeded,
     scoped_refptr<URLIndexPrivateData> private_data) {
   TRACE_EVENT_NESTABLE_ASYNC_END0(

@@ -8,17 +8,16 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/assistant/assistant_state.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "chromeos/components/quick_answers/result_loader.h"
 #include "chromeos/components/quick_answers/understanding/intent_generator.h"
 
 namespace network {
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
+class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 struct QuickAnswer;
@@ -30,6 +29,9 @@ enum class ResultType;
 // A delegate interface for the QuickAnswersClient.
 class QuickAnswersDelegate {
  public:
+  using AccessTokenCallback =
+      base::OnceCallback<void(const std::string& access_token)>;
+
   QuickAnswersDelegate(const QuickAnswersDelegate&) = delete;
   QuickAnswersDelegate& operator=(const QuickAnswersDelegate&) = delete;
 
@@ -42,11 +44,15 @@ class QuickAnswersDelegate {
   virtual void OnRequestPreprocessFinished(
       const QuickAnswersRequest& processed_request) {}
 
-  // Invoked when feature eligibility changed.
-  virtual void OnEligibilityChanged(bool eligible) {}
-
   // Invoked when there is a network error.
   virtual void OnNetworkError() {}
+
+  // Request for the access token associated with the active user's profile.
+  // Request is handled asynchronously if the token is not available.
+  // AccessTokenCallbacks are invoked as soon as the token if fetched.
+  // If the token is available, AccessTokenCallbacks are invoked
+  // synchronously before RequestAccessToken() returns.
+  virtual void RequestAccessToken(AccessTokenCallback callback) {}
 
  protected:
   QuickAnswersDelegate() = default;
@@ -54,8 +60,7 @@ class QuickAnswersDelegate {
 };
 
 // Quick answers client to load and parse quick answer results.
-class QuickAnswersClient : public ash::AssistantStateObserver,
-                           public ResultLoader::ResultLoaderDelegate {
+class QuickAnswersClient : public ResultLoader::ResultLoaderDelegate {
  public:
   // Method that can be used in tests to change the result loader returned by
   // |CreateResultLoader| in tests.
@@ -67,25 +72,20 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   using IntentGeneratorFactoryCallback =
       base::RepeatingCallback<std::unique_ptr<IntentGenerator>()>;
 
-  QuickAnswersClient(network::mojom::URLLoaderFactory* url_loader_factory,
-                     QuickAnswersDelegate* delegate);
+  QuickAnswersClient(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      QuickAnswersDelegate* delegate);
 
   QuickAnswersClient(const QuickAnswersClient&) = delete;
   QuickAnswersClient& operator=(const QuickAnswersClient&) = delete;
 
   ~QuickAnswersClient() override;
 
-  // AssistantStateObserver:
-  void OnAssistantFeatureAllowedChanged(
-      chromeos::assistant::AssistantAllowedState state) override;
-  void OnAssistantSettingsEnabled(bool enabled) override;
-  void OnAssistantContextEnabled(bool enabled) override;
-  void OnLocaleChanged(const std::string& locale) override;
-
   // ResultLoaderDelegate:
   void OnNetworkError() override;
   void OnQuickAnswerReceived(
       std::unique_ptr<QuickAnswer> quick_answer) override;
+  void RequestAccessToken(AccessTokenCallback callback) override;
 
   // Send a quick answer request for preprocessing only.
   void SendRequestForPreprocessing(
@@ -108,9 +108,6 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   static void SetIntentGeneratorFactoryForTesting(
       IntentGeneratorFactoryCallback* factory);
 
-  static bool IsQuickAnswersAllowedForLocale(const std::string& locale,
-                                             const std::string& runtime_locale);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, SendRequest);
   FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest,
@@ -128,7 +125,6 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
       const QuickAnswersRequest& request,
       bool skip_fetch);
 
-  void NotifyEligibilityChanged();
   // Preprocesses the |QuickAnswersRequest| and fetch quick answers result. Only
   // preprocesses the request and skip fetching result if |skip_fetch| is true.
   void SendRequestInternal(const QuickAnswersRequest& quick_answers_request,
@@ -138,16 +134,10 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
                                const IntentInfo& intent_info);
   base::TimeDelta GetImpressionDuration() const;
 
-  network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   QuickAnswersDelegate* delegate_ = nullptr;
   std::unique_ptr<ResultLoader> result_loader_;
   std::unique_ptr<IntentGenerator> intent_generator_;
-  bool assistant_enabled_ = false;
-  bool assistant_context_enabled_ = false;
-  bool locale_supported_ = false;
-  chromeos::assistant::AssistantAllowedState assistant_allowed_state_ =
-      chromeos::assistant::AssistantAllowedState::ALLOWED;
-  bool is_eligible_ = false;
   // Time when the quick answer is received.
   base::TimeTicks quick_answer_received_time_;
 
@@ -155,5 +145,6 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
 };
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
+
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_QUICK_ANSWERS_CLIENT_H_

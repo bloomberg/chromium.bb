@@ -10,9 +10,12 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/webui/help_app_ui/help_app_manager.h"
+#include "ash/webui/help_app_ui/help_app_manager_factory.h"
+#include "ash/webui/help_app_ui/search/search_handler.h"
+#include "ash/webui/help_app_ui/url_constants.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
@@ -23,17 +26,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/help_app_ui/help_app_manager.h"
-#include "chromeos/components/help_app_ui/help_app_manager_factory.h"
-#include "chromeos/components/help_app_ui/search/search_handler.h"
-#include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -43,10 +44,9 @@ namespace {
 
 constexpr char kHelpAppDiscoverResult[] = "help-app://discover";
 constexpr char kHelpAppUpdatesResult[] = "help-app://updates";
-constexpr float kScoreEps = 1e-5f;
 
 constexpr size_t kMinQueryLength = 3u;
-constexpr float kMinScore = 0.4f;
+constexpr double kMinScore = 0.4;
 constexpr size_t kNumRequestedResults = 5u;
 constexpr size_t kMaxShownResults = 2u;
 
@@ -74,25 +74,6 @@ void DecreaseTimesLeftToShowDiscoverTabSuggestionChip(Profile* profile) {
 void StopShowingDiscoverTabSuggestionChip(Profile* profile) {
   profile->GetPrefs()->SetInteger(
       prefs::kDiscoverTabSuggestionChipTimesLeftToShow, 0);
-}
-
-// Filter out results below the min score threshold and limit the number of
-// shown results.
-std::vector<chromeos::help_app::mojom::SearchResultPtr> FilterAndLimitResults(
-    const std::vector<chromeos::help_app::mojom::SearchResultPtr>& results) {
-  std::vector<chromeos::help_app::mojom::SearchResultPtr> clean_results;
-
-  for (const auto& result : results) {
-    if (clean_results.size() == kMaxShownResults) {
-      break;
-    }
-    if (result->relevance_score < kMinScore) {
-      continue;
-    }
-    clean_results.push_back(result.Clone());
-  }
-
-  return clean_results;
 }
 
 // The end result of a list search. Logged once per time a list search finishes.
@@ -124,6 +105,7 @@ HelpAppResult::HelpAppResult(Profile* profile,
     : profile_(profile) {
   DCHECK(profile_);
   set_id(id);
+  SetCategory(Category::kHelp);
   SetTitle(title);
   // Show this in the first position, in front of any other chips that may be
   // also claiming the first slot.
@@ -145,21 +127,21 @@ HelpAppResult::HelpAppResult(Profile* profile,
 HelpAppResult::HelpAppResult(
     const float& relevance,
     Profile* profile,
-    const chromeos::help_app::mojom::SearchResultPtr& result,
+    const ash::help_app::mojom::SearchResultPtr& result,
     const gfx::ImageSkia& icon,
     const std::u16string& query)
     : profile_(profile),
       url_path_(result->url_path_with_parameters),
       help_app_content_id_(result->id) {
   DCHECK(profile_);
-  set_id(chromeos::kChromeUIHelpAppURL + url_path_);
+  set_id(ash::kChromeUIHelpAppURL + url_path_);
   set_relevance(relevance);
   SetTitle(result->title);
   SetTitleTags(CalculateTags(query, result->title));
   SetResultType(ResultType::kHelpApp);
   SetDisplayType(DisplayType::kList);
   SetMetricsType(ash::HELP_APP_DEFAULT);
-  SetIcon(icon);
+  SetIcon(IconInfo(icon));
   SetDetails(result->main_category);
 }
 
@@ -197,7 +179,7 @@ void HelpAppResult::Open(int event_flags) {
   }
   // Launch list result.
   web_app::SystemAppLaunchParams params;
-  params.url = GURL(chromeos::kChromeUIHelpAppURL + url_path_);
+  params.url = GURL(ash::kChromeUIHelpAppURL + url_path_);
   params.launch_source = apps::mojom::LaunchSource::kFromAppListQuery;
   web_app::LaunchSystemWebAppAsync(
       profile_, web_app::SystemAppType::HELP, params,
@@ -222,7 +204,7 @@ HelpAppProvider::HelpAppProvider(Profile* profile)
     return;
   }
   search_handler_ =
-      chromeos::help_app::HelpAppManagerFactory::GetForBrowserContext(profile_)
+      ash::help_app::HelpAppManagerFactory::GetForBrowserContext(profile_)
           ->search_handler();
   if (!search_handler_) {
     return;
@@ -278,6 +260,7 @@ void HelpAppProvider::Start(const std::u16string& query) {
       ClearResults();
       return;
     }
+
     // Invalidate weak pointers to cancel existing searches.
     weak_factory_.InvalidateWeakPtrs();
     search_handler_->Search(
@@ -294,26 +277,22 @@ void HelpAppProvider::ViewClosing() {
 void HelpAppProvider::OnSearchReturned(
     const std::u16string& query,
     const base::TimeTicks& start_time,
-    std::vector<chromeos::help_app::mojom::SearchResultPtr> sorted_results) {
-  // TODO(b/182855408): We are currently not ranking help app results.
-  // Instead, we are gluing at most two to the middle of the search box.
-  // Ideally, we want to always show Showoff results below a Setting, App, or
-  // Shortcut result. The intention is to make sure that the most actionable
-  // result is ranked higher.
+    std::vector<ash::help_app::mojom::SearchResultPtr> sorted_results) {
   DCHECK_LE(sorted_results.size(), kNumRequestedResults);
 
   SearchProvider::Results search_results;
-  int i = 0;
-  for (const auto& result : FilterAndLimitResults(sorted_results)) {
-    // The max score is 0.95 because settings results start at 1.0 and we want
-    // to show help app results after settings. We also want these help app
-    // results to appear before Omnibox history suggestions. The small kScoreEps
-    // difference between each result's score keeps the help app results grouped
-    // together.
-    const float score = 0.95f - i * kScoreEps;
+  for (const auto& result : sorted_results) {
+    if (result->relevance_score < kMinScore) {
+      break;
+    } else if (!app_list_features::IsCategoricalSearchEnabled() &&
+               search_results.size() == kMaxShownResults) {
+      // Categorical search imposes its own maximums on search results
+      // elsewhere.
+      break;
+    }
+
     search_results.emplace_back(std::make_unique<HelpAppResult>(
-        score, profile_, result, icon_, last_query_));
-    ++i;
+        result->relevance_score, profile_, result, icon_, last_query_));
   }
 
   base::UmaHistogramTimes("Apps.AppList.HelpAppProvider.QueryTime",
@@ -358,26 +337,32 @@ void HelpAppProvider::OnSearchResultAvailabilityChanged() {
   Start(last_query_);
 }
 
-void HelpAppProvider::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
-  if (icon_value->icon_type == icon_type) {
+void HelpAppProvider::OnLoadIcon(apps::IconValuePtr icon_value) {
+  if (icon_value && icon_value->icon_type == apps::IconType::kStandard) {
     icon_ = icon_value->uncompressed;
   }
 }
 
 void HelpAppProvider::LoadIcon() {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
-  app_service_proxy_->LoadIcon(
-      apps::mojom::AppType::kWeb, web_app::kHelpAppId, icon_type,
-      ash::SharedAppListConfig::instance().suggestion_chip_icon_dimension(),
-      /*allow_placeholder_icon=*/false,
-      base::BindOnce(&HelpAppProvider::OnLoadIcon, weak_factory_.GetWeakPtr()));
+  apps::mojom::AppType app_type =
+      app_service_proxy_->AppRegistryCache().GetAppType(web_app::kHelpAppId);
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
+    app_service_proxy_->LoadIcon(
+        apps::ConvertMojomAppTypToAppType(app_type), web_app::kHelpAppId,
+        apps::IconType::kStandard,
+        ash::SharedAppListConfig::instance().suggestion_chip_icon_dimension(),
+        /*allow_placeholder_icon=*/false,
+        base::BindOnce(&HelpAppProvider::OnLoadIcon,
+                       weak_factory_.GetWeakPtr()));
+  } else {
+    app_service_proxy_->LoadIcon(
+        app_type, web_app::kHelpAppId, apps::mojom::IconType::kStandard,
+        ash::SharedAppListConfig::instance().suggestion_chip_icon_dimension(),
+        /*allow_placeholder_icon=*/false,
+        apps::MojomIconValueToIconValueCallback(base::BindOnce(
+            &HelpAppProvider::OnLoadIcon, weak_factory_.GetWeakPtr())));
+  }
 }
 
 }  // namespace app_list

@@ -52,7 +52,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -106,6 +106,8 @@ void DateTimeFormatValidator::VisitField(DateTimeFormat::FieldType field_type,
       has_day_ = true;
       break;
     case DateTimeFormat::kFieldTypePeriod:
+    case DateTimeFormat::kFieldTypePeriodAmPmNoonMidnight:
+    case DateTimeFormat::kFieldTypePeriodFlexible:
       has_ampm_ = true;
       break;
     case DateTimeFormat::kFieldTypeHour11:  // Fallthrough.
@@ -296,9 +298,8 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
   if (input_type_->FormControlType() == input_type_names::kTime) {
     if (date.ParseTime(value, 0, end) && end == value.length())
       edit->SetOnlyTime(date);
-  } else if (features::IsFormControlsRefreshEnabled() &&
-             input_type_->FormControlType() ==
-                 input_type_names::kDatetimeLocal) {
+  } else if (input_type_->FormControlType() ==
+             input_type_names::kDatetimeLocal) {
     if (date.ParseDateTimeLocal(value, 0, end) && end == value.length())
       edit->SetDateTimeLocal(date);
   } else {
@@ -347,8 +348,9 @@ void MultipleFieldsTemporalInputTypeView::DidEndChooser() {
   GetElement().EnqueueChangeEvent();
 }
 
-String MultipleFieldsTemporalInputTypeView::AriaRoleForPickerIndicator() const {
-  return input_type_->AriaRoleForPickerIndicator();
+String MultipleFieldsTemporalInputTypeView::AriaLabelForPickerIndicator()
+    const {
+  return input_type_->AriaLabelForPickerIndicator();
 }
 
 MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(
@@ -397,18 +399,6 @@ void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
       MakeGarbageCollected<DateTimeEditElement, Document&,
                            DateTimeEditElement::EditControlOwner&>(document,
                                                                    *this));
-  if (!features::IsFormControlsRefreshEnabled()) {
-    GetElement().UpdateView();
-    container->AppendChild(
-        MakeGarbageCollected<ClearButtonElement, Document&,
-                             ClearButtonElement::ClearButtonOwner&>(document,
-                                                                    *this));
-    container->AppendChild(
-        MakeGarbageCollected<SpinButtonElement, Document&,
-                             SpinButtonElement::SpinButtonOwner&>(document,
-                                                                  *this));
-  }
-
   if (LayoutTheme::GetTheme().SupportsCalendarPicker(
           input_type_->FormControlType()))
     picker_indicator_is_always_visible_ = true;
@@ -497,10 +487,8 @@ void MultipleFieldsTemporalInputTypeView::HandleKeydownEvent(
     return;
   if (picker_indicator_is_visible_ &&
       ((event.key() == "ArrowDown" && event.getModifierState("Alt")) ||
-       (event.key() == "F4") ||
-       (features::IsFormControlsRefreshEnabled() && event.key() == " "))) {
-    if (PickerIndicatorElement* element = GetPickerIndicatorElement())
-      element->OpenPopup();
+       event.key() == "F4" || event.key() == " ")) {
+    OpenPopupView();
     event.SetDefaultHandled();
   } else {
     ForwardEvent(event);
@@ -608,6 +596,11 @@ void MultipleFieldsTemporalInputTypeView::UpdateView() {
   else
     edit->SetEmptyValue(layout_parameters, date);
   UpdateClearButtonVisibility();
+}
+
+void MultipleFieldsTemporalInputTypeView::OpenPopupView() {
+  if (PickerIndicatorElement* picker = GetPickerIndicatorElement())
+    picker->OpenPopup();
 }
 
 void MultipleFieldsTemporalInputTypeView::ClosePopupView() {

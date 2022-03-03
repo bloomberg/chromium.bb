@@ -15,6 +15,7 @@
 #include "dawn_native/ExternalTexture.h"
 
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/Texture.h"
 
 #include "dawn_native/dawn_platform.h"
@@ -29,23 +30,22 @@ namespace dawn_native {
                 "at least one of the passed texture views.");
         }
 
-        if ((textureView->GetTexture()->GetUsage() & wgpu::TextureUsage::Sampled) !=
-            wgpu::TextureUsage::Sampled) {
-            return DAWN_VALIDATION_ERROR(
-                "The external texture descriptor specifies a texture that was not created with "
-                "TextureUsage::Sampled.");
-        }
+        DAWN_INVALID_IF(
+            (textureView->GetTexture()->GetUsage() & wgpu::TextureUsage::TextureBinding) == 0,
+            "The external texture plane (%s) usage (%s) doesn't include the required usage (%s)",
+            textureView, textureView->GetTexture()->GetUsage(), wgpu::TextureUsage::TextureBinding);
 
-        if (textureView->GetDimension() != wgpu::TextureViewDimension::e2D) {
-            return DAWN_VALIDATION_ERROR(
-                "The external texture descriptor contains a texture view with a non-2D dimension.");
-        }
+        DAWN_INVALID_IF(textureView->GetDimension() != wgpu::TextureViewDimension::e2D,
+                        "The external texture plane (%s) dimension (%s) is not 2D.", textureView,
+                        textureView->GetDimension());
 
-        if (textureView->GetLevelCount() > 1) {
-            return DAWN_VALIDATION_ERROR(
-                "The external texture descriptor contains a texture view with a level count "
-                "greater than 1.");
-        }
+        DAWN_INVALID_IF(textureView->GetLevelCount() > 1,
+                        "The external texture plane (%s) mip level count (%u) is not 1.",
+                        textureView, textureView->GetLevelCount());
+
+        DAWN_INVALID_IF(textureView->GetTexture()->GetSampleCount() != 1,
+                        "The external texture plane (%s) sample count (%u) is not one.",
+                        textureView, textureView->GetTexture()->GetSampleCount());
 
         return {};
     }
@@ -59,16 +59,20 @@ namespace dawn_native {
 
         const Format* format;
         DAWN_TRY_ASSIGN(format, device->GetInternalFormat(descriptor->format));
+        DAWN_UNUSED(format);
 
         switch (descriptor->format) {
             case wgpu::TextureFormat::RGBA8Unorm:
             case wgpu::TextureFormat::BGRA8Unorm:
             case wgpu::TextureFormat::RGBA16Float:
-                DAWN_TRY(ValidateExternalTexturePlane(descriptor->plane0, descriptor->format));
+                DAWN_TRY_CONTEXT(
+                    ValidateExternalTexturePlane(descriptor->plane0, descriptor->format),
+                    "validating plane0 against the external texture format (%s)",
+                    descriptor->format);
                 break;
             default:
-                return DAWN_VALIDATION_ERROR(
-                    "The external texture descriptor specifies an unsupported format.");
+                return DAWN_FORMAT_VALIDATION_ERROR(
+                    "Format (%s) is not a supported external texture format.", descriptor->format);
         }
 
         return {};
@@ -85,29 +89,50 @@ namespace dawn_native {
 
     ExternalTextureBase::ExternalTextureBase(DeviceBase* device,
                                              const ExternalTextureDescriptor* descriptor)
-        : ObjectBase(device) {
+        : ApiObjectBase(device, descriptor->label), mState(ExternalTextureState::Alive) {
         textureViews[0] = descriptor->plane0;
+        TrackInDevice();
+    }
+
+    ExternalTextureBase::ExternalTextureBase(DeviceBase* device)
+        : ApiObjectBase(device, kLabelNotImplemented), mState(ExternalTextureState::Alive) {
+        TrackInDevice();
     }
 
     ExternalTextureBase::ExternalTextureBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-        : ObjectBase(device, tag) {
+        : ApiObjectBase(device, tag) {
     }
 
-    std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat> ExternalTextureBase::GetTextureViews()
-        const {
+    const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>&
+    ExternalTextureBase::GetTextureViews() const {
         return textureViews;
+    }
+
+    MaybeError ExternalTextureBase::ValidateCanUseInSubmitNow() const {
+        ASSERT(!IsError());
+        DAWN_INVALID_IF(mState == ExternalTextureState::Destroyed,
+                        "Destroyed external texture %s is used in a submit.", this);
+        return {};
     }
 
     void ExternalTextureBase::APIDestroy() {
         if (GetDevice()->ConsumedError(GetDevice()->ValidateObject(this))) {
             return;
         }
-        ASSERT(!IsError());
+        Destroy();
+    }
+
+    void ExternalTextureBase::DestroyImpl() {
+        mState = ExternalTextureState::Destroyed;
     }
 
     // static
     ExternalTextureBase* ExternalTextureBase::MakeError(DeviceBase* device) {
         return new ExternalTextureBase(device, ObjectBase::kError);
+    }
+
+    ObjectType ExternalTextureBase::GetType() const {
+        return ObjectType::ExternalTexture;
     }
 
 }  // namespace dawn_native

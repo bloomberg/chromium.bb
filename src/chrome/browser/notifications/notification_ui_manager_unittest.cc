@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
+#include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -61,37 +63,34 @@ class NotificationUIManagerTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  MessageCenter* message_center_;
+  raw_ptr<MessageCenter> message_center_;
 };
 
 TEST_F(NotificationUIManagerTest, SetupNotificationManager) {
-  TestingProfile profile;
-  notification_manager()->Add(GetANotification("test"), &profile);
+  notification_manager()->Add(GetANotification("test"), profile());
 }
 
 TEST_F(NotificationUIManagerTest, AddNotificationOnShutdown) {
-  TestingProfile profile;
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
-  notification_manager()->Add(GetANotification("test"), &profile);
+  notification_manager()->Add(GetANotification("test"), profile());
   EXPECT_TRUE(message_center()->NotificationCount() == 1);
 
   // Verify the number of notifications does not increase when trying to add a
   // notifcation on shutdown.
   notification_manager()->StartShutdown();
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
-  notification_manager()->Add(GetANotification("test2"), &profile);
+  notification_manager()->Add(GetANotification("test2"), profile());
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(NotificationUIManagerTest, UpdateNotification) {
-  TestingProfile profile;
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
-  notification_manager()->Add(GetANotification("test"), &profile);
+  notification_manager()->Add(GetANotification("test"), profile());
   EXPECT_TRUE(message_center()->NotificationCount() == 1);
   ASSERT_TRUE(
-      notification_manager()->Update(GetANotification("test"), &profile));
+      notification_manager()->Update(GetANotification("test"), profile()));
   EXPECT_TRUE(message_center()->NotificationCount() == 1);
 
   base::RunLoop().RunUntilIdle();
@@ -99,11 +98,10 @@ TEST_F(NotificationUIManagerTest, UpdateNotification) {
 
 // Regression test for crbug.com/767868
 TEST_F(NotificationUIManagerTest, GetAllIdsReturnsOriginalId) {
-  TestingProfile profile;
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
-  notification_manager()->Add(GetANotification("test"), &profile);
+  notification_manager()->Add(GetANotification("test"), profile());
   std::set<std::string> ids = notification_manager()->GetAllIdsByProfile(
-      NotificationUIManager::GetProfileID(&profile));
+      ProfileNotification::GetProfileID(profile()));
   ASSERT_EQ(1u, ids.size());
   EXPECT_EQ(*ids.begin(), "test");
 }

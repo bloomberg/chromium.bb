@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/sharing/sharing_browsertest.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -22,14 +24,13 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -91,7 +92,7 @@ void SharingBrowserTest::Init(
       sharing_service_->GetMessageSenderForTesting()->GetFCMSenderForTesting();
   fake_web_push_sender_ = new FakeWebPushSender();
   sharing_fcm_sender->SetWebPushSenderForTesting(
-      base::WrapUnique(fake_web_push_sender_));
+      base::WrapUnique(fake_web_push_sender_.get()));
   sharing_fcm_sender->SetSharingMessageBridgeForTesting(
       &fake_sharing_message_bridge_);
 
@@ -115,7 +116,12 @@ void SharingBrowserTest::SetUpDevices(
 
   for (size_t i = 0; i < original_devices.size(); i++)
     AddDeviceInfo(*original_devices[i], i);
-  ASSERT_EQ(2, fake_device_info_tracker_.CountActiveDevices());
+  const std::map<sync_pb::SyncEnums_DeviceType, int> device_count_by_type =
+      fake_device_info_tracker_.CountActiveDevicesByType();
+  int total = 0;
+  for (const auto& type_and_count : device_count_by_type)
+    total += type_and_count.second;
+  ASSERT_EQ(2, total);
 }
 
 void SharingBrowserTest::RegisterDevice(
@@ -179,7 +185,7 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
   params.writing_direction_right_to_left = 0;
 #endif
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      web_contents_->GetMainFrame(), params);
+      *web_contents_->GetMainFrame(), params);
   menu->Init();
   return menu;
 }

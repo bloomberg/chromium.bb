@@ -4,10 +4,11 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
-import {$, hasKeyModifiers} from 'chrome://resources/js/util.m.js';
+import {$, hasKeyModifiers, isRTL} from 'chrome://resources/js/util.m.js';
 
 import {FittingType, Point} from './constants.js';
-import {GestureDetector, PinchEventDetail} from './gesture_detector.js';
+import {Gesture, GestureDetector, PinchEventDetail} from './gesture_detector.js';
+import {UnseasonedPdfPluginElement} from './internal_plugin.js';
 import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
 
 /**
@@ -22,6 +23,7 @@ let DocumentDimensions;
 
 /**
  * @typedef {{
+ *   direction: number,
  *   defaultPageOrientation: number,
  *   twoUpViewEnabled: boolean,
  * }}
@@ -64,28 +66,28 @@ function vectorDelta(p1, p2) {
   return {x: p2.x - p1.x, y: p2.y - p1.y};
 }
 
+// TODO(crbug.com/1276456): Would Viewport be better as a Polymer element?
 export class Viewport {
   /**
-   * @param {!HTMLElement} scrollParent
+   * @param {!HTMLElement} container The element which contains the scrollable
+   *     content.
    * @param {!HTMLDivElement} sizer The element which represents the size of the
-   *     document in the viewport
+   *     scrollable content in the viewport
    * @param {!HTMLDivElement} content The element which is the parent of the
    *     plugin in the viewer.
    * @param {number} scrollbarWidth The width of scrollbars on the page
    * @param {number} defaultZoom The default zoom level.
    */
-  constructor(scrollParent, sizer, content, scrollbarWidth, defaultZoom) {
+  constructor(container, sizer, content, scrollbarWidth, defaultZoom) {
     /** @private {!HTMLElement} */
-    this.window_ = scrollParent;
-
-    /** @private {!HTMLDivElement} */
-    this.sizer_ = sizer;
-
-    /** @private {!HTMLDivElement} */
-    this.content_ = content;
+    this.window_ = container;
 
     /** @private {number} */
     this.scrollbarWidth_ = scrollbarWidth;
+
+    /** @private {!ScrollContent} */
+    this.scrollContent_ =
+        new ScrollContent(this.window_, sizer, content, this.scrollbarWidth_);
 
     /** @private {number} */
     this.defaultZoom_ = defaultZoom;
@@ -152,7 +154,7 @@ export class Viewport {
     this.tracker_ = new EventTracker();
 
     /** @private {!GestureDetector} */
-    this.gestureDetector_ = new GestureDetector(this.content_);
+    this.gestureDetector_ = new GestureDetector(content);
 
     /** @private {boolean} */
     this.sentPinchEvent_ = false;
@@ -178,6 +180,7 @@ export class Viewport {
         // Necessary check since during testing a fake DOM element is used.
         !(this.window_ instanceof HTMLElement)) {
       window.addEventListener('scroll', this.updateViewport_.bind(this));
+      this.scrollContent_.setEventTarget(window);
       // The following line is only used in tests, since they expect
       // |scrollCallback| to be called on the mock |window_| object (legacy).
       this.window_.scrollCallback = this.updateViewport_.bind(this);
@@ -188,6 +191,7 @@ export class Viewport {
     } else {
       // Standard PDF viewer
       this.window_.addEventListener('scroll', this.updateViewport_.bind(this));
+      this.scrollContent_.setEventTarget(this.window_);
       const resizeObserver = new ResizeObserver(_ => this.resizeWrapper_());
       const target = this.window_.parentElement;
       assert(target.id === 'main');
@@ -196,6 +200,39 @@ export class Viewport {
 
     document.body.addEventListener(
         'change-zoom', e => this.setZoom(e.detail.zoom));
+  }
+
+  /**
+   * Sets the contents of the viewport, scrolling within the viewport's window.
+   * @param {?Node} content The new viewport contents, or null to clear the
+   *     viewport.
+   */
+  setContent(content) {
+    this.scrollContent_.setContent(content);
+  }
+
+  /**
+   * Sets the contents of the viewport, scrolling within the content's window.
+   * @param {!UnseasonedPdfPluginElement} content The new viewport contents.
+   */
+  setRemoteContent(content) {
+    this.scrollContent_.setRemoteContent(content);
+  }
+
+  /**
+   * Synchronizes scroll position from remote content.
+   * @param {!Point} position
+   */
+  syncScrollFromRemote(position) {
+    this.scrollContent_.syncScrollFromRemote(position);
+  }
+
+  /**
+   * Receives acknowledgment of scroll position synchronized to remote content.
+   * @param {!Point} position
+   */
+  ackScrollToRemote(position) {
+    this.scrollContent_.ackScrollToRemote(position);
   }
 
   /** @param {function():void} viewportChangedCallback */
@@ -393,23 +430,9 @@ export class Viewport {
   contentSizeChanged_() {
     const zoomedDimensions = this.getZoomedDocumentDimensions_(this.getZoom());
     if (zoomedDimensions) {
-      this.sizer_.style.width = zoomedDimensions.width + 'px';
-      this.sizer_.style.height = zoomedDimensions.height + 'px';
+      this.scrollContent_.setSize(
+          zoomedDimensions.width, zoomedDimensions.height);
     }
-  }
-
-  /**
-   * @param {!Point} coordinateInFrame
-   * @return {!Point} Coordinate converted to plugin coordinates.
-   * @private
-   */
-  frameToPluginCoordinate_(coordinateInFrame) {
-    const containerRect =
-        this.content_.querySelector('#plugin').getBoundingClientRect();
-    return {
-      x: coordinateInFrame.x - containerRect.left,
-      y: coordinateInFrame.y - containerRect.top
-    };
   }
 
   /**
@@ -458,23 +481,34 @@ export class Viewport {
 
   /** @return {!Point} The scroll position of the viewport. */
   get position() {
-    return {x: this.window_.scrollLeft, y: this.window_.scrollTop};
+    return {
+      x: this.scrollContent_.scrollLeft,
+      y: this.scrollContent_.scrollTop,
+    };
   }
 
   /**
    * Scroll the viewport to the specified position.
    * @param {!Point} position The position to scroll to.
    */
-  set position(position) {
-    this.window_.scrollTo(position.x, position.y);
+  setPosition(position) {
+    this.scrollContent_.scrollTo(position.x, position.y);
   }
 
-  /** @return {!Size} the size of the viewport excluding scrollbars. */
+  /** @return {!Size} The size of the viewport. */
   get size() {
     return {
       width: this.window_.offsetWidth,
       height: this.window_.offsetHeight,
     };
+  }
+
+  /**
+   * Exposes the current content size for testing.
+   * @return {!Size}
+   */
+  get contentSizeForTesting() {
+    return this.scrollContent_.sizeForTesting;
   }
 
   /** @return {number} The current zoom. */
@@ -560,17 +594,17 @@ export class Viewport {
     this.contentSizeChanged_();
     // Scroll to the scaled scroll position.
     zoom = this.getZoom();
-    this.position = {
+    this.setPosition({
       x: currentScrollPos.x * zoom,
-      y: currentScrollPos.y * zoom
-    };
+      y: currentScrollPos.y * zoom,
+    });
   }
 
   /**
    * Sets the zoom of the viewport.
    * Same as setZoomInternal_ but for pinch zoom we have some more operations.
    * @param {number} scaleDelta The zoom delta.
-   * @param {!Point} center The pinch center in content coordinates.
+   * @param {!Point} center The pinch center in plugin coordinates.
    * @private
    */
   setPinchZoomInternal_(scaleDelta, center) {
@@ -580,11 +614,10 @@ export class Viewport {
             'Viewport.mightZoom_.');
     this.internalZoom_ = this.clampZoom_(this.internalZoom_ * scaleDelta);
 
-    const newCenterInContent = this.frameToContent_(center);
-    const delta = {
-      x: (newCenterInContent.x - this.oldCenterInContent_.x),
-      y: (newCenterInContent.y - this.oldCenterInContent_.y)
-    };
+    assert(this.oldCenterInContent_);
+    const delta = vectorDelta(
+        /** @type {!Point} */ (this.oldCenterInContent_),
+        this.pluginToContent_(center));
 
     // Record the scroll position (relative to the pinch center).
     const zoom = this.getZoom();
@@ -595,22 +628,22 @@ export class Viewport {
 
     this.contentSizeChanged_();
     // Scroll to the scaled scroll position.
-    this.position = {x: currentScrollPos.x, y: currentScrollPos.y};
+    this.setPosition(currentScrollPos);
   }
 
   /**
-   *  Converts a point from frame to content coordinates.
-   *  @param {!Point} framePoint The frame coordinates.
+   *  Converts a point from plugin to content coordinates.
+   *  @param {!Point} pluginPoint The plugin coordinates.
    *  @return {!Point} The content coordinates.
    *  @private
    */
-  frameToContent_(framePoint) {
+  pluginToContent_(pluginPoint) {
     // TODO(mcnee) Add a helper Point class to avoid duplicating operations
     // on plain {x,y} objects.
     const zoom = this.getZoom();
     return {
-      x: (framePoint.x + this.position.x) / zoom,
-      y: (framePoint.y + this.position.y) / zoom
+      x: (pluginPoint.x + this.position.x) / zoom,
+      y: (pluginPoint.y + this.position.y) / zoom
     };
   }
 
@@ -639,10 +672,10 @@ export class Viewport {
       this.contentSizeChanged_();
       const newZoom = this.getZoom();
       // Scroll to the scaled scroll position.
-      this.position = {
+      this.setPosition({
         x: currentScrollPos.x * newZoom,
-        y: currentScrollPos.y * newZoom
-      };
+        y: currentScrollPos.y * newZoom,
+      });
       this.updateViewport_();
     });
   }
@@ -944,10 +977,10 @@ export class Viewport {
       };
       this.setZoomInternal_(this.computeFittingZoom_(dimensions, false, true));
       if (scrollToTopOfPage) {
-        this.position = {
+        this.setPosition({
           x: 0,
           y: this.pageDimensions_[page].y * this.getZoom(),
-        };
+        });
       }
       this.updateViewport_();
     });
@@ -979,10 +1012,10 @@ export class Viewport {
       };
       this.setZoomInternal_(this.computeFittingZoom_(dimensions, true, true));
       if (scrollToTopOfPage) {
-        this.position = {
+        this.setPosition({
           x: 0,
           y: this.pageDimensions_[page].y * this.getZoom(),
-        };
+        });
       }
       this.updateViewport_();
     });
@@ -1043,21 +1076,32 @@ export class Viewport {
 
   /**
    * @param {!KeyboardEvent} e
+   * @param {boolean} formFieldFocused
    * @private
    */
-  pageUpDownSpaceHandler_(e) {
-    const direction =
-        e.key === 'PageUp' || (e.key === ' ' && e.shiftKey) ? -1 : 1;
+  pageUpDownSpaceHandler_(e, formFieldFocused) {
+    // Avoid scrolling if the space key is down while a form field is focused
+    // on since the user might be typing space into the field.
+    if (formFieldFocused && e.key === ' ') {
+      this.window_.dispatchEvent(new CustomEvent('scroll-avoided-for-testing'));
+      return;
+    }
+
+    const isDown = e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey);
     // Go to the previous/next page if we are fit-to-page or fit-to-height.
     if (this.isPagedMode_()) {
-      direction === 1 ? this.goToNextPage() : this.goToPreviousPage();
+      isDown ? this.goToNextPage() : this.goToPreviousPage();
       // Since we do the movement of the page.
       e.preventDefault();
-    } else if (
-        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
-            .fromScriptingAPI) {
-      this.position.y += direction * this.size.height;
+    } else if (isCrossFrameKeyEvent(e)) {
+      const scrollOffset = (isDown ? 1 : -1) * this.size.height;
+      this.setPosition({
+        x: this.position.x,
+        y: this.position.y + scrollOffset,
+      });
     }
+
+    this.window_.dispatchEvent(new CustomEvent('scroll-proceeded-for-testing'));
   }
 
   /**
@@ -1065,44 +1109,23 @@ export class Viewport {
    * @param {boolean} formFieldFocused
    * @private
    */
-  arrowLeftHandler_(e, formFieldFocused) {
-    if (hasKeyModifiers(e)) {
+  arrowLeftRightHandler_(e, formFieldFocused) {
+    if (formFieldFocused || hasKeyModifiers(e)) {
       return;
     }
 
-    // Go to the previous page if there are no horizontal scrollbars and
-    // no form field is focused.
-    if (!(this.documentHasScrollbars().horizontal || formFieldFocused)) {
-      this.goToPreviousPage();
+    // Go to the previous/next page if there are no horizontal scrollbars.
+    const isRight = e.key === 'ArrowRight';
+    if (!this.documentHasScrollbars().horizontal) {
+      isRight ? this.goToNextPage() : this.goToPreviousPage();
       // Since we do the movement of the page.
       e.preventDefault();
-    } else if (
-        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
-            .fromScriptingAPI) {
-      this.position.x -= SCROLL_INCREMENT;
-    }
-  }
-
-  /**
-   * @param {!KeyboardEvent} e
-   * @param {boolean} formFieldFocused
-   * @private
-   */
-  arrowRightHandler_(e, formFieldFocused) {
-    if (hasKeyModifiers(e)) {
-      return;
-    }
-
-    // Go to the next page if there are no horizontal scrollbars and no
-    // form field is focused.
-    if (!(this.documentHasScrollbars().horizontal || formFieldFocused)) {
-      this.goToNextPage();
-      // Since we do the movement of the page.
-      e.preventDefault();
-    } else if (
-        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
-            .fromScriptingAPI) {
-      this.position.x += SCROLL_INCREMENT;
+    } else if (isCrossFrameKeyEvent(e)) {
+      const scrollOffset = (isRight ? 1 : -1) * SCROLL_INCREMENT;
+      this.setPosition({
+        x: this.position.x + scrollOffset,
+        y: this.position.y,
+      });
     }
   }
 
@@ -1112,20 +1135,21 @@ export class Viewport {
    * @private
    */
   arrowUpDownHandler_(e, formFieldFocused) {
-    if (hasKeyModifiers(e)) {
+    if (formFieldFocused || hasKeyModifiers(e)) {
       return;
     }
 
-    // Go to the previous/next page if Presentation mode is on and no form field
-    // is focused.
-    if (!(document.fullscreenElement === null || formFieldFocused)) {
-      e.key === 'ArrowDown' ? this.goToNextPage() : this.goToPreviousPage();
+    // Go to the previous/next page if Presentation mode is on.
+    const isDown = e.key === 'ArrowDown';
+    if (document.fullscreenElement !== null) {
+      isDown ? this.goToNextPage() : this.goToPreviousPage();
       e.preventDefault();
-    } else if (
-        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
-            .fromScriptingAPI) {
-      const direction = e.key === 'ArrowDown' ? 1 : -1;
-      this.position.y += direction * SCROLL_INCREMENT;
+    } else if (isCrossFrameKeyEvent(e)) {
+      const scrollOffset = (isDown ? 1 : -1) * SCROLL_INCREMENT;
+      this.setPosition({
+        x: this.position.x,
+        y: this.position.y + scrollOffset,
+      });
     }
   }
 
@@ -1141,17 +1165,15 @@ export class Viewport {
       case ' ':
       case 'PageUp':
       case 'PageDown':
-        this.pageUpDownSpaceHandler_(e);
+        this.pageUpDownSpaceHandler_(e, formFieldFocused);
         return true;
       case 'ArrowLeft':
-        this.arrowLeftHandler_(e, formFieldFocused);
+      case 'ArrowRight':
+        this.arrowLeftRightHandler_(e, formFieldFocused);
         return true;
       case 'ArrowDown':
       case 'ArrowUp':
         this.arrowUpDownHandler_(e, formFieldFocused);
-        return true;
-      case 'ArrowRight':
-        this.arrowRightHandler_(e, formFieldFocused);
         return true;
       default:
         return false;
@@ -1222,10 +1244,10 @@ export class Viewport {
         y = currentCoords.y;
       }
 
-      this.position = {
+      this.setPosition({
         x: (dimensions.x + x) * this.getZoom(),
-        y: (dimensions.y + y) * this.getZoom()
-      };
+        y: (dimensions.y + y) * this.getZoom(),
+      });
       this.updateViewport_();
     });
   }
@@ -1238,12 +1260,24 @@ export class Viewport {
     this.mightZoom_(() => {
       const initialDimensions = !this.documentDimensions_;
       this.documentDimensions_ = documentDimensions;
+
+      // Override layout direction based on isRTL().
+      if (this.documentDimensions_.layoutOptions) {
+        if (isRTL()) {
+          // `base::i18n::TextDirection::RIGHT_TO_LEFT`
+          this.documentDimensions_.layoutOptions.direction = 1;
+        } else {
+          // `base::i18n::TextDirection::LEFT_TO_RIGHT`
+          this.documentDimensions_.layoutOptions.direction = 2;
+        }
+      }
+
       this.pageDimensions_ = this.documentDimensions_.pageDimensions;
       if (initialDimensions) {
         this.setZoomInternal_(Math.min(
             this.defaultZoom_,
             this.computeFittingZoom_(this.documentDimensions_, true, false)));
-        this.position = {x: 0, y: 0};
+        this.setPosition({x: 0, y: 0});
       }
       this.contentSizeChanged_();
       this.resize_();
@@ -1297,8 +1331,8 @@ export class Viewport {
     spaceOnLeft = Math.max(spaceOnLeft, 0);
 
     return {
-      x: x * zoom + spaceOnLeft - this.window_.scrollLeft,
-      y: insetDimensions.y * zoom - this.window_.scrollTop,
+      x: x * zoom + spaceOnLeft - this.scrollContent_.scrollLeft,
+      y: insetDimensions.y * zoom - this.scrollContent_.scrollTop,
       width: insetDimensions.width * zoom,
       height: insetDimensions.height * zoom
     };
@@ -1362,7 +1396,7 @@ export class Viewport {
     }
 
     if (changed) {
-      this.position = newPosition;
+      this.setPosition(newPosition);
     }
   }
 
@@ -1379,6 +1413,15 @@ export class Viewport {
     if (this.tracker_) {
       this.tracker_.removeAll();
     }
+  }
+
+  /**
+   * Dispatches a gesture external to this viewport.
+   * @param {!Gesture} gesture The gesture to dispatch.
+   */
+  dispatchGesture(gesture) {
+    this.gestureDetector_.getEventTarget().dispatchEvent(
+        new CustomEvent(gesture.type, {detail: gesture.detail}));
   }
 
   /**
@@ -1410,8 +1453,7 @@ export class Viewport {
             this.documentNeedsScrollbars(this.zoomManager_.applyBrowserZoom(
                 this.clampZoom_(this.internalZoom_ * scaleDelta)));
 
-        const centerInPlugin = this.frameToPluginCoordinate_(center);
-        this.pinchCenter_ = centerInPlugin;
+        this.pinchCenter_ = center;
 
         // If there's no horizontal scrolling, keep the content centered so
         // the user can't zoom in on the non-content area.
@@ -1425,13 +1467,13 @@ export class Viewport {
             y: this.window_.offsetHeight / 2
           };
         } else if (this.keepContentCentered_) {
-          this.oldCenterInContent_ = this.frameToContent_(this.pinchCenter_);
+          this.oldCenterInContent_ = this.pluginToContent_(this.pinchCenter_);
           this.keepContentCentered_ = false;
         }
 
         this.fittingType_ = FittingType.NONE;
 
-        this.setPinchZoomInternal_(scaleDelta, centerInPlugin);
+        this.setPinchZoomInternal_(scaleDelta, center);
         this.updateViewport_();
         this.prevScale_ = /** @type {number} */ (startScaleRatio);
       });
@@ -1451,7 +1493,7 @@ export class Viewport {
         const {center, startScaleRatio} = e.detail;
         this.pinchPhase_ = PinchPhase.END;
         const scaleDelta = startScaleRatio / this.prevScale_;
-        this.pinchCenter_ = this.frameToPluginCoordinate_(center);
+        this.pinchCenter_ = center;
 
         this.setPinchZoomInternal_(scaleDelta, this.pinchCenter_);
         this.updateViewport_();
@@ -1480,8 +1522,7 @@ export class Viewport {
     window.requestAnimationFrame(() => {
       this.pinchPhase_ = PinchPhase.START;
       this.prevScale_ = 1;
-      this.oldCenterInContent_ =
-          this.frameToContent_(this.frameToPluginCoordinate_(e.detail.center));
+      this.oldCenterInContent_ = this.pluginToContent_(e.detail.center);
 
       const needsScrollbars = this.documentNeedsScrollbars(this.getZoom());
       this.keepContentCentered_ = !needsScrollbars.horizontal;
@@ -1520,6 +1561,25 @@ export const PinchPhase = {
 const SCROLL_INCREMENT = 40;
 
 /**
+ * Returns whether a keyboard event came from another frame.
+ * @param {!KeyboardEvent} keyEvent
+ * @return {boolean}
+ */
+function isCrossFrameKeyEvent(keyEvent) {
+  // TODO(crbug.com/1279516): Consider moving these properties to a custom
+  // KeyboardEvent subtype, if it doesn't become obsolete entirely.
+  const custom =
+      /**
+       * @type {!{
+       *   fromPlugin: (boolean|undefined),
+       *   fromScriptingAPI: (boolean|undefined),
+       * }}
+       */
+      (keyEvent);
+  return !!custom.fromPlugin || !!custom.fromScriptingAPI;
+}
+
+/**
  * The width of the page shadow around pages in pixels.
  * @type {!{top: number, bottom: number, left: number, right: number}}
  */
@@ -1529,3 +1589,282 @@ export const PAGE_SHADOW = {
   left: 5,
   right: 5
 };
+
+/**
+ * A wrapper around the viewport's scrollable content. This abstraction isolates
+ * details concerning internal vs. external scrolling behavior.
+ */
+class ScrollContent {
+  /**
+   * @param {!Element} container The element which contains the scrollable
+   *     content.
+   * @param {!Element} sizer The element which represents the size of the
+   *     scrollable content.
+   * @param {!Element} content The element which is the parent of the scrollable
+   *     content.
+   * @param {number} scrollbarWidth The width of any scrollbars.
+   */
+  constructor(container, sizer, content, scrollbarWidth) {
+    /** @private @const {!Element} */
+    this.container_ = container;
+
+    /** @private @const {!Element} */
+    this.sizer_ = sizer;
+
+    /** @private {?EventTarget} */
+    this.target_ = null;
+
+    /** @private @const {!Element} */
+    this.content_ = content;
+
+    /** @private @const {number} */
+    this.scrollbarWidth_ = scrollbarWidth;
+
+    /** @private {?UnseasonedPdfPluginElement} */
+    this.unseasonedPlugin_ = null;
+
+    /** @private {number} */
+    this.width_ = 0;
+
+    /** @private {number} */
+    this.height_ = 0;
+
+    /** @private {number} */
+    this.scrollLeft_ = 0;
+
+    /** @private {number} */
+    this.scrollTop_ = 0;
+
+    /** @private {number} */
+    this.unackedScrollsToRemote_ = 0;
+  }
+
+  /**
+   * Sets the target for dispatching "scroll" events.
+   * @param {!EventTarget} target
+   */
+  setEventTarget(target) {
+    this.target_ = target;
+  }
+
+  /**
+   * Dispatches a "scroll" event.
+   */
+  dispatchScroll_() {
+    this.target_ && this.target_.dispatchEvent(new Event('scroll'));
+  }
+
+  /**
+   * Sets the contents, switching to scrolling locally.
+   * @param {?Node} content The new contents, or null to clear.
+   */
+  setContent(content) {
+    if (content === null) {
+      this.sizer_.style.display = 'none';
+      return;
+    }
+    this.attachContent_(content);
+
+    // Switch to local content.
+    this.sizer_.style.display = 'block';
+    if (!this.unseasonedPlugin_) {
+      return;
+    }
+    this.unseasonedPlugin_ = null;
+
+    // Synchronize remote state to local.
+    this.updateSize_();
+    this.scrollTo(this.scrollLeft_, this.scrollTop_);
+  }
+
+  /**
+   * Sets the contents, switching to scrolling remotely.
+   * @param {!UnseasonedPdfPluginElement} content The new contents.
+   */
+  setRemoteContent(content) {
+    this.attachContent_(content);
+
+    // Switch to remote content.
+    const previousScrollLeft = this.scrollLeft;
+    const previousScrollTop = this.scrollTop;
+    this.sizer_.style.display = 'none';
+    assert(!this.unseasonedPlugin_);
+    this.unseasonedPlugin_ = content;
+
+    // Synchronize local state to remote.
+    this.updateSize_();
+    this.scrollTo(previousScrollLeft, previousScrollTop);
+  }
+
+  /**
+   * Attaches the contents to the DOM.
+   * @param {!Node} content The new contents.
+   * @private
+   */
+  attachContent_(content) {
+    // We don't actually replace the content in the DOM, as the controller
+    // implementations take care of "removal" in controller-specific ways:
+    //
+    // 1. Plugin content gets added once, then hidden and revealed using CSS.
+    // 2. Ink content gets removed directly from the DOM on unload.
+    if (!content.parentNode) {
+      this.content_.appendChild(content);
+    }
+    assert(content.parentNode === this.content_);
+  }
+
+  /**
+   * Synchronizes scroll position from remote content.
+   * @param {!Point} position
+   */
+  syncScrollFromRemote(position) {
+    if (this.unackedScrollsToRemote_ > 0) {
+      // Don't overwrite scroll position while scrolls-to-remote are pending.
+      // TODO(crbug.com/1246398): Don't need this if we make this synchronous
+      // again, by moving more logic to the plugin frame.
+      return;
+    }
+
+    if (this.scrollLeft_ === position.x && this.scrollTop_ === position.y) {
+      // Don't trigger scroll event if scroll position hasn't changed.
+      return;
+    }
+
+    this.scrollLeft_ = position.x;
+    this.scrollTop_ = position.y;
+    this.dispatchScroll_();
+  }
+
+  /**
+   * Receives acknowledgment of scroll position synchronized to remote content.
+   * @param {!Point} position
+   */
+  ackScrollToRemote(position) {
+    assert(this.unackedScrollsToRemote_ > 0);
+
+    if (--this.unackedScrollsToRemote_ === 0) {
+      // Accept remote adjustment when there are no pending scrolls-to-remote.
+      this.scrollLeft_ = position.x;
+      this.scrollTop_ = position.y;
+    }
+
+    this.dispatchScroll_();
+  }
+
+  /**
+   * Exposes the current content size for testing.
+   * @return {!Size}
+   */
+  get sizeForTesting() {
+    return {
+      width: this.width_,
+      height: this.height_,
+    };
+  }
+
+  /**
+   * Sets the content size.
+   * @param {number} width
+   * @param {number} height
+   */
+  setSize(width, height) {
+    this.width_ = width;
+    this.height_ = height;
+    this.updateSize_();
+  }
+
+  /** @private */
+  updateSize_() {
+    if (this.unseasonedPlugin_) {
+      this.unseasonedPlugin_.postMessage({
+        type: 'updateSize',
+        width: this.width_,
+        height: this.height_,
+      });
+    } else {
+      this.sizer_.style.width = `${this.width_}px`;
+      this.sizer_.style.height = `${this.height_}px`;
+    }
+  }
+
+  /**
+   * Gets the scroll offset from the left edge.
+   * @return {number}
+   */
+  get scrollLeft() {
+    return this.unseasonedPlugin_ ? this.scrollLeft_ :
+                                    this.container_.scrollLeft;
+  }
+
+  /**
+   * Gets the scroll offset from the top edge.
+   * @return {number}
+   */
+  get scrollTop() {
+    return this.unseasonedPlugin_ ? this.scrollTop_ : this.container_.scrollTop;
+  }
+
+  /**
+   * Scrolls to the given coordinates.
+   * @param {number} x
+   * @param {number} y
+   */
+  scrollTo(x, y) {
+    if (this.unseasonedPlugin_) {
+      // TODO(crbug.com/1277228): Can get NaN if zoom calculations divide by 0.
+      x = Number.isNaN(x) ? 0 : x;
+      y = Number.isNaN(y) ? 0 : y;
+
+      // Clamp coordinates to scroll limits. Note that the order of min() and
+      // max() operations is significant, as each "maximum" can be negative.
+      const maxX = this.maxScroll_(
+          this.width_, this.container_.clientWidth,
+          this.height_ > this.container_.clientHeight);
+      const maxY = this.maxScroll_(
+          this.height_, this.container_.clientHeight,
+          this.width_ > this.container_.clientWidth);
+
+      if (this.container_.dir === 'rtl') {
+        // Right-to-left.
+        x = Math.min(Math.max(-maxX, x), 0);
+      } else {
+        // Left-to-right.
+        x = Math.max(0, Math.min(x, maxX));
+      }
+      y = Math.max(0, Math.min(y, maxY));
+
+      // To match the DOM's scrollTo() behavior, update the scroll position
+      // immediately, but fire the scroll event later (when the remote side
+      // triggers `ackScrollToRemote()`).
+      this.scrollLeft_ = x;
+      this.scrollTop_ = y;
+
+      ++this.unackedScrollsToRemote_;
+      this.unseasonedPlugin_.postMessage({
+        type: 'syncScrollToRemote',
+        x: this.scrollLeft_,
+        y: this.scrollTop_,
+      });
+    } else {
+      this.container_.scrollTo(x, y);
+    }
+  }
+
+  /**
+   * Computes maximum scroll position.
+   * @param {number} maxContent The maximum content dimension.
+   * @param {number} maxContainer The maximum container dimension.
+   * @param {boolean} hasScrollbar Whether to compensate for a scrollbar.
+   * @return {number}
+   * @private
+   */
+  maxScroll_(maxContent, maxContainer, hasScrollbar) {
+    if (hasScrollbar) {
+      maxContainer -= this.scrollbarWidth_;
+    }
+
+    // This may return a negative value, which is fine because scroll positions
+    // are clamped to a minimum of 0.
+    return maxContent - maxContainer;
+  }
+}

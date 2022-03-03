@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
-#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -23,8 +21,6 @@ ImageBitmapRenderingContext::ImageBitmapRenderingContext(
 
 ImageBitmapRenderingContext::~ImageBitmapRenderingContext() = default;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
 V8RenderingContext* ImageBitmapRenderingContext::AsV8RenderingContext() {
   return MakeGarbageCollected<V8RenderingContext>(this);
 }
@@ -33,19 +29,6 @@ V8OffscreenRenderingContext*
 ImageBitmapRenderingContext::AsV8OffscreenRenderingContext() {
   return MakeGarbageCollected<V8OffscreenRenderingContext>(this);
 }
-
-#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-void ImageBitmapRenderingContext::SetCanvasGetContextResult(
-    RenderingContext& result) {
-  result.SetImageBitmapRenderingContext(this);
-}
-void ImageBitmapRenderingContext::SetOffscreenCanvasGetContextResult(
-    OffscreenRenderingContext& result) {
-  result.SetImageBitmapRenderingContext(this);
-}
-
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void ImageBitmapRenderingContext::transferFromImageBitmap(
     ImageBitmap* image_bitmap,
@@ -79,8 +62,6 @@ CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
   CanvasRenderingContext* rendering_context =
       MakeGarbageCollected<ImageBitmapRenderingContext>(host, attrs);
   DCHECK(rendering_context);
-  rendering_context->RecordUKMCanvasRenderingAPI(
-      CanvasRenderingContext::CanvasRenderingAPI::kBitmaprenderer);
   return rendering_context;
 }
 

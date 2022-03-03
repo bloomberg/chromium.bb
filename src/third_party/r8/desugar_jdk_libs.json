@@ -118,7 +118,6 @@
         "java.util.StringJoiner": "j$.util.StringJoiner",
         "java.util.Tripwire": "j$.util.Tripwire",
         "java.util.concurrent.DesugarUnsafe": "j$.util.concurrent.DesugarUnsafe",
-        "java.util.concurrent.ThreadLocalRandom": "j$.util.concurrent.ThreadLocalRandom",
         "java.util.concurrent.atomic.DesugarAtomic": "j$.util.concurrent.atomic.DesugarAtomic"
       },
       "retarget_lib_member": {
@@ -188,7 +187,6 @@
         "java.util.PrimitiveIterator": "j$.util.PrimitiveIterator",
         "java.util.Spliterator": "j$.util.Spliterator",
         "java.util.StringJoiner": "j$.util.StringJoiner",
-        "java.util.concurrent.ThreadLocalRandom": "j$.util.concurrent.ThreadLocalRandom",
         "java.util.concurrent.atomic.DesugarAtomic": "j$.util.concurrent.atomic.DesugarAtomic"
       },
       "retarget_lib_member": {
@@ -206,9 +204,7 @@
         "java.util.concurrent.atomic.AtomicReference#getAndUpdate": "java.util.concurrent.atomic.DesugarAtomicReference",
         "java.util.concurrent.atomic.AtomicReference#updateAndGet": "java.util.concurrent.atomic.DesugarAtomicReference",
         "java.util.concurrent.atomic.AtomicReference#getAndAccumulate": "java.util.concurrent.atomic.DesugarAtomicReference",
-        "java.util.concurrent.atomic.AtomicReference#accumulateAndGet": "java.util.concurrent.atomic.DesugarAtomicReference",
-        "java.util.Collections#synchronizedMap": "java.util.DesugarCollections",
-        "java.util.Collections#synchronizedSortedMap": "java.util.DesugarCollections"
+        "java.util.concurrent.atomic.AtomicReference#accumulateAndGet": "java.util.concurrent.atomic.DesugarAtomicReference"
       },
       "dont_rewrite": [
         "java.util.Iterator#remove"

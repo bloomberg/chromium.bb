@@ -12,8 +12,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kArcPropertyData[] = {
-    {XFA_Element::Edge, 1, 0},
-    {XFA_Element::Fill, 1, 0},
+    {XFA_Element::Edge, 1, {}},
+    {XFA_Element::Fill, 1, {}},
 };
 
 const CXFA_Node::AttributeData kArcAttributeData[] = {
@@ -32,7 +32,7 @@ const CXFA_Node::AttributeData kArcAttributeData[] = {
 CXFA_Arc::CXFA_Arc(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Box(doc,
                packet,
-               (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+               {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                XFA_ObjectType::Node,
                XFA_Element::Arc,
                kArcPropertyData,

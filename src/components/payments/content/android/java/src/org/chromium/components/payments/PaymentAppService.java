@@ -113,8 +113,14 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
         }
 
         @Override
-        public void onPaymentAppCreationError(String errorMessage) {
-            mDelegate.onPaymentAppCreationError(errorMessage);
+        public void onPaymentAppCreationError(
+                String errorMessage, @AppCreationFailureReason int errorReason) {
+            mDelegate.onPaymentAppCreationError(errorMessage, errorReason);
+        }
+
+        @Override
+        public void setCanMakePaymentEvenWithoutApps() {
+            mDelegate.setCanMakePaymentEvenWithoutApps();
         }
 
         @Override

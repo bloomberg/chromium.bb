@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -25,7 +24,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
+#include "chrome/browser/ash/policy/dlp/mock_dlp_content_manager.h"
 #endif
 
 class TabCaptureAccessHandlerTest : public ChromeRenderViewHostTestHarness {
@@ -121,7 +120,8 @@ TEST_F(TabCaptureAccessHandlerTest, DlpRestricted) {
       web_contents(), /*extension_id=*/"", /*is_anonymous=*/false,
       GURL("http://origin/"), source, /*extension_name=*/"", web_contents());
 
-  blink::mojom::MediaStreamRequestResult result;
+  blink::mojom::MediaStreamRequestResult result =
+      blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
   blink::MediaStreamDevices devices;
   ProcessRequest(source, &result, &devices);
 

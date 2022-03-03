@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache v2
-
 load("//bazel:grpc_build_system.bzl", "grpc_cc_binary", "grpc_cc_library", "grpc_cc_test", "grpc_package")
+
+licenses(["notice"])
 
 grpc_package(
     name = "test/cpp/interop",
@@ -229,6 +229,8 @@ grpc_cc_binary(
     ],
     deps = [
         "//:grpc++",
+        "//:grpc++_reflection",
+        "//:grpcpp_admin",
         "//src/proto/grpc/testing:empty_proto",
         "//src/proto/grpc/testing:messages_proto",
         "//src/proto/grpc/testing:test_proto",
@@ -248,6 +250,8 @@ grpc_cc_binary(
     ],
     deps = [
         "//:grpc++",
+        "//:grpc++_reflection",
+        "//:grpcpp_admin",
         "//src/proto/grpc/testing:empty_proto",
         "//src/proto/grpc/testing:messages_proto",
         "//src/proto/grpc/testing:test_proto",

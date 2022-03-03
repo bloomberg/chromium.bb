@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/socket/client_socket_factory.h"
@@ -72,6 +72,12 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
   };
 
   explicit MockTransportClientSocketFactory(NetLog* net_log);
+
+  MockTransportClientSocketFactory(const MockTransportClientSocketFactory&) =
+      delete;
+  MockTransportClientSocketFactory& operator=(
+      const MockTransportClientSocketFactory&) = delete;
+
   ~MockTransportClientSocketFactory() override;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
@@ -126,17 +132,15 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
   base::OnceClosure WaitForTriggerableSocketCreation();
 
  private:
-  NetLog* net_log_;
+  raw_ptr<NetLog> net_log_;
   int allocation_count_;
   ClientSocketType client_socket_type_;
-  ClientSocketType* client_socket_types_;
+  raw_ptr<ClientSocketType> client_socket_types_;
   int client_socket_index_;
   int client_socket_index_max_;
   base::TimeDelta delay_;
   base::queue<base::OnceClosure> triggerable_sockets_;
   base::OnceClosure run_loop_quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTransportClientSocketFactory);
 };
 
 }  // namespace net

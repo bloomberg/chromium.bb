@@ -46,8 +46,9 @@ class GraphicsLayerUpdater {
     kForceUpdate,
   };
 
-  void Update(PaintLayer&,
-              Vector<PaintLayer*>& layers_needing_paint_invalidation);
+  void Update(
+      PaintLayer&,
+      HeapVector<Member<PaintLayer>>& layers_needing_paint_invalidation);
 
   bool NeedsRebuildTree() const { return needs_rebuild_tree_; }
 
@@ -66,10 +67,10 @@ class GraphicsLayerUpdater {
 
     // Offset of this PaintLayer's LayoutObject relative to the position of its
     // main GraphicsLayer.
-    IntSize object_offset_delta;
+    gfx::Vector2d object_offset_delta;
 
     // The object_offset_delta of the compositing ancestor.
-    IntSize parent_object_offset_delta;
+    gfx::Vector2d parent_object_offset_delta;
 
    private:
     const PaintLayer* compositing_stacking_context_;
@@ -78,10 +79,11 @@ class GraphicsLayerUpdater {
   };
 
  private:
-  void UpdateRecursive(PaintLayer&,
-                       UpdateType,
-                       UpdateContext&,
-                       Vector<PaintLayer*>& layers_needing_paint_invalidation);
+  void UpdateRecursive(
+      PaintLayer&,
+      UpdateType,
+      UpdateContext&,
+      HeapVector<Member<PaintLayer>>& layers_needing_paint_invalidation);
 
   bool needs_rebuild_tree_;
 };

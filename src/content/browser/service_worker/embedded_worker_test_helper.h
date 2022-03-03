@@ -11,11 +11,11 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -87,6 +87,10 @@ class EmbeddedWorkerTestHelper {
   EmbeddedWorkerTestHelper(
       const base::FilePath& user_data_directory,
       storage::SpecialStoragePolicy* special_storage_policy);
+
+  EmbeddedWorkerTestHelper(const EmbeddedWorkerTestHelper&) = delete;
+  EmbeddedWorkerTestHelper& operator=(const EmbeddedWorkerTestHelper&) = delete;
+
   virtual ~EmbeddedWorkerTestHelper();
 
   ServiceWorkerContextCore* context();
@@ -104,6 +108,8 @@ class EmbeddedWorkerTestHelper {
 
   // Only used for tests that force creating a new render process.
   int new_render_process_id() const { return new_mock_render_process_id_; }
+
+  storage::MockQuotaManager* quota_manager() { return quota_manager_.get(); }
 
   storage::MockQuotaManagerProxy* quota_manager_proxy() {
     return quota_manager_proxy_.get();
@@ -187,6 +193,7 @@ class EmbeddedWorkerTestHelper {
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
@@ -214,8 +221,6 @@ class EmbeddedWorkerTestHelper {
   int new_mock_render_process_id_;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerTestHelper);
 };
 
 template <typename MockType, typename... Args>

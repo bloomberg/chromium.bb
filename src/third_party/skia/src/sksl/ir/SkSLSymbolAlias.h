@@ -17,10 +17,10 @@ namespace SkSL {
  */
 class SymbolAlias final : public Symbol {
 public:
-    static constexpr Kind kSymbolKind = Kind::kSymbolAlias;
+    inline static constexpr Kind kSymbolKind = Kind::kSymbolAlias;
 
-    SymbolAlias(int offset, StringFragment name, const Symbol* origSymbol)
-        : INHERITED(offset, kSymbolKind, name)
+    SymbolAlias(int line, skstd::string_view name, const Symbol* origSymbol)
+        : INHERITED(line, kSymbolKind, name)
         , fOrigSymbol(origSymbol) {}
 
     const Symbol* origSymbol() const {
@@ -28,7 +28,7 @@ public:
     }
 
     String description() const override {
-        return this->name();
+        return String(this->name());
     }
 
 private:

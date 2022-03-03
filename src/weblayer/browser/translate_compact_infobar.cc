@@ -71,9 +71,11 @@ ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
   return Java_TranslateCompactInfoBar_create(
       env, tab ? tab->GetJavaTab() : nullptr, delegate->translate_step(),
       source_language_code, target_language_code,
-      delegate->ShouldAlwaysTranslate(), delegate->triggered_from_menu(),
-      translate_languages.java_languages, translate_languages.java_codes,
-      translate_languages.java_hash_codes, TabDefaultTextColor());
+      delegate->ShouldNeverTranslateLanguage(),
+      delegate->IsSiteOnNeverPromptList(), delegate->ShouldAlwaysTranslate(),
+      delegate->triggered_from_menu(), translate_languages.java_languages,
+      translate_languages.java_codes, translate_languages.java_hash_codes,
+      TabDefaultTextColor());
 }
 
 void TranslateCompactInfoBar::ProcessButton(int action) {
@@ -141,13 +143,15 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
   } else if (option == translate::TranslateUtils::OPTION_NEVER_TRANSLATE) {
     bool language_blocklisted = !delegate->IsTranslatableLanguageByPrefs();
     if (language_blocklisted != value) {
+      delegate->RevertWithoutClosingInfobar();
       action_flags_ |= FLAG_NEVER_LANGUAGE;
       delegate->ToggleTranslatableLanguageByPrefs();
     }
   } else if (option == translate::TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
     if (delegate->IsSiteOnNeverPromptList() != value) {
+      delegate->RevertWithoutClosingInfobar();
       action_flags_ |= FLAG_NEVER_SITE;
-      delegate->ToggleNeverPrompt();
+      delegate->ToggleNeverPromptSite();
     }
   } else {
     DCHECK(false);

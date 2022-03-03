@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_MODULAR_OPTIONS_H_
 #define LIB_JXL_MODULAR_OPTIONS_H_
@@ -84,24 +75,24 @@ inline const char* PredictorName(Predictor p) {
 inline std::array<uint8_t, 3> PredictorColor(Predictor p) {
   switch (p) {
     case Predictor::Zero:
-      return {0, 0, 0};
+      return {{0, 0, 0}};
     case Predictor::Left:
-      return {255, 0, 0};
+      return {{255, 0, 0}};
     case Predictor::Top:
-      return {0, 255, 0};
+      return {{0, 255, 0}};
     case Predictor::Average0:
-      return {0, 0, 255};
+      return {{0, 0, 255}};
     case Predictor::Average4:
-      return {192, 128, 128};
+      return {{192, 128, 128}};
     case Predictor::Select:
-      return {255, 255, 0};
+      return {{255, 255, 0}};
     case Predictor::Gradient:
-      return {255, 0, 255};
+      return {{255, 0, 255}};
     case Predictor::Weighted:
-      return {0, 255, 255};
+      return {{0, 255, 255}};
       // TODO
     default:
-      return {255, 255, 255};
+      return {{255, 255, 255}};
   };
 }
 
@@ -123,6 +114,9 @@ struct ModularOptions {
   // Stop encoding/decoding when reaching a (non-meta) channel that has a
   // dimension bigger than max_chan_size.
   size_t max_chan_size = 0xFFFFFF;
+
+  // Used during decoding for validation of transforms (sqeeezing) scheme.
+  size_t group_dim = 0x1FFFFFFF;
 
   /// Encode options:
   // Fraction of pixels to look at to learn a MA tree
@@ -149,9 +143,9 @@ struct ModularOptions {
   float fast_decode_multiplier = 1.01f;
 
   // Forces the encoder to produce a tree that is compatible with the WP-only
-  // decode path (or with the no-wp path).
-  enum class WPTreeMode { kWPOnly, kNoWP, kDefault };
-  WPTreeMode wp_tree_mode = WPTreeMode::kDefault;
+  // decode path (or with the no-wp path, or the gradient-only path).
+  enum class TreeMode { kGradientOnly, kWPOnly, kNoWP, kDefault };
+  TreeMode wp_tree_mode = TreeMode::kDefault;
 
   // Skip fast paths in the encoder.
   bool skip_encoder_fast_path = false;

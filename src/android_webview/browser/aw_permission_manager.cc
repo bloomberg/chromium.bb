@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
@@ -42,6 +43,9 @@ void PermissionRequestResponseCallbackWrapper(
 class LastRequestResultCache {
  public:
   LastRequestResultCache() = default;
+
+  LastRequestResultCache(const LastRequestResultCache&) = delete;
+  LastRequestResultCache& operator=(const LastRequestResultCache&) = delete;
 
   void SetResult(PermissionType permission,
                  const GURL& requesting_origin,
@@ -146,8 +150,6 @@ class LastRequestResultCache {
 
   using StatusMap = std::unordered_map<std::string, PermissionStatus>;
   StatusMap pmi_result_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(LastRequestResultCache);
 };
 
 class AwPermissionManager::PendingRequest {
@@ -341,7 +343,6 @@ void AwPermissionManager::RequestPermissions(
       case PermissionType::WINDOW_PLACEMENT:
       case PermissionType::FONT_ACCESS:
       case PermissionType::DISPLAY_CAPTURE:
-      case PermissionType::FILE_HANDLING:
         NOTIMPLEMENTED() << "RequestPermissions is not implemented for "
                          << static_cast<int>(permissions[i]);
         pending_request_raw->SetPermissionStatus(permissions[i],
@@ -462,9 +463,8 @@ PermissionStatus AwPermissionManager::GetPermissionStatusForFrame(
     const GURL& requesting_origin) {
   return GetPermissionStatus(
       permission, requesting_origin,
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetLastCommittedURL()
-          .GetOrigin());
+      permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+          render_frame_host));
 }
 
 AwPermissionManager::SubscriptionId
@@ -548,7 +548,6 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
       case PermissionType::WINDOW_PLACEMENT:
       case PermissionType::FONT_ACCESS:
       case PermissionType::DISPLAY_CAPTURE:
-      case PermissionType::FILE_HANDLING:
         NOTIMPLEMENTED() << "CancelPermission not implemented for "
                          << static_cast<int>(permission);
         break;
@@ -595,12 +594,13 @@ int AwPermissionManager::GetRenderFrameID(
 
 GURL AwPermissionManager::LastCommittedOrigin(
     content::RenderFrameHost* render_frame_host) {
-  return content::WebContents::FromRenderFrameHost(render_frame_host)
-      ->GetLastCommittedURL().GetOrigin();
+  return permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+      render_frame_host);
 }
 
 AwBrowserPermissionRequestDelegate* AwPermissionManager::GetDelegate(
-    int render_process_id, int render_frame_id) {
+    int render_process_id,
+    int render_frame_id) {
   return AwBrowserPermissionRequestDelegate::FromID(render_process_id,
                                                     render_frame_id);
 }

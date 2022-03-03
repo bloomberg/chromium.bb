@@ -25,6 +25,7 @@
 
 #include <array>
 #include <bitset>
+#include <mutex>
 #include <unordered_map>
 
 namespace dawn_native { namespace vulkan {
@@ -40,21 +41,27 @@ namespace dawn_native { namespace vulkan {
         void SetColor(ColorAttachmentIndex index,
                       wgpu::TextureFormat format,
                       wgpu::LoadOp loadOp,
+                      wgpu::StoreOp storeOp,
                       bool hasResolveTarget);
         void SetDepthStencil(wgpu::TextureFormat format,
                              wgpu::LoadOp depthLoadOp,
-                             wgpu::LoadOp stencilLoadOp);
+                             wgpu::StoreOp depthStoreOp,
+                             wgpu::LoadOp stencilLoadOp,
+                             wgpu::StoreOp stencilStoreOp);
         void SetSampleCount(uint32_t sampleCount);
 
         ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments> colorMask;
         ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments> resolveTargetMask;
         ityp::array<ColorAttachmentIndex, wgpu::TextureFormat, kMaxColorAttachments> colorFormats;
         ityp::array<ColorAttachmentIndex, wgpu::LoadOp, kMaxColorAttachments> colorLoadOp;
+        ityp::array<ColorAttachmentIndex, wgpu::StoreOp, kMaxColorAttachments> colorStoreOp;
 
         bool hasDepthStencil = false;
         wgpu::TextureFormat depthStencilFormat;
         wgpu::LoadOp depthLoadOp;
+        wgpu::StoreOp depthStoreOp;
         wgpu::LoadOp stencilLoadOp;
+        wgpu::StoreOp stencilStoreOp;
 
         uint32_t sampleCount;
     };
@@ -63,6 +70,7 @@ namespace dawn_native { namespace vulkan {
     // render pass. We always arrange the order of attachments in "color-depthstencil-resolve" order
     // when creating render pass and framebuffer so that we can always make sure the order of
     // attachments in the rendering pipeline matches the one of the framebuffer.
+    // All the operations on RenderPassCache are guaranteed to be thread-safe.
     // TODO(cwallez@chromium.org): Make it an LRU cache somehow?
     class RenderPassCache {
       public:
@@ -86,6 +94,8 @@ namespace dawn_native { namespace vulkan {
             std::unordered_map<RenderPassCacheQuery, VkRenderPass, CacheFuncs, CacheFuncs>;
 
         Device* mDevice = nullptr;
+
+        std::mutex mMutex;
         Cache mCache;
     };
 

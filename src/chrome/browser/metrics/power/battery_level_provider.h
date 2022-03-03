@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_METRICS_POWER_BATTERY_LEVEL_PROVIDER_H_
 #define CHROME_BROWSER_METRICS_POWER_BATTERY_LEVEL_PROVIDER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,6 +26,7 @@ class BatteryLevelProvider {
                  bool on_battery,
                  base::TimeTicks capture_time);
     BatteryState(const BatteryState&);
+    BatteryState& operator=(const BatteryState&);
 
     // Number of device interfaces that accept a battery on the system.
     size_t interface_count = 0;

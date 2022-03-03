@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
 
+#include "base/memory/raw_ptr.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
@@ -57,10 +58,11 @@ class MockBufferQueue : public BufferQueue {
                     gpu::kNullSurfaceHandle) {}
   ~MockBufferQueue() override = default;
 
-  MOCK_METHOD1(GetCurrentBuffer, gpu::Mailbox(gpu::SyncToken*));
+  MOCK_METHOD2(GetCurrentBuffer,
+               gpu::Mailbox(gpu::SyncToken*, gfx::GpuFenceHandle*));
   MOCK_CONST_METHOD0(CurrentBufferDamage, gfx::Rect());
   MOCK_METHOD1(SwapBuffers, void(const gfx::Rect&));
-  MOCK_METHOD0(PageFlipComplete, void());
+  MOCK_METHOD1(PageFlipComplete, void(gfx::GpuFenceHandle));
   MOCK_METHOD0(FreeAllSurfaces, void());
   MOCK_METHOD3(Reshape,
                bool(const gfx::Size&,
@@ -114,8 +116,8 @@ class GLOutputSurfaceBufferQueueTest : public ::testing::Test,
 
  protected:
   std::unique_ptr<OutputSurface> surface_;
-  StrictMock<MockGLES2Interface>* gles2_interface_;
-  StrictMock<MockBufferQueue>* buffer_queue_;
+  raw_ptr<StrictMock<MockGLES2Interface>> gles2_interface_;
+  raw_ptr<StrictMock<MockBufferQueue>> buffer_queue_;
 };
 
 MATCHER_P(SyncTokenEqualTo, expected_sync_token, "") {
@@ -145,7 +147,7 @@ TEST_F(GLOutputSurfaceBufferQueueTest, BindFramebufferAndSwap) {
     // the GL framebuffer, requesting a new buffer, waiting on the corresponding
     // sync token, and beginning read/write access to the shared image.
     EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
-    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull()))
+    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull(), NotNull()))
         .WillOnce(DoAll(SetArgPointee<0>(fake_sync_token),
                         Return(fake_shared_image)));
     EXPECT_CALL(*gles2_interface_,
@@ -195,7 +197,7 @@ TEST_F(GLOutputSurfaceBufferQueueTest, EmptySwap) {
     // framebuffer, requesting a new buffer, waiting on the corresponding sync
     // token, and beginning read/write access to the shared image.
     EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
-    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull()))
+    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull(), NotNull()))
         .WillOnce(DoAll(SetArgPointee<0>(fake_sync_token),
                         Return(fake_shared_image)));
     EXPECT_CALL(*gles2_interface_,
@@ -258,7 +260,7 @@ TEST_F(GLOutputSurfaceBufferQueueTest, HandleSwapNAK) {
     // token, beginning read/write access to the shared image, and creating a
     // stencil buffer.
     EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
-    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull()))
+    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull(), NotNull()))
         .WillOnce(DoAll(SetArgPointee<0>(fake_sync_token),
                         Return(fake_shared_image)));
 
@@ -293,7 +295,7 @@ TEST_F(GLOutputSurfaceBufferQueueTest, HandleSwapNAK) {
                 DeleteRenderbuffers(1u, Pointee(Eq(kFakeStencilBuffer))));
     EXPECT_CALL(*gles2_interface_,
                 DeleteTextures(1u, Pointee(Eq(kFakeTexture))));
-    EXPECT_CALL(*buffer_queue_, PageFlipComplete());
+    EXPECT_CALL(*buffer_queue_, PageFlipComplete(_));
   }
 
   surface_->Reshape(kBufferSize, /*device_scale_factor=*/1.0,
@@ -306,7 +308,8 @@ TEST_F(GLOutputSurfaceBufferQueueTest, HandleSwapNAK) {
   gfx::SwapResponse swap_response{};
   swap_response.result = gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
   (static_cast<GLOutputSurfaceBufferQueue*>(surface_.get()))
-      ->DidReceiveSwapBuffersAck(swap_response);
+      ->DidReceiveSwapBuffersAck(swap_response,
+                                 /*release_fence=*/gfx::GpuFenceHandle());
 }
 
 }  // namespace viz

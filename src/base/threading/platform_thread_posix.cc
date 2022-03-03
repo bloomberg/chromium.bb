@@ -17,12 +17,14 @@
 
 #include "base/allocator/buildflags.h"
 #include "base/debug/activity_tracker.h"
+#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/no_destructor.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 #if !defined(OS_APPLE) && !defined(OS_FUCHSIA) && !defined(OS_NACL)
@@ -56,7 +58,7 @@ struct ThreadParams {
   ThreadParams()
       : delegate(nullptr), joinable(false), priority(ThreadPriority::NORMAL) {}
 
-  PlatformThread::Delegate* delegate;
+  raw_ptr<PlatformThread::Delegate> delegate;
   bool joinable;
   ThreadPriority priority;
 };
@@ -70,7 +72,7 @@ void* ThreadFunc(void* params) {
 
     delegate = thread_params->delegate;
     if (!thread_params->joinable)
-      base::ThreadRestrictions::SetSingletonAllowed(false);
+      base::DisallowSingleton();
 
 #if !defined(OS_NACL)
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -195,7 +197,7 @@ PlatformThreadId PlatformThread::CurrentId() {
 #if defined(OS_APPLE)
   return pthread_mach_thread_np(pthread_self());
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
-  static NoDestructor<InitAtFork> init_at_fork;
+  static InitAtFork init_at_fork;
   if (g_thread_id == -1) {
     g_thread_id = syscall(__NR_gettid);
   } else {
@@ -206,6 +208,11 @@ PlatformThreadId PlatformThread::CurrentId() {
   }
   return g_thread_id;
 #elif defined(OS_ANDROID)
+  // Note: do not cache the return value inside a thread_local variable on
+  // Android (as above). The reasons are:
+  // - thread_local is slow on Android (goes through emutls)
+  // - gettid() is fast, since its return value is cached in pthread (in the
+  //   thread control block of pthread). See gettid.c in bionic.
   return gettid();
 #elif defined(OS_FUCHSIA)
   return zx_thread_self();
@@ -246,7 +253,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
   // NOTE: TimeDelta's microseconds are int64s while timespec's
   // nanoseconds are longs, so this unpacking must prevent overflow.
   sleep_time.tv_sec = duration.InSeconds();
-  duration -= TimeDelta::FromSeconds(sleep_time.tv_sec);
+  duration -= Seconds(sleep_time.tv_sec);
   sleep_time.tv_nsec = duration.InMicroseconds() * 1000;  // nanoseconds
 
   while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR)
@@ -306,17 +313,20 @@ void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
 #if !defined(OS_APPLE) && !defined(OS_FUCHSIA)
 
 // static
-bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
+bool PlatformThread::CanChangeThreadPriority(ThreadPriority from,
+                                             ThreadPriority to) {
 #if defined(OS_NACL)
   return false;
 #else
-  auto platform_specific_ability =
-      internal::CanIncreaseCurrentThreadPriorityForPlatform(priority);
-  if (platform_specific_ability)
-    return platform_specific_ability.value();
+  if (from >= to) {
+    // Decreasing thread priority on POSIX is always allowed.
+    return true;
+  }
+  if (to == ThreadPriority::REALTIME_AUDIO) {
+    return internal::CanSetThreadPriorityToRealtimeAudio();
+  }
 
-  return internal::CanLowerNiceTo(
-      internal::ThreadPriorityToNiceValue(priority));
+  return internal::CanLowerNiceTo(internal::ThreadPriorityToNiceValue(to));
 #endif  // defined(OS_NACL)
 }
 

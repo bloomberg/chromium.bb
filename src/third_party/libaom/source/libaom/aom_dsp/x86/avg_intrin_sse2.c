@@ -272,8 +272,8 @@ void aom_hadamard_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
   hadamard_8x8_sse2(src_diff, src_stride, coeff, 1);
 }
 
-void aom_hadamard_lp_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
-                              int16_t *coeff) {
+static INLINE void hadamard_lp_8x8_sse2(const int16_t *src_diff,
+                                        ptrdiff_t src_stride, int16_t *coeff) {
   __m128i src[8];
   src[0] = _mm_load_si128((const __m128i *)src_diff);
   src[1] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
@@ -302,6 +302,50 @@ void aom_hadamard_lp_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
   _mm_store_si128((__m128i *)coeff, src[6]);
   coeff += 8;
   _mm_store_si128((__m128i *)coeff, src[7]);
+}
+
+void aom_hadamard_lp_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
+                              int16_t *coeff) {
+  hadamard_lp_8x8_sse2(src_diff, src_stride, coeff);
+}
+
+void aom_hadamard_lp_16x16_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
+                                int16_t *coeff) {
+  for (int idx = 0; idx < 4; ++idx) {
+    const int16_t *src_ptr =
+        src_diff + (idx >> 1) * 8 * src_stride + (idx & 0x01) * 8;
+    hadamard_lp_8x8_sse2(src_ptr, src_stride, coeff + idx * 64);
+  }
+
+  int16_t *t_coeff = coeff;
+  for (int idx = 0; idx < 64; idx += 8) {
+    __m128i coeff0 = _mm_load_si128((const __m128i *)t_coeff);
+    __m128i coeff1 = _mm_load_si128((const __m128i *)(t_coeff + 64));
+    __m128i coeff2 = _mm_load_si128((const __m128i *)(t_coeff + 128));
+    __m128i coeff3 = _mm_load_si128((const __m128i *)(t_coeff + 192));
+
+    __m128i b0 = _mm_add_epi16(coeff0, coeff1);
+    __m128i b1 = _mm_sub_epi16(coeff0, coeff1);
+    __m128i b2 = _mm_add_epi16(coeff2, coeff3);
+    __m128i b3 = _mm_sub_epi16(coeff2, coeff3);
+
+    b0 = _mm_srai_epi16(b0, 1);
+    b1 = _mm_srai_epi16(b1, 1);
+    b2 = _mm_srai_epi16(b2, 1);
+    b3 = _mm_srai_epi16(b3, 1);
+
+    coeff0 = _mm_add_epi16(b0, b2);
+    coeff1 = _mm_add_epi16(b1, b3);
+    coeff2 = _mm_sub_epi16(b0, b2);
+    coeff3 = _mm_sub_epi16(b1, b3);
+
+    _mm_store_si128((__m128i *)t_coeff, coeff0);
+    _mm_store_si128((__m128i *)(t_coeff + 64), coeff1);
+    _mm_store_si128((__m128i *)(t_coeff + 128), coeff2);
+    _mm_store_si128((__m128i *)(t_coeff + 192), coeff3);
+
+    t_coeff += 8;
+  }
 }
 
 static INLINE void hadamard_16x16_sse2(const int16_t *src_diff,
@@ -416,17 +460,50 @@ void aom_hadamard_32x32_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
 int aom_satd_sse2(const tran_low_t *coeff, int length) {
   int i;
   const __m128i zero = _mm_setzero_si128();
+  const __m128i one = _mm_set1_epi16(1);
   __m128i accum = zero;
 
-  for (i = 0; i < length; i += 8) {
-    const __m128i src_line = load_tran_low(coeff);
-    const __m128i inv = _mm_sub_epi16(zero, src_line);
-    const __m128i abs = _mm_max_epi16(src_line, inv);  // abs(src_line)
-    const __m128i abs_lo = _mm_unpacklo_epi16(abs, zero);
-    const __m128i abs_hi = _mm_unpackhi_epi16(abs, zero);
-    const __m128i sum = _mm_add_epi32(abs_lo, abs_hi);
-    accum = _mm_add_epi32(accum, sum);
-    coeff += 8;
+  for (i = 0; i < length; i += 16) {
+    const __m128i src_line0 = load_tran_low(coeff);
+    const __m128i src_line1 = load_tran_low(coeff + 8);
+    const __m128i inv0 = _mm_sub_epi16(zero, src_line0);
+    const __m128i inv1 = _mm_sub_epi16(zero, src_line1);
+    const __m128i abs0 = _mm_max_epi16(src_line0, inv0);  // abs(src_line)
+    const __m128i abs1 = _mm_max_epi16(src_line1, inv1);  // abs(src_line)
+    const __m128i sum0 = _mm_madd_epi16(abs0, one);
+    const __m128i sum1 = _mm_madd_epi16(abs1, one);
+    accum = _mm_add_epi32(accum, sum0);
+    accum = _mm_add_epi32(accum, sum1);
+    coeff += 16;
+  }
+
+  {  // cascading summation of accum
+    __m128i hi = _mm_srli_si128(accum, 8);
+    accum = _mm_add_epi32(accum, hi);
+    hi = _mm_srli_epi64(accum, 32);
+    accum = _mm_add_epi32(accum, hi);
+  }
+
+  return _mm_cvtsi128_si32(accum);
+}
+
+int aom_satd_lp_sse2(const int16_t *coeff, int length) {
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i one = _mm_set1_epi16(1);
+  __m128i accum = zero;
+
+  for (int i = 0; i < length; i += 16) {
+    const __m128i src_line0 = _mm_loadu_si128((const __m128i *)coeff);
+    const __m128i src_line1 = _mm_loadu_si128((const __m128i *)(coeff + 8));
+    const __m128i inv0 = _mm_sub_epi16(zero, src_line0);
+    const __m128i inv1 = _mm_sub_epi16(zero, src_line1);
+    const __m128i abs0 = _mm_max_epi16(src_line0, inv0);  // abs(src_line)
+    const __m128i abs1 = _mm_max_epi16(src_line1, inv1);  // abs(src_line)
+    const __m128i sum0 = _mm_madd_epi16(abs0, one);
+    const __m128i sum1 = _mm_madd_epi16(abs1, one);
+    accum = _mm_add_epi32(accum, sum0);
+    accum = _mm_add_epi32(accum, sum1);
+    coeff += 16;
   }
 
   {  // cascading summation of accum

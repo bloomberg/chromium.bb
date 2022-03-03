@@ -118,21 +118,21 @@ bool WebviewHandler::Parse(Extension* extension, std::u16string* error) {
   const base::Value* dict_value = nullptr;
   if (!extension->manifest()->GetDictionary(keys::kWebview,
                                             &dict_value)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidWebview);
+    *error = errors::kInvalidWebview;
     return false;
   }
 
   const base::Value* partition_list = dict_value->FindKeyOfType(
       keys::kWebviewPartitions, base::Value::Type::LIST);
   if (partition_list == nullptr) {
-    *error = base::ASCIIToUTF16(errors::kInvalidWebviewPartitionsList);
+    *error = errors::kInvalidWebviewPartitionsList;
     return false;
   }
 
   // The partition list must have at least one entry.
   base::Value::ConstListView partition_list_view = partition_list->GetList();
   if (partition_list_view.empty()) {
-    *error = base::ASCIIToUTF16(errors::kInvalidWebviewPartitionsList);
+    *error = errors::kInvalidWebviewPartitionsList;
     return false;
   }
 
@@ -155,30 +155,28 @@ bool WebviewHandler::Parse(Extension* extension, std::u16string* error) {
     const base::Value* url_list = partition_list_view[i].FindKeyOfType(
         keys::kWebviewAccessibleResources, base::Value::Type::LIST);
     if (url_list == nullptr) {
-      *error = base::ASCIIToUTF16(
-          errors::kInvalidWebviewAccessibleResourcesList);
+      *error = errors::kInvalidWebviewAccessibleResourcesList;
       return false;
     }
 
     // The URL list should have at least one entry.
     base::Value::ConstListView url_list_view = url_list->GetList();
     if (url_list_view.empty()) {
-      *error = base::ASCIIToUTF16(
-          errors::kInvalidWebviewAccessibleResourcesList);
+      *error = errors::kInvalidWebviewAccessibleResourcesList;
       return false;
     }
 
     auto partition_item = std::make_unique<PartitionItem>(partition_pattern);
 
-    for (size_t i = 0; i < url_list_view.size(); ++i) {
-      if (!url_list_view[i].is_string()) {
+    for (size_t url = 0; url < url_list_view.size(); ++url) {
+      if (!url_list_view[url].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidWebviewAccessibleResource, base::NumberToString(i));
         return false;
       }
 
       GURL pattern_url = Extension::GetResourceURL(
-          extension->url(), url_list_view[i].GetString());
+          extension->url(), url_list_view[url].GetString());
       // If passed a non-relative URL (like http://example.com),
       // Extension::GetResourceURL() will return that URL directly. (See
       // https://crbug.com/1135236). Check if this happened by comparing the

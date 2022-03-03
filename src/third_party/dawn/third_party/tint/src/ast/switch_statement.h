@@ -25,45 +25,33 @@ namespace ast {
 class SwitchStatement : public Castable<SwitchStatement, Statement> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source information
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param condition the switch condition
   /// @param body the switch body
-  SwitchStatement(ProgramID program_id,
-                  const Source& source,
-                  Expression* condition,
+  SwitchStatement(ProgramID pid,
+                  const Source& src,
+                  const Expression* condition,
                   CaseStatementList body);
   /// Move constructor
   SwitchStatement(SwitchStatement&&);
   ~SwitchStatement() override;
 
-  /// @returns the switch condition or nullptr if none set
-  Expression* condition() const { return condition_; }
   /// @returns true if this is a default statement
-  bool IsDefault() const { return condition_ == nullptr; }
-
-  /// @returns the Switch body
-  const CaseStatementList& body() const { return body_; }
+  bool IsDefault() const { return condition == nullptr; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  SwitchStatement* Clone(CloneContext* ctx) const override;
+  const SwitchStatement* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// The switch condition or nullptr if none set
+  const Expression* const condition;
 
- private:
+  /// The Switch body
+  const CaseStatementList body;
   SwitchStatement(const SwitchStatement&) = delete;
-
-  Expression* const condition_;
-  CaseStatementList const body_;
 };
 
 }  // namespace ast

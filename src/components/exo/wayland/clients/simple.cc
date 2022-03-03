@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/time/time.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -60,7 +60,7 @@ void FeedbackPresented(void* data,
   int64_t microseconds = seconds * base::Time::kMicrosecondsPerSecond +
                          tv_nsec / base::Time::kNanosecondsPerMicrosecond;
   base::TimeTicks presentation_time =
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(microseconds);
+      base::TimeTicks() + base::Microseconds(microseconds);
   presentation->feedback.total_presentation_latency +=
       presentation_time - frame.submit_time;
   ++presentation->feedback.num_frames_presented;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as Coordinator from '../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
-import {assertElement, assertElements, dispatchClickEvent, dispatchKeyDownEvent} from '../../helpers/DOMHelpers.js';
+import {assertElement, assertElements, dispatchFocusEvent, dispatchKeyDownEvent} from '../../helpers/DOMHelpers.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const {assert} = chai;
@@ -67,9 +67,15 @@ export const assertCurrentFocusedCellIs = (shadowRoot: ShadowRoot, {column, row}
   assert.strictEqual(cell.getAttribute('data-col-index'), String(column), 'The column index was not as expected.');
 };
 
-export const focusTableCell = (shadowRoot: ShadowRoot) => {
+export const assertSelectedRowIs = (shadowRoot: ShadowRoot, row: number) => {
+  const selectedRow = shadowRoot.querySelector('tr.selected');
+  assertElement(selectedRow, HTMLTableRowElement);
+  assert.strictEqual(selectedRow.getAttribute('aria-rowindex'), String(row), 'The row index was not as expected.');
+};
+
+export const focusCurrentlyFocusableCell = (shadowRoot: ShadowRoot) => {
   const cell = getFocusableCell(shadowRoot);
-  cell.focus();
+  dispatchFocusEvent(cell);
 };
 
 export const emulateUserKeyboardNavigation =
@@ -81,7 +87,7 @@ export const emulateUserKeyboardNavigation =
 
 export const emulateUserFocusingCellAt = async (shadowRoot: ShadowRoot, position: {column: number, row: number}) => {
   const cellToFocus = getCellByIndexes(shadowRoot, position);
-  dispatchClickEvent(cellToFocus);
+  dispatchFocusEvent(cellToFocus);
   await coordinator.done();
   assertCurrentFocusedCellIs(shadowRoot, position);
 };
@@ -115,7 +121,6 @@ export const getHeaderCellForColumnId = (shadowRoot: ShadowRoot, columnId: strin
   assertElement(cell, HTMLTableCellElement);
   return cell;
 };
-
 
 export const getValuesForColumn = (shadowRoot: ShadowRoot, columnId: string): string[] => {
   const cells = shadowRoot.querySelectorAll(`[data-grid-value-cell-for-column=${columnId}]`);

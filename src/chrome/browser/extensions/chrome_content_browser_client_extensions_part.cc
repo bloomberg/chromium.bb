@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -440,26 +439,12 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
   if (extension->is_hosted_app())
     return extension->id() != kWebStoreAppId;
 
-  // Some special case extension URLs must be allowed to load in any guest. Note
-  // that CanCommitURL may be called for validating origins as well, so do not
-  // enforce a path comparison in the special cases unless there is a real path
-  // (more than just "/").
-  // TODO(creis): Remove this call when bugs 688565 and 778021 are resolved.
-  base::StringPiece url_path = url.path_piece();
-  bool is_guest =
-      WebViewRendererState::GetInstance()->IsGuest(process_host->GetID());
-  if (is_guest &&
-      url_request_util::AllowSpecialCaseExtensionURLInGuest(
-          extension, url_path.length() > 1
-                         ? absl::make_optional<base::StringPiece>(url_path)
-                         : absl::nullopt)) {
-    return true;
-  }
-
   // Platform app URLs may commit in their own guest processes, when they have
   // the webview permission.  (Some extensions are allowlisted for webviews as
   // well, but their pages load in their own extension process and are allowed
   // through above.)
+  bool is_guest =
+      WebViewRendererState::GetInstance()->IsGuest(process_host->GetID());
   if (is_guest) {
     std::string owner_extension_id;
     int owner_process_id = -1;
@@ -752,13 +737,13 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
                                    site_instance->GetId());
 }
 
-void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(
-    content::WebContents* web_contents,
-    WebPreferences* web_prefs) {
+bool ChromeContentBrowserClientExtensionsPart::
+    OverrideWebPreferencesAfterNavigation(WebContents* web_contents,
+                                          WebPreferences* web_prefs) {
   const ExtensionRegistry* registry =
       ExtensionRegistry::Get(web_contents->GetBrowserContext());
   if (!registry)
-    return;
+    return false;
 
   // Note: it's not possible for kExtensionsScheme to change during the lifetime
   // of the process.
@@ -770,11 +755,18 @@ void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(
   const GURL& site_url =
       web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL();
   if (!site_url.SchemeIs(kExtensionScheme))
-    return;
+    return false;
 
   const Extension* extension =
       registry->enabled_extensions().GetByID(site_url.host());
   extension_webkit_preferences::SetPreferences(extension, web_prefs);
+  return true;
+}
+
+void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(
+    WebContents* web_contents,
+    WebPreferences* web_prefs) {
+  OverrideWebPreferencesAfterNavigation(web_contents, web_prefs);
 }
 
 void ChromeContentBrowserClientExtensionsPart::BrowserURLHandlerCreated(

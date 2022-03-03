@@ -14,6 +14,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"
@@ -75,6 +76,7 @@ class TestKeySystemPropertiesBase : public KeySystemProperties {
   }
 
   EmeConfigRule GetRobustnessConfigRule(
+      const std::string& key_system,
       EmeMediaType media_type,
       const std::string& requested_robustness,
       const bool* /*hw_secure_requirement*/) const override {
@@ -87,7 +89,7 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
  public:
   AesKeySystemProperties(const std::string& name) : name_(name) {}
 
-  std::string GetKeySystemName() const override { return name_; }
+  std::string GetBaseKeySystemName() const override { return name_; }
 
   EmeConfigRule GetEncryptionSchemeConfigRule(
       EncryptionScheme encryption_scheme) const override {
@@ -117,7 +119,7 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
 
 class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
  public:
-  std::string GetKeySystemName() const override { return kExternal; }
+  std::string GetBaseKeySystemName() const override { return kExternal; }
 
   // Pretend clear (unencrypted) and 'cenc' content are always supported. But
   // 'cbcs' is not supported by hardware secure codecs.
@@ -140,6 +142,7 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
   }
 
   EmeConfigRule GetRobustnessConfigRule(
+      const std::string& key_system,
       EmeMediaType media_type,
       const std::string& requested_robustness,
       const bool* /*hw_secure_requirement*/) const override {
@@ -235,18 +238,6 @@ void AddContainerAndCodecMasksForTest() {
   AddMimeTypeCodecMaskForTesting("video/foo", TEST_CODEC_FOO_VIDEO_ALL);
 
   is_test_masks_added = true;
-}
-
-bool CanRunExternalKeySystemTests() {
-#if defined(OS_ANDROID)
-  if (HasPlatformDecoderSupport())
-    return true;
-
-  EXPECT_FALSE(IsSupportedKeySystem(kExternal));
-  return false;
-#else
-  return true;
-#endif
 }
 
 class TestMediaClient : public MediaClient {
@@ -637,9 +628,6 @@ TEST_F(KeySystemsTest,
 //
 
 TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
-  if (!CanRunExternalKeySystemTests())
-    return;
-
   EXPECT_TRUE(IsSupportedKeySystem(kExternal));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
                                                     kExternal));
@@ -650,9 +638,6 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
 TEST_F(
     KeySystemsTest,
     IsSupportedKeySystemWithMediaMimeType_ExternalDecryptor_TypesContainer1) {
-  if (!CanRunExternalKeySystemTests())
-    return;
-
   // Valid video types.
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
                                                     kExternal));
@@ -705,9 +690,6 @@ TEST_F(
 TEST_F(
     KeySystemsTest,
     IsSupportedKeySystemWithMediaMimeType_ExternalDecryptor_TypesContainer2) {
-  if (!CanRunExternalKeySystemTests())
-    return;
-
   // Valid video types.
   EXPECT_TRUE(
       IsSupportedKeySystemWithMediaMimeType(kVideoFoo, no_codecs(), kExternal));
@@ -755,9 +737,6 @@ TEST_F(
 
 TEST_F(KeySystemsTest,
        IsSupportedKeySystem_ExternalDecryptor_EncryptionSchemes) {
-  if (!CanRunExternalKeySystemTests())
-    return;
-
   ExpectEncryptionSchemeConfigRule(kExternal, EncryptionScheme::kUnencrypted,
                                    EmeConfigRule::SUPPORTED);
   ExpectEncryptionSchemeConfigRule(kExternal, EncryptionScheme::kCenc,
@@ -768,12 +747,21 @@ TEST_F(KeySystemsTest,
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
   EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey));
+  EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey, false));
+  EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey, true));
   EXPECT_EQ("Widevine", GetKeySystemNameForUMA(kWidevineKeySystem));
+  EXPECT_EQ("Widevine.SoftwareSecure",
+            GetKeySystemNameForUMA(kWidevineKeySystem, false));
+  EXPECT_EQ("Widevine.HardwareSecure",
+            GetKeySystemNameForUMA(kWidevineKeySystem, true));
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA("Foo"));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA("Foo", false));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA("Foo", true));
 
   // External Clear Key never has a UMA name.
-  if (CanRunExternalKeySystemTests())
-    EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalClearKey));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalClearKey));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalClearKey, false));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalClearKey, true));
 }
 
 TEST_F(KeySystemsTest, KeySystemsUpdate) {
@@ -781,25 +769,19 @@ TEST_F(KeySystemsTest, KeySystemsUpdate) {
   EXPECT_TRUE(
       IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(), kUsesAes));
 
-  if (CanRunExternalKeySystemTests()) {
-    EXPECT_TRUE(IsSupportedKeySystem(kExternal));
-    EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
-                                                      kExternal));
-  }
+  EXPECT_TRUE(IsSupportedKeySystem(kExternal));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
+                                                    kExternal));
 
   UpdateClientKeySystems();
 
   EXPECT_TRUE(IsSupportedKeySystem(kUsesAes));
   EXPECT_TRUE(
       IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(), kUsesAes));
-  if (CanRunExternalKeySystemTests())
-    EXPECT_FALSE(IsSupportedKeySystem(kExternal));
+  EXPECT_FALSE(IsSupportedKeySystem(kExternal));
 }
 
 TEST_F(KeySystemsTest, GetContentTypeConfigRule) {
-  if (!CanRunExternalKeySystemTests())
-    return;
-
   EXPECT_EQ(EmeConfigRule::SUPPORTED,
             GetRobustnessConfigRule(kRobustnessSupported));
   EXPECT_EQ(EmeConfigRule::NOT_SUPPORTED,
@@ -809,9 +791,6 @@ TEST_F(KeySystemsTest, GetContentTypeConfigRule) {
 }
 
 TEST_F(KeySystemsTest, HardwareSecureCodecs) {
-  if (!CanRunExternalKeySystemTests())
-    return;
-
   EXPECT_EQ(EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED,
             GetVideoContentTypeConfigRule(kVideoWebM, vp8_codec(), kUsesAes));
   EXPECT_EQ(

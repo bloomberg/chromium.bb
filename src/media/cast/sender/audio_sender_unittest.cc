@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -42,6 +42,9 @@ class TransportClient : public CastTransport::Client {
  public:
   TransportClient() = default;
 
+  TransportClient(const TransportClient&) = delete;
+  TransportClient& operator=(const TransportClient&) = delete;
+
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
   }
@@ -49,8 +52,6 @@ class TransportClient : public CastTransport::Client {
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
       std::unique_ptr<std::vector<PacketEvent>> packet_events) final {}
   void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {}
-
-  DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };
 
 }  // namespace
@@ -58,6 +59,9 @@ class TransportClient : public CastTransport::Client {
 class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
+
+  TestPacketSender(const TestPacketSender&) = delete;
+  TestPacketSender& operator=(const TestPacketSender&) = delete;
 
   bool SendPacket(PacketRef packet, base::OnceClosure cb) final {
     if (IsRtcpPacket(&packet->data[0], packet->data.size())) {
@@ -87,8 +91,6 @@ class TestPacketSender : public PacketTransport {
  private:
   int number_of_rtp_packets_;
   int number_of_rtcp_packets_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
 };
 
 class AudioSenderTest : public ::testing::Test {
@@ -109,7 +111,7 @@ class AudioSenderTest : public ::testing::Test {
     transport_ = new TestPacketSender();
     transport_sender_ = std::make_unique<CastTransportImpl>(
         &testing_clock_, base::TimeDelta(), std::make_unique<TransportClient>(),
-        base::WrapUnique(transport_), task_runner_);
+        base::WrapUnique(transport_.get()), task_runner_);
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_ = std::make_unique<AudioSender>(
         cast_environment_, audio_config_,
@@ -122,7 +124,7 @@ class AudioSenderTest : public ::testing::Test {
   ~AudioSenderTest() override = default;
 
   base::SimpleTestTickClock testing_clock_;
-  TestPacketSender* transport_;  // Owned by CastTransport.
+  raw_ptr<TestPacketSender> transport_;  // Owned by CastTransport.
   std::unique_ptr<CastTransportImpl> transport_sender_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   std::unique_ptr<AudioSender> audio_sender_;
@@ -131,7 +133,7 @@ class AudioSenderTest : public ::testing::Test {
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {
-  const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
+  const base::TimeDelta kDuration = base::Milliseconds(20);
   std::unique_ptr<AudioBus> bus(
       TestAudioBusFactory(audio_config_.channels, audio_config_.rtp_timebase,
                           TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
@@ -144,7 +146,7 @@ TEST_F(AudioSenderTest, Encode20ms) {
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
-  const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
+  const base::TimeDelta kDuration = base::Milliseconds(20);
   std::unique_ptr<AudioBus> bus(
       TestAudioBusFactory(audio_config_.channels, audio_config_.rtp_timebase,
                           TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
@@ -155,7 +157,7 @@ TEST_F(AudioSenderTest, RtcpTimer) {
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
-      base::TimeDelta::FromMilliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
+      base::Milliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
   testing_clock_.Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
   EXPECT_LE(1, transport_->number_of_rtp_packets());

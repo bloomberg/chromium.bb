@@ -4,8 +4,10 @@
 
 #include "ash/system/message_center/notification_swipe_control_view.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/metrics_utils.h"
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -108,6 +110,9 @@ void NotificationSwipeControlView::UpdateButtonsVisibility() {
 
 void NotificationSwipeControlView::UpdateCornerRadius(int top_radius,
                                                       int bottom_radius) {
+  // In the new notification UI, there will be no swipe control background.
+  if (features::IsNotificationsRefreshEnabled())
+    return;
   SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<message_center::NotificationBackgroundPainter>(
           top_radius, bottom_radius,

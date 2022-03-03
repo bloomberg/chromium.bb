@@ -19,19 +19,38 @@ constexpr auto CallInterfaceDescriptor::DefaultRegisterArray() {
   return registers;
 }
 
+#if DEBUG
+template <typename DerivedDescriptor>
+void StaticCallInterfaceDescriptor<DerivedDescriptor>::
+    VerifyArgumentRegisterCount(CallInterfaceDescriptorData* data, int argc) {
+  RegList allocatable_regs = data->allocatable_registers();
+  if (argc >= 1) DCHECK(allocatable_regs | r3.bit());
+  if (argc >= 2) DCHECK(allocatable_regs | r4.bit());
+  if (argc >= 3) DCHECK(allocatable_regs | r5.bit());
+  if (argc >= 4) DCHECK(allocatable_regs | r6.bit());
+  if (argc >= 5) DCHECK(allocatable_regs | r7.bit());
+  if (argc >= 6) DCHECK(allocatable_regs | r8.bit());
+  if (argc >= 7) DCHECK(allocatable_regs | r9.bit());
+  if (argc >= 8) DCHECK(allocatable_regs | r10.bit());
+  // Additional arguments are passed on the stack.
+}
+#endif  // DEBUG
+
 // static
-constexpr auto RecordWriteDescriptor::registers() {
-  return RegisterArray(r3, r4, r5, r6, r7, kReturnRegister0);
+constexpr auto WriteBarrierDescriptor::registers() {
+  return RegisterArray(r4, r8, r7, r5, r3);
 }
 
 // static
 constexpr auto DynamicCheckMapsDescriptor::registers() {
+  STATIC_ASSERT(kReturnRegister0 == r3);
   return RegisterArray(r3, r4, r5, r6, cp);
 }
 
 // static
-constexpr auto EphemeronKeyBarrierDescriptor::registers() {
-  return RegisterArray(r3, r4, r5, r6, r7, kReturnRegister0);
+constexpr auto DynamicCheckMapsWithFeedbackVectorDescriptor::registers() {
+  STATIC_ASSERT(kReturnRegister0 == r3);
+  return RegisterArray(r3, r4, r5, r6, cp);
 }
 
 // static
@@ -102,7 +121,7 @@ constexpr auto CallTrampolineDescriptor::registers() {
 
 // static
 constexpr auto CallVarargsDescriptor::registers() {
-  // r3 : number of arguments (on the stack, not including receiver)
+  // r3 : number of arguments (on the stack)
   // r4 : the target to call
   // r7 : arguments list length (untagged)
   // r5 : arguments list (FixedArray)
@@ -120,13 +139,13 @@ constexpr auto CallForwardVarargsDescriptor::registers() {
 // static
 constexpr auto CallFunctionTemplateDescriptor::registers() {
   // r4 : function template info
-  // r5 : number of arguments (on the stack, not including receiver)
+  // r5 : number of arguments (on the stack)
   return RegisterArray(r4, r5);
 }
 
 // static
 constexpr auto CallWithSpreadDescriptor::registers() {
-  // r3 : number of arguments (on the stack, not including receiver)
+  // r3 : number of arguments (on the stack)
   // r4 : the target to call
   // r5 : the object to spread
   return RegisterArray(r4, r3, r5);
@@ -141,7 +160,7 @@ constexpr auto CallWithArrayLikeDescriptor::registers() {
 
 // static
 constexpr auto ConstructVarargsDescriptor::registers() {
-  // r3 : number of arguments (on the stack, not including receiver)
+  // r3 : number of arguments (on the stack)
   // r4 : the target to call
   // r6 : the new target
   // r7 : arguments list length (untagged)
@@ -160,7 +179,7 @@ constexpr auto ConstructForwardVarargsDescriptor::registers() {
 
 // static
 constexpr auto ConstructWithSpreadDescriptor::registers() {
-  // r3 : number of arguments (on the stack, not including receiver)
+  // r3 : number of arguments (on the stack)
   // r4 : the target to call
   // r6 : the new target
   // r5 : the object to spread
@@ -222,7 +241,7 @@ constexpr auto InterpreterDispatchDescriptor::registers() {
 
 // static
 constexpr auto InterpreterPushArgsThenCallDescriptor::registers() {
-  return RegisterArray(r3,   // argument count (not including receiver)
+  return RegisterArray(r3,   // argument count
                        r5,   // address of first argument
                        r4);  // the target callable to be call
 }
@@ -230,7 +249,7 @@ constexpr auto InterpreterPushArgsThenCallDescriptor::registers() {
 // static
 constexpr auto InterpreterPushArgsThenConstructDescriptor::registers() {
   return RegisterArray(
-      r3,   // argument count (not including receiver)
+      r3,   // argument count
       r7,   // address of the first argument
       r4,   // constructor to call
       r6,   // new target

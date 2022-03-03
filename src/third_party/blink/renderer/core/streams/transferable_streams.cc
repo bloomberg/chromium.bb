@@ -7,10 +7,9 @@
 
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
 
-#include "base/stl_util.h"
-#include "third_party/blink/renderer/bindings/core/v8/readable_stream_default_reader_or_readable_stream_byob_reader.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
@@ -36,7 +35,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "v8/include/v8.h"
 
@@ -428,7 +427,7 @@ class CrossRealmTransformWritable::WriteAlgorithm final
     v8::Local<v8::Value> CallWithLocal(v8::Local<v8::Value>) override {
       ScriptState* script_state = GetScriptState();
       return target_->DoWrite(script_state,
-                              chunk_.NewLocal(script_state->GetIsolate()));
+                              chunk_.Get(script_state->GetIsolate()));
     }
 
     void Trace(Visitor* visitor) const override {

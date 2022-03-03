@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator_impl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -51,13 +51,13 @@ class HeapHashMap final : public GarbageCollected<HeapHashMap<KeyArg,
                       !WTF::IsTraceable<KeyArg>::value,
                   "HeapHashMap supports only Member, WeakMember and "
                   "non-traceable types as keys.");
-    static_assert(WTF::IsMemberOrWeakMemberType<MappedArg>::value ||
-                      !WTF::IsTraceable<MappedArg>::value ||
-                      WTF::IsSubclassOfTemplate<MappedArg,
-                                                TraceWrapperV8Reference>::value,
-                  "HeapHashMap supports only Member, WeakMember, "
-                  "TraceWrapperV8Reference and "
-                  "non-traceable types as values.");
+    static_assert(
+        WTF::IsMemberOrWeakMemberType<MappedArg>::value ||
+            !WTF::IsTraceable<MappedArg>::value ||
+            WTF::IsSubclassOfTemplate<MappedArg, v8::TracedReference>::value,
+        "HeapHashMap supports only Member, WeakMember, "
+        "TraceWrapperV8Reference and "
+        "non-traceable types as values.");
   }
 };
 

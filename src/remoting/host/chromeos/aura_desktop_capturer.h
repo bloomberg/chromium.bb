@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
@@ -28,6 +27,10 @@ namespace remoting {
 class AuraDesktopCapturer : public webrtc::DesktopCapturer {
  public:
   AuraDesktopCapturer();
+
+  AuraDesktopCapturer(const AuraDesktopCapturer&) = delete;
+  AuraDesktopCapturer& operator=(const AuraDesktopCapturer&) = delete;
+
   ~AuraDesktopCapturer() override;
 
   // webrtc::DesktopCapturer implementation.
@@ -49,8 +52,6 @@ class AuraDesktopCapturer : public webrtc::DesktopCapturer {
   aura::Window* desktop_window_;
 
   base::WeakPtrFactory<AuraDesktopCapturer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AuraDesktopCapturer);
 };
 
 }  // namespace remoting

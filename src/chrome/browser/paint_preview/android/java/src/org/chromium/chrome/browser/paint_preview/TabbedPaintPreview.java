@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.paint_preview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.graphics.Point;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -14,8 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.UserData;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -25,6 +29,10 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.paintpreview.player.PlayerManager;
+import org.chromium.content_public.browser.RenderCoordinates;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.EventForwarder;
+import org.chromium.ui.base.GestureEventType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.TokenHolder;
 
@@ -35,6 +43,7 @@ import org.chromium.ui.util.TokenHolder;
 public class TabbedPaintPreview implements UserData {
     public static final Class<TabbedPaintPreview> USER_DATA_KEY = TabbedPaintPreview.class;
     private static final int CROSS_FADE_DURATION_MS = 500;
+    private static final int SCROLL_DELAY_MS = 10;
 
     private Tab mTab;
     private TabObserver mTabObserver;
@@ -102,6 +111,11 @@ public class TabbedPaintPreview implements UserData {
         getService().captureTab(mTab, successCallback);
     }
 
+    private boolean shouldCompressBitmaps() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, "compress_bitmaps", true);
+    }
+
     /**
      * Shows a Paint Preview for the provided tab if it exists.
      * @param listener An interface used for notifying events originated from the player.
@@ -109,25 +123,53 @@ public class TabbedPaintPreview implements UserData {
      */
     public boolean maybeShow(@NonNull PlayerManager.Listener listener) {
         if (mIsAttachedToTab) return true;
+        TraceEvent.begin("TabbedPaintPreview.maybeShow");
 
         // Check if a capture exists. This is a quick check using a cache.
         boolean hasCapture = getService().hasCaptureForTab(mTab.getId());
-        if (!hasCapture) return false;
+        if (!hasCapture) {
+            TraceEvent.end("TabbedPaintPreview.maybeShow");
+            return false;
+        }
 
         mTab.addObserver(mTabObserver);
         PaintPreviewCompositorUtils.warmupCompositor();
+
         mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(), getService(),
                 String.valueOf(mTab.getId()), listener,
-                ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
-                /*ignoreInitialScrollOffset=*/false);
+                ChromeColors.getPrimaryBackgroundColor(mTab.getContext(), false),
+                /*ignoreInitialScrollOffset=*/false, shouldCompressBitmaps());
+
+        // TODO(crbug/1230021): Consider deferring/post tasking. Locally this appears to be slow.
+        TraceEvent.begin("TabbedPaintPreview.maybeShow addTabViewProvider");
         mTab.getTabViewManager().addTabViewProvider(mTabbedPainPreviewViewProvider);
+        TraceEvent.end("TabbedPaintPreview.maybeShow addTabViewProvider");
         mIsAttachedToTab = true;
         mWasEverShown = true;
+
+        TraceEvent.end("TabbedPaintPreview.maybeShow");
         return true;
     }
 
     public void remove(boolean animate) {
         remove(true, animate);
+    }
+
+    private void matchScrollAndScale(
+            WebContents contents, Point scrollPosition, float scaleFactor) {
+        if (contents == null || scaleFactor == 0f || scrollPosition == null) return;
+        EventForwarder eventForwarder = contents.getEventForwarder();
+        RenderCoordinates coordinates = RenderCoordinates.fromWebContents(contents);
+
+        float scaleDelta = scaleFactor / coordinates.getPageScaleFactor();
+        long timeMs = SystemClock.uptimeMillis();
+        eventForwarder.onGestureEvent(GestureEventType.PINCH_BEGIN, timeMs, 0.f);
+        eventForwarder.onGestureEvent(GestureEventType.PINCH_BY, timeMs, scaleDelta);
+        eventForwarder.onGestureEvent(GestureEventType.PINCH_END, timeMs, 0.f);
+        // Post the scroll so it occurs after the scale. This ensures positioning is correct.
+        new Handler().postDelayed(() -> {
+            eventForwarder.scrollTo(scrollPosition.x, scrollPosition.y);
+        }, SCROLL_DELAY_MS);
     }
 
     /**
@@ -137,18 +179,17 @@ public class TabbedPaintPreview implements UserData {
     public void remove(boolean matchScroll, boolean animate) {
         PaintPreviewCompositorUtils.stopWarmCompositor();
         if (mTab == null || mPlayerManager == null || mFadingOut) return;
+        TraceEvent.begin("TabbedPaintPreview.remove");
 
         mFadingOut = true;
         mPlayerManager.setAcceptUserInput(false);
         mTab.removeObserver(mTabObserver);
         Point scrollPosition = mPlayerManager.getScrollPosition();
+        float scale = mPlayerManager.getScale();
         // Destroy early to free up resource, but don't null until faded out so view sticks around.
         mPlayerManager.destroy();
         if (matchScroll) {
-            if (mTab.getWebContents() != null && scrollPosition != null) {
-                mTab.getWebContents().getEventForwarder().scrollTo(
-                        scrollPosition.x, scrollPosition.y);
-            }
+            matchScrollAndScale(mTab.getWebContents(), scrollPosition, scale);
         }
         mTabbedPainPreviewViewProvider.getView()
                 .animate()
@@ -169,6 +210,7 @@ public class TabbedPaintPreview implements UserData {
                     }
                 });
         if (mProgressSimulatorNeededCallback != null) mProgressSimulatorNeededCallback.run();
+        TraceEvent.end("TabbedPaintPreview.remove");
     }
 
     public boolean isShowing() {

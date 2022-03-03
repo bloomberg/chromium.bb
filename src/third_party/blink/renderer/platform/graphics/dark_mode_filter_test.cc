@@ -26,10 +26,10 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
                 SK_ColorBLACK, DarkModeFilter::ElementRole::kBackground));
 
   EXPECT_EQ(SK_ColorWHITE,
-            filter.InvertColorIfNeeded(SK_ColorWHITE,
+            filter.InvertColorIfNeeded(SK_ColorBLACK,
                                        DarkModeFilter::ElementRole::kSVG));
   EXPECT_EQ(SK_ColorBLACK,
-            filter.InvertColorIfNeeded(SK_ColorBLACK,
+            filter.InvertColorIfNeeded(SK_ColorWHITE,
                                        DarkModeFilter::ElementRole::kSVG));
 
   cc::PaintFlags flags;
@@ -38,6 +38,47 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
       flags, DarkModeFilter::ElementRole::kBackground);
   ASSERT_NE(flags_or_nullopt, absl::nullopt);
   EXPECT_EQ(SK_ColorBLACK, flags_or_nullopt.value().getColor());
+}
+
+TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlagsWithInvertLightnessLAB) {
+  DarkModeSettings settings;
+  settings.mode = DarkModeInversionAlgorithm::kInvertLightnessLAB;
+  DarkModeFilter filter(settings);
+  constexpr SkColor SK_ColorWhiteWithAlpha =
+      SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF);
+  constexpr SkColor SK_ColorBlackWithAlpha =
+      SkColorSetARGB(0x80, 0x00, 0x00, 0x00);
+  constexpr SkColor SK_ColorDark = SkColorSetARGB(0xFF, 0x12, 0x12, 0x12);
+  constexpr SkColor SK_ColorDarkWithAlpha =
+      SkColorSetARGB(0x80, 0x12, 0x12, 0x12);
+
+  EXPECT_EQ(SK_ColorDark,
+            filter.InvertColorIfNeeded(
+                SK_ColorWHITE, DarkModeFilter::ElementRole::kBackground));
+  EXPECT_EQ(SK_ColorWHITE,
+            filter.InvertColorIfNeeded(
+                SK_ColorBLACK, DarkModeFilter::ElementRole::kBackground));
+  EXPECT_EQ(
+      SK_ColorDarkWithAlpha,
+      filter.InvertColorIfNeeded(SK_ColorWhiteWithAlpha,
+                                 DarkModeFilter::ElementRole::kBackground));
+
+  EXPECT_EQ(SK_ColorWHITE,
+            filter.InvertColorIfNeeded(SK_ColorBLACK,
+                                       DarkModeFilter::ElementRole::kSVG));
+  EXPECT_EQ(SK_ColorDark,
+            filter.InvertColorIfNeeded(SK_ColorWHITE,
+                                       DarkModeFilter::ElementRole::kSVG));
+  EXPECT_EQ(SK_ColorWhiteWithAlpha,
+            filter.InvertColorIfNeeded(SK_ColorBlackWithAlpha,
+                                       DarkModeFilter::ElementRole::kSVG));
+
+  cc::PaintFlags flags;
+  flags.setColor(SK_ColorBLACK);
+  auto flags_or_nullopt = filter.ApplyToFlagsIfNeeded(
+      flags, DarkModeFilter::ElementRole::kBackground);
+  ASSERT_NE(flags_or_nullopt, absl::nullopt);
+  EXPECT_EQ(SK_ColorWHITE, flags_or_nullopt.value().getColor());
 }
 
 TEST(DarkModeFilterTest, InvertedColorCacheSize) {
@@ -81,46 +122,39 @@ TEST(DarkModeFilterTest, InvertedColorCacheZeroMaxKeys) {
   EXPECT_EQ(2u, filter.GetInvertedColorCacheSizeForTesting());
 }
 
-TEST(DarkModeFilterTest, AnalyzeShouldApplyToImage) {
+TEST(DarkModeFilterTest, ImageShouldHaveFilterAppliedBasedOnSizes) {
   DarkModeSettings settings;
   settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
   settings.image_policy = DarkModeImagePolicy::kFilterSmart;
   DarkModeFilter filter(settings);
 
   // |dst| is smaller than threshold size.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(100, 100),
-                                             SkIRect::MakeWH(100, 100)),
-            DarkModeResult::kNotClassified);
+  EXPECT_TRUE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(100, 100), SkIRect::MakeWH(100, 100)));
 
   // |dst| is smaller than threshold size, even |src| is larger.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(200, 200),
-                                             SkIRect::MakeWH(100, 100)),
-            DarkModeResult::kNotClassified);
+  EXPECT_TRUE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(200, 200), SkIRect::MakeWH(100, 100)));
 
   // |dst| is smaller than threshold size, |src| is smaller.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(20, 20),
-                                             SkIRect::MakeWH(100, 100)),
-            DarkModeResult::kNotClassified);
+  EXPECT_TRUE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(20, 20), SkIRect::MakeWH(100, 100)));
 
   // |src| having very smaller width, even |dst| is larger than threshold size.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(5, 200),
-                                             SkIRect::MakeWH(5, 200)),
-            DarkModeResult::kNotClassified);
+  EXPECT_TRUE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(5, 200), SkIRect::MakeWH(5, 200)));
 
   // |src| having very smaller height, even |dst| is larger than threshold size.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(200, 5),
-                                             SkIRect::MakeWH(200, 5)),
-            DarkModeResult::kNotClassified);
+  EXPECT_TRUE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(200, 5), SkIRect::MakeWH(200, 5)));
 
   // |dst| is larger than threshold size.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(20, 20),
-                                             SkIRect::MakeWH(200, 200)),
-            DarkModeResult::kDoNotApplyFilter);
+  EXPECT_FALSE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(20, 20), SkIRect::MakeWH(200, 200)));
 
   // |dst| is larger than threshold size.
-  EXPECT_EQ(filter.AnalyzeShouldApplyToImage(SkIRect::MakeWH(20, 200),
-                                             SkIRect::MakeWH(20, 200)),
-            DarkModeResult::kDoNotApplyFilter);
+  EXPECT_FALSE(filter.ImageShouldHaveFilterAppliedBasedOnSizes(
+      SkIRect::MakeWH(20, 200), SkIRect::MakeWH(20, 200)));
 }
 
 }  // namespace

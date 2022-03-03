@@ -98,7 +98,8 @@ _TRACKED_GROUPS = [
            title='File: chrome',
            track_stripped=True,
            track_compressed=True),
-    _Group(paths=['crashpad_handler'], title='File: crashpad_handler'),
+    _Group(paths=['chrome_crashpad_handler'],
+           title='File: chrome_crashpad_handler'),
     _Group(paths=['icudtl.dat'], title='File: icudtl.dat'),
     _Group(paths=['nacl_helper'], title='File: nacl_helper'),
     _Group(paths=['nacl_irt_x86_64.nexe'], title='File: nacl_irt_x86_64.nexe'),
@@ -239,7 +240,7 @@ def _dump_chart_json(output_dir, chartjson):
 
   histogram_path = os.path.join(output_dir, 'perf_results.json')
   logging.critical('Dumping histograms to %s', histogram_path)
-  with open(histogram_path, 'w') as json_file:
+  with open(histogram_path, 'wb') as json_file:
     json_file.write(histogram_result.stdout)
 
 

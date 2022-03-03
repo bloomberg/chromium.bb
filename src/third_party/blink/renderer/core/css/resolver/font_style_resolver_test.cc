@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -19,7 +19,7 @@ TEST(FontStyleResolverTest, Simple) {
 
   EXPECT_EQ(desc.SpecifiedSize(), 15);
   EXPECT_EQ(desc.ComputedSize(), 15);
-  EXPECT_EQ(desc.Family().Family(), "Ahem");
+  EXPECT_EQ(desc.Family().FamilyName(), "Ahem");
 }
 
 TEST(FontStyleResolverTest, InvalidSize) {
@@ -29,7 +29,7 @@ TEST(FontStyleResolverTest, InvalidSize) {
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
-  EXPECT_EQ(desc.Family().Family(), nullptr);
+  EXPECT_EQ(desc.Family().FamilyName(), nullptr);
   EXPECT_EQ(desc.SpecifiedSize(), 0);
   EXPECT_EQ(desc.ComputedSize(), 0);
 }
@@ -41,7 +41,7 @@ TEST(FontStyleResolverTest, InvalidWeight) {
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
-  EXPECT_EQ(desc.Family().Family(), nullptr);
+  EXPECT_EQ(desc.Family().FamilyName(), nullptr);
   EXPECT_EQ(desc.SpecifiedSize(), 0);
   EXPECT_EQ(desc.ComputedSize(), 0);
 }
@@ -54,7 +54,7 @@ TEST(FontStyleResolverTest, InvalidEverything) {
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
-  EXPECT_EQ(desc.Family().Family(), nullptr);
+  EXPECT_EQ(desc.Family().FamilyName(), nullptr);
   EXPECT_EQ(desc.SpecifiedSize(), 0);
   EXPECT_EQ(desc.ComputedSize(), 0);
 }
@@ -66,7 +66,7 @@ TEST(FontStyleResolverTest, RelativeSize) {
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
-  EXPECT_EQ(desc.Family().Family(), "Ahem");
+  EXPECT_EQ(desc.Family().FamilyName(), "Ahem");
   EXPECT_EQ(desc.SpecifiedSize(), 10);
   EXPECT_EQ(desc.ComputedSize(), 10);
 }

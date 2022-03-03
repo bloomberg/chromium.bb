@@ -40,7 +40,6 @@
 #include "sandbox/policy/switches.h"
 #include "services/device/public/cpp/hid/hid_switches.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -140,7 +139,6 @@ static const char* kBadFlags[] = {
     // GPU sanboxing isn't implemented for the Web GPU API yet meaning it would
     // be possible to read GPU data for other Chromium processes.
     switches::kEnableUnsafeWebGPU,
-    switches::kEnableUnsafeWebGPUService,
 
     // A flag to support local file based WebBundle loading, only for testing
     // purpose.
@@ -148,13 +146,17 @@ static const char* kBadFlags[] = {
 
     // A flag to bypass the WebHID blocklist for testing purposes.
     switches::kDisableHidBlocklist,
+
+    // This flag enables restricted APIs (which unlock capabilities
+    // with a high potential for security / privacy abuse) for specified
+    // origins.
+    switches::kRestrictedApiOrigins,
 };
 #endif  // OS_ANDROID
 
 // Dangerous feature flags in about:flags for which to display a warning that
 // "stability and security will suffer".
 static const base::Feature* kBadFeatureFlagsInAboutFlags[] = {
-    &blink::features::kRawClipboard,
     &features::kWebBundlesFromNetwork,
 #if defined(OS_ANDROID)
     &chrome::android::kCommandLineOnNonRooted,

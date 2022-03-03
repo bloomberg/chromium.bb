@@ -16,6 +16,10 @@
 class IOSCaptivePortalBlockingPage
     : public security_interstitials::IOSSecurityInterstitialPage {
  public:
+  IOSCaptivePortalBlockingPage(const IOSCaptivePortalBlockingPage&) = delete;
+  IOSCaptivePortalBlockingPage& operator=(const IOSCaptivePortalBlockingPage&) =
+      delete;
+
   ~IOSCaptivePortalBlockingPage() override;
 
   // Creates a captive portal blocking page. If the blocking page isn't shown,
@@ -33,16 +37,15 @@ class IOSCaptivePortalBlockingPage
  private:
   // IOSSecurityInterstitialPage overrides:
   bool ShouldCreateNewNavigation() const override;
-  void PopulateInterstitialStrings(base::DictionaryValue*) const override;
-  void HandleScriptCommand(const base::DictionaryValue& message,
-                           const GURL& origin_url,
-                           bool user_is_interacting,
-                           web::WebFrame* sender_frame) override;
+  void PopulateInterstitialStrings(base::Value* value) const override;
+  void HandleCommand(
+      security_interstitials::SecurityInterstitialCommand command,
+      const GURL& origin_url,
+      bool user_is_interacting,
+      web::WebFrame* sender_frame) override;
 
   // The landing page url for the captive portal network.
   const GURL landing_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSCaptivePortalBlockingPage);
 };
 
 #endif  // IOS_CHROME_BROWSER_SSL_IOS_CAPTIVE_PORTAL_BLOCKING_PAGE_H_

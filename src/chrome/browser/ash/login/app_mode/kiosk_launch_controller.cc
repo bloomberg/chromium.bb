@@ -15,42 +15,43 @@
 #include "chrome/browser/ash/app_mode/startup_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/network_service_instance.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
+
 // Web Kiosk splash screen minimum show time.
-constexpr base::TimeDelta kKioskSplashScreenMinTime =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kKioskSplashScreenMinTime = base::Seconds(10);
 
 // Time of waiting for the network to be ready to start installation. Can be
 // changed in tests.
-constexpr base::TimeDelta kKioskNetworkWaitTime =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kKioskNetworkWaitTime = base::Seconds(10);
 base::TimeDelta g_network_wait_time = kKioskNetworkWaitTime;
 
 // Time of waiting for the force-installed extension to be ready to start
 // application window. Can be changed in tests.
-constexpr base::TimeDelta kKioskExtensionWaitTime =
-    base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kKioskExtensionWaitTime = base::Minutes(2);
 base::TimeDelta g_extension_wait_time = kKioskExtensionWaitTime;
 
 // Whether we should skip the wait for minimum screen show time.
@@ -76,15 +77,15 @@ enum KioskLaunchType {
   KIOSK_LAUNCH_TYPE_COUNT  // This must be the last entry.
 };
 
-bool IsEnterpriseManaged() {
+bool IsDeviceEnterpriseManaged() {
   return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->IsEnterpriseManaged();
+      ->browser_policy_connector_ash()
+      ->IsDeviceEnterpriseManaged();
 }
 
 void RecordKioskLaunchUMA(bool is_auto_launch) {
   const KioskLaunchType launch_type =
-      IsEnterpriseManaged()
+      IsDeviceEnterpriseManaged()
           ? (is_auto_launch ? KIOSK_LAUNCH_ENTERPRISE_AUTO_LAUNCH
                             : KIOKS_LAUNCH_ENTERPRISE_MANUAL_LAUNCH)
           : (is_auto_launch ? KIOSK_LAUNCH_CONSUMER_AUTO_LAUNCH
@@ -93,7 +94,7 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
   UMA_HISTOGRAM_ENUMERATION("Kiosk.LaunchType", launch_type,
                             KIOSK_LAUNCH_TYPE_COUNT);
 
-  if (IsEnterpriseManaged()) {
+  if (IsDeviceEnterpriseManaged()) {
     enterprise_user_session_metrics::RecordSignInEvent(
         is_auto_launch
             ? enterprise_user_session_metrics::SignInEventType::AUTOMATIC_KIOSK
@@ -111,10 +112,9 @@ extensions::ForceInstalledTracker* GetForceInstalledTracker(Profile* profile) {
 }
 
 bool IsExtensionInstallForcelistPolicyValid() {
-  policy::PolicyService* policy_service =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetPolicyService();
+  policy::PolicyService* policy_service = g_browser_process->platform_part()
+                                              ->browser_policy_connector_ash()
+                                              ->GetPolicyService();
   DCHECK(policy_service);
 
   const policy::PolicyMap& map =
@@ -125,6 +125,13 @@ bool IsExtensionInstallForcelistPolicyValid() {
   policy::PolicyErrorMap errors;
   handler.CheckPolicySettings(map, &errors);
   return errors.GetErrors(policy::key::kExtensionInstallForcelist).empty();
+}
+
+crosapi::ForceInstalledTrackerAsh* GetForceInstalledTrackerAsh() {
+  CHECK(crosapi::CrosapiManager::IsInitialized());
+  return crosapi::CrosapiManager::Get()
+      ->crosapi_ash()
+      ->force_installed_tracker_ash();
 }
 
 // This is a not-owning wrapper around ArcKioskAppService which allows to be
@@ -170,6 +177,7 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
   SYSLOG(INFO) << "Starting kiosk mode of type "
                << static_cast<int>(kiosk_app_id.type) << "...";
   kiosk_app_id_ = kiosk_app_id;
+  auto_launch_ = auto_launch;
 
   RecordKioskLaunchUMA(auto_launch);
 
@@ -197,8 +205,7 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
                                           weak_ptr_factory_.GetWeakPtr()));
 
   kiosk_profile_loader_ = std::make_unique<KioskProfileLoader>(
-      *kiosk_app_id_.account_id, kiosk_app_id_.type,
-      /*use_guest_mount=*/false, /*delegate=*/this);
+      *kiosk_app_id_.account_id, kiosk_app_id_.type, /*delegate=*/this);
   kiosk_profile_loader_->Start();
 }
 
@@ -262,7 +269,8 @@ void KioskLaunchController::OnCancelAppLaunch() {
   if (cleaned_up_)
     return;
 
-  if (KioskAppManager::Get()->GetDisableBailoutShortcut())
+  // Only auto-launched apps should be cancelable.
+  if (KioskAppManager::Get()->GetDisableBailoutShortcut() && auto_launch_)
     return;
 
   SYSLOG(INFO) << "Canceling kiosk app launch.";
@@ -281,27 +289,31 @@ KioskAppManagerBase::App KioskLaunchController::GetAppData() {
   switch (kiosk_app_id_.type) {
     case KioskAppType::kChromeApp: {
       KioskAppManagerBase::App app;
-      bool app_found =
-          KioskAppManager::Get()->GetApp(*kiosk_app_id_.app_id, &app);
-      DCHECK(app_found);
-      return app;
+      if (KioskAppManager::Get()->GetApp(*kiosk_app_id_.app_id, &app))
+        return app;
+      break;
     }
     case KioskAppType::kArcApp: {
       const ArcKioskAppData* arc_app =
           ArcKioskAppManager::Get()->GetAppByAccountId(
               *kiosk_app_id_.account_id);
-      DCHECK(arc_app);
-      return KioskAppManagerBase::App(*arc_app);
+      if (arc_app)
+        return KioskAppManagerBase::App(*arc_app);
+      break;
     }
     case KioskAppType::kWebApp: {
-      const WebKioskAppData* app = WebKioskAppManager::Get()->GetAppByAccountId(
-          *kiosk_app_id_.account_id);
-      DCHECK(app);
-      auto data = KioskAppManagerBase::App(*app);
-      data.url = app->install_url();
-      return data;
+      const WebKioskAppData* web_app =
+          WebKioskAppManager::Get()->GetAppByAccountId(
+              *kiosk_app_id_.account_id);
+      if (web_app)
+        return WebKioskAppManager::CreateAppByData(*web_app);
+      break;
     }
   }
+
+  LOG(WARNING) << "Cannot get a valid kiosk app. App type: "
+               << (int)kiosk_app_id_.type;
+  return KioskAppManagerBase::App();
 }
 
 bool KioskLaunchController::IsNetworkRequired() {
@@ -371,18 +383,25 @@ void KioskLaunchController::OnAppPrepared() {
   }
 
   app_state_ = AppState::kInstallingExtensions;
+
+  // Launch lacros-chrome if the corresponding feature flags are enabled.
+  if (crosapi::browser_util::IsLacrosEnabledInWebKioskSession()) {
+    // Start observing the installation status of extensions in Lacros.
+    force_installed_observation_for_lacros_.Observe(
+        GetForceInstalledTrackerAsh());
+    StartTimerToWaitForExtensions();
+
+    // Initialize and start Lacros for preparing force-installed extensions.
+    crosapi::BrowserManager::Get()->InitializeAndStart();
+    return;
+  }
+
   extensions::ForceInstalledTracker* tracker =
       GetForceInstalledTracker(profile_);
 
   if (tracker && !tracker->IsReady()) {
-    extension_wait_timer_.Start(
-        FROM_HERE, g_extension_wait_time, this,
-        &KioskLaunchController::OnExtensionWaitTimedOut);
-    tracker->AddObserver(this);
-
-    splash_screen_view_->UpdateAppLaunchState(
-        AppLaunchSplashScreenView::AppLaunchState::kInstallingExtension);
-    splash_screen_view_->Show();
+    force_installed_observation_for_ash_.Observe(tracker);
+    StartTimerToWaitForExtensions();
   } else {
     OnForceInstalledExtensionsReady();
   }
@@ -424,6 +443,14 @@ void KioskLaunchController::OnNetworkWaitTimedOut() {
     std::move(*network_timeout_callback).Run();
     network_timeout_callback = nullptr;
   }
+}
+
+void KioskLaunchController::StartTimerToWaitForExtensions() {
+  extension_wait_timer_.Start(FROM_HERE, g_extension_wait_time, this,
+                              &KioskLaunchController::OnExtensionWaitTimedOut);
+  splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::AppLaunchState::kInstallingExtension);
+  splash_screen_view_->Show();
 }
 
 void KioskLaunchController::OnExtensionWaitTimedOut() {
@@ -542,10 +569,11 @@ void KioskLaunchController::OnOldEncryptionDetected(
 
 void KioskLaunchController::OnForceInstalledExtensionsReady() {
   app_state_ = AppState::kInstalled;
-  extensions::ForceInstalledTracker* tracker =
-      GetForceInstalledTracker(profile_);
-  if (tracker)
-    tracker->RemoveObserver(this);
+
+  if (crosapi::browser_util::IsLacrosEnabledInWebKioskSession())
+    force_installed_observation_for_lacros_.Reset();
+  else
+    force_installed_observation_for_ash_.Reset();
 
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
@@ -563,7 +591,7 @@ bool KioskLaunchController::CanConfigureNetwork() {
   if (can_configure_network_callback)
     return can_configure_network_callback->Run();
 
-  if (IsEnterpriseManaged()) {
+  if (IsDeviceEnterpriseManaged()) {
     bool should_prompt;
     if (CrosSettings::Get()->GetBoolean(
             kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
@@ -581,7 +609,7 @@ bool KioskLaunchController::NeedOwnerAuthToConfigureNetwork() {
   if (need_owner_auth_to_configure_network_callback)
     return need_owner_auth_to_configure_network_callback->Run();
 
-  return !IsEnterpriseManaged();
+  return !IsDeviceEnterpriseManaged();
 }
 
 void KioskLaunchController::MaybeShowNetworkConfigureUI() {
@@ -652,10 +680,17 @@ void KioskLaunchController::OnNetworkConfigRequested() {
 
 void KioskLaunchController::OnNetworkConfigFinished() {
   network_ui_state_ = NetworkUIState::kNotShowing;
-  splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::AppLaunchState::kPreparingProfile);
+
+  if (splash_screen_view_) {
+    splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::AppLaunchState::kPreparingProfile);
+  }
+
   app_state_ = AppState::kInitNetwork;
-  app_launcher_->RestartLauncher();
+
+  if (app_launcher_) {
+    app_launcher_->RestartLauncher();
+  }
 }
 
 void KioskLaunchController::OnNetworkStateChanged(bool online) {
@@ -750,4 +785,4 @@ std::unique_ptr<KioskLaunchController> KioskLaunchController::CreateForTesting(
   return controller;
 }
 
-}  // namespace chromeos
+}  // namespace ash

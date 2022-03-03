@@ -27,6 +27,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -303,7 +304,7 @@ TableSortDescriptor::TableSortDescriptor(int col_id, bool ascending)
 ////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerTableModel::TaskManagerTableModel(TableViewDelegate* delegate)
-    : TaskManagerObserver(base::TimeDelta::FromMilliseconds(kRefreshTimeMS),
+    : TaskManagerObserver(base::Milliseconds(kRefreshTimeMS),
                           REFRESH_TYPE_NONE),
       table_view_delegate_(delegate),
       columns_settings_(new base::DictionaryValue),
@@ -469,8 +470,9 @@ std::u16string TaskManagerTableModel::GetText(int row, int column) {
   }
 }
 
-gfx::ImageSkia TaskManagerTableModel::GetIcon(int row) {
-  return observed_task_manager()->GetIcon(tasks_[row]);
+ui::ImageModel TaskManagerTableModel::GetIcon(int row) {
+  return ui::ImageModel::FromImageSkia(
+      observed_task_manager()->GetIcon(tasks_[row]));
 }
 
 void TaskManagerTableModel::SetObserver(
@@ -824,9 +826,9 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
   // Do a best effort of retrieving the correct settings from the local state.
   // Use the default settings of the value if it fails to be retrieved.
   std::string sorted_col_id;
-  bool sort_is_ascending = true;
   dictionary->GetString(kSortColumnIdKey, &sorted_col_id);
-  dictionary->GetBoolean(kSortIsAscendingKey, &sort_is_ascending);
+  bool sort_is_ascending =
+      dictionary->FindBoolPath(kSortIsAscendingKey).value_or(true);
 
   int current_visible_column_index = 0;
   for (size_t i = 0; i < kColumnsSize; ++i) {
@@ -836,10 +838,10 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
     if (col_id_key.empty())
       continue;
 
-    bool col_visibility = kColumns[i].default_visibility;
-    dictionary->GetBoolean(col_id_key, &col_visibility);
+    bool col_visibility = dictionary->FindBoolPath(col_id_key)
+                              .value_or(kColumns[i].default_visibility);
 
-    // If the above GetBoolean() fails, the |col_visibility| remains at the
+    // If the above FindBoolPath() fails, the |col_visibility| remains at the
     // default visibility.
     columns_settings_->SetBoolean(col_id_key, col_visibility);
     table_view_delegate_->SetColumnVisibility(col_id, col_visibility);
@@ -866,8 +868,7 @@ void TaskManagerTableModel::StoreColumnsSettings() {
 
   base::DictionaryValue::Iterator it(*columns_settings_);
   while (!it.IsAtEnd()) {
-    dict_update->Set(it.key(),
-                     base::Value::ToUniquePtrValue(it.value().Clone()));
+    dict_update->SetPath(it.key(), it.value().Clone());
     it.Advance();
   }
 

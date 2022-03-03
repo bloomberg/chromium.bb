@@ -100,6 +100,9 @@ static int get_aiff_header(AVFormatContext *s, int size,
     int sample_rate;
     unsigned int num_frames;
 
+    if (size == INT_MAX)
+        return AVERROR_INVALIDDATA;
+
     if (size & 1)
         size++;
     par->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -117,6 +120,9 @@ static int get_aiff_header(AVFormatContext *s, int size,
         sample_rate = val << exp;
     else
         sample_rate = (val + (1ULL<<(-exp-1))) >> -exp;
+    if (sample_rate <= 0)
+        return AVERROR_INVALIDDATA;
+
     par->sample_rate = sample_rate;
     if (size < 18)
         return AVERROR_INVALIDDATA;
@@ -179,8 +185,10 @@ static int get_aiff_header(AVFormatContext *s, int size,
         par->block_align = (av_get_bits_per_sample(par->codec_id) * par->channels) >> 3;
 
     if (aiff->block_duration) {
-        par->bit_rate = (int64_t)par->sample_rate * (par->block_align << 3) /
-                        aiff->block_duration;
+        par->bit_rate = av_rescale(par->sample_rate, par->block_align * 8LL,
+                                   aiff->block_duration);
+        if (par->bit_rate < 0)
+            par->bit_rate = 0;
     }
 
     /* Chunk is over */
@@ -212,7 +220,7 @@ static int aiff_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     AVStream * st;
     AIFFInputContext *aiff = s->priv_data;
-    ID3v2ExtraMeta *id3v2_extra_meta = NULL;
+    ID3v2ExtraMeta *id3v2_extra_meta;
 
     /* check FORM header */
     filesize = get_tag(pb, &tag);
@@ -302,7 +310,7 @@ static int aiff_read_header(AVFormatContext *s)
             break;
         case MKTAG('w', 'a', 'v', 'e'):
             if ((uint64_t)size > (1<<30))
-                return -1;
+                return AVERROR_INVALIDDATA;
             if ((ret = ff_get_extradata(s, st->codecpar, pb, size)) < 0)
                 return ret;
             if (   (st->codecpar->codec_id == AV_CODEC_ID_QDMC || st->codecpar->codec_id == AV_CODEC_ID_QDM2)
@@ -362,9 +370,9 @@ got_sound:
     if (!st->codecpar->block_align && st->codecpar->codec_id == AV_CODEC_ID_QCELP) {
         av_log(s, AV_LOG_WARNING, "qcelp without wave chunk, assuming full rate\n");
         st->codecpar->block_align = 35;
-    } else if (!st->codecpar->block_align) {
+    } else if (st->codecpar->block_align <= 0) {
         av_log(s, AV_LOG_ERROR, "could not find COMM tag or invalid block_align value\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     /* Now positioned, get the sound data start and end */
@@ -424,7 +432,7 @@ static int aiff_read_packet(AVFormatContext *s,
     return 0;
 }
 
-AVInputFormat ff_aiff_demuxer = {
+const AVInputFormat ff_aiff_demuxer = {
     .name           = "aiff",
     .long_name      = NULL_IF_CONFIG_SMALL("Audio IFF"),
     .priv_data_size = sizeof(AIFFInputContext),

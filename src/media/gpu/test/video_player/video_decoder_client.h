@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
@@ -31,13 +30,6 @@ class EncodedDataHelper;
 class FrameRenderer;
 class VideoFrameProcessor;
 
-// TODO(dstaessens@) Remove allocation mode, temporary added here so we can
-// support the thumbnail test for older platforms that don't support import.
-enum class AllocationMode {
-  kImport,    // Client allocates video frame memory.
-  kAllocate,  // Video decoder allocates video frame memory.
-};
-
 // The supported video decoding implementation.
 enum class DecoderImplementation {
   kVDA,    // VDA-based video decoder.
@@ -50,9 +42,8 @@ struct VideoDecoderClientConfig {
   // The maximum number of bitstream buffer decodes that can be requested
   // without waiting for the result of the previous decode requests.
   size_t max_outstanding_decode_requests = 1;
-  // How the pictures buffers should be allocated.
-  AllocationMode allocation_mode = AllocationMode::kImport;
   DecoderImplementation implementation = DecoderImplementation::kVDA;
+  bool linear_output = false;
 };
 
 // The video decoder client is responsible for the communication between the
@@ -67,6 +58,9 @@ struct VideoDecoderClientConfig {
 // necessary if we don't want to interrupt the test flow.
 class VideoDecoderClient {
  public:
+  VideoDecoderClient(const VideoDecoderClient&) = delete;
+  VideoDecoderClient& operator=(const VideoDecoderClient&) = delete;
+
   ~VideoDecoderClient();
 
   // Return an instance of the VideoDecoderClient. The
@@ -157,9 +151,13 @@ class VideoDecoderClient {
   void FlushDoneTask(media::Status status);
   // Called by the decoder when resetting has completed.
   void ResetDoneTask();
+  // Called by the decoder when a resolution change was requested, returns
+  // whether we should continue or abort the resolution change.
+  bool ResolutionChangeTask();
 
-  // Fire the specified event.
-  void FireEvent(VideoPlayerEvent event);
+  // Fire the specified event, and return true if the decoder should continue
+  // the decoding.
+  bool FireEvent(VideoPlayerEvent event);
 
   VideoPlayer::EventCallback event_cb_;
   std::unique_ptr<FrameRenderer> frame_renderer_;
@@ -190,8 +188,6 @@ class VideoDecoderClient {
 
   base::WeakPtr<VideoDecoderClient> weak_this_;
   base::WeakPtrFactory<VideoDecoderClient> weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderClient);
 };
 
 }  // namespace test

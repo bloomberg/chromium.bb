@@ -48,14 +48,28 @@ const char kTestManagementPolicy2[] =
     "    \"installation_mode\": \"blocked\","
     "  },"
     "}";
-#if defined(OS_WIN)
-const char kSanitizedTestManagementPolicy2[] =
+
+const char kSensitiveTestManagementPolicy[] = R"({
+  "[BLOCKED]abcdefghijklmnopabcdefghijklmnop": {
+    "installation_mode": "force_installed",
+    "update_url": "https://example.com/app",
+  },
+  "[BLOCKED]abcdefghijklmnopabcdefghijklmnpo,
+    abcdefghijklmnopabcdefghijklmopn": {
+      "installation_mode": "normal_installed",
+      "update_url": "https://example.com/app",
+  },
+  "*": {
+    "installation_mode": "blocked",
+  },
+})";
+
+const char kSanitizedTestManagementPolicy[] =
     "{"
     "  \"*\": {"
     "    \"installation_mode\": \"blocked\","
     "  },"
     "}";
-#endif  // defined(OS_WIN)
 
 const char kTestManagementPolicy3[] =
     "{"
@@ -101,7 +115,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
-  list.AppendString("abcdefghijklmnopabcdefghijklmnop");
+  list.Append("abcdefghijklmnopabcdefghijklmnop");
   policy_map.Set(policy::key::kExtensionInstallBlocklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -109,7 +123,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
-  list.AppendString("*");
+  list.Append("*");
   policy_map.Set(policy::key::kExtensionInstallBlocklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -117,7 +131,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
-  list.AppendString("invalid");
+  list.Append("invalid");
   policy_map.Set(policy::key::kExtensionInstallBlocklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -181,8 +195,8 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   ExtensionListPolicyHandler handler(policy::key::kExtensionInstallBlocklist,
                                      kTestPref, false);
 
-  policy.AppendString("abcdefghijklmnopabcdefghijklmnop");
-  expected.AppendString("abcdefghijklmnopabcdefghijklmnop");
+  policy.Append("abcdefghijklmnopabcdefghijklmnop");
+  expected.Append("abcdefghijklmnopabcdefghijklmnop");
 
   policy_map.Set(policy::key::kExtensionInstallBlocklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
@@ -191,7 +205,7 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
 
-  policy.AppendString("invalid");
+  policy.Append("invalid");
   policy_map.Set(policy::key::kExtensionInstallBlocklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, policy.Clone(), nullptr);
@@ -215,7 +229,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(errors.empty());
 
   // Add a correct entry. No errors should be generated.
-  list.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
+  list.Append("abcdefghijklmnopabcdefghijklmnop;http://example.com");
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -225,7 +239,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, CheckPolicySettings) {
 
   // Add an erroneous entry. This should generate an error, but the good
   // entry should still be translated successfully.
-  list.AppendString("adfasdf;http://example.com");
+  list.Append("adfasdf;http://example.com");
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -234,7 +248,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_EQ(1U, errors.size());
 
   // Add an entry with bad URL, which should generate another error.
-  list.AppendString("abcdefghijklmnopabcdefghijklmnop;nourl");
+  list.Append("abcdefghijklmnopabcdefghijklmnop;nourl");
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -243,7 +257,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_EQ(2U, errors.size());
 
   // Just an extension ID should be accepted.
-  list.AppendString("abcdefghijklmnopabcdefghijklmnop");
+  list.Append("abcdefghijklmnopabcdefghijklmnop");
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -275,7 +289,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, ApplyPolicySettings) {
 
   // Add a correct entry to the policy. The pref should contain a corresponding
   // entry.
-  policy.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
+  policy.Append("abcdefghijklmnopabcdefghijklmnop;http://example.com");
   extensions::ExternalPolicyLoader::AddExtension(
       &expected, "abcdefghijklmnopabcdefghijklmnop", "http://example.com");
   policy_map.Set(policy::key::kExtensionInstallForcelist,
@@ -290,7 +304,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, ApplyPolicySettings) {
   // Note: the URL hardcoded below is part of the public policy contract (as
   // documented in the policy_templates.json file), and therefore any changes to
   // it must be carefully thought out.
-  policy.AppendString("bcdefghijklmnopabcdefghijklmnopa");
+  policy.Append("bcdefghijklmnopabcdefghijklmnopa");
   extensions::ExternalPolicyLoader::AddExtension(
       &expected, "bcdefghijklmnopabcdefghijklmnopa",
       "https://clients2.google.com/service/update2/crx");
@@ -302,7 +316,7 @@ TEST(ExtensionInstallForceListPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_EQ(expected, *value);
 
   // Add an invalid entry. The pref should still contain two previous entries.
-  policy.AppendString("invalid");
+  policy.Append("invalid");
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, policy.Clone(), nullptr);
@@ -325,7 +339,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
-  list.AppendString("http://*.google.com/*");
+  list.Append("http://*.google.com/*");
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -333,7 +347,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
-  list.AppendString("<all_urls>");
+  list.Append("<all_urls>");
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -341,7 +355,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
-  list.AppendString("invalid");
+  list.Append("invalid");
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -352,7 +366,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
 
   // URLPattern syntax has a different way to express 'all urls'. Though '*'
   // would be compatible today, it would be brittle, so we disallow.
-  list.AppendString("*");
+  list.Append("*");
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -370,7 +384,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
   ExtensionURLPatternListPolicyHandler handler(
       policy::key::kExtensionInstallSources, kTestPref);
 
-  list.AppendString("https://corp.monkey.net/*");
+  list.Append("https://corp.monkey.net/*");
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
@@ -455,11 +469,7 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettingsTooManyHosts) {
 }
 
 TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
-// Mark as enterprise managed.
-#if defined(OS_WIN)
-  base::win::ScopedDomainStateForTesting scoped_domain(true);
-#endif
-
+  // Mark as enterprise managed.
   base::JSONReader::ValueWithError policy_result =
       base::JSONReader::ReadAndReturnValueWithError(
           kTestManagementPolicy2,
@@ -526,18 +536,15 @@ TEST(ExtensionSettingsPolicyHandlerTest, DropInvalidKeys) {
 
 // Only enterprise managed machines can auto install extensions from a location
 // other than the webstore https://crbug.com/809004.
-#if defined(OS_WIN)
 TEST(ExtensionSettingsPolicyHandlerTest, NonManagedOffWebstoreExtension) {
   // Mark as not enterprise managed.
-  base::win::ScopedDomainStateForTesting scoped_domain(false);
-
   auto policy_result = base::JSONReader::ReadAndReturnValueWithError(
-      kTestManagementPolicy2,
+      kSensitiveTestManagementPolicy,
       base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(policy_result.value) << policy_result.error_message;
 
   auto sanitized_policy_result = base::JSONReader::ReadAndReturnValueWithError(
-      kSanitizedTestManagementPolicy2,
+      kSanitizedTestManagementPolicy,
       base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(sanitized_policy_result.value)
       << sanitized_policy_result.error_message;
@@ -561,6 +568,5 @@ TEST(ExtensionSettingsPolicyHandlerTest, NonManagedOffWebstoreExtension) {
   ASSERT_TRUE(prefs.GetValue(pref_names::kExtensionManagement, &value));
   EXPECT_EQ(*sanitized_policy_result.value, *value);
 }
-#endif
 
 }  // namespace extensions

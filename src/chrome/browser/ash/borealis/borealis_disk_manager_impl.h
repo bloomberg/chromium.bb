@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_disk_manager.h"
-#include "chrome/browser/ash/borealis/infra/expected.h"
 
 namespace borealis {
 // Amount of space, in bytes, that borealis needs to leave free on the host.
@@ -33,17 +32,24 @@ class BorealisDiskManagerImpl : public BorealisDiskManager {
   BorealisDiskManagerImpl& operator=(const BorealisDiskManagerImpl&) = delete;
   ~BorealisDiskManagerImpl() override;
 
-  // TODO(174592560): add more explicit error handling when metrics are
-  // introduced.
   void GetDiskInfo(
-      base::OnceCallback<void(Expected<GetDiskInfoResponse, std::string>)>
+      base::OnceCallback<void(
+          Expected<GetDiskInfoResponse, Described<BorealisGetDiskInfoResult>>)>
           callback) override;
-  void RequestSpace(uint64_t bytes_requested,
-                    base::OnceCallback<void(Expected<uint64_t, std::string>)>
-                        callback) override {}
-  void ReleaseSpace(uint64_t bytes_to_release,
-                    base::OnceCallback<void(Expected<uint64_t, std::string>)>
-                        callback) override {}
+  void RequestSpace(
+      uint64_t bytes_requested,
+      base::OnceCallback<void(
+          Expected<uint64_t, Described<BorealisResizeDiskResult>>)> callback)
+      override;
+  void ReleaseSpace(
+      uint64_t bytes_to_release,
+      base::OnceCallback<void(
+          Expected<uint64_t, Described<BorealisResizeDiskResult>>)> callback)
+      override;
+  void SyncDiskSize(
+      base::OnceCallback<void(Expected<BorealisSyncDiskSizeResult,
+                                       Described<BorealisSyncDiskSizeResult>>)>
+          callback) override;
 
   void SetFreeSpaceProviderForTesting(
       std::unique_ptr<FreeSpaceProvider> provider) {
@@ -59,15 +65,55 @@ class BorealisDiskManagerImpl : public BorealisDiskManager {
   // host and VM disk. Returns an error (string) or a result (BorealisDiskInfo).
   class BuildDiskInfo;
 
+  // Transition class representing the process of resizing the disk. Returns an
+  // error (string) or a result (pair of BorealisDiskInfos, The first references
+  // the original state and the second references the updated state after the
+  // resize).
+  class ResizeDisk;
+
+  // Transition class representing the process of assessing the state of the VM
+  // disk and adjusting it to fit within the appropriate parameters if needed.
+  // Specifically, when the available space on the disk does not match the
+  // target buffer size +/-10%, we will resize the disk.
+  class SyncDisk;
+
   // Handles the results of a GetDiskInfo request.
   void BuildGetDiskInfoResponse(
-      base::OnceCallback<void(Expected<GetDiskInfoResponse, std::string>)>
+      base::OnceCallback<void(
+          Expected<GetDiskInfoResponse, Described<BorealisGetDiskInfoResult>>)>
           callback,
-      Expected<std::unique_ptr<BorealisDiskInfo>, std::string>
-          disk_info_or_error);
+      Expected<std::unique_ptr<BorealisDiskInfo>,
+               Described<BorealisGetDiskInfoResult>> disk_info_or_error);
 
-  std::unique_ptr<BuildDiskInfo> build_disk_info_transition_;
+  // Handles the RequestSpace and ReleaseSpace requests. |bytes_requested| from
+  // RequestSpace becomes a positive delta that expands the disk and the
+  // |bytes_to_release| from ReleaseSpace becomes a negative delta that shrinks
+  // the disk (an error is returned if the unit64_t can't be converted to a
+  // negative int64_t).
+  void RequestSpaceDelta(
+      int64_t target_delta,
+      base::OnceCallback<void(
+          Expected<uint64_t, Described<BorealisResizeDiskResult>>)> callback);
+
+  void OnRequestSpaceDelta(
+      int64_t target_delta,
+      base::OnceCallback<void(
+          Expected<uint64_t, Described<BorealisResizeDiskResult>>)> callback,
+      Expected<std::unique_ptr<std::pair<BorealisDiskInfo, BorealisDiskInfo>>,
+               Described<BorealisResizeDiskResult>> success_or_error);
+
+  void OnSyncDiskSize(
+      base::OnceCallback<void(Expected<BorealisSyncDiskSizeResult,
+                                       Described<BorealisSyncDiskSizeResult>>)>
+          callback,
+      Expected<std::unique_ptr<BorealisSyncDiskSizeResult>,
+               Described<BorealisSyncDiskSizeResult>> success_or_error);
+
   const BorealisContext* const context_;
+  int request_count_;
+  std::unique_ptr<BuildDiskInfo> build_disk_info_transition_;
+  std::unique_ptr<ResizeDisk> resize_disk_transition_;
+  std::unique_ptr<SyncDisk> sync_disk_transition_;
   std::unique_ptr<FreeSpaceProvider> free_space_provider_;
   base::WeakPtrFactory<BorealisDiskManagerImpl> weak_factory_;
 };

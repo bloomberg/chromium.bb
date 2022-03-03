@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
@@ -19,6 +18,9 @@ namespace jingle_glue {
 class TaskPump : public jingle_xmpp::TaskRunner {
  public:
   TaskPump();
+
+  TaskPump(const TaskPump&) = delete;
+  TaskPump& operator=(const TaskPump&) = delete;
 
   ~TaskPump() override;
 
@@ -38,8 +40,6 @@ class TaskPump : public jingle_xmpp::TaskRunner {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<TaskPump> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TaskPump);
 };
 
 }  // namespace jingle_glue

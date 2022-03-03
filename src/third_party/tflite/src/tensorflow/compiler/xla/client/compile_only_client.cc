@@ -17,6 +17,7 @@ limitations under the License.
 
 #include "absl/memory/memory.h"
 #include "llvm/ADT/Triple.h"
+#include "llvm/ADT/Twine.h"
 #include "tensorflow/compiler/xla/status_macros.h"
 
 namespace xla {
@@ -50,7 +51,7 @@ CompileOnlyClient::CompileAheadOfTime(
                                                metadata);
 }
 
-int64 CompileOnlyClient::PointerSizeForTriple(absl::string_view triple) {
+int64_t CompileOnlyClient::PointerSizeForTriple(absl::string_view triple) {
   llvm::Triple llvm_triple(
       llvm::Triple::normalize(llvm::StringRef(triple.data(), triple.size())));
   if (llvm_triple.isArch64Bit()) {

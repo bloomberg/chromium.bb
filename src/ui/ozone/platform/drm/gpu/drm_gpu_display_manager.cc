@@ -8,20 +8,26 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/linux/drm_util_linux.h"
-#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_display.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
 
 namespace {
+constexpr char kMultipleDisplayIdsCollisionDetected[] =
+    "Display.MultipleDisplays.GenerateId.CollisionDetection";
+using MapDisplayIdToIndexAndSnapshotPair =
+    base::flat_map<int64_t, display::DisplaySnapshot*>;
 
 class DisplayComparator {
  public:
@@ -113,11 +119,20 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
 
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
   size_t device_index = 0;
+  MapDisplayIdToIndexAndSnapshotPair id_collision_map;
+  bool collision_detected = false;
   for (const auto& drm : devices) {
+    if (device_index >= kMaxDrmCount) {
+      LOG(WARNING) << "Reached the current limit of " << kMaxDrmCount
+                   << " connected DRM devices. Ignoring the remaining "
+                   << devices.size() - kMaxDrmCount << " connected devices.";
+      break;
+    }
+
     // Receiving a signal that DRM state was updated. Need to reset the plane
     // manager's resource cache since IDs may have changed.
     drm->plane_manager()->ResetConnectorsCache(drm->GetResources());
-    auto display_infos = GetAvailableDisplayControllerInfos(drm->get_fd());
+    auto display_infos = GetDisplayInfosAndUpdateCrtcs(drm->get_fd());
     for (const auto& display_info : display_infos) {
       auto it = std::find_if(
           old_displays.begin(), old_displays.end(),
@@ -130,15 +145,34 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
         displays_.push_back(std::make_unique<DrmDisplay>(drm));
       }
 
-      auto display_snapshot =
-          displays_.back()->Update(display_info.get(), device_index);
+      auto display_snapshot = displays_.back()->Update(
+          display_info.get(), static_cast<uint8_t>(device_index));
       if (display_snapshot) {
+        const auto colliding_display_snapshot_iter =
+            id_collision_map.find(display_snapshot->edid_display_id());
+        if (colliding_display_snapshot_iter != id_collision_map.end()) {
+          // There is a collision between |display_snapshot| and a previous
+          // display. Resolve it by adding their connector indices to their
+          // display IDs, respectively.
+          collision_detected = true;
+          display_snapshot->AddIndexToDisplayId();
+          colliding_display_snapshot_iter->second->AddIndexToDisplayId();
+        } else {
+          id_collision_map[display_snapshot->edid_display_id()] =
+              display_snapshot.get();
+        }
         params_list.push_back(std::move(display_snapshot));
       } else {
         displays_.pop_back();
       }
     }
     device_index++;
+  }
+
+  const bool multiple_connected_displays = params_list.size() > 1;
+  if (multiple_connected_displays) {
+    base::UmaHistogramBoolean(kMultipleDisplayIdsCollisionDetected,
+                              collision_detected);
   }
 
   NotifyScreenManager(displays_, old_displays);
@@ -289,14 +323,14 @@ void DrmGpuDisplayManager::SetGammaCorrection(
   display->SetGammaCorrection(degamma_lut, gamma_lut);
 }
 
-void DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
+bool DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
     LOG(ERROR) << "There is no display with ID " << display_id;
-    return;
+    return false;
   }
 
-  display->SetPrivacyScreen(enabled);
+  return display->SetPrivacyScreen(enabled);
 }
 
 void DrmGpuDisplayManager::SetColorSpace(int64_t crtc_id,

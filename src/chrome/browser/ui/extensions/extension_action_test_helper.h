@@ -10,13 +10,11 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "extensions/common/extension_id.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class ExtensionsContainer;
-class ToolbarActionsBar;
 
 namespace gfx {
 class Image;
@@ -34,6 +32,10 @@ class ExtensionActionTestHelper {
   static std::unique_ptr<ExtensionActionTestHelper> Create(
       Browser* browser,
       bool is_real_window = true);
+
+  ExtensionActionTestHelper(const ExtensionActionTestHelper&) = delete;
+  ExtensionActionTestHelper& operator=(const ExtensionActionTestHelper&) =
+      delete;
 
   virtual ~ExtensionActionTestHelper() {}
 
@@ -84,9 +86,6 @@ class ExtensionActionTestHelper {
   // is too small for the preferred width.
   virtual void SetWidth(int width) = 0;
 
-  // Returns the ToolbarActionsBar.
-  virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
-
   // Returns the associated ExtensionsContainer.
   virtual ExtensionsContainer* GetExtensionsContainer() = 0;
 
@@ -118,9 +117,6 @@ class ExtensionActionTestHelper {
 
  protected:
   ExtensionActionTestHelper() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActionTestHelper);
 };
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_TEST_HELPER_H_

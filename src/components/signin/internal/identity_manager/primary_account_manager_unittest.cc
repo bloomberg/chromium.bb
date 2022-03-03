@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -103,19 +104,6 @@ class PrimaryAccountManagerTest : public testing::Test,
     manager_.reset();
   }
 
-  void ExpectSignInWithRefreshTokenSuccess() {
-    EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
-    EXPECT_FALSE(manager_->GetPrimaryAccountId(ConsentLevel::kSync).empty());
-    EXPECT_FALSE(
-        manager_->GetPrimaryAccountInfo(ConsentLevel::kSync).email.empty());
-
-    EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
-        manager_->GetPrimaryAccountId(ConsentLevel::kSync)));
-
-    // Should go into token service and stop.
-    EXPECT_EQ(1, num_successful_signins_);
-  }
-
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event_details) override {
     DCHECK(event_details.GetEventTypeFor(signin::ConsentLevel::kSync) !=
@@ -152,7 +140,7 @@ class PrimaryAccountManagerTest : public testing::Test,
   AccountTrackerService account_tracker_;
   AccountFetcherService account_fetcher_;
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  PrimaryAccountPolicyManagerImpl* policy_manager_;
+  raw_ptr<PrimaryAccountPolicyManagerImpl> policy_manager_;
 #endif
   std::unique_ptr<PrimaryAccountManager> manager_;
   std::vector<std::string> oauth_tokens_fetched_;
@@ -246,6 +234,10 @@ TEST_F(PrimaryAccountManagerTest, UnconsentedSignOutWhileProhibited) {
   EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSync));
   signin_client()->set_is_signout_allowed(false);
+  manager_->ClearPrimaryAccount(signin_metrics::SIGNOUT_TEST,
+                                signin_metrics::SignoutDelete::kIgnoreMetric);
+  EXPECT_TRUE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
+  signin_client()->set_is_signout_allowed(true);
   manager_->ClearPrimaryAccount(signin_metrics::SIGNOUT_TEST,
                                 signin_metrics::SignoutDelete::kIgnoreMetric);
   EXPECT_FALSE(manager_->HasPrimaryAccount(ConsentLevel::kSignin));
@@ -374,7 +366,7 @@ TEST_F(PrimaryAccountManagerTest, GaiaIdMigration) {
   client_prefs->SetInteger(prefs::kAccountIdMigrationState,
                            AccountTrackerService::MIGRATION_NOT_STARTED);
   ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
-  update->Clear();
+  update->ClearList();
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("account_id", email);
   dict->SetString("email", email);
@@ -407,7 +399,7 @@ TEST_F(PrimaryAccountManagerTest, GaiaIdMigrationCrashInTheMiddle) {
   client_prefs->SetInteger(prefs::kAccountIdMigrationState,
                            AccountTrackerService::MIGRATION_NOT_STARTED);
   ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
-  update->Clear();
+  update->ClearList();
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("account_id", email);
   dict->SetString("email", email);
@@ -429,10 +421,8 @@ TEST_F(PrimaryAccountManagerTest, GaiaIdMigrationCrashInTheMiddle) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
+// Test that force migrating the account id to Gaia ID is finished.
 TEST_F(PrimaryAccountManagerTest, GaiaIdMigration_ForceAllAccounts) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(switches::kForceAccountIdMigration);
-
   ASSERT_EQ(AccountTrackerService::MIGRATION_DONE,
             account_tracker()->GetMigrationState());
   std::string email = "user@gmail.com";
@@ -442,7 +432,7 @@ TEST_F(PrimaryAccountManagerTest, GaiaIdMigration_ForceAllAccounts) {
   client_prefs->SetInteger(prefs::kAccountIdMigrationState,
                            AccountTrackerService::MIGRATION_NOT_STARTED);
   ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
-  update->Clear();
+  update->ClearList();
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("account_id", email);
   dict->SetString("email", email);

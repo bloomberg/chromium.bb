@@ -8,12 +8,13 @@
 #include "src/gpu/vk/GrVkPipelineState.h"
 
 #include "src/core/SkMipmap.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrTexture.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
+#include "src/gpu/GrXferProcessor.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/vk/GrVkBuffer.h"
 #include "src/gpu/vk/GrVkCommandBuffer.h"
 #include "src/gpu/vk/GrVkDescriptorPool.h"
@@ -27,22 +28,22 @@
 #include "src/gpu/vk/GrVkTexture.h"
 
 GrVkPipelineState::GrVkPipelineState(
-            GrVkGpu* gpu,
-            sk_sp<const GrVkPipeline> pipeline,
-            const GrVkDescriptorSetManager::Handle& samplerDSHandle,
-            const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
-            const UniformInfoArray& uniforms,
-            uint32_t uniformSize,
-            bool usePushConstants,
-            const UniformInfoArray& samplers,
-            std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
-            std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-            std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls)
+        GrVkGpu* gpu,
+        sk_sp<const GrVkPipeline> pipeline,
+        const GrVkDescriptorSetManager::Handle& samplerDSHandle,
+        const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
+        const UniformInfoArray& uniforms,
+        uint32_t uniformSize,
+        bool usePushConstants,
+        const UniformInfoArray& samplers,
+        std::unique_ptr<GrGeometryProcessor::ProgramImpl> gpImpl,
+        std::unique_ptr<GrXferProcessor::ProgramImpl> xpImpl,
+        std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls)
         : fPipeline(std::move(pipeline))
         , fSamplerDSHandle(samplerDSHandle)
         , fBuiltinUniformHandles(builtinUniformHandles)
-        , fGeometryProcessor(std::move(geometryProcessor))
-        , fXferProcessor(std::move(xferProcessor))
+        , fGPImpl(std::move(gpImpl))
+        , fXPImpl(std::move(xpImpl))
         , fFPImpls(std::move(fpImpls))
         , fDataManager(uniforms, uniformSize, usePushConstants) {
     fNumSamplers = samplers.count();
@@ -78,21 +79,18 @@ bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
                                            GrVkCommandBuffer* commandBuffer) {
     this->setRenderTargetState(colorAttachmentDimensions, programInfo.origin());
 
-    fGeometryProcessor->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
+    fGPImpl->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
+
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
-        auto& fp = programInfo.pipeline().getFragmentProcessor(i);
-        for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
+        const auto& fp = programInfo.pipeline().getFragmentProcessor(i);
+        fp.visitWithImpls([&](const GrFragmentProcessor& fp,
+                              GrFragmentProcessor::ProgramImpl& impl) {
             impl.setData(fDataManager, fp);
-        }
+        }, *fFPImpls[i]);
     }
 
-    {
-        SkIPoint offset;
-        GrTexture* dstTexture = programInfo.pipeline().peekDstTexture(&offset);
-
-        fXferProcessor->setData(fDataManager, programInfo.pipeline().getXferProcessor(),
-                                dstTexture, offset);
-    }
+    programInfo.pipeline().setDstTextureUniforms(fDataManager, &fBuiltinUniformHandles);
+    fXPImpl->setData(fDataManager, programInfo.pipeline().getXferProcessor());
 
     // Upload uniform data and bind descriptor set.
     auto [uniformBuffer, success] = fDataManager.uploadUniforms(gpu, fPipeline->layout(),
@@ -134,16 +132,17 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
         samplerBindings[currTextureBinding++] = {sampler.samplerState(), texture};
     }
 
-    pipeline.visitTextureEffects([&](const GrTextureEffect& te) {
-        GrSamplerState samplerState = te.samplerState();
-        auto* texture = static_cast<GrVkTexture*>(te.texture());
-        samplerBindings[currTextureBinding++] = {samplerState, texture};
-    });
 
     if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
         samplerBindings[currTextureBinding++] = {GrSamplerState::Filter::kNearest,
                                                  static_cast<GrVkTexture*>(dstTexture)};
     }
+
+    pipeline.visitTextureEffects([&](const GrTextureEffect& te) {
+        GrSamplerState samplerState = te.samplerState();
+        auto* texture = static_cast<GrVkTexture*>(te.texture());
+        samplerBindings[currTextureBinding++] = {samplerState, texture};
+    });
 
     // Get new descriptor set
     SkASSERT(fNumSamplers == currTextureBinding);
@@ -151,7 +150,7 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
 
     if (fNumSamplers == 1) {
         auto texture = samplerBindings[0].fTexture;
-        auto texAttachment = texture->textureAttachment();
+        auto texAttachment = texture->textureImage();
         const auto& samplerState = samplerBindings[0].fState;
         const GrVkDescriptorSet* descriptorSet = texture->cachedSingleDescSet(samplerState);
         if (descriptorSet) {
@@ -176,7 +175,7 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
     for (int i = 0; i < fNumSamplers; ++i) {
         GrSamplerState state = samplerBindings[i].fState;
         GrVkTexture* texture = samplerBindings[i].fTexture;
-        auto texAttachment = texture->textureAttachment();
+        auto texAttachment = texture->textureImage();
 
         const GrVkImageView* textureView = texAttachment->textureView();
         const GrVkSampler* sampler = nullptr;
@@ -249,24 +248,25 @@ bool GrVkPipelineState::setAndBindInputAttachment(GrVkGpu* gpu,
 
 void GrVkPipelineState::setRenderTargetState(SkISize colorAttachmentDimensions,
                                              GrSurfaceOrigin origin) {
-
-    // Load the RT height uniform if it is needed to y-flip gl_FragCoord.
-    if (fBuiltinUniformHandles.fRTHeightUni.isValid() &&
-        fRenderTargetState.fRenderTargetSize.fHeight != colorAttachmentDimensions.height()) {
-        fDataManager.set1f(fBuiltinUniformHandles.fRTHeightUni,
-                           SkIntToScalar(colorAttachmentDimensions.height()));
-    }
-
-    // set RT adjustment
+    // Set RT adjustment and RT flip
     SkASSERT(fBuiltinUniformHandles.fRTAdjustmentUni.isValid());
     if (fRenderTargetState.fRenderTargetOrigin != origin ||
         fRenderTargetState.fRenderTargetSize != colorAttachmentDimensions) {
         fRenderTargetState.fRenderTargetSize = colorAttachmentDimensions;
         fRenderTargetState.fRenderTargetOrigin = origin;
 
-        float rtAdjustmentVec[4];
-        fRenderTargetState.getRTAdjustmentVec(rtAdjustmentVec);
-        fDataManager.set4fv(fBuiltinUniformHandles.fRTAdjustmentUni, 1, rtAdjustmentVec);
+        // The client will mark a swap buffer as kTopLeft when making a SkSurface because
+        // Vulkan's framebuffer space has (0, 0) at the top left. This agrees with Skia's device
+        // coords and with Vulkan's NDC that has (-1, -1) in the top left. So a flip is needed when
+        // surface origin is kBottomLeft rather than kTopLeft.
+        bool flip = (origin == kBottomLeft_GrSurfaceOrigin);
+        std::array<float, 4> v = SkSL::Compiler::GetRTAdjustVector(colorAttachmentDimensions, flip);
+        fDataManager.set4fv(fBuiltinUniformHandles.fRTAdjustmentUni, 1, v.data());
+        if (fBuiltinUniformHandles.fRTFlipUni.isValid()) {
+            std::array<float, 2> d =
+                    SkSL::Compiler::GetRTFlipVector(colorAttachmentDimensions.height(), flip);
+            fDataManager.set2fv(fBuiltinUniformHandles.fRTFlipUni, 1, d.data());
+        }
     }
 }
 

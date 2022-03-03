@@ -21,7 +21,7 @@ public interface TabModelSelector {
     /**
      * A delegate interface to push close all tabs requests.
      */
-    public interface CloseAllTabsDelegate {
+    interface CloseAllTabsDelegate {
         /**
          * Sends a request to close all tabs for a {@link TabModel}.
          * @param incognito Whether the tabs to be closed are incognito.
@@ -29,6 +29,11 @@ public interface TabModelSelector {
          */
         boolean closeAllTabsRequest(boolean incognito);
     }
+
+    /**
+     * Should be called when the app starts showing a view with multiple tabs.
+     */
+    void onTabsViewShown();
 
     /**
      * Set the current model. This won't cause an animation, but will still change the stack that is
@@ -186,6 +191,17 @@ public interface TabModelSelector {
      * Unsubscribe from {@link IncognitoTabModelObserver}.
      */
     void removeIncognitoTabModelObserver(IncognitoTabModelObserver incognitoObserver);
+
+    /**
+     * Sets the delegate to handle {@link TabModel} events that triggers an Incognito
+     * re-authentication. This delegate is invoked when all the observers observing
+     * onTabModelSelected event have been notified.
+     *
+     * @param incognitoReauthDialogDelegate A delegate which takes care of triggering an Incognito
+     *         re-authentication.
+     */
+    void setIncognitoReauthDialogDelegate(
+            IncognitoTabModelObserver.IncognitoReauthDialogDelegate incognitoReauthDialogDelegate);
 
     /**
      * Destroy all owned {@link TabModel}s and {@link Tab}s referenced by this selector.

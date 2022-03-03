@@ -5,8 +5,10 @@
 #ifndef MEDIA_AUDIO_AUDIO_SYSTEM_HELPER_H_
 #define MEDIA_AUDIO_AUDIO_SYSTEM_HELPER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 class AudioManager;
@@ -17,6 +19,10 @@ class AudioManager;
 class MEDIA_EXPORT AudioSystemHelper {
  public:
   AudioSystemHelper(AudioManager* audio_manager);
+
+  AudioSystemHelper(const AudioSystemHelper&) = delete;
+  AudioSystemHelper& operator=(const AudioSystemHelper&) = delete;
+
   ~AudioSystemHelper();
 
   void GetInputStreamParameters(
@@ -49,9 +55,7 @@ class MEDIA_EXPORT AudioSystemHelper {
   absl::optional<AudioParameters> ComputeOutputParameters(
       const std::string& device_id);
 
-  AudioManager* const audio_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioSystemHelper);
+  const raw_ptr<AudioManager> audio_manager_;
 };
 
 }  // namespace media

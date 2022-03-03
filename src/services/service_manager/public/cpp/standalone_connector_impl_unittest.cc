@@ -4,7 +4,6 @@
 
 #include "services/service_manager/public/cpp/standalone_connector_impl.h"
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -24,6 +23,9 @@ class TestConnectorDelegate : public StandaloneConnectorImpl::Delegate {
   TestConnectorDelegate(Handler handler)
       : TestConnectorDelegate(base::BindLambdaForTesting(handler)) {}
 
+  TestConnectorDelegate(const TestConnectorDelegate&) = delete;
+  TestConnectorDelegate& operator=(const TestConnectorDelegate&) = delete;
+
   ~TestConnectorDelegate() override = default;
 
  private:
@@ -40,8 +42,6 @@ class TestConnectorDelegate : public StandaloneConnectorImpl::Delegate {
   }
 
   const Callback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnectorDelegate);
 };
 
 class StandaloneConnectorImplTest : public testing::Test {

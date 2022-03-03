@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -18,6 +18,7 @@
 #include "components/guest_view/common/guest_view_messages.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -61,6 +62,9 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
         destroyed_(false),
         guest_(guest) {}
 
+  OwnerContentsObserver(const OwnerContentsObserver&) = delete;
+  OwnerContentsObserver& operator=(const OwnerContentsObserver&) = delete;
+
   ~OwnerContentsObserver() override = default;
 
   // WebContentsObserver implementation.
@@ -83,7 +87,8 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     Destroy();
   }
 
-  void RenderProcessGone(base::TerminationStatus status) override {
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override {
     if (destroyed_)
       return;
     // If the embedder process is destroyed, then destroy the guest.
@@ -99,7 +104,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     guest_->EmbedderFullscreenToggled(is_fullscreen_);
   }
 
-  void MainFrameWasResized(bool width_changed) override {
+  void PrimaryMainFrameWasResized(bool width_changed) override {
     if (destroyed_ || !web_contents()->GetDelegate())
       return;
 
@@ -127,7 +132,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
  private:
   bool is_fullscreen_;
   bool destroyed_;
-  GuestViewBase* guest_;
+  raw_ptr<GuestViewBase> guest_;
 
   void Destroy() {
     if (destroyed_)
@@ -139,8 +144,6 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     bool also_delete = !guest_->web_contents()->GetOuterWebContents();
     guest_->Destroy(also_delete);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(OwnerContentsObserver);
 };
 
 // This observer ensures that the GuestViewBase destroys itself if its opener
@@ -150,6 +153,9 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
   explicit OpenerLifetimeObserver(GuestViewBase* guest)
       : WebContentsObserver(guest->GetOpener()->web_contents()),
         guest_(guest) {}
+
+  OpenerLifetimeObserver(const OpenerLifetimeObserver&) = delete;
+  OpenerLifetimeObserver& operator=(const OpenerLifetimeObserver&) = delete;
 
   ~OpenerLifetimeObserver() override = default;
 
@@ -163,9 +169,7 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
   }
 
  private:
-  GuestViewBase* guest_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpenerLifetimeObserver);
+  raw_ptr<GuestViewBase> guest_;
 };
 
 GuestViewBase::GuestViewBase(WebContents* owner_web_contents)
@@ -581,7 +585,11 @@ void GuestViewBase::WebContentsDestroyed() {
 
 void GuestViewBase::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted())
     return;
 
   if (attached() && ZoomPropagatesFromEmbedderToGuest())
@@ -624,23 +632,12 @@ bool GuestViewBase::HandleKeyboardEvent(
 }
 
 void GuestViewBase::LoadingStateChanged(WebContents* source,
-                                        bool to_different_document) {
+                                        bool should_show_loading_ui) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
 
   embedder_web_contents()->GetDelegate()->LoadingStateChanged(
-      embedder_web_contents(), to_different_document);
-}
-
-content::ColorChooser* GuestViewBase::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
-    return nullptr;
-
-  return embedder_web_contents()->GetDelegate()->OpenColorChooser(
-      web_contents, color, suggestions);
+      embedder_web_contents(), should_show_loading_ui);
 }
 
 void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,
@@ -813,8 +810,9 @@ double GuestViewBase::GetEmbedderZoomFactor() const {
 
 void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   // Read the autosize parameters passed in from the embedder.
-  bool auto_size_enabled = auto_size_enabled_;
-  params.GetBoolean(kAttributeAutoSize, &auto_size_enabled);
+  absl::optional<bool> auto_size_enabled_opt =
+      params.FindBoolKey(kAttributeAutoSize);
+  bool auto_size_enabled = auto_size_enabled_opt.value_or(auto_size_enabled_);
 
   int max_height = max_auto_size_.height();
   int max_width = max_auto_size_.width();
@@ -826,10 +824,8 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   params.GetInteger(kAttributeMinHeight, &min_height);
   params.GetInteger(kAttributeMinWidth, &min_width);
 
-  double element_height = 0.0;
-  double element_width = 0.0;
-  params.GetDouble(kElementHeight, &element_height);
-  params.GetDouble(kElementWidth, &element_width);
+  double element_height = params.FindDoublePath(kElementHeight).value_or(0.0);
+  double element_width = params.FindDoublePath(kElementWidth).value_or(0.0);
 
   // Set the normal size to the element size so that the guestview will fit
   // the element initially if autosize is disabled.
@@ -837,8 +833,9 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   int normal_width = normal_size_.width();
   // If the element size was provided in logical units (versus physical), then
   // it will be converted to physical units.
-  bool element_size_is_logical = false;
-  params.GetBoolean(kElementSizeIsLogical, &element_size_is_logical);
+  absl::optional<bool> element_size_is_logical_opt =
+      params.FindBoolKey(kElementSizeIsLogical);
+  bool element_size_is_logical = element_size_is_logical_opt.value_or(false);
   if (element_size_is_logical) {
     // Convert the element size from logical pixels to physical pixels.
     normal_height = LogicalPixelsToPhysicalPixels(element_height);

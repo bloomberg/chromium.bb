@@ -9,13 +9,13 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "google_apis/drive/base_requests.h"
-#include "google_apis/drive/dummy_auth_service.h"
-#include "google_apis/drive/request_sender.h"
+#include "google_apis/common/dummy_auth_service.h"
+#include "google_apis/common/request_sender.h"
+#include "google_apis/drive/drive_base_requests.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -24,6 +24,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,8 +129,8 @@ class FilesListRequestRunnerTest : public testing::Test {
 
   // Called when the request is completed and no more backoff retries will
   // happen.
-  void OnCompleted(DriveApiErrorCode error, std::unique_ptr<FileList> entry) {
-    response_error_ = std::make_unique<DriveApiErrorCode>(error);
+  void OnCompleted(ApiErrorCode error, std::unique_ptr<FileList> entry) {
+    response_error_ = std::make_unique<ApiErrorCode>(error);
     response_entry_ = std::move(entry);
     std::move(on_completed_callback_).Run();
   }
@@ -171,7 +172,7 @@ class FilesListRequestRunnerTest : public testing::Test {
 
   // A requests and a response stored for verification in test cases.
   std::unique_ptr<net::test_server::HttpRequest> http_request_;
-  std::unique_ptr<DriveApiErrorCode> response_error_;
+  std::unique_ptr<ApiErrorCode> response_error_;
   std::unique_ptr<FileList> response_entry_;
 };
 

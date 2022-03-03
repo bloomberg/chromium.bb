@@ -10,17 +10,15 @@
 
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_network_handler.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,66 +32,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/chromeos/strings/network_element_localized_strings_provider.h"
 
 namespace chromeos {
-
-namespace {
-
-constexpr char kAddNetwork[] = "addNetwork";
-constexpr char kShowNetworkDetails[] = "showNetworkDetails";
-constexpr char kShowNetworkConfig[] = "showNetworkConfig";
-
-class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
- public:
-  NetworkConfigMessageHandler() {}
-  NetworkConfigMessageHandler(NetworkConfigMessageHandler const&) = delete;
-  NetworkConfigMessageHandler& operator=(const NetworkConfigMessageHandler&) =
-      delete;
-  ~NetworkConfigMessageHandler() override {}
-
-  // WebUIMessageHandler implementation.
-  void RegisterMessages() override {
-    web_ui()->RegisterMessageCallback(
-        kAddNetwork,
-        base::BindRepeating(&NetworkConfigMessageHandler::AddNetwork,
-                            base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
-        kShowNetworkDetails,
-        base::BindRepeating(&NetworkConfigMessageHandler::ShowNetworkDetails,
-                            base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
-        kShowNetworkConfig,
-        base::BindRepeating(&NetworkConfigMessageHandler::ShowNetworkConfig,
-                            base::Unretained(this)));
-  }
-
- private:
-  void ShowNetworkDetails(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string guid;
-    CHECK(arg_list->GetString(0, &guid));
-
-    InternetDetailDialog::ShowDialog(guid);
-  }
-
-  void ShowNetworkConfig(const base::ListValue* arg_list) {
-    CHECK_EQ(1u, arg_list->GetSize());
-    std::string guid;
-    CHECK(arg_list->GetString(0, &guid));
-
-    InternetConfigDialog::ShowDialogForNetworkId(guid);
-  }
-
-  void AddNetwork(const base::ListValue* args) {
-    std::string onc_type;
-    args->GetString(0, &onc_type);
-    InternetConfigDialog::ShowDialogForNetworkType(onc_type);
-  }
-
-  base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_{this};
-};
-
-}  // namespace
 
 // static
 void LockScreenNetworkUI::GetLocalizedStrings(
@@ -114,7 +55,9 @@ void LockScreenNetworkUI::GetLocalizedStrings(
 
 LockScreenNetworkUI::LockScreenNetworkUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
-  web_ui->AddMessageHandler(std::make_unique<NetworkConfigMessageHandler>());
+  auto main_handler = std::make_unique<NetworkConfigMessageHandler>();
+  main_handler_ = main_handler.get();
+  web_ui->AddMessageHandler(std::move(main_handler));
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);
@@ -127,8 +70,8 @@ LockScreenNetworkUI::LockScreenNetworkUI(content::WebUI* web_ui)
 
   html->AddLocalizedStrings(localized_strings);
 
-  network_element::AddLocalizedStrings(html);
-  network_element::AddOncLocalizedStrings(html);
+  ui::network_element::AddLocalizedStrings(html);
+  ui::network_element::AddOncLocalizedStrings(html);
   html->UseStringsJs();
 
   html->AddResourcePath("lock_screen_network.js", IDR_LOCK_SCREEN_NETWORK_JS);

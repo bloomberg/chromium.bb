@@ -5,7 +5,7 @@ include_rules = [
   "+src/asmjs/asm-js.h",
   "-src/baseline",
   "+src/baseline/baseline.h",
-  "+src/baseline/baseline-osr-inl.h",
+  "+src/baseline/baseline-batch-compiler.h",
   "+src/baseline/bytecode-offset-iterator.h",
   "-src/bigint",
   "+src/bigint/bigint.h",
@@ -52,18 +52,24 @@ include_rules = [
   "+src/interpreter/setup-interpreter.h",
   "-src/regexp",
   "+src/regexp/regexp.h",
+  "+src/regexp/regexp-flags.h",
   "+src/regexp/regexp-stack.h",
   "+src/regexp/regexp-utils.h",
   "-src/trap-handler",
   "+src/trap-handler/handler-inside-posix.h",
   "+src/trap-handler/handler-inside-win.h",
   "+src/trap-handler/trap-handler.h",
+  "+src/trap-handler/trap-handler-simulator.h",
   "+testing/gtest/include/gtest/gtest_prod.h",
   "-src/libplatform",
   "-include/libplatform",
   "+builtins-generated",
   "+torque-generated",
   "+starboard",
+  # Using cppgc inside v8 is not (yet) allowed.
+  "-include/cppgc",
+  "+include/cppgc/platform.h",
+  "+include/cppgc/source-location.h",
 ]
 
 specific_include_rules = {
@@ -71,6 +77,9 @@ specific_include_rules = {
     "+include/libplatform/libplatform.h",
     "+include/libplatform/v8-tracing.h",
     "+perfetto/tracing.h"
+  ],
+  "d8-platforms\.cc": [
+    "+include/libplatform/libplatform.h",
   ],
   "builtins-trace\.cc": [
     "+protos/perfetto",

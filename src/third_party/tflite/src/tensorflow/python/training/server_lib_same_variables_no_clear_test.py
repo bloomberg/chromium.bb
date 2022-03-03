@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for tf.GrpcServer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.client import session
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
@@ -34,7 +30,8 @@ class SameVariablesNoClearTest(test.TestCase):
   # TODO(b/34465411): Starting multiple servers with different configurations
   # in the same test is flaky. Move this test case back into
   # "server_lib_test.py" when this is no longer the case.
-  @test_util.run_v1_only("b/120545219")
+  @test_util.run_v1_only(
+      "This exercises tensor lookup via names which is not supported in V2.")
   def testSameVariablesNoClear(self):
     server = server_lib.Server.create_local_server()
 

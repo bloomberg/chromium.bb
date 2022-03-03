@@ -5,7 +5,6 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -31,6 +30,8 @@ ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(
     PasswordManagerClient* password_client,
     autofill::AutofillClient* autofill_client)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ContentPasswordManagerDriverFactory>(
+          *web_contents),
       password_client_(password_client),
       autofill_client_(autofill_client) {}
 
@@ -49,8 +50,16 @@ void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
   // the request will be just dropped, this would cause closing the message pipe
   // which would raise connection error to peer side.
   // Peer side could reconnect later when needed.
+  // TODO(https://crbug.com/1286342): WebContents should never be null here; the
+  // helper function above only returns a null WebContents if
+  // `render_frame_host` is null, but that should never be the case here.
   if (!web_contents)
     return;
+
+  // This is called by a Mojo registry for associated interfaces, which should
+  // never attempt to bind interfaces for RenderFrameHosts with non-live
+  // RenderFrames.
+  CHECK(render_frame_host->IsRenderFrameLive());
 
   ContentPasswordManagerDriverFactory* factory =
       ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
@@ -66,7 +75,12 @@ ContentPasswordManagerDriverFactory::GetDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
   DCHECK_EQ(web_contents(),
             content::WebContents::FromRenderFrameHost(render_frame_host));
-  DCHECK(render_frame_host->IsRenderFrameCreated());
+
+  // A RenderFrameHost without a live RenderFrame will never call
+  // RenderFrameDeleted(), and the corresponding driver would never be cleaned
+  // up.
+  if (!render_frame_host->IsRenderFrameLive())
+    return nullptr;
 
   // TryEmplace() will return an iterator to the driver corresponding to
   // `render_frame_host`. It creates a new one if required.
@@ -86,7 +100,7 @@ void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
 
 void ContentPasswordManagerDriverFactory::DidFinishNavigation(
     content::NavigationHandle* navigation) {
-  if (!navigation->IsInMainFrame() || navigation->IsSameDocument() ||
+  if (!navigation->IsInPrimaryMainFrame() || navigation->IsSameDocument() ||
       !navigation->HasCommitted()) {
     return;
   }
@@ -96,6 +110,8 @@ void ContentPasswordManagerDriverFactory::DidFinishNavigation(
                              navigation->GetPageTransition(),
                              navigation->WasInitiatedByLinkClick(),
                              password_client_->GetPasswordManager());
+  // A committed navigation always has a live RenderFrameHost.
+  CHECK(navigation->GetRenderFrameHost()->IsRenderFrameLive());
   GetDriverForFrame(navigation->GetRenderFrameHost())
       ->GetPasswordAutofillManager()
       ->DidNavigateMainFrame();
@@ -106,6 +122,6 @@ void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {
     frame_and_driver.second.SendLoggingAvailability();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentPasswordManagerDriverFactory)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentPasswordManagerDriverFactory);
 
 }  // namespace password_manager

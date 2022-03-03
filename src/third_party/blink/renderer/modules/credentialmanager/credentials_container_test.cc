@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -46,6 +46,10 @@ namespace {
 class MockCredentialManager : public mojom::blink::CredentialManager {
  public:
   MockCredentialManager() {}
+
+  MockCredentialManager(const MockCredentialManager&) = delete;
+  MockCredentialManager& operator=(const MockCredentialManager&) = delete;
+
   ~MockCredentialManager() override {}
 
   void Bind(mojo::PendingReceiver<::blink::mojom::blink::CredentialManager>
@@ -95,8 +99,6 @@ class MockCredentialManager : public mojom::blink::CredentialManager {
   mojo::Receiver<::blink::mojom::blink::CredentialManager> receiver_{this};
 
   GetCallback get_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCredentialManager);
 };
 
 class CredentialManagerTestingContext {
@@ -249,8 +251,8 @@ TEST(CredentialsContainerTest,
 
   auto* user_options = PublicKeyCredentialUserEntity::Create();
   int dummy_buffer_source = 1;
-  auto dummy_buffer =
-      ArrayBufferOrArrayBufferView::FromArrayBuffer(DOMArrayBuffer::Create(
+  auto* dummy_buffer =
+      MakeGarbageCollected<V8BufferSource>(DOMArrayBuffer::Create(
           &dummy_buffer_source, sizeof(dummy_buffer_source)));
   user_options->setId(dummy_buffer);
   user_options->setIcon("invalid URL");

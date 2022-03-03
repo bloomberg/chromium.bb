@@ -6,9 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"

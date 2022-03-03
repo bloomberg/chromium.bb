@@ -10,6 +10,7 @@
 #include "platform/impl/stream_socket_posix.h"
 #include "platform/impl/tls_connection_posix.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 
@@ -25,8 +26,7 @@ TlsDataRouterPosix::~TlsDataRouterPosix() {
 void TlsDataRouterPosix::RegisterConnection(TlsConnectionPosix* connection) {
   {
     std::lock_guard<std::mutex> lock(connections_mutex_);
-    OSP_DCHECK(std::find(connections_.begin(), connections_.end(),
-                         connection) == connections_.end());
+    OSP_DCHECK(!Contains(connections_, connection));
     connections_.push_back(connection);
   }
 

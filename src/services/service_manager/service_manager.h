@@ -11,7 +11,7 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -29,7 +29,6 @@
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_instance_registry.h"
 #include "services/service_manager/service_process_host.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace service_manager {
 
@@ -108,6 +107,9 @@ class ServiceManager : public Service {
   // manually registered with |RegisterService()| below.
   ServiceManager(const std::vector<Manifest>& manifests,
                  ServiceExecutablePolicy service_executable_policy);
+
+  ServiceManager(const ServiceManager&) = delete;
+  ServiceManager& operator=(const ServiceManager&) = delete;
 
   ~ServiceManager() override;
 
@@ -202,11 +204,9 @@ class ServiceManager : public Service {
 
   // Always points to the ServiceManager's own Instance. Note that this
   // ServiceInstance still has an entry in |instances_|.
-  ServiceInstance* service_manager_instance_;
+  raw_ptr<ServiceInstance> service_manager_instance_;
 
   mojo::RemoteSet<mojom::ServiceManagerListener> listeners_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };
 
 }  // namespace service_manager

@@ -8,6 +8,7 @@
 
 #include "platform/test/fake_task_runner.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 
@@ -29,7 +30,7 @@ FakeClock::~FakeClock() {
   now_.store(kInvalid, std::memory_order_release);
 }
 
-Clock::time_point FakeClock::now() noexcept {
+Clock::time_point FakeClock::now() {
   const Clock::time_point value = now_.load(std::memory_order_acquire);
   OSP_CHECK_NE(value, kInvalid) << "No FakeClock instance!";
   return value;
@@ -66,8 +67,7 @@ void FakeClock::Advance(Clock::duration delta) {
 
 void FakeClock::SubscribeToTimeChanges(FakeTaskRunner* task_runner) {
   OSP_CHECK_EQ(std::this_thread::get_id(), control_thread_id_);
-  OSP_CHECK(std::find(task_runners_.begin(), task_runners_.end(),
-                      task_runner) == task_runners_.end());
+  OSP_CHECK(!Contains(task_runners_, task_runner));
   task_runners_.push_back(task_runner);
 }
 

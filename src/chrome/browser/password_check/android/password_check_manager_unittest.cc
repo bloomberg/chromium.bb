@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,9 +19,10 @@
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -94,15 +96,10 @@ class MockPasswordScriptsFetcher
 
   MOCK_METHOD(void,
               FetchScriptAvailability,
-              (const url::Origin&,
-               const base::Version&,
-               base::OnceCallback<void(bool)>),
+              (const url::Origin&, base::OnceCallback<void(bool)>),
               (override));
 
-  MOCK_METHOD(bool,
-              IsScriptAvailable,
-              (const url::Origin&, const base::Version&),
-              (const override));
+  MOCK_METHOD(bool, IsScriptAvailable, (const url::Origin&), (const override));
 };
 
 BulkLeakCheckService* CreateAndUseBulkLeakCheckService(
@@ -127,11 +124,10 @@ MockPasswordScriptsFetcher* CreateAndUseMockPasswordScriptsFetcher(
 }
 
 syncer::TestSyncService* CreateAndUseSyncService(Profile* profile) {
-  return ProfileSyncServiceFactory::GetInstance()
-      ->SetTestingSubclassFactoryAndUse(
-          profile, base::BindLambdaForTesting([](content::BrowserContext*) {
-            return std::make_unique<syncer::TestSyncService>();
-          }));
+  return SyncServiceFactory::GetInstance()->SetTestingSubclassFactoryAndUse(
+      profile, base::BindLambdaForTesting([](content::BrowserContext*) {
+        return std::make_unique<syncer::TestSyncService>();
+      }));
 }
 
 PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
@@ -163,14 +159,13 @@ PasswordForm MakeSavedAndroidPassword(
   return form;
 }
 
-InsecureCredential MakeInsecureCredential(
-    base::StringPiece signon_realm,
-    base::StringPiece16 username,
-    base::TimeDelta time_since_creation = base::TimeDelta(),
-    InsecureType compromise_type = InsecureType::kLeaked) {
-  return InsecureCredential(std::string(signon_realm), std::u16string(username),
-                            base::Time::Now() - time_since_creation,
-                            compromise_type, password_manager::IsMuted(false));
+void AddIssueToForm(PasswordForm* form,
+                    InsecureType type = InsecureType::kLeaked,
+                    base::TimeDelta time_since_creation = base::TimeDelta()) {
+  form->password_issues.insert_or_assign(
+      type, password_manager::InsecurityMetadata(
+                base::Time::Now() - time_since_creation,
+                password_manager::IsMuted(false)));
 }
 
 // Creates matcher for a given compromised credential
@@ -231,14 +226,15 @@ class PasswordCheckManagerTest : public testing::Test {
   content::BrowserTaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   TestingProfile profile_;
-  BulkLeakCheckService* service_ =
+  raw_ptr<BulkLeakCheckService> service_ =
       CreateAndUseBulkLeakCheckService(identity_test_env_.identity_manager(),
                                        &profile_);
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
-  syncer::TestSyncService* sync_service_ = CreateAndUseSyncService(&profile_);
+  raw_ptr<syncer::TestSyncService> sync_service_ =
+      CreateAndUseSyncService(&profile_);
   NiceMock<MockPasswordCheckManagerObserver> mock_observer_;
-  MockPasswordScriptsFetcher* fetcher_ =
+  raw_ptr<MockPasswordScriptsFetcher> fetcher_ =
       CreateAndUseMockPasswordScriptsFetcher(&profile_);
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<PasswordCheckManager> manager_;
@@ -266,16 +262,16 @@ TEST_F(PasswordCheckManagerTest, OnSavedPasswordsFetched) {
 
 TEST_F(PasswordCheckManagerTest, OnCompromisedCredentialsChanged) {
   // This is called on multiple events: once for saved passwords retrieval,
-  // once for compromised credentials retrieval and once when the saved password
-  // is added.
-  EXPECT_CALL(mock_observer(), OnCompromisedCredentialsChanged(0)).Times(3);
+  // and once when the saved password is added.
+  EXPECT_CALL(mock_observer(), OnCompromisedCredentialsChanged(0)).Times(2);
   InitializeManager();
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  store().AddLogin(form);
   RunUntilIdle();
 
   EXPECT_CALL(mock_observer(), OnCompromisedCredentialsChanged(1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(kExampleCom, kUsername1));
+  AddIssueToForm(&form);
+  store().UpdateLogin(form);
   RunUntilIdle();
 }
 
@@ -340,9 +336,9 @@ TEST_F(PasswordCheckManagerTest,
 
 TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForSiteCredential) {
   InitializeManager();
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(kExampleCom, kUsername1));
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  AddIssueToForm(&form);
+  store().AddLogin(form);
   RunUntilIdle();
   EXPECT_THAT(manager().GetCompromisedCredentials(),
               ElementsAre(ExpectCompromisedCredentialForUI(
@@ -355,16 +351,18 @@ TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForSiteCredential) {
 
 TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForAppCredentials) {
   InitializeManager();
-  // A credential without affiliation information.
-  store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername1));
-  // A credential for which affiliation information is known.
-  store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,
-                                            "Example App", kExampleCom));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(MakeAndroidRealm(kExampleApp), kUsername1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(MakeAndroidRealm(kExampleApp), kUsername2));
 
+  // A credential without affiliation information.
+  PasswordForm form_no_affiliation =
+      MakeSavedAndroidPassword(kExampleApp, kUsername1);
+  AddIssueToForm(&form_no_affiliation);
+  store().AddLogin(form_no_affiliation);
+
+  // A credential for which affiliation information is known.
+  PasswordForm form_with_affiliation = MakeSavedAndroidPassword(
+      kExampleApp, kUsername2, "Example App", kExampleCom);
+  AddIssueToForm(&form_with_affiliation);
+  store().AddLogin(form_with_affiliation);
   RunUntilIdle();
 
   EXPECT_THAT(
@@ -420,11 +418,11 @@ TEST_F(PasswordCheckManagerTest,
       {password_manager::features::kPasswordScriptsFetching,
        password_manager::features::kPasswordChangeInSettings},
       {});
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(kExampleCom, kUsername1));
-
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  AddIssueToForm(&form);
+  store().AddLogin(form);
   RunUntilIdle();
+
   // To have precise metrics, scripts are not requested for users who cannot
   // start a script, i.e. non-sync users.
   EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary).Times(0);
@@ -450,11 +448,11 @@ TEST_F(PasswordCheckManagerTest,
       {password_manager::features::kPasswordScriptsFetching,
        password_manager::features::kPasswordChangeInSettings},
       {});
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(kExampleCom, kUsername1));
-
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  AddIssueToForm(&form);
+  store().AddLogin(form);
   RunUntilIdle();
+
   EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary)
       .WillOnce(Invoke(
           [](base::OnceClosure callback) { std::move(callback).Run(); }));
@@ -480,10 +478,12 @@ TEST_F(PasswordCheckManagerTest,
       {password_manager::features::kPasswordScriptsFetching,
        password_manager::features::kPasswordChangeInSettings},
       {});
-  store().AddLogin(MakeSavedPassword(kExampleCom, u""));
-  store().AddInsecureCredential(MakeInsecureCredential(kExampleCom, u""));
 
+  PasswordForm form = MakeSavedPassword(kExampleCom, u"");
+  AddIssueToForm(&form);
+  store().AddLogin(form);
   RunUntilIdle();
+
   EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary)
       .WillOnce(Invoke(
           [](base::OnceClosure callback) { std::move(callback).Run(); }));
@@ -513,11 +513,12 @@ TEST_F(PasswordCheckManagerTest,
                                 kPasswordScriptsFetching},
       /*disabled_features=*/{
           password_manager::features::kPasswordChangeInSettings});
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(kExampleCom, kUsername1));
 
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  AddIssueToForm(&form);
+  store().AddLogin(form);
   RunUntilIdle();
+
   EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary)
       .WillOnce(Invoke(
           [](base::OnceClosure callback) { std::move(callback).Run(); }));
@@ -545,11 +546,12 @@ TEST_F(PasswordCheckManagerTest,
       {password_manager::features::kPasswordScriptsFetching,
        password_manager::features::kPasswordChangeInSettings},
       {});
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
-  store().AddInsecureCredential(
-      MakeInsecureCredential(kExampleCom, kUsername1));
 
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  AddIssueToForm(&form);
+  store().AddLogin(form);
   RunUntilIdle();
+
   EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary)
       .WillOnce(Invoke(
           [](base::OnceClosure callback) { std::move(callback).Run(); }));
@@ -567,9 +569,76 @@ TEST_F(PasswordCheckManagerTest,
                   /*has_auto_change_button=*/false)));
 }
 
+TEST_F(PasswordCheckManagerTest,
+       CorrectlyCreatesUIStructWithCredentialAgeCheckOn) {
+  InitializeManager();
+  // Enable password sync
+  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  feature_list().InitWithFeatures(
+      {password_manager::features::kPasswordScriptsFetching,
+       password_manager::features::kPasswordChangeInSettings,
+       password_manager::features::kPasswordChangeOnlyRecentCredentials},
+      {});
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  // Credential just used.
+  form.date_last_used = base::Time::Now();
+  AddIssueToForm(&form);
+  store().AddLogin(form);
+  RunUntilIdle();
+
+  EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary)
+      .WillOnce(Invoke(
+          [](base::OnceClosure callback) { std::move(callback).Run(); }));
+
+  manager().RefreshScripts();
+
+  EXPECT_CALL(fetcher(), IsScriptAvailable).WillOnce(Return(true));
+  EXPECT_THAT(manager().GetCompromisedCredentials(),
+              ElementsAre(ExpectCompromisedCredentialForUI(
+                  kUsername1, u"example.com", GURL(kExampleCom), absl::nullopt,
+                  "https://example.com/.well-known/change-password",
+                  InsecureCredentialTypeFlags::kCredentialLeaked,
+                  /*has_startable_script=*/true,
+                  /*has_auto_change_button=*/true)));
+}
+
+TEST_F(PasswordCheckManagerTest,
+       CorrectlyCreatesUIStructWithCredentialAgeCheckOnButCredentialIsOld) {
+  InitializeManager();
+  // Enable password sync
+  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  feature_list().InitWithFeatures(
+      {password_manager::features::kPasswordScriptsFetching,
+       password_manager::features::kPasswordChangeInSettings,
+       password_manager::features::kPasswordChangeOnlyRecentCredentials},
+      {});
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  // Credential used more than 2 years ago.
+  form.date_last_used = base::Time::Now() - base::Days(1000);
+  AddIssueToForm(&form);
+  store().AddLogin(form);
+  RunUntilIdle();
+
+  EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary)
+      .WillOnce(Invoke(
+          [](base::OnceClosure callback) { std::move(callback).Run(); }));
+
+  manager().RefreshScripts();
+
+  EXPECT_CALL(fetcher(), IsScriptAvailable).WillOnce(Return(true));
+  EXPECT_THAT(manager().GetCompromisedCredentials(),
+              ElementsAre(ExpectCompromisedCredentialForUI(
+                  kUsername1, u"example.com", GURL(kExampleCom), absl::nullopt,
+                  "https://example.com/.well-known/change-password",
+                  InsecureCredentialTypeFlags::kCredentialLeaked,
+                  /*has_startable_script=*/true,
+                  /*has_auto_change_button=*/false)));
+}
+
 TEST_F(PasswordCheckManagerTest, UpdatesProgressCorrectly) {
   identity_test_env().MakeAccountAvailable(kTestEmail);
   InitializeManager();
+
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
   store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1, kPassword1));
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2));

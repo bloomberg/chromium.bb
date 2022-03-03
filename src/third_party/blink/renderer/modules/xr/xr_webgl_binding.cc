@@ -17,18 +17,13 @@
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
-#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 
 namespace blink {
 
 XRWebGLBinding* XRWebGLBinding::Create(XRSession* session,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                        const V8XRWebGLRenderingContext* context,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                       const XRWebGLRenderingContext& context,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                        ExceptionState& exception_state) {
   if (session->ended()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -62,13 +57,8 @@ XRWebGLBinding* XRWebGLBinding::Create(XRSession* session,
     return nullptr;
   }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   return MakeGarbageCollected<XRWebGLBinding>(
       session, webgl_context, context->IsWebGL2RenderingContext());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  return MakeGarbageCollected<XRWebGLBinding>(
-      session, webgl_context, context.IsWebGL2RenderingContext());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 XRWebGLBinding::XRWebGLBinding(XRSession* session,
@@ -159,6 +149,8 @@ WebGLTexture* XRWebGLBinding::getReflectionCubeMap(
 
 WebGLTexture* XRWebGLBinding::getCameraImage(XRCamera* camera,
                                              ExceptionState& exception_state) {
+  DVLOG(3) << __func__;
+
   XRFrame* frame = camera->Frame();
   DCHECK(frame);
 
@@ -198,20 +190,8 @@ WebGLTexture* XRWebGLBinding::getCameraImage(XRCamera* camera,
   XRWebGLLayer* base_layer = session->renderState()->baseLayer();
   DCHECK(base_layer);
 
-  absl::optional<gpu::MailboxHolder> camera_image_mailbox_holder =
-      base_layer->CameraImageMailboxHolder();
-
-  if (!camera_image_mailbox_holder) {
-    DVLOG(3) << __func__ << ": camera image mailbox holder is not set";
-    return nullptr;
-  }
-
-  GLuint texture_id = base_layer->CameraImageTextureId();
-
   // This resource is owned by the XRWebGLLayer, and is freed in OnFrameEnd();
-  WebGLUnownedTexture* texture = MakeGarbageCollected<WebGLUnownedTexture>(
-      webgl_context_, texture_id, GL_TEXTURE_2D);
-  return texture;
+  return base_layer->GetCameraTexture();
 }
 
 XRWebGLDepthInformation* XRWebGLBinding::getDepthInformation(

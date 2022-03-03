@@ -118,10 +118,10 @@ uint32_t gIDCounter = 1;
 }  // namespace
 
 template <typename BindingT, typename... ArgsT>
-ANGLE_INLINE void UpdateNonTFBufferBinding(const Context *context,
-                                           BindingT *binding,
-                                           Buffer *buffer,
-                                           ArgsT... args)
+ANGLE_INLINE void UpdateNonTFBufferBindingWebGL(const Context *context,
+                                                BindingT *binding,
+                                                Buffer *buffer,
+                                                ArgsT... args)
 {
     Buffer *oldBuffer = binding->get();
     if (oldBuffer)
@@ -138,7 +138,10 @@ ANGLE_INLINE void UpdateNonTFBufferBinding(const Context *context,
 }
 
 template <typename BindingT, typename... ArgsT>
-void UpdateTFBufferBinding(const Context *context, BindingT *binding, bool indexed, ArgsT... args)
+void UpdateTFBufferBindingWebGL(const Context *context,
+                                BindingT *binding,
+                                bool indexed,
+                                ArgsT... args)
 {
     if (binding->get())
         (*binding)->onTFBindingChanged(context, false, indexed);
@@ -152,13 +155,20 @@ void UpdateBufferBinding(const Context *context,
                          Buffer *buffer,
                          BufferBinding target)
 {
-    if (target == BufferBinding::TransformFeedback)
+    if (context->isWebGL())
     {
-        UpdateTFBufferBinding(context, binding, false, buffer);
+        if (target == BufferBinding::TransformFeedback)
+        {
+            UpdateTFBufferBindingWebGL(context, binding, false, buffer);
+        }
+        else
+        {
+            UpdateNonTFBufferBindingWebGL(context, binding, buffer);
+        }
     }
     else
     {
-        UpdateNonTFBufferBinding(context, binding, buffer);
+        binding->set(context, buffer);
     }
 }
 
@@ -169,13 +179,20 @@ void UpdateIndexedBufferBinding(const Context *context,
                                 GLintptr offset,
                                 GLsizeiptr size)
 {
-    if (target == BufferBinding::TransformFeedback)
+    if (context->isWebGL())
     {
-        UpdateTFBufferBinding(context, binding, true, buffer, offset, size);
+        if (target == BufferBinding::TransformFeedback)
+        {
+            UpdateTFBufferBindingWebGL(context, binding, true, buffer, offset, size);
+        }
+        else
+        {
+            UpdateNonTFBufferBindingWebGL(context, binding, buffer, offset, size);
+        }
     }
     else
     {
-        UpdateNonTFBufferBinding(context, binding, buffer, offset, size);
+        binding->set(context, buffer, offset, size);
     }
 }
 
@@ -183,21 +200,43 @@ void UpdateIndexedBufferBinding(const Context *context,
 template <BufferBinding Target>
 void State::setGenericBufferBindingWithBit(const Context *context, Buffer *buffer)
 {
-    UpdateNonTFBufferBinding(context, &mBoundBuffers[Target], buffer);
+    if (context->isWebGL())
+    {
+        UpdateNonTFBufferBindingWebGL(context, &mBoundBuffers[Target], buffer);
+    }
+    else
+    {
+        mBoundBuffers[Target].set(context, buffer);
+    }
     mDirtyBits.set(kBufferBindingDirtyBits[Target]);
 }
 
 template <BufferBinding Target>
 void State::setGenericBufferBinding(const Context *context, Buffer *buffer)
 {
-    UpdateNonTFBufferBinding(context, &mBoundBuffers[Target], buffer);
+    if (context->isWebGL())
+    {
+        UpdateNonTFBufferBindingWebGL(context, &mBoundBuffers[Target], buffer);
+    }
+    else
+    {
+        mBoundBuffers[Target].set(context, buffer);
+    }
 }
 
 template <>
 void State::setGenericBufferBinding<BufferBinding::TransformFeedback>(const Context *context,
                                                                       Buffer *buffer)
 {
-    UpdateTFBufferBinding(context, &mBoundBuffers[BufferBinding::TransformFeedback], false, buffer);
+    if (context->isWebGL())
+    {
+        UpdateTFBufferBindingWebGL(context, &mBoundBuffers[BufferBinding::TransformFeedback], false,
+                                   buffer);
+    }
+    else
+    {
+        mBoundBuffers[BufferBinding::TransformFeedback].set(context, buffer);
+    }
 }
 
 template <>
@@ -208,14 +247,22 @@ void State::setGenericBufferBinding<BufferBinding::ElementArray>(const Context *
     if (oldBuffer)
     {
         oldBuffer->removeObserver(&mVertexArray->mState.mElementArrayBuffer);
-        oldBuffer->onNonTFBindingChanged(-1);
+        oldBuffer->removeContentsObserver(mVertexArray, kElementArrayBufferIndex);
+        if (context->isWebGL())
+        {
+            oldBuffer->onNonTFBindingChanged(-1);
+        }
         oldBuffer->release(context);
     }
     mVertexArray->mState.mElementArrayBuffer.assign(buffer);
     if (buffer)
     {
         buffer->addObserver(&mVertexArray->mState.mElementArrayBuffer);
-        buffer->onNonTFBindingChanged(1);
+        buffer->addContentsObserver(mVertexArray, kElementArrayBufferIndex);
+        if (context->isWebGL())
+        {
+            buffer->onNonTFBindingChanged(1);
+        }
         buffer->addRef();
     }
     mVertexArray->mDirtyBits.set(VertexArray::DIRTY_BIT_ELEMENT_ARRAY_BUFFER);
@@ -289,14 +336,16 @@ State::State(const State *shareContextState,
              const EGLenum clientType,
              const Version &clientVersion,
              bool debug,
-             bool bindGeneratesResource,
+             bool bindGeneratesResourceCHROMIUM,
              bool clientArraysEnabled,
              bool robustResourceInit,
              bool programBinaryCacheEnabled,
-             EGLenum contextPriority)
+             EGLenum contextPriority,
+             bool hasProtectedContent)
     : mID({gIDCounter++}),
       mClientType(clientType),
       mContextPriority(contextPriority),
+      mHasProtectedContent(hasProtectedContent),
       mClientVersion(clientVersion),
       mShareGroup(shareGroup),
       mBufferManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mBufferManager)),
@@ -317,8 +366,6 @@ State::State(const State *shareContextState,
       mSemaphoreManager(AllocateOrGetSharedResourceManager(shareContextState,
                                                            &State::mSemaphoreManager,
                                                            shareSemaphores)),
-      mMaxDrawBuffers(0),
-      mMaxCombinedTextureImageUnits(0),
       mDepthClearValue(0),
       mStencilClearValue(0),
       mScissorTest(false),
@@ -336,7 +383,7 @@ State::State(const State *shareContextState,
       mGenerateMipmapHint(GL_NONE),
       mTextureFilteringHint(GL_NONE),
       mFragmentShaderDerivativeHint(GL_NONE),
-      mBindGeneratesResource(bindGeneratesResource),
+      mBindGeneratesResource(bindGeneratesResourceCHROMIUM),
       mClientArraysEnabled(clientArraysEnabled),
       mNearZ(0),
       mFarZ(0),
@@ -358,21 +405,28 @@ State::State(const State *shareContextState,
       mMaxShaderCompilerThreads(std::numeric_limits<GLuint>::max()),
       mPatchVertices(3),
       mOverlay(overlay),
-      mNoSimultaneousConstantColorAndAlphaBlendFunc(false)
+      mNoSimultaneousConstantColorAndAlphaBlendFunc(false),
+      mSetBlendIndexedInvoked(false),
+      mSetBlendFactorsIndexedInvoked(false),
+      mSetBlendEquationsIndexedInvoked(false),
+      mBoundingBoxMinX(-1.0f),
+      mBoundingBoxMinY(-1.0f),
+      mBoundingBoxMinZ(-1.0f),
+      mBoundingBoxMinW(1.0f),
+      mBoundingBoxMaxX(1.0f),
+      mBoundingBoxMaxY(1.0f),
+      mBoundingBoxMaxZ(1.0f),
+      mBoundingBoxMaxW(1.0f)
 {}
 
 State::~State() {}
 
 void State::initialize(Context *context)
 {
-    const Caps &caps                   = context->getCaps();
-    const Extensions &extensions       = context->getExtensions();
     const Extensions &nativeExtensions = context->getImplementation()->getNativeExtensions();
     const Version &clientVersion       = context->getClientVersion();
 
-    mMaxDrawBuffers               = static_cast<GLuint>(caps.maxDrawBuffers);
-    mBlendStateExt                = BlendStateExt(mMaxDrawBuffers);
-    mMaxCombinedTextureImageUnits = static_cast<GLuint>(caps.maxCombinedTextureImageUnits);
+    mBlendStateExt = BlendStateExt(mCaps.maxDrawBuffers);
 
     setColorClearValue(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -397,7 +451,7 @@ void State::initialize(Context *context)
     mSampleCoverageValue  = 1.0f;
     mSampleCoverageInvert = false;
 
-    mMaxSampleMaskWords = static_cast<GLuint>(caps.maxSampleMaskWords);
+    mMaxSampleMaskWords = static_cast<GLuint>(mCaps.maxSampleMaskWords);
     mSampleMask         = false;
     mSampleMaskValues.fill(~GLbitfield(0));
 
@@ -419,7 +473,7 @@ void State::initialize(Context *context)
 
     mActiveSampler = 0;
 
-    mVertexAttribCurrentValues.resize(caps.maxVertexAttributes);
+    mVertexAttribCurrentValues.resize(mCaps.maxVertexAttributes);
 
     // Set all indexes in state attributes type mask to float (default)
     for (int i = 0; i < MAX_VERTEX_ATTRIBS; i++)
@@ -427,58 +481,59 @@ void State::initialize(Context *context)
         SetComponentTypeMask(ComponentType::Float, i, &mCurrentValuesTypeMask);
     }
 
-    mUniformBuffers.resize(caps.maxUniformBufferBindings);
+    mUniformBuffers.resize(mCaps.maxUniformBufferBindings);
 
-    mSamplerTextures[TextureType::_2D].resize(caps.maxCombinedTextureImageUnits);
-    mSamplerTextures[TextureType::CubeMap].resize(caps.maxCombinedTextureImageUnits);
+    mSamplerTextures[TextureType::_2D].resize(mCaps.maxCombinedTextureImageUnits);
+    mSamplerTextures[TextureType::CubeMap].resize(mCaps.maxCombinedTextureImageUnits);
     if (clientVersion >= Version(3, 0) || nativeExtensions.texture3DOES)
     {
-        mSamplerTextures[TextureType::_3D].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::_3D].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (clientVersion >= Version(3, 0))
     {
-        mSamplerTextures[TextureType::_2DArray].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::_2DArray].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    if (clientVersion >= Version(3, 1) || nativeExtensions.textureMultisample)
+    if (clientVersion >= Version(3, 1) || nativeExtensions.textureMultisampleANGLE)
     {
-        mSamplerTextures[TextureType::_2DMultisample].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::_2DMultisample].resize(mCaps.maxCombinedTextureImageUnits);
     }
     if (clientVersion >= Version(3, 1))
     {
         mSamplerTextures[TextureType::_2DMultisampleArray].resize(
-            caps.maxCombinedTextureImageUnits);
+            mCaps.maxCombinedTextureImageUnits);
 
-        mAtomicCounterBuffers.resize(caps.maxAtomicCounterBufferBindings);
-        mShaderStorageBuffers.resize(caps.maxShaderStorageBufferBindings);
-        mImageUnits.resize(caps.maxImageUnits);
+        mAtomicCounterBuffers.resize(mCaps.maxAtomicCounterBufferBindings);
+        mShaderStorageBuffers.resize(mCaps.maxShaderStorageBufferBindings);
+        mImageUnits.resize(mCaps.maxImageUnits);
     }
-    if (clientVersion >= Version(3, 2) || extensions.textureCubeMapArrayAny())
+    if (clientVersion >= Version(3, 2) || mExtensions.textureCubeMapArrayAny())
     {
-        mSamplerTextures[TextureType::CubeMapArray].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::CubeMapArray].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    if (clientVersion >= Version(3, 2) || extensions.textureBufferAny())
+    if (clientVersion >= Version(3, 2) || mExtensions.textureBufferAny())
     {
-        mSamplerTextures[TextureType::Buffer].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::Buffer].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    if (nativeExtensions.textureRectangle)
+    if (nativeExtensions.textureRectangleANGLE)
     {
-        mSamplerTextures[TextureType::Rectangle].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::Rectangle].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    if (nativeExtensions.eglImageExternalOES || nativeExtensions.eglStreamConsumerExternalNV)
+    if (nativeExtensions.EGLImageExternalOES || nativeExtensions.EGLStreamConsumerExternalNV)
     {
-        mSamplerTextures[TextureType::External].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::External].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    if (nativeExtensions.webglVideoTexture)
+    if (nativeExtensions.videoTextureWEBGL)
     {
-        mSamplerTextures[TextureType::VideoImage].resize(caps.maxCombinedTextureImageUnits);
+        mSamplerTextures[TextureType::VideoImage].resize(mCaps.maxCombinedTextureImageUnits);
     }
-    mCompleteTextureBindings.reserve(caps.maxCombinedTextureImageUnits);
-    for (int32_t textureIndex = 0; textureIndex < caps.maxCombinedTextureImageUnits; ++textureIndex)
+    mCompleteTextureBindings.reserve(mCaps.maxCombinedTextureImageUnits);
+    for (int32_t textureIndex = 0; textureIndex < mCaps.maxCombinedTextureImageUnits;
+         ++textureIndex)
     {
         mCompleteTextureBindings.emplace_back(context, textureIndex);
     }
 
-    mSamplers.resize(caps.maxCombinedTextureImageUnits);
+    mSamplers.resize(mCaps.maxCombinedTextureImageUnits);
 
     for (QueryType type : angle::AllEnums<QueryType>())
     {
@@ -493,7 +548,7 @@ void State::initialize(Context *context)
 
     mPrimitiveRestart = false;
 
-    mDebug.setMaxLoggedMessages(extensions.maxDebugLoggedMessages);
+    mDebug.setMaxLoggedMessages(mCaps.maxDebugLoggedMessages);
 
     mMultiSampling    = true;
     mSampleAlphaToOne = false;
@@ -502,7 +557,7 @@ void State::initialize(Context *context)
 
     mNoSimultaneousConstantColorAndAlphaBlendFunc =
         context->getLimitations().noSimultaneousConstantColorAndAlphaBlendFunc ||
-        context->getExtensions().webglCompatibility;
+        context->getExtensions().webglCompatibilityANGLE;
 
     // GLES1 emulation: Initialize state for GLES1 if version applies
     // TODO(http://anglebug.com/3745): When on desktop client only do this in compatibility profile
@@ -514,7 +569,7 @@ void State::initialize(Context *context)
 
 void State::reset(const Context *context)
 {
-    // Force a sync so clear doesn't end up deferencing stale pointers.
+    // Force a sync so clear doesn't end up dereferencing stale pointers.
     (void)syncActiveTextures(context, Command::Other);
     mActiveTexturesCache.clear();
 
@@ -844,20 +899,31 @@ void State::setClipControl(GLenum origin, GLenum depth)
 
 void State::setBlend(bool enabled)
 {
-    mBlendState.blend = enabled;
+    if (mSetBlendIndexedInvoked || mBlendState.blend != enabled)
+    {
+        mBlendState.blend = enabled;
 
-    mBlendStateExt.setEnabled(enabled);
-    mDirtyBits.set(DIRTY_BIT_BLEND_ENABLED);
+        mSetBlendIndexedInvoked = false;
+        mBlendStateExt.setEnabled(enabled);
+        mDirtyBits.set(DIRTY_BIT_BLEND_ENABLED);
+    }
 }
 
 void State::setBlendIndexed(bool enabled, GLuint index)
 {
+    mSetBlendIndexedInvoked = true;
     mBlendStateExt.setEnabledIndexed(index, enabled);
     mDirtyBits.set(DIRTY_BIT_BLEND_ENABLED);
 }
 
 void State::setBlendFactors(GLenum sourceRGB, GLenum destRGB, GLenum sourceAlpha, GLenum destAlpha)
 {
+    if (!mSetBlendFactorsIndexedInvoked && mBlendState.sourceBlendRGB == sourceRGB &&
+        mBlendState.destBlendRGB == destRGB && mBlendState.sourceBlendAlpha == sourceAlpha &&
+        mBlendState.destBlendAlpha == destAlpha)
+    {
+        return;
+    }
 
     mBlendState.sourceBlendRGB   = sourceRGB;
     mBlendState.destBlendRGB     = destRGB;
@@ -885,6 +951,7 @@ void State::setBlendFactors(GLenum sourceRGB, GLenum destRGB, GLenum sourceAlpha
         }
     }
 
+    mSetBlendFactorsIndexedInvoked = false;
     mBlendStateExt.setFactors(sourceRGB, destRGB, sourceAlpha, destAlpha);
     mDirtyBits.set(DIRTY_BIT_BLEND_FUNCS);
 }
@@ -901,6 +968,7 @@ void State::setBlendFactorsIndexed(GLenum sourceRGB,
         mBlendFuncConstantAlphaDrawBuffers.set(index, hasConstantAlpha(sourceRGB, destRGB));
     }
 
+    mSetBlendFactorsIndexedInvoked = true;
     mBlendStateExt.setFactorsIndexed(index, sourceRGB, destRGB, sourceAlpha, destAlpha);
     mDirtyBits.set(DIRTY_BIT_BLEND_FUNCS);
 }
@@ -911,8 +979,8 @@ void State::setBlendColor(float red, float green, float blue, float alpha)
     // On ES3+, or with render-to-float exts enabled, it does not clamp on store.
     const bool isES2 = mClientVersion.major == 2;
     const bool hasFloatBlending =
-        mExtensions.colorBufferFloat || mExtensions.colorBufferHalfFloat ||
-        mExtensions.colorBufferFloatRGB || mExtensions.colorBufferFloatRGBA;
+        mExtensions.colorBufferFloatEXT || mExtensions.colorBufferHalfFloatEXT ||
+        mExtensions.colorBufferFloatRgbCHROMIUM || mExtensions.colorBufferFloatRgbaCHROMIUM;
     if (isES2 && !hasFloatBlending)
     {
         red   = clamp01(red);
@@ -921,24 +989,34 @@ void State::setBlendColor(float red, float green, float blue, float alpha)
         alpha = clamp01(alpha);
     }
 
-    mBlendColor.red   = red;
-    mBlendColor.green = green;
-    mBlendColor.blue  = blue;
-    mBlendColor.alpha = alpha;
-    mDirtyBits.set(DIRTY_BIT_BLEND_COLOR);
+    if (mBlendColor.red != red || mBlendColor.green != green || mBlendColor.blue != blue ||
+        mBlendColor.alpha != alpha)
+    {
+        mBlendColor.red   = red;
+        mBlendColor.green = green;
+        mBlendColor.blue  = blue;
+        mBlendColor.alpha = alpha;
+        mDirtyBits.set(DIRTY_BIT_BLEND_COLOR);
+    }
 }
 
 void State::setBlendEquation(GLenum rgbEquation, GLenum alphaEquation)
 {
-    mBlendState.blendEquationRGB   = rgbEquation;
-    mBlendState.blendEquationAlpha = alphaEquation;
+    if (mSetBlendEquationsIndexedInvoked || mBlendState.blendEquationRGB != rgbEquation ||
+        mBlendState.blendEquationAlpha != alphaEquation)
+    {
+        mBlendState.blendEquationRGB   = rgbEquation;
+        mBlendState.blendEquationAlpha = alphaEquation;
 
-    mBlendStateExt.setEquations(rgbEquation, alphaEquation);
-    mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
+        mSetBlendEquationsIndexedInvoked = false;
+        mBlendStateExt.setEquations(rgbEquation, alphaEquation);
+        mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
+    }
 }
 
 void State::setBlendEquationIndexed(GLenum rgbEquation, GLenum alphaEquation, GLuint index)
 {
+    mSetBlendEquationsIndexedInvoked = true;
     mBlendStateExt.setEquationsIndexed(index, rgbEquation, alphaEquation);
     mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
 }
@@ -1789,12 +1867,23 @@ bool State::removeDrawFramebufferBinding(FramebufferID framebuffer)
 void State::setVertexArrayBinding(const Context *context, VertexArray *vertexArray)
 {
     if (mVertexArray == vertexArray)
+    {
         return;
-    if (mVertexArray)
-        mVertexArray->onBindingChanged(context, -1);
+    }
+
+    if (context->isWebGL())
+    {
+        if (mVertexArray)
+        {
+            mVertexArray->onBindingChanged(context, -1);
+        }
+        if (vertexArray)
+        {
+            vertexArray->onBindingChanged(context, 1);
+        }
+    }
+
     mVertexArray = vertexArray;
-    if (vertexArray)
-        vertexArray->onBindingChanged(context, 1);
     mDirtyBits.set(DIRTY_BIT_VERTEX_ARRAY_BINDING);
 
     if (mVertexArray && mVertexArray->hasAnyDirtyBit())
@@ -1845,9 +1934,9 @@ void State::setVertexAttribFormat(GLuint attribIndex,
     mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
 }
 
-void State::setVertexBindingDivisor(GLuint bindingIndex, GLuint divisor)
+void State::setVertexBindingDivisor(const Context *context, GLuint bindingIndex, GLuint divisor)
 {
-    getVertexArray()->setVertexBindingDivisor(bindingIndex, divisor);
+    getVertexArray()->setVertexBindingDivisor(context, bindingIndex, divisor);
     mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
 }
 
@@ -1919,17 +2008,6 @@ bool State::removeTransformFeedbackBinding(const Context *context,
     return false;
 }
 
-angle::Result State::useProgramStages(const Context *context,
-                                      ProgramPipeline *programPipeline,
-                                      GLbitfield stages,
-                                      Program *shaderProgram)
-{
-    programPipeline->useProgramStages(context, stages, shaderProgram);
-    ANGLE_TRY(onProgramPipelineExecutableChange(context, programPipeline));
-
-    return angle::Result::Continue;
-}
-
 angle::Result State::setProgramPipelineBinding(const Context *context, ProgramPipeline *pipeline)
 {
     if (mProgramPipeline.get() == pipeline)
@@ -1957,11 +2035,6 @@ angle::Result State::setProgramPipelineBinding(const Context *context, ProgramPi
         {
             mExecutable = nullptr;
         }
-    }
-
-    if (mProgramPipeline.get())
-    {
-        ANGLE_TRY(onProgramPipelineExecutableChange(context, mProgramPipeline.get()));
     }
 
     return angle::Result::Continue;
@@ -2088,10 +2161,6 @@ const OffsetBindingPointer<Buffer> &State::getIndexedShaderStorageBuffer(size_t 
 
 angle::Result State::detachBuffer(Context *context, const Buffer *buffer)
 {
-    if (!buffer->isBound())
-    {
-        return angle::Result::Continue;
-    }
     BufferID bufferID = buffer->id();
     for (gl::BufferBinding target : angle::AllEnums<BufferBinding>())
     {
@@ -2407,6 +2476,9 @@ void State::getBooleanv(GLenum pname, GLboolean *params) const
         case GL_CLIP_DEPTH_MODE_EXT:
             *params = GL_TRUE;
             break;
+        case GL_ROBUST_FRAGMENT_SHADER_OUTPUT_ANGLE:
+            *params = mExtensions.robustFragmentShaderOutputANGLE ? GL_TRUE : GL_FALSE;
+            break;
         default:
             UNREACHABLE();
             break;
@@ -2543,7 +2615,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
     if (pname >= GL_DRAW_BUFFER0_EXT && pname <= GL_DRAW_BUFFER15_EXT)
     {
         size_t drawBuffer = (pname - GL_DRAW_BUFFER0_EXT);
-        ASSERT(drawBuffer < mMaxDrawBuffers);
+        ASSERT(drawBuffer < static_cast<size_t>(mCaps.maxDrawBuffers));
         Framebuffer *framebuffer = mDrawFramebuffer;
         // The default framebuffer may have fewer draw buffer states than a user-created one. The
         // user is always allowed to query up to GL_MAX_DRAWBUFFERS so just return GL_NONE here if
@@ -2821,55 +2893,55 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         }
         break;
         case GL_TEXTURE_BINDING_2D:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::_2D)
                     .value;
             break;
         case GL_TEXTURE_BINDING_RECTANGLE_ANGLE:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::Rectangle)
                           .value;
             break;
         case GL_TEXTURE_BINDING_CUBE_MAP:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::CubeMap)
                     .value;
             break;
         case GL_TEXTURE_BINDING_3D:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::_3D)
                     .value;
             break;
         case GL_TEXTURE_BINDING_2D_ARRAY:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::_2DArray)
                           .value;
             break;
         case GL_TEXTURE_BINDING_2D_MULTISAMPLE:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::_2DMultisample)
                           .value;
             break;
         case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::_2DMultisampleArray)
                           .value;
             break;
         case GL_TEXTURE_BINDING_CUBE_MAP_ARRAY:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::CubeMapArray)
                           .value;
             break;
         case GL_TEXTURE_BINDING_EXTERNAL_OES:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerTextureId(static_cast<unsigned int>(mActiveSampler),
                                           TextureType::External)
                           .value;
@@ -2877,7 +2949,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
 
         // GL_OES_texture_buffer
         case GL_TEXTURE_BINDING_BUFFER:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params =
                 getSamplerTextureId(static_cast<unsigned int>(mActiveSampler), TextureType::Buffer)
                     .value;
@@ -2912,7 +2984,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
             *params = mReadFramebuffer->getReadBufferState();
             break;
         case GL_SAMPLER_BINDING:
-            ASSERT(mActiveSampler < mMaxCombinedTextureImageUnits);
+            ASSERT(mActiveSampler < mCaps.maxCombinedTextureImageUnits);
             *params = getSamplerId(static_cast<GLuint>(mActiveSampler)).value;
             break;
         case GL_DEBUG_LOGGED_MESSAGES:
@@ -3195,8 +3267,8 @@ void State::getBooleani_v(GLenum target, GLuint index, GLboolean *data) const
     }
 }
 
-// TODO(https://anglebug.com/3889): Remove this helper function after blink and chromium part
-// refactory done.
+// TODO(http://anglebug.com/3889): Remove this helper function after blink and chromium part
+// refactor done.
 Texture *State::getTextureForActiveSampler(TextureType type, size_t index)
 {
     if (type != TextureType::VideoImage)
@@ -3263,7 +3335,7 @@ angle::Result State::syncTexturesInit(const Context *context, Command command)
 angle::Result State::syncImagesInit(const Context *context, Command command)
 {
     ASSERT(mRobustResourceInit);
-    ASSERT(mProgram);
+    ASSERT(mExecutable);
     for (size_t imageUnitIndex : mExecutable->getActiveImagesMask())
     {
         Texture *texture = mImageUnits[imageUnitIndex].texture.get();
@@ -3490,15 +3562,15 @@ angle::Result State::onProgramExecutableChange(const Context *context, Program *
     return angle::Result::Continue;
 }
 
-angle::Result State::onProgramPipelineExecutableChange(const Context *context,
-                                                       ProgramPipeline *programPipeline)
+angle::Result State::onProgramPipelineExecutableChange(const Context *context)
 {
     mDirtyBits.set(DIRTY_BIT_PROGRAM_EXECUTABLE);
 
     // Set any bound textures.
-    const ActiveTextureTypeArray &textureTypes =
-        programPipeline->getExecutable().getActiveSamplerTypes();
-    for (size_t textureIndex : programPipeline->getExecutable().getActiveSamplersMask())
+    const ProgramExecutable &executable        = mProgramPipeline->getExecutable();
+    const ActiveTextureTypeArray &textureTypes = executable.getActiveSamplerTypes();
+
+    for (size_t textureIndex : executable.getActiveSamplersMask())
     {
         TextureType type = textureTypes[textureIndex];
 
@@ -3510,7 +3582,7 @@ angle::Result State::onProgramPipelineExecutableChange(const Context *context,
         updateTextureBinding(context, textureIndex, texture);
     }
 
-    for (size_t imageUnitIndex : programPipeline->getExecutable().getActiveImagesMask())
+    for (size_t imageUnitIndex : executable.getActiveImagesMask())
     {
         Texture *image = mImageUnits[imageUnitIndex].texture.get();
         if (!image)
@@ -3628,6 +3700,16 @@ void State::onUniformBufferStateChange(size_t uniformBufferIndex)
     mDirtyBits.set(DIRTY_BIT_UNIFORM_BUFFER_BINDINGS);
 }
 
+void State::onAtomicCounterBufferStateChange(size_t atomicCounterBufferIndex)
+{
+    mDirtyBits.set(DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING);
+}
+
+void State::onShaderStorageBufferStateChange(size_t shaderStorageBufferIndex)
+{
+    mDirtyBits.set(DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING);
+}
+
 AttributesMask State::getAndResetDirtyCurrentValues() const
 {
     AttributesMask retVal = mDirtyCurrentValues;
@@ -3640,6 +3722,17 @@ State::ExtendedDirtyBits State::getAndResetExtendedDirtyBits() const
     ExtendedDirtyBits retVal = mExtendedDirtyBits;
     mExtendedDirtyBits.reset();
     return retVal;
+}
+
+void State::initializeForCapture(const Context *context)
+{
+    mCaps       = context->getCaps();
+    mExtensions = context->getExtensions();
+
+    // This little kludge gets around the frame capture "constness". It should be safe because
+    // nothing in the context is modified in a non-compatible way during capture.
+    Context *mutableContext = const_cast<Context *>(context);
+    initialize(mutableContext);
 }
 
 constexpr State::DirtyObjectHandler State::kDirtyObjectHandlers[DIRTY_OBJECT_MAX];

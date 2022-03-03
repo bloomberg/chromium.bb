@@ -8,6 +8,7 @@
 #include "ash/accessibility/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/accessibility/autoclick/autoclick_ring_handler.h"
 #include "ash/accessibility/autoclick/autoclick_scroll_position_handler.h"
+#include "ash/constants/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -17,6 +18,7 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
+#include "base/ignore_result.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
@@ -68,7 +70,7 @@ views::Widget::InitParams CreateAutoclickOverlayWidgetParams(
 
 // static.
 base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
-  return base::TimeDelta::FromMilliseconds(int64_t{kDefaultAutoclickDelayMs});
+  return base::Milliseconds(int64_t{kDefaultAutoclickDelayMs});
 }
 
 AutoclickController::AutoclickController()

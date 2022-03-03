@@ -12,8 +12,8 @@
 #include "compiler/translator/OutputGLSL.h"
 #include "compiler/translator/VersionGLSL.h"
 #include "compiler/translator/tree_ops/RewriteTexelFetchOffset.h"
-#include "compiler/translator/tree_ops/gl/mac/RewriteRowMajorMatrices.h"
-#include "compiler/translator/tree_ops/gl/mac/RewriteUnaryMinusOperatorFloat.h"
+#include "compiler/translator/tree_ops/apple/RewriteRowMajorMatrices.h"
+#include "compiler/translator/tree_ops/apple/RewriteUnaryMinusOperatorFloat.h"
 
 namespace sh
 {
@@ -58,7 +58,7 @@ bool TranslatorGLSL::translate(TIntermBlock *root,
 
     // Write pragmas after extensions because some drivers consider pragmas
     // like non-preprocessor tokens.
-    writePragma(compileOptions);
+    WritePragma(sink, compileOptions, getPragma());
 
     // If flattening the global invariant pragma, write invariant declarations for built-in
     // variables. It should be harmless to do this twice in the case that the shader also explicitly
@@ -117,10 +117,6 @@ bool TranslatorGLSL::translate(TIntermBlock *root,
         }
     }
 
-    bool precisionEmulation = false;
-    if (!emulatePrecisionIfNeeded(root, sink, &precisionEmulation, getOutputType()))
-        return false;
-
     // Write emulated built-in functions if needed.
     if (!getBuiltInFunctionEmulator().isOutputEmpty())
     {
@@ -129,9 +125,6 @@ bool TranslatorGLSL::translate(TIntermBlock *root,
         getBuiltInFunctionEmulator().outputEmulatedFunctions(sink);
         sink << "// END: Generated code for built-in function emulation\n\n";
     }
-
-    // Write array bounds clamping emulation if needed.
-    getArrayBoundsClamper().OutputClampingFunctionDefinition(sink);
 
     // Declare gl_FragColor and glFragData as webgl_FragColor and webgl_FragData
     // if it's core profile shaders and they are used.
@@ -192,11 +185,11 @@ bool TranslatorGLSL::translate(TIntermBlock *root,
         }
         if (hasGLSecondaryFragColor)
         {
-            sink << "out vec4 angle_SecondaryFragColor;\n";
+            sink << "out vec4 webgl_SecondaryFragColor;\n";
         }
         if (hasGLSecondaryFragData)
         {
-            sink << "out vec4 angle_SecondaryFragData[" << getResources().MaxDualSourceDrawBuffers
+            sink << "out vec4 webgl_SecondaryFragData[" << getResources().MaxDualSourceDrawBuffers
                  << "];\n";
         }
 
@@ -216,9 +209,7 @@ bool TranslatorGLSL::translate(TIntermBlock *root,
     }
 
     // Write translated shader.
-    TOutputGLSL outputGLSL(sink, getArrayIndexClampingStrategy(), getHashFunction(), getNameMap(),
-                           &getSymbolTable(), getShaderType(), getShaderVersion(), getOutputType(),
-                           compileOptions);
+    TOutputGLSL outputGLSL(this, sink, compileOptions);
 
     root->traverse(&outputGLSL);
 
@@ -282,7 +273,8 @@ void TranslatorGLSL::writeExtensionBehavior(TIntermNode *root, ShCompileOptions 
                      << "\n";
             }
 
-            if (iter.first == TExtension::EXT_geometry_shader)
+            if (iter.first == TExtension::EXT_geometry_shader ||
+                iter.first == TExtension::OES_geometry_shader)
             {
                 sink << "#extension GL_ARB_geometry_shader4 : " << GetBehaviorString(iter.second)
                      << "\n";

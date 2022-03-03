@@ -37,7 +37,7 @@ class DrawIndexedTest : public DawnTest {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleStrip;
@@ -48,7 +48,7 @@ class DrawIndexedTest : public DawnTest {
         descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
         descriptor.cTargets[0].format = renderPass.colorFormat;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
             device, wgpu::BufferUsage::Vertex,
@@ -137,48 +137,9 @@ TEST_P(DrawIndexedTest, Uint32) {
     Test(6, 1, 0, 0, 0, 0, filled, filled);
 }
 
-// Out of bounds drawIndexed are treated as no-ops instead of invalid operations
-// Some agreements: https://github.com/gpuweb/gpuweb/issues/955
-TEST_P(DrawIndexedTest, OutOfBounds) {
-    RGBA8 filled(0, 255, 0, 255);
-    RGBA8 notFilled(0, 0, 0, 0);
-
-    // a valid draw.
-    Test(6, 1, 0, 0, 0, 0, filled, filled);
-    // indexCount is 0 but firstIndex out of bound
-    Test(0, 1, 20, 0, 0, 0, notFilled, notFilled);
-    // indexCount + firstIndex out of bound
-    Test(6, 1, 7, 0, 0, 0, notFilled, notFilled);
-    // only firstIndex out of bound
-    Test(6, 1, 20, 0, 0, 0, notFilled, notFilled);
-    // firstIndex much larger than the bound
-    Test(6, 1, 10000, 0, 0, 0, notFilled, notFilled);
-    // only indexCount out of bound
-    Test(20, 1, 0, 0, 0, 0, notFilled, notFilled);
-    // indexCount much larger than the bound
-    Test(10000, 1, 0, 0, 0, 0, notFilled, notFilled);
-    // max uint32_t indexCount and firstIndex
-    Test(std::numeric_limits<uint32_t>::max(), 1, std::numeric_limits<uint32_t>::max(), 0, 0, 0,
-         notFilled, notFilled);
-    // max uint32_t indexCount and small firstIndex
-    Test(std::numeric_limits<uint32_t>::max(), 1, 2, 0, 0, 0, notFilled, notFilled);
-    // small indexCount and max uint32_t firstIndex
-    Test(2, 1, std::numeric_limits<uint32_t>::max(), 0, 0, 0, notFilled, notFilled);
-}
-
-TEST_P(DrawIndexedTest, ZeroSizedIndexBuffer) {
-    RGBA8 notFilled(0, 0, 0, 0);
-
-    // IndexBuffer size is zero, so index access is always out of bounds
-    TestZeroSizedIndexBufferDraw(3, 1, notFilled, notFilled);
-    TestZeroSizedIndexBufferDraw(0, 1, notFilled, notFilled);
-    TestZeroSizedIndexBufferDraw(3, 0, notFilled, notFilled);
-    TestZeroSizedIndexBufferDraw(0, 0, notFilled, notFilled);
-}
-
 // Test the parameter 'baseVertex' of DrawIndexed() works.
 TEST_P(DrawIndexedTest, BaseVertex) {
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_base_vertex"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_base_vertex"));
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
 

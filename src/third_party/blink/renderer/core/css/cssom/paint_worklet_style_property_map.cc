@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -26,7 +25,10 @@ namespace blink {
 namespace {
 
 class PaintWorkletStylePropertyMapIterationSource final
-    : public PairIterable<String, CSSStyleValueVector>::IterationSource {
+    : public PairIterable<String,
+                          IDLString,
+                          CSSStyleValueVector,
+                          IDLSequence<CSSStyleValue>>::IterationSource {
  public:
   explicit PaintWorkletStylePropertyMapIterationSource(
       HeapVector<PaintWorkletStylePropertyMap::StylePropertyMapEntry> values)
@@ -48,7 +50,8 @@ class PaintWorkletStylePropertyMapIterationSource final
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(values_);
-    PairIterable<String, CSSStyleValueVector>::IterationSource::Trace(visitor);
+    PairIterable<String, IDLString, CSSStyleValueVector,
+                 IDLSequence<CSSStyleValue>>::IterationSource::Trace(visitor);
   }
 
  private:

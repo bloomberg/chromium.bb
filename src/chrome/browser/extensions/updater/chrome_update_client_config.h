@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/configurator.h"
@@ -47,6 +47,9 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   ChromeUpdateClientConfig(content::BrowserContext* context,
                            absl::optional<GURL> url_override);
 
+  ChromeUpdateClientConfig(const ChromeUpdateClientConfig&) = delete;
+  ChromeUpdateClientConfig& operator=(const ChromeUpdateClientConfig&) = delete;
+
   double InitialDelay() const override;
   int NextCheckDelay() const override;
   int OnDemandDelay() const override;
@@ -56,7 +59,6 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   std::string GetProdId() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
-  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
@@ -68,7 +70,6 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
   scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
-  bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
@@ -89,17 +90,15 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
       FactoryCallback factory);
 
  private:
-  content::BrowserContext* context_ = nullptr;
+  raw_ptr<content::BrowserContext> context_ = nullptr;
   component_updater::ConfiguratorImpl impl_;
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
   std::unique_ptr<update_client::ActivityDataService> activity_data_service_;
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
   scoped_refptr<update_client::CrxDownloaderFactory> crx_downloader_factory_;
   scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
   scoped_refptr<update_client::PatcherFactory> patch_factory_;
   absl::optional<GURL> url_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeUpdateClientConfig);
 };
 
 }  // namespace extensions

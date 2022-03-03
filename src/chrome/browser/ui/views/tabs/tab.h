@@ -10,7 +10,9 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "components/performance_manager/public/freezing/freezing.h"
@@ -186,10 +188,7 @@ class Tab : public gfx::AnimationDelegate,
   friend class AlertIndicatorTest;
   friend class TabTest;
   friend class TabStripTestBase;
-  FRIEND_TEST_ALL_PREFIXES(TabStripTestWithScrollingDisabled,
-                           TabCloseButtonVisibilityWhenStacked);
-  FRIEND_TEST_ALL_PREFIXES(TabStripTest,
-                           TabCloseButtonVisibilityWhenNotStacked);
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibility);
   FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
   FRIEND_TEST_ALL_PREFIXES(TabHoverCardBubbleViewBrowserTest,
                            WidgetVisibleOnTabCloseButtonFocusAfterTabFocus);
@@ -224,7 +223,7 @@ class Tab : public gfx::AnimationDelegate,
   void CloseButtonPressed(const ui::Event& event);
 
   // The controller, never nullptr.
-  TabController* const controller_;
+  const raw_ptr<TabController> controller_;
 
   TabRendererData data_;
 
@@ -233,11 +232,11 @@ class Tab : public gfx::AnimationDelegate,
   // True if the tab is being animated closed.
   bool closing_ = false;
 
-  TabIcon* icon_ = nullptr;
-  AlertIndicator* alert_indicator_ = nullptr;
-  TabCloseButton* close_button_ = nullptr;
+  raw_ptr<TabIcon> icon_ = nullptr;
+  raw_ptr<AlertIndicator> alert_indicator_ = nullptr;
+  raw_ptr<TabCloseButton> close_button_ = nullptr;
 
-  views::Label* title_;
+  raw_ptr<views::Label> title_;
   // The title's bounds are animated when switching between showing and hiding
   // the tab's favicon/throbber.
   gfx::Rect start_title_bounds_;
@@ -286,9 +285,6 @@ class Tab : public gfx::AnimationDelegate,
   bool mouse_hovered_ = false;
 
   std::unique_ptr<TabCloseButtonObserver> tab_close_button_observer_;
-
-  // Focus ring for accessibility.
-  views::FocusRing* focus_ring_;
 
   // Freezing token held while the tab is collapsed.
   std::unique_ptr<performance_manager::freezing::FreezingVoteToken>

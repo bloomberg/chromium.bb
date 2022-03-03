@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
@@ -36,6 +37,10 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   static const char kProfileStatsCountReadyEventName[];
 
   explicit ProfileInfoHandler(Profile* profile);
+
+  ProfileInfoHandler(const ProfileInfoHandler&) = delete;
+  ProfileInfoHandler& operator=(const ProfileInfoHandler&) = delete;
+
   ~ProfileInfoHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -72,7 +77,7 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   std::unique_ptr<base::DictionaryValue> GetAccountNameAndIcon();
 
   // Weak pointer.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   base::ScopedObservation<user_manager::UserManager,
@@ -86,8 +91,6 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<ProfileInfoHandler> callback_weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileInfoHandler);
 };
 
 }  // namespace settings

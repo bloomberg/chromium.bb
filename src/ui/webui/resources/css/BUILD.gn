@@ -32,7 +32,6 @@ preprocess_if_expr("preprocess_src") {
     "i18n_process.css",
     "list.css",
     "roboto.css",
-    "table.css",
     "tabs.css",
     "text_defaults.css",
     "text_defaults_md.css",
@@ -51,5 +50,9 @@ preprocess_if_expr("preprocess_src") {
 
   if (include_polymer) {
     in_files += [ "md_colors.css" ]
+  }
+
+  if (is_chromeos) {
+    in_files += [ "os_header.css" ]
   }
 }

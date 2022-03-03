@@ -5,8 +5,6 @@
 #ifndef DEVICE_FIDO_MAC_OPERATION_H_
 #define DEVICE_FIDO_MAC_OPERATION_H_
 
-#include "base/macros.h"
-
 namespace device {
 namespace fido {
 namespace mac {
@@ -14,11 +12,12 @@ namespace mac {
 class Operation {
  public:
   Operation() = default;
+
+  Operation(const Operation&) = delete;
+  Operation& operator=(const Operation&) = delete;
+
   virtual ~Operation() = default;
   virtual void Run() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Operation);
 };
 
 }  // namespace mac

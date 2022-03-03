@@ -4,9 +4,12 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybufferallowshared_arraybufferviewallowshared_readablestream.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decode_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -125,8 +128,7 @@ DEFINE_BINARY_PROTO_FUZZER(
     Persistent<DOMArrayBuffer> data_copy = DOMArrayBuffer::Create(
         proto.config().data().data(), proto.config().data().size());
     image_decoder_init->setData(
-        ArrayBufferOrArrayBufferViewOrReadableStream::FromArrayBuffer(
-            data_copy));
+        MakeGarbageCollected<V8ImageBufferSource>(data_copy));
     image_decoder_init->setPremultiplyAlpha(
         ToPremultiplyAlpha(proto.config().options().premultiply_alpha()));
     image_decoder_init->setColorSpaceConversion(ToColorSpaceConversion(
@@ -153,6 +155,11 @@ DEFINE_BINARY_PROTO_FUZZER(
       image_decoder->close();
       image_decoder = nullptr;
       base::RunLoop().RunUntilIdle();
+
+      // Collect what we can after the first fuzzing loop; this keeps memory
+      // pressure down during ReadableStream fuzzing.
+      V8PerIsolateData::MainThreadIsolate()->RequestGarbageCollectionForTesting(
+          v8::Isolate::kFullGarbageCollection);
     }
 
     Persistent<TestUnderlyingSource> underlying_source =
@@ -162,8 +169,7 @@ DEFINE_BINARY_PROTO_FUZZER(
                                                         underlying_source, 0);
 
     image_decoder_init->setData(
-        ArrayBufferOrArrayBufferViewOrReadableStream::FromReadableStream(
-            stream));
+        MakeGarbageCollected<V8ImageBufferSource>(stream));
     image_decoder = ImageDecoderExternal::Create(
         script_state, image_decoder_init, IGNORE_EXCEPTION_FOR_TESTING);
     image_decoder_init = nullptr;
@@ -178,10 +184,15 @@ DEFINE_BINARY_PROTO_FUZZER(
 
         const size_t current_chunk_size =
             std::min(data_copy->ByteLength() - offset, chunk_size);
-        underlying_source->Enqueue(ScriptValue(
-            script_state->GetIsolate(),
-            ToV8(DOMUint8Array::Create(data_copy, offset, current_chunk_size),
-                 script_state)));
+
+        v8::Local<v8::Value> v8_data_array;
+        ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                        script_state, DOMUint8Array::Create(data_copy, offset,
+                                                            current_chunk_size))
+                        .ToLocal(&v8_data_array));
+
+        underlying_source->Enqueue(
+            ScriptValue(script_state->GetIsolate(), v8_data_array));
         offset += chunk_size;
       }
 
@@ -199,6 +210,7 @@ DEFINE_BINARY_PROTO_FUZZER(
   // a chain of persistent handles), so some objects may not be collected until
   // a subsequent iteration. This is slow enough as is, so we compromise on one
   // major GC, as opposed to the 5 used in V8GCController for unit tests.
+  base::RunLoop().RunUntilIdle();
   V8PerIsolateData::MainThreadIsolate()->RequestGarbageCollectionForTesting(
       v8::Isolate::kFullGarbageCollection);
 }

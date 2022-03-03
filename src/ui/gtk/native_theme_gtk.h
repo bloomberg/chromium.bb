@@ -6,7 +6,6 @@
 #define UI_GTK_NATIVE_THEME_GTK_H_
 
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/glib/glib_signal.h"
@@ -25,6 +24,9 @@ using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 class NativeThemeGtk : public ui::NativeThemeBase {
  public:
   static NativeThemeGtk* instance();
+
+  NativeThemeGtk(const NativeThemeGtk&) = delete;
+  NativeThemeGtk& operator=(const NativeThemeGtk&) = delete;
 
   // ui::NativeThemeBase:
   void PaintArrowButton(cc::PaintCanvas* canvas,
@@ -70,7 +72,6 @@ class NativeThemeGtk : public ui::NativeThemeBase {
                          const FrameTopAreaExtraParams& frame_top_area,
                          ColorScheme color_scheme) const override;
   void NotifyOnNativeThemeUpdated() override;
-  std::string GetNativeThemeName() const override;
 
   void OnThemeChanged(GtkSettings* settings, GtkParamSpec* param);
 
@@ -92,8 +93,6 @@ class NativeThemeGtk : public ui::NativeThemeBase {
   mutable absl::optional<SkColor> color_cache_[kColorId_NumColors];
 
   ScopedCssProvider theme_css_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk);
 };
 
 }  // namespace gtk

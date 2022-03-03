@@ -30,7 +30,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/display/screen.h"
+#include "ui/display/display.h"
 #include "ui/views/controls/native/native_view_host.h"
 
 namespace {
@@ -155,6 +155,10 @@ class TopControlsSlideTabObserver
       permission_manager->AddObserver(this);
   }
 
+  TopControlsSlideTabObserver(const TopControlsSlideTabObserver&) = delete;
+  TopControlsSlideTabObserver& operator=(const TopControlsSlideTabObserver&) =
+      delete;
+
   ~TopControlsSlideTabObserver() override {
     auto* permission_manager =
         permissions::PermissionRequestManager::FromWebContents(web_contents());
@@ -176,7 +180,8 @@ class TopControlsSlideTabObserver
   }
 
   // content::WebContentsObserver:
-  void RenderProcessGone(base::TerminationStatus status) override {
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override {
     // There is no renderer to communicate with, so just ensure top-chrome
     // is shown. Also the render may have crashed before resetting the gesture
     // in progress bit.
@@ -194,14 +199,18 @@ class TopControlsSlideTabObserver
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
+    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+    // frames. This caller was converted automatically to the primary main frame
+    // to preserve its semantics. Follow up to confirm correctness.
+    if (navigation_handle->IsInPrimaryMainFrame() &&
+        navigation_handle->HasCommitted())
       UpdateBrowserControlsStateShown(/*animate=*/true);
   }
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code) override {
-    if (render_frame_host->IsCurrent() &&
+    if (render_frame_host->IsActive() &&
         (render_frame_host == web_contents()->GetMainFrame())) {
       UpdateBrowserControlsStateShown(/*animate=*/true);
     }
@@ -264,8 +273,6 @@ class TopControlsSlideTabObserver
   // right before the final layout of the BrowserView.
   // https://crbug.com/885223.
   bool shrink_renderer_size_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(TopControlsSlideTabObserver);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +293,6 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
   observed_omni_box_->AddObserver(this);
 
   browser_view_->browser()->tab_strip_model()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* accessibility_manager = ash::AccessibilityManager::Get();
@@ -304,7 +310,6 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
 TopControlsSlideControllerChromeOS::~TopControlsSlideControllerChromeOS() {
   OnEnabledStateChanged(false);
 
-  display::Screen::GetScreen()->RemoveObserver(this);
   browser_view_->browser()->tab_strip_model()->RemoveObserver(this);
 
   if (observed_omni_box_)
@@ -579,10 +584,6 @@ void TopControlsSlideControllerChromeOS::UpdateBrowserControlsStateShown(
   if (!web_contents)
     return;
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  if (!main_frame)
-    return;
-
   // If the omnibox is focused, then the top controls should be constrained to
   // remain fully shown until the omnibox is blurred.
   const cc::BrowserControlsState constraints_state =
@@ -592,8 +593,8 @@ void TopControlsSlideControllerChromeOS::UpdateBrowserControlsStateShown(
 
   const cc::BrowserControlsState current_state =
       cc::BrowserControlsState::kShown;
-  main_frame->UpdateBrowserControlsState(constraints_state, current_state,
-                                         animate);
+  web_contents->UpdateBrowserControlsState(constraints_state, current_state,
+                                           animate);
 }
 
 bool TopControlsSlideControllerChromeOS::CanEnable(
@@ -695,7 +696,7 @@ void TopControlsSlideControllerChromeOS::Refresh() {
 
   for (auto* layer : layers) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
+    settings.SetTransitionDuration(base::Milliseconds(0));
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
     layer->SetTransform(trans);

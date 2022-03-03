@@ -5,12 +5,13 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_performance_monitor.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/platform/heap/process_heap.h"
 
 namespace {
 
-using base::TimeDelta;
 using base::TimeTicks;
 using blink::CanvasRenderingContext;
 using blink::CanvasResourceProvider;
@@ -18,27 +19,26 @@ using blink::CanvasResourceProvider;
 const char* const kHostTypeName_Canvas = ".Canvas";
 const char* const kHostTypeName_OffscreenCanvas = ".OffscreenCanvas";
 
-const char* const kThreadTypeName_Main = ".MainThread";
-const char* const kThreadTypeName_Worker = ".Worker";
-
-const char* const kContextTypeName_2D = ".2D";
-const char* const kContextTypeName_WebGL = ".WebGL";
-const char* const kContextTypeName_WebGL2 = ".WebGL2";
-const char* const kContextTypeName_WebGPU = ".WebGPU";
-const char* const kContextTypeName_ImageBitmap = ".ImageBitmap";
-
-const char* const kResourceTypeName_Bitmap = ".Bitmap";
-const char* const kResourceTypeName_SharedBitmap = ".SharedBitmap";
-const char* const kResourceTypeName_SharedImage = ".SharedImage";
-const char* const kResourceTypeName_PassThrough = ".PassThrough";
-const char* const kResourceTypeName_SwapChain = ".SwapChain";
-const char* const kResourceTypeName_SkiaDawnSharedImage =
-    ".SkiaDawnSharedImage";
+const char* const kRenderingAPIName_2D_Accelerated = ".2D.Accelerated";
+const char* const kRenderingAPIName_2D_Unaccelerated = ".2D.Unaccelerated";
+const char* const kRenderingAPIName_WebGL = ".WebGL";
+const char* const kRenderingAPIName_WebGL2 = ".WebGL2";
+const char* const kRenderingAPIName_WebGPU = ".WebGPU";
+const char* const kRenderingAPIName_ImageBitmap = ".ImageBitmap";
 
 const char* const kFilterName_All = ".All";
 const char* const kFilterName_Animation = ".Animation";
+const char* const kFilterName_Path = ".Path";
+const char* const kFilterName_Image = ".Image";
+const char* const kFilterName_ImageData = ".ImageData";
+const char* const kFilterName_Rectangle = ".Rectangle";
+const char* const kFilterName_Text = ".Text";
+const char* const kFilterName_DrawArrays = ".DrawArrays";
+const char* const kFilterName_DrawElements = ".DrawElements";
 
 const char* const kMeasurementName_RenderTaskDuration = ".RenderTaskDuration";
+const char* const kMeasurementName_PartitionAlloc = ".PartitionAlloc";
+const char* const kMeasurementName_BlinkGC = ".BlinkGC";
 
 // The inverse of the probability that a given task will be measured.
 // I.e. a value of X means that each task has a probability 1/X of being
@@ -53,22 +53,20 @@ class RenderingContextDescriptionCodec {
   explicit RenderingContextDescriptionCodec(const uint32_t& key);
 
   bool IsOffscreen() const { return key_.get<IsOffscreenField>(); }
-  CanvasRenderingContext::ContextType ContextType() const;
-  CanvasResourceProvider::ResourceProviderType ResourceType() const;
+  bool IsAccelerated() const { return key_.get<IsAcceleratedField>(); }
+  CanvasRenderingContext::CanvasRenderingAPI GetRenderingAPI() const;
   uint32_t GetKey() const { return key_.bits(); }
   bool IsValid() const { return is_valid_; }
 
   const char* GetHostTypeName() const;
-  const char* GetThreadTypeName() const;
-  const char* GetContextTypeName() const;
-  const char* GetResourceTypeName() const;
+  const char* GetRenderingAPIName() const;
 
  private:
   using Key = WTF::SingleThreadedBitField<uint32_t>;
   using IsOffscreenField = Key::DefineFirstValue<bool, 1>;
-  using ContextTypeField = IsOffscreenField::DefineNextValue<uint32_t, 8>;
-  using ResourceTypeField = ContextTypeField::DefineNextValue<uint32_t, 8>;
-  using PaddingField = ResourceTypeField::DefineNextValue<bool, 1>;
+  using IsAcceleratedField = IsOffscreenField::DefineNextValue<bool, 1>;
+  using RenderingAPIField = IsAcceleratedField::DefineNextValue<uint32_t, 8>;
+  using PaddingField = RenderingAPIField::DefineNextValue<bool, 1>;
 
   Key key_;
   bool is_valid_;
@@ -76,13 +74,14 @@ class RenderingContextDescriptionCodec {
 
 RenderingContextDescriptionCodec::RenderingContextDescriptionCodec(
     const CanvasRenderingContext* context) {
-  is_valid_ = context->Host() && context->Host()->ResourceProvider();
+  is_valid_ = context->Host();
   if (!is_valid_)
     return;
 
   key_.set<IsOffscreenField>(context->Host()->IsOffscreenCanvas());
-  key_.set<ContextTypeField>(context->GetContextType());
-  key_.set<ResourceTypeField>(context->Host()->ResourceProvider()->GetType());
+  key_.set<IsAcceleratedField>(context->IsAccelerated());
+  key_.set<RenderingAPIField>(
+      static_cast<uint32_t>(context->GetRenderingAPI()));
   // The padding field ensures at least one bit is set in the key in order
   // to avoid a key == 0, which is not supported by WTF::HashSet
   key_.set<PaddingField>(true);
@@ -92,59 +91,29 @@ RenderingContextDescriptionCodec::RenderingContextDescriptionCodec(
     const uint32_t& key)
     : key_(key), is_valid_(true) {}
 
-CanvasRenderingContext::ContextType
-RenderingContextDescriptionCodec::ContextType() const {
-  return static_cast<CanvasRenderingContext::ContextType>(
-      key_.get<ContextTypeField>());
-}
-
-CanvasResourceProvider::ResourceProviderType
-RenderingContextDescriptionCodec::ResourceType() const {
-  return static_cast<CanvasResourceProvider::ResourceProviderType>(
-      key_.get<ResourceTypeField>());
+CanvasRenderingContext::CanvasRenderingAPI
+RenderingContextDescriptionCodec::GetRenderingAPI() const {
+  return static_cast<CanvasRenderingContext::CanvasRenderingAPI>(
+      key_.get<RenderingAPIField>());
 }
 
 const char* RenderingContextDescriptionCodec::GetHostTypeName() const {
   return IsOffscreen() ? kHostTypeName_OffscreenCanvas : kHostTypeName_Canvas;
 }
 
-const char* RenderingContextDescriptionCodec::GetThreadTypeName() const {
-  return WTF::IsMainThread() ? kThreadTypeName_Main : kThreadTypeName_Worker;
-}
-
-const char* RenderingContextDescriptionCodec::GetContextTypeName() const {
-  switch (ContextType()) {
-    case CanvasRenderingContext::kContext2D:
-      return kContextTypeName_2D;
-    case CanvasRenderingContext::kContextExperimentalWebgl:
-    case CanvasRenderingContext::kContextWebgl:
-      return kContextTypeName_WebGL;
-    case CanvasRenderingContext::kContextWebgl2:
-      return kContextTypeName_WebGL2;
-    case CanvasRenderingContext::kContextGPUPresent:
-      return kContextTypeName_WebGPU;
-    case CanvasRenderingContext::kContextImageBitmap:
-      return kContextTypeName_ImageBitmap;
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
-const char* RenderingContextDescriptionCodec::GetResourceTypeName() const {
-  switch (ResourceType()) {
-    case CanvasResourceProvider::kBitmap:
-      return kResourceTypeName_Bitmap;
-    case CanvasResourceProvider::kSharedBitmap:
-      return kResourceTypeName_SharedBitmap;
-    case CanvasResourceProvider::kSharedImage:
-      return kResourceTypeName_SharedImage;
-    case CanvasResourceProvider::kPassThrough:
-      return kResourceTypeName_PassThrough;
-    case CanvasResourceProvider::kSwapChain:
-      return kResourceTypeName_SwapChain;
-    case CanvasResourceProvider::kSkiaDawnSharedImage:
-      return kResourceTypeName_SkiaDawnSharedImage;
+const char* RenderingContextDescriptionCodec::GetRenderingAPIName() const {
+  switch (GetRenderingAPI()) {
+    case CanvasRenderingContext::CanvasRenderingAPI::k2D:
+      return IsAccelerated() ? kRenderingAPIName_2D_Accelerated
+                             : kRenderingAPIName_2D_Unaccelerated;
+    case CanvasRenderingContext::CanvasRenderingAPI::kWebgl:
+      return kRenderingAPIName_WebGL;
+    case CanvasRenderingContext::CanvasRenderingAPI::kWebgl2:
+      return kRenderingAPIName_WebGL2;
+    case CanvasRenderingContext::CanvasRenderingAPI::kWebgpu:
+      return kRenderingAPIName_WebGPU;
+    case CanvasRenderingContext::CanvasRenderingAPI::kBitmaprenderer:
+      return kRenderingAPIName_ImageBitmap;
     default:
       NOTREACHED();
       return "";
@@ -169,15 +138,17 @@ void CanvasPerformanceMonitor::CurrentTaskDrawsToContext(
     // canvases per render task.
     measure_current_task_ = !(task_counter_++ % kSamplingProbabilityInv);
 
-    if (context->Host() && context->Host()->GetTopExecutionContext() &&
-        context->Host()
-            ->GetTopExecutionContext()
-            ->IsInRequestAnimationFrame()) {
-      call_type_ = CallType::kAnimation;
-    } else {
-      // TODO(crbug.com/1206028): Add support for CallType::kUserInput
-      call_type_ = CallType::kOther;
+    if (LIKELY(!measure_current_task_))
+      return;
+
+    call_type_ = CallType::kOther;
+    if (context->Host()) {
+      ExecutionContext* ec = context->Host()->GetTopExecutionContext();
+      if (ec && ec->IsInRequestAnimationFrame()) {
+        call_type_ = CallType::kAnimation;
+      }
     }
+    // TODO(crbug.com/1206028): Add support for CallType::kUserInput
   }
 
   if (LIKELY(!measure_current_task_))
@@ -203,7 +174,12 @@ void CanvasPerformanceMonitor::WillProcessTask(TimeTicks start_time) {
 void CanvasPerformanceMonitor::RecordMetrics(TimeTicks start_time,
                                              TimeTicks end_time) {
   TRACE_EVENT0("blink", "CanvasPerformanceMonitor::RecordMetrics");
-  TimeDelta elapsed_time = end_time - start_time;
+  base::TimeDelta elapsed_time = end_time - start_time;
+  constexpr size_t kKiloByte = 1024;
+  size_t partition_alloc_kb = WTF::Partitions::TotalActiveBytes() / kKiloByte;
+  size_t blink_gc_alloc_kb =
+      ProcessHeap::TotalAllocatedObjectSize() / kKiloByte;
+
   while (!rendering_context_descriptions_.IsEmpty()) {
     RenderingContextDescriptionCodec desc(
         rendering_context_descriptions_.TakeAny());
@@ -213,10 +189,10 @@ void CanvasPerformanceMonitor::RecordMetrics(TimeTicks start_time,
     // info.
     WTF::String histogram_name_prefix =
         WTF::String("Blink") + desc.GetHostTypeName();
-    WTF::String histogram_name_radical = WTF::String(desc.GetThreadTypeName()) +
-                                         desc.GetContextTypeName() +
-                                         desc.GetResourceTypeName();
+    WTF::String histogram_name_radical =
+        WTF::String(desc.GetRenderingAPIName());
 
+    // Render task duration metric for all render tasks.
     {
       WTF::String histogram_name = histogram_name_prefix +
                                    kMeasurementName_RenderTaskDuration +
@@ -225,6 +201,7 @@ void CanvasPerformanceMonitor::RecordMetrics(TimeTicks start_time,
                                           elapsed_time);
     }
 
+    // Render task duration metric for rAF callbacks only.
     if (call_type_ == CallType::kAnimation) {
       WTF::String histogram_name =
           histogram_name_prefix + kMeasurementName_RenderTaskDuration +
@@ -232,7 +209,86 @@ void CanvasPerformanceMonitor::RecordMetrics(TimeTicks start_time,
       base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
                                           elapsed_time);
     }
+
+    // Filtered histograms that apply to 2D canvases
+    if (desc.GetRenderingAPI() ==
+        CanvasRenderingContext::CanvasRenderingAPI::k2D) {
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kPath)) {
+        WTF::String histogram_name = histogram_name_prefix +
+                                     kMeasurementName_RenderTaskDuration +
+                                     histogram_name_radical + kFilterName_Path;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kImage)) {
+        WTF::String histogram_name = histogram_name_prefix +
+                                     kMeasurementName_RenderTaskDuration +
+                                     histogram_name_radical + kFilterName_Image;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kImageData)) {
+        WTF::String histogram_name =
+            histogram_name_prefix + kMeasurementName_RenderTaskDuration +
+            histogram_name_radical + kFilterName_ImageData;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kText)) {
+        WTF::String histogram_name = histogram_name_prefix +
+                                     kMeasurementName_RenderTaskDuration +
+                                     histogram_name_radical + kFilterName_Text;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kRectangle)) {
+        WTF::String histogram_name =
+            histogram_name_prefix + kMeasurementName_RenderTaskDuration +
+            histogram_name_radical + kFilterName_Rectangle;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+    } else if (desc.GetRenderingAPI() ==
+                   CanvasRenderingContext::CanvasRenderingAPI::kWebgl ||
+               desc.GetRenderingAPI() ==
+                   CanvasRenderingContext::CanvasRenderingAPI::kWebgl2) {
+      // Filtered histograms that apply to WebGL canvases
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kDrawArrays)) {
+        WTF::String histogram_name =
+            histogram_name_prefix + kMeasurementName_RenderTaskDuration +
+            histogram_name_radical + kFilterName_DrawArrays;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+      if (draw_types_ & static_cast<uint32_t>(DrawType::kDrawElements)) {
+        WTF::String histogram_name =
+            histogram_name_prefix + kMeasurementName_RenderTaskDuration +
+            histogram_name_radical + kFilterName_DrawElements;
+        base::UmaHistogramMicrosecondsTimes(histogram_name.Latin1(),
+                                            elapsed_time);
+      }
+    }
+    // TODO(junov) Add filtered histograms that apply to WebGPU canvases
+
+    // PartitionAlloc heap size metric
+    {
+      WTF::String histogram_name = histogram_name_prefix +
+                                   kMeasurementName_PartitionAlloc +
+                                   histogram_name_radical;
+      base::UmaHistogramMemoryKB(histogram_name.Latin1(),
+                                 static_cast<int>(partition_alloc_kb));
+    }
+
+    // Blink garbage collected heap size metric
+    {
+      WTF::String histogram_name = histogram_name_prefix +
+                                   kMeasurementName_BlinkGC +
+                                   histogram_name_radical;
+      base::UmaHistogramMemoryKB(histogram_name.Latin1(),
+                                 static_cast<int>(blink_gc_alloc_kb));
+    }
   }
+
 }
 
 void CanvasPerformanceMonitor::DidProcessTask(TimeTicks start_time,
@@ -244,14 +300,14 @@ void CanvasPerformanceMonitor::DidProcessTask(TimeTicks start_time,
     RecordMetrics(start_time, end_time);
 
   is_render_task_ = false;
-  draw_flags_ = 0;
+  draw_types_ = 0;
 }
 
 void CanvasPerformanceMonitor::ResetForTesting() {
   if (is_render_task_)
     Thread::Current()->RemoveTaskTimeObserver(this);
   is_render_task_ = false;
-  draw_flags_ = 0;
+  draw_types_ = 0;
   rendering_context_descriptions_.clear();
   call_type_ = CallType::kOther;
   task_counter_ = 0;

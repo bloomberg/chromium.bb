@@ -15,104 +15,99 @@
 #ifndef FUZZERS_TINT_COMMON_FUZZER_H_
 #define FUZZERS_TINT_COMMON_FUZZER_H_
 
+#include <cassert>
+#include <cstring>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "include/tint/tint.h"
 
+#include "fuzzers/data_builder.h"
+
 namespace tint {
 namespace fuzzers {
 
-class Reader {
- public:
-  Reader(const uint8_t* data, size_t size);
+void GenerateSpirvOptions(DataBuilder* b, writer::spirv::Options* options);
+void GenerateWgslOptions(DataBuilder* b, writer::wgsl::Options* options);
+void GenerateHlslOptions(DataBuilder* b, writer::hlsl::Options* options);
+void GenerateMslOptions(DataBuilder* b, writer::msl::Options* options);
 
-  bool failed() { return failed_; }
-  const uint8_t* data() { return data_; }
-  size_t size() { return size_; }
+enum class InputFormat { kWGSL, kSpv };
 
-  template <typename T>
-  T read() {
-    T out{};
-    read(&out, sizeof(T));
-    return out;
-  }
-
-  std::string string();
-
-  template <typename T>
-  std::vector<T> vector() {
-    auto count = read<uint8_t>();
-    if (failed_ || size_ < count) {
-      mark_failed();
-      return {};
-    }
-    std::vector<T> out(count);
-    memcpy(out.data(), data_, count * sizeof(T));
-    data_ += count * sizeof(T);
-    size_ -= count * sizeof(T);
-    return out;
-  }
-
-  template <typename T>
-  std::vector<T> vector(T (*extract)(Reader*)) {
-    auto count = read<uint8_t>();
-    if (size_ < count) {
-      mark_failed();
-      return {};
-    }
-    std::vector<T> out(count);
-    for (uint8_t i = 0; i < count; i++) {
-      out[i] = extract(this);
-    }
-    return out;
-  }
-  template <typename T>
-  T enum_class(uint8_t count) {
-    auto val = read<uint8_t>();
-    return static_cast<T>(val % count);
-  }
-
- private:
-  void mark_failed();
-  void read(void* out, size_t n);
-
-  const uint8_t* data_;
-  size_t size_;
-  bool failed_ = false;
-};
-
-void ExtractBindingRemapperInputs(Reader* r, tint::transform::DataMap* inputs);
-void ExtractFirstIndexOffsetInputs(Reader* r, tint::transform::DataMap* inputs);
-
-void ExtractSingleEntryPointInputs(Reader* r, tint::transform::DataMap* inputs);
-
-void ExtractVertexPullingInputs(Reader* r, tint::transform::DataMap* inputs);
-
-enum class InputFormat { kWGSL, kSpv, kNone };
-
-enum class OutputFormat { kWGSL, kSpv, kHLSL, kMSL, kNone };
+enum class OutputFormat { kWGSL, kSpv, kHLSL, kMSL };
 
 class CommonFuzzer {
  public:
   explicit CommonFuzzer(InputFormat input, OutputFormat output);
   ~CommonFuzzer();
 
-  void SetTransformManager(transform::Manager* tm, transform::DataMap inputs) {
+  void SetTransformManager(transform::Manager* tm, transform::DataMap* inputs) {
+    assert((!tm || inputs) && "DataMap must be !nullptr if Manager !nullptr");
     transform_manager_ = tm;
-    transform_inputs_ = std::move(inputs);
+    transform_inputs_ = inputs;
   }
-  void EnableInspector() { inspector_enabled_ = true; }
+
+  void SetDumpInput(bool enabled) { dump_input_ = enabled; }
 
   int Run(const uint8_t* data, size_t size);
+
+  const tint::diag::List& Diagnostics() const { return diagnostics_; }
+
+  bool HasErrors() const { return diagnostics_.contains_errors(); }
+
+  const std::vector<uint32_t>& GetGeneratedSpirv() const {
+    return generated_spirv_;
+  }
+
+  const std::string& GetGeneratedWgsl() const { return generated_wgsl_; }
+
+  const std::string& GetGeneratedHlsl() const { return generated_hlsl_; }
+
+  const std::string& GetGeneratedMsl() const { return generated_msl_; }
+
+  void SetOptionsSpirv(const writer::spirv::Options& options) {
+    options_spirv_ = options;
+  }
+
+  void SetOptionsWgsl(const writer::wgsl::Options& options) {
+    options_wgsl_ = options;
+  }
+
+  void SetOptionsHlsl(const writer::hlsl::Options& options) {
+    options_hlsl_ = options;
+  }
+
+  void SetOptionsMsl(const writer::msl::Options& options) {
+    options_msl_ = options;
+  }
 
  private:
   InputFormat input_;
   OutputFormat output_;
-  transform::Manager* transform_manager_;
-  transform::DataMap transform_inputs_;
-  bool inspector_enabled_;
+  transform::Manager* transform_manager_ = nullptr;
+  transform::DataMap* transform_inputs_ = nullptr;
+  bool dump_input_ = false;
+  tint::diag::List diagnostics_;
+
+  std::vector<uint32_t> generated_spirv_;
+  std::string generated_wgsl_;
+  std::string generated_hlsl_;
+  std::string generated_msl_;
+
+  writer::spirv::Options options_spirv_;
+  writer::wgsl::Options options_wgsl_;
+  writer::hlsl::Options options_hlsl_;
+  writer::msl::Options options_msl_;
+
+#if TINT_BUILD_WGSL_READER
+  /// The source file needs to live at least as long as #diagnostics_
+  std::unique_ptr<Source::File> file_;
+#endif  // TINT_BUILD_WGSL_READER
+
+  // Run series of reflection operations to exercise the Inspector API.
+  void RunInspector(Program* program);
 };
 
 }  // namespace fuzzers

@@ -13,6 +13,7 @@ source_set("channel") {
   ]
 
   deps = [
+    "../../third_party/abseil",
     "../common:channel",
     "../common/certificate/proto:certificate_proto",
     "../common/channel/proto:channel_proto",
@@ -65,9 +66,7 @@ source_set("test_helpers") {
     "../receiver:channel",
   ]
 
-  public_deps = [
-    ":channel",
-  ]
+  public_deps = [ ":channel" ]
 }
 
 source_set("unittests") {

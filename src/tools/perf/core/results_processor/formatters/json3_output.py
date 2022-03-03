@@ -5,7 +5,7 @@
 """Output formatter for JSON Test Results Format.
 
 Format specification:
-https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_results_format.md
+https://chromium.googlesource.com/chromium/src/+/main/docs/testing/json_test_results_format.md
 """
 
 import collections
@@ -103,11 +103,16 @@ def _DedupedStatus(values):
   # (i.e. story) may be run multiple times, we squash as sequence of PASS
   # results to a single one. Note this does not affect the total number of
   # passes in num_failures_by_type.
+  # See also crbug.com/1254733 for why we want to report a FAIL in the case
+  # of flaky failures. A failed test run means less perf data so in general we
+  # want to investigate and fix those failures, not dismiss them as flakes.
   deduped = set(values)
   if deduped == {'PASS'}:
     return 'PASS'
   elif deduped == {'SKIP'}:
     return 'SKIP'
+  elif 'FAIL' in deduped:
+    return 'FAIL'
   else:
     return ' '.join(values)
 

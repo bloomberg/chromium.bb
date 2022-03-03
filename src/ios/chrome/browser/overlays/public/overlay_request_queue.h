@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_cancel_handler.h"
 
@@ -19,6 +18,9 @@ class WebState;
 // A queue of OverlayRequests for a specific WebState.
 class OverlayRequestQueue {
  public:
+  OverlayRequestQueue(const OverlayRequestQueue&) = delete;
+  OverlayRequestQueue& operator=(const OverlayRequestQueue&) = delete;
+
   virtual ~OverlayRequestQueue() = default;
 
   // Returns the request queue for |web_state| at |modality|.
@@ -65,7 +67,6 @@ class OverlayRequestQueue {
 
  private:
   friend class OverlayRequestCancelHandler;
-  DISALLOW_COPY_AND_ASSIGN(OverlayRequestQueue);
 
   // Called by cancellation handlers to cancel |request|.
   virtual void CancelRequest(OverlayRequest* request) = 0;

@@ -18,7 +18,6 @@
 #include "chrome/browser/external_protocol/auto_launch_protocols_policy_handler.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -33,9 +32,12 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#endif
+
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -66,6 +68,7 @@ constexpr const char* kDeniedSchemes[] = {
     "hcp",
     "ie.http",
     "javascript",
+    "mk",
     "ms-help",
     "nntp",
     "res",
@@ -175,8 +178,7 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
 // request.
 void OnDefaultProtocolClientWorkerFinished(
     const GURL& escaped_url,
-    int render_process_host_id,
-    int render_view_routing_id,
+    content::WebContents::Getter web_contents_getter,
     bool prompt_user,
     ui::PageTransition page_transition,
     bool has_user_gesture,
@@ -188,8 +190,7 @@ void OnDefaultProtocolClientWorkerFinished(
   if (delegate)
     delegate->FinishedProcessingCheck();
 
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, render_view_routing_id);
+  content::WebContents* web_contents = web_contents_getter.Run();
 
   // The default handler is hidden if it is Chrome itself, as nothing will
   // happen if it is selected (since this is invoked by the external protocol
@@ -197,7 +198,7 @@ void OnDefaultProtocolClientWorkerFinished(
   bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
 
   // On ChromeOS, Click to Call is integrated into the external protocol dialog.
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (web_contents && ShouldOfferClickToCallForURL(
                           web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
@@ -391,8 +392,7 @@ void ExternalProtocolHandler::SetBlockState(
 // static
 void ExternalProtocolHandler::LaunchUrl(
     const GURL& url,
-    int render_process_host_id,
-    int render_view_routing_id,
+    content::WebContents::Getter web_contents_getter,
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const absl::optional<url::Origin>& initiating_origin) {
@@ -416,8 +416,7 @@ void ExternalProtocolHandler::LaunchUrl(
   std::string escaped_url_string = net::EscapeExternalHandlerValue(url.spec());
   GURL escaped_url(escaped_url_string);
 
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, render_view_routing_id);
+  content::WebContents* web_contents = web_contents_getter.Run();
   Profile* profile = nullptr;
   if (web_contents)  // Maybe NULL during testing.
     profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -455,8 +454,8 @@ void ExternalProtocolHandler::LaunchUrl(
   // message loops.
   shell_integration::DefaultWebClientWorkerCallback callback = base::BindOnce(
       &OnDefaultProtocolClientWorkerFinished, escaped_url,
-      render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
-      page_transition, has_user_gesture, initiating_origin_or_precursor,
+      std::move(web_contents_getter), block_state == UNKNOWN, page_transition,
+      has_user_gesture, initiating_origin_or_precursor,
       g_external_protocol_handler_delegate);
 
   // Start the check process running. This will send tasks to a worker task

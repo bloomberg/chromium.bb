@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -69,6 +70,8 @@ const char kDisableCheckingUserPermissionsForTesting[] =
 const char kDisableModelDownloadVerificationForTesting[] =
     "disable-model-download-verification";
 
+const char kDebugLoggingEnabled[] = "enable-optimization-guide-debug-logs";
+
 // Disables the fetching of models and overrides the file path and metadata to
 // be used for the session to use what's passed via command-line instead of what
 // is already stored.
@@ -80,6 +83,9 @@ const char kDisableModelDownloadVerificationForTesting[] =
 // It is possible this only works on Desktop since file paths are less easily
 // accessible on Android, but may work.
 const char kModelOverride[] = "optimization-guide-model-override";
+
+// Triggers validation of the model. Used for manual testing.
+const char kModelValidate[] = "optimization-guide-model-validate";
 
 bool IsHintComponentProcessingDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kHintsProtoOverride);
@@ -94,6 +100,11 @@ bool ShouldPurgeOptimizationGuideStoreOnStartup() {
 bool ShouldPurgeModelAndFeaturesStoreOnStartup() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(kPurgeModelAndFeaturesStore);
+}
+
+bool IsDebugLogsEnabled() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  return cmd_line->HasSwitch(kDebugLoggingEnabled);
 }
 
 // Parses a list of hosts to have hints fetched for. This overrides scheduling
@@ -174,61 +185,25 @@ bool IsModelOverridePresent() {
   return command_line->HasSwitch(kModelOverride);
 }
 
-absl::optional<
-    std::pair<std::string, absl::optional<optimization_guide::proto::Any>>>
-GetModelOverrideForOptimizationTarget(
-    optimization_guide::proto::OptimizationTarget optimization_target) {
+bool ShouldValidateModel() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(kModelValidate);
+}
+
+absl::optional<std::string> GetModelOverride() {
+#if defined(OS_WIN)
+  // TODO(crbug/1227996): The parsing below is not supported on Windows because
+  // ':' is used as a delimiter, but this must be used in the absolute file path
+  // on Windows.
+  DLOG(ERROR)
+      << "--optimization-guide-model-override is not available on Windows";
+  return absl::nullopt;
+#else
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kModelOverride))
     return absl::nullopt;
-
-  std::string model_override_switch_value =
-      command_line->GetSwitchValueASCII(kModelOverride);
-  std::vector<std::string> model_overrides =
-      base::SplitString(model_override_switch_value, ",", base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-  for (const auto& model_override : model_overrides) {
-    std::vector<std::string> override_parts = base::SplitString(
-        model_override, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (override_parts.size() != 2 && override_parts.size() != 3) {
-      // Input is malformed.
-      DLOG(ERROR) << "Invalid string format provided to the Model Override";
-      return absl::nullopt;
-    }
-
-    optimization_guide::proto::OptimizationTarget recv_optimization_target;
-    if (!optimization_guide::proto::OptimizationTarget_Parse(
-            override_parts[0], &recv_optimization_target)) {
-      // Optimization target is invalid.
-      DLOG(ERROR)
-          << "Invalid optimization target provided to the Model Override";
-      return absl::nullopt;
-    }
-    if (optimization_target != recv_optimization_target)
-      continue;
-
-    if (override_parts.size() == 2) {
-      std::pair<std::string, absl::optional<optimization_guide::proto::Any>>
-          file_path_and_metadata =
-              std::make_pair(override_parts[1], absl::nullopt);
-      return file_path_and_metadata;
-    }
-    std::string binary_pb;
-    if (!base::Base64Decode(override_parts[2], &binary_pb)) {
-      DLOG(ERROR) << "Invalid base64 encoding of the Model Override";
-      return absl::nullopt;
-    }
-    optimization_guide::proto::Any model_metadata;
-    if (!model_metadata.ParseFromString(binary_pb)) {
-      DLOG(ERROR) << "Invalid model metadata provided to the Model Override";
-      return absl::nullopt;
-    }
-    std::pair<std::string, absl::optional<optimization_guide::proto::Any>>
-        file_path_and_metadata =
-            std::make_pair(override_parts[1], model_metadata);
-    return file_path_and_metadata;
-  }
-  return absl::nullopt;
+  return command_line->GetSwitchValueASCII(kModelOverride);
+#endif
 }
 
 }  // namespace switches

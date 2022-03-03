@@ -5,9 +5,8 @@
 #include "chrome/browser/chooser_controller/title_util.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/url_formatter/elide_url.h"
+#include "components/permissions/chooser_title_util.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
@@ -17,20 +16,18 @@
 #include "extensions/common/constants.h"
 #endif
 
-std::u16string CreateChooserTitle(content::RenderFrameHost* render_frame_host,
-                                  int title_string_id_origin,
-                                  int title_string_id_extension) {
+std::u16string CreateExtensionAwareChooserTitle(
+    content::RenderFrameHost* render_frame_host,
+    int title_string_id_origin,
+    int title_string_id_extension) {
   if (!render_frame_host)
     return u"";
 
-  url::Origin origin = render_frame_host->GetLastCommittedOrigin();
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  url::Origin origin = render_frame_host->GetLastCommittedOrigin();
   if (origin.scheme() == extensions::kExtensionScheme) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(render_frame_host);
     content::BrowserContext* browser_context =
-        web_contents->GetBrowserContext();
+        render_frame_host->GetBrowserContext();
     extensions::ExtensionRegistry* extension_registry =
         extensions::ExtensionRegistry::Get(browser_context);
     if (extension_registry) {
@@ -44,8 +41,6 @@ std::u16string CreateChooserTitle(content::RenderFrameHost* render_frame_host,
   }
 #endif
 
-  return l10n_util::GetStringFUTF16(
-      title_string_id_origin,
-      url_formatter::FormatOriginForSecurityDisplay(
-          origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+  return permissions::CreateChooserTitle(render_frame_host,
+                                         title_string_id_origin);
 }

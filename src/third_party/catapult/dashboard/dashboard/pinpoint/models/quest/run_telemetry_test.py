@@ -16,6 +16,35 @@ _DEFAULT_EXTRA_ARGS = [
 
 _STORY_REGEX = re.compile(r'[^a-zA-Z0-9]')
 
+# crbug/1146949
+# Please keep this executable-argument mapping synced with perf waterfall:
+#  https://chromium.googlesource.com/chromium/src/+/main/tools/perf/core/bot_platforms.py
+_WATERFALL_ENABLED_GTEST_NAMES = {
+    'base_perftests': [
+        '--test-launcher-jobs=1', '--test-launcher-retry-limit=0'
+    ],
+    'components_perftests': ['--xvfb'],
+    'dawn_perf_tests': [
+        '--test-launcher-jobs=1', '--test-launcher-retry-limit=0'
+    ],
+    'gpu_perftests': [],
+    'load_library_perf_tests': [],
+    'performance_browser_tests': [
+        '--full-performance-run',
+        '--test-launcher-jobs=1',
+        '--test-launcher-retry-limit=0',
+        # Allow the full performance runs to take up to 60 seconds (rather
+        # than the default of 30 for normal CQ browser test runs).
+        '--ui-test-action-timeout=60000',
+        '--ui-test-action-max-timeout=60000',
+        '--test-launcher-timeout=60000',
+        '--gtest_filter=*/TabCapturePerformanceTest.*:'
+        '*/CastV2PerformanceTest.*',
+    ],
+    'tracing_perftests': [],
+    'views_perftests': ['--xvfb']
+}
+
 
 def _StoryToRegex(story_name):
   # Telemetry's --story-filter argument takes in a regex, not a
@@ -32,19 +61,9 @@ def ChangeDependentArgs(args, change):
   extra_args = list(args)
   extra_args += ('--results-label', str(change))
   if '--story-filter' in extra_args:
-    # TODO(crbug.com/982027): The --run-full-story-set flag was added to
-    # Chromium at revision http://crrev.com/675459, on Jul 9th, 2019. If we
-    # use this flag for changes before then, then Telemetry will fail. We can
-    # move the following code to run without checking commit_position as part
-    # of the _ExtraTestArgs method once we no longer need to be able to run
-    # Pinpoint against changes that old.
-    commit_position = change.base_commit.AsDict().get('commit_position')
-    if commit_position is None or commit_position >= 675459:
-      # Since benchmarks are run in abridged form by default, we need to
-      # add the argument --run-full-story-set to make sure that if someone
-      # chooses to run a specific story we will run it even if it is not
-      # in the abridged version of the story set.
-      extra_args.append('--run-full-story-set')
+    extra_args.append('--run-full-story-set')
+  if change.change_args:
+    extra_args.extend(change.change_args)
   return extra_args
 
 
@@ -57,7 +76,7 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
     # deprecated and will be removed soon (EOY 2020).
     # TODO(dberris): Move this out to a configuration elsewhere.
     command = [
-        'luci-auth', 'context', '--', 'vpython', '../../testing/test_env.py',
+        'luci-auth', 'context', '--', 'vpython3', '../../testing/test_env.py',
         '../../testing/scripts/run_performance_tests.py',
         '../../tools/perf/run_benchmark'
     ]
@@ -78,10 +97,26 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
   def _ExtraTestArgs(cls, arguments):
     extra_test_args = []
 
+    # Run tests even if they're configured to be ignored in expectations.config
+    extra_test_args.append('-d')
+
     benchmark = arguments.get('benchmark')
     if not benchmark:
       raise TypeError('Missing "benchmark" argument.')
-    extra_test_args += ('--benchmarks', benchmark)
+
+    if benchmark in _WATERFALL_ENABLED_GTEST_NAMES:
+      # crbug/1146949
+      # Pass the correct arguments to run gtests on pinpoint.
+      # As we don't want to add dependency to chromium, the names of gtests are
+      # hard coded here, instead of loading from bot_platforms.py.
+      # Also, the list of pass_through_args is not handled correctly on swarming
+      # so we disassemble here and reassemable the list on server.
+      extra_test_args += ('--gtest-benchmark-name', benchmark)
+      extra_test_args += ('--non-telemetry', 'true')
+      pass_through_args = list(_WATERFALL_ENABLED_GTEST_NAMES[benchmark])
+      extra_test_args += ('--passthrough-arg', ','.join(pass_through_args))
+    else:
+      extra_test_args += ('--benchmarks', benchmark)
 
     story = arguments.get('story')
     if story:

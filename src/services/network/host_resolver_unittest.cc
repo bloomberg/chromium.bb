@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -29,6 +31,8 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/host_resolver_source.h"
+#include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log.h"
 #include "net/net_buildflags.h"
@@ -36,6 +40,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/radio_utils.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "net/android/radio_activity_tracker.h"
+#include "net/base/features.h"
+#include "services/network/radio_monitor_android.h"
+#endif
 
 namespace network {
 namespace {
@@ -129,12 +142,12 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   absl::optional<net::AddressList> result_addresses_;
   absl::optional<std::vector<std::string>> result_text_;
   absl::optional<std::vector<net::HostPortPair>> result_hosts_;
-  base::RunLoop* const run_loop_;
+  const raw_ptr<base::RunLoop> run_loop_;
 };
 
 class TestMdnsListenClient : public mojom::MdnsListenClient {
  public:
-  using UpdateType = net::HostResolver::MdnsListener::Delegate::UpdateType;
+  using UpdateType = net::MdnsListenerUpdateType;
   using UpdateKey = std::pair<UpdateType, net::DnsQueryType>;
 
   explicit TestMdnsListenClient(
@@ -202,6 +215,7 @@ class TestMdnsListenClient : public mojom::MdnsListenClient {
 TEST_F(HostResolverTest, Sync) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->set_synchronous_mode(true);
+  inner_resolver->rules()->AddRule("example.test", "1.2.3.4");
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -215,14 +229,14 @@ TEST_F(HostResolverTest, Sync) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   resolver.ResolveHost(
-      net::HostPortPair("localhost", 160), net::NetworkIsolationKey(),
+      net::HostPortPair("example.test", 160), net::NetworkIsolationKey(),
       std::move(optional_parameters), std::move(pending_response_client));
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.top_level_result_error());
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
-              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+              testing::ElementsAre(CreateExpectedEndPoint("1.2.3.4", 160)));
   EXPECT_FALSE(response_client.result_text());
   EXPECT_FALSE(response_client.result_hosts());
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
@@ -232,6 +246,7 @@ TEST_F(HostResolverTest, Sync) {
 TEST_F(HostResolverTest, Async) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->set_synchronous_mode(false);
+  inner_resolver->rules()->AddRule("example.test", "1.2.3.4");
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -245,7 +260,7 @@ TEST_F(HostResolverTest, Async) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   resolver.ResolveHost(
-      net::HostPortPair("localhost", 160), net::NetworkIsolationKey(),
+      net::HostPortPair("example.test", 160), net::NetworkIsolationKey(),
       std::move(optional_parameters), std::move(pending_response_client));
 
   bool control_handle_closed = false;
@@ -256,7 +271,7 @@ TEST_F(HostResolverTest, Async) {
 
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
-              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+              testing::ElementsAre(CreateExpectedEndPoint("1.2.3.4", 160)));
   EXPECT_FALSE(response_client.result_text());
   EXPECT_FALSE(response_client.result_hosts());
   EXPECT_TRUE(control_handle_closed);
@@ -290,6 +305,7 @@ TEST_F(HostResolverTest, DnsQueryType) {
 
 TEST_F(HostResolverTest, InitialPriority) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->rules()->AddRule("priority.test", "1.2.3.4");
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -302,13 +318,13 @@ TEST_F(HostResolverTest, InitialPriority) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   resolver.ResolveHost(
-      net::HostPortPair("localhost", 80), net::NetworkIsolationKey(),
+      net::HostPortPair("priority.test", 80), net::NetworkIsolationKey(),
       std::move(optional_parameters), std::move(pending_response_client));
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
-              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 80)));
+              testing::ElementsAre(CreateExpectedEndPoint("1.2.3.4", 80)));
   EXPECT_EQ(net::HIGHEST, inner_resolver->last_request_priority());
 }
 
@@ -321,14 +337,26 @@ TEST_F(HostResolverTest, Source) {
   constexpr char kDnsResult[] = "168.100.12.23";
   constexpr char kMdnsResult[] = "200.1.2.3";
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  inner_resolver->rules_map()[net::HostResolverSource::ANY]->AddRule(
-      kDomain, kAnyResult);
-  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
-      kDomain, kSystemResult);
-  inner_resolver->rules_map()[net::HostResolverSource::DNS]->AddRule(
-      kDomain, kDnsResult);
-  inner_resolver->rules_map()[net::HostResolverSource::MULTICAST_DNS]->AddRule(
-      kDomain, kMdnsResult);
+
+  net::MockHostResolverBase::RuleResolver::RuleKey any_key;
+  any_key.hostname_pattern = kDomain;
+  any_key.query_source = net::HostResolverSource::ANY;
+  inner_resolver->rules()->AddRule(std::move(any_key), kAnyResult);
+
+  net::MockHostResolverBase::RuleResolver::RuleKey system_key;
+  system_key.hostname_pattern = kDomain;
+  system_key.query_source = net::HostResolverSource::SYSTEM;
+  inner_resolver->rules()->AddRule(std::move(system_key), kSystemResult);
+
+  net::MockHostResolverBase::RuleResolver::RuleKey dns_key;
+  dns_key.hostname_pattern = kDomain;
+  dns_key.query_source = net::HostResolverSource::DNS;
+  inner_resolver->rules()->AddRule(std::move(dns_key), kDnsResult);
+
+  net::MockHostResolverBase::RuleResolver::RuleKey mdns_key;
+  mdns_key.hostname_pattern = kDomain;
+  mdns_key.query_source = net::HostResolverSource::MULTICAST_DNS;
+  inner_resolver->rules()->AddRule(std::move(mdns_key), kMdnsResult);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -401,10 +429,14 @@ TEST_F(HostResolverTest, SeparateCacheBySource) {
   constexpr char kAnyResultOriginal[] = "1.2.3.4";
   constexpr char kSystemResultOriginal[] = "127.0.0.1";
   auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
-  inner_resolver->rules_map()[net::HostResolverSource::ANY]->AddRule(
-      kDomain, kAnyResultOriginal);
-  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
-      kDomain, kSystemResultOriginal);
+  net::MockHostResolverBase::RuleResolver::RuleKey any_key;
+  any_key.hostname_pattern = kDomain;
+  any_key.query_source = net::HostResolverSource::ANY;
+  inner_resolver->rules()->AddRule(any_key, kAnyResultOriginal);
+  net::MockHostResolverBase::RuleResolver::RuleKey system_key;
+  system_key.hostname_pattern = kDomain;
+  system_key.query_source = net::HostResolverSource::SYSTEM;
+  inner_resolver->rules()->AddRule(system_key, kSystemResultOriginal);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -429,12 +461,9 @@ TEST_F(HostResolverTest, SeparateCacheBySource) {
   // not based on whether they resolve to the old or new value.
   constexpr char kAnyResultFresh[] = "111.222.1.1";
   constexpr char kSystemResultFresh[] = "111.222.1.2";
-  inner_resolver->rules_map()[net::HostResolverSource::ANY]->ClearRules();
-  inner_resolver->rules_map()[net::HostResolverSource::ANY]->AddRule(
-      kDomain, kAnyResultFresh);
-  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->ClearRules();
-  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
-      kDomain, kSystemResultFresh);
+  inner_resolver->rules()->ClearRules();
+  inner_resolver->rules()->AddRule(any_key, kAnyResultFresh);
+  inner_resolver->rules()->AddRule(system_key, kSystemResultFresh);
 
   base::RunLoop cached_run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_cached_client;
@@ -562,7 +591,7 @@ TEST_F(HostResolverTest, CacheStaleAllowed) {
   // MockHostResolver gives cache entries a 1 min TTL, so simulate a day
   // passing, which is more than long enough for the cached results to become
   // stale.
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  task_environment_.FastForwardBy(base::Days(1));
 
   // Fetching stale results returns the original cached value.
   base::RunLoop cached_run_loop;
@@ -711,6 +740,7 @@ TEST_F(HostResolverTest, LoopbackOnly) {
 
 TEST_F(HostResolverTest, HandlesSecureDnsPolicyParameter) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->rules()->AddRule("secure.test", "1.2.3.4");
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -724,13 +754,13 @@ TEST_F(HostResolverTest, HandlesSecureDnsPolicyParameter) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   resolver.ResolveHost(
-      net::HostPortPair("localhost", 80), net::NetworkIsolationKey(),
+      net::HostPortPair("secure.test", 80), net::NetworkIsolationKey(),
       std::move(optional_parameters), std::move(pending_response_client));
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
-              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 80)));
+              testing::ElementsAre(CreateExpectedEndPoint("1.2.3.4", 80)));
   EXPECT_EQ(net::SecureDnsPolicy::kDisable,
             inner_resolver->last_secure_dns_policy());
 }
@@ -800,6 +830,7 @@ TEST_F(HostResolverTest, NetworkIsolationKey) {
   const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
 
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->rules()->AddRule("nik.test", "1.2.3.4");
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -812,14 +843,14 @@ TEST_F(HostResolverTest, NetworkIsolationKey) {
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
-  resolver.ResolveHost(net::HostPortPair("localhost", 160),
-                       kNetworkIsolationKey, std::move(optional_parameters),
+  resolver.ResolveHost(net::HostPortPair("nik.test", 160), kNetworkIsolationKey,
+                       std::move(optional_parameters),
                        std::move(pending_response_client));
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
-              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+              testing::ElementsAre(CreateExpectedEndPoint("1.2.3.4", 160)));
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
   EXPECT_EQ(kNetworkIsolationKey,
             inner_resolver->last_request_network_isolation_key());
@@ -1420,14 +1451,13 @@ TEST_F(HostResolverTest, MdnsListener_AddressResult) {
   net::IPAddress result_address(1, 2, 3, 4);
   net::IPEndPoint result(result_address, 41);
   inner_resolver->TriggerMdnsListeners(
-      host, net::DnsQueryType::A,
-      net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED, result);
+      host, net::DnsQueryType::A, net::MdnsListenerUpdateType::kAdded, result);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(response_client.address_results(),
-              testing::ElementsAre(TestMdnsListenClient::CreateExpectedResult(
-                  net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
-                  net::DnsQueryType::A, result)));
+  EXPECT_THAT(
+      response_client.address_results(),
+      testing::ElementsAre(TestMdnsListenClient::CreateExpectedResult(
+          net::MdnsListenerUpdateType::kAdded, net::DnsQueryType::A, result)));
 
   EXPECT_THAT(response_client.text_results(), testing::IsEmpty());
   EXPECT_THAT(response_client.hostname_results(), testing::IsEmpty());
@@ -1454,21 +1484,19 @@ TEST_F(HostResolverTest, MdnsListener_TextResult) {
   run_loop.Run();
   ASSERT_EQ(net::OK, error);
 
-  inner_resolver->TriggerMdnsListeners(
-      host, net::DnsQueryType::TXT,
-      net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
-      {"foo", "bar"});
+  inner_resolver->TriggerMdnsListeners(host, net::DnsQueryType::TXT,
+                                       net::MdnsListenerUpdateType::kChanged,
+                                       {"foo", "bar"});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(
       response_client.text_results(),
-      testing::UnorderedElementsAre(
-          TestMdnsListenClient::CreateExpectedResult(
-              net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
-              net::DnsQueryType::TXT, "foo"),
-          TestMdnsListenClient::CreateExpectedResult(
-              net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
-              net::DnsQueryType::TXT, "bar")));
+      testing::UnorderedElementsAre(TestMdnsListenClient::CreateExpectedResult(
+                                        net::MdnsListenerUpdateType::kChanged,
+                                        net::DnsQueryType::TXT, "foo"),
+                                    TestMdnsListenClient::CreateExpectedResult(
+                                        net::MdnsListenerUpdateType::kChanged,
+                                        net::DnsQueryType::TXT, "bar")));
 
   EXPECT_THAT(response_client.address_results(), testing::IsEmpty());
   EXPECT_THAT(response_client.hostname_results(), testing::IsEmpty());
@@ -1496,16 +1524,15 @@ TEST_F(HostResolverTest, MdnsListener_HostnameResult) {
   ASSERT_EQ(net::OK, error);
 
   net::HostPortPair result("example.com", 43);
-  inner_resolver->TriggerMdnsListeners(
-      host, net::DnsQueryType::PTR,
-      net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED, result);
+  inner_resolver->TriggerMdnsListeners(host, net::DnsQueryType::PTR,
+                                       net::MdnsListenerUpdateType::kRemoved,
+                                       result);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(
-      response_client.hostname_results(),
-      testing::ElementsAre(TestMdnsListenClient::CreateExpectedResult(
-          net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED,
-          net::DnsQueryType::PTR, result)));
+  EXPECT_THAT(response_client.hostname_results(),
+              testing::ElementsAre(TestMdnsListenClient::CreateExpectedResult(
+                  net::MdnsListenerUpdateType::kRemoved, net::DnsQueryType::PTR,
+                  result)));
 
   EXPECT_THAT(response_client.address_results(), testing::IsEmpty());
   EXPECT_THAT(response_client.text_results(), testing::IsEmpty());
@@ -1532,21 +1559,73 @@ TEST_F(HostResolverTest, MdnsListener_UnhandledResult) {
   run_loop.Run();
   ASSERT_EQ(net::OK, error);
 
-  inner_resolver->TriggerMdnsListeners(
-      host, net::DnsQueryType::PTR,
-      net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED);
+  inner_resolver->TriggerMdnsListeners(host, net::DnsQueryType::PTR,
+                                       net::MdnsListenerUpdateType::kAdded);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(response_client.unhandled_results(),
-              testing::ElementsAre(std::make_pair(
-                  net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
-                  net::DnsQueryType::PTR)));
+  EXPECT_THAT(
+      response_client.unhandled_results(),
+      testing::ElementsAre(std::make_pair(net::MdnsListenerUpdateType::kAdded,
+                                          net::DnsQueryType::PTR)));
 
   EXPECT_THAT(response_client.address_results(), testing::IsEmpty());
   EXPECT_THAT(response_client.text_results(), testing::IsEmpty());
   EXPECT_THAT(response_client.hostname_results(), testing::IsEmpty());
 }
 #endif  // BUILDFLAG(ENABLE_MDNS)
+
+#if defined(OS_ANDROID)
+
+class HostResolverRecordRadioWakeupTest : public HostResolverTest {
+ public:
+  HostResolverRecordRadioWakeupTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        net::features::kRecordRadioWakeupTrigger);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(HostResolverRecordRadioWakeupTest, RecordPreconnect) {
+  base::HistogramTester histograms;
+
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
+      base::android::RadioConnectionType::kCell);
+
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->set_synchronous_mode(false);
+  inner_resolver->rules()->AddRule("example.com", "1.2.3.4");
+
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
+
+  base::RunLoop run_loop;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
+  optional_parameters->purpose =
+      mojom::ResolveHostParameters::Purpose::kPreconnect;
+  mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
+  TestResolveHostClient response_client(&pending_response_client, &run_loop);
+
+  resolver.ResolveHost(
+      net::HostPortPair("example.com", 160), net::NetworkIsolationKey(),
+      std::move(optional_parameters), std::move(pending_response_client));
+
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  histograms.ExpectUniqueSample(
+      kUmaNamePossibleWakeupTriggerResolveHost,
+      mojom::ResolveHostParameters::Purpose::kPreconnect, 1);
+}
+
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 }  // namespace network

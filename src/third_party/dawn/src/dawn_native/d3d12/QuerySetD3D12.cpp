@@ -16,6 +16,7 @@
 
 #include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
+#include "dawn_native/d3d12/UtilsD3D12.h"
 
 namespace dawn_native { namespace d3d12 {
 
@@ -43,24 +44,32 @@ namespace dawn_native { namespace d3d12 {
     MaybeError QuerySet::Initialize() {
         D3D12_QUERY_HEAP_DESC queryHeapDesc = {};
         queryHeapDesc.Type = D3D12QueryHeapType(GetQueryType());
-        queryHeapDesc.Count = GetQueryCount();
+        queryHeapDesc.Count = std::max(GetQueryCount(), uint32_t(1u));
 
         ID3D12Device* d3d12Device = ToBackend(GetDevice())->GetD3D12Device();
-        return CheckOutOfMemoryHRESULT(
+        DAWN_TRY(CheckOutOfMemoryHRESULT(
             d3d12Device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&mQueryHeap)),
-            "ID3D12Device::CreateQueryHeap");
+            "ID3D12Device::CreateQueryHeap"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
     ID3D12QueryHeap* QuerySet::GetQueryHeap() const {
         return mQueryHeap.Get();
     }
 
-    QuerySet::~QuerySet() {
-        DestroyInternal();
-    }
+    QuerySet::~QuerySet() = default;
 
     void QuerySet::DestroyImpl() {
+        QuerySetBase::DestroyImpl();
         ToBackend(GetDevice())->ReferenceUntilUnused(mQueryHeap);
+        mQueryHeap = nullptr;
+    }
+
+    void QuerySet::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), mQueryHeap.Get(), "Dawn_QuerySet", GetLabel());
     }
 
 }}  // namespace dawn_native::d3d12

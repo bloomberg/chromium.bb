@@ -6,7 +6,6 @@
 #define NET_SSL_CLIENT_CERT_STORE_MAC_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -16,6 +15,10 @@ namespace net {
 class NET_EXPORT ClientCertStoreMac : public ClientCertStore {
  public:
   ClientCertStoreMac();
+
+  ClientCertStoreMac(const ClientCertStoreMac&) = delete;
+  ClientCertStoreMac& operator=(const ClientCertStoreMac&) = delete;
+
   ~ClientCertStoreMac() override;
 
   // ClientCertStore:
@@ -44,8 +47,6 @@ class NET_EXPORT ClientCertStoreMac : public ClientCertStore {
       ClientCertIdentityList regular_identities,
       const SSLCertRequestInfo& request,
       ClientCertIdentityList* selected_identities);
-
-  DISALLOW_COPY_AND_ASSIGN(ClientCertStoreMac);
 };
 
 }  // namespace net

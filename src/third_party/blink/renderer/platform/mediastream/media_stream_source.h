@@ -40,6 +40,9 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination_consumer.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -133,8 +136,8 @@ class PLATFORM_EXPORT MediaStreamSource final
     capabilities_ = capabilities;
   }
 
-  void SetAudioFormat(size_t number_of_channels, float sample_rate);
-  void ConsumeAudio(AudioBus*, size_t number_of_frames);
+  void SetAudioFormat(int number_of_channels, float sample_rate);
+  void ConsumeAudio(AudioBus*, int number_of_frames);
 
   // Only used if this is a WebAudio source.
   // The WebAudioDestinationConsumer is not owned, and has to be disposed of
@@ -142,9 +145,6 @@ class PLATFORM_EXPORT MediaStreamSource final
   bool RequiresAudioConsumer() const { return requires_consumer_; }
   void AddAudioConsumer(WebAudioDestinationConsumer*);
   bool RemoveAudioConsumer(WebAudioDestinationConsumer*);
-  const HashSet<AudioDestinationConsumer*>& AudioConsumers() {
-    return audio_consumers_;
-  }
 
   void OnDeviceCaptureHandleChange(const MediaStreamDevice& device);
 
@@ -153,6 +153,23 @@ class PLATFORM_EXPORT MediaStreamSource final
   void Dispose();
 
  private:
+  class PLATFORM_EXPORT ConsumerWrapper final
+      : public AudioDestinationConsumer {
+    USING_FAST_MALLOC(ConsumerWrapper);
+
+   public:
+    explicit ConsumerWrapper(WebAudioDestinationConsumer* consumer);
+
+    void SetFormat(int number_of_channels, float sample_rate) override;
+    void ConsumeAudio(AudioBus* bus, int number_of_frames) override;
+
+    // m_consumer is not owned by this class.
+    WebAudioDestinationConsumer* consumer_;
+    // bus_vector_ must only be used in ConsumeAudio. The only reason it's a
+    // member variable is to not have to reallocate it for each call.
+    Vector<const float*> bus_vector_;
+  };
+
   String id_;
   StreamType type_;
   String name_;
@@ -162,8 +179,8 @@ class PLATFORM_EXPORT MediaStreamSource final
   bool requires_consumer_;
   HeapHashSet<WeakMember<Observer>> observers_;
   Mutex audio_consumers_lock_;
-  HashSet<AudioDestinationConsumer*> audio_consumers_
-      GUARDED_BY(audio_consumers_lock_);
+  HashMap<WebAudioDestinationConsumer*, std::unique_ptr<ConsumerWrapper>>
+      audio_consumers_ GUARDED_BY(audio_consumers_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   MediaConstraints constraints_;
   Capabilities capabilities_;

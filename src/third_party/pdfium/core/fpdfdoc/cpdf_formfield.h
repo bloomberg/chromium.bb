@@ -7,13 +7,14 @@
 #ifndef CORE_FPDFDOC_CPDF_FORMFIELD_H_
 #define CORE_FPDFDOC_CPDF_FORMFIELD_H_
 
-#include <memory>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
 #include "core/fpdfdoc/cpdf_aaction.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 
@@ -24,7 +25,7 @@ class CPDF_InteractiveForm;
 class CPDF_Object;
 class CPDF_String;
 
-enum class NotificationOption { kDoNotNotify = 0, kNotify };
+enum class NotificationOption : bool { kDoNotNotify = false, kNotify = true };
 
 enum class FormFieldType : uint8_t {
   kUnknown = 0,
@@ -72,7 +73,7 @@ class CPDF_FormField {
   CPDF_FormField(CPDF_InteractiveForm* pForm, CPDF_Dictionary* pDict);
   ~CPDF_FormField();
 
-  static Optional<FormFieldType> IntToFormFieldType(int value);
+  static absl::optional<FormFieldType> IntToFormFieldType(int value);
 
   static const CPDF_Object* GetFieldAttr(const CPDF_Dictionary* pFieldDict,
                                          const ByteString& name);
@@ -98,6 +99,7 @@ class CPDF_FormField {
   WideString GetMappingName() const;
 
   uint32_t GetFieldFlags() const;
+  void SetFieldFlags(uint32_t dwFlags);
   ByteString GetDefaultStyle() const;
 
   bool IsRequired() const { return m_bRequired; }
@@ -132,7 +134,7 @@ class CPDF_FormField {
   int GetSelectedOptionIndex(int index) const;
   bool IsSelectedOption(const WideString& wsOptValue) const;
   bool IsSelectedIndex(int iOptIndex) const;
-  bool SelectOption(int iOptIndex, bool bSelected, NotificationOption notify);
+  void SelectOption(int iOptIndex);
 
   // Verifies if there is a valid selected indicies (/I) object and whether its
   // entries are consistent with the value (/V) object.

@@ -9,10 +9,11 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/action_executor.h"
+#include "remoting/host/base/screen_controls.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/curtain_mode.h"
 #include "remoting/host/desktop_resizer.h"
@@ -20,8 +21,8 @@
 #include "remoting/host/host_window_proxy.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/input_monitor/local_input_monitor.h"
+#include "remoting/host/remote_open_url/remote_open_url_util.h"
 #include "remoting/host/resizing_host_observer.h"
-#include "remoting/host/screen_controls.h"
 #include "remoting/protocol/capability_names.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -86,10 +87,16 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
   }
 #endif  // defined(OS_WIN)
 
-#if !defined(NDEBUG) && defined(OS_LINUX)
-  capabilities += " ";
-  capabilities += protocol::kRemoteOpenUrlCapability;
-#endif  // !defined(NDEBUG) && defined(OS_LINUX)
+  if (desktop_environment_options().enable_remote_open_url() &&
+      IsRemoteOpenUrlSupported()) {
+    capabilities += " ";
+    capabilities += protocol::kRemoteOpenUrlCapability;
+  }
+
+  if (desktop_environment_options().enable_remote_webauthn()) {
+    capabilities += " ";
+    capabilities += protocol::kRemoteWebAuthnCapability;
+  }
 
   return capabilities;
 }
@@ -190,6 +197,7 @@ Me2MeDesktopEnvironmentFactory::~Me2MeDesktopEnvironmentFactory() {
 
 std::unique_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<ClientSessionEvents> client_session_events,
     const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 

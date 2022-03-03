@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_LIST_H_
 
+#include <cstring>  // memcpy, memset
+#include <type_traits>
+
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -18,19 +21,17 @@ class JSONArray;
 // A container for a list of display items of various types.
 class PLATFORM_EXPORT DisplayItemList {
  public:
-  static constexpr wtf_size_t kDefaultCapacity = 16;
-
-  // Using 0 as the default value to make 0 also fall back to kDefaultCapacity.
-  // The initial capacity will be allocated when the first item is appended.
-  explicit DisplayItemList(wtf_size_t initial_capacity = 0)
-      : initial_capacity_(initial_capacity ? initial_capacity
-                                           : kDefaultCapacity) {}
+  DisplayItemList() = default;
   ~DisplayItemList();
 
   DisplayItemList(const DisplayItemList&) = delete;
   DisplayItemList& operator=(const DisplayItemList&) = delete;
   DisplayItemList(DisplayItemList&&) = delete;
   DisplayItemList& operator=(DisplayItemList&&) = delete;
+
+  void ReserveCapacity(wtf_size_t initial_capacity) {
+    items_.ReserveCapacity(initial_capacity);
+  }
 
   // This private section is before the public APIs because some inline public
   // methods depend on the private definitions.
@@ -132,7 +133,9 @@ class PLATFORM_EXPORT DisplayItemList {
         : begin_(begin), end_(end) {}
     Iterator begin() const { return begin_; }
     Iterator end() const { return end_; }
-    wtf_size_t size() const { return end_ - begin_; }
+    wtf_size_t size() const {
+      return base::checked_cast<wtf_size_t>(end_ - begin_);
+    }
 
     // To meet the requirement of gmock ElementsAre().
     using value_type = DisplayItem;
@@ -213,22 +216,20 @@ class PLATFORM_EXPORT DisplayItemList {
   typedef unsigned JsonFlags;
 
   static std::unique_ptr<JSONArray> DisplayItemsAsJSON(
+      const PaintArtifact&,
       wtf_size_t first_item_index,
       const Range<const_iterator>& display_items,
       JsonFlags);
 #endif  // DCHECK_IS_ON()
 
  private:
-  ItemSlot* AllocateItemSlot() {
-    if (items_.IsEmpty())
-      items_.ReserveCapacity(initial_capacity_);
-    items_.emplace_back();
-    return &items_.back();
-  }
+  static_assert(std::is_trivially_copyable<value_type>::value,
+                "DisplayItemList uses `memcpy` in several member functions; "
+                "the `value_type` used by it must be trivially copyable");
+
+  ItemSlot* AllocateItemSlot() { return &items_.emplace_back(); }
 
   ItemSlot* AllocateItemSlots(wtf_size_t count) {
-    if (items_.IsEmpty())
-      items_.ReserveCapacity(initial_capacity_);
     items_.Grow(size() + count);
     return &items_.back() - (count - 1);
   }
@@ -250,7 +251,6 @@ class PLATFORM_EXPORT DisplayItemList {
   }
 
   ItemVector items_;
-  wtf_size_t initial_capacity_;
 };
 
 using DisplayItemIterator = DisplayItemList::const_iterator;

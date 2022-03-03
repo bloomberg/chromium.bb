@@ -13,6 +13,7 @@
 #include "third_party/metrics_proto/user_demographics.pb.h"
 
 @class ElementSelector;
+@class FakeChromeIdentity;
 @class NamedGuide;
 
 // ChromeEarlGreyAppInterface contains the app-side implementation for helpers
@@ -45,8 +46,8 @@
 // the operation failed.
 + (NSError*)removeBrowsingCache;
 
-// Opens |URL| using the application delegate.
-+ (void)applicationOpenURL:(NSString*)spec;
+// Opens |URL| using some connected scene.
++ (void)sceneOpenURL:(NSString*)spec;
 
 // Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
@@ -107,7 +108,7 @@
 + (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
 
 // Evicts the tabs associated with the non-current browser mode.
-+ (void)evictOtherTabModelTabs;
++ (void)evictOtherBrowserTabs;
 
 // Sets the normal tabs as 'cold start' tabs
 // If not succeed returns an NSError indicating  why the
@@ -173,12 +174,6 @@
 
 // Returns the index of active tab in normal mode.
 + (NSUInteger)indexOfActiveNormalTab;
-
-// Resets Close All Tabs Confirmation feature to its default value.
-+ (void)resetCloseAllTabsConfirmation;
-
-// Disables Close All Tabs Confirmation feature.
-+ (void)disableCloseAllTabsConfirmation;
 
 #pragma mark - Window utilities (EG2)
 
@@ -279,6 +274,11 @@
 // indicating why the operation failed.
 + (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID;
 
+// Waits for the web state's scroll view zoom scale to be suitably close (within
+// 0.05) of the expected scale. Returns nil if the condition is met within a
+// timeout, or else an NSError indicating why the operation failed.
++ (NSError*)waitForWebStateZoomScale:(CGFloat)scale;
+
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;
 
@@ -302,7 +302,7 @@
 // navigation will not use a cached page. Browsers don't have to use a fresh
 // version for back/forward navigation for HTTP pages and may serve a version
 // from the cache even if the Cache-Control response header says otherwise.
-+ (void)purgeCachedWebViewPages;
++ (NSError*)purgeCachedWebViewPages;
 
 // Returns YES if the current WebState's navigation manager is currently
 // restoring session state.
@@ -340,11 +340,8 @@
 // Clears fake sync server data if the server is running.
 + (void)clearSyncServerData;
 
-// Removes Sync consent for the primary account.
-+ (void)revokeSyncConsent;
-
-// Clears the first sync setup preference.
-+ (void)clearSyncFirstSetupComplete;
+// Signs in with |identity| without sync consent.
++ (void)signInWithoutSyncWithIdentity:(FakeChromeIdentity*)identity;
 
 // Starts the sync server. The server should not be running when calling this.
 + (void)startSync;
@@ -369,11 +366,11 @@
 // Whether or not the fake sync server has been setup.
 + (BOOL)isFakeSyncServerSetUp;
 
-// Sets up a fake sync server to be used by the ProfileSyncService.
+// Sets up a fake sync server to be used by the SyncServiceImpl.
 + (void)setUpFakeSyncServer;
 
-// Tears down the fake sync server used by the ProfileSyncService and restores
-// the real one.
+// Tears down the fake sync server used by the SyncServiceImpl and restores the
+// real one.
 + (void)tearDownFakeSyncServer;
 
 // Gets the number of entities of the given |type|.
@@ -482,11 +479,11 @@
 // Returns YES if a variation triggering server-side behavior is enabled.
 + (BOOL)isTriggerVariationEnabled:(int)variationID;
 
-// Returns YES if UmaCellular feature is enabled.
-+ (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
-
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if kSynthesizedRestoreSessionEnabled feature is enabled.
++ (BOOL)isSynthesizedRestoreSessionEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if kTestFeature is enabled.
 + (BOOL)isTestFeatureEnabled;
@@ -502,21 +499,18 @@
 // with custom WebKit frameworks.
 + (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
 
-// Returns YES if collections are presented in cards.
-+ (BOOL)isCollectionsCardPresentationStyleEnabled WARN_UNUSED_RESULT;
-
 // Returns whether the mobile version of the websites are requested by default.
 + (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
-
-// Returns whether the native context menus feature is enabled or not.
-+ (BOOL)isNativeContextMenusEnabled;
 
 // Returns whether the app is configured to, and running in an environment which
 // can, open multiple windows.
 + (BOOL)areMultipleWindowsSupported;
 
-// Returns whether the Close All Tabs Confirmation feature is enabled.
-+ (BOOL)isCloseAllTabsConfirmationEnabled;
+// Returns whether the ContextMenuActionsRefresh feature is enabled.
++ (BOOL)isContextMenuActionsRefreshEnabled;
+
+// Returns whether the TabGridBulkActions feature is enabled.
++ (BOOL)isTabGridBulkActionsEnabled;
 
 #pragma mark - Popup Blocking
 
@@ -535,6 +529,11 @@
 // returns a Value of type NONE.
 + (NSString*)localStatePrefValue:(NSString*)prefName;
 
+// Sets the integer values for the local state pref with |prefName|. |value|
+// can be either a casted enum or any other numerical value. Local State
+// contains the preferences that are shared between all browser states.
++ (void)setIntegerValue:(int)value forLocalStatePref:(NSString*)prefName;
+
 // Gets the value of a user pref in the original browser state. Returns a
 // base::Value encoded as a JSON string. If the pref was not registered,
 // returns a Value of type NONE.
@@ -542,6 +541,9 @@
 
 // Sets the value of a boolean user pref in the original browser state.
 + (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName;
+
+// Sets the value of a integer user pref in the original browser state.
++ (void)setIntegerValue:(int)value forUserPref:(NSString*)prefName;
 
 // Resets the BrowsingDataPrefs, which defines if its selected or not when
 // clearing Browsing data.
@@ -594,6 +596,19 @@
 
 // Clear the watcher list, stopping monitoring.
 + (void)stopWatcher;
+
+#pragma mark - Default Browser Promo Utilities
+
+// Clears default browser promo data to restart capping for the promos.
++ (void)clearDefaultBrowserPromoData;
+
+// Copies a chrome:// URL that doesn't require internet connection.
++ (void)copyURLToPasteBoard;
+
+// Disables default browser promo. If a test needs to check a message drop down
+// in a second window, this needs to be disabled or the popup will kill the
+// message.
++ (void)disableDefaultBrowserPromo;
 
 @end
 

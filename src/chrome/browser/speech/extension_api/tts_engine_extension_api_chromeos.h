@@ -18,10 +18,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace extensions {
-class EventRouter;
-}
-
 // TtsEngineDelegate implementation used by TtsController on Chrome OS.
 class TtsExtensionEngineChromeOS
     : public TtsExtensionEngine,
@@ -57,9 +53,17 @@ class TtsExtensionEngineChromeOS
   void OnProfileWillBeDestroyed(Profile* profile) override;
 
  private:
-  void UpdateAudioStreamOptions(int sample_rate, int buffer_size);
-  void Play(extensions::EventRouter* event_router,
-            std::unique_ptr<base::ListValue> args,
+  // Unconditionally updates audio stream options.
+  void UpdateAudioStreamOptions(
+      chromeos::tts::mojom::AudioParametersPtr audio_parameters);
+
+  // Refresh audio stream options from an extension's manifest. Returns true if
+  // parameters were updated.
+  bool RefreshAudioStreamOptionsForExtension(const std::string& engine_id,
+                                             Profile* profile);
+
+  // Helper to start audio playback.
+  void Play(std::unique_ptr<base::ListValue> args,
             const std::string& engine_id,
             Profile* profile);
 
@@ -73,8 +77,8 @@ class TtsExtensionEngineChromeOS
   base::ScopedObservation<Profile, ProfileObserver>
       current_utterance_profile_observer_{this};
 
-  int sample_rate_ = 0;
-  int buffer_size_ = 0;
+  chromeos::tts::mojom::AudioParametersPtr audio_parameters_;
+  extensions::ExtensionId current_playback_engine_;
 };
 
 #endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_CHROMEOS_H_

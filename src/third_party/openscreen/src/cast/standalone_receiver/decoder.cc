@@ -4,6 +4,8 @@
 
 #include "cast/standalone_receiver/decoder.h"
 
+#include <libavcodec/version.h>
+
 #include <algorithm>
 #include <sstream>
 #include <thread>
@@ -44,7 +46,14 @@ absl::Span<uint8_t> Decoder::Buffer::GetSpan() {
 Decoder::Client::Client() = default;
 Decoder::Client::~Client() = default;
 
-Decoder::Decoder(const std::string& codec_name) : codec_name_(codec_name) {}
+Decoder::Decoder(const std::string& codec_name) : codec_name_(codec_name) {
+#if LIBAVCODEC_VERSION_MAJOR < 59
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  avcodec_register_all();
+#pragma GCC diagnostic pop
+#endif  // LIBAVCODEC_VERSION_MAJOR < 59
+}
 
 Decoder::~Decoder() = default;
 

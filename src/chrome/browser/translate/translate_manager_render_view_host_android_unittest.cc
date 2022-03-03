@@ -34,10 +34,18 @@
 #include "content/public/test/test_renderer_host.h"
 #include "url/gurl.h"
 
+namespace translate {
+namespace {
+
 class TranslateManagerRenderViewHostAndroidTest
     : public ChromeRenderViewHostTestHarness {
  public:
   TranslateManagerRenderViewHostAndroidTest() {}
+
+  TranslateManagerRenderViewHostAndroidTest(
+      const TranslateManagerRenderViewHostAndroidTest&) = delete;
+  TranslateManagerRenderViewHostAndroidTest& operator=(
+      const TranslateManagerRenderViewHostAndroidTest&) = delete;
 
   // Simulates navigating to a page and getting the page contents and language
   // for that navigation.
@@ -118,8 +126,6 @@ class TranslateManagerRenderViewHostAndroidTest
   std::set<infobars::InfoBarDelegate*> removed_infobars_;
 
   FakeTranslateAgent fake_agent_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostAndroidTest);
 };
 
 TEST_F(TranslateManagerRenderViewHostAndroidTest,
@@ -161,3 +167,6 @@ TEST_F(TranslateManagerRenderViewHostAndroidTest,
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
   EXPECT_TRUE(CloseTranslateInfoBar());
 }
+
+}  // namespace
+}  // namespace translate

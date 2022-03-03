@@ -48,6 +48,8 @@ void MathMLPaddedElement::ParseAttribute(
     const AttributeModificationParams& param) {
   if (param.name == mathml_names::kLspaceAttr ||
       param.name == mathml_names::kVoffsetAttr) {
+    // TODO(crbug.com/1121113): Isn't it enough to set needs style recalc and
+    // let the style system perform proper layout and paint invalidation?
     SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(style_change_reason::kAttribute));
@@ -89,7 +91,7 @@ LayoutObject* MathMLPaddedElement::CreateLayoutObject(
   if (!RuntimeEnabledFeatures::MathMLCoreEnabled() ||
       !style.IsDisplayMathType())
     return MathMLElement::CreateLayoutObject(style, legacy);
-  return new LayoutNGMathMLBlockWithAnonymousMrow(this);
+  return MakeGarbageCollected<LayoutNGMathMLBlockWithAnonymousMrow>(this);
 }
 
 }  // namespace blink

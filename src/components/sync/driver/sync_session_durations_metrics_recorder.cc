@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/sync_session_durations_metrics_recorder.h"
 
+#include <string>
+
 #include "base/metrics/histogram_functions.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -18,7 +20,7 @@ base::TimeDelta SubtractInactiveTime(base::TimeDelta total_length,
   // ends up giving the session negative length, which can happen if the feature
   // state changed after the user became inactive, log the length as 0.
   base::TimeDelta session_length = total_length - inactive_time;
-  if (session_length < base::TimeDelta()) {
+  if (session_length.is_negative()) {
     session_length = base::TimeDelta();
   }
   return session_length;
@@ -37,9 +39,9 @@ SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
     : sync_service_(sync_service), identity_manager_(identity_manager) {
   // |sync_service| can be null if sync is disabled by a command line flag.
   if (sync_service_) {
-    sync_observation_.Observe(sync_service_);
+    sync_observation_.Observe(sync_service_.get());
   }
-  identity_manager_observation_.Observe(identity_manager_);
+  identity_manager_observation_.Observe(identity_manager_.get());
 
   // Since this is created after the profile itself is created, we need to
   // handle the initial state.

@@ -5,7 +5,6 @@
 #ifndef SERVICES_DEVICE_GENERIC_SENSOR_LINEAR_ACCELERATION_FUSION_ALGORITHM_USING_ACCELEROMETER_H_
 #define SERVICES_DEVICE_GENERIC_SENSOR_LINEAR_ACCELERATION_FUSION_ALGORITHM_USING_ACCELEROMETER_H_
 
-#include "base/macros.h"
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"
 
 namespace device {
@@ -17,6 +16,12 @@ class LinearAccelerationFusionAlgorithmUsingAccelerometer final
     : public PlatformSensorFusionAlgorithm {
  public:
   LinearAccelerationFusionAlgorithmUsingAccelerometer();
+
+  LinearAccelerationFusionAlgorithmUsingAccelerometer(
+      const LinearAccelerationFusionAlgorithmUsingAccelerometer&) = delete;
+  LinearAccelerationFusionAlgorithmUsingAccelerometer& operator=(
+      const LinearAccelerationFusionAlgorithmUsingAccelerometer&) = delete;
+
   ~LinearAccelerationFusionAlgorithmUsingAccelerometer() override;
 
   void SetFrequency(double frequency) override;
@@ -34,8 +39,6 @@ class LinearAccelerationFusionAlgorithmUsingAccelerometer final
   double gravity_x_;
   double gravity_y_;
   double gravity_z_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinearAccelerationFusionAlgorithmUsingAccelerometer);
 };
 
 }  // namespace device

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 
 namespace base {
@@ -22,6 +22,9 @@ class DiagnosticsModel;
 class DiagnosticsController {
  public:
   static DiagnosticsController* GetInstance();
+
+  DiagnosticsController(const DiagnosticsController&) = delete;
+  DiagnosticsController& operator=(const DiagnosticsController&) = delete;
 
   // Entry point for the diagnostics mode. Returns zero if able to run
   // diagnostics successfully, regardless of the results of the diagnostics.
@@ -55,9 +58,7 @@ class DiagnosticsController {
   ~DiagnosticsController();
 
   std::unique_ptr<DiagnosticsModel> model_;
-  DiagnosticsWriter* writer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsController);
+  raw_ptr<DiagnosticsWriter> writer_;
 };
 
 }  // namespace diagnostics

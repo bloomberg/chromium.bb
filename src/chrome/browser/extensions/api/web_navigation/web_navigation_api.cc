@@ -57,7 +57,7 @@ void WebNavigationEventRouter::PendingWebContents::Set(
 }
 
 void WebNavigationEventRouter::PendingWebContents::WebContentsDestroyed() {
-  std::move(on_destroy_).Run(target_web_contents_);
+  std::move(on_destroy_).Run(target_web_contents_.get());
   // |this| is deleted!
 }
 
@@ -169,7 +169,8 @@ void WebNavigationEventRouter::PendingWebContentsDestroyed(
 
 WebNavigationTabObserver::WebNavigationTabObserver(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents),
+      content::WebContentsUserData<WebNavigationTabObserver>(*web_contents) {}
 
 WebNavigationTabObserver::~WebNavigationTabObserver() {}
 
@@ -414,7 +415,6 @@ void WebNavigationTabObserver::HandleError(
   web_navigation_api_helpers::DispatchOnErrorOccurred(navigation_handle);
 }
 
-// See also NavigationController::IsURLSameDocumentNavigation.
 bool WebNavigationTabObserver::IsReferenceFragmentNavigation(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
@@ -436,21 +436,21 @@ void WebNavigationTabObserver::RenderFrameHostPendingDeletion(
   // The |pending_delete_rfh| and its children are now pending deletion.
   // Stop tracking them.
 
-  web_contents()->ForEachFrame(base::BindRepeating(
-      [](content::RenderFrameHost* pending_delete_rfh,
-         WebNavigationTabObserver* observer,
+  pending_delete_rfh->ForEachRenderFrameHost(base::BindRepeating(
+      [](WebNavigationTabObserver* observer,
          content::RenderFrameHost* render_frame_host) {
-        if (render_frame_host == pending_delete_rfh ||
-            render_frame_host->IsDescendantOf(pending_delete_rfh)) {
+        auto* navigation_state =
+            FrameNavigationState::GetForCurrentDocument(render_frame_host);
+        if (navigation_state) {
           observer->RenderFrameDeleted(render_frame_host);
           FrameNavigationState::DeleteForCurrentDocument(render_frame_host);
         }
       },
-      pending_delete_rfh, this));
+      this));
 }
 
 ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
-  std::unique_ptr<GetFrame::Params> params(GetFrame::Params::Create(*args_));
+  std::unique_ptr<GetFrame::Params> params(GetFrame::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
   int frame_id = params->details.frame_id;
@@ -487,13 +487,13 @@ ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
   frame_details.error_occurred =
       frame_navigation_state->GetErrorOccurredInFrame();
   frame_details.parent_frame_id =
-      ExtensionApiFrameIdMap::GetFrameId(render_frame_host->GetParent());
+      ExtensionApiFrameIdMap::GetParentFrameId(render_frame_host);
   return RespondNow(ArgumentList(GetFrame::Results::Create(frame_details)));
 }
 
 ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
   std::unique_ptr<GetAllFrames::Params> params(
-      GetAllFrames::Params::Create(*args_));
+      GetAllFrames::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
 
@@ -511,7 +511,10 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
 
   std::vector<GetAllFrames::Results::DetailsType> result_list;
 
-  web_contents->ForEachFrame(base::BindRepeating(
+  // We only iterate the frames in the active page. We currently do not
+  // expose back/forward cached frames or prerender frames in the GetAllFrames
+  // API.
+  web_contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
       [](std::vector<GetAllFrames::Results::DetailsType>& result_list,
          content::RenderFrameHost* render_frame_host) {
         auto* navigation_state =
@@ -526,7 +529,7 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
         frame.url = navigation_state->GetUrl().spec();
         frame.frame_id = ExtensionApiFrameIdMap::GetFrameId(render_frame_host);
         frame.parent_frame_id =
-            ExtensionApiFrameIdMap::GetFrameId(render_frame_host->GetParent());
+            ExtensionApiFrameIdMap::GetParentFrameId(render_frame_host);
         frame.process_id = render_frame_host->GetProcess()->GetID();
         frame.error_occurred = navigation_state->GetErrorOccurredInFrame();
         result_list.push_back(std::move(frame));
@@ -578,6 +581,6 @@ void WebNavigationAPI::OnListenerAdded(const EventListenerInfo& details) {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(WebNavigationTabObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebNavigationTabObserver);
 
 }  // namespace extensions

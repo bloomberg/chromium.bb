@@ -13,10 +13,9 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/async_flusher.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
@@ -111,6 +110,9 @@ class BindingState : public BindingStateBase {
     stub_.set_sink(std::move(impl));
   }
 
+  BindingState(const BindingState&) = delete;
+  BindingState& operator=(const BindingState&) = delete;
+
   ~BindingState() { Close(); }
 
   void Bind(PendingReceiverState* receiver_state,
@@ -132,15 +134,13 @@ class BindingState : public BindingStateBase {
 
   Interface* impl() { return ImplRefTraits::GetRawPointer(&stub_.sink()); }
   ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
-    Interface* old_impl = impl();
-    stub_.set_sink(std::move(new_impl));
-    return old_impl;
+    using std::swap;
+    swap(new_impl, stub_.sink());
+    return new_impl;
   }
 
  private:
   typename Interface::template Stub_<ImplRefTraits> stub_;
-
-  DISALLOW_COPY_AND_ASSIGN(BindingState);
 };
 
 }  // namespace internal

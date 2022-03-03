@@ -15,16 +15,18 @@
 
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
+#include "components/sessions/core/session_id.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -50,7 +52,7 @@ class WebContents;
 // TabStripModel
 //
 // A model & low level controller of a Browser Window tabstrip. Holds a vector
-// of WebContentses, and provides an API for adding, removing and
+// of WebContents, and provides an API for adding, removing and
 // shuffling them, as well as a higher level API for doing specific Browser-
 // related tasks like adding new Tabs from just a URL, etc.
 //
@@ -140,11 +142,72 @@ class TabStripModel : public TabGroupController {
     NEW_TAB_ENUM_COUNT = 5,
   };
 
+  // Enumerates different types of tab activation. Mainly used for
+  // comparison between classic tab strip and WebUI tab strip.
+  // KEEP IN SYNC WITH THE TabActivationTypes ENUM IN enums.xml.
+  // NEW VALUES MUST BE APPENDED AND AVOID CHANGING ANY PRE-EXISTING VALUES.
+  enum class TabActivationTypes {
+    // Switch to a tab.
+    kTab = 0,
+    // Open the context menu of a tab.
+    kContextMenu = 1,
+    kMaxValue = kContextMenu,
+  };
+
+  // Holds state for a WebContents that has been detached from the tab strip.
+  // Will also handle WebContents deletion if |remove_reason| is kDeleted, or
+  // WebContents caching if |remove_reason| is kCached.
+  // TODO(https://crbug.com/1234327): Don't make DetachedWebContents an inner
+  // class, so it can be forward declared in TabStripModelDelegate.
+  struct DetachedWebContents {
+    DetachedWebContents(int index_before_any_removals,
+                        int index_at_time_of_removal,
+                        std::unique_ptr<content::WebContents> owned_contents,
+                        content::WebContents* contents,
+                        TabStripModelChange::RemoveReason remove_reason,
+                        absl::optional<SessionID> id);
+    DetachedWebContents(const DetachedWebContents&) = delete;
+    DetachedWebContents& operator=(const DetachedWebContents&) = delete;
+    ~DetachedWebContents();
+    DetachedWebContents(DetachedWebContents&&);
+
+    // When a WebContents is removed the delegate is given a chance to
+    // take ownership of it (generally for caching). If the delegate takes
+    // ownership, `owned_contents` will be null, and `contents` will be
+    // non-null. In other words, all observers should use `contents`, it is
+    // guaranteed to be valid for the life time of the notification (and
+    // possibly longer).
+    std::unique_ptr<content::WebContents> owned_contents;
+    raw_ptr<content::WebContents> contents;
+
+    // The index of the WebContents in the original selection model of the tab
+    // strip [prior to any tabs being removed, if multiple tabs are being
+    // simultaneously removed].
+    const int index_before_any_removals;
+
+    // The index of the WebContents at the time it is being removed. If multiple
+    // tabs are being simultaneously removed, the index reflects previously
+    // removed tabs in this batch.
+    const int index_at_time_of_removal;
+
+    TabStripModelChange::RemoveReason remove_reason;
+
+    // The |contents| associated optional SessionID, used as key for
+    // ClosedTabCache. We only cache |contents| if |remove_reason| is kCached.
+    absl::optional<SessionID> id;
+  };
+
   static constexpr int kNoTab = -1;
+
+  TabStripModel() = delete;
 
   // Construct a TabStripModel with a delegate to help it do certain things
   // (see the TabStripModelDelegate documentation). |delegate| cannot be NULL.
   explicit TabStripModel(TabStripModelDelegate* delegate, Profile* profile);
+
+  TabStripModel(const TabStripModel&) = delete;
+  TabStripModel& operator=(const TabStripModel&) = delete;
+
   ~TabStripModel() override;
 
   // Retrieves the TabStripModelDelegate associated with this TabStripModel.
@@ -217,11 +280,13 @@ class TabStripModel : public TabGroupController {
       int index,
       std::unique_ptr<content::WebContents> new_contents);
 
-  // Detaches the WebContents at the specified index from this strip. The
-  // WebContents is not destroyed, just removed from display. The caller
-  // is responsible for doing something with it (e.g. stuffing it into another
-  // strip). Returns the detached WebContents.
-  std::unique_ptr<content::WebContents> DetachWebContentsAt(int index);
+  // Detaches the WebContents at the specified index for reinsertion into
+  // another tab strip. Returns the detached WebContents.
+  std::unique_ptr<content::WebContents> DetachWebContentsAtForInsertion(
+      int index);
+
+  // Detaches the WebContents at the specified index and immediately deletes it.
+  void DetachAndDeleteWebContentsAt(int index);
 
   // User gesture type that triggers ActivateTabAt. kNone indicates that it was
   // not triggered by a user gesture, but by a by-product of some other action.
@@ -469,7 +534,7 @@ class TabStripModel : public TabGroupController {
 
   // Returns true if one or more of the tabs pointed to by |indices| are
   // supported by read later.
-  bool IsReadLaterSupportedForAny(const std::vector<int> indices);
+  bool IsReadLaterSupportedForAny(const std::vector<int>& indices);
 
   // Saves tabs with url supported by Read Later.
   void AddToReadLater(const std::vector<int>& indices);
@@ -500,7 +565,6 @@ class TabStripModel : public TabGroupController {
     CommandCloseTabsToRight,
     CommandTogglePinned,
     CommandToggleGrouped,
-    CommandFocusMode,
     CommandToggleSiteMuted,
     CommandSendTabToSelf,
     CommandSendTabToSelfSingleTarget,
@@ -532,9 +596,6 @@ class TabStripModel : public TabGroupController {
   // Adds the tab at |context_index| to the browser window at |browser_index|.
   // If |context_index| is selected the command applies to all selected tabs.
   void ExecuteAddToExistingWindowCommand(int context_index, int browser_index);
-
-  // Get the list of existing windows that tabs can be moved to.
-  std::vector<std::u16string> GetExistingWindowsForMoveMenu();
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
@@ -592,16 +653,25 @@ class TabStripModel : public TabGroupController {
   FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, GetIndicesClosedByCommand);
 
   class WebContentsData;
-  struct DetachedWebContents;
   struct DetachNotifications;
+
+  // Detaches the WebContents at the specified |index| from this strip. |reason|
+  // is used to indicate to observers what is going to happen to the WebContents
+  // (i.e. deleted or reinserted into another tab strip). Returns the detached
+  // WebContents.
+  std::unique_ptr<TabStripModel::DetachedWebContents>
+  DetachWebContentsWithReasonAt(int index,
+                                TabStripModelChange::RemoveReason reason);
 
   // Performs all the work to detach a WebContents instance but avoids sending
   // most notifications. TabClosingAt() and TabDetachedAt() are sent because
   // observers are reliant on the selection model being accurate at the time
   // that TabDetachedAt() is called.
-  std::unique_ptr<content::WebContents> DetachWebContentsImpl(
-      int index,
-      bool create_historical_tab);
+  std::unique_ptr<DetachedWebContents> DetachWebContentsImpl(
+      int index_before_any_removals,
+      int index_at_time_of_removal,
+      bool create_historical_tab,
+      TabStripModelChange::RemoveReason reason);
 
   // We batch send notifications. This has two benefits:
   //   1) This allows us to send the minimal number of necessary notifications.
@@ -665,8 +735,8 @@ class TabStripModel : public TabGroupController {
   //
   // Returns true if the WebContentses were closed immediately, false if we
   // are waiting for the result of an onunload handler.
-  bool InternalCloseTabs(base::span<content::WebContents* const> items,
-                         uint32_t close_types);
+  bool CloseTabs(base::span<content::WebContents* const> items,
+                 uint32_t close_types);
 
   // |close_types| is a bitmask of the types in CloseTypes.
   // Returns true if all the tabs have been deleted. A return value of false
@@ -700,14 +770,22 @@ class TabStripModel : public TabGroupController {
       TabStripModelObserver::ChangeReason reason,
       bool triggered_by_other_operation);
 
-  // Selects either the next tab (|forward| is true), or the previous tab
-  // (|forward| is false).
-  void SelectRelativeTab(bool forward, UserGestureDetails detail);
+  // direction of relative tab movements or selections. kNext indicates moving
+  // forward (positive increment) in the tab strip. kPrevious indicates
+  // backward (negative increment).
+  enum class TabRelativeDirection {
+    kNext,
+    kPrevious,
+  };
 
-  // Moves the active tabs into the next slot (|forward| is true), or the
-  // previous slot (|forward| is false). Respects group boundaries and creates
+  // Selects either the next tab (kNext), or the previous tab (kPrevious).
+  void SelectRelativeTab(TabRelativeDirection direction,
+                         UserGestureDetails detail);
+
+  // Moves the active tabs into the next slot (kNext), or the
+  // previous slot (kPrevious). Respects group boundaries and creates
   // movement slots into and out of groups.
-  void MoveTabRelative(bool forward);
+  void MoveTabRelative(TabRelativeDirection direction);
 
   // Does the work of MoveWebContentsAt. This has no checks to make sure the
   // position is valid, those are done in MoveWebContentsAt.
@@ -779,14 +857,14 @@ class TabStripModel : public TabGroupController {
   // The model for tab groups hosted within this TabStripModel.
   std::unique_ptr<TabGroupModel> group_model_;
 
-  TabStripModelDelegate* delegate_;
+  raw_ptr<TabStripModelDelegate> delegate_;
 
   bool tab_strip_ui_was_set_ = false;
 
   base::ObserverList<TabStripModelObserver>::Unchecked observers_;
 
   // A profile associated with this TabStripModel.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // True if all tabs are currently being closed via CloseAllTabs.
   bool closing_all_ = false;
@@ -819,18 +897,29 @@ class TabStripModel : public TabGroupController {
   size_t tabs_scrubbed_by_key_press_count_ = 0;
 
   base::WeakPtrFactory<TabStripModel> weak_factory_{this};
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 
-// Forbid construction of ScopedObserver with TabStripModel:
-// TabStripModelObserver already implements ScopedObserver's functionality
-// natively.
+// Forbid construction of ScopedObservation and ScopedMultiSourceObservation
+// with TabStripModel: TabStripModelObserver already implements their
+// functionality natively.
+namespace base {
+
 template <>
-class ScopedObserver<TabStripModel, TabStripModelObserver> {
+class ScopedObservation<TabStripModel, TabStripModelObserver> {
  public:
   // Deleting the constructor gives a clear error message traceable back to here.
-  explicit ScopedObserver(TabStripModelObserver* observer) = delete;
+  explicit ScopedObservation(TabStripModelObserver* observer) = delete;
 };
+
+template <>
+class ScopedMultiSourceObservation<TabStripModel, TabStripModelObserver> {
+ public:
+  // Deleting the constructor gives a clear error message traceable back to
+  // here.
+  explicit ScopedMultiSourceObservation(TabStripModelObserver* observer) =
+      delete;
+};
+
+}  // namespace base
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

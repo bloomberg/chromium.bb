@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef TOOLS_CJXL_H_
 #define TOOLS_CJXL_H_
@@ -20,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "lib/extras/color_hints.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/override.h"
 #include "lib/jxl/base/padded_bytes.h"
@@ -62,8 +54,10 @@ struct CompressArgs {
   const char* file_out = nullptr;
   jxl::Override print_profile = jxl::Override::kDefault;
 
+  // Decoding source image flags
+  jxl::ColorHints color_hints;
+
   // JXL flags
-  jxl::DecoderHints dec_hints;
   size_t override_bitdepth = 0;
   jxl::CompressParams params;
   size_t num_threads;
@@ -82,6 +76,7 @@ struct CompressArgs {
                             // or to VarDCT otherwise.
   bool progressive = false;
   bool default_settings = true;
+  bool force_premultiplied = false;
 
   // Will get passed on to AuxOut.
   jxl::InspectorImage3F inspector_image3f;
@@ -95,7 +90,7 @@ struct CompressArgs {
   CommandLineParser::OptionId opt_near_lossless_id = -1;
   CommandLineParser::OptionId opt_intensity_target_id = -1;
   CommandLineParser::OptionId opt_color_id = -1;
-  CommandLineParser::OptionId m_group_size_id = -1;
+  CommandLineParser::OptionId opt_m_group_size_id = -1;
 };
 
 jxl::Status LoadAll(CompressArgs& args, jxl::ThreadPoolInternal* pool,

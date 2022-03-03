@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/notification_counter_view.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/system/unified/notification_icons_controller.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
@@ -151,7 +151,7 @@ TEST_P(NotificationCounterViewTest, DisplayChanged) {
 
   // In medium size screen, the counter should not be displayed since pinned
   // notification icon is shown (if the feature is enabled).
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
   EXPECT_EQ(IsScalableStatusAreaEnabled(),
             !notification_counter_view()->GetVisible());
 
@@ -165,7 +165,7 @@ TEST_P(NotificationCounterViewTest, DisplayChanged) {
   notification_counter_view()->Update();
 
   // In small display, the counter show be shown with pinned notification.
-  UpdateDisplay("600x600");
+  UpdateDisplay("600x500");
   EXPECT_TRUE(notification_counter_view()->GetVisible());
 
   // In large screen size, expected the same behavior like medium screen size.

@@ -42,15 +42,14 @@ TEST_F(BubbleDialogModelHostTest, CloseIsSynchronousAndCallsWindowClosing) {
   int window_closing_count = 0;
   auto host = std::make_unique<BubbleDialogModelHost>(
       ui::DialogModel::Builder(std::move(delegate))
-          .SetWindowClosingCallback(base::BindOnce(base::BindOnce(
+          .SetDialogDestroyingCallback(base::BindOnce(base::BindOnce(
               [](int* window_closing_count) { ++(*window_closing_count); },
               &window_closing_count)))
           .Build(),
       anchor_widget->GetContentsView(), BubbleBorder::Arrow::TOP_RIGHT);
   auto* host_ptr = host.get();
 
-  Widget* bubble_widget =
-      BubbleDialogDelegateView::CreateBubble(host.release());
+  Widget* bubble_widget = BubbleDialogDelegate::CreateBubble(std::move(host));
   test::WidgetDestroyedWaiter waiter(bubble_widget);
 
   EXPECT_EQ(0, window_closing_count);

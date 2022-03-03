@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +31,9 @@ class GuestViewManager;
 // the IO thread or the UI thread.
 class GuestViewMessageFilter : public content::BrowserMessageFilter {
  public:
+  GuestViewMessageFilter(const GuestViewMessageFilter&) = delete;
+  GuestViewMessageFilter& operator=(const GuestViewMessageFilter&) = delete;
+
   static void EnsureShutdownNotifierFactoryBuilt();
 
  protected:
@@ -61,7 +64,7 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
 
   // Should only be accessed on the UI thread.
   // May become null if this filter outlives the BrowserContext.
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
  private:
   friend class content::BrowserThread;
@@ -78,8 +81,6 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   void OnBrowserContextShutdown();
 
   base::CallbackListSubscription browser_context_shutdown_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(GuestViewMessageFilter);
 };
 
 }  // namespace guest_view

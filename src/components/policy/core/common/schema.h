@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/policy/policy_export.h"
@@ -122,29 +123,30 @@ class POLICY_EXPORT Schema {
 
   // Validate |value| against current schema, |strategy| is the strategy to
   // handle unknown properties or invalid values. Allowed errors will be
-  // ignored. |error_path| and |error| will contain the last error location and
-  // detailed message if |value| doesn't strictly conform to the schema. If
-  // |value| doesn't conform to the schema even within the allowance of
-  // |strategy|, false will be returned and |error_path| and |error| will
-  // contain the corresponding error that caused the failure. |error_path| can
-  // be NULL and in that case no error path will be returned.
+  // ignored. |out_error_path| and |out_error| will contain the last error
+  // location and detailed message if |value| doesn't strictly conform to the
+  // schema. If |value| doesn't conform to the schema even within the allowance
+  // of |strategy|, false will be returned and |out_error_path| and |out_error|
+  // will contain the corresponding error that caused the failure.
+  // |out_error_path| and |out_error| can be nullptr and in that case no value
+  // will be returned.
   bool Validate(const base::Value& value,
                 SchemaOnErrorStrategy strategy,
-                std::string* error_path,
-                std::string* error) const;
+                std::string* out_error_path,
+                std::string* out_error) const;
 
   // Similar to Validate() but drop values with errors instead of ignoring them.
-  // |changed| is a pointer to a boolean value, and indicate whether |value|
+  // |out_changed| is a pointer to a boolean value, and indicate whether |value|
   // is changed or not (probably dropped properties or items). Be sure to set
-  // the bool that |changed| pointed to to false before calling Normalize().
-  // |changed| can be NULL and in that case no boolean will be set.
-  // This function will also take the ownership of dropped base::Value and
-  // destroy them.
+  // the bool that |out_changed| pointed to false before calling Normalize().
+  // |out_error_path|, |out_error| and |out_changed| can be nullptr and in that
+  // case no value will be set. This function will also take the ownership of
+  // dropped base::Value and destroy them.
   bool Normalize(base::Value* value,
                  SchemaOnErrorStrategy strategy,
-                 std::string* error_path,
-                 std::string* error,
-                 bool* changed) const;
+                 std::string* out_error_path,
+                 std::string* out_error,
+                 bool* out_changed) const;
 
   // Modifies |value| in place - masks values that have been marked as sensitive
   // ("sensitiveValue": true) in this Schema. Note that |value| may not be
@@ -177,8 +179,8 @@ class POLICY_EXPORT Schema {
 
    private:
     scoped_refptr<const InternalStorage> storage_;
-    const internal::PropertyNode* it_;
-    const internal::PropertyNode* end_;
+    raw_ptr<const internal::PropertyNode> it_;
+    raw_ptr<const internal::PropertyNode> end_;
   };
 
   // These methods should be called only if type() == Type::DICTIONARY,

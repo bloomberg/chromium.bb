@@ -9,9 +9,10 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,7 +28,6 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/web_contents.h"
-#include "device/base/features.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -81,7 +81,7 @@ GURL GetActiveTabURL() {
   if (!web_contents)
     return GURL();
 
-  return web_contents->GetURL();
+  return web_contents->GetVisibleURL();
 }
 
 void OpenURL(const GURL& url) {
@@ -106,6 +106,9 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
         browser_tab_strip_tracker_(absl::in_place, this, nullptr) {
     browser_tab_strip_tracker_->Init();
   }
+  WebUsbNotificationDelegate(const WebUsbNotificationDelegate&) = delete;
+  WebUsbNotificationDelegate& operator=(const WebUsbNotificationDelegate&) =
+      delete;
 
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -114,7 +117,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     if (tab_strip_model->empty() || !selection.active_tab_changed())
       return;
 
-    if (base::StartsWith(selection.new_contents->GetURL().spec(),
+    if (base::StartsWith(selection.new_contents->GetVisibleURL().spec(),
                          landing_page_.spec(),
                          base::CompareCase::INSENSITIVE_ASCII)) {
       // If the disposition is not already set, go ahead and set it.
@@ -171,8 +174,6 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
   std::string notification_id_;
   WebUsbNotificationClosed disposition_;
   absl::optional<BrowserTabStripTracker> browser_tab_strip_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUsbNotificationDelegate);
 };
 
 }  // namespace
@@ -182,13 +183,10 @@ WebUsbDetector::WebUsbDetector() = default;
 WebUsbDetector::~WebUsbDetector() = default;
 
 void WebUsbDetector::Initialize() {
-#if defined(OS_WIN)
-  // The WebUSB device detector is disabled on Windows due to jank and hangs
-  // caused by enumerating devices. The new USB backend is designed to resolve
-  // these issues so enable it for testing. https://crbug.com/656702
-  if (!base::FeatureList::IsEnabled(device::kNewUsbBackend))
+  // The WebUSB device detector can be disabled if it causes trouble due to
+  // buggy devices and drivers.
+  if (!base::FeatureList::IsEnabled(features::kWebUsbDeviceDetection))
     return;
-#endif  // defined(OS_WIN)
 
   // Tests may set a fake manager.
   if (!device_manager_) {
@@ -197,8 +195,6 @@ void WebUsbDetector::Initialize() {
         device_manager_.BindNewPipeAndPassReceiver());
   }
   DCHECK(device_manager_);
-  device_manager_.set_disconnect_handler(base::BindOnce(
-      &WebUsbDetector::OnDeviceManagerConnectionError, base::Unretained(this)));
 
   // Listen for added/removed device events.
   DCHECK(!client_receiver_.is_bound());
@@ -268,14 +264,6 @@ void WebUsbDetector::RemoveNotification(const std::string& id) {
 void WebUsbDetector::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   SystemNotificationHelper::GetInstance()->Close(device_info->guid);
-}
-
-void WebUsbDetector::OnDeviceManagerConnectionError() {
-  device_manager_.reset();
-  client_receiver_.reset();
-
-  // Try to reconnect the device manager.
-  Initialize();
 }
 
 void WebUsbDetector::SetDeviceManagerForTesting(

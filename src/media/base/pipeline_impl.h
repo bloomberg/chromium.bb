@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -86,6 +86,10 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
                scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
                CreateRendererCB create_renderer_cb,
                MediaLog* media_log);
+
+  PipelineImpl(const PipelineImpl&) = delete;
+  PipelineImpl& operator=(const PipelineImpl&) = delete;
+
   ~PipelineImpl() override;
 
   // Pipeline implementation.
@@ -162,8 +166,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
   void OnVideoAverageKeyframeDistanceUpdate();
-  void OnAudioDecoderChange(const AudioDecoderInfo& info);
-  void OnVideoDecoderChange(const VideoDecoderInfo& info);
+  void OnAudioPipelineInfoChange(const AudioPipelineInfo& info);
+  void OnVideoPipelineInfoChange(const VideoPipelineInfo& info);
   void OnRemotePlayStateChange(MediaStatus::State state);
   void OnVideoFrameRateChange(absl::optional<int> fps);
 
@@ -174,10 +178,10 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   // Parameters passed in the constructor.
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   CreateRendererCB create_renderer_cb_;
-  MediaLog* const media_log_;
+  const raw_ptr<MediaLog> media_log_;
 
   // Pipeline client. Valid only while the pipeline is running.
-  Client* client_;
+  raw_ptr<Client> client_;
 
   // RendererWrapper instance that runs on the media thread.
   std::unique_ptr<RendererWrapper> renderer_wrapper_;
@@ -215,8 +219,6 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<PipelineImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PipelineImpl);
 };
 
 }  // namespace media

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/hash_value.h"
@@ -121,6 +120,10 @@ struct NET_EXPORT SignedCertificateTimestamp
 
   SignedCertificateTimestamp();
 
+  SignedCertificateTimestamp(const SignedCertificateTimestamp&) = delete;
+  SignedCertificateTimestamp& operator=(const SignedCertificateTimestamp&) =
+      delete;
+
   void Persist(base::Pickle* pickle);
   static scoped_refptr<SignedCertificateTimestamp> CreateFromPickle(
       base::PickleIterator* iter);
@@ -141,8 +144,6 @@ struct NET_EXPORT SignedCertificateTimestamp
   friend class base::RefCountedThreadSafe<SignedCertificateTimestamp>;
 
   ~SignedCertificateTimestamp();
-
-  DISALLOW_COPY_AND_ASSIGN(SignedCertificateTimestamp);
 };
 
 using SCTList = std::vector<scoped_refptr<ct::SignedCertificateTimestamp>>;

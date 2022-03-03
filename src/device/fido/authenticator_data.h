@@ -13,7 +13,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/values.h"
 #include "device/fido/attested_credential_data.h"
@@ -56,6 +55,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
 
   AuthenticatorData(AuthenticatorData&& other);
   AuthenticatorData& operator=(AuthenticatorData&& other);
+
+  AuthenticatorData(const AuthenticatorData&) = delete;
+  AuthenticatorData& operator=(const AuthenticatorData&) = delete;
 
   ~AuthenticatorData();
 
@@ -124,8 +126,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
   absl::optional<AttestedCredentialData> attested_data_;
   // If |extensions_| has a value, then it will be a CBOR map.
   absl::optional<cbor::Value> extensions_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorData);
 };
 
 }  // namespace device

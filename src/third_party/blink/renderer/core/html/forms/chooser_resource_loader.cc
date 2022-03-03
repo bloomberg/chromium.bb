@@ -29,15 +29,6 @@ Vector<char> ChooserResourceLoader::GetSuggestionPickerJS() {
 #endif
 }
 
-Vector<char> ChooserResourceLoader::GetPickerButtonStyleSheet() {
-#if !defined(OS_ANDROID)
-  return UncompressResourceAsBinary(IDR_PICKER_BUTTON_CSS);
-#else
-  NOTREACHED();
-  return Vector<char>();
-#endif
-}
-
 Vector<char> ChooserResourceLoader::GetPickerCommonStyleSheet() {
 #if !defined(OS_ANDROID)
   return UncompressResourceAsBinary(IDR_PICKER_COMMON_CSS);
@@ -131,15 +122,6 @@ Vector<char> ChooserResourceLoader::GetColorSuggestionPickerJS() {
 Vector<char> ChooserResourceLoader::GetColorPickerStyleSheet() {
 #if !defined(OS_ANDROID)
   return UncompressResourceAsBinary(IDR_COLOR_PICKER_CSS);
-#else
-  NOTREACHED();
-  return Vector<char>();
-#endif
-}
-
-Vector<char> ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet() {
-#if !defined(OS_ANDROID)
-  return UncompressResourceAsBinary(IDR_CALENDAR_PICKER_REFRESH_CSS);
 #else
   NOTREACHED();
   return Vector<char>();

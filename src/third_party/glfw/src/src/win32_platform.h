@@ -1,8 +1,8 @@
 //========================================================================
-// GLFW 3.3 Win32 - www.glfw.org
+// GLFW 3.4 Win32 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2016 Camilla Löwy <elmindreda@glfw.org>
+// Copyright (c) 2006-2019 Camilla Löwy <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -61,6 +61,9 @@
 // GLFW uses DirectInput8 interfaces
 #define DIRECTINPUT_VERSION 0x0800
 
+// GLFW uses OEM cursor resources
+#define OEMRESOURCE
+
 #include <wctype.h>
 #include <windows.h>
 #include <dinput.h>
@@ -73,6 +76,9 @@
 #endif
 #ifndef WM_DWMCOMPOSITIONCHANGED
  #define WM_DWMCOMPOSITIONCHANGED 0x031E
+#endif
+#ifndef WM_DWMCOLORIZATIONCOLORCHANGED
+ #define WM_DWMCOLORIZATIONCOLORCHANGED 0x0320
 #endif
 #ifndef WM_COPYGLOBALDATA
  #define WM_COPYGLOBALDATA 0x0049
@@ -96,13 +102,19 @@
  #define DISPLAY_DEVICE_ACTIVE 0x00000001
 #endif
 #ifndef _WIN32_WINNT_WINBLUE
- #define _WIN32_WINNT_WINBLUE 0x0602
+ #define _WIN32_WINNT_WINBLUE 0x0603
+#endif
+#ifndef _WIN32_WINNT_WIN8
+ #define _WIN32_WINNT_WIN8 0x0602
 #endif
 #ifndef WM_GETDPISCALEDSIZE
  #define WM_GETDPISCALEDSIZE 0x02e4
 #endif
 #ifndef USER_DEFAULT_SCREEN_DPI
  #define USER_DEFAULT_SCREEN_DPI 96
+#endif
+#ifndef OCR_HAND
+ #define OCR_HAND 32649
 #endif
 
 #if WINVER < 0x0601
@@ -151,9 +163,6 @@ typedef enum
 #endif /*DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2*/
 
 // HACK: Define versionhelpers.h functions manually as MinGW lacks the header
-#define IsWindowsXPOrGreater()                                 \
-    _glfwIsWindowsVersionOrGreaterWin32(HIBYTE(_WIN32_WINNT_WINXP),   \
-                                        LOBYTE(_WIN32_WINNT_WINXP), 0)
 #define IsWindowsVistaOrGreater()                                     \
     _glfwIsWindowsVersionOrGreaterWin32(HIBYTE(_WIN32_WINNT_VISTA),   \
                                         LOBYTE(_WIN32_WINNT_VISTA), 0)
@@ -203,7 +212,7 @@ typedef enum
 
 // HACK: Define macros that some dinput.h variants don't
 #ifndef DIDFT_OPTIONAL
- #define DIDFT_OPTIONAL	0x80000000
+ #define DIDFT_OPTIONAL 0x80000000
 #endif
 
 // winmm.dll function pointer typedefs
@@ -238,9 +247,11 @@ typedef BOOL (WINAPI * PFN_AdjustWindowRectExForDpi)(LPRECT,DWORD,BOOL,DWORD,UIN
 typedef HRESULT (WINAPI * PFN_DwmIsCompositionEnabled)(BOOL*);
 typedef HRESULT (WINAPI * PFN_DwmFlush)(VOID);
 typedef HRESULT(WINAPI * PFN_DwmEnableBlurBehindWindow)(HWND,const DWM_BLURBEHIND*);
+typedef HRESULT (WINAPI * PFN_DwmGetColorizationColor)(DWORD*,BOOL*);
 #define DwmIsCompositionEnabled _glfw.win32.dwmapi.IsCompositionEnabled
 #define DwmFlush _glfw.win32.dwmapi.Flush
 #define DwmEnableBlurBehindWindow _glfw.win32.dwmapi.EnableBlurBehindWindow
+#define DwmGetColorizationColor _glfw.win32.dwmapi.GetColorizationColor
 
 // shcore.dll function pointer typedefs
 typedef HRESULT (WINAPI * PFN_SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
@@ -268,8 +279,6 @@ typedef VkBool32 (APIENTRY *PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)(
 
 #include "win32_joystick.h"
 #include "wgl_context.h"
-#include "egl_context.h"
-#include "osmesa_context.h"
 
 #if !defined(_GLFW_WNDCLASSNAME)
  #define _GLFW_WNDCLASSNAME L"GLFW30"
@@ -278,9 +287,6 @@ typedef VkBool32 (APIENTRY *PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)(
 #define _glfw_dlopen(name) LoadLibraryA(name)
 #define _glfw_dlclose(handle) FreeLibrary((HMODULE) handle)
 #define _glfw_dlsym(handle, name) GetProcAddress((HMODULE) handle, name)
-
-#define _GLFW_EGL_NATIVE_WINDOW  ((EGLNativeWindowType) window->win32.handle)
-#define _GLFW_EGL_NATIVE_DISPLAY EGL_DEFAULT_DISPLAY
 
 #define _GLFW_PLATFORM_WINDOW_STATE         _GLFWwindowWin32  win32
 #define _GLFW_PLATFORM_LIBRARY_WINDOW_STATE _GLFWlibraryWin32 win32
@@ -306,9 +312,15 @@ typedef struct _GLFWwindowWin32
     // Whether to enable framebuffer transparency on DWM
     GLFWbool            transparent;
     GLFWbool            scaleToMonitor;
+    GLFWbool            keymenu;
+
+    // Cached size used to filter out duplicate events
+    int                 width, height;
 
     // The last received cursor position, regardless of source
     int                 lastCursorPosX, lastCursorPosY;
+    // The last recevied high surrogate when decoding pairs of UTF-16 messages
+    WCHAR               highSurrogate;
 
 } _GLFWwindowWin32;
 
@@ -364,6 +376,7 @@ typedef struct _GLFWlibraryWin32
         PFN_DwmIsCompositionEnabled     IsCompositionEnabled;
         PFN_DwmFlush                    Flush;
         PFN_DwmEnableBlurBehindWindow   EnableBlurBehindWindow;
+        PFN_DwmGetColorizationColor     GetColorizationColor;
     } dwmapi;
 
     struct {

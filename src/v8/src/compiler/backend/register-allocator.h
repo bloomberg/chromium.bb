@@ -1477,15 +1477,15 @@ class LinearScanAllocator final : public RegisterAllocator {
   bool TryReuseSpillForPhi(TopLevelLiveRange* range);
   int PickRegisterThatIsAvailableLongest(
       LiveRange* current, int hint_reg,
-      const Vector<LifetimePosition>& free_until_pos);
+      const base::Vector<LifetimePosition>& free_until_pos);
   bool TryAllocateFreeReg(LiveRange* range,
-                          const Vector<LifetimePosition>& free_until_pos);
-  bool TryAllocatePreferredReg(LiveRange* range,
-                               const Vector<LifetimePosition>& free_until_pos);
+                          const base::Vector<LifetimePosition>& free_until_pos);
+  bool TryAllocatePreferredReg(
+      LiveRange* range, const base::Vector<LifetimePosition>& free_until_pos);
   void GetFPRegisterSet(MachineRepresentation rep, int* num_regs,
                         int* num_codes, const int** codes) const;
   void FindFreeRegistersForRange(LiveRange* range,
-                                 Vector<LifetimePosition> free_until_pos);
+                                 base::Vector<LifetimePosition> free_until_pos);
   void ProcessCurrentRange(LiveRange* current, SpillMode spill_mode);
   void AllocateBlockedReg(LiveRange* range, SpillMode spill_mode);
 
@@ -1505,7 +1505,7 @@ class LinearScanAllocator final : public RegisterAllocator {
 
   void PrintRangeRow(std::ostream& os, const TopLevelLiveRange* toplevel);
 
-  void PrintRangeOverview(std::ostream& os);
+  void PrintRangeOverview();
 
   UnhandledLiveRangeQueue unhandled_live_ranges_;
   ZoneVector<LiveRange*> active_live_ranges_;

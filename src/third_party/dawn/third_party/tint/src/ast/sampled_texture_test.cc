@@ -14,22 +14,8 @@
 
 #include "src/ast/sampled_texture.h"
 
-#include "src/ast/access_control.h"
-#include "src/ast/alias.h"
-#include "src/ast/array.h"
-#include "src/ast/bool.h"
-#include "src/ast/depth_texture.h"
 #include "src/ast/f32.h"
-#include "src/ast/i32.h"
-#include "src/ast/matrix.h"
-#include "src/ast/pointer.h"
-#include "src/ast/sampler.h"
-#include "src/ast/storage_texture.h"
-#include "src/ast/struct.h"
 #include "src/ast/test_helper.h"
-#include "src/ast/texture.h"
-#include "src/ast/u32.h"
-#include "src/ast/vector.h"
 
 namespace tint {
 namespace ast {
@@ -48,19 +34,13 @@ TEST_F(AstSampledTextureTest, IsTexture) {
 TEST_F(AstSampledTextureTest, Dim) {
   auto* f32 = create<F32>();
   auto* s = create<SampledTexture>(TextureDimension::k3d, f32);
-  EXPECT_EQ(s->dim(), TextureDimension::k3d);
+  EXPECT_EQ(s->dim, TextureDimension::k3d);
 }
 
 TEST_F(AstSampledTextureTest, Type) {
   auto* f32 = create<F32>();
   auto* s = create<SampledTexture>(TextureDimension::k3d, f32);
-  EXPECT_EQ(s->type(), f32);
-}
-
-TEST_F(AstSampledTextureTest, TypeName) {
-  auto* f32 = create<F32>();
-  auto* s = create<SampledTexture>(TextureDimension::k3d, f32);
-  EXPECT_EQ(s->type_name(), "__sampled_texture_3d__f32");
+  EXPECT_EQ(s->type, f32);
 }
 
 TEST_F(AstSampledTextureTest, FriendlyName) {

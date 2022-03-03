@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "remoting/android/jni_headers/GlDisplay_jni.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/cursor_shape_stub_proxy.h"
@@ -28,6 +29,10 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
                                   public GlRendererDelegate {
  public:
   Core(base::WeakPtr<JniGlDisplayHandler> shell);
+
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
+
   ~Core() override;
 
   // GlRendererDelegate interface.
@@ -60,7 +65,7 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
   // Initializes the core on the display thread.
   void Initialize();
 
-  ChromotingClientRuntime* runtime_;
+  raw_ptr<ChromotingClientRuntime> runtime_;
   base::WeakPtr<JniGlDisplayHandler> shell_;
 
   // Will be std::move'd when GrabFrameConsumer() is called.
@@ -68,15 +73,13 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
 
   base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
 
-  ANativeWindow* window_ = nullptr;
+  raw_ptr<ANativeWindow> window_ = nullptr;
   std::unique_ptr<EglThreadContext> egl_context_;
   std::unique_ptr<GlRenderer> renderer_;
 
   // Used on display thread.
   base::WeakPtr<Core> weak_ptr_;
   base::WeakPtrFactory<Core> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 JniGlDisplayHandler::Core::Core(base::WeakPtr<JniGlDisplayHandler> shell)

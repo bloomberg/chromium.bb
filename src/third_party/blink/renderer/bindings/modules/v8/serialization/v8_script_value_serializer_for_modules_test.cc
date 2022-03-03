@@ -11,24 +11,30 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_rect_read_only.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_copy_to_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
+#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_transfer_list.h"
@@ -265,8 +271,9 @@ WebVector<unsigned char> ConvertCryptoResult<WebVector<unsigned char>>(
     v8::Isolate* isolate,
     const ScriptValue& value) {
   WebVector<unsigned char> vector;
-  if (DOMArrayBuffer* buffer =
-          V8ArrayBuffer::ToImplWithTypeCheck(isolate, value.V8Value())) {
+  DummyExceptionStateForTesting exception_state;
+  if (DOMArrayBuffer* buffer = NativeValueTraits<DOMArrayBuffer>::NativeValue(
+          isolate, value.V8Value(), exception_state)) {
     vector.Assign(reinterpret_cast<const unsigned char*>(buffer->Data()),
                   buffer->ByteLength());
   }
@@ -1082,17 +1089,17 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripAudioData) {
   const unsigned kChannels = 2;
   const unsigned kSampleRate = 8000;
   const unsigned kFrames = 500;
-  constexpr base::TimeDelta kTimestamp = base::TimeDelta::FromMilliseconds(314);
+  constexpr base::TimeDelta kTimestamp = base::Milliseconds(314);
 
   auto audio_bus = media::AudioBus::Create(kChannels, kFrames);
 
-  // Populate each frame with a unique value.
-  const unsigned kTotalFrames = (kFrames * kChannels);
-  const float kFramesMultiplier = 1.0 / kTotalFrames;
+  // Populate each sample with a unique value.
+  const unsigned kTotalSamples = (kFrames * kChannels);
+  const float kSampleMultiplier = 1.0 / kTotalSamples;
   for (unsigned ch = 0; ch < kChannels; ++ch) {
     float* data = audio_bus->channel(ch);
     for (unsigned i = 0; i < kFrames; ++i)
-      data[i] = (i + ch * kFrames) * kFramesMultiplier;
+      data[i] = (i + ch * kFrames) * kSampleMultiplier;
   }
 
   // Copying the data from an AudioBus instead of creating a media::AudioBuffer
@@ -1108,29 +1115,38 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripAudioData) {
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
 
   // The data should have been copied, not transferred.
-  EXPECT_TRUE(audio_data->buffer());
+  EXPECT_TRUE(audio_data->data());
 
   ASSERT_TRUE(V8AudioData::HasInstance(result, scope.GetIsolate()));
 
   AudioData* new_data = V8AudioData::ToImpl(result.As<v8::Object>());
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(new_data->timestamp()),
-            kTimestamp);
-  EXPECT_EQ(new_data->buffer()->numberOfChannels(), kChannels);
-  EXPECT_EQ(new_data->buffer()->sampleRate(), kSampleRate);
-  EXPECT_EQ(new_data->buffer()->length(), kFrames);
+  EXPECT_EQ(base::Microseconds(new_data->timestamp()), kTimestamp);
+  EXPECT_EQ(new_data->numberOfChannels(), kChannels);
+  EXPECT_EQ(new_data->numberOfFrames(), kFrames);
+  EXPECT_EQ(new_data->sampleRate(), kSampleRate);
 
-  // Make sure the data wasn't changed during the transfer.
-  for (unsigned ch = 0; ch < kChannels; ++ch) {
-    float* src_data = audio_data->buffer()->getChannelData(ch)->Data();
-    float* dst_data = new_data->buffer()->getChannelData(ch)->Data();
-    for (unsigned i = 0; i < kFrames; ++i) {
-      EXPECT_EQ(src_data[i], dst_data[i]);
-    }
+  // Copy out the frames to make sure they haven't been changed during the
+  // transfer.
+  DOMArrayBuffer* copy_dest = DOMArrayBuffer::Create(kFrames, sizeof(float));
+  AllowSharedBufferSource* dest =
+      MakeGarbageCollected<AllowSharedBufferSource>(copy_dest);
+  AudioDataCopyToOptions* options =
+      MakeGarbageCollected<AudioDataCopyToOptions>();
+
+  for (unsigned int ch = 0; ch < kChannels; ++ch) {
+    options->setPlaneIndex(ch);
+    new_data->copyTo(dest, options, scope.GetExceptionState());
+    EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+    float* new_samples = static_cast<float*>(copy_dest->Data());
+
+    for (unsigned int i = 0; i < kFrames; ++i)
+      ASSERT_EQ(new_samples[i], (i + ch * kFrames) * kSampleMultiplier);
   }
 
   // Closing the original |audio_data| should not affect |new_data|.
   audio_data->close();
-  EXPECT_TRUE(new_data->buffer());
+  EXPECT_TRUE(new_data->data());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, ClosedAudioDataThrows) {
@@ -1143,7 +1159,7 @@ TEST(V8ScriptValueSerializerForModulesTest, ClosedAudioDataThrows) {
       media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
       /*channel_count=*/2,
       /*sample_rate=*/8000,
-      /*frame_count=*/500, base::TimeDelta::FromMilliseconds(314));
+      /*frame_count=*/500, base::Milliseconds(314));
 
   // Create and close the frame.
   auto* audio_data = MakeGarbageCollected<AudioData>(std::move(audio_buffer));

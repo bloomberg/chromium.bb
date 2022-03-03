@@ -24,6 +24,9 @@ RENDERING_BENCHMARK_UMA = [
     'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
     'Graphics.Smoothness.Checkerboarding.TouchScroll',
     'Graphics.Smoothness.Checkerboarding.WheelScroll',
+    'Graphics.Smoothness.Jank.AllAnimations',
+    'Graphics.Smoothness.Jank.AllInteractions',
+    'Graphics.Smoothness.Jank.AllSequences',
     'Graphics.Smoothness.PercentDroppedFrames.AllAnimations',
     'Graphics.Smoothness.PercentDroppedFrames.AllInteractions',
     'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
@@ -48,10 +51,18 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
     parser.add_option('--allow-software-compositing', action='store_true',
                       help='If set, allows the benchmark to run with software '
                            'compositing.')
+    parser.add_option('--extra-uma-metrics',
+                      action='store',
+                      help='Comma separated list of additional UMA metrics to '
+                      'include in result output. Note that histogram buckets '
+                      'in telemetry report may not match buckets from UMA.')
 
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
     cls.allow_software_compositing = args.allow_software_compositing
+    cls.uma_metrics = RENDERING_BENCHMARK_UMA
+    if args.extra_uma_metrics:
+      cls.uma_metrics += args.extra_uma_metrics.split(',')
 
   def CreateStorySet(self, options):
     return page_sets.RenderingStorySet(platform=self.PLATFORM_NAME)
@@ -70,8 +81,7 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
     category_filter.AddDisabledByDefault(
         'disabled-by-default-histogram_samples')
     options = timeline_based_measurement.Options(category_filter)
-    options.config.chrome_trace_config.EnableUMAHistograms(
-        *RENDERING_BENCHMARK_UMA)
+    options.config.chrome_trace_config.EnableUMAHistograms(*self.uma_metrics)
     options.SetTimelineBasedMetrics([
         'renderingMetric',
         'umaMetric',
@@ -118,8 +128,15 @@ class RenderingMobile(_RenderingBenchmark):
   # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
   # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
   # from expectations.config in SUPPORTED_PLATFORM_TAGS.
-  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
-  SUPPORTED_PLATFORM_TAGS = [core_platforms.MOBILE]
+  SUPPORTED_PLATFORMS = [
+      story_module.expectations.ALL_MOBILE,
+      story_module.expectations.FUCHSIA_ASTRO,
+      story_module.expectations.FUCHSIA_SHERLOCK
+  ]
+  SUPPORTED_PLATFORM_TAGS = [
+      core_platforms.MOBILE, core_platforms.FUCHSIA_ASTRO,
+      core_platforms.FUCHSIA_SHERLOCK
+  ]
   PLATFORM_NAME = platforms.MOBILE
 
   @classmethod

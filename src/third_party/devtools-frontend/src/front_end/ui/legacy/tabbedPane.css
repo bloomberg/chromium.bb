@@ -127,10 +127,14 @@
   padding-right: 4px;
 }
 
+.tabbed-pane-header-tab.preview.closeable {
+  padding-right: 5px;
+}
+
 .tabbed-pane-header-tab:hover,
 .tabbed-pane-shadow .tabbed-pane-header-tab:focus-visible {
   color: var(--color-text-primary);
-  background-color: var(--legacy-toolbar-hover-bg-color);
+  background-color: var(--color-background-elevation-2);
 }
 
 .tabbed-pane-header-tab-title {
@@ -144,17 +148,25 @@
 
 .tabbed-pane-header-tab.selected {
   border-bottom: none;
-  background-color: var(--color-background-elevation-1);
   color: var(--legacy-tab-selected-fg-color);
 }
 
 /**
  * In light-mode we have a blue border to show the active pane, and we don't change the background color. In dark mode we do not show the border, so we instead change the background color.
  */
+/* stylelint-disable no-descending-specificity */
 .-theme-with-dark-background .tabbed-pane-header-tab.selected,
 :host-context(.-theme-with-dark-background) .tabbed-pane-header-tab.selected {
+  --override-tabbed-dark-mode-bg-color: rgb(0 0 0);
+
+  background-color: var(--override-tabbed-dark-mode-bg-color);
+}
+
+.-theme-with-dark-background .tabbed-pane-header-tab.selected,
+:host-context(.-theme-with-dark-background) .tabbed-pane-header-tab.selected:focus-visible {
   background-color: var(--color-background-elevation-0);
 }
+/* stylelint-enable no-descending-specificity */
 
 .tabbed-pane-header-tab.dragging {
   --override-dragging-box-shadow-color: rgb(0 0 0 / 37%);
@@ -190,6 +202,12 @@
 
 .tabbed-pane-header-tabs-drop-down-container > .chevron-icon {
   background-color: var(--color-text-secondary);
+  display: block;
+}
+
+.tabbed-pane-header-tabs-drop-down-container > .chevron-icon:hover,
+.tabbed-pane-header-tabs-drop-down-container > .chevron-icon:focus-visible {
+  background-color: var(--color-text-primary);
   display: block;
 }
 
@@ -254,18 +272,21 @@
   cursor: pointer !important; /* stylelint-disable-line declaration-no-important */
 }
 
+/* stylelint-disable no-descending-specificity */
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected {
   --override-vertical-tab-selected-border-color: #666;
 
   color: inherit;
   border: none transparent;
   border-left: 6px solid var(--override-vertical-tab-selected-border-color);
+  background-color: var(--color-background-elevation-1);
 }
 
 .-theme-with-dark-background .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected,
 :host-context(.-theme-with-dark-background) .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected {
   --override-vertical-tab-selected-border-color: rgb(153 153 153);
 }
+/* stylelint-enable no-descending-specificity */
 
 .tabbed-pane-tab-slider {
   height: 2px;
@@ -308,6 +329,43 @@
   flex: none;
 }
 
+.preview-icon {
+  --override-tabbed-pane-preview-icon-color: rgb(110 110 110);
+
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
+}
+
+.-theme-with-dark-background .preview-icon,
+:host-context(.-theme-with-dark-background) .preview-icon {
+  --override-tabbed-pane-preview-icon-color: rgb(145 145 145);
+}
+
+.close-button {
+  --tabbed-pane-close-icon-color: var(--color-text-primary);
+
+  width: 14px;
+  height: 14px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover,
+.close-button:active {
+  background-color: var(--color-details-hairline);
+}
+
+.tabbed-pane-header-tab.preview.closeable .close-button {
+  margin-left: 0;
+}
+
 @media (forced-colors: active) {
   .tabbed-pane-tab-slider {
     forced-color-adjust: none;
@@ -332,6 +390,11 @@
     color: HighlightText;
   }
 
+  .tabbed-pane-header-tab:hover .tabbed-pane-close-button,
+  .tabbed-pane-shadow .tabbed-pane-header-tab:focus-visible .tabbed-pane-close-button {
+    --icon-color: HighlightText;
+  }
+
   .tabbed-pane-header-tabs-drop-down-container {
     opacity: 100%;
   }
@@ -348,5 +411,18 @@
   .tabbed-pane-header-tabs-drop-down-container:hover > .chevron-icon,
   .tabbed-pane-header-tabs-drop-down-container:focus-visible > .chevron-icon {
     background-color: HighlightText;
+  }
+
+  .close-button {
+    --tabbed-pane-close-icon-color: ButtonText;
+
+    forced-color-adjust: none;
+  }
+
+  .close-button:hover,
+  .close-button:active {
+    --tabbed-pane-close-icon-color: HighlightText;
+
+    background-color: Highlight;
   }
 }

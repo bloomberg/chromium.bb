@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -14,8 +13,8 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
@@ -46,14 +45,16 @@ using testing::IsEmpty;
 class TwoClientSessionsSyncTest : public SyncTest {
  public:
   TwoClientSessionsSyncTest() : SyncTest(TWO_CLIENT) {}
+
+  TwoClientSessionsSyncTest(const TwoClientSessionsSyncTest&) = delete;
+  TwoClientSessionsSyncTest& operator=(const TwoClientSessionsSyncTest&) =
+      delete;
+
   ~TwoClientSessionsSyncTest() override {}
 
   bool WaitForForeignSessionsToSync(int local_index, int non_local_index) {
     return ForeignSessionsMatchChecker(non_local_index, local_index).Wait();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientSessionsSyncTest);
 };
 
 static const char* kURL1 = "data:text/html,<html><title>Test</title></html>";
@@ -217,6 +218,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
           .Wait());
   ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
       "passphrase"));
+  // Make sure that re-encryption happens before opening the tab (otherwise race
+  // condition may occur when second client attempts to re-encrypt data, while
+  // first client attempts to commit local changes).
+  ASSERT_TRUE(AwaitQuiescence());
 
   EXPECT_TRUE(OpenTab(0, GURL(kURL1)));
   EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
