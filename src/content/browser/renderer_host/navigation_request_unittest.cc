@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
@@ -24,6 +23,7 @@
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -76,15 +76,12 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
-    // Release the |request_| before destroying the WebContents, to match
-    // the WebContentsObserverConsistencyChecker expectations.
-    request_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
 
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) {
-    request_->CancelDeferredNavigationInternal(result);
+    GetNavigationRequest()->CancelDeferredNavigationInternal(result);
   }
 
   // Helper function to call WillStartRequest on |handle|. If this function
@@ -96,11 +93,11 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->set_complete_callback_for_testing(
+    GetNavigationRequest()->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
 
-    request_->WillStartRequest();
+    GetNavigationRequest()->WillStartRequest();
   }
 
   // Helper function to call WillRedirectRequest on |handle|. If this function
@@ -114,13 +111,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->set_complete_callback_for_testing(
+    GetNavigationRequest()->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
 
-    request_->WillRedirectRequest(GURL(),
-                                  WebExposedIsolationInfo::CreateNonIsolated(),
-                                  nullptr /* post_redirect_process */);
+    GetNavigationRequest()->WillRedirectRequest(
+        GURL(), WebExposedIsolationInfo::CreateNonIsolated(),
+        nullptr /* post_redirect_process */);
   }
 
   // Helper function to call WillFailRequest on |handle|. If this function
@@ -131,15 +128,15 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
       const absl::optional<net::SSLInfo> ssl_info = absl::nullopt) {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
-    request_->set_net_error(net_error_code);
+    GetNavigationRequest()->set_net_error(net_error_code);
 
     // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->set_complete_callback_for_testing(
+    GetNavigationRequest()->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
 
-    request_->WillFailRequest();
+    GetNavigationRequest()->WillFailRequest();
   }
 
   // Whether the callback was called.
@@ -150,7 +147,9 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     return callback_result_;
   }
 
-  NavigationRequest::NavigationState state() { return request_->state(); }
+  NavigationRequest::NavigationState state() {
+    return GetNavigationRequest()->state();
+  }
 
   bool call_counts_match(TestNavigationThrottle* throttle,
                          int start,
@@ -172,10 +171,10 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   TestNavigationThrottle* CreateTestNavigationThrottle(
       NavigationThrottle::ThrottleCheckResult result) {
     TestNavigationThrottle* test_throttle =
-        new TestNavigationThrottle(request_.get());
+        new TestNavigationThrottle(GetNavigationRequest());
     test_throttle->SetResponseForAllMethods(TestNavigationThrottle::SYNCHRONOUS,
                                             result);
-    request_->RegisterThrottleForTesting(
+    GetNavigationRequest()->RegisterThrottleForTesting(
         std::unique_ptr<TestNavigationThrottle>(test_throttle));
     return test_throttle;
   }
@@ -196,21 +195,24 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   // TODO(zetamoo): Use NavigationSimulator instead of creating
   // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
-    auto common_params = CreateCommonNavigationParams();
+    auto common_params = blink::CreateCommonNavigationParams();
     common_params->initiator_origin =
         url::Origin::Create(GURL("https://initiator.example.com"));
-    auto commit_params = CreateCommitNavigationParams();
+    auto commit_params = blink::CreateCommitNavigationParams();
     commit_params->frame_policy =
         main_test_rfh()->frame_tree_node()->pending_frame_policy();
-    request_ = NavigationRequest::CreateBrowserInitiated(
+    auto request = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
         std::move(commit_params), false /* browser-initiated */,
         false /* was_opener_suppressed */, nullptr /* initiator_frame_token */,
         ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
         std::string() /* extra_headers */, nullptr /* frame_entry */,
         nullptr /* entry */, nullptr /* post_body */,
-        nullptr /* navigation_ui_data */, absl::nullopt /* impression */);
-    request_->StartNavigation(true);
+        nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
+        false /* is_pdf */);
+    main_test_rfh()->frame_tree_node()->CreatedNavigationRequest(
+        std::move(request));
+    GetNavigationRequest()->StartNavigation();
   }
 
  private:
@@ -224,7 +226,11 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     return true;
   }
 
-  std::unique_ptr<NavigationRequest> request_;
+  // This must be called after CreateNavigationHandle().
+  NavigationRequest* GetNavigationRequest() {
+    return main_test_rfh()->frame_tree_node()->navigation_request();
+  }
+
   bool was_callback_called_ = false;
   NavigationThrottle::ThrottleCheckResult callback_result_;
 };
@@ -237,7 +243,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl1, main_rfh());
   navigation->Start();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
@@ -246,7 +252,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   navigation->set_http_connection_info(
       net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1);
   navigation->Redirect(kUrl2);
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
@@ -255,7 +261,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   navigation->set_http_connection_info(
       net::HttpResponseInfo::CONNECTION_INFO_QUIC_35);
   navigation->ReadyToCommit();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
@@ -282,14 +288,14 @@ TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
   navigation->Start();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::ERR_CERT_DATE_INVALID,
@@ -453,6 +459,12 @@ class GetRenderFrameHostOnFailureNavigationThrottle
   explicit GetRenderFrameHostOnFailureNavigationThrottle(
       NavigationHandle* handle)
       : NavigationThrottle(handle) {}
+
+  GetRenderFrameHostOnFailureNavigationThrottle(
+      const GetRenderFrameHostOnFailureNavigationThrottle&) = delete;
+  GetRenderFrameHostOnFailureNavigationThrottle& operator=(
+      const GetRenderFrameHostOnFailureNavigationThrottle&) = delete;
+
   ~GetRenderFrameHostOnFailureNavigationThrottle() override = default;
 
   NavigationThrottle::ThrottleCheckResult WillFailRequest() override {
@@ -463,9 +475,6 @@ class GetRenderFrameHostOnFailureNavigationThrottle
   const char* GetNameForLogging() override {
     return "GetRenderFrameHostOnFailureNavigationThrottle";
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GetRenderFrameHostOnFailureNavigationThrottle);
 };
 
 class ThrottleTestContentBrowserClient : public ContentBrowserClient {
@@ -538,7 +547,7 @@ TEST_F(NavigationRequestTest, PolicyContainerInheritance) {
     // - If navigating to a non-local scheme, the target frame should have a new
     //   policy container (hence referrer policy set to "default").
     const GURL kUrl = GURL(test.url);
-    auto navigation =
+    navigation =
         NavigationSimulatorImpl::CreateRendererInitiated(kUrl, child_frame);
     static_cast<blink::mojom::PolicyContainerHost*>(
         child_frame->policy_container_host())
@@ -606,6 +615,56 @@ TEST_F(NavigationRequestTest, NoDnsAliases) {
 
   // Verify that there are no aliases in the NavigationRequest.
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetDnsAliases().empty());
+}
+
+TEST_F(NavigationRequestTest, StorageKeyToCommit) {
+  TestRenderFrameHost* child_document = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild(""));
+  child_document->frame_tree_node()->set_anonymous(true);
+
+  const GURL kUrl = GURL("http://chromium.org");
+  auto navigation =
+      NavigationSimulatorImpl::CreateRendererInitiated(kUrl, child_document);
+  navigation->ReadyToCommit();
+  NavigationRequest* request =
+      NavigationRequest::From(navigation->GetNavigationHandle());
+  EXPECT_TRUE(request->commit_params().storage_key.nonce().has_value());
+  EXPECT_EQ(child_document->GetMainFrame()->GetPage().anonymous_iframes_nonce(),
+            request->commit_params().storage_key.nonce().value());
+
+  navigation->Commit();
+  child_document =
+      static_cast<TestRenderFrameHost*>(navigation->GetFinalRenderFrameHost());
+  EXPECT_TRUE(child_document->anonymous());
+  EXPECT_EQ(
+      blink::StorageKey::CreateWithNonce(
+          url::Origin::Create(kUrl),
+          child_document->GetMainFrame()->GetPage().anonymous_iframes_nonce()),
+      child_document->storage_key());
+}
+
+TEST_F(NavigationRequestTest,
+       NavigationToAnonymousDocumentNetworkIsolationInfo) {
+  auto* child_frame = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(main_test_rfh())
+          ->AppendChild("child"));
+  child_frame->frame_tree_node()->set_anonymous(true);
+
+  std::unique_ptr<NavigationSimulator> navigation =
+      NavigationSimulator::CreateRendererInitiated(
+          GURL("https://example.com/navigation.html"), child_frame);
+  navigation->ReadyToCommit();
+
+  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+            static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
+                ->isolation_info_for_subresources()
+                .network_isolation_key()
+                .GetNonce());
+  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+            static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
+                ->GetIsolationInfo()
+                .network_isolation_key()
+                .GetNonce());
 }
 
 // Test that the required CSP of every frame is computed/inherited correctly and

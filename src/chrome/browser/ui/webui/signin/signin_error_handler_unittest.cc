@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -30,6 +31,10 @@ class TestingSigninErrorHandler : public SigninErrorHandler {
         profile_picker_force_signin_dialog_did_close_(false) {
     set_web_ui(web_ui);
   }
+
+  TestingSigninErrorHandler(const TestingSigninErrorHandler&) = delete;
+  TestingSigninErrorHandler& operator=(const TestingSigninErrorHandler&) =
+      delete;
 
   void CloseBrowserModalSigninDialog() override {
     browser_modal_dialog_did_close_ = true;
@@ -57,14 +62,15 @@ class TestingSigninErrorHandler : public SigninErrorHandler {
  private:
   bool browser_modal_dialog_did_close_;
   bool profile_picker_force_signin_dialog_did_close_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingSigninErrorHandler);
 };
 
 class SigninErrorHandlerTest : public BrowserWithTestWindowTest {
  public:
   SigninErrorHandlerTest()
       : web_ui_(new content::TestWebUI), handler_(nullptr) {}
+
+  SigninErrorHandlerTest(const SigninErrorHandlerTest&) = delete;
+  SigninErrorHandlerTest& operator=(const SigninErrorHandlerTest&) = delete;
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
@@ -109,9 +115,7 @@ class SigninErrorHandlerTest : public BrowserWithTestWindowTest {
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
   std::unique_ptr<SigninErrorUI> signin_error_ui_;
-  TestingSigninErrorHandler* handler_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(SigninErrorHandlerTest);
+  raw_ptr<TestingSigninErrorHandler> handler_;  // Not owned.
 };
 
 TEST_F(SigninErrorHandlerTest, InBrowserHandleLearnMore) {

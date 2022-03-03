@@ -13,6 +13,8 @@ import android.util.Size;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.TraceEvent;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,6 +31,7 @@ class PlayerFrameBitmapPainter {
     private Runnable mInvalidateCallback;
     private Runnable mFirstPaintListener;
     private Handler mHandler = new Handler();
+    private boolean mDestroyed;
 
     // The following sets should only be modified on {@link mHandler} or UI thread.
 
@@ -65,11 +68,15 @@ class PlayerFrameBitmapPainter {
     }
 
     void updateViewPort(int left, int top, int right, int bottom) {
+        if (mDestroyed) return;
+
         mViewPort.set(left, top, right, bottom);
         mInvalidateCallback.run();
     }
 
     void updateBitmapMatrix(CompressibleBitmap[][] bitmapMatrix) {
+        if (mDestroyed) return;
+
         mBitmapMatrix = bitmapMatrix;
         mInvalidateCallback.run();
     }
@@ -78,11 +85,14 @@ class PlayerFrameBitmapPainter {
      * Draws bitmaps on a given {@link Canvas} for the current viewport.
      */
     void onDraw(Canvas canvas) {
+        if (mDestroyed) return;
+
         if (mBitmapMatrix == null) return;
 
         if (mViewPort.isEmpty()) return;
 
         if (mTileSize.getWidth() <= 0 || mTileSize.getHeight() <= 0) return;
+        TraceEvent.begin("PlayerFrameBitmapPainter.onDraw");
 
         final int rowStart = mViewPort.top / mTileSize.getHeight();
         int rowEnd = (int) Math.ceil((double) mViewPort.bottom / mTileSize.getHeight());
@@ -118,6 +128,12 @@ class PlayerFrameBitmapPainter {
                         // Handler is on the UI thread so the needed bitmaps will be the last
                         // set of bitmaps requested.
                         mHandler.post(() -> {
+                            // If this is destroyed, then make sure any straggling inflations are
+                            // destroyed.
+                            if (mInflatedBitmaps == null) {
+                                inflatedBitmap.destroy();
+                                return;
+                            }
                             if (inflated) {
                                 mInflatedBitmaps.add(inflatedBitmap);
                             }
@@ -165,5 +181,22 @@ class PlayerFrameBitmapPainter {
         if (needsInvalidate) {
             mHandler.post(mInvalidateCallback);
         }
+        TraceEvent.end("PlayerFrameBitmapPainter.onDraw");
+    }
+
+    private void unlockAll() {
+        for (CompressibleBitmap bitmap : mLockedBitmaps) {
+            bitmap.unlock();
+        }
+    }
+
+    void destroy() {
+        // Prevent future invalidation.
+        mDestroyed = true;
+        mBitmapMatrix = null;
+        mInflatedBitmaps = null;
+
+        // Unlock all bitmaps so they can be destroyed.
+        unlockAll();
     }
 }

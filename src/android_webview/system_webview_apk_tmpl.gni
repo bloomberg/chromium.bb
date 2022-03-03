@@ -4,11 +4,13 @@
 
 import("//android_webview/variables.gni")
 import("//base/android/resource_exclusions.gni")
+import("//build/config/android/abi.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//build/util/version.gni")
 import("//chrome/android/trichrome.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//weblayer/variables.gni")
 import("//weblayer/weblayer_resource_exclusions.gni")
@@ -108,7 +110,13 @@ template("system_webview_apk_or_module_tmpl") {
     _pure_32_bit =
         android_64bit_target_cpu && defined(invoker.include_64_bit_webview) &&
         !invoker.include_64_bit_webview
-    not_needed([ "_pure_32_bit" ])
+    _pure_64_bit =
+        android_64bit_target_cpu && defined(invoker.include_32_bit_webview) &&
+        !invoker.include_32_bit_webview
+    not_needed([
+                 "_pure_32_bit",
+                 "_pure_64_bit",
+               ])
 
     # Flag whether additional deps and libs should be included for each ABI.
     _include_primary_support = false
@@ -121,7 +129,7 @@ template("system_webview_apk_or_module_tmpl") {
         shared_libraries = [ "//android_webview:libwebviewchromium" ]
         _include_primary_support = true
       }
-      if (android_64bit_target_cpu) {
+      if (android_64bit_target_cpu && !_pure_64_bit) {
         secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
         _include_secondary_support = true
       }
@@ -151,6 +159,15 @@ template("system_webview_apk_or_module_tmpl") {
       }
     }
 
+    _libarcore_dir = get_label_info(
+                         "//third_party/arcore-android-sdk-client:com_google_ar_core_java($default_toolchain)",
+                         "target_out_dir") + "/com_google_ar_core_java/jni"
+    not_needed([ "_libarcore_dir" ])
+
+    _include_arcore =
+        webview_includes_weblayer && enable_arcore && !_exclude_weblayer_java &&
+        (_include_secondary_support || _include_primary_support)
+
     if (_include_primary_support) {
       deps += [
         "//android_webview:webview_primary_abi_assets",
@@ -161,6 +178,10 @@ template("system_webview_apk_or_module_tmpl") {
         deps += [ "//base/android/linker:chromium_android_linker" ]
         loadable_modules +=
             [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
+      }
+      if (_include_arcore) {
+        loadable_modules +=
+            [ "$_libarcore_dir/$android_app_abi/libarcore_sdk_c.so" ]
       }
     }
     if (_include_secondary_support) {
@@ -177,6 +198,14 @@ template("system_webview_apk_or_module_tmpl") {
         secondary_abi_loadable_modules +=
             [ "$_secondary_out_dir/libchromium_android_linker$shlib_extension" ]
       }
+      if (_include_arcore) {
+        secondary_abi_loadable_modules +=
+            [ "$_libarcore_dir/$android_app_secondary_abi/libarcore_sdk_c.so" ]
+      }
+    }
+
+    if (_include_arcore) {
+      deps += [ "//third_party/arcore-android-sdk-client:com_google_ar_core_J__unpack_aar" ]
     }
 
     aapt_locale_allowlist = locales
@@ -191,6 +220,17 @@ template("system_webview_apk_or_module_tmpl") {
       # Note: WebLayer's resource exclusion regex deliberately does not start
       # with "|".
       resource_exclusion_regex += "|" + weblayer_resource_exclusion_regex
+    }
+
+    # We only optimize resources for bundles since APKs are not shipped.
+    # Resources only live in the base module atm as such we only need to set
+    # these on the base module
+    if (_is_bundle_module) {
+      # Removes metadata needed for Resources.getIdentifier("resource_name").
+      strip_resource_names = !is_java_debug
+
+      # Shortens resource file names in apk eg: res/drawable/button.xml -> res/a.xml
+      short_resource_paths = !is_java_debug
     }
 
     if (!_is_bundle_module) {
@@ -235,18 +275,24 @@ template("system_webview_apk_or_module_tmpl") {
         if (android_channel == "dev") {
           if (_pure_32_bit) {
             version_code = webview_32_dev_version_code
+          } else if (_pure_64_bit) {
+            version_code = webview_64_dev_version_code
           } else {
             version_code = webview_dev_version_code
           }
         } else if (android_channel == "beta") {
           if (_pure_32_bit) {
             version_code = webview_32_beta_version_code
+          } else if (_pure_64_bit) {
+            version_code = webview_64_beta_version_code
           } else {
             version_code = webview_beta_version_code
           }
         } else {
           if (_pure_32_bit) {
             version_code = webview_32_stable_version_code
+          } else if (_pure_64_bit) {
+            version_code = webview_64_stable_version_code
           } else {
             version_code = webview_stable_version_code
           }

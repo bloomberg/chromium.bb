@@ -11,6 +11,7 @@
 #include "net/http/structured_headers.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "url/origin.h"
@@ -48,7 +50,7 @@ class ParsedFeaturePolicies final
                   1) {}
 
   bool Observed(mojom::blink::PermissionsPolicyFeature feature) {
-    size_t feature_index = static_cast<size_t>(feature);
+    wtf_size_t feature_index = static_cast<wtf_size_t>(feature);
     if (policies_[feature_index])
       return true;
     policies_[feature_index] = true;
@@ -131,6 +133,7 @@ class ParsingContext {
   ParsedAllowlist ParseAllowlist(const Vector<String>& origin_strings);
 
   void ReportFeatureUsage(mojom::blink::PermissionsPolicyFeature feature);
+  void ReportFeatureUsageLegacy(mojom::blink::PermissionsPolicyFeature feature);
 
   // This function should be called after Allowlist Histograms related flags
   // have been captured.
@@ -147,6 +150,9 @@ class ParsingContext {
   scoped_refptr<const SecurityOrigin> self_origin_;
   scoped_refptr<const SecurityOrigin> src_origin_;
   const FeatureNameMap& feature_names_;
+  // `execution_context_` is used for reporting various WebFeatures
+  // during the parsing process.
+  // `execution_context_` should only be `nullptr` in tests.
   ExecutionContext* execution_context_;
 
   // Flags for the types of items which can be used in allowlists.
@@ -171,7 +177,9 @@ bool FeatureObserver::FeatureObserved(
   }
 }
 
-void ParsingContext::ReportFeatureUsage(
+// TODO: Remove this function once we verified the new histogram counts
+// are consistent with old ones.
+void ParsingContext::ReportFeatureUsageLegacy(
     mojom::blink::PermissionsPolicyFeature feature) {
   if (src_origin_) {
     if (!execution_context_ ||
@@ -182,6 +190,20 @@ void ParsingContext::ReportFeatureUsage(
   } else {
     UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Header", feature);
   }
+}
+
+void ParsingContext::ReportFeatureUsage(
+    mojom::blink::PermissionsPolicyFeature feature) {
+  if (!execution_context_ || !execution_context_->IsWindow())
+    return;
+
+  LocalDOMWindow* local_dom_window = To<LocalDOMWindow>(execution_context_);
+
+  auto usage_type =
+      src_origin_ ? UseCounterImpl::PermissionsPolicyUsageType::kIframeAttribute
+                  : UseCounterImpl::PermissionsPolicyUsageType::kHeader;
+
+  local_dom_window->CountPermissionsPolicyUsage(feature, usage_type);
 }
 
 void ParsingContext::RecordAllowlistTypeUsage(size_t origin_count) {
@@ -391,6 +413,7 @@ ParsedPermissionsPolicy ParsingContext::ParseIR(
         ParseFeature(declaration_node);
     if (parsed_feature) {
       ReportFeatureUsage(parsed_feature->feature);
+      ReportFeatureUsageLegacy(parsed_feature->feature);
       parsed_policy.push_back(*parsed_feature);
     }
   }
@@ -562,18 +585,30 @@ ParsedPermissionsPolicy PermissionsPolicyParser::ParseHeader(
         observer.FeatureObserved(policy_declaration.feature);
     DCHECK(!feature_observed);
   }
+
+  std::vector<std::string> overlap_features;
+
   for (const auto& policy_declaration : feature_policy) {
     if (!observer.FeatureObserved(policy_declaration.feature)) {
       permissions_policy.push_back(policy_declaration);
     } else {
-      feature_policy_logger.Warn(String::Format(
-          "Feature %s has been specified in both Feature-Policy and "
-          "Permissions-Policy header. Value defined in Permissions-Policy "
-          "header will be used.",
-          GetNameForFeature(policy_declaration.feature).Ascii().c_str()));
+      overlap_features.push_back(
+          GetNameForFeature(policy_declaration.feature).Ascii().c_str());
     }
   }
 
+  if (!overlap_features.empty()) {
+    std::ostringstream features_stream;
+    std::copy(overlap_features.begin(), overlap_features.end() - 1,
+              std::ostream_iterator<std::string>(features_stream, ", "));
+    features_stream << overlap_features.back();
+
+    feature_policy_logger.Warn(String::Format(
+        "Some features are specified in both Feature-Policy and "
+        "Permissions-Policy header: %s. Values defined in Permissions-Policy "
+        "header will be used.",
+        features_stream.str().c_str()));
+  }
   return permissions_policy;
 }
 

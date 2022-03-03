@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -63,6 +64,7 @@ public class AwSettings {
     public static final int FORCE_DARK_OFF = ForceDarkMode.FORCE_DARK_OFF;
     public static final int FORCE_DARK_AUTO = ForceDarkMode.FORCE_DARK_AUTO;
     public static final int FORCE_DARK_ON = ForceDarkMode.FORCE_DARK_ON;
+    public static final int FORCE_DARK_MODES_COUNT = 3;
 
     @ForceDarkMode
     private int mForceDarkMode = ForceDarkMode.FORCE_DARK_AUTO;
@@ -72,9 +74,12 @@ public class AwSettings {
     // This option requires RuntimeEnabledFeatures::MetaColorSchemeEnabled()
     public static final int PREFER_MEDIA_QUERY_OVER_FORCE_DARK =
             ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
+    public static final int FORCE_DARK_STRATEGY_COUNT = 3;
 
     @ForceDarkBehavior
     private int mForceDarkBehavior = ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
+
+    private Context mContext;
 
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
@@ -111,7 +116,6 @@ public class AwSettings {
     private boolean mAllowFileAccessFromFileURLs;
     private boolean mJavaScriptCanOpenWindowsAutomatically;
     private boolean mSupportMultipleWindows;
-    private boolean mAppCacheEnabled;
     private boolean mDomStorageEnabled;
     private boolean mDatabaseEnabled;
     private boolean mUseWideViewport;
@@ -164,10 +168,6 @@ public class AwSettings {
 
     // Protects access to settings global fields.
     private static final Object sGlobalContentSettingsLock = new Object();
-    // For compatibility with the legacy WebView, we can only enable AppCache when the path is
-    // provided. However, we don't use the path, so we just check if we have received it from the
-    // client.
-    private static boolean sAppCachePathIsSet;
 
     // The native side of this object. It's lifetime is bounded by the WebContent it is attached to.
     private long mNativeAwSettings;
@@ -259,6 +259,7 @@ public class AwSettings {
             boolean supportsLegacyQuirks, boolean allowEmptyDocumentPersistence,
             boolean allowGeolocationOnInsecureOrigins,
             boolean doNotUpdateSelectionOnMutatingSelectionRange) {
+        mContext = context;
         boolean hasInternetPermission = context.checkPermission(
                 android.Manifest.permission.INTERNET,
                 Process.myPid(),
@@ -298,6 +299,10 @@ public class AwSettings {
                     < Build.VERSION_CODES.R;
         }
         // Defer initializing the native side until a native WebContents instance is set.
+    }
+
+    public int getUiModeNight() {
+        return mContext.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     }
 
     @CalledByNative
@@ -1428,58 +1433,6 @@ public class AwSettings {
     }
 
     /**
-     * See {@link android.webkit.WebSettings#setAppCacheEnabled}.
-     */
-    public void setAppCacheEnabled(boolean flag) {
-        if (TRACE) Log.i(LOGTAG, "setAppCacheEnabled=" + flag);
-        synchronized (mAwSettingsLock) {
-            if (mAppCacheEnabled != flag) {
-                mAppCacheEnabled = flag;
-                mEventHandler.updateWebkitPreferencesLocked();
-            }
-        }
-    }
-
-    /**
-     * See {@link android.webkit.WebSettings#setAppCachePath}.
-     */
-    public void setAppCachePath(String path) {
-        if (TRACE) Log.i(LOGTAG, "setAppCachePath=" + path);
-        boolean needToSync = false;
-        synchronized (sGlobalContentSettingsLock) {
-            // AppCachePath can only be set once.
-            if (!sAppCachePathIsSet && path != null && !path.isEmpty()) {
-                sAppCachePathIsSet = true;
-                needToSync = true;
-            }
-        }
-        // The obvious problem here is that other WebViews will not be updated,
-        // until they execute synchronization from Java to the native side.
-        // But this is the same behaviour as it was in the legacy WebView.
-        if (needToSync) {
-            synchronized (mAwSettingsLock) {
-                mEventHandler.updateWebkitPreferencesLocked();
-            }
-        }
-    }
-
-    /**
-     * Gets whether Application Cache is enabled.
-     *
-     * @return true if Application Cache is enabled
-     */
-    @CalledByNative
-    private boolean getAppCacheEnabledLocked() {
-        assert Thread.holdsLock(mAwSettingsLock);
-        if (!mAppCacheEnabled) {
-            return false;
-        }
-        synchronized (sGlobalContentSettingsLock) {
-            return sAppCachePathIsSet;
-        }
-    }
-
-    /**
      * See {@link android.webkit.WebSettings#setDomStorageEnabled}.
      */
     public void setDomStorageEnabled(boolean flag) {
@@ -1730,6 +1683,7 @@ public class AwSettings {
     }
 
     public void setForceDarkMode(@ForceDarkMode int forceDarkMode) {
+        DarkModeHistogramRecorder.recordForceDarkModeAPIUsage(mContext, forceDarkMode);
         synchronized (mAwSettingsLock) {
             if (mForceDarkMode != forceDarkMode) {
                 mForceDarkMode = forceDarkMode;
@@ -1760,6 +1714,7 @@ public class AwSettings {
     }
 
     public void setForceDarkBehavior(@ForceDarkBehavior int forceDarkBehavior) {
+        DarkModeHistogramRecorder.recordForceDarkBehaviorAPIUsage(forceDarkBehavior);
         synchronized (mAwSettingsLock) {
             if (mForceDarkBehavior != forceDarkBehavior) {
                 mForceDarkBehavior = forceDarkBehavior;

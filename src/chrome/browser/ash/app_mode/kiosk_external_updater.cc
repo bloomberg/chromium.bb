@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/notifications/kiosk_external_update_notification.h"
@@ -26,10 +26,6 @@
 namespace ash {
 
 namespace {
-
-namespace disks = ::chromeos::disks;
-using ::chromeos::MountError;
-using ::chromeos::MountType;
 
 constexpr base::FilePath::CharType kExternalUpdateManifest[] =
     "external_update.json";

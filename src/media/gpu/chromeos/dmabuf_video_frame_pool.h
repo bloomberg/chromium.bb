@@ -6,8 +6,10 @@
 #define MEDIA_GPU_CHROMEOS_DMABUF_VIDEO_FRAME_POOL_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
+#include "media/base/status.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/chromeos/chromeos_status.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/gpu_buffer_layout.h"
 #include "media/gpu/media_gpu_export.h"
@@ -15,7 +17,14 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
+
 namespace media {
+
+// Forward declare for use in AsPlatformVideoFramePool.
+class PlatformVideoFramePool;
 
 // Interface for allocating and managing DMA-buf VideoFrame. The client should
 // set a task runner first, and guarantee both GetFrame() and the destructor are
@@ -25,6 +34,16 @@ namespace media {
 class MEDIA_GPU_EXPORT DmabufVideoFramePool {
  public:
   using DmabufId = const std::vector<base::ScopedFD>*;
+
+  using CreateFrameCB =
+      base::RepeatingCallback<CroStatus::Or<scoped_refptr<VideoFrame>>(
+          gpu::GpuMemoryBufferFactory*,
+          VideoPixelFormat,
+          const gfx::Size&,
+          const gfx::Rect&,
+          const gfx::Size&,
+          bool,
+          base::TimeDelta)>;
 
   // Get the identifier of Dmabuf-backed |frame|. Calling this method with the
   // frames backed by the same Dmabuf should return the same result.
@@ -39,10 +58,16 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   virtual void set_parent_task_runner(
       scoped_refptr<base::SequencedTaskRunner> parent_task_runner);
 
+  // Allows downcasting to an implementation of DmabufVideoFramePool safely
+  // since it has custom behavior that VaapiVideoDecoder needs to take
+  // advantage of.
+  virtual PlatformVideoFramePool* AsPlatformVideoFramePool();
+
   // Sets the parameters of allocating frames and the maximum number of frames
-  // which can be allocated. Returns a valid GpuBufferLayout if VideoFrame
-  // will be created by GetFrame().
-  virtual absl::optional<GpuBufferLayout> Initialize(
+  // which can be allocated.
+  // Returns a valid GpuBufferLayout if the initialization is successful,
+  // otherwise returns any given error from the set of CroStatus::Codes.
+  virtual CroStatus::Or<GpuBufferLayout> Initialize(
       const Fourcc& fourcc,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
@@ -50,9 +75,9 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
       size_t max_num_frames,
       bool use_protected) = 0;
 
-  // Returns a frame from the pool with the parameters assigned by
-  // SetFrameFormat() and zero timestamp. Returns nullptr if the pool is
-  // exhausted.
+  // Returns a frame from the pool with the layout that is returned by the
+  // previous Initialize() method and zero timestamp. Returns nullptr if the
+  // pool is exhausted.
   virtual scoped_refptr<VideoFrame> GetFrame() = 0;
 
   // Checks whether the pool is exhausted. This happens when the pool reached
@@ -65,6 +90,11 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   // pending callback when calling NotifyWhenFrameAvailable(), the old callback
   // would be dropped immediately.
   virtual void NotifyWhenFrameAvailable(base::OnceClosure cb) = 0;
+
+  // Invoke to cause the pool to release all the frames it has allocated before
+  // which will cause new ones to be allocated. This method must be called on
+  // |parent_task_runner_| because it may invalidate weak ptrs.
+  virtual void ReleaseAllFrames() = 0;
 
  protected:
   scoped_refptr<base::SequencedTaskRunner> parent_task_runner_;

@@ -152,6 +152,12 @@ TraceEventMetadataSource::TraceEventMetadataSource()
   AddGeneratorFunction(base::BindRepeating(
       &TraceEventMetadataSource::GenerateTraceConfigMetadataDict,
       base::Unretained(this)));
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  perfetto::DataSourceDescriptor dsd;
+  dsd.set_name(mojom::kMetaDataSourceName);
+  DataSourceProxy::Register(dsd, this);
+#endif
 }
 
 TraceEventMetadataSource::~TraceEventMetadataSource() = default;
@@ -210,23 +216,23 @@ void TraceEventMetadataSource::WriteMetadataPacket(
   }
 }
 
-std::unique_ptr<base::DictionaryValue>
+absl::optional<base::Value>
 TraceEventMetadataSource::GenerateTraceConfigMetadataDict() {
   AutoLockWithDeferredTaskPosting lock(lock_);
   if (chrome_config_.empty()) {
-    return nullptr;
+    return absl::nullopt;
   }
 
-  auto metadata_dict = std::make_unique<base::DictionaryValue>();
+  base::Value metadata_dict(base::Value::Type::DICTIONARY);
   // If argument filtering is enabled, we need to check if the trace config is
   // allowlisted before emitting it.
   // TODO(eseckler): Figure out a way to solve this without calling directly
   // into IsMetadataAllowlisted().
   if (!parsed_chrome_config_->IsArgumentFilterEnabled() ||
       IsMetadataAllowlisted("trace-config")) {
-    metadata_dict->SetString("trace-config", chrome_config_);
+    metadata_dict.SetStringKey("trace-config", chrome_config_);
   } else {
-    metadata_dict->SetString("trace-config", "__stripped__");
+    metadata_dict.SetStringKey("trace-config", "__stripped__");
   }
 
   chrome_config_ = std::string();
@@ -236,6 +242,20 @@ TraceEventMetadataSource::GenerateTraceConfigMetadataDict() {
 void TraceEventMetadataSource::GenerateMetadataFromGenerator(
     const TraceEventMetadataSource::MetadataGeneratorFunction& generator) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  {
+    AutoLockWithDeferredTaskPosting lock(lock_);
+    if (!emit_metadata_at_start_)
+      return;
+  }
+  DataSourceProxy::Trace([&](DataSourceProxy::TraceContext ctx) {
+    auto packet = ctx.NewTracePacket();
+    packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+    packet->set_timestamp_clock_id(perfetto::TrackEvent::GetTraceClockId());
+    auto* chrome_metadata = packet->set_chrome_metadata();
+    generator.Run(chrome_metadata, privacy_filtering_enabled_);
+  });
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   perfetto::TraceWriter::TracePacketHandle trace_packet;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
@@ -249,11 +269,25 @@ void TraceEventMetadataSource::GenerateMetadataFromGenerator(
   trace_packet->set_timestamp_clock_id(base::tracing::kTraceClockId);
   auto* chrome_metadata = trace_packet->set_chrome_metadata();
   generator.Run(chrome_metadata, privacy_filtering_enabled_);
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 }
 
 void TraceEventMetadataSource::GenerateMetadataPacket(
     const TraceEventMetadataSource::PacketGeneratorFunction& generator) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  {
+    AutoLockWithDeferredTaskPosting lock(lock_);
+    if (!emit_metadata_at_start_)
+      return;
+  }
+  DataSourceProxy::Trace([&](DataSourceProxy::TraceContext ctx) {
+    auto packet = ctx.NewTracePacket();
+    packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+    packet->set_timestamp_clock_id(perfetto::TrackEvent::GetTraceClockId());
+    generator.Run(packet.get(), privacy_filtering_enabled_);
+  });
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   perfetto::TraceWriter::TracePacketHandle trace_packet;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
@@ -265,12 +299,53 @@ void TraceEventMetadataSource::GenerateMetadataPacket(
       TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
   trace_packet->set_timestamp_clock_id(base::tracing::kTraceClockId);
   generator.Run(trace_packet.get(), privacy_filtering_enabled_);
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 }
 
 void TraceEventMetadataSource::GenerateJsonMetadataFromGenerator(
     const TraceEventMetadataSource::JsonMetadataGeneratorFunction& generator,
     ChromeEventBundle* event_bundle) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+
+  auto write_to_bundle = [&generator](ChromeEventBundle* bundle) {
+    absl::optional<base::Value> metadata_dict = generator.Run();
+    if (!metadata_dict)
+      return;
+    for (auto it : metadata_dict->DictItems()) {
+      auto* new_metadata = bundle->add_metadata();
+      new_metadata->set_name(it.first.c_str());
+
+      if (it.second.is_int()) {
+        new_metadata->set_int_value(it.second.GetInt());
+      } else if (it.second.is_bool()) {
+        new_metadata->set_bool_value(it.second.GetBool());
+      } else if (it.second.is_string()) {
+        new_metadata->set_string_value(it.second.GetString().c_str());
+      } else {
+        std::string json_value;
+        base::JSONWriter::Write(it.second, &json_value);
+        new_metadata->set_json_value(json_value.c_str());
+      }
+    }
+  };
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  {
+    AutoLockWithDeferredTaskPosting lock(lock_);
+    if (!emit_metadata_at_start_)
+      return;
+  }
+  if (event_bundle) {
+    write_to_bundle(event_bundle);
+    return;
+  }
+  DataSourceProxy::Trace([&](DataSourceProxy::TraceContext ctx) {
+    auto packet = ctx.NewTracePacket();
+    packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+    packet->set_timestamp_clock_id(perfetto::TrackEvent::GetTraceClockId());
+    write_to_bundle(packet->set_chrome_events());
+  });
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   perfetto::TraceWriter::TracePacketHandle trace_packet;
   if (!event_bundle) {
     {
@@ -285,46 +360,25 @@ void TraceEventMetadataSource::GenerateJsonMetadataFromGenerator(
     trace_packet->set_timestamp_clock_id(base::tracing::kTraceClockId);
     event_bundle = trace_packet->set_chrome_events();
   }
-
-  std::unique_ptr<base::DictionaryValue> metadata_dict = generator.Run();
-  if (!metadata_dict) {
-    return;
-  }
-
-  for (const auto& it : metadata_dict->DictItems()) {
-    auto* new_metadata = event_bundle->add_metadata();
-    new_metadata->set_name(it.first.c_str());
-
-    if (it.second.is_int()) {
-      new_metadata->set_int_value(it.second.GetInt());
-    } else if (it.second.is_bool()) {
-      new_metadata->set_bool_value(it.second.GetBool());
-    } else if (it.second.is_string()) {
-      new_metadata->set_string_value(it.second.GetString().c_str());
-    } else {
-      std::string json_value;
-      base::JSONWriter::Write(it.second, &json_value);
-      new_metadata->set_json_value(json_value.c_str());
-    }
-  }
+  write_to_bundle(event_bundle);
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 }
 
-std::unique_ptr<base::DictionaryValue>
-TraceEventMetadataSource::GenerateLegacyMetadataDict() {
+base::Value TraceEventMetadataSource::GenerateLegacyMetadataDict() {
   DCHECK(!privacy_filtering_enabled_);
 
-  auto merged_metadata = std::make_unique<base::DictionaryValue>();
+  base::Value merged_metadata(base::Value::Type::DICTIONARY);
   std::vector<JsonMetadataGeneratorFunction> json_generators;
   {
     base::AutoLock lock(lock_);
     json_generators = json_generator_functions_;
   }
   for (auto& generator : json_generators) {
-    std::unique_ptr<base::DictionaryValue> metadata_dict = generator.Run();
+    absl::optional<base::Value> metadata_dict = generator.Run();
     if (!metadata_dict) {
       continue;
     }
-    merged_metadata->MergeDictionary(metadata_dict.get());
+    merged_metadata.MergeDictionary(&(*metadata_dict));
   }
 
   base::trace_event::MetadataFilterPredicate metadata_filter =
@@ -333,10 +387,9 @@ TraceEventMetadataSource::GenerateLegacyMetadataDict() {
   // This out-of-band generation of the global metadata is only used by the
   // crash service uploader path, which always requires privacy filtering.
   CHECK(metadata_filter);
-  for (base::DictionaryValue::Iterator it(*merged_metadata); !it.IsAtEnd();
-       it.Advance()) {
-    if (!metadata_filter.Run(it.key())) {
-      merged_metadata->SetString(it.key(), "__stripped__");
+  for (auto it : merged_metadata.DictItems()) {
+    if (!metadata_filter.Run(it.first)) {
+      it.second = base::Value("__stripped__");
     }
   }
 
@@ -355,14 +408,54 @@ void TraceEventMetadataSource::GenerateMetadata(
         packet_generators) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   perfetto::TraceWriter* trace_writer;
+#endif
   bool privacy_filtering_enabled;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     trace_writer = trace_writer_.get();
+#endif
     privacy_filtering_enabled = privacy_filtering_enabled_;
   }
 
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  DataSourceProxy::Trace([&](DataSourceProxy::TraceContext ctx) {
+    for (auto& generator : *packet_generators) {
+      auto packet = ctx.NewTracePacket();
+      packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+      packet->set_timestamp_clock_id(perfetto::TrackEvent::GetTraceClockId());
+      generator.Run(packet.get(), privacy_filtering_enabled);
+    }
+
+    {
+      auto trace_packet = ctx.NewTracePacket();
+      trace_packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+      trace_packet->set_timestamp_clock_id(
+          perfetto::TrackEvent::GetTraceClockId());
+      auto* chrome_metadata = trace_packet->set_chrome_metadata();
+      for (auto& generator : *proto_generators) {
+        generator.Run(chrome_metadata, privacy_filtering_enabled);
+      }
+    }
+
+    if (!privacy_filtering_enabled) {
+      auto trace_packet = ctx.NewTracePacket();
+      trace_packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+      trace_packet->set_timestamp_clock_id(
+          perfetto::TrackEvent::GetTraceClockId());
+      ChromeEventBundle* event_bundle = trace_packet->set_chrome_events();
+      for (auto& generator : *json_generators) {
+        GenerateJsonMetadataFromGenerator(generator, event_bundle);
+      }
+    }
+
+    // Force flush the packets since the default flush happens at end of trace,
+    // and the trace writer's chunk could then be discarded (in kDiscard mode).
+    ctx.Flush();
+  });
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   for (auto& generator : *packet_generators) {
     TracePacketHandle generator_trace_packet = trace_writer->NewTracePacket();
     generator_trace_packet->set_timestamp(
@@ -397,6 +490,7 @@ void TraceEventMetadataSource::GenerateMetadata(
   // Force flush the packets since the default flush happens at end of trace,
   // and the trace writer's chunk could then be discarded (in kDiscard mode).
   trace_writer->Flush();
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 }
 
 void TraceEventMetadataSource::StartTracingImpl(
@@ -414,8 +508,10 @@ void TraceEventMetadataSource::StartTracingImpl(
         data_source_config.chrome_config().privacy_filtering_enabled();
     chrome_config_ = data_source_config.chrome_config().trace_config();
     parsed_chrome_config_ = std::make_unique<TraceConfig>(chrome_config_);
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     trace_writer_ =
         producer->CreateTraceWriter(data_source_config.target_buffer());
+#endif
     switch (parsed_chrome_config_->GetTraceRecordMode()) {
       case TraceRecordMode::RECORD_UNTIL_FULL:
       case TraceRecordMode::RECORD_AS_MUCH_AS_POSSIBLE: {
@@ -447,7 +543,7 @@ void TraceEventMetadataSource::StopTracingImpl(
   base::OnceClosure maybe_generate_task = base::DoNothing();
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
-    if (!emit_metadata_at_start_ && trace_writer_) {
+    if (!emit_metadata_at_start_) {
       // Write metadata at the end of tracing if not emitted at start (in ring
       // buffer mode), to make it less likely that it is overwritten by other
       // trace data in perfetto's ring buffer.
@@ -464,6 +560,10 @@ void TraceEventMetadataSource::StopTracingImpl(
           &TraceEventMetadataSource::GenerateMetadata, base::Unretained(this),
           std::move(json_generators), std::move(proto_generators),
           std::move(packet_generators));
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+      if (!trace_writer_)
+        maybe_generate_task = base::OnceCallback<void()>();
+#endif
     }
   }
   // Even when not generating metadata, make sure the metadata generate task
@@ -475,7 +575,12 @@ void TraceEventMetadataSource::StopTracingImpl(
              base::OnceClosure stop_complete_callback) {
             {
               AutoLockWithDeferredTaskPosting lock(ds->lock_);
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+              DataSourceProxy::Trace(
+                  [&](DataSourceProxy::TraceContext ctx) { ctx.Flush(); });
+#else
               ds->trace_writer_.reset();
+#endif
               ds->chrome_config_ = std::string();
               ds->parsed_chrome_config_.reset();
               ds->emit_metadata_at_start_ = false;
@@ -490,6 +595,15 @@ void TraceEventMetadataSource::Flush(
   origin_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                                         std::move(flush_complete_callback));
 }
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+base::SequencedTaskRunner* TraceEventMetadataSource::GetTaskRunner() {
+  // Much like the data source, the task runner is long-lived, so returning the
+  // raw pointer here is safe.
+  base::AutoLock lock(lock_);
+  return origin_task_runner_.get();
+}
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 void TraceEventMetadataSource::ResetForTesting() {
   if (!g_trace_event_metadata_source_for_testing)
@@ -541,23 +655,39 @@ TraceEventDataSource::TraceEventDataSource()
       << "SessionFlags are not atomic! We rely on efficient lock-free look-up "
          "of the session flags when emitting a trace event.";
   g_trace_event_data_source_for_testing = this;
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  perfetto::TrackEvent::AddSessionObserver(this);
+#endif
 }
 
-TraceEventDataSource::~TraceEventDataSource() = default;
+TraceEventDataSource::~TraceEventDataSource()
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+{
+  perfetto::TrackEvent::RemoveSessionObserver(this);
+}
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+    = default;
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 void TraceEventDataSource::RegisterStartupHooks() {
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   RegisterTracedValueProtoWriter();
   base::trace_event::EnableTypedTraceEvents(
       &TraceEventDataSource::OnAddTypedTraceEvent,
-      &TraceEventDataSource::OnAddTracePacket);
+      &TraceEventDataSource::OnAddTracePacket,
+      &TraceEventDataSource::OnAddEmptyPacket);
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 }
 
 void TraceEventDataSource::RegisterWithTraceLog(
     const base::trace_event::TraceConfig& trace_config) {
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   TraceLog::GetInstance()->SetAddTraceEventOverrides(
       &TraceEventDataSource::OnAddLegacyTraceEvent,
       &TraceEventDataSource::FlushCurrentThread,
       &TraceEventDataSource::OnUpdateDuration);
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
   DCHECK(monitored_histograms_.empty());
   if (trace_config.IsCategoryGroupEnabled(
@@ -604,7 +734,7 @@ void TraceEventDataSource::OnStopTracingDone() {
 }
 
 // static
-TrackEventThreadLocalEventSink* TraceEventDataSource::GetOrPrepareEventSink() {
+TrackEventThreadLocalEventSink* TraceEventDataSource::GetOrPrepareEventSink(bool create_if_needed) {
   // Avoid re-entrancy, which can happen during PostTasks (the taskqueue can
   // emit trace events). We discard the events in this case, as any PostTasking
   // to deal with these events later would break the event ordering that the
@@ -638,10 +768,11 @@ TrackEventThreadLocalEventSink* TraceEventDataSource::GetOrPrepareEventSink() {
     if (new_session_flags.session_id != thread_local_event_sink->session_id()) {
       delete thread_local_event_sink;
       thread_local_event_sink = nullptr;
+      ThreadLocalEventSinkSlot()->Set(nullptr);
     }
   }
 
-  if (!thread_local_event_sink) {
+  if (!thread_local_event_sink && create_if_needed) {
     thread_local_event_sink = GetInstance()->CreateThreadLocalEventSink();
     ThreadLocalEventSinkSlot()->Set(thread_local_event_sink);
   }
@@ -689,14 +820,15 @@ void TraceEventDataSource::SetupStartupTracing(
   config_for_trace_log.SetTraceBufferSizeInKb(0);
   config_for_trace_log.SetTraceBufferSizeInEvents(0);
 
+  RegisterWithTraceLog(config_for_trace_log);
+
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
   if (!trace_config.event_filters().empty()) {
     modes |= base::trace_event::TraceLog::FILTERING_MODE;
   }
-
-  RegisterWithTraceLog(config_for_trace_log);
-
   base::trace_event::TraceLog::GetInstance()->SetEnabled(trace_config, modes);
+#endif
 }
 
 void TraceEventDataSource::AbortStartupTracing() {
@@ -790,6 +922,26 @@ void TraceEventDataSource::OnFlushFinished(
   }
 }
 
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+void TraceEventDataSource::OnSetup(
+    const perfetto::DataSourceBase::SetupArgs& args) {
+  GetTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&TraceEventDataSource::StartTracingImpl,
+                                base::Unretained(this), nullptr, *args.config));
+}
+
+void TraceEventDataSource::OnStop(
+    const perfetto::DataSourceBase::StopArgs& args) {
+  std::function<void()> finish_async_stop = args.HandleStopAsynchronously();
+  base::OnceClosure stop_callback = base::BindOnce(
+      [](std::function<void()> callback) { callback(); }, finish_async_stop);
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&TraceEventDataSource::StopTracingImpl,
+                     base::Unretained(this), std::move(stop_callback)));
+}
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+
 void TraceEventDataSource::StartTracingImpl(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
@@ -869,7 +1021,10 @@ void TraceEventDataSource::StartTracingInternal(
   // previously startup tracing, because the process name may have changed.
   EmitTrackDescriptor();
 
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+#endif
+
   EmitRecurringUpdates();
   ResetHistograms(trace_config);
 
@@ -904,6 +1059,11 @@ void TraceEventDataSource::StartTracingInternal(
 void TraceEventDataSource::StopTracingImpl(
     base::OnceClosure stop_complete_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  // Write metadata events etc.
+  LogHistograms();
+  std::move(stop_complete_callback).Run();
+#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   stop_complete_callback_ = std::move(stop_complete_callback);
 
   auto on_tracing_stopped_callback =
@@ -966,6 +1126,7 @@ void TraceEventDataSource::StopTracingImpl(
     on_tracing_stopped_callback(this, scoped_refptr<base::RefCountedString>(),
                                 false);
   }
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
   base::StatisticsRecorder::SetGlobalSampleCallback(nullptr);
   monitored_histograms_.clear();
@@ -1052,6 +1213,7 @@ void TraceEventDataSource::Flush(
 void TraceEventDataSource::ClearIncrementalState() {
   TrackEventThreadLocalEventSink::ClearIncrementalState();
   EmitTrackDescriptor();
+  base::trace_event::TraceLog::GetInstance()->OnIncrementalStateCleared();
 }
 
 std::unique_ptr<perfetto::TraceWriter>
@@ -1148,6 +1310,15 @@ base::trace_event::TracePacketHandle TraceEventDataSource::OnAddTracePacket() {
     return thread_local_event_sink->AddTracePacket();
   }
   return base::trace_event::TracePacketHandle();
+}
+
+// static
+void TraceEventDataSource::OnAddEmptyPacket() {
+  auto* thread_local_event_sink = GetOrPrepareEventSink(false);
+  if (thread_local_event_sink) {
+    // GetThreadIsInTraceEventTLS() is handled by the sink for trace packets.
+    thread_local_event_sink->AddEmptyPacket();
+  }
 }
 
 // static
@@ -1319,8 +1490,11 @@ void TraceEventDataSource::EmitTrackDescriptor() {
   process->set_pid(process_id);
   process->set_start_timestamp_ns(
       process_creation_time_ticks_.since_origin().InNanoseconds());
-  if (!privacy_filtering_enabled && !process_name.empty()) {
+  if (!privacy_filtering_enabled) {
     process->set_process_name(process_name);
+    for (const auto& label : TraceLog::GetInstance()->process_labels()) {
+      process->add_process_labels(label.second);
+    }
   }
 
   ChromeProcessDescriptor* chrome_process =
@@ -1342,13 +1516,13 @@ void TraceEventDataSource::EmitTrackDescriptor() {
   }
 
 #if defined(OS_ANDROID)
-  // Host app package name is only recorded if privacy filtering is disabled or
-  // this is a system trace.
-  if (!privacy_filtering_enabled || is_system_producer) {
+  // Host app package name is only recorded if the corresponding TraceLog
+  // setting is set to true and privacy filtering is disabled or this is a
+  // system trace.
+  if (TraceLog::GetInstance()->ShouldRecordHostAppPackageName() &&
+      (!privacy_filtering_enabled || is_system_producer)) {
     // Host app package name is used to group information from different
     // processes that "belong" to the same WebView app.
-    // TODO(b/161983088): only write this for WebView since this information is
-    // not useful in other cases.
     if (process_type == ChromeProcessDescriptor::PROCESS_RENDERER ||
         process_type == ChromeProcessDescriptor::PROCESS_BROWSER) {
       chrome_process->set_host_app_package_name(
@@ -1372,3 +1546,8 @@ bool TraceEventDataSource::IsPrivacyFilteringEnabled() {
 }
 
 }  // namespace tracing
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(
+    tracing::TraceEventMetadataSource::DataSourceProxy);
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)

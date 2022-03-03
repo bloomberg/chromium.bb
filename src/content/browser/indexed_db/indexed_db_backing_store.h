@@ -15,9 +15,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -37,10 +39,10 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -210,7 +212,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     base::WeakPtr<IndexedDBBackingStore> backing_store_
         GUARDED_BY_CONTEXT(sequence_checker_);
 
-    TransactionalLevelDBFactory* const transactional_leveldb_factory_;
+    const raw_ptr<TransactionalLevelDBFactory> transactional_leveldb_factory_;
 
     scoped_refptr<TransactionalLevelDBTransaction> transaction_
         GUARDED_BY_CONTEXT(sequence_checker_);
@@ -378,15 +380,15 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // Wait for a maximum of 5 seconds from the first call to the timer since the
   // last journal cleaning.
   static constexpr const base::TimeDelta kMaxJournalCleaningWindowTime =
-      base::TimeDelta::FromSeconds(5);
+      base::Seconds(5);
   // Default to a 2 second timer delay before we clean up blobs.
   static constexpr const base::TimeDelta kInitialJournalCleaningWindowTime =
-      base::TimeDelta::FromSeconds(2);
+      base::Seconds(2);
 
   IndexedDBBackingStore(
       Mode backing_store_mode,
       TransactionalLevelDBFactory* transactional_leveldb_factory,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
@@ -405,7 +407,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // operations or method calls on this object.
   leveldb::Status Initialize(bool clean_active_blob_journal);
 
-  const url::Origin& origin() const { return origin_; }
+  const blink::StorageKey& storage_key() const { return storage_key_; }
   base::SequencedTaskRunner* idb_task_runner() const {
     return idb_task_runner_.get();
   }
@@ -421,7 +423,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       TransactionalLevelDBTransaction* transaction);
 
   static bool RecordCorruptionInfo(const base::FilePath& path_base,
-                                   const url::Origin& origin,
+                                   const blink::StorageKey& storage_key,
                                    const std::string& message);
 
   virtual leveldb::Status GetRecord(
@@ -585,7 +587,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       blink::mojom::IDBTransactionDurability durability);
 
  protected:
-  friend class IndexedDBOriginState;
+  friend class IndexedDBStorageKeyState;
 
   leveldb::Status AnyDatabaseContainsBlobs(
       TransactionalLevelDBDatabase* database,
@@ -660,8 +662,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   void DidCommitTransaction();
 
   const Mode backing_store_mode_;
-  TransactionalLevelDBFactory* const transactional_leveldb_factory_;
-  const url::Origin origin_;
+  const raw_ptr<TransactionalLevelDBFactory> transactional_leveldb_factory_;
+  const blink::StorageKey storage_key_;
   const base::FilePath blob_path_;
 
   // IndexedDB can store blobs and File System Access handles. These mojo
@@ -669,18 +671,18 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // relevant subsystems.
   // Raw pointers are safe because the bindings are owned by
   // IndexedDBContextImpl.
-  storage::mojom::BlobStorageContext* const blob_storage_context_;
-  storage::mojom::FileSystemAccessContext* const file_system_access_context_;
+  const raw_ptr<storage::mojom::BlobStorageContext> blob_storage_context_;
+  const raw_ptr<storage::mojom::FileSystemAccessContext>
+      file_system_access_context_;
 
   // Filesystem proxy to use for file operations.  nullptr if in memory.
   const std::unique_ptr<storage::FilesystemProxy> filesystem_proxy_;
 
-  // The origin identifier is a key prefix unique to the origin used in the
-  // leveldb backing store to partition data by origin. It is a normalized
-  // version of the origin URL with a versioning suffix appended, e.g.
-  // "http_localhost_81@1" Since only one origin is stored per backing store
-  // this is redundant but necessary for backwards compatibility; the suffix
-  // provides for future flexibility.
+  // The origin identifier is a key prefix, unique to the storage key's origin,
+  // used in the leveldb backing store to partition data by origin. It is a
+  // normalized version of the origin URL with a versioning suffix appended,
+  // e.g. "http_localhost_81@1." Since only one storage key is stored per
+  // backing store this is redundant but necessary for backwards compatibility.
   const std::string origin_identifier_;
 
   const scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;

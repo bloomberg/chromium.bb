@@ -81,6 +81,7 @@ config("extra_warnings") {
       "-Wno-padded",
       "-Wno-poison-system-directories",
       "-Wno-reserved-id-macro",
+      "-Wno-reserved-identifier",
       "-Wno-unknown-sanitizers",
       "-Wno-unknown-warning-option",
     ]
@@ -161,6 +162,8 @@ config("default") {
     cflags += [
       "/bigobj",  # Some of our files are bigger than the regular limits.
       "/Gy",  # Enable function-level linking.
+      "/FS",  # Preserve previous PDB behavior.
+      "/utf-8",  # Assume UTF-8 by default to avoid code page dependencies.
     ]
     defines += [
       "_CRT_NONSTDC_NO_WARNINGS",
@@ -207,10 +210,10 @@ config("default") {
     ldflags += [ "-flto=full" ]
   }
 
-  # We support only x64 builds on Windows.
-  assert(!is_win || current_cpu == "x64")
-
-  if (current_cpu == "arm") {
+  if (is_win) {
+    # We support only x86/x64 builds on Windows.
+    assert(current_cpu == "x64" || current_cpu == "x86")
+  } else if (current_cpu == "arm") {
     cflags += [
       "-march=armv7-a",
       "-mfpu=neon",
@@ -229,6 +232,17 @@ config("default") {
     ]
   } else if (current_cpu == "arm64") {
     cflags += [ "-fno-omit-frame-pointer" ]
+  } else if (current_cpu == "x64") {
+    cflags += [ "-fno-omit-frame-pointer" ]  # For perf profiling.
+    if (enable_perfetto_x64_cpu_opt) {
+      # When updating these flags, the CheckCpuOptimizations() in utils.cc must
+      # be updated accordingly.
+      cflags += [
+        "-mavx",
+        "-mpopcnt",
+        "-msse4.2",
+      ]
+    }
   }
 
   if (is_linux) {

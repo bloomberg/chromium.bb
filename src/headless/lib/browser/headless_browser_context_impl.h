@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/unguessable_token.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_context.h"
@@ -31,6 +32,10 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
     : public HeadlessBrowserContext,
       public content::BrowserContext {
  public:
+  HeadlessBrowserContextImpl(const HeadlessBrowserContextImpl&) = delete;
+  HeadlessBrowserContextImpl& operator=(const HeadlessBrowserContextImpl&) =
+      delete;
+
   ~HeadlessBrowserContextImpl() override;
 
   static HeadlessBrowserContextImpl* From(
@@ -67,6 +72,8 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
   ::storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::PlatformNotificationService* GetPlatformNotificationService()
+      override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
@@ -116,7 +123,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
-  HeadlessBrowserImpl* browser_;  // Not owned.
+  raw_ptr<HeadlessBrowserImpl> browser_;  // Not owned.
   std::unique_ptr<HeadlessBrowserContextOptions> context_options_;
   base::FilePath path_;
 
@@ -128,7 +135,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   // TODO(alexclarke): Remove if we can add DevTools frame token ID to
   // ResourceRequestInfo. See https://crbug.com/715541
   mutable base::Lock devtools_frame_token_map_lock_;
-  base::flat_map<content::GlobalFrameRoutingId, base::UnguessableToken>
+  base::flat_map<content::GlobalRenderFrameHostId, base::UnguessableToken>
       devtools_frame_token_map_;
   base::flat_map<int, base::UnguessableToken>
       frame_tree_node_id_to_devtools_frame_token_map_;
@@ -138,8 +145,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
 
   std::unique_ptr<HeadlessRequestContextManager> request_context_manager_;
   std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };
 
 }  // namespace headless

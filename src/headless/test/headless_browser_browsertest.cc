@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -27,6 +27,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
+#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
@@ -43,8 +44,8 @@
 #include "headless/test/headless_browser_test.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
@@ -53,7 +54,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_MAC)
-#include "third_party/crashpad/crashpad/client/crash_report_database.h"
+#include "third_party/crashpad/crashpad/client/crash_report_database.h"  // nogncheck
 #endif
 
 using testing::UnorderedElementsAre;
@@ -343,6 +344,9 @@ class CookieSetter {
                        base::Unretained(this)));
   }
 
+  CookieSetter(const CookieSetter&) = delete;
+  CookieSetter& operator=(const CookieSetter&) = delete;
+
   ~CookieSetter() {
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
   }
@@ -357,13 +361,11 @@ class CookieSetter {
   }
 
  private:
-  HeadlessBrowserTest* browser_test_;  // Not owned.
-  HeadlessWebContents* web_contents_;  // Not owned.
+  raw_ptr<HeadlessBrowserTest> browser_test_;  // Not owned.
+  raw_ptr<HeadlessWebContents> web_contents_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 
   std::unique_ptr<network::SetCookieResult> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieSetter);
 };
 
 }  // namespace
@@ -376,7 +378,6 @@ class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
   const base::FilePath& launcher_stamp() const { return launcher_stamp_; }
 
   void SetUp() override {
-    base::ThreadRestrictions::SetIOAllowed(true);
     base::CreateTemporaryFile(&launcher_stamp_);
 
     base::ScopedFILE launcher_file =
@@ -414,7 +415,7 @@ class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserRendererCommandPrefixTest, Prefix) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -441,7 +442,6 @@ class CrashReporterTest : public HeadlessBrowserTest,
   ~CrashReporterTest() override = default;
 
   void SetUp() override {
-    base::ThreadRestrictions::SetIOAllowed(true);
     base::CreateNewTempDirectory(FILE_PATH_LITERAL("CrashReporterTest"),
                                  &crash_dumps_dir_);
     EXPECT_FALSE(options()->enable_crash_reporter);
@@ -451,7 +451,6 @@ class CrashReporterTest : public HeadlessBrowserTest,
   }
 
   void TearDown() override {
-    base::ThreadRestrictions::SetIOAllowed(true);
     base::DeleteFile(crash_dumps_dir_);
   }
 
@@ -469,8 +468,8 @@ class CrashReporterTest : public HeadlessBrowserTest,
   }
 
  protected:
-  HeadlessBrowserContext* browser_context_ = nullptr;
-  HeadlessWebContents* web_contents_ = nullptr;
+  raw_ptr<HeadlessBrowserContext> browser_context_ = nullptr;
+  raw_ptr<HeadlessWebContents> web_contents_ = nullptr;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   base::FilePath crash_dumps_dir_;
 };
@@ -506,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
 
   // Check that one minidump got created.
   {
-    base::ThreadRestrictions::SetIOAllowed(true);
+    base::ScopedAllowBlockingForTesting allow_blocking;
 
 #if defined(OS_MAC)
     auto database = crashpad::CrashReportDatabase::Initialize(crash_dumps_dir_);
@@ -575,6 +574,9 @@ class TraceHelper : public tracing::ExperimentalObserver {
         base::BindOnce(&TraceHelper::OnTracingStarted, base::Unretained(this)));
   }
 
+  TraceHelper(const TraceHelper&) = delete;
+  TraceHelper& operator=(const TraceHelper&) = delete;
+
   ~TraceHelper() override {
     target_->DetachClient(client_.get());
     EXPECT_FALSE(target_->IsAttached());
@@ -603,18 +605,24 @@ class TraceHelper : public tracing::ExperimentalObserver {
     browser_test_->FinishAsynchronousTest();
   }
 
-  HeadlessBrowserTest* browser_test_;  // Not owned.
-  HeadlessDevToolsTarget* target_;     // Not owned.
+  raw_ptr<HeadlessBrowserTest> browser_test_;  // Not owned.
+  raw_ptr<HeadlessDevToolsTarget> target_;     // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> client_;
 
   std::unique_ptr<base::ListValue> tracing_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(TraceHelper);
 };
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, TraceUsingBrowserDevToolsTarget) {
+// Flaky, http://crbug.com/1269261.
+#if defined(OS_WIN)
+#define MAYBE_TraceUsingBrowserDevToolsTarget \
+  DISABLED_TraceUsingBrowserDevToolsTarget
+#else
+#define MAYBE_TraceUsingBrowserDevToolsTarget TraceUsingBrowserDevToolsTarget
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
+                       MAYBE_TraceUsingBrowserDevToolsTarget) {
   HeadlessDevToolsTarget* target = browser()->GetDevToolsTarget();
   EXPECT_NE(nullptr, target);
 
@@ -623,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, TraceUsingBrowserDevToolsTarget) {
 
   std::unique_ptr<base::ListValue> tracing_data = helper.TakeTracingData();
   EXPECT_TRUE(tracing_data);
-  EXPECT_LT(0u, tracing_data->GetSize());
+  EXPECT_LT(0u, tracing_data->GetList().size());
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
@@ -644,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
 class HeadlessBrowserAllowInsecureLocalhostTest : public HeadlessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowInsecureLocalhost);
+    command_line->AppendSwitch(::switches::kAllowInsecureLocalhost);
   }
 };
 
@@ -710,12 +718,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ServerWantsClientCertificate) {
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-
-  net::SpawnedTestServer server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("headless/test/data")));
+  net::SSLServerConfig server_config;
+  server_config.client_cert_type = net::SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  server.SetSSLConfig(net::EmbeddedTestServer::CERT_AUTO, server_config);
+  server.ServeFilesFromSourceDirectory("headless/test/data");
   EXPECT_TRUE(server.Start());
 
   HeadlessBrowserContext* browser_context =
@@ -766,129 +773,43 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, BadgingAPI) {
   EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
-class HeadlessBrowserTestWithPolicy : public HeadlessBrowserTest {
+class HeadlessBrowserTestWithExplicitlyAllowedPorts
+    : public HeadlessBrowserTest,
+      public testing::WithParamInterface<bool> {
  protected:
-  // Implement to set policies before headless browser is instantiated.
-  virtual void SetPolicy() {}
-
-  void SetUp() override {
-    mock_provider_ =
-        std::make_unique<policy::MockConfigurationPolicyProvider>();
-    EXPECT_CALL(*mock_provider_.get(), IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(false));
-    policy::BrowserPolicyConnectorBase::SetPolicyProviderForTesting(
-        mock_provider_.get());
-    SetPolicy();
-    HeadlessBrowserTest::SetUp();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    HeadlessBrowserTest::SetUpInProcessBrowserTestFixture();
-    CreateTempUserDir();
-  }
-
-  void TearDown() override {
-    HeadlessBrowserTest::TearDown();
-    mock_provider_->Shutdown();
-    policy::BrowserPolicyConnectorBase::SetPolicyProviderForTesting(nullptr);
-  }
-
-  void CreateTempUserDir() {
-    ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
-    EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir()));
-    options()->user_data_dir = user_data_dir();
-  }
-
-  const base::FilePath& user_data_dir() const {
-    return user_data_dir_.GetPath();
-  }
-
-  PrefService* GetPrefs() {
-    return static_cast<HeadlessBrowserImpl*>(browser())->GetPrefs();
-  }
-
-  base::ScopedTempDir user_data_dir_;
-  std::unique_ptr<policy::MockConfigurationPolicyProvider> mock_provider_;
-};
-
-// The following enum values must match HeadlessMode policy template in
-// components/policy/resources/policy_templates.json
-enum {
-  kHeadlessModePolicyEnabled = 1,
-  kHeadlessModePolicyDisabled = 2,
-  kHeadlessModePolicyUnset = -1,  // not in the template
-};
-
-class HeadlessBrowserTestWithHeadlessModePolicy
-    : public HeadlessBrowserTestWithPolicy,
-      public testing::WithParamInterface<std::tuple<int, bool>> {
- protected:
-  void SetPolicy() override {
-    int headless_mode_policy = std::get<0>(GetParam());
-    if (headless_mode_policy != kHeadlessModePolicyUnset) {
-      SetHeadlessModePolicy(
-          static_cast<policy::HeadlessModePolicy::HeadlessMode>(
-              headless_mode_policy));
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessBrowserTest::SetUpCommandLine(command_line);
+    if (is_port_allowed()) {
+      command_line->AppendSwitchASCII(switches::kExplicitlyAllowedPorts,
+                                      "10080");
     }
   }
 
-  void SetHeadlessModePolicy(
-      policy::HeadlessModePolicy::HeadlessMode headless_mode) {
-    policy::PolicyMap policy;
-    policy.Set("HeadlessMode", policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::Value(static_cast<int>(headless_mode)),
-               /*external_data_fetcher=*/nullptr);
-    mock_provider_->UpdateChromePolicy(policy);
-  }
-
-  bool expected_enabled() { return std::get<1>(GetParam()); }
-  bool actual_enabled() {
-    return !policy::HeadlessModePolicy::IsHeadlessDisabled(GetPrefs());
-  }
+  bool is_port_allowed() { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    HeadlessBrowserTestWithHeadlessModePolicy,
-    HeadlessBrowserTestWithHeadlessModePolicy,
-    testing::Values(std::make_tuple(kHeadlessModePolicyEnabled, true),
-                    std::make_tuple(kHeadlessModePolicyDisabled, false),
-                    std::make_tuple(kHeadlessModePolicyUnset, true)));
+INSTANTIATE_TEST_CASE_P(HeadlessBrowserTestWithExplicitlyAllowedPorts,
+                        HeadlessBrowserTestWithExplicitlyAllowedPorts,
+                        testing::Values(false, true));
 
-IN_PROC_BROWSER_TEST_P(HeadlessBrowserTestWithHeadlessModePolicy,
-                       HeadlessModePolicySettings) {
-  EXPECT_EQ(actual_enabled(), expected_enabled());
-}
-
-class HeadlessBrowserTestWithUrlBlockPolicy
-    : public HeadlessBrowserTestWithPolicy {
- protected:
-  void SetPolicy() override {
-    base::Value::ListStorage storage;
-    storage.emplace_back("*/blocked.html");
-    base::Value value(std::move(storage));
-
-    policy::PolicyMap policy;
-    policy.Set("URLBlocklist", policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               std::move(value), /*external_data_fetcher=*/nullptr);
-    mock_provider_->UpdateChromePolicy(policy);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithUrlBlockPolicy, BlockUrl) {
-  EXPECT_TRUE(embedded_test_server()->Start());
-
+IN_PROC_BROWSER_TEST_P(HeadlessBrowserTestWithExplicitlyAllowedPorts,
+                       AllowedPort) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
-  GURL url = embedded_test_server()->GetURL("/blocked.html");
   HeadlessWebContents* web_contents =
-      browser_context->CreateWebContentsBuilder().SetInitialURL(url).Build();
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("http://127.0.0.1:10080"))
+          .Build();
 
+  // If the port is allowed, the request is expected to fail for
+  // reasons other than ERR_UNSAFE_PORT.
   net::Error error = net::OK;
   EXPECT_FALSE(WaitForLoad(web_contents, &error));
-  EXPECT_EQ(error, net::ERR_BLOCKED_BY_ADMINISTRATOR);
+  if (is_port_allowed())
+    EXPECT_NE(error, net::ERR_UNSAFE_PORT);
+  else
+    EXPECT_EQ(error, net::ERR_UNSAFE_PORT);
 }
 
 }  // namespace headless

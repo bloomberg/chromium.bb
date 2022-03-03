@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "build/build_config.h"
@@ -19,6 +20,8 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+struct CHROME_LUID;
 
 namespace content {
 class XrInstallHelper;
@@ -85,7 +88,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   device::mojom::XRDeviceId GetId() const { return id_; }
 
 #if defined(OS_WIN)
-  absl::optional<LUID> GetLuid() const;
+  absl::optional<CHROME_LUID> GetLuid() const;
 #endif
 
   // BrowserXRRuntime
@@ -122,7 +125,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   std::set<VRServiceImpl*> services_;
   device::mojom::VRDisplayInfoPtr display_info_;
 
-  VRServiceImpl* presenting_service_ = nullptr;
+  raw_ptr<VRServiceImpl> presenting_service_ = nullptr;
 
   mojo::AssociatedReceiver<device::mojom::XRRuntimeEventListener> receiver_{
       this};

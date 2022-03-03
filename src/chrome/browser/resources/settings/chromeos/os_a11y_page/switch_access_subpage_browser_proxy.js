@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /** @interface */
-/* #export */ class SwitchAccessSubpageBrowserProxy {
+export class SwitchAccessSubpageBrowserProxy {
   /**
    * Refresh assignments by requesting SwitchAccessHandler send all readable key
    * names for each action pref via the 'switch-access-assignments-changed'
@@ -18,34 +18,44 @@
   /**
    * Notifies SwitchAccessHandler an assignment dialog has been attached.
    */
-  notifySwitchAccessActionAssignmentDialogAttached() {}
+  notifySwitchAccessActionAssignmentPaneActive() {}
 
   /**
    * Notifies SwitchAccessHandler an assignment dialog is closing.
    */
-  notifySwitchAccessActionAssignmentDialogDetached() {}
+  notifySwitchAccessActionAssignmentPaneInactive() {}
+
+  /**
+   * Notifies when the setup guide dialog is ready.
+   */
+  notifySwitchAccessSetupGuideAttached() {}
 }
 
 /**
  * @implements {SwitchAccessSubpageBrowserProxy}
  */
-/* #export */ class SwitchAccessSubpageBrowserProxyImpl {
+export class SwitchAccessSubpageBrowserProxyImpl {
   /** @override */
   refreshAssignmentsFromPrefs() {
     chrome.send('refreshAssignmentsFromPrefs');
   }
 
   /** @override */
-  notifySwitchAccessActionAssignmentDialogAttached() {
-    chrome.send('notifySwitchAccessActionAssignmentDialogAttached');
+  notifySwitchAccessActionAssignmentPaneActive() {
+    chrome.send('notifySwitchAccessActionAssignmentPaneActive');
   }
 
   /** @override */
-  notifySwitchAccessActionAssignmentDialogDetached() {
-    chrome.send('notifySwitchAccessActionAssignmentDialogDetached');
+  notifySwitchAccessActionAssignmentPaneInactive() {
+    chrome.send('notifySwitchAccessActionAssignmentPaneInactive');
+  }
+
+  /** @override */
+  notifySwitchAccessSetupGuideAttached() {
+    // Currently only used in testing, so no event is fired.
   }
 }
 
 // The singleton instance_ is replaced with a test version of this wrapper
 // during testing.
-cr.addSingletonGetter(SwitchAccessSubpageBrowserProxyImpl);
+addSingletonGetter(SwitchAccessSubpageBrowserProxyImpl);

@@ -8,7 +8,6 @@
 #include "gm/gm.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkPoint.h"
@@ -151,8 +150,8 @@ private:
         return pt;
     }
 
-    static constexpr unsigned  kSegLen = 15;
-    static constexpr unsigned  kStretchFactor = 4;
+    inline static constexpr unsigned  kSegLen = 15;
+    inline static constexpr unsigned  kStretchFactor = 4;
     SkSTArray<2, ImageSet> fSets;
 
     using INHERITED = GM;

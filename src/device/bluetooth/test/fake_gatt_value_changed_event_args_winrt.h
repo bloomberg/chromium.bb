@@ -12,8 +12,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
-
 namespace device {
 
 class FakeGattValueChangedEventArgsWinrt
@@ -24,6 +22,12 @@ class FakeGattValueChangedEventArgsWinrt
               IGattValueChangedEventArgs> {
  public:
   explicit FakeGattValueChangedEventArgsWinrt(std::vector<uint8_t> value);
+
+  FakeGattValueChangedEventArgsWinrt(
+      const FakeGattValueChangedEventArgsWinrt&) = delete;
+  FakeGattValueChangedEventArgsWinrt& operator=(
+      const FakeGattValueChangedEventArgsWinrt&) = delete;
+
   ~FakeGattValueChangedEventArgsWinrt() override;
 
   // IGattValueChangedEventArgs:
@@ -34,8 +38,6 @@ class FakeGattValueChangedEventArgsWinrt
 
  private:
   std::vector<uint8_t> value_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeGattValueChangedEventArgsWinrt);
 };
 
 }  // namespace device

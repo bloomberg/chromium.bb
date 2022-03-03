@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +21,9 @@ class ErrorBuilder {
  public:
   explicit ErrorBuilder(std::u16string* error) : error_(error) {}
 
+  ErrorBuilder(const ErrorBuilder&) = delete;
+  ErrorBuilder& operator=(const ErrorBuilder&) = delete;
+
   // Appends a literal string |error|.
   void Append(base::StringPiece error) {
     if (!error_->empty())
@@ -34,8 +37,7 @@ class ErrorBuilder {
   }
 
  private:
-  std::u16string* const error_;
-  DISALLOW_COPY_AND_ASSIGN(ErrorBuilder);
+  const raw_ptr<std::u16string> error_;
 };
 
 // Converts a rule defined in the manifest into a JSON internal format. The
@@ -61,7 +63,7 @@ bool ConvertManifestRule(const DeclarativeManifestData::Rule& rule,
           }
           if (type == declarative_content_constants::kLegacyShowAction)
             type = declarative_content_constants::kShowAction;
-          dictionary->Remove("type", nullptr);
+          dictionary->RemoveKey("type");
           dictionary->SetString("instanceType", type);
         }
         return true;

@@ -1,7 +1,7 @@
 ;
-; Copyright (c) 2017 The Khronos Group Inc.
-; Copyright (c) 2017 Valve Corporation
-; Copyright (c) 2017 LunarG, Inc.
+; Copyright (c) 2017-2021 The Khronos Group Inc.
+; Copyright (c) 2017-2021 Valve Corporation
+; Copyright (c) 2017-2021 LunarG, Inc.
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 ; limitations under the License.
 ;
 ; Author: Lenny Komow <lenny@lunarg.com>
+; Author: Charles Giessen <charles@lunarg.com>
 ;
 
 ; This code is used to pass on device (including physical device) extensions through the call chain. It must do this without
@@ -54,7 +55,7 @@ terminError&num&:
     lea     r9, termin_error_string                                             ; Load the error string into r9 (fourth arg)
     xor     r8d, r8d                                                            ; Set r8 to zero (third arg)
     mov     qword ptr [rsp + 32], rax                                           ; Move the func name onto the stack (fifth arg)
-    lea     edx, [r8 + VK_DEBUG_REPORT_ERROR_BIT_EXT]                           ; Write the error logging bit to rdx (second arg)
+    lea     edx, [r8 + VULKAN_LOADER_ERROR_BIT]                                 ; Write the error logging bit to rdx (second arg)
     call    loader_log                                                          ; Log the error message before we crash
     add     rsp, 56                                                             ; Clean up the stack frame
     mov     rax, 0
@@ -96,7 +97,7 @@ terminError&num&:
     push    dword ptr [eax + (HASH_OFFSET_INSTANCE + (HASH_SIZE * num) + FUNC_NAME_OFFSET_HASH)] ; Push the func name (fifth arg)
     push    offset termin_error_string                                          ; Push the error string (fourth arg)
     push    0                                                                   ; Push zero (third arg)
-    push    VK_DEBUG_REPORT_ERROR_BIT_EXT                                       ; Push the error logging bit (second arg)
+    push    VULKAN_LOADER_ERROR_BIT                                             ; Push the error logging bit (second arg)
     push    eax                                                                 ; Push the loader_instance (first arg)
     call    _loader_log                                                         ; Log the error message before we crash
     add     esp, 20                                                             ; Clean up the args

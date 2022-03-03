@@ -25,15 +25,17 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/native_cursor.h"
@@ -60,6 +62,10 @@ bool IsOpaque(SkColor color) {
 }  // namespace
 
 namespace views {
+
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(CascadingProperty<SkColor>,
+                                   kCascadingLabelEnabledColor,
+                                   nullptr)
 
 Label::Label() : Label(std::u16string()) {}
 
@@ -107,6 +113,9 @@ void Label::SetText(const std::u16string& new_text) {
   ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelText,
                     kPropertyEffectsPreferredSizeChanged);
+  if (accessible_name_.empty()) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+  }
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
@@ -1172,22 +1181,23 @@ void Label::ApplyTextColors() const {
 }
 
 void Label::UpdateColorsFromTheme() {
-  ui::NativeTheme* theme = GetNativeTheme();
+  ui::ColorProvider* color_provider = GetColorProvider();
   if (!enabled_color_set_) {
-    requested_enabled_color_ =
-        style::GetColor(*this, text_context_, text_style_);
+    const absl::optional<SkColor> cascading_color =
+        GetCascadingProperty(this, kCascadingLabelEnabledColor);
+    requested_enabled_color_ = cascading_color.value_or(
+        style::GetColor(*this, text_context_, text_style_));
   }
   if (!background_color_set_) {
-    background_color_ =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+    background_color_ = color_provider->GetColor(ui::kColorDialogBackground);
   }
   if (!selection_text_color_set_) {
-    requested_selection_text_color_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelTextSelectionColor);
+    requested_selection_text_color_ =
+        color_provider->GetColor(ui::kColorLabelSelectionForeground);
   }
   if (!selection_background_color_set_) {
-    selection_background_color_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelTextSelectionBackgroundFocused);
+    selection_background_color_ =
+        color_provider->GetColor(ui::kColorLabelSelectionBackground);
   }
   RecalculateColors();
 }

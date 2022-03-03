@@ -11,7 +11,6 @@
 #include "ash/components/audio/audio_device.h"
 #include "ash/components/audio/audio_devices_pref_handler.h"
 #include "ash/constants/ash_pref_names.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/dbus/audio/audio_node.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -96,6 +95,11 @@ AudioDevice CreateAudioDevice(const AudioNodeInfo& info, int version) {
 class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
  public:
   AudioDevicesPrefHandlerTest() = default;
+
+  AudioDevicesPrefHandlerTest(const AudioDevicesPrefHandlerTest&) = delete;
+  AudioDevicesPrefHandlerTest& operator=(const AudioDevicesPrefHandlerTest&) =
+      delete;
+
   ~AudioDevicesPrefHandlerTest() override = default;
 
   void SetUp() override {
@@ -111,17 +115,17 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
       DictionaryPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesState);
       base::DictionaryValue* pref = update.Get();
-      std::unique_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-      state->SetBoolean("active", kPresetState.active);
-      state->SetBoolean("activate_by_user", kPresetState.activate_by_user);
-      pref->Set(preset_key, std::move(state));
+      base::DictionaryValue state;
+      state.SetBoolean("active", kPresetState.active);
+      state.SetBoolean("activate_by_user", kPresetState.activate_by_user);
+      pref->SetPath(preset_key, std::move(state));
     }
 
     {
       DictionaryPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesVolumePercent);
       base::DictionaryValue* pref = update.Get();
-      pref->SetDouble(preset_key, kPresetState.sound_level);
+      pref->SetDoubleKey(preset_key, kPresetState.sound_level);
     }
 
     {
@@ -216,9 +220,6 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(Input, AudioDevicesPrefHandlerTest, Values(true));
@@ -453,9 +454,9 @@ TEST_P(AudioDevicesPrefHandlerTest, TestSettingV2DeviceStateRemovesV1Entry) {
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, InputNoiseCancellationPrefRegistered) {
-  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
-  audio_pref_handler_->SetNoiseCancellationState(true);
   EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
+  audio_pref_handler_->SetNoiseCancellationState(false);
+  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
 }
 
 }  // namespace ash

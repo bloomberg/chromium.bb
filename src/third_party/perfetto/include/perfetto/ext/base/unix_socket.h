@@ -140,6 +140,10 @@ class UnixSocketRaw {
                const int* send_fds = nullptr,
                size_t num_fds = 0);
 
+  ssize_t SendStr(const std::string& str) {
+    return Send(str.data(), str.size());
+  }
+
   // |fd_vec| and |max_files| are ignored on Windows.
   ssize_t Receive(void* msg,
                   size_t len,
@@ -171,6 +175,7 @@ class UnixSocketRaw {
 #endif
   SockFamily family_ = SockFamily::kUnix;
   SockType type_ = SockType::kStream;
+  uint32_t tx_timeout_ms_ = 0;
 };
 
 // A non-blocking UNIX domain socket. Allows also to transfer file descriptors.
@@ -321,8 +326,8 @@ class PERFETTO_EXPORT UnixSocket {
     return Send(msg, len, nullptr, 0);
   }
 
-  inline bool Send(const std::string& msg) {
-    return Send(msg.c_str(), msg.size() + 1, -1);
+  inline bool SendStr(const std::string& msg) {
+    return Send(msg.data(), msg.size(), -1);
   }
 
   // Returns the number of bytes (<= |len|) written in |msg| or 0 if there

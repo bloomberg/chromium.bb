@@ -16,6 +16,7 @@
 #define DAWNNATIVE_EXTERNALTEXTURE_H_
 
 #include "dawn_native/Error.h"
+#include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
 #include "dawn_native/Subresource.h"
 
@@ -29,22 +30,33 @@ namespace dawn_native {
     MaybeError ValidateExternalTextureDescriptor(const DeviceBase* device,
                                                  const ExternalTextureDescriptor* descriptor);
 
-    class ExternalTextureBase : public ObjectBase {
+    class ExternalTextureBase : public ApiObjectBase {
       public:
         static ResultOrError<Ref<ExternalTextureBase>> Create(
             DeviceBase* device,
             const ExternalTextureDescriptor* descriptor);
 
-        std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat> GetTextureViews() const;
+        const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>& GetTextureViews() const;
+
+        MaybeError ValidateCanUseInSubmitNow() const;
 
         static ExternalTextureBase* MakeError(DeviceBase* device);
 
+        ObjectType GetType() const override;
+
         void APIDestroy();
 
+      protected:
+        // Constructor used only for mocking and testing.
+        ExternalTextureBase(DeviceBase* device);
+        void DestroyImpl() override;
+
       private:
+        enum class ExternalTextureState { Alive, Destroyed };
         ExternalTextureBase(DeviceBase* device, const ExternalTextureDescriptor* descriptor);
         ExternalTextureBase(DeviceBase* device, ObjectBase::ErrorTag tag);
         std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat> textureViews;
+        ExternalTextureState mState;
     };
 }  // namespace dawn_native
 

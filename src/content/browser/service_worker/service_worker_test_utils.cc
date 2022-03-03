@@ -37,8 +37,12 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_info.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -61,13 +65,17 @@ class FakeNavigationClient : public mojom::NavigationClient {
   explicit FakeNavigationClient(
       ReceivedProviderInfoCallback on_received_callback)
       : on_received_callback_(std::move(on_received_callback)) {}
+
+  FakeNavigationClient(const FakeNavigationClient&) = delete;
+  FakeNavigationClient& operator=(const FakeNavigationClient&) = delete;
+
   ~FakeNavigationClient() override = default;
 
  private:
   // mojom::NavigationClient implementation:
   void CommitNavigation(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::CommitNavigationParamsPtr commit_params,
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -82,13 +90,16 @@ class FakeNavigationClient : public mojom::NavigationClient {
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       blink::mojom::PolicyContainerPtr policy_container,
+      mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
+      mojom::CookieManagerInfoPtr cookie_manager_info,
+      mojom::StorageInfoPtr storage_info,
       CommitNavigationCallback callback) override {
     std::move(on_received_callback_).Run(std::move(container_info));
     std::move(callback).Run(MinimalDidCommitNavigationLoadParams(), nullptr);
   }
   void CommitFailedNavigation(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       int extended_error_code,
@@ -101,8 +112,6 @@ class FakeNavigationClient : public mojom::NavigationClient {
   }
 
   ReceivedProviderInfoCallback on_received_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeNavigationClient);
 };
 
 class ResourceWriter {
@@ -236,11 +245,13 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
       navigation_client_.BindNewPipeAndPassReceiver());
 
   navigation_client_->CommitNavigation(
-      CreateCommonNavigationParams(), CreateCommitNavigationParams(),
+      blink::CreateCommonNavigationParams(),
+      blink::CreateCommitNavigationParams(),
       network::mojom::URLResponseHead::New(),
       mojo::ScopedDataPipeConsumerHandle(), nullptr, nullptr, absl::nullopt,
       nullptr, std::move(info), mojo::NullRemote(),
       base::UnguessableToken::Create(), CreateStubPolicyContainer(),
+      mojo::NullRemote(), nullptr, nullptr,
       base::BindOnce(
           [](mojom::DidCommitProvisionalLoadParamsPtr validated_params,
              mojom::DidCommitProvisionalLoadInterfaceParamsPtr
@@ -265,7 +276,7 @@ ServiceWorkerContainerHostAndInfo::~ServiceWorkerContainerHostAndInfo() =
     default;
 
 base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
-    int process_id,
+    const GlobalRenderFrameHostId& render_frame_host_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteContainerEndpoint* output_endpoint) {
@@ -283,7 +294,7 @@ base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
   container_host->OnBeginNavigationCommit(
-      process_id, 1 /* route_id */, network::CrossOriginEmbedderPolicy(),
+      render_frame_host_id, network::CrossOriginEmbedderPolicy(),
       std::move(reporter), ukm::kInvalidSourceId);
   return container_host;
 }
@@ -360,7 +371,8 @@ std::unique_ptr<ServiceWorkerHost> CreateServiceWorkerHost(
 
 scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
     ServiceWorkerRegistry* registry,
-    const blink::mojom::ServiceWorkerRegistrationOptions& options) {
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
+    const blink::StorageKey& key) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   // Using nestable run loop because:
   // * The CreateNewRegistration() internally uses a mojo remote and the
@@ -373,7 +385,7 @@ scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
   // problematic.
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   registry->CreateNewRegistration(
-      options,
+      options, key,
       base::BindLambdaForTesting(
           [&](scoped_refptr<ServiceWorkerRegistration> new_registration) {
             registration = std::move(new_registration);
@@ -384,8 +396,6 @@ scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
   return registration;
 }
 
-// TODO(http://crbug.com/1199077): Update after ServiceWorkerVersion supports
-// StorageKey.
 scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
     ServiceWorkerRegistry* registry,
     scoped_refptr<ServiceWorkerRegistration> registration,
@@ -397,7 +407,6 @@ scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   registry->CreateNewVersion(
       std::move(registration), script_url, script_type,
-      storage::StorageKey(url::Origin::Create(script_url)),
       base::BindLambdaForTesting(
           [&](scoped_refptr<ServiceWorkerVersion> new_version) {
             version = std::move(new_version);
@@ -412,12 +421,13 @@ scoped_refptr<ServiceWorkerRegistration>
 CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           const GURL& scope,
                                           const GURL& script,
+                                          const blink::StorageKey& key,
                                           int64_t resource_id) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateNewServiceWorkerRegistration(context->registry(), options);
+      CreateNewServiceWorkerRegistration(context->registry(), options, key);
   scoped_refptr<ServiceWorkerVersion> version =
       CreateNewServiceWorkerVersion(context->registry(), registration.get(),
                                     script, blink::mojom::ScriptType::kClassic);

@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacadeImpl;
@@ -79,7 +80,7 @@ public class FirstRunUtilsTest {
         addTestAccount();
 
         ContextUtils.initApplicationContextForTests(mAccountTestingContext);
-        Assert.assertTrue(FirstRunUtils.hasGoogleAccounts());
+        CriteriaHelper.pollUiThread(FirstRunUtils::hasGoogleAccounts);
         Assert.assertTrue(FirstRunUtils.hasGoogleAccountAuthenticator());
     }
 
@@ -92,7 +93,8 @@ public class FirstRunUtilsTest {
         setUpAccountManager("Not A Google Account");
 
         ContextUtils.initApplicationContextForTests(mAccountTestingContext);
-        Assert.assertFalse(FirstRunUtils.hasGoogleAccounts());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(FirstRunUtils.hasGoogleAccounts()); });
         Assert.assertFalse(FirstRunUtils.hasGoogleAccountAuthenticator());
     }
 }

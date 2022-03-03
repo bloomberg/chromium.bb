@@ -8,6 +8,7 @@
 #include <fuchsia/media/drm/cpp/fidl_test_base.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/fidl/cpp/interface_request.h>
+#include <lib/fpromise/promise.h>
 #include <map>
 
 #include "base/bind.h"
@@ -138,7 +139,7 @@ TEST_F(FuchsiaCdmManagerTest, CreateAndProvision) {
           Invoke([&](uint32_t data_store_id,
                      drm::KeySystem::AddDataStoreCallback callback) {
             added_data_store_id = data_store_id;
-            callback(fit::ok());
+            callback(fpromise::ok());
           })));
 
   EXPECT_CALL(mock_key_system(kKeySystem), CreateContentDecryptionModule2(_, _))
@@ -164,7 +165,7 @@ TEST_F(FuchsiaCdmManagerTest, RecreateAfterDisconnect) {
           Invoke([&](uint32_t data_store_id,
                      drm::KeySystem::AddDataStoreCallback callback) {
             added_data_store_id = data_store_id;
-            callback(fit::ok());
+            callback(fpromise::ok());
           })));
 
   // Create a CDM to force a KeySystem binding
@@ -194,7 +195,7 @@ TEST_F(FuchsiaCdmManagerTest, RecreateAfterDisconnect) {
               AddDataStore(Eq(added_data_store_id), _, _))
       .WillOnce(
           WithArgs<2>(Invoke([](drm::KeySystem::AddDataStoreCallback callback) {
-            callback(fit::ok());
+            callback(fpromise::ok());
           })));
 
   base::RunLoop recreate_run_loop;
@@ -226,7 +227,7 @@ TEST_F(FuchsiaCdmManagerTest, SameOriginShareDataStore) {
   EXPECT_CALL(mock_key_system(kKeySystem), AddDataStore(Eq(1u), _, _))
       .WillOnce(
           WithArgs<2>(Invoke([](drm::KeySystem::AddDataStoreCallback callback) {
-            callback(fit::ok());
+            callback(fpromise::ok());
           })));
   EXPECT_CALL(mock_key_system(kKeySystem),
               CreateContentDecryptionModule2(Eq(1u), _))
@@ -262,12 +263,12 @@ TEST_F(FuchsiaCdmManagerTest, DifferentOriginDoNotShareDataStore) {
   EXPECT_CALL(mock_key_system(kKeySystem), AddDataStore(Eq(1u), _, _))
       .WillOnce(
           WithArgs<2>(Invoke([](drm::KeySystem::AddDataStoreCallback callback) {
-            callback(fit::ok());
+            callback(fpromise::ok());
           })));
   EXPECT_CALL(mock_key_system(kKeySystem), AddDataStore(Eq(2u), _, _))
       .WillOnce(
           WithArgs<2>(Invoke([](drm::KeySystem::AddDataStoreCallback callback) {
-            callback(fit::ok());
+            callback(fpromise::ok());
           })));
   EXPECT_CALL(mock_key_system(kKeySystem),
               CreateContentDecryptionModule2(Eq(1u), _))
@@ -325,7 +326,7 @@ TEST_F(FuchsiaCdmManagerTest, CdmDataQuotaBytes) {
                           kEmptyKeySystemDirectory, 0);
 
   // Sleep to account for coarse-grained filesystem timestamps.
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+  base::PlatformThread::Sleep(base::Seconds(1));
 
   // Create the recently-used directories.
   CreateDummyCdmDirectory(temp_path, kOriginDirectory1, kKeySystemDirectory2,
@@ -388,7 +389,7 @@ TEST_F(FuchsiaCdmManagerTest, EmptyOriginDirectory) {
                           kKeySystemDirectory2, kTestQuotaBytes / 2);
 
   // Sleep to account for coarse-grained filesystem timestamps.
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+  base::PlatformThread::Sleep(base::Seconds(1));
 
   // Create dummy data for a recently-used, active origin.
   CreateDummyCdmDirectory(temp_path, kActiveOriginDirectory,

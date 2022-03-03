@@ -8,7 +8,8 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 PageAnchorsMetricsObserver::AnchorsData::AnchorsData(
-    content::WebContents* contents) {}
+    content::WebContents* contents)
+    : content::WebContentsUserData<AnchorsData>(*contents) {}
 
 PageAnchorsMetricsObserver::AnchorsData::~AnchorsData() = default;
 
@@ -34,7 +35,7 @@ void PageAnchorsMetricsObserver::AnchorsData::Clear() {
   link_locations_.clear();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PageAnchorsMetricsObserver::AnchorsData)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PageAnchorsMetricsObserver::AnchorsData);
 
 void PageAnchorsMetricsObserver::RecordUkm() {
   PageAnchorsMetricsObserver::AnchorsData* data =

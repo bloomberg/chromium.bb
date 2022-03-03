@@ -9,7 +9,6 @@
 
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/ash_export.h"
-#include "base/macros.h"
 
 namespace views {
 class BoxLayout;
@@ -65,7 +64,7 @@ class ASH_EXPORT SearchResultSuggestionChipView : public SearchResultBaseView {
   void OnButtonPressed(const ui::Event& event);
 
   // Sets rounded corners for the layer with |corner_radius| to clip the chip.
-  void SetRoundedCornersForLayer(int corner_radius);
+  void SetRoundedCornersForLayer(float corner_radius);
 
   AppListViewDelegate* const view_delegate_;  // Owned by AppListView.
 

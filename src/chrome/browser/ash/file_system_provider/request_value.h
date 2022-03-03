@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 // Holds a parsed value returned by a file system provider. Each accessor can
@@ -22,6 +21,9 @@ class RequestValue {
   // Creates an empty value. Use static methods to create a value holding a
   // proper content.
   RequestValue();
+
+  RequestValue(const RequestValue&) = delete;
+  RequestValue& operator=(const RequestValue&) = delete;
 
   virtual ~RequestValue();
 
@@ -123,17 +125,8 @@ class RequestValue {
                       OperationRequestedError::Params>
       operation_error_params_;
   std::unique_ptr<std::string> testing_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestValue);
 };
 
-}  // namespace file_system_provider
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace file_system_provider {
-using ::chromeos::file_system_provider::RequestValue;
 }  // namespace file_system_provider
 }  // namespace ash
 

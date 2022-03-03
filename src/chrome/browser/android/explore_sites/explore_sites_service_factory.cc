@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 
@@ -35,14 +36,16 @@ class URLLoaderFactoryGetterImpl
  public:
   explicit URLLoaderFactoryGetterImpl(Profile* profile) : profile_(profile) {}
 
+  URLLoaderFactoryGetterImpl(const URLLoaderFactoryGetterImpl&) = delete;
+  URLLoaderFactoryGetterImpl& operator=(const URLLoaderFactoryGetterImpl&) =
+      delete;
+
   scoped_refptr<network::SharedURLLoaderFactory> GetFactory() override {
     return profile_->GetURLLoaderFactory();
   }
 
  private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryGetterImpl);
+  raw_ptr<Profile> profile_;
 };
 
 ExploreSitesServiceFactory::ExploreSitesServiceFactory()

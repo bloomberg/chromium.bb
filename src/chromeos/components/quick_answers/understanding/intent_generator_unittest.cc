@@ -7,11 +7,11 @@
 #include <memory>
 #include <string>
 
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/test/quick_answers_test_base.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
@@ -19,18 +19,18 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
-using chromeos::machine_learning::FakeServiceConnectionImpl;
-using machine_learning::mojom::TextAnnotation;
-using machine_learning::mojom::TextAnnotationPtr;
-using machine_learning::mojom::TextEntity;
-using machine_learning::mojom::TextEntityData;
-using machine_learning::mojom::TextEntityPtr;
-using machine_learning::mojom::TextLanguage;
-using machine_learning::mojom::TextLanguagePtr;
+using ::chromeos::machine_learning::FakeServiceConnectionImpl;
+using ::chromeos::machine_learning::mojom::TextAnnotation;
+using ::chromeos::machine_learning::mojom::TextAnnotationPtr;
+using ::chromeos::machine_learning::mojom::TextEntity;
+using ::chromeos::machine_learning::mojom::TextEntityData;
+using ::chromeos::machine_learning::mojom::TextEntityPtr;
+using ::chromeos::machine_learning::mojom::TextLanguage;
+using ::chromeos::machine_learning::mojom::TextLanguagePtr;
 
 TextLanguagePtr DefaultLanguage() {
   return TextLanguage::New("en", /* confidence */ 1);
@@ -38,7 +38,7 @@ TextLanguagePtr DefaultLanguage() {
 
 }  // namespace
 
-class IntentGeneratorTest : public testing::Test {
+class IntentGeneratorTest : public QuickAnswersTestBase {
  public:
   IntentGeneratorTest() = default;
 
@@ -46,19 +46,18 @@ class IntentGeneratorTest : public testing::Test {
   IntentGeneratorTest& operator=(const IntentGeneratorTest&) = delete;
 
   void SetUp() override {
+    QuickAnswersTestBase::SetUp();
     intent_generator_ = std::make_unique<IntentGenerator>(
         base::BindOnce(&IntentGeneratorTest::IntentGeneratorTestCallback,
                        base::Unretained(this)));
 
-    intent_generator_->UseTextAnnotatorForTesting();
-
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kQuickAnswersTextAnnotator,
-         chromeos::features::kQuickAnswersTranslation},
-        {});
+    QuickAnswersState::Get()->set_use_text_annotator_for_testing();
   }
 
-  void TearDown() override { intent_generator_.reset(); }
+  void TearDown() override {
+    intent_generator_.reset();
+    QuickAnswersTestBase::TearDown();
+  }
 
   void IntentGeneratorTestCallback(const IntentInfo& intent_info) {
     intent_info_ = intent_info;
@@ -81,9 +80,7 @@ class IntentGeneratorTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<IntentGenerator> intent_generator_;
   IntentInfo intent_info_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  chromeos::machine_learning::FakeServiceConnectionImpl
-      fake_service_connection_;
+  FakeServiceConnectionImpl fake_service_connection_;
 };
 
 TEST_F(IntentGeneratorTest, TranslationIntent) {
@@ -220,28 +217,6 @@ TEST_F(IntentGeneratorTest, TranslationIntentWithAnnotation) {
   // translation.
   EXPECT_EQ(IntentType::kDictionary, intent_info_.intent_type);
   EXPECT_EQ("unfathomable", intent_info_.intent_text);
-}
-
-TEST_F(IntentGeneratorTest, TranslationIntentNotEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kQuickAnswersTextAnnotator},
-      {chromeos::features::kQuickAnswersTranslation});
-  std::vector<TextLanguagePtr> languages;
-  languages.push_back(DefaultLanguage());
-  UseFakeServiceConnection({}, languages);
-
-  QuickAnswersRequest request;
-  request.selected_text = "quick answers";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es";
-  intent_generator_->GenerateIntent(request);
-
-  task_environment_.RunUntilIdle();
-
-  // Should not generate translation intent since the feature is not enabled.
-  EXPECT_EQ(IntentType::kUnknown, intent_info_.intent_type);
-  EXPECT_EQ("quick answers", intent_info_.intent_text);
 }
 
 TEST_F(IntentGeneratorTest, TranslationIntentDeviceLanguageNotSet) {
@@ -512,4 +487,4 @@ TEST_F(IntentGeneratorTest, TextAnnotationIntentUnSupportedEntity) {
   EXPECT_EQ("the unfathomable reaches of space", intent_info_.intent_text);
 }
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

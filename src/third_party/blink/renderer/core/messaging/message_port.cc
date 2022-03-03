@@ -28,8 +28,10 @@
 
 #include <memory>
 
+#include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
@@ -145,7 +147,7 @@ void MessagePort::start() {
     return;
 
   started_ = true;
-  connector_->ResumeIncomingMethodCallProcessing();
+  connector_->StartReceiving(task_runner_);
 }
 
 void MessagePort::close() {
@@ -168,8 +170,7 @@ void MessagePort::Entangle(MessagePortDescriptor port) {
   port_ = std::move(port);
   connector_ = std::make_unique<mojo::Connector>(
       port_.TakeHandleToEntangle(GetExecutionContext()),
-      mojo::Connector::SINGLE_THREADED_SEND, task_runner_);
-  connector_->PauseIncomingMethodCallProcessing();
+      mojo::Connector::SINGLE_THREADED_SEND);
   connector_->set_incoming_receiver(this);
   connector_->set_connection_error_handler(
       WTF::Bind(&MessagePort::close, WrapWeakPersistent(this)));

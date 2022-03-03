@@ -27,7 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_BUILDER_H_
 
-#include "base/macros.h"
+#include <unicode/utf16.h>
+
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -41,7 +42,9 @@ class WTF_EXPORT StringBuilder {
 
  public:
   StringBuilder() : no_buffer_() {}
-  ~StringBuilder() { Clear(); }
+  StringBuilder(const StringBuilder&) = delete;
+  StringBuilder& operator=(const StringBuilder&) = delete;
+  ~StringBuilder() { ClearBuffer(); }
 
   void Append(const UChar*, unsigned length);
   void Append(const LChar*, unsigned length);
@@ -156,6 +159,10 @@ class WTF_EXPORT StringBuilder {
 
   void erase(unsigned);
 
+  // ReleaseString is similar to ToString but releases the string_ object
+  // to the caller, preventing refcount trashing. Prefer it over ToString()
+  // if the StringBuilder is going to be destroyed or cleared afterwards.
+  String ReleaseString();
   String ToString();
   AtomicString ToAtomicString();
   String Substring(unsigned start, unsigned length) const;
@@ -245,6 +252,15 @@ class WTF_EXPORT StringBuilder {
   void ClearBuffer();
   bool HasBuffer() const { return has_buffer_; }
 
+  template <typename StringType>
+  void BuildString() {
+    if (is_8bit_)
+      string_ = StringType(Characters8(), length_);
+    else
+      string_ = StringType(Characters16(), length_);
+    ClearBuffer();
+  }
+
   String string_;
   union {
     char no_buffer_;
@@ -254,8 +270,6 @@ class WTF_EXPORT StringBuilder {
   unsigned length_ = 0;
   bool is_8bit_ = true;
   bool has_buffer_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(StringBuilder);
 };
 
 template <typename CharType>

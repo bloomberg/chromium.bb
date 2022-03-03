@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
@@ -25,6 +26,7 @@
 
 namespace {
 
+const int kCdpMethodNotFoundCode = -32601;
 const char kInspectorDefaultContextError[] =
     "Cannot find default execution context";
 const char kInspectorContextError[] = "Cannot find context with specified id";
@@ -47,7 +49,7 @@ class ScopedIncrementer {
   }
 
  private:
-  int* count_;
+  raw_ptr<int> count_;
 };
 
 Status ConditionIsMet(bool* is_condition_met) {
@@ -210,7 +212,7 @@ Status DevToolsClientImpl::SetUpDevTools() {
     if (status.IsError())
       return status;
 
-    params.Clear();
+    params.DictClear();
     params.SetString("expression", script);
     status = SendCommandAndIgnoreResponse("Runtime.evaluate", params);
     if (status.IsError())
@@ -310,8 +312,7 @@ Status DevToolsClientImpl::HandleEventsUntil(
     // when only funcinterval has expired, continue while loop
     // but return timeout status if primary timeout has expired
     // This supports cases when loading state is updated by a different client
-    Timeout funcinterval =
-        Timeout(base::TimeDelta::FromMilliseconds(500), &timeout);
+    Timeout funcinterval = Timeout(base::Milliseconds(500), &timeout);
     Status status = ProcessNextMessage(-1, false, funcinterval);
     if (status.code() == kTimeout) {
       if (timeout.IsExpired()) {
@@ -346,7 +347,7 @@ DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
 DevToolsClientImpl::ResponseInfo::~ResponseInfo() {}
 
 DevToolsClient* DevToolsClientImpl::GetRootClient() {
-  return parent_ ? parent_ : this;
+  return parent_ ? parent_.get() : this;
 }
 
 Status DevToolsClientImpl::SendCommandInternal(
@@ -394,8 +395,7 @@ Status DevToolsClientImpl::SendCommandInternal(
         // Use a long default timeout if user has not requested one.
         Status status = ProcessNextMessage(
             command_id, true,
-            timeout != nullptr ? *timeout
-                               : Timeout(base::TimeDelta::FromMinutes(10)));
+            timeout != nullptr ? *timeout : Timeout(base::Minutes(10)));
         if (status.IsError()) {
           if (response_info->state == kReceived)
             response_info_map_.erase(command_id);
@@ -463,14 +463,14 @@ Status DevToolsClientImpl::ProcessNextMessage(int expected_id,
 
   std::string message;
   switch (socket_->ReceiveNextMessage(&message, timeout)) {
-    case SyncWebSocket::kOk:
+    case SyncWebSocket::StatusCode::kOk:
       break;
-    case SyncWebSocket::kDisconnected: {
+    case SyncWebSocket::StatusCode::kDisconnected: {
       std::string err = "Unable to receive message from renderer";
       LOG(ERROR) << err;
       return Status(kDisconnected, err);
     }
-    case SyncWebSocket::kTimeout: {
+    case SyncWebSocket::StatusCode::kTimeout: {
       std::string err =
           "Timed out receiving message from renderer: " +
           base::StringPrintf("%.3lf", timeout.GetDuration().InSecondsF());
@@ -705,9 +705,19 @@ Status ParseInspectorError(const std::string& error_json) {
   base::DictionaryValue* error_dict;
   if (!error || !error->GetAsDictionary(&error_dict))
     return Status(kUnknownError, "inspector error with no error message");
-  std::string error_message;
-  bool error_found = error_dict->GetString("message", &error_message);
-  if (error_found) {
+
+  absl::optional<int> maybe_code = error_dict->FindIntKey("code");
+  std::string* maybe_message = error_dict->FindStringKey("message");
+
+  if (maybe_code.has_value()) {
+    if (maybe_code.value() == kCdpMethodNotFoundCode) {
+      return Status(kUnknownCommand,
+                    maybe_message ? *maybe_message : "UnknownCommand");
+    }
+  }
+
+  if (maybe_message) {
+    std::string error_message = *maybe_message;
     if (error_message == kInspectorDefaultContextError ||
         error_message == kInspectorContextError) {
       return Status(kNoSuchWindow);

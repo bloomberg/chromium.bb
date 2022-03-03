@@ -27,9 +27,9 @@ namespace {
       public:
         void SetUp() override {
             DawnTest::SetUp();
-            DAWN_SKIP_TEST_IF(UsesWire());
+            DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
-            mDeviceVk = reinterpret_cast<dawn_native::vulkan::Device*>(device.Get());
+            mDeviceVk = dawn_native::vulkan::ToBackend(dawn_native::FromAPI(device.Get()));
         }
 
       protected:

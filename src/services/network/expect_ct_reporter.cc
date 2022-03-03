@@ -12,8 +12,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -23,6 +21,7 @@
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/cert/ct_serialization.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
@@ -52,16 +51,16 @@ bool HasHeaderValues(net::URLRequest* request,
   return false;
 }
 
-std::unique_ptr<base::ListValue> GetPEMEncodedChainAsList(
+base::ListValue GetPEMEncodedChainAsList(
     const net::X509Certificate* cert_chain) {
   if (!cert_chain)
-    return std::make_unique<base::ListValue>();
+    return base::ListValue();
 
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
+  base::ListValue result;
   std::vector<std::string> pem_encoded_chain;
   cert_chain->GetPEMEncodedChain(&pem_encoded_chain);
   for (const std::string& cert : pem_encoded_chain)
-    result->Append(std::make_unique<base::Value>(cert));
+    result.Append(std::make_unique<base::Value>(cert));
 
   return result;
 }
@@ -175,25 +174,23 @@ void ExpectCTReporter::OnExpectCTFailed(
   report->SetString("date-time", base::TimeToISO8601(base::Time::Now()));
   report->SetString("effective-expiration-date",
                     base::TimeToISO8601(expiration));
-  report->Set("served-certificate-chain",
-              GetPEMEncodedChainAsList(served_certificate_chain));
-  report->Set("validated-certificate-chain",
-              GetPEMEncodedChainAsList(validated_certificate_chain));
+  report->SetKey("served-certificate-chain",
+                 GetPEMEncodedChainAsList(served_certificate_chain));
+  report->SetKey("validated-certificate-chain",
+                 GetPEMEncodedChainAsList(validated_certificate_chain));
 
-  std::unique_ptr<base::ListValue> scts(new base::ListValue());
+  base::ListValue scts;
   for (const auto& sct_and_status : signed_certificate_timestamps) {
-    if (!AddSCT(sct_and_status, scts.get()))
+    if (!AddSCT(sct_and_status, &scts))
       LOG(ERROR) << "Failed to add signed certificate timestamp to list";
   }
-  report->Set("scts", std::move(scts));
+  report->SetKey("scts", std::move(scts));
 
   std::string serialized_report;
   if (!base::JSONWriter::Write(outer_report, &serialized_report)) {
     LOG(ERROR) << "Failed to serialize Expect CT report";
     return;
   }
-
-  UMA_HISTOGRAM_BOOLEAN("SSL.ExpectCTReportSendingAttempt", true);
 
   SendPreflight(report_uri, serialized_report, network_isolation_key);
 }
@@ -289,7 +286,6 @@ void ExpectCTReporter::SendPreflight(
 void ExpectCTReporter::OnReportFailure(const GURL& report_uri,
                                        int net_error,
                                        int http_response_code) {
-  base::UmaHistogramSparse("SSL.ExpectCTReportFailure2", -net_error);
   if (!failure_callback_.is_null())
     failure_callback_.Run();
 }

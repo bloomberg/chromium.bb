@@ -20,13 +20,32 @@ limitations under the License.
 
 #include "ruy/context.h"
 #include "ruy/context_get_ctx.h"
-#include "ruy/dispatch.h"
+#include "ruy/frontend.h"
 #include "ruy/mat.h"
 #include "ruy/matrix.h"
 #include "ruy/mul_params.h"
 #include "ruy/path.h"
+#include "ruy/trace.h"
 
 namespace ruy {
+
+// Entry point allowing to specify a custom OR-ed set of Path's to
+// compile. See the comments in path.h for more details about that.
+// Most users should use the other ruy::Mul overload not taking a Path template
+// parameter, and the main documentation comment is on that overload.
+template <Path CompiledPaths, typename LhsScalar, typename RhsScalar,
+          typename AccumScalar, typename DstScalar>
+void Mul(const Matrix<LhsScalar>& lhs, const Matrix<RhsScalar>& rhs,
+         const MulParams<AccumScalar, DstScalar>& mul_params, Context* context,
+         Matrix<DstScalar>* dst) {
+  RUY_TRACE_SCOPE;
+  RUY_TRACE_INFO(MUL);
+  Mat<LhsScalar> internal_lhs = ToInternal(lhs);
+  Mat<RhsScalar> internal_rhs = ToInternal(rhs);
+  Mat<DstScalar> internal_dst = ToInternal(*dst);
+  MulFrontEnd<CompiledPaths>(internal_lhs, internal_rhs, mul_params,
+                             get_ctx(context), &internal_dst);
+}
 
 // Performs a multiplication of matrices, with some extra features for
 // neural network applications. The basic operation is:
@@ -74,31 +93,12 @@ namespace ruy {
 // (e.g. the number of CPU cores in typical scenarios). At least ruy forces
 // each invocation to make an explicit decision here, there is no automatic
 // detection of the best number of threads to use in ruy.
-template <typename LhsScalar, typename RhsScalar, typename DstScalar,
-          typename MulParamsType>
+template <typename LhsScalar, typename RhsScalar, typename AccumScalar,
+          typename DstScalar>
 void Mul(const Matrix<LhsScalar>& lhs, const Matrix<RhsScalar>& rhs,
-         const MulParamsType& mul_params, Context* context,
+         const MulParams<AccumScalar, DstScalar>& mul_params, Context* context,
          Matrix<DstScalar>* dst) {
-  Mat<LhsScalar> internal_lhs = ToInternal(lhs);
-  Mat<RhsScalar> internal_rhs = ToInternal(rhs);
-  Mat<DstScalar> internal_dst = ToInternal(*dst);
-  DispatchMul<ruy::kDefaultPaths, LhsScalar, RhsScalar, DstScalar,
-              MulParamsType>(internal_lhs, internal_rhs, mul_params,
-                             get_ctx(context), &internal_dst);
-}
-
-// Variant of ruy::Mul allowing to specify a custom OR-ed set of Path's to
-// compile. See the comments in path.h for more details.
-template <Path CompiledPaths, typename LhsScalar, typename RhsScalar,
-          typename DstScalar, typename MulParamsType>
-void Mul(const Matrix<LhsScalar>& lhs, const Matrix<RhsScalar>& rhs,
-         const MulParamsType& mul_params, Context* context,
-         Matrix<DstScalar>* dst) {
-  Mat<LhsScalar> internal_lhs = ToInternal(lhs);
-  Mat<RhsScalar> internal_rhs = ToInternal(rhs);
-  Mat<DstScalar> internal_dst = ToInternal(*dst);
-  DispatchMul<CompiledPaths, LhsScalar, RhsScalar, DstScalar, MulParamsType>(
-      internal_lhs, internal_rhs, mul_params, get_ctx(context), &internal_dst);
+  Mul<kDefaultPaths>(lhs, rhs, mul_params, context, dst);
 }
 
 }  // namespace ruy

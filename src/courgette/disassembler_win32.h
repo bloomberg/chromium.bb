@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
 #include "courgette/instruction_utils.h"
@@ -25,6 +25,9 @@ class AssemblyProgram;
 
 class DisassemblerWin32 : public Disassembler {
  public:
+  DisassemblerWin32(const DisassemblerWin32&) = delete;
+  DisassemblerWin32& operator=(const DisassemblerWin32&) = delete;
+
   virtual ~DisassemblerWin32() = default;
 
   // Disassembler interfaces.
@@ -125,7 +128,7 @@ class DisassemblerWin32 : public Disassembler {
 
   uint16_t machine_type_ = 0;
   uint16_t number_of_sections_ = 0;
-  const Section* sections_ = nullptr;
+  raw_ptr<const Section> sections_ = nullptr;
   bool has_text_section_ = false;
 
   uint32_t size_of_code_ = 0;
@@ -153,9 +156,6 @@ class DisassemblerWin32 : public Disassembler {
   std::map<RVA, int> abs32_target_rvas_;
   std::map<RVA, int> rel32_target_rvas_;
 #endif
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisassemblerWin32);
 };
 
 }  // namespace courgette

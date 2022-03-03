@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_CAST_MEDIA_CONTROLLER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_CAST_MEDIA_CONTROLLER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/media_router/common/mojom/media_controller.mojom.h"
 #include "components/media_router/common/mojom/media_status.mojom.h"
@@ -52,6 +52,10 @@ class CastMediaController : public mojom::MediaController {
   CastMediaController(AppActivity* activity,
                       mojo::PendingReceiver<mojom::MediaController> receiver,
                       mojo::PendingRemote<mojom::MediaStatusObserver> observer);
+
+  CastMediaController(const CastMediaController&) = delete;
+  CastMediaController& operator=(const CastMediaController&) = delete;
+
   ~CastMediaController() override;
 
   // mojom::MediaController overrides:
@@ -77,15 +81,13 @@ class CastMediaController : public mojom::MediaController {
   void UpdateMediaStatus(const base::Value& message_value);
 
   const std::string sender_id_;
-  AppActivity* const activity_;
+  const raw_ptr<AppActivity> activity_;
   mojom::MediaStatus media_status_;
   std::string session_id_;
   int media_session_id_;
 
   mojo::Receiver<mojom::MediaController> receiver_;
   mojo::Remote<mojom::MediaStatusObserver> observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastMediaController);
 };
 
 }  // namespace media_router

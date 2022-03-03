@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,7 +20,8 @@
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -48,7 +50,7 @@ class OmniboxSuggestionButtonRowBrowserTest : public DialogBrowserTest {
 
     // Populate suggestions for the omnibox popup.
     AutocompleteController* autocomplete_controller =
-        omnibox_view->model()->popup_model()->autocomplete_controller();
+        omnibox_view->model()->autocomplete_controller();
     AutocompleteResult& results = autocomplete_controller->result_;
     ACMatches matches;
     TermMatches termMatches = {{0, 0, 0}};
@@ -75,15 +77,15 @@ class OmniboxSuggestionButtonRowBrowserTest : public DialogBrowserTest {
         ACMatchClassification::URL);
     switch_to_tab_match.has_tab_match = true;
 
-    AutocompleteMatch pedal_match(nullptr, 500, false,
-                                  AutocompleteMatchType::SEARCH_SUGGEST);
-    pedal_match.contents = u"clear data";
-    pedal_match.description = u"Search";
-    pedal_match.description_class = ClassifyTermMatches(
-        termMatches, pedal_match.description.size(),
+    AutocompleteMatch action_match(nullptr, 500, false,
+                                   AutocompleteMatchType::SEARCH_SUGGEST);
+    action_match.contents = u"clear data";
+    action_match.description = u"Search";
+    action_match.description_class = ClassifyTermMatches(
+        termMatches, action_match.description.size(),
         ACMatchClassification::MATCH | ACMatchClassification::URL,
         ACMatchClassification::DIM);
-    pedal_ = std::make_unique<OmniboxPedal>(
+    action_ = base::MakeRefCounted<OmniboxPedal>(
         OmniboxPedalId::CLEAR_BROWSING_DATA,
         OmniboxPedal::LabelStrings(
             IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
@@ -91,7 +93,7 @@ class OmniboxSuggestionButtonRowBrowserTest : public DialogBrowserTest {
             IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUFFIX,
             IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA),
         GURL());
-    pedal_match.pedal = pedal_.get();
+    action_match.action = action_.get();
 
     AutocompleteMatch multiple_actions_match(
         nullptr, 500, false, AutocompleteMatchType::HISTORY_URL);
@@ -108,41 +110,42 @@ class OmniboxSuggestionButtonRowBrowserTest : public DialogBrowserTest {
 
     matches.push_back(search_match);
     matches.push_back(switch_to_tab_match);
-    matches.push_back(pedal_match);
+    matches.push_back(action_match);
     matches.push_back(multiple_actions_match);
     results.AppendMatches(autocomplete_controller->input_, matches);
 
     // The omnibox popup should open with suggestions displayed.
-    omnibox_view->model()->popup_model()->OnResultChanged();
-    EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+    omnibox_view->model()->OnPopupResultChanged();
+    EXPECT_TRUE(omnibox_view->model()->PopupIsOpen());
   }
 
   bool VerifyUi() override {
     OmniboxPopupContentsView* popup_view =
         GetOmniboxViewViews()->GetPopupContentsViewForTesting();
+    OmniboxEditModel* model = GetOmniboxViewViews()->model();
 
-    popup_view->model()->SetSelection(
-        OmniboxPopupModel::Selection(0, OmniboxPopupModel::KEYWORD_MODE));
+    model->SetPopupSelection(
+        OmniboxPopupSelection(0, OmniboxPopupSelection::KEYWORD_MODE));
     if (!VerifyActiveButtonText(popup_view->result_view_at(0), "Search"))
       return false;
 
-    popup_view->model()->SetSelection(OmniboxPopupModel::Selection(
-        1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
+    model->SetPopupSelection(OmniboxPopupSelection(
+        1, OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH));
     if (!VerifyActiveButtonText(popup_view->result_view_at(1), "Switch"))
       return false;
 
-    popup_view->model()->SetSelection(OmniboxPopupModel::Selection(
-        2, OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
+    model->SetPopupSelection(
+        OmniboxPopupSelection(2, OmniboxPopupSelection::FOCUSED_BUTTON_ACTION));
     if (!VerifyActiveButtonText(popup_view->result_view_at(2), "Clear"))
       return false;
 
-    popup_view->model()->SetSelection(
-        OmniboxPopupModel::Selection(3, OmniboxPopupModel::KEYWORD_MODE));
+    model->SetPopupSelection(
+        OmniboxPopupSelection(3, OmniboxPopupSelection::KEYWORD_MODE));
     if (!VerifyActiveButtonText(popup_view->result_view_at(3), "Search"))
       return false;
 
-    popup_view->model()->SetSelection(OmniboxPopupModel::Selection(
-        3, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
+    model->SetPopupSelection(OmniboxPopupSelection(
+        3, OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH));
     if (!VerifyActiveButtonText(popup_view->result_view_at(3), "Switch"))
       return false;
 
@@ -168,7 +171,7 @@ class OmniboxSuggestionButtonRowBrowserTest : public DialogBrowserTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<OmniboxPedal> pedal_;
+  scoped_refptr<OmniboxAction> action_;
 };
 
 IN_PROC_BROWSER_TEST_F(OmniboxSuggestionButtonRowBrowserTest, InvokeUi) {

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 @abstract
-@generateCppClass
 extern class TemplateInfo extends Struct {
   tag: Smi;
   serial_number: Smi;
@@ -12,8 +11,6 @@ extern class TemplateInfo extends Struct {
   property_accessors: TemplateList|Undefined;
 }
 
-@generateCppClass
-@generatePrint
 extern class FunctionTemplateRareData extends Struct {
   // See DECL_RARE_ACCESSORS in FunctionTemplateInfo.
   prototype_template: ObjectTemplateInfo|Undefined;
@@ -34,9 +31,13 @@ bitfield struct FunctionTemplateInfoFlags extends uint31 {
   remove_prototype: bool: 1 bit;
   accept_any_receiver: bool: 1 bit;
   published: bool: 1 bit;
+  // Allowed receiver ranges are used for instance type checking to check
+  // whether the receiver calling the associated JSFunction is a compatible
+  // receiver.
+  allowed_receiver_instance_type_range_start: int16: 12 bit;
+  allowed_receiver_instance_type_range_end: int16: 12 bit;
 }
 
-@generateCppClass
 extern class FunctionTemplateInfo extends TemplateInfo {
   // Handler invoked when calling an instance of this FunctionTemplateInfo.
   // Either CallHandlerInfo or Undefined.
@@ -62,6 +63,9 @@ extern class FunctionTemplateInfo extends TemplateInfo {
   // the receiver under the the cached_property_name when this
   // FunctionTemplateInfo is used as a getter.
   cached_property_name: Object;
+  // This will be set as the instance type of the objects that are created from
+  // this FunctionTemplateInfo.
+  instance_type: Smi;
 }
 
 bitfield struct ObjectTemplateInfoFlags extends uint31 {
@@ -70,7 +74,6 @@ bitfield struct ObjectTemplateInfoFlags extends uint31 {
   embedder_field_count: int32: 28 bit;
 }
 
-@generateCppClass
 extern class ObjectTemplateInfo extends TemplateInfo {
   constructor: FunctionTemplateInfo|Undefined;
   data: SmiTagged<ObjectTemplateInfoFlags>;

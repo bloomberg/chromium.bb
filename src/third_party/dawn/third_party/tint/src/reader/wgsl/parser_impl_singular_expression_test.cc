@@ -27,18 +27,15 @@ TEST_F(ParserImplTest, SingularExpression_Array_ConstantIndex) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
 
-  ASSERT_TRUE(e->Is<ast::ArrayAccessorExpression>());
-  auto* ary = e->As<ast::ArrayAccessorExpression>();
+  ASSERT_TRUE(e->Is<ast::IndexAccessorExpression>());
+  auto* idx = e->As<ast::IndexAccessorExpression>();
 
-  ASSERT_TRUE(ary->array()->Is<ast::IdentifierExpression>());
-  auto* ident = ary->array()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
+  ASSERT_TRUE(idx->object->Is<ast::IdentifierExpression>());
+  auto* ident = idx->object->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol, p->builder().Symbols().Get("a"));
 
-  ASSERT_TRUE(ary->idx_expr()->Is<ast::ConstructorExpression>());
-  ASSERT_TRUE(ary->idx_expr()->Is<ast::ScalarConstructorExpression>());
-  auto* c = ary->idx_expr()->As<ast::ScalarConstructorExpression>();
-  ASSERT_TRUE(c->literal()->Is<ast::SintLiteral>());
-  EXPECT_EQ(c->literal()->As<ast::SintLiteral>()->value(), 1);
+  ASSERT_TRUE(idx->index->Is<ast::SintLiteralExpression>());
+  EXPECT_EQ(idx->index->As<ast::SintLiteralExpression>()->value, 1);
 }
 
 TEST_F(ParserImplTest, SingularExpression_Array_ExpressionIndex) {
@@ -49,14 +46,14 @@ TEST_F(ParserImplTest, SingularExpression_Array_ExpressionIndex) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
 
-  ASSERT_TRUE(e->Is<ast::ArrayAccessorExpression>());
-  auto* ary = e->As<ast::ArrayAccessorExpression>();
+  ASSERT_TRUE(e->Is<ast::IndexAccessorExpression>());
+  auto* idx = e->As<ast::IndexAccessorExpression>();
 
-  ASSERT_TRUE(ary->array()->Is<ast::IdentifierExpression>());
-  auto* ident = ary->array()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
+  ASSERT_TRUE(idx->object->Is<ast::IdentifierExpression>());
+  auto* ident = idx->object->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol, p->builder().Symbols().Get("a"));
 
-  ASSERT_TRUE(ary->idx_expr()->Is<ast::BinaryExpression>());
+  ASSERT_TRUE(idx->index->Is<ast::BinaryExpression>());
 }
 
 TEST_F(ParserImplTest, SingularExpression_Array_MissingIndex) {
@@ -76,7 +73,7 @@ TEST_F(ParserImplTest, SingularExpression_Array_MissingRightBrace) {
   EXPECT_TRUE(e.errored);
   EXPECT_EQ(e.value, nullptr);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(p->error(), "1:4: expected ']' for array accessor");
+  EXPECT_EQ(p->error(), "1:4: expected ']' for index accessor");
 }
 
 TEST_F(ParserImplTest, SingularExpression_Array_InvalidIndex) {
@@ -100,11 +97,9 @@ TEST_F(ParserImplTest, SingularExpression_Call_Empty) {
   ASSERT_TRUE(e->Is<ast::CallExpression>());
   auto* c = e->As<ast::CallExpression>();
 
-  ASSERT_TRUE(c->func()->Is<ast::IdentifierExpression>());
-  auto* func = c->func()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(func->symbol(), p->builder().Symbols().Get("a"));
+  EXPECT_EQ(c->target.name->symbol, p->builder().Symbols().Get("a"));
 
-  EXPECT_EQ(c->params().size(), 0u);
+  EXPECT_EQ(c->args.size(), 0u);
 }
 
 TEST_F(ParserImplTest, SingularExpression_Call_WithArgs) {
@@ -118,14 +113,12 @@ TEST_F(ParserImplTest, SingularExpression_Call_WithArgs) {
   ASSERT_TRUE(e->Is<ast::CallExpression>());
   auto* c = e->As<ast::CallExpression>();
 
-  ASSERT_TRUE(c->func()->Is<ast::IdentifierExpression>());
-  auto* func = c->func()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(func->symbol(), p->builder().Symbols().Get("test"));
+  EXPECT_EQ(c->target.name->symbol, p->builder().Symbols().Get("test"));
 
-  EXPECT_EQ(c->params().size(), 3u);
-  EXPECT_TRUE(c->params()[0]->Is<ast::ConstructorExpression>());
-  EXPECT_TRUE(c->params()[1]->Is<ast::IdentifierExpression>());
-  EXPECT_TRUE(c->params()[2]->Is<ast::BinaryExpression>());
+  EXPECT_EQ(c->args.size(), 3u);
+  EXPECT_TRUE(c->args[0]->Is<ast::IntLiteralExpression>());
+  EXPECT_TRUE(c->args[1]->Is<ast::IdentifierExpression>());
+  EXPECT_TRUE(c->args[2]->Is<ast::BinaryExpression>());
 }
 
 TEST_F(ParserImplTest, SingularExpression_Call_TrailingComma) {
@@ -137,7 +130,7 @@ TEST_F(ParserImplTest, SingularExpression_Call_TrailingComma) {
 
   ASSERT_TRUE(e->Is<ast::CallExpression>());
   auto* c = e->As<ast::CallExpression>();
-  EXPECT_EQ(c->params().size(), 1u);
+  EXPECT_EQ(c->args.size(), 1u);
 }
 
 TEST_F(ParserImplTest, SingularExpression_Call_InvalidArg) {
@@ -170,12 +163,12 @@ TEST_F(ParserImplTest, SingularExpression_MemberAccessor) {
   ASSERT_TRUE(e->Is<ast::MemberAccessorExpression>());
 
   auto* m = e->As<ast::MemberAccessorExpression>();
-  ASSERT_TRUE(m->structure()->Is<ast::IdentifierExpression>());
-  EXPECT_EQ(m->structure()->As<ast::IdentifierExpression>()->symbol(),
+  ASSERT_TRUE(m->structure->Is<ast::IdentifierExpression>());
+  EXPECT_EQ(m->structure->As<ast::IdentifierExpression>()->symbol,
             p->builder().Symbols().Get("a"));
 
-  ASSERT_TRUE(m->member()->Is<ast::IdentifierExpression>());
-  EXPECT_EQ(m->member()->As<ast::IdentifierExpression>()->symbol(),
+  ASSERT_TRUE(m->member->Is<ast::IdentifierExpression>());
+  EXPECT_EQ(m->member->As<ast::IdentifierExpression>()->symbol,
             p->builder().Symbols().Get("b"));
 }
 
@@ -209,7 +202,7 @@ TEST_F(ParserImplTest, SingularExpression_NonMatch_returnLHS) {
   ASSERT_TRUE(e->Is<ast::IdentifierExpression>());
 }
 
-TEST_F(ParserImplTest, SingularExpression_Array_NestedArrayAccessor) {
+TEST_F(ParserImplTest, SingularExpression_Array_NestedIndexAccessor) {
   auto p = parser("a[b[c]]");
   auto e = p->singular_expression();
   EXPECT_TRUE(e.matched);
@@ -217,27 +210,51 @@ TEST_F(ParserImplTest, SingularExpression_Array_NestedArrayAccessor) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
 
-  const auto* outer_accessor = e->As<ast::ArrayAccessorExpression>();
+  const auto* outer_accessor = e->As<ast::IndexAccessorExpression>();
   ASSERT_TRUE(outer_accessor);
 
-  const auto* outer_array =
-      outer_accessor->array()->As<ast::IdentifierExpression>();
-  ASSERT_TRUE(outer_array);
-  EXPECT_EQ(outer_array->symbol(), p->builder().Symbols().Get("a"));
+  const auto* outer_object =
+      outer_accessor->object->As<ast::IdentifierExpression>();
+  ASSERT_TRUE(outer_object);
+  EXPECT_EQ(outer_object->symbol, p->builder().Symbols().Get("a"));
 
   const auto* inner_accessor =
-      outer_accessor->idx_expr()->As<ast::ArrayAccessorExpression>();
+      outer_accessor->index->As<ast::IndexAccessorExpression>();
   ASSERT_TRUE(inner_accessor);
 
-  const auto* inner_array =
-      inner_accessor->array()->As<ast::IdentifierExpression>();
-  ASSERT_TRUE(inner_array);
-  EXPECT_EQ(inner_array->symbol(), p->builder().Symbols().Get("b"));
+  const auto* inner_object =
+      inner_accessor->object->As<ast::IdentifierExpression>();
+  ASSERT_TRUE(inner_object);
+  EXPECT_EQ(inner_object->symbol, p->builder().Symbols().Get("b"));
 
   const auto* index_expr =
-      inner_accessor->idx_expr()->As<ast::IdentifierExpression>();
+      inner_accessor->index->As<ast::IdentifierExpression>();
   ASSERT_TRUE(index_expr);
-  EXPECT_EQ(index_expr->symbol(), p->builder().Symbols().Get("c"));
+  EXPECT_EQ(index_expr->symbol, p->builder().Symbols().Get("c"));
+}
+
+TEST_F(ParserImplTest, SingularExpression_PostfixPlusPlus) {
+  auto p = parser("a++");
+  auto e = p->singular_expression();
+  EXPECT_FALSE(e.matched);
+  EXPECT_TRUE(e.errored);
+  EXPECT_EQ(e.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(),
+            "1:2: postfix increment and decrement operators are reserved for a "
+            "future WGSL version");
+}
+
+TEST_F(ParserImplTest, SingularExpression_PostfixMinusMinus) {
+  auto p = parser("a--");
+  auto e = p->singular_expression();
+  EXPECT_FALSE(e.matched);
+  EXPECT_TRUE(e.errored);
+  EXPECT_EQ(e.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(),
+            "1:2: postfix increment and decrement operators are reserved for a "
+            "future WGSL version");
 }
 
 }  // namespace

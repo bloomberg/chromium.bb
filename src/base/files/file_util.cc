@@ -12,6 +12,7 @@
 #include <fstream>
 #include <limits>
 #include <memory>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/files/file_enumerator.h"
@@ -24,9 +25,12 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace base {
 
-#if !defined(OS_NACL_NONSFI)
 #if !defined(OS_WIN)
 OnceCallback<void(const FilePath&)> GetDeleteFileCallback() {
   return BindOnce(IgnoreResult(&DeleteFile));
@@ -174,7 +178,6 @@ bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 
   return true;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool ReadStreamToString(FILE* stream, std::string* contents) {
   return ReadStreamToStringWithMaxSize(
@@ -186,7 +189,8 @@ bool ReadStreamToStringWithMaxSize(FILE* stream,
                                    std::string* contents) {
   if (contents)
     contents->clear();
-
+  if (!stream)
+    return false;
   // Seeking to the beginning is best-effort -- it is expected to fail for
   // certain non-file stream (e.g., pipes).
   HANDLE_EINTR(fseek(stream, 0, SEEK_SET));
@@ -196,7 +200,6 @@ bool ReadStreamToStringWithMaxSize(FILE* stream,
   // chunk size if available.
   constexpr int64_t kDefaultChunkSize = 1 << 16;
   int64_t chunk_size = kDefaultChunkSize - 1;
-#if !defined(OS_NACL_NONSFI)
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 #if defined(OS_WIN)
   BY_HANDLE_FILE_INFORMATION file_info = {};
@@ -210,6 +213,12 @@ bool ReadStreamToStringWithMaxSize(FILE* stream,
       chunk_size = size.QuadPart;
   }
 #else   // defined(OS_WIN)
+  // In cases where the reported file size is 0, use a smaller chunk size to
+  // minimize memory allocated and cost of string::resize() in case the read
+  // size is small (i.e. proc files). If the file is larger than this, the read
+  // loop will reset |chunk_size| to kDefaultChunkSize.
+  constexpr int64_t kSmallChunkSize = 4096;
+  chunk_size = kSmallChunkSize - 1;
   stat_wrapper_t file_info = {};
   if (!File::Fstat(fileno(stream), &file_info) && file_info.st_size > 0)
     chunk_size = file_info.st_size;
@@ -217,9 +226,6 @@ bool ReadStreamToStringWithMaxSize(FILE* stream,
   // We need to attempt to read at EOF for feof flag to be set so here we
   // use |chunk_size| + 1.
   chunk_size = std::min<uint64_t>(chunk_size, max_size) + 1;
-#else   // !defined(OS_NACL_NONSFI)
-  chunk_size = kDefaultChunkSize;
-#endif  // !defined(OS_NACL_NONSFI)
   size_t bytes_read_this_pass;
   size_t bytes_read_so_far = 0;
   bool read_status = true;
@@ -273,7 +279,6 @@ bool ReadFileToStringWithMaxSize(const FilePath& path,
   return ReadStreamToStringWithMaxSize(file_stream.get(), max_size, contents);
 }
 
-#if !defined(OS_NACL_NONSFI)
 bool IsDirectoryEmpty(const FilePath& dir_path) {
   FileEnumerator files(dir_path, false,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
@@ -315,7 +320,7 @@ bool TouchFile(const FilePath& path,
 #if defined(OS_WIN)
   // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
   if (DirectoryExists(path))
-    flags |= File::FLAG_BACKUP_SEMANTICS;
+    flags |= File::FLAG_WIN_BACKUP_SEMANTICS;
 #elif defined(OS_FUCHSIA)
   // On Fuchsia, we need O_RDONLY for directories, or O_WRONLY for files.
   // TODO(https://crbug.com/947802): Find a cleaner workaround for this.
@@ -328,7 +333,6 @@ bool TouchFile(const FilePath& path,
 
   return file.SetTimes(last_accessed, last_modified);
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool CloseFile(FILE* file) {
   if (file == nullptr)
@@ -336,7 +340,6 @@ bool CloseFile(FILE* file) {
   return fclose(file) == 0;
 }
 
-#if !defined(OS_NACL_NONSFI)
 bool TruncateFile(FILE* file) {
   if (file == nullptr)
     return false;
@@ -396,8 +399,8 @@ bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
   File file(file_path, File::FLAG_OPEN | File::FLAG_READ |
-                           File::FLAG_SEQUENTIAL_SCAN |
-                           File::FLAG_SHARE_DELETE);
+                           File::FLAG_WIN_SEQUENTIAL_SCAN |
+                           File::FLAG_WIN_SHARE_DELETE);
   if (!file.IsValid())
     return false;
 
@@ -427,7 +430,5 @@ bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes) {
 }
 
 }  // namespace internal
-
-#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace base

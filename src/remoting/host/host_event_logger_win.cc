@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/ip_endpoint.h"
@@ -30,6 +29,9 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
  public:
   HostEventLoggerWin(scoped_refptr<HostStatusMonitor> monitor,
                      const std::string& application_name);
+
+  HostEventLoggerWin(const HostEventLoggerWin&) = delete;
+  HostEventLoggerWin& operator=(const HostEventLoggerWin&) = delete;
 
   ~HostEventLoggerWin() override;
 
@@ -52,8 +54,6 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
   scoped_refptr<HostStatusMonitor> monitor_;
 
   WindowsEventLogger event_logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostEventLoggerWin);
 };
 
 }  // namespace

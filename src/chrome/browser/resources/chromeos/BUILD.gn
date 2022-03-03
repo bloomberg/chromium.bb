@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/common/features.gni")
+import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -45,15 +46,21 @@ group("closure_compile") {
     "gaia_action_buttons:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
+    "keyboard:closure_compile",
+    "keyboard:closure_compile_module",
     "login:closure_compile",
     "login:closure_compile_module",
     "multidevice_internals:closure_compile",
     "multidevice_setup:closure_compile",
     "network_ui:closure_compile",
+    "parent_access:closure_compile",
     "password_change:closure_compile",
     "set_time_dialog:closure_compile",
     "smb_shares:closure_compile",
     "sys_internals:closure_compile",
     "vm:closure_compile",
   ]
+  if (is_cfm) {
+    deps += [ "chromebox_for_meetings:closure_compile" ]
+  }
 }

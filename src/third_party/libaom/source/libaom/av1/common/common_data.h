@@ -434,9 +434,12 @@ static const int intra_mode_context[INTRA_MODES] = {
 static const int quant_dist_weight[4][2] = {
   { 2, 3 }, { 2, 5 }, { 2, 7 }, { 1, MAX_FRAME_DISTANCE }
 };
-static const int quant_dist_lookup_table[2][4][2] = {
-  { { 9, 7 }, { 11, 5 }, { 12, 4 }, { 13, 3 } },
-  { { 7, 9 }, { 5, 11 }, { 4, 12 }, { 3, 13 } },
+
+static const int quant_dist_lookup_table[4][2] = {
+  { 9, 7 },
+  { 11, 5 },
+  { 12, 4 },
+  { 13, 3 },
 };
 
 #ifdef __cplusplus

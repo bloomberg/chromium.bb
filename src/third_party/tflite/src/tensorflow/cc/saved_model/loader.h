@@ -72,6 +72,7 @@ struct SavedModelBundle : public SavedModelBundleInterface {
 class SavedModelBundleLite : public SavedModelBundleInterface {
  public:
   SavedModelBundleLite() = default;
+  SavedModelBundleLite(SavedModelBundleLite&& other) = default;
   SavedModelBundleLite& operator=(SavedModelBundleLite&& other) = default;
 
   SavedModelBundleLite(std::unique_ptr<Session> session,
@@ -95,6 +96,21 @@ class SavedModelBundleLite : public SavedModelBundleInterface {
   std::unique_ptr<Session> session_;
   protobuf::Map<string, SignatureDef> signatures_;
 };
+
+// Restore variable and resources in the SavedModel export dir for the
+// indicated metagraph.
+// The recommended way to load a saved model is to call LoadSavedModel,
+// which provides an already initialized Metagraph, Session, and DebugInfo.
+Status RestoreSession(const RunOptions& run_options,
+                      const MetaGraphDef& meta_graph, const string& export_dir,
+                      std::unique_ptr<Session>* session);
+
+// Initialize a session which wraps this metagraph.
+// The recommended way to load a saved model is to call LoadSavedModel,
+// which provides an already initialized Metagraph, Session, and DebugInfo.
+Status LoadMetagraphIntoSession(const SessionOptions& session_options,
+                                const MetaGraphDef& meta_graph,
+                                std::unique_ptr<Session>* session);
 
 /// Loads a SavedModel from the specified export directory. The MetaGraphDef
 /// to be loaded is identified by the supplied tags, corresponding exactly to

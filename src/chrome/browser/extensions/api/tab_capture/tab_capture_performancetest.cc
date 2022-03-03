@@ -217,7 +217,7 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
     double sqr_sum = 0.0;
     int count = 0;
     for (const auto* begin_event : events_to_analyze) {
-      const auto* end_event = begin_event->other_event;
+      const auto* end_event = begin_event->other_event.get();
       if (!end_event)
         continue;
       const double latency = end_event->timestamp - begin_event->timestamp;
@@ -282,8 +282,11 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
 
 }  // namespace
 
-// Using MSAN on ChromeOS causes problems due to its hardware OpenGL library.
 #if BUILDFLAG(IS_CHROMEOS_ASH) && defined(MEMORY_SANITIZER)
+// Using MSAN on ChromeOS causes problems due to its hardware OpenGL library.
+#define MAYBE_Performance DISABLED_Performance
+#elif defined(OS_MAC)
+// flaky on Mac 10.11 See: http://crbug.com/1235358
 #define MAYBE_Performance DISABLED_Performance
 #else
 #define MAYBE_Performance Performance

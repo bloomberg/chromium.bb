@@ -38,16 +38,16 @@ bool LoadImages(const base::DictionaryValue* theme_value,
           for (base::DictionaryValue::Iterator inner_iter(*inner_value);
                !inner_iter.IsAtEnd(); inner_iter.Advance()) {
             if (!inner_iter.value().is_string()) {
-              *error = base::ASCIIToUTF16(errors::kInvalidThemeImages);
+              *error = errors::kInvalidThemeImages;
               return false;
             }
           }
         } else {
-          *error = base::ASCIIToUTF16(errors::kInvalidThemeImages);
+          *error = errors::kInvalidThemeImages;
           return false;
         }
       } else if (!iter.value().is_string()) {
-        *error = base::ASCIIToUTF16(errors::kInvalidThemeImages);
+        *error = errors::kInvalidThemeImages;
         return false;
       }
     }
@@ -56,34 +56,45 @@ bool LoadImages(const base::DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadColors(const base::DictionaryValue* theme_value,
+bool LoadColors(const base::Value* theme_value,
                 std::u16string* error,
                 ThemeInfo* theme_info) {
-  const base::DictionaryValue* colors_value = NULL;
-  if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
+  DCHECK(theme_value);
+  DCHECK(theme_value->is_dict());
+  const base::Value* colors_value =
+      theme_value->FindDictPath(keys::kThemeColors);
+  if (colors_value) {
     // Validate that the colors are RGB or RGBA lists.
-    for (base::DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
-         iter.Advance()) {
-      const base::ListValue* color_list = NULL;
-      double alpha = 0.0;
-      int color = 0;
-      // The color must be a list...
-      if (!iter.value().GetAsList(&color_list) ||
-          // ... and either 3 items (RGB) or 4 (RGBA).
-          ((color_list->GetSize() != 3) &&
-           ((color_list->GetSize() != 4) ||
-            // For RGBA, the fourth item must be a real or int alpha value.
-            // Note that GetDouble() can get an integer value.
-            !color_list->GetDouble(3, &alpha))) ||
-          // For both RGB and RGBA, the first three items must be ints (R,G,B).
-          !color_list->GetInteger(0, &color) ||
-          !color_list->GetInteger(1, &color) ||
-          !color_list->GetInteger(2, &color)) {
-        *error = base::ASCIIToUTF16(errors::kInvalidThemeColors);
+    for (const auto it : colors_value->DictItems()) {
+      if (!it.second.is_list()) {
+        *error = errors::kInvalidThemeColors;
+        return false;
+      }
+      base::Value::ConstListView color_list = it.second.GetList();
+
+      // There must be either 3 items (RGB), or 4 (RGBA).
+      if (!(color_list.size() == 3 || color_list.size() == 4)) {
+        *error = errors::kInvalidThemeColors;
+        return false;
+      }
+
+      // The first three items (RGB), must be ints:
+      if (!(color_list[0].is_int() && color_list[1].is_int() &&
+            color_list[2].is_int())) {
+        *error = errors::kInvalidThemeColors;
+        return false;
+      }
+
+      // If there is a 4th item (alpha), it may be either int or double:
+      if (color_list.size() == 4 &&
+          !(color_list[3].is_int() || color_list[3].is_double())) {
+        *error = errors::kInvalidThemeColors;
         return false;
       }
     }
-    theme_info->theme_colors_.reset(colors_value->DeepCopy());
+
+    theme_info->theme_colors_ =
+        base::Value::ToUniquePtrValue(colors_value->Clone());
   }
   return true;
 }
@@ -98,17 +109,24 @@ bool LoadTints(const base::DictionaryValue* theme_value,
   // Validate that the tints are all reals.
   for (base::DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
        iter.Advance()) {
-    const base::ListValue* tint_list = NULL;
-    double v = 0.0;
-    if (!iter.value().GetAsList(&tint_list) ||
-        tint_list->GetSize() != 3 ||
-        !tint_list->GetDouble(0, &v) ||
-        !tint_list->GetDouble(1, &v) ||
-        !tint_list->GetDouble(2, &v)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidThemeTints);
+    if (!iter.value().is_list()) {
+      *error = errors::kInvalidThemeTints;
+      return false;
+    }
+
+    base::Value::ConstListView tint_list = iter.value().GetList();
+    if (tint_list.size() != 3) {
+      *error = errors::kInvalidThemeTints;
+      return false;
+    }
+
+    if (!tint_list[0].GetIfDouble() || !tint_list[1].GetIfDouble() ||
+        !tint_list[2].GetIfDouble()) {
+      *error = errors::kInvalidThemeTints;
       return false;
     }
   }
+
   theme_info->theme_tints_.reset(tints_value->DeepCopy());
   return true;
 }
@@ -144,7 +162,7 @@ const base::DictionaryValue* ThemeInfo::GetImages(const Extension* extension) {
 }
 
 // static
-const base::DictionaryValue* ThemeInfo::GetColors(const Extension* extension) {
+const base::Value* ThemeInfo::GetColors(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_colors_.get() : NULL;
 }
@@ -171,7 +189,7 @@ ThemeHandler::~ThemeHandler() {
 bool ThemeHandler::Parse(Extension* extension, std::u16string* error) {
   const base::DictionaryValue* theme_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kTheme, &theme_value)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidTheme);
+    *error = errors::kInvalidTheme;
     return false;
   }
 
@@ -199,10 +217,10 @@ bool ThemeHandler::Validate(const Extension* extension,
     if (images_value) {
       for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
            iter.Advance()) {
-        std::string val;
-        if (iter.value().GetAsString(&val)) {
-          base::FilePath image_path = extension->path().Append(
-              base::FilePath::FromUTF8Unsafe(val));
+        const std::string* val = iter.value().GetIfString();
+        if (val) {
+          base::FilePath image_path =
+              extension->path().Append(base::FilePath::FromUTF8Unsafe(*val));
           if (!base::PathExists(image_path)) {
             *error =
                 l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,

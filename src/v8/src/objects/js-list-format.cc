@@ -18,8 +18,9 @@
 #include "src/objects/intl-objects.h"
 #include "src/objects/js-array-inl.h"
 #include "src/objects/js-list-format-inl.h"
-#include "src/objects/managed.h"
+#include "src/objects/managed-inl.h"
 #include "src/objects/objects-inl.h"
+#include "src/objects/option-utils.h"
 #include "unicode/fieldpos.h"
 #include "unicode/fpositer.h"
 #include "unicode/listformatter.h"
@@ -69,9 +70,9 @@ MaybeHandle<JSListFormat> JSListFormat::New(Isolate* isolate, Handle<Map> map,
   Handle<JSReceiver> options;
   const char* service = "Intl.ListFormat";
   // 4. Let options be GetOptionsObject(_options_).
-  ASSIGN_RETURN_ON_EXCEPTION(
-      isolate, options, Intl::GetOptionsObject(isolate, input_options, service),
-      JSListFormat);
+  ASSIGN_RETURN_ON_EXCEPTION(isolate, options,
+                             GetOptionsObject(isolate, input_options, service),
+                             JSListFormat);
 
   // Note: No need to create a record. It's not observable.
   // 6. Let opt be a new Record.
@@ -100,7 +101,7 @@ MaybeHandle<JSListFormat> JSListFormat::New(Isolate* isolate, Handle<Map> map,
 
   // 12. Let t be GetOption(options, "type", "string", «"conjunction",
   //    "disjunction", "unit"», "conjunction").
-  Maybe<Type> maybe_type = Intl::GetStringOption<Type>(
+  Maybe<Type> maybe_type = GetStringOption<Type>(
       isolate, options, "type", service, {"conjunction", "disjunction", "unit"},
       {Type::CONJUNCTION, Type::DISJUNCTION, Type::UNIT}, Type::CONJUNCTION);
   MAYBE_RETURN(maybe_type, MaybeHandle<JSListFormat>());
@@ -108,7 +109,7 @@ MaybeHandle<JSListFormat> JSListFormat::New(Isolate* isolate, Handle<Map> map,
 
   // 14. Let s be ? GetOption(options, "style", "string",
   //                          «"long", "short", "narrow"», "long").
-  Maybe<Style> maybe_style = Intl::GetStringOption<Style>(
+  Maybe<Style> maybe_style = GetStringOption<Style>(
       isolate, options, "style", service, {"long", "short", "narrow"},
       {Style::LONG, Style::SHORT, Style::NARROW}, Style::LONG);
   MAYBE_RETURN(maybe_style, MaybeHandle<JSListFormat>());
@@ -220,7 +221,8 @@ Maybe<std::vector<icu::UnicodeString>> ToUnicodeStringArray(
 template <typename T>
 MaybeHandle<T> FormatListCommon(
     Isolate* isolate, Handle<JSListFormat> format, Handle<JSArray> list,
-    MaybeHandle<T> (*formatToResult)(Isolate*, const icu::FormattedValue&)) {
+    const std::function<MaybeHandle<T>(Isolate*, const icu::FormattedValue&)>&
+        formatToResult) {
   DCHECK(!list->IsUndefined());
   Maybe<std::vector<icu::UnicodeString>> maybe_array =
       ToUnicodeStringArray(isolate, list);
@@ -247,8 +249,6 @@ Handle<String> IcuFieldIdToType(Isolate* isolate, int32_t field_id) {
       return isolate->factory()->element_string();
     default:
       UNREACHABLE();
-      // To prevent MSVC from issuing C4715 warning.
-      return Handle<String>();
   }
 }
 

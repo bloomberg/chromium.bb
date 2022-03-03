@@ -34,6 +34,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
@@ -49,10 +50,27 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace blink {
+
+namespace {
+
+float GetDprForSizeAdjustment(const Element& owner_element) {
+  float dpr = 1.0f;
+  // Android doesn't need these adjustments and it makes tests fail.
+#ifndef OS_ANDROID
+  LocalFrame* frame = owner_element.GetDocument().GetFrame();
+  const Page* page = frame ? frame->GetPage() : nullptr;
+  if (Platform::Current()->IsUseZoomForDSFEnabled() && page) {
+    dpr = page->GetChromeClient().GetScreenInfo(*frame).device_scale_factor;
+  }
+#endif
+  return dpr;
+}
+
+}  // namespace
 
 ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
                                      HTMLSelectElement& owner_element)
@@ -99,17 +117,23 @@ bool ExternalPopupMenu::ShowInternal() {
     if (!layout_object || !layout_object->IsBox())
       return false;
     auto* box = To<LayoutBox>(layout_object);
-    IntRect rect = EnclosingIntRect(
-        box->LocalToAbsoluteRect(box->PhysicalBorderBoxRect()));
-    IntRect rect_in_viewport = local_frame_->View()->FrameToViewport(rect);
+    gfx::Rect rect =
+        ToEnclosingRect(box->LocalToAbsoluteRect(box->PhysicalBorderBoxRect()));
+    gfx::Rect rect_in_viewport = local_frame_->View()->FrameToViewport(rect);
     float scale_for_emulation = WebLocalFrameImpl::FromFrame(local_frame_)
                                     ->LocalRootFrameWidget()
                                     ->GetEmulatorScale();
 
+    // rect_in_viewport needs to be in CSS pixels.
+    float dpr = GetDprForSizeAdjustment(*owner_element_);
+    if (dpr != 1.0) {
+      rect_in_viewport = gfx::ScaleToRoundedRect(rect_in_viewport, 1 / dpr);
+    }
+
     gfx::Rect bounds =
-        gfx::Rect(rect_in_viewport.X() * scale_for_emulation,
-                  rect_in_viewport.Y() * scale_for_emulation,
-                  rect_in_viewport.Width(), rect_in_viewport.Height());
+        gfx::Rect(rect_in_viewport.x() * scale_for_emulation,
+                  rect_in_viewport.y() * scale_for_emulation,
+                  rect_in_viewport.width(), rect_in_viewport.height());
     local_frame_->GetLocalFrameHostRemote().ShowPopupMenu(
         receiver_.BindNewPipeAndPassRemote(execution_context->GetTaskRunner(
             TaskType::kInternalUserInteraction)),
@@ -124,7 +148,7 @@ bool ExternalPopupMenu::ShowInternal() {
   return false;
 }
 
-void ExternalPopupMenu::Show() {
+void ExternalPopupMenu::Show(PopupMenu::ShowEventType) {
   if (!ShowInternal())
     return;
 #if defined(OS_MAC)
@@ -278,9 +302,11 @@ void ExternalPopupMenu::GetPopupMenuInfo(
                                         : *owner_element.EnsureComputedStyle();
   const SimpleFontData* font_data = menu_style.GetFont().PrimaryFont();
   DCHECK(font_data);
-  *item_height = font_data ? font_data->GetFontMetrics().Height() : 0;
+  // These coordinates need to be in CSS pixels.
+  float dpr = GetDprForSizeAdjustment(owner_element);
+  *item_height = font_data ? font_data->GetFontMetrics().Height() / dpr : 0;
   *font_size = static_cast<int>(
-      menu_style.GetFont().GetFontDescription().ComputedSize());
+      menu_style.GetFont().GetFontDescription().ComputedSize() / dpr);
   *selected_item = ToExternalPopupMenuItemIndex(
       owner_element.SelectedListIndex(), owner_element);
 

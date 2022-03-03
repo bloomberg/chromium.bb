@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/app_history/app_history_navigate_event.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_app_history_navigate_event_init.h"
+#include "third_party/blink/renderer/core/app_history/app_history_destination.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
@@ -19,53 +21,57 @@ AppHistoryNavigateEvent::AppHistoryNavigateEvent(
     AppHistoryNavigateEventInit* init)
     : Event(type, init),
       ExecutionContextClient(context),
-      can_respond_(init->canRespond()),
+      navigation_type_(init->navigationType()),
+      destination_(init->destination()),
+      can_transition_(init->canTransition()),
       user_initiated_(init->userInitiated()),
       hash_change_(init->hashChange()),
+      signal_(init->signal()),
       form_data_(init->formData()),
-      info_(init->info()) {
+      info_(init->hasInfo()
+                ? init->info()
+                : ScriptValue(context->GetIsolate(),
+                              v8::Undefined(context->GetIsolate()))) {
   DCHECK(IsA<LocalDOMWindow>(context));
 }
 
-void AppHistoryNavigateEvent::respondWith(ScriptState* script_state,
-                                          ScriptPromise newNavigationAction,
-                                          ExceptionState& exception_state) {
+void AppHistoryNavigateEvent::transitionWhile(ScriptState* script_state,
+                                              ScriptPromise newNavigationAction,
+                                              ExceptionState& exception_state) {
   if (!DomWindow()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "respondWith may not be called in a "
-                                      "detached window");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "transitionWhile() may not be called in a "
+        "detached window");
     return;
   }
 
   if (!isTrusted()) {
     exception_state.ThrowSecurityError(
-        "respondWith may only be called on a "
+        "transitionWhile() may only be called on a "
         "trusted event during event dispatch");
     return;
   }
 
-  if (!can_respond_) {
+  if (!can_transition_) {
     exception_state.ThrowSecurityError(
         "A navigation with URL '" + url_.ElidedString() +
-        "' cannot be intercepted by respondWith in a window with origin '" +
+        "' cannot be intercepted by transitionWhile() in a window with origin "
+        "'" +
         DomWindow()->GetSecurityOrigin()->ToString() + "' and URL '" +
         DomWindow()->Url().ElidedString() + "'.");
     return;
   }
 
   if (!IsBeingDispatched() || defaultPrevented()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "respondWith may only be called during "
-                                      "the first dispatch of this event");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "transitionWhile() may only be called during "
+        "the first dispatch of this event");
     return;
   }
 
-  preventDefault();
-  navigation_action_promise_ = newNavigationAction;
-}
-
-void AppHistoryNavigateEvent::ClearNavigationActionPromise() {
-  navigation_action_promise_ = ScriptPromise();
+  navigation_action_promises_list_.push_back(newNavigationAction);
 }
 
 const AtomicString& AppHistoryNavigateEvent::InterfaceName() const {
@@ -75,9 +81,11 @@ const AtomicString& AppHistoryNavigateEvent::InterfaceName() const {
 void AppHistoryNavigateEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
+  visitor->Trace(destination_);
+  visitor->Trace(signal_);
   visitor->Trace(form_data_);
   visitor->Trace(info_);
-  visitor->Trace(navigation_action_promise_);
+  visitor->Trace(navigation_action_promises_list_);
 }
 
 }  // namespace blink

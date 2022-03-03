@@ -14,16 +14,11 @@
 # ==============================================================================
 """Sparse tensors."""
 # pylint: disable=g-bad-name
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 
 import numpy as np
 
 from tensorflow.python import pywrap_tensorflow  # pylint: disable=unused-import
-from tensorflow.python import _pywrap_utils
 from tensorflow.python import tf2
 from tensorflow.python.framework import composite_tensor
 from tensorflow.python.framework import constant_op
@@ -35,6 +30,7 @@ from tensorflow.python.framework import tensor_util
 from tensorflow.python.framework import type_spec
 from tensorflow.python.ops import gen_sparse_ops
 from tensorflow.python.types import internal
+from tensorflow.python.util import _pywrap_utils
 from tensorflow.python.util.tf_export import tf_export
 
 # pylint: disable=protected-access
@@ -106,8 +102,8 @@ class SparseTensor(internal.NativeObject, composite_tensor.CompositeTensor):
   @classmethod
   def from_value(cls, sparse_tensor_value):
     if not is_sparse(sparse_tensor_value):
-      raise TypeError("Neither a SparseTensor nor SparseTensorValue: %s." %
-                      sparse_tensor_value)
+      raise TypeError(f"Argument sparse_tensor_value={sparse_tensor_value} "
+                      "is neither a SparseTensor nor SparseTensorValue.")
     return SparseTensor(
         indices=sparse_tensor_value.indices,
         values=sparse_tensor_value.values,
@@ -146,10 +142,10 @@ class SparseTensor(internal.NativeObject, composite_tensor.CompositeTensor):
     dense_shape_shape = dense_shape.shape.with_rank(1)
 
     # Assert number of rows in indices match the number of elements in values.
-    indices_shape.dims[0].merge_with(values_shape.dims[0])
+    indices_shape.dims[0].assert_is_compatible_with(values_shape.dims[0])
     # Assert number of columns in indices matches the number of elements in
     # dense_shape.
-    indices_shape.dims[1].merge_with(dense_shape_shape.dims[0])
+    indices_shape.dims[1].assert_is_compatible_with(dense_shape_shape.dims[0])
 
   def get_shape(self):
     """Get the `TensorShape` representing the shape of the dense tensor.
@@ -177,6 +173,31 @@ class SparseTensor(internal.NativeObject, composite_tensor.CompositeTensor):
       A 1-D Tensor of any data type.
     """
     return self._values
+
+  def with_values(self, new_values):
+    """Returns a copy of `self` with `values` replaced by `new_values`.
+
+    This method produces a new `SparseTensor` that has the same nonzero
+    `indices` and same `dense_shape`, but updated values.
+
+    Args:
+      new_values: The values of the new `SparseTensor`. Needs to have the same
+        shape as the current `.values` `Tensor`. May have a different type than
+        the current `values`.
+
+    Returns:
+      A `SparseTensor` with identical indices and shape but updated values.
+
+    Example usage:
+
+    >>> st = tf.sparse.from_dense([[1, 0, 2, 0], [3, 0, 0, 4]])
+    >>> tf.sparse.to_dense(st.with_values([10, 20, 30, 40]))  # 4 nonzero values
+    <tf.Tensor: shape=(2, 4), dtype=int32, numpy=
+    array([[10,  0, 20,  0],
+           [30,  0,  0, 40]], dtype=int32)>
+
+    """
+    return SparseTensor(self._indices, new_values, self._dense_shape)
 
   @property
   def op(self):
@@ -252,7 +273,8 @@ class SparseTensor(internal.NativeObject, composite_tensor.CompositeTensor):
     # invariant here is the shape of the SparseTensor.dense_shape property. It
     # must be the shape of a vector.
     if shape.ndims is not None and shape.ndims != 1:
-      raise ValueError("Expected a shape with 1 dimension")
+      raise ValueError(f"Expected a shape with 1 dimension. Obtained: {shape} "
+                       f"which has {shape.ndims} dimensions.")
     rank = tensor_shape.dimension_value(shape[0])
     return SparseTensorSpec(tensor_shape.unknown_shape(rank), self.dtype)
 
@@ -267,6 +289,7 @@ _pywrap_utils.RegisterType("SparseTensorValue", SparseTensorValue)
 
 
 @tf_export("SparseTensorSpec")
+@type_spec.register("tf.SparseTensorSpec")
 class SparseTensorSpec(type_spec.BatchableTypeSpec):
   """Type specification for a `tf.sparse.SparseTensor`."""
 
@@ -340,7 +363,8 @@ class SparseTensorSpec(type_spec.BatchableTypeSpec):
     dense_shape = tensor_util.constant_value_as_shape(value.dense_shape)
     if self._shape.merge_with(dense_shape).ndims == 0:
       raise ValueError(
-          "Unbatching a sparse tensor is only supported for rank >= 1")
+          "Unbatching a sparse tensor is only supported for rank >= 1. "
+          f"Obtained input: {value}.")
     return [gen_sparse_ops.serialize_many_sparse(
         value.indices, value.values, value.dense_shape,
         out_type=dtypes.variant)]
@@ -399,7 +423,8 @@ class SparseTensorSpec(type_spec.BatchableTypeSpec):
       else:
         return cls.from_value(SparseTensor.from_value(value))
     else:
-      raise TypeError("Expected SparseTensor or SparseTensorValue")
+      raise TypeError("Expected SparseTensor or SparseTensorValue. Received: "
+                      f"{value} of type {type(value).__name__}.")
 
 
 # TODO(b/133606651) Delete the SparseTensor registration when CompositeTensor
@@ -434,8 +459,8 @@ def convert_to_tensor_or_sparse_tensor(value, dtype=None, name=None):
     value = SparseTensor.from_value(value)
   if isinstance(value, SparseTensor):
     if dtype and not dtype.is_compatible_with(value.dtype):
-      raise RuntimeError("Sparse dtype: requested = %s, actual = %s" %
-                         (dtype.name, value.dtype.name))
+      raise RuntimeError(f"Sparse dtype mismatch. Requested: {dtype.name}, "
+                         f" Actual: {value.dtype.name}")
     return value
   return ops.convert_to_tensor(value, dtype=dtype, name=name)
 

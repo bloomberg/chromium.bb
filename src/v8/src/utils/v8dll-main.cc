@@ -5,7 +5,7 @@
 // The GYP based build ends up defining USING_V8_SHARED when compiling this
 // file.
 #undef USING_V8_SHARED
-#include "include/v8.h"
+#include "include/v8config.h"
 #include "base/allocator/buildflags.h"
 #include "build/build_config.h"
 
@@ -20,7 +20,7 @@ BOOL WINAPI DllMain(HANDLE hinstDLL, DWORD dwReason, LPVOID lpvReserved) {
   }
 
   // Do nothing.
-  return TRUE;
+  return 1;
 }
 }
 #endif  // V8_OS_WIN

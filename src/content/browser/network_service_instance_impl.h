@@ -9,6 +9,10 @@
 #include "base/callback_list.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace content {
 
 // Creates the network::NetworkService object on the IO thread directly instead
@@ -60,10 +64,6 @@ void PingNetworkService(base::OnceClosure closure);
 // Shuts down the in-process network service or disconnects from the out-of-
 // process one, allowing it to shut down.
 CONTENT_EXPORT void ShutDownNetworkService();
-
-// Returns whether the network sandbox should be enabled for the current
-// platform configuration.
-bool IsNetworkSandboxEnabled();
 
 }  // namespace content
 

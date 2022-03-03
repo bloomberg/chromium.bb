@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 
 #include "base/bind.h"
@@ -51,7 +52,7 @@ class TriggerSingleReentrantUpdateHelper
   }
 
  private:
-  MockOfflineContentProvider* wrapped_provider_;
+  raw_ptr<MockOfflineContentProvider> wrapped_provider_;
   OfflineItem new_item_;
 };
 
@@ -60,7 +61,7 @@ class ThrottledOfflineContentProviderTest : public testing::Test {
   ThrottledOfflineContentProviderTest()
       : task_runner_(new base::TestMockTimeTaskRunner),
         handle_(task_runner_),
-        delay_(base::TimeDelta::FromSeconds(1)),
+        delay_(base::Seconds(1)),
         provider_(delay_, &wrapped_provider_) {}
   ~ThrottledOfflineContentProviderTest() override {}
 
@@ -70,8 +71,7 @@ class ThrottledOfflineContentProviderTest : public testing::Test {
 
  protected:
   base::TimeTicks GetTimeThatWillAllowAnUpdate() {
-    return base::TimeTicks::Now() - delay_ -
-           base::TimeDelta::FromMilliseconds(1);
+    return base::TimeTicks::Now() - delay_ - base::Milliseconds(1);
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;

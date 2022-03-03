@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -28,8 +29,9 @@ namespace {
 
 using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
 
-::mojom::FrameInfoPtr RenderFrameHostToFrameInfo(RenderFrameHostImpl* frame,
-                                                 bool is_bfcached) {
+::mojom::FrameInfoPtr RenderFrameHostToFrameInfo(
+    RenderFrameHostImpl* frame,
+    ::mojom::FrameInfo::Type type) {
   auto frame_info = ::mojom::FrameInfo::New();
 
   frame_info->routing_id = frame->GetRoutingID();
@@ -40,18 +42,14 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
       frame->GetLastCommittedURL().is_valid()
           ? absl::make_optional(frame->GetLastCommittedURL())
           : absl::nullopt;
-  frame_info->is_bfcached = is_bfcached;
+  frame_info->type = type;
 
   SiteInstanceImpl* site_instance =
       static_cast<SiteInstanceImpl*>(frame->GetSiteInstance());
   frame_info->site_instance = ::mojom::SiteInstanceInfo::New();
-  frame_info->site_instance->id = site_instance->GetId();
-
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  frame_info->site_instance->id = site_instance->GetId().value();
   frame_info->site_instance->locked =
-      policy->GetProcessLock(site_instance->GetProcess()->GetID())
-          .is_locked_to_site();
-
+      site_instance->GetProcess()->GetProcessLock().is_locked_to_site();
   frame_info->site_instance->site_url =
       site_instance->HasSite()
           ? absl::make_optional(site_instance->GetSiteInfo().site_url())
@@ -68,15 +66,31 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
           ? absl::make_optional(site_instance->GetSiteInfo().process_lock_url())
           : absl::nullopt;
 
-  frame_info->site_instance->is_origin_keyed =
-      site_instance->GetSiteInfo().is_origin_keyed();
+  frame_info->site_instance->requires_origin_keyed_process =
+      site_instance->GetSiteInfo().requires_origin_keyed_process();
 
   for (size_t i = 0; i < frame->child_count(); ++i) {
     frame_info->subframes.push_back(RenderFrameHostToFrameInfo(
-        frame->child_at(i)->current_frame_host(), is_bfcached));
+        frame->child_at(i)->current_frame_host(), type));
   }
 
   return frame_info;
+}
+
+// Adds `host` to `out_frames` if it is a prerendered main frame.
+RenderFrameHost::FrameIterationAction CollectPrerenders(
+    std::vector<::mojom::FrameInfoPtr>& out_frames,
+    RenderFrameHost* host) {
+  if (!host->GetParentOrOuterDocument()) {
+    if (host->GetLifecycleState() ==
+        RenderFrameHost::LifecycleState::kPrerendering) {
+      out_frames.push_back(
+          RenderFrameHostToFrameInfo(static_cast<RenderFrameHostImpl*>(host),
+                                     ::mojom::FrameInfo::Type::kPrerender));
+    }
+    return RenderFrameHost::FrameIterationAction::kSkipChildren;
+  }
+  return RenderFrameHost::FrameIterationAction::kContinue;
 }
 
 std::string IsolatedOriginSourceToString(IsolatedOriginSource source) {
@@ -201,16 +215,21 @@ void ProcessInternalsHandlerImpl::GetAllWebContentsInfo(
 
     auto info = ::mojom::WebContentsInfo::New();
     info->title = base::UTF16ToUTF8(web_contents->GetTitle());
-    info->root_frame =
-        RenderFrameHostToFrameInfo(web_contents->GetMainFrame(), false);
+    info->root_frame = RenderFrameHostToFrameInfo(
+        web_contents->GetMainFrame(), ::mojom::FrameInfo::Type::kActive);
 
     // Retrieve all root frames from bfcache as well.
     NavigationControllerImpl& controller = web_contents->GetController();
     const auto& entries = controller.GetBackForwardCache().GetEntries();
     for (const auto& entry : entries) {
-      info->bfcached_root_frames.push_back(
-          RenderFrameHostToFrameInfo((*entry).render_frame_host.get(), true));
+      info->bfcached_root_frames.push_back(RenderFrameHostToFrameInfo(
+          (*entry).render_frame_host(),
+          ::mojom::FrameInfo::Type::kBackForwardCache));
     }
+
+    // Retrieve prerendering root frames.
+    web_contents->ForEachRenderFrameHost(base::BindRepeating(
+        &CollectPrerenders, std::ref(info->prerender_root_frames)));
 
     infos.push_back(std::move(info));
   }

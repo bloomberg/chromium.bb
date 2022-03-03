@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/print_preview/cloud_print_signin.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,11 +25,17 @@ class SignInObserver : public content::WebContentsObserver {
   SignInObserver(content::WebContents* web_contents, base::OnceClosure callback)
       : WebContentsObserver(web_contents), callback_(std::move(callback)) {}
 
+  SignInObserver(const SignInObserver&) = delete;
+  SignInObserver& operator=(const SignInObserver&) = delete;
+
  private:
   // Overridden from content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (!navigation_handle->IsInMainFrame() ||
+    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+    // frames. This caller was converted automatically to the primary main frame
+    // to preserve its semantics. Follow up to confirm correctness.
+    if (!navigation_handle->IsInPrimaryMainFrame() ||
         !navigation_handle->HasCommitted()) {
       return;
     }
@@ -52,8 +57,6 @@ class SignInObserver : public content::WebContentsObserver {
 
   base::OnceClosure callback_;
   base::WeakPtrFactory<SignInObserver> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SignInObserver);
 };
 
 }  // namespace

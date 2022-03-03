@@ -190,7 +190,7 @@ class CalledProcessError(Exception):
   exits with a non-zero exit code."""
 
   def __init__(self, cwd, args, output):
-    super(CalledProcessError, self).__init__()
+    super().__init__()
     self.cwd = cwd
     self.args = args
     self.output = output
@@ -254,6 +254,7 @@ def CheckOutput(args,
   if not cwd:
     cwd = os.getcwd()
 
+  logging.info('CheckOutput: %s', ' '.join(args))
   child = subprocess.Popen(args,
       stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
   stdout, stderr = child.communicate()
@@ -397,12 +398,10 @@ def HermeticZipInfo(*args, **kwargs):
   """
   # The caller may have provided a date_time either as a positional parameter
   # (args[1]) or as a keyword parameter. Use the default hermetic date_time if
-  # none was provided.
-  date_time = None
+  # none was provided. Note that even if date_time is set, it can be None.
+  date_time = kwargs.get('date_time')
   if len(args) >= 2:
     date_time = args[1]
-  elif 'date_time' in kwargs:
-    date_time = kwargs['date_time']
   if not date_time:
     kwargs['date_time'] = HermeticDateTime()
   ret = zipfile.ZipInfo(*args, **kwargs)
@@ -655,8 +654,8 @@ def WriteDepfile(depfile_path, first_gn_output, inputs=None):
   # Ninja does not support multiple outputs in depfiles.
   with open(depfile_path, 'w') as depfile:
     depfile.write(first_gn_output.replace(' ', '\\ '))
-    depfile.write(': ')
-    depfile.write(' '.join(i.replace(' ', '\\ ') for i in inputs))
+    depfile.write(': \\\n ')
+    depfile.write(' \\\n '.join(i.replace(' ', '\\ ') for i in inputs))
     depfile.write('\n')
 
 

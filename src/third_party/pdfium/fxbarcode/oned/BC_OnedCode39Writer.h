@@ -17,7 +17,7 @@ class CBC_OnedCode39Writer final : public CBC_OneDimWriter {
 
   // CBC_OneDimWriter
   uint8_t* EncodeWithHint(const ByteString& contents,
-                          BCFORMAT format,
+                          BC_TYPE format,
                           int32_t& outWidth,
                           int32_t& outHeight,
                           int32_t hints) override;
@@ -27,7 +27,7 @@ class CBC_OnedCode39Writer final : public CBC_OneDimWriter {
                     int32_t codeLength) override;
   bool CheckContentValidity(WideStringView contents) override;
   WideString FilterContents(WideStringView contents) override;
-  bool SetTextLocation(BC_TEXT_LOC location) override;
+  void SetTextLocation(BC_TEXT_LOC location) override;
   bool SetWideNarrowRatio(int8_t ratio) override;
 
   WideString RenderTextContents(WideStringView contents);

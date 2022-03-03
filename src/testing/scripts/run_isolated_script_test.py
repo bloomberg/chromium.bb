@@ -1,35 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Runs a script that can run as an isolate (or not).
 
-The main requirement is that
+If optional argument --isolated-script-test-output=[FILENAME] is passed
+to the script, json is written to that file in the format detailed in
+//docs/testing/json-test-results-format.md.
 
-  --isolated-script-test-output=[FILENAME]
-
-is passed on the command line to run_isolated_script_tests. This gets
-remapped to the command line argument --write-full-results-to.
-
-json is written to that file in the format produced by
-common.parse_common_test_results.
-
-Optional argument:
-
-  --isolated-script-test-filter=[TEST_NAMES]
-
-is a double-colon-separated ("::") list of test names, to run just that subset
-of tests. This list is parsed by this harness and sent down via the --test-list
-argument.
+If optional argument --isolated-script-test-filter=[TEST_NAMES] is passed to
+the script, it should be a  double-colon-separated ("::") list of test names,
+to run just that subset of tests.
 
 This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
 """
-
-# TODO(tansell): Remove this script once LayoutTests can accept the isolated
-# arguments and start xvfb itself.
 
 import argparse
 import json
@@ -60,9 +47,14 @@ KNOWN_TYP_TEST_RUNNERS = {
     'run_blinkpy_tests.py',
     'run_mac_signing_tests.py',
     'run_mini_installer_tests.py',
-    'run_polymer_tools_tests.py',
+    'test_suite_all.py',  # //tools/grit:grit_python_unittests
 }
 
+KNOWN_TYP_VPYTHON3_TEST_RUNNERS = {
+    'monochrome_python_tests.py',
+    'run_polymer_tools_tests.py',
+    'test_suite_all.py',  # //tools/grit:grit_python_unittests
+}
 
 class IsolatedScriptTestAdapter(common.BaseIsolatedScriptArgsAdapter):
   def __init__(self):
@@ -118,6 +110,11 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
   def clean_up_after_test_run(self):
     if self._temp_filter_file:
       os.unlink(self._temp_filter_file.name)
+
+  def select_python_executable(self):
+    if any(r in self.rest_args[0] for r in KNOWN_TYP_VPYTHON3_TEST_RUNNERS):
+      return 'vpython3.bat' if sys.platform == 'win32' else 'vpython3'
+    return super(TypUnittestAdapter, self).select_python_executable()
 
   def run_test(self):
     return super(TypUnittestAdapter, self).run_test()

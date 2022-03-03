@@ -303,7 +303,12 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     OverlayInfo overlay_info;
 #endif
 
+    // Accelerated video decoding supported capabilities. "video_decoder..."
+    // refers to the direct VideoDecoder API and "video_decode_accelerator..."
+    // to the legacy VideoDecodeAccelerator API.
     VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
+    VideoDecodeAcceleratorSupportedProfiles video_decoder_capabilities;
+
     VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
     bool jpeg_decode_accelerator_supported;
@@ -313,6 +318,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 
     bool oop_rasterization_supported;
     bool subpixel_font_rendering;
+    uint32_t visibility_callback_call_count;
 
 #if BUILDFLAG(ENABLE_VULKAN)
     absl::optional<VulkanInfo> vulkan_info;
@@ -377,7 +383,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 
   // TODO(crbug.com/966839): Fix the two supported profile dumping below.
   for (const auto& profile :
-       video_decode_accelerator_capabilities.supported_profiles)
+       video_decode_accelerator_capabilities.supported_profiles) {
+    EnumerateVideoDecodeAcceleratorSupportedProfile(profile, enumerator);
+  }
+  for (const auto& profile : video_decoder_capabilities)
     EnumerateVideoDecodeAcceleratorSupportedProfile(profile, enumerator);
   for (const auto& profile : video_encode_accelerator_supported_profiles)
     EnumerateVideoEncodeAcceleratorSupportedProfile(profile, enumerator);
@@ -387,6 +396,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     EnumerateImageDecodeAcceleratorSupportedProfile(profile, enumerator);
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
   enumerator->AddBool("subpixelFontRendering", subpixel_font_rendering);
+  enumerator->AddInt("visibilityCallbackCallCount",
+                     visibility_callback_call_count);
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_info) {
     auto blob = vulkan_info->Serialize();

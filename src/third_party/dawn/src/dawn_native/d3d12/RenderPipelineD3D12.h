@@ -26,20 +26,29 @@ namespace dawn_native { namespace d3d12 {
 
     class RenderPipeline final : public RenderPipelineBase {
       public:
-        static ResultOrError<Ref<RenderPipeline>> Create(
-            Device* device,
-            const RenderPipelineDescriptor2* descriptor);
+        static Ref<RenderPipeline> CreateUninitialized(Device* device,
+                                                       const RenderPipelineDescriptor* descriptor);
+        static void InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
+                                    WGPUCreateRenderPipelineAsyncCallback callback,
+                                    void* userdata);
         RenderPipeline() = delete;
+
+        MaybeError Initialize() override;
 
         D3D12_PRIMITIVE_TOPOLOGY GetD3D12PrimitiveTopology() const;
         ID3D12PipelineState* GetPipelineState() const;
 
         const FirstOffsetInfo& GetFirstOffsetInfo() const;
 
+        // Dawn API
+        void SetLabelImpl() override;
+
       private:
         ~RenderPipeline() override;
+
+        void DestroyImpl() override;
+
         using RenderPipelineBase::RenderPipelineBase;
-        MaybeError Initialize(const RenderPipelineDescriptor2* descriptor);
         D3D12_INPUT_LAYOUT_DESC ComputeInputLayout(
             std::array<D3D12_INPUT_ELEMENT_DESC, kMaxVertexAttributes>* inputElementDescriptors);
 

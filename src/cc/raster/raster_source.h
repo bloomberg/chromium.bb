@@ -8,9 +8,11 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -50,7 +52,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     // Specifies the sample count if MSAA is enabled for this tile.
     int msaa_sample_count = 0;
 
-    ImageProvider* image_provider = nullptr;
+    raw_ptr<ImageProvider> image_provider = nullptr;
   };
 
   RasterSource(const RasterSource&) = delete;
@@ -125,6 +127,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   size_t* max_op_size_hint() { return &max_op_size_hint_; }
 
+  void set_debug_name(const std::string& name) { debug_name_ = name; }
+  const std::string& debug_name() const { return debug_name_; }
+
  protected:
   // RecordingSource is the only class that can create a raster source.
   friend class RecordingSource;
@@ -163,6 +168,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Size size_;
   const int slow_down_raster_scale_factor_for_debug_;
   const float recording_scale_factor_;
+  // Used for debugging and tracing.
+  std::string debug_name_;
 };
 
 }  // namespace cc

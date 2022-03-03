@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "components/media_router/browser/test/mock_screen_availability_listener.h"
 #include "components/media_router/common/media_source.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,6 +28,12 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
  public:
   PresentationMediaSinksObserverTest()
       : listener_(GURL("http://example.com/presentation.html")) {}
+
+  PresentationMediaSinksObserverTest(
+      const PresentationMediaSinksObserverTest&) = delete;
+  PresentationMediaSinksObserverTest& operator=(
+      const PresentationMediaSinksObserverTest&) = delete;
+
   ~PresentationMediaSinksObserverTest() override {}
 
   void SetUp() override {
@@ -52,14 +58,11 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
   MockMediaRouter router_;
   MockScreenAvailabilityListener listener_;
   std::unique_ptr<PresentationMediaSinksObserver> observer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PresentationMediaSinksObserverTest);
 };
 
 TEST_F(PresentationMediaSinksObserverTest, AvailableScreens) {
   std::vector<MediaSink> result;
-  result.push_back(MediaSink("sinkId", "Sink", SinkIconType::CAST));
+  result.push_back(CreateCastSink("sinkId", "Sink"));
 
   EXPECT_CALL(listener_, OnScreenAvailabilityChanged(
                              blink::mojom::ScreenAvailability::AVAILABLE))
@@ -87,7 +90,7 @@ TEST_F(PresentationMediaSinksObserverTest, ConsecutiveResults) {
 
   // |listener_| should get result since it changed to true.
   std::vector<MediaSink> result;
-  result.push_back(MediaSink("sinkId", "Sink", SinkIconType::CAST));
+  result.push_back(CreateCastSink("sinkId", "Sink"));
 
   EXPECT_CALL(listener_, OnScreenAvailabilityChanged(
                              blink::mojom::ScreenAvailability::AVAILABLE))
@@ -96,7 +99,7 @@ TEST_F(PresentationMediaSinksObserverTest, ConsecutiveResults) {
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&listener_));
 
   // Does not propagate result to |listener_| since result is same.
-  result.push_back(MediaSink("sinkId2", "Sink 2", SinkIconType::CAST));
+  result.push_back(CreateCastSink("sinkId2", "Sink 2"));
   observer_->OnSinksReceived(result);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&listener_));
 

@@ -200,7 +200,7 @@ class PermissionsPolicyParserParsingTest
       const Vector<PolicyParserMessageBuffer::Message>& actual,
       const std::vector<String> expected) {
     ASSERT_EQ(actual.size(), expected.size());
-    for (size_t i = 0; i < actual.size(); ++i) {
+    for (wtf_size_t i = 0; i < actual.size(); ++i) {
       EXPECT_EQ(actual[i].content, expected[i]);
     }
   }
@@ -644,6 +644,45 @@ TEST_F(PermissionsPolicyParserParsingTest,
 }
 
 TEST_F(PermissionsPolicyParserParsingTest,
+       OverlapDeclarationSingleWarningMessage) {
+  PolicyParserMessageBuffer feature_policy_logger("");
+  PolicyParserMessageBuffer permissions_policy_logger("");
+
+  CheckParsedPolicy(
+      PermissionsPolicyParser::ParseHeader(
+          "geolocation 'self', fullscreen 'self'" /* feature_policy_header */
+          ,
+          "geolocation=*, fullscreen=*" /* permissions_policy_header */
+          ,
+          origin_a_.get(), feature_policy_logger, permissions_policy_logger,
+          nullptr /* context */
+          ),
+      {
+          {
+              mojom::blink::PermissionsPolicyFeature::kGeolocation,
+              /* matches_all_origins */ true,
+              /* matches_opaque_src */ true,
+              {},
+          },
+          {
+              mojom::blink::PermissionsPolicyFeature::kFullscreen,
+              /* matches_all_origins */ true,
+              /* matches_opaque_src */ true,
+              {},
+          },
+      });
+
+  CheckConsoleMessage(feature_policy_logger.GetMessages(),
+                      {
+                          "Some features are specified in both Feature-Policy "
+                          "and Permissions-Policy header: geolocation, "
+                          "fullscreen. Values defined in "
+                          "Permissions-Policy header will be used.",
+                      });
+  CheckConsoleMessage(permissions_policy_logger.GetMessages(), {});
+}
+
+TEST_F(PermissionsPolicyParserParsingTest,
        FeaturePolicyHeaderPermissionsPolicyHeaderCoExistSeparateLogger) {
   PolicyParserMessageBuffer feature_policy_logger("Feature Policy: ");
   PolicyParserMessageBuffer permissions_policy_logger("Permissions Policy: ");
@@ -674,8 +713,8 @@ TEST_F(PermissionsPolicyParserParsingTest,
       feature_policy_logger.GetMessages(),
       {
           "Feature Policy: Unrecognized feature: 'worse-feature'.",
-          "Feature Policy: Feature geolocation has been specified in both "
-          "Feature-Policy and Permissions-Policy header. Value defined in "
+          "Feature Policy: Some features are specified in both Feature-Policy "
+          "and Permissions-Policy header: geolocation. Values defined in "
           "Permissions-Policy header will be used.",
       });
   CheckConsoleMessage(
@@ -1300,13 +1339,16 @@ TEST_F(FeaturePolicyMutationTest, TestAllowNewFeatureUnconditionally) {
 }
 
 class PermissionsPolicyViolationHistogramTest : public testing::Test {
+ public:
+  PermissionsPolicyViolationHistogramTest(
+      const PermissionsPolicyViolationHistogramTest&) = delete;
+  PermissionsPolicyViolationHistogramTest& operator=(
+      const PermissionsPolicyViolationHistogramTest&) = delete;
+
  protected:
   PermissionsPolicyViolationHistogramTest() = default;
 
   ~PermissionsPolicyViolationHistogramTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PermissionsPolicyViolationHistogramTest);
 };
 
 }  // namespace blink

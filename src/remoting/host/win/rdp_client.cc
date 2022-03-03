@@ -12,14 +12,14 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/typed_buffer.h"
-#include "remoting/host/screen_resolution.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/win/rdp_client_window.h"
 
 namespace remoting {
@@ -43,6 +43,9 @@ class RdpClient::Core
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       RdpClient::EventHandler* event_handler);
+
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
 
   // Initiates a loopback RDP connection.
   void Connect(const ScreenResolution& resolution,
@@ -79,15 +82,13 @@ class RdpClient::Core
 
   // Event handler receiving notification about connection state. The pointer is
   // cleared when Disconnect() methods is called, stopping any further updates.
-  RdpClient::EventHandler* event_handler_;
+  raw_ptr<RdpClient::EventHandler> event_handler_;
 
   // Hosts the RDP ActiveX control.
   std::unique_ptr<RdpClientWindow> rdp_client_window_;
 
   // A self-reference to keep the object alive during connection shutdown.
   scoped_refptr<Core> self_;
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 RdpClient::RdpClient(

@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 #if !BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #error
@@ -47,7 +49,9 @@ class ImmersiveRevealedLock;
 class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public gfx::AnimationDelegate,
                                    public views::AccessiblePaneView,
-                                   public views::ViewObserver {
+                                   public views::ViewObserver,
+                                   public views::WidgetObserver,
+                                   public content::WebContentsObserver {
  public:
   WebUITabStripContainerView(BrowserView* browser_view,
                              views::View* tab_contents_container,
@@ -85,6 +89,10 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // Finish the open or close animation if it's active.
   void FinishAnimationForTesting();
 
+  // content::WebContentsObserver:
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
+
  private:
   class AutoCloser;
   class DragToOpenHandler;
@@ -109,6 +117,8 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // Passed to the AutoCloser to handle closing.
   void CloseForEventOutsideTabStrip(TabStripUICloseAction reason);
 
+  void InitializeWebView();
+
   // TabStripUIEmbedder:
   const ui::AcceleratorProvider* GetAcceleratorProvider() const override;
   void CloseContainer() override;
@@ -120,9 +130,10 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void ShowEditDialogForGroupAtPoint(gfx::Point point,
                                      gfx::Rect rect,
                                      tab_groups::TabGroupId group) override;
+  void HideEditDialogForGroup() override;
   TabStripUILayout GetLayout() override;
   SkColor GetColor(int id) const override;
-  SkColor GetSystemColor(ui::NativeTheme::ColorId id) const override;
+  SkColor GetColorProviderColor(ui::ColorId id) const override;
 
   // views::View:
   int GetHeightForWidth(int w) const override;
@@ -138,15 +149,18 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+
   // views::AccessiblePaneView
   bool SetPaneFocusAndFocusDefault() override;
 
-  BrowserView* const browser_view_;
-  views::WebView* const web_view_;
-  views::View* const top_container_;
-  views::View* tab_contents_container_;
+  const raw_ptr<BrowserView> browser_view_;
+  const raw_ptr<views::WebView> web_view_;
+  const raw_ptr<views::View> top_container_;
+  raw_ptr<views::View> tab_contents_container_;
   views::View* tab_counter_ = nullptr;
-  views::View* new_tab_button_ = nullptr;
+  raw_ptr<views::View> new_tab_button_ = nullptr;
 
 #if defined(OS_WIN)
   // If the user interacts with Windows in a way that changes the width of the
@@ -178,6 +192,10 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
 
   base::ScopedMultiSourceObservation<views::View, views::ViewObserver>
       view_observations_{this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      scoped_widget_observation_{this};
+
+  raw_ptr<views::Widget> editor_bubble_widget_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

@@ -13,10 +13,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -240,7 +240,7 @@ void FakeShillServiceClient::ClearProperties(
   base::ListValue result;
   for (const auto& name : names) {
     // Note: Shill does not send notifications when properties are cleared.
-    result.AppendBoolean(dict->RemoveKey(name));
+    result.Append(dict->RemoveKey(name));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
@@ -304,7 +304,7 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
       base::BindOnce(&FakeShillServiceClient::SetProperty,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
                      shill::kStateProperty, base::Value(shill::kStateIdle),
-                     base::DoNothing::Once(), std::move(error_callback)),
+                     base::DoNothing(), std::move(error_callback)),
       GetInteractiveDelay());
   std::move(callback).Run();
 }
@@ -359,6 +359,37 @@ void FakeShillServiceClient::GetWiFiPassphrase(
   const std::string* passphrase =
       service_properties->FindStringKey(shill::kPassphraseProperty);
   std::move(callback).Run(passphrase ? *passphrase : std::string());
+}
+
+void FakeShillServiceClient::GetEapPassphrase(
+    const dbus::ObjectPath& service_path,
+    StringCallback callback,
+    ErrorCallback error_callback) {
+  base::Value* service_properties =
+      GetModifiableServiceProperties(service_path.value(), false);
+  if (!service_properties) {
+    LOG(ERROR) << "Service not found: " << service_path.value();
+    std::move(error_callback).Run("Error.InvalidService", "Invalid Service");
+    return;
+  }
+
+  const std::string* passphrase =
+      service_properties->FindStringKey(shill::kEapPasswordProperty);
+  std::move(callback).Run(passphrase ? *passphrase : std::string());
+}
+
+void FakeShillServiceClient::RequestTrafficCounters(
+    const dbus::ObjectPath& service_path,
+    DBusMethodCallback<base::Value> callback) {
+  std::move(callback).Run(fake_traffic_counters_.Clone());
+}
+
+void FakeShillServiceClient::ResetTrafficCounters(
+    const dbus::ObjectPath& service_path,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  fake_traffic_counters_.ClearList();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 ShillServiceClient::TestInterface* FakeShillServiceClient::GetTestInterface() {
@@ -510,10 +541,10 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   ShillProfileClient::TestInterface* profile_test =
       ShillProfileClient::Get()->GetTestInterface();
   if (property == shill::kProfileProperty) {
-    std::string profile_path;
-    if (value.GetAsString(&profile_path)) {
-      if (!profile_path.empty())
-        profile_test->AddService(profile_path, service_path);
+    const std::string* profile_path = value.GetIfString();
+    if (profile_path) {
+      if (!profile_path->empty())
+        profile_test->AddService(*profile_path, service_path);
     } else {
       LOG(ERROR) << "Profile value is not a String!";
     }
@@ -526,10 +557,8 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
 
   // Notify the Manager if the state changed (affects DefaultService).
   if (property == shill::kStateProperty) {
-    std::string state;
-    value.GetAsString(&state);
     ShillManagerClient::Get()->GetTestInterface()->ServiceStateChanged(
-        service_path, state);
+        service_path, value.is_string() ? value.GetString() : std::string());
   }
 
   // If the State or Visibility changes, the sort order of service lists may
@@ -598,7 +627,7 @@ bool FakeShillServiceClient::ClearConfiguredServiceProperties(
 
 std::string FakeShillServiceClient::FindServiceMatchingGUID(
     const std::string& guid) {
-  for (const auto& service_pair : stub_services_.DictItems()) {
+  for (const auto service_pair : stub_services_.DictItems()) {
     const auto& service_path = service_pair.first;
     const auto& service_properties = service_pair.second;
 
@@ -618,7 +647,7 @@ std::string FakeShillServiceClient::FindSimilarService(
   if (!template_type)
     return std::string();
 
-  for (const auto& service_pair : stub_services_.DictItems()) {
+  for (const auto service_pair : stub_services_.DictItems()) {
     const auto& service_path = service_pair.first;
     const auto& service_properties = service_pair.second;
 
@@ -783,6 +812,15 @@ void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
     SetServiceProperty(service_path, shill::kStateProperty,
                        base::Value(shill::kStateOnline));
   }
+}
+
+void FakeShillServiceClient::SetFakeTrafficCounters(
+    base::Value fake_traffic_counters) {
+  if (!fake_traffic_counters.is_list()) {
+    LOG(ERROR) << "Fake traffic counters must be a list";
+    return;
+  }
+  fake_traffic_counters_ = std::move(fake_traffic_counters);
 }
 
 }  // namespace chromeos

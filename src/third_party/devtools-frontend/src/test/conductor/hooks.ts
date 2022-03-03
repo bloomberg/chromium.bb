@@ -24,11 +24,18 @@ const DEFAULT_TAB = {
   selector: '.elements',
 };
 
-const width = 1280;
-const height = 720;
+const viewportWidth = 1280;
+const viewportHeight = 720;
+// Adding some offset to the window size used in the headful mode
+// so to account for the size of the browser UI.
+// Values are choosen by trial and error to make sure that the window
+// size is not much bigger than the viewport but so that the entire
+// viewport is visible.
+const windowWidth = viewportWidth + 50;
+const windowHeight = viewportHeight + 200;
 let unhandledRejectionSet = false;
 
-const headless = !process.env['DEBUG'];
+const headless = !process.env['DEBUG_TEST'];
 const envSlowMo = process.env['STRESS'] ? 50 : undefined;
 const envThrottleRate = process.env['STRESS'] ? 3 : 1;
 
@@ -37,11 +44,7 @@ const DEVTOOLS_WAITUNTIL_EVENTS: puppeteer.PuppeteerLifeCycleEvent[] = ['network
 // When loading an empty page (including within the devtools window), we wait for it to be loaded using these events.
 const EMPTY_PAGE_WAITUNTIL_EVENTS: puppeteer.PuppeteerLifeCycleEvent[] = ['domcontentloaded'];
 
-// TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
-const TEST_SERVER_TYPE = getTestRunnerConfigSetting('test-server-type', process.env.TEST_SERVER_TYPE);
-if (!TEST_SERVER_TYPE) {
-  throw new Error('Failed to run tests: test-server-type was not defined.');
-}
+const TEST_SERVER_TYPE = getTestRunnerConfigSetting<string>('test-server-type', 'hosted-mode');
 
 // TODO: move this into a file
 const ALLOWED_ASSERTION_FAILURES = [
@@ -82,21 +85,20 @@ interface DevToolsTarget {
   id: string;
 }
 
-// TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
-const envChromeBinary = getTestRunnerConfigSetting('chrome-binary-path', process.env['CHROME_BIN']);
-const envChromeFeatures = getTestRunnerConfigSetting('chrome-features', process.env['CHROME_FEATURES']);
+const envChromeBinary = getTestRunnerConfigSetting<string>('chrome-binary-path', process.env['CHROME_BIN'] || '');
+const envChromeFeatures = getTestRunnerConfigSetting<string>('chrome-features', process.env['CHROME_FEATURES'] || '');
 
 function launchChrome() {
   // Use port 0 to request any free port.
+  const enabledFeatures = ['Portals', 'PortalsCrossOrigin', 'PartitionedCookies'];
   const launchArgs = [
-    '--remote-debugging-port=0',
-    '--enable-experimental-web-platform-features',
+    '--remote-debugging-port=0', '--enable-experimental-web-platform-features',
     // This fingerprint may be generated from the certificate using
     // openssl x509 -noout -pubkey -in scripts/hosted_mode/cert.pem | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64
     '--ignore-certificate-errors-spki-list=KLy6vv6synForXwI6lDIl+D3ZrMV6Y1EMTY6YpOcAos=',
     '--site-per-process',  // Default on Desktop anyway, but ensure that we always use out-of-process frames when we intend to.
-    '--host-resolver-rules=MAP *.test 127.0.0.1',
-    '--disable-gpu',
+    '--host-resolver-rules=MAP *.test 127.0.0.1', '--disable-gpu',
+    '--enable-blink-features=CSSContainerQueries',  // TODO(crbug.com/1218390) Remove globally enabled flag and conditionally enable it
   ];
   const opts: puppeteer.LaunchOptions&puppeteer.BrowserLaunchArgumentOptions&puppeteer.BrowserConnectOptions = {
     headless,
@@ -105,16 +107,18 @@ function launchChrome() {
     slowMo: envSlowMo,
   };
 
+  // Always set the default viewport because setting only the window size for
+  // headful mode would result in much smaller actual viewport.
+  opts.defaultViewport = {width: viewportWidth, height: viewportHeight};
   // Toggle either viewport or window size depending on headless vs not.
-  if (headless) {
-    opts.defaultViewport = {width, height};
-  } else {
-    launchArgs.push(`--window-size=${width},${height}`);
+  if (!headless) {
+    launchArgs.push(`--window-size=${windowWidth},${windowHeight}`);
   }
 
   if (envChromeFeatures) {
-    launchArgs.push(`--enable-features=${envChromeFeatures}`);
+    enabledFeatures.push(envChromeFeatures);
   }
+  launchArgs.push(`--enable-features=${enabledFeatures.join(',')}`);
 
   opts.args = launchArgs;
   return puppeteer.launch(opts);
@@ -195,7 +199,6 @@ async function loadTargetPageAndFrontend(testServerPort: number) {
     await frontend.goto(frontendUrl, {waitUntil: DEVTOOLS_WAITUNTIL_EVENTS});
   }
 
-
   if (TEST_SERVER_TYPE === 'component-docs') {
     /**
      * In the component docs mode it points to the page where we load component
@@ -228,13 +231,22 @@ async function loadTargetPageAndFrontend(testServerPort: number) {
     unhandledRejectionSet = true;
   }
 
-  frontend.on('console', msg => {
+  frontend.on('console', async msg => {
     const logLevel = logLevels[msg.type() as keyof typeof logLevels] as string;
     if (logLevel) {
       if (logLevel === 'E') {
-        let message = `${logLevel}> ${msg.text()}`;
-        for (const frame of msg.stackTrace()) {
-          message += '\n' + formatStackFrame(frame);
+        let message = `${logLevel}> `;
+        if (msg.text() === 'JSHandle@error') {
+          const errorHandle: puppeteer.JSHandle<Error> = msg.args()[0];
+          message += await errorHandle.evaluate(error => {
+            return error.stack;
+          });
+          await errorHandle.dispose();
+        } else {
+          message += msg.text();
+          for (const frame of msg.stackTrace()) {
+            message += '\n' + formatStackFrame(frame);
+          }
         }
         if (ALLOWED_ASSERTION_FAILURES.includes(msg.text())) {
           expectedErrors.push(message);
@@ -265,13 +277,15 @@ export async function resetPages() {
   // Reload the target page.
   await loadEmptyPageAndWaitForContent(target);
 
+  // Under stress conditions throttle the CPU down.
+  await throttleCPUIfRequired();
+
   if (TEST_SERVER_TYPE === 'hosted-mode') {
-    const {frontend} = getBrowserAndPages();
     // Clear any local storage settings.
     await frontend.evaluate(() => localStorage.clear());
 
     await reloadDevTools();
-  } else {
+  } else if (TEST_SERVER_TYPE === 'component-docs') {
     // Reset the frontend back to an empty page for the component docs server.
     await loadEmptyPageAndWaitForContent(frontend);
   }
@@ -282,6 +296,17 @@ type ReloadDevToolsOptions = {
   canDock?: boolean,
   queryParams?: {panel?: string},
 };
+
+async function throttleCPUIfRequired(): Promise<void> {
+  const {frontend} = getBrowserAndPages();
+  // Under stress conditions throttle the CPU down.
+  if (envThrottleRate !== 1) {
+    console.log(`Throttling CPU: ${envThrottleRate}x slowdown`);
+
+    const client = await frontend.target().createCDPSession();
+    await client.send('Emulation.setCPUThrottlingRate', {rate: envThrottleRate});
+  }
+}
 
 export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
   const {frontend} = getBrowserAndPages();
@@ -309,14 +334,6 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
 
   if (!queryParams.panel && selectedPanel.selector) {
     await frontend.waitForSelector(selectedPanel.selector);
-  }
-
-  // Under stress conditions throttle the CPU down.
-  if (envThrottleRate !== 1) {
-    console.log(`Throttling CPU: ${envThrottleRate}x slowdown`);
-
-    const client = await frontend.target().createCDPSession();
-    await client.send('Emulation.setCPUThrottlingRate', {rate: envThrottleRate});
   }
 }
 

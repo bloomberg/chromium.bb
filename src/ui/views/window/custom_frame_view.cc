@@ -16,6 +16,8 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -88,7 +90,9 @@ CustomFrameView::CustomFrameView(Widget* frame)
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ =
         AddChildView(std::make_unique<ImageButton>(Button::PressedCallback()));
-    window_icon_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+    // `window_icon_` does not need to be focusable as it is not used here as a
+    // button and is not interactive.
+    window_icon_->SetFocusBehavior(FocusBehavior::NEVER);
   }
 }
 
@@ -141,9 +145,11 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
   if (window_icon_ && window_icon_->GetMirroredBounds().Contains(point))
     return HTSYSMENU;
 
+  gfx::Insets resize_border(NonClientBorderThickness());
+  // The top resize border has extra thickness.
+  resize_border.set_top(FrameBorderThickness());
   int window_component = GetHTComponentForFrame(
-      point, FrameBorderThickness(), NonClientBorderThickness(),
-      kResizeAreaCornerSize, kResizeAreaCornerSize,
+      point, resize_border, kResizeAreaCornerSize, kResizeAreaCornerSize,
       frame_->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -422,9 +428,8 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 SkColor CustomFrameView::GetFrameColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      frame_->IsActive() ? ui::NativeTheme::kColorId_CustomFrameActiveColor
-                         : ui::NativeTheme::kColorId_CustomFrameInactiveColor);
+  return GetColorProvider()->GetColor(
+      frame_->IsActive() ? ui::kColorFrameActive : ui::kColorFrameInactive);
 }
 
 gfx::ImageSkia CustomFrameView::GetFrameImage() const {
@@ -452,7 +457,7 @@ void CustomFrameView::LayoutWindowControls() {
 
   bool is_restored = !is_maximized && !frame_->IsMinimized();
   ImageButton* invisible_button =
-      is_restored ? restore_button_ : maximize_button_;
+      is_restored ? restore_button_.get() : maximize_button_.get();
   invisible_button->SetVisible(false);
 
   WindowButtonOrderProvider* button_order =
@@ -571,7 +576,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
     }
     case views::FrameButton::kMaximize: {
       bool is_restored = !frame_->IsMaximized() && !frame_->IsMinimized();
-      button = is_restored ? maximize_button_ : restore_button_;
+      button = is_restored ? maximize_button_.get() : restore_button_.get();
       // If we should not show the maximize/restore button, then we return
       // NULL as we don't want this button to become visible and to be laid
       // out.

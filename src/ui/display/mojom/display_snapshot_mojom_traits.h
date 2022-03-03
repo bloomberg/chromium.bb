@@ -23,6 +23,21 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
     return snapshot->display_id();
   }
 
+  static int64_t port_display_id(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->port_display_id();
+  }
+
+  static int64_t edid_display_id(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->edid_display_id();
+  }
+
+  static uint16_t connector_index(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->connector_index();
+  }
+
   static const gfx::Point& origin(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
     return snapshot->origin();
@@ -86,6 +101,11 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
   static uint32_t bits_per_channel(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
     return snapshot->bits_per_channel();
+  }
+
+  static const absl::optional<gfx::HDRStaticMetadata>& hdr_static_metadata(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->hdr_static_metadata();
   }
 
   static std::string display_name(

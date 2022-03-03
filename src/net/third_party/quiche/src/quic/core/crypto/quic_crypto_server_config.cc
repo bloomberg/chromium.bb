@@ -29,12 +29,10 @@
 #include "quic/core/crypto/key_exchange.h"
 #include "quic/core/crypto/p256_key_exchange.h"
 #include "quic/core/crypto/proof_source.h"
-#include "quic/core/crypto/proof_verifier.h"
 #include "quic/core/crypto/quic_decrypter.h"
 #include "quic/core/crypto/quic_encrypter.h"
 #include "quic/core/crypto/quic_hkdf.h"
 #include "quic/core/crypto/quic_random.h"
-#include "quic/core/crypto/server_proof_verifier.h"
 #include "quic/core/crypto/tls_server_connection.h"
 #include "quic/core/proto/crypto_server_config_proto.h"
 #include "quic/core/proto/source_address_token_proto.h"
@@ -244,7 +242,6 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       primary_config_(nullptr),
       next_config_promotion_time_(QuicWallTime::Zero()),
       proof_source_(std::move(proof_source)),
-      client_cert_mode_(ClientCertMode::kNone),
       key_exchange_source_(std::move(key_exchange_source)),
       ssl_ctx_(TlsServerConnection::CreateSslCtx(proof_source_.get())),
       source_address_token_future_secs_(3600),
@@ -1250,7 +1247,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
           configs.requested != nullptr ? *configs.requested : *configs.primary;
       source_address_token_error =
           ParseSourceAddressToken(*config.source_address_token_boxer, srct,
-                                  &info->source_address_tokens);
+                                  info->source_address_tokens);
 
       if (source_address_token_error == HANDSHAKE_OK) {
         source_address_token_error = ValidateSourceAddressTokens(
@@ -1628,15 +1625,6 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   static_assert(sizeof(config->orbit) == kOrbitSize, "incorrect orbit size");
   memcpy(config->orbit, orbit.data(), sizeof(config->orbit));
 
-  if ((kexs_tags.size() != static_cast<size_t>(protobuf.key_size())) &&
-      (!GetQuicRestartFlag(dont_fetch_quic_private_keys_from_leto) &&
-       protobuf.key_size() == 0)) {
-    QUIC_LOG(WARNING) << "Server config has " << kexs_tags.size()
-                      << " key exchange methods configured, but "
-                      << protobuf.key_size() << " private keys";
-    return nullptr;
-  }
-
   QuicTagVector proof_demand_tags;
   if (msg->GetTaglist(kPDMD, &proof_demand_tags) == QUIC_NO_ERROR) {
     for (QuicTag tag : proof_demand_tags) {
@@ -1761,38 +1749,20 @@ ProofSource* QuicCryptoServerConfig::proof_source() const {
   return proof_source_.get();
 }
 
-ServerProofVerifier* QuicCryptoServerConfig::proof_verifier() const {
-  return proof_verifier_.get();
-}
-
-void QuicCryptoServerConfig::set_proof_verifier(
-    std::unique_ptr<ServerProofVerifier> proof_verifier) {
-  proof_verifier_ = std::move(proof_verifier);
-}
-
-ClientCertMode QuicCryptoServerConfig::client_cert_mode() const {
-  return client_cert_mode_;
-}
-
-void QuicCryptoServerConfig::set_client_cert_mode(ClientCertMode mode) {
-  client_cert_mode_ = mode;
-}
-
 SSL_CTX* QuicCryptoServerConfig::ssl_ctx() const {
   return ssl_ctx_.get();
 }
 
 HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
-    const CryptoSecretBoxer& crypto_secret_boxer,
-    absl::string_view token,
-    SourceAddressTokens* tokens) const {
+    const CryptoSecretBoxer& crypto_secret_boxer, absl::string_view token,
+    SourceAddressTokens& tokens) const {
   std::string storage;
   absl::string_view plaintext;
   if (!crypto_secret_boxer.Unbox(token, &storage, &plaintext)) {
     return SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE;
   }
 
-  if (!tokens->ParseFromArray(plaintext.data(), plaintext.size())) {
+  if (!tokens.ParseFromArray(plaintext.data(), plaintext.size())) {
     // Some clients might still be using the old source token format so
     // attempt to parse that format.
     // TODO(rch): remove this code once the new format is ubiquitous.
@@ -1800,7 +1770,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
     if (!token.ParseFromArray(plaintext.data(), plaintext.size())) {
       return SOURCE_ADDRESS_TOKEN_PARSE_FAILURE;
     }
-    *tokens->add_tokens() = token;
+    *tokens.add_tokens() = token;
   }
 
   return HANDSHAKE_OK;
@@ -1816,7 +1786,8 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressTokens(
   for (const SourceAddressToken& token : source_address_tokens.tokens()) {
     reason = ValidateSingleSourceAddressToken(token, ip, now);
     if (reason == HANDSHAKE_OK) {
-      if (token.has_cached_network_parameters()) {
+      if (cached_network_params != nullptr &&
+          token.has_cached_network_parameters()) {
         *cached_network_params = token.cached_network_parameters();
       }
       break;

@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
@@ -66,6 +65,10 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
 
   WelcomeScreenHandler(JSCallsContainer* js_calls_container,
                        CoreOobeView* core_oobe_view);
+
+  WelcomeScreenHandler(const WelcomeScreenHandler&) = delete;
+  WelcomeScreenHandler& operator=(const WelcomeScreenHandler&) = delete;
+
   ~WelcomeScreenHandler() override;
 
   // WelcomeView:
@@ -110,8 +113,8 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();
 
-  // Returns available timezones. Caller gets the ownership.
-  static std::unique_ptr<base::ListValue> GetTimezoneList();
+  // Returns available timezones.
+  static base::ListValue GetTimezoneList();
 
   CoreOobeView* core_oobe_view_ = nullptr;
   ash::WelcomeScreen* screen_ = nullptr;
@@ -120,8 +123,6 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   bool show_on_init_ = false;
 
   base::CallbackListSubscription accessibility_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(WelcomeScreenHandler);
 };
 
 }  // namespace chromeos
@@ -129,6 +130,7 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
 namespace ash {
+using ::chromeos::WelcomeScreenHandler;
 using ::chromeos::WelcomeView;
 }
 

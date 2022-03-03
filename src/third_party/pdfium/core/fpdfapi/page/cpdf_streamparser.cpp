@@ -6,6 +6,8 @@
 
 #include "core/fpdfapi/page/cpdf_streamparser.h"
 
+#include <ctype.h>
+
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -29,6 +31,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/span_util.h"
 #include "third_party/base/check.h"
 
 namespace {
@@ -51,13 +54,18 @@ uint32_t DecodeAllScanlines(std::unique_ptr<ScanlineDecoder> pDecoder) {
   if (width <= 0 || height <= 0)
     return FX_INVALID_OFFSET;
 
-  FX_SAFE_UINT32 size = fxcodec::CalculatePitch8(bpc, ncomps, width);
+  absl::optional<uint32_t> maybe_size =
+      fxcodec::CalculatePitch8(bpc, ncomps, width);
+  if (!maybe_size.has_value())
+    return FX_INVALID_OFFSET;
+
+  FX_SAFE_UINT32 size = maybe_size.value();
   size *= height;
   if (size.ValueOrDefault(0) == 0)
     return FX_INVALID_OFFSET;
 
   for (int row = 0; row < height; ++row) {
-    if (!pDecoder->GetScanline(row))
+    if (pDecoder->GetScanline(row).empty())
       break;
   }
   return pDecoder->GetSrcOffset();
@@ -157,7 +165,12 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
     nComponents = pCS ? pCS->CountComponents() : 3;
     bpc = pDict->GetIntegerFor("BitsPerComponent");
   }
-  FX_SAFE_UINT32 size = fxcodec::CalculatePitch8(bpc, nComponents, width);
+  absl::optional<uint32_t> maybe_size =
+      fxcodec::CalculatePitch8(bpc, nComponents, width);
+  if (!maybe_size.has_value())
+    return nullptr;
+
+  FX_SAFE_UINT32 size = maybe_size.value();
   size *= height;
   if (!size.IsValid())
     return nullptr;
@@ -168,8 +181,8 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
   if (decoder.IsEmpty()) {
     dwOrigSize = std::min<uint32_t>(dwOrigSize, m_pBuf.size() - m_Pos);
     pData.reset(FX_AllocUninit(uint8_t, dwOrigSize));
-    auto copy_span = m_pBuf.subspan(m_Pos, dwOrigSize);
-    memcpy(pData.get(), copy_span.data(), copy_span.size());
+    auto dest_span = pdfium::make_span(pData.get(), dwOrigSize);
+    fxcrt::spancpy(dest_span, m_pBuf.subspan(m_Pos, dwOrigSize));
     dwStreamSize = dwOrigSize;
     m_Pos += dwOrigSize;
   } else {
@@ -182,11 +195,11 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
     m_Pos += dwStreamSize;
     while (1) {
       uint32_t dwPrevPos = m_Pos;
-      CPDF_StreamParser::SyntaxType type = ParseNextElement();
-      if (type == CPDF_StreamParser::EndOfData)
+      ElementType type = ParseNextElement();
+      if (type == ElementType::kEndOfData)
         break;
 
-      if (type != CPDF_StreamParser::Keyword) {
+      if (type != ElementType::kKeyword) {
         dwStreamSize += m_Pos - dwPrevPos;
         continue;
       }
@@ -198,8 +211,8 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
     }
     m_Pos = dwSavePos;
     pData.reset(FX_AllocUninit(uint8_t, dwStreamSize));
-    auto copy_span = m_pBuf.subspan(m_Pos, dwStreamSize);
-    memcpy(pData.get(), copy_span.data(), copy_span.size());
+    auto dest_span = pdfium::make_span(pData.get(), dwStreamSize);
+    fxcrt::spancpy(dest_span, m_pBuf.subspan(m_Pos, dwStreamSize));
     m_Pos += dwStreamSize;
   }
   pDict->SetNewFor<CPDF_Number>("Length", static_cast<int>(dwStreamSize));
@@ -207,17 +220,17 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
                                          std::move(pDict));
 }
 
-CPDF_StreamParser::SyntaxType CPDF_StreamParser::ParseNextElement() {
+CPDF_StreamParser::ElementType CPDF_StreamParser::ParseNextElement() {
   m_pLastObj.Reset();
   m_WordSize = 0;
   if (!PositionIsInBounds())
-    return EndOfData;
+    return ElementType::kEndOfData;
 
   uint8_t ch = m_pBuf[m_Pos++];
   while (1) {
     while (PDFCharIsWhitespace(ch)) {
       if (!PositionIsInBounds())
-        return EndOfData;
+        return ElementType::kEndOfData;
 
       ch = m_pBuf[m_Pos++];
     }
@@ -227,7 +240,7 @@ CPDF_StreamParser::SyntaxType CPDF_StreamParser::ParseNextElement() {
 
     while (1) {
       if (!PositionIsInBounds())
-        return EndOfData;
+        return ElementType::kEndOfData;
 
       ch = m_pBuf[m_Pos++];
       if (PDFCharIsLineEnding(ch))
@@ -238,7 +251,7 @@ CPDF_StreamParser::SyntaxType CPDF_StreamParser::ParseNextElement() {
   if (PDFCharIsDelimiter(ch) && ch != '/') {
     m_Pos--;
     m_pLastObj = ReadNextObject(false, false, 0);
-    return Others;
+    return ElementType::kOther;
   }
 
   bool bIsNumber = true;
@@ -262,27 +275,27 @@ CPDF_StreamParser::SyntaxType CPDF_StreamParser::ParseNextElement() {
 
   m_WordBuffer[m_WordSize] = 0;
   if (bIsNumber)
-    return Number;
+    return ElementType::kNumber;
 
   if (m_WordBuffer[0] == '/')
-    return Name;
+    return ElementType::kName;
 
   if (m_WordSize == 4) {
-    if (WordBufferMatches(kTrue)) {
+    if (GetWord() == kTrue) {
       m_pLastObj = pdfium::MakeRetain<CPDF_Boolean>(true);
-      return Others;
+      return ElementType::kOther;
     }
-    if (WordBufferMatches(kNull)) {
+    if (GetWord() == kNull) {
       m_pLastObj = pdfium::MakeRetain<CPDF_Null>();
-      return Others;
+      return ElementType::kOther;
     }
   } else if (m_WordSize == 5) {
-    if (WordBufferMatches(kFalse)) {
+    if (GetWord() == kFalse) {
       m_pLastObj = pdfium::MakeRetain<CPDF_Boolean>(false);
-      return Others;
+      return ElementType::kOther;
     }
   }
-  return Keyword;
+  return ElementType::kKeyword;
 }
 
 RetainPtr<CPDF_Object> CPDF_StreamParser::ReadNextObject(
@@ -333,8 +346,7 @@ RetainPtr<CPDF_Object> CPDF_StreamParser::ReadNextObject(
       if (!pObj)
         return nullptr;
 
-      if (!key.IsEmpty())
-        pDict->SetFor(key, std::move(pObj));
+      pDict->SetFor(key, std::move(pObj));
     }
     return pDict;
   }
@@ -357,11 +369,11 @@ RetainPtr<CPDF_Object> CPDF_StreamParser::ReadNextObject(
     return pArray;
   }
 
-  if (WordBufferMatches(kFalse))
+  if (GetWord() == kFalse)
     return pdfium::MakeRetain<CPDF_Boolean>(false);
-  if (WordBufferMatches(kTrue))
+  if (GetWord() == kTrue)
     return pdfium::MakeRetain<CPDF_Boolean>(true);
-  if (WordBufferMatches(kNull))
+  if (GetWord() == kNull)
     return pdfium::MakeRetain<CPDF_Null>();
   return nullptr;
 }
@@ -561,7 +573,7 @@ ByteString CPDF_StreamParser::ReadHexString() {
     if (ch == '>')
       break;
 
-    if (!std::isxdigit(ch))
+    if (!isxdigit(ch))
       continue;
 
     int val = FXSYS_HexCharToInt(ch);
@@ -586,9 +598,4 @@ ByteString CPDF_StreamParser::ReadHexString() {
 
 bool CPDF_StreamParser::PositionIsInBounds() const {
   return m_Pos < m_pBuf.size();
-}
-
-bool CPDF_StreamParser::WordBufferMatches(const char* pWord) const {
-  const size_t iLength = strlen(pWord);
-  return m_WordSize == iLength && memcmp(m_WordBuffer, pWord, iLength) == 0;
 }

@@ -21,23 +21,18 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::Void);
 namespace tint {
 namespace ast {
 
-Void::Void(ProgramID program_id, const Source& source)
-    : Base(program_id, source) {}
+Void::Void(ProgramID pid, const Source& src) : Base(pid, src) {}
 
 Void::Void(Void&&) = default;
 
 Void::~Void() = default;
 
-std::string Void::type_name() const {
-  return "__void";
-}
-
 std::string Void::FriendlyName(const SymbolTable&) const {
   return "void";
 }
 
-Void* Void::Clone(CloneContext* ctx) const {
-  auto src = ctx->Clone(source());
+const Void* Void::Clone(CloneContext* ctx) const {
+  auto src = ctx->Clone(source);
   return ctx->dst->create<Void>(src);
 }
 

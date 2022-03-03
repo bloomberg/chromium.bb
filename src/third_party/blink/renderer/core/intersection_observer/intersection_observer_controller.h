@@ -24,7 +24,7 @@ class IntersectionObserverController
       public NameClient {
  public:
   explicit IntersectionObserverController(ExecutionContext*);
-  virtual ~IntersectionObserverController();
+  ~IntersectionObserverController() override;
 
   void ScheduleIntersectionObserverForDelivery(IntersectionObserver&);
 
@@ -38,7 +38,8 @@ class IntersectionObserverController
   // communicates whether observer->trackVisibility() is true for any tracked
   // observer.
   bool ComputeIntersections(unsigned flags,
-                            LocalFrameUkmAggregator& ukm_aggregator);
+                            LocalFrameUkmAggregator& ukm_aggregator,
+                            absl::optional<base::TimeTicks>& monotonic_time);
 
   // The second argument indicates whether the Element is a target of any
   // observers for which observer->trackVisibility() is true.

@@ -8,15 +8,16 @@
 #include <string>
 #include <utility>
 
-#include "base/bind_post_task.h"
 #include "base/hash/hash.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
@@ -56,6 +57,8 @@ scoped_refptr<media::VideoFrame> CopyFrame(
   if (frame->HasTextures()) {
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
            frame->format() == media::PIXEL_FORMAT_XRGB ||
+           frame->format() == media::PIXEL_FORMAT_ABGR ||
+           frame->format() == media::PIXEL_FORMAT_XBGR ||
            frame->format() == media::PIXEL_FORMAT_I420 ||
            frame->format() == media::PIXEL_FORMAT_NV12);
     auto provider = Platform::Current()->SharedMainThreadContextProvider();
@@ -83,9 +86,15 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     }
   } else {
     DCHECK(frame->IsMappable());
-    DCHECK(frame->format() == media::PIXEL_FORMAT_I420A ||
-           frame->format() == media::PIXEL_FORMAT_I420 ||
-           frame->format() == media::PIXEL_FORMAT_NV12);
+    if (frame->format() != media::PIXEL_FORMAT_I420A &&
+        frame->format() != media::PIXEL_FORMAT_I420 &&
+        frame->format() != media::PIXEL_FORMAT_NV12 &&
+        frame->format() != media::PIXEL_FORMAT_ARGB) {
+      DLOG(WARNING) << frame->format() << " is not supported.";
+      return media::VideoFrame::CreateColorFrame(
+          frame->visible_rect().size(), 0u, 0x80, 0x80, frame->timestamp());
+    }
+
     const gfx::Size& coded_size = frame->coded_size();
     new_frame = media::VideoFrame::CreateFrame(
         frame->format(), coded_size, frame->visible_rect(),
@@ -104,6 +113,12 @@ scoped_refptr<media::VideoFrame> CopyFrame(
                        new_frame->stride(media::VideoFrame::kYPlane),
                        new_frame->data(media::VideoFrame::kUVPlane),
                        new_frame->stride(media::VideoFrame::kUVPlane),
+                       coded_size.width(), coded_size.height());
+    } else if (frame->format() == media::PIXEL_FORMAT_ARGB) {
+      libyuv::ARGBCopy(frame->data(media::VideoFrame::kARGBPlane),
+                       frame->stride(media::VideoFrame::kARGBPlane),
+                       new_frame->data(media::VideoFrame::kARGBPlane),
+                       new_frame->stride(media::VideoFrame::kARGBPlane),
                        coded_size.width(), coded_size.height());
     } else {
       libyuv::I420Copy(frame->data(media::VideoFrame::kYPlane),
@@ -160,7 +175,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       player_(player),
       video_frame_provider_client_(nullptr),
       current_frame_rendered_(false),
-      last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
+      last_render_length_(base::Seconds(1.0 / 60.0)),
       total_frame_count_(0),
       dropped_frame_count_(0),
       stopped_(true),
@@ -258,7 +273,7 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     video_frame_provider_client_->StopUsingProvider();
   }
 
-  submitter_->SetRotation(transformation.rotation);
+  submitter_->SetTransform(transformation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->EnableSubmission(id);
   video_frame_provider_client_ = submitter_.get();
@@ -461,10 +476,13 @@ void WebMediaPlayerMSCompositor::PutCurrentFrame() {
 base::TimeDelta WebMediaPlayerMSCompositor::GetPreferredRenderInterval() {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   if (!rendering_frame_buffer_) {
+    DCHECK_GE(last_render_length_, base::TimeDelta());
     return last_render_length_;
-  } else {
-    return rendering_frame_buffer_->average_frame_duration();
   }
+
+  DCHECK_GE(rendering_frame_buffer_->average_frame_duration(),
+            base::TimeDelta());
+  return rendering_frame_buffer_->average_frame_duration();
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {
@@ -584,8 +602,10 @@ void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
   {
     base::AutoLock auto_lock(current_frame_lock_);
     // Last timestamp in the stream might not have timestamp.
-    if (current_frame_ && !frame->timestamp().is_zero())
+    if (current_frame_ && !frame->timestamp().is_zero() &&
+        frame->timestamp() > current_frame_->timestamp()) {
       last_render_length_ = frame->timestamp() - current_frame_->timestamp();
+    }
     SetCurrentFrame(std::move(frame), is_copy, absl::nullopt);
   }
   if (video_frame_provider_client_)
@@ -611,9 +631,10 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   bool is_first_frame = true;
   bool has_frame_size_changed = false;
 
-  absl::optional<media::VideoRotation> new_rotation = media::VIDEO_ROTATION_0;
+  absl::optional<media::VideoTransformation> new_transform =
+      media::kNoTransformation;
   if (frame->metadata().transformation)
-    new_rotation = frame->metadata().transformation->rotation;
+    new_transform = frame->metadata().transformation;
 
   absl::optional<bool> new_opacity;
   new_opacity = media::IsOpaque(frame->format());
@@ -622,19 +643,16 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
     // We have a current frame, so determine what has changed.
     is_first_frame = false;
 
-    auto current_video_rotation = media::VIDEO_ROTATION_0;
-    if (current_frame_->metadata().transformation) {
-      current_video_rotation =
-          current_frame_->metadata().transformation->rotation;
-    }
-
+    auto current_video_transform =
+        current_frame_->metadata().transformation.value_or(
+            media::kNoTransformation);
     has_frame_size_changed =
-        RotationAdjustedSize(*new_rotation, frame->natural_size()) !=
-        RotationAdjustedSize(current_video_rotation,
+        RotationAdjustedSize(new_transform->rotation, frame->natural_size()) !=
+        RotationAdjustedSize(current_video_transform.rotation,
                              current_frame_->natural_size());
 
-    if (current_video_rotation == *new_rotation)
-      new_rotation.reset();
+    if (current_video_transform == *new_transform)
+      new_transform.reset();
 
     if (*new_opacity == media::IsOpaque(current_frame_->format()))
       new_opacity.reset();
@@ -667,14 +685,14 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
       *video_frame_compositor_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebMediaPlayerMSCompositor::CheckForFrameChanges,
                           WrapRefCounted(this), is_first_frame,
-                          has_frame_size_changed, std::move(new_rotation),
+                          has_frame_size_changed, std::move(new_transform),
                           std::move(new_opacity)));
 }
 
 void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     bool is_first_frame,
     bool has_frame_size_changed,
-    absl::optional<media::VideoRotation> new_frame_rotation,
+    absl::optional<media::VideoTransformation> new_frame_transform,
     absl::optional<bool> new_frame_opacity) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
 
@@ -682,17 +700,17 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&WebMediaPlayerMS::OnFirstFrameReceived, player_,
-                            *new_frame_rotation, *new_frame_opacity));
+                            *new_frame_transform, *new_frame_opacity));
     return;
   }
 
-  if (new_frame_rotation.has_value()) {
+  if (new_frame_transform.has_value()) {
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(&WebMediaPlayerMS::OnRotationChanged, player_,
-                            *new_frame_rotation));
+        CrossThreadBindOnce(&WebMediaPlayerMS::OnTransformChanged, player_,
+                            *new_frame_transform));
     if (submitter_)
-      submitter_->SetRotation(*new_frame_rotation);
+      submitter_->SetTransform(*new_frame_transform);
   }
   if (new_frame_opacity.has_value()) {
     PostCrossThreadTask(*main_task_runner_, FROM_HERE,
@@ -703,10 +721,10 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&WebMediaPlayerMS::TriggerResize, player_));
+    PostCrossThreadTask(
+        *main_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&WebMediaPlayerMS::ResetCanvasCache, player_));
   }
-  PostCrossThreadTask(
-      *main_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }
 
 void WebMediaPlayerMSCompositor::StartRenderingInternal() {
@@ -806,6 +824,9 @@ WebMediaPlayerMSCompositor::GetLastPresentedFrameMetadata() {
     frame_metadata->average_frame_duration = last_preferred_render_interval_;
     frame_metadata->rendering_interval = last_render_length_;
   }
+
+  if (base::FeatureList::IsEnabled(media::kKeepRvfcFrameAlive))
+    frame_metadata->frame = last_frame;
 
   frame_metadata->width = last_frame->visible_rect().width();
   frame_metadata->height = last_frame->visible_rect().height();

@@ -20,8 +20,6 @@
  */
 #include "sync_utils.h"
 #include "state_tracker.h"
-#include "descriptor_sets.h"
-#include "core_validation_types.h"
 #include "synchronization_validation_types.h"
 
 namespace sync_utils {
@@ -35,7 +33,7 @@ VkPipelineStageFlags2KHR DisabledPipelineStages(const DeviceFeatures &features) 
     if (!features.core.tessellationShader) {
         result |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
     }
-    if (!features.conditional_rendering.conditionalRendering) {
+    if (!features.conditional_rendering_features.conditionalRendering) {
         result |= VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT;
     }
     if (!features.fragment_density_map_features.fragmentDensityMap) {
@@ -44,13 +42,14 @@ VkPipelineStageFlags2KHR DisabledPipelineStages(const DeviceFeatures &features) 
     if (!features.transform_feedback_features.transformFeedback) {
         result |= VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT;
     }
-    if (!features.mesh_shader.meshShader) {
+    if (!features.mesh_shader_features.meshShader) {
         result |= VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV;
     }
-    if (!features.mesh_shader.taskShader) {
+    if (!features.mesh_shader_features.taskShader) {
         result |= VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV;
     }
-    if (!features.fragment_shading_rate_features.pipelineFragmentShadingRate && !features.shading_rate_image.shadingRateImage) {
+    if (!features.fragment_shading_rate_features.pipelineFragmentShadingRate &&
+        !features.shading_rate_image_features.shadingRateImage) {
         result |= VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
     }
     // TODO: VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR

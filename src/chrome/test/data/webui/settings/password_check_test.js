@@ -12,13 +12,14 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {makeCompromisedCredential, makeInsecureCredential, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {getSyncAllPrefs,simulateSyncStatus} from 'chrome://test/settings/sync_test_util.js';
-import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
-import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {OpenWindowProxyImpl, PasswordCheckInteraction, PasswordManagerImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+
+import {makeCompromisedCredential, makeInsecureCredential, makePasswordCheckStatus} from './passwords_and_autofill_fake_data.js';
+import {getSyncAllPrefs,simulateSyncStatus} from './sync_test_util.js';
+import {TestOpenWindowProxy} from './test_open_window_proxy.js';
+import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
+import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
 
 // clang-format on
 
@@ -212,11 +213,11 @@ suite('PasswordsCheckSection', function() {
     PolymerTest.clearBody();
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
-    PasswordManagerImpl.instance_ = passwordManager;
+    PasswordManagerImpl.setInstance(passwordManager);
 
     // Override the SyncBrowserProxyImpl for testing.
     syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
     syncBrowserProxy.syncStatus = {signedIn: false};
   });
 
@@ -239,9 +240,7 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('startBulkPasswordCheck');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
-        interaction);
+    assertEquals(PasswordCheckInteraction.START_CHECK_MANUALLY, interaction);
   });
 
   // Test verifies that clicking 'Start Check' make proper function call to
@@ -259,9 +258,7 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('startBulkPasswordCheck');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
-        interaction);
+    assertEquals(PasswordCheckInteraction.START_CHECK_MANUALLY, interaction);
   });
 
   // Test verifies that clicking 'Check again' make proper function call to
@@ -281,8 +278,7 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('stopBulkPasswordCheck');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.STOP_CHECK, interaction);
+    assertEquals(PasswordCheckInteraction.STOP_CHECK, interaction);
   });
 
   // Test verifies that sync users see only the link to account checkup and no
@@ -349,9 +345,7 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('startBulkPasswordCheck');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
-        interaction);
+    assertEquals(PasswordCheckInteraction.START_CHECK_MANUALLY, interaction);
   });
 
   // Test verifies that 'Check again' is shown when users is signed out.
@@ -370,9 +364,7 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('startBulkPasswordCheck');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
-        interaction);
+    assertEquals(PasswordCheckInteraction.START_CHECK_MANUALLY, interaction);
   });
 
   // Test verifies that 'Try again' is hidden when users encounter a
@@ -400,9 +392,7 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('startBulkPasswordCheck');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
-        interaction);
+    assertEquals(PasswordCheckInteraction.START_CHECK_MANUALLY, interaction);
   });
 
   // Test verifies that if no compromised credentials found than list of
@@ -451,27 +441,29 @@ suite('PasswordsCheckSection', function() {
     password.changePasswordUrl = null;
 
     const checkPasswordSection = createLeakedPasswordItem(password);
-    assertEquals(checkPasswordSection.$$('changePasswordUrl'), null);
-    assertTrue(!!checkPasswordSection.$$('#changePasswordInApp'));
+    assertEquals(
+        checkPasswordSection.shadowRoot.querySelector('changePasswordUrl'),
+        null);
+    assertTrue(!!checkPasswordSection.shadowRoot.querySelector(
+        '#changePasswordInApp'));
   });
 
   // Verify that a click on "Change password" opens the expected URL and
   // records a corresponding user action.
   test('changePasswordOpensUrlAndRecordsAction', async function() {
     const testOpenWindowProxy = new TestOpenWindowProxy();
-    OpenWindowProxyImpl.instance_ = testOpenWindowProxy;
+    OpenWindowProxyImpl.setInstance(testOpenWindowProxy);
 
     const password = makeCompromisedCredential('one.com', 'test4', 'LEAKED');
     const passwordCheckListItem = createLeakedPasswordItem(password);
-    passwordCheckListItem.$$('#changePasswordButton').click();
+    passwordCheckListItem.shadowRoot.querySelector('#changePasswordButton')
+        .click();
 
     const url = await testOpenWindowProxy.whenCalled('openURL');
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
     assertEquals('http://one.com/', url);
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.CHANGE_PASSWORD,
-        interaction);
+    assertEquals(PasswordCheckInteraction.CHANGE_PASSWORD, interaction);
   });
 
   // Verify that the More Actions menu opens when the button is clicked.
@@ -485,7 +477,8 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('getCompromisedCredentials');
     flush();
     assertFalse(checkPasswordSection.$.compromisedCredentialsBody.hidden);
-    const listElement = checkPasswordSection.$$('password-check-list-item');
+    const listElement = checkPasswordSection.shadowRoot.querySelector(
+        'password-check-list-item');
     const menu = checkPasswordSection.$.moreActionsMenu;
 
     assertFalse(menu.open);
@@ -504,9 +497,7 @@ suite('PasswordsCheckSection', function() {
     const {id, username, formattedOrigin} =
         await passwordManager.whenCalled('removeInsecureCredential');
 
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.REMOVE_PASSWORD,
-        interaction);
+    assertEquals(PasswordCheckInteraction.REMOVE_PASSWORD, interaction);
     assertEquals(0, id);
     assertEquals('test4', username);
     assertEquals('one.com', formattedOrigin);
@@ -587,8 +578,9 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    const icon = checkPasswordSection.$$('iron-icon');
-    const spinner = checkPasswordSection.$$('paper-spinner-lite');
+    const icon = checkPasswordSection.shadowRoot.querySelector('iron-icon');
+    const spinner =
+        checkPasswordSection.shadowRoot.querySelector('paper-spinner-lite');
     expectFalse(isElementVisible(spinner));
     assertTrue(isElementVisible(icon));
     expectFalse(icon.classList.contains('has-security-issues'));
@@ -606,8 +598,9 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    const icon = checkPasswordSection.$$('iron-icon');
-    const spinner = checkPasswordSection.$$('paper-spinner-lite');
+    const icon = checkPasswordSection.shadowRoot.querySelector('iron-icon');
+    const spinner =
+        checkPasswordSection.shadowRoot.querySelector('paper-spinner-lite');
     expectFalse(isElementVisible(spinner));
     assertTrue(isElementVisible(icon));
     expectTrue(icon.classList.contains('has-security-issues'));
@@ -626,8 +619,9 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    const icon = checkPasswordSection.$$('iron-icon');
-    const spinner = checkPasswordSection.$$('paper-spinner-lite');
+    const icon = checkPasswordSection.shadowRoot.querySelector('iron-icon');
+    const spinner =
+        checkPasswordSection.shadowRoot.querySelector('paper-spinner-lite');
     expectFalse(isElementVisible(spinner));
     assertTrue(isElementVisible(icon));
     expectFalse(icon.classList.contains('has-security-issues'));
@@ -638,9 +632,10 @@ suite('PasswordsCheckSection', function() {
   test('showStrongCtaOnLeaks', function() {
     const password = makeCompromisedCredential('one.com', 'test6', 'LEAKED');
     const passwordCheckListItem = createLeakedPasswordItem(password);
-    const button = passwordCheckListItem.$$('#changePasswordButton');
+    const button =
+        passwordCheckListItem.shadowRoot.querySelector('#changePasswordButton');
     assertTrue(button.classList.contains('action-button'));
-    const icon = passwordCheckListItem.$$('iron-icon');
+    const icon = passwordCheckListItem.shadowRoot.querySelector('iron-icon');
     assertFalse(icon.classList.contains('icon-weak-cta'));
   });
 
@@ -648,9 +643,10 @@ suite('PasswordsCheckSection', function() {
   test('showWeakCtaOnWeaksPasswords', function() {
     const password = makeInsecureCredential('one.com', 'test7');
     const passwordCheckListItem = createLeakedPasswordItem(password);
-    const button = passwordCheckListItem.$$('#changePasswordButton');
+    const button =
+        passwordCheckListItem.shadowRoot.querySelector('#changePasswordButton');
     assertFalse(button.classList.contains('action-button'));
-    const icon = passwordCheckListItem.$$('iron-icon');
+    const icon = passwordCheckListItem.shadowRoot.querySelector('iron-icon');
     assertTrue(icon.classList.contains('icon-weak-cta'));
   });
 
@@ -664,8 +660,9 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    const icon = checkPasswordSection.$$('iron-icon');
-    const spinner = checkPasswordSection.$$('paper-spinner-lite');
+    const icon = checkPasswordSection.shadowRoot.querySelector('iron-icon');
+    const spinner =
+        checkPasswordSection.shadowRoot.querySelector('paper-spinner-lite');
     expectFalse(isElementVisible(spinner));
     assertTrue(isElementVisible(icon));
     expectFalse(icon.classList.contains('has-security-issues'));
@@ -682,8 +679,9 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    const icon = checkPasswordSection.$$('iron-icon');
-    const spinner = checkPasswordSection.$$('paper-spinner-lite');
+    const icon = checkPasswordSection.shadowRoot.querySelector('iron-icon');
+    const spinner =
+        checkPasswordSection.shadowRoot.querySelector('paper-spinner-lite');
     expectTrue(isElementVisible(spinner));
     expectFalse(isElementVisible(icon));
   });
@@ -876,7 +874,7 @@ suite('PasswordsCheckSection', function() {
     expectEquals(section.i18n('checkPasswordsCanceled'), title.innerText);
   });
 
-  // Before the first run, show only a description of what the check does.
+  // Before the first run, show nothing.
   test('showOnlyDescriptionIfNotRun', async function() {
     const section = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
@@ -885,7 +883,7 @@ suite('PasswordsCheckSection', function() {
     const subtitle = section.$.subtitle;
     assertTrue(isElementVisible(title));
     assertFalse(isElementVisible(subtitle));
-    expectEquals(section.i18n('checkPasswordsDescription'), title.innerText);
+    expectEquals('', title.innerText);
   });
 
   // After running, show confirmation, timestamp and number of leaks.
@@ -970,10 +968,10 @@ suite('PasswordsCheckSection', function() {
             1);
     expectEquals(count, subtitle.textContent.trim());
 
-    expectTrue(
-        section.$$('iron-icon').classList.contains('has-security-issues'));
-    expectFalse(
-        section.$$('iron-icon').classList.contains('no-security-issues'));
+    expectTrue(section.shadowRoot.querySelector('iron-icon')
+                   .classList.contains('has-security-issues'));
+    expectFalse(section.shadowRoot.querySelector('iron-icon')
+                    .classList.contains('no-security-issues'));
 
     assertTrue(isElementVisible(section.$.compromisedCredentialsBody));
     assertTrue(isElementVisible(section.$.signedOutUserLabel));
@@ -1005,10 +1003,10 @@ suite('PasswordsCheckSection', function() {
     assertTrue(isElementVisible(title));
     expectEquals(section.i18n('checkedPasswords'), title.innerText);
     assertTrue(isElementVisible(subtitle));
-    expectTrue(
-        section.$$('iron-icon').classList.contains('no-security-issues'));
-    expectFalse(
-        section.$$('iron-icon').classList.contains('has-security-issues'));
+    expectTrue(section.shadowRoot.querySelector('iron-icon')
+                   .classList.contains('no-security-issues'));
+    expectFalse(section.shadowRoot.querySelector('iron-icon')
+                    .classList.contains('has-security-issues'));
 
     assertTrue(isElementVisible(section.$.compromisedCredentialsBody));
     assertTrue(isElementVisible(section.$.signedOutUserLabel));
@@ -1100,10 +1098,11 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    assertTrue(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
     expectEquals(
         'chrome://settings/images/password_check_positive.svg',
-        checkPasswordSection.$$('#bannerImage').src);
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage').src);
   });
 
   // Test that the banner indicates a neutral state if no check was run yet.
@@ -1115,10 +1114,11 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    assertTrue(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
     expectEquals(
         'chrome://settings/images/password_check_neutral.svg',
-        checkPasswordSection.$$('#bannerImage').src);
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage').src);
   });
 
   // Test that the banner is in a state that shows that the leak check is
@@ -1133,10 +1133,11 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    assertTrue(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
     expectEquals(
         'chrome://settings/images/password_check_neutral.svg',
-        checkPasswordSection.$$('#bannerImage').src);
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage').src);
   });
 
   // Test that the banner is in a state that shows that the leak check is
@@ -1150,10 +1151,11 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    assertTrue(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
     expectEquals(
         'chrome://settings/images/password_check_neutral.svg',
-        checkPasswordSection.$$('#bannerImage').src);
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage').src);
   });
 
   // Test that the banner isn't visible as soon as the first leak is detected.
@@ -1169,7 +1171,8 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    expectFalse(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
   });
 
   // Test that the banner isn't visible if a leak is detected after a check.
@@ -1184,7 +1187,8 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    expectFalse(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
   });
 
   // Test that the banner isn't visible if a leak is detected after canceling.
@@ -1199,7 +1203,8 @@ suite('PasswordsCheckSection', function() {
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getPasswordCheckStatus');
     flush();
-    expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+    expectFalse(isElementVisible(
+        checkPasswordSection.shadowRoot.querySelector('#bannerImage')));
   });
 
   // Test verifies that new credentials are added to the bottom
@@ -1307,8 +1312,8 @@ suite('PasswordsCheckSection', function() {
     await passwordManager.whenCalled('getPlaintextInsecurePassword');
     // Verify that the edit dialog has not become visible.
     flush();
-    expectFalse(isElementVisible(
-        checkPasswordSection.$$('settings-password-check-edit-dialog')));
+    expectFalse(isElementVisible(checkPasswordSection.shadowRoot.querySelector(
+        'settings-password-check-edit-dialog')));
 
     // Verify that the more actions menu is closed.
     expectFalse(checkPasswordSection.$.moreActionsMenu.open);
@@ -1337,8 +1342,8 @@ suite('PasswordsCheckSection', function() {
 
     // Verify that the edit dialog has become visible.
     flush();
-    expectTrue(isElementVisible(
-        checkPasswordSection.$$('settings-password-check-edit-dialog')));
+    expectTrue(isElementVisible(checkPasswordSection.shadowRoot.querySelector(
+        'settings-password-check-edit-dialog')));
 
     // Verify that the more actions menu is closed.
     expectFalse(checkPasswordSection.$.moreActionsMenu.open);
@@ -1367,9 +1372,7 @@ suite('PasswordsCheckSection', function() {
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
     const {newPassword} =
         await passwordManager.whenCalled('changeInsecureCredential');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.EDIT_PASSWORD,
-        interaction);
+    assertEquals(PasswordCheckInteraction.EDIT_PASSWORD, interaction);
     assertEquals('yadhtribym', newPassword);
   });
 
@@ -1394,8 +1397,7 @@ suite('PasswordsCheckSection', function() {
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
     assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_AUTOMATICALLY,
-        interaction);
+        PasswordCheckInteraction.START_CHECK_AUTOMATICALLY, interaction);
     Router.getInstance().resetRouteForTesting();
   });
 
@@ -1421,9 +1423,7 @@ suite('PasswordsCheckSection', function() {
     const interaction =
         await passwordManager.whenCalled('recordPasswordCheckInteraction');
 
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckInteraction.SHOW_PASSWORD,
-        interaction);
+    assertEquals(PasswordCheckInteraction.SHOW_PASSWORD, interaction);
     const {reason} =
         await passwordManager.whenCalled('getPlaintextInsecurePassword');
     expectEquals(chrome.passwordsPrivate.PlaintextReason.VIEW, reason);
@@ -1470,10 +1470,13 @@ suite('PasswordsCheckSection', function() {
     const listElements = checkPasswordSection.$.leakedPasswordList;
     const passwordCheckListItem = listElements.children[0];
 
-    assertFalse(isElementVisible(passwordCheckListItem.$$('#alreadyChanged')));
-    passwordCheckListItem.$$('#changePasswordButton').click();
+    assertFalse(isElementVisible(
+        passwordCheckListItem.shadowRoot.querySelector('#alreadyChanged')));
+    passwordCheckListItem.shadowRoot.querySelector('#changePasswordButton')
+        .click();
     flush();
-    assertTrue(isElementVisible(passwordCheckListItem.$$('#alreadyChanged')));
+    assertTrue(isElementVisible(
+        passwordCheckListItem.shadowRoot.querySelector('#alreadyChanged')));
   });
 
   // Verify if clicking "Edit password" in edit disclaimer opens edit dialog
@@ -1489,21 +1492,22 @@ suite('PasswordsCheckSection', function() {
     const listElements = checkPasswordSection.$.leakedPasswordList;
     const node = listElements.children[0];
     // Clicking change password to show "Already changed password" link
-    node.$$('#changePasswordButton').click();
+    node.shadowRoot.querySelector('#changePasswordButton').click();
     flush();
     // Clicking "Already changed password" to open edit disclaimer
-    node.$$('#alreadyChanged').click();
+    node.shadowRoot.querySelector('#alreadyChanged').click();
     flush();
 
-    assertTrue(isElementVisible(
-        checkPasswordSection.$$('settings-password-edit-disclaimer-dialog')));
-    checkPasswordSection.$$('settings-password-edit-disclaimer-dialog')
+    assertTrue(isElementVisible(checkPasswordSection.shadowRoot.querySelector(
+        'settings-password-edit-disclaimer-dialog')));
+    checkPasswordSection.shadowRoot
+        .querySelector('settings-password-edit-disclaimer-dialog')
         .$.edit.click();
 
     await passwordManager.whenCalled('getPlaintextInsecurePassword');
     flush();
-    assertTrue(isElementVisible(
-        checkPasswordSection.$$('settings-password-check-edit-dialog')));
+    assertTrue(isElementVisible(checkPasswordSection.shadowRoot.querySelector(
+        'settings-password-check-edit-dialog')));
   });
 
   if (isChromeOS) {

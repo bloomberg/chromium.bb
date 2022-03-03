@@ -103,7 +103,8 @@ JNI_PerformanceHintsObserver_IsContextMenuPerformanceInfoEnabled(JNIEnv* env) {
 
 PerformanceHintsObserver::PerformanceHintsObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PerformanceHintsObserver>(*web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -432,7 +433,10 @@ void PerformanceHintsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(navigation_handle);
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted()) {
     // Use the same hints if the main frame hasn't changed.
@@ -455,6 +459,6 @@ void PerformanceHintsObserver::DidFinishNavigation(
   page_url_ = navigation_handle->GetURL();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PerformanceHintsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PerformanceHintsObserver);
 
 }  // namespace performance_hints

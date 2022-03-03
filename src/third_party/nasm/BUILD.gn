@@ -78,6 +78,9 @@ config("nasm_config") {
 
       # NASM sometimes uses uninitialized values.
       "-Wno-uninitialized",
+
+      # NASM sometimes set variables but doesn't use them.
+      "-Wno-unused-but-set-variable",
     ]
   } else if (is_win) {
     # Please note that's a slightly different set of warnings.

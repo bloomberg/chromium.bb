@@ -18,16 +18,13 @@ In `tf.losses` and `tf.metrics`, we support limited weight broadcasting. This
 file includes operations for those broadcasting rules.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import sets
+from tensorflow.python.util.tf_export import tf_export
 
 
 def _has_valid_dims(weights_shape, values_shape):
@@ -97,10 +94,10 @@ def assert_broadcastable(weights, values):
         return control_flow_ops.no_op(name="static_scalar_check_success")
       if weights_rank_static != values_rank_static:
         raise ValueError(
-            "%s values.rank=%s. weights.rank=%s."
-            " values.shape=%s. weights.shape=%s." % (
-                _ASSERT_BROADCASTABLE_ERROR_PREFIX, values_rank_static,
-                weights_rank_static, values.shape, weights.shape))
+            f"{_ASSERT_BROADCASTABLE_ERROR_PREFIX} values.rank="
+            f"{values_rank_static}. weights.rank={weights_rank_static}. "
+            f"values.shape={values.shape}. weights.shape={weights.shape}. "
+            f"Received weights={weights}, values={values}")
       weights_shape_static = tensor_util.constant_value(weights_shape)
       values_shape_static = tensor_util.constant_value(values_shape)
       if weights_shape_static is not None and values_shape_static is not None:
@@ -111,9 +108,10 @@ def assert_broadcastable(weights, values):
         for i in range(ndims):
           if weights_shape_static[i] not in (1, values_shape_static[i]):
             raise ValueError(
-                "%s Mismatch at dim %s. values.shape=%s weights.shape=%s." % (
-                    _ASSERT_BROADCASTABLE_ERROR_PREFIX, i, values_shape_static,
-                    weights_shape_static))
+                f"{_ASSERT_BROADCASTABLE_ERROR_PREFIX} Mismatch at dim {i}. "
+                f"values.shape={values_shape_static}, weights.shape="
+                f"{weights_shape_static}. Received weights={weights}, "
+                f"values={values}")
         return control_flow_ops.no_op(name="static_dims_check_success")
 
     # Dynamic checks.
@@ -133,6 +131,7 @@ def assert_broadcastable(weights, values):
     return control_flow_ops.Assert(is_valid_shape, data, name=scope)
 
 
+@tf_export("__internal__.ops.broadcast_weights", v1=[])
 def broadcast_weights(weights, values):
   """Broadcast `weights` to the same shape as `values`.
 
@@ -164,6 +163,13 @@ def broadcast_weights(weights, values):
         weights_shape.is_compatible_with(values_shape)):
       return weights
 
+    # Skip the assert_broadcastable on TPU/GPU because asserts are not
+    # supported so it only causes unnecessary ops. Also skip it because it uses
+    # a DenseToDenseSetOperation op that is incompatible with the TPU/GPU when
+    # the shape(s) are dynamic.
+    if control_flow_ops.get_enclosing_xla_context() is not None:
+      return math_ops.multiply(
+          weights, array_ops.ones_like(values), name=scope)
     with ops.control_dependencies((assert_broadcastable(weights, values),)):
       return math_ops.multiply(
           weights, array_ops.ones_like(values), name=scope)

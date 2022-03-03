@@ -14,7 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace gfx {
 
@@ -24,11 +24,11 @@ namespace {
 constexpr int64_t kMaxArcSize = 270;
 
 // The amount of time it takes to grow the "spinning" arc from 0 to 270 degrees.
-constexpr auto kArcTime = base::TimeDelta::FromSecondsD(2.0 / 3.0);
+constexpr auto kArcTime = base::Seconds(2.0 / 3.0);
 
 // The amount of time it takes for the "spinning" throbber to make a full
 // rotation.
-constexpr auto kRotationTime = base::TimeDelta::FromMilliseconds(1568);
+constexpr auto kRotationTime = base::Milliseconds(1568);
 
 void PaintArc(Canvas* canvas,
               const Rect& bounds,
@@ -69,7 +69,7 @@ void CalculateWaitingAngles(const base::TimeDelta& elapsed_time,
   // the throbber spins counter-clockwise. The finish angle starts at 12 o'clock
   // (90 degrees) and rotates steadily. The start angle trails 180 degrees
   // behind, except for the first half revolution, when it stays at 12 o'clock.
-  constexpr auto kRevolutionTime = base::TimeDelta::FromMilliseconds(1320);
+  constexpr auto kRevolutionTime = base::Milliseconds(1320);
   int64_t twelve_oclock = 90;
   int64_t finish_angle_cc =
       twelve_oclock +
@@ -85,13 +85,9 @@ void CalculateWaitingAngles(const base::TimeDelta& elapsed_time,
 
 // This is a Skia port of the MD spinner SVG. The |start_angle| rotation
 // here corresponds to the 'rotate' animation.
-void PaintThrobberSpinningWithStartAngle(
-    Canvas* canvas,
-    const Rect& bounds,
-    SkColor color,
-    const base::TimeDelta& elapsed_time,
-    int64_t start_angle,
-    absl::optional<SkScalar> stroke_width) {
+ThrobberSpinningState CalculateThrobberSpinningStateWithStartAngle(
+    base::TimeDelta elapsed_time,
+    int64_t start_angle) {
   // The sweep angle ranges from -270 to 270 over 1333ms. CSS
   // animation timing functions apply in between key frames, so we have to
   // break up the 1333ms into two keyframes (-270 to 0, then 0 to 270).
@@ -118,21 +114,51 @@ void PaintThrobberSpinningWithStartAngle(
   // To keep the sweep smooth, we have an additional rotation after each
   // arc period has elapsed. See SVG's 'rot' animation.
   const int64_t rot_keyframe = (sweep_frame / 2) % 4;
-  PaintArc(canvas, bounds, color, start_angle + rot_keyframe * kMaxArcSize,
-           sweep, stroke_width);
+  start_angle = start_angle + rot_keyframe * kMaxArcSize;
+  return ThrobberSpinningState{
+      .start_angle = static_cast<SkScalar>(start_angle),
+      .sweep_angle = static_cast<SkScalar>(sweep)};
+}
+
+void PaintThrobberSpinningWithState(Canvas* canvas,
+                                    const Rect& bounds,
+                                    SkColor color,
+                                    const ThrobberSpinningState& state,
+                                    absl::optional<SkScalar> stroke_width) {
+  PaintArc(canvas, bounds, color, state.start_angle, state.sweep_angle,
+           stroke_width);
+}
+
+void PaintThrobberSpinningWithStartAngle(
+    Canvas* canvas,
+    const Rect& bounds,
+    SkColor color,
+    const base::TimeDelta& elapsed_time,
+    int64_t start_angle,
+    absl::optional<SkScalar> stroke_width) {
+  const ThrobberSpinningState state =
+      CalculateThrobberSpinningStateWithStartAngle(elapsed_time, start_angle);
+  PaintThrobberSpinningWithState(canvas, bounds, color, state, stroke_width);
 }
 
 }  // namespace
+
+ThrobberSpinningState CalculateThrobberSpinningState(
+    base::TimeDelta elapsed_time) {
+  const int64_t start_angle =
+      270 + base::ClampRound<int64_t>(elapsed_time / kRotationTime * 360);
+  return CalculateThrobberSpinningStateWithStartAngle(elapsed_time,
+                                                      start_angle);
+}
 
 void PaintThrobberSpinning(Canvas* canvas,
                            const Rect& bounds,
                            SkColor color,
                            const base::TimeDelta& elapsed_time,
                            absl::optional<SkScalar> stroke_width) {
-  const int64_t start_angle =
-      270 + base::ClampRound<int64_t>(elapsed_time / kRotationTime * 360);
-  PaintThrobberSpinningWithStartAngle(canvas, bounds, color, elapsed_time,
-                                      start_angle, stroke_width);
+  const ThrobberSpinningState state =
+      CalculateThrobberSpinningState(elapsed_time);
+  PaintThrobberSpinningWithState(canvas, bounds, color, state, stroke_width);
 }
 
 void PaintThrobberWaiting(Canvas* canvas,
@@ -161,7 +187,7 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
     for (int64_t arc_ms = 0; arc_ms <= kArcTime.InMillisecondsRoundedUp();
          ++arc_ms) {
       const base::TimeDelta arc_time =
-          std::min(base::TimeDelta::FromMilliseconds(arc_ms), kArcTime);
+          std::min(base::Milliseconds(arc_ms), kArcTime);
       if (kMaxArcSize * Tween::CalculateValue(Tween::FAST_OUT_SLOW_IN,
                                               arc_time / kArcTime) >=
           waiting_sweep) {
@@ -173,9 +199,9 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
   }
 
   // Blend the color between "waiting" and "spinning" states.
-  constexpr auto kColorFadeTime = base::TimeDelta::FromMilliseconds(900);
-  const float color_progress = float{Tween::CalculateValue(
-      Tween::LINEAR_OUT_SLOW_IN, std::min(elapsed_time / kColorFadeTime, 1.0))};
+  constexpr auto kColorFadeTime = base::Milliseconds(900);
+  const float color_progress = static_cast<float>(Tween::CalculateValue(
+      Tween::LINEAR_OUT_SLOW_IN, std::min(elapsed_time / kColorFadeTime, 1.0)));
   const SkColor blend_color =
       color_utils::AlphaBlend(color, waiting_state->color, color_progress);
 
@@ -195,7 +221,7 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
                                         SkColor color,
                                         const base::TimeDelta& elapsed_time) {
   // Cycle time for the waiting throbber.
-  constexpr auto kNewThrobberWaitingCycleTime = base::TimeDelta::FromSeconds(1);
+  constexpr auto kNewThrobberWaitingCycleTime = base::Seconds(1);
 
   // The throbber bounces back and forth. We map the elapsed time to 0->2. Time
   // 0->1 represents when the throbber moves left to right, time 1->2 represents

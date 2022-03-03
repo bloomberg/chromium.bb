@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "base/containers/queue.h"
 #include "base/i18n/streaming_utf8_validator.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -76,6 +76,10 @@ class NET_EXPORT WebSocketChannel {
   // connection process.
   WebSocketChannel(std::unique_ptr<WebSocketEventInterface> event_interface,
                    URLRequestContext* url_request_context);
+
+  WebSocketChannel(const WebSocketChannel&) = delete;
+  WebSocketChannel& operator=(const WebSocketChannel&) = delete;
+
   virtual ~WebSocketChannel();
 
   // Starts the connection process.
@@ -329,7 +333,7 @@ class NET_EXPORT WebSocketChannel {
   const std::unique_ptr<WebSocketEventInterface> event_interface_;
 
   // The URLRequestContext to pass to the WebSocketStream creator.
-  URLRequestContext* const url_request_context_;
+  const raw_ptr<URLRequestContext> url_request_context_;
 
   // The WebSocketStream on which to send and receive data.
   std::unique_ptr<WebSocketStream> stream_;
@@ -388,8 +392,6 @@ class NET_EXPORT WebSocketChannel {
 
   // True if we're waiting for OnReadDone() callback.
   bool is_reading_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
 
 }  // namespace net

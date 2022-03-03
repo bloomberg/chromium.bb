@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -32,6 +31,11 @@ class IOSChromeLargeIconServiceFactory
   // registered with SetTestingFactory to use real instances during testing.
   static TestingFactory GetDefaultFactory();
 
+  IOSChromeLargeIconServiceFactory(const IOSChromeLargeIconServiceFactory&) =
+      delete;
+  IOSChromeLargeIconServiceFactory& operator=(
+      const IOSChromeLargeIconServiceFactory&) = delete;
+
  private:
   friend class base::NoDestructor<IOSChromeLargeIconServiceFactory>;
 
@@ -44,8 +48,6 @@ class IOSChromeLargeIconServiceFactory
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeLargeIconServiceFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_FAVICON_IOS_CHROME_LARGE_ICON_SERVICE_FACTORY_H_

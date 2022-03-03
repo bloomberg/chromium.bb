@@ -30,9 +30,11 @@
 
 namespace libgav1 {
 
-constexpr bool IsGlobalMvBlock(bool is_global_mv_block,
+constexpr bool IsGlobalMvBlock(const BlockParameters& bp,
                                GlobalMotionTransformationType type) {
-  return is_global_mv_block &&
+  return (bp.y_mode == kPredictionModeGlobalMv ||
+          bp.y_mode == kPredictionModeGlobalGlobalMv) &&
+         !IsBlockDimension4(bp.size) &&
          type > kGlobalMotionTransformationTypeTranslation;
 }
 

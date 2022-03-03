@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_enums.h"
+#include "ui/gl/gl_fence.h"
 
 namespace viz {
 
@@ -35,14 +36,14 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
-  // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
+  // Set |max_pending_swaps| to 2 for buffer_queue, which aligns scheduling
   // more closely with the previous surfaced behavior.
   // With a surface, swap buffer ack used to return early, before actually
   // presenting the back buffer, enabling the browser compositor to run ahead.
   // BufferQueue implementation acks at the time of actual buffer swap, which
   // shifts the start of the new frame forward relative to the old
   // implementation.
-  capabilities_.max_frames_pending = 2;
+  capabilities_.pending_swap_params.max_pending_swaps = 2;
   // GetCurrentFramebufferDamage will return an upper bound of the part of the
   // buffer that needs to be recomposited.
 #if defined(OS_APPLE)
@@ -56,7 +57,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   // allocates at most one additional buffer.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDoubleBufferCompositing)) {
-    capabilities_.max_frames_pending = 1;
+    capabilities_.pending_swap_params.max_pending_swaps = 1;
     buffer_queue_->SetMaxBuffers(2);
   }
 
@@ -98,11 +99,22 @@ void GLOutputSurfaceBufferQueue::BindFramebuffer() {
 
   DCHECK(buffer_queue_);
   gpu::SyncToken creation_sync_token;
+  gfx::GpuFenceHandle release_fence;
   const gpu::Mailbox current_buffer =
-      buffer_queue_->GetCurrentBuffer(&creation_sync_token);
+      buffer_queue_->GetCurrentBuffer(&creation_sync_token, &release_fence);
   if (current_buffer.IsZero())
     return;
   gl->WaitSyncTokenCHROMIUM(creation_sync_token.GetConstData());
+  if (!release_fence.is_null()) {
+    auto fence = gfx::GpuFence(std::move(release_fence));
+    if (gl::GLFence::IsGpuFenceSupported()) {
+      auto id = gl->CreateClientGpuFenceCHROMIUM(fence.AsClientGpuFence());
+      gl->WaitGpuFenceCHROMIUM(id);
+      gl->DestroyGpuFenceCHROMIUM(id);
+    } else {
+      fence.Wait();
+    }
+  }
   unsigned& buffer_texture = buffer_queue_textures_[current_buffer];
   if (!buffer_texture) {
     buffer_texture =
@@ -231,7 +243,8 @@ gpu::Mailbox GLOutputSurfaceBufferQueue::GetOverlayMailbox() const {
 }
 
 void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
-    const gfx::SwapResponse& response) {
+    const gfx::SwapResponse& response,
+    gfx::GpuFenceHandle release_fence) {
   bool force_swap = false;
   if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
@@ -264,9 +277,9 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
     force_swap = true;
   }
 
-  buffer_queue_->PageFlipComplete();
+  buffer_queue_->PageFlipComplete(release_fence.Clone());
   client()->DidReceiveSwapBuffersAck(response.timings,
-                                     /*release_fence=*/gfx::GpuFenceHandle());
+                                     std::move(release_fence));
 
   if (force_swap)
     client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));

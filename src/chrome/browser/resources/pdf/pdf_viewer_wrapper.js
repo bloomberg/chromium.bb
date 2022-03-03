@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+export {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 export {BrowserApi, ZoomBehavior} from './browser_api.js';
 export {FittingType, SaveRequestType} from './constants.js';
 export {PluginController} from './controller.js';
@@ -14,8 +15,12 @@ export {ViewerPdfSidenavElement} from './elements/viewer-pdf-sidenav.js';
 export {ViewerPropertiesDialogElement} from './elements/viewer-properties-dialog.js';
 export {ViewerThumbnailBarElement} from './elements/viewer-thumbnail-bar.js';
 export {PAINTED_ATTRIBUTE, ViewerThumbnailElement} from './elements/viewer-thumbnail.js';
+// <if expr="enable_ink">
+export {ViewerToolbarDropdownElement} from './elements/viewer-toolbar-dropdown.js';
+// </if>
 export {ViewerToolbarElement} from './elements/viewer-toolbar.js';
 export {GestureDetector, PinchEventDetail} from './gesture_detector.js';
+export {UnseasonedPdfPluginElement} from './internal_plugin.js';
 export {record, recordFitTo, resetForTesting, UserAction} from './metrics.js';
 export {NavigatorDelegate, PdfNavigator, WindowOpenDisposition} from './navigator.js';
 export {OpenPdfParamsParser} from './open_pdf_params_parser.js';
@@ -24,7 +29,3 @@ export {getFilenameFromURL, PDFViewerElement} from './pdf_viewer.js';
 export {shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 export {LayoutOptions, PAGE_SHADOW, Viewport} from './viewport.js';
 export {ZoomManager} from './zoom_manager.js';
-
-// <if expr="enable_ink">
-export {ViewerToolbarDropdownElement} from './elements/viewer-toolbar-dropdown.js';
-// </if>

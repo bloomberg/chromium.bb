@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -14,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -23,7 +23,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
-#include "components/omnibox/browser/actions/omnibox_pedal.h"
+#include "base/trace_event/trace_event.h"
+#include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -36,6 +37,7 @@
 #include "url/third_party/mozilla/url_parse.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
@@ -212,7 +214,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                              : nullptr),
       keyword(match.keyword),
       from_keyword(match.from_keyword),
-      pedal(match.pedal),
+      action(match.action),
       from_previous(match.from_previous),
       search_terms_args(
           match.search_terms_args
@@ -232,9 +234,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept {
 
 AutocompleteMatch& AutocompleteMatch::operator=(
     AutocompleteMatch&& match) noexcept {
-  if (this == &match) {
-    return *this;
-  }
   provider = std::move(match.provider);
   relevance = std::move(match.relevance);
   typed_count = std::move(match.typed_count);
@@ -271,19 +270,18 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   associated_keyword = std::move(match.associated_keyword);
   keyword = std::move(match.keyword);
   from_keyword = std::move(match.from_keyword);
-  pedal = std::move(match.pedal);
+  action = std::move(match.action);
   from_previous = std::move(match.from_previous);
   search_terms_args = std::move(match.search_terms_args);
   post_content = std::move(match.post_content);
-  // TODO(crbug/1217575): Remove this once the bug is closed, assuming it is not
-  // directly responsible for the crash.
-  std::swap(additional_info, match.additional_info);
+  additional_info = std::move(match.additional_info);
   duplicate_matches = std::move(match.duplicate_matches);
   query_tiles = std::move(match.query_tiles);
   navsuggest_tiles = std::move(match.navsuggest_tiles);
 #if defined(OS_ANDROID)
   DestroyJavaObject();
   std::swap(java_match_, match.java_match_);
+  std::swap(matching_java_tab_, match.matching_java_tab_);
   UpdateJavaObjectNativeRef();
 #endif
   return *this;
@@ -336,7 +334,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
           : nullptr);
   keyword = match.keyword;
   from_keyword = match.from_keyword;
-  pedal = match.pedal;
+  action = match.action;
   from_previous = match.from_previous;
   search_terms_args.reset(
       match.search_terms_args
@@ -365,15 +363,36 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 }
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+// static
+const gfx::VectorIcon& AutocompleteMatch::AnswerTypeToAnswerIcon(int type) {
+  switch (static_cast<SuggestionAnswer::AnswerType>(type)) {
+    case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
+      return omnibox::kAnswerCurrencyIcon;
+    case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
+      return omnibox::kAnswerDictionaryIcon;
+    case SuggestionAnswer::ANSWER_TYPE_FINANCE:
+      return omnibox::kAnswerFinanceIcon;
+    case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
+      return omnibox::kAnswerSunriseIcon;
+    case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
+      return omnibox::kAnswerTranslationIcon;
+    case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
+      return omnibox::kAnswerWhenIsIcon;
+    default:
+      return omnibox::kAnswerDefaultIcon;
+  }
+}
+
 const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     bool is_bookmark) const {
   // TODO(https://crbug.com/1024114): Remove crash logging once fixed.
   SCOPED_CRASH_KEY_NUMBER("AutocompleteMatch", "type", type);
   SCOPED_CRASH_KEY_NUMBER("AutocompleteMatch", "provider_type",
                           provider ? provider->type() : -1);
-
   if (is_bookmark)
     return omnibox::kBookmarkIcon;
+  if (answer.has_value())
+    return AnswerTypeToAnswerIcon(answer->type());
   switch (type) {
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:
@@ -699,10 +718,17 @@ bool AutocompleteMatch::IsSearchHistoryType(Type type) {
 }
 
 // static
-bool AutocompleteMatch::IsPedalCompatibleType(Type type) {
+bool AutocompleteMatch::IsActionCompatibleType(Type type) {
   // Note: There is a PEDAL type, but it is deprecated because Pedals always
   // attach to matches of other types instead of creating dedicated matches.
-  return type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  return type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+         // Attaching to Tail Suggest types looks weird, and is actually
+         // technically wrong because the Pedals annotator (and history clusters
+         // annotator) both use match.contents. If we do want to turn on Actions
+         // for tail suggest in the future, we should switch to using
+         // match.fill_into_edit or maybe page title for URL matches, and come
+         // up with a UI design for the button in the tail suggest layout.
+         type != AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 }
 
 // static
@@ -799,8 +825,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
       (input.terms_prefixed_by_http_or_https().empty() ||
        !WordMatchesURLContent(
            input.terms_prefixed_by_http_or_https(), url))) {
-    replacements.SetScheme(url::kHttpScheme,
-                           url::Component(0, strlen(url::kHttpScheme)));
+    replacements.SetSchemeStr(url::kHttpScheme);
     needs_replacement = true;
   }
 
@@ -905,11 +930,13 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(
 
 void AutocompleteMatch::GetKeywordUIState(
     TemplateURLService* template_url_service,
-    std::u16string* keyword,
+    std::u16string* keyword_out,
     bool* is_keyword_hint) const {
   *is_keyword_hint = associated_keyword != nullptr;
-  keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
-      GetSubstitutingExplicitlyInvokedKeyword(template_url_service));
+  keyword_out->assign(
+      *is_keyword_hint
+          ? associated_keyword->keyword
+          : GetSubstitutingExplicitlyInvokedKeyword(template_url_service));
 }
 
 std::u16string AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
@@ -1069,7 +1096,7 @@ bool AutocompleteMatch::IsTrivialAutocompletion() const {
 bool AutocompleteMatch::SupportsDeletion() const {
   return deletable ||
          std::any_of(duplicate_matches.begin(), duplicate_matches.end(),
-                     [](auto m) { return m.deletable; });
+                     [](const auto& m) { return m.deletable; });
 }
 
 AutocompleteMatch
@@ -1198,11 +1225,11 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
     relevance = duplicate_match.relevance;
   }
 
-  // Take the |pedal|, if any, so that it will be presented instead of buried.
-  if (!pedal && duplicate_match.pedal &&
-      AutocompleteMatch::IsPedalCompatibleType(type)) {
-    pedal = duplicate_match.pedal;
-    duplicate_match.pedal = nullptr;
+  // Take the |action|, if any, so that it will be presented instead of buried.
+  if (!action && duplicate_match.action &&
+      AutocompleteMatch::IsActionCompatibleType(type)) {
+    action = duplicate_match.action;
+    duplicate_match.action = nullptr;
   }
 
   // Copy |rich_autocompletion_triggered| for counterfactual logging. Only copy
@@ -1394,6 +1421,14 @@ bool AutocompleteMatch::TryRichAutocompletion(
 bool AutocompleteMatch::IsEmptyAutocompletion() const {
   return inline_autocompletion.empty() && prefix_autocompletion.empty() &&
          split_autocompletion.Empty();
+}
+
+void AutocompleteMatch::WriteIntoTrace(perfetto::TracedValue context) const {
+  perfetto::TracedDictionary dict = std::move(context).WriteDictionary();
+  dict.Add("fill_into_edit", fill_into_edit);
+  dict.Add("additional_text", additional_text);
+  dict.Add("destination_url", destination_url);
+  dict.Add("keyword", keyword);
 }
 
 #if DCHECK_IS_ON()

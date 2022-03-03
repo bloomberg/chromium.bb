@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export interface CrSearchFieldBehaviorInterface {
+import {CrInputElement} from '../cr_input/cr_input.m.js';
+
+export interface CrSearchFieldBehavior {
   label: string;
   clearLabel: string;
   hasSearchText: boolean;
-  getSearchInput(): HTMLInputElement;
+  getSearchInput(): HTMLInputElement|CrInputElement;
   getValue(): string;
   setValue(value: string, noEvent?: boolean): void;
   onSearchTermSearch(): void;
   onSearchTermInput(): void;
 }
-
-export {CrSearchFieldBehavior};
-
-interface CrSearchFieldBehavior extends CrSearchFieldBehaviorInterface {}
 
 declare const CrSearchFieldBehavior: object;

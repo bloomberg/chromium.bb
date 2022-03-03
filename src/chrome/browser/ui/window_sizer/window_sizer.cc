@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -41,6 +41,9 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
  public:
   explicit DefaultStateProvider(const Browser* browser) : browser_(browser) {}
 
+  DefaultStateProvider(const DefaultStateProvider&) = delete;
+  DefaultStateProvider& operator=(const DefaultStateProvider&) = delete;
+
   // Overridden from WindowSizer::StateProvider:
   bool GetPersistentState(gfx::Rect* bounds,
                           gfx::Rect* work_area,
@@ -51,45 +54,34 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     if (!browser_ || !browser_->profile()->GetPrefs())
       return false;
 
-    const base::DictionaryValue* wp_pref =
-        chrome::GetWindowPlacementDictionaryReadOnly(
-            chrome::GetWindowName(browser_), browser_->profile()->GetPrefs());
-    int top = 0, left = 0, bottom = 0, right = 0;
-    bool maximized = false;
-    bool has_prefs = wp_pref &&
-                     wp_pref->GetInteger("top", &top) &&
-                     wp_pref->GetInteger("left", &left) &&
-                     wp_pref->GetInteger("bottom", &bottom) &&
-                     wp_pref->GetInteger("right", &right) &&
-                     wp_pref->GetBoolean("maximized", &maximized);
-    bounds->SetRect(left, top, std::max(0, right - left),
-                    std::max(0, bottom - top));
+    const base::Value* pref = chrome::GetWindowPlacementDictionaryReadOnly(
+        chrome::GetWindowName(browser_), browser_->profile()->GetPrefs());
 
-    int work_area_top = 0;
-    int work_area_left = 0;
-    int work_area_bottom = 0;
-    int work_area_right = 0;
-    if (wp_pref) {
-      wp_pref->GetInteger("work_area_top", &work_area_top);
-      wp_pref->GetInteger("work_area_left", &work_area_left);
-      wp_pref->GetInteger("work_area_bottom", &work_area_bottom);
-      wp_pref->GetInteger("work_area_right", &work_area_right);
-      if (*show_state == ui::SHOW_STATE_DEFAULT && maximized)
-        *show_state = ui::SHOW_STATE_MAXIMIZED;
-    }
-    work_area->SetRect(work_area_left, work_area_top,
-                      std::max(0, work_area_right - work_area_left),
-                      std::max(0, work_area_bottom - work_area_top));
+    absl::optional<gfx::Rect> pref_bounds = RectFromPrefixedPref(pref, "");
+    absl::optional<gfx::Rect> pref_area =
+        RectFromPrefixedPref(pref, "work_area_");
+    absl::optional<bool> maximized =
+        pref ? pref->FindBoolPath("maximized") : absl::nullopt;
 
-    return has_prefs;
+    if (!pref_bounds || !maximized)
+      return false;
+
+    *bounds = pref_bounds.value();
+    if (pref_area)
+      *work_area = pref_area.value();
+    if (*show_state == ui::SHOW_STATE_DEFAULT && maximized.value())
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+
+    return true;
   }
 
   bool GetLastActiveWindowState(
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const override {
     DCHECK(show_state);
-    // Applications are always restored with the same position.
-    if (browser_ && browser_->deprecated_is_app())
+    // Applications and devtools are always restored with the same position.
+    if (browser_ && (browser_->is_type_app() || browser_->is_type_app_popup() ||
+                     browser_->is_type_devtools()))
       return false;
 
     // If a reference browser is set, use its window. Otherwise find last
@@ -101,8 +93,8 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       window = browser_->window();
     } else {
       const BrowserList* browser_list = BrowserList::GetInstance();
-      for (auto it = browser_list->begin_last_active();
-           it != browser_list->end_last_active(); ++it) {
+      for (auto it = browser_list->begin_browsers_ordered_by_activation();
+           it != browser_list->end_browsers_ordered_by_activation(); ++it) {
         Browser* last_active = *it;
         if (last_active && last_active->is_type_normal()) {
           window = last_active->window();
@@ -128,11 +120,31 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   }
 
  private:
+  static absl::optional<gfx::Rect> RectFromPrefixedPref(
+      const base::Value* pref,
+      const std::string& prefix) {
+    if (!pref)
+      return absl::nullopt;
+
+    absl::optional<int> top, left, bottom, right;
+
+    top = pref->FindIntKey(prefix + "top");
+    left = pref->FindIntKey(prefix + "left");
+    bottom = pref->FindIntKey(prefix + "bottom");
+    right = pref->FindIntKey(prefix + "right");
+
+    if (!top || !left || !bottom || !right)
+      return absl::nullopt;
+
+    return gfx::Rect(left.value(), top.value(),
+                     std::max(0, right.value() - left.value()),
+                     std::max(0, bottom.value() - top.value()));
+  }
+
   std::string app_name_;
 
   // If set, is used as the reference browser for GetLastActiveWindowState.
-  const Browser* browser_;
-  DISALLOW_COPY_AND_ASSIGN(DefaultStateProvider);
+  raw_ptr<const Browser> browser_;
 };
 
 }  // namespace
@@ -154,6 +166,8 @@ void WindowSizer::GetBrowserWindowBoundsAndShowState(
       browser, window_bounds, show_state);
 }
 
+#if !defined(OS_LINUX)
+// Linux has its own implementation, see WindowSizerLinux.
 // static
 void WindowSizer::GetBrowserWindowBoundsAndShowState(
     std::unique_ptr<StateProvider> state_provider,
@@ -173,6 +187,7 @@ void WindowSizer::GetBrowserWindowBoundsAndShowState(
   *bounds = specified_bounds;
   sizer.DetermineWindowBoundsAndShowState(specified_bounds, bounds, show_state);
 }
+#endif  // !defined(OS_LINUX)
 
 void WindowSizer::DetermineWindowBoundsAndShowState(
     const gfx::Rect& specified_bounds,
@@ -200,9 +215,14 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
   // is visible on the screen.
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayMatching(*bounds).work_area();
+
+  AdjustWorkAreaForPlatform(work_area);
+
   // Resize so that it fits.
   bounds->AdjustToFit(work_area);
 }
+
+void WindowSizer::AdjustWorkAreaForPlatform(gfx::Rect& work_area) {}
 
 bool WindowSizer::GetLastActiveWindowBounds(
     gfx::Rect* bounds,
@@ -302,10 +322,12 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
       !work_area.Contains(*bounds)) {
     bounds->set_width(std::min(bounds->width(), work_area.width()));
     bounds->set_height(std::min(bounds->height(), work_area.height()));
-    bounds->set_x(base::ClampToRange(bounds->x(), work_area.x(),
-                                     work_area.right() - bounds->width()));
-    bounds->set_y(base::ClampToRange(bounds->y(), work_area.y(),
-                                     work_area.bottom() - bounds->height()));
+    // TODO(crbug.com/1235666): Make sure these use correct ranges (lo <= hi)
+    // and migrate to base::clamp().
+    bounds->set_x(base::BrokenClampThatShouldNotBeUsed(
+        bounds->x(), work_area.x(), work_area.right() - bounds->width()));
+    bounds->set_y(base::BrokenClampThatShouldNotBeUsed(
+        bounds->y(), work_area.y(), work_area.bottom() - bounds->height()));
   }
 
 #if defined(OS_MAC)
@@ -333,8 +355,12 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   const int min_x = work_area.x() + kMinVisibleWidth - bounds->width();
   const int max_y = work_area.bottom() - kMinVisibleHeight;
   const int max_x = work_area.right() - kMinVisibleWidth;
-  bounds->set_y(base::ClampToRange(bounds->y(), min_y, max_y));
-  bounds->set_x(base::ClampToRange(bounds->x(), min_x, max_x));
+  // TODO(crbug.com/1235666): Make sure these use correct ranges (lo <= hi)
+  // and migrate to base::clamp().
+  bounds->set_y(
+      base::BrokenClampThatShouldNotBeUsed(bounds->y(), min_y, max_y));
+  bounds->set_x(
+      base::BrokenClampThatShouldNotBeUsed(bounds->x(), min_x, max_x));
 #endif  // defined(OS_MAC)
 }
 
@@ -350,7 +376,8 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState(
 
 #if defined(USE_AURA)
   // We use the apps save state as well on aura.
-  use_command_line = use_command_line || browser->deprecated_is_app();
+  use_command_line = use_command_line || browser->is_type_app() ||
+                     browser->is_type_app_popup();
 #endif
 
   if (use_command_line && base::CommandLine::ForCurrentProcess()->HasSwitch(

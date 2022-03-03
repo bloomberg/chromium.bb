@@ -44,7 +44,6 @@ std::string TextDumpEventToString(mojom::TextDumpEvent event) {
   switch (event) {
     case mojom::TextDumpEvent::kFirstLayout:
       return "FirstLayout";
-      break;
     case mojom::TextDumpEvent::kFinishedLoad:
       return "FinishedLoad";
   }
@@ -223,7 +222,7 @@ class RequestMediator : public base::RefCounted<RequestMediator> {
     mojo::AssociatedRemote<mojom::PageTextService> renderer_text_service;
     rfh->GetRemoteAssociatedInterfaces()->GetInterface(&renderer_text_service);
 
-    auto rfh_id = rfh->GetGlobalFrameRoutingId();
+    auto rfh_id = rfh->GetGlobalId();
     bool is_subframe = rfh->GetMainFrame() != rfh;
     int nav_id = content::WebContents::FromRenderFrameHost(rfh)
                      ->GetController()
@@ -321,7 +320,8 @@ PageTextObserver::ConsumerTextDumpRequest::ConsumerTextDumpRequest() = default;
 PageTextObserver::ConsumerTextDumpRequest::~ConsumerTextDumpRequest() = default;
 
 PageTextObserver::PageTextObserver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PageTextObserver>(*web_contents) {}
 PageTextObserver::~PageTextObserver() = default;
 
 PageTextObserver* PageTextObserver::GetOrCreateForWebContents(
@@ -332,25 +332,22 @@ PageTextObserver* PageTextObserver::GetOrCreateForWebContents(
   return PageTextObserver::FromWebContents(web_contents);
 }
 
-void PageTextObserver::DidStartNavigation(content::NavigationHandle* handle) {
-  if (!handle->IsInMainFrame()) {
-    return;
-  }
-
-  requests_.clear();
-  page_result_.reset();
-  outstanding_requests_ = 0;
-  outstanding_requests_grace_timer_.reset();
-}
-
 void PageTextObserver::DidFinishNavigation(content::NavigationHandle* handle) {
   // Only main frames are supported for right now.
-  if (!handle->IsInMainFrame()) {
+  if (!handle->IsInPrimaryMainFrame()) {
     return;
   }
 
   if (!handle->HasCommitted()) {
     return;
+  }
+
+  // Reset consumer requests if the navigation is not in the same document.
+  if (!handle->IsSameDocument()) {
+    requests_.clear();
+    page_result_.reset();
+    outstanding_requests_ = 0;
+    outstanding_requests_grace_timer_.reset();
   }
 
   if (consumers_.empty()) {
@@ -473,6 +470,6 @@ void PageTextObserver::RemoveConsumer(Consumer* consumer) {
   consumers_.erase(consumer);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PageTextObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PageTextObserver);
 
 }  // namespace optimization_guide

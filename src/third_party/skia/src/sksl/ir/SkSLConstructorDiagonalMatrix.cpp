@@ -7,21 +7,29 @@
 
 #include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
 
+#include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLType.h"
 
 namespace SkSL {
 
 std::unique_ptr<Expression> ConstructorDiagonalMatrix::Make(const Context& context,
-                                                            int offset,
+                                                            int line,
                                                             const Type& type,
                                                             std::unique_ptr<Expression> arg) {
     SkASSERT(type.isMatrix());
+    SkASSERT(type.isAllowedInES2(context));
+    SkASSERT(arg->type().isScalar());
     SkASSERT(arg->type() == type.componentType());
-    return std::make_unique<ConstructorDiagonalMatrix>(offset, type, std::move(arg));
+
+    // Look up the value of constant variables. This allows constant-expressions like `mat4(five)`
+    // to be replaced with `mat4(5.0)`.
+    arg = ConstantFolder::MakeConstantValueForVariable(std::move(arg));
+
+    return std::make_unique<ConstructorDiagonalMatrix>(line, type, std::move(arg));
 }
 
-const Expression* ConstructorDiagonalMatrix::getConstantSubexpression(int n) const {
+skstd::optional<double> ConstructorDiagonalMatrix::getConstantValue(int n) const {
     int rows = this->type().rows();
     int row = n % rows;
     int col = n / rows;
@@ -31,7 +39,7 @@ const Expression* ConstructorDiagonalMatrix::getConstantSubexpression(int n) con
     SkASSERT(col < this->type().columns());
     SkASSERT(row < this->type().rows());
 
-    return (col == row) ? this->argument()->getConstantSubexpression(0) : &fZeroLiteral;
+    return (col == row) ? this->argument()->getConstantValue(0) : 0.0;
 }
 
 }  // namespace SkSL

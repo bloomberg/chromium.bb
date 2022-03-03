@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 
@@ -28,6 +28,12 @@ class AutofillProfileModelTypeController : public syncer::ModelTypeController {
           delegate_for_full_sync_mode,
       PrefService* pref_service,
       syncer::SyncService* sync_service);
+
+  AutofillProfileModelTypeController(
+      const AutofillProfileModelTypeController&) = delete;
+  AutofillProfileModelTypeController& operator=(
+      const AutofillProfileModelTypeController&) = delete;
+
   ~AutofillProfileModelTypeController() override;
 
   // DataTypeController overrides.
@@ -37,13 +43,11 @@ class AutofillProfileModelTypeController : public syncer::ModelTypeController {
   // Callback for changes to the autofill pref.
   void OnUserPrefChanged();
 
-  PrefService* const pref_service_;
-  syncer::SyncService* const sync_service_;
+  const raw_ptr<PrefService> pref_service_;
+  const raw_ptr<syncer::SyncService> sync_service_;
 
   // Registrar for listening to prefs::kAutofillProfileEnabled.
   PrefChangeRegistrar pref_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillProfileModelTypeController);
 };
 
 }  // namespace browser_sync

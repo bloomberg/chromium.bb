@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -27,14 +28,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
-// without the trailing semicolon.  For now, disable the extra semi warning
-// so Xcode indexing works for the egtest.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(OmniboxAppInterface);
-#pragma clang diagnostic pop
 
 using base::test::ios::kWaitForUIElementTimeout;
 
@@ -194,6 +187,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 #pragma mark - Steady state tests
 
 @interface LocationBarSteadyStateTestCase : ChromeTestCase
+- (void)testFocusingOmniboxDismissesEditMenu;
 @end
 
 @implementation LocationBarSteadyStateTestCase
@@ -213,6 +207,16 @@ id<GREYMatcher> SearchCopiedTextButton() {
   [pasteboard setValue:@"" forPasteboardType:UIPasteboardNameGeneral];
 }
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+
+  if ([self isRunningTest:@selector(testFocusingOmniboxDismissesEditMenu)]) {
+    config.features_disabled.push_back(kIOSLocationBarUseNativeContextMenu);
+  }
+
+  return config;
+}
+
 // Tapping on steady view starts editing.
 - (void)testTapSwitchesToEditing {
   [self openPage1];
@@ -224,11 +228,9 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // Tests that in compact, a share button is visible.
 // Voice search is not enabled on the bots, so the voice search button is
 // not tested here.
-- (void)testTrailingButton {
-  // TODO(crbug.com/996541) Starting in Xcode 11 beta 6, the share button does
-  // not appear (even with a delay) flakily.
-  if (@available(iOS 13, *))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
+// TODO(crbug.com/996541) Starting in Xcode 11 beta 6, the share button does
+// not appear (even with a delay) flakily.
+- (void)DISABLED_testTrailingButton {
   [self openPage1];
 
   if ([ChromeEarlGrey isCompactWidth]) {
@@ -298,13 +300,6 @@ id<GREYMatcher> SearchCopiedTextButton() {
 }
 
 - (void)testFocusingOmniboxDismissesEditMenu {
-// TODO(crbug.com/1129095): Re-enable test for iOS 12 device.
-#if !TARGET_IPHONE_SIMULATOR
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
-  }
-#endif
-
   [self openPage1];
 
   // Long pressing should open edit menu.
@@ -696,18 +691,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 }
 
 // TODO(crbug.com/1067815): Test can't pass on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testNoDefaultMatch testNoDefaultMatch
-#else
-#define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
-#endif
-- (void)MAYBE_testNoDefaultMatch {
-  // TODO(crbug.com/1105869) Omnibox pasteboard suggestions are currently
-  // disabled on iOS14.
-  if (@available(iOS 14, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
-  }
-
+// TODO(crbug.com/1253345) Re-enable this test
+- (void)DISABLED_testNoDefaultMatch {
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.
@@ -738,9 +723,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
   // Returns the popup row containing the |url| as suggestion.
   id<GREYMatcher> textYouCopiedMatch =
       grey_allOf(grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                 grey_descendant(grey_accessibilityLabel(
-                     [NSString stringWithFormat:@"\"%@\"", copiedText])),
-                 nil);
+                 grey_descendant(grey_accessibilityLabel(copiedText)), nil);
   [[EarlGrey selectElementWithMatcher:textYouCopiedMatch]
       assertWithMatcher:grey_notNil()];
 }

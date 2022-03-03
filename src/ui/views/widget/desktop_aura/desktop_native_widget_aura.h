@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "ui/aura/client/drag_drop_delegate.h"
@@ -65,6 +65,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       public aura::WindowTreeHostObserver {
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
+
+  DesktopNativeWidgetAura(const DesktopNativeWidgetAura&) = delete;
+  DesktopNativeWidgetAura& operator=(const DesktopNativeWidgetAura&) = delete;
+
   ~DesktopNativeWidgetAura() override;
 
   // Maps from window to DesktopNativeWidgetAura. |window| must be a root
@@ -138,6 +142,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool SetWindowTitle(const std::u16string& title) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
+  const gfx::ImageSkia* GetWindowIcon() override;
+  const gfx::ImageSkia* GetWindowAppIcon() override;
   void InitModalType(ui::ModalType modal_type) override;
   gfx::Rect GetWindowBoundsInScreen() const override;
   gfx::Rect GetClientAreaBoundsInScreen() const override;
@@ -167,7 +173,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Restore() override;
-  void SetFullscreen(bool fullscreen) override;
+  void SetFullscreen(bool fullscreen, const base::TimeDelta& delay) override;
   bool IsFullscreen() const override;
   void SetCanAppearInExistingFullscreenSpaces(
       bool can_appear_in_existing_fullscreen_spaces) override;
@@ -271,7 +277,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void NotifyAccessibilityEvent(ax::mojom::Event event_type);
 
   std::unique_ptr<aura::WindowTreeHost> host_;
-  DesktopWindowTreeHost* desktop_window_tree_host_;
+  raw_ptr<DesktopWindowTreeHost> desktop_window_tree_host_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
@@ -283,9 +289,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // This is the return value from GetNativeView().
   // WARNING: this may be NULL, in particular during shutdown it becomes NULL.
-  aura::Window* content_window_;
+  raw_ptr<aura::Window> content_window_;
 
-  internal::NativeWidgetDelegate* native_widget_delegate_;
+  raw_ptr<internal::NativeWidgetDelegate> native_widget_delegate_;
 
   std::unique_ptr<wm::FocusController> focus_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> position_client_;
@@ -335,8 +341,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };
 
 }  // namespace views

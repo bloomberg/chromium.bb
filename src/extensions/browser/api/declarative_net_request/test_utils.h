@@ -10,10 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/warning_service.h"
@@ -64,8 +66,10 @@ std::ostream& operator<<(std::ostream& output, const RulesCountPair& count);
 
 // Returns true if the given extension's indexed static rulesets are all valid.
 // Should be called on a sequence where file IO is allowed.
-bool AreAllIndexedStaticRulesetsValid(const Extension& extension,
-                                      content::BrowserContext* browser_context);
+bool AreAllIndexedStaticRulesetsValid(
+    const Extension& extension,
+    content::BrowserContext* browser_context,
+    FileBackedRulesetSource::RulesetFilter ruleset_filter);
 
 // Helper to create a verified ruleset matcher. Populates |matcher| and
 // |expected_checksum|. Returns true on success.
@@ -114,7 +118,7 @@ class RulesetManagerObserver : public RulesetManager::TestObserver {
   void OnEvaluateRequest(const WebRequestInfo& request,
                          bool is_incognito_context) override;
 
-  RulesetManager* const manager_;
+  const raw_ptr<RulesetManager> manager_;
   size_t current_count_ = 0;
   absl::optional<size_t> expected_count_;
   std::unique_ptr<base::RunLoop> run_loop_;

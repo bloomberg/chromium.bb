@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
@@ -35,6 +35,11 @@ class SecurityKeyExtensionSession : public HostExtensionSession {
       ClientSessionDetails* client_session_details,
       protocol::ClientStub* client_stub,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+
+  SecurityKeyExtensionSession(const SecurityKeyExtensionSession&) = delete;
+  SecurityKeyExtensionSession& operator=(const SecurityKeyExtensionSession&) =
+      delete;
+
   ~SecurityKeyExtensionSession() override;
 
   // HostExtensionSession interface.
@@ -59,12 +64,10 @@ class SecurityKeyExtensionSession : public HostExtensionSession {
   base::ThreadChecker thread_checker_;
 
   // Interface through which messages can be sent to the client.
-  protocol::ClientStub* client_stub_ = nullptr;
+  raw_ptr<protocol::ClientStub> client_stub_ = nullptr;
 
   // Handles platform specific security key operations.
   std::unique_ptr<SecurityKeyAuthHandler> security_key_auth_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecurityKeyExtensionSession);
 };
 
 }  // namespace remoting

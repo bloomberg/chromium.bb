@@ -6,7 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_MEDIA_REMOTER_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/mojom/remoting_common.mojom.h"
@@ -65,6 +65,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
                const media::mojom::RemotingSinkMetadata& sink_metadata,
                MessageDispatcher* message_dispatcher);
 
+  MediaRemoter(const MediaRemoter&) = delete;
+  MediaRemoter& operator=(const MediaRemoter&) = delete;
+
   ~MediaRemoter() override;
 
   // Callback from |message_dispatcher_| for received RPC messages.
@@ -108,15 +111,15 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
   // session and fallback to mirroring.
   void OnRemotingDataStreamError();
 
-  Client* const client_;  // Outlives this class.
+  const raw_ptr<Client> client_;  // Outlives this class.
   const media::mojom::RemotingSinkMetadata sink_metadata_;
-  MessageDispatcher* const message_dispatcher_;  // Outlives this class.
+  const raw_ptr<MessageDispatcher> message_dispatcher_;  // Outlives this class.
   mojo::Receiver<media::mojom::Remoter> receiver_{this};
   mojo::Remote<media::mojom::RemotingSource> remoting_source_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   std::unique_ptr<RemotingSender> audio_sender_;
   std::unique_ptr<RemotingSender> video_sender_;
-  media::cast::CastTransport* transport_;  // Outlives this class;
+  raw_ptr<media::cast::CastTransport> transport_;  // Outlives this class;
   media::cast::FrameSenderConfig audio_config_;
   media::cast::FrameSenderConfig video_config_;
 
@@ -144,8 +147,6 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
   } state_;
 
   base::WeakPtrFactory<MediaRemoter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaRemoter);
 };
 
 }  // namespace mirroring

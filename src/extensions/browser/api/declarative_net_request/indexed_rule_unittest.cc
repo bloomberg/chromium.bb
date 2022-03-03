@@ -8,11 +8,10 @@
 #include <utility>
 
 #include "base/containers/flat_set.h"
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -204,7 +203,9 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
             dnr_api::RESOURCE_TYPE_OBJECT,
             dnr_api::RESOURCE_TYPE_XMLHTTPREQUEST, dnr_api::RESOURCE_TYPE_PING,
             dnr_api::RESOURCE_TYPE_CSP_REPORT, dnr_api::RESOURCE_TYPE_MEDIA,
-            dnr_api::RESOURCE_TYPE_WEBSOCKET, dnr_api::RESOURCE_TYPE_OTHER})),
+            dnr_api::RESOURCE_TYPE_WEBSOCKET,
+            dnr_api::RESOURCE_TYPE_WEBTRANSPORT,
+            dnr_api::RESOURCE_TYPE_WEBBUNDLE, dnr_api::RESOURCE_TYPE_OTHER})),
        ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES,
        flat_rule::ElementType_NONE},
       {std::make_unique<ResourceTypeVec>(), std::make_unique<ResourceTypeVec>(),

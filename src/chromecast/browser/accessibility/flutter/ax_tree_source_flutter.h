@@ -48,7 +48,7 @@ class FlutterSemanticsNode;
 // OnAccessibilityEventRequest proto into a tree update Chrome's accessibility
 // API can work with.
 class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
-                            public CastWebContents::Observer,
+                            public CastWebContentsObserver,
                             public ui::AXActionHandler {
  public:
   class Delegate {
@@ -92,9 +92,8 @@ class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
 
   void UpdateTree();
 
-  // CastWebContents::Observer
-  void OnPageStopped(CastWebContents* cast_web_contents,
-                     int error_code) override;
+  // CastWebContentsObserver
+  void PageStopped(PageState page_state, int error_code) override;
 
   void SetAccessibilityEnabled(bool value);
 
@@ -105,6 +104,10 @@ class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
         content::WebContents* web_contents,
         chromecast::accessibility::AXTreeSourceFlutter* ax_tree_source);
 
+    AXTreeWebContentsObserver(const AXTreeWebContentsObserver&) = delete;
+    AXTreeWebContentsObserver& operator=(const AXTreeWebContentsObserver&) =
+        delete;
+
     void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                                 content::RenderFrameHost* new_host) override;
 
@@ -112,8 +115,6 @@ class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
 
    private:
     chromecast::accessibility::AXTreeSourceFlutter* ax_tree_source_;
-
-    DISALLOW_COPY_AND_ASSIGN(AXTreeWebContentsObserver);
   };
 
   using AXTreeFlutterSerializer = ui::AXTreeSerializer<FlutterSemanticsNode*>;
@@ -206,6 +207,9 @@ class AXTreeSourceFlutter : public ui::AXTreeSource<FlutterSemanticsNode*>,
   // Maps web contents id to the web contents observer
   base::flat_map<int32_t, std::unique_ptr<AXTreeWebContentsObserver>>
       child_tree_observers_;
+
+  // Observed CastWebContents for this tree node.
+  CastWebContents* cast_web_contents_;
 
   // Copy of most recent tree data
   gallium::castos::OnAccessibilityEventRequest last_event_data_;

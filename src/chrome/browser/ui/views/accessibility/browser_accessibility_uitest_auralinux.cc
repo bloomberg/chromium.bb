@@ -5,7 +5,7 @@
 #include <atk/atk.h>
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -24,12 +24,15 @@ class AuraLinuxAccessibilityInProcessBrowserTest : public InProcessBrowserTest {
   AuraLinuxAccessibilityInProcessBrowserTest()
       : ax_mode_setter_(ui::kAXModeComplete) {}
 
+  AuraLinuxAccessibilityInProcessBrowserTest(
+      const AuraLinuxAccessibilityInProcessBrowserTest&) = delete;
+  AuraLinuxAccessibilityInProcessBrowserTest& operator=(
+      const AuraLinuxAccessibilityInProcessBrowserTest&) = delete;
+
   void VerifyEmbedRelationships();
 
  private:
   ui::testing::ScopedAxModeSetter ax_mode_setter_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraLinuxAccessibilityInProcessBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
@@ -55,10 +58,14 @@ class TestTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
  public:
   explicit TestTabModalConfirmDialogDelegate(content::WebContents* contents)
       : TabModalConfirmDialogDelegate(contents) {}
+
+  TestTabModalConfirmDialogDelegate(const TestTabModalConfirmDialogDelegate&) =
+      delete;
+  TestTabModalConfirmDialogDelegate& operator=(
+      const TestTabModalConfirmDialogDelegate&) = delete;
+
   std::u16string GetTitle() override { return u"Dialog Title"; }
   std::u16string GetDialogMessage() override { return std::u16string(); }
-
-  DISALLOW_COPY_AND_ASSIGN(TestTabModalConfirmDialogDelegate);
 };
 
 // Open a tab-modal dialog and test IndexInParent with the modal dialog.
@@ -188,8 +195,15 @@ IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
 
 // Tests that the embedded relationship is set on the main web contents when
 // the DevTools is opened.
+// This fails on Linux : http://crbug.com/1223047
+#if defined(OS_LINUX)
+#define MAYBE_EmbeddedRelationshipWithDevTools \
+  DISABLED_EmbeddedRelationshipWithDevTools
+#else
+#define MAYBE_EmbeddedRelationshipWithDevTools EmbeddedRelationshipWithDevTools
+#endif
 IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
-                       EmbeddedRelationshipWithDevTools) {
+                       MAYBE_EmbeddedRelationshipWithDevTools) {
   // Force the creation of the document's native object which sets up the
   // relationship.
   content::WebContents* active_web_contents =

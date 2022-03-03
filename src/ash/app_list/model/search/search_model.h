@@ -28,11 +28,11 @@ class APP_LIST_MODEL_EXPORT SearchModel {
   using SearchResults = ui::ListModel<SearchResult>;
 
   SearchModel();
-  ~SearchModel();
 
-  // Whether tablet mode is active. Controlled by AppListView.
-  void SetTabletMode(bool is_tablet_mode);
-  bool tablet_mode() const { return search_box_->is_tablet_mode(); }
+  SearchModel(const SearchModel&) = delete;
+  SearchModel& operator=(const SearchModel&) = delete;
+
+  ~SearchModel();
 
   void SetSearchEngineIsGoogle(bool is_google);
   bool search_engine_is_google() const {
@@ -57,8 +57,13 @@ class APP_LIST_MODEL_EXPORT SearchModel {
 
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
+  std::vector<ash::AppListSearchResultCategory>* ordered_categories() {
+    return &ordered_categories_;
+  }
 
-  void PublishResults(std::vector<std::unique_ptr<SearchResult>> new_results);
+  void PublishResults(
+      std::vector<std::unique_ptr<SearchResult>> new_results,
+      const std::vector<ash::AppListSearchResultCategory>& categories);
 
   SearchResult* FindSearchResult(const std::string& id);
 
@@ -75,8 +80,7 @@ class APP_LIST_MODEL_EXPORT SearchModel {
  private:
   std::unique_ptr<SearchBoxModel> search_box_;
   std::unique_ptr<SearchResults> results_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchModel);
+  std::vector<ash::AppListSearchResultCategory> ordered_categories_;
 };
 
 }  // namespace ash

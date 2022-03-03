@@ -104,8 +104,8 @@ class GrpcSessionDebugTest : public ::testing::Test {
 
   void DeleteDumpDir() {
     if (Env::Default()->IsDirectory(dump_dir_).ok()) {
-      int64 undeleted_files = 0;
-      int64 undeleted_dirs = 0;
+      int64_t undeleted_files = 0;
+      int64_t undeleted_dirs = 0;
       ASSERT_TRUE(
           Env::Default()
               ->DeleteRecursively(dump_dir_, &undeleted_files, &undeleted_dirs)
@@ -283,12 +283,10 @@ TEST_F(GrpcSessionDebugTest, MultiDevices_String) {
 
         DeleteDumpDir();
       } else {
-        // CUDA and SYCL devices do not have an Identity op for strings
+        // The CUDA device does not have an Identity op for strings
         LOG(ERROR) << "Error: " << s;
         ASSERT_TRUE((a_dev.device_type() == DEVICE_GPU) ||
-                    (a_dev.device_type() == DEVICE_SYCL) ||
-                    (b_dev.device_type() == DEVICE_GPU) ||
-                    (b_dev.device_type() == DEVICE_SYCL));
+                    (b_dev.device_type() == DEVICE_GPU));
         ASSERT_FALSE(s.ok());
       }
     }

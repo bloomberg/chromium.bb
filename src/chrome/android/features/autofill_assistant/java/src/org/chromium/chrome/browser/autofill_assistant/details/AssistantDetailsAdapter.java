@@ -38,9 +38,9 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -456,8 +456,8 @@ class AssistantDetailsAdapter extends RecyclerView.Adapter<AssistantDetailsAdapt
         if (!clickthroughData.getDescription().isEmpty()) {
             builder.with(ModalDialogProperties.MESSAGE, clickthroughData.getDescription());
         } else {
-            builder.with(ModalDialogProperties.MESSAGE, resources,
-                    R.string.autofill_assistant_view_original_image_desc);
+            builder.with(ModalDialogProperties.MESSAGE,
+                    resources.getString(R.string.autofill_assistant_view_original_image_desc));
         }
 
         if (!clickthroughData.getPositiveText().isEmpty()) {

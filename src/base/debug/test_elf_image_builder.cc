@@ -55,7 +55,7 @@ TestElfImageBuilder::~TestElfImageBuilder() = default;
 
 TestElfImageBuilder& TestElfImageBuilder::AddLoadSegment(Word flags,
                                                          size_t size) {
-  load_segments_.push_back({flags, size});
+  load_segments_.push_back({flags, static_cast<Word>(size)});
   return *this;
 }
 
@@ -148,15 +148,12 @@ TestElfImageBuilder::ImageMeasures TestElfImageBuilder::MeasureSizesAndOffsets()
 
   // Add space for the load segments.
   for (auto it = load_segments_.begin(); it != load_segments_.end(); ++it) {
-    size_t size = 0;
     // The first non PT_PHDR program header is expected to be a PT_LOAD and
     // start at the already-aligned start of the ELF header.
     if (it == load_segments_.begin()) {
-      size = offset + it->size;
       measures.load_segment_start.push_back(0);
     } else {
       offset = bits::AlignUp(offset, kLoadAlign);
-      size = it->size;
       measures.load_segment_start.push_back(offset);
     }
     offset += it->size;

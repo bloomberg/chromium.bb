@@ -14,12 +14,6 @@
 # ==============================================================================
 """SavedModel utility functions implementation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import os
-
 from tensorflow.core.framework import types_pb2
 from tensorflow.core.protobuf import meta_graph_pb2
 from tensorflow.core.protobuf import struct_pb2
@@ -61,9 +55,17 @@ def build_tensor_info(tensor):
 
   Raises:
     RuntimeError: If eager execution is enabled.
+
+  @compatibility(TF2)
+  This API is not compatible with eager execution as `tensor` needs to be a
+  graph tensor, and there is no replacement for it in TensorFlow 2.x. To start
+  writing programs using TensorFlow 2.x, please refer to the [Effective
+  TensorFlow 2](https://www.tensorflow.org/guide/effective_tf2) guide.
+  @end_compatibility
   """
   if context.executing_eagerly():
-    raise RuntimeError("build_tensor_info is not supported in Eager mode.")
+    raise RuntimeError("`build_tensor_info` is not supported in eager "
+                       "execution.")
   return build_tensor_info_internal(tensor)
 
 
@@ -89,8 +91,7 @@ def _build_composite_tensor_info_internal(tensor):
   """Utility function to build TensorInfo proto from a CompositeTensor."""
   spec = tensor._type_spec  # pylint: disable=protected-access
   tensor_info = meta_graph_pb2.TensorInfo()
-  struct_coder = nested_structure_coder.StructureCoder()
-  spec_proto = struct_coder.encode_structure(spec)
+  spec_proto = nested_structure_coder.encode_structure(spec)
   tensor_info.composite_tensor.type_spec.CopyFrom(spec_proto.type_spec_value)
   for component in nest.flatten(tensor, expand_composites=True):
     tensor_info.composite_tensor.components.add().CopyFrom(
@@ -126,7 +127,13 @@ def build_tensor_info_from_op(op):
 
   Returns:
     A TensorInfo protocol buffer constructed based on the supplied argument.
+
+  Raises:
+    RuntimeError: If eager execution is enabled.
   """
+  if context.executing_eagerly():
+    raise RuntimeError(
+        "`build_tensor_info_from_op` is not supported in eager execution.")
   return meta_graph_pb2.TensorInfo(
       dtype=types_pb2.DT_INVALID,
       tensor_shape=tensor_shape.unknown_shape().as_proto(),
@@ -172,15 +179,16 @@ def get_tensor_from_tensor_info(tensor_info, graph=None, import_scope=None):
         _get_tensor(tensor_info.coo_sparse.values_tensor_name),
         _get_tensor(tensor_info.coo_sparse.dense_shape_tensor_name))
   elif encoding == "composite_tensor":
-    struct_coder = nested_structure_coder.StructureCoder()
     spec_proto = struct_pb2.StructuredValue(
         type_spec_value=tensor_info.composite_tensor.type_spec)
-    spec = struct_coder.decode_proto(spec_proto)
+    spec = nested_structure_coder.decode_proto(spec_proto)
     components = [_get_tensor(component.name) for component in
                   tensor_info.composite_tensor.components]
     return nest.pack_sequence_as(spec, components, expand_composites=True)
   else:
-    raise ValueError("Invalid TensorInfo.encoding: %s" % encoding)
+    raise ValueError(f"Invalid TensorInfo.encoding: {encoding}. Expected `"
+                     "coo_sparse`, `composite_tensor`, or `name` for a dense "
+                     "tensor.")
 
 
 def get_element_from_tensor_info(tensor_info, graph=None, import_scope=None):
@@ -210,21 +218,19 @@ def get_element_from_tensor_info(tensor_info, graph=None, import_scope=None):
 def get_or_create_variables_dir(export_dir):
   """Return variables sub-directory, or create one if it doesn't exist."""
   variables_dir = get_variables_dir(export_dir)
-  if not file_io.file_exists(variables_dir):
-    file_io.recursive_create_dir(variables_dir)
+  file_io.recursive_create_dir(variables_dir)
   return variables_dir
 
 
 def get_variables_dir(export_dir):
   """Return variables sub-directory in the SavedModel."""
-  return os.path.join(
-      compat.as_text(export_dir),
-      compat.as_text(constants.VARIABLES_DIRECTORY))
+  return file_io.join(
+      compat.as_text(export_dir), compat.as_text(constants.VARIABLES_DIRECTORY))
 
 
 def get_variables_path(export_dir):
   """Return the variables path, used as the prefix for checkpoint files."""
-  return os.path.join(
+  return file_io.join(
       compat.as_text(get_variables_dir(export_dir)),
       compat.as_text(constants.VARIABLES_FILENAME))
 
@@ -233,30 +239,80 @@ def get_or_create_assets_dir(export_dir):
   """Return assets sub-directory, or create one if it doesn't exist."""
   assets_destination_dir = get_assets_dir(export_dir)
 
-  if not file_io.file_exists(assets_destination_dir):
-    file_io.recursive_create_dir(assets_destination_dir)
+  file_io.recursive_create_dir(assets_destination_dir)
 
   return assets_destination_dir
 
 
 def get_assets_dir(export_dir):
   """Return path to asset directory in the SavedModel."""
-  return os.path.join(
-      compat.as_text(export_dir),
-      compat.as_text(constants.ASSETS_DIRECTORY))
+  return file_io.join(
+      compat.as_text(export_dir), compat.as_text(constants.ASSETS_DIRECTORY))
 
 
 def get_or_create_debug_dir(export_dir):
   """Returns path to the debug sub-directory, creating if it does not exist."""
   debug_dir = get_debug_dir(export_dir)
 
-  if not file_io.file_exists(debug_dir):
-    file_io.recursive_create_dir(debug_dir)
+  file_io.recursive_create_dir(debug_dir)
 
   return debug_dir
 
 
+def get_saved_model_pbtxt_path(export_dir):
+  return file_io.join(
+      compat.as_bytes(compat.path_to_str(export_dir)),
+      compat.as_bytes(constants.SAVED_MODEL_FILENAME_PBTXT))
+
+
+def get_saved_model_pb_path(export_dir):
+  return file_io.join(
+      compat.as_bytes(compat.path_to_str(export_dir)),
+      compat.as_bytes(constants.SAVED_MODEL_FILENAME_PB))
+
+
 def get_debug_dir(export_dir):
   """Returns path to the debug sub-directory in the SavedModel."""
-  return os.path.join(
+  return file_io.join(
       compat.as_text(export_dir), compat.as_text(constants.DEBUG_DIRECTORY))
+
+# Based on tensor_bundle/byte_swap.cc
+byte_swappable = [
+    dtypes.float16, dtypes.float32, dtypes.float64, dtypes.bfloat16,
+    dtypes.complex64, dtypes.complex128, dtypes.uint16, dtypes.uint32,
+    dtypes.uint64, dtypes.int16, dtypes.int32, dtypes.int64, dtypes.qint16,
+    dtypes.quint16, dtypes.qint32
+]
+
+
+def swap_function_tensor_content(meta_graph_def, from_endiness, to_endiness):
+  functions = meta_graph_def.graph_def.library.function
+  for function in functions:
+    node_def = function.node_def
+    for node in node_def:
+      if node.op == "Const":
+        tensor = node.attr["value"].tensor
+        byte_swap_tensor_content(tensor, from_endiness, to_endiness)
+
+
+def byte_swap_tensor_content(tensor, from_endiness, to_endiness):
+  """Byte swaps."""
+  if tensor.dtype in byte_swappable:
+    tshape = tensor.tensor_shape.dim
+    tensor_bytes = tensor.tensor_content
+    if tensor_bytes:
+      tensor_size = 1
+      for sz in tshape:
+        tensor_size = tensor_size * sz.size
+      chunksize = int(len(tensor_bytes) / tensor_size)
+      # Split tensor_data into chunks for byte swapping.
+      to_swap = [
+          tensor_bytes[i:i + chunksize]
+          for i in range(0, len(tensor_bytes), chunksize)
+      ]
+      # Swap and replace tensor_content.
+      tensor.tensor_content = b"".join([
+          int.from_bytes(byteswap,
+                         from_endiness).to_bytes(chunksize, to_endiness)
+          for byteswap in to_swap
+      ])

@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_TEST_IMAGE_LOADER_H_
 #define EXTENSIONS_BROWSER_TEST_IMAGE_LOADER_H_
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "ui/gfx/image/image.h"
 
@@ -17,6 +16,10 @@ class Extension;
 class TestImageLoader {
  public:
   TestImageLoader();
+
+  TestImageLoader(const TestImageLoader&) = delete;
+  TestImageLoader& operator=(const TestImageLoader&) = delete;
+
   ~TestImageLoader();
 
   // Loads an image to be used in test from |extension|.
@@ -36,8 +39,6 @@ class TestImageLoader {
   base::OnceClosure loader_message_loop_quit_;
   bool waiting_ = false;
   bool image_loaded_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestImageLoader);
 };
 
 }  // namespace extensions

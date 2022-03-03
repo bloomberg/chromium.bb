@@ -21,7 +21,7 @@
 #include "url/gurl.h"
 
 namespace {
-constexpr char kBaseDataDir[] = "content/test/data/conversions";
+constexpr char kBaseDataDir[] = "content/test/data/attribution_reporting";
 constexpr char kOriginTrialTestPublicKey[] =
     "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=";
 }  // namespace
@@ -74,8 +74,7 @@ class ConversionsOriginTrialSubsetExclusionBrowserTest
     // Disable the alternative usage feature, this should prevent the OT token
     // from enabling the API.
     feature_list_.InitWithFeatures(
-        {features::kConversionMeasurement},
-        {embedder_support::kConversionMeasurementAPIAlternativeUsage});
+        {}, {embedder_support::kConversionMeasurementAPIAlternativeUsage});
   }
 
  private:
@@ -100,9 +99,7 @@ class ConversionsOriginTrialNoSubsetExclusionBrowserTest
     // Enable the alternative usage feature, this should allow the OT token to
     // enable the API.
     feature_list_.InitWithFeatures(
-        {features::kConversionMeasurement,
-         embedder_support::kConversionMeasurementAPIAlternativeUsage},
-        {});
+        {embedder_support::kConversionMeasurementAPIAlternativeUsage}, {});
   }
 
  private:

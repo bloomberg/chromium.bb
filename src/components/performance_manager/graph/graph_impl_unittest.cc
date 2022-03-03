@@ -5,6 +5,7 @@
 #include "components/performance_manager/graph/graph_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
@@ -26,13 +27,9 @@ TEST_F(GraphImplTest, SafeCasting) {
   EXPECT_EQ(graph(), GraphImpl::FromGraph(graph_base));
 }
 
-TEST_F(GraphImplTest, FindOrCreateSystemNode) {
-  EXPECT_TRUE(graph()->IsEmpty());
-  SystemNodeImpl* system_node = graph()->FindOrCreateSystemNodeImpl();
-  EXPECT_FALSE(graph()->IsEmpty());
-
-  // A second request should return the same instance.
-  EXPECT_EQ(system_node, graph()->FindOrCreateSystemNodeImpl());
+TEST_F(GraphImplTest, GetSystemNodeImpl) {
+  // The SystemNode singleton should be created by default.
+  EXPECT_NE(nullptr, graph()->GetSystemNodeImpl());
 }
 
 TEST_F(GraphImplTest, GetProcessNodeByPid) {
@@ -159,7 +156,7 @@ class Foo : public GraphOwned {
  private:
   bool passed_to_called_ = false;
   bool taken_from_called_ = false;
-  int* destructor_count_ = nullptr;
+  raw_ptr<int> destructor_count_ = nullptr;
 };
 
 }  // namespace
@@ -291,7 +288,7 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
   AssertDictValueContainsListKey(descr, "d1", "d1", "ProcessNode");
   EXPECT_EQ(1u, descr.DictSize());
 
-  descr = registry->DescribeNodeData(graph()->FindOrCreateSystemNodeImpl());
+  descr = registry->DescribeNodeData(graph()->GetSystemNode());
   AssertDictValueContainsListKey(descr, "d1", "d1", "SystemNode");
   EXPECT_EQ(1u, descr.DictSize());
 

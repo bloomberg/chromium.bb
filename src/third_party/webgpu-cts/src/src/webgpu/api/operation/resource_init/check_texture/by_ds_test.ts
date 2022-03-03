@@ -1,15 +1,15 @@
-import { assert } from '../../../../../common/framework/util/util.js';
+import { assert } from '../../../../../common/util/util.js';
 import { GPUTest } from '../../../../gpu_test.js';
-import { mipSize } from '../../../../util/texture/subresource.js';
+import { virtualMipSize } from '../../../../util/texture/base.js';
 import { CheckContents } from '../texture_zero.spec.js';
 
 function makeFullscreenVertexModule(device: GPUDevice) {
   return device.createShaderModule({
     code: `
     [[stage(vertex)]]
-    fn main([[builtin(vertex_index)]] VertexIndex : i32)
+    fn main([[builtin(vertex_index)]] VertexIndex : u32)
          -> [[builtin(position)]] vec4<f32> {
-      let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+      var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
         vec2<f32>(-1.0, -3.0),
         vec2<f32>( 3.0,  1.0),
         vec2<f32>(-1.0,  1.0));
@@ -99,12 +99,17 @@ const checkContents: (type: 'depth' | 'stencil', ...args: Parameters<CheckConten
   state,
   subresourceRange
 ) => {
+  assert(params.dimension === '2d');
   for (const viewDescriptor of t.generateTextureViewDescriptorsForRendering(
     params.aspect,
     subresourceRange
   )) {
     assert(viewDescriptor.baseMipLevel !== undefined);
-    const [width, height] = mipSize([t.textureWidth, t.textureHeight], viewDescriptor.baseMipLevel);
+    const [width, height] = virtualMipSize(
+      params.dimension,
+      [t.textureWidth, t.textureHeight, 1],
+      viewDescriptor.baseMipLevel
+    );
 
     const renderTexture = t.device.createTexture({
       size: [width, height, 1],

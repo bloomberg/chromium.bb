@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -29,7 +28,7 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
   MockWebIDBCallbacks(const MockWebIDBCallbacks&) = delete;
   MockWebIDBCallbacks& operator=(const MockWebIDBCallbacks&) = delete;
 
-  void SetState(base::WeakPtr<WebIDBCursorImpl>, int64_t) override;
+  void SetState(base::WeakPtr<WebIDBCursor>, int64_t) override;
 
   MOCK_METHOD2(Error, void(mojom::blink::IDBException, const String&));
 

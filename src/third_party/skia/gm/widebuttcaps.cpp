@@ -10,10 +10,13 @@
 #include "include/core/SkPath.h"
 #include "include/core/SkPoint.h"
 #include "include/gpu/GrContextOptions.h"
-#include "include/gpu/GrRecordingContext.h"
+#include "include/gpu/GrDirectContext.h"
+#include "include/utils/SkRandom.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/tessellate/GrTessellationPathRenderer.h"
+#include "src/gpu/ops/TessellationPathRenderer.h"
 
 static constexpr float kStrokeWidth = 100;
 static constexpr int kTestWidth = 120 * 4;
@@ -51,9 +54,9 @@ static void draw_test(SkCanvas* canvas) {
 
     if (canvas->recordingContext() &&
         canvas->recordingContext()->priv().caps()->shaderCaps()->tessellationSupport() &&
-        canvas->recordingContext()->priv().caps()->shaderCaps()->maxTessellationSegments() < 64) {
-        // There are fewer tessellation segments than the spec minimum. It must have been overriden
-        // for testing. Indicate this in the background color.
+        canvas->recordingContext()->priv().caps()->shaderCaps()->maxTessellationSegments() == 5) {
+        // The caller successfully overrode the max tessellation segments to 5. Indicate this in the
+        // background color.
         canvas->clear(SkColorSetARGB(255, 64, 0, 0));
     } else {
         canvas->clear(SK_ColorBLACK);
@@ -88,7 +91,7 @@ DEF_SIMPLE_GM(widebuttcaps, canvas, kTestWidth, kTestHeight) {
     draw_test(canvas);
 }
 
-class WideButtCaps_tess_segs_5 : public skiagm::GpuGM {
+class WideButtCaps_tess_segs_5 : public skiagm::GM {
     SkString onShortName() override {
         return SkString("widebuttcaps_tess_segs_5");
     }
@@ -104,36 +107,41 @@ class WideButtCaps_tess_segs_5 : public skiagm::GpuGM {
     //
     // - >=4 because the tessellator code will just assume we have enough to combine a miter join
     //   and line in a single patch. (Requires 4 segments. Spec required minimum is 64.)
-    static constexpr int kMaxTessellationSegmentsOverride = 5;
+    inline static constexpr int kMaxTessellationSegmentsOverride = 5;
 
     void modifyGrContextOptions(GrContextOptions* options) override {
         options->fMaxTessellationSegmentsOverride = kMaxTessellationSegmentsOverride;
+        options->fAlwaysPreferHardwareTessellation = true;
         // Only allow the tessellation path renderer.
         options->fGpuPathRenderers = (GpuPathRenderers)((int)options->fGpuPathRenderers &
                                                         (int)GpuPathRenderers::kTessellation);
     }
 
-    DrawResult onDraw(GrRecordingContext* context,
-                      GrSurfaceDrawContext* rtc, SkCanvas* canvas,
-                      SkString* errorMsg) override {
-        if (!context->priv().caps()->shaderCaps()->tessellationSupport() ||
-            !GrTessellationPathRenderer::IsSupported(*context->priv().caps())) {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
+        auto dContext = GrAsDirectContext(canvas->recordingContext());
+        if (!dContext) {
+            *errorMsg = "GM relies on having access to a live direct context.";
+            return DrawResult::kSkip;
+        }
+
+        if (!dContext->priv().caps()->shaderCaps()->tessellationSupport() ||
+            !skgpu::v1::TessellationPathRenderer::IsSupported(*dContext->priv().caps())) {
             errorMsg->set("Tessellation not supported.");
             return DrawResult::kSkip;
         }
-        auto opts = context->priv().drawingManager()->testingOnly_getOptionsForPathRendererChain();
+        auto opts = dContext->priv().drawingManager()->testingOnly_getOptionsForPathRendererChain();
         if (!(opts.fGpuPathRenderers & GpuPathRenderers::kTessellation)) {
-            errorMsg->set("GrTessellationPathRenderer disabled.");
+            errorMsg->set("TessellationPathRenderer disabled.");
             return DrawResult::kSkip;
         }
-        if (context->priv().caps()->shaderCaps()->maxTessellationSegments() !=
+        if (dContext->priv().caps()->shaderCaps()->maxTessellationSegments() !=
             kMaxTessellationSegmentsOverride) {
             errorMsg->set("modifyGrContextOptions() did not limit maxTessellationSegments. "
                           "(Are you running viewer? If so use '--maxTessellationSegments 5'.)");
             return DrawResult::kFail;
         }
         // Suppress a tessellator warning message that caps.maxTessellationSegments is too small.
-        GrRecordingContextPriv::AutoSuppressWarningMessages aswm(context);
+        GrRecordingContextPriv::AutoSuppressWarningMessages aswm(dContext);
         draw_test(canvas);
         return DrawResult::kOk;
     }

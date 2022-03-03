@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/sessions/session_id.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
 #include "chrome/browser/extensions/api/tabs/windows_util.h"
@@ -209,7 +210,7 @@ SessionsGetRecentlyClosedFunction::CreateSessionModel(
 
 ExtensionFunction::ResponseAction SessionsGetRecentlyClosedFunction::Run() {
   std::unique_ptr<GetRecentlyClosed::Params> params(
-      GetRecentlyClosed::Params::Create(*args_));
+      GetRecentlyClosed::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   int max_results = api::sessions::MAX_SESSION_RESULTS;
   if (params->filter && params->filter->max_results)
@@ -233,6 +234,7 @@ ExtensionFunction::ResponseAction SessionsGetRecentlyClosedFunction::Run() {
   // List of entries. They are ordered from most to least recent.
   // We prune the list to contain max 25 entries at any time and removes
   // uninteresting entries.
+  int counter = 0;
   for (const auto& entry : tab_restore_service->entries()) {
     // TODO(crbug.com/1192309): Support group entries in the Sessions API,
     // rather than sharding the group out into individual tabs.
@@ -240,9 +242,15 @@ ExtensionFunction::ResponseAction SessionsGetRecentlyClosedFunction::Run() {
       auto& group =
           static_cast<const sessions::TabRestoreService::Group&>(*entry);
       for (const auto& tab : group.tabs)
-        result.push_back(std::move(*CreateSessionModel(*tab)));
+        if (counter++ < max_results)
+          result.push_back(std::move(*CreateSessionModel(*tab)));
+        else
+          break;
     } else {
-      result.push_back(std::move(*CreateSessionModel(*entry)));
+      if (counter++ < max_results)
+        result.push_back(std::move(*CreateSessionModel(*entry)));
+      else
+        break;
     }
   }
 
@@ -316,6 +324,9 @@ SessionsGetDevicesFunction::CreateWindowModel(
       type = api::windows::WINDOW_TYPE_DEVTOOLS;
       break;
     case sessions::SessionWindow::TYPE_APP_POPUP:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case sessions::SessionWindow::TYPE_CUSTOM_TAB:
+#endif
       NOTREACHED();
   }
 
@@ -372,7 +383,7 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
   int max_results = api::sessions::MAX_SESSION_RESULTS;
   // Already validated in RunAsync().
   std::unique_ptr<GetDevices::Params> params(
-      GetDevices::Params::Create(*args_));
+      GetDevices::Params::Create(args()));
   if (params->filter && params->filter->max_results)
     max_results = *params->filter->max_results;
 
@@ -408,7 +419,7 @@ ExtensionFunction::ResponseAction SessionsGetDevicesFunction::Run() {
   }
 
   std::unique_ptr<GetDevices::Params> params(
-      GetDevices::Params::Create(*args_));
+      GetDevices::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   if (params->filter && params->filter->max_results) {
     EXTENSION_FUNCTION_VALIDATE(*params->filter->max_results >= 0 &&
@@ -583,7 +594,7 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::RestoreForeignSession(
 }
 
 ExtensionFunction::ResponseAction SessionsRestoreFunction::Run() {
-  std::unique_ptr<Restore::Params> params(Restore::Params::Create(*args_));
+  std::unique_ptr<Restore::Params> params(Restore::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());

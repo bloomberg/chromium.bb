@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gl/gl_helper.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
 
@@ -122,9 +123,8 @@ STRINGIZE(
 YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
                                      const gfx::ColorSpace& color_space) {
   std::unique_ptr<gfx::ColorTransform> color_transform =
-      gfx::ColorTransform::NewColorTransform(
-          color_space, color_space.GetAsFullRangeRGB(),
-          gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+      gfx::ColorTransform::NewColorTransform(color_space,
+                                             color_space.GetAsFullRangeRGB());
   std::string do_color_conversion = color_transform->GetShaderSource();
 
   // On MacOS, the default texture target for native GpuMemoryBuffers is
@@ -158,17 +158,30 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
 
   glGenFramebuffersEXT(1, &framebuffer_);
 
-  vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();
-  vertex_shader_ = GLHelper::LoadShader(
-      GL_VERTEX_SHADER,
-      base::StringPrintf("%s\n%s", vertex_header, kVertexShader).c_str());
-  fragment_shader_ = GLHelper::LoadShader(
-      GL_FRAGMENT_SHADER,
-      base::StringPrintf("%s\n%s\n%s", fragment_header,
-                         do_color_conversion.c_str(),
-                         (is_rect ? kFragmentShaderRect : kFragmentShader2D))
-          .c_str());
-  program_ = GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
+  {
+    // In contexts that are in WebGL compatibility mode, we need to temporarily
+    // enable GL_ANGLE_TEXTURE_RECTANGLE in order to compile the fragment
+    // shader.  Furthermore, in ES2 contexts, the GL_ANGLE_webgl_compatibility
+    // extension is required for using GL_ANGLE_TEXTURE_RECTANGLE as an argument
+    // to glEnable/Disable.  Therefore the GL_ANGLE_webgl_compatibility
+    // extension is a necessary and sufficient condition for determining whether
+    // GL_ANGLE_TEXTURE_RECTANGLE needs to be temporarily enabled.
+    ScopedEnableTextureRectangleInShaderCompiler enable(
+        (is_rect && g_current_gl_driver->ext.b_GL_ANGLE_webgl_compatibility)
+            ? g_current_gl_context
+            : nullptr);
+    vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();
+    vertex_shader_ = GLHelper::LoadShader(
+        GL_VERTEX_SHADER,
+        base::StringPrintf("%s\n%s", vertex_header, kVertexShader).c_str());
+    fragment_shader_ = GLHelper::LoadShader(
+        GL_FRAGMENT_SHADER,
+        base::StringPrintf("%s\n%s\n%s", fragment_header,
+                           do_color_conversion.c_str(),
+                           (is_rect ? kFragmentShaderRect : kFragmentShader2D))
+            .c_str());
+    program_ = GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
+  }
 
   ScopedUseProgram use_program(program_);
   size_location_ = glGetUniformLocation(program_, "a_texScale");

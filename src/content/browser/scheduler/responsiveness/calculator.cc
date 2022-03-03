@@ -21,15 +21,15 @@ namespace {
 // We divide the measurement interval into discretized time slices.
 // Each slice is marked as janky if it contained a janky task. A janky task is
 // one whose execution latency is greater than kJankThreshold.
-constexpr auto kMeasurementInterval = base::TimeDelta::FromSeconds(30);
+constexpr auto kMeasurementInterval = base::Seconds(30);
 
 // A task or event longer than kJankThreshold is considered janky.
-constexpr auto kJankThreshold = base::TimeDelta::FromMilliseconds(100);
+constexpr auto kJankThreshold = base::Milliseconds(100);
 
 // If there have been no events/tasks on the UI thread for a significant period
 // of time, it's likely because Chrome was suspended.
 // This value is copied from queueing_time_estimator.cc:kInvalidPeriodThreshold.
-constexpr auto kSuspendInterval = base::TimeDelta::FromSeconds(30);
+constexpr auto kSuspendInterval = base::Seconds(30);
 
 constexpr char kLatencyEventCategory[] = "latency";
 
@@ -136,7 +136,8 @@ void Calculator::TaskOrEventFinishedOnIOThread(
 
 void Calculator::OnFirstIdle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(startup_stage_, StartupStage::kMessageLoopStarted);
+  DCHECK(startup_stage_ == StartupStage::kMessageLoopJustStarted ||
+         startup_stage_ == StartupStage::kFirstIntervalDoneWithoutFirstIdle);
   startup_stage_ = StartupStage::kPastFirstIdle;
 }
 
@@ -152,6 +153,15 @@ void Calculator::EmitResponsiveness(JankType jank_type,
       UMA_HISTOGRAM_COUNTS_1000(
           "Browser.Responsiveness.JankyIntervalsPerThirtySeconds",
           janky_slices);
+      if (startup_stage_ == StartupStage::kMessageLoopJustStarted) {
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Browser.Responsiveness.JankyIntervalsPerThirtySeconds.Initial",
+            janky_slices);
+      } else if (startup_stage_ == StartupStage::kRecordingPastFirstIdle) {
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Browser.Responsiveness.JankyIntervalsPerThirtySeconds.Periodic",
+            janky_slices);
+      }
       break;
     }
     case JankType::kQueueAndExecution: {
@@ -301,7 +311,10 @@ void Calculator::CalculateResponsivenessIfNecessary(
       JankType::kQueueAndExecution,
       std::move(queue_and_execution_janks_from_multiple_threads),
       last_calculation_time_, new_calculation_time);
-  if (startup_stage_ == StartupStage::kPastFirstIdle)
+
+  if (startup_stage_ == StartupStage::kMessageLoopJustStarted)
+    startup_stage_ = StartupStage::kFirstIntervalDoneWithoutFirstIdle;
+  else if (startup_stage_ == StartupStage::kPastFirstIdle)
     startup_stage_ = StartupStage::kRecordingPastFirstIdle;
 
   last_calculation_time_ = new_calculation_time;

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
 #include "ui/views/widget/native_widget_private.h"
 
@@ -31,7 +32,11 @@ ViewsDelegate::ViewsDelegate()
   ui::TouchEditingControllerFactory::SetInstance(
       editing_controller_factory_.get());
 
-#if defined(USE_AURA)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || BUILDFLAG(IS_CHROMEOS_ASH)
+  // TouchSelectionMenuRunnerViews is not supported on Mac or Cast.
+  // It is also not used on Ash (the ChromeViewsDelegate() for Ash will
+  // immediately replace this). But tests running without the Chrome layer
+  // will not get the replacement.
   touch_selection_menu_runner_ =
       std::make_unique<TouchSelectionMenuRunnerViews>();
 #endif

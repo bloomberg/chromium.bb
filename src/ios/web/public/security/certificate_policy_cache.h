@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "ios/web/public/security/cert_policy.h"
 #include "net/cert/x509_certificate.h"
 
@@ -24,6 +23,9 @@ class CertificatePolicyCache
  public:
   // Can be called from any thread:
   CertificatePolicyCache();
+
+  CertificatePolicyCache(const CertificatePolicyCache&) = delete;
+  CertificatePolicyCache& operator=(const CertificatePolicyCache&) = delete;
 
   // Everything from here on can only be called from the IO thread.
 
@@ -48,8 +50,6 @@ class CertificatePolicyCache
 
   // Certificate policies for each host.
   std::map<std::string, CertPolicy> cert_policy_for_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertificatePolicyCache);
 };
 
 }  // namespace web

@@ -81,9 +81,37 @@
 #define EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV 0x334C
 #endif /*EGL_NV_robustness_video_memory_purge */
 
+#ifndef EGL_ANGLE_context_virtualization
+#define EGL_ANGLE_context_virtualization 1
+#define EGL_CONTEXT_VIRTUALIZATION_GROUP_ANGLE 0x3481
+#endif /* EGL_ANGLE_context_virtualization */
+
 using ui::GetLastEGLErrorString;
 
 namespace gl {
+
+namespace {
+
+// Change the specified attribute in context_attributes. This fails if
+// the attribute is not already present. Returns true on success, false
+// otherwise.
+bool ChangeContextAttributes(std::vector<EGLint>& context_attributes,
+                             EGLint attribute,
+                             EGLint value) {
+  auto iter = std::find(context_attributes.begin(), context_attributes.end(),
+                        attribute);
+  if (iter != context_attributes.end()) {
+    ++iter;
+    if (iter != context_attributes.end()) {
+      *iter = value;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+}  // namespace
 
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)
     : GLContextReal(share_group) {}
@@ -94,25 +122,32 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
   DCHECK(!context_);
 
   display_ = compatible_surface->GetDisplay();
-  config_ = compatible_surface->GetConfig();
 
-  EGLint config_renderable_type = 0;
-  if (!eglGetConfigAttrib(display_, config_, EGL_RENDERABLE_TYPE,
-                          &config_renderable_type)) {
-    LOG(ERROR) << "eglGetConfigAttrib failed with error "
-               << GetLastEGLErrorString();
-    return false;
+  // Always prefer to use EGL_KHR_no_config_context so that all surfaces and
+  // contexts are compatible
+  if (!GLSurfaceEGL::IsEGLNoConfigContextSupported()) {
+    config_ = compatible_surface->GetConfig();
   }
 
   EGLint context_client_major_version = attribs.client_major_es_version;
   EGLint context_client_minor_version = attribs.client_minor_es_version;
 
-  // If the requested context is ES3 but the config cannot support ES3, request
-  // ES2 instead.
-  if ((config_renderable_type & EGL_OPENGL_ES3_BIT) == 0 &&
-      context_client_major_version >= 3) {
-    context_client_major_version = 2;
-    context_client_minor_version = 0;
+  if (config_) {
+    EGLint config_renderable_type = 0;
+    if (!eglGetConfigAttrib(display_, config_, EGL_RENDERABLE_TYPE,
+                            &config_renderable_type)) {
+      LOG(ERROR) << "eglGetConfigAttrib failed with error "
+                 << GetLastEGLErrorString();
+      return false;
+    }
+
+    // If the requested context is ES3 but the config cannot support ES3,
+    // request ES2 instead.
+    if ((config_renderable_type & EGL_OPENGL_ES3_BIT) == 0 &&
+        context_client_major_version >= 3) {
+      context_client_major_version = 2;
+      context_client_minor_version = 0;
+    }
   }
 
   std::vector<EGLint> context_attributes;
@@ -238,7 +273,7 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
 
   if (GLSurfaceEGL::IsANGLEPowerPreferenceSupported()) {
     GpuPreference pref = attribs.gpu_preference;
-    pref = GLContext::AdjustGpuPreference(pref);
+    pref = GLSurface::AdjustGpuPreference(pref);
     switch (pref) {
       case GpuPreference::kDefault:
         // Don't request any GPU, let ANGLE and the native driver decide.
@@ -267,6 +302,12 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     }
   }
 
+  if (GLSurfaceEGL::IsANGLEContextVirtualizationSupported()) {
+    context_attributes.push_back(EGL_CONTEXT_VIRTUALIZATION_GROUP_ANGLE);
+    context_attributes.push_back(
+        static_cast<EGLint>(attribs.angle_context_virtualization_group_number));
+  }
+
   // Append final EGL_NONE to signal the context attributes are finished
   context_attributes.push_back(EGL_NONE);
   context_attributes.push_back(EGL_NONE);
@@ -274,6 +315,41 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
   context_ = eglCreateContext(
       display_, config_, share_group() ? share_group()->GetHandle() : nullptr,
       context_attributes.data());
+
+  // If EGL_KHR_no_config_context is in use and context creation failed,
+  // it might indicate that an unsupported ES version was requested. Try
+  // falling back to a lower version.
+  if (!context_ && GLSurfaceEGL::IsEGLNoConfigContextSupported() &&
+      eglGetError() == EGL_BAD_MATCH) {
+    // Set up the list of versions to try: 3.1 -> 3.0 -> 2.0
+    std::vector<std::pair<EGLint, EGLint>> candidate_versions;
+    if (context_client_major_version == 3 &&
+        context_client_minor_version == 1) {
+      candidate_versions.emplace_back(3, 0);
+      candidate_versions.emplace_back(2, 0);
+    } else if (context_client_major_version == 3 &&
+               context_client_minor_version == 0) {
+      candidate_versions.emplace_back(2, 0);
+    }
+
+    for (const auto& version : candidate_versions) {
+      if (!ChangeContextAttributes(context_attributes,
+                                   EGL_CONTEXT_MAJOR_VERSION, version.first) ||
+          !ChangeContextAttributes(context_attributes,
+                                   EGL_CONTEXT_MINOR_VERSION, version.second)) {
+        break;
+      }
+
+      context_ =
+          eglCreateContext(display_, config_,
+                           share_group() ? share_group()->GetHandle() : nullptr,
+                           context_attributes.data());
+      // Stop searching as soon as a context is successfully created.
+      if (context_) {
+        break;
+      }
+    }
+  }
 
   if (!context_) {
     LOG(ERROR) << "eglCreateContext failed with error "

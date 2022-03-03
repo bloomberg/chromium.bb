@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/udp_socket.h"
@@ -24,6 +23,10 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   UDPClientSocket(DatagramSocket::BindType bind_type,
                   net::NetLog* net_log,
                   const net::NetLogSource& source);
+
+  UDPClientSocket(const UDPClientSocket&) = delete;
+  UDPClientSocket& operator=(const UDPClientSocket&) = delete;
+
   ~UDPClientSocket() override;
 
   // DatagramClientSocket implementation.
@@ -78,8 +81,6 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
  private:
   UDPSocket socket_;
   NetworkChangeNotifier::NetworkHandle network_;
-
-  DISALLOW_COPY_AND_ASSIGN(UDPClientSocket);
 };
 
 }  // namespace net

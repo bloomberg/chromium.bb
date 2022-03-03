@@ -11,8 +11,8 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "components/printing/browser/service_sandbox_type.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
+#include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,7 +73,8 @@ void BindDiscardableSharedMemoryManagerOnIOThread(
 }  // namespace
 
 PrintCompositeClient::PrintCompositeClient(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsUserData<PrintCompositeClient>(*web_contents),
+      content::WebContentsObserver(web_contents) {}
 
 PrintCompositeClient::~PrintCompositeClient() {}
 
@@ -290,10 +291,9 @@ void PrintCompositeClient::DoCompositeDocumentToPdf(
           requested->render_process_id_, requested->render_frame_id_,
           requested->document_cookie_, std::move(requested->params_));
     } else {
-      auto* render_frame_host = content::RenderFrameHost::FromID(
-          requested->render_process_id_, requested->render_frame_id_);
       compositor->NotifyUnavailableSubframe(
-          GenerateFrameGuid(render_frame_host));
+          GenerateFrameGuid(content::RenderFrameHost::FromID(
+              requested->render_process_id_, requested->render_frame_id_)));
     }
   }
   requested_subframes_.clear();
@@ -421,6 +421,6 @@ PrintCompositeClient::GetPrintRenderFrame(content::RenderFrameHost* rfh) {
   return it->second;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintCompositeClient)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintCompositeClient);
 
 }  // namespace printing

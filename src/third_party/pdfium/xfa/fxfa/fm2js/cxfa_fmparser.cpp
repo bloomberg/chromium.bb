@@ -6,11 +6,11 @@
 
 #include "xfa/fxfa/fm2js/cxfa_fmparser.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "core/fxcrt/autorestorer.h"
+#include "v8/include/cppgc/heap.h"
 
 namespace {
 
@@ -651,7 +651,7 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
 
     switch (m_token.m_type) {
       case TOKlparen: {
-        Optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
+        absl::optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
             expressions = ParseArgumentList();
         if (!expressions.has_value())
           return nullptr;
@@ -682,7 +682,7 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
         if (!NextToken())
           return nullptr;
         if (m_token.m_type == TOKlparen) {
-          Optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
+          absl::optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
               expressions = ParseArgumentList();
           if (!expressions.has_value())
             return nullptr;
@@ -715,13 +715,12 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
               m_heap->GetAllocationHandle(), expr, TOKdot, std::move(tempStr),
               s);
         } else {
-          CXFA_FMSimpleExpression* s =
-              cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
-                  m_heap->GetAllocationHandle(), ACCESSOR_NO_INDEX, nullptr,
-                  false);
+          auto* subexpr = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
+              m_heap->GetAllocationHandle(),
+              CXFA_FMIndexExpression::AccessorIndex::kNoIndex, nullptr, false);
           expr = cppgc::MakeGarbageCollected<CXFA_FMDotAccessorExpression>(
               m_heap->GetAllocationHandle(), expr, TOKdot, std::move(tempStr),
-              s);
+              subexpr);
           continue;
         }
         break;
@@ -744,13 +743,12 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
               m_heap->GetAllocationHandle(), expr, TOKdotdot,
               std::move(tempStr), s);
         } else {
-          CXFA_FMSimpleExpression* s =
-              cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
-                  m_heap->GetAllocationHandle(), ACCESSOR_NO_INDEX, nullptr,
-                  false);
+          auto* subexpr = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
+              m_heap->GetAllocationHandle(),
+              CXFA_FMIndexExpression::AccessorIndex::kNoIndex, nullptr, false);
           expr = cppgc::MakeGarbageCollected<CXFA_FMDotDotAccessorExpression>(
               m_heap->GetAllocationHandle(), expr, TOKdotdot,
-              std::move(tempStr), s);
+              std::move(tempStr), subexpr);
           continue;
         }
         break;
@@ -766,11 +764,12 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
           return nullptr;
 
         if (m_token.m_type != TOKlbracket) {
-          auto* s = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
-              m_heap->GetAllocationHandle(), ACCESSOR_NO_INDEX, nullptr, false);
+          auto* subexpr = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
+              m_heap->GetAllocationHandle(),
+              CXFA_FMIndexExpression::AccessorIndex::kNoIndex, nullptr, false);
           expr = cppgc::MakeGarbageCollected<CXFA_FMDotAccessorExpression>(
               m_heap->GetAllocationHandle(), expr, TOKdotscream,
-              std::move(tempStr), s);
+              std::move(tempStr), subexpr);
           continue;
         }
 
@@ -784,10 +783,11 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
         break;
       }
       case TOKdotstar: {
-        auto* s = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
-            m_heap->GetAllocationHandle(), ACCESSOR_NO_INDEX, nullptr, false);
+        auto* subexpr = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
+            m_heap->GetAllocationHandle(),
+            CXFA_FMIndexExpression::AccessorIndex::kNoIndex, nullptr, false);
         expr = cppgc::MakeGarbageCollected<CXFA_FMDotAccessorExpression>(
-            m_heap->GetAllocationHandle(), expr, TOKdotstar, L"*", s);
+            m_heap->GetAllocationHandle(), expr, TOKdotstar, L"*", subexpr);
         break;
       }
       default:
@@ -796,15 +796,14 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParsePostExpression(
     if (!NextToken())
       return nullptr;
   }
-  return expr;
 }
 
 // Argument lists are zero or more comma seperated simple expressions found
 // between '(' and ')'
-Optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
+absl::optional<std::vector<cppgc::Member<CXFA_FMSimpleExpression>>>
 CXFA_FMParser::ParseArgumentList() {
   if (m_token.m_type != TOKlparen || !NextToken())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   std::vector<cppgc::Member<CXFA_FMSimpleExpression>> expressions;
   bool first_arg = true;
@@ -813,16 +812,16 @@ CXFA_FMParser::ParseArgumentList() {
       first_arg = false;
     } else {
       if (m_token.m_type != TOKcomma || !NextToken())
-        return pdfium::nullopt;
+        return absl::nullopt;
     }
 
     CXFA_FMSimpleExpression* exp = ParseSimpleExpression();
     if (!exp)
-      return pdfium::nullopt;
+      return absl::nullopt;
 
     expressions.push_back(exp);
     if (expressions.size() > kMaxPostExpressions)
-      return pdfium::nullopt;
+      return absl::nullopt;
   }
 
   return expressions;
@@ -838,8 +837,8 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParseIndexExpression() {
 
   if (m_token.m_type == TOKmul) {
     auto* pExp = cppgc::MakeGarbageCollected<CXFA_FMIndexExpression>(
-        m_heap->GetAllocationHandle(), ACCESSOR_NO_RELATIVEINDEX, nullptr,
-        true);
+        m_heap->GetAllocationHandle(),
+        CXFA_FMIndexExpression::AccessorIndex::kNoRelativeIndex, nullptr, true);
     if (!pExp || !NextToken())
       return nullptr;
 
@@ -850,13 +849,14 @@ CXFA_FMSimpleExpression* CXFA_FMParser::ParseIndexExpression() {
     return pExp;
   }
 
-  XFA_FM_AccessorIndex accessorIndex = ACCESSOR_NO_RELATIVEINDEX;
+  CXFA_FMIndexExpression::AccessorIndex accessorIndex =
+      CXFA_FMIndexExpression::AccessorIndex::kNoRelativeIndex;
   if (m_token.m_type == TOKplus) {
-    accessorIndex = ACCESSOR_POSITIVE_INDEX;
+    accessorIndex = CXFA_FMIndexExpression::AccessorIndex::kPositiveIndex;
     if (!NextToken())
       return nullptr;
   } else if (m_token.m_type == TOKminus) {
-    accessorIndex = ACCESSOR_NEGATIVE_INDEX;
+    accessorIndex = CXFA_FMIndexExpression::AccessorIndex::kNegativeIndex;
     if (!NextToken())
       return nullptr;
   }

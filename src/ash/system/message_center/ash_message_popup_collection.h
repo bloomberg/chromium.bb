@@ -11,7 +11,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
-#include "base/macros.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/message_popup_collection.h"
@@ -42,6 +42,11 @@ class ASH_EXPORT AshMessagePopupCollection
   static const char kMessagePopupWidgetName[];
 
   explicit AshMessagePopupCollection(Shelf* shelf);
+
+  AshMessagePopupCollection(const AshMessagePopupCollection&) = delete;
+  AshMessagePopupCollection& operator=(const AshMessagePopupCollection&) =
+      delete;
+
   ~AshMessagePopupCollection() override;
 
   // Start observing the system.
@@ -66,12 +71,17 @@ class ASH_EXPORT AshMessagePopupCollection
       const message_center::Notification& notification) const override;
   void NotifyPopupAdded(message_center::MessagePopupView* popup) override;
   void NotifyPopupClosed(message_center::MessagePopupView* popup) override;
+  void AnimationStarted() override;
+  void AnimationFinished() override;
+  message_center::MessagePopupView* CreatePopup(
+      const message_center::Notification& notification) override;
 
   // Returns the current tray bubble height or 0 if there is no bubble.
   int tray_bubble_height_for_test() const { return tray_bubble_height_; }
 
  private:
   friend class AshMessagePopupCollectionTest;
+  friend class NotificationGroupingControllerTest;
 
   // message_center::MessageView::Observer:
   void OnSlideOut(const std::string& notification_id) override;
@@ -101,6 +111,8 @@ class ASH_EXPORT AshMessagePopupCollection
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
+
   display::Screen* screen_;
   gfx::Rect work_area_;
   Shelf* shelf_;
@@ -108,7 +120,18 @@ class ASH_EXPORT AshMessagePopupCollection
 
   std::set<views::Widget*> tracked_widgets_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshMessagePopupCollection);
+  // Tracks the smoothness of popup animation.
+  absl::optional<ui::ThroughputTracker> animation_tracker_;
+
+  // Keeps track of number of items that are animating. This is used when we
+  // have more than one popup appear in the screen and different animations are
+  // performed at the same time (fade in, move up, etc.), making sure that we
+  // stop the throughput tracker only when all of these animations are finished.
+  int popups_animating_ = 0;
+
+  // Keeps track the last pop up added, used by throughout tracker. We only
+  // record smoothness when this variable is in scope.
+  message_center::MessagePopupView* last_pop_up_added_ = nullptr;
 };
 
 }  // namespace ash

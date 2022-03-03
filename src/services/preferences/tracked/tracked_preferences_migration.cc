@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
@@ -40,6 +39,10 @@ class TrackedPreferencesMigrator
       std::unique_ptr<PrefHashStore> protected_pref_hash_store,
       InterceptablePrefFilter* unprotected_pref_filter,
       InterceptablePrefFilter* protected_pref_filter);
+
+  TrackedPreferencesMigrator(const TrackedPreferencesMigrator&) = delete;
+  TrackedPreferencesMigrator& operator=(const TrackedPreferencesMigrator&) =
+      delete;
 
   // Stores the data coming in from the filter identified by |id| into this
   // class and then calls MigrateIfReady();
@@ -80,8 +83,6 @@ class TrackedPreferencesMigrator
 
   std::unique_ptr<base::DictionaryValue> unprotected_prefs_;
   std::unique_ptr<base::DictionaryValue> protected_prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrackedPreferencesMigrator);
 };
 
 // Invokes |store_cleaner| for every |keys_to_clean|.
@@ -167,8 +168,7 @@ void MigratePrefsFromOldToNewStore(const std::set<std::string>& pref_names,
         // |new_store| having equivalently been successfully flushed to disk
         // (e.g., on crash or in cases where |new_store| is read-only following
         // a read error on startup).
-        new_store->Set(pref_name, std::make_unique<base::Value>(
-                                      value_in_old_store->Clone()));
+        new_store->SetPath(pref_name, value_in_old_store->Clone());
         migrated_value = true;
         *new_store_altered = true;
       }
@@ -187,7 +187,7 @@ void MigratePrefsFromOldToNewStore(const std::set<std::string>& pref_names,
         // value in order to provide the same no-op behaviour as if the pref was
         // added to the wrong file when there was already a value for
         // |pref_name| in |new_store|.
-        new_store->Remove(pref_name, NULL);
+        new_store->RemovePath(pref_name);
         *new_store_altered = true;
       }
     }

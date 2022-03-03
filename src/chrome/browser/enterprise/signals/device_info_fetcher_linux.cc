@@ -22,16 +22,24 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/enterprise/signals/signals_common.h"
 #include "net/base/network_interfaces.h"
-
-using SettingValue = enterprise_signals::DeviceInfo::SettingValue;
 
 namespace enterprise_signals {
 
 namespace {
 
+std::string ReadFile(std::string path_str) {
+  base::FilePath path(path_str);
+  std::string output;
+  if (base::PathExists(path) && base::ReadFileToString(path, &output))
+    base::TrimWhitespaceASCII(output, base::TrimPositions::TRIM_ALL, &output);
+
+  return output;
+}
+
 std::string GetDeviceModel() {
-  return base::SysInfo::HardwareModelName();
+  return ReadFile("/sys/class/dmi/id/product_name");
 }
 
 std::string GetOsVersion() {
@@ -52,12 +60,18 @@ std::string GetOsVersion() {
   return base::SysInfo::OperatingSystemVersion();
 }
 
+std::string GetSecurityPatchLevel() {
+  int32_t major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  return base::StringPrintf("%d.%d.%d", major, minor, bugfix);
+}
+
 std::string GetDeviceHostName() {
   return net::GetHostName();
 }
 
 std::string GetSerialNumber() {
-  return std::string();
+  return ReadFile("/sys/class/dmi/id/product_serial");
 }
 
 // Implements the logic from the native client setup script. It reads the
@@ -165,6 +179,7 @@ DeviceInfo DeviceInfoFetcherLinux::Fetch() {
   DeviceInfo device_info;
   device_info.os_name = "linux";
   device_info.os_version = GetOsVersion();
+  device_info.security_patch_level = GetSecurityPatchLevel();
   device_info.device_host_name = GetDeviceHostName();
   device_info.device_model = GetDeviceModel();
   device_info.serial_number = GetSerialNumber();

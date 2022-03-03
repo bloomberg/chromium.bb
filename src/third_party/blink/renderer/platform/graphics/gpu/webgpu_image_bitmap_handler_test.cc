@@ -59,12 +59,11 @@ bool GPUUploadingPathSupported() {
 class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
  public:
   MockWebGPUInterface() {
-    procs_ = {};
-
     // WebGPU functions the tests will call. No-op them since we don't have a
     // real WebGPU device.
-    procs_.deviceReference = [](WGPUDevice) {};
-    procs_.deviceRelease = [](WGPUDevice) {};
+    procs()->deviceReference = [](WGPUDevice) {};
+    procs()->deviceRelease = [](WGPUDevice) {};
+    procs()->textureRelease = [](WGPUTexture) {};
   }
 
   MOCK_METHOD(gpu::webgpu::ReservedTexture,
@@ -77,15 +76,11 @@ class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
                GLuint id,
                GLuint generation,
                GLuint usage,
+               gpu::webgpu::MailboxFlags flags,
                const GLbyte* mailbox));
   MOCK_METHOD(void,
               DissociateMailbox,
               (GLuint texture_id, GLuint texture_generation));
-
-  const DawnProcTable& GetProcs() const override { return procs_; }
-
- private:
-  DawnProcTable procs_;
 };
 
 // The six reference pixels are: red, green, blue, white, black.
@@ -205,7 +200,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
   void VerifyCopyBytesForCanvasColorParams(uint64_t width,
                                            uint64_t height,
                                            SkImageInfo info,
-                                           IntRect copy_rect,
+                                           gfx::Rect copy_rect,
                                            WGPUTextureFormat color_type) {
     const uint64_t content_length = width * height * info.bytesPerPixel();
     std::vector<uint8_t> contents(content_length, 0);
@@ -222,7 +217,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
   void VerifyCopyBytes(uint64_t width,
                        uint64_t height,
                        SkImageInfo info,
-                       IntRect copy_rect,
+                       gfx::Rect copy_rect,
                        WGPUTextureFormat color_type,
                        base::span<const uint8_t> contents,
                        base::span<const uint8_t> expected_value) {
@@ -240,18 +235,18 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
     std::vector<uint8_t> results(result_length, 0);
     bool success = CopyBytesFromImageBitmapForWebGPU(
         image, base::span<uint8_t>(results.data(), result_length), copy_rect,
-        color_type);
+        color_type, image->IsPremultiplied(), /* flipY = */ false);
     ASSERT_EQ(success, true);
 
     // Compare content and results
     uint32_t bytes_per_row = wgpu_info.wgpu_bytes_per_row;
     uint32_t content_row_index =
-        (copy_rect.Y() * width + copy_rect.X()) * bytes_per_pixel;
+        (copy_rect.y() * width + copy_rect.x()) * bytes_per_pixel;
     uint32_t result_row_index = 0;
-    for (int i = 0; i < copy_rect.Height(); ++i) {
+    for (int i = 0; i < copy_rect.height(); ++i) {
       EXPECT_EQ(0, memcmp(&expected_value[content_row_index],
                           &results[result_row_index],
-                          copy_rect.Width() * bytes_per_pixel));
+                          copy_rect.width() * bytes_per_pixel));
       content_row_index += width * bytes_per_pixel;
       result_row_index += bytes_per_row;
     }
@@ -285,7 +280,7 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyColorConvert) {
   uint64_t kImageWidth = 3;
   uint64_t kImageHeight = 2;
 
-  IntRect image_data_rect(0, 0, kImageWidth, kImageHeight);
+  gfx::Rect image_data_rect(0, 0, kImageWidth, kImageHeight);
 
   for (SkColorType src_color_type : srcSkColorFormat) {
     for (WGPUTextureFormat dst_color_type : kDstWebGPUTextureFormat) {
@@ -311,7 +306,7 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyGetWGPUResourceInfo) {
   uint32_t expected_bytes_per_row = 256;
   uint64_t expected_size = 256;
 
-  IntRect test_rect(0, 0, kImageWidth, kImageHeight);
+  gfx::Rect test_rect(0, 0, kImageWidth, kImageHeight);
   WebGPUImageUploadSizeInfo info = ComputeImageBitmapWebGPUUploadSizeInfo(
       test_rect, WGPUTextureFormat_RGBA8Unorm);
   ASSERT_EQ(expected_size, info.size_in_bytes);
@@ -326,7 +321,7 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyCopyBytesFromImageBitmapForWebGPU) {
       kImageWidth, kImageHeight, SkColorType::kRGBA_8888_SkColorType,
       SkAlphaType::kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
 
-  IntRect image_data_rect(0, 0, kImageWidth, kImageHeight);
+  gfx::Rect image_data_rect(0, 0, kImageWidth, kImageHeight);
   VerifyCopyBytesForCanvasColorParams(kImageWidth, kImageHeight, info,
                                       image_data_rect,
                                       WGPUTextureFormat_RGBA8Unorm);
@@ -340,7 +335,7 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyCopyBytesFromSubImageBitmap) {
       kImageWidth, kImageHeight, SkColorType::kRGBA_8888_SkColorType,
       SkAlphaType::kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
 
-  IntRect image_data_rect(2, 2, 60, 2);
+  gfx::Rect image_data_rect(2, 2, 60, 2);
   VerifyCopyBytesForCanvasColorParams(kImageWidth, kImageHeight, info,
                                       image_data_rect,
                                       WGPUTextureFormat_RGBA8Unorm);
@@ -354,7 +349,7 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyCopyBytesWithPremultiplyAlpha) {
       kImageWidth, kImageHeight, SkColorType::kRGBA_8888_SkColorType,
       SkAlphaType::kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
 
-  IntRect image_data_rect(0, 0, 2, 1);
+  gfx::Rect image_data_rect(0, 0, 2, 1);
   VerifyCopyBytesForCanvasColorParams(kImageWidth, kImageHeight, info,
                                       image_data_rect,
                                       WGPUTextureFormat_RGBA8Unorm);
@@ -402,18 +397,19 @@ TEST_F(WebGPUMailboxTextureTest, VerifyAccessTexture) {
       .WillOnce(Return(reservation));
   EXPECT_CALL(*webgpu_,
               AssociateMailbox(2, 3, reservation.id, reservation.generation,
-                               WGPUTextureUsage_CopySrc, _))
+                               WGPUTextureUsage_CopySrc, _, _))
       .WillOnce(
-          testing::Invoke(testing::WithArg<5>([&](const GLbyte* mailbox_bytes) {
+          testing::Invoke(testing::WithArg<6>([&](const GLbyte* mailbox_bytes) {
             mailbox = gpu::Mailbox::FromVolatile(
                 *reinterpret_cast<const volatile gpu::Mailbox*>(mailbox_bytes));
           })));
 
+  SkImageInfo image_info = bitmap->PaintImageForCurrentFrame().GetSkImageInfo();
   scoped_refptr<WebGPUMailboxTexture> mailbox_texture =
       WebGPUMailboxTexture::FromStaticBitmapImage(
-          dawn_control_client_, fake_device_, WGPUTextureUsage_CopySrc, bitmap);
+          dawn_control_client_, fake_device_, WGPUTextureUsage_CopySrc, bitmap,
+          CanvasColorSpace::kSRGB, image_info.colorType());
 
-  EXPECT_TRUE(mailbox == bitmap->GetMailboxHolder().mailbox);
   EXPECT_NE(mailbox_texture->GetTexture(), nullptr);
   EXPECT_EQ(mailbox_texture->GetTextureIdForTest(), 1u);
   EXPECT_EQ(mailbox_texture->GetTextureGenerationForTest(), 1u);

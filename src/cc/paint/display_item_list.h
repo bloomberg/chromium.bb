@@ -18,6 +18,7 @@
 #include "cc/paint/image_id.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -151,7 +152,12 @@ class CC_PAINT_EXPORT DisplayItemList
 
   // This gives the total number of PaintOps.
   size_t TotalOpCount() const { return paint_op_buffer_.total_op_count(); }
-  size_t BytesUsed() const;
+  size_t BytesUsed() const {
+    // TODO(jbroman): Does anything else owned by this class substantially
+    // contribute to memory usage?
+    // TODO(vmpstr): Probably DiscardableImageMap is worth counting here.
+    return sizeof(*this) + paint_op_buffer_.bytes_used();
+  }
 
   const DiscardableImageMap& discardable_image_map() const {
     return image_map_;

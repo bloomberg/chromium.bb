@@ -166,7 +166,7 @@
 #include "common/dwarf/dwarf2reader.h"
 #include "common/using_std_string.h"
 
-namespace dwarf2reader {
+namespace google_breakpad {
 
 // A base class for handlers for specific DIE types.  The series of
 // calls made on a DIE handler is as follows:
@@ -258,10 +258,13 @@ class DIEHandler {
 
 // A subclass of DIEHandler, with additional kludges for handling the
 // compilation unit's root die.
-class RootDIEHandler: public DIEHandler {
+class RootDIEHandler : public DIEHandler {
  public:
-  RootDIEHandler() { }
-  virtual ~RootDIEHandler() { }
+  bool handle_inline;
+
+  explicit RootDIEHandler(bool handle_inline = false)
+      : handle_inline(handle_inline) {}
+  virtual ~RootDIEHandler() {}
 
   // We pass the values reported via Dwarf2Handler::StartCompilationUnit
   // to this member function, and skip the entire compilation unit if it
@@ -361,5 +364,5 @@ class DIEDispatcher: public Dwarf2Handler {
   RootDIEHandler* root_handler_;
 };
 
-} // namespace dwarf2reader
+} // namespace google_breakpad
 #endif  // COMMON_DWARF_DWARF2DIEHANDLER_H__

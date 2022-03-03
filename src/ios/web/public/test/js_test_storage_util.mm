@@ -56,11 +56,10 @@ bool ExecuteJavaScriptInFrame(
 bool ExecuteJavaScriptInFrame(WebFrame* web_frame,
                               const std::string& name,
                               const std::vector<base::Value>& parameters) {
-  return ExecuteJavaScriptInFrame(
-      web_frame, name, parameters,
-      base::BindOnce(^(const base::Value*){
-      }),
-      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout));
+  return ExecuteJavaScriptInFrame(web_frame, name, parameters,
+                                  base::BindOnce(^(const base::Value*){
+                                  }),
+                                  base::Seconds(kWaitForJSCompletionTimeout));
 }
 
 // Saves |key|, |value| to a Javascript storage type in |web_frame| using the
@@ -87,7 +86,7 @@ bool SetStorage(WebFrame* web_frame,
           set_success = true;
         }
       }),
-      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout));
+      base::Seconds(kWaitForJSCompletionTimeout));
   if (error_message) {
     *error_message = block_error_message;
   }
@@ -122,7 +121,7 @@ bool GetStorage(WebFrame* web_frame,
           lookup_success = false;
         }
       }),
-      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout));
+      base::Seconds(kWaitForJSCompletionTimeout));
 
   if (error_message) {
     *error_message = block_error_message;
@@ -149,20 +148,26 @@ bool SetAsyncStorage(WebFrame* web_frame,
   __block NSString* block_error_message;
   base::CallbackListSubscription subscription_ =
       web_state->AddScriptCommandCallback(
-          base::BindRepeating(^(const base::DictionaryValue& message,
+          base::BindRepeating(^(const base::Value& message,
                                 const GURL& page_url, bool user_is_interacting,
                                 web::WebFrame* sender_frame) {
-            const base::Value* result = message.FindPath("result");
+            const base::Value* result = message.FindKey("result");
             if (!result) {
               return;
             }
             if (result->is_bool()) {
               async_success = result->GetBool();
-            } else {
-              block_error_message = base::SysUTF8ToNSString(
-                  result->FindPath("message")->GetString());
-              async_success = true;
+              return;
             }
+            if (result->is_dict()) {
+              const std::string* message = result->FindStringKey("message");
+              if (message) {
+                block_error_message = base::SysUTF8ToNSString(*message);
+                async_success = true;
+                return;
+              }
+            }
+            async_success = false;
           }),
           "cookieTest");
 
@@ -199,24 +204,28 @@ bool GetAsyncStorage(WebFrame* web_frame,
   __block NSString* block_error_message;
   base::CallbackListSubscription subscription_ =
       web_state->AddScriptCommandCallback(
-          base::BindRepeating(^(const base::DictionaryValue& message,
+          base::BindRepeating(^(const base::Value& message,
                                 const GURL& page_url, bool user_is_interacting,
                                 web::WebFrame* sender_frame) {
-            const base::Value* javascript_result = message.FindPath("result");
-            if (!javascript_result) {
+            const base::Value* result = message.FindPath("result");
+            if (!result) {
               return;
             }
-            if (javascript_result->is_string()) {
-              block_result =
-                  base::SysUTF8ToNSString(javascript_result->GetString());
+            if (result->is_string()) {
+              block_result = base::SysUTF8ToNSString(result->GetString());
               async_success = true;
-            } else if (javascript_result->is_dict()) {
-              block_error_message = base::SysUTF8ToNSString(
-                  javascript_result->FindPath("message")->GetString());
-              async_success = true;
-            } else {
-              async_success = false;
+              return;
             }
+            if (result->is_dict()) {
+              const std::string* message = result->FindStringKey("message");
+              if (message) {
+                block_error_message = base::SysUTF8ToNSString(*message);
+                async_success = true;
+                return;
+              }
+            }
+
+            async_success = false;
           }),
           "cookieTest");
 
@@ -259,7 +268,7 @@ bool GetCookies(WebFrame* web_frame, NSString** cookies) {
         ASSERT_TRUE(value->is_string());
         result = base::SysUTF8ToNSString(value->GetString());
       }),
-      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout));
+      base::Seconds(kWaitForJSCompletionTimeout));
   if (cookies) {
     *cookies = result;
   }

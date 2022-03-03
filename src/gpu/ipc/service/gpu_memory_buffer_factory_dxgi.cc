@@ -73,6 +73,10 @@ GpuMemoryBufferFactoryDXGI::GetOrCreateD3D11Device() {
       DLOG(ERROR) << "D3D11CreateDevice failed with error 0x" << std::hex << hr;
       return nullptr;
     }
+
+    const char* kDebugName = "GPUIPC_GpuMemoryBufferFactoryDXGI";
+    d3d11_device_->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(kDebugName),
+                                  kDebugName);
   }
   DCHECK(d3d11_device_);
   return d3d11_device_;
@@ -106,14 +110,18 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
       return handle;
   }
 
+  size_t buffer_size;
+  if (!BufferSizeForBufferFormatChecked(size, format, &buffer_size))
+    return handle;
+
   // We are binding as a shader resource and render target regardless of usage,
   // so make sure that the usage is one that we support.
   DCHECK(usage == gfx::BufferUsage::GPU_READ ||
          usage == gfx::BufferUsage::SCANOUT);
 
   D3D11_TEXTURE2D_DESC desc = {
-      size.width(),
-      size.height(),
+      static_cast<UINT>(size.width()),
+      static_cast<UINT>(size.height()),
       1,
       1,
       dxgi_format,
@@ -139,11 +147,8 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
           nullptr, &texture_handle)))
     return handle;
 
-  size_t buffer_size;
-  if (!BufferSizeForBufferFormatChecked(size, format, &buffer_size))
-    return handle;
-
   handle.dxgi_handle.Set(texture_handle);
+  handle.dxgi_token = gfx::DXGIHandleToken();
   handle.type = gfx::DXGI_SHARED_HANDLE;
   handle.id = id;
 

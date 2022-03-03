@@ -8,8 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 
 namespace base {
@@ -25,6 +24,11 @@ class Status;
 class GeolocationOverrideManager : public DevToolsEventListener {
  public:
   explicit GeolocationOverrideManager(DevToolsClient* client);
+
+  GeolocationOverrideManager(const GeolocationOverrideManager&) = delete;
+  GeolocationOverrideManager& operator=(const GeolocationOverrideManager&) =
+      delete;
+
   ~GeolocationOverrideManager() override;
 
   Status OverrideGeolocation(const Geoposition& geoposition);
@@ -38,10 +42,8 @@ class GeolocationOverrideManager : public DevToolsEventListener {
  private:
   Status ApplyOverrideIfNeeded();
 
-  DevToolsClient* client_;
+  raw_ptr<DevToolsClient> client_;
   std::unique_ptr<Geoposition> overridden_geoposition_;
-
-  DISALLOW_COPY_AND_ASSIGN(GeolocationOverrideManager);
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_GEOLOCATION_OVERRIDE_MANAGER_H_

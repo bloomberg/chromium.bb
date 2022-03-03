@@ -5,12 +5,18 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_VIEWS_H_
 
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace views {
+class MdTextButton;
 }
 
 namespace autofill {
@@ -33,20 +39,43 @@ class VirtualCardManualFallbackBubbleViews
       const VirtualCardManualFallbackBubbleViews&) = delete;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
+      TooltipAndAccessibleName);
+
   // AutofillBubbleBase:
   void Hide() override;
 
   // LocationBarBubbleDelegateView:
   void Init() override;
-  void AddedToWidget() override;
+  ui::ImageModel GetWindowIcon() override;
   std::u16string GetWindowTitle() const override;
   void WindowClosing() override;
   void OnWidgetClosing(views::Widget* widget) override;
 
-  VirtualCardManualFallbackBubbleController* controller_;
+  // Creates a button for the |field|. If the button is pressed, the text of it
+  // will be copied to the clipboard.
+  std::unique_ptr<views::MdTextButton> CreateRowItemButtonForField(
+      VirtualCardManualFallbackBubbleField field);
+
+  // Invoked when a button with card information is clicked.
+  void OnFieldClicked(VirtualCardManualFallbackBubbleField field);
+
+  // Update the tooltips and the accessible names of the buttons.
+  void UpdateButtonTooltipsAndAccessibleNames();
+
+  raw_ptr<VirtualCardManualFallbackBubbleController> controller_;
 
   PaymentsBubbleClosedReason closed_reason_ =
       PaymentsBubbleClosedReason::kUnknown;
+
+  // The map keeping the references to each button with card information text in
+  // the bubble.
+  std::map<VirtualCardManualFallbackBubbleField, views::MdTextButton*>
+      fields_to_buttons_map_;
+
+  base::WeakPtrFactory<VirtualCardManualFallbackBubbleViews> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace autofill
