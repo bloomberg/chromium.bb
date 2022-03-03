@@ -16,13 +16,14 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/dcheck_is_on.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -85,7 +86,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -102,14 +102,15 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_lacros.h"
+#define DESKTOP_BROWSER_FRAME_AURA DesktopBrowserFrameLacros
+#elif defined(OS_LINUX)
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
 #define DESKTOP_BROWSER_FRAME_AURA DesktopBrowserFrameAuraLinux
 #else
@@ -164,30 +165,33 @@ gfx::Point GetRightCenterInScreenCoordinates(const views::View* view) {
 
 }  // namespace
 
-class QuitDraggingObserver : public content::NotificationObserver {
+class QuitDraggingObserver {
  public:
-  QuitDraggingObserver() {
-    registrar_.Add(this, chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
-                   content::NotificationService::AllSources());
+  explicit QuitDraggingObserver(TabStrip* tab_strip) {
+    tab_strip->GetDragContext()->SetDragControllerCallbackForTesting(
+        base::BindOnce(&QuitDraggingObserver::OnDragControllerSet,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
+
   QuitDraggingObserver(const QuitDraggingObserver&) = delete;
   QuitDraggingObserver& operator=(const QuitDraggingObserver&) = delete;
-  ~QuitDraggingObserver() override = default;
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE, type);
-    run_loop_.QuitWhenIdle();
-  }
+  ~QuitDraggingObserver() = default;
 
   // The observer should be constructed prior to initiating the drag. To prevent
   // misuse via constructing a temporary object, Wait is marked lvalue-only.
   void Wait() & { run_loop_.Run(); }
 
  private:
-  content::NotificationRegistrar registrar_;
+  void OnDragControllerSet(TabDragController* controller) {
+    controller->SetDragLoopDoneCallbackForTesting(base::BindOnce(
+        &QuitDraggingObserver::Quit, weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void Quit() { run_loop_.QuitWhenIdle(); }
+
   base::RunLoop run_loop_;
+
+  base::WeakPtrFactory<QuitDraggingObserver> weak_ptr_factory_{this};
 };
 
 void SetID(WebContents* web_contents, int id) {
@@ -330,8 +334,9 @@ bool GetIsDragged(Browser* browser) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash::WindowState::Get(browser->window()->GetNativeWindow())
       ->is_dragged();
-#endif
+#else
   return false;
+#endif
 }
 
 }  // namespace
@@ -578,7 +583,7 @@ class DetachToBrowserTabDragControllerTest
           base::BindOnce(&DetachToBrowserTabDragControllerTest::
                              ReleaseInputAfterWindowDetached,
                          base::Unretained(this), first_dragged_tab_width),
-          base::TimeDelta::FromMilliseconds(1));
+          base::Milliseconds(1));
       return;
     }
 
@@ -646,7 +651,7 @@ class DetachToBrowserTabDragControllerTest
                         base::OnceClosure task,
                         int tab = 0,
                         int drag_x_offset = 0) {
-    test::QuitDraggingObserver observer;
+    test::QuitDraggingObserver observer(tab_strip);
     // Move to the tab and drag it enough so that it detaches.
     const gfx::Point tab_0_center =
         GetCenterInScreenCoordinates(tab_strip->tab_at(tab));
@@ -661,7 +666,7 @@ class DetachToBrowserTabDragControllerTest
                                   base::OnceClosure task,
                                   tab_groups::TabGroupId group,
                                   int drag_x_offset = 0) {
-    test::QuitDraggingObserver observer;
+    test::QuitDraggingObserver observer(tab_strip);
     // Move to the tab and drag it enough so that it detaches.
     const gfx::Point group_header_center =
         GetCenterInScreenCoordinates(tab_strip->group_header(group));
@@ -1468,7 +1473,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   browser2->window()
       ->GetNativeWindow()
       ->GetHost()
-      ->SetNativeWindowOcclusionState(aura::Window::OcclusionState::OCCLUDED);
+      ->SetNativeWindowOcclusionState(aura::Window::OcclusionState::OCCLUDED,
+                                      {});
 
   // Drag a tab from first browser to middle of first tab of the second,
   // occluded browser, and drop. This should create a third browser window.
@@ -1503,7 +1509,7 @@ class CaptureLoseWindowFinder : public WindowFinder {
   }
 
  private:
-  TabStrip* tab_strip_;
+  raw_ptr<TabStrip> tab_strip_;
 };
 
 }  // namespace
@@ -1585,7 +1591,7 @@ class MaximizedBrowserWindowWaiter {
   }
 
   // The browser window observed by this waiter.
-  BrowserWindow* window_;
+  raw_ptr<BrowserWindow> window_;
 
   // The waiter's RunLoop quit closure.
   base::RepeatingClosure quit_;
@@ -1824,7 +1830,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  browser()->tab_strip_model()->DetachWebContentsAt(0);
+  browser()->tab_strip_model()->DetachWebContentsAtForInsertion(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
@@ -1876,7 +1882,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  browser()->tab_strip_model()->DetachWebContentsAt(0);
+  browser()->tab_strip_model()->DetachWebContentsAtForInsertion(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
@@ -2531,8 +2537,10 @@ IN_PROC_BROWSER_TEST_P(
 
   AddTabsAndResetBrowser(browser(), 1);
 
+  // We must ensure that we set the bounds of the browser window such that it is
+  // wide enough to allow the tab strip to expand to accommodate this tab.
   browser()->window()->SetBounds(
-      gfx::Rect(0, 0, TabStyle::GetStandardWidth() * 4, 400));
+      gfx::Rect(0, 0, TabStyle::GetStandardWidth() * 5, 400));
 
   const int tab_strip_width = tab_strip->width();
   const gfx::Point tab_1_center =
@@ -2863,7 +2871,7 @@ TabStrip* GetAttachedTabstrip() {
 void DragWindowAndVerifyOffset(DetachToBrowserTabDragControllerTest* test,
                                TabStrip* tab_strip,
                                int tab_index) {
-  test::QuitDraggingObserver observer;
+  test::QuitDraggingObserver observer(tab_strip);
   // Move to the tab and drag it enough so that it detaches.
   const gfx::Point tab_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(tab_index));
@@ -2901,8 +2909,8 @@ void DragWindowAndVerifyOffset(DetachToBrowserTabDragControllerTest* test,
 
 }  // namespace
 
-#if defined(OS_WIN)
-// TODO(mukai): enable those tests on Windows.
+#if defined(OS_WIN) || defined(OS_LINUX)
+// TODO(mukai): enable this test on Windows and Linux.
 #define MAYBE_OffsetForDraggingTab DISABLED_OffsetForDraggingTab
 #else
 #define MAYBE_OffsetForDraggingTab OffsetForDraggingTab
@@ -3297,7 +3305,7 @@ void DoNotAttachToOtherWindowTestStep2(
   // Get this new created window and set it to non-attachable.
   Browser* new_browser = test->browser_list->get(2);
   new_browser->window()->GetNativeWindow()->SetProperty(
-      ash::kCanAttachToAnotherWindowKey, false);
+      chromeos::kCanAttachToAnotherWindowKey, false);
 
   // Now drag to target_tab_strip.
   ASSERT_TRUE(
@@ -3355,12 +3363,13 @@ void DeferredTargetTabStripTestStep2(DetachToBrowserTabDragControllerTest* test,
   // At this point, |target_tab_strip| should be the deferred target tabstip.
   // Theoratically the dragged tabstrip will merge into |target_tab_strip| after
   // the drag ends.
-  EXPECT_TRUE(test::GetWindowForTabStrip(target_tab_strip)
-                  ->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(
+      test::GetWindowForTabStrip(target_tab_strip)
+          ->GetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey));
 
   // Now clear the property.
   test::GetWindowForTabStrip(target_tab_strip)
-      ->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+      ->ClearProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey);
 
   ASSERT_TRUE(test->ReleaseInput());
 }
@@ -3482,8 +3491,8 @@ void DragToMinimizedOverviewWindowStep2(
                              ui::SHOW_STATE_MINIMIZED);
 
   ASSERT_TRUE(test->DragInputTo(target_point));
-  EXPECT_TRUE(
-      target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(target_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
 
   ASSERT_TRUE(test->ReleaseInput());
 }
@@ -4485,8 +4494,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   // minimizing the window. See https://crbug.com/902897 for the details.
   ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
 
-  test::QuitDraggingObserver observer;
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  test::QuitDraggingObserver observer(tab_strip);
   const gfx::Point tab_0_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(0));
   const gfx::Vector2d detach(0, GetDetachY(tab_strip));
@@ -4494,14 +4503,14 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   clock.SetNowTicks(base::TimeTicks::Now());
   ui::SetEventTickClockForTesting(&clock);
   ASSERT_TRUE(PressInput(tab_0_center));
-  clock.Advance(base::TimeDelta::FromMilliseconds(5));
+  clock.Advance(base::Milliseconds(5));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
       tab_0_center + detach, base::BindLambdaForTesting([&]() {
         // Drag down again; this should cause a fling-down event.
-        clock.Advance(base::TimeDelta::FromMilliseconds(5));
+        clock.Advance(base::Milliseconds(5));
         ASSERT_TRUE(DragInputToNotifyWhenDone(
             tab_0_center + detach + detach, base::BindLambdaForTesting([&]() {
-              clock.Advance(base::TimeDelta::FromMilliseconds(5));
+              clock.Advance(base::Milliseconds(5));
               ASSERT_TRUE(ReleaseInput());
             })));
       })));
@@ -4525,16 +4534,16 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 
   // Sends events to the server without waiting for its reply, which will cause
   // extra touch events before PerformWindowMove starts handling events.
-  test::QuitDraggingObserver observer;
+  test::QuitDraggingObserver observer(tab_strip);
   base::SimpleTestTickClock clock;
   clock.SetNowTicks(base::TimeTicks::Now());
   ui::SetEventTickClockForTesting(&clock);
   ASSERT_TRUE(PressInput(tab_0_center));
-  clock.Advance(base::TimeDelta::FromMilliseconds(5));
+  clock.Advance(base::Milliseconds(5));
   ASSERT_TRUE(DragInputToAsync(tab_0_center + detach));
-  clock.Advance(base::TimeDelta::FromMilliseconds(5));
+  clock.Advance(base::Milliseconds(5));
   ASSERT_TRUE(DragInputToAsync(tab_0_center + detach + detach));
-  clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  clock.Advance(base::Milliseconds(2));
   ASSERT_TRUE(ReleaseInput());
   observer.Wait();
 

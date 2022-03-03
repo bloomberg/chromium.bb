@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/apps/app_service/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system.h"
@@ -20,7 +20,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 namespace {
 
@@ -126,8 +126,7 @@ ExtensionProvider::ExtensionProvider(
   capabilities_.source = info.capabilities.source();
   name_ = info.name;
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
-      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+  if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
     auto* AppServiceProxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
 
@@ -178,4 +177,4 @@ void ExtensionProvider::OnAppRegistryCacheWillBeDestroyed(
 }
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

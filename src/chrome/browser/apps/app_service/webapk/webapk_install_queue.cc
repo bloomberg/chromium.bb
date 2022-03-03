@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "ash/components/arc/mojom/webapk.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -13,12 +16,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_install_task.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/mojom/webapk.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
 
 namespace apps {
 
+// Queue of WebApks to be installed or updated.
 WebApkInstallQueue::WebApkInstallQueue(Profile* profile)
     : profile_(profile), connection_ready_(false) {
   arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
@@ -33,7 +34,7 @@ WebApkInstallQueue::~WebApkInstallQueue() {
   }
 }
 
-void WebApkInstallQueue::Install(const std::string& app_id) {
+void WebApkInstallQueue::InstallOrUpdate(const std::string& app_id) {
   pending_installs_.push_back(
       std::make_unique<WebApkInstallTask>(profile_, app_id));
   PostMaybeStartNext();

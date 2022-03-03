@@ -8,6 +8,7 @@
 #include "src/gpu/vk/GrVkCommandBuffer.h"
 
 #include "include/core/SkRect.h"
+#include "src/core/SkTraceEvent.h"
 #include "src/gpu/vk/GrVkBuffer.h"
 #include "src/gpu/vk/GrVkCommandPool.h"
 #include "src/gpu/vk/GrVkFramebuffer.h"
@@ -57,13 +58,7 @@ void GrVkCommandBuffer::freeGPUData(const GrGpu* gpu, VkCommandPool cmdPool) con
 void GrVkCommandBuffer::releaseResources() {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(!fIsActive || this->isWrapped());
-    for (int i = 0; i < fTrackedResources.count(); ++i) {
-        fTrackedResources[i]->notifyFinishedWithWorkOnGpu();
-    }
     fTrackedResources.reset();
-    for (int i = 0; i < fTrackedRecycledResources.count(); ++i) {
-        fTrackedRecycledResources[i]->notifyFinishedWithWorkOnGpu();
-    }
     fTrackedRecycledResources.reset();
 
     fTrackedGpuBuffers.reset();

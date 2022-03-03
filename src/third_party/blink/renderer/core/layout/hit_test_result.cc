@@ -42,7 +42,9 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
@@ -69,7 +71,6 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     : hit_test_request_(other.hit_test_request_),
       cacheable_(other.cacheable_),
       inner_node_(other.InnerNode()),
-      inert_node_(other.InertNode()),
       inner_element_(other.InnerElement()),
       inner_possibly_pseudo_node_(other.inner_possibly_pseudo_node_),
       point_in_inner_node_frame_(other.point_in_inner_node_frame_),
@@ -96,7 +97,7 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other) {
 
 bool HitTestResult::EqualForCacheability(const HitTestResult& other) const {
   return hit_test_request_.EqualForCacheability(other.hit_test_request_) &&
-         inner_node_ == other.InnerNode() && inert_node_ == other.InertNode() &&
+         inner_node_ == other.InnerNode() &&
          inner_element_ == other.InnerElement() &&
          inner_possibly_pseudo_node_ == other.InnerPossiblyPseudoNode() &&
          point_in_inner_node_frame_ == other.point_in_inner_node_frame_ &&
@@ -113,7 +114,6 @@ void HitTestResult::CacheValues(const HitTestResult& other) {
 
 void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   inner_node_ = other.InnerNode();
-  inert_node_ = other.InertNode();
   inner_element_ = other.InnerElement();
   inner_possibly_pseudo_node_ = other.InnerPossiblyPseudoNode();
   point_in_inner_node_frame_ = other.point_in_inner_node_frame_;
@@ -133,8 +133,8 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
 }
 
 void HitTestResult::Trace(Visitor* visitor) const {
+  visitor->Trace(hit_test_request_);
   visitor->Trace(inner_node_);
-  visitor->Trace(inert_node_);
   visitor->Trace(inner_element_);
   visitor->Trace(inner_possibly_pseudo_node_);
   visitor->Trace(inner_url_element_);
@@ -172,7 +172,7 @@ PositionWithAffinity HitTestResult::GetPosition() const {
     return PositionWithAffinity();
 
   // We should never have a layout object that is within a locked subtree.
-  CHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object));
+  CHECK(!DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object));
 
   // If the layout object is blocked by display lock, we return the beginning of
   // the node as the position. This is because we don't paint contents of the
@@ -203,7 +203,7 @@ PositionWithAffinity HitTestResult::GetPositionForInnerNodeOrImageMapImage()
   if (!layout_object)
     return PositionWithAffinity();
   // We should never have a layout object that is within a locked subtree.
-  CHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object));
+  CHECK(!DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object));
 
   // If the layout object is blocked by display lock, we return the beginning of
   // the node as the position. This is because we don't paint contents of the
@@ -257,7 +257,10 @@ CompositorElementId HitTestResult::GetScrollableContainer() const {
           cur_box->UniqueId(), CompositorElementIdNamespace::kScroll);
     }
 
-    cur_box = cur_box->ContainingBlock();
+    if (IsA<LayoutView>(cur_box))
+      cur_box = cur_box->GetFrame()->OwnerLayoutObject();
+    else
+      cur_box = cur_box->ContainingBlock();
   }
 
   return InnerNode()
@@ -297,22 +300,6 @@ void HitTestResult::SetInnerNode(Node* n) {
     return;
   }
 
-  if (RuntimeEnabledFeatures::InertAttributeEnabled()) {
-    if (GetHitTestRequest().RetargetForInert()) {
-      if (n->IsInert()) {
-        if (!inert_node_)
-          inert_node_ = n;
-
-        return;
-      }
-
-      if (inert_node_ && n != inert_node_ &&
-          !n->IsShadowIncludingInclusiveAncestorOf(*inert_node_)) {
-        return;
-      }
-    }
-  }
-
   inner_possibly_pseudo_node_ = n;
   if (auto* pseudo_element = DynamicTo<PseudoElement>(n))
     n = pseudo_element->InnerNodeForHitTesting();
@@ -325,14 +312,6 @@ void HitTestResult::SetInnerNode(Node* n) {
     inner_element_ = element;
   else
     inner_element_ = FlatTreeTraversal::ParentElement(*inner_node_);
-}
-
-void HitTestResult::SetInertNode(Node* n) {
-  // Don't overwrite an existing value for inert_node_
-  if (inert_node_)
-    DCHECK(n == inert_node_);
-
-  inert_node_ = n;
 }
 
 void HitTestResult::SetURLElement(Element* n) {
@@ -409,9 +388,9 @@ Image* HitTestResult::GetImage(const Node* node) {
   return nullptr;
 }
 
-IntRect HitTestResult::ImageRect() const {
+gfx::Rect HitTestResult::ImageRect() const {
   if (!GetImage())
-    return IntRect();
+    return gfx::Rect();
   return InnerNodeOrImageMapImage()
       ->GetLayoutBox()
       ->AbsoluteContentQuad()
@@ -508,26 +487,36 @@ bool HitTestResult::IsContentEditable() const {
   return HasEditableStyle(*inner_node_);
 }
 
-ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
+std::tuple<bool, ListBasedHitTestBehavior>
+HitTestResult::AddNodeToListBasedTestResultInternal(
     Node* node,
-    const HitTestLocation& location,
-    const PhysicalRect& rect) {
-  // If we are in the process of retargeting for `inert`, continue.
-  if (GetHitTestRequest().RetargetForInert() && InertNode() && !InnerNode())
-    return kContinueHitTesting;
-
+    const HitTestLocation& location) {
   // If not a list-based test, stop testing because the hit has been found.
   if (!GetHitTestRequest().ListBased())
-    return kStopHitTesting;
+    return std::make_tuple(false, kStopHitTesting);
 
   if (!node)
-    return kContinueHitTesting;
+    return std::make_tuple(false, kContinueHitTesting);
 
   MutableListBasedTestResult().insert(node);
 
   if (GetHitTestRequest().PenetratingList())
-    return kContinueHitTesting;
+    return std::make_tuple(false, kContinueHitTesting);
 
+  // The second argument will be ignored.
+  return std::make_tuple(true, kContinueHitTesting);
+}
+
+ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
+    Node* node,
+    const HitTestLocation& location,
+    const PhysicalRect& rect) {
+  bool should_check_containment;
+  ListBasedHitTestBehavior behavior;
+  std::tie(should_check_containment, behavior) =
+      AddNodeToListBasedTestResultInternal(node, location);
+  if (!should_check_containment)
+    return behavior;
   return rect.Contains(location.BoundingBox()) ? kStopHitTesting
                                                : kContinueHitTesting;
 }
@@ -535,25 +524,30 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
 ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
     Node* node,
     const HitTestLocation& location,
+    const FloatQuad& quad) {
+  bool should_check_containment;
+  ListBasedHitTestBehavior behavior;
+  std::tie(should_check_containment, behavior) =
+      AddNodeToListBasedTestResultInternal(node, location);
+  if (!should_check_containment)
+    return behavior;
+  return quad.ContainsQuad(FloatRect(location.BoundingBox()))
+             ? kStopHitTesting
+             : kContinueHitTesting;
+}
+
+ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
+    Node* node,
+    const HitTestLocation& location,
     const Region& region) {
-  // If we are in the process of retargeting for `inert`, continue.
-  if (GetHitTestRequest().RetargetForInert() && InertNode() && !InnerNode())
-    return kContinueHitTesting;
-
-  // If not a list-based test, stop testing because the hit has been found.
-  if (!GetHitTestRequest().ListBased())
-    return kStopHitTesting;
-
-  if (!node)
-    return kContinueHitTesting;
-
-  MutableListBasedTestResult().insert(node);
-
-  if (GetHitTestRequest().PenetratingList())
-    return kContinueHitTesting;
-
-  return region.Contains(location.EnclosingIntRect()) ? kStopHitTesting
-                                                      : kContinueHitTesting;
+  bool should_check_containment;
+  ListBasedHitTestBehavior behavior;
+  std::tie(should_check_containment, behavior) =
+      AddNodeToListBasedTestResultInternal(node, location);
+  if (!should_check_containment)
+    return behavior;
+  return region.Contains(location.ToEnclosingRect()) ? kStopHitTesting
+                                                     : kContinueHitTesting;
 }
 
 void HitTestResult::Append(const HitTestResult& other) {
@@ -573,9 +567,6 @@ void HitTestResult::Append(const HitTestResult& other) {
     is_over_embedded_content_view_ = other.IsOverEmbeddedContentView();
     canvas_region_id_ = other.CanvasRegionId();
   }
-
-  if (!inert_node_ && other.InertNode())
-    SetInertNode(other.InertNode());
 
   if (other.list_based_test_result_) {
     NodeSet& set = MutableListBasedTestResult();

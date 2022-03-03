@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../../../../core/i18n/i18n.js';
 
-import {FilteredListWidget, Provider} from './FilteredListWidget.js';
+import {Events as FilteredListWidgetEvents, FilteredListWidget, Provider} from './FilteredListWidget.js';
 
 const UIStrings = {
   /**
@@ -29,20 +27,19 @@ export class QuickInput {
     throw new ReferenceError('Instance type not implemented.');
   }
 
-  static show(options: QuickInputOptions): Promise<string|undefined> {
-    let canceledPromise: Promise<undefined> =
-        new Promise<undefined>(_r => {});  // Intentionally creates an unresolved promise
+  static show(options: QuickInputOptions): Promise<string|void> {
+    let canceledPromise = new Promise<void>(_r => {});  // Intentionally creates an unresolved promise
     const fulfilledPromise = new Promise<string>(resolve => {
       const provider = new QuickInputProvider(options, resolve);
       const widget = new FilteredListWidget(provider);
 
       if (options.placeHolder) {
-        widget.setPlaceholder(options.placeHolder);
+        widget.setHintElement(options.placeHolder);
       }
 
       widget.setPromptTitle(options.placeHolder || options.prompt);
       widget.showAsDialog(options.prompt);
-      canceledPromise = (widget.once('hidden') as Promise<undefined>);
+      canceledPromise = widget.once(FilteredListWidgetEvents.Hidden);
 
       widget.setQuery(options.value || '');
       if (options.valueSelection) {
@@ -60,19 +57,19 @@ export class QuickInput {
 }
 
 class QuickInputProvider extends Provider {
-  _options: QuickInputOptions;
-  _resolve: Function;
+  private readonly options: QuickInputOptions;
+  private readonly resolve: Function;
   constructor(options: QuickInputOptions, resolve: Function) {
     super();
-    this._options = options;
-    this._resolve = resolve;
+    this.options = options;
+    this.resolve = resolve;
   }
 
   notFoundText(): string {
-    return i18nString(UIStrings.pressEnterToConfirmOrEscapeTo, {PH1: this._options.prompt});
+    return i18nString(UIStrings.pressEnterToConfirmOrEscapeTo, {PH1: this.options.prompt});
   }
 
   selectItem(_itemIndex: number|null, promptValue: string): void {
-    this._resolve(promptValue);
+    this.resolve(promptValue);
   }
 }

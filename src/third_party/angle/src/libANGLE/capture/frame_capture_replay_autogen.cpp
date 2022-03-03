@@ -20,9 +20,9 @@ using namespace gl;
 namespace angle
 {
 
-void FrameCapture::ReplayCall(gl::Context *context,
-                              ReplayContext *replayContext,
-                              const CallCapture &call)
+void FrameCaptureShared::ReplayCall(gl::Context *context,
+                                    ReplayContext *replayContext,
+                                    const CallCapture &call)
 {
     const ParamBuffer &params = call.params;
     switch (call.entryPoint)
@@ -1107,6 +1107,14 @@ void FrameCapture::ReplayCall(gl::Context *context,
                                    replayContext->getReadBufferPointer<GLfixed *>(
                                        params.getParam("equation", ParamType::TGLfixedPointer, 1)));
             break;
+        case angle::EntryPoint::GLGetCompressedTexImage:
+            context->getCompressedTexImage(
+                params.getParam("targetPacked", ParamType::TTextureTarget, 0)
+                    .value.TextureTargetVal,
+                params.getParam("level", ParamType::TGLint, 1).value.GLintVal,
+                replayContext->getReadBufferPointer<void *>(
+                    params.getParam("img", ParamType::TvoidPointer, 2)));
+            break;
         case angle::EntryPoint::GLGetDebugMessageLog:
             context->getDebugMessageLog(
                 params.getParam("count", ParamType::TGLuint, 0).value.GLuintVal,
@@ -1947,6 +1955,14 @@ void FrameCapture::ReplayCall(gl::Context *context,
                     params.getParam("count", ParamType::TGLsizeiConstPointer, 2)),
                 params.getParam("drawcount", ParamType::TGLsizei, 3).value.GLsizeiVal);
             break;
+        case angle::EntryPoint::GLMultiDrawArraysIndirect:
+            context->multiDrawArraysIndirect(
+                params.getParam("mode", ParamType::TGLenum, 0).value.GLenumVal,
+                replayContext->getAsConstPointer<const void *>(
+                    params.getParam("indirect", ParamType::TvoidConstPointer, 1)),
+                params.getParam("drawcount", ParamType::TGLsizei, 2).value.GLsizeiVal,
+                params.getParam("stride", ParamType::TGLsizei, 3).value.GLsizeiVal);
+            break;
         case angle::EntryPoint::GLMultiDrawElements:
             context->multiDrawElements(
                 params.getParam("modePacked", ParamType::TPrimitiveMode, 0).value.PrimitiveModeVal,
@@ -1970,6 +1986,15 @@ void FrameCapture::ReplayCall(gl::Context *context,
                 params.getParam("drawcount", ParamType::TGLsizei, 4).value.GLsizeiVal,
                 replayContext->getAsConstPointer<const GLint *>(
                     params.getParam("basevertex", ParamType::TGLintConstPointer, 5)));
+            break;
+        case angle::EntryPoint::GLMultiDrawElementsIndirect:
+            context->multiDrawElementsIndirect(
+                params.getParam("mode", ParamType::TGLenum, 0).value.GLenumVal,
+                params.getParam("type", ParamType::TGLenum, 1).value.GLenumVal,
+                replayContext->getAsConstPointer<const void *>(
+                    params.getParam("indirect", ParamType::TvoidConstPointer, 2)),
+                params.getParam("drawcount", ParamType::TGLsizei, 3).value.GLsizeiVal,
+                params.getParam("stride", ParamType::TGLsizei, 4).value.GLsizeiVal);
             break;
         case angle::EntryPoint::GLMultiTexCoord4f:
             context->multiTexCoord4f(

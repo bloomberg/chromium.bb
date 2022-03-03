@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_MANAGER_H_
 #define CHROME_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_MANAGER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 
 namespace content {
@@ -29,6 +30,10 @@ class PictureInPictureWindowManager {
  public:
   // Returns the singleton instance.
   static PictureInPictureWindowManager* GetInstance();
+
+  PictureInPictureWindowManager(const PictureInPictureWindowManager&) = delete;
+  PictureInPictureWindowManager& operator=(
+      const PictureInPictureWindowManager&) = delete;
 
   // Some PIP windows (e.g. from ARC) may not have a WebContents as the source
   // of the PIP content. This function lets them provide their own window
@@ -61,9 +66,8 @@ class PictureInPictureWindowManager {
   ~PictureInPictureWindowManager();
 
   std::unique_ptr<ContentsObserver> contents_observer_;
-  content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowManager);
+  raw_ptr<content::PictureInPictureWindowController> pip_window_controller_ =
+      nullptr;
 };
 
 #endif  // CHROME_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_MANAGER_H_

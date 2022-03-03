@@ -22,7 +22,6 @@
 #include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_util.h"
@@ -184,6 +183,7 @@ void Prefetch(size_t start, size_t end) {
     // loop.
     dummy ^= *static_cast<volatile unsigned char*>(ptr);
   }
+  ALLOW_UNUSED_LOCAL(dummy);
 }
 
 // These values were used in the past for recording
@@ -241,7 +241,6 @@ PrefetchStatus ForkAndPrefetch(bool ordered_only) {
           case SIGSEGV:
           case SIGBUS:
             return PrefetchStatus::kChildProcessCrashed;
-            break;
           case SIGKILL:
           case SIGTERM:
           default:

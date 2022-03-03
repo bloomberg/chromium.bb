@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
@@ -60,7 +60,7 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
   FrameInfo info;
   info.token = token;
   info.decode_time = frame.metadata().decode_end_time;
-  info.refresh_rate_hz = int{std::round(1.0 / render_interval.InSecondsF())};
+  info.refresh_rate_hz = base::ClampRound(render_interval.ToHz());
   info.size = frame.natural_size();
 
   info.intended_duration = frame.metadata().wallclock_frame_duration;
@@ -75,8 +75,7 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
     // Adjust frame window size to fit about 1 second of playback
     const int win_size =
         base::ClampRound(info.intended_duration.value().ToHz());
-    frames_window_size_ =
-        base::ClampToRange(win_size, kMinWindowSize, kMaxWindowSize);
+    frames_window_size_ = base::clamp(win_size, kMinWindowSize, kMaxWindowSize);
   }
 
   frames_.push_back(info);
@@ -203,7 +202,7 @@ void VideoPlaybackRoughnessReporter::ProcessFrameWindow() {
           total_error.InMillisecondsF() * total_error.InMillisecondsF();
     }
     win.size = frames_window_size_;
-    win.root_mean_square_error = base::TimeDelta::FromMillisecondsD(
+    win.root_mean_square_error = base::Milliseconds(
         std::sqrt(mean_square_error_ms2 / frames_window_size_));
 
     if (observed_change_in_parameters) {

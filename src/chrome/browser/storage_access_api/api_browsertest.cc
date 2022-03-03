@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -34,6 +33,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -86,7 +86,7 @@ class StorageAccessAPIBrowserTest : public InProcessBrowserTest {
 
   void NavigateToPageWithFrame(const std::string& host) {
     GURL main_url(https_server_.GetURL(host, "/iframe.html"));
-    ui_test_utils::NavigateToURL(browser(), main_url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
   }
 
   void NavigateToNewTabWithFrame(const std::string& host) {
@@ -538,8 +538,7 @@ IN_PROC_BROWSER_TEST_F(StorageAccessAPIBrowserTest,
   storage::test::CheckStorageAccessForFrame(GetNestedFrame(), false);
 
   // Manually create a pre-expired grant and ensure it doesn't grant access.
-  base::Time expiration_time =
-      base::Time::Now() - base::TimeDelta::FromMinutes(5);
+  base::Time expiration_time = base::Time::Now() - base::Minutes(5);
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   settings_map->SetContentSettingDefaultScope(

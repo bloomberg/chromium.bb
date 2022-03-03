@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
@@ -44,16 +44,18 @@ HidChooserController::HidChooserController(
     content::RenderFrameHost* render_frame_host,
     std::vector<blink::mojom::HidDeviceFilterPtr> filters,
     content::HidChooser::Callback callback)
-    : ChooserController(
-          CreateChooserTitle(render_frame_host,
-                             IDS_HID_CHOOSER_PROMPT_ORIGIN,
-                             IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME)),
+    : ChooserController(CreateExtensionAwareChooserTitle(
+          render_frame_host,
+          IDS_HID_CHOOSER_PROMPT_ORIGIN,
+          IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME)),
       filters_(std::move(filters)),
       callback_(std::move(callback)),
-      origin_(content::WebContents::FromRenderFrameHost(render_frame_host)
-                  ->GetMainFrame()
-                  ->GetLastCommittedOrigin()),
+      origin_(render_frame_host->GetMainFrame()->GetLastCommittedOrigin()),
       frame_tree_node_id_(render_frame_host->GetFrameTreeNodeId()) {
+  // The use above of GetMainFrame is safe as content::HidService instances are
+  // not created for fenced frames.
+  DCHECK(!render_frame_host->IsNestedWithinFencedFrame());
+
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   auto* profile =

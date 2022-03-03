@@ -44,7 +44,7 @@ void LayoutInstabilityTest::RunWPT(const std::string& test_file,
     return;
 
   // Finish session.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
 
   // Check UKM.
   ExpectUKMPageLoadMetric(PageLoad::kLayoutInstability_CumulativeShiftScoreName,
@@ -73,17 +73,17 @@ double LayoutInstabilityTest::CheckTraceData(Value& expectations,
       continue;
     }
 
-    std::unique_ptr<Value> data;
+    Value data;
     events[i++]->GetArgAsValue("data", &data);
 
     if (score) {
-      EXPECT_EQ(*score, *data->FindDoubleKey("score"));
+      EXPECT_EQ(*score, *data.FindDoubleKey("score"));
       final_score = *score;
     }
     const Value* sources = expectation.FindListKey("sources");
     if (sources) {
       CheckSources(sources->GetList(),
-                   data->FindListKey("impacted_nodes")->GetList());
+                   data.FindListKey("impacted_nodes")->GetList());
     }
   }
 

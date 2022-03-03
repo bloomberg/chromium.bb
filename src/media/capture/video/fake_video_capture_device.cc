@@ -9,12 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/numerics/ranges.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -200,7 +200,7 @@ class FrameDeliverer {
 
  private:
   const std::unique_ptr<PacmanFramePainter> frame_painter_;
-  const FakeDeviceState* device_state_ = nullptr;
+  raw_ptr<const FakeDeviceState> device_state_ = nullptr;
   std::unique_ptr<VideoCaptureDevice::Client> client_;
   base::TimeTicks first_ref_time_;
 };
@@ -258,7 +258,7 @@ class GpuMemoryBufferFrameDeliverer : public FrameDeliverer {
   void PaintAndDeliverNextFrame(base::TimeDelta timestamp_to_paint) override;
 
  private:
-  gpu::GpuMemoryBufferSupport* gmb_support_;
+  raw_ptr<gpu::GpuMemoryBufferSupport> gmb_support_;
 };
 
 FrameDelivererFactory::FrameDelivererFactory(
@@ -679,23 +679,23 @@ void FakePhotoDevice::SetPhotoOptions(
 
   if (settings->has_pan) {
     device_state_write_access->pan =
-        base::ClampToRange(settings->pan, kMinPan, kMaxPan);
+        base::clamp(settings->pan, kMinPan, kMaxPan);
   }
   if (settings->has_tilt) {
     device_state_write_access->tilt =
-        base::ClampToRange(settings->tilt, kMinTilt, kMaxTilt);
+        base::clamp(settings->tilt, kMinTilt, kMaxTilt);
   }
   if (settings->has_zoom) {
     device_state_write_access->zoom =
-        base::ClampToRange(settings->zoom, kMinZoom, kMaxZoom);
+        base::clamp(settings->zoom, kMinZoom, kMaxZoom);
   }
   if (settings->has_exposure_time) {
-    device_state_write_access->exposure_time = base::ClampToRange(
+    device_state_write_access->exposure_time = base::clamp(
         settings->exposure_time, kMinExposureTime, kMaxExposureTime);
   }
 
   if (settings->has_focus_distance) {
-    device_state_write_access->focus_distance = base::ClampToRange(
+    device_state_write_access->focus_distance = base::clamp(
         settings->focus_distance, kMinFocusDistance, kMaxFocusDistance);
   }
 
@@ -859,10 +859,9 @@ void GpuMemoryBufferFrameDeliverer::PaintAndDeliverNextFrame(
 void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(
     base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const base::TimeDelta beep_interval =
-      base::TimeDelta::FromMilliseconds(kBeepInterval);
+  const base::TimeDelta beep_interval = base::Milliseconds(kBeepInterval);
   const base::TimeDelta frame_interval =
-      base::TimeDelta::FromMicroseconds(1e6 / device_state_->format.frame_rate);
+      base::Microseconds(1e6 / device_state_->format.frame_rate);
   beep_time_ += frame_interval;
   elapsed_time_ += frame_interval;
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -17,6 +18,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/accept_ch_frame_observer.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -39,8 +41,7 @@ namespace blink {
 // URL loading. If the Mojo connection fails during the request it is canceled
 // with net::ERR_ABORTED.
 class BLINK_COMMON_EXPORT ThrottlingURLLoader
-    : public network::mojom::URLLoaderClient,
-      public network::mojom::AcceptCHFrameObserver {
+    : public network::mojom::URLLoaderClient {
  public:
   // Reason used when resetting the URLLoader to follow a redirect.
   static const char kFollowRedirectReason[];
@@ -63,6 +64,8 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
       absl::optional<std::vector<std::string>> cors_exempt_header_list =
           absl::nullopt);
 
+  ThrottlingURLLoader(const ThrottlingURLLoader&) = delete;
+  ThrottlingURLLoader& operator=(const ThrottlingURLLoader&) = delete;
   ~ThrottlingURLLoader() override;
 
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
@@ -73,7 +76,14 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // implementing similar logic to FollowRedirectForcingRestart(). If this is
   // called, a future request for the redirect should be guaranteed to be sent
   // with the same request_id.
-  void ResetForFollowRedirect();
+  // `removed_headers`, `modified_headers` and `modified_cors_exempt_headers`
+  // will be merged to corresponding members in the ThrottlingURLLoader, and
+  // then apply updates against `resource_request`.
+  void ResetForFollowRedirect(
+      network::ResourceRequest& resource_request,
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers);
 
   void FollowRedirect(
       const std::vector<std::string>& removed_headers,
@@ -147,10 +157,6 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // Restart the request immediately if the response has not started yet.
   void RestartWithURLResetAndFlagsNow(int additional_load_flags);
 
-  // Restart the request immediately with modified headers.
-  void RestartWithModifiedHeadersNow(
-      const net::HttpRequestHeaders& modified_headers);
-
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(
@@ -167,14 +173,6 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  // network::mojom::AcceptCHFrameObserver implementation
-  void OnAcceptCHFrameReceived(
-      const GURL& url,
-      const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame,
-      OnAcceptCHFrameReceivedCallback callback) override;
-  void Clone(mojo::PendingReceiver<network::mojom::AcceptCHFrameObserver>
-                 listener) override;
-
   void OnClientConnectionError();
 
   void Resume();
@@ -182,6 +180,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   void UpdateDeferredRequestHeaders(
       const net::HttpRequestHeaders& modified_request_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_request_headers);
+  void UpdateRequestHeaders(network::ResourceRequest& resource_request);
   void UpdateDeferredResponseHead(
       network::mojom::URLResponseHeadPtr new_response_head);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
@@ -215,15 +214,11 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
     ThrottleEntry(ThrottlingURLLoader* loader,
                   std::unique_ptr<URLLoaderThrottle> the_throttle);
     ThrottleEntry(ThrottleEntry&& other);
-    ~ThrottleEntry();
-
     ThrottleEntry& operator=(ThrottleEntry&& other);
+    ~ThrottleEntry();
 
     std::unique_ptr<ForwardingThrottleDelegate> delegate;
     std::unique_ptr<URLLoaderThrottle> throttle;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ThrottleEntry);
   };
 
   std::vector<ThrottleEntry> throttles_;
@@ -235,7 +230,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // NOTE: This may point to a native implementation (instead of a Mojo proxy
   // object). And it is possible that the implementation of |forwarding_client_|
   // destroys this object synchronously when this object is calling into it.
-  network::mojom::URLLoaderClient* forwarding_client_;
+  raw_ptr<network::mojom::URLLoaderClient> forwarding_client_;
   mojo::Remote<network::mojom::URLLoader> url_loader_;
 
   mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
@@ -321,15 +316,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   int pending_restart_flags_ = 0;
   bool has_pending_restart_ = false;
 
-  // While it's not expected to have two active Remote ends for the same
-  // ThrottlingURLLoader, when a TrustedParam is copied all of the pipes are
-  // cloned instead of being destroyed.
-  mojo::ReceiverSet<network::mojom::AcceptCHFrameObserver>
-      accept_ch_frame_observers_;
-
   base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };
 
 }  // namespace blink

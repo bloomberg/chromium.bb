@@ -30,7 +30,6 @@
 #include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/track_tracker.h"
 #include "src/trace_processor/importers/ftrace/ftrace_module.h"
-#include "src/trace_processor/importers/gzip/gzip_utils.h"
 #include "src/trace_processor/importers/proto/metadata_tracker.h"
 #include "src/trace_processor/importers/proto/packet_sequence_state.h"
 #include "src/trace_processor/importers/proto/proto_incremental_state.h"
@@ -38,6 +37,7 @@
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/trace_sorter.h"
 #include "src/trace_processor/util/descriptors.h"
+#include "src/trace_processor/util/gzip_utils.h"
 
 #include "protos/perfetto/common/builtin_clock.pbzero.h"
 #include "protos/perfetto/config/trace_config.pbzero.h"
@@ -55,11 +55,10 @@ ProtoTraceReader::ProtoTraceReader(TraceProcessorContext* ctx)
     : context_(ctx) {}
 ProtoTraceReader::~ProtoTraceReader() = default;
 
-util::Status ProtoTraceReader::Parse(std::unique_ptr<uint8_t[]> owned_buf,
-                                     size_t size) {
-  return tokenizer_.Tokenize(
-      std::move(owned_buf), size,
-      [this](TraceBlobView packet) { return ParsePacket(std::move(packet)); });
+util::Status ProtoTraceReader::Parse(TraceBlobView blob) {
+  return tokenizer_.Tokenize(std::move(blob), [this](TraceBlobView packet) {
+    return ParsePacket(std::move(packet));
+  });
 }
 
 util::Status ProtoTraceReader::ParseExtensionDescriptor(ConstBytes descriptor) {
@@ -69,6 +68,7 @@ util::Status ProtoTraceReader::ParseExtensionDescriptor(ConstBytes descriptor) {
   auto extension = decoder.extension_set();
   return context_->descriptor_pool_->AddFromFileDescriptorSet(
       extension.data, extension.size,
+      /*skip_prefixes*/ {},
       /*merge_existing_messages=*/true);
 }
 
@@ -99,14 +99,12 @@ util::Status ProtoTraceReader::ParsePacket(TraceBlobView packet) {
   // the timestamp, since the defaults could affect them.
   if (decoder.has_trace_packet_defaults()) {
     auto field = decoder.trace_packet_defaults();
-    const size_t offset = packet.offset_of(field.data);
-    ParseTracePacketDefaults(decoder, packet.slice(offset, field.size));
+    ParseTracePacketDefaults(decoder, packet.slice(field.data, field.size));
   }
 
   if (decoder.has_interned_data()) {
     auto field = decoder.interned_data();
-    const size_t offset = packet.offset_of(field.data);
-    ParseInternedData(decoder, packet.slice(offset, field.size));
+    ParseInternedData(decoder, packet.slice(field.data, field.size));
   }
 
   if (decoder.has_clock_snapshot()) {
@@ -232,49 +230,12 @@ util::Status ProtoTraceReader::ParsePacket(TraceBlobView packet) {
 
 void ProtoTraceReader::ParseTraceConfig(protozero::ConstBytes blob) {
   protos::pbzero::TraceConfig::Decoder trace_config(blob);
-  // If we're forcing a full sort, we can keep using the INT_MAX duration set
-  // when we created the sorter.
-  const auto& cfg = context_->config;
-  if (cfg.sorting_mode == SortingMode::kForceFullSort) {
-    return;
-  }
-
-  base::Optional<int64_t> flush_period_window_size_ns;
-  if (trace_config.has_flush_period_ms() &&
-      trace_config.flush_period_ms() > 0) {
-    flush_period_window_size_ns =
-        static_cast<int64_t>(trace_config.flush_period_ms()) * 2 * 1000 * 1000;
-  }
-
-  // If we're trying to force flush period based sorting, use that as the
-  // window size if it exists.
-  if (cfg.sorting_mode == SortingMode::kForceFlushPeriodWindowedSort &&
-      flush_period_window_size_ns.has_value()) {
-    context_->sorter->SetWindowSizeNs(flush_period_window_size_ns.value());
-    return;
-  }
-
-  // If we end up here, we should use heuristics because either the sorting mode
-  // was set as such or we don't have a flush period to force the window size
-  // to.
-
-  // If we're not forcing anything and this is a write_into_file trace, then
-  // use flush_period_ms as an indiciator for how big the sliding window for the
-  // sorter should be.
-  if (trace_config.write_into_file()) {
-    int64_t window_size_ns;
-    if (flush_period_window_size_ns.has_value()) {
-      window_size_ns = flush_period_window_size_ns.value();
-    } else {
-      constexpr uint64_t kDefaultWindowNs =
-          180 * 1000 * 1000 * 1000ULL;  // 3 minutes.
-      PERFETTO_ELOG(
-          "It is strongly recommended to have flush_period_ms set when "
-          "write_into_file is turned on. You will likely have many dropped "
-          "events because of inability to sort the events correctly.");
-      window_size_ns = static_cast<int64_t>(kDefaultWindowNs);
-    }
-    context_->sorter->SetWindowSizeNs(window_size_ns);
+  if (trace_config.write_into_file() && !trace_config.flush_period_ms()) {
+    PERFETTO_ELOG(
+        "It is strongly recommended to have flush_period_ms set when "
+        "write_into_file is turned on. This trace will be loaded fully "
+        "into memory before sorting which increases the likliehoold of "
+        "OOMs.");
   }
 }
 
@@ -346,8 +307,7 @@ void ProtoTraceReader::ParseInternedData(
   for (protozero::Field f = decoder.ReadField(); f.valid();
        f = decoder.ReadField()) {
     auto bytes = f.as_bytes();
-    auto offset = interned_data.offset_of(bytes.data);
-    state->InternMessage(f.id(), interned_data.slice(offset, bytes.size));
+    state->InternMessage(f.id(), interned_data.slice(bytes.data, bytes.size));
   }
 }
 
@@ -446,6 +406,12 @@ util::Status ProtoTraceReader::ParseServiceEvent(int64_t ts, ConstBytes blob) {
   if (tse.all_data_sources_started()) {
     context_->metadata_tracker->SetMetadata(
         metadata::all_data_source_started_ns, Variadic::Integer(ts));
+  }
+  if (tse.all_data_sources_flushed()) {
+    context_->sorter->NotifyFlushEvent();
+  }
+  if (tse.read_tracing_buffers_completed()) {
+    context_->sorter->NotifyReadBufferEvent();
   }
   return util::OkStatus();
 }

@@ -18,7 +18,6 @@
 #include <string>
 
 #include "src/clone_context.h"
-#include "src/program_id.h"
 
 namespace tint {
 
@@ -38,43 +37,22 @@ class Node : public Castable<Node, Cloneable> {
  public:
   ~Node() override;
 
-  /// @returns the identifier of the program that owns this node
-  ProgramID program_id() const { return program_id_; }
+  /// The identifier of the program that owns this node
+  const ProgramID program_id;
 
-  /// @returns the node source data
-  const Source& source() const { return source_; }
-
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  virtual void to_str(const sem::Info& sem,
-                      std::ostream& out,
-                      size_t indent) const = 0;
-
-  /// Convenience wrapper around the to_str() method.
-  /// @param sem the semantic info for the program
-  /// @returns the node as a string
-  std::string str(const sem::Info& sem) const;
+  /// The node source data
+  const Source source;
 
  protected:
   /// Create a new node
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the input source for the node
-  Node(ProgramID program_id, const Source& source);
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the input source for the node
+  Node(ProgramID pid, const Source& src);
   /// Move constructor
   Node(Node&&);
 
-  /// Writes indent into stream
-  /// @param out the stream to write to
-  /// @param indent the number of spaces to write
-  void make_indent(std::ostream& out, size_t indent) const;
-
  private:
   Node(const Node&) = delete;
-
-  ProgramID const program_id_;
-  Source const source_;
 };
 
 }  // namespace ast
@@ -82,7 +60,7 @@ class Node : public Castable<Node, Cloneable> {
 /// @param node a pointer to an AST node
 /// @returns the ProgramID of the given AST node.
 inline ProgramID ProgramIDOf(const ast::Node* node) {
-  return node ? node->program_id() : ProgramID();
+  return node ? node->program_id : ProgramID();
 }
 
 }  // namespace tint

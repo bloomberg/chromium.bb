@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ELEMENT_FRAGMENT_ANCHOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ELEMENT_FRAGMENT_ANCHOR_H_
 
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -35,6 +36,8 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
                                           bool should_scroll);
 
   ElementFragmentAnchor(Node& anchor_node, LocalFrame& frame);
+  ElementFragmentAnchor(const ElementFragmentAnchor&) = delete;
+  ElementFragmentAnchor& operator=(const ElementFragmentAnchor&) = delete;
   ~ElementFragmentAnchor() override = default;
 
   // Will attempt to scroll the anchor into view.
@@ -58,8 +61,6 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
 
   void Trace(Visitor*) const override;
 
-  bool IsTextFragmentAnchor() override { return false; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ElementFragmentAnchorTest,
                            AnchorRemovedBeforeBeginFrameCrash);
@@ -67,7 +68,6 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   void ApplyFocusIfNeeded();
 
   WeakMember<Node> anchor_node_;
-  Member<LocalFrame> frame_;
   bool needs_focus_;
 
   // While this is true, the fragment is still "active" in the sense that we
@@ -75,8 +75,6 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   // Invoke has no effect and the fragment can be disposed (unless focus is
   // still needed).
   bool needs_invoke_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ElementFragmentAnchor);
 };
 
 }  // namespace blink

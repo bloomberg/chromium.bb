@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
-#include "third_party/blink/renderer/bindings/modules/v8/dom_exception_or_overconstrained_error.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
@@ -67,28 +66,19 @@ class MODULES_EXPORT UserMediaRequest final
     kTrackStart,
     kFailedDueToShutdown,
     kKillSwitchOn,
-    kSystemPermissionDenied
+    kSystemPermissionDenied,
+    kDeviceInUse
   };
 
-  enum class MediaType {
-    kUserMedia,
-    kDisplayMedia,
-    kGetCurrentBrowsingContextMedia,
-  };
+  enum class MediaType { kUserMedia, kDisplayMedia };
 
   class Callbacks : public GarbageCollected<Callbacks> {
    public:
     virtual ~Callbacks() = default;
 
-    virtual void OnSuccess(ScriptWrappable* callback_this_value,
-                           MediaStream*) = 0;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    virtual void OnSuccess(MediaStream*) = 0;
     virtual void OnError(ScriptWrappable* callback_this_value,
                          const V8MediaStreamError* error) = 0;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    virtual void OnError(ScriptWrappable* callback_this_value,
-                         DOMExceptionOrOverconstrainedError) = 0;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
     virtual void Trace(Visitor*) const {}
 
@@ -120,6 +110,8 @@ class MODULES_EXPORT UserMediaRequest final
                    MediaType media_type,
                    MediaConstraints audio,
                    MediaConstraints video,
+                   bool should_prefer_current_tab,
+                   bool region_capture_capable,
                    Callbacks*,
                    IdentifiableSurface surface);
   ~UserMediaRequest() override;
@@ -160,12 +152,18 @@ class MODULES_EXPORT UserMediaRequest final
     return has_transient_user_activation_;
   }
 
+  bool should_prefer_current_tab() const { return should_prefer_current_tab_; }
+
+  bool region_capture_capable() const { return region_capture_capable_; }
+
   void Trace(Visitor*) const override;
 
  private:
   MediaType media_type_;
   MediaConstraints audio_;
   MediaConstraints video_;
+  const bool should_prefer_current_tab_ = false;
+  const bool region_capture_capable_ = false;
   bool should_disable_hardware_noise_suppression_;
   bool has_transient_user_activation_ = false;
   int request_id_ = -1;

@@ -83,7 +83,7 @@ public class BottomSheetObserverTest {
         }
 
         @Override
-        public void onSheetStateChanged(int newState) {
+        public void onSheetStateChanged(int newState, int reason) {
             if (newState == BottomSheetController.SheetState.HIDDEN) {
                 mHiddenCallbackHelper.notifyCalled();
             } else if (newState == BottomSheetController.SheetState.FULL) {
@@ -134,9 +134,10 @@ public class BottomSheetObserverTest {
             mSheetContent = new TestBottomSheetContent(
                     mTestRule.getActivity(), BottomSheetContent.ContentPriority.HIGH, false);
             mBottomSheetController.requestShowContent(mSheetContent, false);
+
+            mObserver = new TestSheetObserver();
+            mBottomSheetController.addObserver(mObserver);
         });
-        mObserver = new TestSheetObserver();
-        mBottomSheetController.addObserver(mObserver);
     }
 
     /** Test that the onSheetClosed event is triggered if the sheet is closed without animation. */

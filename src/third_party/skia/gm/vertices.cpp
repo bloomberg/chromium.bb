@@ -228,10 +228,10 @@ static void draw_batching(SkCanvas* canvas) {
     SkTDArray<SkMatrix> matrices;
     matrices.push()->reset();
     matrices.push()->setTranslate(0, 40);
-    SkMatrix* m = matrices.push();
-    m->setRotate(45, kMeshSize / 2, kMeshSize / 2);
-    m->postScale(1.2f, .8f, kMeshSize / 2, kMeshSize / 2);
-    m->postTranslate(0, 80);
+    matrices.push()
+            ->setRotate(45, kMeshSize / 2, kMeshSize / 2)
+            .postScale(1.2f, .8f, kMeshSize / 2, kMeshSize / 2)
+            .postTranslate(0, 80);
 
     auto shader = make_shader1(1);
 
@@ -252,6 +252,7 @@ static void draw_batching(SkCanvas* canvas) {
                 canvas->concat(m);
                 SkPaint paint;
                 paint.setShader(useShader ? shader : nullptr);
+                paint.setColor(SK_ColorWHITE);
 
                 const SkPoint* t = useTex ? texs : nullptr;
                 auto v = SkVertices::MakeCopy(SkVertices::kTriangles_VertexMode, kMeshVertexCnt,
@@ -301,12 +302,12 @@ DEF_SIMPLE_GM(vertices_perspective, canvas, 256, 256) {
     canvas->save();
     canvas->translate(0, r.height());
     canvas->concat(persp);
-    canvas->drawVertices(verts, paint);
+    canvas->drawVertices(verts, SkBlendMode::kModulate, paint);
     canvas->restore();
 
     canvas->save();
     canvas->translate(r.width(), r.height());
     canvas->concat(persp);
-    canvas->drawVertices(verts, paint);
+    canvas->drawVertices(verts, SkBlendMode::kModulate, paint);
     canvas->restore();
 }

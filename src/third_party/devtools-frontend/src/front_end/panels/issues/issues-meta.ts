@@ -7,7 +7,6 @@ import * as Root from '../../core/root/root.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Issues from './issues.js';
 
 import * as i18n from '../../core/i18n/i18n.js';
@@ -35,8 +34,6 @@ let loadedIssuesModule: (typeof Issues|undefined);
 
 async function loadIssuesModule(): Promise<typeof Issues> {
   if (!loadedIssuesModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/issues');
     loadedIssuesModule = await import('./issues.js');
   }
   return loadedIssuesModule;

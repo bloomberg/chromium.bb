@@ -4,9 +4,21 @@
 
 #include "ash/app_list/app_list_util.h"
 
+#include "ash/app_list/model/app_list_folder_item.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
+#include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -49,6 +61,10 @@ bool IsArrowKeyEvent(const ui::KeyEvent& event) {
 bool IsArrowKey(const ui::KeyboardCode& key_code) {
   return key_code == ui::VKEY_DOWN || key_code == ui::VKEY_RIGHT ||
          key_code == ui::VKEY_LEFT || key_code == ui::VKEY_UP;
+}
+
+bool IsFolderItem(AppListItem* item) {
+  return item->GetItemType() == AppListFolderItem::kItemType;
 }
 
 bool LeftRightKeyEventShouldExitText(views::Textfield* textfield,
@@ -109,6 +125,34 @@ gfx::ImageSkia CreateIconWithCircleBackground(const gfx::ImageSkia& icon,
   // color from the NativeTheme or AshColorProvider.
   return gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
       icon.width() / 2, background_color, icon);
+}
+
+void PaintFocusBar(gfx::Canvas* canvas,
+                   const gfx::Point content_origin,
+                   const int height) {
+  SkPath path;
+  gfx::Rect focus_bar_bounds(content_origin.x() - kFocusBarThickness,
+                             content_origin.y(), kFocusBarThickness * 2,
+                             height);
+  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(focus_bar_bounds),
+                                    kFocusBarThickness, kFocusBarThickness));
+  canvas->ClipPath(path, true);
+
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kFocusBarThickness);
+  gfx::Point top_point = content_origin;
+  gfx::Point bottom_point = content_origin + gfx::Vector2d(0, height);
+  canvas->DrawLine(top_point, bottom_point, flags);
+}
+
+void SetViewIgnoredForAccessibility(views::View* view, bool ignored) {
+  auto& view_accessibility = view->GetViewAccessibility();
+  view_accessibility.OverrideIsLeaf(ignored);
+  view_accessibility.OverrideIsIgnored(ignored);
+  view->NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged, true);
 }
 
 }  // namespace ash

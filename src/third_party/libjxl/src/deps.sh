@@ -1,17 +1,8 @@
 #!/usr/bin/env bash
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 # This file downloads the dependencies needed to build JPEG XL into third_party.
 # These dependencies are normally pulled by gtest.
@@ -22,7 +13,7 @@ MYDIR=$(dirname $(realpath "$0"))
 
 # Git revisions we use for the given submodules. Update these whenever you
 # update a git submodule.
-THIRD_PARTY_HIGHWAY="ca1a57c342cd815053abfcffa29b44eaead4f20b"
+THIRD_PARTY_HIGHWAY="e2397743fe092df68b760d358253773699a16c93"
 THIRD_PARTY_LODEPNG="48e5364ef48ec2408f44c727657ac1b6703185f8"
 THIRD_PARTY_SKCMS="64374756e03700d649f897dbd98c95e78c30c7da"
 THIRD_PARTY_SJPEG="868ab558fad70fcbe8863ba4e85179eeb81cc840"
@@ -68,7 +59,7 @@ download_github() {
 main() {
   if git -C "${MYDIR}" rev-parse; then
     cat >&2 <<EOF
-Currenty directory is a git repository, downloading dependencies via git:
+Current directory is a git repository, downloading dependencies via git:
 
   git submodule update --init --recursive
 

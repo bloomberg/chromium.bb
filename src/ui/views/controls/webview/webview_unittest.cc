@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
@@ -48,6 +48,11 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
         valid_root_while_shown_(true) {
     content::WebContentsObserver::Observe(web_contents);
   }
+
+  WebViewTestWebContentsObserver(const WebViewTestWebContentsObserver&) =
+      delete;
+  WebViewTestWebContentsObserver& operator=(
+      const WebViewTestWebContentsObserver&) = delete;
 
   ~WebViewTestWebContentsObserver() override {
     if (web_contents_)
@@ -92,20 +97,24 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
   bool valid_root_while_shown() const { return valid_root_while_shown_; }
 
  private:
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
   bool was_shown_;
   int32_t shown_count_;
   int32_t hidden_count_;
   // Set to true if the view containing the webcontents has a valid root window.
   bool valid_root_while_shown_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewTestWebContentsObserver);
 };
 
 // Fakes the fullscreen browser state reported to WebContents and WebView.
 class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
  public:
   WebViewTestWebContentsDelegate() = default;
+
+  WebViewTestWebContentsDelegate(const WebViewTestWebContentsDelegate&) =
+      delete;
+  WebViewTestWebContentsDelegate& operator=(
+      const WebViewTestWebContentsDelegate&) = delete;
+
   ~WebViewTestWebContentsDelegate() override = default;
 
   void set_is_fullscreened(bool fs) { is_fullscreened_ = fs; }
@@ -118,8 +127,6 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
 
  private:
   bool is_fullscreened_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewTestWebContentsDelegate);
 };
 
 }  // namespace
@@ -130,6 +137,9 @@ class WebViewUnitTest : public views::test::WidgetTest {
   WebViewUnitTest()
       : views::test::WidgetTest(std::unique_ptr<base::test::TaskEnvironment>(
             std::make_unique<content::BrowserTaskEnvironment>())) {}
+
+  WebViewUnitTest(const WebViewUnitTest&) = delete;
+  WebViewUnitTest& operator=(const WebViewUnitTest&) = delete;
 
   ~WebViewUnitTest() override = default;
 
@@ -164,7 +174,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
         top_level_widget_->SetContentsView(std::make_unique<View>());
     web_view_ = new WebView(browser_context_.get());
     web_view_->SetBoundsRect(gfx::Rect(contents_view->size()));
-    contents_view->AddChildView(web_view_);
+    contents_view->AddChildView(web_view_.get());
     top_level_widget_->Show();
     ASSERT_EQ(gfx::Rect(0, 0, 100, 100), web_view_->bounds());
   }
@@ -205,10 +215,8 @@ class WebViewUnitTest : public views::test::WidgetTest {
   std::unique_ptr<views::WebView::ScopedWebContentsCreatorForTesting>
       scoped_web_contents_creator_;
 
-  Widget* top_level_widget_ = nullptr;
-  WebView* web_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewUnitTest);
+  raw_ptr<Widget> top_level_widget_ = nullptr;
+  raw_ptr<WebView> web_view_ = nullptr;
 };
 
 // Tests that attaching and detaching a WebContents to a WebView makes the
@@ -310,7 +318,8 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
 // if WebView is already removed from Widget.
 TEST_F(WebViewUnitTest, DetachedWebViewDestructor) {
   // Init WebView with attached NativeView.
-  const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents =
+      CreateWebContents();
   std::unique_ptr<WebView> webview(
       new WebView(web_contents->GetBrowserContext()));
   View* contents_view = top_level_widget()->GetContentsView();
@@ -409,7 +418,8 @@ TEST_F(WebViewUnitTest, DefaultConstructability) {
 // holder's parent NativeViewAccessible matches that of its parent view's
 // NativeViewAccessible.
 TEST_F(WebViewUnitTest, ReparentingUpdatesParentAccessible) {
-  const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents =
+      CreateWebContents();
   auto web_view = std::make_unique<WebView>(web_contents->GetBrowserContext());
   web_view->SetWebContents(web_contents.get());
 
@@ -444,12 +454,23 @@ TEST_F(WebViewUnitTest, ChangeAXMode) {
   // Case 2: WebView has no Widget and a WebContents.
   View* contents_view = top_level_widget()->GetContentsView();
   contents_view->RemoveChildView(web_view());
-  const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents =
+      CreateWebContents();
   web_view()->SetWebContents(web_contents.get());
 
   SetAXMode(ui::AXMode::kFirstModeFlag);
 
   // No crash.
+}
+
+// Tests to make sure the WebView clears away the reference to its hosted
+// WebContents object when its deleted.
+TEST_F(WebViewUnitTest, WebViewClearsWebContentsOnDestruction) {
+  std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
+  web_view()->SetWebContents(web_contents.get());
+  EXPECT_EQ(web_contents.get(), web_view()->web_contents());
+  web_contents.reset();
+  EXPECT_EQ(nullptr, web_view()->web_contents());
 }
 
 }  // namespace views

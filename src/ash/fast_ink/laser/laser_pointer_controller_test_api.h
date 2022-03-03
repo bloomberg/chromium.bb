@@ -5,7 +5,8 @@
 #ifndef ASH_FAST_INK_LASER_LASER_POINTER_CONTROLLER_TEST_API_H_
 #define ASH_FAST_INK_LASER_LASER_POINTER_CONTROLLER_TEST_API_H_
 
-#include "base/macros.h"
+#include "ash/system/palette/palette_tray.h"
+#include "ui/display/display.h"
 
 namespace fast_ink {
 class FastInkPoints;
@@ -19,19 +20,23 @@ class LaserPointerController;
 class LaserPointerControllerTestApi {
  public:
   explicit LaserPointerControllerTestApi(LaserPointerController* instance);
+
+  LaserPointerControllerTestApi(const LaserPointerControllerTestApi&) = delete;
+  LaserPointerControllerTestApi& operator=(
+      const LaserPointerControllerTestApi&) = delete;
+
   ~LaserPointerControllerTestApi();
 
   void SetEnabled(bool enabled);
   bool IsEnabled() const;
   bool IsShowingLaserPointer() const;
   bool IsFadingAway() const;
+  PaletteTray* GetPaletteTrayOnDisplay(int64_t display_id) const;
   const fast_ink::FastInkPoints& laser_points() const;
   const fast_ink::FastInkPoints& predicted_laser_points() const;
 
  private:
   LaserPointerController* instance_;
-
-  DISALLOW_COPY_AND_ASSIGN(LaserPointerControllerTestApi);
 };
 
 }  // namespace ash

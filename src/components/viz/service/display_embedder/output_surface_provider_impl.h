@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -47,6 +47,11 @@ class VIZ_SERVICE_EXPORT OutputSurfaceProviderImpl
       bool headless);
   // Software compositing only.
   explicit OutputSurfaceProviderImpl(bool headless);
+
+  OutputSurfaceProviderImpl(const OutputSurfaceProviderImpl&) = delete;
+  OutputSurfaceProviderImpl& operator=(const OutputSurfaceProviderImpl&) =
+      delete;
+
   ~OutputSurfaceProviderImpl() override;
 
   std::unique_ptr<DisplayCompositorMemoryAndTaskController> CreateGpuDependency(
@@ -68,11 +73,11 @@ class VIZ_SERVICE_EXPORT OutputSurfaceProviderImpl
       gpu::SurfaceHandle surface_handle,
       mojom::DisplayClient* display_client);
 
-  GpuServiceImpl* const gpu_service_impl_;
-  gpu::CommandBufferTaskExecutor* const task_executor_;
-  gpu::GpuChannelManagerDelegate* const gpu_channel_manager_delegate_;
+  const raw_ptr<GpuServiceImpl> gpu_service_impl_;
+  const raw_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  const raw_ptr<gpu::GpuChannelManagerDelegate> gpu_channel_manager_delegate_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  gpu::ImageFactory* const image_factory_;
+  const raw_ptr<gpu::ImageFactory> image_factory_;
 
 #if defined(OS_WIN)
   // Used for software compositing output on Windows.
@@ -87,8 +92,6 @@ class VIZ_SERVICE_EXPORT OutputSurfaceProviderImpl
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
 
   const bool headless_;
-
-  DISALLOW_COPY_AND_ASSIGN(OutputSurfaceProviderImpl);
 };
 
 }  // namespace viz

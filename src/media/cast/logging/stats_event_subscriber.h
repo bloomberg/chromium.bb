@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/logging/logging_defines.h"
@@ -38,6 +38,9 @@ class StatsEventSubscriber final : public RawEventSubscriber {
   StatsEventSubscriber(EventMediaType event_media_type,
                        const base::TickClock* clock,
                        ReceiverTimeOffsetEstimator* offset_estimator);
+
+  StatsEventSubscriber(const StatsEventSubscriber&) = delete;
+  StatsEventSubscriber& operator=(const StatsEventSubscriber&) = delete;
 
   ~StatsEventSubscriber() final;
 
@@ -240,10 +243,10 @@ class StatsEventSubscriber final : public RawEventSubscriber {
   const EventMediaType event_media_type_;
 
   // Not owned by this class.
-  const base::TickClock* const clock_;
+  const raw_ptr<const base::TickClock> clock_;
 
   // Not owned by this class.
-  ReceiverTimeOffsetEstimator* const offset_estimator_;
+  const raw_ptr<ReceiverTimeOffsetEstimator> offset_estimator_;
 
   FrameStatsMap frame_stats_;
   PacketStatsMap packet_stats_;
@@ -282,7 +285,6 @@ class StatsEventSubscriber final : public RawEventSubscriber {
   HistogramMap histograms_;
 
   base::ThreadChecker thread_checker_;
-  DISALLOW_COPY_AND_ASSIGN(StatsEventSubscriber);
 };
 
 }  // namespace cast

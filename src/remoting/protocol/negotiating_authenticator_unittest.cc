@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -53,6 +53,11 @@ const char kTestPinBad[] = "654321";
 class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
  public:
   NegotiatingAuthenticatorTest() = default;
+
+  NegotiatingAuthenticatorTest(const NegotiatingAuthenticatorTest&) = delete;
+  NegotiatingAuthenticatorTest& operator=(const NegotiatingAuthenticatorTest&) =
+      delete;
+
   ~NegotiatingAuthenticatorTest() override = default;
 
  protected:
@@ -153,13 +158,11 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
   }
 
   // Use a bare pointer because the storage is managed by the base class.
-  NegotiatingHostAuthenticator* host_as_negotiating_authenticator_;
-  NegotiatingClientAuthenticator* client_as_negotiating_authenticator_;
+  raw_ptr<NegotiatingHostAuthenticator> host_as_negotiating_authenticator_;
+  raw_ptr<NegotiatingClientAuthenticator> client_as_negotiating_authenticator_;
 
  private:
   scoped_refptr<PairingRegistry> pairing_registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(NegotiatingAuthenticatorTest);
 };
 
 struct PairingTestParameters {

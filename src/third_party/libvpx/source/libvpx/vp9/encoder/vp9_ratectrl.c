@@ -39,9 +39,6 @@
 #define MAX_MB_RATE 250
 #define MAXRATE_1080P 4000000
 
-#define DEFAULT_KF_BOOST 2000
-#define DEFAULT_GF_BOOST 2000
-
 #define LIMIT_QRANGE_FOR_ALTREF_AND_KEY 1
 
 #define MIN_BPB_FACTOR 0.005
@@ -226,9 +223,10 @@ int vp9_rc_clamp_pframe_target_size(const VP9_COMP *const cpi, int target) {
   if (target > rc->max_frame_bandwidth) target = rc->max_frame_bandwidth;
 
   if (oxcf->rc_max_inter_bitrate_pct) {
-    const int max_rate =
-        rc->avg_frame_bandwidth * oxcf->rc_max_inter_bitrate_pct / 100;
-    target = VPXMIN(target, max_rate);
+    const int64_t max_rate =
+        (int64_t)rc->avg_frame_bandwidth * oxcf->rc_max_inter_bitrate_pct / 100;
+    // target is of type int and VPXMIN cannot evaluate to larger than target
+    target = (int)VPXMIN(target, max_rate);
   }
   return target;
 }
@@ -237,9 +235,9 @@ int vp9_rc_clamp_iframe_target_size(const VP9_COMP *const cpi, int target) {
   const RATE_CONTROL *rc = &cpi->rc;
   const VP9EncoderConfig *oxcf = &cpi->oxcf;
   if (oxcf->rc_max_intra_bitrate_pct) {
-    const int max_rate =
-        rc->avg_frame_bandwidth * oxcf->rc_max_intra_bitrate_pct / 100;
-    target = VPXMIN(target, max_rate);
+    const int64_t max_rate =
+        (int64_t)rc->avg_frame_bandwidth * oxcf->rc_max_intra_bitrate_pct / 100;
+    target = (int)VPXMIN(target, max_rate);
   }
   if (target > rc->max_frame_bandwidth) target = rc->max_frame_bandwidth;
   return target;
@@ -280,9 +278,9 @@ static void update_buffer_level_svc_preencode(VP9_COMP *cpi) {
         svc->current_superframe > 0) {
       // TODO(marpan): This may need to be modified for temporal layers.
       const double framerate_pts = 10000000.0 / ts_delta;
-      lrc->bits_off_target += (int)(lc->target_bandwidth / framerate_pts);
+      lrc->bits_off_target += (int)round(lc->target_bandwidth / framerate_pts);
     } else {
-      lrc->bits_off_target += (int)(lc->target_bandwidth / lc->framerate);
+      lrc->bits_off_target += (int)round(lc->target_bandwidth / lc->framerate);
     }
     // Clip buffer level to maximum buffer size for the layer.
     lrc->bits_off_target =
@@ -410,6 +408,7 @@ void vp9_rc_init(const VP9EncoderConfig *oxcf, int pass, RATE_CONTROL *rc) {
   rc->source_alt_ref_active = 0;
 
   rc->frames_till_gf_update_due = 0;
+  rc->constrain_gf_key_freq_onepass_vbr = 1;
   rc->ni_av_qi = oxcf->worst_allowed_q;
   rc->ni_tot_qi = 0;
   rc->ni_frames = 0;
@@ -1720,10 +1719,12 @@ void vp9_rc_set_frame_target(VP9_COMP *cpi, int target) {
   }
 
 #if CONFIG_RATE_CTRL
-  if (cpi->encode_command.use_external_target_frame_bits) {
-    rc->this_frame_target = cpi->encode_command.target_frame_bits;
+  if (cpi->oxcf.use_simple_encode_api) {
+    if (cpi->encode_command.use_external_target_frame_bits) {
+      rc->this_frame_target = cpi->encode_command.target_frame_bits;
+    }
   }
-#endif
+#endif  // CONFIG_RATE_CTRL
 
   // Target rate per SB64 (including partial SB64s.
   rc->sb64_target_rate = (int)(((int64_t)rc->this_frame_target * 64 * 64) /
@@ -2009,7 +2010,7 @@ void vp9_rc_postencode_update_drop_frame(VP9_COMP *cpi) {
   }
 }
 
-static int calc_pframe_target_size_one_pass_vbr(const VP9_COMP *const cpi) {
+int vp9_calc_pframe_target_size_one_pass_vbr(const VP9_COMP *cpi) {
   const RATE_CONTROL *const rc = &cpi->rc;
   const int af_ratio = rc->af_ratio_onepass_vbr;
   int64_t target =
@@ -2024,7 +2025,7 @@ static int calc_pframe_target_size_one_pass_vbr(const VP9_COMP *const cpi) {
   return vp9_rc_clamp_pframe_target_size(cpi, (int)target);
 }
 
-static int calc_iframe_target_size_one_pass_vbr(const VP9_COMP *const cpi) {
+int vp9_calc_iframe_target_size_one_pass_vbr(const VP9_COMP *cpi) {
   static const int kf_ratio = 25;
   const RATE_CONTROL *rc = &cpi->rc;
   const int target = rc->avg_frame_bandwidth * kf_ratio;
@@ -2050,22 +2051,9 @@ static void adjust_gfint_frame_constraint(VP9_COMP *cpi, int frame_constraint) {
   }
 }
 
-void vp9_rc_get_one_pass_vbr_params(VP9_COMP *cpi) {
-  VP9_COMMON *const cm = &cpi->common;
+void vp9_set_gf_update_one_pass_vbr(VP9_COMP *const cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
-  int target;
-  if (!cpi->refresh_alt_ref_frame &&
-      (cm->current_video_frame == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY) ||
-       rc->frames_to_key == 0)) {
-    cm->frame_type = KEY_FRAME;
-    rc->this_key_frame_forced =
-        cm->current_video_frame != 0 && rc->frames_to_key == 0;
-    rc->frames_to_key = cpi->oxcf.key_freq;
-    rc->kf_boost = DEFAULT_KF_BOOST;
-    rc->source_alt_ref_active = 0;
-  } else {
-    cm->frame_type = INTER_FRAME;
-  }
+  VP9_COMMON *const cm = &cpi->common;
   if (rc->frames_till_gf_update_due == 0) {
     double rate_err = 1.0;
     rc->gfu_boost = DEFAULT_GF_BOOST;
@@ -2084,18 +2072,23 @@ void vp9_rc_get_one_pass_vbr_params(VP9_COMP *cpi) {
           rate_err > 3.5) {
         rc->baseline_gf_interval =
             VPXMIN(15, (3 * rc->baseline_gf_interval) >> 1);
-      } else if (rc->avg_frame_low_motion < 20) {
+      } else if (rc->avg_frame_low_motion > 0 &&
+                 rc->avg_frame_low_motion < 20) {
         // Decrease gf interval for high motion case.
         rc->baseline_gf_interval = VPXMAX(6, rc->baseline_gf_interval >> 1);
       }
-      // Adjust boost and af_ratio based on avg_frame_low_motion, which varies
-      // between 0 and 100 (stationary, 100% zero/small motion).
-      rc->gfu_boost =
-          VPXMAX(500, DEFAULT_GF_BOOST * (rc->avg_frame_low_motion << 1) /
-                          (rc->avg_frame_low_motion + 100));
+      // Adjust boost and af_ratio based on avg_frame_low_motion, which
+      // varies between 0 and 100 (stationary, 100% zero/small motion).
+      if (rc->avg_frame_low_motion > 0)
+        rc->gfu_boost =
+            VPXMAX(500, DEFAULT_GF_BOOST * (rc->avg_frame_low_motion << 1) /
+                            (rc->avg_frame_low_motion + 100));
+      else if (rc->avg_frame_low_motion == 0 && rate_err > 1.0)
+        rc->gfu_boost = DEFAULT_GF_BOOST >> 1;
       rc->af_ratio_onepass_vbr = VPXMIN(15, VPXMAX(5, 3 * rc->gfu_boost / 400));
     }
-    adjust_gfint_frame_constraint(cpi, rc->frames_to_key);
+    if (rc->constrain_gf_key_freq_onepass_vbr)
+      adjust_gfint_frame_constraint(cpi, rc->frames_to_key);
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
     cpi->refresh_golden_frame = 1;
     rc->source_alt_ref_pending = 0;
@@ -2105,10 +2098,29 @@ void vp9_rc_get_one_pass_vbr_params(VP9_COMP *cpi) {
       rc->alt_ref_gf_group = 1;
     }
   }
+}
+
+void vp9_rc_get_one_pass_vbr_params(VP9_COMP *cpi) {
+  VP9_COMMON *const cm = &cpi->common;
+  RATE_CONTROL *const rc = &cpi->rc;
+  int target;
+  if (!cpi->refresh_alt_ref_frame &&
+      (cm->current_video_frame == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY) ||
+       rc->frames_to_key == 0)) {
+    cm->frame_type = KEY_FRAME;
+    rc->this_key_frame_forced =
+        cm->current_video_frame != 0 && rc->frames_to_key == 0;
+    rc->frames_to_key = cpi->oxcf.key_freq;
+    rc->kf_boost = DEFAULT_KF_BOOST;
+    rc->source_alt_ref_active = 0;
+  } else {
+    cm->frame_type = INTER_FRAME;
+  }
+  vp9_set_gf_update_one_pass_vbr(cpi);
   if (cm->frame_type == KEY_FRAME)
-    target = calc_iframe_target_size_one_pass_vbr(cpi);
+    target = vp9_calc_iframe_target_size_one_pass_vbr(cpi);
   else
-    target = calc_pframe_target_size_one_pass_vbr(cpi);
+    target = vp9_calc_pframe_target_size_one_pass_vbr(cpi);
   vp9_rc_set_frame_target(cpi, target);
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cpi->oxcf.pass == 0)
     vp9_cyclic_refresh_update_parameters(cpi);
@@ -2526,26 +2538,25 @@ void vp9_rc_set_gf_interval_range(const VP9_COMP *const cpi,
     rc->min_gf_interval = FIXED_GF_INTERVAL;
     rc->static_scene_max_gf_interval = FIXED_GF_INTERVAL;
   } else {
+    double framerate = cpi->framerate;
     // Set Maximum gf/arf interval
     rc->max_gf_interval = oxcf->max_gf_interval;
     rc->min_gf_interval = oxcf->min_gf_interval;
 #if CONFIG_RATE_CTRL
+    if (oxcf->use_simple_encode_api) {
+      // In this experiment, we avoid framerate being changed dynamically during
+      // encoding.
+      framerate = oxcf->init_framerate;
+    }
+#endif  // CONFIG_RATE_CTRL
     if (rc->min_gf_interval == 0) {
       rc->min_gf_interval = vp9_rc_get_default_min_gf_interval(
-          oxcf->width, oxcf->height, oxcf->init_framerate);
+          oxcf->width, oxcf->height, framerate);
     }
     if (rc->max_gf_interval == 0) {
-      rc->max_gf_interval = vp9_rc_get_default_max_gf_interval(
-          oxcf->init_framerate, rc->min_gf_interval);
+      rc->max_gf_interval =
+          vp9_rc_get_default_max_gf_interval(framerate, rc->min_gf_interval);
     }
-#else
-    if (rc->min_gf_interval == 0)
-      rc->min_gf_interval = vp9_rc_get_default_min_gf_interval(
-          oxcf->width, oxcf->height, cpi->framerate);
-    if (rc->max_gf_interval == 0)
-      rc->max_gf_interval = vp9_rc_get_default_max_gf_interval(
-          cpi->framerate, rc->min_gf_interval);
-#endif
 
     // Extended max interval for genuinely static scenes like slide shows.
     rc->static_scene_max_gf_interval = MAX_STATIC_GF_GROUP_LENGTH;
@@ -2953,7 +2964,7 @@ static void adjust_gf_boost_lag_one_pass_vbr(VP9_COMP *cpi,
         }
       }
     }
-    target = calc_pframe_target_size_one_pass_vbr(cpi);
+    target = vp9_calc_pframe_target_size_one_pass_vbr(cpi);
     vp9_rc_set_frame_target(cpi, target);
   }
   rc->prev_avg_source_sad_lag = avg_source_sad_lag;
@@ -3163,7 +3174,7 @@ void vp9_scene_detection_onepass(VP9_COMP *cpi) {
           VPXMIN(20, VPXMAX(10, rc->baseline_gf_interval));
       adjust_gfint_frame_constraint(cpi, rc->frames_to_key);
       rc->frames_till_gf_update_due = rc->baseline_gf_interval;
-      target = calc_pframe_target_size_one_pass_vbr(cpi);
+      target = vp9_calc_pframe_target_size_one_pass_vbr(cpi);
       vp9_rc_set_frame_target(cpi, target);
       rc->count_last_scene_change = 0;
     } else {

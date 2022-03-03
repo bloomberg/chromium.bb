@@ -5,6 +5,7 @@
 import("//base/allocator/allocator.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/dcheck_always_on.gni")
 
 declare_args() {
   # Provide a way to force disable debugallocation in Debug builds,
@@ -287,16 +288,44 @@ if (use_allocator == "tcmalloc") {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  _use_partition_alloc = use_allocator == "partition"
-  _use_tcmalloc = use_allocator == "tcmalloc"
-  assert(use_allocator_shim || !_use_partition_alloc,
+  _use_partition_alloc_as_malloc = use_allocator == "partition"
+  _use_tcmalloc_as_malloc = use_allocator == "tcmalloc"
+  assert(use_allocator_shim || !_use_partition_alloc_as_malloc,
          "Partition alloc requires the allocator shim")
+
+  # BackupRefPtr(BRP) build flags.
+  _use_backup_ref_ptr = use_backup_ref_ptr && use_partition_alloc && !is_nacl
+  _put_ref_count_in_previous_slot =
+      put_ref_count_in_previous_slot && _use_backup_ref_ptr
+  _never_remove_from_brp_pool_from_blocklist =
+      never_remove_from_brp_pool_blocklist && _use_backup_ref_ptr
+  _enable_backup_ref_ptr_slow_checks =
+      enable_backup_ref_ptr_slow_checks && _use_backup_ref_ptr
 
   flags = [
     "USE_ALLOCATOR_SHIM=$use_allocator_shim",
-    "USE_TCMALLOC=$_use_tcmalloc",
-    "USE_PARTITION_ALLOC_AS_MALLOC=$_use_partition_alloc",
+    "USE_TCMALLOC=$_use_tcmalloc_as_malloc",
+    "USE_PARTITION_ALLOC=$use_partition_alloc",
+    "USE_PARTITION_ALLOC_AS_MALLOC=$_use_partition_alloc_as_malloc",
+
+    "USE_BACKUP_REF_PTR=$_use_backup_ref_ptr",
+    "ENABLE_BACKUP_REF_PTR_SLOW_CHECKS=$_enable_backup_ref_ptr_slow_checks",
+    "PUT_REF_COUNT_IN_PREVIOUS_SLOT=$_put_ref_count_in_previous_slot",
+    "NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST=$_never_remove_from_brp_pool_from_blocklist",
+
+    "USE_FAKE_BINARY_EXPERIMENT=$use_fake_binary_experiment",
   ]
+}
+
+if (is_apple) {
+  source_set("early_zone_registration_mac") {
+    sources = [
+      "early_zone_registration_mac.cc",
+      "early_zone_registration_mac.h",
+    ]
+
+    deps = [ ":buildflags" ]
+  }
 }
 
 # Used to shim malloc symbols on Android. see //base/allocator/README.md.

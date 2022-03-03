@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -33,6 +34,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -72,7 +74,7 @@ class PasswordGenerationPopupControllerImpl::KeyPressRegistrator {
   }
 
  private:
-  content::RenderFrameHost* const frame_;
+  const raw_ptr<content::RenderFrameHost> frame_;
   content::RenderWidgetHost::KeyPressEventCallback callback_;
 };
 
@@ -212,13 +214,13 @@ bool PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
       (state_ != state || current_password_.empty())) {
     current_password_ =
         driver_->GetPasswordGenerationHelper()->GeneratePassword(
-            web_contents()->GetLastCommittedURL().GetOrigin(), form_signature_,
-            field_signature_, max_length_);
+            web_contents()->GetLastCommittedURL().DeprecatedGetOriginAsURL(),
+            form_signature_, field_signature_, max_length_);
   }
   state_ = state;
 
   if (!view_) {
-    view_ = PasswordGenerationPopupView::Create(this);
+    view_ = PasswordGenerationPopupView::Create(GetWeakPtr());
 
     // Treat popup as being hidden if creation fails.
     if (!view_) {
@@ -274,7 +276,8 @@ void PasswordGenerationPopupControllerImpl::WebContentsDestroyed() {
 
 void PasswordGenerationPopupControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame() &&
+  if (navigation_handle->HasCommitted() &&
+      navigation_handle->IsInPrimaryMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     HideImpl();
   }

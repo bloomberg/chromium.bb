@@ -6,13 +6,16 @@
 
 #include <type_traits>
 
+#include "include/v8-maybe.h"
 #include "include/v8-value-serializer-version.h"
-#include "include/v8.h"
+#include "include/v8-value-serializer.h"
+#include "include/v8-wasm.h"
 #include "src/api/api-inl.h"
 #include "src/base/logging.h"
 #include "src/base/platform/wrappers.h"
 #include "src/execution/isolate.h"
 #include "src/flags/flags.h"
+#include "src/handles/global-handles-inl.h"
 #include "src/handles/handles-inl.h"
 #include "src/handles/maybe-handles-inl.h"
 #include "src/heap/factory.h"
@@ -310,15 +313,15 @@ void ValueSerializer::WriteDouble(double value) {
   WriteRawBytes(&value, sizeof(value));
 }
 
-void ValueSerializer::WriteOneByteString(Vector<const uint8_t> chars) {
+void ValueSerializer::WriteOneByteString(base::Vector<const uint8_t> chars) {
   WriteVarint<uint32_t>(chars.length());
   WriteRawBytes(chars.begin(), chars.length() * sizeof(uint8_t));
 }
 
-void ValueSerializer::WriteTwoByteString(Vector<const uc16> chars) {
+void ValueSerializer::WriteTwoByteString(base::Vector<const base::uc16> chars) {
   // Warning: this uses host endianness.
-  WriteVarint<uint32_t>(chars.length() * sizeof(uc16));
-  WriteRawBytes(chars.begin(), chars.length() * sizeof(uc16));
+  WriteVarint<uint32_t>(chars.length() * sizeof(base::uc16));
+  WriteRawBytes(chars.begin(), chars.length() * sizeof(base::uc16));
 }
 
 void ValueSerializer::WriteBigIntContents(BigInt bigint) {
@@ -334,7 +337,7 @@ void ValueSerializer::WriteBigIntContents(BigInt bigint) {
 void ValueSerializer::WriteRawBytes(const void* source, size_t length) {
   uint8_t* dest;
   if (ReserveRawBytes(length).To(&dest) && length > 0) {
-    base::Memcpy(dest, source, length);
+    memcpy(dest, source, length);
   }
 }
 
@@ -410,7 +413,8 @@ Maybe<bool> ValueSerializer::WriteObject(Handle<Object> object) {
   }
 
   DCHECK(object->IsHeapObject());
-  switch (HeapObject::cast(*object).map().instance_type()) {
+  InstanceType instance_type = HeapObject::cast(*object).map().instance_type();
+  switch (instance_type) {
     case ODDBALL_TYPE:
       WriteOddball(Oddball::cast(*object));
       return ThrowIfOutOfMemory();
@@ -430,7 +434,7 @@ Maybe<bool> ValueSerializer::WriteObject(Handle<Object> object) {
       Handle<JSArrayBufferView> view = Handle<JSArrayBufferView>::cast(object);
       if (!id_map_.Find(view) && !treat_array_buffer_views_as_host_objects_) {
         Handle<JSArrayBuffer> buffer(
-            view->IsJSTypedArray()
+            InstanceTypeChecker::IsJSTypedArray(instance_type)
                 ? Handle<JSTypedArray>::cast(view)->GetBuffer()
                 : handle(JSArrayBuffer::cast(view->buffer()), isolate_));
         if (!WriteJSReceiver(buffer).FromMaybe(false)) return Nothing<bool>();
@@ -438,10 +442,10 @@ Maybe<bool> ValueSerializer::WriteObject(Handle<Object> object) {
       return WriteJSReceiver(view);
     }
     default:
-      if (object->IsString()) {
+      if (InstanceTypeChecker::IsString(instance_type)) {
         WriteString(Handle<String>::cast(object));
         return ThrowIfOutOfMemory();
-      } else if (object->IsJSReceiver()) {
+      } else if (InstanceTypeChecker::IsJSReceiver(instance_type)) {
         return WriteJSReceiver(Handle<JSReceiver>::cast(object));
       } else {
         ThrowDataCloneError(MessageTemplate::kDataCloneError, object);
@@ -493,12 +497,12 @@ void ValueSerializer::WriteString(Handle<String> string) {
   String::FlatContent flat = string->GetFlatContent(no_gc);
   DCHECK(flat.IsFlat());
   if (flat.IsOneByte()) {
-    Vector<const uint8_t> chars = flat.ToOneByteVector();
+    base::Vector<const uint8_t> chars = flat.ToOneByteVector();
     WriteTag(SerializationTag::kOneByteString);
     WriteOneByteString(chars);
   } else if (flat.IsTwoByte()) {
-    Vector<const uc16> chars = flat.ToUC16Vector();
-    uint32_t byte_length = chars.length() * sizeof(uc16);
+    base::Vector<const base::uc16> chars = flat.ToUC16Vector();
+    uint32_t byte_length = chars.length() * sizeof(base::uc16);
     // The existing reading code expects 16-byte strings to be aligned.
     if ((buffer_size_ + 1 + BytesNeededForVarint(byte_length)) & 1)
       WriteTag(SerializationTag::kPadding);
@@ -618,8 +622,9 @@ Maybe<bool> ValueSerializer::WriteJSObject(Handle<JSObject> object) {
 
     Handle<Object> value;
     if (V8_LIKELY(!map_changed)) map_changed = *map != object->map();
-    if (V8_LIKELY(!map_changed && details.location() == kField)) {
-      DCHECK_EQ(kData, details.kind());
+    if (V8_LIKELY(!map_changed &&
+                  details.location() == PropertyLocation::kField)) {
+      DCHECK_EQ(PropertyKind::kData, details.kind());
       FieldIndex field_index = FieldIndex::ForDescriptor(*map, i);
       value = JSObject::FastPropertyAt(object, details.representation(),
                                        field_index);
@@ -660,6 +665,7 @@ Maybe<bool> ValueSerializer::WriteJSObjectSlow(Handle<JSObject> object) {
 }
 
 Maybe<bool> ValueSerializer::WriteJSArray(Handle<JSArray> array) {
+  PtrComprCageBase cage_base(isolate_);
   uint32_t length = 0;
   bool valid_length = array->length().ToArrayLength(&length);
   DCHECK(valid_length);
@@ -671,7 +677,7 @@ Maybe<bool> ValueSerializer::WriteJSArray(Handle<JSArray> array) {
   // existed (as only indices which were enumerable own properties at this point
   // should be serialized).
   const bool should_serialize_densely =
-      array->HasFastElements() && !array->HasHoleyElements();
+      array->HasFastElements(cage_base) && !array->HasHoleyElements(cage_base);
 
   if (should_serialize_densely) {
     DCHECK_LE(length, static_cast<uint32_t>(FixedArray::kMaxLength));
@@ -681,35 +687,36 @@ Maybe<bool> ValueSerializer::WriteJSArray(Handle<JSArray> array) {
 
     // Fast paths. Note that PACKED_ELEMENTS in particular can bail due to the
     // structure of the elements changing.
-    switch (array->GetElementsKind()) {
+    switch (array->GetElementsKind(cage_base)) {
       case PACKED_SMI_ELEMENTS: {
-        Handle<FixedArray> elements(FixedArray::cast(array->elements()),
-                                    isolate_);
-        for (; i < length; i++) WriteSmi(Smi::cast(elements->get(i)));
+        DisallowGarbageCollection no_gc;
+        FixedArray elements = FixedArray::cast(array->elements());
+        for (i = 0; i < length; i++)
+          WriteSmi(Smi::cast(elements.get(cage_base, i)));
         break;
       }
       case PACKED_DOUBLE_ELEMENTS: {
         // Elements are empty_fixed_array, not a FixedDoubleArray, if the array
         // is empty. No elements to encode in this case anyhow.
         if (length == 0) break;
-        Handle<FixedDoubleArray> elements(
-            FixedDoubleArray::cast(array->elements()), isolate_);
-        for (; i < length; i++) {
+        DisallowGarbageCollection no_gc;
+        FixedDoubleArray elements = FixedDoubleArray::cast(array->elements());
+        for (i = 0; i < length; i++) {
           WriteTag(SerializationTag::kDouble);
-          WriteDouble(elements->get_scalar(i));
+          WriteDouble(elements.get_scalar(i));
         }
         break;
       }
       case PACKED_ELEMENTS: {
-        Handle<Object> old_length(array->length(), isolate_);
+        Handle<Object> old_length(array->length(cage_base), isolate_);
         for (; i < length; i++) {
-          if (array->length() != *old_length ||
-              array->GetElementsKind() != PACKED_ELEMENTS) {
+          if (array->length(cage_base) != *old_length ||
+              array->GetElementsKind(cage_base) != PACKED_ELEMENTS) {
             // Fall back to slow path.
             break;
           }
-          Handle<Object> element(FixedArray::cast(array->elements()).get(i),
-                                 isolate_);
+          Handle<Object> element(
+              FixedArray::cast(array->elements()).get(cage_base, i), isolate_);
           if (!WriteObject(element).FromMaybe(false)) return Nothing<bool>();
         }
         break;
@@ -802,8 +809,8 @@ Maybe<bool> ValueSerializer::WriteJSPrimitiveWrapper(
 
 void ValueSerializer::WriteJSRegExp(Handle<JSRegExp> regexp) {
   WriteTag(SerializationTag::kRegExp);
-  WriteString(handle(regexp->Pattern(), isolate_));
-  WriteVarint(static_cast<uint32_t>(regexp->GetFlags()));
+  WriteString(handle(regexp->source(), isolate_));
+  WriteVarint(static_cast<uint32_t>(regexp->flags()));
 }
 
 Maybe<bool> ValueSerializer::WriteJSMap(Handle<JSMap> map) {
@@ -931,6 +938,11 @@ Maybe<bool> ValueSerializer::WriteJSArrayBufferView(JSArrayBufferView view) {
   WriteVarint(static_cast<uint8_t>(tag));
   WriteVarint(static_cast<uint32_t>(view.byte_offset()));
   WriteVarint(static_cast<uint32_t>(view.byte_length()));
+  // TODO(crbug.com/v8/12532): Re-enable the flags serialization logic below.
+  // Bump the serialization format version number when doing so, and preserve
+  // logic and tests for reading from the old format.
+  //
+  // WriteVarint(static_cast<uint32_t>(view.bit_field()));
   return ThrowIfOutOfMemory();
 }
 
@@ -955,17 +967,17 @@ Maybe<bool> ValueSerializer::WriteJSError(Handle<JSObject> error) {
     return Nothing<bool>();
   }
 
-  if (name->IsOneByteEqualTo(CStrVector("EvalError"))) {
+  if (name->IsOneByteEqualTo(base::CStrVector("EvalError"))) {
     WriteVarint(static_cast<uint8_t>(ErrorTag::kEvalErrorPrototype));
-  } else if (name->IsOneByteEqualTo(CStrVector("RangeError"))) {
+  } else if (name->IsOneByteEqualTo(base::CStrVector("RangeError"))) {
     WriteVarint(static_cast<uint8_t>(ErrorTag::kRangeErrorPrototype));
-  } else if (name->IsOneByteEqualTo(CStrVector("ReferenceError"))) {
+  } else if (name->IsOneByteEqualTo(base::CStrVector("ReferenceError"))) {
     WriteVarint(static_cast<uint8_t>(ErrorTag::kReferenceErrorPrototype));
-  } else if (name->IsOneByteEqualTo(CStrVector("SyntaxError"))) {
+  } else if (name->IsOneByteEqualTo(base::CStrVector("SyntaxError"))) {
     WriteVarint(static_cast<uint8_t>(ErrorTag::kSyntaxErrorPrototype));
-  } else if (name->IsOneByteEqualTo(CStrVector("TypeError"))) {
+  } else if (name->IsOneByteEqualTo(base::CStrVector("TypeError"))) {
     WriteVarint(static_cast<uint8_t>(ErrorTag::kTypeErrorPrototype));
-  } else if (name->IsOneByteEqualTo(CStrVector("URIError"))) {
+  } else if (name->IsOneByteEqualTo(base::CStrVector("URIError"))) {
     WriteVarint(static_cast<uint8_t>(ErrorTag::kUriErrorPrototype));
   } else {
     // The default prototype in the deserialization side is Error.prototype, so
@@ -1065,7 +1077,7 @@ Maybe<uint32_t> ValueSerializer::WriteJSObjectPropertiesSlow(
   for (int i = 0; i < length; i++) {
     Handle<Object> key(keys->get(i), isolate_);
 
-    LookupIterator::Key lookup_key(isolate_, key);
+    PropertyKey lookup_key(isolate_, key);
     LookupIterator it(isolate_, object, lookup_key, LookupIterator::OWN);
     Handle<Object> value;
     if (!Object::GetProperty(&it).ToHandle(&value)) return Nothing<uint32_t>();
@@ -1112,12 +1124,12 @@ void ValueSerializer::ThrowDataCloneError(MessageTemplate index,
 }
 
 ValueDeserializer::ValueDeserializer(Isolate* isolate,
-                                     Vector<const uint8_t> data,
+                                     base::Vector<const uint8_t> data,
                                      v8::ValueDeserializer::Delegate* delegate)
     : isolate_(isolate),
       delegate_(delegate),
       position_(data.begin()),
-      end_(data.begin() + data.length()),
+      end_(data.end()),
       id_map_(isolate->global_handles()->Create(
           ReadOnlyRoots(isolate_).empty_fixed_array())) {}
 
@@ -1226,17 +1238,17 @@ Maybe<double> ValueDeserializer::ReadDouble() {
   if (sizeof(double) > static_cast<unsigned>(end_ - position_))
     return Nothing<double>();
   double value;
-  base::Memcpy(&value, position_, sizeof(double));
+  memcpy(&value, position_, sizeof(double));
   position_ += sizeof(double);
   if (std::isnan(value)) value = std::numeric_limits<double>::quiet_NaN();
   return Just(value);
 }
 
-Maybe<Vector<const uint8_t>> ValueDeserializer::ReadRawBytes(int size) {
-  if (size > end_ - position_) return Nothing<Vector<const uint8_t>>();
+Maybe<base::Vector<const uint8_t>> ValueDeserializer::ReadRawBytes(int size) {
+  if (size > end_ - position_) return Nothing<base::Vector<const uint8_t>>();
   const uint8_t* start = position_;
   position_ += size;
-  return Just(Vector<const uint8_t>(start, size));
+  return Just(base::Vector<const uint8_t>(start, size));
 }
 
 bool ValueDeserializer::ReadUint32(uint32_t* value) {
@@ -1409,7 +1421,7 @@ MaybeHandle<BigInt> ValueDeserializer::ReadBigInt() {
   uint32_t bitfield;
   if (!ReadVarint<uint32_t>().To(&bitfield)) return MaybeHandle<BigInt>();
   int bytelength = BigInt::DigitsByteLengthForBitfield(bitfield);
-  Vector<const uint8_t> digits_storage;
+  base::Vector<const uint8_t> digits_storage;
   if (!ReadRawBytes(bytelength).To(&digits_storage)) {
     return MaybeHandle<BigInt>();
   }
@@ -1418,7 +1430,7 @@ MaybeHandle<BigInt> ValueDeserializer::ReadBigInt() {
 
 MaybeHandle<String> ValueDeserializer::ReadUtf8String() {
   uint32_t utf8_length;
-  Vector<const uint8_t> utf8_bytes;
+  base::Vector<const uint8_t> utf8_bytes;
   if (!ReadVarint<uint32_t>().To(&utf8_length) ||
       utf8_length >
           static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) ||
@@ -1426,12 +1438,12 @@ MaybeHandle<String> ValueDeserializer::ReadUtf8String() {
     return MaybeHandle<String>();
   }
   return isolate_->factory()->NewStringFromUtf8(
-      Vector<const char>::cast(utf8_bytes));
+      base::Vector<const char>::cast(utf8_bytes));
 }
 
 MaybeHandle<String> ValueDeserializer::ReadOneByteString() {
   uint32_t byte_length;
-  Vector<const uint8_t> bytes;
+  base::Vector<const uint8_t> bytes;
   if (!ReadVarint<uint32_t>().To(&byte_length) ||
       byte_length >
           static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) ||
@@ -1443,11 +1455,11 @@ MaybeHandle<String> ValueDeserializer::ReadOneByteString() {
 
 MaybeHandle<String> ValueDeserializer::ReadTwoByteString() {
   uint32_t byte_length;
-  Vector<const uint8_t> bytes;
+  base::Vector<const uint8_t> bytes;
   if (!ReadVarint<uint32_t>().To(&byte_length) ||
       byte_length >
           static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) ||
-      byte_length % sizeof(uc16) != 0 ||
+      byte_length % sizeof(base::uc16) != 0 ||
       !ReadRawBytes(byte_length).To(&bytes)) {
     return MaybeHandle<String>();
   }
@@ -1457,7 +1469,7 @@ MaybeHandle<String> ValueDeserializer::ReadTwoByteString() {
   if (byte_length == 0) return isolate_->factory()->empty_string();
   Handle<SeqTwoByteString> string;
   if (!isolate_->factory()
-           ->NewRawTwoByteString(byte_length / sizeof(uc16))
+           ->NewRawTwoByteString(byte_length / sizeof(base::uc16))
            .ToHandle(&string)) {
     return MaybeHandle<String>();
   }
@@ -1465,7 +1477,7 @@ MaybeHandle<String> ValueDeserializer::ReadTwoByteString() {
   // Copy the bytes directly into the new string.
   // Warning: this uses host endianness.
   DisallowGarbageCollection no_gc;
-  base::Memcpy(string->GetChars(no_gc), bytes.begin(), bytes.length());
+  memcpy(string->GetChars(no_gc), bytes.begin(), bytes.length());
   return string;
 }
 
@@ -1476,7 +1488,7 @@ bool ValueDeserializer::ReadExpectedString(Handle<String> expected) {
 
   SerializationTag tag;
   uint32_t byte_length;
-  Vector<const uint8_t> bytes;
+  base::Vector<const uint8_t> bytes;
   if (!ReadTag().To(&tag) || !ReadVarint<uint32_t>().To(&byte_length) ||
       byte_length >
           static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) ||
@@ -1490,19 +1502,20 @@ bool ValueDeserializer::ReadExpectedString(Handle<String> expected) {
   // If the bytes are verbatim what is in the flattened string, then the string
   // is successfully consumed.
   if (tag == SerializationTag::kOneByteString && flat.IsOneByte()) {
-    Vector<const uint8_t> chars = flat.ToOneByteVector();
+    base::Vector<const uint8_t> chars = flat.ToOneByteVector();
     if (byte_length == static_cast<size_t>(chars.length()) &&
         memcmp(bytes.begin(), chars.begin(), byte_length) == 0) {
       return true;
     }
   } else if (tag == SerializationTag::kTwoByteString && flat.IsTwoByte()) {
-    Vector<const uc16> chars = flat.ToUC16Vector();
-    if (byte_length == static_cast<unsigned>(chars.length()) * sizeof(uc16) &&
+    base::Vector<const base::uc16> chars = flat.ToUC16Vector();
+    if (byte_length ==
+            static_cast<unsigned>(chars.length()) * sizeof(base::uc16) &&
         memcmp(bytes.begin(), chars.begin(), byte_length) == 0) {
       return true;
     }
   } else if (tag == SerializationTag::kUtf8String && flat.IsOneByte()) {
-    Vector<const uint8_t> chars = flat.ToOneByteVector();
+    base::Vector<const uint8_t> chars = flat.ToOneByteVector();
     if (byte_length == static_cast<size_t>(chars.length()) &&
         String::IsAscii(chars.begin(), chars.length()) &&
         memcmp(bytes.begin(), chars.begin(), byte_length) == 0) {
@@ -1703,9 +1716,6 @@ MaybeHandle<JSRegExp> ValueDeserializer::ReadJSRegExp() {
   if (!FLAG_enable_experimental_regexp_engine) {
     bad_flags_mask |= JSRegExp::kLinear;
   }
-  if (!FLAG_harmony_regexp_match_indices) {
-    bad_flags_mask |= JSRegExp::kHasIndices;
-  }
   if ((raw_flags & bad_flags_mask) ||
       !JSRegExp::New(isolate_, pattern, static_cast<JSRegExp::Flags>(raw_flags))
            .ToHandle(&regexp)) {
@@ -1826,7 +1836,7 @@ MaybeHandle<JSArrayBuffer> ValueDeserializer::ReadJSArrayBuffer(
   if (!result.ToHandle(&array_buffer)) return result;
 
   if (byte_length > 0) {
-    base::Memcpy(array_buffer->backing_store(), position_, byte_length);
+    memcpy(array_buffer->backing_store(), position_, byte_length);
   }
   position_ += byte_length;
   AddObjectWithID(id, array_buffer);
@@ -1857,6 +1867,9 @@ MaybeHandle<JSArrayBufferView> ValueDeserializer::ReadJSArrayBufferView(
   uint8_t tag = 0;
   uint32_t byte_offset = 0;
   uint32_t byte_length = 0;
+  uint32_t flags = 0;
+  // TODO(crbug.com/v8/12532): Read `flags` from the serialized value, when we
+  // restore the logic for serializing them.
   if (!ReadVarint<uint8_t>().To(&tag) ||
       !ReadVarint<uint32_t>().To(&byte_offset) ||
       !ReadVarint<uint32_t>().To(&byte_length) ||
@@ -1873,6 +1886,7 @@ MaybeHandle<JSArrayBufferView> ValueDeserializer::ReadJSArrayBufferView(
       Handle<JSDataView> data_view =
           isolate_->factory()->NewJSDataView(buffer, byte_offset, byte_length);
       AddObjectWithID(id, data_view);
+      data_view->set_bit_field(flags);
       return data_view;
     }
 #define TYPED_ARRAY_CASE(Type, type, TYPE, ctype) \
@@ -1889,6 +1903,7 @@ MaybeHandle<JSArrayBufferView> ValueDeserializer::ReadJSArrayBufferView(
   }
   Handle<JSTypedArray> typed_array = isolate_->factory()->NewJSTypedArray(
       external_array_type, buffer, byte_offset, byte_length / element_size);
+  typed_array->set_bit_field(flags);
   AddObjectWithID(id, typed_array);
   return typed_array;
 }
@@ -2160,7 +2175,7 @@ Maybe<uint32_t> ValueDeserializer::ReadJSObjectProperties(
       num_properties = static_cast<uint32_t>(properties.size());
 
       // We checked earlier that IsValidObjectKey(key).
-      LookupIterator::Key lookup_key(isolate_, key);
+      PropertyKey lookup_key(isolate_, key);
       LookupIterator it(isolate_, object, lookup_key, LookupIterator::OWN);
       if (it.state() != LookupIterator::NOT_FOUND ||
           JSObject::DefineOwnPropertyIgnoreAttributes(&it, value, NONE)
@@ -2194,7 +2209,7 @@ Maybe<uint32_t> ValueDeserializer::ReadJSObjectProperties(
     if (!ReadObject().ToHandle(&value)) return Nothing<uint32_t>();
 
     // We checked earlier that IsValidObjectKey(key).
-    LookupIterator::Key lookup_key(isolate_, key);
+    PropertyKey lookup_key(isolate_, key);
     LookupIterator it(isolate_, object, lookup_key, LookupIterator::OWN);
     if (it.state() != LookupIterator::NOT_FOUND ||
         JSObject::DefineOwnPropertyIgnoreAttributes(&it, value, NONE)
@@ -2240,7 +2255,7 @@ static Maybe<bool> SetPropertiesFromKeyValuePairs(Isolate* isolate,
     Handle<Object> key = data[i];
     if (!IsValidObjectKey(key)) return Nothing<bool>();
     Handle<Object> value = data[i + 1];
-    LookupIterator::Key lookup_key(isolate, key);
+    PropertyKey lookup_key(isolate, key);
     LookupIterator it(isolate, object, lookup_key, LookupIterator::OWN);
     if (it.state() != LookupIterator::NOT_FOUND ||
         JSObject::DefineOwnPropertyIgnoreAttributes(&it, value, NONE)

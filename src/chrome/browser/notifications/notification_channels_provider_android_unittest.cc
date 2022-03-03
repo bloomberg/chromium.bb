@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -137,7 +139,7 @@ class NotificationChannelsProviderAndroidTest : public testing::Test {
     // Can't use std::make_unique because the provider's constructor is private.
     channels_provider_ =
         base::WrapUnique(new NotificationChannelsProviderAndroid(
-            base::WrapUnique(fake_bridge_)));
+            base::WrapUnique(fake_bridge_.get())));
   }
 
   ContentSettingsPattern GetTestPattern() {
@@ -151,7 +153,7 @@ class NotificationChannelsProviderAndroidTest : public testing::Test {
   std::unique_ptr<NotificationChannelsProviderAndroid> channels_provider_;
 
   // No leak because ownership is passed to channels_provider_ in constructor.
-  FakeNotificationChannelsBridge* fake_bridge_;
+  raw_ptr<FakeNotificationChannelsBridge> fake_bridge_;
 };
 
 TEST_F(NotificationChannelsProviderAndroidTest,
@@ -384,8 +386,8 @@ TEST_F(NotificationChannelsProviderAndroidTest,
                               ContentSettingsType::NOTIFICATIONS));
 
   EXPECT_CALL(mock_observer,
-              OnContentSettingChanged(ContentSettingsPattern(),
-                                      ContentSettingsPattern(),
+              OnContentSettingChanged(ContentSettingsPattern::Wildcard(),
+                                      ContentSettingsPattern::Wildcard(),
                                       ContentSettingsType::NOTIFICATIONS));
 
   channels_provider_->ClearAllContentSettingsRules(
@@ -481,7 +483,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
       ContentSettingsPattern::FromString(first_origin),
       ContentSettingsPattern(), ContentSettingsType::NOTIFICATIONS,
       std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
-  clock.Advance(base::TimeDelta::FromSeconds(1));
+  clock.Advance(base::Seconds(1));
 
   base::Time last_modified = channels_provider_->GetWebsiteSettingLastModified(
       ContentSettingsPattern::FromString(first_origin),
@@ -490,7 +492,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 
   // Delete and recreate the same channel after some time has passed.
   // This simulates the user clearing data and regranting permisison.
-  clock.Advance(base::TimeDelta::FromSeconds(3));
+  clock.Advance(base::Seconds(3));
   base::Time t2 = clock.Now();
   channels_provider_->SetWebsiteSetting(
       ContentSettingsPattern::FromString(first_origin),
@@ -507,7 +509,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   EXPECT_EQ(last_modified, t2);
 
   // Create an unrelated channel after some more time has passed.
-  clock.Advance(base::TimeDelta::FromSeconds(5));
+  clock.Advance(base::Seconds(5));
   std::string second_origin = "https://other.com";
   channels_provider_->SetWebsiteSetting(
       ContentSettingsPattern::FromString(second_origin),

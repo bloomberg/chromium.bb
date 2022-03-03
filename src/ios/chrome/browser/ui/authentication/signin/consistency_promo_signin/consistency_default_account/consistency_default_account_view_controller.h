@@ -7,10 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/bottom_sheet/child_bottom_sheet_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_consumer.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/child_consistency_sheet_view_controller.h"
 
 @class ConsistencyDefaultAccountViewController;
+@protocol ConsistencyLayoutDelegate;
 
 // Delegate protocol for ConsistencyDefaultAccountViewController.
 @protocol ConsistencyDefaultAccountActionDelegate <NSObject>
@@ -29,12 +31,15 @@
 
 // View controller for ConsistencyDefaultAccountCoordinator.
 @interface ConsistencyDefaultAccountViewController
-    : UIViewController <ChildBottomSheetViewController,
+    : UIViewController <ChildConsistencySheetViewController,
                         ConsistencyDefaultAccountConsumer>
 
 // Delegate for all the user actions.
 @property(nonatomic, weak) id<ConsistencyDefaultAccountActionDelegate>
     actionDelegate;
+@property(nonatomic, weak) id<ConsistencyLayoutDelegate> layoutDelegate;
+@property(nonatomic, assign)
+    EnterpriseSignInRestrictions enterpriseSignInRestrictions;
 
 // Starts the spinner and disables buttons.
 - (void)startSpinner;

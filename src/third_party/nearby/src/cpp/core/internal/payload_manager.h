@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/endpoint_manager.h"
 #include "core/internal/internal_payload.h"
@@ -31,7 +32,6 @@
 #include "platform/public/atomic_reference.h"
 #include "platform/public/count_down_latch.h"
 #include "platform/public/mutex.h"
-#include "absl/container/flat_hash_map.h"
 
 namespace location {
 namespace nearby {
@@ -85,7 +85,7 @@ class PayloadManager : public EndpointManager::FrameProcessor {
         PayloadTransferFrame::ControlMessage::EventType event);
 
     std::string id;
-    AtomicReference<Status> status {Status::kUnknown};
+    AtomicReference<Status> status{Status::kUnknown};
     std::int64_t offset = 0;
   };
 
@@ -174,6 +174,8 @@ class PayloadManager : public EndpointManager::FrameProcessor {
   using Endpoints = std::vector<const EndpointInfo*>;
   static std::string ToString(const EndpointIds& endpoint_ids);
   static std::string ToString(const Endpoints& endpoints);
+  static std::string ToString(Payload::Type type);
+  static std::string ToString(EndpointInfo::Status status);
 
   // Splits the endpoints for this payload by availability.
   // Returns a pair of lists of EndpointInfo*, with the first being the list of
@@ -187,7 +189,7 @@ class PayloadManager : public EndpointManager::FrameProcessor {
 
   bool SendPayloadLoop(ClientProxy* client, PendingPayload& pending_payload,
                        PayloadTransferFrame::PayloadHeader& payload_header,
-                       std::int64_t& next_chunk_offset);
+                       std::int64_t& next_chunk_offset, size_t resume_offset);
   void SendClientCallbacksForFinishedIncomingPayloadRunnable(
       ClientProxy* client, const std::string& endpoint_id,
       const PayloadTransferFrame::PayloadHeader& payload_header,
@@ -209,7 +211,7 @@ class PayloadManager : public EndpointManager::FrameProcessor {
   int GetOptimalChunkSize(EndpointIds endpoint_ids);
 
   PayloadTransferFrame::PayloadHeader CreatePayloadHeader(
-      const InternalPayload& payload);
+      const InternalPayload& payload, size_t offset);
   PayloadTransferFrame::PayloadChunk CreatePayloadChunk(std::int64_t offset,
                                                         ByteArray body);
 
@@ -283,6 +285,22 @@ class PayloadManager : public EndpointManager::FrameProcessor {
   PendingPayload* GetPayload(Payload::Id payload_id) const
       ABSL_LOCKS_EXCLUDED(mutex_);
   void CancelAllPayloads() ABSL_LOCKS_EXCLUDED(mutex_);
+
+  void RecordPayloadStartedAnalytics(ClientProxy* client,
+                                     const EndpointIds& endpoint_ids,
+                                     std::int64_t payload_id,
+                                     Payload::Type payload_type,
+                                     std::int64_t offset,
+                                     std::int64_t total_size);
+  void RecordInvalidPayloadAnalytics(ClientProxy* client,
+                                     const EndpointIds& endpoint_ids,
+                                     std::int64_t payload_id,
+                                     Payload::Type payload_type,
+                                     std::int64_t offset,
+                                     std::int64_t total_size);
+
+  Payload::Type FramePayloadTypeToPayloadType(
+      PayloadTransferFrame::PayloadHeader::PayloadType type);
 
   mutable Mutex mutex_;
   AtomicBoolean shutdown_{false};

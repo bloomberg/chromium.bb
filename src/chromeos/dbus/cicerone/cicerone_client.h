@@ -6,7 +6,6 @@
 #define CHROMEOS_DBUS_CICERONE_CICERONE_CLIENT_H_
 
 #include "base/component_export.h"
-#include "base/observer_list.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -113,6 +112,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
    protected:
     virtual ~Observer() = default;
   };
+
+  CiceroneClient(const CiceroneClient&) = delete;
+  CiceroneClient& operator=(const CiceroneClient&) = delete;
 
   ~CiceroneClient() override;
 
@@ -336,6 +338,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::GetVshSessionResponse>
           callback) = 0;
 
+  // Send signal with files user has selected in SelectFile dialog. This is sent
+  // in response to VmApplicationsServiceProvider::SelectFile().
+  virtual void FileSelected(
+      const vm_tools::cicerone::FileSelectedSignal& signal) = 0;
+
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.
@@ -359,11 +366,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
  protected:
   // Initialize() should be used instead.
   CiceroneClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CiceroneClient);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::CiceroneClient;
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_CICERONE_CICERONE_CLIENT_H_

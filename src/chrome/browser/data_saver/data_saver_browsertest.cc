@@ -8,6 +8,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -77,6 +78,11 @@ class TestEffectiveConnectionTypeObserver
     tracker_->AddEffectiveConnectionTypeObserver(this);
   }
 
+  TestEffectiveConnectionTypeObserver(
+      const TestEffectiveConnectionTypeObserver&) = delete;
+  TestEffectiveConnectionTypeObserver& operator=(
+      const TestEffectiveConnectionTypeObserver&) = delete;
+
   ~TestEffectiveConnectionTypeObserver() override {
     tracker_->RemoveEffectiveConnectionTypeObserver(this);
   }
@@ -111,10 +117,8 @@ class TestEffectiveConnectionTypeObserver
 
   net::EffectiveConnectionType run_loop_wait_effective_connection_type_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  network::NetworkQualityTracker* tracker_;
+  raw_ptr<network::NetworkQualityTracker> tracker_;
   net::EffectiveConnectionType effective_connection_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEffectiveConnectionTypeObserver);
 };
 
 // Test version of the observer. Used to wait for the event when the network
@@ -128,6 +132,11 @@ class TestRTTAndThroughputEstimatesObserver
         downstream_throughput_kbps_(std::numeric_limits<int32_t>::max()) {
     tracker_->AddRTTAndThroughputEstimatesObserver(this);
   }
+
+  TestRTTAndThroughputEstimatesObserver(
+      const TestRTTAndThroughputEstimatesObserver&) = delete;
+  TestRTTAndThroughputEstimatesObserver& operator=(
+      const TestRTTAndThroughputEstimatesObserver&) = delete;
 
   ~TestRTTAndThroughputEstimatesObserver() override {
     tracker_->RemoveRTTAndThroughputEstimatesObserver(this);
@@ -167,14 +176,12 @@ class TestRTTAndThroughputEstimatesObserver
       run_loop_->Quit();
   }
 
-  network::NetworkQualityTracker* tracker_;
+  raw_ptr<network::NetworkQualityTracker> tracker_;
   // May be null.
   std::unique_ptr<base::RunLoop> run_loop_;
   base::TimeDelta http_rtt_;
   int32_t downstream_throughput_kbps_;
   base::TimeDelta http_rtt_notification_wait_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRTTAndThroughputEstimatesObserver);
 };
 
 }  // namespace
@@ -189,8 +196,8 @@ class DataSaverBrowserTest : public InProcessBrowserTest {
                             Browser* browser = nullptr) {
     if (!browser)
       browser = InProcessBrowserTest::browser();
-    ui_test_utils::NavigateToURL(
-        browser, embedded_test_server()->GetURL("/echoheader?Save-Data"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser, embedded_test_server()->GetURL("/echoheader?Save-Data")));
     EXPECT_EQ(
         expected_header_value,
         content::EvalJs(browser->tab_strip_model()->GetActiveWebContents(),
@@ -261,8 +268,8 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, ReloadPage) {
   EnableDataSaver(true);
 
   expected_save_data_header_ = "on";
-  ui_test_utils::NavigateToURL(browser(),
-                               test_server_->GetURL("/google/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), test_server_->GetURL("/google/google.html")));
 
   // Reload the webpage and expect the main and the subresources will get the
   // correct save-data header.
@@ -299,8 +306,8 @@ class DataSaverForWorkerBrowserTest : public InProcessBrowserTest,
         "text/javascript", script, loop.QuitClosure()));
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    ui_test_utils::NavigateToURL(browser(),
-                                 embedded_test_server()->GetURL(url));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(url)));
     loop.Run();
   }
 
@@ -381,9 +388,9 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, ServiceWorker_Register) {
       &CaptureHeaderHandlerWithContent, "/capture", &header_map,
       "text/javascript", "// empty", loop.QuitClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/service_worker/create_service_worker.html"));
+                     "/service_worker/create_service_worker.html")));
 
   EXPECT_EQ("DONE",
             content::EvalJs(GetActiveWebContents(), "register('/capture');"));
@@ -413,9 +420,9 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, ServiceWorker_Update) {
                           &header_map, "text/javascript", "// empty",
                           base::BarrierClosure(2, loop.QuitClosure())));
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/service_worker/create_service_worker.html"));
+                     "/service_worker/create_service_worker.html")));
 
   EXPECT_EQ("DONE",
             content::EvalJs(GetActiveWebContents(), "register('/capture');"));
@@ -439,9 +446,9 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, ServiceWorker_Update) {
 IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, FetchFromWorker) {
   EnableDataSaver(IsEnabledDataSaver());
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("/workers/fetch_from_worker.html"));
+      embedded_test_server()->GetURL("/workers/fetch_from_worker.html")));
   const char* expected = IsEnabledDataSaver() ? "on" : "None";
   EXPECT_EQ(expected,
             content::EvalJs(GetActiveWebContents(),
@@ -453,9 +460,9 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, FetchFromWorker) {
 IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, FetchFromSharedWorker) {
   EnableDataSaver(IsEnabledDataSaver());
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/workers/fetch_from_shared_worker.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/workers/fetch_from_shared_worker.html")));
   const char* expected = IsEnabledDataSaver() ? "on" : "None";
   EXPECT_EQ(
       expected,
@@ -468,9 +475,9 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, FetchFromSharedWorker) {
 IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest, FetchFromServiceWorker) {
   EnableDataSaver(IsEnabledDataSaver());
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/service_worker/fetch_from_service_worker.html"));
+                     "/service_worker/fetch_from_service_worker.html")));
   EXPECT_EQ("ready", content::EvalJs(GetActiveWebContents(), "setup();"));
 
   const char* expected = IsEnabledDataSaver() ? "on" : "None";
@@ -486,15 +493,15 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest,
                        FetchFromServiceWorkerControlledPage_NoFetchHandler) {
   EnableDataSaver(IsEnabledDataSaver());
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/service_worker/create_service_worker.html"));
+                     "/service_worker/create_service_worker.html")));
   EXPECT_EQ("DONE",
             content::EvalJs(GetActiveWebContents(), "register('empty.js');"));
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html"));
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
 
   const char* expected = IsEnabledDataSaver() ? "on" : "None";
   EXPECT_EQ(expected,
@@ -508,16 +515,16 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest,
                        FetchFromServiceWorkerControlledPage_PassThrough) {
   EnableDataSaver(IsEnabledDataSaver());
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/service_worker/create_service_worker.html"));
+                     "/service_worker/create_service_worker.html")));
   EXPECT_EQ("DONE",
             content::EvalJs(GetActiveWebContents(),
                             "register('fetch_event_pass_through.js');"));
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html"));
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
 
   const char* expected = IsEnabledDataSaver() ? "on" : "None";
   EXPECT_EQ(expected,
@@ -532,16 +539,16 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest,
                        FetchFromServiceWorkerControlledPage_RespondWithFetch) {
   EnableDataSaver(IsEnabledDataSaver());
   ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/service_worker/create_service_worker.html"));
+                     "/service_worker/create_service_worker.html")));
   EXPECT_EQ("DONE",
             content::EvalJs(GetActiveWebContents(),
                             "register('fetch_event_respond_with_fetch.js');"));
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html"));
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
 
   const char* expected = IsEnabledDataSaver() ? "on" : "None";
   EXPECT_EQ(expected,
@@ -595,8 +602,8 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithImageServerBrowserTest,
   SetImagesNotToLoad({"/data_saver/red.jpg"});
 
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(
-      browser(), test_server_->GetURL("/data_saver/image_srcset.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), test_server_->GetURL("/data_saver/image_srcset.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverWithImageServerBrowserTest,
@@ -605,6 +612,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithImageServerBrowserTest,
   SetImagesNotToLoad({"/data_saver/green.jpg"});
 
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(
-      browser(), test_server_->GetURL("/data_saver/image_srcset.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), test_server_->GetURL("/data_saver/image_srcset.html")));
 }

@@ -12,6 +12,14 @@
 const astUtils = require("./utils/ast-utils");
 
 //------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+
+const DEFAULT_OPTIONS = {
+    allowInParentheses: true
+};
+
+//------------------------------------------------------------------------------
 // Rule Definition
 //------------------------------------------------------------------------------
 
@@ -21,12 +29,19 @@ module.exports = {
 
         docs: {
             description: "disallow comma operators",
-            category: "Best Practices",
             recommended: false,
             url: "https://eslint.org/docs/rules/no-sequences"
         },
 
-        schema: [],
+        schema: [{
+            properties: {
+                allowInParentheses: {
+                    type: "boolean",
+                    default: true
+                }
+            },
+            additionalProperties: false
+        }],
 
         messages: {
             unexpectedCommaExpression: "Unexpected use of comma operator."
@@ -34,6 +49,7 @@ module.exports = {
     },
 
     create(context) {
+        const options = Object.assign({}, DEFAULT_OPTIONS, context.options[0]);
         const sourceCode = context.getSourceCode();
 
         /**
@@ -99,13 +115,15 @@ module.exports = {
                 }
 
                 // Wrapping a sequence in extra parens indicates intent
-                if (requiresExtraParens(node)) {
-                    if (isParenthesisedTwice(node)) {
-                        return;
-                    }
-                } else {
-                    if (isParenthesised(node)) {
-                        return;
+                if (options.allowInParentheses) {
+                    if (requiresExtraParens(node)) {
+                        if (isParenthesisedTwice(node)) {
+                            return;
+                        }
+                    } else {
+                        if (isParenthesised(node)) {
+                            return;
+                        }
                     }
                 }
 

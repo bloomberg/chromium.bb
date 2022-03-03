@@ -10,9 +10,9 @@
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "third_party/base/check.h"
+#include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/numerics/safe_conversions.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -85,7 +85,7 @@ bool CPDF_CrossRefAvail::CheckCrossRef() {
   }
   parser_->SetPos(cross_refs_for_check_.front());
 
-  const ByteString first_word = parser_->PeekNextWord(nullptr);
+  const ByteString first_word = parser_->PeekNextWord();
   if (CheckReadProblems())
     return false;
 

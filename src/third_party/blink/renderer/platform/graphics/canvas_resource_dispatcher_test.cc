@@ -86,7 +86,7 @@ class CanvasResourceDispatcherTest
     return dispatcher_->id_generator_.PeekNextValueForTesting();
   }
 
-  const IntSize& GetSize() const { return dispatcher_->size_; }
+  const gfx::Size& GetSize() const { return dispatcher_->size_; }
 
  protected:
   CanvasResourceDispatcherTest() = default;
@@ -94,7 +94,8 @@ class CanvasResourceDispatcherTest
   void CreateCanvasResourceDispatcher() {
     dispatcher_ = std::make_unique<MockCanvasResourceDispatcher>();
     resource_provider_ = CanvasResourceProvider::CreateSharedBitmapProvider(
-        IntSize(kWidth, kHeight), kLow_SkFilterQuality, CanvasResourceParams(),
+        SkImageInfo::MakeN32Premul(kWidth, kHeight),
+        cc::PaintFlags::FilterQuality::kLow,
         CanvasResourceProvider::ShouldInitialize::kCallClear,
         dispatcher_->GetWeakPtr());
   }
@@ -224,8 +225,8 @@ TEST_P(CanvasResourceDispatcherTest, DispatchFrame) {
   platform->RunUntilIdle();
 
   auto canvas_resource = CanvasResourceSharedBitmap::Create(
-      GetSize(), CanvasResourceParams(), nullptr /* provider */,
-      kLow_SkFilterQuality);
+      SkImageInfo::MakeN32Premul(GetSize().width(), GetSize().height()),
+      nullptr /* provider */, cc::PaintFlags::FilterQuality::kLow);
   EXPECT_TRUE(!!canvas_resource);
   EXPECT_EQ(canvas_resource->Size(), GetSize());
 

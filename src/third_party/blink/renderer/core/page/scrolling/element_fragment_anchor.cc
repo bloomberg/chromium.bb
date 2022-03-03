@@ -20,6 +20,19 @@
 
 namespace blink {
 
+namespace {
+// TODO(bokan): Move this into FragmentDirective after
+// https://crrev.com/c/3216206 lands.
+String RemoveFragmentDirectives(const String& url_fragment) {
+  wtf_size_t directive_delimiter_ix = url_fragment.Find(":~:");
+  if (directive_delimiter_ix == kNotFound)
+    return url_fragment;
+
+  return url_fragment.Substring(0, directive_delimiter_ix);
+}
+
+}  // namespace
+
 ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
                                                         LocalFrame& frame,
                                                         bool should_scroll) {
@@ -35,7 +48,7 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   if (!url.HasFragmentIdentifier() && !doc.CssTarget() && !doc.IsSVGDocument())
     return nullptr;
 
-  String fragment = url.FragmentIdentifier();
+  String fragment = RemoveFragmentDirectives(url.FragmentIdentifier());
   Node* anchor_node = doc.FindAnchor(fragment);
 
   // Setting to null will clear the current target.
@@ -75,8 +88,8 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
 
 ElementFragmentAnchor::ElementFragmentAnchor(Node& anchor_node,
                                              LocalFrame& frame)
-    : anchor_node_(&anchor_node),
-      frame_(&frame),
+    : FragmentAnchor(frame),
+      anchor_node_(&anchor_node),
       needs_focus_(!anchor_node.IsDocumentNode()) {
   DCHECK(frame_->View());
 }
@@ -94,15 +107,7 @@ bool ElementFragmentAnchor::Invoke() {
   if (!doc.HaveRenderBlockingResourcesLoaded() || !frame_->View())
     return true;
 
-  Frame* boundary_frame = frame_->FindUnsafeParentScrollPropagationBoundary();
-
-  // FIXME: Handle RemoteFrames
-  auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame);
-  if (boundary_local_frame) {
-    boundary_local_frame->View()->SetSafeToPropagateScrollToParent(false);
-  }
-
-  auto* element_to_scroll = DynamicTo<Element>(anchor_node_.Get());
+  Member<Element> element_to_scroll = DynamicTo<Element>(anchor_node_.Get());
   if (!element_to_scroll)
     element_to_scroll = doc.documentElement();
 
@@ -110,11 +115,7 @@ bool ElementFragmentAnchor::Invoke() {
     ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
     options->setBlock("start");
     options->setInlinePosition("nearest");
-    element_to_scroll->ScrollIntoViewNoVisualUpdate(options);
-  }
-
-  if (boundary_local_frame) {
-    boundary_local_frame->View()->SetSafeToPropagateScrollToParent(true);
+    ScrollElementIntoViewWithOptions(element_to_scroll, options);
   }
 
   if (AXObjectCache* cache = doc.ExistingAXObjectCache())

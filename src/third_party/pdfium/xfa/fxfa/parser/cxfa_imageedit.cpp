@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kImageEditPropertyData[] = {
-    {XFA_Element::Margin, 1, 0},
-    {XFA_Element::Border, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Margin, 1, {}},
+    {XFA_Element::Border, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kImageEditAttributeData[] = {
@@ -30,7 +30,7 @@ const CXFA_Node::AttributeData kImageEditAttributeData[] = {
 CXFA_ImageEdit::CXFA_ImageEdit(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::ImageEdit,
                 kImageEditPropertyData,

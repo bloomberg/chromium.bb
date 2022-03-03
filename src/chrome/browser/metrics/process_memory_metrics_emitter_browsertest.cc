@@ -6,7 +6,9 @@
 
 #include <set>
 
+#include "base/allocator/buildflags.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -16,7 +18,13 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_features.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -102,6 +110,11 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
                                            ukm::TestUkmRecorder* recorder)
       : run_loop_(run_loop), recorder_(recorder) {}
 
+  ProcessMemoryMetricsEmitterFake(const ProcessMemoryMetricsEmitterFake&) =
+      delete;
+  ProcessMemoryMetricsEmitterFake& operator=(
+      const ProcessMemoryMetricsEmitterFake&) = delete;
+
  private:
   ~ProcessMemoryMetricsEmitterFake() override {}
 
@@ -128,12 +141,10 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
 
   ukm::UkmRecorder* GetUkmRecorder() override { return recorder_; }
 
-  base::RunLoop* run_loop_;
+  raw_ptr<base::RunLoop> run_loop_;
   bool finished_memory_dump_ = false;
   bool finished_process_info_ = false;
-  ukm::TestUkmRecorder* recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterFake);
+  raw_ptr<ukm::TestUkmRecorder> recorder_;
 };
 
 void CheckMemoryMetric(const std::string& name,
@@ -183,6 +194,23 @@ void CheckExperimentalMemoryMetricsForProcessType(
   CheckMemoryMetric(std::string("Memory.Experimental.") + process_type + "2.V8",
                     histogram_tester, count, ValueRestriction::NONE,
                     number_of_processes);
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // It's a small metric, so should not be strictly zero in theory, but could be
+  // if purge comes at the wrong time, or the thread cache is not available on
+  // this platform.
+  CheckMemoryMetric(std::string("Memory.Experimental.") + process_type +
+                        "2.Small.Malloc.ThreadCache",
+                    histogram_tester, count, ValueRestriction::NONE,
+                    number_of_processes);
+  CheckMemoryMetric(std::string("Memory.Experimental.") + process_type +
+                        "2.Malloc.Fragmentation",
+                    histogram_tester, count, ValueRestriction::NONE,
+                    number_of_processes);
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.Malloc.Wasted",
+      histogram_tester, count, ValueRestriction::NONE, number_of_processes);
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }
 
 void CheckExperimentalMemoryMetrics(
@@ -274,8 +302,12 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
                     count_for_resident_set, ValueRestriction::ABOVE_ZERO);
   CheckMemoryMetric("Memory.Total.PrivateMemoryFootprint", histogram_tester,
                     count, ValueRestriction::ABOVE_ZERO);
+  CheckMemoryMetric("Memory.Total.PrivateMemoryFootprint.HasZombieProfile",
+                    histogram_tester, 0, ValueRestriction::NONE);
   CheckMemoryMetric("Memory.Total.RendererPrivateMemoryFootprint",
                     histogram_tester, count, ValueRestriction::ABOVE_ZERO);
+  CheckMemoryMetric("Memory.Total.RendererMalloc", histogram_tester, count,
+                    ValueRestriction::ABOVE_ZERO);
   // Shared memory footprint can be below 1 MB, which is reported as zero.
   CheckMemoryMetric("Memory.Total.SharedMemoryFootprint", histogram_tester,
                     count, ValueRestriction::NONE);
@@ -293,6 +325,31 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                            number_of_extension_processes);
 }
 
+class ProfileDestructionWatcher : public ProfileObserver {
+ public:
+  explicit ProfileDestructionWatcher(Profile* profile) {
+    observation_.Observe(profile);
+  }
+
+  ProfileDestructionWatcher(const ProfileDestructionWatcher&) = delete;
+  ProfileDestructionWatcher& operator=(const ProfileDestructionWatcher&) =
+      delete;
+
+  ~ProfileDestructionWatcher() override = default;
+
+  void WaitForDestruction() { run_loop_.Run(); }
+
+ private:
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override {
+    observation_.Reset();
+    run_loop_.Quit();
+  }
+
+  base::RunLoop run_loop_;
+  base::ScopedObservation<Profile, ProfileObserver> observation_{this};
+};
+
 }  // namespace
 
 class ProcessMemoryMetricsEmitterTest
@@ -301,6 +358,11 @@ class ProcessMemoryMetricsEmitterTest
   ProcessMemoryMetricsEmitterTest() {
     scoped_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
   }
+
+  ProcessMemoryMetricsEmitterTest(const ProcessMemoryMetricsEmitterTest&) =
+      delete;
+  ProcessMemoryMetricsEmitterTest& operator=(
+      const ProcessMemoryMetricsEmitterTest&) = delete;
 
   ~ProcessMemoryMetricsEmitterTest() override {}
 
@@ -513,8 +575,6 @@ class ProcessMemoryMetricsEmitterTest
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterTest);
 };
 
 // TODO(crbug.com/732501): Re-enable on Win once not flaky.
@@ -552,6 +612,56 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// TODO(crbug.com/732501): Re-enable on Win once not flaky.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || defined(OS_WIN)
+#define MAYBE_HasZombieProfile DISABLED_HasZombieProfile
+#else
+#define MAYBE_HasZombieProfile HasZombieProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
+                       MAYBE_HasZombieProfile) {
+  ASSERT_TRUE(
+      base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Create  a second Profile.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile2 = profile_manager->GetProfile(
+      profile_manager->GenerateNextProfileDirectoryPath());
+
+  // Now destroy the second Profile, so HasZombieProfile() returns true.
+  ProfileDestructionWatcher destruction_watcher(profile2);
+  {
+    ScopedProfileKeepAlive keep_alive(profile2,
+                                      ProfileKeepAliveOrigin::kBrowserWindow);
+  }
+  destruction_watcher.WaitForDestruction();
+
+  base::HistogramTester histogram_tester;
+  base::RunLoop run_loop;
+
+  // Intentionally let emitter leave scope to check that it correctly keeps
+  // itself alive.
+  {
+    scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+        new ProcessMemoryMetricsEmitterFake(&run_loop,
+                                            test_ukm_recorder_.get()));
+    emitter->FetchAndEmitProcessMemoryMetrics();
+  }
+  run_loop.Run();
+
+  CheckMemoryMetric("Memory.Total.PrivateMemoryFootprint.HasZombieProfile",
+                    histogram_tester, 1, ValueRestriction::NONE);
+}
+#endif
 
 // TODO(https://crbug.com/990148): Re-enable on Win and Linux once not flaky.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -619,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL app_url = embedded_test_server()->GetURL("app.org", "/empty.html");
   const Extension* app = CreateHostedApp("App", GURL("http://app.org"));
-  ui_test_utils::NavigateToURL(browser(), app_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), app_url));
 
   // Verify that the hosted app has loaded.
   ProcessManager* pm = ProcessManager::Get(profile());

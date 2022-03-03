@@ -13,9 +13,11 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -24,8 +26,10 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
+#include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
+#include "chrome/updater/update_block_check.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_version.h"
 #include "components/prefs/pref_service.h"
@@ -137,20 +141,62 @@ MakeUpdateClientCrxStateChangeCallback(
 }
 
 std::vector<absl::optional<update_client::CrxComponent>> GetComponents(
+    scoped_refptr<Configurator> config,
     scoped_refptr<PersistedData> persisted_data,
+    bool foreground,
+    bool update_blocked,
+    UpdateService::PolicySameVersionUpdate policy_same_version_update,
     const std::vector<std::string>& ids) {
+  VLOG(1) << __func__
+          << ". Same version update: " << policy_same_version_update;
+
   std::vector<absl::optional<update_client::CrxComponent>> components;
   for (const auto& id : ids) {
-    components.push_back(base::MakeRefCounted<Installer>(id, persisted_data)
-                             ->MakeCrxComponent());
+    components.push_back(
+        base::MakeRefCounted<Installer>(
+            id,
+            [&config, &id]() {
+              std::string component_channel;
+              return config->GetPolicyService()->GetTargetChannel(
+                         id, nullptr, &component_channel)
+                         ? component_channel
+                         : std::string();
+            }(),
+            [&config, &id]() {
+              std::string target_version_prefix;
+              return config->GetPolicyService()->GetTargetVersionPrefix(
+                         id, nullptr, &target_version_prefix)
+                         ? target_version_prefix
+                         : std::string();
+            }(),
+            [&config, &id]() {
+              bool rollback_allowed;
+              return config->GetPolicyService()
+                             ->IsRollbackToTargetVersionAllowed(
+                                 id, nullptr, &rollback_allowed)
+                         ? rollback_allowed
+                         : false;
+            }(),
+            [&config, &id, &foreground, update_blocked]() {
+              if (update_blocked)
+                return true;
+              int policy = kPolicyEnabled;
+              return config->GetPolicyService()
+                         ->GetEffectivePolicyForAppUpdates(id, nullptr,
+                                                           &policy) &&
+                     (policy == kPolicyDisabled ||
+                      (!foreground && policy == kPolicyManualUpdatesOnly) ||
+                      (foreground && policy == kPolicyAutomaticUpdatesOnly));
+            }(),
+            policy_same_version_update, persisted_data)
+            ->MakeCrxComponent());
   }
   return components;
 }
 
 }  // namespace
 
-UpdateServiceImpl::UpdateServiceImpl(
-    scoped_refptr<update_client::Configurator> config)
+UpdateServiceImpl::UpdateServiceImpl(scoped_refptr<Configurator> config)
     : config_(config),
       persisted_data_(
           base::MakeRefCounted<PersistedData>(config_->GetPrefService())),
@@ -159,6 +205,7 @@ UpdateServiceImpl::UpdateServiceImpl(
 
 void UpdateServiceImpl::GetVersion(
     base::OnceCallback<void(const base::Version&)> callback) const {
+  VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -168,30 +215,70 @@ void UpdateServiceImpl::GetVersion(
 void UpdateServiceImpl::RegisterApp(
     const RegistrationRequest& request,
     base::OnceCallback<void(const RegistrationResponse&)> callback) {
+  VLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::Version current_version =
+      persisted_data_->GetProductVersion(request.app_id);
+  if (current_version.IsValid() &&
+      current_version.CompareTo(request.version) == 1) {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       RegistrationResponse(kRegistrationAlreadyRegistered)));
+    return;
+  }
+  persisted_data_->RegisterApp(request);
+  update_client::CrxComponent crx_component;
+  crx_component.app_id = request.app_id;
+  crx_component.version = request.version;
+  crx_component.requires_network_encryption = false;
+  crx_component.ap = request.ap;
+  crx_component.brand = request.brand_code;
+  update_client_->SendRegistrationPing(
+      crx_component,
+      base::BindOnce(
+          [](base::OnceCallback<void(const RegistrationResponse&)> callback,
+             update_client::Error /*error*/) {
+            // Ping failures do not count as registration failures.
+            std::move(callback).Run(RegistrationResponse(kRegistrationSuccess));
+          },
+          std::move(callback)));
+}
+
+void UpdateServiceImpl::GetAppStates(
+    base::OnceCallback<void(const std::vector<AppState>&)> callback) const {
+  VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  persisted_data_->RegisterApp(request);
+  std::vector<std::string> app_ids = persisted_data_->GetAppIds();
+  std::vector<AppState> apps;
+  for (const std::string& app_id : app_ids) {
+    AppState app_state;
+    app_state.app_id = app_id;
+    app_state.version = persisted_data_->GetProductVersion(app_id);
+    app_state.ap = persisted_data_->GetAP(app_id);
+    app_state.brand_code = persisted_data_->GetBrandCode(app_id);
+    app_state.brand_path = persisted_data_->GetBrandPath(app_id);
+    app_state.ecp = persisted_data_->GetExistenceCheckerPath(app_id);
+    apps.push_back(app_state);
+  }
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(apps)));
+}
+
+void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
+  VLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // The installer should make an updater registration, but in case it halts
+  // before it does, synthesize a registration if necessary here.
   if (!base::Contains(persisted_data_->GetAppIds(), kUpdaterAppId)) {
     RegistrationRequest updater_request;
     updater_request.app_id = kUpdaterAppId;
     updater_request.version = base::Version(kUpdaterVersion);
-    persisted_data_->RegisterApp(updater_request);
-    update_client_->SendRegistrationPing(
-        updater_request.app_id, updater_request.version, base::DoNothing());
+    RegisterApp(updater_request, base::DoNothing());
   }
 
-  update_client_->SendRegistrationPing(request.app_id, request.version,
-                                       base::DoNothing());
-
-  // Result of registration. Currently there's no error handling in
-  // PersistedData, so we assume success every time, which is why we respond
-  // with 0.
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), RegistrationResponse(0)));
-}
-
-void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   tasks_.push(base::MakeRefCounted<CheckForUpdatesTask>(
       config_,
       base::BindOnce(&UpdateServiceImpl::UpdateAll, this, base::DoNothing()),
@@ -216,28 +303,115 @@ void UpdateServiceImpl::TaskDone(base::OnceClosure callback) {
 
 void UpdateServiceImpl::UpdateAll(StateChangeCallback state_update,
                                   Callback callback) {
+  VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto app_ids = persisted_data_->GetAppIds();
   DCHECK(base::Contains(app_ids, kUpdaterAppId));
 
-  update_client_->Update(
-      app_ids, base::BindOnce(&GetComponents, persisted_data_),
-      MakeUpdateClientCrxStateChangeCallback(config_, state_update), false,
-      MakeUpdateClientCallback(std::move(callback)));
+  const Priority priority = Priority::kBackground;
+  ShouldBlockUpdateForMeteredNetwork(
+      priority,
+      base::BindOnce(&UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork,
+                     this, state_update, std::move(callback), app_ids, priority,
+                     UpdateService::PolicySameVersionUpdate::kNotAllowed));
 }
 
-void UpdateServiceImpl::Update(const std::string& app_id,
-                               Priority priority,
-                               StateChangeCallback state_update,
-                               Callback callback) {
+void UpdateServiceImpl::Update(
+    const std::string& app_id,
+    Priority priority,
+    PolicySameVersionUpdate policy_same_version_update,
+    StateChangeCallback state_update,
+    Callback callback) {
+  VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  update_client_->Update(
-      {app_id}, base::BindOnce(&GetComponents, persisted_data_),
-      MakeUpdateClientCrxStateChangeCallback(config_, state_update),
-      priority == Priority::kForeground,
-      MakeUpdateClientCallback(std::move(callback)));
+  int policy = kPolicyEnabled;
+  if (IsUpdateDisabledByPolicy(app_id, priority, policy_same_version_update,
+                               policy)) {
+    HandleUpdateDisabledByPolicy(app_id, policy, policy_same_version_update,
+                                 state_update, std::move(callback));
+    return;
+  }
+
+  std::vector<std::string> ids = {app_id};
+  ShouldBlockUpdateForMeteredNetwork(
+      priority,
+      base::BindOnce(&UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork,
+                     this, state_update, std::move(callback), ids, priority,
+                     policy_same_version_update));
+}
+
+bool UpdateServiceImpl::IsUpdateDisabledByPolicy(
+    const std::string& app_id,
+    Priority priority,
+    PolicySameVersionUpdate policy_same_version_update,
+    int& policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  policy = kPolicyEnabled;
+
+  // The Install case is inferred by the presence of
+  // `PolicySameVersionUpdate::kAllowed`.
+  if (policy_same_version_update == PolicySameVersionUpdate::kAllowed) {
+    return config_->GetPolicyService()->GetEffectivePolicyForAppInstalls(
+               app_id, nullptr, &policy) &&
+           (policy == kPolicyDisabled || (config_->IsPerUserInstall() &&
+                                          policy == kPolicyEnabledMachineOnly));
+  } else {
+    return config_->GetPolicyService()->GetEffectivePolicyForAppUpdates(
+               app_id, nullptr, &policy) &&
+           (policy == kPolicyDisabled ||
+            ((policy == kPolicyManualUpdatesOnly) &&
+             (priority != Priority::kForeground)) ||
+            ((policy == kPolicyAutomaticUpdatesOnly) &&
+             (priority == Priority::kForeground)));
+  }
+}
+
+void UpdateServiceImpl::HandleUpdateDisabledByPolicy(
+    const std::string& app_id,
+    int policy,
+    PolicySameVersionUpdate policy_same_version_update,
+    StateChangeCallback state_update,
+    Callback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  UpdateState update_state;
+  update_state.app_id = app_id;
+  update_state.state = UpdateService::UpdateState::State::kUpdateError;
+  update_state.error_category = UpdateService::ErrorCategory::kUpdateCheck;
+  update_state.error_code =
+      policy_same_version_update == PolicySameVersionUpdate::kAllowed
+          ? GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY
+          : policy != kPolicyAutomaticUpdatesOnly
+                ? GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY
+                : GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL;
+  update_state.extra_code1 = 0;
+
+  base::BindPostTask(main_task_runner_, state_update).Run(update_state);
+  base::BindPostTask(main_task_runner_, std::move(callback))
+      .Run(UpdateService::Result::kUpdateCheckFailed);
+}
+
+void UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork(
+    StateChangeCallback state_update,
+    Callback callback,
+    const std::vector<std::string>& ids,
+    Priority priority,
+    PolicySameVersionUpdate policy_same_version_update,
+    bool update_blocked) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &update_client::UpdateClient::Update, update_client_, ids,
+          base::BindOnce(&GetComponents, config_, persisted_data_, false,
+                         update_blocked, policy_same_version_update),
+          MakeUpdateClientCrxStateChangeCallback(config_, state_update),
+          priority == Priority::kForeground,
+          MakeUpdateClientCallback(std::move(callback))));
 }
 
 void UpdateServiceImpl::Uninitialize() {

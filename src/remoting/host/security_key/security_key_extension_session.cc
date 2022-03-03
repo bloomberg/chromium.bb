@@ -11,8 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/client_session_details.h"
@@ -110,7 +109,7 @@ bool SecurityKeyExtensionSession::OnExtensionMessage(
   }
   std::string type = *maybe_type;
 
-  base::Value::DictStorage client_message = value->TakeDict();
+  base::Value::DictStorage client_message = std::move(*value).TakeDict();
   if (type == kControlMessage) {
     ProcessControlMessage(client_message);
   } else if (type == kDataMessage) {
@@ -197,11 +196,11 @@ void SecurityKeyExtensionSession::SendMessageToClient(
   request.SetString(kMessageType, kDataMessage);
   request.SetInteger(kConnectionId, connection_id);
 
-  auto bytes = std::make_unique<base::ListValue>();
-  for (std::string::const_iterator i = data.begin(); i != data.end(); ++i) {
-    bytes->AppendInteger(static_cast<unsigned char>(*i));
+  base::ListValue bytes;
+  for (auto& byte : data) {
+    bytes.Append(static_cast<unsigned char>(byte));
   }
-  request.Set(kDataPayload, std::move(bytes));
+  request.SetKey(kDataPayload, std::move(bytes));
 
   std::string request_json;
   CHECK(base::JSONWriter::Write(request, &request_json));

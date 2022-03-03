@@ -7,21 +7,24 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/download_params.h"
-#include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/service_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace download {
 namespace test {
 
-class MockDownloadService : public DownloadService {
+class MockDownloadService : public BackgroundDownloadService {
  public:
   MockDownloadService();
+
+  MockDownloadService(const MockDownloadService&) = delete;
+  MockDownloadService& operator=(const MockDownloadService&) = delete;
+
   ~MockDownloadService() override;
 
-  // DownloadService implementation.
+  // BackgroundDownloadService implementation.
   MOCK_METHOD0(GetConfig, const ServiceConfig&());
   MOCK_METHOD2(OnStartScheduledTask,
                void(DownloadTaskType task_type, TaskFinishedCallback callback));
@@ -40,9 +43,6 @@ class MockDownloadService : public DownloadService {
   MOCK_METHOD2(ChangeDownloadCriteria,
                void(const std::string& guid, const SchedulingParams& params));
   MOCK_METHOD0(GetLogger, Logger*());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadService);
 };
 
 }  // namespace test

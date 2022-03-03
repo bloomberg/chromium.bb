@@ -45,7 +45,8 @@ class ReceiveStatisticsProxyTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     metrics::Reset();
-    statistics_proxy_.reset(new ReceiveStatisticsProxy(&config_, &fake_clock_));
+    statistics_proxy_.reset(
+        new ReceiveStatisticsProxy(config_.rtp.remote_ssrc, &fake_clock_));
   }
 
   VideoReceiveStream::Config GetTestConfig() {
@@ -1257,7 +1258,7 @@ TEST_P(ReceiveStatisticsProxyTestWithContent,
     fake_clock_.AdvanceTimeMilliseconds(kInterFrameDelayMs);
   }
 
-  // |kMinRequiredSamples| samples, and thereby intervals, is required. That
+  // `kMinRequiredSamples` samples, and thereby intervals, is required. That
   // means we're one frame short of having a valid data set.
   statistics_proxy_->UpdateHistograms(absl::nullopt, StreamDataCounters(),
                                       nullptr);

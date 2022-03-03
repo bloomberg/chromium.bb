@@ -16,7 +16,7 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -46,7 +46,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_APPLE)
-#error This file must not be included on macOS; Chromium Mac doesn't use Aura.
+#error "This file must not be included on macOS; Chromium Mac doesn't use Aura."
 #endif
 
 namespace cc {
@@ -156,6 +156,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   explicit Window(WindowDelegate* delegate,
                   client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
+
+  Window(const Window&) = delete;
+  Window& operator=(const Window&) = delete;
+
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.
@@ -498,11 +502,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Use SetEmbedFrameSinkId() when this window is embedding another client.
   // See comment for |frame_sink_id_| below for more details.
   void SetEmbedFrameSinkId(const viz::FrameSinkId& embed_frame_sink_id);
-  void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
-    DCHECK(!embeds_external_client_);
-    DCHECK(!frame_sink_id_.is_valid());
-    frame_sink_id_ = frame_sink_id;
-  }
 
   // Starts occlusion state tracking.
   void TrackOcclusionState();
@@ -716,7 +715,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // is relative to the parent Window.
   gfx::Rect bounds_;
 
-  WindowTreeHost* host_ = nullptr;
+  raw_ptr<WindowTreeHost> host_ = nullptr;
 
   client::WindowType type_;
 
@@ -727,10 +726,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // parent during its parents destruction.
   bool owned_by_parent_ = true;
 
-  WindowDelegate* delegate_;
+  raw_ptr<WindowDelegate> delegate_;
 
   // The Window's parent.
-  Window* parent_ = nullptr;
+  raw_ptr<Window> parent_ = nullptr;
 
   // Child windows. Topmost is last.
   Windows children_;
@@ -820,8 +819,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Used when this is embedding external content.
   base::WeakPtr<cc::LayerTreeFrameSink> frame_sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(Window);
 };
 
 }  // namespace aura

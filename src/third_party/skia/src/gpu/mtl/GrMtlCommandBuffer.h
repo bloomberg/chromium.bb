@@ -13,11 +13,17 @@
 #include "include/core/SkRefCnt.h"
 #include "include/gpu/GrTypes.h"
 #include "src/gpu/GrBuffer.h"
+#include "src/gpu/GrManagedResource.h"
+#include "src/gpu/GrRefCnt.h"
+#include "src/gpu/GrSurface.h"
+#include "src/gpu/mtl/GrMtlRenderCommandEncoder.h"
 #include "src/gpu/mtl/GrMtlUtil.h"
 
+class GrMtlEvent;
 class GrMtlGpu;
 class GrMtlPipelineState;
 class GrMtlOpsRenderPass;
+class GrMtlRenderCommandEncoder;
 
 GR_NORETAIN_BEGIN
 
@@ -25,6 +31,8 @@ class GrMtlCommandBuffer : public SkRefCnt {
 public:
     static sk_sp<GrMtlCommandBuffer> Make(id<MTLCommandQueue> queue);
     ~GrMtlCommandBuffer() override;
+
+    void releaseResources();
 
     bool commit(bool waitUntilCompleted);
     bool hasWork() { return fHasWork; }
@@ -34,20 +42,34 @@ public:
     }
 
     id<MTLBlitCommandEncoder> getBlitCommandEncoder();
-    id<MTLRenderCommandEncoder> getRenderCommandEncoder(MTLRenderPassDescriptor*,
-                                                        const GrMtlPipelineState*,
-                                                        GrMtlOpsRenderPass* opsRenderPass);
+    // Tries to reuse current renderCommandEncoder if possible
+    GrMtlRenderCommandEncoder* getRenderCommandEncoder(MTLRenderPassDescriptor*,
+                                                       const GrMtlPipelineState*,
+                                                       GrMtlOpsRenderPass* opsRenderPass);
+    // Replaces current renderCommandEncoder with new one
+    GrMtlRenderCommandEncoder* getRenderCommandEncoder(MTLRenderPassDescriptor*,
+                                                       GrMtlOpsRenderPass*);
 
     void addCompletedHandler(MTLCommandBufferHandler block) {
         [fCmdBuffer addCompletedHandler:block];
+    }
+
+    void addResource(sk_sp<const GrManagedResource> resource) {
+// Disable generic resource tracking for now
+//        SkASSERT(resource);
+//        fTrackedResources.push_back(std::move(resource));
     }
 
     void addGrBuffer(sk_sp<const GrBuffer> buffer) {
         fTrackedGrBuffers.push_back(std::move(buffer));
     }
 
-    void encodeSignalEvent(id<MTLEvent>, uint64_t value) SK_API_AVAILABLE(macos(10.14), ios(12.0));
-    void encodeWaitForEvent(id<MTLEvent>, uint64_t value) SK_API_AVAILABLE(macos(10.14), ios(12.0));
+    void addGrSurface(sk_sp<const GrSurface> surface) {
+        fTrackedGrSurfaces.push_back(std::move(surface));
+    }
+
+    void encodeSignalEvent(sk_sp<GrMtlEvent>, uint64_t value);
+    void encodeWaitForEvent(sk_sp<GrMtlEvent>, uint64_t value);
 
     void waitUntilCompleted() {
         [fCmdBuffer waitUntilCompleted];
@@ -58,9 +80,19 @@ public:
     }
     void callFinishedCallbacks() { fFinishedCallbacks.reset(); }
 
-private:
-    static const int kInitialTrackedResourcesCount = 32;
+    void pushDebugGroup(NSString* string) {
+        if (@available(macOS 10.13, iOS 11.0, *)) {
+            [fCmdBuffer pushDebugGroup:string];
+        }
+    }
 
+    void popDebugGroup() {
+        if (@available(macOS 10.13, iOS 11.0, *)) {
+            [fCmdBuffer popDebugGroup];
+        }
+    }
+
+private:
     GrMtlCommandBuffer(id<MTLCommandBuffer> cmdBuffer)
         : fCmdBuffer(cmdBuffer)
         , fActiveBlitCommandEncoder(nil)
@@ -70,15 +102,20 @@ private:
 
     void endAllEncoding();
 
+    static const int kInitialTrackedResourcesCount = 32;
+
+    SkSTArray<kInitialTrackedResourcesCount, sk_sp<const GrManagedResource>> fTrackedResources;
+    SkSTArray<kInitialTrackedResourcesCount, sk_sp<const GrBuffer>> fTrackedGrBuffers;
+    SkSTArray<16, gr_cb<const GrSurface>> fTrackedGrSurfaces;
+
     id<MTLCommandBuffer>        fCmdBuffer;
     id<MTLBlitCommandEncoder>   fActiveBlitCommandEncoder;
-    id<MTLRenderCommandEncoder> fActiveRenderCommandEncoder;
+    std::unique_ptr<GrMtlRenderCommandEncoder> fActiveRenderCommandEncoder;
     MTLRenderPassDescriptor*    fPreviousRenderPassDescriptor;
     bool                        fHasWork;
 
     SkTArray<sk_sp<GrRefCntedCallback>> fFinishedCallbacks;
 
-    SkSTArray<kInitialTrackedResourcesCount, sk_sp<const GrBuffer>> fTrackedGrBuffers;
 };
 
 GR_NORETAIN_END

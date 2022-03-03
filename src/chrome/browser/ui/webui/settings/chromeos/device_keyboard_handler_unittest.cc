@@ -11,7 +11,6 @@
 
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "content/public/test/test_web_ui.h"
 #include "device/udev_linux/fake_udev_loader.h"
@@ -43,6 +42,9 @@ class KeyboardHandlerTest : public testing::Test {
     device_data_manager_test_api_.SetKeyboardDevices({});
   }
 
+  KeyboardHandlerTest(const KeyboardHandlerTest&) = delete;
+  KeyboardHandlerTest& operator=(const KeyboardHandlerTest&) = delete;
+
  protected:
   // Updates out-params from the last message sent to WebUI about a change to
   // which keys should be shown. False is returned if the message was invalid or
@@ -56,10 +58,9 @@ class KeyboardHandlerTest : public testing::Test {
     for (auto it = web_ui_.call_data().rbegin();
          it != web_ui_.call_data().rend(); ++it) {
       const content::TestWebUI::CallData* data = it->get();
-      std::string name;
-      if (data->function_name() != "cr.webUIListenerCallback" ||
-          !data->arg1()->GetAsString(&name) ||
-          name != KeyboardHandler::kShowKeysChangedName) {
+      const std::string* name = data->arg1()->GetIfString();
+      if (data->function_name() != "cr.webUIListenerCallback" || !name ||
+          *name != KeyboardHandler::kShowKeysChangedName) {
         continue;
       }
 
@@ -164,9 +165,6 @@ class KeyboardHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
   TestKeyboardHandler handler_;
   KeyboardHandler::TestAPI handler_test_api_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeyboardHandlerTest);
 };
 
 TEST_F(KeyboardHandlerTest, DefaultKeys) {

@@ -19,23 +19,11 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::Node);
 namespace tint {
 namespace ast {
 
-Node::Node(ProgramID program_id, const Source& source)
-    : program_id_(program_id), source_(source) {}
+Node::Node(ProgramID pid, const Source& src) : program_id(pid), source(src) {}
 
 Node::Node(Node&&) = default;
 
 Node::~Node() = default;
-
-void Node::make_indent(std::ostream& out, size_t indent) const {
-  for (size_t i = 0; i < indent; ++i)
-    out << " ";
-}
-
-std::string Node::str(const sem::Info& sem) const {
-  std::ostringstream out;
-  to_str(sem, out, 0);
-  return out.str();
-}
 
 }  // namespace ast
 }  // namespace tint

@@ -5,7 +5,7 @@
 #include "ash/shelf/drag_handle.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -41,29 +41,28 @@ constexpr int kInAppToHomeVerticalMarginDrop = 10;
 constexpr int kInAppToHomeNudgeVerticalMarginDrop = 8;
 
 // Animation time for each translation of drag handle to show contextual nudge.
-constexpr base::TimeDelta kInAppToHomeAnimationTime =
-    base::TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kInAppToHomeAnimationTime = base::Milliseconds(300);
 
 // Animation time to return drag handle to original position after hiding
 // contextual nudge.
 constexpr base::TimeDelta kInAppToHomeHideAnimationDuration =
-    base::TimeDelta::FromMilliseconds(600);
+    base::Milliseconds(600);
 
 // Animation time to return drag handle to original position after the user taps
 // to hide the contextual nudge.
 constexpr base::TimeDelta kInAppToHomeHideOnTapAnimationDuration =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 
 // Delay between animating drag handle and tooltip opacity.
 constexpr base::TimeDelta kInAppToHomeNudgeOpacityDelay =
-    base::TimeDelta::FromMilliseconds(500);
+    base::Milliseconds(500);
 
 // Fade in time for drag handle nudge tooltip.
 constexpr base::TimeDelta kInAppToHomeNudgeOpacityAnimationDuration =
-    base::TimeDelta::FromMilliseconds(200);
+    base::Milliseconds(200);
 
 // Delay before animating the drag handle and showing the drag handle nudge.
-constexpr base::TimeDelta kShowNudgeDelay = base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kShowNudgeDelay = base::Seconds(2);
 
 // This class is deleted after OnImplicitAnimationsCompleted() is called.
 class HideNudgeObserver : public ui::ImplicitAnimationObserver {
@@ -85,7 +84,7 @@ class HideNudgeObserver : public ui::ImplicitAnimationObserver {
 
 }  // namespace
 
-DragHandle::DragHandle(int drag_handle_corner_radius, Shelf* shelf)
+DragHandle::DragHandle(float drag_handle_corner_radius, Shelf* shelf)
     : views::Button(base::BindRepeating(&DragHandle::ButtonPressed,
                                         base::Unretained(this))),
       shelf_(shelf) {

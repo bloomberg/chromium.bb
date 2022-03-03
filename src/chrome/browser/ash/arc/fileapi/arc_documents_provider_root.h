@@ -11,14 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/file_system.mojom-forward.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_operation_runner.h"
-#include "components/arc/mojom/file_system.mojom-forward.h"
 #include "storage/browser/file_system/async_file_util.h"
 #include "storage/browser/file_system/watcher_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -89,6 +88,10 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
                            const std::string& root_id,
                            bool read_only,
                            const std::vector<std::string>& mime_types);
+
+  ArcDocumentsProviderRoot(const ArcDocumentsProviderRoot&) = delete;
+  ArcDocumentsProviderRoot& operator=(const ArcDocumentsProviderRoot&) = delete;
+
   ~ArcDocumentsProviderRoot() override;
 
   // Queries information of a file just like AsyncFileUtil.GetFileInfo(). If the
@@ -415,8 +418,6 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   uint64_t next_watcher_request_id_ = 1;
 
   base::WeakPtrFactory<ArcDocumentsProviderRoot> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderRoot);
 };
 
 }  // namespace arc

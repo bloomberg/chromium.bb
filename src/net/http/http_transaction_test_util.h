@@ -5,6 +5,7 @@
 #ifndef NET_HTTP_HTTP_TRANSACTION_TEST_UTIL_H_
 #define NET_HTTP_HTTP_TRANSACTION_TEST_UTIL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "net/http/http_transaction.h"
 
 #include <stdint.h>
@@ -14,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
@@ -23,6 +25,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/transport_info.h"
+#include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_info.h"
@@ -34,7 +37,6 @@ namespace net {
 
 class IOBuffer;
 class SSLPrivateKey;
-class X509Certificate;
 class NetLogWithSource;
 struct HttpRequestInfo;
 
@@ -147,7 +149,7 @@ class TestTransactionConsumer {
 
   void Start(const HttpRequestInfo* request, const NetLogWithSource& net_log);
 
-  bool is_done() const { return state_ == DONE; }
+  bool is_done() const { return state_ == State::kDone; }
   int error() const { return error_; }
 
   const HttpResponseInfo* response_info() const {
@@ -157,12 +159,7 @@ class TestTransactionConsumer {
   const std::string& content() const { return content_; }
 
  private:
-  enum State {
-    IDLE,
-    STARTING,
-    READING,
-    DONE
-  };
+  enum class State { kIdle, kStarting, kReading, kDone };
 
   void DidStart(int result);
   void DidRead(int result);
@@ -277,7 +274,7 @@ class MockNetworkTransaction
   void CallbackLater(CompletionOnceCallback callback, int result);
   void RunCallback(CompletionOnceCallback callback, int result);
 
-  const HttpRequestInfo* request_;
+  raw_ptr<const HttpRequestInfo> request_;
   HttpResponseInfo response_;
   std::string data_;
   int64_t data_cursor_;
@@ -285,7 +282,7 @@ class MockNetworkTransaction
   int test_mode_;
   RequestPriority priority_;
   MockTransactionReadHandler read_handler_;
-  CreateHelper* websocket_handshake_stream_create_helper_;
+  raw_ptr<CreateHelper> websocket_handshake_stream_create_helper_;
   BeforeNetworkStartCallback before_network_start_callback_;
   ConnectedCallback connected_callback_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
@@ -364,7 +361,7 @@ class MockNetworkLayer : public HttpTransactionFactory,
 
   // By default clock_ is NULL but it can be set to a custom clock by test
   // frameworks using SetClock.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   base::WeakPtr<MockNetworkTransaction> last_transaction_;
 };

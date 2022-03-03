@@ -8,8 +8,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
@@ -72,6 +74,14 @@ bool ShouldAlignCaretRight(ETextAlign text_align, TextDirection direction) {
   return false;
 }
 
+LayoutUnit ClampAndRound(LayoutUnit value, LayoutUnit min, LayoutUnit max) {
+  LayoutUnit min_ceil = LayoutUnit(min.Ceil());
+  LayoutUnit max_floor = LayoutUnit(max.Floor());
+  if (min_ceil >= max_floor)
+    return max_floor;
+  return LayoutUnit(ClampTo<LayoutUnit>(value, min_ceil, max_floor).Round());
+}
+
 PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
                                                unsigned offset) {
   DCHECK(cursor.Current().IsText());
@@ -89,7 +99,7 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
                                           : cursor.Current().Size().width;
   LayoutUnit caret_top;
 
-  LayoutUnit caret_left = cursor.InlinePositionForOffset(offset);
+  LayoutUnit caret_left = cursor.CaretInlinePositionForOffset(offset);
   if (!cursor.Current().IsLineBreak())
     caret_left -= caret_width / 2;
 
@@ -101,6 +111,12 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
   // Adjust the location to be relative to the inline formatting context.
   PhysicalOffset caret_location = PhysicalOffset(caret_left, caret_top) +
                                   cursor.Current().OffsetInContainerFragment();
+  const auto* const text_combine = DynamicTo<LayoutNGTextCombine>(
+      cursor.Current().GetLayoutObject()->Parent());
+  if (UNLIKELY(text_combine)) {
+    caret_location =
+        text_combine->AdjustOffsetForLocalCaretRect(caret_location);
+  }
   const PhysicalSize caret_size(caret_width, caret_height);
 
   const NGPhysicalBoxFragment& fragment = cursor.ContainerFragment();
@@ -125,27 +141,23 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
   if (is_horizontal) {
     if (should_align_caret_right) {
       const LayoutUnit left_edge = std::min(LayoutUnit(), line_box_rect.X());
-      caret_location.left = std::max(caret_location.left, left_edge);
+      const LayoutUnit right_limit = line_box_rect.Right() - caret_width;
       caret_location.left =
-          std::min(caret_location.left, line_box_rect.Right() - caret_width);
+          ClampAndRound(caret_location.left, left_edge, right_limit);
     } else {
-      const LayoutUnit right_edge =
-          std::max(fragment.Size().width, line_box_rect.Right());
+      const LayoutUnit right_limit =
+          std::max(fragment.Size().width, line_box_rect.Right()) - caret_width;
       caret_location.left =
-          std::min(caret_location.left, right_edge - caret_width);
-      caret_location.left = std::max(caret_location.left, line_box_rect.X());
+          ClampAndRound(caret_location.left, line_box_rect.X(), right_limit);
     }
-    caret_location.left = LayoutUnit(caret_location.left.Round());
     return PhysicalRect(caret_location, caret_size);
   }
 
   // Similar adjustment and rounding for vertical text.
   const LayoutUnit min_y = std::min(LayoutUnit(), line_box_offset.top);
-  caret_location.top = std::max(caret_location.top, min_y);
-  const LayoutUnit max_y =
-      std::max(fragment.Size().height, line_box_rect.Bottom());
-  caret_location.top = std::min(caret_location.top, max_y - caret_height);
-  caret_location.top = LayoutUnit(caret_location.top.Round());
+  const LayoutUnit bottom_limit =
+      std::max(fragment.Size().height, line_box_rect.Bottom()) - caret_height;
+  caret_location.top = ClampAndRound(caret_location.top, min_y, bottom_limit);
   return PhysicalRect(caret_location, caret_size);
 }
 

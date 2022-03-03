@@ -70,7 +70,7 @@ For the full arguments list see the
 
 #### Using the Recording page of Perfetto UI
 
-You can also use the [Perfetto UI](https://ui.perfetto.dev/#!/record?p=memory)
+You can also use the [Perfetto UI](https://ui.perfetto.dev/#!/record/memory)
 to record heapprofd profiles. Tick "Heap profiling" in the trace configuration,
 enter the processes you want to target, click "Add Device" to pair your phone,
 and record profiles straight from your browser. This is also possible on
@@ -116,6 +116,8 @@ probability of being selected as a sample, and the corresponding callstack
 gets attributed the complete n bytes. For more accuracy, allocations larger than
 the sampling interval bypass the sampling logic and are recorded with their true
 size.
+See the [heapprofd Sampling](/docs/design-docs/heapprofd-sampling) document for
+details.
 
 ## Startup profiling
 
@@ -564,9 +566,12 @@ subject to change**.
 
 ```sql
 select name, map_name, cumulative_size
-       from experimental_flamegraph(8300973884377,1,'native')
+       from experimental_flamegraph
+       where ts = 8300973884377
+            and upid = 1
+            and profile_type = 'native'
        order by abs(cumulative_size) desc;
-``` 
+```
 
 | name | map_name | cumulative_size |
 |------|----------|----------------|

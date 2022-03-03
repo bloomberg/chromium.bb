@@ -14,9 +14,7 @@ class QUIC_NO_EXPORT QuicSpdyServerStreamBase : public QuicSpdyStream {
   QuicSpdyServerStreamBase(QuicStreamId id,
                            QuicSpdySession* session,
                            StreamType type);
-  QuicSpdyServerStreamBase(PendingStream* pending,
-                           QuicSpdySession* session,
-                           StreamType type);
+  QuicSpdyServerStreamBase(PendingStream* pending, QuicSpdySession* session);
   QuicSpdyServerStreamBase(const QuicSpdyServerStreamBase&) = delete;
   QuicSpdyServerStreamBase& operator=(const QuicSpdyServerStreamBase&) = delete;
 
@@ -24,6 +22,9 @@ class QUIC_NO_EXPORT QuicSpdyServerStreamBase : public QuicSpdyStream {
   // when the stream has not received all the data.
   void CloseWriteSide() override;
   void StopReading() override;
+
+ protected:
+  bool AreHeadersValid(const QuicHeaderList& header_list) const override;
 };
 
 }  // namespace quic

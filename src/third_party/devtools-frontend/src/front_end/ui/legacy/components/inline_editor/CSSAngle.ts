@@ -4,9 +4,11 @@
 
 import * as ComponentHelpers from '../../../components/helpers/helpers.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
+import cssAngleStyles from './cssAngle.css.js';
 
 import type {Angle} from './CSSAngleUtils.js';
 import {AngleUnit, convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit} from './CSSAngleUtils.js';
+import {ValueChangedEvent} from './InlineEditorUtils.js';
 
 import type {CSSAngleEditorData} from './CSSAngleEditor.js';
 import {CSSAngleEditor} from './CSSAngleEditor.js';
@@ -19,28 +21,21 @@ const styleMap = LitHtml.Directives.styleMap;
 const ContextAwareProperties = new Set(['color', 'background', 'background-color']);
 
 export class PopoverToggledEvent extends Event {
+  static readonly eventName = 'popovertoggled';
   data: {open: boolean};
 
   constructor(open: boolean) {
-    super('popovertoggled', {});
+    super(PopoverToggledEvent.eventName, {});
     this.data = {open};
   }
 }
 
-export class ValueChangedEvent extends Event {
-  data: {value: string};
-
-  constructor(value: string) {
-    super('valuechanged', {});
-    this.data = {value};
-  }
-}
-
 export class UnitChangedEvent extends Event {
+  static readonly eventName = 'unitchanged';
   data: {value: string};
 
   constructor(value: string) {
-    super('unitchanged', {});
+    super(UnitChangedEvent.eventName, {});
     this.data = {value};
   }
 }
@@ -58,6 +53,7 @@ const DefaultAngle = {
 };
 
 export class CSSAngle extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-css-angle`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private angle: Angle = DefaultAngle;
   private displayedAngle: Angle = DefaultAngle;
@@ -71,6 +67,10 @@ export class CSSAngle extends HTMLElement {
   private popoverStyleLeft = '';
   private onMinifyingAction = this.minify.bind(this);
   private onAngleUpdate = this.updateAngle.bind(this);
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [cssAngleStyles];
+  }
 
   set data(data: CSSAngleData) {
     const parsedResult = parseText(data.angleText);
@@ -213,28 +213,6 @@ export class CSSAngle extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
-      <style>
-        .css-angle {
-          display: inline-block;
-          position: relative;
-          outline: none;
-        }
-
-        devtools-css-angle-swatch {
-          display: inline-block;
-          margin-right: 2px;
-          user-select: none;
-        }
-
-        devtools-css-angle-editor {
-          --dial-color: #a3a3a3;
-          --border-color: var(--color-background-elevation-1);
-
-          position: fixed;
-          z-index: 2;
-        }
-      </style>
-
       <div class="css-angle" @keydown=${this.onKeydown} tabindex="-1">
         <div class="preview">
           <${CSSAngleSwatch.litTagName}
@@ -244,8 +222,7 @@ export class CSSAngle extends HTMLElement {
             .data=${{
               angle: this.angle,
             } as CSSAngleSwatchData}>
-          </${CSSAngleSwatch.litTagName}><slot></slot>
-        </div>
+          </${CSSAngleSwatch.litTagName}><slot></slot></div>
         ${this.popoverOpen ? this.renderPopover() : null}
       </div>
     `, this.shadow, {

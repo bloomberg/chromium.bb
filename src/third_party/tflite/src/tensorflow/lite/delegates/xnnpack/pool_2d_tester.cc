@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
+#include "tensorflow/lite/schema/schema_conversion_utils.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
 
@@ -43,15 +44,19 @@ void Pool2DTester::Test(tflite::BuiltinOperator pool_op,
   const tflite::Model* model = tflite::GetModel(buffer.data());
 
   std::unique_ptr<tflite::Interpreter> delegate_interpreter;
-  ASSERT_EQ(tflite::InterpreterBuilder(
-                model, tflite::ops::builtin::BuiltinOpResolver())(
-                &delegate_interpreter),
-            kTfLiteOk);
+  ASSERT_EQ(
+      tflite::InterpreterBuilder(
+          model,
+          tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates())(
+          &delegate_interpreter),
+      kTfLiteOk);
   std::unique_ptr<tflite::Interpreter> default_interpreter;
-  ASSERT_EQ(tflite::InterpreterBuilder(
-                model, tflite::ops::builtin::BuiltinOpResolver())(
-                &default_interpreter),
-            kTfLiteOk);
+  ASSERT_EQ(
+      tflite::InterpreterBuilder(
+          model,
+          tflite::ops::builtin::BuiltinOpResolverWithoutDefaultDelegates())(
+          &default_interpreter),
+      kTfLiteOk);
 
   ASSERT_TRUE(delegate_interpreter);
   ASSERT_TRUE(default_interpreter);
@@ -67,8 +72,7 @@ void Pool2DTester::Test(tflite::BuiltinOperator pool_op,
 
   ASSERT_EQ(delegate_interpreter->ModifyGraphWithDelegate(delegate), kTfLiteOk);
 
-  float* default_input_data = default_interpreter->typed_tensor<float>(
-      default_interpreter->inputs()[0]);
+  float* default_input_data = default_interpreter->typed_input_tensor<float>(0);
   for (int32_t i = 0; i < BatchSize(); i++) {
     for (int32_t c = 0; c < Channels(); c++) {
       // Use the same range of all-positive or all-negative values to generate
@@ -90,8 +94,8 @@ void Pool2DTester::Test(tflite::BuiltinOperator pool_op,
     }
   }
 
-  float* xnnpack_input_data = delegate_interpreter->typed_tensor<float>(
-      delegate_interpreter->inputs()[0]);
+  float* xnnpack_input_data =
+      delegate_interpreter->typed_input_tensor<float>(0);
   std::copy(default_input_data,
             default_input_data +
                 BatchSize() * InputHeight() * InputWidth() * Channels(),
@@ -100,10 +104,10 @@ void Pool2DTester::Test(tflite::BuiltinOperator pool_op,
   ASSERT_EQ(default_interpreter->Invoke(), kTfLiteOk);
   ASSERT_EQ(delegate_interpreter->Invoke(), kTfLiteOk);
 
-  float* default_output_data = default_interpreter->typed_tensor<float>(
-      default_interpreter->outputs()[0]);
-  float* xnnpack_output_data = delegate_interpreter->typed_tensor<float>(
-      delegate_interpreter->outputs()[0]);
+  float* default_output_data =
+      default_interpreter->typed_output_tensor<float>(0);
+  float* xnnpack_output_data =
+      delegate_interpreter->typed_output_tensor<float>(0);
 
   for (int32_t i = 0; i < BatchSize(); i++) {
     for (int32_t y = 0; y < OutputHeight(); y++) {

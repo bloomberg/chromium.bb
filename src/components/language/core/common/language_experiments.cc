@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,12 +15,14 @@
 
 namespace language {
 // Features:
-const base::Feature kUseHeuristicLanguageModel{
-    "UseHeuristicLanguageModel", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kExplicitLanguageAsk{"ExplicitLanguageAsk",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAppLanguagePrompt{"AppLanguagePrompt",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kForceAppLanguagePrompt{"ForceAppLanguagePrompt",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kUseFluentLanguageModel {
   "UseFluentLanguageModel",
 #if defined(OS_IOS)
@@ -41,17 +44,19 @@ const base::Feature kTranslateAssistContent{"TranslateAssistContent",
 const base::Feature kTranslateIntent{"TranslateIntent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDetectedSourceLanguageOption{
-    "DetectedSourceLanguageOption", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DetectedSourceLanguageOption", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kContentLanguagesInLanguagePicker{
     "ContentLanguagesInLanguagePicker", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseULPLanguagesInChrome{"UseULPLanguagesInChrome",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";
 const char kOverrideModelKey[] = "override_model";
 const char kEnforceRankerKey[] = "enforce_ranker";
-const char kOverrideModelHeuristicValue[] = "heuristic";
 const char kOverrideModelGeoValue[] = "geo";
 const char kOverrideModelDefaultValue[] = "default";
+const char kContentLanguagesDisableObserversParam[] = "disable_observers";
 
 OverrideLanguageModel GetOverrideLanguageModel() {
   std::map<std::string, std::string> params;
@@ -62,12 +67,6 @@ OverrideLanguageModel GetOverrideLanguageModel() {
   // have concurrent overrides in experiment without having to partition them
   // explicitly. For example, we may have a FLUENT experiment globally and a
   // GEO experiment in India only.
-
-  if (base::FeatureList::IsEnabled(kUseHeuristicLanguageModel) ||
-      (should_override_model &&
-       params[kOverrideModelKey] == kOverrideModelHeuristicValue)) {
-    return OverrideLanguageModel::HEURISTIC;
-  }
 
   if (should_override_model &&
       params[kOverrideModelKey] == kOverrideModelGeoValue) {

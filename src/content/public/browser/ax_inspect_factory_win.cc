@@ -12,13 +12,14 @@
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_uia_win.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_win.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace content {
 
 // static
 std::unique_ptr<ui::AXTreeFormatter>
 AXInspectFactory::CreatePlatformFormatter() {
-  return CreateFormatter(kWinIA2);
+  return CreateFormatter(ui::AXApiType::kWinIA2);
 }
 
 // static
@@ -26,19 +27,25 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
-  return AXInspectFactory::CreateRecorder(kWinIA2, manager, pid, selector);
+  return AXInspectFactory::CreateRecorder(ui::AXApiType::kWinIA2, manager, pid,
+                                          selector);
 }
 
 // static
 std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
-    AXInspectFactory::Type type) {
+    ui::AXApiType::Type type) {
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
+
   switch (type) {
-    case kBlink:
+    case ui::AXApiType::kBlink:
       return std::make_unique<AccessibilityTreeFormatterBlink>();
-    case kWinIA2:
+    case ui::AXApiType::kWinIA2:
       base::win::AssertComInitialized();
       return std::make_unique<AccessibilityTreeFormatterWin>();
-    case kWinUIA:
+    case ui::AXApiType::kWinUIA:
       base::win::AssertComInitialized();
       return std::make_unique<AccessibilityTreeFormatterUia>();
     default:
@@ -49,20 +56,25 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
 
 // static
 std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
-    AXInspectFactory::Type type,
+    ui::AXApiType::Type type,
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
+
   if (!selector.pattern.empty()) {
     LOG(FATAL) << "Recording accessibility events from an application name "
                   "match pattern not supported on this platform yet.";
   }
 
   switch (type) {
-    case kWinIA2:
+    case ui::AXApiType::kWinIA2:
       return std::make_unique<AccessibilityEventRecorderWin>(manager, pid,
                                                              selector);
-    case kWinUIA:
+    case ui::AXApiType::kWinUIA:
       return std::make_unique<AccessibilityEventRecorderUia>(manager, pid,
                                                              selector.pattern);
     default:

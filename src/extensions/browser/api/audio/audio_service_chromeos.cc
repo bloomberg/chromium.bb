@@ -11,7 +11,6 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/callback.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,6 +75,10 @@ class AudioServiceImpl : public AudioService,
                          public CrasAudioHandler::AudioObserver {
  public:
   explicit AudioServiceImpl(AudioDeviceIdCalculator* id_calculator);
+
+  AudioServiceImpl(const AudioServiceImpl&) = delete;
+  AudioServiceImpl& operator=(const AudioServiceImpl&) = delete;
+
   ~AudioServiceImpl() override;
 
   // Called by listeners to this service to add/remove themselves as observers.
@@ -129,8 +132,6 @@ class AudioServiceImpl : public AudioService,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<AudioServiceImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioServiceImpl);
 };
 
 AudioServiceImpl::AudioServiceImpl(AudioDeviceIdCalculator* id_calculator)

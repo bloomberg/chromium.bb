@@ -12,7 +12,7 @@ import {Module} from './module_descriptor.js';
 
 /** @fileoverview Element that implements the common module UI. */
 
-class ModuleWrapperElement extends PolymerElement {
+export class ModuleWrapperElement extends PolymerElement {
   static get is() {
     return 'ntp-module-wrapper';
   }
@@ -56,6 +56,7 @@ class ModuleWrapperElement extends PolymerElement {
         recordLoadDuration(
             `NewTabPage.Modules.Impression.${this.module.descriptor.id}`, time);
         this.dispatchEvent(new Event('detect-impression'));
+        this.module.element.dispatchEvent(new Event('detect-impression'));
       }
     }, {threshold: 1.0});
 

@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_region.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -495,7 +495,7 @@ bool VTTParser::CollectTimeStamp(const String& line, double& time_stamp) {
 }
 
 static String SerializeTimeStamp(double time_stamp) {
-  uint64_t value = clampTo<uint64_t>(time_stamp * 1000);
+  uint64_t value = ClampTo<uint64_t>(time_stamp * 1000);
   unsigned milliseconds = value % 1000;
   value /= 1000;
   unsigned seconds = value % 60;

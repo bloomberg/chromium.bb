@@ -14,7 +14,6 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/dev_ui_components_resources.h"
@@ -43,6 +42,11 @@ class ChromeNTPTilesInternalsMessageHandlerClient
       favicon::FaviconService* favicon_service)
       : handler_(favicon_service) {}
 
+  ChromeNTPTilesInternalsMessageHandlerClient(
+      const ChromeNTPTilesInternalsMessageHandlerClient&) = delete;
+  ChromeNTPTilesInternalsMessageHandlerClient& operator=(
+      const ChromeNTPTilesInternalsMessageHandlerClient&) = delete;
+
  private:
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
@@ -54,6 +58,10 @@ class ChromeNTPTilesInternalsMessageHandlerClient
   PrefService* GetPrefs() override;
   void RegisterMessageCallback(
       const std::string& message,
+      base::RepeatingCallback<void(base::Value::ConstListView)> callback)
+      override;
+  void RegisterDeprecatedMessageCallback(
+      const std::string& message,
       const base::RepeatingCallback<void(const base::ListValue*)>& callback)
       override;
   void CallJavascriptFunctionVector(
@@ -61,8 +69,6 @@ class ChromeNTPTilesInternalsMessageHandlerClient
       const std::vector<const base::Value*>& values) override;
 
   ntp_tiles::NTPTilesInternalsMessageHandler handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeNTPTilesInternalsMessageHandlerClient);
 };
 
 void ChromeNTPTilesInternalsMessageHandlerClient::RegisterMessages() {
@@ -71,15 +77,13 @@ void ChromeNTPTilesInternalsMessageHandlerClient::RegisterMessages() {
 
 bool ChromeNTPTilesInternalsMessageHandlerClient::SupportsNTPTiles() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  return !(profile->IsGuestSession() || profile->IsEphemeralGuestProfile() ||
-           profile->IsOffTheRecord());
+  return !(profile->IsGuestSession() || profile->IsOffTheRecord());
 }
 
 bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(
     ntp_tiles::TileSource source) {
   switch (source) {
     case ntp_tiles::TileSource::TOP_SITES:
-    case ntp_tiles::TileSource::SUGGESTIONS_SERVICE:
     case ntp_tiles::TileSource::ALLOWLIST:
     case ntp_tiles::TileSource::HOMEPAGE:
       return true;
@@ -92,7 +96,6 @@ bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(
       return false;
 #endif
     case ntp_tiles::TileSource::CUSTOM_LINKS:
-    case ntp_tiles::TileSource::REPEATABLE_QUERIES_SERVICE:
 #if defined(OS_ANDROID)
       return false;
 #else
@@ -115,8 +118,15 @@ PrefService* ChromeNTPTilesInternalsMessageHandlerClient::GetPrefs() {
 
 void ChromeNTPTilesInternalsMessageHandlerClient::RegisterMessageCallback(
     const std::string& message,
-    const base::RepeatingCallback<void(const base::ListValue*)>& callback) {
-  web_ui()->RegisterMessageCallback(message, callback);
+    base::RepeatingCallback<void(base::Value::ConstListView)> callback) {
+  web_ui()->RegisterMessageCallback(message, std::move(callback));
+}
+
+void ChromeNTPTilesInternalsMessageHandlerClient::
+    RegisterDeprecatedMessageCallback(
+        const std::string& message,
+        const base::RepeatingCallback<void(const base::ListValue*)>& callback) {
+  web_ui()->RegisterDeprecatedMessageCallback(message, callback);
 }
 
 void ChromeNTPTilesInternalsMessageHandlerClient::CallJavascriptFunctionVector(

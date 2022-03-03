@@ -31,13 +31,18 @@ struct Allocator {
 };
 
 struct Node : public Castable<Node, Cloneable> {
-  Node(Allocator* alloc, Symbol n) : allocator(alloc), name(n) {}
+  Node(Allocator* alloc,
+       Symbol n,
+       const Node* node_a = nullptr,
+       const Node* node_b = nullptr,
+       const Node* node_c = nullptr)
+      : allocator(alloc), name(n), a(node_a), b(node_b), c(node_c) {}
   Allocator* const allocator;
   Symbol name;
-  Node* a = nullptr;
-  Node* b = nullptr;
-  Node* c = nullptr;
-  std::vector<Node*> vec;
+  const Node* a = nullptr;
+  const Node* b = nullptr;
+  const Node* c = nullptr;
+  std::vector<const Node*> vec;
 
   Node* Clone(CloneContext* ctx) const override {
     auto* out = allocator->Create<Node>(ctx->Clone(name));
@@ -50,7 +55,12 @@ struct Node : public Castable<Node, Cloneable> {
 };
 
 struct Replaceable : public Castable<Replaceable, Node> {
-  Replaceable(Allocator* alloc, Symbol n) : Base(alloc, n) {}
+  Replaceable(Allocator* alloc,
+              Symbol n,
+              const Node* node_a = nullptr,
+              const Node* node_b = nullptr,
+              const Node* node_c = nullptr)
+      : Base(alloc, n, node_a, node_b, node_c) {}
 };
 
 struct Replacement : public Castable<Replacement, Replaceable> {
@@ -71,8 +81,8 @@ struct ProgramNode : public Castable<ProgramNode, Cloneable> {
       : allocator(alloc), program_id(id), cloned_program_id(cloned_id) {}
 
   Allocator* const allocator;
-  ProgramID const program_id;
-  ProgramID const cloned_program_id;
+  const ProgramID program_id;
+  const ProgramID cloned_program_id;
 
   ProgramNode* Clone(CloneContext*) const override {
     return allocator->Create<ProgramNode>(cloned_program_id, cloned_program_id);
@@ -86,16 +96,19 @@ ProgramID ProgramIDOf(const ProgramNode* node) {
 using CloneContextNodeTest = ::testing::Test;
 
 TEST_F(CloneContextNodeTest, Clone) {
-  Allocator a;
+  Allocator alloc;
 
   ProgramBuilder builder;
-  auto* original_root = a.Create<Node>(builder.Symbols().New("root"));
-  original_root->a = a.Create<Node>(builder.Symbols().New("a"));
-  original_root->a->b = a.Create<Node>(builder.Symbols().New("a->b"));
-  original_root->b = a.Create<Node>(builder.Symbols().New("b"));
-  original_root->b->a = original_root->a;  // Aliased
-  original_root->b->b = a.Create<Node>(builder.Symbols().New("b->b"));
-  original_root->c = original_root->b;  // Aliased
+  Node* original_root;
+  {
+    auto* a_b = alloc.Create<Node>(builder.Symbols().New("a->b"));
+    auto* a = alloc.Create<Node>(builder.Symbols().New("a"), nullptr, a_b);
+    auto* b_a = a;  // Aliased
+    auto* b_b = alloc.Create<Node>(builder.Symbols().New("b->b"));
+    auto* b = alloc.Create<Node>(builder.Symbols().New("b"), b_a, b_b);
+    auto* c = b;  // Aliased
+    original_root = alloc.Create<Node>(builder.Symbols().New("root"), a, b, c);
+  }
   Program original(std::move(builder));
 
   //                          root
@@ -142,15 +155,19 @@ TEST_F(CloneContextNodeTest, Clone) {
 }
 
 TEST_F(CloneContextNodeTest, CloneWithReplaceAll_Cloneable) {
-  Allocator a;
+  Allocator alloc;
 
   ProgramBuilder builder;
-  auto* original_root = a.Create<Node>(builder.Symbols().New("root"));
-  original_root->a = a.Create<Node>(builder.Symbols().New("a"));
-  original_root->a->b = a.Create<Replaceable>(builder.Symbols().New("a->b"));
-  original_root->b = a.Create<Replaceable>(builder.Symbols().New("b"));
-  original_root->b->a = original_root->a;  // Aliased
-  original_root->c = original_root->b;     // Aliased
+  Node* original_root;
+  {
+    auto* a_b = alloc.Create<Replaceable>(builder.Symbols().New("a->b"));
+    auto* a = alloc.Create<Node>(builder.Symbols().New("a"), nullptr, a_b);
+    auto* b_a = a;  // Aliased
+    auto* b =
+        alloc.Create<Replaceable>(builder.Symbols().New("b"), b_a, nullptr);
+    auto* c = b;  // Aliased
+    original_root = alloc.Create<Node>(builder.Symbols().New("root"), a, b, c);
+  }
   Program original(std::move(builder));
 
   //                          root
@@ -167,13 +184,13 @@ TEST_F(CloneContextNodeTest, CloneWithReplaceAll_Cloneable) {
   ProgramBuilder cloned;
 
   CloneContext ctx(&cloned, &original);
-  ctx.ReplaceAll([&](Replaceable* in) {
+  ctx.ReplaceAll([&](const Replaceable* in) {
     auto out_name = cloned.Symbols().Register(
         "replacement:" + original.Symbols().NameFor(in->name));
     auto b_name = cloned.Symbols().Register(
         "replacement-child:" + original.Symbols().NameFor(in->name));
-    auto* out = a.Create<Replacement>(out_name);
-    out->b = a.Create<Node>(b_name);
+    auto* out = alloc.Create<Replacement>(out_name);
+    out->b = alloc.Create<Node>(b_name);
     out->c = ctx.Clone(in->a);
     return out;
   });
@@ -235,16 +252,19 @@ TEST_F(CloneContextNodeTest, CloneWithReplaceAll_Cloneable) {
 }
 
 TEST_F(CloneContextNodeTest, CloneWithReplaceAll_Symbols) {
-  Allocator a;
+  Allocator alloc;
 
   ProgramBuilder builder;
-  auto* original_root = a.Create<Node>(builder.Symbols().New("root"));
-  original_root->a = a.Create<Node>(builder.Symbols().New("a"));
-  original_root->a->b = a.Create<Node>(builder.Symbols().New("a->b"));
-  original_root->b = a.Create<Node>(builder.Symbols().New("b"));
-  original_root->b->a = original_root->a;  // Aliased
-  original_root->b->b = a.Create<Node>(builder.Symbols().New("b->b"));
-  original_root->c = original_root->b;  // Aliased
+  Node* original_root;
+  {
+    auto* a_b = alloc.Create<Node>(builder.Symbols().New("a->b"));
+    auto* a = alloc.Create<Node>(builder.Symbols().New("a"), nullptr, a_b);
+    auto* b_a = a;  // Aliased
+    auto* b_b = alloc.Create<Node>(builder.Symbols().New("b->b"));
+    auto* b = alloc.Create<Node>(builder.Symbols().New("b"), b_a, b_b);
+    auto* c = b;  // Aliased
+    original_root = alloc.Create<Node>(builder.Symbols().New("root"), a, b, c);
+  }
   Program original(std::move(builder));
 
   //                          root
@@ -282,7 +302,7 @@ TEST_F(CloneContextNodeTest, CloneWithoutTransform) {
 
   ProgramBuilder cloned;
   CloneContext ctx(&cloned, &original);
-  ctx.ReplaceAll([&](Node*) {
+  ctx.ReplaceAll([&](const Node*) {
     return a.Create<Replacement>(builder.Symbols().New("<unexpected-node>"));
   });
 
@@ -291,7 +311,7 @@ TEST_F(CloneContextNodeTest, CloneWithoutTransform) {
   EXPECT_EQ(cloned_node->name, cloned.Symbols().Get("root"));
 }
 
-TEST_F(CloneContextNodeTest, CloneWithReplace) {
+TEST_F(CloneContextNodeTest, CloneWithReplacePointer) {
   Allocator a;
 
   ProgramBuilder builder;
@@ -312,6 +332,39 @@ TEST_F(CloneContextNodeTest, CloneWithReplace) {
   auto* cloned_root = CloneContext(&cloned, &original)
                           .Replace(original_root->b, replacement)
                           .Clone(original_root);
+
+  EXPECT_NE(cloned_root->a, replacement);
+  EXPECT_EQ(cloned_root->b, replacement);
+  EXPECT_NE(cloned_root->c, replacement);
+
+  EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
+  EXPECT_EQ(cloned_root->a->name, cloned.Symbols().Get("a"));
+  EXPECT_EQ(cloned_root->b->name, cloned.Symbols().Get("replacement"));
+  EXPECT_EQ(cloned_root->c->name, cloned.Symbols().Get("c"));
+}
+
+TEST_F(CloneContextNodeTest, CloneWithReplaceFunction) {
+  Allocator a;
+
+  ProgramBuilder builder;
+  auto* original_root = a.Create<Node>(builder.Symbols().New("root"));
+  original_root->a = a.Create<Node>(builder.Symbols().New("a"));
+  original_root->b = a.Create<Node>(builder.Symbols().New("b"));
+  original_root->c = a.Create<Node>(builder.Symbols().New("c"));
+  Program original(std::move(builder));
+
+  //                          root
+  //        ╭──────────────────┼──────────────────╮
+  //       (a)                (b)                (c)
+  //                        Replaced
+
+  ProgramBuilder cloned;
+  auto* replacement = a.Create<Node>(cloned.Symbols().New("replacement"));
+
+  auto* cloned_root =
+      CloneContext(&cloned, &original)
+          .Replace(original_root->b, [=] { return replacement; })
+          .Clone(original_root);
 
   EXPECT_NE(cloned_root->a, replacement);
   EXPECT_EQ(cloned_root->b, replacement);
@@ -347,6 +400,131 @@ TEST_F(CloneContextNodeTest, CloneWithRemove) {
   EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
   EXPECT_EQ(cloned_root->vec[0]->name, cloned.Symbols().Get("a"));
   EXPECT_EQ(cloned_root->vec[1]->name, cloned.Symbols().Get("c"));
+}
+
+TEST_F(CloneContextNodeTest, CloneWithInsertFront) {
+  Allocator a;
+
+  ProgramBuilder builder;
+  auto* original_root = a.Create<Node>(builder.Symbols().Register("root"));
+  original_root->a = a.Create<Node>(builder.Symbols().Register("a"));
+  original_root->b = a.Create<Node>(builder.Symbols().Register("b"));
+  original_root->c = a.Create<Node>(builder.Symbols().Register("c"));
+  original_root->vec = {original_root->a, original_root->b, original_root->c};
+  Program original(std::move(builder));
+
+  ProgramBuilder cloned;
+  auto* insertion = a.Create<Node>(cloned.Symbols().New("insertion"));
+
+  auto* cloned_root = CloneContext(&cloned, &original)
+                          .InsertFront(original_root->vec, insertion)
+                          .Clone(original_root);
+
+  EXPECT_EQ(cloned_root->vec.size(), 4u);
+
+  EXPECT_NE(cloned_root->vec[0], cloned_root->a);
+  EXPECT_NE(cloned_root->vec[1], cloned_root->b);
+  EXPECT_NE(cloned_root->vec[2], cloned_root->c);
+
+  EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
+  EXPECT_EQ(cloned_root->vec[0]->name, cloned.Symbols().Get("insertion"));
+  EXPECT_EQ(cloned_root->vec[1]->name, cloned.Symbols().Get("a"));
+  EXPECT_EQ(cloned_root->vec[2]->name, cloned.Symbols().Get("b"));
+  EXPECT_EQ(cloned_root->vec[3]->name, cloned.Symbols().Get("c"));
+}
+
+TEST_F(CloneContextNodeTest, CloneWithInsertFront_Empty) {
+  Allocator a;
+
+  ProgramBuilder builder;
+  auto* original_root = a.Create<Node>(builder.Symbols().Register("root"));
+  original_root->vec = {};
+  Program original(std::move(builder));
+
+  ProgramBuilder cloned;
+  auto* insertion = a.Create<Node>(cloned.Symbols().New("insertion"));
+
+  auto* cloned_root = CloneContext(&cloned, &original)
+                          .InsertFront(original_root->vec, insertion)
+                          .Clone(original_root);
+
+  EXPECT_EQ(cloned_root->vec.size(), 1u);
+
+  EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
+  EXPECT_EQ(cloned_root->vec[0]->name, cloned.Symbols().Get("insertion"));
+}
+
+TEST_F(CloneContextNodeTest, CloneWithInsertBack) {
+  Allocator a;
+
+  ProgramBuilder builder;
+  auto* original_root = a.Create<Node>(builder.Symbols().Register("root"));
+  original_root->a = a.Create<Node>(builder.Symbols().Register("a"));
+  original_root->b = a.Create<Node>(builder.Symbols().Register("b"));
+  original_root->c = a.Create<Node>(builder.Symbols().Register("c"));
+  original_root->vec = {original_root->a, original_root->b, original_root->c};
+  Program original(std::move(builder));
+
+  ProgramBuilder cloned;
+  auto* insertion = a.Create<Node>(cloned.Symbols().New("insertion"));
+
+  auto* cloned_root = CloneContext(&cloned, &original)
+                          .InsertBack(original_root->vec, insertion)
+                          .Clone(original_root);
+
+  EXPECT_EQ(cloned_root->vec.size(), 4u);
+
+  EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
+  EXPECT_EQ(cloned_root->vec[0]->name, cloned.Symbols().Get("a"));
+  EXPECT_EQ(cloned_root->vec[1]->name, cloned.Symbols().Get("b"));
+  EXPECT_EQ(cloned_root->vec[2]->name, cloned.Symbols().Get("c"));
+  EXPECT_EQ(cloned_root->vec[3]->name, cloned.Symbols().Get("insertion"));
+}
+
+TEST_F(CloneContextNodeTest, CloneWithInsertBack_Empty) {
+  Allocator a;
+
+  ProgramBuilder builder;
+  auto* original_root = a.Create<Node>(builder.Symbols().Register("root"));
+  original_root->vec = {};
+  Program original(std::move(builder));
+
+  ProgramBuilder cloned;
+  auto* insertion = a.Create<Node>(cloned.Symbols().New("insertion"));
+
+  auto* cloned_root = CloneContext(&cloned, &original)
+                          .InsertBack(original_root->vec, insertion)
+                          .Clone(original_root);
+
+  EXPECT_EQ(cloned_root->vec.size(), 1u);
+
+  EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
+  EXPECT_EQ(cloned_root->vec[0]->name, cloned.Symbols().Get("insertion"));
+}
+
+TEST_F(CloneContextNodeTest, CloneWithInsertFrontAndBack_Empty) {
+  Allocator a;
+
+  ProgramBuilder builder;
+  auto* original_root = a.Create<Node>(builder.Symbols().Register("root"));
+  original_root->vec = {};
+  Program original(std::move(builder));
+
+  ProgramBuilder cloned;
+  auto* insertion_front =
+      a.Create<Node>(cloned.Symbols().New("insertion_front"));
+  auto* insertion_back = a.Create<Node>(cloned.Symbols().New("insertion_back"));
+
+  auto* cloned_root = CloneContext(&cloned, &original)
+                          .InsertBack(original_root->vec, insertion_back)
+                          .InsertFront(original_root->vec, insertion_front)
+                          .Clone(original_root);
+
+  EXPECT_EQ(cloned_root->vec.size(), 2u);
+
+  EXPECT_EQ(cloned_root->name, cloned.Symbols().Get("root"));
+  EXPECT_EQ(cloned_root->vec[0]->name, cloned.Symbols().Get("insertion_front"));
+  EXPECT_EQ(cloned_root->vec[1]->name, cloned.Symbols().Get("insertion_back"));
 }
 
 TEST_F(CloneContextNodeTest, CloneWithInsertBefore) {
@@ -471,8 +649,8 @@ TEST_F(CloneContextNodeTest, CloneWithReplaceAll_SameTypeTwice) {
         ProgramBuilder cloned;
         Program original;
         CloneContext ctx(&cloned, &original);
-        ctx.ReplaceAll([](Node*) { return nullptr; });
-        ctx.ReplaceAll([](Node*) { return nullptr; });
+        ctx.ReplaceAll([](const Node*) { return nullptr; });
+        ctx.ReplaceAll([](const Node*) { return nullptr; });
       },
       "internal compiler error: ReplaceAll() called with a handler for type " +
           node_name + " that is already handled by a handler for type " +
@@ -488,8 +666,8 @@ TEST_F(CloneContextNodeTest, CloneWithReplaceAll_BaseThenDerived) {
         ProgramBuilder cloned;
         Program original;
         CloneContext ctx(&cloned, &original);
-        ctx.ReplaceAll([](Node*) { return nullptr; });
-        ctx.ReplaceAll([](Replaceable*) { return nullptr; });
+        ctx.ReplaceAll([](const Node*) { return nullptr; });
+        ctx.ReplaceAll([](const Replaceable*) { return nullptr; });
       },
       "internal compiler error: ReplaceAll() called with a handler for type " +
           replaceable_name + " that is already handled by a handler for type " +
@@ -505,15 +683,15 @@ TEST_F(CloneContextNodeTest, CloneWithReplaceAll_DerivedThenBase) {
         ProgramBuilder cloned;
         Program original;
         CloneContext ctx(&cloned, &original);
-        ctx.ReplaceAll([](Replaceable*) { return nullptr; });
-        ctx.ReplaceAll([](Node*) { return nullptr; });
+        ctx.ReplaceAll([](const Replaceable*) { return nullptr; });
+        ctx.ReplaceAll([](const Node*) { return nullptr; });
       },
       "internal compiler error: ReplaceAll() called with a handler for type " +
           node_name + " that is already handled by a handler for type " +
           replaceable_name);
 }
 
-TEST_F(CloneContextNodeTest, CloneWithReplace_WithNotANode) {
+TEST_F(CloneContextNodeTest, CloneWithReplacePointer_WithNotANode) {
   EXPECT_FATAL_FAILURE(
       {
         Allocator allocator;
@@ -541,6 +719,34 @@ TEST_F(CloneContextNodeTest, CloneWithReplace_WithNotANode) {
       "internal compiler error");
 }
 
+TEST_F(CloneContextNodeTest, CloneWithReplaceFunction_WithNotANode) {
+  EXPECT_FATAL_FAILURE(
+      {
+        Allocator allocator;
+        ProgramBuilder builder;
+        auto* original_root =
+            allocator.Create<Node>(builder.Symbols().New("root"));
+        original_root->a = allocator.Create<Node>(builder.Symbols().New("a"));
+        original_root->b = allocator.Create<Node>(builder.Symbols().New("b"));
+        original_root->c = allocator.Create<Node>(builder.Symbols().New("c"));
+        Program original(std::move(builder));
+
+        //                          root
+        //        ╭──────────────────┼──────────────────╮
+        //       (a)                (b)                (c)
+        //                        Replaced
+
+        ProgramBuilder cloned;
+        auto* replacement = allocator.Create<NotANode>();
+
+        CloneContext ctx(&cloned, &original);
+        ctx.Replace(original_root->b, [=] { return replacement; });
+
+        ctx.Clone(original_root);
+      },
+      "internal compiler error");
+}
+
 using CloneContextTest = ::testing::Test;
 
 TEST_F(CloneContextTest, CloneWithReplaceAll_SymbolsTwice) {
@@ -549,8 +755,8 @@ TEST_F(CloneContextTest, CloneWithReplaceAll_SymbolsTwice) {
         ProgramBuilder cloned;
         Program original;
         CloneContext ctx(&cloned, &original);
-        ctx.ReplaceAll([](Symbol s) { return s; });
-        ctx.ReplaceAll([](Symbol s) { return s; });
+        ctx.ReplaceAll([](const Symbol s) { return s; });
+        ctx.ReplaceAll([](const Symbol s) { return s; });
       },
       "internal compiler error: ReplaceAll(const SymbolTransform&) called "
       "multiple times on the same CloneContext");
@@ -658,7 +864,7 @@ TEST_F(CloneContextTest, ProgramIDs_Clone_ObjectNotOwnedBySrc) {
         Allocator allocator;
         ctx.Clone(allocator.Create<ProgramNode>(ProgramID::New(), dst.ID()));
       },
-      R"(internal compiler error: TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, a))");
+      R"(internal compiler error: TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, object))");
 }
 
 TEST_F(CloneContextTest, ProgramIDs_Clone_ObjectNotOwnedByDst) {
@@ -670,7 +876,7 @@ TEST_F(CloneContextTest, ProgramIDs_Clone_ObjectNotOwnedByDst) {
         Allocator allocator;
         ctx.Clone(allocator.Create<ProgramNode>(src.ID(), ProgramID::New()));
       },
-      R"(internal compiler error: TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(dst, out))");
+      R"(internal compiler error: TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, out))");
 }
 
 }  // namespace

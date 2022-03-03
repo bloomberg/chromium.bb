@@ -108,6 +108,18 @@ class GitWrapperTestCase(unittest.TestCase):
     self.assertEqual(mockCapture.call_count, 1)
 
   @mock.patch('scm.GIT.Capture')
+  @mock.patch('os.path.exists', lambda _: True)
+  def testGetRemoteHeadRefLocalUpdateHead(self, mockCapture):
+    mockCapture.side_effect = [
+        'refs/remotes/origin/master',  # first symbolic-ref call
+        'foo',  # set-head call
+        'refs/remotes/origin/main',  # second symbolic-ref call
+    ]
+    self.assertEqual('refs/remotes/origin/main',
+                     scm.GIT.GetRemoteHeadRef('foo', 'proto://url', 'origin'))
+    self.assertEqual(mockCapture.call_count, 3)
+
+  @mock.patch('scm.GIT.Capture')
   @mock.patch('os.path.exists', lambda _:True)
   def testGetRemoteHeadRefRemote(self, mockCapture):
     mockCapture.side_effect = [
@@ -250,18 +262,18 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     scm.GIT.SetBranchConfig(self.cwd, branch, 'remote')
 
   def testGetBranchRef(self):
-    self.assertEqual('refs/heads/master', scm.GIT.GetBranchRef(self.cwd))
+    self.assertEqual('refs/heads/main', scm.GIT.GetBranchRef(self.cwd))
     HEAD = scm.GIT.Capture(['rev-parse', 'HEAD'], cwd=self.cwd)
     scm.GIT.Capture(['checkout', HEAD], cwd=self.cwd)
     self.assertIsNone(scm.GIT.GetBranchRef(self.cwd))
-    scm.GIT.Capture(['checkout', 'master'], cwd=self.cwd)
+    scm.GIT.Capture(['checkout', 'main'], cwd=self.cwd)
 
   def testGetBranch(self):
-    self.assertEqual('master', scm.GIT.GetBranch(self.cwd))
+    self.assertEqual('main', scm.GIT.GetBranch(self.cwd))
     HEAD = scm.GIT.Capture(['rev-parse', 'HEAD'], cwd=self.cwd)
     scm.GIT.Capture(['checkout', HEAD], cwd=self.cwd)
     self.assertIsNone(scm.GIT.GetBranchRef(self.cwd))
-    scm.GIT.Capture(['checkout', 'master'], cwd=self.cwd)
+    scm.GIT.Capture(['checkout', 'main'], cwd=self.cwd)
 
 
 if __name__ == '__main__':

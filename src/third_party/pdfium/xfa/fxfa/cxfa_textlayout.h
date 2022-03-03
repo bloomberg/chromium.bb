@@ -12,9 +12,9 @@
 
 #include "core/fxcrt/css/cfx_css.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/widestring.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/garbage-collected.h"
@@ -62,7 +62,9 @@ class CXFA_TextLayout final : public cppgc::GarbageCollected<CXFA_TextLayout> {
   bool HasBlock() const { return m_bHasBlock; }
   void ClearBlocks() { m_Blocks.clear(); }
   void ResetHasBlock() { m_bHasBlock = false; }
-  const wchar_t* GetLinkURLAtPoint(const CFX_PointF& point);
+
+  // Returns empty string when no link is present.
+  WideString GetLinkURLAtPoint(const CFX_PointF& point);
 
  private:
   class TextPiece : public CFGAS_TextPiece {

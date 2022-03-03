@@ -84,7 +84,7 @@ js_library("file_metadata") {
   deps = [
     ":utils",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:util.m",
   ]
 }
@@ -95,7 +95,7 @@ js_library("sync_service") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr:ui.m",
-    "//ui/webui/resources/js/cr/ui:tabs.m",
+    "//ui/webui/resources/js/cr/ui:tabs",
   ]
 }
 

@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -54,6 +54,9 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/gurl.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 namespace net {
 namespace {
@@ -91,11 +94,11 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         session_(CreateNetworkSession()),
-        direct_transport_socket_params_(
-            new TransportSocketParams(HostPortPair("host", 443),
-                                      NetworkIsolationKey(),
-                                      SecureDnsPolicy::kAllow,
-                                      OnHostResolutionCallback())),
+        direct_transport_socket_params_(new TransportSocketParams(
+            url::SchemeHostPort(url::kHttpsScheme, "host", 443),
+            NetworkIsolationKey(),
+            SecureDnsPolicy::kAllow,
+            OnHostResolutionCallback())),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
                                       NetworkIsolationKey(),
@@ -142,13 +145,13 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
     const std::u16string kFoo(u"foo");
     const std::u16string kBar(u"bar");
     session_->http_auth_cache()->Add(
-        GURL("http://proxy:443/"), HttpAuth::AUTH_PROXY, "MyRealm1",
-        HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
+        url::SchemeHostPort(GURL("http://proxy:443/")), HttpAuth::AUTH_PROXY,
+        "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
         "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
   }
 
   HttpNetworkSession* CreateNetworkSession() {
-    HttpNetworkSession::Context session_context;
+    HttpNetworkSessionContext session_context;
     session_context.host_resolver = &host_resolver_;
     session_context.cert_verifier = &cert_verifier_;
     session_context.transport_security_state = &transport_security_state_;
@@ -160,13 +163,13 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
         http_auth_handler_factory_.get();
     session_context.http_server_properties = &http_server_properties_;
     session_context.quic_context = &quic_context_;
-    return new HttpNetworkSession(HttpNetworkSession::Params(),
-                                  session_context);
+    return new HttpNetworkSession(HttpNetworkSessionParams(), session_context);
   }
 
  protected:
   MockClientSocketFactory socket_factory_;
-  MockHostResolver host_resolver_;
+  MockHostResolver host_resolver_{/*default_result=*/MockHostResolverBase::
+                                      RuleResolver::GetLocalhostResult()};
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
@@ -210,7 +213,7 @@ TEST_F(SSLConnectJobTest, TCPFail) {
 }
 
 TEST_F(SSLConnectJobTest, TCPTimeout) {
-  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+  const base::TimeDelta kTinyTime = base::Microseconds(1);
 
   // Make request hang.
   host_resolver_.set_ondemand_mode(true);
@@ -232,7 +235,7 @@ TEST_F(SSLConnectJobTest, TCPTimeout) {
 }
 
 TEST_F(SSLConnectJobTest, SSLTimeoutSyncConnect) {
-  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+  const base::TimeDelta kTinyTime = base::Microseconds(1);
 
   // DNS lookup and transport connect complete synchronously, but SSL
   // negotiation hangs.
@@ -261,7 +264,7 @@ TEST_F(SSLConnectJobTest, SSLTimeoutSyncConnect) {
 }
 
 TEST_F(SSLConnectJobTest, SSLTimeoutAsyncTcpConnect) {
-  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+  const base::TimeDelta kTinyTime = base::Microseconds(1);
 
   // DNS lookup is asynchronous, and later SSL negotiation hangs.
   host_resolver_.set_ondemand_mode(true);
@@ -336,7 +339,7 @@ TEST_F(SSLConnectJobTest, BasicDirectAsync) {
   EXPECT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
   EXPECT_TRUE(host_resolver_.has_pending_requests());
   EXPECT_EQ(MEDIUM, host_resolver_.last_request_priority());
-  FastForwardBy(base::TimeDelta::FromSeconds(5));
+  FastForwardBy(base::Seconds(5));
 
   base::TimeTicks resolve_complete_time = base::TimeTicks::Now();
   host_resolver_.ResolveAllPending();
@@ -430,7 +433,8 @@ TEST_F(SSLConnectJobTest, SecureDnsPolicy) {
     TestConnectJobDelegate test_delegate;
     direct_transport_socket_params_ =
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair("host", 443), NetworkIsolationKey(), secure_dns_policy,
+            url::SchemeHostPort(url::kHttpsScheme, "host", 443),
+            NetworkIsolationKey(), secure_dns_policy,
             OnHostResolutionCallback());
     auto common_connect_job_params = session_->CreateCommonConnectJobParams();
     std::unique_ptr<ConnectJob> ssl_connect_job =
@@ -543,35 +547,6 @@ TEST_F(SSLConnectJobTest, DirectLegacyCryptoFallback) {
   }
 }
 
-// Test that the feature flag disables the legacy crypto fallback.
-TEST_F(SSLConnectJobTest, LegacyCryptoFallbackDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kTLSLegacyCryptoFallbackForMetrics);
-  for (Error error :
-       {ERR_CONNECTION_CLOSED, ERR_CONNECTION_RESET, ERR_SSL_PROTOCOL_ERROR,
-        ERR_SSL_VERSION_OR_CIPHER_MISMATCH}) {
-    SCOPED_TRACE(error);
-
-    StaticSocketDataProvider data;
-    socket_factory_.AddSocketDataProvider(&data);
-    SSLSocketDataProvider ssl(ASYNC, error);
-    socket_factory_.AddSSLSocketDataProvider(&ssl);
-    ssl.expected_disable_legacy_crypto = false;
-
-    TestConnectJobDelegate test_delegate;
-    std::unique_ptr<ConnectJob> ssl_connect_job =
-        CreateConnectJob(&test_delegate);
-
-    test_delegate.StartJobExpectingResult(ssl_connect_job.get(), error,
-                                          /*expect_sync_result=*/false);
-    ConnectionAttempts connection_attempts =
-        ssl_connect_job->GetConnectionAttempts();
-    ASSERT_EQ(1u, connection_attempts.size());
-    EXPECT_THAT(connection_attempts[0].result, test::IsError(error));
-  }
-}
-
 TEST_F(SSLConnectJobTest, LegacyCryptoFallbackHistograms) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 
@@ -597,8 +572,6 @@ TEST_F(SSLConnectJobTest, LegacyCryptoFallbackHistograms) {
 
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
   const uint16_t kModernCipher = 0xc02f;
-  // TLS_RSA_WITH_3DES_EDE_CBC_SHA
-  const uint16_t k3DESCipher = 0x000a;
 
   struct HistogramTest {
     SSLLegacyCryptoFallback expected;
@@ -616,16 +589,6 @@ TEST_F(SSLConnectJobTest, LegacyCryptoFallbackHistograms) {
        SSL_SIGN_RSA_PSS_RSAE_SHA256, sha1_leaf},
       {SSLLegacyCryptoFallback::kNoFallback, OK, kModernCipher,
        SSL_SIGN_RSA_PSS_RSAE_SHA256, ok_with_unused_sha1},
-
-      // Connections using 3DES map to kUsed3DES or kSentSHA1CertAndUsed3DES.
-      // Note our only supported 3DES cipher suite does not include a server
-      // signature, so |peer_signature_algorithm| would always be zero.
-      {SSLLegacyCryptoFallback::kUsed3DES, ERR_SSL_PROTOCOL_ERROR, k3DESCipher,
-       0, ok_cert},
-      {SSLLegacyCryptoFallback::kSentSHA1CertAndUsed3DES,
-       ERR_SSL_PROTOCOL_ERROR, k3DESCipher, 0, sha1_leaf},
-      {SSLLegacyCryptoFallback::kSentSHA1CertAndUsed3DES,
-       ERR_SSL_PROTOCOL_ERROR, k3DESCipher, 0, ok_with_unused_sha1},
 
       // Connections using SHA-1 map to kUsedSHA1 or kSentSHA1CertAndUsedSHA1.
       {SSLLegacyCryptoFallback::kUsedSHA1, ERR_SSL_PROTOCOL_ERROR,
@@ -760,13 +723,14 @@ TEST_F(SSLConnectJobTest, SOCKSHostResolutionFailure) {
 TEST_F(SSLConnectJobTest, SOCKSBasic) {
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);
-    const char kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's',
-                                   'o',  'c',  'k',  's',  'h',  'o',
-                                   's',  't',  0x01, 0xBB};
+    const uint8_t kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's',
+                                      'o',  'c',  'k',  's',  'h',  'o',
+                                      's',  't',  0x01, 0xBB};
 
     MockWrite writes[] = {
         MockWrite(io_mode, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
-        MockWrite(io_mode, kSOCKS5Request, base::size(kSOCKS5Request)),
+        MockWrite(io_mode, reinterpret_cast<const char*>(kSOCKS5Request),
+                  base::size(kSOCKS5Request)),
     };
 
     MockRead reads[] = {
@@ -794,12 +758,14 @@ TEST_F(SSLConnectJobTest, SOCKSBasic) {
 }
 
 TEST_F(SSLConnectJobTest, SOCKSHasEstablishedConnection) {
-  const char kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's', 'o',  'c',
-                                 'k',  's',  'h',  'o',  's',  't', 0x01, 0xBB};
+  const uint8_t kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's',
+                                    'o',  'c',  'k',  's',  'h',  'o',
+                                    's',  't',  0x01, 0xBB};
 
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength, 0),
-      MockWrite(SYNCHRONOUS, kSOCKS5Request, base::size(kSOCKS5Request), 3),
+      MockWrite(SYNCHRONOUS, reinterpret_cast<const char*>(kSOCKS5Request),
+                base::size(kSOCKS5Request), 3),
   };
 
   MockRead reads[] = {
@@ -954,7 +920,7 @@ TEST_F(SSLConnectJobTest, HttpProxyAuthChallenge) {
 
   // While waiting for auth credentials to be provided, the Job should not time
   // out.
-  FastForwardBy(base::TimeDelta::FromDays(1));
+  FastForwardBy(base::Days(1));
   test_delegate.WaitForAuthChallenge(1);
   EXPECT_FALSE(test_delegate.has_result());
 

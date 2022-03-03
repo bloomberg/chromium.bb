@@ -23,14 +23,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 project('dav1d', ['c'],
-    version: '0.9.0',
+    version: '0.9.2',
     default_options: ['c_std=c99',
                       'warning_level=2',
                       'buildtype=release',
                       'b_ndebug=if-release'],
     meson_version: '>= 0.49.0')
 
-dav1d_soname_version       = '5.1.0'
+dav1d_soname_version       = '6.0.0'
 dav1d_api_version_array    = dav1d_soname_version.split('.')
 dav1d_api_version_major    = dav1d_api_version_array[0]
 dav1d_api_version_minor    = dav1d_api_version_array[1]
@@ -173,21 +173,26 @@ libm_dependency = cc.find_library('m', required: false)
 
 # Header checks
 
-stdatomic_dependency = []
+stdatomic_dependencies = []
 if not cc.check_header('stdatomic.h')
     if cc.get_id() == 'msvc'
         # we have a custom replacement for MSVC
-        stdatomic_dependency = declare_dependency(
+        stdatomic_dependencies += declare_dependency(
             include_directories : include_directories('include/compat/msvc'),
         )
     elif cc.compiles('''int main() { int v = 0; return __atomic_fetch_add(&v, 1, __ATOMIC_SEQ_CST); }''',
                      name : 'GCC-style atomics', args : test_args)
-        stdatomic_dependency = declare_dependency(
+        stdatomic_dependencies += declare_dependency(
             include_directories : include_directories('include/compat/gcc'),
         )
     else
         error('Atomics not supported')
     endif
+endif
+
+if host_machine.cpu_family().startswith('wasm')
+    # enable atomics + bulk-memory features
+    stdatomic_dependencies += thread_dependency.partial_dependency(compile_args: true)
 endif
 
 if cc.check_header('unistd.h')
@@ -196,6 +201,11 @@ endif
 
 if cc.check_header('io.h')
     cdata.set('HAVE_IO_H', 1)
+endif
+
+if cc.check_header('pthread_np.h')
+    cdata.set('HAVE_PTHREAD_NP_H', 1)
+    test_args += '-DHAVE_PTHREAD_NP_H'
 endif
 
 
@@ -229,6 +239,16 @@ if (host_machine.cpu_family() == 'aarch64' or
     endif
 endif
 
+pthread_np_prefix = '''
+#include <pthread.h>
+#ifdef HAVE_PTHREAD_NP_H
+#include <pthread_np.h>
+#endif
+'''
+if cc.has_function('pthread_getaffinity_np', prefix : pthread_np_prefix, args : test_args, dependencies : thread_dependency)
+    cdata.set('HAVE_PTHREAD_GETAFFINITY_NP', 1)
+endif
+
 # Compiler flag tests
 
 if cc.has_argument('-fvisibility=hidden')
@@ -247,6 +267,7 @@ if cc.get_argument_syntax() != 'msvc'
       '-Wno-maybe-uninitialized',
       '-Wno-missing-field-initializers',
       '-Wno-unused-parameter',
+      '-Wstrict-prototypes',
       '-Werror=missing-prototypes',
       '-Wshorten-64-to-32',
     ]
@@ -369,11 +390,18 @@ if host_machine.cpu_family().startswith('x86')
     cdata_asm.set10('ARCH_X86_64', host_machine.cpu_family() == 'x86_64')
     cdata_asm.set10('ARCH_X86_32', host_machine.cpu_family() == 'x86')
     cdata_asm.set10('PIC', true)
+
+    # Convert SSE asm into (128-bit) AVX when compiler flags are set to use AVX instructions
+    cdata_asm.set10('FORCE_VEX_ENCODING', cc.get_define('__AVX__') != '')
 endif
 
 cdata.set10('ARCH_PPC64LE', host_machine.cpu() == 'ppc64le')
 
-if cc.symbols_have_underscore_prefix()
+# meson's cc.symbols_have_underscore_prefix() is unfortunately unrelieably
+# when additional flags like '-fprofile-instr-generate' are passed via CFLAGS
+# see following meson issue https://github.com/mesonbuild/meson/issues/5482
+if (host_machine.system() == 'darwin' or
+   (host_machine.system() == 'windows' and host_machine.cpu_family() == 'x86'))
     cdata.set10('PREFIX', true)
     cdata_asm.set10('PREFIX', true)
 endif
@@ -397,14 +425,9 @@ if is_asm_enabled and host_machine.cpu_family().startswith('x86')
 
         out = nasm_r.stdout().strip().split()
         if out[1].to_lower() == 'version'
-            if out[2].version_compare('<2.13.02')
-                error('nasm 2.13.02 or later is required, found nasm @0@'.format(out[2]))
-            elif out[2].version_compare('<2.14') and get_option('enable_avx512')
-                error('nasm 2.14 or later is required for AVX-512 asm.\n' +
-                       'AVX-512 asm can be disabled with \'-Denable_avx512=false\'')
+            if out[2].version_compare('<2.14')
+                error('nasm 2.14 or later is required, found nasm @0@'.format(out[2]))
             endif
-            cdata.set10('HAVE_AVX512ICL', get_option('enable_avx512'))
-            cdata_asm.set10('HAVE_AVX512ICL', get_option('enable_avx512'))
         else
             error('unexpected nasm version string: @0@'.format(nasm_r.stdout()))
         endif

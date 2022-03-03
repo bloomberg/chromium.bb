@@ -14,14 +14,15 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/registry.h"
@@ -93,7 +94,7 @@ HRESULT CreateActivationFactory(wchar_t const (&class_name)[size],
 }
 
 void ForwardNotificationOperationOnUiThread(
-    NotificationCommon::Operation operation,
+    NotificationOperation operation,
     NotificationHandler::Type notification_type,
     const GURL& origin,
     const std::string& notification_id,
@@ -114,7 +115,8 @@ void ForwardNotificationOperationOnUiThread(
   DCHECK(!profile_id.empty());
 
   g_browser_process->profile_manager()->LoadProfile(
-      profile_id, incognito,
+      NotificationPlatformBridge::GetProfileBaseNameFromProfileId(profile_id),
+      incognito,
       base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
                      operation, notification_type, origin, notification_id,
                      action_index, reply, by_user));
@@ -297,9 +299,9 @@ class NotificationPlatformBridgeWinImpl
       std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
           notifications = GetNotifications();
 
-      for (const auto& notification : notifications) {
+      for (const auto& n : notifications) {
         mswr::ComPtr<winui::Notifications::IToastNotification2> t2;
-        HRESULT hr = notification->QueryInterface(IID_PPV_ARGS(&t2));
+        hr = n->QueryInterface(IID_PPV_ARGS(&t2));
         if (FAILED(hr))
           continue;
 
@@ -618,7 +620,7 @@ class NotificationPlatformBridgeWinImpl
     for (const auto& notification : displayed_notifications_) {
       if (!displayed_notifications.count(notification.first)) {
         HandleEvent(/*launch_id=*/notification.second,
-                    NotificationCommon::OPERATION_CLOSE,
+                    NotificationOperation::kClose,
                     /*action_index=*/absl::nullopt, /*by_user=*/true);
         key_to_remove.push_back(notification.first);
       }
@@ -723,12 +725,13 @@ class NotificationPlatformBridgeWinImpl
   }
 
   void HandleEvent(NotificationLaunchId launch_id,
-                   NotificationCommon::Operation operation,
+                   NotificationOperation operation,
                    const absl::optional<int>& action_index,
                    const absl::optional<bool>& by_user) {
     if (!launch_id.is_valid()) {
       LogHandleEventStatus(HandleEventStatus::kHandleEventLaunchIdInvalid);
-      DLOG(ERROR) << "Failed to decode launch ID for operation " << operation;
+      DLOG(ERROR) << "Failed to decode launch ID for operation "
+                  << static_cast<int>(operation);
       return;
     }
 
@@ -757,7 +760,7 @@ class NotificationPlatformBridgeWinImpl
   }
 
   void ForwardHandleEventForTesting(
-      NotificationCommon::Operation operation,
+      NotificationOperation operation,
       winui::Notifications::IToastNotification* notification,
       winui::Notifications::IToastActivatedEventArgs* args,
       const absl::optional<bool>& by_user) {
@@ -833,6 +836,11 @@ class NotificationPlatformBridgeWinImpl
   }
 
   void MaybeStartNotificationSynchronizationTimer() {
+    // Avoid touching synchronize_displayed_notifications_timer_ in testing,
+    // to avoid sequence checker issues at shutdown.
+    if (NotificationPlatformBridgeWinImpl::notifications_for_testing_)
+      return;
+
     if (synchronize_displayed_notifications_timer_.IsRunning())
       return;
 
@@ -852,8 +860,7 @@ class NotificationPlatformBridgeWinImpl
 
   static winui::Notifications::IToastNotifier* notifier_for_testing_;
 
-  const base::TimeDelta kSynchronizationInterval =
-      base::TimeDelta::FromMinutes(10);
+  const base::TimeDelta kSynchronizationInterval = base::Minutes(10);
 
   // Windows does not fire a close event when the notification closes. To work
   // around this, NotificationPlatformBridgeWinImpl simulates the close event by
@@ -984,13 +991,13 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   if (!inline_reply.empty())
     reply = base::AsString16(inline_reply);
 
-  NotificationCommon::Operation operation;
+  NotificationOperation operation;
   if (launch_id.is_for_dismiss_button())
-    operation = NotificationCommon::OPERATION_CLOSE;
+    operation = NotificationOperation::kClose;
   else if (launch_id.is_for_context_menu())
-    operation = NotificationCommon::OPERATION_SETTINGS;
+    operation = NotificationOperation::kSettings;
   else
-    operation = NotificationCommon::OPERATION_CLICK;
+    operation = NotificationOperation::kClick;
 
   absl::optional<int> action_index;
   if (launch_id.button_index() != -1)
@@ -1020,7 +1027,7 @@ bool NotificationPlatformBridgeWin::SystemNotificationEnabled() {
 }
 
 void NotificationPlatformBridgeWin::ForwardHandleEventForTesting(
-    NotificationCommon::Operation operation,
+    NotificationOperation operation,
     winui::Notifications::IToastNotification* notification,
     winui::Notifications::IToastActivatedEventArgs* args,
     const absl::optional<bool>& by_user) {
@@ -1037,6 +1044,8 @@ void NotificationPlatformBridgeWin::SetDisplayedNotificationsForTesting(
     std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>*
         notifications) {
   NotificationPlatformBridgeWinImpl::notifications_for_testing_ = notifications;
+  if (!notifications)
+    impl_->displayed_notifications_.clear();
 }
 
 void NotificationPlatformBridgeWin::SetExpectedDisplayedNotificationsForTesting(

@@ -13,7 +13,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "net/android/keystore.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_platform_key_util.h"
@@ -94,6 +93,9 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
       }
     }
   }
+
+  SSLPlatformKeyAndroid(const SSLPlatformKeyAndroid&) = delete;
+  SSLPlatformKeyAndroid& operator=(const SSLPlatformKeyAndroid&) = delete;
 
   ~SSLPlatformKeyAndroid() override {}
 
@@ -177,8 +179,6 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
   std::string provider_name_;
   std::vector<uint16_t> preferences_;
   base::flat_set<uint16_t> use_pss_fallback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyAndroid);
 };
 
 }  // namespace

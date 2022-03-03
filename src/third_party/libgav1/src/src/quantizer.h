@@ -17,6 +17,7 @@
 #ifndef LIBGAV1_SRC_QUANTIZER_H_
 #define LIBGAV1_SRC_QUANTIZER_H_
 
+#include <array>
 #include <cstdint>
 
 #include "src/utils/constants.h"

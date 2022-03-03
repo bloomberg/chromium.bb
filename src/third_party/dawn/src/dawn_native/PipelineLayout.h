@@ -22,6 +22,7 @@
 #include "dawn_native/CachedObject.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
+#include "dawn_native/ObjectBase.h"
 
 #include "dawn_native/dawn_platform.h"
 
@@ -30,8 +31,10 @@
 
 namespace dawn_native {
 
-    MaybeError ValidatePipelineLayoutDescriptor(DeviceBase*,
-                                                const PipelineLayoutDescriptor* descriptor);
+    MaybeError ValidatePipelineLayoutDescriptor(
+        DeviceBase*,
+        const PipelineLayoutDescriptor* descriptor,
+        PipelineCompatibilityToken pipelineCompatibilityToken = PipelineCompatibilityToken(0));
 
     using BindGroupLayoutArray =
         ityp::array<BindGroupIndex, Ref<BindGroupLayoutBase>, kMaxBindGroups>;
@@ -41,10 +44,15 @@ namespace dawn_native {
         SingleShaderStage shaderStage;
         ShaderModuleBase* module;
         std::string entryPoint;
+        uint32_t constantCount = 0u;
+        ConstantEntry const* constants = nullptr;
     };
 
-    class PipelineLayoutBase : public CachedObject {
+    class PipelineLayoutBase : public ApiObjectBase, public CachedObject {
       public:
+        PipelineLayoutBase(DeviceBase* device,
+                           const PipelineLayoutDescriptor* descriptor,
+                           ApiObjectBase::UntrackedByDeviceTag tag);
         PipelineLayoutBase(DeviceBase* device, const PipelineLayoutDescriptor* descriptor);
         ~PipelineLayoutBase() override;
 
@@ -52,6 +60,8 @@ namespace dawn_native {
         static ResultOrError<Ref<PipelineLayoutBase>> CreateDefault(
             DeviceBase* device,
             std::vector<StageAndDescriptor> stages);
+
+        ObjectType GetType() const override;
 
         const BindGroupLayoutBase* GetBindGroupLayout(BindGroupIndex group) const;
         BindGroupLayoutBase* GetBindGroupLayout(BindGroupIndex group);
@@ -73,7 +83,10 @@ namespace dawn_native {
         };
 
       protected:
+        // Constructor used only for mocking and testing.
+        PipelineLayoutBase(DeviceBase* device);
         PipelineLayoutBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+        void DestroyImpl() override;
 
         BindGroupLayoutArray mBindGroupLayouts;
         BindGroupLayoutMask mMask;

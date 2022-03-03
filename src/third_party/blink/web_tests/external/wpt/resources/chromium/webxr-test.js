@@ -502,8 +502,10 @@ class MockRuntime {
   setViews(views) {
     if (views) {
       this.displayInfo_.views = [];
+      this.viewOffsets_ = [];
       for (let i = 0; i < views.length; i++) {
         this.displayInfo_.views[i] = this.getView(views[i]);
+        this.viewOffsets_[i] = composeGFXTransform(views[i].viewOffset);
       }
 
       if (this.sessionClient_) {
@@ -733,10 +735,10 @@ class MockRuntime {
           leftDegrees: 50.899,
           rightDegrees: 35.197
         },
-        headFromEye: composeGFXTransform({
+        mojoFromView: this._getMojoFromViewerWithOffset(composeGFXTransform({
           position: [-0.032, 0, 0],
           orientation: [0, 0, 0, 1]
-        }),
+        })),
         viewport: { width: viewport_size, height: viewport_size }
       },
       {
@@ -747,10 +749,10 @@ class MockRuntime {
           leftDegrees: 50.899,
           rightDegrees: 35.197
         },
-        headFromEye: composeGFXTransform({
+        mojoFromView: this._getMojoFromViewerWithOffset(composeGFXTransform({
           position: [0.032, 0, 0],
           orientation: [0, 0, 0, 1]
-        }),
+        })),
         viewport: { width: viewport_size, height: viewport_size }
       }]
     };
@@ -807,7 +809,7 @@ class MockRuntime {
     return {
       eye: viewEye,
       fieldOfView: fov,
-      headFromEye: composeGFXTransform(fakeXRViewInit.viewOffset),
+      mojoFromView: this._getMojoFromViewerWithOffset(composeGFXTransform(fakeXRViewInit.viewOffset)),
       viewport: {
         width: fakeXRViewInit.resolution.width,
         height: fakeXRViewInit.resolution.height
@@ -881,9 +883,14 @@ class MockRuntime {
           }
         }
 
+        let views = this.displayInfo_.views;
+        for (let i = 0; i < views.length; i++) {
+          views[i].mojoFromView = this._getMojoFromViewerWithOffset(this.viewOffsets_[i]);
+        }
+
         const frameData = {
-          pose: this.pose_,
-          views: [],
+          mojoFromViewer: this.pose_,
+          views: views,
           mojoSpaceReset: mojo_space_reset,
           inputState: input_state,
           timeDelta: {
@@ -1215,8 +1222,8 @@ class MockRuntime {
   // Private functions - utilities:
   _nativeOriginKnown(nativeOriginInformation){
 
-    if (nativeOriginInformation.inputSourceId !== undefined) {
-      if (!this.input_sources_.has(nativeOriginInformation.inputSourceId)) {
+    if (nativeOriginInformation.inputSourceSpaceInfo !== undefined) {
+      if (!this.input_sources_.has(nativeOriginInformation.inputSourceSpaceInfo.inputSourceId)) {
         // Unknown input source.
         return false;
       }
@@ -1547,6 +1554,9 @@ class MockRuntime {
   }
 
   _getMojoFromViewer() {
+    if (!this.pose_) {
+      return XRMathHelper.identity();
+    }
     const transform = {
       position: [
         this.pose_.position.x,
@@ -1562,14 +1572,18 @@ class MockRuntime {
     return getMatrixFromTransform(transform);
   }
 
+  _getMojoFromViewerWithOffset(viewOffset) {
+    return { matrix: XRMathHelper.mul4x4(this._getMojoFromViewer(), viewOffset.matrix) };
+  }
+
   _getMojoFromNativeOrigin(nativeOriginInformation) {
     const mojo_from_viewer = this._getMojoFromViewer();
 
-    if (nativeOriginInformation.inputSourceId !== undefined) {
-      if (!this.input_sources_.has(nativeOriginInformation.inputSourceId)) {
+    if (nativeOriginInformation.inputSourceSpaceInfo !== undefined) {
+      if (!this.input_sources_.has(nativeOriginInformation.inputSourceSpaceInfo.inputSourceId)) {
         return null;
       } else {
-        const inputSource = this.input_sources_.get(nativeOriginInformation.inputSourceId);
+        const inputSource = this.input_sources_.get(nativeOriginInformation.inputSourceSpaceInfo.inputSourceId);
         return inputSource._getMojoFromInputSource(mojo_from_viewer);
       }
     } else if (nativeOriginInformation.referenceSpaceType !== undefined) {

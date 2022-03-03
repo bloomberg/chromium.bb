@@ -15,39 +15,28 @@
   # https://crbug.com/v8/9029
   'debugger/script-on-after-compile-snapshot': [SKIP],
 
-  # https://crbug.com/v8/10356
-  # This test worked in the wasm interpreter, but fails when using Liftoff for
-  # debugging.
-  'debugger/wasm-externref-global': [FAIL],
-
   # https://crbug.com/1080638
   # The initial CL only fixed the crash. The test still causes an endless
   # loop instead of properly reporting a RangeError for a stack overflow.
   'regress/regress-crbug-1080638': [SKIP],
 
-  # https://crbug.com/v8/11338
-  'runtime-call-stats/enable-disable': [SKIP],
+  # Tests that need to run sequentially (e.g. due to memory consumption).
+  'runtime/console-messages-limits': [PASS, HEAVY],
+  'runtime/regression-732717': [PASS, HEAVY],
 }],  # ALWAYS
 
 ##############################################################################
-['mode != debug or dcheck_always_on', {
-  # Investigating flaky tests: https://crbug.com/v8/10876. Enable only on pure debug.
-  'debugger/pause-on-oom': [SKIP],
-  'debugger/pause-on-oom-wide': [SKIP],
-  'debugger/pause-on-oom-extrawide': [SKIP],
-}],  # 'mode != debug or dcheck_always_on'
+['arch == x64 and mode == debug', {
+  # Flaky tests: https://crbug.com/v8/10876
+  'debugger/pause-on-oom-extrawide': [PASS, FAIL],
+  'debugger/pause-on-oom-wide': [PASS, FAIL],
+}],  # 'arch == x64 and mode == debug'
 
 ##############################################################################
 ['system == android', {
   # https://crbug.com/v8/8197
   'debugger/get-possible-breakpoints-class-fields': [SKIP],
 }],  # 'system == android'
-
-##############################################################################
-['system == macos', {
-  # Bug(v8:11399): Deadlock on Mac.
-  'cpu-profiler/console-profile-wasm': [SKIP],
-}],
 
 ##############################################################################
 ['variant != default', {
@@ -108,16 +97,19 @@
 }],  # variant == no_wasm_traps
 
 ##############################################################################
-['arch == ppc or arch == ppc64', {
-  # Liftoff needs to be enabled before running these tests.
-  'debugger/wasm-*': [SKIP],
-}],  # 'arch == ppc or arch == ppc64'
-
-##############################################################################
-['arch == s390 or arch == s390x', {
-  # Liftoff needs to be enabled before running these tests.
-  'debugger/wasm-*': [SKIP],
-}],  # 'arch == s390 or arch == s390x'
+['arch == s390x or arch == ppc64', {
+  # Need simd support on Liftoff
+  'debugger/wasm-scope-info': [SKIP],
+  'debugger/wasm-inspect-many-registers': [SKIP],
+  # endian related issue
+  'debugger/wasm-conditional-breakpoints': [SKIP],
+  'debugger/wasm-evaluate-on-call-frame': [SKIP],
+  'debugger/wasm-set-breakpoint': [SKIP],
+  'debugger/wasm-stack-check': [SKIP],
+  'debugger/wasm-step-after-trap': [SKIP],
+  'debugger/wasm-stepping-no-opcode-merging': [SKIP],
+  'debugger/wasm-stepping-with-source-map': [SKIP],
+}],  # 'arch == s390x or arch == ppc64'
 
 ##############################################################################
 ['no_simd_hardware', {
@@ -126,16 +118,12 @@
 }], # no_simd_hardware
 
 ##############################################################################
-['arch == riscv64', {
+['arch == riscv64 or arch == loong64', {
   # SIMD support is still in progress.
   'debugger/wasm-scope-info*': [SKIP],
   'debugger/wasm-step-after-trap': [SKIP],
 
-}],  # 'arch == riscv64'
-
-['arch == riscv64 and variant == stress_incremental_marking', {
-  'debugger/wasm-gc-breakpoints': [SKIP]
-}],  # 'arch == riscv64'
+}],  # 'arch == riscv64 or arch == loong64'
 
 ################################################################################
 ['variant == stress_snapshot', {
@@ -167,7 +155,7 @@
   'cpu-profiler/coverage-block': [SKIP],
   'debugger/get-possible-breakpoints': [SKIP],
   'debugger/get-possible-breakpoints-array-literal': [SKIP],
-  'debugger/get-possible-breakpoints-master': [SKIP],
+  'debugger/get-possible-breakpoints-main': [SKIP],
   'debugger/limit-size-of-collected-scripts': [SKIP],
   'debugger/not-hold-promises': [SKIP],
   'debugger/regression-424142': [SKIP],
@@ -176,7 +164,6 @@
   'debugger/set-breakpoint-at-last-line': [SKIP],
   'debugger/set-breakpoint-breaks-on-first-breakable-location': [SKIP],
   'heap-profiler/collect-garbage' : [SKIP],
-  'runtime-call-stats/collection': [SKIP],
   'runtime/context-destroyed-on-context-collected': [SKIP],
   'runtime/evaluate-async': [SKIP],
   'runtime/internal-properties-entries': [SKIP],
@@ -199,7 +186,6 @@
   'cpu-profiler/coverage': [SKIP],
   'cpu-profiler/coverage-block': [SKIP],
   'runtime/internal-properties-entries': [SKIP],
-  'runtime-call-stats/collection': [SKIP],
 
   # Skip tests that might fail with concurrent allocation
   'debugger/pause-on-oom-wide': [SKIP],
@@ -215,14 +201,20 @@
 ################################################################################
 ['third_party_heap', {
   # Requires a second isolate
+  'debugger/stepping-generator-parameters': [SKIP],
+  'debugger/wasm-externref-global': [SKIP],
+  'debugger/stepping-async-generator': [SKIP],
+  'regress/regress-crbug-1222065': [SKIP],
+  'debugger/stepping-generator': [SKIP],
+  'runtime/exception-thrown-metadata': [SKIP],
+  'debugger/wasm-side-effect-free-debug-evaluate': [SKIP],
+  'regress/regress-crbug-1081162': [SKIP],
   'regress/regress-crbug-1207867': [SKIP],
   'regress/regress-crbug-1197392': [SKIP],
   'debugger/command-line-api-with-arrow-function': [SKIP],
   'regress/regress-crbug-1199919': [SKIP],
   'console/destroy-context-during-log': [SKIP],
   'console/scoped-variables': [SKIP],
-  'counters/collection': [SKIP],
-  'counters/enable-disable': [SKIP],
   'cpu-profiler/console-profile': [SKIP],
   'cpu-profiler/console-profile-asm-js': [SKIP],
   'cpu-profiler/console-profile-end-parameterless-crash': [SKIP],
@@ -299,7 +291,7 @@
   'debugger/get-possible-breakpoints-array-literal': [SKIP],
   'debugger/get-possible-breakpoints-class-fields': [SKIP],
   'debugger/get-possible-breakpoints-lazy-error': [SKIP],
-  'debugger/get-possible-breakpoints-master': [SKIP],
+  'debugger/get-possible-breakpoints-main': [SKIP],
   'debugger/get-possible-breakpoints-restrict-to-function': [SKIP],
   'debugger/get-properties-paused': [SKIP],
   'debugger/inspector-break-api': [SKIP],
@@ -421,15 +413,12 @@
   'debugger/wasm-stepping-with-source-map': [SKIP],
   'debugger/wasm-unnamed-function-names': [SKIP],
   'heap-profiler/collect-garbage': [SKIP],
-  'heap-profiler/console-retaining-path': [SKIP],
   'heap-profiler/sampling-heap-profiler': [SKIP],
   'heap-profiler/take-heap-snapshot-on-pause': [SKIP],
   'json-parse': [SKIP],
   'print-method-not-found': [SKIP],
   'regress/regress-crbug-1147552': [SKIP],
   'regress/regress-crbug-1183664': [SKIP],
-  'runtime-call-stats/collection': [SKIP],
-  'runtime-call-stats/enable-disable': [SKIP],
   'runtime/add-binding': [SKIP],
   'runtime/await-promise': [SKIP],
   'runtime/call-function-on-async': [SKIP],
@@ -524,5 +513,16 @@
   'type-profiler/type-profile-with-to-string-tag': [SKIP],
   'regress/regress-crbug-1195927': [SKIP],
 }], # third_party_heap
+
+##############################################################################
+['variant == turboprop or variant == turboprop_as_toptier or variant == future or (tsan and not concurrent_marking)', {
+
+  'cpu-profiler/coverage-block': [SKIP],
+}],  # variant == turboprop or variant = turboprop_as_toptier
+
+##############################################################################
+['no_i18n == True', {
+  'runtime/evaluate-without-side-effects-i18n': [SKIP],
+}],  # no_i18n == True
 
 ]

@@ -6,8 +6,9 @@
 
 #include <sstream>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
+#include "base/files/safe_base_name.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -771,6 +772,8 @@ TEST_F(FilePathTest, Extension2) {
     { FPL("C:\\foo.bar\\.."),        FPL("") },
     { FPL("C:\\foo.bar\\..\\\\"),    FPL("") },
 #endif
+    { FPL("/foo/bar/baz.EXT"),       FPL(".EXT") },
+    { FPL("/foo/bar/baz.Ext"),       FPL(".Ext") },
     { FPL("/foo/bar/baz.ext"),       FPL(".ext") },
     { FPL("/foo/bar/baz."),          FPL(".") },
     { FPL("/foo/bar/baz.."),         FPL(".") },
@@ -793,17 +796,24 @@ TEST_F(FilePathTest, Extension2) {
     { FPL("/user.js"),               FPL(".js") },
   };
   const struct UnaryTestData double_extension_cases[] = {
-    { FPL("/foo.tar.gz"),            FPL(".tar.gz") },
+    // `kCommonDoubleExtensionSuffixes` cases. Blah is not on that allow-list.
+    // Membership is (ASCII) case-insensitive: both ".Z" and ".z" match.
+    { FPL("/foo.TAR.bz2"),           FPL(".TAR.bz2") },
     { FPL("/foo.tar.Z"),             FPL(".tar.Z") },
+    { FPL("/foo.tar.blah"),          FPL(".blah") },
+    { FPL("/foo.tar.bz"),            FPL(".tar.bz") },
     { FPL("/foo.tar.bz2"),           FPL(".tar.bz2") },
+    { FPL("/foo.tar.gz"),            FPL(".tar.gz") },
+    { FPL("/foo.tar.xz"),            FPL(".tar.xz") },
+    { FPL("/foo.tar.z"),             FPL(".tar.z") },
+    // `kCommonDoubleExtensions` cases.
+    { FPL("/foo.1234.user.js"),      FPL(".user.js") },
+    { FPL("foo.user.js"),            FPL(".user.js") },
+    // Other cases.
     { FPL("/foo.1234.gz"),           FPL(".1234.gz") },
     { FPL("/foo.1234.tar.gz"),       FPL(".tar.gz") },
     { FPL("/foo.tar.tar.gz"),        FPL(".tar.gz") },
     { FPL("/foo.tar.gz.gz"),         FPL(".gz.gz") },
-    { FPL("/foo.1234.user.js"),      FPL(".user.js") },
-    { FPL("foo.user.js"),            FPL(".user.js") },
-    { FPL("/foo.tar.bz"),            FPL(".tar.bz") },
-    { FPL("/foo.tar.xz"),            FPL(".tar.xz") },
   };
   // clang-format on
 
@@ -1169,6 +1179,19 @@ TEST_F(FilePathTest, ReferencesParent) {
   }
 }
 
+TEST_F(FilePathTest, FromASCII) {
+  const struct UTF8TestData cases[] = {
+      {FPL("foo.txt"), "foo.txt"},
+      {FPL("!#$%&'()"), "!#$%&'()"},
+  };
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    FilePath from_ascii = FilePath::FromASCII(cases[i].utf8);
+    EXPECT_EQ(FilePath::StringType(cases[i].native), from_ascii.value())
+        << "i: " << i << ", input: " << cases[i].utf8;
+  }
+}
+
 TEST_F(FilePathTest, FromUTF8Unsafe_And_AsUTF8Unsafe) {
   const struct UTF8TestData cases[] = {
     { FPL("foo.txt"), "foo.txt" },
@@ -1219,6 +1242,18 @@ TEST_F(FilePathTest, AppendWithNUL) {
   EXPECT_EQ(FPL("a\\b"), path.value());
 #else
   EXPECT_EQ(FPL("a/b"), path.value());
+#endif
+}
+
+TEST_F(FilePathTest, AppendBaseName) {
+  FilePath dir(FPL("foo"));
+  auto file(SafeBaseName::Create(FPL("bar.txt")));
+  EXPECT_TRUE(file);
+
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  EXPECT_EQ(dir.Append(*file), FilePath(FPL("foo\\bar.txt")));
+#else
+  EXPECT_EQ(dir.Append(*file), FilePath(FPL("foo/bar.txt")));
 #endif
 }
 

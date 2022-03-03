@@ -6,7 +6,6 @@
 <org.chromium.chrome.browser.feed.webfeed.WebFeedMainMenuItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/web_feed_menu_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -64,6 +63,6 @@
         android:id="@+id/web_feed_menu_divider"
         style="@style/HorizontalDivider"
         android:layout_width="match_parent"
-        android:background="@color/divider_line_bg_color" />
+        android:background="@macro/divider_line_bg_color" />
 
 </org.chromium.chrome.browser.feed.webfeed.WebFeedMainMenuItem>

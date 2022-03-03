@@ -22,8 +22,9 @@ class CORE_EXPORT SuggestionMarkerProperties final {
  public:
   class CORE_EXPORT Builder;
 
-  SuggestionMarkerProperties(const SuggestionMarkerProperties&);
   SuggestionMarkerProperties();
+  SuggestionMarkerProperties(const SuggestionMarkerProperties&);
+  SuggestionMarkerProperties& operator=(const SuggestionMarkerProperties&);
 
   SuggestionMarker::SuggestionType Type() const { return type_; }
   SuggestionMarker::RemoveOnFinishComposing RemoveOnFinishComposing() const {
@@ -59,6 +60,8 @@ class CORE_EXPORT SuggestionMarkerProperties::Builder final {
  public:
   explicit Builder(const SuggestionMarkerProperties&);
   Builder();
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder&) = delete;
 
   SuggestionMarkerProperties Build() const;
 
@@ -74,8 +77,6 @@ class CORE_EXPORT SuggestionMarkerProperties::Builder final {
 
  private:
   SuggestionMarkerProperties data_;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace blink

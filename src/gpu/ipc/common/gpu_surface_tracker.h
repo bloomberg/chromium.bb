@@ -9,7 +9,6 @@
 
 #include <map>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -74,6 +73,9 @@ class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   // Gets the global instance of the surface tracker.
   static GpuSurfaceTracker* Get() { return GetInstance(); }
 
+  GpuSurfaceTracker(const GpuSurfaceTracker&) = delete;
+  GpuSurfaceTracker& operator=(const GpuSurfaceTracker&) = delete;
+
   // Adds a surface for a native widget. Returns the surface ID.
   int AddSurfaceForNativeWidget(SurfaceRecord record);
 
@@ -101,8 +103,6 @@ class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   mutable base::Lock surface_map_lock_;
   SurfaceMap surface_map_;
   int next_surface_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuSurfaceTracker);
 };
 
 }  // namespace ui

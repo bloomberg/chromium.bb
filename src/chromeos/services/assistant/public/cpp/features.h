@@ -21,14 +21,6 @@ extern const base::Feature kAssistantAudioEraser;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantAppSupport;
 
-// Enables better onboarding for Assistant.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantBetterOnboarding;
-
-// Enables Assistant launcher chip integration.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantLauncherChipIntegration;
-
 // Enables Assistant routines.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantRoutines;
@@ -40,17 +32,9 @@ extern const base::Feature kAssistantRoutines;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantWaitScheduling;
 
-// Enables Better Assistant.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kEnableBetterAssistant;
-
 // Enables DSP for hotword detection.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableDspHotword;
-
-// Enables MediaSession Integration.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kEnableMediaSessionIntegration;
 
 // Enables stereo audio input.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
@@ -64,37 +48,27 @@ extern const base::Feature kEnablePowerManager;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableLibAssistantBetaBackend;
 
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAmbientAssistantEnabled();
+// Enables the sandbox of LibAssistant service.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnableLibAssistantSandbox;
+
+// Enables the LibAssistantV2 APIs and related features.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnableLibAssistantV2;
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAudioEraserEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsBetterAssistantEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsBetterOnboardingEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsConversationStartersV2Enabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsAssistantDebuggingEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
 
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsLauncherChipIntegrationEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsMediaSessionIntegrationEnabled();
-
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsPowerManagerEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsLibAssistantBetaBackendEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsResponseProcessingV2Enabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsRoutinesEnabled();
 
@@ -103,6 +77,11 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsStereoAudioInputEnabled();
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsVoiceMatchDisabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWaitSchedulingEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsLibAssistantSandboxEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsLibAssistantV2Enabled();
 
 }  // namespace features
 }  // namespace assistant

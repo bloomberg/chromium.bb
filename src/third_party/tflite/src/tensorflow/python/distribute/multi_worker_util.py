@@ -14,10 +14,6 @@
 # ==============================================================================
 """Utilities for multi-worker distribution strategies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.core.protobuf import cluster_pb2
 from tensorflow.python.distribute import distribute_coordinator_context as dc_context
 from tensorflow.python.training import server_lib
@@ -46,13 +42,21 @@ def normalize_cluster_spec(cluster_spec):
   return cluster_spec
 
 
-# TODO(yuefengz): add more validations.
-def _validate_cluster_spec(cluster_spec, task_type, task_id):
+def task_count(cluster_spec, task_type):
+  try:
+    return cluster_spec.num_tasks(task_type)
+  except ValueError:
+    return 0
+
+
+def _validate_cluster_spec(cluster_spec,
+                           task_type,
+                           task_id):
   """Validates `cluster_spec`.
 
   It checks:
-  0) None of `cluster_spec`, `task_type`, and `task_id` is `None`.
-  1) task type is one of "chief", "worker" or "evaluator".
+  1) task type is one of "chief", "worker", "ps", "evaluator", or not provided
+     (None).
   2) whether there is such a task type as `task_type` in the `cluster_spec`. The
      only exception is `evaluator`. In other words, it is still a valid
      configuration when `task_type` is `evaluator` but it doesn't appear in
@@ -65,31 +69,38 @@ def _validate_cluster_spec(cluster_spec, task_type, task_id):
   Args:
     cluster_spec: a dict, `ClusterDef` or `ClusterSpec` object to be validated.
     task_type: string indicating the type of the task.
-    task_id: task_id: the id of the `task_type` in this cluster.
-  Throws:
+    task_id: the id of the `task_type` in this cluster.
+
+  Raises:
     ValueError: if `cluster_spec` fails any check.
   """
-  if cluster_spec is None or task_type is None or task_id is None:
-    raise ValueError(
-        "None of `cluster_spec`, `task_type`, and `task_id` should be `None`.")
+  allowed_task_types = ("chief", "worker", "evaluator", "ps", None)
 
-  cluster_spec = normalize_cluster_spec(cluster_spec).as_dict()
-  if task_type not in ("chief", "worker", "evaluator", "ps"):
-    raise ValueError(
-        "Unrecognized task_type: %r, valid task types are: \"chief\", "
-        "\"worker\", \"evaluator\" and \"ps\"." % task_type)
+  cluster_spec = normalize_cluster_spec(cluster_spec)
 
-  if task_type and task_type not in cluster_spec and task_type != "evaluator":
+  if any(job not in allowed_task_types for job in cluster_spec.jobs):
+    raise ValueError("Disallowed task type found in cluster spec. Allowed "
+                     "types are {} and the cluster spec is {}.".format(
+                         allowed_task_types, cluster_spec))
+
+  if task_type not in allowed_task_types:
+    raise ValueError(
+        "Unrecognized task_type: {}, valid task types are: {}".format(
+            task_type, allowed_task_types))
+
+  if (task_type and task_type not in cluster_spec.jobs and
+      task_type != "evaluator"):
     raise ValueError("`task_type` %r not found in cluster_spec." % task_type)
 
-  if len(cluster_spec.get("chief", [])) > 1:
+  if task_count(cluster_spec, "chief") > 1:
     raise ValueError("There must be at most one 'chief' job.")
 
-  if len(cluster_spec.get("evaluator", [])) > 1:
+  if task_count(cluster_spec, "evaluator") > 1:
     raise ValueError("There must be at most one 'evaluator' job.")
 
   # The `evaluator` job is allowed to be missing in `cluster_spec`.
-  if task_type in cluster_spec and task_id >= len(cluster_spec[task_type]):
+  if task_type in cluster_spec.jobs and task_id >= task_count(
+      cluster_spec, task_type):
     raise ValueError(
         "The `task_id` %d exceeds the maximum id of %s." % (task_id, task_type))
 
@@ -157,6 +168,31 @@ def collective_leader(cluster_spec, task_type, task_id):
 
   # Only one evaluator, so no need to set collective leader.
   if task_type == "evaluator":
+    return ""
+
+  # Use chief if chief is in the cluster.
+  if "chief" in cluster_spec.jobs:
+    return "/job:chief/replica:0/task:0"
+
+  # Use worker 0 if no chief job.
+  assert "worker" in cluster_spec.jobs
+  return "/job:worker/replica:0/task:0"
+
+
+def coordination_leader(cluster_spec):
+  """Return the task name of the coordination service leader.
+
+  Args:
+    cluster_spec: a dict, `ClusterDef` or `ClusterSpec` object sxpecifying the
+      cluster configurations.
+
+  Returns:
+    a string indicating the task name of the coordination service leader.
+  """
+  cluster_spec = normalize_cluster_spec(cluster_spec)
+
+  # No need to set coordination service leader for local.
+  if not cluster_spec.as_dict():
     return ""
 
   # Use chief if chief is in the cluster.

@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 
 import java.lang.annotation.Retention;
@@ -137,7 +136,8 @@ public class AppLaunchDrawBlocker {
     }
 
     private void writeSearchEngineHadLogoPref() {
-        boolean searchEngineHasLogo = TemplateUrlServiceFactory.doesDefaultSearchEngineHaveLogo();
+        boolean searchEngineHasLogo =
+                TemplateUrlServiceFactory.get().doesDefaultSearchEngineHaveLogo();
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO, searchEngineHasLogo);
     }
@@ -161,8 +161,7 @@ public class AppLaunchDrawBlocker {
                 tabState, HomepageManager.isHomepageNonNtpPreNative(), singleUrlBarMode);
 
         if (shouldBlockDrawForNtpOnColdStartWithIntent(hasValidIntentUrl, isNtpUrl,
-                    StartSurfaceConfiguration.shouldIntentShowNewTabOmniboxFocused(
-                            mIntentSupplier.get()),
+                    IntentHandler.shouldIntentShowNewTabOmniboxFocused(mIntentSupplier.get()),
                     IncognitoTabLauncher.didCreateIntent(mIntentSupplier.get()),
                     shouldBlockWithoutIntent)) {
             mTimeStartedBlockingDrawForInitialTab = SystemClock.elapsedRealtime();
@@ -219,11 +218,12 @@ public class AppLaunchDrawBlocker {
      * @param isTabRegularNtp Whether the tab is regular NTP, not incognito.
      */
     private void recordBlockDrawForInitialTabHistograms(boolean isTabRegularNtp) {
-        boolean searchEngineHasLogo = TemplateUrlServiceFactory.doesDefaultSearchEngineHaveLogo();
+        boolean searchEngineHasLogo =
+                TemplateUrlServiceFactory.get().doesDefaultSearchEngineHaveLogo();
         boolean singleUrlBarMode =
                 NewTabPage.isInSingleUrlBarMode(mIsTabletSupplier.get(), searchEngineHasLogo);
-        boolean focusedOmnibox = StartSurfaceConfiguration.shouldIntentShowNewTabOmniboxFocused(
-                mIntentSupplier.get());
+        boolean focusedOmnibox =
+                IntentHandler.shouldIntentShowNewTabOmniboxFocused(mIntentSupplier.get());
         boolean singleUrlBarNtp = isTabRegularNtp && singleUrlBarMode;
         long durationDrawBlocked =
                 SystemClock.elapsedRealtime() - mTimeStartedBlockingDrawForInitialTab;

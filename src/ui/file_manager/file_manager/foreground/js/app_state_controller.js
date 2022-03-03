@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {DialogType} from './dialog_type.m.js';
-// #import {util} from '../../common/js/util.m.js';
-// #import {appUtil} from '../../common/js/app_util.m.js';
-// #import {ListContainer} from './ui/list_container.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {xfm} from '../../common/js/xfm.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
-/* #export */ class AppStateController {
+import {appUtil} from '../../common/js/app_util.js';
+import {DialogType} from '../../common/js/dialog_type.js';
+import {util} from '../../common/js/util.js';
+import {xfm} from '../../common/js/xfm.js';
+
+import {DirectoryModel} from './directory_model.js';
+import {FileManagerUI} from './ui/file_manager_ui.js';
+import {ListContainer} from './ui/list_container.js';
+
+export class AppStateController {
   /**
    * @param {DialogType} dialogType
    */
@@ -46,45 +48,37 @@
   /**
    * @return {Promise}
    */
-  loadInitialViewOptions() {
+  async loadInitialViewOptions() {
     // Load initial view option.
-    return new Promise((fulfill, reject) => {
-             xfm.storage.local.get(this.viewOptionStorageKey_, values => {
-               if (chrome.runtime.lastError) {
-                 reject(
-                     'Failed to load view options: ' +
-                     chrome.runtime.lastError.message);
-               } else {
-                 fulfill(values);
-               }
-             });
-           })
-        .then(values => {
-          this.viewOptions_ = {};
-          const value = values[this.viewOptionStorageKey_];
-          if (!value) {
-            return;
-          }
+    try {
+      const values =
+          await xfm.storage.local.getAsync(this.viewOptionStorageKey_);
 
-          // Load the global default options.
-          try {
-            this.viewOptions_ = JSON.parse(value);
-          } catch (ignore) {
-          }
+      this.viewOptions_ = {};
 
-          // Override with window-specific options.
-          if (window.appState && window.appState.viewOptions) {
-            for (const key in window.appState.viewOptions) {
-              if (window.appState.viewOptions.hasOwnProperty(key)) {
-                this.viewOptions_[key] = window.appState.viewOptions[key];
-              }
-            }
+      const value = /** @type {string} */ (values[this.viewOptionStorageKey_]);
+      if (!value) {
+        return;
+      }
+
+      // Load the global default options.
+      try {
+        this.viewOptions_ = JSON.parse(value);
+      } catch (ignore) {
+      }
+
+      // Override with window-specific options.
+      if (window.appState && window.appState.viewOptions) {
+        for (const key in window.appState.viewOptions) {
+          if (window.appState.viewOptions.hasOwnProperty(key)) {
+            this.viewOptions_[key] = window.appState.viewOptions[key];
           }
-        })
-        .catch(error => {
-          this.viewOptions_ = {};
-          console.error(error);
-        });
+        }
+      }
+    } catch (error) {
+      this.viewOptions_ = {};
+      console.error(error);
+    }
   }
 
   /**
@@ -130,7 +124,7 @@
   /**
    * Saves current view option.
    */
-  saveViewOptions() {
+  async saveViewOptions() {
     const prefs = {
       sortField: this.fileListSortField_,
       sortDirection: this.fileListSortDirection_,
@@ -144,12 +138,7 @@
     // Save the global default.
     const items = {};
     items[this.viewOptionStorageKey_] = JSON.stringify(prefs);
-    xfm.storage.local.set(items, () => {
-      if (chrome.runtime.lastError) {
-        console.error(
-            'Failed to save view options: ' + chrome.runtime.lastError.message);
-      }
-    });
+    xfm.storage.local.setAsync(items);
 
     // Save the window-specific preference.
     if (window.appState) {
@@ -161,7 +150,7 @@
   /**
    * @private
    */
-  onFileListSorted_() {
+  async onFileListSorted_() {
     const currentDirectory = this.directoryModel_.getCurrentDirEntry();
     if (!currentDirectory) {
       return;
@@ -180,7 +169,7 @@
   /**
    * @private
    */
-  onFileFilterChanged_() {
+  async onFileFilterChanged_() {
     const isAllAndroidFoldersVisible =
         this.directoryModel_.getFileFilter().isAllAndroidFoldersVisible();
     if (this.viewOptions_.isAllAndroidFoldersVisible !==
@@ -216,12 +205,11 @@
       }
     }
 
-    // TODO(mtomasz): Consider remembering the selection.
     appUtil.updateAppState(
         this.directoryModel_.getCurrentDirEntry() ?
             this.directoryModel_.getCurrentDirEntry().toURL() :
             '',
-        '' /* selectionURL */, '' /* opt_param */);
+        /*selectionURL=*/ '');
   }
 }
 

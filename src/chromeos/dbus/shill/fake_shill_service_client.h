@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
@@ -27,6 +26,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
       public ShillServiceClient::TestInterface {
  public:
   FakeShillServiceClient();
+
+  FakeShillServiceClient(const FakeShillServiceClient&) = delete;
+  FakeShillServiceClient& operator=(const FakeShillServiceClient&) = delete;
+
   ~FakeShillServiceClient() override;
 
   // ShillServiceClient overrides
@@ -73,6 +76,15 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
                          StringCallback callback,
                          ErrorCallback error_callback) override;
+  void GetEapPassphrase(const dbus::ObjectPath& service_path,
+                        StringCallback callback,
+                        ErrorCallback error_callback) override;
+  void RequestTrafficCounters(
+      const dbus::ObjectPath& service_path,
+      DBusMethodCallback<base::Value> callback) override;
+  void ResetTrafficCounters(const dbus::ObjectPath& service_path,
+                            base::OnceClosure callback,
+                            ErrorCallback error_callback) override;
   ShillServiceClient::TestInterface* GetTestInterface() override;
 
   // ShillServiceClient::TestInterface overrides.
@@ -113,6 +125,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void SetHoldBackServicePropertyUpdates(bool hold_back) override;
   void SetRequireServiceToGetProperties(
       bool require_service_to_get_properties) override;
+  void SetFakeTrafficCounters(base::Value fake_traffic_counters) override;
 
  private:
   typedef base::ObserverList<ShillPropertyChangedObserver>::Unchecked
@@ -155,11 +168,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   // unknown service.
   bool require_service_to_get_properties_ = false;
 
+  base::Value fake_traffic_counters_{base::Value::Type::LIST};
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FakeShillServiceClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeShillServiceClient);
 };
 
 }  // namespace chromeos

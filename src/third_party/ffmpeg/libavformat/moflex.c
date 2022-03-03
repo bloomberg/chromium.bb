@@ -172,7 +172,6 @@ static int moflex_read_sync(AVFormatContext *s)
         unsigned type, ssize, codec_id = 0;
         unsigned codec_type, width = 0, height = 0, sample_rate = 0, channels = 0;
         int stream_index = -1;
-        int format;
         AVRational fps;
 
         read_var_byte(s, &type);
@@ -213,7 +212,6 @@ static int moflex_read_sync(AVFormatContext *s)
             fps.den = avio_rb16(pb);
             width = avio_rb16(pb);
             height = avio_rb16(pb);
-            format = AV_PIX_FMT_YUV420P;
             avio_skip(pb, type == 3 ? 3 : 2);
             break;
         case 4:
@@ -235,7 +233,6 @@ static int moflex_read_sync(AVFormatContext *s)
             st->codecpar->height     = height;
             st->codecpar->sample_rate= sample_rate;
             st->codecpar->channels   = channels;
-            st->codecpar->format     = format;
             st->priv_data            = av_packet_alloc();
             if (!st->priv_data)
                 return AVERROR(ENOMEM);
@@ -369,16 +366,13 @@ static int moflex_read_seek(AVFormatContext *s, int stream_index,
 static int moflex_read_close(AVFormatContext *s)
 {
     for (int i = 0; i < s->nb_streams; i++) {
-        AVPacket *packet = s->streams[i]->priv_data;
-
-        av_packet_free(&packet);
-        s->streams[i]->priv_data = 0;
+        av_packet_free((AVPacket **)&s->streams[i]->priv_data);
     }
 
     return 0;
 }
 
-AVInputFormat ff_moflex_demuxer = {
+const AVInputFormat ff_moflex_demuxer = {
     .name           = "moflex",
     .long_name      = NULL_IF_CONFIG_SMALL("MobiClip MOFLEX"),
     .priv_data_size = sizeof(MOFLEXDemuxContext),

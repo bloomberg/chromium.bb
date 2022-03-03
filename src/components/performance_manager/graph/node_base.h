@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/types/pass_key.h"
 #include "components/performance_manager/graph/graph_impl.h"
@@ -40,6 +40,10 @@ class NodeBase {
   // TODO(siggi): Don't store the node type, expose it on a virtual function
   //    instead.
   explicit NodeBase(NodeTypeEnum type);
+
+  NodeBase(const NodeBase&) = delete;
+  NodeBase& operator=(const NodeBase&) = delete;
+
   virtual ~NodeBase();
 
   // May be called on any sequence.
@@ -137,12 +141,9 @@ class NodeBase {
 
   // Assigned when JoinGraph() is called, up until LeaveGraph() is called, where
   // it is reset to null.
-  GraphImpl* graph_ GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
+  raw_ptr<GraphImpl> graph_ GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
 // Helper for implementing the Node parent of a PublicNodeClass.
@@ -173,6 +174,9 @@ class TypedNodeBase : public NodeBase {
       ObservedPropertyImpl<NodeImplClass, NodeClass, NodeObserverClass>;
 
   TypedNodeBase() : NodeBase(NodeImplClass::Type()) {}
+
+  TypedNodeBase(const TypedNodeBase&) = delete;
+  TypedNodeBase& operator=(const TypedNodeBase&) = delete;
 
   // Helper functions for casting from NodeBase to a concrete node type. This
   // CHECKs that the cast is valid.
@@ -206,9 +210,6 @@ class TypedNodeBase : public NodeBase {
   const Node* ToNode() const override {
     return static_cast<const NodeImplClass*>(this);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TypedNodeBase);
 };
 
 }  // namespace performance_manager

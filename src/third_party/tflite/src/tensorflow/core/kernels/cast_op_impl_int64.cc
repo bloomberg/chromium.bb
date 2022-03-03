@@ -28,17 +28,14 @@ CastFunctorType GetCpuCastFromInt64(DataType dst_dtype) {
 #if (defined(GOOGLE_CUDA) && GOOGLE_CUDA) || \
     (defined(TENSORFLOW_USE_ROCM) && TENSORFLOW_USE_ROCM)
 CastFunctorType GetGpuCastFromInt64(DataType dst_dtype) {
+#if defined(MLIR_GENERATED_GPU_KERNELS_ENABLED)
+  CURRY_SUBSET_TYPES3(CAST_CASE, GPUDevice, int64);
+#else
   CURRY_TYPES3_NO_BF16(CAST_CASE, GPUDevice, int64);
+#endif
   return nullptr;
 }
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-typedef Eigen::SyclDevice SYCLDevice;
-CastFunctorType GetSyclCastFromInt64(DataType dst_dtype) {
-  CURRY_TYPES3_NO_HALF(CAST_CASE, SYCLDevice, int64);
-  return nullptr;
-}
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // namespace tensorflow

@@ -6,11 +6,11 @@
 
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_sum_value.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 CSSMathMax* CSSMathMax::Create(const HeapVector<Member<V8CSSNumberish>>& args,
                                ExceptionState& exception_state) {
   if (args.IsEmpty()) {
@@ -27,24 +27,6 @@ CSSMathMax* CSSMathMax::Create(const HeapVector<Member<V8CSSNumberish>>& args,
 
   return result;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-CSSMathMax* CSSMathMax::Create(const HeapVector<CSSNumberish>& args,
-                               ExceptionState& exception_state) {
-  if (args.IsEmpty()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                      "Arguments can't be empty");
-    return nullptr;
-  }
-
-  CSSMathMax* result = Create(CSSNumberishesToNumericValues(args));
-  if (!result) {
-    exception_state.ThrowTypeError("Incompatible types");
-    return nullptr;
-  }
-
-  return result;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CSSMathMax* CSSMathMax::Create(CSSNumericValueVector values) {
   bool error = false;
@@ -58,12 +40,12 @@ CSSMathMax* CSSMathMax::Create(CSSNumericValueVector values) {
 
 absl::optional<CSSNumericSumValue> CSSMathMax::SumValue() const {
   auto cur_max = NumericValues()[0]->SumValue();
-  if (!cur_max || cur_max->terms.size() != 1)
+  if (!cur_max.has_value() || cur_max->terms.size() != 1)
     return absl::nullopt;
 
   for (const auto& value : NumericValues()) {
     const auto child_sum = value->SumValue();
-    if (!child_sum || child_sum->terms.size() != 1 ||
+    if (!child_sum.has_value() || child_sum->terms.size() != 1 ||
         child_sum->terms[0].units != cur_max->terms[0].units)
       return absl::nullopt;
 

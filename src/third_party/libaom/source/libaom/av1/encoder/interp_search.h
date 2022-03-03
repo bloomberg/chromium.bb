@@ -37,7 +37,7 @@ typedef struct {
 
 /*!\brief Miscellaneous arguments for inter mode search.
  */
-typedef struct {
+typedef struct HandleInterModeArgs {
   /*!
    * Buffer for the above predictor in OBMC
    */
@@ -149,6 +149,11 @@ typedef struct {
    *    MACROBLOCK::pred_sse due to different interpolation filter used.
    */
   unsigned int best_single_sse_in_refs[REF_FRAMES];
+  /*!
+   * Holds the sse of best mode so far in the mode evaluation process. This is
+   * used in intermediate termination of NEWMV mode evaluation.
+   */
+  unsigned int best_pred_sse;
 } HandleInterModeArgs;
 
 /*!\cond */

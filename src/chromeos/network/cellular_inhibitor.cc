@@ -25,13 +25,11 @@ namespace {
 
 // Delay for first uninhibit retry attempt. Delay doubles for every
 // subsequent attempt.
-constexpr base::TimeDelta kUninhibitRetryDelay =
-    base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kUninhibitRetryDelay = base::Seconds(2);
 
 // Timeout waiting for Cellular device scanning state to change
 // to true and back to false.
-constexpr base::TimeDelta kScanningChangeTimeout =
-    base::TimeDelta::FromSeconds(120);
+constexpr base::TimeDelta kScanningChangeTimeout = base::Seconds(120);
 
 }  // namespace
 
@@ -52,7 +50,7 @@ CellularInhibitor::InhibitLock::~InhibitLock() {
 
 // static
 const base::TimeDelta CellularInhibitor::kInhibitPropertyChangeTimeout =
-    base::TimeDelta::FromSeconds(5);
+    base::Seconds(5);
 
 // static
 void CellularInhibitor::RecordInhibitOperationResult(
@@ -204,33 +202,15 @@ void CellularInhibitor::OnUninhibit(bool success) {
       FROM_HERE, kScanningChangeTimeout,
       base::BindOnce(&CellularInhibitor::OnScanningChangeTimeout,
                      weak_ptr_factory_.GetWeakPtr()));
-  TransitionToState(State::kWaitingForScanningToStart);
-  CheckForScanningStarted();
-}
-
-void CellularInhibitor::CheckScanningIfNeeded() {
-  if (state_ == State::kWaitingForScanningToStart)
-    CheckForScanningStarted();
-
-  if (state_ == State::kWaitingForScanningToStop)
-    CheckForScanningStopped();
-}
-
-void CellularInhibitor::CheckForScanningStarted() {
-  DCHECK(state_ == State::kWaitingForScanningToStart);
-
-  if (!HasScanningStarted())
-    return;
-
   TransitionToState(State::kWaitingForScanningToStop);
   CheckForScanningStopped();
 }
 
-bool CellularInhibitor::HasScanningStarted() {
-  const DeviceState* cellular_device = GetCellularDevice();
-  if (!cellular_device)
-    return false;
-  return !cellular_device->inhibited() && cellular_device->scanning();
+void CellularInhibitor::CheckScanningIfNeeded() {
+  if (state_ != State::kWaitingForScanningToStop)
+    return;
+  else
+    CheckForScanningStopped();
 }
 
 void CellularInhibitor::CheckForScanningStopped() {
@@ -373,9 +353,6 @@ std::ostream& operator<<(std::ostream& stream,
     case CellularInhibitor::State::kWaitForUninhibit:
       stream << "[Waiting for Inhibit property clear]";
       break;
-    case CellularInhibitor::State::kWaitingForScanningToStart:
-      stream << "[Waiting for scanning to start]";
-      break;
     case CellularInhibitor::State::kWaitingForScanningToStop:
       stream << "[Waiting for scanning to stop]";
       break;
@@ -403,6 +380,9 @@ std::ostream& operator<<(
       break;
     case chromeos::CellularInhibitor::InhibitReason::kRefreshingProfileList:
       stream << "[Refreshing profile list]";
+      break;
+    case chromeos::CellularInhibitor::InhibitReason::kResettingEuiccMemory:
+      stream << "[Resetting EUICC memory]";
       break;
   }
   return stream;

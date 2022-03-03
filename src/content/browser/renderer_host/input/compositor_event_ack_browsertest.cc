@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -110,6 +110,11 @@ namespace content {
 class CompositorEventAckBrowserTest : public ContentBrowserTest {
  public:
   CompositorEventAckBrowserTest() {}
+
+  CompositorEventAckBrowserTest(const CompositorEventAckBrowserTest&) = delete;
+  CompositorEventAckBrowserTest& operator=(
+      const CompositorEventAckBrowserTest&) = delete;
+
   ~CompositorEventAckBrowserTest() override {}
 
   RenderWidgetHostImpl* GetWidgetHost() {
@@ -134,8 +139,26 @@ class CompositorEventAckBrowserTest : public ContentBrowserTest {
     TitleWatcher watcher(shell()->web_contents(), ready_title);
     ignore_result(watcher.WaitAndGetTitle());
 
-    HitTestRegionObserver observer(host->GetFrameSinkId());
-    observer.WaitForHitTestData();
+    // SetSize triggers an animation of the size, leading to a a new
+    // viz::LocalSurfaceId being generated. Since this was done right after
+    // navigation Viz could be processing an old surface.
+    //
+    // We want the HitTestData for the post resize surface. So wait until that
+    // surface has submitted a frame.
+    viz::LocalSurfaceId target = host->GetView()->GetLocalSurfaceId();
+    RenderFrameSubmissionObserver rfm_observer(
+        GetWidgetHost()->render_frame_metadata_provider());
+    while (!rfm_observer.LastRenderFrameMetadata()
+                .local_surface_id.value_or(viz::LocalSurfaceId())
+                .is_valid() ||
+           target !=
+               rfm_observer.LastRenderFrameMetadata().local_surface_id.value_or(
+                   viz::LocalSurfaceId::MaxSequenceId())) {
+      rfm_observer.WaitForMetadataChange();
+    }
+
+    HitTestRegionObserver hit_test_observer(host->GetFrameSinkId());
+    hit_test_observer.WaitForHitTestData();
   }
 
   int ExecuteScriptAndExtractInt(const std::string& script) {
@@ -173,7 +196,7 @@ class CompositorEventAckBrowserTest : public ContentBrowserTest {
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
-    gfx::Vector2dF default_scroll_offset;
+    gfx::PointF default_scroll_offset;
     while (observer.LastRenderFrameMetadata()
                .root_scroll_offset.value_or(default_scroll_offset)
                .y() <= 0) {
@@ -206,16 +229,13 @@ class CompositorEventAckBrowserTest : public ContentBrowserTest {
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
-    gfx::Vector2dF default_scroll_offset;
+    gfx::PointF default_scroll_offset;
     while (observer.LastRenderFrameMetadata()
                .root_scroll_offset.value_or(default_scroll_offset)
                .y() <= 0) {
       observer.WaitForMetadataChange();
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompositorEventAckBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest, MouseWheel) {
@@ -278,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
   GetWidgetHost()->ForwardGestureEvent(gesture_fling_start);
   RenderFrameSubmissionObserver observer(
       GetWidgetHost()->render_frame_metadata_provider());
-  gfx::Vector2dF default_scroll_offset;
+  gfx::PointF default_scroll_offset;
   while (observer.LastRenderFrameMetadata()
              .root_scroll_offset.value_or(default_scroll_offset)
              .y() <= 0)

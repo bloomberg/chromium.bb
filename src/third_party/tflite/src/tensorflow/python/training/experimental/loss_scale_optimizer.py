@@ -13,21 +13,21 @@
 # limitations under the License.
 # ==============================================================================
 """Contains LossScale classes."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.distribute import distribution_strategy_context
-from tensorflow.python.framework import ops
+from tensorflow.python.framework import indexed_slices
 from tensorflow.python.framework import smart_cond
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.training import optimizer
 from tensorflow.python.training.experimental import loss_scale as loss_scale_module
+from tensorflow.python.util import deprecation
 from tensorflow.python.util.tf_export import tf_export
 
 
-@tf_export(v1=['train.experimental.MixedPrecisionLossScaleOptimizer'])
+@deprecation.deprecated_endpoints(
+    'train.experimental.MixedPrecisionLossScaleOptimizer')
+@tf_export(v1=['mixed_precision.MixedPrecisionLossScaleOptimizer',
+               'train.experimental.MixedPrecisionLossScaleOptimizer'])
 class MixedPrecisionLossScaleOptimizer(optimizer.Optimizer):
   """An optimizer that applies loss scaling.
 
@@ -144,9 +144,10 @@ class MixedPrecisionLossScaleOptimizer(optimizer.Optimizer):
     ]
 
   def _scale_grad(self, grad, loss_scale_reciprocal):
-    if isinstance(grad, ops.IndexedSlices):
+    if isinstance(grad, indexed_slices.IndexedSlices):
       grad_vals = grad.values * loss_scale_reciprocal
-      return ops.IndexedSlices(grad_vals, grad.indices, grad.dense_shape)
+      return indexed_slices.IndexedSlices(grad_vals, grad.indices,
+                                          grad.dense_shape)
     return grad * loss_scale_reciprocal
 
   def apply_gradients(self, grads_and_vars, global_step=None, name=None):

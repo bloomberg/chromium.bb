@@ -12,7 +12,7 @@
 #include <arm_neon.h>
 #include <assert.h>
 
-#include "av1/common/arm/mem_neon.h"
+#include "aom_dsp/arm/mem_neon.h"
 #include "config/aom_dsp_rtcd.h"
 
 static INLINE uint32x4_t sum_squares_i16_4x4_neon(const int16_t *src,

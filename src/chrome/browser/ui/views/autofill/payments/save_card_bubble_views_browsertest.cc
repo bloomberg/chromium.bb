@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -17,14 +18,15 @@
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -58,8 +60,8 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/render_process_host.h"
@@ -87,6 +89,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+#include "url/url_constants.h"
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
@@ -95,6 +98,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #endif
 
 using base::Bucket;
@@ -172,32 +176,19 @@ class SaveCardBubbleViewsFullFormBrowserTest
         "components/test/data/autofill");
     embedded_test_server()->StartAcceptingConnections();
 
-    ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
-        browser()->profile())
-        ->OverrideNetworkForTest(
-            fake_server::CreateFakeServerHttpPostProviderFactory(
-                GetFakeServer()->AsWeakPtr()));
-
-    std::string username;
+    ASSERT_TRUE(SetupClients());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    // In ChromeOS browser tests, the profile may already by authenticated with
-    // stub account |user_manager::kStubUserEmail|.
-    CoreAccountInfo info =
-        IdentityManagerFactory::GetForProfile(browser()->profile())
-            ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
-    username = info.email;
-
     // Install the Settings App.
-    web_app::WebAppProvider::Get(browser()->profile())
+    web_app::WebAppProvider::GetForTest(GetProfile(0))
         ->system_web_app_manager()
         .InstallSystemAppsForTesting();
 #endif
-    if (username.empty())
-      username = "user@gmail.com";
 
-    harness_ = ProfileSyncServiceHarness::Create(
-        browser()->profile(), username, "password",
-        ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
+    // It's important to use the blank tab here and not some arbitrary page.
+    // This causes the RenderFrameHost to stay the same when navigating to the
+    // HTML pages in tests. Since ContentAutofillDriver is per RFH, the driver
+    // that this method starts observing will also be the one to notify later.
+    AddBlankTabAndShow(GetBrowser(0));
 
     // Set up the URL loader factory for the payments client so we can intercept
     // those network requests too.
@@ -213,7 +204,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
     // Wait for Personal Data Manager to be fully loaded to prevent that
     // spurious notifications deceive the tests.
-    WaitForPersonalDataManagerToBeLoaded(browser()->profile());
+    WaitForPersonalDataManagerToBeLoaded(GetProfile(0));
 
     // Set up this class as the ObserverForTest implementation.
     credit_card_save_manager_ = ContentAutofillDriver::GetForRenderFrameHost(
@@ -331,23 +322,23 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void SetUpForEditableExpirationDate() {
     // Start sync.
-    harness_->SetupSync();
+    ASSERT_TRUE(SetupSync());
   }
 
   void NavigateTo(const std::string& file_path) {
     if (file_path.find("data:") == 0U) {
-      ui_test_utils::NavigateToURL(browser(), GURL(file_path));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(GetBrowser(0), GURL(file_path)));
     } else {
-      ui_test_utils::NavigateToURL(browser(),
-                                   embedded_test_server()->GetURL(file_path));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(
+          GetBrowser(0), embedded_test_server()->GetURL(file_path)));
     }
   }
 
   void SetAccountFullName(const std::string& full_name) {
     signin::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForProfile(browser()->profile());
+        IdentityManagerFactory::GetForProfile(GetProfile(0));
     CoreAccountInfo core_info =
-        PersonalDataManagerFactory::GetForProfile(browser()->profile())
+        PersonalDataManagerFactory::GetForProfile(GetProfile(0))
             ->GetAccountInfoForPaymentsServer();
 
     AccountInfo account_info;
@@ -717,7 +708,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   SavePaymentIconView* GetSaveCardIconView() {
     BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(browser());
+        BrowserView::GetBrowserViewForBrowser(GetBrowser(0));
     PageActionIconView* icon =
         browser_view->toolbar_button_provider()->GetPageActionIconView(
             PageActionIconType::kSaveCard);
@@ -732,30 +723,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return static_cast<SavePaymentIconView*>(icon);
   }
 
-  void OpenSettingsFromManageCardsPrompt() {
-    FillForm();
-    SubmitFormAndWaitForCardLocalSaveBubble();
-    ReduceAnimationTime();
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-    ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-#endif
-
-    // Click [Save] should close the offer-to-save bubble and show "Card saved"
-    // animation.
-    ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-
-    // Open up Manage Cards prompt.
-    ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-    ClickOnView(GetSaveCardIconView());
-    WaitForObservedEvent();
-
-    // Click on the redirect button.
-    ClickOnDialogViewWithId(DialogViewId::MANAGE_CARDS_BUTTON);
-  }
-
   content::WebContents* GetActiveWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+    return GetBrowser(0)->tab_strip_model()->GetActiveWebContents();
   }
 
   void AddEventObserverToController() {
@@ -770,8 +739,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     GetSaveCardIconView()->ReduceAnimationTimeForTesting();
     auto* const animating_layout = GetAnimatingLayoutManager();
     if (animating_layout) {
-      animating_layout->SetAnimationDuration(
-          base::TimeDelta::FromMilliseconds(1));
+      animating_layout->SetAnimationDuration(base::Milliseconds(1));
     }
   }
 
@@ -792,9 +760,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return &test_url_loader_factory_;
   }
 
-  std::unique_ptr<ProfileSyncServiceHarness> harness_;
-
-  CreditCardSaveManager* credit_card_save_manager_ = nullptr;
+  raw_ptr<CreditCardSaveManager> credit_card_save_manager_ = nullptr;
 
  private:
   views::AnimatingLayoutManager* GetAnimatingLayoutManager() {
@@ -804,7 +770,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     }
 
     return views::test::GetAnimatingLayoutManager(
-        BrowserView::GetBrowserViewForBrowser(browser())
+        BrowserView::GetBrowserViewForBrowser(GetBrowser(0))
             ->toolbar()
             ->toolbar_account_icon_container());
   }
@@ -892,6 +858,41 @@ class SaveCardBubbleViewsFullFormBrowserTestSettings
 #endif
   }
 
+  void SetUpOnMainThread() override {
+    SaveCardBubbleViewsFullFormBrowserTest::SetUpOnMainThread();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // OpenSettingsFromManageCardsPrompt() tries to retrieve the PhoneHubManager
+    // keyed service, whose factory implementation relies on ChromeOS having a
+    // single profile, and consequently a single service instance. Creating a
+    // service for both browser()->profile() and GetProfile(0) hits a DCHECK,
+    // so prevent this by disabling the feature.
+    GetProfile(0)->GetPrefs()->SetBoolean(
+        chromeos::multidevice_setup::kPhoneHubAllowedPrefName, false);
+#endif
+  }
+
+  void OpenSettingsFromManageCardsPrompt() {
+    FillForm();
+    SubmitFormAndWaitForCardLocalSaveBubble();
+    ReduceAnimationTime();
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+#endif
+
+    // Click [Save] should close the offer-to-save bubble and show "Card saved"
+    // animation.
+    ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+    // Open up Manage Cards prompt.
+    ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+    ClickOnView(GetSaveCardIconView());
+    WaitForObservedEvent();
+
+    // Click on the redirect button.
+    ClickOnDialogViewWithId(DialogViewId::MANAGE_CARDS_BUTTON);
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 };
@@ -904,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestSettings,
   OpenSettingsFromManageCardsPrompt();
 
   // Another tab should have opened.
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(2, GetBrowser(0)->tab_strip_model()->count());
 
   // Metrics should have been recorded correctly.
   EXPECT_THAT(
@@ -936,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // |bubble| and |bubble_widget| now point to deleted objects.
 
   // Simulate closing the browser window.
-  browser()->tab_strip_model()->CloseAllTabs();
+  GetBrowser(0)->tab_strip_model()->CloseAllTabs();
 
   // Process the asynchronous close (which should do nothing).
   base::RunLoop().RunUntilIdle();
@@ -949,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_ClickingSaveClosesBubble) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -998,18 +999,17 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
   }
 
   void SetUpForSyncTransportModeTest() {
-    // Signing in (without making the account Chrome's primary one or explicitly
-    // setting up Sync) causes the Sync machinery to start up in standalone
-    // transport mode.
-    secondary_account_helper::SignInSecondaryAccount(
-        browser()->profile(), test_url_loader_factory(), "user@gmail.com");
+    // Signing in (without granting sync consent or explicitly setting up Sync)
+    // should trigger starting the Sync machinery in standalone transport mode.
+    secondary_account_helper::SignInUnconsentedAccount(
+        GetProfile(0), test_url_loader_factory(), "user@gmail.com");
     ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
-              harness_->service()->GetTransportState());
+              GetSyncService(0)->GetTransportState());
 
-    ASSERT_TRUE(harness_->AwaitSyncTransportActive());
+    ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
     ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-              harness_->service()->GetTransportState());
-    ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
+              GetSyncService(0)->GetTransportState());
+    ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   }
 
  private:
@@ -1079,20 +1079,19 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
     Upload_TransportMode_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
-  // Signing in (without making the account Chrome's primary one or explicitly
-  // setting up Sync) causes the Sync machinery to start up in standalone
-  // transport mode.
-  secondary_account_helper::SignInSecondaryAccount(
-      browser()->profile(), test_url_loader_factory(), "user@gmail.com");
+  // Signing in (without granting sync consent or explicitly setting up Sync)
+  // should trigger starting the Sync machinery in standalone transport mode.
+  secondary_account_helper::SignInUnconsentedAccount(
+      GetProfile(0), test_url_loader_factory(), "user@gmail.com");
   SetAccountFullName("John Smith");
 
   ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
-            harness_->service()->GetTransportState());
+            GetSyncService(0)->GetTransportState());
 
-  ASSERT_TRUE(harness_->AwaitSyncTransportActive());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            harness_->service()->GetTransportState());
-  ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 
   FillFormWithoutName();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1113,7 +1112,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_NotTransportMode_InfoTextIconDoesNotExist) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1129,7 +1128,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_ClickingNoThanksClosesBubble) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1152,7 +1151,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_ClickingCloseClosesBubble) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1167,7 +1166,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_ShouldNotRequestCardholderNameInHappyPath) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1182,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithMissingNamesRequestsCardholderNameIfExpOn) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillFormWithoutName();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1192,11 +1191,22 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the upload save bubble. Ensures that the bubble surfaces a textfield
 // requesting cardholder name if cardholder name is conflicting.
+// TODO(crbug.com/1245213)
+// This test is not applicable for explicit address save dialogs.
+// The test relies on the following sequence of events: First a credit card is
+// imported first, but the upload fails. Subsequently, an address profile is
+// imported which is than used to complement the information needed to offer a
+// local save prompt. With explicit address save prompts, the storage of a new
+// address is omitted if a credit card can be stored to avoid showing two
+// dialogs at the same time.
+// To make test work one need to inject an existing address into the
+// PersonalDataManager. Alternatively, the import logic should try to get an
+// address candidate from the form even though no address was imported yet.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
-    Upload_SubmittingFormWithConflictingNamesRequestsCardholderNameIfExpOn) {
+    DISABLED_Upload_SubmittingFormWithConflictingNamesRequestsCardholderNameIfExpOn) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submit first shipping address form with a conflicting name.
   FillFormWithConflictingName();
@@ -1215,7 +1225,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SaveButtonIsDisabledIfNoCardholderNameAndCardholderNameRequested) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still show the upload save bubble and legal
   // footer, along with a textfield specifically requesting the cardholder name.
@@ -1245,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_EnteringCardholderNameAndClickingSaveClosesBubbleIfCardholderNameRequested) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still show the upload save bubble and legal
   // footer, along with a textfield specifically requesting the cardholder name.
@@ -1280,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
 
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
   // Set the user's full name.
   SetAccountFullName("John Smith");
 
@@ -1311,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
 
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still show the upload save bubble and legal
   // footer, along with a textfield specifically requesting the cardholder name.
@@ -1337,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_CardholderNameRequested_SubmittingPrefilledValueLogsUneditedMetric) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
   // Set the user's full name.
   SetAccountFullName("John Smith");
 
@@ -1363,7 +1373,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_CardholderNameRequested_SubmittingChangedValueLogsEditedMetric) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
   // Set the user's full name.
   SetAccountFullName("John Smith");
 
@@ -1397,7 +1407,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldOfferLocalSaveIfPaymentsDeclines) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
@@ -1423,7 +1433,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldOfferLocalSaveIfPaymentsFails) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcServerError();
@@ -1449,7 +1459,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_CanOfferToSaveEvenIfNothingFoundIfPaymentsAccepts) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form, even with only card number and expiration date, should
   // start the flow of asking Payments if Chrome should offer to save the card
@@ -1465,7 +1475,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_CanOfferToSaveDynamicForm) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -1491,7 +1501,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldNotOfferToSaveIfNothingFoundAndPaymentsDeclines) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
@@ -1515,7 +1525,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldAttemptToOfferToSaveIfCvcNotFound) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though CVC is missing.
@@ -1531,7 +1541,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldAttemptToOfferToSaveIfInvalidCvcFound) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though the provided
@@ -1549,7 +1559,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldAttemptToOfferToSaveIfNameNotFound) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though name is
@@ -1567,7 +1577,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldAttemptToOfferToSaveIfNamesConflict) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submit first shipping address form with a conflicting name.
   FillFormWithConflictingName();
@@ -1588,7 +1598,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldAttemptToOfferToSaveIfAddressNotFound) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though billing address
@@ -1606,7 +1616,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Submit first shipping address form with a conflicting postal code.
   FillFormWithConflictingPostalCode();
@@ -1629,7 +1639,7 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
 
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1734,7 +1744,7 @@ IN_PROC_BROWSER_TEST_F(
   // be selected, so selecting the current January will always be expired.
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(base::Time::Now());
-  test_clock.Advance(base::TimeDelta::FromDays(40));
+  test_clock.Advance(base::Days(40));
   // Selecting expired date will disable [Save] button.
   month_input()->SetSelectedRow(1);
   year_input()->SetSelectedRow(1);
@@ -1863,7 +1873,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     StrikeDatabase_Upload_AddStrikeIfBubbleDeclined) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -1952,7 +1962,7 @@ IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     StrikeDatabase_Upload_FullFlowTest) {
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   // Show and ignore the bubble enough times in order to accrue maximum strikes.
   for (int i = 0;
@@ -2026,10 +2036,10 @@ IN_PROC_BROWSER_TEST_F(
   // Set card number to match the number to be filled in the form.
   card.SetNumber(u"5454545454545454");
   card.SetNickname(u"nickname");
-  AddTestCreditCard(browser()->profile(), card);
+  AddTestCreditCard(GetProfile(0), card);
 
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -2045,10 +2055,10 @@ IN_PROC_BROWSER_TEST_F(
   CreditCard card = test::GetCreditCard();
   // Set card number to match the number to be filled in the form.
   card.SetNumber(u"5454545454545454");
-  AddTestCreditCard(browser()->profile(), card);
+  AddTestCreditCard(GetProfile(0), card);
 
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -2069,9 +2079,17 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
 }
 
+// Disabled on Linux due to crashes; https://crbug.com/1216300.
+#if defined(OS_LINUX)
+#define MAYBE_ClickingOnCreditCardIconInStatusChipReshowsBubble \
+    DISABLED_ClickingOnCreditCardIconInStatusChipReshowsBubble
+#else
+#define MAYBE_ClickingOnCreditCardIconInStatusChipReshowsBubble \
+    ClickingOnCreditCardIconInStatusChipReshowsBubble
+#endif
 // Ensures that the clicking on the credit card icon will reshow bubble.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
-                       ClickingOnCreditCardIconInStatusChipReshowsBubble) {
+                       MAYBE_ClickingOnCreditCardIconInStatusChipReshowsBubble) {
   FillForm();
   SubmitFormAndWaitForCardLocalSaveBubble();
   ClickOnCloseButton();
@@ -2093,7 +2111,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
 #endif
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        MAYBE_ActivateFirstInactiveBubbleForAccessibility) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(GetBrowser(0));
   ToolbarView* toolbar_view = browser_view->toolbar();
   EXPECT_FALSE(toolbar_view->toolbar_account_icon_container()
                    ->page_action_icon_controller()
@@ -2131,8 +2150,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_TRUE(GetSaveCardBubbleViews()->GetVisible());
 
-  AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
-  TabStripModel* tab_model = browser()->tab_strip_model();
+  AddTabAtIndexToBrowser(GetBrowser(0), 1, GURL("http://example.com/"),
+                         ui::PAGE_TRANSITION_TYPED,
+                         /*check_navigation_success=*/true);
+  TabStripModel* tab_model = GetBrowser(0)->tab_strip_model();
   tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   WaitForAnimationToEnd();
 
@@ -2155,7 +2176,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        Feedback_Success) {
   base::HistogramTester histogram_tester;
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -2202,7 +2223,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        Feedback_Failure) {
   base::HistogramTester histogram_tester;
   // Start sync.
-  harness_->SetupSync();
+  ASSERT_TRUE(SetupSync());
 
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();

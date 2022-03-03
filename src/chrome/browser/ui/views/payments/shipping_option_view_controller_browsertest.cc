@@ -17,11 +17,14 @@ namespace payments {
 
 class PaymentRequestShippingOptionViewControllerTest
     : public PaymentRequestBrowserTestBase {
+ public:
+  PaymentRequestShippingOptionViewControllerTest(
+      const PaymentRequestShippingOptionViewControllerTest&) = delete;
+  PaymentRequestShippingOptionViewControllerTest& operator=(
+      const PaymentRequestShippingOptionViewControllerTest&) = delete;
+
  protected:
   PaymentRequestShippingOptionViewControllerTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestShippingOptionViewControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
@@ -40,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
   InvokePaymentRequestUI();
 
   // There is no shipping option section, because no address has been selected.
-  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  PaymentRequest* request = GetPaymentRequests().front();
   EXPECT_EQ(2U, request->state()->shipping_profiles().size());
   EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(

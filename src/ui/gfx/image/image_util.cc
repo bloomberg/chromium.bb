@@ -9,10 +9,12 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/webp_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/resize_image_dimensions.h"
@@ -51,6 +53,14 @@ Image ResizedImageForSearchByImage(const Image& image) {
   return ResizedImageForSearchByImageSkiaRepresentation(image);
 }
 
+Image ResizedImageForMaxDimensions(const Image& image,
+                                   int max_width,
+                                   int max_height,
+                                   int max_area) {
+  return ResizedImageForMaxDimensionsSkiaRepresentation(image, max_width,
+                                                        max_height, max_area);
+}
+
 // The MacOS implementation of this function is in image_utils_mac.mm.
 #if !defined(OS_MAC)
 bool JPEG1xEncodedDataFromImage(const Image& image,
@@ -75,23 +85,35 @@ bool JPEG1xEncodedDataFromSkiaRepresentation(const Image& image,
   return gfx::JPEGCodec::Encode(bitmap, quality, dst);
 }
 
+bool WebpEncodedDataFromImage(const Image& image,
+                              int quality,
+                              std::vector<unsigned char>* dst) {
+  const SkBitmap bitmap = image.AsBitmap();
+  return gfx::WebpCodec::Encode(bitmap, quality, dst);
+}
+
 Image ResizedImageForSearchByImageSkiaRepresentation(const Image& image) {
+  return ResizedImageForMaxDimensionsSkiaRepresentation(
+      image, kSearchByImageMaxImageWidth, kSearchByImageMaxImageHeight,
+      kSearchByImageMaxImageArea);
+}
+
+Image ResizedImageForMaxDimensionsSkiaRepresentation(const Image& image,
+                                                     int max_width,
+                                                     int max_height,
+                                                     int max_area) {
   const gfx::ImageSkiaRep& image_skia_rep =
       image.AsImageSkia().GetRepresentation(1.0f);
   if (image_skia_rep.scale() != 1.0f)
     return image;
 
   const SkBitmap& bitmap = image_skia_rep.GetBitmap();
-  if (bitmap.height() * bitmap.width() > kSearchByImageMaxImageArea &&
-      (bitmap.width() > kSearchByImageMaxImageWidth ||
-       bitmap.height() > kSearchByImageMaxImageHeight)) {
-    double scale = std::min(
-        static_cast<double>(kSearchByImageMaxImageWidth) / bitmap.width(),
-        static_cast<double>(kSearchByImageMaxImageHeight) / bitmap.height());
-    int width = base::ClampToRange<int>(scale * bitmap.width(), 1,
-                                        kSearchByImageMaxImageWidth);
-    int height = base::ClampToRange<int>(scale * bitmap.height(), 1,
-                                         kSearchByImageMaxImageHeight);
+  if (bitmap.height() * bitmap.width() > max_area &&
+      (bitmap.width() > max_width || bitmap.height() > max_height)) {
+    double scale = std::min(static_cast<double>(max_width) / bitmap.width(),
+                            static_cast<double>(max_height) / bitmap.height());
+    int width = base::clamp<int>(scale * bitmap.width(), 1, max_width);
+    int height = base::clamp<int>(scale * bitmap.height(), 1, max_height);
     SkBitmap new_bitmap = skia::ImageOperations::Resize(
         bitmap, skia::ImageOperations::RESIZE_GOOD, width, height);
     return Image(ImageSkia(ImageSkiaRep(new_bitmap, 0.0f)));

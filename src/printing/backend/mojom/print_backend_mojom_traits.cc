@@ -215,13 +215,7 @@ bool StructTraits<printing::mojom::PrinterSemanticCapsAndDefaultsDataView,
     return false;
   }
 
-  // There should be at least one item in `papers`.
-  if (out->papers.empty()) {
-    DLOG(ERROR) << "The available papers must not be empty.";
-    return false;
-  }
-
-  // There should not be duplicates in any of the arrays.
+  // There should not be duplicates in certain arrays.
   DuplicateChecker<printing::mojom::DuplexMode> duplex_modes_dup_checker;
   if (duplex_modes_dup_checker.HasDuplicates(out->duplex_modes)) {
     DLOG(ERROR) << "Duplicate duplex_modes detected.";
@@ -229,22 +223,9 @@ bool StructTraits<printing::mojom::PrinterSemanticCapsAndDefaultsDataView,
   }
 
   DuplicateChecker<printing::PrinterSemanticCapsAndDefaults::Paper>
-      papers_dup_checker;
-  if (papers_dup_checker.HasDuplicates(out->papers)) {
-    DLOG(ERROR) << "Duplicate papers detected.";
-    return false;
-  }
-
-  DuplicateChecker<printing::PrinterSemanticCapsAndDefaults::Paper>
       user_defined_papers_dup_checker;
   if (user_defined_papers_dup_checker.HasDuplicates(out->user_defined_papers)) {
     DLOG(ERROR) << "Duplicate user_defined_papers detected.";
-    return false;
-  }
-
-  DuplicateChecker<gfx::Size> dpis_dup_checker;
-  if (dpis_dup_checker.HasDuplicates(out->dpis)) {
-    DLOG(ERROR) << "Duplicate dpis detected.";
     return false;
   }
 

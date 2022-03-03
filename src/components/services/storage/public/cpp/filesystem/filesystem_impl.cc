@@ -19,6 +19,10 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace storage {
 
 namespace {
@@ -111,7 +115,7 @@ void FilesystemImpl::GetEntries(const base::FilePath& path,
                                 mojom::GetEntriesMode mode,
                                 GetEntriesCallback callback) {
   const base::FilePath full_path = MakeAbsolute(path);
-  FileErrorOr<std::vector<base::FilePath>> result =
+  base::FileErrorOr<std::vector<base::FilePath>> result =
       GetDirectoryEntries(full_path, mode);
   if (result.is_error()) {
     std::move(callback).Run(result.error(), std::vector<base::FilePath>());
@@ -251,7 +255,7 @@ void FilesystemImpl::RenameFile(const base::FilePath& old_path,
 
 void FilesystemImpl::LockFile(const base::FilePath& path,
                               LockFileCallback callback) {
-  FileErrorOr<base::File> result = LockFileLocal(MakeAbsolute(path));
+  base::FileErrorOr<base::File> result = LockFileLocal(MakeAbsolute(path));
   if (result.is_error()) {
     std::move(callback).Run(result.error(), mojo::NullRemote());
     return;
@@ -273,7 +277,7 @@ void FilesystemImpl::SetOpenedFileLength(base::File file,
 }
 
 // static
-FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
+base::FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
     const base::FilePath& path) {
   DCHECK(path.IsAbsolute());
   base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ |
@@ -322,9 +326,9 @@ mojom::PathAccessInfoPtr FilesystemImpl::GetPathAccessLocal(
 }
 
 // static
-FileErrorOr<std::vector<base::FilePath>> FilesystemImpl::GetDirectoryEntries(
-    const base::FilePath& path,
-    mojom::GetEntriesMode mode) {
+base::FileErrorOr<std::vector<base::FilePath>>
+FilesystemImpl::GetDirectoryEntries(const base::FilePath& path,
+                                    mojom::GetEntriesMode mode) {
   DCHECK(path.IsAbsolute());
   int file_types = base::FileEnumerator::FILES;
   if (mode == mojom::GetEntriesMode::kFilesAndDirectories)
@@ -335,9 +339,9 @@ FileErrorOr<std::vector<base::FilePath>> FilesystemImpl::GetDirectoryEntries(
       base::FileEnumerator::FolderSearchPolicy::ALL,
       base::FileEnumerator::ErrorPolicy::STOP_ENUMERATION);
   std::vector<base::FilePath> entries;
-  for (base::FilePath path = enumerator.Next(); !path.empty();
-       path = enumerator.Next()) {
-    entries.push_back(path);
+  for (base::FilePath entry = enumerator.Next(); !entry.empty();
+       entry = enumerator.Next()) {
+    entries.push_back(entry);
   }
   if (enumerator.GetError() != base::File::FILE_OK)
     return enumerator.GetError();

@@ -27,9 +27,11 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/gpu/gpu_fusible.h"
 #include "tensorflow/compiler/xla/service/gpu/instruction_fusion.h"
 #include "tensorflow/compiler/xla/service/gpu/ir_emission_utils.h"
+#include "tensorflow/compiler/xla/service/hlo_graph_dumper.h"
 #include "tensorflow/compiler/xla/service/hlo_instruction.h"
 #include "tensorflow/compiler/xla/service/hlo_opcode.h"
 #include "tensorflow/compiler/xla/service/hlo_reachability.h"
+#include "tensorflow/compiler/xla/service/llvm_ir/fused_ir_emitter.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/core/platform/types.h"
 
@@ -48,7 +50,8 @@ bool IsProfitableOperand(HloInstruction* instr) {
   return true;
 }
 
-bool LegalToFuse(HloInstruction* instr1, HloInstruction* instr2) {
+bool LegalToFuse(HloInstruction* instr1, HloInstruction* instr2,
+                 FusionInfoCache* fusion_info_cache) {
   // If we're fusing fusions only do it if the fusion kind matches. Loop fusions
   // merge into bigger loop fusions and input (reduce) fusions become fusions
   // with multiple reduce outputs. We could fuse reduce and loop fusions
@@ -74,7 +77,9 @@ bool LegalToFuse(HloInstruction* instr1, HloInstruction* instr2) {
     return false;
   }
   // Do this check last, as it may be expensive.
-  return !FusionWouldBeTooLarge(*instr1, *instr2);
+  return !FusionWouldBeTooLarge(*instr1, *instr2,
+                                /*is_consumer_producer_fusion=*/false,
+                                fusion_info_cache);
 }
 
 // We prefer multi-output fusions over other fusions over unfused ops, because
@@ -102,8 +107,16 @@ HloInstruction* SelectPreferredFusionCandidate(
 }
 
 std::vector<HloInstruction*> GetProducerConsumerMultiOutputFusionCandidates(
-    const HloInstruction* producer, const HloReachabilityMap& reachability) {
+    const HloInstruction* producer, const HloReachabilityMap& reachability,
+    FusionInfoCache* fusion_info_cache) {
   std::vector<HloInstruction*> fusion_candidates;
+  // If there is only one user, and it is not a multi-output fusion node, this
+  // fusion possibility was already considered and rejected by the FusionMerger
+  // pass. No need to try again!
+  if (producer->user_count() == 1 &&
+      !producer->users()[0]->IsMultiOutputFusion()) {
+    return fusion_candidates;
+  }
   for (HloInstruction* consumer : producer->users()) {
     VLOG(3) << "Looking at producer " << producer->name()
             << " and its consumer " << consumer->name();
@@ -136,9 +149,21 @@ std::vector<HloInstruction*> GetProducerConsumerMultiOutputFusionCandidates(
       VLOG(3) << producer->name() << " would introduce a cycle when fused.";
       continue;
     }
-    if (FusionWouldBeTooLarge(*producer, *consumer)) {
+    if (FusionWouldBeTooLarge(*producer, *consumer,
+                              /*is_consumer_producer_fusion=*/false,
+                              fusion_info_cache)) {
       VLOG(3) << producer->name() << " and " << consumer->name()
               << " would be too large of a fusion.";
+      continue;
+    }
+    // Make sure the emitter can codegen the fusion op efficiently. We currently
+    // can have exponential time/memory requirements for emitting certain fusion
+    // ops, in which case we don't want to fuse.
+    // TODO(b/119692968): Remove this once fixed in the emitter.
+    if (FusedIrEmitter::IsFusedIrEmitterInefficient(consumer, producer)) {
+      VLOG(3) << "Fusion of " << producer->name() << " into "
+              << consumer->name()
+              << " would result in overly large code duplication.";
       continue;
     }
     fusion_candidates.push_back(consumer);
@@ -172,7 +197,8 @@ void GpuMultiOutputFusion::RecomputeReachability() {
   reachability_ = HloReachabilityMap::Build(computation_);
 }
 
-bool GpuMultiOutputFusion::FuseSiblings(HloInstruction* parent) {
+bool GpuMultiOutputFusion::FuseSiblings(HloInstruction* parent,
+                                        FusionInfoCache* fusion_info_cache) {
   if (!IsProfitableOperand(parent)) {
     return false;
   }
@@ -194,17 +220,20 @@ bool GpuMultiOutputFusion::FuseSiblings(HloInstruction* parent) {
       VLOG(3) << "Considering " << (*i)->name() << " and " << (*j)->name();
       if (!IsSiblingFusionCandidate(*j) || reachability_->IsConnected(*i, *j) ||
           !ShapesCompatibleForMultiOutputFusion(*(*i), *(*j)) ||
-          !LegalToFuse(*i, *j)) {
+          !LegalToFuse(*i, *j, fusion_info_cache)) {
         ++j;
         continue;
       }
       if (!ConsumeFuel(name(), [&] {
-            return absl::StrFormat("Not fusing %s and %s.", (*i)->name(),
-                                   (*j)->name());
+            return absl::StrFormat("Not fusing siblings %s and %s.",
+                                   (*i)->name(), (*j)->name());
           })) {
+        ++j;
         continue;
       }
       VLOG(2) << "Fuse siblings " << (*i)->name() << " and " << (*j)->name();
+      fusion_info_cache->Invalidate(*i);
+      fusion_info_cache->Invalidate(*j);
       HloInstruction* remaining = *i;
       HloInstruction* fused = *j;
       if (fused->opcode() == HloOpcode::kFusion) {
@@ -223,12 +252,24 @@ bool GpuMultiOutputFusion::FuseSiblings(HloInstruction* parent) {
   return changed;
 }
 
-bool GpuMultiOutputFusion::DoMultiOutputFusion() {
+StatusOr<bool> GpuMultiOutputFusion::DoMultiOutputFusion() {
   bool changed = false;
   RecomputeReachability();
   std::vector<HloInstruction*> defs_before_uses =
       computation_->MakeInstructionPostOrder();
 
+  auto dump_fusion_state = [&] {
+    if (computation_->parent()
+            ->config()
+            .debug_options()
+            .xla_dump_fusion_visualization()) {
+      TF_RETURN_IF_ERROR(
+          RegisterFusionState(*computation_, "GpuMultiOutputFusion"));
+    }
+    return Status::OK();
+  };
+
+  FusionInfoCache fusion_info_cache;
   while (!defs_before_uses.empty()) {
     // Traverse the HLO in uses-before-defs order by removing instruction from
     // the back of the vector.
@@ -241,7 +282,7 @@ bool GpuMultiOutputFusion::DoMultiOutputFusion() {
       continue;
     }
     // First, fuse the consumer ops of the current op, which are siblings.
-    if (FuseSiblings(/*parent=*/producer)) {
+    if (FuseSiblings(/*parent=*/producer, &fusion_info_cache)) {
       changed = true;
     }
     // Second, perform producer-consumer multi-output fusion. This order will
@@ -249,7 +290,7 @@ bool GpuMultiOutputFusion::DoMultiOutputFusion() {
     // multi-output fusion will occur before the current op in the order of
     // traversal, and hence, not get into the way of subsequent fusion attempts.
     const auto candidates = GetProducerConsumerMultiOutputFusionCandidates(
-        producer, *reachability_);
+        producer, *reachability_, &fusion_info_cache);
     auto* consumer_for_fusion = SelectPreferredFusionCandidate(candidates);
     if (consumer_for_fusion == nullptr) {
       continue;
@@ -261,6 +302,9 @@ bool GpuMultiOutputFusion::DoMultiOutputFusion() {
       continue;
     }
     changed = true;
+    fusion_info_cache.Invalidate(producer);
+    fusion_info_cache.Invalidate(consumer_for_fusion);
+
     if (consumer_for_fusion->opcode() == HloOpcode::kFusion) {
       VLOG(2) << "Fuse producer " << producer->name() << " into its consumer "
               << consumer_for_fusion->name();
@@ -271,6 +315,8 @@ bool GpuMultiOutputFusion::DoMultiOutputFusion() {
         CHECK_EQ(0, producer->user_count());
         TF_CHECK_OK(computation_->RemoveInstruction(producer));
       }
+
+      TF_RETURN_IF_ERROR(dump_fusion_state());
       RecomputeReachability();
       continue;
     }
@@ -290,6 +336,8 @@ bool GpuMultiOutputFusion::DoMultiOutputFusion() {
       CHECK_EQ(0, producer->user_count());
       TF_CHECK_OK(computation_->RemoveInstruction(producer));
     }
+
+    TF_RETURN_IF_ERROR(dump_fusion_state());
     RecomputeReachability();
   }
   return changed;
@@ -299,7 +347,8 @@ StatusOr<bool> GpuMultiOutputFusion::Run(HloModule* module) {
   bool changed = false;
   for (auto* computation : module->MakeNonfusionComputations()) {
     computation_ = computation;
-    if (DoMultiOutputFusion()) {
+    TF_ASSIGN_OR_RETURN(bool fusion_changed, DoMultiOutputFusion());
+    if (fusion_changed) {
       changed = true;
     }
   }

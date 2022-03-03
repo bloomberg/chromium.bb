@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
@@ -50,6 +51,7 @@ import java.util.List;
  */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@Batch(Batch.PER_CLASS)
 public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -66,7 +68,8 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     private TextView mCustomTextView2;
 
     @Rule
-    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
+    public RenderTestRule mRenderTestRule =
+            RenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
 
     public ModalDialogViewRenderTest(boolean nightModeEnabled) {
         // Sets a fake background color to make the screenshots easier to compare with bare eyes.
@@ -77,8 +80,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { NightModeTestUtils.tearDownNightModeForDummyUiActivity(); });
+        NightModeTestUtils.tearDownNightModeForDummyUiActivity();
         super.tearDownTest();
     }
 
@@ -109,8 +111,8 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_TitleAndTitleIcon() throws IOException {
         setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
-        final Drawable icon = UiUtils.getTintedDrawable(
-                getActivity(), org.chromium.chrome.R.drawable.ic_add, R.color.default_icon_color);
+        final Drawable icon = UiUtils.getTintedDrawable(getActivity(),
+                org.chromium.chrome.R.drawable.ic_add, R.color.default_icon_color_tint_list);
         createModel(mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                             .with(ModalDialogProperties.TITLE_ICON, icon));
         mRenderTestRule.render(mModalDialogView, "title_and_title_icon");

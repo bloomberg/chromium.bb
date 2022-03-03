@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
@@ -20,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
@@ -62,10 +64,10 @@
 #include "net/cookies/cookie_util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
+#include "sandbox/policy/features.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
@@ -75,9 +77,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/net/dhcp_wpad_url_client.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -92,21 +94,11 @@
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-namespace {
-
-constexpr bool kCertificateTransparencyEnabled =
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD) && \
-    !defined(OS_ANDROID)
-    // Certificate Transparency is only enabled if:
-    //   - Desktop (!OS_ANDROID); OS_IOS does not use this file
-    //   - base::GetBuildTime() is deterministic to the source (OFFICIAL_BUILD)
-    //   - The build in reliably updatable (GOOGLE_CHROME_BRANDING)
-    true;
-#else
-    false;
+#if defined(OS_WIN)
+#include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
 #endif
 
-bool g_enable_certificate_transparency = kCertificateTransparencyEnabled;
+namespace {
 
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
@@ -165,8 +157,8 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO: Use KerberosCredentialsManager to determine whether Kerberos is
   // enabled instead of relying directly on the preference.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   auth_dynamic_params->allow_gssapi_library_load =
       connector->IsActiveDirectoryManaged() ||
       local_state->GetBoolean(prefs::kKerberosEnabled);
@@ -198,6 +190,18 @@ bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
 }
 #endif
 
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+// TODO(https://crbug.com/1228958): update function with enterprise policy for
+// Chrome root store usage once this is created.
+bool ShouldUseChromeRootStore(PrefService* local_state) {
+  // Note: intentionally checking the feature state here rather than falling
+  // back to ChromeRootImpl::kRootDefault, as browser-side network context
+  // initializition for TrialComparisonCertVerifier depends on knowing which
+  // verifier will be used.
+  return base::FeatureList::IsEnabled(net::features::kChromeRootStoreUsed);
+}
+#endif
+
 }  // namespace
 
 // SharedURLLoaderFactory backed by a SystemNetworkContextManager and its
@@ -209,6 +213,10 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
       : manager_(manager) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
   }
+
+  URLLoaderFactoryForSystem(const URLLoaderFactoryForSystem&) = delete;
+  URLLoaderFactoryForSystem& operator=(const URLLoaderFactoryForSystem&) =
+      delete;
 
   // mojom::URLLoaderFactory implementation:
 
@@ -249,9 +257,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
   ~URLLoaderFactoryForSystem() override = default;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  SystemNetworkContextManager* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
+  raw_ptr<SystemNetworkContextManager> manager_;
 };
 
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
@@ -454,6 +460,12 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif
 
   registry->RegisterListPref(prefs::kExplicitlyAllowedNetworkPorts);
+
+#if defined(OS_WIN)
+  registry->RegisterBooleanPref(
+      prefs::kNetworkServiceSandboxEnabled,
+      sandbox::policy::features::IsNetworkSandboxEnabled());
+#endif  // defined(OS_WIN)
 }
 
 // static
@@ -499,6 +511,48 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   network_service->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams(local_state_));
 
+  // Configure the Certificate Transparency logs.
+  if (IsCertificateTransparencyEnabled()) {
+    std::vector<std::string> operated_by_google_logs =
+        certificate_transparency::GetLogsOperatedByGoogle();
+    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+        certificate_transparency::GetDisqualifiedLogs();
+    std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
+    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
+      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+      log_info->name = ct_log.log_name;
+      log_info->current_operator = ct_log.current_operator;
+
+      std::string log_id = crypto::SHA256HashString(log_info->public_key);
+      log_info->operated_by_google =
+          std::binary_search(std::begin(operated_by_google_logs),
+                             std::end(operated_by_google_logs), log_id);
+      auto it = std::lower_bound(
+          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+          [](const auto& disqualified_log, const std::string& log_id) {
+            return disqualified_log.first < log_id;
+          });
+      if (it != std::end(disqualified_logs) && it->first == log_id) {
+        log_info->disqualified_at = it->second;
+      }
+
+      for (size_t i = 0; i < ct_log.previous_operators_length; i++) {
+        const auto& op = ct_log.previous_operators[i];
+        network::mojom::PreviousOperatorEntryPtr previous_operator =
+            network::mojom::PreviousOperatorEntry::New();
+        previous_operator->name = op.name;
+        previous_operator->end_time = op.end_time;
+        log_info->previous_operators.push_back(std::move(previous_operator));
+      }
+
+      log_list_mojo.push_back(std::move(log_info));
+    }
+    network_service->UpdateCtLogList(
+        std::move(log_list_mojo),
+        certificate_transparency::GetLogListTimestamp());
+  }
+
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
   if (max_connections_per_proxy != -1)
@@ -533,14 +587,13 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   config->should_use_preference =
       command_line.HasSwitch(switches::kEnableEncryptionSelection);
   chrome::GetDefaultUserDataDirectory(&config->user_data_path);
-  content::GetNetworkService()->SetCryptConfig(std::move(config));
+  network_service->SetCryptConfig(std::move(config));
 #endif
 #if defined(OS_WIN) || defined(OS_MAC)
   // The OSCrypt keys are process bound, so if network service is out of
   // process, send it the required key.
   if (content::IsOutOfProcessNetworkService()) {
-    content::GetNetworkService()->SetEncryptionKey(
-        OSCrypt::GetRawEncryptionKey());
+    network_service->SetEncryptionKey(OSCrypt::GetRawEncryptionKey());
   }
 #endif
 
@@ -550,19 +603,16 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   // Configure SCT Auditing in the NetworkService.
   SCTReportingService::ReconfigureAfterNetworkRestart();
 
-  if (net::cookie_util::IsFirstPartySetsEnabled()) {
-    component_updater::FirstPartySetsComponentInstallerPolicy::
-        ReconfigureAfterNetworkRestart(
-            base::BindRepeating([](const std::string& raw_sets) {
-              // We use a fresh pointer here (instead of using `network_service`
-              // from the enclosing scope) to avoid use-after-free bugs, since
-              // `network_service` is not guaranteed to live until the
-              // invocation of this callback.
-              network::mojom::NetworkService* network_service =
-                  content::GetNetworkService();
-              network_service->SetFirstPartySets(raw_sets);
-            }));
-  }
+  component_updater::FirstPartySetsComponentInstallerPolicy::
+      ReconfigureAfterNetworkRestart(base::BindOnce([](base::File sets_file) {
+        // We use a fresh pointer here (instead of using `network_service`
+        // from the enclosing scope) to avoid use-after-free bugs, since
+        // `network_service` is not guaranteed to live until the
+        // invocation of this callback.
+        network::mojom::NetworkService* network_service =
+            content::GetNetworkService();
+        network_service->SetFirstPartySets(std::move(sets_file));
+      }));
 
   UpdateExplicitlyAllowedNetworkPorts();
 }
@@ -602,7 +652,7 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
 
   std::string quic_user_agent_id;
 
-  if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
+  if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent)) {
     quic_user_agent_id = "";
   } else {
     // Extended stable reports as regular stable due to the similarity, and to
@@ -637,6 +687,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
     }
   }
 
+#if defined(OS_WIN)
+  if (command_line.HasSwitch(switches::kUseSystemProxyResolver)) {
+    network_context_params->windows_system_proxy_resolver =
+        ChromeMojoProxyResolverWin::CreateWithSelfOwnedReceiver();
+  }
+#endif
+
   network_context_params->pac_quick_check_enabled =
       local_state_->GetBoolean(prefs::kQuickCheckEnabled);
 
@@ -646,38 +703,9 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
   // point, all NetworkContexts will be destroyed as well.
   AddSSLConfigToNetworkContextParams(network_context_params);
 
-#if !defined(OS_ANDROID)
-
-  if (g_enable_certificate_transparency) {
+  if (IsCertificateTransparencyEnabled()) {
     network_context_params->enforce_chrome_ct_policy = true;
-    network_context_params->ct_log_update_time = base::GetBuildTime();
-
-    std::vector<std::string> operated_by_google_logs =
-        certificate_transparency::GetLogsOperatedByGoogle();
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
-        certificate_transparency::GetDisqualifiedLogs();
-    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
-      // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
-      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
-      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
-      log_info->name = ct_log.log_name;
-
-      std::string log_id = crypto::SHA256HashString(log_info->public_key);
-      log_info->operated_by_google =
-          std::binary_search(std::begin(operated_by_google_logs),
-                             std::end(operated_by_google_logs), log_id);
-      auto it = std::lower_bound(
-          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
-          [](const auto& disqualified_log, const std::string& log_id) {
-            return disqualified_log.first < log_id;
-          });
-      if (it != std::end(disqualified_logs) && it->first == log_id) {
-        log_info->disqualified_at = it->second;
-      }
-      network_context_params->ct_logs.push_back(std::move(log_info));
-    }
   }
-#endif
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   cert_verifier_creation_params->use_builtin_cert_verifier =
@@ -686,6 +714,15 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
                 kBuiltin
           : cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
                 kSystem;
+#endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+  cert_verifier_creation_params->use_chrome_root_store =
+      ShouldUseChromeRootStore(local_state_)
+          ? cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
+                kRootChrome
+          : cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
+                kRootSystem;
 #endif
 }
 
@@ -709,6 +746,21 @@ SystemNetworkContextManager::GetNetExportFileWriter() {
     net_export_file_writer_ = std::make_unique<net_log::NetExportFileWriter>();
   }
   return net_export_file_writer_.get();
+}
+
+// static
+bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
+#if defined(OS_WIN)
+  if (!sandbox::policy::features::IsWinNetworkServiceSandboxSupported())
+    return false;
+  auto* local_state = g_browser_process->local_state();
+  if (local_state &&
+      local_state->HasPrefPath(prefs::kNetworkServiceSandboxEnabled)) {
+    return local_state->GetBoolean(prefs::kNetworkServiceSandboxEnabled);
+  }
+#endif  // defined(OS_WIN)
+  // If no policy is specified, then delegate to global sandbox configuration.
+  return sandbox::policy::features::IsNetworkSandboxEnabled();
 }
 
 void SystemNetworkContextManager::FlushSSLConfigManagerForTesting() {
@@ -738,8 +790,29 @@ SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
 
 void SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
     absl::optional<bool> enabled) {
-  g_enable_certificate_transparency =
-      enabled.value_or(kCertificateTransparencyEnabled);
+  certificate_transparency_enabled_for_testing_ = enabled;
+}
+
+bool SystemNetworkContextManager::IsCertificateTransparencyEnabled() {
+  if (certificate_transparency_enabled_for_testing_.has_value())
+    return certificate_transparency_enabled_for_testing_.value();
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
+// TODO(carlosil): Figure out if we can/should remove the OFFICIAL_BUILD and
+// GOOGLE_CHROME_BRANDING checks now that enforcement does not rely on build
+// dates, and allow embedders to enforce.
+//    Certificate Transparency is only enabled if:
+//   - base::GetBuildTime() is deterministic to the source (OFFICIAL_BUILD)
+//   - The build in reliably updatable (GOOGLE_CHROME_BRANDING)
+#if defined(OS_ANDROID)
+  // On Android, enforcement is currently controlled via a feature flag.
+  return base::FeatureList::IsEnabled(
+      features::kCertificateTransparencyAndroid);
+#else
+  return true;
+#endif
+#else
+  return false;
+#endif
 }
 
 network::mojom::NetworkContextParamsPtr
@@ -748,17 +821,9 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
 
-  network_context_params->context_name = std::string("system");
-
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 
   network_context_params->http_cache_enabled = false;
-
-  // These are needed for PAC scripts that use FTP URLs.
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  network_context_params->enable_ftp_url_support =
-      base::FeatureList::IsEnabled(network::features::kFtpProtocol);
-#endif
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
@@ -779,4 +844,9 @@ void SystemNetworkContextManager::UpdateReferrersEnabled() {
 
 // static
 StubResolverConfigReader*
-SystemNetworkContextManager::stub_resolver_config_reader_for_testing_ = nullptr;
+    SystemNetworkContextManager::stub_resolver_config_reader_for_testing_ =
+        nullptr;
+
+absl::optional<bool>
+    SystemNetworkContextManager::certificate_transparency_enabled_for_testing_ =
+        absl::nullopt;

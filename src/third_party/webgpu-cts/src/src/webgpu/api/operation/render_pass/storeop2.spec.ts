@@ -10,9 +10,9 @@ import { GPUTest } from '../../../gpu_test.js';
 export const g = makeTestGroup(GPUTest);
 
 g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
-  .params([
+  .paramsSimple([
     { storeOp: 'store', _expected: 1 }, //
-    { storeOp: 'clear', _expected: 0 },
+    { storeOp: 'discard', _expected: 0 },
   ] as const)
   .fn(async t => {
     const renderTexture = t.device.createTexture({
@@ -27,9 +27,9 @@ g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
         module: t.device.createShaderModule({
           code: `
             [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : i32
+              [[builtin(vertex_index)]] VertexIndex : u32
               ) -> [[builtin(position)]] vec4<f32> {
-              let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+              var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                   vec2<f32>( 1.0, -1.0),
                   vec2<f32>( 1.0,  1.0),
                   vec2<f32>(-1.0,  1.0));

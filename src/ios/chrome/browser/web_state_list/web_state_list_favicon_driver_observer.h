@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 
 #include "components/favicon/core/favicon_driver_observer.h"
@@ -34,6 +33,12 @@ class WebStateListFaviconDriverObserver
  public:
   WebStateListFaviconDriverObserver(WebStateList* web_state_list,
                                     id<WebStateFaviconDriverObserver> observer);
+
+  WebStateListFaviconDriverObserver(const WebStateListFaviconDriverObserver&) =
+      delete;
+  WebStateListFaviconDriverObserver& operator=(
+      const WebStateListFaviconDriverObserver&) = delete;
+
   ~WebStateListFaviconDriverObserver() override;
 
   // WebStateListObserver implementation:
@@ -72,8 +77,6 @@ class WebStateListFaviconDriverObserver
 
   base::ScopedObservation<WebStateList, WebStateListObserver>
       web_state_list_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebStateListFaviconDriverObserver);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_FAVICON_DRIVER_OBSERVER_H_

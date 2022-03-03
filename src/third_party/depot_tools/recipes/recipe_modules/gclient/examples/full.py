@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
   'gclient',
   'recipe_engine/buildbucket',
@@ -26,12 +28,23 @@ TEST_CONFIGS = [
   'disable_syntax_validation',
   'emscripten_releases',
   'expect_tests',
-  'gerrit_plugins',
+  'gerrit',
+  'gerrit_plugins_binary_size',
+  'gerrit_plugins_buildbucket',
+  'gerrit_plugins_chromium_behavior',
+  'gerrit_plugins_chromium_binary_size',
+  'gerrit_plugins_chromium_style',
+  'gerrit_plugins_chumpdetector',
+  'gerrit_plugins_code_coverage',
+  'gerrit_plugins_git_numberer',
+  'gerrit_plugins_landingwidget',
+  'gerrit_plugins_tricium',
   'gerrit_test_cq_normal',
   'gyp',
   'infra',
   'infradata_master_manager',
   'infradata_config',
+  'infradata_rbe',
   'internal_deps',
   'luci_gae',
   'luci_go',

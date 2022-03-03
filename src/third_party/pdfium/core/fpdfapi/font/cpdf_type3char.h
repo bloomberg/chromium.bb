@@ -12,9 +12,9 @@
 
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/base/span.h"
 
 class CFX_DIBitmap;
 
@@ -27,7 +27,7 @@ class CPDF_Type3Char {
   static void TextUnitRectToGlyphUnitRect(CFX_FloatRect* pRect);
 
   bool LoadBitmapFromSoleImageOfForm();
-  void InitializeFromStreamData(bool bColored, const float* pData);
+  void InitializeFromStreamData(bool bColored, pdfium::span<const float> pData);
   void Transform(CPDF_Font::FormIface* pForm, const CFX_Matrix& matrix);
   void WillBeDestroyed();
 

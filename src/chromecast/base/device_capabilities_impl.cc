@@ -13,8 +13,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 
@@ -280,7 +280,7 @@ void DeviceCapabilitiesImpl::SetCapability(const std::string& path,
 
 void DeviceCapabilitiesImpl::MergeDictionary(const base::Value& dict_value) {
   DCHECK(dict_value.is_dict());
-  for (const auto& kv : dict_value.DictItems()) {
+  for (const auto kv : dict_value.DictItems()) {
     SetCapability(kv.first, kv.second.Clone());
   }
 }

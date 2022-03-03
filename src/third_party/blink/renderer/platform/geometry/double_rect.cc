@@ -5,41 +5,38 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
-DoubleRect::DoubleRect(const IntRect& r)
-    : location_(r.Location()), size_(r.Size()) {}
+DoubleRect::DoubleRect(const gfx::Rect& r)
+    : location_(r.origin()), size_(r.size()) {}
 
 DoubleRect::DoubleRect(const FloatRect& r)
-    : location_(r.Location()), size_(r.Size()) {}
+    : location_(r.origin()), size_(r.size()) {}
 
 DoubleRect::DoubleRect(const LayoutRect& r)
     : location_(r.Location()), size_(r.Size()) {}
 
-IntRect EnclosingIntRect(const DoubleRect& rect) {
-  IntPoint location = FlooredIntPoint(rect.MinXMinYCorner());
-  IntPoint max_point = CeiledIntPoint(rect.MaxXMaxYCorner());
+gfx::Rect ToEnclosingRect(const DoubleRect& rect) {
+  gfx::Point location = ToFlooredPoint(rect.MinXMinYCorner());
+  gfx::Point max_point = ToCeiledPoint(rect.MaxXMaxYCorner());
 
-  return IntRect(location,
-                 IntSize(base::ClampSub(max_point.X(), location.X()),
-                         base::ClampSub(max_point.Y(), location.Y())));
+  return gfx::Rect(location,
+                   gfx::Size(base::ClampSub(max_point.x(), location.x()),
+                             base::ClampSub(max_point.y(), location.y())));
 }
 
-IntRect EnclosedIntRect(const DoubleRect& rect) {
-  IntPoint location = CeiledIntPoint(rect.MinXMinYCorner());
-  IntPoint max_point = FlooredIntPoint(rect.MaxXMaxYCorner());
-  IntSize size = max_point - location;
-  size.ClampNegativeToZero();
-
-  return IntRect(location, size);
+gfx::Rect ToEnclosedRect(const DoubleRect& rect) {
+  gfx::Point location = ToCeiledPoint(rect.MinXMinYCorner());
+  gfx::Point max_point = ToFlooredPoint(rect.MaxXMaxYCorner());
+  return gfx::BoundingRect(location, max_point);
 }
 
-IntRect RoundedIntRect(const DoubleRect& rect) {
-  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.Size()));
+gfx::Rect RoundedIntRect(const DoubleRect& rect) {
+  return gfx::Rect(ToRoundedPoint(rect.Location()), ToRoundedSize(rect.Size()));
 }
 
 void DoubleRect::Scale(float sx, float sy) {

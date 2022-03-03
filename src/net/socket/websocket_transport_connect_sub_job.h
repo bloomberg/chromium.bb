@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/load_states.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
@@ -39,6 +39,11 @@ class WebSocketTransportConnectSubJob
       WebSocketTransportConnectJob* parent_job,
       SubJobType type,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
+
+  WebSocketTransportConnectSubJob(const WebSocketTransportConnectSubJob&) =
+      delete;
+  WebSocketTransportConnectSubJob& operator=(
+      const WebSocketTransportConnectSubJob&) = delete;
 
   ~WebSocketTransportConnectSubJob() override;
 
@@ -81,18 +86,16 @@ class WebSocketTransportConnectSubJob
   int DoTransportConnect();
   int DoTransportConnectComplete(int result);
 
-  WebSocketTransportConnectJob* const parent_job_;
+  const raw_ptr<WebSocketTransportConnectJob> parent_job_;
 
   const AddressList addresses_;
   size_t current_address_index_;
 
   State next_state_;
   const SubJobType type_;
-  WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
+  const raw_ptr<WebSocketEndpointLockManager> websocket_endpoint_lock_manager_;
 
   std::unique_ptr<StreamSocket> transport_socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketTransportConnectSubJob);
 };
 
 }  // namespace net

@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_HELPER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_HELPER_CHROMEOS_H_
 
-#include "ash/components/account_manager/account_manager.h"
-#include "ash/components/account_manager/account_manager_ash.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -27,8 +27,8 @@ namespace chromeos {
 class SigninHelper : public GaiaAuthConsumer {
  public:
   SigninHelper(
-      ash::AccountManager* account_manager,
-      crosapi::AccountManagerAsh* account_manager_ash,
+      account_manager::AccountManager* account_manager,
+      crosapi::AccountManagerMojoService* account_manager_mojo_service,
       const base::RepeatingClosure& close_dialog_closure,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& gaia_id,
@@ -53,7 +53,7 @@ class SigninHelper : public GaiaAuthConsumer {
   // Deletes this object.
   void Exit();
 
-  ash::AccountManager* GetAccountManager();
+  account_manager::AccountManager* GetAccountManager();
 
   // Returns email address of the account being added.
   std::string GetEmail();
@@ -62,9 +62,9 @@ class SigninHelper : public GaiaAuthConsumer {
 
  private:
   // A non-owning pointer to Chrome OS AccountManager.
-  ash::AccountManager* const account_manager_;
-  // A non-owning pointer to AccountManagerAsh.
-  crosapi::AccountManagerAsh* const account_manager_ash_;
+  account_manager::AccountManager* const account_manager_;
+  // A non-owning pointer to AccountManagerMojoService.
+  crosapi::AccountManagerMojoService* const account_manager_mojo_service_;
   // A closure to close the hosting dialog window.
   base::RepeatingClosure close_dialog_closure_;
   // The user's AccountKey for which |this| object has been created.

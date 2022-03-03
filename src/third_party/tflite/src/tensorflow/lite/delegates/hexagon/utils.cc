@@ -70,7 +70,7 @@ TfLiteStatus Get4DShape(unsigned int* batch_size, unsigned int* height_size,
   return kTfLiteOk;
 }
 
-// We maintain an op-version whitelist here to ensure we don't accept unintended
+// We maintain an op-version allowlist here to ensure we don't accept unintended
 // ops.
 bool CheckOpVersion(const TfLiteRegistration* registration) {
   switch (registration->builtin_code) {
@@ -91,22 +91,25 @@ bool CheckOpVersion(const TfLiteRegistration* registration) {
     case kTfLiteBuiltinPad:
     case kTfLiteBuiltinQuantize:
     case kTfLiteBuiltinRelu6:
-    case kTfLiteBuiltinResizeBilinear:
-    case kTfLiteBuiltinResizeNearestNeighbor:
     case kTfLiteBuiltinSlice:
     case kTfLiteBuiltinSoftmax:
     case kTfLiteBuiltinSpaceToDepth:
+    case kTfLiteBuiltinDepthToSpace:
     case kTfLiteBuiltinSplit:
     case kTfLiteBuiltinStridedSlice:
     case kTfLiteBuiltinSub:
     case kTfLiteBuiltinTanh:
     case kTfLiteBuiltinTranspose:
-    case kTfLiteBuiltinTransposeConv:
       return registration->version <= 2;
+    case kTfLiteBuiltinSquaredDifference:
     case kTfLiteBuiltinRelu:
+    case kTfLiteBuiltinRsqrt:
       return registration->version == 2;
     case kTfLiteBuiltinConv2d:
     case kTfLiteBuiltinDepthwiseConv2d:
+    case kTfLiteBuiltinResizeBilinear:
+    case kTfLiteBuiltinResizeNearestNeighbor:
+    case kTfLiteBuiltinTransposeConv:
       return registration->version <= 3;
     case kTfLiteBuiltinFullyConnected:
       return registration->version <= 4;
@@ -233,6 +236,12 @@ bool IsNodeSupportedByHexagon(const TfLiteRegistration* registration,
       // TODO(b/129276536): Add support for activation here.
       const TfLitePoolParams* pool_params =
           reinterpret_cast<const TfLitePoolParams*>(node->builtin_data);
+      // Disable max pool on delegate with activation SAME when filter is > 12.
+      if (pool_params->padding == kTfLitePaddingSame &&
+          (pool_params->filter_height >= 13 ||
+           pool_params->filter_width >= 13)) {
+        return false;
+      }
       return pool_params->activation == kTfLiteActNone;
     }
     case kTfLiteBuiltinAveragePool2d: {
@@ -244,11 +253,22 @@ bool IsNodeSupportedByHexagon(const TfLiteRegistration* registration,
               pool_params->activation == kTfLiteActNone);
     }
     case kTfLiteBuiltinTransposeConv: {
-      if (!InputsWithCorrectTypes(node, context,
-                                  {{kTfLiteInt32},
-                                   {kTfLiteUInt8, kTfLiteInt8},
-                                   {kTfLiteUInt8, kTfLiteInt8}}))
+      if (NumInputs(node) == 3) {
+        if (!InputsWithCorrectTypes(node, context,
+                                    {{kTfLiteInt32},
+                                     {kTfLiteUInt8, kTfLiteInt8},
+                                     {kTfLiteUInt8, kTfLiteInt8}}))
+          return false;
+      } else if (NumInputs(node) == 4) {
+        if (!InputsWithCorrectTypes(node, context,
+                                    {{kTfLiteInt32},
+                                     {kTfLiteUInt8, kTfLiteInt8},
+                                     {kTfLiteUInt8, kTfLiteInt8},
+                                     {kTfLiteInt32}}))
+          return false;
+      } else {
         return false;
+      }
       const TfLiteTransposeConvParams* params =
           reinterpret_cast<const TfLiteTransposeConvParams*>(
               node->builtin_data);
@@ -424,6 +444,13 @@ bool IsNodeSupportedByHexagon(const TfLiteRegistration* registration,
           reinterpret_cast<const TfLiteStridedSliceParams*>(node->builtin_data);
       // Hexagon doesn't support ellipsis/new-axis masks.
       return (params->ellipsis_mask == 0 && params->new_axis_mask == 0);
+    }
+    case kTfLiteBuiltinSquaredDifference: {
+      return InputsWithCorrectTypes(node, context,
+                                    {{kTfLiteInt8}, {kTfLiteInt8}});
+    }
+    case kTfLiteBuiltinRsqrt: {
+      return InputsWithCorrectTypes(node, context, {{kTfLiteInt8}});
     }
     default:
       return false;

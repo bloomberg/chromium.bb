@@ -3,10 +3,10 @@
 type RTArr = [[stride (16)]] array<vec4<f32>>;
 [[block]]
 struct SArr{
-  [[offset(0)]] data : RTArr;
+  data : RTArr;
 };
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
   var s : SArr;
 }

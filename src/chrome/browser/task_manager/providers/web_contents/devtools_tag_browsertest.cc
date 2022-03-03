@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
@@ -9,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -39,7 +41,7 @@ class DevToolsTagTest : public InProcessBrowserTest {
 
   void LoadTestPage(const std::string& test_page) {
     GURL url = embedded_test_server()->GetURL(test_page);
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   }
 
   void OpenDevToolsWindow(bool is_docked) {
@@ -56,7 +58,7 @@ class DevToolsTagTest : public InProcessBrowserTest {
   }
 
  private:
-  DevToolsWindow* devtools_window_;
+  raw_ptr<DevToolsWindow> devtools_window_;
 };
 
 // Tests that opening a DevToolsWindow will result in tagging its main
@@ -126,10 +128,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
   }
   EXPECT_NE(task_manager.tasks()[0]->title(),
             task_manager.tasks()[1]->title());
+  // If same-site back-forward cache is enabled, the task for the previous page
+  // will still be around.
+  EXPECT_EQ(
+      content::BackForwardCache::IsSameSiteBackForwardCacheFeatureEnabled()
+          ? 3U
+          : 2U,
+      task_manager.tasks().size());
 
+  // Close the DevTools window.
   CloseDevToolsWindow();
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
-  EXPECT_EQ(1U, task_manager.tasks().size());
+
+  EXPECT_EQ(
+      content::BackForwardCache::IsSameSiteBackForwardCacheFeatureEnabled()
+          ? 2U
+          : 1U,
+      task_manager.tasks().size());
 }
 
 }  // namespace task_manager

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -42,10 +41,17 @@ class NavigationObserver : public content::WebContentsObserver {
 
   explicit NavigationObserver(content::WebContents* web_contents)
       : WebContentsObserver(web_contents), navigation_result_(NOT_FINISHED) {}
+
+  NavigationObserver(const NavigationObserver&) = delete;
+  NavigationObserver& operator=(const NavigationObserver&) = delete;
+
   ~NavigationObserver() override = default;
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->IsInPrimaryMainFrame()) {
+      return;
+    }
     navigation_result_ =
         navigation_handle->IsErrorPage() ? ERROR_PAGE : SUCCESS;
     net_error_ = navigation_handle->GetNetErrorCode();
@@ -73,8 +79,6 @@ class NavigationObserver : public content::WebContentsObserver {
   net::Error net_error_ = net::OK;
   bool got_navigation_ = false;
   int http_status_code_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
 }  // namespace
@@ -93,7 +97,8 @@ class ChromeURLDataManagerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, 200) {
   NavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUINewTabURL)));
   EXPECT_TRUE(observer.got_navigation());
   EXPECT_EQ(200, observer.http_status_code());
 }
@@ -103,15 +108,15 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, UnknownResource) {
   // Known resource
   NavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON")));
   EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
   EXPECT_EQ(net::OK, observer.net_error());
 
   // Unknown resource
   observer.Reset();
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_ASDFGHJKL"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_ASDFGHJKL")));
   EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
   // The presence of net error means that navigation did not commit to the
   // original url.
@@ -123,15 +128,15 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   // Valid scale
   NavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@2x"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@2x")));
   EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
   EXPECT_EQ(net::OK, observer.net_error());
 
   // Unreasonably large scale
   observer.Reset();
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x")));
   EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
   // The presence of net error means that navigation did not commit to the
   // original url.
@@ -144,7 +149,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
  public:
   ChromeURLDataManagerWebUITrustedTypesTest() {
     std::vector<base::Feature> enabled_features;
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     if (GetParam() == std::string("chrome://welcome"))
       enabled_features.push_back(welcome::kForceEnabled);
 #endif
@@ -162,7 +167,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     console_observer.SetPattern(message_filter2);
 
     ASSERT_TRUE(embedded_test_server()->Start());
-    ui_test_utils::NavigateToURL(browser(), GURL(url));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(url)));
 
     if (url == "chrome://network-error" || url == "chrome://dino") {
       // We don't ASSERT_TRUE here because some WebUI pages are
@@ -175,15 +180,24 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     EXPECT_TRUE(console_observer.messages().empty());
   }
 
+  static std::string ParamInfoToString(
+      const ::testing::TestParamInfo<const char*>& info) {
+    std::string name(info.param);
+    std::replace_if(
+        name.begin(), name.end(), [](char c) { return !std::isalnum(c); }, '_');
+    return name;
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
+#endif
 };
 
 // Verify that there's no Trusted Types violation in chrome://chrome-urls
 IN_PROC_BROWSER_TEST_P(ChromeURLDataManagerWebUITrustedTypesTest,
                        NoTrustedTypesViolation) {
-  LOG(INFO) << "Navigating to " << GetParam();
   CheckTrustedTypesViolation(GetParam());
 }
 
@@ -191,12 +205,8 @@ IN_PROC_BROWSER_TEST_P(ChromeURLDataManagerWebUITrustedTypesTest,
 // This list was derived from chrome://about. :)
 static constexpr const char* const kChromeUrls[] = {
     "chrome://accessibility",
-    // TODO(crbug.com/1114074): DCHECK failure when opening
-    // chrome://appcache-internals.
-    // "chrome://appcache-internals",
     "chrome://autofill-internals",
     "chrome://blob-internals",
-    "chrome://bluetooth-internals",
     "chrome://bookmarks",
     "chrome://chrome-urls",
     "chrome://components",
@@ -222,7 +232,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://identity-internals",
     "chrome://indexeddb-internals",
     "chrome://inspect",
-    "chrome://internals/web-app",
     "chrome://interstitials/ssl",
     "chrome://invalidations",
     "chrome://local-state",
@@ -231,7 +240,8 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://media-history",
     "chrome://media-internals",
     "chrome://media-router-internals",
-    "chrome://memory-internals",
+    // TODO(crbug.com/1217395): DCHECK failure
+    // "chrome://memory-internals",
     "chrome://net-export",
     "chrome://net-internals",
     "chrome://network-error",
@@ -256,7 +266,6 @@ static constexpr const char* const kChromeUrls[] = {
     // "chrome://signin-dice-web-intercept",
     "chrome://signin-internals",
     "chrome://site-engagement",
-    "chrome://suggestions",
     // TODO(crbug.com/1099564): Navigating to chrome://sync-confirmation and
     // quickly navigating away cause DCHECK failure.
     // "chrome://sync-confirmation",
@@ -273,6 +282,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://usb-internals",
     "chrome://user-actions",
     "chrome://version",
+    "chrome://web-app-internals",
     "chrome://webrtc-internals",
     "chrome://webrtc-logs",
 #if defined(OS_ANDROID)
@@ -318,21 +328,27 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://sys-internals",
     "chrome-untrusted://terminal",
 #endif
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
     "chrome://apps",
     "chrome://browser-switch",
-    "chrome://signin-email-confirmation",
     "chrome://welcome",
+#endif
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    "chrome://signin-email-confirmation",
 #endif
 #if !defined(OS_MAC)
     "chrome://sandbox",
     "chrome://nacl",
+    // TODO(https://crbug.com/1219651): this test is flaky on mac.
+    "chrome://bluetooth-internals",
 #endif
 #if defined(OS_WIN)
     "chrome://conflicts",
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
-                         ChromeURLDataManagerWebUITrustedTypesTest,
-                         ::testing::ValuesIn(kChromeUrls));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ChromeURLDataManagerWebUITrustedTypesTest,
+    ::testing::ValuesIn(kChromeUrls),
+    ChromeURLDataManagerWebUITrustedTypesTest::ParamInfoToString);

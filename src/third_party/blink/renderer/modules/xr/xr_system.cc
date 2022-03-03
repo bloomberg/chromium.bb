@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_session_viewport_scaler.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -121,9 +121,6 @@ const char* SessionModeToString(device::mojom::blink::XRSessionMode mode) {
   return "";
 }
 
-// TODO(crbug.com/1070871): Drop this #if-else
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-
 device::mojom::XRDepthUsage ParseDepthUsage(const V8XRDepthUsage& usage) {
   switch (usage.AsEnum()) {
     case V8XRDepthUsage::Enum::kCpuOptimized:
@@ -162,52 +159,6 @@ Vector<device::mojom::XRDepthDataFormat> ParseDepthFormats(
 
   return result;
 }
-
-#else
-
-device::mojom::XRDepthUsage ParseDepthUsage(const String& usage) {
-  if (usage == "cpu-optimized") {
-    return device::mojom::XRDepthUsage::kCPUOptimized;
-  } else if (usage == "gpu-optimized") {
-    return device::mojom::XRDepthUsage::kGPUOptimized;
-  }
-
-  NOTREACHED() << "Only strings in the enum are allowed by IDL";
-  return device::mojom::XRDepthUsage::kCPUOptimized;
-}
-
-Vector<device::mojom::XRDepthUsage> ParseDepthUsages(
-    const Vector<String>& usages) {
-  Vector<device::mojom::XRDepthUsage> result;
-
-  std::transform(usages.begin(), usages.end(), std::back_inserter(result),
-                 ParseDepthUsage);
-
-  return result;
-}
-
-device::mojom::XRDepthDataFormat ParseDepthFormat(const String& format) {
-  if (format == "luminance-alpha") {
-    return device::mojom::XRDepthDataFormat::kLuminanceAlpha;
-  } else if (format == "float32") {
-    return device::mojom::XRDepthDataFormat::kFloat32;
-  }
-
-  NOTREACHED() << "Only strings in the enum are allowed by IDL";
-  return device::mojom::XRDepthDataFormat::kLuminanceAlpha;
-}
-
-Vector<device::mojom::XRDepthDataFormat> ParseDepthFormats(
-    const Vector<String>& formats) {
-  Vector<device::mojom::XRDepthDataFormat> result;
-
-  std::transform(formats.begin(), formats.end(), std::back_inserter(result),
-                 ParseDepthFormat);
-
-  return result;
-}
-
-#endif  // USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
 
 // Converts the given string to an XRSessionFeature. If the string is
 // unrecognized, returns nullopt. Based on the spec:
@@ -313,7 +264,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
   }
 }
 
-bool HasRequiredPermissionsPolicy(const ExecutionContext* context,
+bool HasRequiredPermissionsPolicy(ExecutionContext* context,
                                   device::mojom::XRSessionFeature feature) {
   if (!context)
     return false;
@@ -1027,6 +978,23 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
   return promise;
 }
 
+void XRSystem::RequestSessionInternal(
+    device::mojom::blink::XRSessionMode session_mode,
+    PendingRequestSessionQuery* query,
+    ExceptionState* exception_state) {
+  // The various session request methods may have other checks that would reject
+  // before needing to create the vr service, so we don't try to create it here.
+  switch (session_mode) {
+    case device::mojom::blink::XRSessionMode::kImmersiveVr:
+    case device::mojom::blink::XRSessionMode::kImmersiveAr:
+      RequestImmersiveSession(query, exception_state);
+      break;
+    case device::mojom::blink::XRSessionMode::kInline:
+      RequestInlineSession(query, exception_state);
+      break;
+  }
+}
+
 void XRSystem::RequestImmersiveSession(PendingRequestSessionQuery* query,
                                        ExceptionState* exception_state) {
   DVLOG(2) << __func__;
@@ -1344,9 +1312,8 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
           image->image()->BitmapImage();
       SkBitmap sk_bitmap = static_bitmap_image->AsSkBitmapForCurrentFrame(
           kRespectImageOrientation);
-      IntSize int_size = static_bitmap_image->Size();
-      gfx::Size size(int_size.Width(), int_size.Height());
-      images.emplace_back(sk_bitmap, size, image->widthInMeters());
+      images.emplace_back(sk_bitmap, static_bitmap_image->Size(),
+                          image->widthInMeters());
       ++index;
     }
     query->SetTrackedImages(images);
@@ -1382,18 +1349,17 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
     query->SetDepthSensingConfiguration(preferred_usage, preferred_format);
   }
 
-  // The various session request methods may have other checks that would reject
-  // before needing to create the vr service, so we don't try to create it here.
-  switch (session_mode) {
-    case device::mojom::blink::XRSessionMode::kImmersiveVr:
-    case device::mojom::blink::XRSessionMode::kImmersiveAr:
-      RequestImmersiveSession(query, &exception_state);
-      break;
-    case device::mojom::blink::XRSessionMode::kInline:
-      RequestInlineSession(query, &exception_state);
-      break;
+  // Defer to request the session until the prerendering page is activated.
+  if (DomWindow()->document()->IsPrerendering()) {
+    // Pass a nullptr instead of |exception_state| because we can't guarantee
+    // this object is alive until the prerendering page is activate.
+    DomWindow()->document()->AddPostPrerenderingActivationStep(WTF::Bind(
+        &XRSystem::RequestSessionInternal, WrapWeakPersistent(this),
+        session_mode, WrapPersistent(query), /*exception_state=*/nullptr));
+    return promise;
   }
 
+  RequestSessionInternal(session_mode, query, &exception_state);
   return promise;
 }
 

@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "mlir/IR/Attributes.h"  // from @llvm-project
-#include "mlir/IR/StandardTypes.h"  // from @llvm-project
+#include "mlir/IR/BuiltinAttributes.h"  // from @llvm-project
+#include "mlir/IR/BuiltinTypes.h"  // from @llvm-project
 
 namespace mlir {
 namespace TFL {
@@ -24,8 +24,7 @@ FloatAttr ExtractSingleElementAsFloat(ElementsAttr attr) {
       !attr.getType().getElementType().isa<FloatType>()) {
     return {};
   }
-  SmallVector<uint64_t, 8> index(attr.getType().getRank(), 0);
-  return attr.getValue<FloatAttr>(index);
+  return attr.getSplatValue<FloatAttr>();
 }
 
 FloatAttr GetSingleElementAsFloatOrSelf(Attribute attr) {
@@ -41,8 +40,7 @@ IntegerAttr ExtractSingleElementAsInteger(ElementsAttr attr) {
       !attr.getType().getElementType().isSignlessInteger()) {
     return {};
   }
-  SmallVector<uint64_t, 8> index(attr.getType().getRank(), 0);
-  return attr.getValue<IntegerAttr>(index);
+  return attr.getSplatValue<IntegerAttr>();
 }
 
 }  // namespace TFL

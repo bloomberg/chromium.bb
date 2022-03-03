@@ -11,8 +11,9 @@
 #ifndef EIGEN_RESHAPED_H
 #define EIGEN_RESHAPED_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
-namespace internal {
 
 /** \class Reshaped
   * \ingroup Core_Module
@@ -43,6 +44,8 @@ namespace internal {
   *
   * \sa DenseBase::reshaped(NRowsType,NColsType)
   */
+
+namespace internal {
 
 template<typename XprType, int Rows, int Cols, int Order>
 struct traits<Reshaped<XprType, Rows, Cols, Order> > : traits<XprType>
@@ -239,14 +242,14 @@ class ReshapedImpl_dense<XprType, Rows, Cols, Order, true>
     XprType& nestedExpression() { return m_xpr; }
 
     /** \sa MapBase::innerStride() */
-    EIGEN_DEVICE_FUNC
+    EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR
     inline Index innerStride() const
     {
       return m_xpr.innerStride();
     }
 
     /** \sa MapBase::outerStride() */
-    EIGEN_DEVICE_FUNC
+    EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR
     inline Index outerStride() const
     {
       return ((Flags&RowMajorBit)==RowMajorBit) ? this->cols() : this->rows();

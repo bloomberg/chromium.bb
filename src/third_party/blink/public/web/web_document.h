@@ -34,6 +34,8 @@
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_draggable_region.h"
@@ -46,6 +48,7 @@ namespace blink {
 class Document;
 class WebElement;
 class WebFormElement;
+class WebFormControlElement;
 class WebElementCollection;
 class WebString;
 class WebURL;
@@ -82,8 +85,8 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebString Encoding() const;
   BLINK_EXPORT WebString ContentLanguage() const;
   BLINK_EXPORT WebString GetReferrer() const;
-  BLINK_EXPORT absl::optional<SkColor> ThemeColor() const;
-  // The url of the OpenSearch Desription Document (if any).
+  BLINK_EXPORT absl::optional<SkColor> ThemeColor();
+  // The url of the OpenSearch Description Document (if any).
   BLINK_EXPORT WebURL OpenSearchDescriptionURL() const;
 
   // Returns the frame the document belongs to or 0 if the document is
@@ -106,11 +109,16 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebElement Head();
   BLINK_EXPORT WebString Title() const;
   BLINK_EXPORT WebString ContentAsTextForTesting() const;
-  BLINK_EXPORT WebElementCollection All();
+  BLINK_EXPORT WebElementCollection All() const;
   BLINK_EXPORT WebVector<WebFormElement> Forms() const;
   BLINK_EXPORT WebURL CompleteURL(const WebString&) const;
   BLINK_EXPORT WebElement GetElementById(const WebString&) const;
   BLINK_EXPORT WebElement FocusedElement() const;
+
+  // The unassociated form controls are form control elements that are not
+  // associated to a <form> element.
+  BLINK_EXPORT WebVector<WebFormControlElement> UnassociatedFormControls()
+      const;
 
   // Inserts the given CSS source code as a style sheet in the document.
   BLINK_EXPORT WebStyleSheetKey
@@ -131,8 +139,6 @@ class WebDocument : public WebNode {
 
   BLINK_EXPORT WebVector<WebDraggableRegion> DraggableRegions() const;
 
-  BLINK_EXPORT WebURL CanonicalUrlForSharing() const;
-
   BLINK_EXPORT WebDistillabilityFeatures DistillabilityFeatures();
 
   BLINK_EXPORT void SetShowBeforeUnloadDialog(bool show_dialog);
@@ -141,6 +147,32 @@ class WebDocument : public WebNode {
   BLINK_EXPORT uint64_t GetVisualViewportScrollingElementIdForTesting();
 
   BLINK_EXPORT bool IsLoaded();
+
+  // Returns true if the document is in prerendering.
+  BLINK_EXPORT bool IsPrerendering();
+
+  // Return true if  accessibility processing has been enabled.
+  BLINK_EXPORT bool IsAccessibilityEnabled();
+
+  // Adds `callback` to the post-prerendering activation steps.
+  // https://wicg.github.io/nav-speculation/prerendering.html#document-post-prerendering-activation-steps-list
+  BLINK_EXPORT void AddPostPrerenderingActivationStep(
+      base::OnceClosure callback);
+
+  // Sets a cookie manager which can be used for this document.
+  BLINK_EXPORT void SetCookieManager(
+      CrossVariantMojoRemote<
+          network::mojom::RestrictedCookieManagerInterfaceBase> cookie_manager);
+
+  // Get an element that's a descendent of this document by the stable Devtools'
+  // node id.
+  // https://chromedevtools.github.io/devtools-protocol/tot/DOM/#type-BackendNodeId
+  // Returns a null WebElement if any of the following are true:
+  // * the `node_id` does not identify any Node
+  // * the Node identified by `node_id` is not an Element
+  // * the Element is not a descendant of this WebDocument or any shadow
+  //   document contained within it
+  BLINK_EXPORT WebElement GetElementByDevToolsNodeId(int node_id);
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebDocument(Document*);

@@ -5,10 +5,10 @@
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -18,8 +18,6 @@
 #include "chrome/browser/ntp_tiles/chrome_custom_links_manager_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/repeatable_queries/repeatable_queries_service_factory.h"
-#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -30,6 +28,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/most_visited_client.h"
+#else
+#include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -38,8 +38,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
-
-using suggestions::SuggestionsServiceFactory;
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 namespace {
@@ -52,15 +50,14 @@ class SupervisorBridge : public ntp_tiles::MostVisitedSitesSupervisor,
 
   void SetObserver(Observer* observer) override;
   bool IsBlocked(const GURL& url) override;
-  std::vector<MostVisitedSitesSupervisor::Allowlist> GetAllowlists() override;
   bool IsChildProfile() override;
 
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;
 
  private:
-  Profile* const profile_;
-  Observer* supervisor_observer_;
+  const raw_ptr<Profile> profile_;
+  raw_ptr<Observer> supervisor_observer_;
   base::ScopedObservation<SupervisedUserService, SupervisedUserServiceObserver>
       register_observation_{this};
 };
@@ -91,12 +88,6 @@ bool SupervisorBridge::IsBlocked(const GURL& url) {
          SupervisedUserURLFilter::FilteringBehavior::BLOCK;
 }
 
-std::vector<ntp_tiles::MostVisitedSitesSupervisor::Allowlist>
-SupervisorBridge::GetAllowlists() {
-  // TODO(crbug.com/1149782): Remove allowlists from New Tab Page.
-  return {};
-}
-
 bool SupervisorBridge::IsChildProfile() {
   return profile_->IsChild();
 }
@@ -121,12 +112,6 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
   auto most_visited_sites = std::make_unique<ntp_tiles::MostVisitedSites>(
       profile->GetPrefs(), TopSitesFactory::GetForProfile(profile),
 #if defined(OS_ANDROID)
-      nullptr,
-#else
-      RepeatableQueriesServiceFactory::GetForProfile(profile),
-#endif
-      SuggestionsServiceFactory::GetForProfile(profile),
-#if defined(OS_ANDROID)
       ChromePopularSitesFactory::NewForProfile(profile),
 #else
       nullptr,
@@ -145,9 +130,14 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
               profile->GetDefaultStoragePartition()
                   ->GetURLLoaderFactoryForBrowserProcess())),
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      std::make_unique<SupervisorBridge>(profile)
+      std::make_unique<SupervisorBridge>(profile),
 #else
-      nullptr
+      nullptr,
+#endif
+#if !defined(OS_ANDROID)
+      web_app::IsAnyChromeAppToWebAppMigrationEnabled(*profile)
+#else
+      false
 #endif
   );
 #if defined(OS_ANDROID)

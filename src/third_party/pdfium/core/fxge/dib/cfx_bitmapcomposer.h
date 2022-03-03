@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -19,6 +18,7 @@
 
 class CFX_ClipRgn;
 class CFX_DIBitmap;
+struct FX_RECT;
 
 class CFX_BitmapComposer final : public ScanlineComposerIface {
  public:
@@ -43,19 +43,19 @@ class CFX_BitmapComposer final : public ScanlineComposerIface {
                pdfium::span<const uint32_t> src_palette) override;
 
   void ComposeScanline(int line,
-                       const uint8_t* scanline,
-                       const uint8_t* scan_extra_alpha) override;
+                       pdfium::span<const uint8_t> scanline,
+                       pdfium::span<const uint8_t> scan_extra_alpha) override;
 
  private:
-  void DoCompose(uint8_t* dest_scan,
-                 const uint8_t* src_scan,
+  void DoCompose(pdfium::span<uint8_t> dest_scan,
+                 pdfium::span<const uint8_t> src_scan,
                  int dest_width,
-                 const uint8_t* clip_scan,
-                 const uint8_t* src_extra_alpha,
-                 uint8_t* dst_extra_alpha);
+                 pdfium::span<const uint8_t> clip_scan,
+                 pdfium::span<const uint8_t> src_extra_alpha,
+                 pdfium::span<uint8_t> dst_extra_alpha);
   void ComposeScanlineV(int line,
-                        const uint8_t* scanline,
-                        const uint8_t* scan_extra_alpha);
+                        pdfium::span<const uint8_t> scanline,
+                        pdfium::span<const uint8_t> scan_extra_alpha);
 
   RetainPtr<CFX_DIBitmap> m_pBitmap;
   UnownedPtr<const CFX_ClipRgn> m_pClipRgn;

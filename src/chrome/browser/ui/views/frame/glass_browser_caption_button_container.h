@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_CAPTION_BUTTON_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_CAPTION_BUTTON_CONTAINER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
@@ -14,7 +15,9 @@
 #include "ui/views/widget/widget_observer.h"
 
 class GlassBrowserFrameView;
+class TabSearchBubbleHost;
 class Windows10CaptionButton;
+class Windows10TabSearchCaptionButton;
 
 // Provides a container for Windows 10 caption buttons that can be moved between
 // frame and browser window as needed. When extended horizontally, becomes a
@@ -35,12 +38,17 @@ class GlassBrowserCaptionButtonContainer : public views::View,
   // See also ClientView::NonClientHitTest.
   int NonClientHitTest(const gfx::Point& point) const;
 
+  void OnWindowControlsOverlayEnabledChanged();
+
+  TabSearchBubbleHost* GetTabSearchBubbleHost();
+
  private:
   friend class GlassBrowserFrameView;
 
   // views::View:
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  void OnThemeChanged() override;
 
   // views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,
@@ -53,11 +61,18 @@ class GlassBrowserCaptionButtonContainer : public views::View,
   // time, and both are disabled in tablet UI mode.
   void UpdateButtons();
 
-  GlassBrowserFrameView* const frame_view_;
-  Windows10CaptionButton* const minimize_button_;
-  Windows10CaptionButton* const maximize_button_;
-  Windows10CaptionButton* const restore_button_;
-  Windows10CaptionButton* const close_button_;
+  // Sets caption button's accessible name as its tooltip when it's in a PWA
+  // with window-controls-overlay display override and resets it otherwise. In
+  // this mode, the web contents covers the frame view and so does it's legacy
+  // hwnd which prevent tooltips being shown for the caption buttons.
+  void UpdateButtonToolTipsForWindowControlsOverlay();
+
+  const raw_ptr<GlassBrowserFrameView> frame_view_;
+  raw_ptr<Windows10TabSearchCaptionButton> tab_search_button_ = nullptr;
+  const raw_ptr<Windows10CaptionButton> minimize_button_;
+  const raw_ptr<Windows10CaptionButton> maximize_button_;
+  const raw_ptr<Windows10CaptionButton> restore_button_;
+  const raw_ptr<Windows10CaptionButton> close_button_;
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       widget_observation_{this};

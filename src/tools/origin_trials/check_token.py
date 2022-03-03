@@ -146,7 +146,7 @@ def main():
   for x in version:
     version_number <<= 8
     version_number += ord(x)
-  if (version != VERSION2 and version != VERSION3):
+  if (version not in (VERSION2, VERSION3)):
     print("Token has wrong version: %d" % version_number)
     sys.exit(1)
 
@@ -222,7 +222,8 @@ def main():
   if (usage_restriction is not None and version != VERSION3):
     print("The usage field can only be be set in Version 3 token.")
     sys.exit(1)
-  if (usage_restriction not in USAGE_RESTRICTION):
+  if (usage_restriction is not None
+      and usage_restriction not in USAGE_RESTRICTION):
     print("Only empty string and \"subset\" are supported in the usage field.")
     sys.exit(1)
 

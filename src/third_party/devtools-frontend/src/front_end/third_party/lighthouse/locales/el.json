@@ -1,4 +1,136 @@
 {
+  "flow-report/src/i18n/ui-strings.js | allReports": {
+    "message": "Όλες οι αναφορές"
+  },
+  "flow-report/src/i18n/ui-strings.js | categories": {
+    "message": "Categories"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryAccessibility": {
+    "message": "Προσβασιμότητα"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryBestPractices": {
+    "message": "Βέλτιστες πρακτικές"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryPerformance": {
+    "message": "Απόδοση"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryProgressiveWebApp": {
+    "message": "Προηγμένη εφαρμογή ιστού"
+  },
+  "flow-report/src/i18n/ui-strings.js | categorySeo": {
+    "message": "SEO"
+  },
+  "flow-report/src/i18n/ui-strings.js | desktop": {
+    "message": "Υπολογιστής"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpDialogTitle": {
+    "message": "Understanding the Lighthouse Flow Report"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpLabel": {
+    "message": "Understanding Flows"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionNavigation": {
+    "message": "Use Navigation reports to..."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionSnapshot": {
+    "message": "Use Snapshot reports to..."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionTimespan": {
+    "message": "Use Timespan reports to..."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation1": {
+    "message": "Obtain a Lighthouse Performance score."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation2": {
+    "message": "Measure page load Performance metrics such as Largest Contentful Paint and Speed Index."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation3": {
+    "message": "Assess Progressive Web App capabilities."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseSnapshot1": {
+    "message": "Find accessibility issues in single page applications or complex forms."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseSnapshot2": {
+    "message": "Evaluate best practices of menus and UI elements hidden behind interaction."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseTimespan1": {
+    "message": "Measure layout shifts and JavaScript execution time on a series of interactions."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseTimespan2": {
+    "message": "Discover performance opportunities to improve the experience for long-lived pages and single-page applications."
+  },
+  "flow-report/src/i18n/ui-strings.js | highestImpact": {
+    "message": "Υψηλότερος αντίκτυπος"
+  },
+  "flow-report/src/i18n/ui-strings.js | informativeAuditCount": {
+    "message": "{numInformative,plural, =1{{numInformative} πληροφοριακός έλεγχος}other{{numInformative} πληροφοριακοί έλεγχοι}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | mobile": {
+    "message": "Κινητό"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationDescription": {
+    "message": "Φόρτωση σελίδας"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationLongDescription": {
+    "message": "Navigation reports analyze a single page load, exactly like the original Lighthouse reports."
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationReport": {
+    "message": "Αναφορά πλοήγησης"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationReportCount": {
+    "message": "{numNavigation,plural, =1{{numNavigation} αναφορά πλοήγησης}other{{numNavigation} αναφορές πλοήγησης}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | passableAuditCount": {
+    "message": "{numPassableAudits,plural, =1{{numPassableAudits} έλεγχος που μπορεί να ολοκληρωθεί}other{{numPassableAudits} έλεγχοι που μπορούν να ολοκληρωθούν}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | passedAuditCount": {
+    "message": "{numPassed,plural, =1{{numPassed} έλεγχος ολοκληρώθηκε}other{{numPassed} έλεγχοι ολοκληρώθηκαν}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingAverage": {
+    "message": "Μέτρια"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingError": {
+    "message": "Σφάλμα"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingFail": {
+    "message": "Χαμηλή"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingPass": {
+    "message": "Καλή"
+  },
+  "flow-report/src/i18n/ui-strings.js | save": {
+    "message": "Save"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotDescription": {
+    "message": "Καταγεγραμμένη κατάσταση σελίδας"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotLongDescription": {
+    "message": "Snapshot reports analyze the page in a particular state, typically after user interactions."
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotReport": {
+    "message": "Αναφορά σύνοψης"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotReportCount": {
+    "message": "{numSnapshot,plural, =1{{numSnapshot} αναφορά σύνοψης}other{{numSnapshot} αναφορές σύνοψης}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | summary": {
+    "message": "Σύνοψη"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanDescription": {
+    "message": "Αλληλεπιδράσεις χρήστη"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanLongDescription": {
+    "message": "Timespan reports analyze an arbitrary period of time, typically containing user interactions."
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanReport": {
+    "message": "Αναφορά χρονικού διαστήματος"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanReportCount": {
+    "message": "{numTimespan,plural, =1{{numTimespan} αναφορά χρονικού διαστήματος}other{{numTimespan} αναφορές χρονικού διαστήματος}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | title": {
+    "message": "Αναφορά ροής χρήστη Lighthouse"
+  },
   "lighthouse-core/audits/accessibility/accesskeys.js | description": {
     "message": "Τα πλήκτρα πρόσβασης επιτρέπουν στους χρήστες να εστιάσουν γρήγορα σε ένα τμήμα της σελίδας. Για σωστή πλοήγηση, κάθε πλήκτρο πρόσβασης πρέπει να είναι μοναδικό. [Μάθετε περισσότερα](https://web.dev/accesskeys/)."
   },
@@ -63,7 +195,7 @@
     "message": "Τα στοιχεία ARIA `meter` έχουν προσβάσιμα ονόματα"
   },
   "lighthouse-core/audits/accessibility/aria-progressbar-name.js | description": {
-    "message": "Όταν ένα στοιχείο δεν έχει προσβάσιμο όνομα, οι αναγνώστες οθόνης το ανακοινώνουν με ένα γενικό όνομα, με αποτέλεσμα να μην μπορεί να χρησιμοποιηθεί από χρήστες που βασίζονται σε αναγνώστες οθόνης. [Μάθετε περισσότερα](https://web.dev/aria-name/)."
+    "message": "Όταν ένα `progressbar` στοιχείο δεν έχει προσβάσιμο όνομα, οι αναγνώστες οθόνης το ανακοινώνουν με ένα γενικό όνομα, με αποτέλεσμα να μην μπορεί να χρησιμοποιηθεί από χρήστες που βασίζονται σε αναγνώστες οθόνης. [Μάθετε περισσότερα](https://web.dev/aria-name/)."
   },
   "lighthouse-core/audits/accessibility/aria-progressbar-name.js | failureTitle": {
     "message": "Τα στοιχεία ARIA `progressbar` δεν έχουν προσβάσιμα ονόματα"
@@ -476,6 +608,12 @@
   "lighthouse-core/audits/byte-efficiency/legacy-javascript.js | title": {
     "message": "Αποφύγετε την προβολή JavaScript παλαιού τύπου σε σύγχρονα προγράμματα περιήγησης"
   },
+  "lighthouse-core/audits/byte-efficiency/modern-image-formats.js | description": {
+    "message": "Οι μορφές εικόνας όπως WebP και AVIF παρέχουν συχνά καλύτερη συμπίεση σε σχέση με τις μορφές PNG ή JPEG, κάτι που σημαίνει ταχύτερες λήψεις και μικρότερη κατανάλωση δεδομένων. [Μάθετε περισσότερα](https://web.dev/uses-webp-images/)."
+  },
+  "lighthouse-core/audits/byte-efficiency/modern-image-formats.js | title": {
+    "message": "Προβολή εικόνων σε μορφές επόμενης γενιάς"
+  },
   "lighthouse-core/audits/byte-efficiency/offscreen-images.js | description": {
     "message": "Εξετάστε το ενδεχόμενο αργής φόρτωσης των εικόνων εκτός οθόνης και των κρυφών εικόνων μετά τη φόρτωση όλων των κρίσιμων πόρων. Με αυτό τον τρόπο, μπορεί να ελλατώθεί ο χρόνος μετάβασης σε κατάσταση αλληλεπίδρασης. [Μάθετε περισσότερα](https://web.dev/offscreen-images/)."
   },
@@ -542,6 +680,18 @@
   "lighthouse-core/audits/byte-efficiency/uses-optimized-images.js | title": {
     "message": "Αποδοτική κωδικοποίηση εικόνων"
   },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | columnActualDimensions": {
+    "message": "Πραγματικές διαστάσεις"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | columnDisplayedDimensions": {
+    "message": "Διαστάσεις προβολής"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | failureTitle": {
+    "message": "Οι εικόνες ήταν μεγαλύτερες από το εμφανιζόμενο μέγεθός τους"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | title": {
+    "message": "Οι εικόνες ήταν κατάλληλες για το εμφανιζόμενο μέγεθός τους"
+  },
   "lighthouse-core/audits/byte-efficiency/uses-responsive-images.js | description": {
     "message": "Συνιστάται η προβολή εικόνων κατάλληλου μεγέθους για την εξοικονόμηση δεδομένων κινητής τηλεφωνίας και τη βελτίωση του χρόνου φόρτωσης. [Μάθετε περισσότερα](https://web.dev/uses-responsive-images/)."
   },
@@ -553,12 +703,6 @@
   },
   "lighthouse-core/audits/byte-efficiency/uses-text-compression.js | title": {
     "message": "Ενεργοποίηση συμπίεσης κειμένου"
-  },
-  "lighthouse-core/audits/byte-efficiency/uses-webp-images.js | description": {
-    "message": "Οι μορφές εικόνας JPEG 2000, JPEG XR και WebP συχνά παρέχουν καλύτερη συμπίεση από ό,τι οι μορφές PNG και JPEG. Αυτό σημαίνει γρηγορότερες λήψεις και μικρότερη κατανάλωση δεδομένων. [Μάθετε περισσότερα](https://web.dev/uses-webp-images/)."
-  },
-  "lighthouse-core/audits/byte-efficiency/uses-webp-images.js | title": {
-    "message": "Προβολή εικόνων σε μορφές επόμενης γενιάς"
   },
   "lighthouse-core/audits/content-width.js | description": {
     "message": "Εάν το πλάτος του περιεχομένου της εφαρμογής σας δεν αντιστοιχεί στο πλάτος της θύρας προβολής, η εφαρμογή σας ενδέχεται να μην είναι βελτιστοποιημένη για οθόνες κινητών συσκευών. [Μάθετε περισσότερα](https://web.dev/content-width/)."
@@ -584,8 +728,14 @@
   "lighthouse-core/audits/csp-xss.js | columnDirective": {
     "message": "Οδηγία"
   },
+  "lighthouse-core/audits/csp-xss.js | columnSeverity": {
+    "message": "Σοβαρότητα"
+  },
   "lighthouse-core/audits/csp-xss.js | description": {
-    "message": "Μια ισχυρή Πολιτική ασφάλειας περιεχομένου (CSP) μειώνει σημαντικά τον κίνδυνο επιθέσεων XSS. [Μάθετε περισσότερα](https://csp.withgoogle.com/docs/index.html)"
+    "message": "Μια ισχυρή Πολιτική ασφάλειας περιεχομένου (CSP) μειώνει σημαντικά τον κίνδυνο επιθέσεων μέσω δέσμης ενεργειών από άλλο ιστότοπο (XSS). [Μάθετε περισσότερα](https://web.dev/csp-xss/)"
+  },
+  "lighthouse-core/audits/csp-xss.js | itemSeveritySyntax": {
+    "message": "Σύνταξη"
   },
   "lighthouse-core/audits/csp-xss.js | metaTagMessage": {
     "message": "Η σελίδα περιέχει CSP που ορίζεται σε ετικέτα <meta>. Εάν μπορείτε, εξετάστε το ενδεχόμενο ορισμού του CSP σε κεφαλίδα HTTP."
@@ -613,18 +763,6 @@
   },
   "lighthouse-core/audits/deprecations.js | title": {
     "message": "Αποφυγή καταργημένων API"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | description": {
-    "message": "Η κρυφή μνήμη εφαρμογής έχει καταργηθεί. [Μάθετε περισσότερα](https://web.dev/appcache-manifest/)."
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | displayValue": {
-    "message": "Βρέθηκε \"{AppCacheManifest}\""
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | failureTitle": {
-    "message": "Χρησιμοποιεί προσωρινή μνήμη εφαρμογής"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | title": {
-    "message": "Αποφυγή προσωρινής μνήμης εφαρμογής"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | description": {
     "message": "Απαιτείται δήλωση κωδικοποίησης χαρακτήρων. Μπορεί να πραγματοποιηθεί με μια ετικέτα `<meta>` στα πρώτα 1024 byte του κώδικα HTML ή στην κεφαλίδα απόκρισης HTTP τύπου περιεχομένου. [Μάθετε περισσότερα](https://web.dev/charset/)."
@@ -682,21 +820,6 @@
   },
   "lighthouse-core/audits/dobetterweb/dom-size.js | title": {
     "message": "Αποφεύγει τα υπερβολικά μεγάλα μεγέθη DOM"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | columnFailingAnchors": {
-    "message": "Αγκυρώσεις που αποτυγχάνουν"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | description": {
-    "message": "Προσθέστε ένα στοιχείο `rel=\"noopener\"` ή `rel=\"noreferrer\"` στους εξωτερικούς συνδέσμους για να βελτιώσετε την απόδοση και να αποφύγετε τις ευπάθειες ασφάλειας. [Μάθετε περισσότερα](https://web.dev/external-anchors-use-rel-noopener/)."
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | failureTitle": {
-    "message": "Οι σύνδεσμοι με προορισμούς διασταυρούμενων προελεύσεων δεν είναι ασφαλείς"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | title": {
-    "message": "Οι σύνδεσμοι με προορισμούς διασταυρούμενων προελεύσεων είναι ασφαλείς"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | warning": {
-    "message": "Δεν ήταν δυνατός ο προσδιορισμός του προορισμού για την αγκύρωση ({anchorHTML}). Εάν δεν χρησιμοποιείται ως υπερσύνδεσμος, εξετάστε το ενδεχόμενο να καταργήσετε το χαρακτηριστικό target=_blank."
   },
   "lighthouse-core/audits/dobetterweb/geolocation-on-start.js | description": {
     "message": "Οι ιστότοποι που απαιτούν τη γνωστοποίηση τοποθεσίας χωρίς προφανή αιτία προκαλούν σύγχυση ή φαίνονται ύποπτοι στους χρήστες. Συνιστάται τα αιτήματα να συνδέονται με τις ενέργειες των χρηστών. [Μάθετε περισσότερα](https://web.dev/geolocation-on-start/)."
@@ -760,15 +883,6 @@
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | failureTitle": {
     "message": "Συμπερίληψη βιβλιοθηκών JavaScript διεπαφής με γνωστές ευπάθειες ασφάλειας"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityHigh": {
-    "message": "Υψηλή"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityLow": {
-    "message": "Χαμηλή"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityMedium": {
-    "message": "Μέτρια"
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | title": {
     "message": "Αποφυγή όλων των βιβλιοθηκών JavaScript διεπαφής με γνωστές ευπάθειες ασφάλειας"
@@ -906,10 +1020,10 @@
     "message": "Το μανιφέστο δεν περιέχει το πεδίο \"name\" η \"short_name\"."
   },
   "lighthouse-core/audits/installable-manifest.js | manifest-missing-suitable-icon": {
-    "message": "Το μανιφέστο δεν περιέχει κατάλληλο εικονίδιο. Απαιτείται μορφή PNG, SVG ή WebP, μεγέθους τουλάχιστον {value0} px. Το χαρακτηριστικό μεγέθους θα πρέπει να οριστεί και το χαρακτηριστικό σκοπού, εάν οριστεί, θα πρέπει να περιλαμβάνει τις τιμές \"any\" ή \"maskable\"."
+    "message": "Το μανιφέστο δεν περιέχει κατάλληλο εικονίδιο. Απαιτείται μορφή PNG, SVG ή WebP, μεγέθους τουλάχιστον {value0} px. Το χαρακτηριστικό μεγέθους θα πρέπει να οριστεί και το χαρακτηριστικό σκοπού, εάν οριστεί, θα πρέπει να περιλαμβάνει την τιμή \"any\"."
   },
   "lighthouse-core/audits/installable-manifest.js | no-acceptable-icon": {
-    "message": "Κανένα παρεχόμενο εικονίδιο δεν είναι τετράγωνο μεγέθους τουλάχιστον {value0} px σε μορφή PNG, SVG ή WebP."
+    "message": "Κανένα παρεχόμενο εικονίδιο δεν είναι τετράγωνο μεγέθους τουλάχιστον {value0} px σε μορφή PNG, SVG ή WebP, με το στοιχείο σκοπού μη ορισμένο ή ορισμένο σε \"any\""
   },
   "lighthouse-core/audits/installable-manifest.js | no-icon-available": {
     "message": "Το εικονίδιο λήψης ήταν κενό ή κατεστραμμένο."
@@ -989,21 +1103,6 @@
   "lighthouse-core/audits/is-on-https.js | warning": {
     "message": "Επιτρέπεται με προειδοποίηση"
   },
-  "lighthouse-core/audits/large-javascript-libraries.js | columnLibraryName": {
-    "message": "Βιβλιοθήκη"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | description": {
-    "message": "Οι μεγάλες βιβλιοθήκες JavaScript ενδέχεται να οδηγήσουν σε κακή απόδοση. Προτιμήστε μικρότερες βιβλιοθήκες με αντίστοιχη λειτουργικότητα για να μειώσετε το μέγεθος πακέτου. [Μάθετε περισσότερα](https://developers.google.com/web/fundamentals/performance/webpack/decrease-frontend-size#optimize_dependencies)."
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | displayValue": {
-    "message": "{libraryCount,plural, =1{Βρέθηκε μία μεγάλη βιβλιοθήκη}other{Βρέθηκαν # μεγάλες βιβλιοθήκες}}"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | failureTitle": {
-    "message": "Αντικατάσταση των βιβλιοθηκών JavaScript που είναι αδικαιολόγητα μεγάλες"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | title": {
-    "message": "Αποφεύγει τις μεγάλες βιβλιοθήκες JavaScript με μικρότερες εναλλακτικές"
-  },
   "lighthouse-core/audits/largest-contentful-paint-element.js | description": {
     "message": "Αυτό είναι το μεγαλύτερο χρωματισμένο στοιχείο με περιεχόμενο στη θύρα προβολής. [Μάθετε περισσότερα](https://web.dev/lighthouse-largest-contentful-paint/)"
   },
@@ -1018,6 +1117,15 @@
   },
   "lighthouse-core/audits/layout-shift-elements.js | title": {
     "message": "Αποφύγετε τις μεγάλες μετατοπίσεις διάταξης"
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | description": {
+    "message": "Οι εικόνες στο επάνω μέρος που φορτώνονται αργά αποδίδονται αργότερα στον κύκλο ζωής της σελίδας, κάτι που μπορεί να καθυστερήσει τη μεγαλύτερη σχεδίαση με περιεχόμενο. [Μάθετε περισσότερα](https://web.dev/lcp-lazy-loading/)."
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | failureTitle": {
+    "message": "Η εικόνα μεγαλύτερης σχεδίασης με περιεχόμενο φορτώθηκε αργά"
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | title": {
+    "message": "Η εικόνα μεγαλύτερης σχεδίασης με περιεχόμενο δεν φορτώθηκε αργά"
   },
   "lighthouse-core/audits/long-tasks.js | description": {
     "message": "Παραθέτει τις μεγαλύτερες εργασίες στο κύριο νήμα, κάτι που είναι χρήσιμο για τον εντοπισμό των συνεισφερόντων που συμβάλλουν περισσότερο στην καθυστέρηση εισόδου. [Μάθετε περισσότερα](https://web.dev/long-tasks-devtools/)"
@@ -1070,14 +1178,8 @@
   "lighthouse-core/audits/metrics/cumulative-layout-shift.js | description": {
     "message": "Οι Συνολικές αλλαγές διάταξης μετρούν την κίνηση των ορατών στοιχείων εντός της θύρας προβολής. [Μάθετε περισσότερα](https://web.dev/cls/)."
   },
-  "lighthouse-core/audits/metrics/estimated-input-latency.js | description": {
-    "message": "Ο εκτιμώμενος λανθάνων χρόνος στοιχείων εισόδου αποτελεί εκτίμηση του χρόνου που απαιτείται, σε χιλιοστά του δευτερολέπτου, προκειμένου η εφαρμογή σας να ανταποκριθεί στα στοιχεία εισόδου χρήστη στο διάστημα των 5 δευτερολέπτων με τον μεγαλύτερο φόρτο κατά τη φόρτωση της σελίδας. Εάν ο λανθάνων χρόνος είναι μεγαλύτερος από 50 χιλιοστά δευτερολέπτου, οι χρήστες μπορεί να θεωρήσουν ότι η εφαρμογή σας είναι αργή. [Μάθετε περισσότερα](https://web.dev/estimated-input-latency/)."
-  },
   "lighthouse-core/audits/metrics/first-contentful-paint.js | description": {
     "message": "Η πρώτη μορφή με περιεχόμενο υποδεικνύει πότε σχεδιάζεται το πρώτο κείμενο ή η πρώτη εικόνα. [Μάθετε περισσότερα](https://web.dev/first-contentful-paint/)."
-  },
-  "lighthouse-core/audits/metrics/first-cpu-idle.js | description": {
-    "message": "Η πρώτη αδράνεια CPU υποδεικνύει πότε είναι η πρώτη φορά που η δραστηριότητα του κύριου νήματος της σελίδας είναι τόσο χαμηλή ώστε να διαχειριστεί στοιχεία εισόδου.  [Μάθετε περισσότερα](https://web.dev/first-cpu-idle/)."
   },
   "lighthouse-core/audits/metrics/first-meaningful-paint.js | description": {
     "message": "Η πρώτη χρήσιμη μορφή υπολογίζει πότε καθίσταται ορατό το κύριο περιεχόμενο μιας σελίδας. [Μάθετε περισσότερα](https://web.dev/first-meaningful-paint/)."
@@ -1169,15 +1271,6 @@
   "lighthouse-core/audits/preload-lcp-image.js | title": {
     "message": "Προφόρτωση εικόνας Μεγαλύτερης σχεδίασης με περιεχόμενο"
   },
-  "lighthouse-core/audits/redirects-http.js | description": {
-    "message": "Αν έχετε ήδη ρυθμίσει το HTTPS, βεβαιωθείτε ότι ανακατευθύνετε όλη την επισκεψιμότητα HTTP σε HTTPS, προκειμένου να ενεργοποιήσετε ασφαλείς λειτουργίες ιστού για όλους τους χρήστες σας. [Μάθετε περισσότερα](https://web.dev/redirects-http/)."
-  },
-  "lighthouse-core/audits/redirects-http.js | failureTitle": {
-    "message": "Δεν ανακατευθύνσει την επισκεψιμότητα HTTP σε HTTPS"
-  },
-  "lighthouse-core/audits/redirects-http.js | title": {
-    "message": "Ανακατευθύνει την επισκεψιμότητα HTTP σε HTTPS"
-  },
   "lighthouse-core/audits/redirects.js | description": {
     "message": "Οι ανακατευθύνσεις προκαλούν πρόσθετες καθυστερήσεις στη φόρτωση της σελίδας. [Μάθετε περισσότερα](https://web.dev/redirects/)."
   },
@@ -1199,9 +1292,6 @@
   "lighthouse-core/audits/seo/canonical.js | explanationConflict": {
     "message": "Πολλά URL σε διένεξη ({urlList})"
   },
-  "lighthouse-core/audits/seo/canonical.js | explanationDifferentDomain": {
-    "message": "Παραπέμπει σε διαφορετικό τομέα ({url})"
-  },
   "lighthouse-core/audits/seo/canonical.js | explanationInvalid": {
     "message": "Μη έγκυρο URL ({url})"
   },
@@ -1209,7 +1299,7 @@
     "message": "Παραπέμπει σε μια άλλη τοποθεσία `hreflang` ({url})"
   },
   "lighthouse-core/audits/seo/canonical.js | explanationRelative": {
-    "message": "Σχετικό URL ({url})"
+    "message": "Δεν είναι απόλυτο URL ({url})"
   },
   "lighthouse-core/audits/seo/canonical.js | explanationRoot": {
     "message": "Παραπέμπει στο ριζικό URL του τομέα (την αρχική σελίδα), αντί για μια αντίστοιχη σελίδα περιεχομένου"
@@ -1290,10 +1380,10 @@
     "message": "Οι μηχανές αναζήτησης δεν μπορούν να συμπεριλάβουν τις σελίδες σας στα αποτελέσματα αναζήτησης, εάν δεν έχουν άδεια για την εκτέλεση ανίχνευσης σε αυτές. [Μάθετε περισσότερα](https://web.dev/is-crawable/)."
   },
   "lighthouse-core/audits/seo/is-crawlable.js | failureTitle": {
-    "message": "Η σελίδα αποκλείεται από την ευρετηρίαση"
+    "message": "Η σελίδα αποκλείεται από την δημιουργία καταλόγου"
   },
   "lighthouse-core/audits/seo/is-crawlable.js | title": {
-    "message": "Η σελίδα δεν αποκλείεται από την ευρετηρίαση"
+    "message": "Η σελίδα δεν αποκλείεται από την δημιουργία καταλόγου"
   },
   "lighthouse-core/audits/seo/link-text.js | description": {
     "message": "Το περιγραφικό κείμενο συνδέσμων βοηθά τις μηχανές αναζήτησης να κατανοήσουν το περιεχόμενό σας. [Μάθετε περισσότερα](https://web.dev/link-text/)."
@@ -1542,7 +1632,7 @@
     "message": "Η σελίδα έχει έγκυρες αντιστοιχίσεις πηγής"
   },
   "lighthouse-core/audits/viewport.js | description": {
-    "message": "Προσθέστε μια ετικέτα `<meta name=\"viewport\">` για να βελτιστοποιήσετε την εφαρμογή σας για οθόνες κινητών συσκευών. [Μάθετε περισσότερα](https://web.dev/viewport/)."
+    "message": "Μια μεταετικέτα `<meta name=\"viewport\">` δεν βελτιστοποιεί απλώς την εφαρμογή σας για μεγέθη οθόνης κινητών, αλλά αποτρέπει και [μια καθυστέρηση 300 χιλιοστών του δευτερολέπτου στην εισαγωγή στοιχείων από τους χρήστες](https://developers.google.com/web/updates/2013/12/300ms-tap-delay-gone-away). [Μάθετε περισσότερα](https://web.dev/viewport/)."
   },
   "lighthouse-core/audits/viewport.js | explanationNoTag": {
     "message": "Δεν βρέθηκε ετικέτα `<meta name=\"viewport\">`"
@@ -1668,7 +1758,7 @@
     "message": "Αυτοί οι έλεγχοι απαιτούνται από τη [Λίστα ελέγχου PWA](https://developers.google.com/web/progressive-web-apps/checklist) σημείου αναφοράς αλλά δεν ελέγχονται αυτόματα από το Lighthouse. Δεν επηρεάζουν τη βαθμολογία σας αλλά είναι σημαντικό να τους επαληθεύσετε με μη αυτόματο τρόπο."
   },
   "lighthouse-core/config/default-config.js | pwaCategoryTitle": {
-    "message": "Προηγμένη εφαρμογή ιστού"
+    "message": "PWA"
   },
   "lighthouse-core/config/default-config.js | pwaInstallableGroupTitle": {
     "message": "Δυνατότητα εγκατάστασης"
@@ -1677,7 +1767,7 @@
     "message": "Με βελτιστοποίηση PWA"
   },
   "lighthouse-core/config/default-config.js | seoCategoryDescription": {
-    "message": "Αυτοί οι έλεγχοι διασφαλίζουν ότι η σελίδα σας είναι βελτιστοποιημένη για κατάταξη στα αποτελέσματα μηχανών αναζήτησης. Υπάρχουν επιπλέον παράγοντες που δεν ελέγχονται από το Lighthouse και μπορεί να επηρεάσουν την κατάταξη της σελίδας σας στην αναζήτηση. [Μάθετε περισσότερα](https://support.google.com/webmasters/answer/35769)."
+    "message": "Αυτοί οι έλεγχοι διασφαλίζουν ότι η σελίδα σας ακολουθεί τις βασικές συμβουλές βελτιστοποίησης μηχανών αναζήτησης. Υπάρχουν πολλοί επιπλέον παράγοντες τους οποίους το Lighthouse δεν βαθμολογεί εδώ και οι οποίοι ενδέχεται να επηρεάζουν την κατάταξη στην αναζήτηση, συμπεριλαμβανομένης της απόδοσης στο [Core Web Vitals](https://web.dev/learn-web-vitals/). [Μάθετε περισσότερα](https://support.google.com/webmasters/answer/35769)."
   },
   "lighthouse-core/config/default-config.js | seoCategoryManualDescription": {
     "message": "Εκτελέστε αυτά τα πρόσθετα εργαλεία επικύρωσης, για να ελέγξετε περισσότερες βέλτιστες πρακτικές SEO."
@@ -1703,6 +1793,15 @@
   "lighthouse-core/config/default-config.js | seoMobileGroupTitle": {
     "message": "Φιλική προς κινητά"
   },
+  "lighthouse-core/gather/driver/environment.js | warningSlowHostCpu": {
+    "message": "Η δοκιμασμένη συσκευή φαίνεται να έχει πιο αργή CPU από ό,τι αναμένει το Lighthouse. Αυτό μπορεί να επηρεάσει αρνητικά τη βαθμολογία απόδοσης. Μάθετε περισσότερα σχετικά με τη [βαθμονόμηση ενός κατάλληλου πολλαπλασιαστή επιβράδυνσης CPU](https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#cpu-throttling)."
+  },
+  "lighthouse-core/gather/driver/navigation.js | warningRedirected": {
+    "message": "Η σελίδα μπορεί να μην φορτώνεται με τον αναμενόμενο τρόπο επειδή το URL δοκιμής ({requested}) ανακατευθύνθηκε στο {final}. Προσπαθήστε να δοκιμάσετε απευθείας το δεύτερο URL."
+  },
+  "lighthouse-core/gather/driver/navigation.js | warningTimeout": {
+    "message": "Η φόρτωση της σελίδας ήταν υπερβολικά αργή και δεν ολοκληρώθηκε εντός του χρονικού ορίου. Τα αποτελέσματα ενδέχεται να μην είναι ολοκληρωμένα."
+  },
   "lighthouse-core/gather/driver/storage.js | warningData": {
     "message": "{locationCount,plural, =1{Ενδέχεται να υπάρχουν αποθηκευμένα δεδομένα που επηρεάζουν την απόδοση φόρτωσης σε αυτήν την τοποθεσία: {locations}. Ελέγξτε αυτήν τη σελίδα σε παράθυρο για ανώνυμη περιήγηση για να εμποδίσετε αυτούς τους πόρους από το να επηρεάσουν τις βαθμολογίες σας.}other{Ενδέχεται να υπάρχουν αποθηκευμένα δεδομένα που επηρεάζουν την απόδοση φόρτωσης σε αυτές τις τοποθεσίες: {locations}. Ελέγξτε αυτήν τη σελίδα σε παράθυρο για ανώνυμη περιήγηση για να εμποδίσετε αυτούς τους πόρους από το να επηρεάσουν τις βαθμολογίες σας.}}"
   },
@@ -1722,7 +1821,7 @@
     "message": "Το base-uri που λείπει επιτρέπει στις ενσωματωμένες ετικέτες <base> να ορίζουν το βασικό URL για όλα τα σχετικά URL (π.χ. σενάρια) σε έναν τομέα που ελέγχεται από έναν υπεύθυνο επίθεσης. Εξετάστε το ενδεχόμενο ρύθμισης του base-uri στις επιλογές \"none\" ή \"self\"."
   },
   "lighthouse-core/lib/csp-evaluator.js | missingObjectSrc": {
-    "message": "Τα στοιχεία που ελέγχονται από το object-src θεωρούνται λειτουργίες παλαιού τύπου. Εξετάστε το ενδεχόμενο ρύθμισης του object-src σε none για να αποτρέψετε την εισαγωγή προσθηκών που εκτελούν μη ασφαλή σενάρια."
+    "message": "Η απουσία object-src επιτρέπει την εισαγωγή προσθηκών που εκτελούν μη ασφαλή σενάρια. Εξετάστε το ενδεχόμενο να ορίσετε το object-src σε none, εφόσον μπορείτε."
   },
   "lighthouse-core/lib/csp-evaluator.js | missingScriptSrc": {
     "message": "Λείπει η οδηγία script-src. Αυτό μπορεί να επιτρέψει την εκτέλεση μη ασφαλών σεναρίων."
@@ -1736,6 +1835,12 @@
   "lighthouse-core/lib/csp-evaluator.js | nonceLength": {
     "message": "Οι αριθμοί nonce πρέπει να αποτελούνται από τουλάχιστον 8 χαρακτήρες."
   },
+  "lighthouse-core/lib/csp-evaluator.js | plainUrlScheme": {
+    "message": "Αποφύγετε τη χρήση απλών σχημάτων URL ({keyword}) σε αυτήν την οδηγία. Τα απλά σχήματα URL επιτρέπουν την άντληση σεναρίων από μη ασφαλή τομέα."
+  },
+  "lighthouse-core/lib/csp-evaluator.js | plainWildcards": {
+    "message": "Αποφύγετε τη χρήση απλών χαρακτήρων μπαλαντέρ ({keyword}) σε αυτήν την οδηγία. Οι απλοί χαρακτήρες μπαλαντέρ επιτρέπουν την άντληση σεναρίων από μη ασφαλή τομέα."
+  },
   "lighthouse-core/lib/csp-evaluator.js | reportToOnly": {
     "message": "Ο προορισμός αναφοράς διαμορφώνεται μόνο μέσω της οδηγίας report-to. Αυτή η οδηγία υποστηρίζεται μόνο σε προγράμματα περιήγησης που βασίζονται στο Chromium, συνεπώς, συνιστάται επίσης η χρήση μιας οδηγίας report-uri."
   },
@@ -1743,7 +1848,7 @@
     "message": "Δεν υπάρχει CSP που διαμορφώνει προορισμό αναφοράς. Αυτό δυσχεραίνει τη διατήρηση του CSP για μεγάλα διαστήματα και την παρακολούθηση για τυχόν προβλήματα."
   },
   "lighthouse-core/lib/csp-evaluator.js | strictDynamic": {
-    "message": "Οι λίστες επιτρεπόμενων κεντρικού υπολογιστή μπορούν συχνά να παρακαμφθούν. Εξετάστε το ενδεχόμενο χρήσης του strict-dynamic σε συνδυασμό με αριθμούς nonce ή κατακερματισμούς CSP."
+    "message": "Οι λίστες επιτρεπομένων κεντρικού υπολογιστή μπορούν συχνά να παρακαμφθούν. Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε κατακερματισμούς ή αριθμούς nonce CSP στη θέση τους, μαζί με το strict-dynamic, εφόσον χρειάζεται."
   },
   "lighthouse-core/lib/csp-evaluator.js | unknownDirective": {
     "message": "Άγνωστη οδηγία CSP."
@@ -1832,12 +1937,6 @@
   "lighthouse-core/lib/i18n/i18n.js | documentResourceType": {
     "message": "Έγγραφο"
   },
-  "lighthouse-core/lib/i18n/i18n.js | estimatedInputLatencyMetric": {
-    "message": "Εκτιμώμενος λανθάνων χρόνος στοιχείων εισόδου"
-  },
-  "lighthouse-core/lib/i18n/i18n.js | firstCPUIdleMetric": {
-    "message": "Πρώτη αδράνεια CPU"
-  },
   "lighthouse-core/lib/i18n/i18n.js | firstContentfulPaintMetric": {
     "message": "First Contentful Paint"
   },
@@ -1852,6 +1951,15 @@
   },
   "lighthouse-core/lib/i18n/i18n.js | interactiveMetric": {
     "message": "Time to Interactive"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityHigh": {
+    "message": "Υψηλή"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityLow": {
+    "message": "Χαμηλή"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityMedium": {
+    "message": "Μέτρια"
   },
   "lighthouse-core/lib/i18n/i18n.js | largestContentfulPaintMetric": {
     "message": "Largest Contentful Paint"
@@ -1952,143 +2060,11 @@
   "lighthouse-core/lib/lh-error.js | urlInvalid": {
     "message": "Το URL που παρείχατε φαίνεται ότι δεν είναι έγκυρο."
   },
-  "lighthouse-core/report/html/renderer/util.js | calculatorLink": {
-    "message": "Προβολή αριθμομηχανής."
-  },
-  "lighthouse-core/report/html/renderer/util.js | crcInitialNavigation": {
-    "message": "Αρχική πλοήγηση"
-  },
-  "lighthouse-core/report/html/renderer/util.js | crcLongestDurationLabel": {
-    "message": "Μέγιστος λανθάνων χρόνος κρίσιμης διαδρομής:"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownCopyJSON": {
-    "message": "Αντιγραφή JSON"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownDarkTheme": {
-    "message": "Εναλλαγή σκούρου θέματος"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownPrintExpanded": {
-    "message": "Πλήρης εκτύπωση"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownPrintSummary": {
-    "message": "Συνοπτική εκτύπωση"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveGist": {
-    "message": "Αποθήκευση ως Gist"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveHTML": {
-    "message": "Αποθήκευση ως HTML"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveJSON": {
-    "message": "Αποθήκευση ως JSON"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownViewer": {
-    "message": "Άνοιγμα στο πρόγραμμα προβολής"
-  },
-  "lighthouse-core/report/html/renderer/util.js | errorLabel": {
-    "message": "Σφάλμα!"
-  },
-  "lighthouse-core/report/html/renderer/util.js | errorMissingAuditInfo": {
-    "message": "Σφάλμα αναφοράς: Δεν υπάρχουν πληροφορίες ελέγχου"
-  },
-  "lighthouse-core/report/html/renderer/util.js | footerIssue": {
-    "message": "Υποβολή προβλήματος"
-  },
-  "lighthouse-core/report/html/renderer/util.js | labDataTitle": {
-    "message": "Εργαστηριακά δεδομένα"
-  },
-  "lighthouse-core/report/html/renderer/util.js | lsPerformanceCategoryDescription": {
-    "message": "Ανάλυση της τρέχουσας σελίδας από το [Lighthouse](https://developers.google.com/web/tools/lighthouse/) σε ένα προσομειωμένο δίκτυο κινητής τηλεφωνίας. Οι τιμές είναι κατ' εκτίμηση και μπορεί να διαφέρουν."
-  },
-  "lighthouse-core/report/html/renderer/util.js | manualAuditsGroupTitle": {
-    "message": "Επιπλέον στοιχεία για μη αυτόματο έλεγχο"
-  },
-  "lighthouse-core/report/html/renderer/util.js | notApplicableAuditsGroupTitle": {
-    "message": "Δεν ισχύει"
-  },
-  "lighthouse-core/report/html/renderer/util.js | opportunityResourceColumnLabel": {
-    "message": "Ευκαιρία"
-  },
-  "lighthouse-core/report/html/renderer/util.js | opportunitySavingsColumnLabel": {
-    "message": "Εκτιμώμενες εξοικονομήσεις"
-  },
-  "lighthouse-core/report/html/renderer/util.js | passedAuditsGroupTitle": {
-    "message": "Έλεγχοι που ολοκληρώθηκαν επιτυχώς"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeDesktopEmulation": {
-    "message": "Προσομοιωμένη επιφάνεια εργασίας"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeMobileEmulation": {
-    "message": "Προσομοιωμένο Moto G4"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeNoEmulation": {
-    "message": "Χωρίς προσομοίωση"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsAxeVersion": {
-    "message": "'Εκδοση Axe"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsBenchmark": {
-    "message": "Ισχύς CPU/μνήμης"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsCPUThrottling": {
-    "message": "Περιορισμός CPU"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsChannel": {
-    "message": "Κανάλι"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsDevice": {
-    "message": "Συσκευή"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsFetchTime": {
-    "message": "Ώρα ανάκτησης"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsNetworkThrottling": {
-    "message": "Περιορισμός δικτύου"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsTitle": {
-    "message": "Ρυθμίσεις χρόνου εκτέλεσης (runtime)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUA": {
-    "message": "Παράγοντας χρήστη (κεντρικός υπολογιστής)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUANetwork": {
-    "message": "Παράγοντας χρήστη (δίκτυο)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUrl": {
-    "message": "URL"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeUnknown": {
-    "message": "Άγνωστη"
-  },
-  "lighthouse-core/report/html/renderer/util.js | snippetCollapseButtonLabel": {
-    "message": "Σύμπτυξη αποσπάσματος"
-  },
-  "lighthouse-core/report/html/renderer/util.js | snippetExpandButtonLabel": {
-    "message": "Ανάπτυξη αποσπάσματος"
-  },
-  "lighthouse-core/report/html/renderer/util.js | thirdPartyResourcesLabel": {
-    "message": "Εμφάνιση πόρων τρίτων"
-  },
-  "lighthouse-core/report/html/renderer/util.js | throttlingProvided": {
-    "message": "Παρέχεται από το περιβάλλον"
-  },
-  "lighthouse-core/report/html/renderer/util.js | toplevelWarningsMessage": {
-    "message": "Παρουσιάστηκαν ορισμένα ζητήματα τα οποία επηρεάζουν αυτήν την εκτέλεση του Lighthouse:"
-  },
-  "lighthouse-core/report/html/renderer/util.js | varianceDisclaimer": {
-    "message": "Οι τιμές εκτιμώνται και μπορεί να ποικίλουν. Η [βαθμολογία απόδοσης υπολογίζεται](https://web.dev/performance-scoring/) απευθείας από αυτές τις μετρήσεις."
-  },
-  "lighthouse-core/report/html/renderer/util.js | viewTreemapLabel": {
-    "message": "Προβολή δενδροειδούς χάρτη"
-  },
-  "lighthouse-core/report/html/renderer/util.js | warningAuditsGroupTitle": {
-    "message": "Έλεγχοι που ολοκληρώθηκαν αλλά με προειδοποιήσεις"
-  },
-  "lighthouse-core/report/html/renderer/util.js | warningHeader": {
-    "message": "Προειδοποιήσεις: "
-  },
   "node_modules/lighthouse-stack-packs/packs/amp.js | efficient-animated-content": {
     "message": "Για περιεχόμενο κινούμενης εικόνας, χρησιμοποιήστε το [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) για να ελαχιστοποιήσετε τη χρήση CPU όταν το περιεχόμενο είναι εκτός οθόνης."
+  },
+  "node_modules/lighthouse-stack-packs/packs/amp.js | modern-image-formats": {
+    "message": "Μπορείτε να εμφανίσετε όλα τα στοιχεία [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) σε μορφές WebP, ορίζοντας μια κατάλληλη εναλλακτική για άλλα προγράμματα περιήγησης. [Μάθετε περισσότερα](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | offscreen-images": {
     "message": "Βεβαιωθείτε ότι χρησιμοποιείτε το στοιχείο [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) για εικόνες για αυτόματη αργή φόρτωση. [Μάθετε περισσότερα](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)."
@@ -2101,9 +2077,6 @@
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-responsive-images": {
     "message": "Το στοιχείο [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) υποστηρίζει το χαρακτηριστικό [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) για να ορίσει ποια στοιχεία εικόνας θα χρησιμοποιούνται, βάσει μεγέθους οθόνης. [Μάθετε περισσότερα](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)."
-  },
-  "node_modules/lighthouse-stack-packs/packs/amp.js | uses-webp-images": {
-    "message": "Μπορείτε να εμφανίσετε όλα τα στοιχεία [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) σε μορφές WebP, ορίζοντας μια κατάλληλη εναλλακτική για άλλα προγράμματα περιήγησης. [Μάθετε περισσότερα](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | dom-size": {
     "message": "Μπορείτε να χρησιμοποιήσετε εικονική κύλιση με το Component Dev Kit (CDK), όταν αποδίδονται πολύ μεγάλες λίστες. [Μάθετε περισσότερα](https://web.dev/virtualize-lists-with-angular-cdk/)."
@@ -2129,13 +2102,16 @@
   "node_modules/lighthouse-stack-packs/packs/drupal.js | font-display": {
     "message": "Καθορίστε τη `@font-display` κατά τον προσδιορισμό προσαρμοσμένων γραμματοσειρών στο θέμα σας."
   },
+  "node_modules/lighthouse-stack-packs/packs/drupal.js | modern-image-formats": {
+    "message": "Εξετάστε το ενδεχόμενο να εγκαταστήσετε και να διαμορφώσετε [μια λειτουργική μονάδα για να αξιοποιήσετε μορφές εικόνας WebP](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) στον ιστότοπό σας. Αυτές οι λειτουργικές μονάδες δημιουργούν αυτόματα μια έκδοση WebP των μεταφορτωμένων εικόνων σας για τη βελτιστοποίηση των χρόνων φόρτωσης."
+  },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | offscreen-images": {
     "message": "Εγκαταστήστε [μια λειτουργική μονάδα Drupal](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) η οποία μπορεί να εκτελέσει αργή φόρτωση εικόνων. Αυτού του είδους οι λειτουργικές μονάδες παρέχουν τη δυνατότητα αναβολής φόρτωσης των εικόνων εκτός οθόνης, για τη βελτίωση της απόδοσης."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | render-blocking-resources": {
     "message": "Εξετάστε το ενδεχόμενο χρήσης μιας λειτουργικής μονάδας για την ενσωμάτωση σημαντικών στοιχείων CSS και JavaScript ή ενδεχομένως για την ασύγχρονη φόρτωση στοιχείων μέσω JavaScript, όπως τη λειτουργική μονάδα [Σύνθετη συγκέντρωση CSS/JS](https://www.drupal.org/project/advagg). Λάβετε υπόψη ότι οι βελτιστοποιήσεις που παρέχονται από αυτήν τη λειτουργική μονάδα μπορεί να προκαλέσουν προβλήματα στη λειτουργία του ιστοτόπου σας. Συνεπώς, είναι πιθανό να χρειαστεί να κάνετε αλλαγές στον κώδικα."
   },
-  "node_modules/lighthouse-stack-packs/packs/drupal.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/drupal.js | server-response-time": {
     "message": "Τα θέματα, οι ενότητες και οι προδιαγραφές διακομιστή συμβάλλουν στον χρόνο απόκρισης του διακομιστή. Αν θέλετε, μπορείτε να ψάξετε για ένα περισσότερο βελτιστοποιημένο θέμα, να επιλέξετε προσεκτικά μια ενότητα βελτιστοποίησης ή/και να αναβαθμίσετε τον διακομιστή σας. Οι διακομιστές φιλοξενίας σας θα πρέπει να χρησιμοποιούν την προσωρινή αποθήκευση κώδικα λειτουργίας (opcode) PHP, την προσωρινή αποθήκευση μνήμης για τη μείωση των χρόνων ερωτημάτων βάσης δεδομένων, όπως στα Redis και Memcached, καθώς και βελτιστοποιημένη λογική εφαρμογής για την πιο γρήγορη προετοιμασία σελίδων."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | total-byte-weight": {
@@ -2165,11 +2141,11 @@
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-responsive-images": {
     "message": "Βεβαιωθείτε ότι χρησιμοποιείτε τα εγγενή [Στιλ αποκριτικών εικόνων](https://www.drupal.org/docs/8/mobile-guide/responsive-images-in-drupal-8) που παρέχονται από το Drupal (διατίθενται στο Drupal 8 και σε νεότερες εκδόσεις). Χρησιμοποιήστε Στιλ αποκριτικών εικόνων κατά την απόδοση πεδίων εικόνων μέσω λειτουργιών προβολής, προβολών ή εικόνων που μεταφορτώθηκαν μέσω του εργαλείου επεξεργασίας WYSIWYG."
   },
-  "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-webp-images": {
-    "message": "Εξετάστε το ενδεχόμενο να εγκαταστήσετε και να διαμορφώσετε [μια λειτουργική μονάδα για να αξιοποιήσετε μορφές εικόνας WebP](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) στον ιστότοπό σας. Αυτές οι λειτουργικές μονάδες δημιουργούν αυτόματα μια έκδοση WebP των μεταφορτωμένων εικόνων σας για τη βελτιστοποίηση των χρόνων φόρτωσης."
-  },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | efficient-animated-content": {
     "message": "Εξετάστε το ενδεχόμενο μεταφόρτωσης του GIF σε μια υπηρεσία η οποία θα το διαθέσει για ενσωμάτωση ως βίντεο HTML5."
+  },
+  "node_modules/lighthouse-stack-packs/packs/joomla.js | modern-image-formats": {
+    "message": "Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε μια [προσθήκη](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=webp) ή μια υπηρεσία που θα μετατρέπει αυτόματα τις μεταφορτωμένες εικόνες σας στη βέλτιστη μορφή."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | offscreen-images": {
     "message": "Εγκαταστήστε μια προσθήκη [Joomla αργής φόρτωσης](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) η οποία παρέχει τη δυνατότητα αναβολής φόρτωσης των εικόνων εκτός οθόνης. Εναλλακτικά, χρησιμοποιήστε ένα πρότυπο που παρέχει αυτήν τη δυνατότητα. Από το Joomla 4.0, όλες οι νέες εικόνες θα λαμβάνουν [αυτόματα](https://github.com/joomla/joomla-cms/pull/30748) το χαρακτηριστικό `loading` από τη βασική ρύθμιση."
@@ -2207,9 +2183,6 @@
   "node_modules/lighthouse-stack-packs/packs/joomla.js | uses-text-compression": {
     "message": "Μπορείτε να ενεργοποιήσετε τη συμπίεση κειμένου μέσω της ενεργοποίησης της Συμπίεσης σελίδας Gzip στο Joomla (Σύστημα > Καθολική διαμόρφωση > Διακομιστής)."
   },
-  "node_modules/lighthouse-stack-packs/packs/joomla.js | uses-webp-images": {
-    "message": "Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε μια [προσθήκη](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=webp) ή μια υπηρεσία που θα μετατρέπει αυτόματα τις μεταφορτωμένες εικόνες σας στη βέλτιστη μορφή."
-  },
   "node_modules/lighthouse-stack-packs/packs/magento.js | critical-request-chains": {
     "message": "Εάν δεν δημιουργείτε δικά σας στοιχεία JavaScript, σκεφτείτε να χρησιμοποιήσετε [δεματοποιητή](https://github.com/magento/baler)."
   },
@@ -2219,10 +2192,13 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | font-display": {
     "message": "Καθορίστε το `@font-display` όταν [ορίζετε προσαρμοσμένες γραμματοσειρές](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/css-topics/using-fonts.html)."
   },
+  "node_modules/lighthouse-stack-packs/packs/magento.js | modern-image-formats": {
+    "message": "Μπορείτε να πραγματοποιήσετε αναζήτηση στο [Magento Marketplace](https://marketplace.magento.com/catalogsearch/result/?q=webp) για διάφορες επεκτάσεις τρίτων μερών, ώστε να αξιοποιήσετε νεότερες μορφές εικόνας."
+  },
   "node_modules/lighthouse-stack-packs/packs/magento.js | offscreen-images": {
     "message": "Μπορείτε να τροποποιήσετε το προϊόν σας και τα πρότυπα καταλόγου για να αξιοποιήσετε τη λειτουργία [αργής φόρτωσης](https://web.dev/native-lazy-loading) της πλατφόρμας ιστού."
   },
-  "node_modules/lighthouse-stack-packs/packs/magento.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/magento.js | server-response-time": {
     "message": "Χρησιμοποιήστε την[ενσωμάτωση Varnish](https://devdocs.magento.com/guides/v2.3/config-guide/varnish/config-varnish.html) του Magento."
   },
   "node_modules/lighthouse-stack-packs/packs/magento.js | unminified-css": {
@@ -2243,11 +2219,11 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | uses-rel-preload": {
     "message": "Οι ετικέτες `<link rel=preload>` μπορούν να προστεθούν [τροποποιώντας τη διάταξη ενός θέματος](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/layouts/xml-manage.html)."
   },
-  "node_modules/lighthouse-stack-packs/packs/magento.js | uses-webp-images": {
-    "message": "Μπορείτε να πραγματοποιήσετε αναζήτηση στο [Magento Marketplace](https://marketplace.magento.com/catalogsearch/result/?q=webp) για διάφορες επεκτάσεις τρίτων μερών, ώστε να αξιοποιήσετε νεότερες μορφές εικόνας."
-  },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | efficient-animated-content": {
     "message": "[Αντικαταστήστε τις κινούμενες εικόνες GIF με βίντεο](https://web.dev/replace-gifs-with-videos/) για ταχύτερη φόρτωση ιστοσελίδας, ενώ μπορείτε επίσης να χρησιμοποιήσετε σύγχρονες μορφές αρχείων όπως [WebM](https://web.dev/replace-gifs-with-videos/#create-webm-videos) ή [AV1](https://developers.google.com/web/updates/2018/09/chrome-70-media-updates#av1-decoder) για τη βελτίωση της απόδοσης συμπίεσης κατά περισσότερο από 30% σε σχέση με τον τρέχοντα υπερσύγχρονο κωδικοποιητή βίντεο, VP9."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | modern-image-formats": {
+    "message": "Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε μια [προσθήκη](https://octobercms.com/plugins?search=image) ή μια υπηρεσία που θα μετατρέπει αυτόματα τις μεταφορτωμένες εικόνες σας στη βέλτιστη μορφή. Οι [Εικόνες WebP χωρίς απώλειες](https://developers.google.com/speed/webp) έχουν 26% μικρότερο μέγεθος σε σχέση με τις εικόνες PNG και 25-34% μικρότερο μέγεθος σε σχέση με τις συγκρίσιμες εικόνες JPEG στον αντίστοιχο δείκτη ποιότητας SSIM. Μια άλλη μορφή εικόνας επόμενης γενιάς που μπορείτε να χρησιμοποιήσετε είναι η μορφή [AVIF](https://jakearchibald.com/2020/avif-has-landed/)."
   },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | offscreen-images": {
     "message": "Μπορείτε να εγκαταστήσετε μια [προσθήκη αργής φόρτωσης εικόνας](https://octobercms.com/plugins?search=lazy) η οποία παρέχει τη δυνατότητα αναβολής φόρτωσης των εικόνων εκτός οθόνης. Εναλλακτικά, χρησιμοποιήστε ένα θέμα που παρέχει αυτήν τη δυνατότητα. Εξετάστε επίσης το ενδεχόμενο χρήσης της [προσθήκης AMP](https://octobercms.com/plugins?search=Accelerated+Mobile+Pages)."
@@ -2255,7 +2231,7 @@
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | render-blocking-resources": {
     "message": "Υπάρχουν πολλές προσθήκες που βοηθούν στην [ενσωμάτωση των σημαντικών στοιχείων](https://octobercms.com/plugins?search=css). Αυτές οι προσθήκες ενδέχεται να καταστρέψουν άλλα προσθήκες, επομένως θα πρέπει να τις ελέγξετε προσεκτικά."
   },
-  "node_modules/lighthouse-stack-packs/packs/octobercms.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | server-response-time": {
     "message": "Τα θέματα, οι προσθήκες και οι προδιαγραφές διακομιστή συμβάλλουν στον χρόνο απόκρισης του διακομιστή. Μπορείτε να αναζητήσετε ένα περισσότερο βελτιστοποιημένο θέμα, να επιλέξετε προσεκτικά μια προσθήκη βελτιστοποίησης ή/και να αναβαθμίσετε τον διακομιστή σας. Το CMS του Οκτωβρίου επιτρέπει επίσης στους προγραμματιστές να χρησιμοποιήσουν [`Queues`](https://octobercms.com/docs/services/queues) για την αναβολή της επεξεργασίας μιας χρονοβόρας εργασίας, όπως η αποστολή ενός μηνύματος ηλεκτρονικού ταχυδρομείου. Αυτό επιταχύνει σημαντικά τα αιτήματα ιστού."
   },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | total-byte-weight": {
@@ -2285,16 +2261,13 @@
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-text-compression": {
     "message": "Ενεργοποίηση συμπίεσης κειμένου στη διαμόρφωση διακομιστή ιστού."
   },
-  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-webp-images": {
-    "message": "Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε μια [προσθήκη](https://octobercms.com/plugins?search=image) ή μια υπηρεσία που θα μετατρέπει αυτόματα τις μεταφορτωμένες εικόνες σας στη βέλτιστη μορφή. Οι [Εικόνες WebP χωρίς απώλειες](https://developers.google.com/speed/webp) έχουν 26% μικρότερο μέγεθος σε σχέση με τις εικόνες PNG και 25-34% μικρότερο μέγεθος σε σχέση με τις συγκρίσιμες εικόνες JPEG στον αντίστοιχο δείκτη ποιότητας SSIM. Μια άλλη μορφή εικόνας επόμενης γενιάς που μπορείτε να χρησιμοποιήσετε είναι η μορφή [AVIF](https://jakearchibald.com/2020/avif-has-landed/)."
-  },
   "node_modules/lighthouse-stack-packs/packs/react.js | dom-size": {
     "message": "Μπορείτε να χρησιμοποιήσετε μια βιβλιοθήκη \"παραθύρων\", όπως η `react-window` για να ελαχιστοποιήσετε τον αριθμό κόμβων DOM που δημιουργήθηκαν, εάν αποδίδετε πολλά επαναλαμβανόμενα στοιχεία στη σελίδα. [Μάθετε περισσότερα](https://web.dev/virtualize-long-lists-react-window/). Επίσης, ελαχιστοποιήστε τις περιττές εκ νέου αποδόσεις, χρησιμοποιώντας το [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent) ή το [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) και [παραβλέψτε τα εφέ](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) μόνο μέχρι να αλλάξουν συγκεκριμένες εξαρτήσεις, εάν χρησιμοποιείτε το άγκιστρο `Effect` για να βελτιώσετε την απόδοση χρόνου εκτέλεσης (runtime)."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | redirects": {
     "message": "Εάν χρησιμοποιείτε το React Router, ελαχιστοποιήστε τη χρήση του στοιχείου `<Redirect>` για [πλοηγήσεις διαδρομής](https://reacttraining.com/react-router/web/api/Redirect)."
   },
-  "node_modules/lighthouse-stack-packs/packs/react.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/react.js | server-response-time": {
     "message": "Εάν πραγματοποιείτε απόδοση στοιχείων React στον διακομιστή, μπορείτε να χρησιμοποιήσετε το `renderToNodeStream()` ή το `renderToStaticNodeStream()` για να επιτρέψετε στον υπολογιστή-πελάτη να λαμβάνει και να ενισχύει διαφορετικά μέρη της σήμανσης, αντί για όλα μαζί. [Μάθετε περισσότερα](https://reactjs.org/docs/react-dom-server.html#rendertonodestream)."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-css": {
@@ -2312,13 +2285,16 @@
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | efficient-animated-content": {
     "message": "Εξετάστε το ενδεχόμενο μεταφόρτωσης του GIF σε μια υπηρεσία η οποία θα το διαθέσει για ενσωμάτωση ως βίντεο HTML5."
   },
+  "node_modules/lighthouse-stack-packs/packs/wordpress.js | modern-image-formats": {
+    "message": "Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε μια [προσθήκη](https://wordpress.org/plugins/search/convert+webp/) ή μια υπηρεσία που θα μετατρέπει αυτόματα τις μεταφορτωμένες εικόνες σας στη βέλτιστη μορφή."
+  },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | offscreen-images": {
     "message": "Εγκαταστήστε μια προσθήκη [WordPress αργής φόρτωσης](https://wordpress.org/plugins/search/lazy+load/) η οποία παρέχει τη δυνατότητα αναβολής φόρτωσης των εικόνων εκτός οθόνης. Εναλλακτικά, χρησιμοποιήστε ένα θέμα που παρέχει αυτή τη δυνατότητα. Εξετάστε επίσης το ενδεχόμενο χρήσης της [προσθήκης AMP](https://wordpress.org/plugins/amp/)."
   },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | render-blocking-resources": {
     "message": "Υπάρχουν διάφορες προσθήκες WordPress που μπορούν να σας βοηθήσουν στην [ενσωμάτωση των σημαντικών στοιχείων](https://wordpress.org/plugins/search/critical+css/) ή στην [καθυστέρηση των λιγότερο σημαντικών πόρων](https://wordpress.org/plugins/search/defer+css+javascript/). Λάβετε υπόψη ότι οι βελτιστοποιήσεις που παρέχονται από αυτές τις προσθήκες ενδέχεται να προκαλέσουν προβλήματα στις λειτουργίες των θεμάτων ή των προσθηκών σας. Ως εκ τούτου, είναι πιθανό να χρειαστεί να κάνετε αλλαγές στον κώδικα."
   },
-  "node_modules/lighthouse-stack-packs/packs/wordpress.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/wordpress.js | server-response-time": {
     "message": "Τα θέματα, οι προσθήκες και οι προδιαγραφές διακομιστή συμβάλλουν στον χρόνο απόκρισης του διακομιστή. Αν θέλετε, μπορείτε να ψάξετε για ένα περισσότερο βελτιστοποιημένο θέμα, να επιλέξετε προσεκτικά μια προσθήκη βελτιστοποίησης ή/και να αναβαθμίσετε τον διακομιστή σας."
   },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | total-byte-weight": {
@@ -2348,7 +2324,178 @@
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | uses-text-compression": {
     "message": "Μπορείτε να ενεργοποιήσετε τη συμπίεση κειμένου στη διαμόρφωση του διακομιστή ιστού σας."
   },
-  "node_modules/lighthouse-stack-packs/packs/wordpress.js | uses-webp-images": {
-    "message": "Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε μια [προσθήκη](https://wordpress.org/plugins/search/convert+webp/) ή μια υπηρεσία που θα μετατρέπει αυτόματα τις μεταφορτωμένες εικόνες σας στη βέλτιστη μορφή."
+  "report/renderer/util.js | calculatorLink": {
+    "message": "Προβολή αριθμομηχανής."
+  },
+  "report/renderer/util.js | collapseView": {
+    "message": "Σύμπτυξη προβολής"
+  },
+  "report/renderer/util.js | crcInitialNavigation": {
+    "message": "Αρχική πλοήγηση"
+  },
+  "report/renderer/util.js | crcLongestDurationLabel": {
+    "message": "Μέγιστος λανθάνων χρόνος κρίσιμης διαδρομής:"
+  },
+  "report/renderer/util.js | dropdownCopyJSON": {
+    "message": "Αντιγραφή JSON"
+  },
+  "report/renderer/util.js | dropdownDarkTheme": {
+    "message": "Εναλλαγή σκούρου θέματος"
+  },
+  "report/renderer/util.js | dropdownPrintExpanded": {
+    "message": "Πλήρης εκτύπωση"
+  },
+  "report/renderer/util.js | dropdownPrintSummary": {
+    "message": "Συνοπτική εκτύπωση"
+  },
+  "report/renderer/util.js | dropdownSaveGist": {
+    "message": "Αποθήκευση ως Gist"
+  },
+  "report/renderer/util.js | dropdownSaveHTML": {
+    "message": "Αποθήκευση ως HTML"
+  },
+  "report/renderer/util.js | dropdownSaveJSON": {
+    "message": "Αποθήκευση ως JSON"
+  },
+  "report/renderer/util.js | dropdownViewer": {
+    "message": "Άνοιγμα στο πρόγραμμα προβολής"
+  },
+  "report/renderer/util.js | errorLabel": {
+    "message": "Σφάλμα!"
+  },
+  "report/renderer/util.js | errorMissingAuditInfo": {
+    "message": "Σφάλμα αναφοράς: Δεν υπάρχουν πληροφορίες ελέγχου"
+  },
+  "report/renderer/util.js | expandView": {
+    "message": "Ανάπτυξη προβολής"
+  },
+  "report/renderer/util.js | footerIssue": {
+    "message": "Υποβολή προβλήματος"
+  },
+  "report/renderer/util.js | hide": {
+    "message": "Απόκρυψη"
+  },
+  "report/renderer/util.js | labDataTitle": {
+    "message": "Εργαστηριακά δεδομένα"
+  },
+  "report/renderer/util.js | lsPerformanceCategoryDescription": {
+    "message": "Ανάλυση της τρέχουσας σελίδας από το [Lighthouse](https://developers.google.com/web/tools/lighthouse/) σε ένα προσομειωμένο δίκτυο κινητής τηλεφωνίας. Οι τιμές είναι κατ' εκτίμηση και μπορεί να διαφέρουν."
+  },
+  "report/renderer/util.js | manualAuditsGroupTitle": {
+    "message": "Επιπλέον στοιχεία για μη αυτόματο έλεγχο"
+  },
+  "report/renderer/util.js | notApplicableAuditsGroupTitle": {
+    "message": "Δεν ισχύει"
+  },
+  "report/renderer/util.js | opportunityResourceColumnLabel": {
+    "message": "Ευκαιρία"
+  },
+  "report/renderer/util.js | opportunitySavingsColumnLabel": {
+    "message": "Εκτιμώμενες εξοικονομήσεις"
+  },
+  "report/renderer/util.js | passedAuditsGroupTitle": {
+    "message": "Έλεγχοι που ολοκληρώθηκαν επιτυχώς"
+  },
+  "report/renderer/util.js | runtimeAnalysisWindow": {
+    "message": "Αρχική φόρτωση σελίδας"
+  },
+  "report/renderer/util.js | runtimeCustom": {
+    "message": "Προσαρμοσμένη ρύθμιση ροής δεδομένων"
+  },
+  "report/renderer/util.js | runtimeDesktopEmulation": {
+    "message": "Προσομοιωμένη επιφάνεια εργασίας"
+  },
+  "report/renderer/util.js | runtimeMobileEmulation": {
+    "message": "Προσομοιωμένο Moto G4"
+  },
+  "report/renderer/util.js | runtimeNoEmulation": {
+    "message": "Χωρίς προσομοίωση"
+  },
+  "report/renderer/util.js | runtimeSettingsAxeVersion": {
+    "message": "'Εκδοση Axe"
+  },
+  "report/renderer/util.js | runtimeSettingsBenchmark": {
+    "message": "Ισχύς CPU/μνήμης"
+  },
+  "report/renderer/util.js | runtimeSettingsCPUThrottling": {
+    "message": "Περιορισμός CPU"
+  },
+  "report/renderer/util.js | runtimeSettingsDevice": {
+    "message": "Συσκευή"
+  },
+  "report/renderer/util.js | runtimeSettingsNetworkThrottling": {
+    "message": "Περιορισμός δικτύου"
+  },
+  "report/renderer/util.js | runtimeSettingsUANetwork": {
+    "message": "Παράγοντας χρήστη (δίκτυο)"
+  },
+  "report/renderer/util.js | runtimeSingleLoad": {
+    "message": "Μία φόρτωση σελίδας"
+  },
+  "report/renderer/util.js | runtimeSingleLoadTooltip": {
+    "message": "Αυτά τα δεδομένα λαμβάνονται από μία φόρτωση σελίδας, σε αντίθεση με τα δεδομένα πεδίου που συνοψίζουν πολλές περιόδους λειτουργίας."
+  },
+  "report/renderer/util.js | runtimeSlow4g": {
+    "message": "Ρύθμιση ροής δεδομένων αργού 4G"
+  },
+  "report/renderer/util.js | runtimeUnknown": {
+    "message": "Άγνωστη"
+  },
+  "report/renderer/util.js | show": {
+    "message": "Εμφάνιση"
+  },
+  "report/renderer/util.js | showRelevantAudits": {
+    "message": "Εμφάνιση ελέγχων που σχετίζονται με:"
+  },
+  "report/renderer/util.js | snippetCollapseButtonLabel": {
+    "message": "Σύμπτυξη αποσπάσματος"
+  },
+  "report/renderer/util.js | snippetExpandButtonLabel": {
+    "message": "Ανάπτυξη αποσπάσματος"
+  },
+  "report/renderer/util.js | thirdPartyResourcesLabel": {
+    "message": "Εμφάνιση πόρων τρίτων"
+  },
+  "report/renderer/util.js | throttlingProvided": {
+    "message": "Παρέχεται από το περιβάλλον"
+  },
+  "report/renderer/util.js | toplevelWarningsMessage": {
+    "message": "Παρουσιάστηκαν ορισμένα ζητήματα τα οποία επηρεάζουν αυτήν την εκτέλεση του Lighthouse:"
+  },
+  "report/renderer/util.js | varianceDisclaimer": {
+    "message": "Οι τιμές εκτιμώνται και μπορεί να ποικίλουν. Η [βαθμολογία απόδοσης υπολογίζεται](https://web.dev/performance-scoring/) απευθείας από αυτές τις μετρήσεις."
+  },
+  "report/renderer/util.js | viewTreemapLabel": {
+    "message": "Προβολή δενδροειδούς χάρτη"
+  },
+  "report/renderer/util.js | warningAuditsGroupTitle": {
+    "message": "Έλεγχοι που ολοκληρώθηκαν αλλά με προειδοποιήσεις"
+  },
+  "report/renderer/util.js | warningHeader": {
+    "message": "Προειδοποιήσεις: "
+  },
+  "treemap/app/src/util.js | allLabel": {
+    "message": "Όλα"
+  },
+  "treemap/app/src/util.js | allScriptsDropdownLabel": {
+    "message": "Όλες οι γραφές"
+  },
+  "treemap/app/src/util.js | coverageColumnName": {
+    "message": "Κάλυψη"
+  },
+  "treemap/app/src/util.js | duplicateModulesLabel": {
+    "message": "Διπλότυπες λειτουργικές μονάδες"
+  },
+  "treemap/app/src/util.js | resourceBytesLabel": {
+    "message": "Byte πόρου"
+  },
+  "treemap/app/src/util.js | tableColumnName": {
+    "message": "Όνομα"
+  },
+  "treemap/app/src/util.js | toggleTableButtonLabel": {
+    "message": "Εναλλαγή πίνακα"
+  },
+  "treemap/app/src/util.js | unusedBytesLabel": {
+    "message": "Byte που δεν χρησιμοποιούνται"
   }
 }
