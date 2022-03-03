@@ -9,6 +9,7 @@
 #include "base/time/default_tick_clock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_position_state.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
@@ -351,7 +352,7 @@ base::TimeDelta MediaSession::GetPositionNow() const {
       (now - position_state_->last_updated_time);
   const base::TimeDelta updated_position =
       position_state_->position + elapsed_time;
-  const base::TimeDelta start = base::TimeDelta::FromSeconds(0);
+  const base::TimeDelta start = base::Seconds(0);
 
   if (updated_position <= start)
     return start;

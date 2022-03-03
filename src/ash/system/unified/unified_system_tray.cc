@@ -5,8 +5,9 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -14,6 +15,7 @@
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
+#include "ash/system/message_center/notification_grouping_controller.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -27,6 +29,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/camera_mic_tray_item_view.h"
 #include "ash/system/unified/current_locale_view.h"
+#include "ash/system/unified/hps_notify_view.h"
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
@@ -35,6 +38,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -42,12 +46,25 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_view_controller.h"
+#include "ui/views/controls/image_view.h"
 
 namespace ash {
+
+namespace {
+// The UMA histogram that records presentation time for opening QuickSettings
+// and Notification Center through Status Area button.
+constexpr char kStatusAreaShowBubbleHistogram[] =
+    "Ash.StatusAreaShowBubble.PresentationTime";
+}  // namespace
 
 class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
  public:
   explicit UiDelegate(UnifiedSystemTray* owner);
+
+  UiDelegate(const UiDelegate&) = delete;
+  UiDelegate& operator=(const UiDelegate&) = delete;
+
   ~UiDelegate() override;
 
   // MessageCenterUiDelegate:
@@ -68,24 +85,34 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
         notification_id);
   }
 
+  AshMessagePopupCollection* message_popup_collection() {
+    return message_popup_collection_.get();
+  }
+
  private:
-  std::unique_ptr<MessageCenterUiController> ui_controller_;
-  std::unique_ptr<AshMessagePopupCollection> message_popup_collection_;
+  std::unique_ptr<MessageCenterUiController> const ui_controller_;
+  std::unique_ptr<AshMessagePopupCollection> const message_popup_collection_;
 
   UnifiedSystemTray* const owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(UiDelegate);
+  std::unique_ptr<NotificationGroupingController> grouping_controller_;
 };
 
 const base::TimeDelta UnifiedSystemTray::kNotificationCountUpdateDelay =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 
 UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
-    : owner_(owner) {
-  ui_controller_ = std::make_unique<MessageCenterUiController>(this);
+    : ui_controller_(std::make_unique<MessageCenterUiController>(this)),
+      message_popup_collection_(
+          std::make_unique<AshMessagePopupCollection>(owner->shelf())),
+      owner_(owner) {
+  if (features::IsNotificationsRefreshEnabled()) {
+    grouping_controller_ =
+        std::make_unique<NotificationGroupingController>(owner);
+  }
+
   ui_controller_->set_hide_on_last_notification(false);
-  message_popup_collection_ =
-      std::make_unique<AshMessagePopupCollection>(owner->shelf());
+
   display::Screen* screen = display::Screen::GetScreen();
   message_popup_collection_->StartObserving(
       screen, screen->GetDisplayNearestWindow(
@@ -121,13 +148,16 @@ void UnifiedSystemTray::UiDelegate::HideMessageCenter() {}
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
-      model_(std::make_unique<UnifiedSystemTrayModel>(shelf)),
+      model_(base::MakeRefCounted<UnifiedSystemTrayModel>(shelf)),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
       privacy_screen_toast_controller_(
           std::make_unique<PrivacyScreenToastController>(this)),
       notification_icons_controller_(
           std::make_unique<NotificationIconsController>(this)),
+      hps_notify_view_(features::IsSnoopingProtectionEnabled()
+                           ? new HpsNotifyView(shelf)
+                           : nullptr),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
@@ -135,19 +165,33 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           new CameraMicTrayItemView(shelf,
                                     CameraMicTrayItemView::Type::kCamera)),
       mic_view_(
-          new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)),
-      time_view_(new tray::TimeTrayItemView(shelf, model())) {
+          new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)) {
+  time_view_ = new tray::TimeTrayItemView(
+      shelf, model_,
+      base::BindRepeating(&UnifiedSystemTray::OnTimeViewActionPerformed,
+                          weak_factory_.GetWeakPtr()));
   tray_container()->SetMargin(
       kUnifiedTrayContentPadding -
           ShelfConfig::Get()->status_area_hit_region_padding(),
       0);
 
   notification_icons_controller_->AddNotificationTrayItems(tray_container());
-  for (TrayItemView* tray_item : notification_icons_controller_->tray_items())
+  for (TrayItemView* tray_item : notification_icons_controller_->tray_items()) {
     tray_items_.push_back(tray_item);
+    AddObservedTrayItem(tray_item);
+  }
+
   tray_items_.push_back(
       notification_icons_controller_->notification_counter_view());
+  AddObservedTrayItem(
+      notification_icons_controller_->notification_counter_view());
+
   tray_items_.push_back(notification_icons_controller_->quiet_mode_view());
+  AddObservedTrayItem(notification_icons_controller_->quiet_mode_view());
+
+  if (features::IsSnoopingProtectionEnabled())
+    AddTrayItemToContainer(hps_notify_view_);
+
   AddTrayItemToContainer(current_locale_view_);
   AddTrayItemToContainer(ime_mode_view_);
   AddTrayItemToContainer(managed_device_view_);
@@ -163,28 +207,67 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     network_tray_view_ =
         new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
   }
+
   AddTrayItemToContainer(network_tray_view_);
   AddTrayItemToContainer(new tray::PowerTrayView(shelf));
+
+  auto vertical_clock_padding = std::make_unique<views::View>();
+  vertical_clock_padding->SetPreferredSize(
+      gfx::Size(0, kTrayTimeIconTopPadding));
+  vertical_clock_padding_ =
+      tray_container()->AddChildView(std::move(vertical_clock_padding));
+
   AddTrayItemToContainer(time_view_);
 
   set_separator_visibility(false);
   set_use_bounce_in_animation(false);
 
   ShelfConfig::Get()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 UnifiedSystemTray::~UnifiedSystemTray() {
   ShelfConfig::Get()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 
   message_center_bubble_.reset();
-  // Close bubble immediately when the bubble is closed on dtor.
-  if (bubble_)
-    bubble_->CloseNow();
   bubble_.reset();
 
   // Reset the view to remove its dependency from |model_|, since this view is
   // destructed after |model_|.
   time_view_->Reset();
+}
+
+bool UnifiedSystemTray::MoreThanOneVisibleTrayItem() const {
+  bool one_visible_item = false;
+  for (TrayItemView* item : tray_items_) {
+    if (!item->GetVisible())
+      continue;
+    if (one_visible_item)
+      return true;
+    one_visible_item = true;
+  }
+  return false;
+}
+
+void UnifiedSystemTray::MaybeUpdateVerticalClockPadding() {
+  const bool padding_is_visible = vertical_clock_padding_->GetVisible();
+
+  if (shelf()->IsHorizontalAlignment()) {
+    if (padding_is_visible)
+      vertical_clock_padding_->SetVisible(false);
+    return;
+  }
+
+  // Padding is shown when an icon besides TimeView is visible.
+  const bool should_show_padding = MoreThanOneVisibleTrayItem();
+  if (padding_is_visible != should_show_padding)
+    vertical_clock_padding_->SetVisible(should_show_padding);
+}
+
+void UnifiedSystemTray::OnViewVisibilityChanged(views::View* observed_view,
+                                                views::View* starting_view) {
+  MaybeUpdateVerticalClockPadding();
 }
 
 bool UnifiedSystemTray::IsBubbleShown() const {
@@ -344,6 +427,16 @@ const char* UnifiedSystemTray::GetClassName() const {
   return "UnifiedSystemTray";
 }
 
+absl::optional<AcceleratorAction> UnifiedSystemTray::GetAcceleratorAction()
+    const {
+  return absl::make_optional(TOGGLE_SYSTEM_TRAY_BUBBLE);
+}
+
+void UnifiedSystemTray::OnShelfAlignmentChanged(aura::Window* root_window,
+                                                ShelfAlignment old_alignment) {
+  MaybeUpdateVerticalClockPadding();
+}
+
 void UnifiedSystemTray::OnShelfConfigUpdated() {
   // Ensure the margin is updated correctly depending on whether dense shelf
   // is currently shown or not.
@@ -351,6 +444,30 @@ void UnifiedSystemTray::OnShelfConfigUpdated() {
       kUnifiedTrayContentPadding -
           ShelfConfig::Get()->status_area_hit_region_padding(),
       0);
+}
+
+void UnifiedSystemTray::OnTimeViewActionPerformed(const ui::Event& event) {
+  int visible_item_count = 0;
+  for (auto* item : tray_items_) {
+    if (item->GetVisible())
+      ++visible_item_count;
+  }
+
+  // If there are >= 2 icons in front of the time view (total items >= 3 if
+  // includes time_view) and the screen size is large enough to show date in
+  // the unified system tray, show calendar bubble; otherwise show quick setting
+  // bubble.
+  if (visible_item_count < 3 || !time_view_->time_view()->show_date()) {
+    TrayBackgroundView::PerformAction(event);
+    return;
+  }
+
+  if (GetBubbleWidget()) {
+    CloseBubble();
+  } else {
+    ShowBubble();
+    bubble_->ShowCalendarView();
+  }
 }
 
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
@@ -419,6 +536,9 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
   status.push_back(camera_view_->GetVisible()
                        ? camera_view_->GetAccessibleNameString()
                        : base::EmptyString16());
+  status.push_back(managed_device_view_->GetVisible()
+                       ? managed_device_view_->image_view()->GetTooltipText()
+                       : base::EmptyString16());
   status.push_back(notification_icons_controller_->GetAccessibleNameString());
   status.push_back(ime_mode_view_->GetVisible()
                        ? ime_mode_view_->label()->GetAccessibleNameString()
@@ -453,6 +573,13 @@ void UnifiedSystemTray::ShowBubbleInternal() {
     return;
 
   CloseSecondaryBubbles();
+
+  // Presentation time recorder for opening QuickSettings and Notification
+  // Center through Status Area button.
+  auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
+      shelf()->GetStatusAreaWidget()->GetCompositor(),
+      kStatusAreaShowBubbleHistogram);
+  presentation_time_recorder->RequestNext();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this);
 
@@ -493,9 +620,18 @@ UnifiedSystemTray::GetPopupViewForNotificationID(
   return ui_delegate_->GetPopupViewForNotificationID(notification_id);
 }
 
+AshMessagePopupCollection* UnifiedSystemTray::GetMessagePopupCollection() {
+  return ui_delegate_->message_popup_collection();
+}
+
 void UnifiedSystemTray::AddTrayItemToContainer(TrayItemView* tray_item) {
   tray_items_.push_back(tray_item);
   tray_container()->AddChildView(tray_item);
+  AddObservedTrayItem(tray_item);
+}
+
+void UnifiedSystemTray::AddObservedTrayItem(TrayItemView* tray_item) {
+  tray_items_observations_.AddObservation(tray_item);
 }
 
 }  // namespace ash

@@ -29,30 +29,93 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(GNUInstallDirs)
 include(StdFilesystemFlags)
 
+string(TOUPPER "${CMAKE_GENERATOR_PLATFORM}" CMAKE_GENERATOR_PLATFORM_UPPER)
+
+# Artifact organization
+if(WIN32)
+    option(INSTALL_TO_ARCHITECTURE_PREFIXES "Install platform-specific files to architecture-specific directories." OFF)
+    if(INSTALL_TO_ARCHITECTURE_PREFIXES)
+        unset(_UWP_SUFFIX)
+        if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+            set(_UWP_SUFFIX _uwp)
+        endif()
+        if(CMAKE_GENERATOR_PLATFORM_UPPER MATCHES "ARM.*")
+            if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+                set(_PLATFORM ARM64)
+            else()
+                set(_PLATFORM ARM)
+            endif()
+        else()
+            if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+                set(_PLATFORM x64)
+            else()
+                set(_PLATFORM Win32)
+            endif()
+        endif()
+
+        set(CMAKE_INSTALL_BINDIR ${_PLATFORM}${_UWP_SUFFIX}/${CMAKE_INSTALL_BINDIR})
+        set(CMAKE_INSTALL_LIBDIR ${_PLATFORM}${_UWP_SUFFIX}/${CMAKE_INSTALL_LIBDIR})
+    endif()
+endif()
+
 ### Dependencies
-set(OpenGL_GL_PREFERENCE GLVND)
-if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    # OpenGL package will be found for UWP apps but gl.h excludes UWP apps so it isn't actually usable.
+
+set(OPENGLES_INCOMPATIBLE TRUE)
+set(OPENGL_INCOMPATIBLE FALSE)
+set(VULKAN_INCOMPATIBLE FALSE)
+
+# CMake will detect OpenGL/Vulkan which are not compatible with UWP and ARM/ARM64 on Windows so skip it in these cases.
+if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" OR (WIN32 AND CMAKE_GENERATOR_PLATFORM_UPPER MATCHES "ARM.*"))
+    set(OPENGL_INCOMPATIBLE TRUE)
+    set(VULKAN_INCOMPATIBLE TRUE)
+    message(STATUS "OpenGL/Vulkan disabled due to incompatibility")
+elseif(ANDROID)
+    set(OPENGL_INCOMPATIBLE TRUE)
+    find_path(ANDROID_NATIVE_APP_GLUE android_native_app_glue.h PATHS ${ANDROID_NDK}/sources/android/native_app_glue)
+    if(ANDROID_NATIVE_APP_GLUE)
+        # Needed by gfxwrapper
+        set(OPENGLES_INCOMPATIBLE FALSE)
+    endif()
+    if(ANDROID_PLATFORM_LEVEL LESS 24)
+        set(VULKAN_INCOMPATIBLE TRUE)
+        message(STATUS "Vulkan disabled due to incompatibility: need to target at least API 24")
+    endif()
+endif()
+
+if(NOT OPENGL_INCOMPATIBLE)
+    set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL)
+
+    if(OPENGL_FOUND)
+        add_definitions(-DXR_USE_GRAPHICS_API_OPENGL)
+        message(STATUS "Enabling OpenGL support")
+    elseif(BUILD_ALL_EXTENSIONS)
+        message(FATAL_ERROR "OpenGL not found")
+    endif()
 endif()
 
-if(OPENGL_FOUND)
-    add_definitions(-DXR_USE_GRAPHICS_API_OPENGL)
-    message(STATUS "Enabling OpenGL support")
-elseif(BUILD_ALL_EXTENSIONS AND NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    message(FATAL_ERROR "OpenGL not found")
+if(NOT OPENGLES_INCOMPATIBLE)
+    find_package(OpenGLES COMPONENTS V3 V2)
+    find_package(EGL)
+    if(OPENGLES_FOUND AND EGL_FOUND)
+        add_definitions(-DXR_USE_GRAPHICS_API_OPENGL_ES)
+        message(STATUS "Enabling OpenGL|ES support")
+    elseif(BUILD_ALL_EXTENSIONS)
+        message(FATAL_ERROR "OpenGL|ES not found")
+    endif()
 endif()
 
-if(NOT CMAKE_VERSION VERSION_LESS 3.7.0)
-    # Find the Vulkan headers
-    find_package(VulkanHeaders)
-    find_package(Vulkan)
-endif()
-if(VulkanHeaders_FOUND)
-    add_definitions(-DXR_USE_GRAPHICS_API_VULKAN)
-    message(STATUS "Enabling Vulkan support")
-elseif(BUILD_ALL_EXTENSIONS)
-    message(FATAL_ERROR "Vulkan headers not found")
+if(NOT VULKAN_INCOMPATIBLE)
+    if(NOT CMAKE_VERSION VERSION_LESS 3.7.0)
+        # Find the Vulkan headers
+        find_package(Vulkan)
+    endif()
+    if(Vulkan_FOUND)
+        add_definitions(-DXR_USE_GRAPHICS_API_VULKAN)
+        message(STATUS "Enabling Vulkan support")
+    elseif(BUILD_ALL_EXTENSIONS)
+        message(FATAL_ERROR "Vulkan headers not found")
+    endif()
 endif()
 
 find_package(Threads REQUIRED)
@@ -67,18 +130,24 @@ option(
     ON
 )
 
+if(WIN32)
+    set(OPENXR_DEBUG_POSTFIX d CACHE STRING "OpenXR loader debug postfix.")
+else()
+    set(OPENXR_DEBUG_POSTFIX "" CACHE STRING "OpenXR loader debug postfix.")
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option(DYNAMIC_LOADER "Build the loader as a .dll library" OFF)
 else()
     option(DYNAMIC_LOADER "Build the loader as a .dll library" ON)
 endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/api_layers")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/api_layers/CMakeLists.txt")
     option(BUILD_API_LAYERS "Build API layers" ON)
 endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests" AND NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
     option(BUILD_TESTS "Build tests" ON)
 endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/CMakeLists.txt")
     option(BUILD_CONFORMANCE_TESTS "Build conformance tests" ON)
 endif()
 include(CMakeDependentOption)
@@ -86,8 +155,17 @@ include(CMakeDependentOption)
 cmake_dependent_option(
     BUILD_WITH_SYSTEM_JSONCPP "Use system jsoncpp instead of vendored source" ON "JSONCPP_FOUND" OFF
 )
-cmake_dependent_option(BUILD_WITH_STD_FILESYSTEM "Use std::[experimental::]filesystem." ON
-       "HAVE_FILESYSTEM_WITHOUT_LIB OR HAVE_FILESYSTEM_NEEDING_LIB" OFF)
+cmake_dependent_option(
+    BUILD_WITH_STD_FILESYSTEM "Use std::[experimental::]filesystem." ON
+    "HAVE_FILESYSTEM_WITHOUT_LIB OR HAVE_FILESYSTEM_NEEDING_LIBSTDCXXFS OR HAVE_FILESYSTEM_NEEDING_LIBCXXFS"
+    OFF
+)
+
+if(BUILD_CONFORMANCE_TESTS AND NOT ANDROID)
+    set(BUILD_CONFORMANCE_CLI ON)
+else()
+    set(BUILD_CONFORMANCE_CLI OFF)
+endif()
 
 # Several files use these compile-time OS switches
 if(WIN32)
@@ -95,6 +173,8 @@ if(WIN32)
     add_definitions(-DNOMINMAX)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_definitions(-DXR_OS_LINUX)
+elseif(ANDROID)
+    add_definitions(-DXR_OS_ANDROID)
 endif()
 
 # /EHsc (support for C++ exceptions) is default in most configurations but seems missing when building arm/arm64.
@@ -103,15 +183,36 @@ if(MSVC)
 endif()
 
 # This is a little helper library for setting up OpenGL
-if(OPENGL_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/common/gfxwrapper_opengl.c")
+if((OPENGL_FOUND OR OpenGLES_FOUND) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/common/gfxwrapper_opengl.c")
     add_library(openxr-gfxwrapper STATIC common/gfxwrapper_opengl.c common/gfxwrapper_opengl.h)
     target_include_directories(openxr-gfxwrapper PUBLIC ${PROJECT_SOURCE_DIR}/external/include)
-    if(TARGET OpenGL::OpenGL)
-        target_link_libraries(openxr-gfxwrapper PUBLIC OpenGL::OpenGL)
-    elseif(TARGET OpenGL::GL)
-        target_link_libraries(openxr-gfxwrapper PUBLIC OpenGL::GL)
-    else()
-        target_link_libraries(openxr-gfxwrapper PUBLIC ${OPENGL_LIBRARIES})
+    if(OPENGL_FOUND)
+        if(TARGET OpenGL::OpenGL)
+            target_link_libraries(openxr-gfxwrapper PUBLIC OpenGL::OpenGL)
+        elseif(TARGET OpenGL::GL)
+            target_link_libraries(openxr-gfxwrapper PUBLIC OpenGL::GL)
+        else()
+            target_link_libraries(openxr-gfxwrapper PUBLIC ${OPENGL_LIBRARIES})
+        endif()
+    endif()
+    if(OpenGLES_FOUND)
+        if(TARGET OpenGLES::OpenGLESv3)
+            target_link_libraries(openxr-gfxwrapper PUBLIC OpenGLES::OpenGLESv3)
+        elseif(TARGET OpenGLES::OpenGLESv2)
+            target_link_libraries(openxr-gfxwrapper PUBLIC OpenGLES::OpenGLESv2)
+        else()
+            message(FATAL_ERROR "Should not get here!")
+        endif()
+        target_link_libraries(openxr-gfxwrapper PUBLIC EGL::EGL)
+    endif()
+    if(ANDROID)
+        target_include_directories(openxr-gfxwrapper PUBLIC ${ANDROID_NATIVE_APP_GLUE})
+
+        # Note: For some reason, just adding this to the gfxwrapper library results in failure at load time.
+        # So, each consuming target must add $<TARGET_OBJECTS:android_native_app_glue> to their sources
+        add_library(android_native_app_glue OBJECT "${ANDROID_NATIVE_APP_GLUE}/android_native_app_glue.c")
+        target_include_directories(android_native_app_glue PUBLIC ${ANDROID_NATIVE_APP_GLUE})
+        target_compile_options(android_native_app_glue PRIVATE -Wno-unused-parameter)
     endif()
     message(STATUS "Enabling OpenGL support in hello_xr, loader_test, and conformance, if configured")
 endif()
@@ -125,11 +226,8 @@ endif()
 # Several files use these compile-time platform switches
 if(WIN32)
     add_definitions(-DXR_USE_PLATFORM_WIN32)
-    # TODO remove once work is done to get more stuff building for UWP.
-    if (CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-        set(BUILD_TESTS OFF)
-        set(BUILD_CONFORMANCE_TESTS OFF)
-    endif()
+elseif(ANDROID)
+    add_definitions(-DXR_USE_PLATFORM_ANDROID)
 elseif(PRESENTATION_BACKEND MATCHES "xlib")
     add_definitions(-DXR_USE_PLATFORM_XLIB)
 elseif(PRESENTATION_BACKEND MATCHES "xcb")
@@ -144,17 +242,23 @@ elseif(PRESENTATION_BACKEND MATCHES "wayland")
     set(BUILD_CONFORMANCE_TESTS OFF)
 endif()
 
-add_library(openxr-all-supported INTERFACE)
+if(BUILD_CONFORMANCE_TESTS AND NOT ANDROID)
+    set(BUILD_CONFORMANCE_CLI ON)
+else()
+    set(BUILD_CONFORMANCE_CLI OFF)
+endif()
+
+set(OPENXR_ALL_SUPPORTED_DEFINES)
 if(BUILD_WITH_XLIB_HEADERS)
-    target_compile_definitions(openxr-all-supported INTERFACE XR_USE_PLATFORM_XLIB)
+    list(APPEND OPENXR_ALL_SUPPORTED_DEFINES XR_USE_PLATFORM_XLIB)
 endif()
 
 if(BUILD_WITH_XCB_HEADERS)
-    target_compile_definitions(openxr-all-supported INTERFACE XR_USE_PLATFORM_XCB)
+    list(APPEND OPENXR_ALL_SUPPORTED_DEFINES XR_USE_PLATFORM_XCB)
 endif()
 
 if(BUILD_WITH_WAYLAND_HEADERS)
-    target_compile_definitions(openxr-all-supported INTERFACE XR_USE_PLATFORM_WAYLAND)
+    list(APPEND OPENXR_ALL_SUPPORTED_DEFINES XR_USE_PLATFORM_WAYLAND)
 endif()
 
 # Find glslc shader compiler.
@@ -170,8 +274,11 @@ else()
     file(GLOB glslc_folders $ENV{VULKAN_SDK}/*)
     find_program(GLSL_COMPILER glslc PATHS ${glslc_folders})
 endif()
+find_program(GLSLANG_VALIDATOR glslangValidator)
 if(GLSL_COMPILER)
     message(STATUS "Found glslc: ${GLSL_COMPILER}")
+elseif(GLSLANG_VALIDATOR)
+    message(STATUS "Found glslangValidator: ${GLSLANG_VALIDATOR}")
 else()
     message(STATUS "Could NOT find glslc, using precompiled .spv files")
 endif()
@@ -188,6 +295,14 @@ function(compile_glsl run_target_name)
                 COMMAND ${GLSL_COMPILER} -mfmt=c -fshader-stage=${glsl_stage} ${in_file} -o ${out_file}
                 DEPENDS ${in_file}
             )
+        elseif(GLSLANG_VALIDATOR)
+            # Run glslangValidator if we can find it
+            add_custom_command(
+                OUTPUT ${out_file}
+                COMMAND ${GLSLANG_VALIDATOR} -V -S ${glsl_stage} ${in_file} -x -o ${out_file}
+                DEPENDS ${in_file}
+                VERBATIM
+            )
         else()
             # Use the precompiled .spv files
             get_filename_component(glsl_src_dir ${in_file} DIRECTORY)
@@ -202,26 +317,11 @@ function(compile_glsl run_target_name)
 endfunction()
 
 if(WIN32)
-    # This is too simple of detection to be worth separating into a find module
-    find_library(D3D_DXGI_LIBRARY dxgi)
-    find_library(D3D_COMPILER_LIBRARY d3dcompiler)
-    find_path(D3D_D3D11_INCLUDE_DIR d3d11.h)
-    find_library(D3D_D3D11_LIBRARY d3d11)
-    if(D3D_D3D11_INCLUDE_DIR AND D3D_D3D11_LIBRARY AND D3D_DXGI_LIBRARY AND D3D_COMPILER_LIBRARY)
-        set(D3D_D3D11_FOUND ON)
-        set(D3D_D3D11_LIBRARIES ${D3D_D3D11_LIBRARY} ${D3D_DXGI_LIBRARY} ${D3D_COMPILER_LIBRARY})
-        add_definitions(-DXR_USE_GRAPHICS_API_D3D11)
-    endif()
-
-    find_path(D3D_D3D12_INCLUDE_DIR d3d12.h)
-    find_library(D3D_D3D12_LIBRARY d3d12)
-    if(D3D_D3D12_INCLUDE_DIR AND D3D_D3D12_LIBRARY AND D3D_DXGI_LIBRARY)
-        set(D3D_D3D12_FOUND ON)
-        set(D3D_D3D12_LIBRARIES ${D3D_D3D12_LIBRARY} ${D3D_DXGI_LIBRARY} ${D3D_COMPILER_LIBRARY})
+    add_definitions(-DXR_USE_GRAPHICS_API_D3D11)
+    if(MSVC)
+        # Not available in MinGW right now
         add_definitions(-DXR_USE_GRAPHICS_API_D3D12)
     endif()
-
-    find_path(D3D_DIRECTXCOLORS_INCLUDE_DIR DirectXColors.h)
 endif()
 
 # Check for the existence of the secure_getenv or __secure_getenv commands
@@ -235,7 +335,11 @@ add_definitions(-DOPENXR_HAVE_COMMON_CONFIG)
 # Be able to find pre-generated files, if used.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_definitions(-DXR_USE_TIMESPEC)
+include(CheckSymbolExists)
+check_symbol_exists(timespec_get time.h HAVE_TIMESPEC_GET)
+if(HAVE_TIMESPEC_GET)
+    add_definitions(-DXR_USE_TIMESPEC)
+endif()
 
 # Set up the OpenXR version variables, used by several targets in this project.
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
@@ -315,10 +419,16 @@ set(GENERATED_OUTPUT)
 set(GENERATED_DEPENDS)
 run_xr_xml_generate(utility_source_generator.py xr_generated_dispatch_table.h)
 run_xr_xml_generate(utility_source_generator.py xr_generated_dispatch_table.c)
-add_custom_target(xr_global_generated_files DEPENDS ${GENERATED_DEPENDS})
+if(GENERATED_DEPENDS)
+    add_custom_target(xr_global_generated_files DEPENDS ${GENERATED_DEPENDS})
+else()
+    add_custom_target(xr_global_generated_files)
+endif()
+
 set_target_properties(xr_global_generated_files PROPERTIES FOLDER ${CODEGEN_FOLDER})
 
 set(COMMON_GENERATED_OUTPUT ${GENERATED_OUTPUT})
+set(COMMON_GENERATED_DEPENDS ${GENERATED_DEPENDS})
 if(NOT MSVC)
     include(CheckCXXCompilerFlag)
     include(CheckCCompilerFlag)
@@ -334,6 +444,11 @@ if(NOT MSVC)
         endif()
     endforeach()
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+endif()
+
+if(ANDROID)
+    find_library(ANDROID_LIBRARY NAMES android)
+    find_library(ANDROID_LOG_LIBRARY NAMES log)
 endif()
 
 if(BUILD_LOADER)

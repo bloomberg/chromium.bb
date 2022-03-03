@@ -37,6 +37,7 @@
 #include "libavutil/mathematics.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/avstring.h"
+#include "libavutil/bprint.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/random_seed.h"
 #include "libavutil/opt.h"
@@ -119,8 +120,8 @@ typedef struct VariantStream {
     unsigned var_stream_idx;
     unsigned number;
     int64_t sequence;
-    ff_const59 AVOutputFormat *oformat;
-    ff_const59 AVOutputFormat *vtt_oformat;
+    const AVOutputFormat *oformat;
+    const AVOutputFormat *vtt_oformat;
     AVIOContext *out;
     AVIOContext *out_single_file;
     int packets_written;
@@ -178,7 +179,7 @@ typedef struct VariantStream {
     unsigned int nb_streams;
     int m3u8_created; /* status of media play-list creation */
     int is_default; /* default status of audio group */
-    const char *language; /* audio lauguage name */
+    const char *language; /* audio language name */
     const char *agroup;   /* audio group name */
     const char *sgroup;   /* subtitle group name */
     const char *ccgroup;  /* closed caption group name */
@@ -188,7 +189,7 @@ typedef struct VariantStream {
 typedef struct ClosedCaptionsStream {
     const char *ccgroup;    /* closed caption group name */
     const char *instreamid; /* closed captions INSTREAM-ID */
-    const char *language;   /* closed captions langauge */
+    const char *language;   /* closed captions language */
 } ClosedCaptionsStream;
 
 typedef struct HLSContext {
@@ -200,9 +201,6 @@ typedef struct HLSContext {
     int64_t init_time;     // Set by a private option.
     int max_nb_segments;   // Set by a private option.
     int hls_delete_threshold; // Set by a private option.
-#if FF_API_HLS_WRAP
-    int  wrap;             // Set by a private option.
-#endif
     uint32_t flags;        // enum HLSFlags
     uint32_t pl_type;      // enum PlaylistType
     char *segment_filename;
@@ -283,7 +281,7 @@ static int strftime_expand(const char *fmt, char **dest)
     return r;
 }
 
-static int hlsenc_io_open(AVFormatContext *s, AVIOContext **pb, char *filename,
+static int hlsenc_io_open(AVFormatContext *s, AVIOContext **pb, const char *filename,
                           AVDictionary **options)
 {
     HLSContext *hls = s->priv_data;
@@ -573,6 +571,7 @@ static int hls_delete_file(HLSContext *hls, AVFormatContext *avf,
         AVDictionary *opt = NULL;
         AVIOContext  *out = NULL;
         int ret;
+        set_http_options(avf, &opt, hls);
         av_dict_set(&opt, "method", "DELETE", 0);
         ret = avf->io_open(avf, &out, path, AVIO_FLAG_WRITE, &opt);
         av_dict_free(&opt);
@@ -1063,11 +1062,7 @@ static int sls_flag_use_localtime_filename(AVFormatContext *oc, HLSContext *c, V
     if (c->flags & HLS_SECOND_LEVEL_SEGMENT_INDEX) {
         char *filename = NULL;
         if (replace_int_data_in_filename(&filename,
-#if FF_API_HLS_WRAP
-            oc->url, 'd', c->wrap ? vs->sequence % c->wrap : vs->sequence) < 1) {
-#else
             oc->url, 'd', vs->sequence) < 1) {
-#endif
             av_log(c, AV_LOG_ERROR, "Invalid second level segment filename template '%s', "
                     "you can try to remove second_level_segment_index flag\n",
                    oc->url);
@@ -1177,11 +1172,7 @@ static int hls_append_segment(struct AVFormatContext *s, HLSContext *hls,
             vs->initial_prog_date_time += en->duration;
         vs->segments = en->next;
         if (en && hls->flags & HLS_DELETE_SEGMENTS &&
-#if FF_API_HLS_WRAP
-                !(hls->flags & HLS_SINGLE_FILE || hls->wrap)) {
-#else
                 !(hls->flags & HLS_SINGLE_FILE)) {
-#endif
             en->next = vs->old_segments;
             vs->old_segments = en;
             if ((ret = hls_delete_old_segments(s, hls, vs)) < 0)
@@ -1702,11 +1693,7 @@ static int hls_start(AVFormatContext *s, VariantStream *vs)
     } else if (c->max_seg_size > 0) {
         char *filename = NULL;
         if (replace_int_data_in_filename(&filename,
-#if FF_API_HLS_WRAP
-            vs->basename, 'd', c->wrap ? vs->sequence % c->wrap : vs->sequence) < 1) {
-#else
             vs->basename, 'd', vs->sequence) < 1) {
-#endif
                 av_freep(&filename);
                 av_log(oc, AV_LOG_ERROR, "Invalid segment filename template '%s', you can try to use -strftime 1 with it\n", vs->basename);
                 return AVERROR(EINVAL);
@@ -1745,11 +1732,7 @@ static int hls_start(AVFormatContext *s, VariantStream *vs)
         } else {
             char *filename = NULL;
             if (replace_int_data_in_filename(&filename,
-#if FF_API_HLS_WRAP
-                   vs->basename, 'd', c->wrap ? vs->sequence % c->wrap : vs->sequence) < 1) {
-#else
                    vs->basename, 'd', vs->sequence) < 1) {
-#endif
                 av_freep(&filename);
                 av_log(oc, AV_LOG_ERROR, "Invalid segment filename template '%s' you can try to use -strftime 1 with it\n", vs->basename);
                 return AVERROR(EINVAL);
@@ -1759,11 +1742,7 @@ static int hls_start(AVFormatContext *s, VariantStream *vs)
         if (vs->vtt_basename) {
             char *filename = NULL;
             if (replace_int_data_in_filename(&filename,
-#if FF_API_HLS_WRAP
-                vs->vtt_basename, 'd', c->wrap ? vs->sequence % c->wrap : vs->sequence) < 1) {
-#else
                 vs->vtt_basename, 'd', vs->sequence) < 1) {
-#endif
                 av_freep(&filename);
                 av_log(vtt_oc, AV_LOG_ERROR, "Invalid segment filename template '%s'\n", vs->vtt_basename);
                 return AVERROR(EINVAL);
@@ -2314,6 +2293,7 @@ static int hls_write_header(AVFormatContext *s)
     VariantStream *vs = NULL;
 
     for (i = 0; i < hls->nb_varstreams; i++) {
+        int subtitle_streams = 0;
         vs = &hls->var_streams[i];
 
         ret = avformat_write_header(vs->avf, NULL);
@@ -2334,10 +2314,11 @@ static int hls_write_header(AVFormatContext *s)
             }
 
             if (outer_st->codecpar->codec_type != AVMEDIA_TYPE_SUBTITLE)
-                inner_st = vs->avf->streams[j];
-            else if (vs->vtt_avf)
+                inner_st = vs->avf->streams[j - subtitle_streams];
+            else if (vs->vtt_avf) {
                 inner_st = vs->vtt_avf->streams[0];
-            else {
+                subtitle_streams++;
+            } else {
                 /* We have a subtitle stream, when the user does not want one */
                 inner_st = NULL;
                 continue;
@@ -2424,6 +2405,7 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
     int is_ref_pkt = 1;
     int ret = 0, can_split = 1, i, j;
     int stream_index = 0;
+    int subtitle_streams = 0;
     int range_length = 0;
     const char *proto = NULL;
     int use_temp_file = 0;
@@ -2433,13 +2415,16 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
     for (i = 0; i < hls->nb_varstreams; i++) {
         vs = &hls->var_streams[i];
         for (j = 0; j < vs->nb_streams; j++) {
+            if (vs->streams[j]->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE) {
+                subtitle_streams++;
+            }
             if (vs->streams[j] == st) {
                 if (st->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE) {
                     oc = vs->vtt_avf;
                     stream_index = 0;
                 } else {
                     oc = vs->avf;
-                    stream_index = j;
+                    stream_index = j - subtitle_streams;
                 }
                 break;
             }
@@ -2494,7 +2479,8 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
             if (pkt->duration) {
                 vs->duration += (double)(pkt->duration) * st->time_base.num / st->time_base.den;
             } else {
-                av_log(s, AV_LOG_WARNING, "pkt->duration = 0, maybe the hls segment duration will not precise\n");
+                av_log(s, AV_LOG_WARNING, "Stream %d packet with pts %" PRId64 " has duration 0. The segment duration may not be precise.\n",
+                       pkt->stream_index, pkt->pts);
                 vs->duration = (double)(pkt->pts - vs->end_pts) * st->time_base.num / st->time_base.den;
             }
         }
@@ -2667,19 +2653,17 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (ret < 0) {
             return ret;
         }
-
     }
 
     vs->packets_written++;
     if (oc->pb) {
-        int64_t keyframe_pre_pos = avio_tell(oc->pb);
         ret = ff_write_chained(oc, stream_index, pkt, s, 0);
-        if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) &&
-            (pkt->flags & AV_PKT_FLAG_KEY) && !keyframe_pre_pos) {
-            av_write_frame(oc, NULL); /* Flush any buffered data */
-            vs->video_keyframe_size = avio_tell(oc->pb) - keyframe_pre_pos;
+        vs->video_keyframe_size += pkt->size;
+        if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) && (pkt->flags & AV_PKT_FLAG_KEY)) {
+            vs->video_keyframe_size = avio_tell(oc->pb);
+        } else {
+            vs->video_keyframe_pos = avio_tell(vs->out);
         }
-        vs->video_keyframe_pos = vs->start_pos;
         if (hls->ignore_io_errors)
             ret = 0;
     }
@@ -3120,9 +3104,6 @@ static const AVOption options[] = {
     {"hls_delete_threshold", "set number of unreferenced segments to keep before deleting",  OFFSET(hls_delete_threshold),    AV_OPT_TYPE_INT,    {.i64 = 1},     1, INT_MAX, E},
     {"hls_ts_options","set hls mpegts list of options for the container format used for hls", OFFSET(format_options), AV_OPT_TYPE_DICT, {.str = NULL},  0, 0,    E},
     {"hls_vtt_options","set hls vtt list of options for the container format used for hls", OFFSET(vtt_format_options_str), AV_OPT_TYPE_STRING, {.str = NULL},  0, 0,    E},
-#if FF_API_HLS_WRAP
-    {"hls_wrap",      "set number after which the index wraps (will be deprecated)",  OFFSET(wrap),    AV_OPT_TYPE_INT,    {.i64 = 0},     0, INT_MAX, E},
-#endif
     {"hls_allow_cache", "explicitly set whether the client MAY (1) or MUST NOT (0) cache media segments", OFFSET(allowcache), AV_OPT_TYPE_INT, {.i64 = -1}, INT_MIN, INT_MAX, E},
     {"hls_base_url",  "url to prepend to each playlist entry",   OFFSET(baseurl), AV_OPT_TYPE_STRING, {.str = NULL},  0, 0,       E},
     {"hls_segment_filename", "filename template for segment files", OFFSET(segment_filename),   AV_OPT_TYPE_STRING, {.str = NULL},            0,       0,         E},
@@ -3154,13 +3135,7 @@ static const AVOption options[] = {
     {"periodic_rekey", "reload keyinfo file periodically for re-keying", 0, AV_OPT_TYPE_CONST, {.i64 = HLS_PERIODIC_REKEY }, 0, UINT_MAX,   E, "flags"},
     {"independent_segments", "add EXT-X-INDEPENDENT-SEGMENTS, whenever applicable", 0, AV_OPT_TYPE_CONST, { .i64 = HLS_INDEPENDENT_SEGMENTS }, 0, UINT_MAX, E, "flags"},
     {"iframes_only", "add EXT-X-I-FRAMES-ONLY, whenever applicable", 0, AV_OPT_TYPE_CONST, { .i64 = HLS_I_FRAMES_ONLY }, 0, UINT_MAX, E, "flags"},
-#if FF_API_HLS_USE_LOCALTIME
-    {"use_localtime", "set filename expansion with strftime at segment creation(will be deprecated)", OFFSET(use_localtime), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, E },
-#endif
     {"strftime", "set filename expansion with strftime at segment creation", OFFSET(use_localtime), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, E },
-#if FF_API_HLS_USE_LOCALTIME
-    {"use_localtime_mkdir", "create last directory component in strftime-generated filename(will be deprecated)", OFFSET(use_localtime_mkdir), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, E },
-#endif
     {"strftime_mkdir", "create last directory component in strftime-generated filename", OFFSET(use_localtime_mkdir), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, E },
     {"hls_playlist_type", "set the HLS playlist type", OFFSET(pl_type), AV_OPT_TYPE_INT, {.i64 = PLAYLIST_TYPE_NONE }, 0, PLAYLIST_TYPE_NB-1, E, "pl_type" },
     {"event", "EVENT playlist", 0, AV_OPT_TYPE_CONST, {.i64 = PLAYLIST_TYPE_EVENT }, INT_MIN, INT_MAX, E, "pl_type" },
@@ -3191,7 +3166,7 @@ static const AVClass hls_class = {
 };
 
 
-AVOutputFormat ff_hls_muxer = {
+const AVOutputFormat ff_hls_muxer = {
     .name           = "hls",
     .long_name      = NULL_IF_CONFIG_SMALL("Apple HTTP Live Streaming"),
     .extensions     = "m3u8",

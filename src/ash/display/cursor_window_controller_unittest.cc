@@ -5,10 +5,10 @@
 #include "ash/display/cursor_window_controller.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -30,6 +30,11 @@ namespace ash {
 class CursorWindowControllerTest : public AshTestBase {
  public:
   CursorWindowControllerTest() = default;
+
+  CursorWindowControllerTest(const CursorWindowControllerTest&) = delete;
+  CursorWindowControllerTest& operator=(const CursorWindowControllerTest&) =
+      delete;
+
   ~CursorWindowControllerTest() override = default;
 
   // AshTestBase:
@@ -70,7 +75,6 @@ class CursorWindowControllerTest : public AshTestBase {
     // feature using it and is turned off.
     Shell::Get()->accessibility_controller()->high_contrast().SetEnabled(
         enabled);
-    Shell::Get()->UpdateCursorCompositingEnabled();
   }
 
   CursorWindowController* cursor_window_controller() {
@@ -80,14 +84,12 @@ class CursorWindowControllerTest : public AshTestBase {
  private:
   // Not owned.
   CursorWindowController* cursor_window_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(CursorWindowControllerTest);
 };
 
 // Test that the composited cursor moves to another display when the real cursor
 // moves to another display.
 TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
-  UpdateDisplay("200x200,200x200*2/r");
+  UpdateDisplay("300x200,300x200*2/r");
 
   WindowTreeHostManager* window_tree_host_manager =
       Shell::Get()->window_tree_host_manager();
@@ -134,7 +136,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   hot_point = GetCursorHotPoint();
   EXPECT_EQ("3,3", hot_point.ToString());
   cursor_bounds = GetCursorWindow()->GetBoundsInScreen();
-  EXPECT_EQ(220, cursor_bounds.x() + hot_point.x());
+  EXPECT_EQ(320, cursor_bounds.x() + hot_point.x());
   EXPECT_EQ(50, cursor_bounds.y() + hot_point.y());
 }
 
@@ -203,12 +205,10 @@ TEST_F(CursorWindowControllerTest, ShouldEnableCursorCompositing) {
 
   // Enable large cursor, cursor compositing should be enabled.
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
-  Shell::Get()->UpdateCursorCompositingEnabled();
   EXPECT_TRUE(cursor_window_controller()->is_cursor_compositing_enabled());
 
   // Disable large cursor, cursor compositing should be disabled.
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, false);
-  Shell::Get()->UpdateCursorCompositingEnabled();
   EXPECT_FALSE(cursor_window_controller()->is_cursor_compositing_enabled());
 }
 

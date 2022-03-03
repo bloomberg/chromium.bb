@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import contextlib
 
 import numpy as np
 
+from tensorflow.python.framework import config
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
@@ -176,6 +173,13 @@ class LinearOperatorCirculantTestHermitianSpectrum(
   zero imaginary part.
   """
 
+  def tearDown(self):
+    config.enable_tensor_float_32_execution(self.tf32_keep_)
+
+  def setUp(self):
+    self.tf32_keep_ = config.tensor_float_32_execution_enabled()
+    config.enable_tensor_float_32_execution(False)
+
   def operator_and_matrix(self,
                           shape_info,
                           dtype,
@@ -283,6 +287,18 @@ class LinearOperatorCirculantTestNonHermitianSpectrum(
     operator = linalg.LinearOperatorCirculant(
         lin_op_spectrum, input_output_dtype=dtype)
 
+    self.assertEqual(
+        operator.parameters,
+        {
+            "input_output_dtype": dtype,
+            "is_non_singular": None,
+            "is_positive_definite": None,
+            "is_self_adjoint": None,
+            "is_square": True,
+            "name": "LinearOperatorCirculant",
+            "spectrum": lin_op_spectrum,
+        })
+
     mat = self._spectrum_to_circulant_1d(spectrum, shape, dtype=dtype)
 
     return operator, mat
@@ -381,7 +397,7 @@ class LinearOperatorCirculantTestNonHermitianSpectrum(
 
   def test_real_spectrum_and_not_self_adjoint_hint_raises(self):
     spectrum = [1., 2.]
-    with self.assertRaisesRegexp(ValueError, "real.*always.*self-adjoint"):
+    with self.assertRaisesRegex(ValueError, "real.*always.*self-adjoint"):
       linalg.LinearOperatorCirculant(spectrum, is_self_adjoint=False)
 
   def test_real_spectrum_auto_sets_is_self_adjoint_to_true(self):
@@ -481,6 +497,13 @@ class LinearOperatorCirculant2DTestHermitianSpectrum(
   zero imaginary part.
   """
 
+  def tearDown(self):
+    config.enable_tensor_float_32_execution(self.tf32_keep_)
+
+  def setUp(self):
+    self.tf32_keep_ = config.tensor_float_32_execution_enabled()
+    config.enable_tensor_float_32_execution(False)
+
   @staticmethod
   def skip_these_tests():
     return ["cond"]
@@ -526,6 +549,20 @@ class LinearOperatorCirculant2DTestHermitianSpectrum(
         is_self_adjoint=True if ensure_self_adjoint_and_pd else None,
         input_output_dtype=dtype)
 
+    self.assertEqual(
+        operator.parameters,
+        {
+            "input_output_dtype": dtype,
+            "is_non_singular": None,
+            "is_positive_definite": (
+                True if ensure_self_adjoint_and_pd else None),
+            "is_self_adjoint": (
+                True if ensure_self_adjoint_and_pd else None),
+            "is_square": True,
+            "name": "LinearOperatorCirculant2D",
+            "spectrum": lin_op_spectrum,
+        })
+
     mat = self._spectrum_to_circulant_2d(spectrum, shape, dtype=dtype)
 
     return operator, mat
@@ -569,6 +606,19 @@ class LinearOperatorCirculant2DTestNonHermitianSpectrum(
 
     operator = linalg.LinearOperatorCirculant2D(
         lin_op_spectrum, input_output_dtype=dtype)
+
+    self.assertEqual(
+        operator.parameters,
+        {
+            "input_output_dtype": dtype,
+            "is_non_singular": None,
+            "is_positive_definite": None,
+            "is_self_adjoint": None,
+            "is_square": True,
+            "name": "LinearOperatorCirculant2D",
+            "spectrum": lin_op_spectrum,
+        }
+    )
 
     mat = self._spectrum_to_circulant_2d(spectrum, shape, dtype=dtype)
 
@@ -635,7 +685,7 @@ class LinearOperatorCirculant2DTestNonHermitianSpectrum(
 
   def test_real_spectrum_and_not_self_adjoint_hint_raises(self):
     spectrum = [[1., 2.], [3., 4]]
-    with self.assertRaisesRegexp(ValueError, "real.*always.*self-adjoint"):
+    with self.assertRaisesRegex(ValueError, "real.*always.*self-adjoint"):
       linalg.LinearOperatorCirculant2D(spectrum, is_self_adjoint=False)
 
   def test_real_spectrum_auto_sets_is_self_adjoint_to_true(self):
@@ -645,7 +695,7 @@ class LinearOperatorCirculant2DTestNonHermitianSpectrum(
 
   def test_invalid_rank_raises(self):
     spectrum = array_ops.constant(np.float32(rng.rand(2)))
-    with self.assertRaisesRegexp(ValueError, "must have at least 2 dimensions"):
+    with self.assertRaisesRegex(ValueError, "must have at least 2 dimensions"):
       linalg.LinearOperatorCirculant2D(spectrum)
 
   def test_tape_safe(self):
@@ -674,6 +724,18 @@ class LinearOperatorCirculant3DTest(test.TestCase):
           shape=(2, 2, 3, 5), dtype=dtypes.float32)
       operator = linalg.LinearOperatorCirculant3D(spectrum)
       self.assertAllEqual((2, 2 * 3 * 5, 2 * 3 * 5), operator.shape)
+
+      self.assertEqual(
+          operator.parameters,
+          {
+              "input_output_dtype": dtypes.complex64,
+              "is_non_singular": None,
+              "is_positive_definite": None,
+              "is_self_adjoint": None,
+              "is_square": True,
+              "name": "LinearOperatorCirculant3D",
+              "spectrum": spectrum,
+          })
 
       matrix_tensor = operator.to_dense()
       self.assertEqual(matrix_tensor.dtype, dtypes.complex64)

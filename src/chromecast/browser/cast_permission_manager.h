@@ -6,8 +6,8 @@
 #define CHROMECAST_BROWSER_CAST_PERMISSION_MANAGER_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "content/public/browser/permission_controller_delegate.h"
+#include "url/gurl.h"
 
 namespace chromecast {
 namespace shell {
@@ -15,6 +15,10 @@ namespace shell {
 class CastPermissionManager : public content::PermissionControllerDelegate {
  public:
   CastPermissionManager();
+
+  CastPermissionManager(const CastPermissionManager&) = delete;
+  CastPermissionManager& operator=(const CastPermissionManager&) = delete;
+
   ~CastPermissionManager() override;
 
   // content::PermissionControllerDelegate implementation:
@@ -52,9 +56,6 @@ class CastPermissionManager : public content::PermissionControllerDelegate {
       override;
   void UnsubscribePermissionStatusChange(
       SubscriptionId subscription_id) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastPermissionManager);
 };
 
 }  // namespace shell

@@ -9,6 +9,7 @@
 #define GrD3DGpuDescriptorTableManager_DEFINED
 
 #include "src/gpu/d3d/GrD3DDescriptorHeap.h"
+#include <vector>
 
 class GrD3DCommandList;
 class GrD3DDirectCommandList;
@@ -17,9 +18,10 @@ class GrD3DGpu;
 class GrD3DDescriptorTable : public SkRefCnt {
 public:
     GrD3DDescriptorTable(D3D12_CPU_DESCRIPTOR_HANDLE baseCPU, D3D12_GPU_DESCRIPTOR_HANDLE baseGPU,
-                         D3D12_DESCRIPTOR_HEAP_TYPE type)
+                         ID3D12DescriptorHeap* heap, D3D12_DESCRIPTOR_HEAP_TYPE type)
         : fDescriptorTableCpuStart(baseCPU)
         , fDescriptorTableGpuStart(baseGPU)
+        , fHeap(heap)
         , fType(type) {}
 
     const D3D12_CPU_DESCRIPTOR_HANDLE* baseCpuDescriptorPtr() {
@@ -30,11 +32,13 @@ public:
         return fDescriptorTableGpuStart;
     }
 
+    ID3D12DescriptorHeap* heap() const { return fHeap; }
     D3D12_DESCRIPTOR_HEAP_TYPE type() const { return fType; }
 
 private:
     D3D12_CPU_DESCRIPTOR_HANDLE fDescriptorTableCpuStart;
     D3D12_GPU_DESCRIPTOR_HANDLE fDescriptorTableGpuStart;
+    ID3D12DescriptorHeap* fHeap;
     D3D12_DESCRIPTOR_HEAP_TYPE fType;
 };
 
@@ -82,7 +86,7 @@ private:
 
 #ifdef SK_TRACE_MANAGED_RESOURCES
         void dumpInfo() const override {
-            SkDebugf("GrD3DDescriptorTable::Heap: %d (%d refs)\n", fHeap.get(), this->getRefCnt());
+            SkDebugf("GrD3DDescriptorTable::Heap: %p (%d refs)\n", fHeap.get(), this->getRefCnt());
         }
 #endif
 
@@ -105,14 +109,13 @@ private:
         void prepForSubmit(GrD3DGpu* gpu);
 
     private:
-        static constexpr int kInitialHeapDescriptorCount = 256;
+        inline static constexpr int kInitialHeapDescriptorCount = 256;
 
         std::vector<sk_sp<Heap>> fDescriptorHeaps;
         D3D12_DESCRIPTOR_HEAP_TYPE fHeapType;
         unsigned int fCurrentHeapDescriptorCount;
     };
 
-    void setHeaps(GrD3DGpu*);
     void recycle(Heap*);
 
     HeapPool fShaderViewDescriptorPool;

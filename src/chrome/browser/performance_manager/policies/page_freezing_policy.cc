@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/mechanisms/page_freezer.h"
 #include "components/performance_manager/freezing/freezing_vote_aggregator.h"
@@ -21,8 +20,8 @@ namespace policies {
 
 namespace {
 
-constexpr base::TimeDelta kUnfreezeInterval = base::TimeDelta::FromMinutes(5);
-constexpr base::TimeDelta kUnfreezeDuration = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kUnfreezeInterval = base::Minutes(5);
+constexpr base::TimeDelta kUnfreezeDuration = base::Seconds(10);
 
 bool IsPageNodeFrozen(const PageNode* page_node) {
   return page_node->GetLifecycleState() ==
@@ -212,7 +211,9 @@ void PageFreezingPolicy::OnFreezingVoteChanged(
   }
 }
 
-void PageFreezingPolicy::OnLoadingStateChanged(const PageNode* page_node) {
+void PageFreezingPolicy::OnLoadingStateChanged(
+    const PageNode* page_node,
+    PageNode::LoadingState previous_state) {
   if (page_node->GetLoadingState() != PageNode::LoadingState::kLoadedIdle)
     return;
   auto freezing_vote = page_node->GetFreezingVote();

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -27,7 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/sync_error.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
@@ -58,8 +59,10 @@ static const char kCustomThemeUrl[] = "http://update.url/foo";
 #if defined(OS_WIN)
 const base::FilePath::CharType kExtensionFilePath[] =
     FILE_PATH_LITERAL("c:\\foo");
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
+#else
+#error "Unknown platform"
 #endif
 
 const ThemeHelper& GetThemeHelper() {
@@ -291,7 +294,7 @@ class ThemeSyncableServiceTest : public testing::Test,
 #endif
 
   std::unique_ptr<TestingProfile> profile_;
-  FakeThemeService* fake_theme_service_;
+  raw_ptr<FakeThemeService> fake_theme_service_;
   scoped_refptr<extensions::Extension> theme_extension_;
   std::unique_ptr<ThemeSyncableService> theme_sync_service_;
   std::unique_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;

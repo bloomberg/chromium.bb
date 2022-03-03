@@ -9,8 +9,9 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/test/bind.h"
@@ -85,7 +86,7 @@ class P2PSocketTcpTestBase : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   std::string sent_data_;
-  FakeSocket* socket_;  // Owned by |socket_impl_|.
+  raw_ptr<FakeSocket> socket_;  // Owned by |socket_impl_|.
   std::unique_ptr<P2PSocketTcpBase> socket_impl_;
   FakeP2PSocketDelegate socket_delegate_;
   std::unique_ptr<FakeSocketClient> fake_client_;
@@ -622,7 +623,7 @@ TEST(P2PSocketTcpWithPseudoTlsTest, Hostname) {
         context.host_resolver()->CreateRequest(kHostPortPair, other_nik,
                                                net::NetLogWithSource(), params);
     net::TestCompletionCallback callback2;
-    int result = request2->Start(callback2.callback());
+    result = request2->Start(callback2.callback());
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback2.GetResult(result));
   }
 }

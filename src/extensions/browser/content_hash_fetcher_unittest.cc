@@ -27,6 +27,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
@@ -44,6 +45,10 @@ class ContentHashFetcherTest : public ExtensionsTest {
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
+
+  ContentHashFetcherTest(const ContentHashFetcherTest&) = delete;
+  ContentHashFetcherTest& operator=(const ContentHashFetcherTest&) = delete;
+
   ~ContentHashFetcherTest() override {}
 
   bool LoadTestExtension() {
@@ -157,8 +162,6 @@ class ContentHashFetcherTest : public ExtensionsTest {
   base::FilePath test_dir_base_;
   std::unique_ptr<MockContentVerifierDelegate> delegate_;
   scoped_refptr<Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentHashFetcherTest);
 };
 
 // This tests our ability to successfully fetch, parse, and validate a missing

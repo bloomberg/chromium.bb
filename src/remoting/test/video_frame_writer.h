@@ -5,7 +5,6 @@
 #ifndef REMOTING_TEST_VIDEO_FRAME_WRITER_H_
 #define REMOTING_TEST_VIDEO_FRAME_WRITER_H_
 
-#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -24,6 +23,10 @@ namespace test {
 class VideoFrameWriter {
  public:
   VideoFrameWriter();
+
+  VideoFrameWriter(const VideoFrameWriter&) = delete;
+  VideoFrameWriter& operator=(const VideoFrameWriter&) = delete;
+
   ~VideoFrameWriter();
 
   // Save video frame to a local path.
@@ -57,8 +60,6 @@ class VideoFrameWriter {
 
   // Used to append before file extension to create unique file name.
   int frame_name_unique_number_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameWriter);
 };
 
 }  // namespace test

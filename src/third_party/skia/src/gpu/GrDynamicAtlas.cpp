@@ -8,12 +8,15 @@
 #include "src/gpu/GrDynamicAtlas.h"
 
 #include "src/core/SkIPoint16.h"
+#include "src/gpu/GrCaps.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRectanizerPow2.h"
 #include "src/gpu/GrRectanizerSkyline.h"
 #include "src/gpu/GrRenderTarget.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSurfaceProxyPriv.h"
+#include "src/gpu/GrSurfaceProxyView.h"
 
 // Each Node covers a sub-rectangle of the final atlas. When a GrDynamicAtlas runs out of room, we
 // create a new Node the same size as all combined nodes in the atlas as-is, and then place the new
@@ -91,8 +94,14 @@ void GrDynamicAtlas::reset(SkISize initialSize, const GrCaps& caps) {
             [this](GrResourceProvider* resourceProvider, const LazyAtlasDesc& desc) {
                 if (!fBackingTexture) {
                     fBackingTexture = resourceProvider->createTexture(
-                            {fWidth, fHeight}, desc.fFormat, desc.fRenderable, desc.fSampleCnt,
-                            desc.fMipmapped, desc.fBudgeted, desc.fProtected);
+                            fTextureProxy->backingStoreDimensions(),
+                            desc.fFormat,
+                            desc.fTextureType,
+                            desc.fRenderable,
+                            desc.fSampleCnt,
+                            desc.fMipmapped,
+                            desc.fBudgeted,
+                            desc.fProtected);
                 }
                 return GrSurfaceProxy::LazyCallbackResult(fBackingTexture);
             },
@@ -107,6 +116,16 @@ GrDynamicAtlas::Node* GrDynamicAtlas::makeNode(Node* previous, int l, int t, int
             ? (GrRectanizer*)fNodeAllocator.make<GrRectanizerSkyline>(width, height)
             : fNodeAllocator.make<GrRectanizerPow2>(width, height);
     return fNodeAllocator.make<Node>(previous, rectanizer, l, t);
+}
+
+GrSurfaceProxyView GrDynamicAtlas::readView(const GrCaps& caps) const {
+    return {fTextureProxy, kTextureOrigin,
+            caps.getReadSwizzle(fTextureProxy->backendFormat(), fColorType)};
+}
+
+GrSurfaceProxyView GrDynamicAtlas::writeView(const GrCaps& caps) const {
+    return {fTextureProxy, kTextureOrigin,
+            caps.getWriteSwizzle(fTextureProxy->backendFormat(), fColorType)};
 }
 
 bool GrDynamicAtlas::addRect(int width, int height, SkIPoint16* location) {
@@ -166,17 +185,20 @@ bool GrDynamicAtlas::internalPlaceRect(int w, int h, SkIPoint16* loc) {
     return true;
 }
 
-std::unique_ptr<GrSurfaceDrawContext> GrDynamicAtlas::instantiate(
-        GrOnFlushResourceProvider* onFlushRP, sk_sp<GrTexture> backingTexture) {
+void GrDynamicAtlas::instantiate(GrOnFlushResourceProvider* onFlushRP,
+                                 sk_sp<GrTexture> backingTexture) {
     SkASSERT(!this->isInstantiated());  // This method should only be called once.
     // Caller should have cropped any paths to the destination render target instead of asking for
     // an atlas larger than maxRenderTargetSize.
     SkASSERT(std::max(fHeight, fWidth) <= fMaxAtlasSize);
     SkASSERT(fMaxAtlasSize <= onFlushRP->caps()->maxRenderTargetSize());
 
-    // Finalize the content size of our proxy. The GPU can potentially make optimizations if it
-    // knows we only intend to write out a smaller sub-rectangle of the backing texture.
-    fTextureProxy->priv().setLazyDimensions(fDrawBounds);
+    if (fTextureProxy->isFullyLazy()) {
+        // Finalize the content size of our proxy. The GPU can potentially make optimizations if it
+        // knows we only intend to write out a smaller sub-rectangle of the backing texture.
+        fTextureProxy->priv().setLazyDimensions(fDrawBounds);
+    }
+    SkASSERT(fTextureProxy->dimensions() == fDrawBounds);
 
     if (backingTexture) {
 #ifdef SK_DEBUG
@@ -184,21 +206,9 @@ std::unique_ptr<GrSurfaceDrawContext> GrDynamicAtlas::instantiate(
         SkASSERT(backingRT);
         SkASSERT(backingRT->backendFormat() == fTextureProxy->backendFormat());
         SkASSERT(backingRT->numSamples() == fTextureProxy->asRenderTargetProxy()->numSamples());
-        SkASSERT(backingRT->width() == fWidth);
-        SkASSERT(backingRT->height() == fHeight);
+        SkASSERT(backingRT->dimensions() == fTextureProxy->backingStoreDimensions());
 #endif
         fBackingTexture = std::move(backingTexture);
     }
-    auto rtc = onFlushRP->makeRenderTargetContext(fTextureProxy, kTextureOrigin, fColorType,
-                                                  nullptr, SkSurfaceProps());
-    if (!rtc) {
-        onFlushRP->printWarningMessage(SkStringPrintf(
-                "WARNING: failed to allocate a %ix%i atlas. Some masks will not be drawn.\n",
-                fWidth, fHeight).c_str());
-        return nullptr;
-    }
-
-    SkIRect clearRect = SkIRect::MakeSize(fDrawBounds);
-    rtc->clearAtLeast(clearRect, SK_PMColor4fTRANSPARENT);
-    return rtc;
+    onFlushRP->instatiateProxy(fTextureProxy.get());
 }

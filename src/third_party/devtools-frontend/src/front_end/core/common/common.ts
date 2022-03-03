@@ -18,6 +18,7 @@ import * as ObjectWrapper from './Object.js';
 import * as ParsedURL from './ParsedURL.js';
 import * as Progress from './Progress.js';
 import * as QueryParamHandler from './QueryParamHandler.js';
+import * as ResolverBase from './ResolverBase.js';
 import * as ResourceType from './ResourceType.js';
 import * as Revealer from './Revealer.js';
 import * as Runnable from './Runnable.js';
@@ -31,12 +32,12 @@ import * as Trie from './Trie.js';
 import * as WasmDisassembly from './WasmDisassembly.js';
 import * as Worker from './Worker.js';
 
-/* This is re-exported here because we moved UIString into platform from
+/*
+ * This is re-exported here because we moved UIString into platform from
  * common and wanted to avoid a huge rename of imports. A future CL will
  * update all references to `Common.UIString` to `Platform.UIString`.
  */
 export {UIString} from '../platform/platform.js';
-
 
 /**
  * @type {!Settings.Settings}
@@ -61,6 +62,7 @@ export {
   ParsedURL,
   Progress,
   QueryParamHandler,
+  ResolverBase,
   ResourceType,
   Revealer,
   Runnable,

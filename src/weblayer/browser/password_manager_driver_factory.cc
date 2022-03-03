@@ -4,7 +4,10 @@
 
 #include "weblayer/browser/password_manager_driver_factory.h"
 
+#include "base/memory/raw_ptr.h"
+#include "base/stl_util.h"
 #include "components/password_manager/content/browser/bad_message.h"
+#include "components/password_manager/content/browser/form_meta_data.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -33,19 +36,16 @@ class PasswordManagerDriverFactory::PasswordManagerDriver
   // For that reason, any access to form data should be validated via
   // bad_message::CheckChildProcessSecurityPolicy.
   void PasswordFormsParsed(
-      const std::vector<autofill::FormData>& forms_data) override {}
+      const std::vector<autofill::FormData>& raw_forms_data) override {}
   void PasswordFormsRendered(
-      const std::vector<autofill::FormData>& visible_forms_data,
+      const std::vector<autofill::FormData>& raw_visible_forms_data,
       bool did_stop_loading) override {}
-  void PasswordFormSubmitted(const autofill::FormData& form_data) override {}
-  void InformAboutUserInput(const autofill::FormData& form_data) override {
-    if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
-            render_frame_host_, form_data.url,
-            password_manager::BadMessageReason::
-                CPMD_BAD_ORIGIN_UPON_USER_INPUT_CHANGE)) {
-      return;
-    }
-
+  void PasswordFormSubmitted(const autofill::FormData& raw_form_data) override {
+  }
+  void InformAboutUserInput(const autofill::FormData& raw_form_data) override {
+    autofill::FormData form_data =
+        password_manager::GetFormWithFrameAndFormMetaData(render_frame_host_,
+                                                          raw_form_data);
     if (FormHasNonEmptyPasswordField(form_data) &&
         site_isolation::SiteIsolationPolicy::
             IsIsolationForPasswordSitesEnabled()) {
@@ -63,10 +63,11 @@ class PasswordManagerDriverFactory::PasswordManagerDriver
   }
   void DynamicFormSubmission(autofill::mojom::SubmissionIndicatorEvent
                                  submission_indication_event) override {}
-  void PasswordFormCleared(const autofill::FormData& form_data) override {}
+  void PasswordFormCleared(const autofill::FormData& raw_form_data) override {}
   void RecordSavePasswordProgress(const std::string& log) override {}
   void UserModifiedPasswordField() override {}
   void UserModifiedNonPasswordField(autofill::FieldRendererId renderer_id,
+                                    const std::u16string& field_name,
                                     const std::u16string& value) override {}
   void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
                                const std::u16string& typed_username,
@@ -83,12 +84,14 @@ class PasswordManagerDriverFactory::PasswordManagerDriver
 
   mojo::AssociatedReceiver<autofill::mojom::PasswordManagerDriver>
       password_manager_receiver_{this};
-  content::RenderFrameHost* render_frame_host_;
+  raw_ptr<content::RenderFrameHost> render_frame_host_;
 };
 
 PasswordManagerDriverFactory::PasswordManagerDriverFactory(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PasswordManagerDriverFactory>(
+          *web_contents) {}
 
 PasswordManagerDriverFactory::~PasswordManagerDriverFactory() = default;
 
@@ -130,6 +133,6 @@ void PasswordManagerDriverFactory::RenderFrameDeleted(
   frame_driver_map_.erase(render_frame_host);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordManagerDriverFactory)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordManagerDriverFactory);
 
 }  // namespace weblayer

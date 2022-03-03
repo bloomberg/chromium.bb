@@ -29,7 +29,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('searchDrive',
-      function(name, request, callback, response) {
+      function(callback, response) {
     if (response && !response.error && response.entries) {
       response.entries = response.entries.map(function(entry) {
         return GetExternalFileEntry(entry);
@@ -45,7 +45,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('searchDriveMetadata',
-      function(name, request, callback, response) {
+      function(callback, response) {
     if (response && !response.error) {
       for (var i = 0; i < response.length; i++) {
         response[i].entry =
@@ -188,20 +188,20 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('executeTask',
-      function(taskId, entries, callback) {
+      function(descriptor, entries, callback) {
         var urls = entries.map(function(entry) {
           return getEntryURL(entry);
         });
-        fileManagerPrivateInternal.executeTask(taskId, urls, callback);
+        fileManagerPrivateInternal.executeTask(descriptor, urls, callback);
       });
 
   apiFunctions.setHandleRequest('setDefaultTask',
-      function(taskId, entries, mimeTypes, callback) {
+      function(descriptor, entries, mimeTypes, callback) {
         var urls = entries.map(function(entry) {
           return getEntryURL(entry);
         });
         fileManagerPrivateInternal.setDefaultTask(
-            taskId, urls, mimeTypes, callback);
+            descriptor, urls, mimeTypes, callback);
       });
 
   apiFunctions.setHandleRequest('getFileTasks', function(entries, callback) {
@@ -216,11 +216,16 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getDownloadUrl(url, callback);
   });
 
-  apiFunctions.setHandleRequest('copyImageToClipboard', function(
-        entry, callback) {
-    var url = getEntryURL(entry);
-    fileManagerPrivateInternal.copyImageToClipboard(url, callback);
-  });
+  apiFunctions.setHandleRequest(
+      'getDisallowedTransfers', function(entries, destinationEntry, callback) {
+        var sourceUrls = entries.map(getEntryURL);
+        var destinationUrl = getEntryURL(destinationEntry);
+        fileManagerPrivateInternal.getDisallowedTransfers(
+            sourceUrls, destinationUrl,
+            callback(entryDescriptions.map(function(description) {
+              return GetExternalFileEntry(description);
+            })));
+      });
 
   apiFunctions.setHandleRequest('startCopy', function(
         entry, parentEntry, newName, callback) {
@@ -230,15 +235,12 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
         url, parentUrl, newName, callback);
   });
 
-  apiFunctions.setHandleRequest('zipSelection', function(
-        entries, parentEntry, destName, callback) {
-    var parentUrl = getEntryURL(parentEntry);
-    var urls = entries.map(function(entry) {
-      return getEntryURL(entry);
-    });
-    fileManagerPrivateInternal.zipSelection(
-        parentUrl, urls, destName, callback);
-  });
+  apiFunctions.setHandleRequest(
+      'zipSelection',
+      (entries, parentEntry, destName, callback) =>
+          fileManagerPrivateInternal.zipSelection(
+              getEntryURL(parentEntry), entries.map(getEntryURL), destName,
+              callback));
 
   apiFunctions.setHandleRequest('validatePathNameLength', function(
         entry, name, callback) {
@@ -322,7 +324,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('searchFiles',
-      function(name, request, callback, response) {
+      function(callback, response) {
     if (response && !response.error && response.entries) {
       response.entries = response.entries.map(function(entry) {
         return GetExternalFileEntry(entry);
@@ -367,6 +369,15 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
         fileManagerPrivateInternal.toggleAddedToHoldingSpace(
             urls, added, callback);
       });
+
+  apiFunctions.setHandleRequest('startIOTask', function(type, entries, params) {
+    const urls = entries.map(entry => getEntryURL(entry));
+    let newParams = {};
+    if (params.destinationFolder) {
+      newParams.destinationFolderUrl = getEntryURL(params.destinationFolder);
+    }
+    fileManagerPrivateInternal.startIOTask(type, urls, newParams);
+  });
 });
 
 bindingUtil.registerEventArgumentMassager(

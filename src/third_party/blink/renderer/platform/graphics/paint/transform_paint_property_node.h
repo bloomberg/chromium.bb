@@ -89,10 +89,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     DISALLOW_NEW();
 
    public:
-    TransformAndOrigin() {}
-    // These constructors are not explicit so that we can use FloatSize or
+    TransformAndOrigin() = default;
+    // These constructors are not explicit so that we can use gfx::Vector2dF or
     // TransformationMatrix directly in the initialization list of State.
-    TransformAndOrigin(const FloatSize& translation_2d)
+    TransformAndOrigin(const gfx::Vector2dF& translation_2d)
         : translation_2d_(translation_2d) {}
     // This should be used for arbitrary matrix only. If the caller knows that
     // the transform is identity or a 2d translation, the translation_2d version
@@ -106,7 +106,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     bool IsIdentity() const {
       return !matrix_and_origin_ && translation_2d_.IsZero();
     }
-    const FloatSize& Translation2D() const {
+    const gfx::Vector2dF& Translation2D() const {
       DCHECK(IsIdentityOr2DTranslation());
       return translation_2d_;
     }
@@ -115,10 +115,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       return matrix_and_origin_->matrix;
     }
     TransformationMatrix SlowMatrix() const {
-      return matrix_and_origin_
-                 ? matrix_and_origin_->matrix
-                 : TransformationMatrix().Translate(translation_2d_.Width(),
-                                                    translation_2d_.Height());
+      return matrix_and_origin_ ? matrix_and_origin_->matrix
+                                : TransformationMatrix().Translate(
+                                      translation_2d_.x(), translation_2d_.y());
     }
     FloatPoint3D Origin() const {
       return matrix_and_origin_ ? matrix_and_origin_->origin : FloatPoint3D();
@@ -146,7 +145,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       TransformationMatrix matrix;
       FloatPoint3D origin;
     };
-    FloatSize translation_2d_;
+    gfx::Vector2dF translation_2d_;
     std::unique_ptr<MatrixAndOrigin> matrix_and_origin_;
   };
 
@@ -160,6 +159,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   struct State {
     TransformAndOrigin transform_and_origin;
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
+    scoped_refptr<const TransformPaintPropertyNode>
+        scroll_translation_for_fixed;
     // Use bitfield packing instead of separate bools to save space.
     struct Flags {
       bool flattens_inherited_transform : 1;
@@ -200,7 +201,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
-          scroll != other.scroll || !StickyConstraintEquals(other) ||
+          scroll != other.scroll ||
+          scroll_translation_for_fixed != other.scroll_translation_for_fixed ||
+          !StickyConstraintEquals(other) ||
           visible_frame_element_id != other.visible_frame_element_id) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
@@ -299,7 +302,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   }
   bool IsIdentity() const { return state_.transform_and_origin.IsIdentity(); }
   // Only available when IsIdentityOr2DTranslation() is true.
-  const FloatSize& Translation2D() const {
+  const gfx::Vector2dF& Translation2D() const {
     return state_.transform_and_origin.Translation2D();
   }
   // Only available when IsIdentityOr2DTranslation() is false.
@@ -320,6 +323,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // The associated scroll node, or nullptr otherwise.
   const ScrollPaintPropertyNode* ScrollNode() const {
     return state_.scroll.get();
+  }
+
+  const TransformPaintPropertyNode* ScrollTranslationForFixed() const {
+    return state_.scroll_translation_for_fixed.get();
   }
 
   // If true, this node is translated by the viewport bounds delta, which is
@@ -414,9 +421,13 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
            CompositingReason::kActiveTransformAnimation;
   }
 
+  bool RequiresCompositingForFixedPosition() const {
+    return DirectCompositingReasons() & CompositingReason::kFixedPosition;
+  }
+
   bool RequiresCompositingForScrollDependentPosition() const {
     return DirectCompositingReasons() &
-           CompositingReason::kScrollDependentPosition;
+           CompositingReason::kComboScrollDependentPosition;
   }
 
   CompositingReasons DirectCompositingReasonsForDebugging() const {

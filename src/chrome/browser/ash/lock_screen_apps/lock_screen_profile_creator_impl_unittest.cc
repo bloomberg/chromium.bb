@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/session/arc_session.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -20,9 +22,9 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,8 +35,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/session/arc_session.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -68,14 +68,18 @@ void SetWasRun(bool* was_run) {
 // profile creation callbacks, and to provide a way to override profile creation
 // result.
 // An instance can be passed to TestingProfile as delegate - when the testing
-// profile creation is done, i.e. when the delegate's |OnProfileCreated| is
-// called this will remember the result. The creation result will be forwarded
-// to the actual (wrapped) delegate when |WaitForCreationAndOverrideResponse| is
-// called. This method will additionally wait until the profile creation
-// finishes.
+// profile creation is done, i.e. when the delegate's
+// |OnProfileCreationFinished| is called this will remember the result. The
+// creation result will be forwarded to the actual (wrapped) delegate when
+// |WaitForCreationAndOverrideResponse| is called. This method will additionally
+// wait until the profile creation finishes.
 class PendingProfileCreation : public Profile::Delegate {
  public:
   PendingProfileCreation() {}
+
+  PendingProfileCreation(const PendingProfileCreation&) = delete;
+  PendingProfileCreation& operator=(const PendingProfileCreation&) = delete;
+
   ~PendingProfileCreation() override {}
 
   // Sets the pending profile creation to track a profile creation,
@@ -131,15 +135,20 @@ class PendingProfileCreation : public Profile::Delegate {
     Profile* profile = profile_;
     profile_ = nullptr;
 
-    delegate->OnProfileCreated(profile, success, is_new_profile_);
+    delegate->OnProfileCreationFinished(
+        profile, Profile::CREATE_MODE_ASYNCHRONOUS, success, is_new_profile_);
     return true;
   }
 
+  void OnProfileCreationStarted(Profile* profile,
+                                Profile::CreateMode create_mode) override {}
+
   // Called when the profile is created - it caches the result, and quits the
   // run loop potentially set in |WaitForCreationAndOverrideResponse|.
-  void OnProfileCreated(Profile* profile,
-                        bool success,
-                        bool is_new_profile) override {
+  void OnProfileCreationFinished(Profile* profile,
+                                 Profile::CreateMode create_mode,
+                                 bool success,
+                                 bool is_new_profile) override {
     ASSERT_FALSE(profile_);
 
     profile_ = profile;
@@ -165,8 +174,6 @@ class PendingProfileCreation : public Profile::Delegate {
   Profile* profile_ = nullptr;
   bool success_ = false;
   bool is_new_profile_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingProfileCreation);
 };
 
 // Test profile manager implementation used to track async profile creation.
@@ -206,6 +213,12 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
  public:
   LockScreenProfileCreatorImplTest()
       : local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+  LockScreenProfileCreatorImplTest(const LockScreenProfileCreatorImplTest&) =
+      delete;
+  LockScreenProfileCreatorImplTest& operator=(
+      const LockScreenProfileCreatorImplTest&) = delete;
+
   ~LockScreenProfileCreatorImplTest() override {}
 
   void SetUp() override {
@@ -229,7 +242,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     arc_session_manager_ = arc::CreateTestArcSessionManager(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(&ArcSessionFactory)));
-    chromeos::NoteTakingHelper::Initialize();
+    ash::NoteTakingHelper::Initialize();
 
     AddTestUserProfile();
 
@@ -241,7 +254,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   void TearDown() override {
     lock_screen_profile_creator_.reset();
     arc_session_manager_.reset();
-    chromeos::NoteTakingHelper::Shutdown();
+    ash::NoteTakingHelper::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
 
     chromeos::ConciergeClient::Shutdown();
@@ -309,9 +322,9 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   void SetAppEnabledOnLockScreen(Profile* profile,
                                  const extensions::Extension* app,
                                  bool enabled) {
-    chromeos::NoteTakingHelper::Get()->SetPreferredApp(profile, app->id());
-    chromeos::NoteTakingHelper::Get()->SetPreferredAppEnabledOnLockScreen(
-        profile, enabled);
+    ash::NoteTakingHelper::Get()->SetPreferredApp(profile, app->id());
+    ash::NoteTakingHelper::Get()->SetPreferredAppEnabledOnLockScreen(profile,
+                                                                     enabled);
   }
 
   // Marks extension system as ready.
@@ -348,7 +361,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
                                              false /*add_to_storage*/);
     InitExtensionSystem(primary_profile_);
 
-    chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
+    ash::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
         primary_profile_);
   }
 
@@ -369,8 +382,6 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
 
   std::unique_ptr<LockScreenProfileCreator> lock_screen_profile_creator_;
-
-  DISALLOW_COPY_AND_ASSIGN(LockScreenProfileCreatorImplTest);
 };
 
 }  // namespace
@@ -613,7 +624,7 @@ TEST_F(LockScreenProfileCreatorImplTest, MetricsOnSuccess) {
   ASSERT_EQ(ProfileHelper::GetLockScreenAppProfilePath(),
             profile_manager()->pending_profile_creation()->path());
 
-  tick_clock()->Advance(base::TimeDelta::FromMilliseconds(20));
+  tick_clock()->Advance(base::Milliseconds(20));
 
   ASSERT_TRUE(profile_manager()
                   ->pending_profile_creation()
@@ -622,8 +633,8 @@ TEST_F(LockScreenProfileCreatorImplTest, MetricsOnSuccess) {
   EXPECT_TRUE(callback_run);
 
   histogram_tester->ExpectTimeBucketCount(
-      "Apps.LockScreen.AppsProfile.Creation.Duration",
-      base::TimeDelta::FromMilliseconds(20), 1);
+      "Apps.LockScreen.AppsProfile.Creation.Duration", base::Milliseconds(20),
+      1);
   histogram_tester->ExpectUniqueSample(
       "Apps.LockScreen.AppsProfile.Creation.Success", 1, 1);
 }
@@ -648,7 +659,7 @@ TEST_F(LockScreenProfileCreatorImplTest, MetricsOnFailure) {
   ASSERT_EQ(ProfileHelper::GetLockScreenAppProfilePath(),
             profile_manager()->pending_profile_creation()->path());
 
-  tick_clock()->Advance(base::TimeDelta::FromMilliseconds(20));
+  tick_clock()->Advance(base::Milliseconds(20));
 
   ASSERT_TRUE(profile_manager()
                   ->pending_profile_creation()

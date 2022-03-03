@@ -23,11 +23,18 @@ namespace {
 constexpr wchar_t kBaseDacl[] = L"D:P(A;;FA;;;WD)";
 constexpr wchar_t kTest1Dacl[] = L"D:PAI(A;;FR;;;AU)(A;;FA;;;WD)";
 constexpr wchar_t kTest2Dacl[] = L"D:PAI(A;;FA;;;BA)(A;;FA;;;AU)(A;;FA;;;WD)";
+constexpr wchar_t kTest1DaclNoInherit[] = L"D:P(A;;FR;;;AU)(A;;FA;;;WD)";
+constexpr wchar_t kTest2DaclNoInherit[] =
+    L"D:P(A;;FA;;;BA)(A;;FA;;;AU)(A;;FA;;;WD)";
 
 constexpr wchar_t kBaseDirDacl[] = L"D:P(A;OICI;FA;;;WD)";
 constexpr wchar_t kTest1InheritedDacl[] = L"D:(A;ID;FA;;;WD)";
 constexpr wchar_t kBaseDir2Dacl[] = L"D:PAI(A;OICI;FR;;;AU)(A;OICI;FA;;;WD)";
 constexpr wchar_t kTest2InheritedDacl[] = L"D:AI(A;ID;FR;;;AU)(A;ID;FA;;;WD)";
+constexpr wchar_t kBaseDir2DaclNoInherit[] =
+    L"D:P(A;OICI;FR;;;AU)(A;OICI;FA;;;WD)";
+constexpr wchar_t kTest2InheritedDaclNoInherit[] = L"D:P(A;;FA;;;WD)";
+constexpr wchar_t kTest3InheritedDacl[] = L"D:(A;ID;FR;;;AU)(A;ID;FA;;;WD)";
 
 constexpr wchar_t kNoWriteDacDacl[] = L"D:(D;;WD;;;OW)(A;;FRSD;;;WD)";
 
@@ -77,14 +84,20 @@ TEST(SecurityUtilTest, GrantAccessToPathErrorCase) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath path = temp_dir.GetPath().Append(L"test");
   EXPECT_FALSE(
-      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE));
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, true));
+  EXPECT_FALSE(
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, false));
   ASSERT_TRUE(CreateWithDacl(path, kBaseDacl, false));
   EXPECT_TRUE(
-      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE));
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, true));
+  EXPECT_TRUE(
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, false));
   path = temp_dir.GetPath().Append(L"test_nowritedac");
   ASSERT_TRUE(CreateWithDacl(path, kNoWriteDacDacl, false));
   EXPECT_FALSE(
-      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE));
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, true));
+  EXPECT_FALSE(
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, false));
 }
 
 TEST(SecurityUtilTest, GrantAccessToPathFile) {
@@ -96,12 +109,31 @@ TEST(SecurityUtilTest, GrantAccessToPathFile) {
   auto sids = Sid::FromSddlStringVector({kAuthenticatedUsersSid});
   ASSERT_TRUE(sids);
   EXPECT_TRUE(
-      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE));
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, true));
   EXPECT_EQ(kTest1Dacl, GetFileDacl(path));
   auto sids2 = Sid::FromSddlStringVector({L"S-1-5-11", L"BA"});
   ASSERT_TRUE(sids2);
-  EXPECT_TRUE(GrantAccessToPath(path, *sids2, GENERIC_ALL, NO_INHERITANCE));
+  EXPECT_TRUE(
+      GrantAccessToPath(path, *sids2, GENERIC_ALL, NO_INHERITANCE, true));
   EXPECT_EQ(kTest2Dacl, GetFileDacl(path));
+}
+
+TEST(SecurityUtilTest, GrantAccessToPathFileNoInherit) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath path = temp_dir.GetPath().Append(L"test");
+  ASSERT_TRUE(CreateWithDacl(path, kBaseDacl, false));
+  EXPECT_EQ(kBaseDacl, GetFileDacl(path));
+  auto sids = Sid::FromSddlStringVector({kAuthenticatedUsersSid});
+  ASSERT_TRUE(sids);
+  EXPECT_TRUE(
+      GrantAccessToPath(path, *sids, FILE_GENERIC_READ, NO_INHERITANCE, false));
+  EXPECT_EQ(kTest1DaclNoInherit, GetFileDacl(path));
+  auto sids2 = Sid::FromSddlStringVector({L"S-1-5-11", L"BA"});
+  ASSERT_TRUE(sids2);
+  EXPECT_TRUE(
+      GrantAccessToPath(path, *sids2, GENERIC_ALL, NO_INHERITANCE, false));
+  EXPECT_EQ(kTest2DaclNoInherit, GetFileDacl(path));
 }
 
 TEST(SecurityUtilTest, GrantAccessToPathDirectory) {
@@ -118,9 +150,74 @@ TEST(SecurityUtilTest, GrantAccessToPathDirectory) {
   auto sids = Sid::FromSddlStringVector({kAuthenticatedUsersSid});
   ASSERT_TRUE(sids);
   EXPECT_TRUE(GrantAccessToPath(path, *sids, FILE_GENERIC_READ,
-                                OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE));
+                                OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE,
+                                true));
   EXPECT_EQ(kBaseDir2Dacl, GetFileDacl(path));
   EXPECT_EQ(kTest2InheritedDacl, GetFileDacl(file_path));
+}
+
+TEST(SecurityUtilTest, GrantAccessToPathDirectoryNoInherit) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath path = temp_dir.GetPath().Append(L"testdir");
+  ASSERT_TRUE(CreateWithDacl(path, kBaseDirDacl, true));
+  EXPECT_EQ(kBaseDirDacl, GetFileDacl(path));
+  FilePath file_path = path.Append(L"test");
+  File file(file_path, File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
+  file.Close();
+  EXPECT_EQ(kTest1InheritedDacl, GetFileDacl(file_path));
+  auto sids = Sid::FromSddlStringVector({kAuthenticatedUsersSid});
+  ASSERT_TRUE(sids);
+  EXPECT_TRUE(GrantAccessToPath(path, *sids, FILE_GENERIC_READ,
+                                OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE,
+                                false));
+  EXPECT_EQ(kBaseDir2DaclNoInherit, GetFileDacl(path));
+  EXPECT_EQ(kTest2InheritedDaclNoInherit, GetFileDacl(file_path));
+
+  FilePath file_path2 = path.Append(L"test2");
+  File file2(file_path2, File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE);
+  ASSERT_TRUE(file2.IsValid());
+  file2.Close();
+  EXPECT_EQ(kTest3InheritedDacl, GetFileDacl(file_path2));
+}
+
+TEST(SecurityUtilTest, CloneSidVector) {
+  std::vector<Sid> sids =
+      *Sid::FromKnownSidVector({WellKnownSid::kNull, WellKnownSid::kWorld});
+  std::vector<Sid> clone = CloneSidVector(sids);
+  ASSERT_EQ(sids.size(), clone.size());
+  for (size_t index = 0; index < sids.size(); ++index) {
+    ASSERT_EQ(sids[index], clone[index]);
+    ASSERT_NE(sids[index].GetPSID(), clone[index].GetPSID());
+  }
+  ASSERT_EQ(CloneSidVector(std::vector<Sid>()).size(), 0U);
+}
+
+TEST(SecurityUtilTest, AppendSidVector) {
+  std::vector<Sid> sids =
+      *Sid::FromKnownSidVector({WellKnownSid::kNull, WellKnownSid::kWorld});
+
+  std::vector<Sid> total_sids;
+  AppendSidVector(total_sids, sids);
+  EXPECT_EQ(total_sids.size(), sids.size());
+
+  std::vector<Sid> sids2 = *Sid::FromKnownSidVector(
+      {WellKnownSid::kCreatorOwner, WellKnownSid::kNetwork});
+  AppendSidVector(total_sids, sids2);
+  EXPECT_EQ(total_sids.size(), sids.size() + sids2.size());
+
+  auto sid_interator = total_sids.cbegin();
+  for (size_t index = 0; index < sids.size(); ++index) {
+    ASSERT_EQ(*sid_interator, sids[index]);
+    ASSERT_NE(sid_interator->GetPSID(), sids[index].GetPSID());
+    sid_interator++;
+  }
+  for (size_t index = 0; index < sids2.size(); ++index) {
+    ASSERT_EQ(*sid_interator, sids2[index]);
+    ASSERT_NE(sid_interator->GetPSID(), sids2[index].GetPSID());
+    sid_interator++;
+  }
 }
 
 }  // namespace win

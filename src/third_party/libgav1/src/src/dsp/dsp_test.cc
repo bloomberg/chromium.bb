@@ -33,11 +33,11 @@ namespace dsp {
 namespace {
 
 // Maps 1D transform to the maximum valid size for the corresponding transform.
-constexpr int kMax1DTransformSize[kNum1DTransforms] = {
-    k1DTransformSize64,  // Dct.
-    k1DTransformSize16,  // Adst.
-    k1DTransformSize32,  // Identity.
-    k1DTransformSize4,   // Wht.
+constexpr int kMaxTransform1dSize[kNumTransform1ds] = {
+    kTransform1dSize64,  // Dct.
+    kTransform1dSize16,  // Adst.
+    kTransform1dSize32,  // Identity.
+    kTransform1dSize4,   // Wht.
 };
 
 void CheckTables(bool c_only) {
@@ -80,10 +80,10 @@ void CheckTables(bool c_only) {
     }
     EXPECT_NE(dsp->intra_edge_filter, nullptr);
     EXPECT_NE(dsp->intra_edge_upsampler, nullptr);
-    for (int i = 0; i < kNum1DTransforms; ++i) {
-      for (int j = 0; j < kNum1DTransformSizes; ++j) {
+    for (int i = 0; i < kNumTransform1ds; ++i) {
+      for (int j = 0; j < kNumTransform1dSizes; ++j) {
         for (int k = 0; k < 2; ++k) {
-          if (j <= kMax1DTransformSize[i]) {
+          if (j <= kMaxTransform1dSize[i]) {
             EXPECT_NE(dsp->inverse_transforms[i][j][k], nullptr)
                 << "index [" << i << "][" << j << "][" << k << "]";
           } else {
@@ -203,13 +203,23 @@ void CheckTables(bool c_only) {
     EXPECT_NE(dsp->film_grain.initialize_scaling_lut, nullptr);
     EXPECT_NE(dsp->film_grain.blend_noise_luma, nullptr);
 
-    EXPECT_NE(dsp->motion_field_projection_kernel, nullptr);
-    EXPECT_NE(dsp->mv_projection_compound[0], nullptr);
-    EXPECT_NE(dsp->mv_projection_compound[1], nullptr);
-    EXPECT_NE(dsp->mv_projection_compound[2], nullptr);
-    EXPECT_NE(dsp->mv_projection_single[0], nullptr);
-    EXPECT_NE(dsp->mv_projection_single[1], nullptr);
-    EXPECT_NE(dsp->mv_projection_single[2], nullptr);
+    if (bitdepth == 8) {
+      EXPECT_NE(dsp->motion_field_projection_kernel, nullptr);
+      EXPECT_NE(dsp->mv_projection_compound[0], nullptr);
+      EXPECT_NE(dsp->mv_projection_compound[1], nullptr);
+      EXPECT_NE(dsp->mv_projection_compound[2], nullptr);
+      EXPECT_NE(dsp->mv_projection_single[0], nullptr);
+      EXPECT_NE(dsp->mv_projection_single[1], nullptr);
+      EXPECT_NE(dsp->mv_projection_single[2], nullptr);
+    } else {
+      EXPECT_EQ(dsp->motion_field_projection_kernel, nullptr);
+      EXPECT_EQ(dsp->mv_projection_compound[0], nullptr);
+      EXPECT_EQ(dsp->mv_projection_compound[1], nullptr);
+      EXPECT_EQ(dsp->mv_projection_compound[2], nullptr);
+      EXPECT_EQ(dsp->mv_projection_single[0], nullptr);
+      EXPECT_EQ(dsp->mv_projection_single[1], nullptr);
+      EXPECT_EQ(dsp->mv_projection_single[2], nullptr);
+    }
   }
 }
 

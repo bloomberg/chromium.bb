@@ -4,6 +4,8 @@
 
 #include "net/cookies/cookie_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 
@@ -44,9 +46,5 @@ void CookieStore::SetCookieAccessDelegate(
     std::unique_ptr<CookieAccessDelegate> delegate) {
   cookie_access_delegate_ = std::move(delegate);
 }
-
-void CookieStore::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd,
-    const std::string& parent_absolute_name) const {}
 
 }  // namespace net

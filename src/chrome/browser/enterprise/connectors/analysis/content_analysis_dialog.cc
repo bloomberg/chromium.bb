@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -23,13 +23,14 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -38,16 +39,21 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/throbber.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
+#include "ui/views/layout/table_layout_view.h"
+
+// This should be after all other #includes.
+#if defined(_WINDOWS_)  // Detect whether windows.h was included.
+#include "base/win/windows_h_disallowed.h"
+#endif  // defined(_WINDOWS_)
 
 namespace enterprise_connectors {
 
 namespace {
 
-constexpr base::TimeDelta kResizeAnimationDuration =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kResizeAnimationDuration = base::Milliseconds(100);
 
 constexpr int kSideImageSize = 24;
 constexpr int kLineHeight = 20;
@@ -59,8 +65,8 @@ constexpr int kSideIconBetweenChildSpacing = 16;
 
 // These time values are non-const in order to be overridden in test so they
 // complete faster.
-base::TimeDelta minimum_pending_dialog_time_ = base::TimeDelta::FromSeconds(2);
-base::TimeDelta success_dialog_timeout_ = base::TimeDelta::FromSeconds(1);
+base::TimeDelta minimum_pending_dialog_time_ = base::Seconds(2);
+base::TimeDelta success_dialog_timeout_ = base::Seconds(1);
 
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
@@ -80,9 +86,8 @@ class CircleBackground : public views::Background {
   }
 };
 
-SkColor GetBackgroundColor(const views::Widget* widget) {
-  return widget->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
+SkColor GetBackgroundColor(const views::View* view) {
+  return view->GetColorProvider()->GetColor(ui::kColorDialogBackground);
 }
 
 ContentAnalysisDialog::TestObserver* observer_for_testing = nullptr;
@@ -99,7 +104,7 @@ class DeepScanningBaseView {
   ContentAnalysisDialog* dialog() { return dialog_; }
 
  protected:
-  ContentAnalysisDialog* dialog_;
+  raw_ptr<ContentAnalysisDialog> dialog_;
 };
 
 class DeepScanningTopImageView : public DeepScanningBaseView,
@@ -109,7 +114,11 @@ class DeepScanningTopImageView : public DeepScanningBaseView,
 
   using DeepScanningBaseView::DeepScanningBaseView;
 
-  void Update() { SetImage(dialog()->GetTopImage()); }
+  void Update() {
+    if (!GetWidget())
+      return;
+    SetImage(dialog()->GetTopImage());
+  }
 
  protected:
   void OnThemeChanged() override {
@@ -129,6 +138,8 @@ class DeepScanningSideIconImageView : public DeepScanningBaseView,
   using DeepScanningBaseView::DeepScanningBaseView;
 
   void Update() {
+    if (!GetWidget())
+      return;
     SetImage(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kSideImageSize,
                                    dialog()->GetSideImageLogoColor()));
     if (dialog()->is_result()) {
@@ -171,28 +182,6 @@ class DeepScanningSideIconSpinnerView : public DeepScanningBaseView,
 BEGIN_METADATA(DeepScanningSideIconSpinnerView, views::Throbber)
 END_METADATA
 
-class DeepScanningMessageView : public DeepScanningBaseView,
-                                public views::Label {
- public:
-  METADATA_HEADER(DeepScanningMessageView);
-
-  using DeepScanningBaseView::DeepScanningBaseView;
-
-  void Update() {
-    if (dialog()->is_failure() || dialog()->is_warning())
-      SetEnabledColor(dialog()->GetSideImageBackgroundColor());
-  }
-
- protected:
-  void OnThemeChanged() override {
-    views::Label::OnThemeChanged();
-    Update();
-  }
-};
-
-BEGIN_METADATA(DeepScanningMessageView, views::Label)
-END_METADATA
-
 // static
 base::TimeDelta ContentAnalysisDialog::GetMinimumPendingDialogTime() {
   return minimum_pending_dialog_time_;
@@ -207,16 +196,24 @@ ContentAnalysisDialog::ContentAnalysisDialog(
     std::unique_ptr<ContentAnalysisDelegateBase> delegate,
     content::WebContents* web_contents,
     safe_browsing::DeepScanAccessPoint access_point,
-    int files_count)
+    int files_count,
+    ContentAnalysisDelegateBase::FinalResult final_result)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
       web_contents_(web_contents),
+      final_result_(final_result),
       access_point_(std::move(access_point)),
       files_count_(files_count) {
+  DCHECK(delegate_);
   SetOwnedByWidget(true);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   if (observer_for_testing)
     observer_for_testing->ConstructorCalled(this, base::TimeTicks::Now());
+
+  if (final_result_ != ContentAnalysisDelegateBase::FinalResult::SUCCESS)
+    UpdateStateFromFinalResult(final_result_);
 
   SetupButtons();
 
@@ -245,10 +242,11 @@ void ContentAnalysisDialog::CancelButtonCallback() {
 
 void ContentAnalysisDialog::LearnMoreLinkClickedCallback(
     const ui::Event& event) {
-  web_contents_->OpenURL(
-      content::OpenURLParams(final_learn_more_url_, content::Referrer(),
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, false));
+  DCHECK(has_learn_more_url());
+  web_contents_->OpenURL(content::OpenURLParams(
+      (*delegate_->GetCustomLearnMoreUrl()), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      false));
 }
 
 void ContentAnalysisDialog::SuccessCallback() {
@@ -271,76 +269,65 @@ bool ContentAnalysisDialog::ShouldShowCloseButton() const {
 
 views::View* ContentAnalysisDialog::GetContentsView() {
   if (!contents_view_) {
-    contents_view_ = new views::View();  // Owned by caller.
-
-    // Create layout
-    views::GridLayout* layout =
-        contents_view_->SetLayoutManager(std::make_unique<views::GridLayout>());
-    views::ColumnSet* columns = layout->AddColumnSet(0);
-    columns->AddColumn(
-        /*h_align=*/views::GridLayout::FILL,
-        /*v_align=*/views::GridLayout::FILL,
-        /*resize_percent=*/1.0,
-        /*size_type=*/views::GridLayout::ColumnSize::kUsePreferred,
-        /*fixed_width=*/0,
-        /*min_width=*/0);
+    contents_view_ = new views::BoxLayoutView();  // Owned by caller.
+    contents_view_->SetOrientation(views::BoxLayout::Orientation::kVertical);
+    // Padding to distance the top image from the icon and message.
+    contents_view_->SetBetweenChildSpacing(16);
+    // padding to distance the message from the button(s).
+    contents_view_->SetInsideBorderInsets(gfx::Insets(0, 0, 10, 0));
 
     // Add the top image.
-    layout->StartRow(views::GridLayout::kFixedSize, 0);
-    image_ = layout->AddView(std::make_unique<DeepScanningTopImageView>(this));
+    image_ = contents_view_->AddChildView(
+        std::make_unique<DeepScanningTopImageView>(this));
 
-    // Add padding to distance the top image from the icon and message.
-    layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
-
-    views::ColumnSet* message_columns = layout->AddColumnSet(1);
-    message_columns->AddPaddingColumn(0.0, kMessageAndIconRowLeadingPadding);
-    message_columns->AddColumn(
-        /*h_align=*/views::GridLayout::LEADING,
-        /*v_align=*/views::GridLayout::LEADING,
-        /*resize_percent=*/0.0,
-        /*size_type=*/views::GridLayout::ColumnSize::kUsePreferred,
-        /*fixed_width=*/0,
-        /*min_width=*/0);
-    message_columns->AddPaddingColumn(0.0, kSideIconBetweenChildSpacing);
-    message_columns->AddColumn(
-        /*h_align=*/views::GridLayout::LEADING,
-        /*v_align=*/views::GridLayout::FILL,
-        /*resize_percent=*/1.0,
-        /*size_type=*/views::GridLayout::ColumnSize::kUsePreferred,
-        /*fixed_width=*/0,
-        /*min_width=*/0);
-    message_columns->AddPaddingColumn(0.0, kMessageAndIconRowTrailingPadding);
-
-    // Add the side icon and message row.
-    layout->StartRow(views::GridLayout::kFixedSize, 1);
+    // Create message area layout.
+    auto* message_container = contents_view_->AddChildView(
+        std::make_unique<views::TableLayoutView>());
+    message_container
+        ->AddPaddingColumn(views::TableLayout::kFixedSize,
+                           kMessageAndIconRowLeadingPadding)
+        .AddColumn(views::LayoutAlignment::kStart,
+                   views::LayoutAlignment::kStart,
+                   views::TableLayout::kFixedSize,
+                   views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+        .AddPaddingColumn(views::TableLayout::kFixedSize,
+                          kSideIconBetweenChildSpacing)
+        .AddColumn(views::LayoutAlignment::kStretch,
+                   views::LayoutAlignment::kStretch, 1.0f,
+                   views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+        .AddPaddingColumn(views::TableLayout::kFixedSize,
+                          kMessageAndIconRowTrailingPadding)
+        .AddRows(2, views::TableLayout::kFixedSize);
 
     // Add the side icon.
-    layout->AddView(CreateSideIcon());
+    message_container->AddChildView(CreateSideIcon());
 
     // Add the message.
-    auto label = std::make_unique<DeepScanningMessageView>(this);
-    label->SetText(GetDialogMessage());
-    label->SetLineHeight(kLineHeight);
-    label->SetMultiLine(true);
-    label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    message_ = layout->AddView(std::move(label));
+    message_ =
+        message_container->AddChildView(std::make_unique<views::Label>());
+    message_->SetText(GetDialogMessage());
+    message_->SetLineHeight(kLineHeight);
+    message_->SetMultiLine(true);
+    message_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
+    message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    layout->StartRow(views::GridLayout::kFixedSize, 1);
-    layout->SkipColumns(1);
     // Add the Learn More link but hide it so it can only be displayed when
     // required.
-    auto learn_more_link =
+    message_container->AddChildView(
+        std::make_unique<views::View>());  // Skip a column
+    learn_more_link_ = message_container->AddChildView(
         std::make_unique<views::Link>(l10n_util::GetStringUTF16(
-            IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE_LEARN_MORE_LINK));
-    learn_more_link->SetCallback(base::BindRepeating(
+            IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE_LEARN_MORE_LINK)));
+    learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    learn_more_link_->SetCallback(base::BindRepeating(
         &ContentAnalysisDialog::LearnMoreLinkClickedCallback,
         base::Unretained(this)));
-    learn_more_link->SetVisible(false);
-    learn_more_link_ = layout->AddView(std::move(learn_more_link));
+    learn_more_link_->SetVisible(false);
 
-    // Add padding to distance the message from the button(s).
-    layout->AddPaddingRow(views::GridLayout::kFixedSize, 10);
+    // If the dialog was started in a state other than pending, setup the views
+    // accordingly.
+    if (!is_pending())
+      UpdateViews();
   }
 
   return contents_view_;
@@ -366,27 +353,10 @@ void ContentAnalysisDialog::WebContentsDestroyed() {
 }
 
 void ContentAnalysisDialog::ShowResult(
-    ContentAnalysisDelegateBase::FinalResult result,
-    const std::u16string& custom_message,
-    const GURL& learn_more_url) {
+    ContentAnalysisDelegateBase::FinalResult result) {
   DCHECK(is_pending());
-  final_result_ = result;
-  final_custom_message_ = custom_message;
-  final_learn_more_url_ = learn_more_url;
 
-  switch (final_result_) {
-    case ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES:
-    case ContentAnalysisDelegateBase::FinalResult::LARGE_FILES:
-    case ContentAnalysisDelegateBase::FinalResult::FAILURE:
-      dialog_status_ = DeepScanningDialogStatus::FAILURE;
-      break;
-    case ContentAnalysisDelegateBase::FinalResult::SUCCESS:
-      dialog_status_ = DeepScanningDialogStatus::SUCCESS;
-      break;
-    case ContentAnalysisDelegateBase::FinalResult::WARNING:
-      dialog_status_ = DeepScanningDialogStatus::WARNING;
-      break;
-  }
+  UpdateStateFromFinalResult(result);
 
   // Update the pending dialog only after it has been shown for a minimum amount
   // of time.
@@ -407,19 +377,36 @@ ContentAnalysisDialog::~ContentAnalysisDialog() {
     observer_for_testing->DestructorCalled(this);
 }
 
-void ContentAnalysisDialog::UpdateDialog() {
-  views::Widget* widget = GetWidget();
-  DCHECK(widget);
-  DCHECK(is_result());
+void ContentAnalysisDialog::UpdateStateFromFinalResult(
+    ContentAnalysisDelegateBase::FinalResult final_result) {
+  final_result_ = final_result;
+  switch (final_result_) {
+    case ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES:
+    case ContentAnalysisDelegateBase::FinalResult::LARGE_FILES:
+    case ContentAnalysisDelegateBase::FinalResult::FAILURE:
+      dialog_state_ = State::FAILURE;
+      break;
+    case ContentAnalysisDelegateBase::FinalResult::SUCCESS:
+      dialog_state_ = State::SUCCESS;
+      break;
+    case ContentAnalysisDelegateBase::FinalResult::WARNING:
+      dialog_state_ = State::WARNING;
+      break;
+  }
+}
 
-  auto height_before = contents_view_->GetPreferredSize().height();
+void ContentAnalysisDialog::UpdateViews() {
+  DCHECK(contents_view_);
 
   // Update the style of the dialog to reflect the new state.
-  message_->Update();
   image_->Update();
   side_icon_image_->Update();
-  side_icon_spinner_->Update();
-  side_icon_spinner_ = nullptr;
+  // There isn't always a spinner, for instance when the dialog is started in a
+  // state other than the "pending" state.
+  if (side_icon_spinner_) {
+    side_icon_spinner_->Update();
+    side_icon_spinner_ = nullptr;
+  }
 
   // Update the buttons.
   SetupButtons();
@@ -433,13 +420,20 @@ void ContentAnalysisDialog::UpdateDialog() {
   // Update the visibility of the Learn More link, which should only be visible
   // if the dialog is in the warning or failure state, and there's a link to
   // display.
-  learn_more_link_->SetVisible(
-      (is_failure() || is_warning()) &&
-      (final_learn_more_url_.is_valid() && !final_learn_more_url_.is_empty()));
+  learn_more_link_->SetVisible((is_failure() || is_warning()) &&
+                               has_learn_more_url());
+}
+
+void ContentAnalysisDialog::UpdateDialog() {
+  DCHECK(contents_view_);
+  DCHECK(is_result());
+
+  auto height_before = contents_view_->GetPreferredSize().height();
+
+  UpdateViews();
 
   // Resize the dialog's height. This is needed since the text might take more
   // lines after changing.
-
   auto height_after = contents_view_->GetPreferredSize().height();
   int height_to_add = std::max(height_after - height_before, 0);
   if (height_to_add > 0)
@@ -447,7 +441,7 @@ void ContentAnalysisDialog::UpdateDialog() {
 
   // Update the dialog.
   DialogDelegate::DialogModelChanged();
-  widget->ScheduleLayout();
+  contents_view_->InvalidateLayout();
 
   // Schedule the dialog to close itself in the success case.
   if (is_success()) {
@@ -545,31 +539,36 @@ void ContentAnalysisDialog::SetupButtons() {
 }
 
 std::u16string ContentAnalysisDialog::GetDialogMessage() const {
-  switch (dialog_status_) {
-    case DeepScanningDialogStatus::PENDING:
+  switch (dialog_state_) {
+    case State::PENDING:
       return GetPendingMessage();
-    case DeepScanningDialogStatus::FAILURE:
+    case State::FAILURE:
       return GetFailureMessage();
-    case DeepScanningDialogStatus::SUCCESS:
+    case State::SUCCESS:
       return GetSuccessMessage();
-    case DeepScanningDialogStatus::WARNING:
+    case State::WARNING:
       return GetWarningMessage();
   }
 }
 
 std::u16string ContentAnalysisDialog::GetCancelButtonText() const {
   int text_id;
-  switch (dialog_status_) {
-    case DeepScanningDialogStatus::SUCCESS:
+  auto overriden_text = delegate_->OverrideCancelButtonText();
+  if (overriden_text) {
+    return overriden_text.value();
+  }
+
+  switch (dialog_state_) {
+    case State::SUCCESS:
       NOTREACHED();
       FALLTHROUGH;
-    case DeepScanningDialogStatus::PENDING:
+    case State::PENDING:
       text_id = IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON;
       break;
-    case DeepScanningDialogStatus::FAILURE:
+    case State::FAILURE:
       text_id = IDS_CLOSE;
       break;
-    case DeepScanningDialogStatus::WARNING:
+    case State::WARNING:
       text_id = IDS_DEEP_SCANNING_DIALOG_CANCEL_WARNING_BUTTON;
       break;
   }
@@ -610,28 +609,45 @@ std::unique_ptr<views::View> ContentAnalysisDialog::CreateSideIcon() {
 
 SkColor ContentAnalysisDialog::GetSideImageBackgroundColor() const {
   DCHECK(is_result());
-  const views::Widget* widget = GetWidget();
-  DCHECK(widget);
-  ui::NativeTheme::ColorId color_id =
-      is_success() ? ui::NativeTheme::kColorId_AlertSeverityLow
-                   : ui::NativeTheme::kColorId_AlertSeverityHigh;
-  return widget->GetNativeTheme()->GetSystemColor(color_id);
+  DCHECK(contents_view_);
+
+  switch (dialog_state_) {
+    case State::PENDING:
+      NOTREACHED();
+      return gfx::kGoogleBlue500;
+    case State::SUCCESS:
+      return gfx::kGoogleBlue500;
+    case State::FAILURE:
+      return gfx::kGoogleRed500;
+    case State::WARNING:
+      return gfx::kGoogleYellow500;
+  }
 }
 
-int ContentAnalysisDialog::GetPasteImageId(bool use_dark) const {
-  if (is_pending())
-    return use_dark ? IDR_PASTE_SCANNING_DARK : IDR_PASTE_SCANNING;
-  if (is_success())
-    return use_dark ? IDR_PASTE_SUCCESS_DARK : IDR_PASTE_SUCCESS;
-  return use_dark ? IDR_PASTE_VIOLATION_DARK : IDR_PASTE_VIOLATION;
-}
-
-int ContentAnalysisDialog::GetUploadImageId(bool use_dark) const {
-  if (is_pending())
-    return use_dark ? IDR_UPLOAD_SCANNING_DARK : IDR_UPLOAD_SCANNING;
-  if (is_success())
-    return use_dark ? IDR_UPLOAD_SUCCESS_DARK : IDR_UPLOAD_SUCCESS;
-  return use_dark ? IDR_UPLOAD_VIOLATION_DARK : IDR_UPLOAD_VIOLATION;
+int ContentAnalysisDialog::GetTopImageId(bool use_dark) const {
+  if (use_dark) {
+    switch (dialog_state_) {
+      case State::PENDING:
+        return IDR_UPLOAD_SCANNING_DARK;
+      case State::SUCCESS:
+        return IDR_UPLOAD_SUCCESS_DARK;
+      case State::FAILURE:
+        return IDR_UPLOAD_VIOLATION_DARK;
+      case State::WARNING:
+        return IDR_UPLOAD_WARNING_DARK;
+    }
+  } else {
+    switch (dialog_state_) {
+      case State::PENDING:
+        return IDR_UPLOAD_SCANNING;
+      case State::SUCCESS:
+        return IDR_UPLOAD_SUCCESS;
+      case State::FAILURE:
+        return IDR_UPLOAD_VIOLATION;
+      case State::WARNING:
+        return IDR_UPLOAD_WARNING;
+    }
+  }
 }
 
 std::u16string ContentAnalysisDialog::GetPendingMessage() const {
@@ -684,37 +700,28 @@ std::u16string ContentAnalysisDialog::GetSuccessMessage() const {
 std::u16string ContentAnalysisDialog::GetCustomMessage() const {
   DCHECK(is_warning() || is_failure());
   DCHECK(has_custom_message());
-  return l10n_util::GetStringFUTF16(IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE,
-                                    final_custom_message_);
+  return *(delegate_->GetCustomMessage());
 }
 
 const gfx::ImageSkia* ContentAnalysisDialog::GetTopImage() const {
-  const bool use_dark = color_utils::IsDark(GetBackgroundColor(GetWidget()));
-  const bool treat_as_text_paste =
-      access_point_ == safe_browsing::DeepScanAccessPoint::PASTE ||
-      (access_point_ == safe_browsing::DeepScanAccessPoint::DRAG_AND_DROP &&
-       files_count_ == 0);
-
-  int image_id = treat_as_text_paste ? GetPasteImageId(use_dark)
-                                     : GetUploadImageId(use_dark);
-
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id);
+  const bool use_dark = color_utils::IsDark(GetBackgroundColor(contents_view_));
+  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      GetTopImageId(use_dark));
 }
 
 SkColor ContentAnalysisDialog::GetSideImageLogoColor() const {
-  const views::Widget* widget = GetWidget();
-  DCHECK(widget);
-  switch (dialog_status_) {
-    case DeepScanningDialogStatus::PENDING:
+  DCHECK(contents_view_);
+
+  switch (dialog_state_) {
+    case State::PENDING:
       // Match the spinner in the pending state.
-      return widget->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ThrobberSpinningColor);
-    case DeepScanningDialogStatus::SUCCESS:
-    case DeepScanningDialogStatus::FAILURE:
-    case DeepScanningDialogStatus::WARNING:
+      return gfx::kGoogleBlue500;
+    case State::SUCCESS:
+    case State::FAILURE:
+    case State::WARNING:
       // In a result state the background will have the result's color, so the
       // logo should have the same color as the background.
-      return GetBackgroundColor(widget);
+      return GetBackgroundColor(contents_view_);
   }
 }
 

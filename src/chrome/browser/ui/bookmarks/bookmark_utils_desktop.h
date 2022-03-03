@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -23,6 +25,9 @@ class PageNavigator;
 }
 
 namespace chrome {
+
+using TabGroupData =
+    std::pair<absl::optional<tab_groups::TabGroupId>, std::u16string>;
 
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.
@@ -43,7 +48,8 @@ void OpenAllIfAllowed(
     Browser* browser,
     base::OnceCallback<content::PageNavigator*()> get_navigator,
     const std::vector<const bookmarks::BookmarkNode*>& nodes,
-    WindowOpenDisposition initial_disposition);
+    WindowOpenDisposition initial_disposition,
+    bool add_to_group);
 
 // Opens all the bookmarks in |nodes| that are of type url and all the child
 // bookmarks that are of type url for folders in |nodes|. |initial_disposition|
@@ -86,6 +92,13 @@ bool HasBookmarkURLs(
 bool HasBookmarkURLsAllowedInIncognitoMode(
     const std::vector<const bookmarks::BookmarkNode*>& selection,
     content::BrowserContext* browser_context);
+
+// Populates |folder_data| with all tab items and sub-folders for any open tab
+// groups.
+void GetURLsAndFoldersForTabEntries(
+    std::vector<BookmarkEditor::EditDetails::BookmarkData>* folder_data,
+    std::vector<std::pair<GURL, std::u16string>> tab_entries,
+    base::flat_map<int, TabGroupData> groups_by_index);
 
 }  // namespace chrome
 

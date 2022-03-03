@@ -17,7 +17,8 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -80,8 +81,8 @@ class GFX_EXPORT SkiaTextRenderer {
  private:
   friend class test::RenderTextTestApi;
 
-  Canvas* canvas_;
-  cc::PaintCanvas* canvas_skia_;
+  raw_ptr<Canvas> canvas_;
+  raw_ptr<cc::PaintCanvas> canvas_skia_;
   cc::PaintFlags flags_;
   SkFont font_;
 };
@@ -126,11 +127,11 @@ class StyleIterator {
  private:
   // Pointers to the breaklists to iterate through. These pointers can't be
   // nullptr and the breaklists must outlive this object.
-  const BreakList<SkColor>* colors_;
-  const BreakList<BaselineStyle>* baselines_;
-  const BreakList<int>* font_size_overrides_;
-  const BreakList<Font::Weight>* weights_;
-  const StyleArray* styles_;
+  raw_ptr<const BreakList<SkColor>> colors_;
+  raw_ptr<const BreakList<BaselineStyle>> baselines_;
+  raw_ptr<const BreakList<int>> font_size_overrides_;
+  raw_ptr<const BreakList<Font::Weight>> weights_;
+  raw_ptr<const StyleArray> styles_;
 
   BreakList<SkColor>::const_iterator color_;
   BreakList<BaselineStyle>::const_iterator baseline_;
@@ -616,6 +617,14 @@ class GFX_EXPORT RenderText {
   // resulting range. Maintains directionality of |range|.
   Range ExpandRangeToGraphemeBoundary(const Range& range) const;
 
+  // Specify the width/height of a glyph for test. The width/height of glyphs is
+  // very platform-dependent and environment-dependent. Otherwise multiline text
+  // will become really flaky.
+  void set_glyph_width_for_test(float width) { glyph_width_for_test_ = width; }
+  void set_glyph_height_for_test(float height) {
+    glyph_height_for_test_ = height;
+  }
+
  protected:
   RenderText();
 
@@ -759,8 +768,11 @@ class GFX_EXPORT RenderText {
   const BreakList<size_t>& GetLineBreaks();
 
   // Convert points from the text space to the view space. Handles the display
-  // area, display offset, application LTR/RTL mode and multiline.
-  Point ToViewPoint(const PointF& point, LogicalCursorDirection caret_affinity);
+  // area, display offset, application LTR/RTL mode and multiline. |line| is the
+  // index of the line in which |point| is found, and is required to be passed
+  // because by the time |point| is in text space, the information to account
+  // for certain zero-width characters (such as empty lines) is lost.
+  Point ToViewPoint(const PointF& point, size_t line);
 
   // Get the alignment, resolving ALIGN_TO_HEAD with the current text direction.
   HorizontalAlignment GetCurrentHorizontalAlignment();
@@ -873,14 +885,6 @@ class GFX_EXPORT RenderText {
   // text cannot be retrieved, e.g. if the text is obscured.
   virtual bool GetDecoratedTextForRange(const Range& range,
                                         DecoratedText* decorated_text) = 0;
-
-  // Specify the width/height of a glyph for test. The width/height of glyphs is
-  // very platform-dependent and environment-dependent. Otherwise multiline text
-  // will become really flaky.
-  void set_glyph_width_for_test(float width) { glyph_width_for_test_ = width; }
-  void set_glyph_height_for_test(float height) {
-    glyph_height_for_test_ = height;
-  }
 
   // Logical UTF-16 string data to be drawn.
   std::u16string text_;

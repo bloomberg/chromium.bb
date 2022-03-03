@@ -36,6 +36,10 @@ class CrostiniPortForwarderTest : public testing::Test {
         other_container_id_(ContainerId("other", "other")),
         inactive_container_id_(ContainerId("inactive", "inactive")) {}
 
+  CrostiniPortForwarderTest(const CrostiniPortForwarderTest&) = delete;
+  CrostiniPortForwarderTest& operator=(const CrostiniPortForwarderTest&) =
+      delete;
+
   ~CrostiniPortForwarderTest() override {}
 
   void SetUp() override {
@@ -84,7 +88,7 @@ class CrostiniPortForwarderTest : public testing::Test {
                                                 Protocol protocol_type,
                                                 ContainerId container_id) {
     return {
-        .port_number = port_number,
+        .port_number = static_cast<uint16_t>(port_number),
         .protocol_type = protocol_type,
         .container_id = container_id,
     };
@@ -196,9 +200,6 @@ class CrostiniPortForwarderTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniPortForwarder> crostini_port_forwarder_;
   content::BrowserTaskEnvironment task_environment_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrostiniPortForwarderTest);
 };
 
 TEST_F(CrostiniPortForwarderTest, AddPort) {

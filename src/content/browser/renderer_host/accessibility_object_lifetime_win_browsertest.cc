@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/test/browser_test.h"
@@ -19,6 +20,12 @@ class AccessibilityObjectLifetimeWinBrowserTest
     : public content::ContentBrowserTest {
  public:
   AccessibilityObjectLifetimeWinBrowserTest() = default;
+
+  AccessibilityObjectLifetimeWinBrowserTest(
+      const AccessibilityObjectLifetimeWinBrowserTest&) = delete;
+  AccessibilityObjectLifetimeWinBrowserTest& operator=(
+      const AccessibilityObjectLifetimeWinBrowserTest&) = delete;
+
   ~AccessibilityObjectLifetimeWinBrowserTest() override = default;
 
  protected:
@@ -46,9 +53,6 @@ class AccessibilityObjectLifetimeWinBrowserTest
   HWND GetHwnd() { return GetView()->AccessibilityGetAcceleratedWidget(); }
 
   Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> test_node_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityObjectLifetimeWinBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
@@ -131,7 +135,7 @@ class AccessibilityTeardownTestMessageFilter : public ui::HWNDMessageFilter {
   }
 
  private:
-  LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND_;
+  raw_ptr<LegacyRenderWidgetHostHWND> legacy_render_widget_host_HWND_;
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
@@ -148,15 +152,18 @@ class AccessibilityObjectLifetimeUiaWinBrowserTest
     : public AccessibilityObjectLifetimeWinBrowserTest {
  public:
   AccessibilityObjectLifetimeUiaWinBrowserTest() = default;
+
+  AccessibilityObjectLifetimeUiaWinBrowserTest(
+      const AccessibilityObjectLifetimeUiaWinBrowserTest&) = delete;
+  AccessibilityObjectLifetimeUiaWinBrowserTest& operator=(
+      const AccessibilityObjectLifetimeUiaWinBrowserTest&) = delete;
+
   ~AccessibilityObjectLifetimeUiaWinBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableExperimentalUIAutomation);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityObjectLifetimeUiaWinBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeUiaWinBrowserTest,

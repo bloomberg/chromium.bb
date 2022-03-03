@@ -58,6 +58,7 @@ METADATA_APK_SPLIT_NAME = 'apk_split_name'  # Name of the split if applicable.
 METADATA_ZIPALIGN_OVERHEAD = 'zipalign_padding'  # Overhead from zipalign.
 METADATA_SIGNING_BLOCK_SIZE = 'apk_signature_block_size'  # Size in bytes.
 METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
+METADATA_ELF_ALGORITHM = 'elf_algorithm'  # linker_map / dwarf / sections.
 METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "Machine" field from readelf -h
 METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
@@ -207,7 +208,7 @@ def ClassifySections(section_names):
   return frozenset(unsummed_sections), frozenset(summed_sections)
 
 
-class BaseContainer(object):
+class BaseContainer:
   """Base class for BaseContainer and DeltaContainer.
 
   Fields:
@@ -229,6 +230,13 @@ class BaseContainer(object):
     self.short_name = None  # Assigned by AssignShortNames().
     self._classified_sections = None
 
+  def __str__(self):
+    return self.name
+
+  def __repr__(self):
+    return '{}(name={}, short_name={})'.format(self.__class__.__name__,
+                                               self.name, self.short_name)
+
   def ClassifySections(self):
     if self._classified_sections is None:
       self._classified_sections = ClassifySections(self.section_sizes.keys())
@@ -238,6 +246,10 @@ class BaseContainer(object):
   def AssignShortNames(containers):
     for i, c in enumerate(containers):
       c.short_name = str(i) if c.name else ''
+
+  @property
+  def section_sizes(self):
+    pass
 
 
 class Container(BaseContainer):
@@ -253,7 +265,7 @@ class Container(BaseContainer):
   )
 
   def __init__(self, name, metadata, section_sizes):
-    super(Container, self).__init__(name)
+    super().__init__(name)
     self.metadata = metadata or {}
     self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
 
@@ -276,7 +288,7 @@ class DeltaContainer(BaseContainer):
   )
 
   def __init__(self, name, before, after):
-    super(DeltaContainer, self).__init__(name)
+    super().__init__(name)
     self.before = before
     self.after = after
 
@@ -287,7 +299,7 @@ class DeltaContainer(BaseContainer):
     return dict(ret)
 
 
-class BaseSizeInfo(object):
+class BaseSizeInfo:
   """Base class for SizeInfo and DeltaSizeInfo.
 
   Fields:
@@ -373,10 +385,7 @@ class SizeInfo(BaseSizeInfo):
                raw_symbols,
                symbols=None,
                size_path=None):
-    super(SizeInfo, self).__init__(build_config,
-                                   containers,
-                                   raw_symbols,
-                                   symbols=symbols)
+    super().__init__(build_config, containers, raw_symbols, symbols=symbols)
     self.size_path = size_path
 
   @property
@@ -406,17 +415,53 @@ class DeltaSizeInfo(BaseSizeInfo):
   )
 
   def __init__(self, before, after, containers, raw_symbols):
-    super(DeltaSizeInfo, self).__init__(None, containers, raw_symbols)
+    super().__init__(None, containers, raw_symbols)
     self.before = before
     self.after = after
 
 
-class BaseSymbol(object):
+class BaseSymbol:
   """Base class for Symbol and SymbolGroup.
 
   Refer to module docs for field descriptions.
   """
   __slots__ = ()
+
+  @property
+  def container(self):
+    pass
+
+  @property
+  def section_name(self):
+    pass
+
+  @property
+  def size(self):
+    pass
+
+  @property
+  def padding(self):
+    pass
+
+  @property
+  def address(self):
+    pass
+
+  @property
+  def flags(self):
+    pass
+
+  @property
+  def aliases(self):
+    pass
+
+  @property
+  def full_name(self):
+    pass
+
+  @property
+  def name(self):
+    pass
 
   @property
   def container_name(self):
@@ -580,8 +625,8 @@ class Symbol(BaseSymbol):
     self.component = ''
 
   def __repr__(self):
-    if self.container and self.container.name:
-      container_str = '<{}>'.format(self.container.name)
+    if self.container_name:
+      container_str = '<{}>'.format(self.container_name)
     else:
       container_str = ''
     template = ('{}{}@{:x}(size_without_padding={},padding={},full_name={},'
@@ -686,9 +731,11 @@ class DeltaSymbol(BaseSymbol):
 
   @property
   def flags(self):
+    # Compute the union of flags (|) instead of symmetric difference (^), as
+    # that is more useful when querying for symbols with flags.
     before_flags = self.before_symbol.flags if self.before_symbol else 0
     after_flags = self.after_symbol.flags if self.after_symbol else 0
-    return before_flags ^ after_flags
+    return before_flags | after_flags
 
   @property
   def object_path(self):
@@ -1033,12 +1080,20 @@ class SymbolGroup(BaseSymbol):
       ret = ret.Inverted()
     return ret
 
+  def WhereInContainer(self, container):
+    """|container| can be name, short_name, or container instance."""
+    if isinstance(container, str):
+      if container.isdigit():
+        return self.Filter(lambda s: s.container_short_name == container)
+      return self.Filter(lambda s: s.container_name == container)
+    return self.Filter(lambda s: s.container == container)
+
   def WhereInSection(self, section, container=None):
     """|section| can be section_name ('.bss'), or section chars ('bdr')."""
     if section.startswith('.'):
       if container:
         short_name = container.short_name
-        ret = self.Filter(lambda s: (s.container.short_name == short_name and s.
+        ret = self.Filter(lambda s: (s.container_short_name == short_name and s.
                                      section_name == section))
       else:
         ret = self.Filter(lambda s: s.section_name == section)
@@ -1046,7 +1101,7 @@ class SymbolGroup(BaseSymbol):
     else:
       if container:
         short_name = container.short_name
-        ret = self.Filter(lambda s: (s.container.short_name == short_name and s.
+        ret = self.Filter(lambda s: (s.container_short_name == short_name and s.
                                      section in section))
       else:
         ret = self.Filter(lambda s: s.section in section)
@@ -1065,6 +1120,9 @@ class SymbolGroup(BaseSymbol):
   def WhereIsPak(self):
     return self.WhereInSection(
         ''.join(SECTION_NAME_TO_SECTION[s] for s in PAK_SECTIONS))
+
+  def WhereIsPlaceholder(self):
+    return self.Filter(lambda s: s.full_name.startswith('*'))
 
   def WhereIsTemplate(self):
     return self.Filter(lambda s: s.template_name is not s.name)

@@ -13,6 +13,12 @@ namespace updater {
 // The updater specific app ID.
 extern const char kUpdaterAppId[];
 
+// The app ID used to qualify the updater.
+extern const char kQualificationAppId[];
+
+// A suffix appended to the updater executable name before any file extension.
+extern const char kExecutableSuffix[];
+
 // "0.0.0.0". Historically, a null version has been used to indicate a
 // new install.
 extern const char kNullVersion[];
@@ -110,8 +116,10 @@ extern const char kInitDoneNotifierSwitch[];
 // Enables logging.
 extern const char kEnableLoggingSwitch[];
 
-// Specifies the logging module filter.
+// Specifies the logging module filter and its value. Note that some call sites
+// may still use different values for the logging module filter.
 extern const char kLoggingModuleSwitch[];
+extern const char kLoggingModuleSwitchValue[];
 
 // Specifies the application that the Updater needs to install.
 extern const char kAppIdSwitch[];
@@ -224,6 +232,18 @@ constexpr int kErrorFailedToMoveDownloadedFile = 5;
 
 constexpr double kInitialDelay = 60;
 constexpr int kServerKeepAliveSeconds = 10;
+
+// The maximum number of server starts before the updater uninstalls itself
+// while waiting for the first app registration.
+constexpr int kMaxServerStartsBeforeFirstReg = 24;
+
+// These are GoogleUpdate error codes, which must be retained by this
+// implementation in order to be backward compatible with the existing update
+// client code in Chrome.
+constexpr int GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY = 0x80040812;
+constexpr int GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY = 0x80040813;
+constexpr int GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL = 0x8004081f;
+constexpr int GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
 
 }  // namespace updater
 

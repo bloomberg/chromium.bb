@@ -82,7 +82,7 @@ struct hb_serialize_context_t
 
     struct link_t
     {
-      bool is_wide: 1;
+      unsigned width: 3;
       bool is_signed: 1;
       unsigned whence: 2;
       unsigned position: 28;
@@ -102,10 +102,11 @@ struct hb_serialize_context_t
     char *tail;
     object_t *current; // Just for sanity check
     unsigned num_links;
+    hb_serialize_error_t errors;
   };
 
   snapshot_t snapshot ()
-  { return snapshot_t { head, tail, current, current->links.length }; }
+  { return snapshot_t { head, tail, current, current->links.length, errors }; }
 
   hb_serialize_context_t (void *start_, unsigned int size) :
     start ((char *) start_),
@@ -136,6 +137,12 @@ struct hb_serialize_context_t
   HB_NODISCARD bool ran_out_of_room () const { return errors & HB_SERIALIZE_ERROR_OUT_OF_ROOM; }
   HB_NODISCARD bool offset_overflow () const { return errors & HB_SERIALIZE_ERROR_OFFSET_OVERFLOW; }
   HB_NODISCARD bool only_offset_overflow () const { return errors == HB_SERIALIZE_ERROR_OFFSET_OVERFLOW; }
+  HB_NODISCARD bool only_overflow () const
+  {
+    return errors == HB_SERIALIZE_ERROR_OFFSET_OVERFLOW
+        || errors == HB_SERIALIZE_ERROR_INT_OVERFLOW
+        || errors == HB_SERIALIZE_ERROR_ARRAY_OVERFLOW;
+  }
 
   void reset (void *start_, unsigned int size)
   {
@@ -182,8 +189,8 @@ struct hb_serialize_context_t
   { return check_success (!hb_deref (obj).in_error ()); }
 
   template <typename T1, typename... Ts> bool propagate_error (T1 &&o1, Ts&&... os)
-  { return propagate_error (hb_forward<T1> (o1)) &&
-	   propagate_error (hb_forward<Ts> (os)...); }
+  { return propagate_error (std::forward<T1> (o1)) &&
+	   propagate_error (std::forward<Ts> (os)...); }
 
   /* To be called around main operation. */
   template <typename Type>
@@ -254,7 +261,7 @@ struct hb_serialize_context_t
     current = current->next;
     revert (obj->head, obj->tail);
     obj->fini ();
-    object_pool.free (obj);
+    object_pool.release (obj);
   }
 
   /* Set share to false when an object is unlikely sharable with others
@@ -317,9 +324,11 @@ struct hb_serialize_context_t
 
   void revert (snapshot_t snap)
   {
-    if (unlikely (in_error ())) return;
+    // Overflows that happened after the snapshot will be erased by the revert.
+    if (unlikely (in_error () && !only_overflow ())) return;
     assert (snap.current == current);
     current->links.shrink (snap.num_links);
+    errors = snap.errors;
     revert (snap.head, snap.tail);
   }
 
@@ -349,12 +358,40 @@ struct hb_serialize_context_t
       assert (packed.tail ()->head == tail);
   }
 
+  // Adds a virtual link from the current object to objidx. A virtual link is not associated with
+  // an actual offset field. They are solely used to enforce ordering constraints between objects.
+  // Adding a virtual link from object a to object b will ensure that object b is always packed after
+  // object a in the final serialized order.
+  //
+  // This is useful in certain situtations where there needs to be a specific ordering in the
+  // final serialization. Such as when platform bugs require certain orderings, or to provide
+  //  guidance to the repacker for better offset overflow resolution.
+  void add_virtual_link (objidx_t objidx)
+  {
+    if (unlikely (in_error ())) return;
+
+    if (!objidx)
+      return;
+
+    assert (current);
+
+    auto& link = *current->links.push ();
+    if (current->links.in_error ())
+      err (HB_SERIALIZE_ERROR_OTHER);
+
+    link.width = 0;
+    link.objidx = objidx;
+    link.is_signed = 0;
+    link.whence = 0;
+    link.position = 0;
+    link.bias = 0;
+  }
+
   template <typename T>
   void add_link (T &ofs, objidx_t objidx,
 		 whence_t whence = Head,
 		 unsigned bias = 0)
   {
-    static_assert (sizeof (T) == 2 || sizeof (T) == 4, "");
     if (unlikely (in_error ())) return;
 
     if (!objidx)
@@ -364,13 +401,26 @@ struct hb_serialize_context_t
     assert (current->head <= (const char *) &ofs);
 
     auto& link = *current->links.push ();
+    if (current->links.in_error ())
+      err (HB_SERIALIZE_ERROR_OTHER);
 
-    link.is_wide = sizeof (T) == 4;
-    link.is_signed = hb_is_signed (hb_unwrap_type (T));
+    link.width = sizeof (T);
+    link.objidx = objidx;
+    if (unlikely (!sizeof (T)))
+    {
+      // This link is not associated with an actual offset and exists merely to enforce
+      // an ordering constraint.
+      link.is_signed = 0;
+      link.whence = 0;
+      link.position = 0;
+      link.bias = 0;
+      return;
+    }
+
+    link.is_signed = std::is_signed<hb_unwrap_type (T)>::value;
     link.whence = (unsigned) whence;
     link.position = (const char *) &ofs - current->head;
     link.bias = bias;
-    link.objidx = objidx;
   }
 
   unsigned to_bias (const void *base) const
@@ -392,6 +442,8 @@ struct hb_serialize_context_t
     for (const object_t* parent : ++hb_iter (packed))
       for (const object_t::link_t &link : parent->links)
       {
+        if (unlikely (!link.width)) continue; // Don't need to resolve virtual offsets
+
 	const object_t* child = packed[link.objidx];
 	if (unlikely (!child)) { err (HB_SERIALIZE_ERROR_OTHER); return; }
 	unsigned offset = 0;
@@ -405,15 +457,19 @@ struct hb_serialize_context_t
 	offset -= link.bias;
 	if (link.is_signed)
 	{
-	  if (link.is_wide)
+	  assert (link.width == 2 || link.width == 4);
+	  if (link.width == 4)
 	    assign_offset<int32_t> (parent, link, offset);
 	  else
 	    assign_offset<int16_t> (parent, link, offset);
 	}
 	else
 	{
-	  if (link.is_wide)
+	  assert (link.width == 2 || link.width == 3 || link.width == 4);
+	  if (link.width == 4)
 	    assign_offset<uint32_t> (parent, link, offset);
+	  else if (link.width == 3)
+	    assign_offset<uint32_t, 3> (parent, link, offset);
 	  else
 	    assign_offset<uint16_t> (parent, link, offset);
 	}
@@ -446,16 +502,16 @@ struct hb_serialize_context_t
   }
 
   template <typename Type>
-  Type *allocate_size (unsigned int size)
+  Type *allocate_size (size_t size)
   {
     if (unlikely (in_error ())) return nullptr;
 
-    if (this->tail - this->head < ptrdiff_t (size))
+    if (unlikely (size > INT_MAX || this->tail - this->head < ptrdiff_t (size)))
     {
       err (HB_SERIALIZE_ERROR_OUT_OF_ROOM);
       return nullptr;
     }
-    memset (this->head, 0, size);
+    hb_memset (this->head, 0, size);
     char *ret = this->head;
     this->head += size;
     return reinterpret_cast<Type *> (ret);
@@ -480,7 +536,7 @@ struct hb_serialize_context_t
 
   template <typename Type, typename ...Ts> auto
   _copy (const Type &src, hb_priority<1>, Ts&&... ds) HB_RETURN
-  (Type *, src.copy (this, hb_forward<Ts> (ds)...))
+  (Type *, src.copy (this, std::forward<Ts> (ds)...))
 
   template <typename Type> auto
   _copy (const Type &src, hb_priority<0>) -> decltype (&(hb_declval<Type> () = src))
@@ -495,33 +551,34 @@ struct hb_serialize_context_t
    * instead of memcpy(). */
   template <typename Type, typename ...Ts>
   Type *copy (const Type &src, Ts&&... ds)
-  { return _copy (src, hb_prioritize, hb_forward<Ts> (ds)...); }
+  { return _copy (src, hb_prioritize, std::forward<Ts> (ds)...); }
   template <typename Type, typename ...Ts>
   Type *copy (const Type *src, Ts&&... ds)
-  { return copy (*src, hb_forward<Ts> (ds)...); }
+  { return copy (*src, std::forward<Ts> (ds)...); }
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator)),
 	   typename ...Ts>
   void copy_all (Iterator it, Ts&&... ds)
-  { for (decltype (*it) _ : it) copy (_, hb_forward<Ts> (ds)...); }
+  { for (decltype (*it) _ : it) copy (_, std::forward<Ts> (ds)...); }
 
   template <typename Type>
   hb_serialize_context_t& operator << (const Type &obj) & { embed (obj); return *this; }
 
   template <typename Type>
-  Type *extend_size (Type *obj, unsigned int size)
+  Type *extend_size (Type *obj, size_t size)
   {
     if (unlikely (in_error ())) return nullptr;
 
     assert (this->start <= (char *) obj);
     assert ((char *) obj <= this->head);
-    assert ((char *) obj + size >= this->head);
-    if (unlikely (!this->allocate_size<Type> (((char *) obj) + size - this->head))) return nullptr;
+    assert ((size_t) (this->head - (char *) obj) <= size);
+    if (unlikely (((char *) obj + size < (char *) obj) ||
+		  !this->allocate_size<Type> (((char *) obj) + size - this->head))) return nullptr;
     return reinterpret_cast<Type *> (obj);
   }
   template <typename Type>
-  Type *extend_size (Type &obj, unsigned int size)
+  Type *extend_size (Type &obj, size_t size)
   { return extend_size (hb_addressof (obj), size); }
 
   template <typename Type>
@@ -531,10 +588,10 @@ struct hb_serialize_context_t
 
   template <typename Type, typename ...Ts>
   Type *extend (Type *obj, Ts&&... ds)
-  { return extend_size (obj, obj->get_size (hb_forward<Ts> (ds)...)); }
+  { return extend_size (obj, obj->get_size (std::forward<Ts> (ds)...)); }
   template <typename Type, typename ...Ts>
   Type *extend (Type &obj, Ts&&... ds)
-  { return extend (hb_addressof (obj), hb_forward<Ts> (ds)...); }
+  { return extend (hb_addressof (obj), std::forward<Ts> (ds)...); }
 
   /* Output routines. */
   hb_bytes_t copy_bytes () const
@@ -544,7 +601,11 @@ struct hb_serialize_context_t
     unsigned int len = (this->head - this->start)
 		     + (this->end  - this->tail);
 
-    char *p = (char *) malloc (len);
+    // If len is zero don't hb_malloc as the memory won't get properly
+    // cleaned up later.
+    if (!len) return hb_bytes_t ();
+
+    char *p = (char *) hb_malloc (len);
     if (unlikely (!p)) return hb_bytes_t ();
 
     memcpy (p, this->start, this->head - this->start);
@@ -559,17 +620,17 @@ struct hb_serialize_context_t
     hb_bytes_t b = copy_bytes ();
     return hb_blob_create (b.arrayZ, b.length,
 			   HB_MEMORY_MODE_WRITABLE,
-			   (char *) b.arrayZ, free);
+			   (char *) b.arrayZ, hb_free);
   }
 
   const hb_vector_t<object_t *>& object_graph() const
   { return packed; }
 
   private:
-  template <typename T>
+  template <typename T, unsigned Size = sizeof (T)>
   void assign_offset (const object_t* parent, const object_t::link_t &link, unsigned offset)
   {
-    auto &off = * ((BEInt<T> *) (parent->head + link.position));
+    auto &off = * ((BEInt<T, Size> *) (parent->head + link.position));
     assert (0 == off);
     check_assign (off, offset, HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
   }

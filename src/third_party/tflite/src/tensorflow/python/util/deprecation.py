@@ -14,12 +14,9 @@
 # ==============================================================================
 
 """Tensor utility functions."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import functools
+import inspect
 import re
 
 from tensorflow.python.platform import tf_logging as logging
@@ -28,7 +25,7 @@ from tensorflow.python.util import is_in_graph_mode
 from tensorflow.python.util import tf_contextlib
 from tensorflow.python.util import tf_decorator
 from tensorflow.python.util import tf_inspect
-from tensorflow.python.util import tf_stack
+from tensorflow.tools.docs import doc_controls
 
 
 # Allow deprecation warnings to be silenced temporarily with a context manager.
@@ -92,22 +89,30 @@ def _add_deprecated_arg_value_notice_to_docstring(doc, date, instructions,
 
 def _validate_deprecation_args(date, instructions):
   if date is not None and not re.match(r'20\d\d-[01]\d-[0123]\d', date):
-    raise ValueError('Date must be YYYY-MM-DD.')
+    raise ValueError(f'Date must be in format YYYY-MM-DD. Received: {date}')
   if not instructions:
-    raise ValueError('Don\'t deprecate things without conversion instructions!')
+    raise ValueError(
+        'Don\'t deprecate things without conversion instructions! Specify '
+        'the `instructions` argument.')
 
 
 def _call_location(outer=False):
   """Returns call location given level up from current call."""
-  stack = tf_stack.extract_stack(limit=4)
-  length = len(stack)
-  if length == 0:  # should never happen as we're in a function
-    return 'UNKNOWN'
-  index = length-4 if outer else length-3
-  if index < 0:
-    index = 0
-  frame = stack[index]
-  return '{}:{}'.format(frame.filename, frame.lineno)
+  # Two up: <_call_location>, <_call_location's caller>
+  # tf_inspect is not required here. Please ignore the lint warning by adding
+  # DISABLE_IMPORT_INSPECT_CHECK=TRUE to your cl description. Using it caused
+  # test timeouts (b/189384061).
+  f = inspect.currentframe().f_back.f_back
+  parent = f and f.f_back
+  if outer and parent is not None:
+    f = parent
+  return '{}:{}'.format(f.f_code.co_filename, f.f_lineno)
+
+
+def _safe_eq(a, b):
+  if a is None or b is None:
+    return a is None and b is None
+  return a == b
 
 
 def _wrap_decorator(wrapped_function):
@@ -262,9 +267,9 @@ def deprecated_endpoints(*args):
     # pylint: disable=protected-access
     if '_tf_deprecated_api_names' in func.__dict__:
       raise DeprecatedNamesAlreadySet(
-          'Cannot set deprecated names for %s to %s. '
-          'Deprecated names are already set to %s.' % (
-              func.__name__, str(args), str(func._tf_deprecated_api_names)))
+          f'Cannot set deprecated names for {func.__name__} to {args}. '
+          'Deprecated names are already set to '
+          f'{func._tf_deprecated_api_names}.')
     func._tf_deprecated_api_names = args
     # pylint: disable=protected-access
     return func
@@ -305,8 +310,23 @@ def deprecated(date, instructions, warn_once=True):
   """
   _validate_deprecation_args(date, instructions)
 
-  def deprecated_wrapper(func):
+  def deprecated_wrapper(func_or_class):
     """Deprecation wrapper."""
+    if isinstance(func_or_class, type):
+      # If a class is deprecated, you actually want to wrap the constructor.
+      cls = func_or_class
+      if cls.__new__ is object.__new__:
+        func = cls.__init__
+        constructor_name = '__init__'
+      else:
+        func = cls.__new__
+        constructor_name = '__new__'
+
+    else:
+      cls = None
+      constructor_name = None
+      func = func_or_class
+
     decorator_utils.validate_callable(func, 'deprecated')
     @functools.wraps(func)
     def new_func(*args, **kwargs):  # pylint: disable=missing-docstring
@@ -322,10 +342,25 @@ def deprecated(date, instructions, warn_once=True):
               'in a future version' if date is None else ('after %s' % date),
               instructions)
       return func(*args, **kwargs)
-    return tf_decorator.make_decorator(
+
+    doc_controls.set_deprecated(new_func)
+    new_func = tf_decorator.make_decorator(
         func, new_func, 'deprecated',
         _add_deprecated_function_notice_to_docstring(func.__doc__, date,
                                                      instructions))
+
+    if cls is None:
+      return new_func
+    else:
+      # Insert the wrapped function as the constructor
+      setattr(cls, constructor_name, new_func)
+
+      # And update the docstring of the class.
+      cls.__doc__ = _add_deprecated_function_notice_to_docstring(
+          cls.__doc__, date, instructions)
+
+      return cls
+
   return deprecated_wrapper
 
 
@@ -356,8 +391,8 @@ def deprecated_args(date, instructions, *deprecated_arg_names_or_tuples,
       Must be ISO 8601 (YYYY-MM-DD), or None.
     instructions: String. Instructions on how to update code using the
       deprecated function.
-    *deprecated_arg_names_or_tuples: String or 2-Tuple(String,
-      [ok_vals]).  The string is the deprecated argument name.
+    *deprecated_arg_names_or_tuples: String or 2-Tuple (String,
+      ok_val).  The string is the deprecated argument name.
       Optionally, an ok-value may be provided.  If the user provided
       argument equals this value, the warning is suppressed.
     **kwargs: If `warn_once=False` is passed, every call with a deprecated
@@ -379,7 +414,7 @@ def deprecated_args(date, instructions, *deprecated_arg_names_or_tuples,
     raise ValueError('Specify which argument is deprecated.')
   if kwargs and list(kwargs.keys()) != ['warn_once']:
     kwargs.pop('warn_once', None)
-    raise ValueError('Illegal argument to deprecated_args: %s' % kwargs)
+    raise ValueError(f'Illegal argument passed to deprecated_args: {kwargs}')
   warn_once = kwargs.get('warn_once', True)
 
   def _get_arg_names_to_ok_vals():
@@ -411,8 +446,10 @@ def deprecated_args(date, instructions, *deprecated_arg_names_or_tuples,
     Returns:
       Dictionary from arg_name to DeprecatedArgSpec.
     """
+    # Extract argument list
+    arg_space = arg_spec.args + arg_spec.kwonlyargs
     arg_name_to_pos = {
-        name: pos for pos, name in enumerate(arg_spec.args)}
+        name: pos for pos, name in enumerate(arg_space)}
     deprecated_positional_args = {}
     for arg_name, spec in iter(names_to_ok_vals.items()):
       if arg_name in arg_name_to_pos:
@@ -434,14 +471,18 @@ def deprecated_args(date, instructions, *deprecated_arg_names_or_tuples,
     is_varargs_deprecated = arg_spec.varargs in deprecated_arg_names
     is_kwargs_deprecated = arg_spec.varkw in deprecated_arg_names
 
-    if (len(deprecated_positions) + is_varargs_deprecated + is_kwargs_deprecated
+    if (len(deprecated_positions) + is_varargs_deprecated
+        + is_kwargs_deprecated
         != len(deprecated_arg_names_or_tuples)):
-      known_args = arg_spec.args + [arg_spec.varargs, arg_spec.varkw]
+      known_args = (arg_spec.args
+                    + arg_spec.kwonlyargs
+                    + [arg_spec.varargs, arg_spec.varkw])
       missing_args = [arg_name for arg_name in deprecated_arg_names
                       if arg_name not in known_args]
       raise ValueError('The following deprecated arguments are not present '
-                       'in the function signature: %s. '
-                       'Found next arguments: %s.' % (missing_args, known_args))
+                       f'in the function signature: {missing_args}. '
+                       'Expected arguments from the following list: '
+                       f'{known_args}.')
 
     def _same_value(a, b):
       """A comparison operation that works for multiple object types.
@@ -561,7 +602,8 @@ def deprecated_arg_values(date, instructions, warn_once=True,
       if _PRINT_DEPRECATION_WARNINGS:
         named_args = tf_inspect.getcallargs(func, *args, **kwargs)
         for arg_name, arg_value in deprecated_kwargs.items():
-          if arg_name in named_args and named_args[arg_name] == arg_value:
+          if arg_name in named_args and _safe_eq(named_args[arg_name],
+                                                 arg_value):
             if (func, arg_name) not in _PRINTED_WARNING:
               if warn_once:
                 _PRINTED_WARNING[(func, arg_name)] = True
@@ -595,8 +637,7 @@ def deprecated_argument_lookup(new_name, new_value, old_name, old_value):
   """
   if old_value is not None:
     if new_value is not None:
-      raise ValueError("Cannot specify both '%s' and '%s'" %
-                       (old_name, new_name))
+      raise ValueError(f"Cannot specify both '{old_name}' and '{new_name}'.")
     return old_value
   return new_value
 

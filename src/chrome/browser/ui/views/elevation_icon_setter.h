@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ELEVATION_ICON_SETTER_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class SkBitmap;
@@ -25,15 +25,17 @@ class ElevationIconSetter {
   // should pass a function which does a relayout on the view containing the
   // button, to ensure the button is correctly resized as necessary.
   ElevationIconSetter(views::LabelButton* button, base::OnceClosure callback);
+
+  ElevationIconSetter(const ElevationIconSetter&) = delete;
+  ElevationIconSetter& operator=(const ElevationIconSetter&) = delete;
+
   ~ElevationIconSetter();
 
  private:
   void SetButtonIcon(base::OnceClosure callback, const SkBitmap& icon);
 
-  views::LabelButton* button_;
+  raw_ptr<views::LabelButton> button_;
   base::WeakPtrFactory<ElevationIconSetter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ElevationIconSetter);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ELEVATION_ICON_SETTER_H_

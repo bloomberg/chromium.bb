@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_handle.h"
@@ -27,15 +28,19 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/mime_handler_private.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "pdf/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
-#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "pdf/pdf_features.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 using content::WebContents;
 using guest_view::GuestViewBase;
@@ -119,7 +124,7 @@ bool MimeHandlerViewGuest::CanBeEmbeddedInsideCrossProcessFrames() {
 }
 
 void MimeHandlerViewGuest::SetEmbedderFrame(
-    content::GlobalFrameRoutingId frame_id) {
+    content::GlobalRenderFrameHostId frame_id) {
   DCHECK_NE(MSG_ROUTING_NONE, frame_id.frame_routing_id);
   DCHECK_EQ(MSG_ROUTING_NONE, embedder_frame_id_.frame_routing_id);
 
@@ -132,14 +137,14 @@ void MimeHandlerViewGuest::SetEmbedderFrame(
         rfh->GetView()->GetRenderWidgetHost()->GetRoutingID();
   }
   auto owner_type = rfh ? rfh->GetFrameOwnerElementType()
-                        : blink::mojom::FrameOwnerElementType::kNone;
+                        : blink::FrameOwnerElementType::kNone;
   // If the embedder frame is the ContentFrame() of a plugin element, then there
   // could be a MimeHandlerViewFrameContainer in the parent frame. Note that
   // the MHVFC is only created through HTMLPlugInElement::UpdatePlugin (manually
   // navigating a plugin element's window would create a MHVFC).
   maybe_has_frame_container_ =
-      owner_type == blink::mojom::FrameOwnerElementType::kEmbed ||
-      owner_type == blink::mojom::FrameOwnerElementType::kObject;
+      owner_type == blink::FrameOwnerElementType::kEmbed ||
+      owner_type == blink::FrameOwnerElementType::kObject;
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
   delegate_->RecordLoadMetric(
       /* in_main_frame */ !GetEmbedderFrame()->GetParent(), mime_type_);
@@ -279,9 +284,12 @@ void MimeHandlerViewGuest::NavigationStateChanged(
 }
 
 bool MimeHandlerViewGuest::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
-  return delegate_ && delegate_->HandleContextMenu(web_contents(), params);
+  DCHECK_EQ(web_contents(),
+            content::WebContents::FromRenderFrameHost(&render_frame_host));
+
+  return delegate_ && delegate_->HandleContextMenu(render_frame_host, params);
 }
 
 bool MimeHandlerViewGuest::PreHandleGestureEvent(
@@ -440,6 +448,18 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame(
 
 void MimeHandlerViewGuest::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+#if BUILDFLAG(ENABLE_PDF)
+  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfUnseasoned)) {
+    const GURL& url = navigation_handle->GetURL();
+    if (url.SchemeIs(kExtensionScheme) &&
+        url.host_piece() == extension_misc::kPdfExtensionId) {
+      // The unseasoned PDF viewer will navigate to the stream URL (using
+      // PdfNavigtionThrottle), rather than using it as a subresource.
+      return;
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_PDF)
+
   navigation_handle->RegisterSubresourceOverride(
       stream_->TakeTransferrableURLLoader());
 }

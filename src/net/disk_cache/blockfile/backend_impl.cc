@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -20,18 +21,16 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_cleanup_tracker.h"
@@ -47,7 +46,6 @@
 #define CACHE_UMA_BACKEND_IMPL_OBJ this
 
 using base::Time;
-using base::TimeDelta;
 using base::TimeTicks;
 
 namespace {
@@ -319,7 +317,7 @@ int BackendImpl::SyncInit() {
     DCHECK(background_queue_.BackgroundIsCurrentSequence());
     int timer_delay = unit_test_ ? 1000 : 30000;
     timer_ = std::make_unique<base::RepeatingTimer>();
-    timer_->Start(FROM_HERE, TimeDelta::FromMilliseconds(timer_delay), this,
+    timer_->Start(FROM_HERE, base::Milliseconds(timer_delay), this,
                   &BackendImpl::OnStatsTimer);
   }
 
@@ -750,7 +748,7 @@ bool BackendImpl::CreateExternalFile(Addr* address) {
     }
     base::FilePath name = GetFileName(file_address);
     int flags = base::File::FLAG_READ | base::File::FLAG_WRITE |
-                base::File::FLAG_CREATE | base::File::FLAG_EXCLUSIVE_WRITE;
+                base::File::FLAG_CREATE | base::File::FLAG_WIN_EXCLUSIVE_WRITE;
     base::File file(name, flags);
     if (!file.IsValid()) {
       base::File::Error error = file.error_details();
@@ -1358,13 +1356,6 @@ void BackendImpl::OnExternalCacheHit(const std::string& key) {
   background_queue_.OnExternalCacheHit(key);
 }
 
-size_t BackendImpl::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd,
-    const std::string& parent_absolute_name) const {
-  // TODO(xunjieli): Implement this. crbug.com/669108.
-  return 0u;
-}
-
 // ------------------------------------------------------------------------
 
 // We just created a new file so we're going to write the header and set the
@@ -1418,7 +1409,8 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
   base::FilePath index_name = path_.AppendASCII(kIndexName);
 
   int flags = base::File::FLAG_READ | base::File::FLAG_WRITE |
-              base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_EXCLUSIVE_WRITE;
+              base::File::FLAG_OPEN_ALWAYS |
+              base::File::FLAG_WIN_EXCLUSIVE_WRITE;
   base::File base_file(index_name, flags);
   if (!base_file.IsValid())
     return false;

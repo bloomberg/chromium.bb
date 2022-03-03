@@ -6,12 +6,16 @@ package org.chromium.components.signin;
 
 import android.accounts.Account;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Promise;
+import org.chromium.components.signin.AccountManagerFacade.ChildAccountStatusListener;
 import org.chromium.components.signin.base.CoreAccountInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -71,6 +75,49 @@ public class AccountUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the cached list of accounts from the given {@link Promise}.
+     * If the cache is not yet populated, return an empty list.
+     */
+    public static List<Account> getAccountsIfFulfilledOrEmpty(Promise<List<Account>> promise) {
+        return promise.isFulfilled() ? promise.getResult() : Collections.emptyList();
+    }
+
+    /**
+     * Gets the cached default accounts from the given {@link Promise}.
+     * If the cache is not yet populated or no accounts exist, return null.
+     */
+    public static @Nullable Account getDefaultAccountIfFulfilled(Promise<List<Account>> promise) {
+        final List<Account> accounts = getAccountsIfFulfilledOrEmpty(promise);
+        return accounts.isEmpty() ? null : accounts.get(0);
+    }
+
+    /**
+     * Checks the child account status on device based on the list of (zero or more) provided
+     * accounts.
+     *
+     * If there are no child accounts on the device, the listener will be invoked with the status
+     * {@link ChildAccountStatus#NOT_CHILD}. If there is a child account on device, the listener
+     * will be called with that account and its child status. Note that it is not currently possible
+     * to have more than one child account on device.
+     *
+     * It should be safe to invoke this method before the native library is initialized.
+     *
+     * @param accountManagerFacade The singleton instance of {@link AccountManagerFacade}.
+     * @param accounts The list of accounts on device.
+     * @param listener The listener is called when the {@link ChildAccountStatus.Status} is ready.
+     */
+    public static void checkChildAccountStatus(@NonNull AccountManagerFacade accountManagerFacade,
+            @NonNull List<Account> accounts, @NonNull ChildAccountStatusListener listener) {
+        if (accounts.size() >= 1) {
+            // If a child account is present then there can be only one, and it must be the first
+            // account on the device.
+            accountManagerFacade.checkChildAccountStatus(accounts.get(0), listener);
+        } else {
+            listener.onStatusReady(ChildAccountStatus.NOT_CHILD, null);
+        }
     }
 
     /**

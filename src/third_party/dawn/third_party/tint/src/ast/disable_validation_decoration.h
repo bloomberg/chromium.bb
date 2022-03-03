@@ -31,6 +31,22 @@ enum class DisabledValidation {
   /// When applied to a module-scoped variable, the validator will not complain
   /// if two resource variables have the same binding points.
   kBindingPointCollision,
+  /// When applied to a variable, the validator will not complain about the
+  /// declared storage class.
+  kIgnoreStorageClass,
+  /// When applied to an entry-point function parameter, the validator will not
+  /// check for entry IO decorations.
+  kEntryPointParameter,
+  /// When applied to a function parameter, the validator will not
+  /// check if parameter type is constructible
+  kIgnoreConstructibleFunctionParameter,
+  /// When applied to a member decoration, a stride decoration may be applied to
+  /// non-array types.
+  kIgnoreStrideDecoration,
+  /// When applied to a pointer function parameter, the validator will not
+  /// require a function call argument passed for that parameter to have a
+  /// certain form.
+  kIgnoreInvalidPointerArgument,
 };
 
 /// An internal decoration used to tell the validator to ignore specific
@@ -48,20 +64,17 @@ class DisableValidationDecoration
   /// Destructor
   ~DisableValidationDecoration() override;
 
-  /// @return the validation that this decoration disables
-  DisabledValidation Validation() const { return validation_; }
-
   /// @return a short description of the internal decoration which will be
   /// displayed in WGSL as `[[internal(<name>)]]` (but is not parsable).
-  std::string Name() const override;
+  std::string InternalName() const override;
 
   /// Performs a deep clone of this object using the CloneContext `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned object
-  DisableValidationDecoration* Clone(CloneContext* ctx) const override;
+  const DisableValidationDecoration* Clone(CloneContext* ctx) const override;
 
- private:
-  DisabledValidation const validation_;
+  /// The validation that this decoration disables
+  const DisabledValidation validation;
 };
 
 }  // namespace ast

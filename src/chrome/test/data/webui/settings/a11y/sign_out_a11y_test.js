@@ -6,24 +6,25 @@ import 'chrome://settings/lazy_load.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {simulateSyncStatus} from 'chrome://test/settings/sync_test_util.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
-import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+
+import {simulateSyncStatus} from '../sync_test_util.js';
+import {TestSyncBrowserProxy} from '../test_sync_browser_proxy.js';
 
 // Set the URL of the page to render to load the correct view upon
 // injecting settings-ui without attaching listeners.
 window.history.pushState('object or string', 'Test', routes.PEOPLE.path);
 
 const browserProxy = new TestSyncBrowserProxy();
-SyncBrowserProxyImpl.instance_ = browserProxy;
+SyncBrowserProxyImpl.setInstance(browserProxy);
 
 const settingsUi = document.createElement('settings-ui');
 document.body.appendChild(settingsUi);
 flush();
 
-const peoplePage = settingsUi.$$('settings-main')
-                       .$$('settings-basic-page')
-                       .$$('settings-people-page');
+const peoplePage = settingsUi.shadowRoot.querySelector('settings-main')
+                       .shadowRoot.querySelector('settings-basic-page')
+                       .shadowRoot.querySelector('settings-people-page');
 assertTrue(!!peoplePage);
 
 simulateSyncStatus({
@@ -40,7 +41,8 @@ browserProxy.getSyncStatus()
       // Navigate to the sign out dialog.
       flush();
 
-      parent = peoplePage.$$('settings-sync-account-control');
+      parent =
+          peoplePage.shadowRoot.querySelector('settings-sync-account-control');
       parent.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -52,7 +54,7 @@ browserProxy.getSyncStatus()
       return waitBeforeNextRender(parent);
     })
     .then(() => {
-      const disconnectButton = parent.$$('#turn-off');
+      const disconnectButton = parent.shadowRoot.querySelector('#turn-off');
       assertTrue(!!disconnectButton);
       disconnectButton.click();
       document.dispatchEvent(new CustomEvent('a11y-setup-complete'));

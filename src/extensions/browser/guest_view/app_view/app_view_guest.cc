@@ -119,10 +119,14 @@ AppViewGuest::~AppViewGuest() {
 }
 
 bool AppViewGuest::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
+  DCHECK_EQ(web_contents(),
+            content::WebContents::FromRenderFrameHost(&render_frame_host));
+
   if (app_view_guest_delegate_) {
-    return app_view_guest_delegate_->HandleContextMenu(web_contents(), params);
+    return app_view_guest_delegate_->HandleContextMenu(render_frame_host,
+                                                       params);
   }
   return false;
 }
@@ -278,7 +282,8 @@ void AppViewGuest::LaunchAppAndFireEvent(
       new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
   embed_request->SetString(appview::kEmbedderID, owner_host());
-  embed_request->Set(appview::kData, std::move(data));
+  embed_request->SetKey(appview::kData,
+                        base::Value::FromUniquePtrValue(std::move(data)));
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), std::move(embed_request), extension);
 }

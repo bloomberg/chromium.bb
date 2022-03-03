@@ -7,14 +7,16 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/mojom/video_encoder_info.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -31,7 +33,13 @@ class VideoEncodeAcceleratorClient
  public:
   VideoEncodeAcceleratorClient(
       VideoEncodeAccelerator::Client* client,
-      mojo::PendingReceiver<mojom::VideoEncodeAcceleratorClient> receiver);
+      mojo::PendingAssociatedReceiver<mojom::VideoEncodeAcceleratorClient>
+          receiver);
+
+  VideoEncodeAcceleratorClient(const VideoEncodeAcceleratorClient&) = delete;
+  VideoEncodeAcceleratorClient& operator=(const VideoEncodeAcceleratorClient&) =
+      delete;
+
   ~VideoEncodeAcceleratorClient() override = default;
 
   // mojom::VideoEncodeAcceleratorClient impl.
@@ -45,15 +53,14 @@ class VideoEncodeAcceleratorClient
   void NotifyEncoderInfoChange(const VideoEncoderInfo& info) override;
 
  private:
-  VideoEncodeAccelerator::Client* client_;
-  mojo::Receiver<mojom::VideoEncodeAcceleratorClient> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoEncodeAcceleratorClient);
+  raw_ptr<VideoEncodeAccelerator::Client> client_;
+  mojo::AssociatedReceiver<mojom::VideoEncodeAcceleratorClient> receiver_;
 };
 
 VideoEncodeAcceleratorClient::VideoEncodeAcceleratorClient(
     VideoEncodeAccelerator::Client* client,
-    mojo::PendingReceiver<mojom::VideoEncodeAcceleratorClient> receiver)
+    mojo::PendingAssociatedReceiver<mojom::VideoEncodeAcceleratorClient>
+        receiver)
     : client_(client), receiver_(this, std::move(receiver)) {
   DCHECK(client_);
 }
@@ -93,19 +100,19 @@ void VideoEncodeAcceleratorClient::NotifyEncoderInfoChange(
 }  // anonymous namespace
 
 MojoVideoEncodeAccelerator::MojoVideoEncodeAccelerator(
-    mojo::PendingRemote<mojom::VideoEncodeAccelerator> vea,
-    const SupportedProfiles& supported_profiles)
-    : vea_(std::move(vea)), supported_profiles_(supported_profiles) {
+    mojo::PendingRemote<mojom::VideoEncodeAccelerator> vea)
+    : vea_(std::move(vea)) {
   DVLOG(1) << __func__;
   DCHECK(vea_);
 }
 
 VideoEncodeAccelerator::SupportedProfiles
 MojoVideoEncodeAccelerator::GetSupportedProfiles() {
-  DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  return supported_profiles_;
+  NOTREACHED() << "GetSupportedProfiles() should never be called."
+               << "Use VEA provider or GPU factories";
+  return {};
 }
 
 bool MojoVideoEncodeAccelerator::Initialize(const Config& config,
@@ -117,9 +124,10 @@ bool MojoVideoEncodeAccelerator::Initialize(const Config& config,
 
   // Get a mojom::VideoEncodeAcceleratorClient bound to a local implementation
   // (VideoEncodeAcceleratorClient) and send the remote.
-  mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> vea_client_remote;
+  mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient>
+      vea_client_remote;
   vea_client_ = std::make_unique<VideoEncodeAcceleratorClient>(
-      client, vea_client_remote.InitWithNewPipeAndPassReceiver());
+      client, vea_client_remote.InitWithNewEndpointAndPassReceiver());
 
   bool result = false;
   vea_->Initialize(config, std::move(vea_client_remote), &result);
@@ -136,10 +144,8 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
 
   // GPU memory path: Pass-through.
   if (frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    vea_->Encode(
-        frame, force_keyframe,
-        base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
-                       frame));
+    vea_->Encode(frame, force_keyframe,
+                 base::BindOnce([](scoped_refptr<VideoFrame>) {}, frame));
     return;
   }
 
@@ -165,8 +171,7 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
   }
   vea_->Encode(
       std::move(mojo_frame), force_keyframe,
-      base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
-                     std::move(frame)));
+      base::BindOnce([](scoped_refptr<VideoFrame>) {}, std::move(frame)));
 }
 
 void MojoVideoEncodeAccelerator::UseOutputBitstreamBuffer(
@@ -184,15 +189,13 @@ void MojoVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32_t bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(vea_.is_bound());
 
-  media::VideoBitrateAllocation bitrate_allocation;
-  bitrate_allocation.SetBitrate(0, 0, bitrate);
-  vea_->RequestEncodingParametersChange(bitrate_allocation, framerate);
+  vea_->RequestEncodingParametersChangeWithBitrate(bitrate, framerate);
 }
 
 void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
@@ -202,7 +205,7 @@ void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(vea_.is_bound());
 
-  vea_->RequestEncodingParametersChange(bitrate, framerate);
+  vea_->RequestEncodingParametersChangeWithLayers(bitrate, framerate);
 }
 
 bool MojoVideoEncodeAccelerator::IsFlushSupported() {

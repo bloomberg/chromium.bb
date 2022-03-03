@@ -9,11 +9,10 @@
 namespace blink {
 
 // How frequently we check for leaks.
-constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kTimerInterval = base::Seconds(10);
 
 // How long we wait before stopping the timer when there is no activity.
-constexpr base::TimeDelta kTimerShutdownDelay =
-    base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kTimerShutdownDelay = base::Seconds(60);
 
 void WebCodecsLogger::VideoFrameCloseAuditor::ReportUnclosedFrame() {
   were_frames_not_closed_ = true;
@@ -56,18 +55,6 @@ WebCodecsLogger::GetCloseAuditor() {
   return close_auditor_;
 }
 
-void WebCodecsLogger::LogCropDeprecation() {
-  LogDeprecation(
-      Deprecation::kCrop,
-      "cropTop, cropLeft, cropWidth, and cropHeight are deprecated; please "
-      "use visibleRegion.");
-}
-
-void WebCodecsLogger::LogPlaneInitSrcDeprecation() {
-  LogDeprecation(Deprecation::kPlaneInitSrc,
-                 "PlaneInit.src is deprecated, please use PlaneInit.data.");
-}
-
 void WebCodecsLogger::LogCloseErrors(TimerBase*) {
   // If it's been a while since this class was used and there are not other
   // references to |leak_status_|, stop the timer.
@@ -90,16 +77,6 @@ void WebCodecsLogger::LogCloseErrors(TimerBase*) {
   }
 
   close_auditor_->Clear();
-}
-
-void WebCodecsLogger::LogDeprecation(Deprecation id, const String& message) {
-  uint32_t id_bits = static_cast<uint32_t>(id);
-  if (logged_deprecations_ & id_bits)
-    return;
-  logged_deprecations_ |= id_bits;
-  GetSupplementable()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-      mojom::blink::ConsoleMessageSource::kDeprecation,
-      mojom::blink::ConsoleMessageLevel::kWarning, message));
 }
 
 void WebCodecsLogger::Trace(Visitor* visitor) const {

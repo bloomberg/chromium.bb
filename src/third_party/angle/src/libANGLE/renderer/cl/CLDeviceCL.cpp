@@ -7,10 +7,9 @@
 
 #include "libANGLE/renderer/cl/CLDeviceCL.h"
 
-#include "libANGLE/renderer/cl/CLPlatformCL.h"
 #include "libANGLE/renderer/cl/cl_util.h"
 
-#include "libANGLE/Debug.h"
+#include "libANGLE/CLDevice.h"
 
 namespace rx
 {
@@ -41,31 +40,35 @@ bool GetDeviceInfo(cl_device_id device, cl::DeviceInfo name, std::vector<T> &vec
     return false;
 }
 
+// This queries the OpenCL device info for value types with known size
+template <typename T>
+bool GetDeviceInfo(cl_device_id device, cl::DeviceInfo name, T &value)
+{
+    if (device->getDispatch().clGetDeviceInfo(device, cl::ToCLenum(name), sizeof(T), &value,
+                                              nullptr) != CL_SUCCESS)
+    {
+        ERR() << "Failed to query CL device info for " << name;
+        return false;
+    }
+    return true;
+}
+
 }  // namespace
 
 CLDeviceCL::~CLDeviceCL()
 {
-    if (mVersion >= CL_MAKE_VERSION(1, 2, 0) &&
-        mDevice->getDispatch().clReleaseDevice(mDevice) != CL_SUCCESS)
+    if (!mDevice.isRoot() && mNative->getDispatch().clReleaseDevice(mNative) != CL_SUCCESS)
     {
         ERR() << "Error while releasing CL device";
     }
 }
 
-CLDeviceImpl::Info CLDeviceCL::createInfo() const
+CLDeviceImpl::Info CLDeviceCL::createInfo(cl::DeviceType type) const
 {
-    Info info;
-    info.mVersion = mVersion;
-
+    Info info(type);
     std::vector<char> valString;
-    if (!GetDeviceInfo(mDevice, cl::DeviceInfo::Extensions, valString))
-    {
-        return Info{};
-    }
-    info.mExtensions.assign(valString.data());
-    RemoveUnsupportedCLExtensions(info.mExtensions);
 
-    if (!GetDeviceInfo(mDevice, cl::DeviceInfo::MaxWorkItemSizes, info.mMaxWorkItemSizes))
+    if (!GetDeviceInfo(mNative, cl::DeviceInfo::MaxWorkItemSizes, info.maxWorkItemSizes))
     {
         return Info{};
     }
@@ -73,126 +76,168 @@ CLDeviceImpl::Info CLDeviceCL::createInfo() const
     // "The minimum value is (1, 1, 1) for devices that are not of type CL_DEVICE_TYPE_CUSTOM."
     // https://www.khronos.org/registry/OpenCL/specs/3.0-unified/html/OpenCL_API.html#clGetDeviceInfo
     // Custom devices are currently not supported by this back end.
-    if (info.mMaxWorkItemSizes.size() < 3u || info.mMaxWorkItemSizes[0] == 0u ||
-        info.mMaxWorkItemSizes[1] == 0u || info.mMaxWorkItemSizes[2] == 0u)
+    if (info.maxWorkItemSizes.size() < 3u || info.maxWorkItemSizes[0] == 0u ||
+        info.maxWorkItemSizes[1] == 0u || info.maxWorkItemSizes[2] == 0u)
     {
         ERR() << "Invalid CL_DEVICE_MAX_WORK_ITEM_SIZES";
         return Info{};
     }
 
-    if (mVersion >= CL_MAKE_VERSION(1, 2, 0) &&
-        (!GetDeviceInfo(mDevice, cl::DeviceInfo::PartitionProperties, info.mPartitionProperties) ||
-         !GetDeviceInfo(mDevice, cl::DeviceInfo::PartitionType, info.mPartitionType)))
+    if (!GetDeviceInfo(mNative, cl::DeviceInfo::MaxMemAllocSize, info.maxMemAllocSize) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::ImageSupport, info.imageSupport) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::Image2D_MaxWidth, info.image2D_MaxWidth) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::Image2D_MaxHeight, info.image2D_MaxHeight) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::Image3D_MaxWidth, info.image3D_MaxWidth) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::Image3D_MaxHeight, info.image3D_MaxHeight) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::Image3D_MaxDepth, info.image3D_MaxDepth) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::MemBaseAddrAlign, info.memBaseAddrAlign) ||
+        !GetDeviceInfo(mNative, cl::DeviceInfo::ExecutionCapabilities, info.execCapabilities))
     {
         return Info{};
     }
 
-    if (mVersion >= CL_MAKE_VERSION(3, 0, 0) &&
-        (!GetDeviceInfo(mDevice, cl::DeviceInfo::ILsWithVersion, info.mILsWithVersion) ||
-         !GetDeviceInfo(mDevice, cl::DeviceInfo::BuiltInKernelsWithVersion,
-                        info.mBuiltInKernelsWithVersion) ||
-         !GetDeviceInfo(mDevice, cl::DeviceInfo::OpenCL_C_AllVersions,
-                        info.mOpenCL_C_AllVersions) ||
-         !GetDeviceInfo(mDevice, cl::DeviceInfo::OpenCL_C_Features, info.mOpenCL_C_Features) ||
-         !GetDeviceInfo(mDevice, cl::DeviceInfo::ExtensionsWithVersion,
-                        info.mExtensionsWithVersion)))
+    if (!GetDeviceInfo(mNative, cl::DeviceInfo::Version, valString))
     {
         return Info{};
     }
-    RemoveUnsupportedCLExtensions(info.mExtensionsWithVersion);
+    info.versionStr.assign(valString.data());
+
+    if (!GetDeviceInfo(mNative, cl::DeviceInfo::Extensions, valString))
+    {
+        return Info{};
+    }
+    std::string extensionStr(valString.data());
+
+    // TODO(jplate) Remove workaround after bug is fixed http://anglebug.com/6053
+    if (info.versionStr.compare(0u, 15u, "OpenCL 3.0 CUDA", 15u) == 0)
+    {
+        extensionStr.append(" cl_khr_depth_images cl_khr_image2d_from_buffer");
+    }
+
+    // Limit version number to supported version
+    if (info.versionStr[7] != '1')
+    {
+        info.versionStr[7] = '1';
+        info.versionStr[9] = '2';
+    }
+
+    info.version = ExtractCLVersion(info.versionStr);
+    if (info.version == 0u)
+    {
+        return Info{};
+    }
+
+    RemoveUnsupportedCLExtensions(extensionStr);
+    info.initializeExtensions(std::move(extensionStr));
+
+    if (info.version >= CL_MAKE_VERSION(1, 2, 0))
+    {
+        if (!GetDeviceInfo(mNative, cl::DeviceInfo::ImageMaxBufferSize, info.imageMaxBufferSize) ||
+            !GetDeviceInfo(mNative, cl::DeviceInfo::ImageMaxArraySize, info.imageMaxArraySize) ||
+            !GetDeviceInfo(mNative, cl::DeviceInfo::BuiltInKernels, valString))
+        {
+            return Info{};
+        }
+        info.builtInKernels.assign(valString.data());
+        if (!GetDeviceInfo(mNative, cl::DeviceInfo::PartitionProperties,
+                           info.partitionProperties) ||
+            !GetDeviceInfo(mNative, cl::DeviceInfo::PartitionType, info.partitionType))
+        {
+            return Info{};
+        }
+    }
+
+    if (info.version >= CL_MAKE_VERSION(2, 0, 0) &&
+        (!GetDeviceInfo(mNative, cl::DeviceInfo::ImagePitchAlignment, info.imagePitchAlignment) ||
+         !GetDeviceInfo(mNative, cl::DeviceInfo::ImageBaseAddressAlignment,
+                        info.imageBaseAddressAlignment) ||
+         !GetDeviceInfo(mNative, cl::DeviceInfo::QueueOnDeviceMaxSize, info.queueOnDeviceMaxSize)))
+    {
+        return Info{};
+    }
+
+    if (info.version >= CL_MAKE_VERSION(2, 1, 0))
+    {
+        if (!GetDeviceInfo(mNative, cl::DeviceInfo::IL_Version, valString))
+        {
+            return Info{};
+        }
+        info.IL_Version.assign(valString.data());
+    }
+
+    if (info.version >= CL_MAKE_VERSION(3, 0, 0) &&
+        (!GetDeviceInfo(mNative, cl::DeviceInfo::ILsWithVersion, info.ILsWithVersion) ||
+         !GetDeviceInfo(mNative, cl::DeviceInfo::BuiltInKernelsWithVersion,
+                        info.builtInKernelsWithVersion) ||
+         !GetDeviceInfo(mNative, cl::DeviceInfo::OpenCL_C_AllVersions, info.OpenCL_C_AllVersions) ||
+         !GetDeviceInfo(mNative, cl::DeviceInfo::OpenCL_C_Features, info.OpenCL_C_Features) ||
+         !GetDeviceInfo(mNative, cl::DeviceInfo::ExtensionsWithVersion,
+                        info.extensionsWithVersion)))
+    {
+        return Info{};
+    }
+    RemoveUnsupportedCLExtensions(info.extensionsWithVersion);
 
     return info;
 }
 
 cl_int CLDeviceCL::getInfoUInt(cl::DeviceInfo name, cl_uint *value) const
 {
-    return mDevice->getDispatch().clGetDeviceInfo(mDevice, cl::ToCLenum(name), sizeof(*value),
+    return mNative->getDispatch().clGetDeviceInfo(mNative, cl::ToCLenum(name), sizeof(*value),
                                                   value, nullptr);
 }
 
 cl_int CLDeviceCL::getInfoULong(cl::DeviceInfo name, cl_ulong *value) const
 {
-    return mDevice->getDispatch().clGetDeviceInfo(mDevice, cl::ToCLenum(name), sizeof(*value),
+    return mNative->getDispatch().clGetDeviceInfo(mNative, cl::ToCLenum(name), sizeof(*value),
                                                   value, nullptr);
 }
 
 cl_int CLDeviceCL::getInfoSizeT(cl::DeviceInfo name, size_t *value) const
 {
-    return mDevice->getDispatch().clGetDeviceInfo(mDevice, cl::ToCLenum(name), sizeof(*value),
+    return mNative->getDispatch().clGetDeviceInfo(mNative, cl::ToCLenum(name), sizeof(*value),
                                                   value, nullptr);
 }
 
 cl_int CLDeviceCL::getInfoStringLength(cl::DeviceInfo name, size_t *value) const
 {
-    return mDevice->getDispatch().clGetDeviceInfo(mDevice, cl::ToCLenum(name), 0u, nullptr, value);
+    return mNative->getDispatch().clGetDeviceInfo(mNative, cl::ToCLenum(name), 0u, nullptr, value);
 }
 
 cl_int CLDeviceCL::getInfoString(cl::DeviceInfo name, size_t size, char *value) const
 {
-    return mDevice->getDispatch().clGetDeviceInfo(mDevice, cl::ToCLenum(name), size, value,
+    return mNative->getDispatch().clGetDeviceInfo(mNative, cl::ToCLenum(name), size, value,
                                                   nullptr);
 }
 
 cl_int CLDeviceCL::createSubDevices(const cl_device_partition_property *properties,
                                     cl_uint numDevices,
-                                    PtrList &implList,
+                                    CreateFuncs &createFuncs,
                                     cl_uint *numDevicesRet)
 {
-    if (mVersion < CL_MAKE_VERSION(1, 2, 0))
-    {
-        return CL_INVALID_VALUE;
-    }
     if (numDevices == 0u)
     {
-        return mDevice->getDispatch().clCreateSubDevices(mDevice, properties, 0u, nullptr,
+        return mNative->getDispatch().clCreateSubDevices(mNative, properties, 0u, nullptr,
                                                          numDevicesRet);
     }
 
-    std::vector<cl_device_id> devices(numDevices, nullptr);
-    const cl_int result = mDevice->getDispatch().clCreateSubDevices(mDevice, properties, numDevices,
-                                                                    devices.data(), nullptr);
-    if (result == CL_SUCCESS)
+    std::vector<cl_device_id> nativeSubDevices(numDevices, nullptr);
+    const cl_int errorCode = mNative->getDispatch().clCreateSubDevices(
+        mNative, properties, numDevices, nativeSubDevices.data(), nullptr);
+    if (errorCode == CL_SUCCESS)
     {
-        for (cl_device_id device : devices)
+        for (cl_device_id nativeSubDevice : nativeSubDevices)
         {
-            implList.emplace_back(CLDeviceCL::Create(getPlatform<CLPlatformCL>(), this, device));
-            if (!implList.back())
-            {
-                implList.clear();
-                return CL_INVALID_VALUE;
-            }
-            mSubDevices.emplace_back(implList.back().get());
+            createFuncs.emplace_back([nativeSubDevice](const cl::Device &device) {
+                return Ptr(new CLDeviceCL(device, nativeSubDevice));
+            });
         }
     }
-    return result;
+    return errorCode;
 }
 
-CLDeviceCL *CLDeviceCL::Create(CLPlatformCL &platform, CLDeviceCL *parent, cl_device_id device)
-{
-    size_t valueSize = 0u;
-    if (device->getDispatch().clGetDeviceInfo(device, CL_DEVICE_VERSION, 0u, nullptr, &valueSize) ==
-        CL_SUCCESS)
-    {
-        std::vector<char> valString(valueSize, '\0');
-        if (device->getDispatch().clGetDeviceInfo(device, CL_DEVICE_VERSION, valueSize,
-                                                  valString.data(), nullptr) == CL_SUCCESS)
-        {
-            const cl_version version = ExtractCLVersion(valString.data());
-            if (version != 0u)
-            {
-                return new CLDeviceCL(platform, parent, device, version);
-            }
-        }
-    }
-    ERR() << "Failed to query version for device";
-    return nullptr;
-}
-
-CLDeviceCL::CLDeviceCL(CLPlatformCL &platform,
-                       CLDeviceCL *parent,
-                       cl_device_id device,
-                       cl_version version)
-    : CLDeviceImpl(platform, parent), mDevice(device), mVersion(version)
+CLDeviceCL::CLDeviceCL(const cl::Device &device, cl_device_id native)
+    : CLDeviceImpl(device), mNative(native)
 {}
 
 }  // namespace rx

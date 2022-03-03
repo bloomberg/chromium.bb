@@ -9,21 +9,21 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/login/error_screens_histogram_helper.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 
 namespace chromeos {
-
 class CookieWaiter;
-class ErrorScreensHistogramHelper;
-class HelpAppLauncher;
 
 // Possible error states of the Active Directory screen. Must be in the same
 // order as ACTIVE_DIRECTORY_ERROR_STATE enum values.
@@ -62,20 +62,30 @@ class EnrollmentScreenHandler
       JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen);
+
+  EnrollmentScreenHandler(const EnrollmentScreenHandler&) = delete;
+  EnrollmentScreenHandler& operator=(const EnrollmentScreenHandler&) = delete;
+
   ~EnrollmentScreenHandler() override;
 
   // Implements WebUIMessageHandler:
   void RegisterMessages() override;
 
   // Implements EnrollmentScreenView:
-  void SetEnrollmentConfig(Controller* controller,
-                           const policy::EnrollmentConfig& config) override;
+  void SetEnrollmentConfig(const policy::EnrollmentConfig& config) override;
+  void SetEnrollmentController(Controller* controller) override;
 
   void SetEnterpriseDomainInfo(const std::string& manager,
                                const std::u16string& device_type) override;
+  void SetFlowType(FlowType flow_type) override;
   void Show() override;
   void Hide() override;
+  void Bind(ash::EnrollmentScreen* screen) override;
+  void Unbind() override;
   void ShowSigninScreen() override;
+  void ShowUserError(UserErrorType error_type,
+                     const std::string& email) override;
+  void ShowEnrollmentCloudReadyNotAllowedError() override;
   void ShowActiveDirectoryScreen(const std::string& domain_join_config,
                                  const std::string& machine_name,
                                  const std::string& username,
@@ -83,12 +93,14 @@ class EnrollmentScreenHandler
   void ShowAttributePromptScreen(const std::string& asset_id,
                                  const std::string& location) override;
   void ShowEnrollmentSuccessScreen() override;
-  void ShowEnrollmentSpinnerScreen() override;
+  void ShowEnrollmentWorkingScreen() override;
+  void ShowEnrollmentTPMCheckingScreen() override;
   void ShowAuthError(const GoogleServiceAuthError& error) override;
   void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
   void ShowOtherError(
       EnterpriseEnrollmentHelper::OtherError error_code) override;
   void Shutdown() override;
+  void SetIsBrandedBuild(bool is_branded) override;
 
   // Implements BaseScreenHandler:
   void Initialize() override;
@@ -117,6 +129,7 @@ class EnrollmentScreenHandler
                              const std::string& user_name,
                              const std::string& password);
   void HandleAdUnlockConfiguration(const std::string& password);
+  void HandleIdentifierEntered(const std::string& email);
   void HandleRetry();
   void HandleFrameLoadingCompleted();
   void HandleDeviceAttributesProvided(const std::string& asset_id,
@@ -168,6 +181,9 @@ class EnrollmentScreenHandler
   // The enrollment configuration.
   policy::EnrollmentConfig config_;
 
+  // GAIA flow type parameter that is set to authenticator.
+  FlowType flow_type_;
+
   // Active Directory configuration in the form of encrypted binary data.
   std::string active_directory_domain_join_config_;
 
@@ -189,6 +205,7 @@ class EnrollmentScreenHandler
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   ErrorScreen* error_screen_ = nullptr;
+  ash::EnrollmentScreen* screen_ = nullptr;
 
   std::string signin_partition_name_;
 
@@ -202,8 +219,6 @@ class EnrollmentScreenHandler
   bool use_fake_login_for_testing_ = false;
 
   base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenHandler);
 };
 
 }  // namespace chromeos
@@ -212,6 +227,7 @@ class EnrollmentScreenHandler
 // source migration is finished.
 namespace ash {
 using ::chromeos::ActiveDirectoryErrorState;
+using ::chromeos::EnrollmentScreenHandler;
 }
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENROLLMENT_SCREEN_HANDLER_H_

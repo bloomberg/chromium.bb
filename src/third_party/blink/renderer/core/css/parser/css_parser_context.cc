@@ -89,9 +89,13 @@ CSSParserContext::CSSParserContext(CSSParserMode mode,
                        ResourceFetchRestriction::kNone) {}
 
 CSSParserContext::CSSParserContext(const Document& document)
+    : CSSParserContext(document, document.BaseURL()) {}
+
+CSSParserContext::CSSParserContext(const Document& document,
+                                   const KURL& base_url_override)
     : CSSParserContext(
           document,
-          document.BaseURL(),
+          base_url_override,
           true /* origin_clean */,
           Referrer(document.GetExecutionContext()
                        ? document.GetExecutionContext()->OutgoingReferrer()
@@ -257,7 +261,7 @@ void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
     const StyleRuleKeyframe& rule) const {
   if (!document_ || !document_->GetExecutionContext())
     return;
-  for (size_t i = 0; i < rule.Properties().PropertyCount(); ++i) {
+  for (unsigned i = 0; i < rule.Properties().PropertyCount(); ++i) {
     CSSPropertyID id = rule.Properties().PropertyAt(i).Id();
     if (id == CSSPropertyID::kVariable)
       continue;

@@ -8,6 +8,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
@@ -76,19 +77,13 @@ WebMediaStreamTrack StartVideoSource(MediaStreamVideoSource* video_source) {
       /*enabled=*/true);
 }
 
-MediaStreamSource* CreateAndStartMediaStreamSource(
-    MediaStreamVideoSource* video_source) {
-  MediaStreamSource* source = CreateConnectedMediaStreamSource(video_source);
-  StartVideoSource(video_source);
-  return source;
-}
-
 }  // namespace
 
 class PushableMediaStreamVideoSourceTest : public testing::Test {
  public:
   PushableMediaStreamVideoSourceTest() {
-    pushable_video_source_ = new PushableMediaStreamVideoSource();
+    pushable_video_source_ = new PushableMediaStreamVideoSource(
+        scheduler::GetSingleThreadTaskRunnerForTesting());
     stream_source_ = CreateConnectedMediaStreamSource(pushable_video_source_);
   }
 
@@ -148,27 +143,6 @@ TEST_F(PushableMediaStreamVideoSourceTest, FramesPropagateToSink) {
   EXPECT_EQ(30.0, *metadata.frame_rate);
   EXPECT_EQ(natural_size.width(), 100);
   EXPECT_EQ(natural_size.height(), 50);
-}
-
-TEST_F(PushableMediaStreamVideoSourceTest, ForwardToUpstream) {
-  MockMediaStreamVideoSource* mock_source = new MockMediaStreamVideoSource();
-  PushableMediaStreamVideoSource* pushable_video_source =
-      new PushableMediaStreamVideoSource(mock_source->GetWeakPtr());
-  CreateAndStartMediaStreamSource(mock_source);
-  CreateAndStartMediaStreamSource(pushable_video_source);
-
-  EXPECT_CALL(*mock_source, OnRequestRefreshFrame());
-  pushable_video_source->RequestRefreshFrame();
-
-  EXPECT_CALL(*mock_source,
-              OnFrameDropped(media::VideoCaptureFrameDropReason::
-                                 kResolutionAdapterFrameIsNotValid));
-  pushable_video_source->OnFrameDropped(
-      media::VideoCaptureFrameDropReason::kResolutionAdapterFrameIsNotValid);
-
-  EXPECT_CALL(*mock_source, OnFrameFeedback(media::VideoCaptureFeedback()));
-  pushable_video_source->GetFeedbackCallback().Run(
-      media::VideoCaptureFeedback());
 }
 
 }  // namespace blink

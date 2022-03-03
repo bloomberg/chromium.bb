@@ -6,11 +6,9 @@
 #define UI_EVENTS_OZONE_EVDEV_EVENT_FACTORY_EVDEV_H_
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/task/task_runner.h"
 #include "ui/events/event_modifiers.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
@@ -53,6 +51,10 @@ class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
                     DeviceManager* device_manager,
                     KeyboardLayoutEngine* keyboard_layout_engine);
+
+  EventFactoryEvdev(const EventFactoryEvdev&) = delete;
+  EventFactoryEvdev& operator=(const EventFactoryEvdev&) = delete;
+
   ~EventFactoryEvdev() override;
 
   // Initialize. Must be called with a valid message loop.
@@ -81,7 +83,8 @@ class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
   void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices,
                                    bool has_mouse,
                                    bool has_pointing_stick);
-  void DispatchTouchpadDevicesUpdated(const std::vector<InputDevice>& devices);
+  void DispatchTouchpadDevicesUpdated(const std::vector<InputDevice>& devices,
+                                      bool has_haptic_touchpad);
   void DispatchUncategorizedDevicesUpdated(
       const std::vector<InputDevice>& devices);
   void DispatchDeviceListsComplete();
@@ -157,8 +160,6 @@ class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EventFactoryEvdev);
 };
 
 }  // namespace ui

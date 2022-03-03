@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/debug/debugging_buildflags.h"
+#include "base/trace_event/base_tracing_forward.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -32,6 +33,8 @@ class BASE_EXPORT Location {
  public:
   Location();
   Location(const Location& other);
+  Location(Location&& other) noexcept;
+  Location& operator=(const Location& other);
 
   // Only initializes the file name and program counter, the source information
   // will be null for the strings, and -1 for the line number.
@@ -78,6 +81,9 @@ class BASE_EXPORT Location {
   // are not available, this will return "pc:<hex address>".
   std::string ToString() const;
 
+  // Write a representation of this object into a trace.
+  void WriteIntoTrace(perfetto::TracedValue context) const;
+
 #if !BUILDFLAG(FROM_HERE_USES_LOCATION_BUILTINS)
 #if !BUILDFLAG(ENABLE_LOCATION_SOURCE)
   static Location CreateFromHere(const char* file_name);
@@ -102,6 +108,9 @@ class BASE_EXPORT Location {
   const char* function_name_ = nullptr;
   const char* file_name_ = nullptr;
   int line_number_ = -1;
+
+  // `program_counter_` is not a raw_ptr<...> for performance reasons (based on
+  // analysis of sampling profiler data and tab_search:top100:2020).
   const void* program_counter_ = nullptr;
 };
 

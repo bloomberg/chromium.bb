@@ -16,7 +16,10 @@ limitations under the License.
 package org.tensorflow.lite.gpu;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 
+import com.google.common.base.Stopwatch;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -24,7 +27,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.tensorflow.lite.Interpreter;
@@ -39,7 +44,9 @@ public final class GpuDelegateTest {
   private static final ByteBuffer MODEL_BUFFER = TestUtils.getTestFileAsBuffer(MODEL_PATH);
   private static final ByteBuffer MOBILENET_QUANTIZED_MODEL_BUFFER =
       TestUtils.getTestFileAsBuffer(
-          "third_party/tensorflow/lite/java/demo/app/src/main/assets/mobilenet_v1_1.0_224_quant.tflite");
+          "tensorflow/lite/java/demo/app/src/main/assets/mobilenet_v1_1.0_224_quant.tflite");
+
+  @Rule public final TemporaryFolder tempDir = new TemporaryFolder();
 
   @Test
   public void testBasic() throws Exception {
@@ -76,8 +83,8 @@ public final class GpuDelegateTest {
             "tensorflow/lite/java/src/testdata/grace_hopper_224.jpg");
 
     Interpreter.Options options = new Interpreter.Options();
-    try (GpuDelegate delegate =
-            new GpuDelegate(new GpuDelegate.Options().setQuantizedModelsAllowed(true));
+    // Default behavior allows quantized models.
+    try (GpuDelegate delegate = new GpuDelegate();
         Interpreter interpreter =
             new Interpreter(MOBILENET_QUANTIZED_MODEL_BUFFER, options.addDelegate(delegate))) {
       byte[][] output = new byte[1][1001];
@@ -98,18 +105,72 @@ public final class GpuDelegateTest {
             "tensorflow/lite/java/src/testdata/grace_hopper_224.jpg");
 
     Interpreter.Options options = new Interpreter.Options();
-    try (GpuDelegate delegate = new GpuDelegate();
+    try (GpuDelegate delegate =
+            new GpuDelegate(new GpuDelegate.Options().setQuantizedModelsAllowed(false));
         Interpreter interpreter =
             new Interpreter(MOBILENET_QUANTIZED_MODEL_BUFFER, options.addDelegate(delegate))) {
       byte[][] output = new byte[1][1001];
       interpreter.run(img, output);
-      // Original execution plan remains since default behavior doesn't allow quantized models.
+      // Original execution plan remains since we disabled quantized models.
       assertThat(InterpreterTestHelper.executionPlanLength(interpreter)).isEqualTo(31);
       assertThat(interpreter.getInputTensor(0).shape()).isEqualTo(new int[] {1, 224, 224, 3});
       assertThat(interpreter.getOutputTensor(0).shape()).isEqualTo(new int[] {1, 1001});
       // 653 == "military uniform"
       assertThat(getTopKLabels(output, 3)).contains(653);
     }
+  }
+
+  @Test
+  public void testDelegateSerialization() throws Exception {
+    ByteBuffer img =
+        TestUtils.getTestImageAsByteBuffer(
+            "tensorflow/lite/java/src/testdata/grace_hopper_224.jpg");
+
+    File serializationFolder = tempDir.newFolder();
+    String serializationDir = serializationFolder.getPath();
+
+    // Create the interpreter with serialization enabled delegate.
+    createInterpreterWithDelegate(/*enableSerialization=*/ true, serializationFolder.getPath());
+
+    // In the second interpreter initialization, delegate reuses the serialization data.
+    Stopwatch stopWatch = Stopwatch.createStarted();
+    Interpreter interpreter =
+        createInterpreterWithDelegate(/*enableSerialization=*/ true, serializationFolder.getPath());
+    stopWatch.stop();
+    long serializedInitTime = stopWatch.elapsed(MICROSECONDS);
+    // Check on the model.
+    byte[][] output = new byte[1][1001];
+    interpreter.run(img, output);
+    // 653 == "military uniform"
+    assertThat(getTopKLabels(output, 3)).contains(653);
+
+    // If OpenCL is available, serialized data will be written to serializationDir and
+    // initialization time improvement shall be observed.
+    // Otherwise, this testcase performs a check that enabling the option won't crash.
+    if (serializationFolder.list().length > 0) {
+      stopWatch.reset();
+      stopWatch.start();
+      // Initialze interpreter with GpuDelegate serialization not enabled.
+      createInterpreterWithDelegate(/*enableSerialization=*/ false, /*serializationDir=*/ null);
+      long notserializedInitTime = stopWatch.elapsed(MICROSECONDS);
+
+      assertThat(serializedInitTime).isLessThan(notserializedInitTime);
+    }
+  }
+
+  private Interpreter createInterpreterWithDelegate(
+      boolean enableSerialization, String serializationDir) {
+    Interpreter.Options options = new Interpreter.Options();
+    if (enableSerialization) {
+      options.addDelegate(
+          new GpuDelegate(
+              new GpuDelegate.Options()
+                  .setSerializationParams(serializationDir, "GpuDelegateTest.testModelToken")));
+    } else {
+      options.addDelegate(new GpuDelegate());
+    }
+    Interpreter interpreter = new Interpreter(MOBILENET_QUANTIZED_MODEL_BUFFER, options);
+    return interpreter;
   }
 
   private static ArrayList<Integer> getTopKLabels(byte[][] byteLabels, int k) {

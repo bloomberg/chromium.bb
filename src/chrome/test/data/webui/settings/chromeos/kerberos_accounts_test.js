@@ -11,9 +11,9 @@
 // #import {Router, Route, routes, KerberosErrorType, KerberosConfigErrorCode, KerberosAccountsBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// #import {flushTasks} from 'chrome://test/test_util.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 cr.define('settings_kerberos_accounts', function() {
@@ -126,9 +126,12 @@ cr.define('settings_kerberos_accounts', function() {
     });
 
     test('AddAccount', function() {
+      // The kerberos-add-account-dialog shouldn't be open yet.
       assertTrue(!kerberosAccounts.$$('kerberos-add-account-dialog'));
+
       kerberosAccounts.$$('#add-account-button').click();
       Polymer.dom.flush();
+
       const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
       assertTrue(!!addDialog);
       assertEquals('', addDialog.$.username.value);
@@ -227,8 +230,6 @@ cr.define('settings_kerberos_accounts', function() {
     });
 
     test('Deep link to remove account dropdown', async () => {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-
       const params = new URLSearchParams;
       params.append('settingId', '1801');
       settings.Router.getInstance().navigateTo(
@@ -508,6 +509,25 @@ cr.define('settings_kerberos_accounts', function() {
 
       // Reset for further tests.
       loadTimeData.overrideValues({kerberosRememberPasswordEnabled: true});
+    });
+
+    test('RememberPasswordVisibleOnUserSessions', function() {
+      assertFalse(loadTimeData.getBoolean('isGuest'));
+      createDialog(null);
+      Polymer.dom.flush();
+
+      assertFalse(dialog.$$('#rememberPasswordContainer').hidden);
+    });
+
+    test('RememberPasswordHiddenOnMgs', function() {
+      loadTimeData.overrideValues({isGuest: true});
+      createDialog(null);
+      Polymer.dom.flush();
+
+      assertTrue(dialog.$$('#rememberPasswordContainer').hidden);
+
+      // Reset for further tests.
+      loadTimeData.overrideValues({isGuest: false});
     });
 
     // By clicking the action button, all field values are passed to the

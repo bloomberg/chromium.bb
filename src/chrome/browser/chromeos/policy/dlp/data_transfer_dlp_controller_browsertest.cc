@@ -8,19 +8,24 @@
 #include "ash/shell.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
+#include "chrome/browser/ash/policy/core/user_policy_test_helper.h"
+#include "chrome/browser/ash/policy/login/login_policy_test_base.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager_test_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_test_utils.h"
-#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
-#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -41,6 +46,7 @@
 #include "ui/views/widget/widget_observer.h"
 #include "url/origin.h"
 
+// TODO(crbug.com/1262948): Enable and modify for lacros.
 namespace policy {
 
 namespace {
@@ -112,6 +118,8 @@ class FakeDlpController : public DataTransferDlpController,
 
   bool ShouldPasteOnWarn(
       const ui::DataTransferEndpoint* const data_dst) override {
+    if (force_paste_on_warn_)
+      return true;
     return helper_->DidUserApproveDst(data_dst);
   }
 
@@ -129,6 +137,7 @@ class FakeDlpController : public DataTransferDlpController,
   FakeClipboardNotifier* helper_ = nullptr;
   absl::optional<ui::DataTransferEndpoint> blink_data_dst_;
   base::RepeatingClosure blink_quit_cb_ = base::DoNothing();
+  bool force_paste_on_warn_ = false;
 };
 
 class MockDlpRulesManager : public DlpRulesManagerImpl {
@@ -136,6 +145,8 @@ class MockDlpRulesManager : public DlpRulesManagerImpl {
   explicit MockDlpRulesManager(PrefService* local_state)
       : DlpRulesManagerImpl(local_state) {}
   ~MockDlpRulesManager() override = default;
+
+  MOCK_CONST_METHOD0(GetReportingManager, DlpReportingManager*());
 };
 
 void SetClipboardText(std::u16string text,
@@ -228,7 +239,7 @@ class DataTransferDlpBrowserTest : public LoginPolicyTestBase {
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_EmptyPolicy) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   SetClipboardText(kClipboardText116, nullptr);
 
@@ -242,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_EmptyPolicy) {
 
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   FakeClipboardNotifier helper;
   FakeDlpController dlp_controller(
@@ -300,12 +311,9 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   EXPECT_EQ(std::u16string(), result3);
   ASSERT_TRUE(dlp_controller.ObserveWidget());
 
-  EXPECT_CALL(dlp_controller, OnWidgetClosing);
-
   SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kExampleUrl))));
-  testing::Mock::VerifyAndClearExpectations(&helper);
 
   ui::DataTransferEndpoint data_dst4(url::Origin::Create(GURL(kMailUrl)));
   std::u16string result4;
@@ -324,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_BlockComponent) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   SetupCrostini();
 
@@ -378,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_BlockComponent) {
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   FakeClipboardNotifier helper;
   FakeDlpController dlp_controller(
@@ -454,11 +462,6 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   EXPECT_EQ(std::u16string(), result);
   ASSERT_TRUE(dlp_controller.ObserveWidget());
 
-  EXPECT_CALL(dlp_controller, OnWidgetClosing);
-  SetClipboardText(kClipboardText2, std::make_unique<ui::DataTransferEndpoint>(
-                                        url::Origin::Create(GURL(kDocsUrl))));
-  testing::Mock::VerifyAndClearExpectations(&dlp_controller);
-
   FlushMessageLoop();
 }
 
@@ -470,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnComponent) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
 
   SetupCrostini();
 
@@ -533,6 +536,28 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
   ~DataTransferDlpBlinkBrowserTest() override = default;
 
  protected:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    rules_manager_ = std::make_unique<::testing::NiceMock<MockDlpRulesManager>>(
+        g_browser_process->local_state());
+
+    reporting_manager_ = std::make_unique<DlpReportingManager>();
+    SetReportQueueForReportingManager(reporting_manager_.get(), events,
+                                      base::SequencedTaskRunnerHandle::Get());
+    ON_CALL(*rules_manager_, GetReportingManager)
+        .WillByDefault(::testing::Return(reporting_manager_.get()));
+
+    dlp_controller_ =
+        std::make_unique<FakeDlpController>(*rules_manager_, &helper);
+  }
+
+  void TearDownOnMainThread() override {
+    dlp_controller_.reset();
+    reporting_manager_.reset();
+    rules_manager_.reset();
+  }
+
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -550,19 +575,26 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
                            content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                            /*world_id=*/1);
   }
+
+  std::unique_ptr<::testing::NiceMock<MockDlpRulesManager>> rules_manager_;
+  std::unique_ptr<DlpReportingManager> reporting_manager_;
+  std::vector<DlpPolicyEvent> events;
+  FakeClipboardNotifier helper;
+  std::unique_ptr<FakeDlpController> dlp_controller_;
 };
 
-// Flaky: crbug.com/1195297
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
-                       DISABLED_ProceedOnWarn) {
+// Flaky on MSan bots: crbug.com/1230617
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ProceedOnWarn DISABLED_ProceedOnWarn
+#else
+#define MAYBE_ProceedOnWarn ProceedOnWarn
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ProceedOnWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
-  MockDlpRulesManager rules_manager(g_browser_process->local_state());
 
-  FakeClipboardNotifier helper;
-  FakeDlpController dlp_controller(rules_manager, &helper);
-
+  // TODO(1276069): Refactor duplicated code below.
   {
     ListPrefUpdate update(g_browser_process->local_state(),
                           policy_prefs::kDlpRulesList);
@@ -613,34 +645,51 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
              "  };"
              "});"));
 
-  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
-  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
   user_activation_interceptor.UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation,
       blink::mojom::UserActivationNotificationType::kTest);
 
   // Send paste event and wait till the notification is displayed.
   base::RunLoop run_loop;
-  dlp_controller.SetBlinkQuitCallback(run_loop.QuitClosure());
+  dlp_controller_->SetBlinkQuitCallback(run_loop.QuitClosure());
   GetActiveWebContents()->Paste();
   run_loop.Run();
 
-  ASSERT_TRUE(dlp_controller.ObserveWidget());
-  helper.BlinkProceedPressed(dlp_controller.blink_data_dst_.value());
+  ASSERT_TRUE(dlp_controller_->ObserveWidget());
+  EXPECT_EQ(events.size(), 1u);
+  EXPECT_THAT(events[0],
+              IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
+                  DlpRulesManager::Level::kWarn)));
+
+  EXPECT_CALL(*dlp_controller_, OnWidgetClosing);
+  ASSERT_TRUE(dlp_controller_->blink_data_dst_.has_value());
+  helper.BlinkProceedPressed(dlp_controller_->blink_data_dst_.value());
 
   EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
+  EXPECT_EQ(events.size(), 2u);
+  EXPECT_THAT(events[1],
+              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
+                  kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
+                  DlpRulesManager::Level::kNotSet)));
+
+  testing::Mock::VerifyAndClearExpectations(&dlp_controller_);
 }
 
-// Flaky: crbug.com/1195297
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_CancelWarn) {
+// Flaky on MSan bots: crbug.com/1230617
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CancelWarn DISABLED_CancelWarn
+#else
+#define MAYBE_CancelWarn CancelWarn
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_CancelWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
-  MockDlpRulesManager rules_manager(g_browser_process->local_state());
 
-  FakeClipboardNotifier helper;
-  FakeDlpController dlp_controller(rules_manager, &helper);
-
+  // TODO(1276069): Refactor duplicated code below.
   {
     ListPrefUpdate update(g_browser_process->local_state(),
                           policy_prefs::kDlpRulesList);
@@ -691,36 +740,132 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_CancelWarn) {
              "  };"
              "});"));
 
-  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
-  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
   user_activation_interceptor.UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation,
       blink::mojom::UserActivationNotificationType::kTest);
 
   // Send paste event and wait till the notification is displayed.
   base::RunLoop run_loop;
-  dlp_controller.SetBlinkQuitCallback(run_loop.QuitClosure());
+  dlp_controller_->SetBlinkQuitCallback(run_loop.QuitClosure());
   GetActiveWebContents()->Paste();
   run_loop.Run();
 
-  ASSERT_TRUE(dlp_controller.ObserveWidget());
-  ASSERT_TRUE(dlp_controller.blink_data_dst_.has_value());
-  helper.CancelWarningPressed(dlp_controller.blink_data_dst_.value());
+  ASSERT_TRUE(dlp_controller_->ObserveWidget());
+  ASSERT_TRUE(dlp_controller_->blink_data_dst_.has_value());
+  EXPECT_EQ(events.size(), 1u);
+  EXPECT_THAT(events[0],
+              IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
+                  DlpRulesManager::Level::kWarn)));
+
+  EXPECT_CALL(*dlp_controller_, OnWidgetClosing);
+  helper.CancelWarningPressed(dlp_controller_->blink_data_dst_.value());
 
   EXPECT_EQ("", EvalJs(GetActiveWebContents(), "p"));
+  EXPECT_EQ(events.size(), 1u);
+
+  testing::Mock::VerifyAndClearExpectations(&dlp_controller_);
+}
+
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ShouldProceedWarn DISABLED_ShouldProceedWarn
+#else
+#define MAYBE_ShouldProceedWarn ShouldProceedWarn
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
+                       MAYBE_ShouldProceedWarn) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+
+  // TODO(1276069): Refactor duplicated code below.
+  {
+    ListPrefUpdate update(g_browser_process->local_state(),
+                          policy_prefs::kDlpRulesList);
+    base::Value rule(base::Value::Type::DICTIONARY);
+    base::Value src_urls(base::Value::Type::DICTIONARY);
+    base::Value src_urls_list(base::Value::Type::LIST);
+    src_urls_list.Append(base::Value(kMailUrl));
+    src_urls.SetKey("urls", std::move(src_urls_list));
+    rule.SetKey("sources", std::move(src_urls));
+
+    base::Value dst_urls(base::Value::Type::DICTIONARY);
+    base::Value dst_urls_list(base::Value::Type::LIST);
+    dst_urls_list.Append(base::Value("*"));
+    dst_urls.SetKey("urls", std::move(dst_urls_list));
+    rule.SetKey("destinations", std::move(dst_urls));
+
+    base::Value restrictions(base::Value::Type::DICTIONARY);
+    base::Value restrictions_list(base::Value::Type::LIST);
+    base::Value class_level_dict(base::Value::Type::DICTIONARY);
+    class_level_dict.SetKey("class", base::Value("CLIPBOARD"));
+    class_level_dict.SetKey("level", base::Value("WARN"));
+    restrictions_list.Append(std::move(class_level_dict));
+    rule.SetKey("restrictions", std::move(restrictions_list));
+
+    update->Append(std::move(rule));
+  }
+
+  SetClipboardText(kClipboardText116,
+                   std::make_unique<ui::DataTransferEndpoint>(
+                       url::Origin::Create(GURL(kMailUrl))));
+
+  EXPECT_TRUE(
+      ExecJs(GetActiveWebContents(),
+             "var p = new Promise((resolve, reject) => {"
+             "  window.document.onpaste = async (event) => {"
+             "    if (event.clipboardData.items.length !== 1) {"
+             "      reject('There were ' + event.clipboardData.items.length +"
+             "             ' clipboard items. Expected 1.');"
+             "    }"
+             "    if (event.clipboardData.items[0].kind != 'string') {"
+             "      reject('The clipboard item was of kind: ' +"
+             "             event.clipboardData.items[0].kind + '. Expected ' +"
+             "             'string.');"
+             "    }"
+             "    const clipboardDataItem = event.clipboardData.items[0];"
+             "    clipboardDataItem.getAsString((clipboardDataText)=> {"
+             "      resolve(clipboardDataText);});"
+             "  };"
+             "});"));
+
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
+  user_activation_interceptor.UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
+
+  dlp_controller_->force_paste_on_warn_ = true;
+  GetActiveWebContents()->Paste();
+  EXPECT_FALSE(dlp_controller_->ObserveWidget());
+  EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
+
+  EXPECT_EQ(events.size(), 1u);
+  EXPECT_THAT(events[0],
+              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
+                  kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
+                  DlpRulesManager::Level::kNotSet)));
+
+  testing::Mock::VerifyAndClearExpectations(&dlp_controller_);
 }
 
 // Test case for crbug.com/1213143
-// Disabled due to flakiness: crbug.com/1219981
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_Reporting) {
+// Flaky on MSan bots: crbug.com/1230617
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Reporting DISABLED_Reporting
+#else
+#define MAYBE_Reporting Reporting
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_Reporting) {
+  base::HistogramTester histogram_tester;
+
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
-  MockDlpRulesManager rules_manager(g_browser_process->local_state());
 
-  FakeClipboardNotifier helper;
-  FakeDlpController dlp_controller(rules_manager, &helper);
-
+  // TODO(1276069): Refactor duplicated code below.
   {
     ListPrefUpdate update(g_browser_process->local_state(),
                           policy_prefs::kDlpRulesList);
@@ -771,15 +916,29 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_Reporting) {
              "  };"
              "});"));
 
-  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
-  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
   user_activation_interceptor.UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation,
       blink::mojom::UserActivationNotificationType::kTest);
 
   GetActiveWebContents()->Paste();
-  EXPECT_FALSE(dlp_controller.ObserveWidget());
+  EXPECT_FALSE(dlp_controller_->ObserveWidget());
   EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
+
+  EXPECT_EQ(events.size(), 1u);
+  EXPECT_THAT(events[0],
+              IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
+                  DlpRulesManager::Level::kReport)));
+  // TODO(1276063): This EXPECT_GE is always true, because it is compared to 0.
+  // The histogram sum may not have any samples when the time difference is very
+  // small (almost 0), because UmaHistogramTimes requires the time difference to
+  // be >= 1.
+  EXPECT_GE(
+      histogram_tester.GetTotalSum(GetDlpHistogramPrefix() +
+                                   dlp::kDataTransferReportingTimeDiffUMA),
+      0);
 }
 
 }  // namespace policy

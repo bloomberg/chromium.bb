@@ -6,9 +6,11 @@
 // subtle differences between enum fields.
 syntax = "proto3";
 
+option java_multiple_files = true;
+option java_package = "org.chromium.components.sync.protocol";
+
 option optimize_for = LITE_RUNTIME;
 
-option java_package = "sync_pb";
 package sync_pb;
 
 message SharedMemberKey {
@@ -30,6 +32,7 @@ message SecurityDomainDetails {
 
 message SecurityDomain {
   string name = 1;
+  int32 current_epoch = 2;
   SecurityDomainDetails security_domain_details = 3;
 }
 
@@ -56,5 +59,26 @@ message SecurityDomainMember {
 message JoinSecurityDomainsRequest {
   SecurityDomain security_domain = 1;
   SecurityDomainMember security_domain_member = 2;
-  SharedMemberKey shared_member_key = 3;
+  repeated SharedMemberKey shared_member_key = 3;
+  int32 member_type_hint = 4;
+}
+
+message JoinSecurityDomainsResponse {
+  SecurityDomain security_domain = 1;
+}
+
+message JoinSecurityDomainsErrorDetail {
+  JoinSecurityDomainsResponse already_exists_response = 1;
+}
+
+// TODO(crbug.com/1234719): figure out how to link google.protobuf.Any and use
+// it instead.
+message Proto3Any {
+  string type_url = 1;
+  bytes value = 2;
+}
+
+// Forked version of google.rpc.Status.
+message RPCStatus {
+  repeated Proto3Any details = 3;
 }

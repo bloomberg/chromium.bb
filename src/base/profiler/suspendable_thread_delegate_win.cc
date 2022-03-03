@@ -7,8 +7,11 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include <vector>
+
 #include "base/check.h"
 #include "base/debug/alias.h"
+#include "base/memory/raw_ptr.h"
 #include "base/profiler/native_unwinder_win.h"
 #include "build/build_config.h"
 
@@ -82,7 +85,7 @@ const TEB* GetThreadEnvironmentBlock(PlatformThreadId thread_id,
 
   struct THREAD_BASIC_INFORMATION {
     NTSTATUS ExitStatus;
-    TEB* Teb;
+    raw_ptr<TEB> Teb;
     CLIENT_ID ClientId;
     KAFFINITY AffinityMask;
     LONG Priority;
@@ -123,14 +126,17 @@ bool PointsToGuardPage(uintptr_t stack_pointer) {
 class ScopedDisablePriorityBoost {
  public:
   ScopedDisablePriorityBoost(HANDLE thread_handle);
+
+  ScopedDisablePriorityBoost(const ScopedDisablePriorityBoost&) = delete;
+  ScopedDisablePriorityBoost& operator=(const ScopedDisablePriorityBoost&) =
+      delete;
+
   ~ScopedDisablePriorityBoost();
 
  private:
   HANDLE thread_handle_;
   BOOL got_previous_boost_state_;
   BOOL boost_state_was_disabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDisablePriorityBoost);
 };
 
 // NO HEAP ALLOCATIONS.

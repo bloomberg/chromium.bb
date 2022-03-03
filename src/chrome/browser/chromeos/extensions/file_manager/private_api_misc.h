@@ -13,11 +13,12 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/chromeos/extensions/file_manager/files_extension_function.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/browser/chromeos/extensions/file_manager/logged_extension_function.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "google_apis/drive/drive_api_error_codes.h"
+#include "chrome/services/file_util/public/cpp/zip_file_creator.h"
+#include "google_apis/common/api_error_codes.h"
 #include "storage/browser/file_system/file_system_url.h"
 
 namespace chromeos {
@@ -27,7 +28,7 @@ class RecentFile;
 namespace crostini {
 enum class CrostiniResult;
 struct LinuxPackageInfo;
-}
+}  // namespace crostini
 
 namespace file_manager {
 namespace util {
@@ -84,7 +85,7 @@ class FileManagerPrivateSetPreferencesFunction : public ExtensionFunction {
 };
 
 // Implements the chrome.fileManagerPrivate.zipSelection method.
-// Creates a zip file for the selected files.
+// Creates a ZIP file for the selected files and folders.
 class FileManagerPrivateInternalZipSelectionFunction
     : public LoggedExtensionFunction {
  public:
@@ -93,14 +94,74 @@ class FileManagerPrivateInternalZipSelectionFunction
 
   FileManagerPrivateInternalZipSelectionFunction();
 
- protected:
+ private:
   ~FileManagerPrivateInternalZipSelectionFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
-  // Receives the result from ZipFileCreator.
-  void OnZipDone(const std::string& dest_file, bool success);
+  // Computes the total number of bytes of all the items to zip.
+  void ComputeSize();
+
+  // Zips the items to zip.
+  void ZipItems();
+
+  // Absolute path of the source directory.
+  base::FilePath src_dir_;
+
+  // Relative paths of the items to zip. These paths are relative to |src_dir_|.
+  std::vector<base::FilePath> src_files_;
+
+  // Absolute path of the ZIP to create.
+  base::FilePath dest_file_;
+
+  // Total number of bytes of all the items to zip.
+  int64_t total_bytes_;
+};
+
+// Implements the chrome.fileManagerPrivate.cancelZip method.
+// Cancels an ongoing ZIP operation.
+class FileManagerPrivateCancelZipFunction : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelZip",
+                             FILEMANAGERPRIVATE_CANCELZIP)
+
+  FileManagerPrivateCancelZipFunction();
+
+ private:
+  ~FileManagerPrivateCancelZipFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.getZipProgress method.
+// Gets the progress of an ongoing ZIP operation.
+class FileManagerPrivateGetZipProgressFunction
+    : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getZipProgress",
+                             FILEMANAGERPRIVATE_GETZIPPROGRESS)
+
+  FileManagerPrivateGetZipProgressFunction();
+
+ private:
+  ~FileManagerPrivateGetZipProgressFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  // Receives the progress from ZipFileCreator.
+  void OnProgress();
+
+  // Creates the response value.
+  ResponseValue ZipProgressValue(const ZipFileCreator::Progress& progress);
+
+  // Current ZIP task ID.
+  int zip_id_ = 0;
+
+  // Matching ZipFileCreator object.
+  scoped_refptr<ZipFileCreator> creator_;
 };
 
 // Implements the chrome.fileManagerPrivate.zoom method.
@@ -136,7 +197,7 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
  private:
   std::unique_ptr<google_apis::AuthServiceInterface> auth_service_;
 
-  void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
+  void OnAccessTokenFetched(google_apis::ApiErrorCode code,
                             const std::string& access_token);
 };
 
@@ -351,7 +412,7 @@ class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
 // Implements the chrome.fileManagerPrivate.getCrostiniSharedPaths
 // method.  Returns list of file entries.
 class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
-    : public FilesExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.getCrostiniSharedPaths",
@@ -434,7 +495,7 @@ class FileManagerPrivateInternalGetCustomActionsFunction
 
  private:
   ResponseAction Run() override;
-  void OnCompleted(const chromeos::file_system_provider::Actions& actions,
+  void OnCompleted(const ash::file_system_provider::Actions& actions,
                    base::File::Error result);
 };
 
@@ -485,19 +546,6 @@ class FileManagerPrivateInternalGetRecentFilesFunction
           entry_definition_list);
 };
 
-// Implements the chrome.fileManagerPrivate.detectCharacterEncoding method.
-class FileManagerPrivateDetectCharacterEncodingFunction
-    : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.detectCharacterEncoding",
-                             FILEMANAGERPRIVATE_DETECTCHARACTERENCODING)
-
- protected:
-  ~FileManagerPrivateDetectCharacterEncodingFunction() override = default;
-
-  ResponseAction Run() override;
-};
-
 // Implements the chrome.fileManagerPrivate.isTabletModeEnabled method.
 class FileManagerPrivateIsTabletModeEnabledFunction : public ExtensionFunction {
  public:
@@ -506,6 +554,19 @@ class FileManagerPrivateIsTabletModeEnabledFunction : public ExtensionFunction {
 
  protected:
   ~FileManagerPrivateIsTabletModeEnabledFunction() override = default;
+
+ private:
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.openWindow method.
+class FileManagerPrivateOpenWindowFunction : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.openWindow",
+                             FILEMANAGERPRIVATE_OPENWINDOW)
+
+ protected:
+  ~FileManagerPrivateOpenWindowFunction() override = default;
 
  private:
   ResponseAction Run() override;

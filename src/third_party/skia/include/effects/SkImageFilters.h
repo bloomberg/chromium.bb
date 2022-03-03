@@ -15,9 +15,12 @@
 #include "include/core/SkPicture.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkTileMode.h"
+#include "include/core/SkTypes.h"
+#include "include/effects/SkRuntimeEffect.h"
 
 #include <cstddef>
 
+class SkBlender;
 class SkColorFilter;
 class SkPaint;
 class SkRegion;
@@ -93,6 +96,17 @@ public:
      *  @cropRect         Optional rectangle to crop input and output.
      */
     static sk_sp<SkImageFilter> Blend(SkBlendMode mode, sk_sp<SkImageFilter> background,
+                                      sk_sp<SkImageFilter> foreground = nullptr,
+                                      const CropRect& cropRect = {});
+
+    /**
+     *  This filter takes an SkBlendMode and uses it to composite the two filters together.
+     *  @param blender       The blender that defines the compositing operation
+     *  @param background The Dst pixels used in blending, if null the source bitmap is used.
+     *  @param foreground The Src pixels used in blending, if null the source bitmap is used.
+     *  @cropRect         Optional rectangle to crop input and output.
+     */
+    static sk_sp<SkImageFilter> Blend(sk_sp<SkBlender> blender, sk_sp<SkImageFilter> background,
                                       sk_sp<SkImageFilter> foreground = nullptr,
                                       const CropRect& cropRect = {});
 
@@ -319,6 +333,26 @@ public:
         SkRect target = pic ? pic->cullRect() : SkRect::MakeEmpty();
         return Picture(std::move(pic), target);
     }
+
+#ifdef SK_ENABLE_SKSL
+    /**
+     *  Create a filter that fills the output with the per-pixel evaluation of the SkShader produced
+     *  by the SkRuntimeShaderBuilder. The shader is defined in the image filter's local coordinate
+     *  system, so it will automatically be affected by SkCanvas' transform.
+     *
+     *  @param builder         The builder used to produce the runtime shader, that will in turn
+     *                         fill the result image
+     *  @param childShaderName The name of the child shader defined in the builder that will be
+     *                         bound to the input param (or the source image if the input param
+     *                         is null).  If null the builder can have exactly one child shader,
+     *                         which automatically binds the input param.
+     *  @param input           The image filter that will be provided as input to the runtime
+     *                         shader. If null the implicit source image is used instead
+     */
+    static sk_sp<SkImageFilter> RuntimeShader(const SkRuntimeShaderBuilder& builder,
+                                              const char* childShaderName,
+                                              sk_sp<SkImageFilter> input);
+#endif  // SK_ENABLE_SKSL
 
     enum class Dither : bool {
         kNo = false,

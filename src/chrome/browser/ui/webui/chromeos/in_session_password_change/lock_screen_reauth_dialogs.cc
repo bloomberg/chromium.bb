@@ -7,11 +7,13 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
+#include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,7 +34,19 @@ namespace chromeos {
 
 namespace {
 LockScreenStartReauthDialog* g_dialog = nullptr;
+
 }  // namespace
+
+// static
+gfx::Size LockScreenStartReauthDialog::CalculateLockScreenReauthDialogSize(
+    bool is_new_layout_enabled) {
+  if (!is_new_layout_enabled) {
+    return kBaseLockDialogSize;
+  }
+
+  // LockscreenReauth Dialog size should match OOBE Dialog size.
+  return CalculateOobeDialogSizeForPrimaryDisplay();
+}
 
 void LockScreenStartReauthDialog::Show() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -55,7 +69,8 @@ void LockScreenStartReauthDialog::OnProfileCreated(
     g_dialog->ShowSystemDialogForBrowserContext(
         profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
     // Show network screen if needed.
-    if (!network_state_helper_->IsConnected()) {
+    // TODO(mslus): Handle other states in NetworkStateInformer properly.
+    if (network_state_informer_->state() == NetworkStateInformer::OFFLINE) {
       ShowLockScreenNetworkDialog();
     }
   } else if (status != Profile::CREATE_STATUS_CREATED) {
@@ -76,8 +91,8 @@ void LockScreenStartReauthDialog::OnDialogClosed(
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
-  InSessionPasswordSyncManager* password_sync_manager =
-      chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+  auto* password_sync_manager =
+      InSessionPasswordSyncManagerFactory::GetForProfile(profile);
   password_sync_manager->ResetDialog();
 }
 
@@ -85,52 +100,83 @@ bool LockScreenStartReauthDialog::IsRunning() {
   return g_dialog;
 }
 
-void LockScreenStartReauthDialog::CloseLockScreenNetworkDialog() {
+int LockScreenStartReauthDialog::GetDialogWidth() {
+  gfx::Size ret;
+  GetDialogSize(&ret);
+  return ret.width();
+}
+
+void LockScreenStartReauthDialog::DeleteLockScreenNetworkDialog() {
+  is_network_dialog_visible_ = false;
   if (!lock_screen_network_dialog_)
     return;
   lock_screen_network_dialog_.reset();
+}
+
+void LockScreenStartReauthDialog::DismissLockScreenNetworkDialog() {
+  if (lock_screen_network_dialog_)
+    lock_screen_network_dialog_->Dismiss();
 }
 
 void LockScreenStartReauthDialog::ShowLockScreenNetworkDialog() {
   if (lock_screen_network_dialog_)
     return;
   DCHECK(profile_);
+  is_network_dialog_visible_ = true;
   lock_screen_network_dialog_ =
       std::make_unique<chromeos::LockScreenNetworkDialog>(base::BindOnce(
-          &LockScreenStartReauthDialog::CloseLockScreenNetworkDialog,
+          &LockScreenStartReauthDialog::DeleteLockScreenNetworkDialog,
           base::Unretained(this)));
   lock_screen_network_dialog_->Show(profile_);
 }
 
+bool LockScreenStartReauthDialog::IsNetworkDialogLoadedForTesting(
+    base::OnceClosure callback) {
+  if (is_network_dialog_loaded_for_testing_)
+    return true;
+  DCHECK(!on_network_dialog_loaded_callback_for_testing_);
+  on_network_dialog_loaded_callback_for_testing_ = std::move(callback);
+  return false;
+}
+
+void LockScreenStartReauthDialog::OnNetworkDialogReadyForTesting() {
+  if (is_network_dialog_loaded_for_testing_)
+    return;
+  is_network_dialog_loaded_for_testing_ = true;
+  if (on_network_dialog_loaded_callback_for_testing_) {
+    std::move(on_network_dialog_loaded_callback_for_testing_).Run();
+  }
+}
+
 LockScreenStartReauthDialog::LockScreenStartReauthDialog()
     : BaseLockDialog(GURL(chrome::kChromeUILockScreenStartReauthURL),
-                     kBaseLockDialogSize),
-      network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
-  NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
+                     CalculateLockScreenReauthDialogSize(
+                         features::IsNewLockScreenReauthLayoutEnabled())),
+      network_state_informer_(
+          base::MakeRefCounted<chromeos::NetworkStateInformer>()) {
+  network_state_informer_->Init();
+  scoped_observation_.Observe(network_state_informer_.get());
 }
 
 LockScreenStartReauthDialog::~LockScreenStartReauthDialog() {
   DCHECK_EQ(this, g_dialog);
-  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                 FROM_HERE);
-  CloseLockScreenNetworkDialog();
+  scoped_observation_.Reset();
+  DeleteLockScreenNetworkDialog();
   g_dialog = nullptr;
 }
 
-void LockScreenStartReauthDialog::NetworkConnectionStateChanged(
-    const NetworkState* network) {
-  if (network_state_helper_->IsConnected()) {
-    if (lock_screen_network_dialog_) {
+void LockScreenStartReauthDialog::UpdateState(
+    NetworkError::ErrorReason reason) {
+  const bool is_offline =
+      NetworkStateInformer::OFFLINE == network_state_informer_->state();
+  if (is_offline) {
+    ShowLockScreenNetworkDialog();
+  } else {
+    if (is_network_dialog_visible_ && lock_screen_network_dialog_) {
+      is_network_dialog_visible_ = false;
       lock_screen_network_dialog_->Close();
     }
-    return;
   }
-  ShowLockScreenNetworkDialog();
-}
-
-void LockScreenStartReauthDialog::DefaultNetworkChanged(
-    const NetworkState* network) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace chromeos

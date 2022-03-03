@@ -32,6 +32,8 @@ namespace gl
 {
 class Buffer;
 
+constexpr uint32_t kElementArrayBufferIndex = MAX_VERTEX_ATTRIBS;
+
 class VertexArrayState final : angle::NonCopyable
 {
   public:
@@ -107,12 +109,23 @@ class VertexArrayState final : angle::NonCopyable
     AttributesMask mCachedInvalidMappedArrayBuffer;
 };
 
+class VertexArrayBufferContentsObservers final : angle::NonCopyable
+{
+  public:
+    VertexArrayBufferContentsObservers(VertexArray *vertexArray);
+    void enableForBuffer(Buffer *buffer, uint32_t bufferIndex);
+    void disableForBuffer(Buffer *buffer, uint32_t bufferIndex);
+
+  private:
+    VertexArray *mVertexArray;
+};
+
 class VertexArray final : public angle::ObserverInterface,
                           public LabeledObject,
                           public angle::Subject
 {
   public:
-    // Dirty bits for VertexArrays use a heirarchical design. At the top level, each attribute
+    // Dirty bits for VertexArrays use a hierarchical design. At the top level, each attribute
     // has a single dirty bit. Then an array of MAX_ATTRIBS dirty bits each has a dirty bit for
     // enabled/pointer/format/binding. Bindings are handled similarly. Note that because the
     // total number of dirty bits is 33, it will not be as fast on a 32-bit machine, which
@@ -225,7 +238,7 @@ class VertexArray final : public angle::ObserverInterface,
                           GLintptr offset,
                           GLsizei stride);
     void setVertexAttribBinding(const Context *context, size_t attribIndex, GLuint bindingIndex);
-    void setVertexBindingDivisor(size_t bindingIndex, GLuint divisor);
+    void setVertexBindingDivisor(const Context *context, size_t bindingIndex, GLuint divisor);
 
     Buffer *getElementArrayBuffer() const { return mState.getElementArrayBuffer(); }
     size_t getMaxAttribs() const { return mState.getMaxAttribs(); }
@@ -265,6 +278,7 @@ class VertexArray final : public angle::ObserverInterface,
 
     // Observer implementation
     void onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message) override;
+    void onBufferContentsChange(uint32_t bufferIndex);
 
     static size_t GetVertexIndexFromDirtyBit(size_t dirtyBit);
 
@@ -398,6 +412,7 @@ class VertexArray final : public angle::ObserverInterface,
 
     mutable IndexRangeCache mIndexRangeCache;
     bool mBufferAccessValidationEnabled;
+    VertexArrayBufferContentsObservers mContentsObservers;
 };
 
 }  // namespace gl

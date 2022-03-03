@@ -48,10 +48,17 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
   void CloneSessionStorage(
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) override;
+  void EvictSessionStorageCachedData(Page*) override;
 
   void DidChangeManifest(LocalFrame&) override;
   void NotifyOrientationChanged(LocalFrame&) override;
-  void DidUpdateScreens(LocalFrame&, const ScreenInfos&) override;
+  void DidUpdateScreens(LocalFrame&, const display::ScreenInfos&) override;
+  void SetLocalStorageArea(LocalFrame& frame,
+                           mojo::PendingRemote<mojom::blink::StorageArea>
+                               local_storage_area) override;
+  void SetSessionStorageArea(LocalFrame& frame,
+                             mojo::PendingRemote<mojom::blink::StorageArea>
+                                 session_storage_area) override;
 };
 
 }  // namespace blink

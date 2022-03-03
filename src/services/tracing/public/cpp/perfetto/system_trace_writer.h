@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -50,6 +49,9 @@ class COMPONENT_EXPORT(TRACING_CPP) SystemTraceWriter {
       : trace_writer_(producer->CreateTraceWriter(target_buffer)),
         trace_type_(trace_type),
         task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+  SystemTraceWriter(const SystemTraceWriter&) = delete;
+  SystemTraceWriter& operator=(const SystemTraceWriter&) = delete;
 
   void WriteData(const StringType& data) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -146,8 +148,6 @@ class COMPONENT_EXPORT(TRACING_CPP) SystemTraceWriter {
   base::OnceClosure on_flush_complete_callback_;
 
   base::WeakPtrFactory<SystemTraceWriter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTraceWriter);
 };
 
 }  // namespace tracing

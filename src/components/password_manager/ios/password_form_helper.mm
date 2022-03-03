@@ -61,7 +61,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 @interface PasswordFormHelper ()
 
 // Handler for injected JavaScript callbacks.
-- (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
+- (BOOL)handleScriptCommand:(const base::Value&)JSONCommand;
 
 // Parses the |jsonString| which contatins the password forms found on a web
 // page to populate the |forms| vector.
@@ -113,9 +113,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
     _fieldDataManager = uniqueIDDataTabHelper->GetFieldDataManager();
 
     __weak PasswordFormHelper* weakSelf = self;
-    auto callback = base::BindRepeating(
-        ^(const base::DictionaryValue& JSON, const GURL& originURL,
-          bool interacting, web::WebFrame* senderFrame) {
+    auto callback =
+        base::BindRepeating(^(const base::Value& JSON, const GURL& originURL,
+                              bool interacting, web::WebFrame* senderFrame) {
           // Passwords is only supported on main frame.
           if (senderFrame->IsMainFrame()) {
             // |originURL| and |interacting| aren't used.
@@ -158,7 +158,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
                            inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
   GURL pageURL = webState->GetLastCommittedURL();
-  if (pageURL.GetOrigin() != frame->GetSecurityOrigin()) {
+  if (pageURL.DeprecatedGetOriginAsURL() != frame->GetSecurityOrigin()) {
     // Passwords is only supported on main frame and iframes with the same
     // origin.
     return;
@@ -169,7 +169,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
   std::vector<FormData> forms;
   NSString* nsFormData = [NSString stringWithUTF8String:formData.c_str()];
   autofill::ExtractFormsData(nsFormData, false, std::u16string(), pageURL,
-                             pageURL.GetOrigin(), &forms);
+                             pageURL.DeprecatedGetOriginAsURL(), &forms);
   if (forms.size() != 1) {
     return;
   }
@@ -184,13 +184,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 #pragma mark - Private methods
 
-- (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand {
-  std::string command;
-  if (!JSONCommand.GetString("command", &command)) {
-    return NO;
-  }
-
-  if (command != "passwordForm.submitButtonClick") {
+- (BOOL)handleScriptCommand:(const base::Value&)JSONCommand {
+  const std::string* command = JSONCommand.FindStringKey("command");
+  if (!command || *command != "passwordForm.submitButtonClick") {
     return NO;
   }
 
@@ -201,7 +197,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
   FormData form;
   if (!autofill::ExtractFormData(JSONCommand, false, std::u16string(), pageURL,
-                                 pageURL.GetOrigin(), &form)) {
+                                 pageURL.DeprecatedGetOriginAsURL(), &form)) {
     return NO;
   }
 
@@ -221,7 +217,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
                  pageURL:(const GURL&)pageURL {
   std::vector<FormData> formsData;
   if (!autofill::ExtractFormsData(JSONString, false, std::u16string(), pageURL,
-                                  pageURL.GetOrigin(), &formsData)) {
+                                  pageURL.DeprecatedGetOriginAsURL(),
+                                  &formsData)) {
     return;
   }
   // Extract FieldDataManager data for observed form fields.
@@ -303,7 +300,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
   // 2. |formData|'s origin is not matching the origin of the last commited URL.
   // 3. If a field has user typed input or input filled on user trigger.
   if (formData.wait_for_username ||
-      formData.url.GetOrigin() != self.lastCommittedURL.GetOrigin() ||
+      formData.url.DeprecatedGetOriginAsURL() !=
+          self.lastCommittedURL.DeprecatedGetOriginAsURL() ||
       self.fieldDataManager->WasAutofilledOnUserTrigger(passwordID) ||
       self.fieldDataManager->DidUserType(passwordID)) {
     if (completionHandler) {

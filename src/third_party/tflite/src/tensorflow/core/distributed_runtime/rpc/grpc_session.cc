@@ -96,7 +96,8 @@ void ReEncodeConsts(GraphDef* gdef) {
 }
 }  // namespace
 
-void GrpcSession::SetHandleAndGraphVersion(string handle, int64 graph_version) {
+void GrpcSession::SetHandleAndGraphVersion(string handle,
+                                           int64_t graph_version) {
   mutex_lock l(mu_);
   handle_ = std::move(handle);
   current_graph_version_ = graph_version;
@@ -229,7 +230,7 @@ Status GrpcSession::RunHelper(
   // Build an index from fetch tensor name to first index in
   // output_tensor_names.
   std::unordered_map<string, int> output_name_to_offset;
-  for (int i = 0; i < output_tensor_names.size(); ++i) {
+  for (int i = 0, end = output_tensor_names.size(); i < end; ++i) {
     const string& name = output_tensor_names[i];
     if (output_name_to_offset.insert(std::make_pair(name, i)).second) {
       req->add_fetch(name);
@@ -245,7 +246,7 @@ Status GrpcSession::RunHelper(
 
   // Look for an extended error returned in the response body.
   if (resp->status_code() != error::Code::OK) {
-    return Status(resp->status_code(), resp->status_error_message());
+    return resp->status();
   }
 
   if (!output_tensor_names.empty()) {
@@ -267,7 +268,7 @@ Status GrpcSession::RunHelper(
   // In the unlikely event that output_tensor_names contains duplicates, fill in
   // the duplicate values.
   if (output_name_to_offset.size() != output_tensor_names.size()) {
-    for (int i = 0; i < output_tensor_names.size(); ++i) {
+    for (int i = 0, end = output_tensor_names.size(); i < end; ++i) {
       const string& name = output_tensor_names[i];
       int offset = output_name_to_offset[name];
       if (offset != i) {
@@ -413,6 +414,7 @@ Status GrpcSession::Reset(const SessionOptions& options,
                              /*rpc_options=*/nullptr, &master_channel));
   auto master = NewGrpcMaster(master_channel);
   ResetRequest req;
+  req.mutable_container()->Reserve(containers.size());
   for (const auto& c : containers) req.add_container(c);
   ResetResponse resp;
   CallOptions call_options;

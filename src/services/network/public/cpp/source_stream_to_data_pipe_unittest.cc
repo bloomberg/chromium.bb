@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/source_stream_to_data_pipe.h"
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "net/filter/mock_source_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,7 +85,7 @@ class SourceStreamToDataPipeTest
     while (result == MOJO_RESULT_OK || result == MOJO_RESULT_SHOULD_WAIT) {
       char buffer[16];
       uint32_t read_size = sizeof(buffer);
-      MojoResult result =
+      result =
           consumer_end().ReadData(buffer, &read_size, MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_FAILED_PRECONDITION)
         break;
@@ -112,7 +113,7 @@ class SourceStreamToDataPipeTest
   void FinishedReading(int result) { callback_result_ = result; }
 
   base::test::TaskEnvironment task_environment_;
-  net::MockSourceStream* source_;
+  raw_ptr<net::MockSourceStream> source_;
   std::unique_ptr<SourceStreamToDataPipe> adapter_;
   mojo::ScopedDataPipeConsumerHandle consumer_end_;
   absl::optional<int> callback_result_;

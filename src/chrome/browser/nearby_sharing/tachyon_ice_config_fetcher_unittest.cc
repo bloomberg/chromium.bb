@@ -67,8 +67,8 @@ class TachyonIceConfigFetcherTest : public testing::Test {
                 &test_url_loader_factory_)),
         ice_config_fetcher_(identity_test_environment_.identity_manager(),
                             test_shared_loader_factory_) {
-    identity_test_environment_.MakeUnconsentedPrimaryAccountAvailable(
-        kTestAccount);
+    identity_test_environment_.MakePrimaryAccountAvailable(
+        kTestAccount, signin::ConsentLevel::kSignin);
   }
   ~TachyonIceConfigFetcherTest() override = default;
 
@@ -222,8 +222,7 @@ TEST_F(TachyonIceConfigFetcherTest, IceServersCached) {
   run_loop->Run();
 
   // Wait until the cache has expired.
-  task_environment_.FastForwardBy(
-      base::TimeDelta::FromSeconds(kLifetimeDurationSeconds + 1));
+  task_environment_.FastForwardBy(base::Seconds(kLifetimeDurationSeconds + 1));
 
   // Expired cache results in fetching the servers again.
   run_loop.reset(new base::RunLoop());

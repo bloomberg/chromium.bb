@@ -17,10 +17,10 @@
 #include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace {

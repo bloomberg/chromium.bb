@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for boosted_trees training kernels."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from google.protobuf import text_format
@@ -4117,8 +4113,8 @@ class UpdateTreeEnsembleOpTest(test_util.TensorFlowTestCase):
                                      dtype=np.float32)
       split_types = np.array(
           [_INEQUALITY_DEFAULT_LEFT, _INEQUALITY_DEFAULT_LEFT])
-      with self.assertRaisesRegexp(Exception,
-                                   r'Dimension 0 in both shapes must be equal'):
+      with self.assertRaisesRegex(Exception,
+                                  r'Dimension 0 in both shapes must be equal'):
         grow_op = boosted_trees_ops.update_ensemble_v2(
             tree_ensemble_handle,
             learning_rate=1.0,

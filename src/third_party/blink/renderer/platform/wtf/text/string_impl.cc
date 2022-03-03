@@ -41,6 +41,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode_string.h"
 
 using std::numeric_limits;
 
@@ -51,6 +53,7 @@ namespace {
 struct SameSizeAsStringImpl {
 #if DCHECK_IS_ON()
   ThreadRestrictionVerifier verifier;
+  unsigned int ref_count_change_count;
 #endif
   int fields[3];
 };

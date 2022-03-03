@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
@@ -50,6 +50,10 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
         const perfetto::TraceConfig& trace_config,
         perfetto::base::ScopedFile output_file,
         mojom::TracingClientPriority priority);
+
+    TracingSession(const TracingSession&) = delete;
+    TracingSession& operator=(const TracingSession&) = delete;
+
     ~TracingSession() override;
 
     void OnPerfettoEvents(const perfetto::ObservableEvents&);
@@ -91,7 +95,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
     void MaybeSendEnableTracingAck();
     bool IsExpectedPid(base::ProcessId pid) const;
 
-    ConsumerHost* const host_;
+    const raw_ptr<ConsumerHost> host_;
     mojo::Remote<mojom::TracingSessionClient> tracing_session_client_;
     mojo::Receiver<mojom::TracingSessionHost> receiver_;
     bool privacy_filtering_enabled_ = false;
@@ -121,13 +125,15 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
 
     SEQUENCE_CHECKER(sequence_checker_);
     base::WeakPtrFactory<TracingSession> weak_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(TracingSession);
   };
 
   // The owner of ConsumerHost should make sure to destroy
   // |service| after destroying this.
   explicit ConsumerHost(PerfettoService* service);
+
+  ConsumerHost(const ConsumerHost&) = delete;
+  ConsumerHost& operator=(const ConsumerHost&) = delete;
+
   ~ConsumerHost() override;
 
   PerfettoService* service() const { return service_; }
@@ -164,7 +170,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
  private:
   void DestructTracingSession();
 
-  PerfettoService* const service_;
+  const raw_ptr<PerfettoService> service_;
   std::unique_ptr<TracingSession> tracing_session_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -174,7 +180,6 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
       consumer_endpoint_;
 
   base::WeakPtrFactory<ConsumerHost> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ConsumerHost);
 };
 
 }  // namespace tracing

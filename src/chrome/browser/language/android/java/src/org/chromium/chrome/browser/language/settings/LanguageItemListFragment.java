@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.language.R;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
@@ -127,17 +128,18 @@ public abstract class LanguageItemListFragment
                         scrollView, inflatedView.findViewById(R.id.shadow)));
 
         TextView addLanguageButton = (TextView) inflatedView.findViewById(R.id.add_language);
+        final TintedDrawable tintedDrawable =
+                TintedDrawable.constructTintedDrawable(getContext(), R.drawable.plus);
+        tintedDrawable.setTint(SemanticColorUtils.getDefaultControlColorActive(getContext()));
         addLanguageButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                TintedDrawable.constructTintedDrawable(
-                        getContext(), R.drawable.plus, R.color.default_control_color_active),
-                null, null, null);
+                tintedDrawable, null, null, null);
 
         addLanguageButton.setOnClickListener(view -> { // Lambda for View.OnClickListener
             recordAddLanguageImpression();
             Intent intent = mSettingsLauncher.createSettingsActivityIntent(
-                    getActivity(), AddLanguageFragment.class.getName());
+                    getActivity(), SelectLanguageFragment.class.getName());
             intent.putExtra(
-                    AddLanguageFragment.INTENT_POTENTIAL_LANGUAGES, getPotentialLanguageType());
+                    SelectLanguageFragment.INTENT_POTENTIAL_LANGUAGES, getPotentialLanguageType());
             startActivityForResult(intent, REQUEST_CODE_SELECT_LANGUAGE);
         });
 
@@ -148,7 +150,7 @@ public abstract class LanguageItemListFragment
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, requestCode, data);
         if (requestCode == REQUEST_CODE_SELECT_LANGUAGE && resultCode == Activity.RESULT_OK) {
-            String code = data.getStringExtra(AddLanguageFragment.INTENT_SELECTED_LANGUAGE);
+            String code = data.getStringExtra(SelectLanguageFragment.INTENT_SELECTED_LANGUAGE);
             onLanguageAdded(code);
             mAdapter.onDataUpdated();
             recordAddAction();

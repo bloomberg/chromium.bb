@@ -16,6 +16,7 @@
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +67,10 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
   DigitalAssetLinksHandlerTest()
       : num_invocations_(0), result_(RelationshipCheckResult::kSuccess) {}
 
+  DigitalAssetLinksHandlerTest(const DigitalAssetLinksHandlerTest&) = delete;
+  DigitalAssetLinksHandlerTest& operator=(const DigitalAssetLinksHandlerTest&) =
+      delete;
+
   void OnRelationshipCheckComplete(RelationshipCheckResult result) {
     ++num_invocations_;
     result_ = result;
@@ -115,8 +120,6 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DigitalAssetLinksHandlerTest);
 };
 }  // namespace
 

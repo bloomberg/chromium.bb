@@ -9,7 +9,6 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
-#include "skia/ext/legacy_display_globals.h"
 #include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/vsync_provider.h"
@@ -113,7 +112,9 @@ void SkiaOutputDeviceDawn::SwapBuffers(BufferPresentedCallback feedback,
 }
 
 SkSurface* SkiaOutputDeviceDawn::BeginPaint(
+    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  DCHECK(!allocate_frame_buffer);
   GrDawnRenderTargetInfo info;
   info.fTextureView = swap_chain_.GetCurrentTextureView();
   info.fFormat = kSwapChainFormat;
@@ -121,8 +122,7 @@ SkSurface* SkiaOutputDeviceDawn::BeginPaint(
   GrBackendRenderTarget backend_target(
       size_.width(), size_.height(), /*sampleCnt=*/0, /*stencilBits=*/0, info);
   DCHECK(backend_target.isValid());
-  SkSurfaceProps surface_props =
-      skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+  SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_provider_->GetGrContext(), backend_target,
       capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft

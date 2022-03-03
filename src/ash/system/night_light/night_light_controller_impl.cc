@@ -7,11 +7,10 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/display_color_manager.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -20,10 +19,10 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
@@ -33,6 +32,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -87,13 +87,11 @@ constexpr float kDefaultColorTemperature = 0.5f;
 
 // The duration of the temperature change animation for
 // AnimationDurationType::kShort.
-constexpr base::TimeDelta kManualAnimationDuration =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kManualAnimationDuration = base::Seconds(1);
 
 // The duration of the temperature change animation for
 // AnimationDurationType::kLong.
-constexpr base::TimeDelta kAutomaticAnimationDuration =
-    base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kAutomaticAnimationDuration = base::Seconds(60);
 
 // The color temperature animation frames per second.
 constexpr int kNightLightAnimationFrameRate = 15;
@@ -108,6 +106,10 @@ class NightLightControllerDelegateImpl
     : public NightLightControllerImpl::Delegate {
  public:
   NightLightControllerDelegateImpl() = default;
+  NightLightControllerDelegateImpl(const NightLightControllerDelegateImpl&) =
+      delete;
+  NightLightControllerDelegateImpl& operator=(
+      const NightLightControllerDelegateImpl&) = delete;
   ~NightLightControllerDelegateImpl() override = default;
 
   // ash::NightLightControllerImpl::Delegate:
@@ -154,8 +156,6 @@ class NightLightControllerDelegateImpl
   }
 
   std::unique_ptr<NightLightController::SimpleGeoposition> geoposition_;
-
-  DISALLOW_COPY_AND_ASSIGN(NightLightControllerDelegateImpl);
 };
 
 // Returns the color temperature range bucket in which |temperature| resides.
@@ -166,7 +166,7 @@ class NightLightControllerDelegateImpl
 // 3 => Range [60 : 80).
 // 4 => Range [80 : 100] (most warm).
 int GetTemperatureRange(float temperature) {
-  return base::ClampToRange(std::floor(5 * temperature), 0.0f, 4.0f);
+  return base::clamp(std::floor(5 * temperature), 0.0f, 4.0f);
 }
 
 // Returns the color matrix that corresponds to the given |temperature|.
@@ -175,14 +175,14 @@ int GetTemperatureRange(float temperature) {
 // If |in_linear_gamma_space| is true, the generated matrix is the one that
 // should be applied after gamma correction, and it corresponds to the
 // non-linear temperature value for the given |temperature|.
-SkMatrix44 MatrixFromTemperature(float temperature,
-                                 bool in_linear_gamma_space,
-                                 bool apply_ambient_temperature) {
+skia::Matrix44 MatrixFromTemperature(float temperature,
+                                     bool in_linear_gamma_space,
+                                     bool apply_ambient_temperature) {
   if (in_linear_gamma_space)
     temperature =
         NightLightControllerImpl::GetNonLinearTemperature(temperature);
 
-  SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
+  skia::Matrix44 matrix(skia::Matrix44::kIdentity_Constructor);
   if (temperature != 0.0f) {
     const float blue_scale =
         NightLightControllerImpl::BlueColorScaleFromTemperature(temperature);
@@ -215,11 +215,11 @@ SkMatrix44 MatrixFromTemperature(float temperature,
 // either apply the |night_light_matrix| on the compositor, or reset it to
 // the identity matrix to avoid having double the Night Light effect.
 void UpdateCompositorMatrix(aura::WindowTreeHost* host,
-                            const SkMatrix44& night_light_matrix,
+                            const skia::Matrix44& night_light_matrix,
                             bool crtc_matrix_result) {
   if (host->compositor()) {
     host->compositor()->SetDisplayColorMatrix(
-        crtc_matrix_result ? SkMatrix44::I() : night_light_matrix);
+        crtc_matrix_result ? skia::Matrix44::I() : night_light_matrix);
   }
 }
 
@@ -233,8 +233,8 @@ void UpdateCompositorMatrix(aura::WindowTreeHost* host,
 // Returns true if the hardware supports this operation and one of the
 // matrices was successfully sent to the GPU.
 bool AttemptSettingHardwareCtm(int64_t display_id,
-                               const SkMatrix44& linear_gamma_space_matrix,
-                               const SkMatrix44& gamma_compressed_matrix) {
+                               const skia::Matrix44& linear_gamma_space_matrix,
+                               const skia::Matrix44& gamma_compressed_matrix) {
   for (const auto* snapshot :
        Shell::Get()->display_configurator()->cached_displays()) {
     if (snapshot->display_id() == display_id &&
@@ -275,9 +275,9 @@ void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
       night_light_controller->GetAmbientColorEnabled() &&
       display::Display::IsInternalDisplayId(display_id);
 
-  const SkMatrix44 linear_gamma_space_matrix =
+  const skia::Matrix44 linear_gamma_space_matrix =
       MatrixFromTemperature(temperature, true, apply_ambient_temperature);
-  const SkMatrix44 gamma_compressed_matrix =
+  const skia::Matrix44 gamma_compressed_matrix =
       MatrixFromTemperature(temperature, false, apply_ambient_temperature);
   const bool crtc_result = AttemptSettingHardwareCtm(
       display_id, linear_gamma_space_matrix, gamma_compressed_matrix);
@@ -337,6 +337,9 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
       : gfx::LinearAnimation(kManualAnimationDuration,
                              kNightLightAnimationFrameRate,
                              this) {}
+  ColorTemperatureAnimation(const ColorTemperatureAnimation&) = delete;
+  ColorTemperatureAnimation& operator=(const ColorTemperatureAnimation&) =
+      delete;
   ~ColorTemperatureAnimation() override = default;
 
   float target_temperature() const { return target_temperature_; }
@@ -351,8 +354,7 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
     }
 
     start_temperature_ = current_temperature_;
-    target_temperature_ =
-        base::ClampToRange(new_target_temperature, 0.0f, 1.0f);
+    target_temperature_ = base::clamp(new_target_temperature, 0.0f, 1.0f);
 
     if (ui::ScopedAnimationDurationScaleMode::duration_multiplier() ==
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
@@ -371,7 +373,7 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
  private:
   // gfx::Animation:
   void AnimateToState(double state) override {
-    state = base::ClampToRange(state, 0.0, 1.0);
+    state = base::clamp(state, 0.0, 1.0);
     current_temperature_ =
         start_temperature_ + (target_temperature_ - start_temperature_) * state;
   }
@@ -393,7 +395,6 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
   float current_temperature_ = 0.0f;
   float target_temperature_ = 0.0f;
 
-  DISALLOW_COPY_AND_ASSIGN(ColorTemperatureAnimation);
 };
 
 NightLightControllerImpl::NightLightControllerImpl()
@@ -479,9 +480,9 @@ float NightLightControllerImpl::RemapAmbientColorTemperature(
   // maximum. Given that the interval kTable[i].input_temperature,
   // kTable[i+1].input_temperature exclude the upper bound, we clamp it to the
   // last input_temperature element of the table minus 1.
-  const float temperature = base::ClampToRange<float>(
-      temperature_in_kelvin, kTable[0].input_temperature,
-      kTable[kTableSize - 1].input_temperature - 1);
+  const float temperature =
+      base::clamp<float>(temperature_in_kelvin, kTable[0].input_temperature,
+                         kTable[kTableSize - 1].input_temperature - 1);
   for (size_t i = 0; i < kTableSize - 1; i++) {
     if (temperature >= kTable[i].input_temperature &&
         temperature < kTable[i + 1].input_temperature) {
@@ -693,7 +694,7 @@ void NightLightControllerImpl::SetCurrentGeoposition(
   // or more in either sunset or sunrise times. A one-hour threshold is used
   // here as an indication of a possible timezone change, and this case, manual
   // toggles should be ignored.
-  constexpr base::TimeDelta kOneHourDuration = base::TimeDelta::FromHours(1);
+  constexpr base::TimeDelta kOneHourDuration = base::Hours(1);
   const bool keep_manual_toggles_during_schedules =
       (delegate_->GetSunsetTime() - previous_sunset).magnitude() <
           kOneHourDuration &&
@@ -1111,7 +1112,7 @@ void NightLightControllerImpl::RefreshScheduleTimer(
       //        |             |        |
       //      start          now      end
       //
-      start_time -= base::TimeDelta::FromDays(1);
+      start_time -= base::Days(1);
     } else {
       // Two possibilities here:
       // - Either "now" is greater than the end time, but less than start time.
@@ -1120,7 +1121,7 @@ void NightLightControllerImpl::RefreshScheduleTimer(
       // - Or "now" is greater than both the start and end times. This means
       //   NightLight is within the schedule, waiting to turn off at the next
       //   end time, which is also a day later.
-      end_time += base::TimeDelta::FromDays(1);
+      end_time += base::Days(1);
     }
   }
 
@@ -1152,7 +1153,7 @@ void NightLightControllerImpl::RefreshScheduleTimer(
     // Start NightLight right away. Our future start time is a day later than
     // its current value.
     enable_now = true;
-    start_time += base::TimeDelta::FromDays(1);
+    start_time += base::Days(1);
   } else {  // now >= end_time.
     // Example:
     // Start: 6:00 PM today, End: 10:00 PM today, Now: 11:00 PM.
@@ -1165,8 +1166,8 @@ void NightLightControllerImpl::RefreshScheduleTimer(
     // current values. NightLight needs to be ended immediately if it's already
     // enabled.
     enable_now = false;
-    start_time += base::TimeDelta::FromDays(1);
-    end_time += base::TimeDelta::FromDays(1);
+    start_time += base::Days(1);
+    end_time += base::Days(1);
   }
 
   // After the above processing, the start and end time are all in the future.

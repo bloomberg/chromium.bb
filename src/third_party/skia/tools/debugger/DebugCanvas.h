@@ -184,8 +184,9 @@ protected:
     void onClipPath(const SkPath&, SkClipOp, ClipEdgeStyle) override;
     void onClipShader(sk_sp<SkShader>, SkClipOp) override;
     void onClipRegion(const SkRegion& region, SkClipOp) override;
-    void onDrawShadowRec(const SkPath&, const SkDrawShadowRec&) override;
+    void onResetClip() override;
 
+    void onDrawShadowRec(const SkPath&, const SkDrawShadowRec&) override;
     void onDrawDrawable(SkDrawable*, const SkMatrix*) override;
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 
@@ -231,10 +232,11 @@ private:
      */
     void addDrawCommand(DrawCommand* command);
 
+#if SK_GPU_V1
     GrAuditTrail* getAuditTrail(SkCanvas*);
-
     void drawAndCollectOps(SkCanvas*);
-    void cleanupAuditTrail(SkCanvas*);
+    void cleanupAuditTrail(GrAuditTrail*);
+#endif
 
     using INHERITED = SkCanvasVirtualEnforcer<SkCanvas>;
 };

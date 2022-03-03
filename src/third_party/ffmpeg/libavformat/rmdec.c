@@ -66,8 +66,6 @@ typedef struct RMDemuxContext {
     int data_end;
 } RMDemuxContext;
 
-static int rm_read_close(AVFormatContext *s);
-
 static inline void get_strl(AVIOContext *pb, char *buf, int buf_size, int len)
 {
     int read = avio_get_str(pb, len, buf, buf_size);
@@ -124,9 +122,14 @@ void ff_rm_free_rmstream (RMStream *rms)
 static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
                                      AVStream *st, RMStream *ast, int read_all)
 {
+    FFStream *const sti = ffstream(st);
     char buf[256];
     uint32_t version;
     int ret;
+
+    // Duplicate tags
+    if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+        return AVERROR_INVALIDDATA;
 
     /* ra type header */
     version = avio_rb16(pb); /* version */
@@ -204,7 +207,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
 
         switch (st->codecpar->codec_id) {
         case AV_CODEC_ID_AC3:
-            st->need_parsing = AVSTREAM_PARSE_FULL;
+            sti->need_parsing = AVSTREAM_PARSE_FULL;
             break;
         case AV_CODEC_ID_RA_288:
             st->codecpar->extradata_size= 0;
@@ -213,7 +216,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             st->codecpar->block_align = coded_framesize;
             break;
         case AV_CODEC_ID_COOK:
-            st->need_parsing = AVSTREAM_PARSE_HEADERS;
+            sti->need_parsing = AVSTREAM_PARSE_HEADERS;
         case AV_CODEC_ID_ATRAC3:
         case AV_CODEC_ID_SIPR:
             if (read_all) {
@@ -237,7 +240,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
                     return -1;
                 }
                 st->codecpar->block_align = ff_sipr_subpk_size[flavor];
-                st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+                sti->need_parsing = AVSTREAM_PARSE_FULL_RAW;
             } else {
                 if(sub_packet_size <= 0){
                     av_log(s, AV_LOG_ERROR, "sub_packet_size is invalid\n");
@@ -269,9 +272,9 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         case DEINT_ID_INT4:
             if (ast->coded_framesize > ast->audio_framesize ||
                 sub_packet_h <= 1 ||
-                ast->coded_framesize * sub_packet_h > (2 + (sub_packet_h & 1)) * ast->audio_framesize)
+                ast->coded_framesize * (uint64_t)sub_packet_h > (2 + (sub_packet_h & 1)) * ast->audio_framesize)
                 return AVERROR_INVALIDDATA;
-            if (ast->coded_framesize * sub_packet_h != 2*ast->audio_framesize) {
+            if (ast->coded_framesize * (uint64_t)sub_packet_h != 2*ast->audio_framesize) {
                 avpriv_request_sample(s, "mismatching interleaver parameters");
                 return AVERROR_INVALIDDATA;
             }
@@ -296,7 +299,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             ast->deint_id == DEINT_ID_GENR ||
             ast->deint_id == DEINT_ID_SIPR) {
             if (st->codecpar->block_align <= 0 ||
-                ast->audio_framesize * sub_packet_h > (unsigned)INT_MAX ||
+                ast->audio_framesize * (uint64_t)sub_packet_h > (unsigned)INT_MAX ||
                 ast->audio_framesize * sub_packet_h < st->codecpar->block_align)
                 return AVERROR_INVALIDDATA;
             if (av_new_packet(&ast->pkt, ast->audio_framesize * sub_packet_h) < 0)
@@ -390,7 +393,7 @@ int ff_rm_read_mdpr_codecdata(AVFormatContext *s, AVIOContext *pb,
         avio_skip(pb, 2); // looks like bits per sample
         avio_skip(pb, 4); // always zero?
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-        st->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
+        ffstream(st)->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
         fps = avio_rb32(pb);
 
         if ((ret = rm_read_extradata(s, pb, st->codecpar, codec_data_size - (avio_tell(pb) - codec_pos))) < 0)
@@ -563,16 +566,15 @@ static int rm_read_header(AVFormatContext *s)
     avio_skip(pb, tag_size - 8);
 
     for(;;) {
-        ret = AVERROR_INVALIDDATA;
         if (avio_feof(pb))
-            goto fail;
+            return AVERROR_INVALIDDATA;
         tag = avio_rl32(pb);
         tag_size = avio_rb32(pb);
         avio_rb16(pb);
         av_log(s, AV_LOG_TRACE, "tag=%s size=%d\n",
                av_fourcc2str(tag), tag_size);
         if (tag_size < 10 && tag != MKTAG('D', 'A', 'T', 'A'))
-            goto fail;
+            return AVERROR_INVALIDDATA;
         switch(tag) {
         case MKTAG('P', 'R', 'O', 'P'):
             /* file header */
@@ -594,10 +596,8 @@ static int rm_read_header(AVFormatContext *s)
             break;
         case MKTAG('M', 'D', 'P', 'R'):
             st = avformat_new_stream(s, NULL);
-            if (!st) {
-                ret = AVERROR(ENOMEM);
-                goto fail;
-            }
+            if (!st)
+                return AVERROR(ENOMEM);
             st->id = avio_rb16(pb);
             avio_rb32(pb); /* max bit rate */
             st->codecpar->bit_rate = avio_rb32(pb); /* bit rate */
@@ -625,14 +625,14 @@ static int rm_read_header(AVFormatContext *s)
             if (v == MKBETAG('M', 'L', 'T', 'I')) {
                 ret = rm_read_multi(s, s->pb, st, mime);
                 if (ret < 0)
-                    goto fail;
+                    return ret;
                 avio_seek(pb, codec_pos + size, SEEK_SET);
             } else {
                 avio_skip(pb, -4);
                 ret = ff_rm_read_mdpr_codecdata(s, s->pb, st, st->priv_data,
                                                 size, mime);
                 if (ret < 0)
-                    goto fail;
+                    return ret;
             }
 
             break;
@@ -660,10 +660,6 @@ static int rm_read_header(AVFormatContext *s)
     }
 
     return 0;
-
-fail:
-    rm_read_close(s);
-    return ret;
 }
 
 static int get_num(AVIOContext *pb, int *len)
@@ -1010,8 +1006,8 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     RMDemuxContext *rm = s->priv_data;
     AVStream *st = NULL; // init to silence compiler warning
-    int i, len, res, seq = 1;
-    int64_t timestamp, pos;
+    int i, res, seq = 1;
+    int64_t timestamp, pos, len;
     int flags;
 
     for (;;) {
@@ -1030,7 +1026,9 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
                 ast = st->priv_data;
                 timestamp = AV_NOPTS_VALUE;
                 len = !ast->audio_framesize ? RAW_PACKET_SIZE :
-                    ast->coded_framesize * ast->sub_packet_h / 2;
+                    ast->coded_framesize * (int64_t)ast->sub_packet_h / 2;
+                if (len > INT_MAX)
+                    return AVERROR_INVALIDDATA;
                 flags = (seq++ == 1) ? 2 : 0;
                 pos = avio_tell(s->pb);
             } else {
@@ -1145,10 +1143,11 @@ static int rm_read_seek(AVFormatContext *s, int stream_index,
 }
 
 
-AVInputFormat ff_rm_demuxer = {
+const AVInputFormat ff_rm_demuxer = {
     .name           = "rm",
     .long_name      = NULL_IF_CONFIG_SMALL("RealMedia"),
     .priv_data_size = sizeof(RMDemuxContext),
+    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = rm_probe,
     .read_header    = rm_read_header,
     .read_packet    = rm_read_packet,
@@ -1157,7 +1156,7 @@ AVInputFormat ff_rm_demuxer = {
     .read_seek      = rm_read_seek,
 };
 
-AVInputFormat ff_rdt_demuxer = {
+const AVInputFormat ff_rdt_demuxer = {
     .name           = "rdt",
     .long_name      = NULL_IF_CONFIG_SMALL("RDT demuxer"),
     .priv_data_size = sizeof(RMDemuxContext),
@@ -1249,11 +1248,8 @@ static int ivr_read_header(AVFormatContext *s)
     }
 
     for (n = 0; n < nb_streams; n++) {
-        st = avformat_new_stream(s, NULL);
-        if (!st)
-            return AVERROR(ENOMEM);
-        st->priv_data = ff_rm_alloc_rmstream();
-        if (!st->priv_data)
+        if (!(st = avformat_new_stream(s, NULL)) ||
+            !(st->priv_data = ff_rm_alloc_rmstream()))
             return AVERROR(ENOMEM);
 
         if (avio_r8(pb) != 1)
@@ -1311,7 +1307,7 @@ static int ivr_read_header(AVFormatContext *s)
     if (avio_r8(pb) != 6)
         return AVERROR_INVALIDDATA;
     avio_skip(pb, 12);
-    avio_skip(pb, avio_rb64(pb) + pos - avio_tell(s->pb));
+    avio_seek(pb, avio_rb64(pb) + pos, SEEK_SET);
     if (avio_r8(pb) != 8)
         return AVERROR_INVALIDDATA;
     avio_skip(pb, 8);
@@ -1400,10 +1396,11 @@ static int ivr_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-AVInputFormat ff_ivr_demuxer = {
+const AVInputFormat ff_ivr_demuxer = {
     .name           = "ivr",
     .long_name      = NULL_IF_CONFIG_SMALL("IVR (Internet Video Recording)"),
     .priv_data_size = sizeof(RMDemuxContext),
+    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = ivr_probe,
     .read_header    = ivr_read_header,
     .read_packet    = ivr_read_packet,

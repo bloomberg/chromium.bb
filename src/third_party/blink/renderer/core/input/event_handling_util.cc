@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -117,11 +118,11 @@ ContainerNode* ParentForClickEvent(const Node& node) {
 
 PhysicalOffset ContentPointFromRootFrame(
     LocalFrame* frame,
-    const FloatPoint& point_in_root_frame) {
+    const gfx::PointF& point_in_root_frame) {
   LocalFrameView* view = frame->View();
   // FIXME: Is it really OK to use the wrong coordinates here when view is 0?
   // Historically the code would just crash; this is clearly no worse than that.
-  return PhysicalOffset::FromFloatPointRound(
+  return PhysicalOffset::FromPointFRound(
       view ? view->ConvertFromRootFrame(point_in_root_frame)
            : point_in_root_frame);
 }
@@ -134,8 +135,7 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(
   DCHECK(frame->GetDocument());
 
   return frame->GetDocument()->PerformMouseEventHitTest(
-      request,
-      ContentPointFromRootFrame(frame, FloatPoint(mev.PositionInRootFrame())),
+      request, ContentPointFromRootFrame(frame, mev.PositionInRootFrame()),
       mev);
 }
 

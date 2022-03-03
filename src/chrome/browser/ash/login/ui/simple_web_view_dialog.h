@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
@@ -31,7 +30,7 @@ class Widget;
 class WidgetDelegate;
 }  // namespace views
 
-namespace chromeos {
+namespace ash {
 
 class StubBubbleModelDelegate;
 
@@ -68,7 +67,7 @@ class SimpleWebViewDialog : public views::View,
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
   void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
+                           bool should_show_loading_ui) override;
 
   // Implements LocationBarView::Delegate:
   content::WebContents* GetWebContents() override;
@@ -121,6 +120,6 @@ class SimpleWebViewDialog : public views::View,
   base::ObserverList<web_modal::ModalDialogHostObserver>::Unchecked observers_;
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_SIMPLE_WEB_VIEW_DIALOG_H_

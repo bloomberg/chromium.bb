@@ -80,6 +80,23 @@ size_t NumberOfCpus() {
   return static_cast<size_t>(sysconf(_SC_NPROCESSORS_CONF));
 }
 
+int32_t ToBuiltinClock(int32_t clockid) {
+  switch (clockid) {
+    case CLOCK_REALTIME:
+      return protos::pbzero::BUILTIN_CLOCK_REALTIME;
+    case CLOCK_MONOTONIC:
+      return protos::pbzero::BUILTIN_CLOCK_MONOTONIC;
+    case CLOCK_MONOTONIC_RAW:
+      return protos::pbzero::BUILTIN_CLOCK_MONOTONIC_RAW;
+    case CLOCK_BOOTTIME:
+      return protos::pbzero::BUILTIN_CLOCK_BOOTTIME;
+    // Should never get invalid input here as otherwise the syscall itself
+    // would've failed earlier.
+    default:
+      return protos::pbzero::BUILTIN_CLOCK_UNKNOWN;
+  }
+}
+
 TraceWriter::TracePacketHandle StartTracePacket(TraceWriter* trace_writer) {
   auto packet = trace_writer->NewTracePacket();
   packet->set_sequence_flags(
@@ -97,16 +114,16 @@ void WritePerfEventDefaultsPacket(const EventConfig& event_config,
   packet->set_sequence_flags(
       protos::pbzero::TracePacket::SEQ_INCREMENTAL_STATE_CLEARED);
 
-  // default packet timestamp clockid:
+  // default packet timestamp clock for the samples:
+  perf_event_attr* perf_attr = event_config.perf_attr();
   auto* defaults = packet->set_trace_packet_defaults();
-  defaults->set_timestamp_clock_id(protos::pbzero::BUILTIN_CLOCK_MONOTONIC_RAW);
-  PERFETTO_DCHECK(event_config.perf_attr()->clockid == CLOCK_MONOTONIC_RAW);
+  int32_t builtin_clock = ToBuiltinClock(perf_attr->clockid);
+  defaults->set_timestamp_clock_id(static_cast<uint32_t>(builtin_clock));
 
   auto* perf_defaults = defaults->set_perf_sample_defaults();
   auto* timebase_pb = perf_defaults->set_timebase();
 
   // frequency/period:
-  perf_event_attr* perf_attr = event_config.perf_attr();
   if (perf_attr->freq) {
     timebase_pb->set_frequency(perf_attr->sample_freq);
   } else {
@@ -115,17 +132,35 @@ void WritePerfEventDefaultsPacket(const EventConfig& event_config,
 
   // event:
   const PerfCounter& timebase = event_config.timebase_event();
-  if (timebase.is_counter()) {
-    timebase_pb->set_counter(
-        static_cast<protos::pbzero::PerfEvents::Counter>(timebase.counter));
-  } else {
-    PERFETTO_DCHECK(timebase.is_tracepoint());
-    // TODO(rsavitski): reconsider using a struct with two strings instead
-    // of the ::gen::Tracepoint class in the C++ code.
-    auto* tracepoint_pb = timebase_pb->set_tracepoint();
-    tracepoint_pb->set_name(timebase.tracepoint.name());
-    tracepoint_pb->set_filter(timebase.tracepoint.filter());
+  switch (timebase.event_type()) {
+    case PerfCounter::Type::kBuiltinCounter: {
+      timebase_pb->set_counter(
+          static_cast<protos::pbzero::PerfEvents::Counter>(timebase.counter));
+      break;
+    }
+    case PerfCounter::Type::kTracepoint: {
+      auto* tracepoint_pb = timebase_pb->set_tracepoint();
+      tracepoint_pb->set_name(timebase.tracepoint_name);
+      tracepoint_pb->set_filter(timebase.tracepoint_filter);
+      break;
+    }
+    case PerfCounter::Type::kRawEvent: {
+      auto* raw_pb = timebase_pb->set_raw_event();
+      raw_pb->set_type(timebase.attr_type);
+      raw_pb->set_config(timebase.attr_config);
+      raw_pb->set_config1(timebase.attr_config1);
+      raw_pb->set_config2(timebase.attr_config2);
+      break;
+    }
   }
+
+  // optional name to identify the counter during parsing:
+  if (!timebase.name.empty()) {
+    timebase_pb->set_name(timebase.name);
+  }
+
+  // Not setting timebase.timestamp_clock since the field that matters during
+  // parsing is the root timestamp_clock_id set above.
 }
 
 uint32_t TimeToNextReadTickMs(DataSourceInstanceID ds_id, uint32_t period_ms) {

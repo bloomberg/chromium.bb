@@ -19,11 +19,41 @@
 #include "dawn/webgpu_cpp.h"
 #include "dawn_native/DawnNative.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#define ASSERT_DEVICE_ERROR(statement)                          \
-    FlushWire();                                                \
+// Argument helpers to allow macro overriding.
+#define UNIMPLEMENTED_MACRO(...) UNREACHABLE()
+#define GET_3RD_ARG_HELPER_(_1, _2, NAME, ...) NAME
+#define GET_3RD_ARG_(args) GET_3RD_ARG_HELPER_ args
+
+// Overloaded to allow further validation of the error messages given an error is expected.
+// Especially useful to verify that the expected errors are occuring, not just any error.
+//
+// Example usages:
+//   1 Argument Case:
+//     ASSERT_DEVICE_ERROR(FunctionThatExpectsError());
+//
+//   2 Argument Case:
+//     ASSERT_DEVICE_ERROR(FunctionThatHasLongError(), HasSubstr("partial match"))
+//     ASSERT_DEVICE_ERROR(FunctionThatHasShortError(), Eq("exact match"));
+#define ASSERT_DEVICE_ERROR(...)                                                         \
+    GET_3RD_ARG_((__VA_ARGS__, ASSERT_DEVICE_ERROR_IMPL_2_, ASSERT_DEVICE_ERROR_IMPL_1_, \
+                  UNIMPLEMENTED_MACRO))                                                  \
+    (__VA_ARGS__)
+
+#define ASSERT_DEVICE_ERROR_IMPL_1_(statement)                  \
     StartExpectDeviceError();                                   \
+    statement;                                                  \
+    FlushWire();                                                \
+    if (!EndExpectDeviceError()) {                              \
+        FAIL() << "Expected device error in:\n " << #statement; \
+    }                                                           \
+    do {                                                        \
+    } while (0)
+
+#define ASSERT_DEVICE_ERROR_IMPL_2_(statement, matcher)         \
+    StartExpectDeviceError(matcher);                            \
     statement;                                                  \
     FlushWire();                                                \
     if (!EndExpectDeviceError()) {                              \
@@ -42,7 +72,7 @@
         }                                                       \
     } while (0)
 
-#define EXPECT_DEPRECATION_WARNING(statement)                                                     \
+#define EXPECT_DEPRECATION_WARNINGS(statement, n)                                                 \
     do {                                                                                          \
         FlushWire();                                                                              \
         size_t warningsBefore = dawn_native::GetDeprecationWarningCountForTesting(backendDevice); \
@@ -50,9 +80,10 @@
         statement;                                                                                \
         FlushWire();                                                                              \
         size_t warningsAfter = dawn_native::GetDeprecationWarningCountForTesting(backendDevice);  \
-        EXPECT_EQ(warningsAfter, warningsBefore + 1);                                             \
+        EXPECT_EQ(warningsAfter, warningsBefore + n);                                             \
         mLastWarningCount = warningsAfter;                                                        \
     } while (0)
+#define EXPECT_DEPRECATION_WARNING(statement) EXPECT_DEPRECATION_WARNINGS(statement, 1)
 
 namespace utils {
     class WireHelper;
@@ -68,6 +99,7 @@ class ValidationTest : public testing::Test {
     void SetUp() override;
     void TearDown() override;
 
+    void StartExpectDeviceError(testing::Matcher<std::string> errorMatcher);
     void StartExpectDeviceError();
     bool EndExpectDeviceError();
     std::string GetLastDeviceErrorMessage() const;
@@ -90,10 +122,15 @@ class ValidationTest : public testing::Test {
         uint32_t height;
 
       private:
-        wgpu::RenderPassColorAttachmentDescriptor mColorAttachment;
+        wgpu::RenderPassColorAttachment mColorAttachment;
     };
 
     bool HasToggleEnabled(const char* toggle) const;
+
+    // TODO(crbug.com/dawn/689): Use limits returned from the wire
+    // This is implemented here because tests need to always query
+    // the |backendDevice| since limits are not implemented in the wire.
+    wgpu::SupportedLimits GetSupportedLimits();
 
   protected:
     virtual WGPUDevice CreateTestDevice();
@@ -112,6 +149,7 @@ class ValidationTest : public testing::Test {
     std::string mDeviceErrorMessage;
     bool mExpectError = false;
     bool mError = false;
+    testing::Matcher<std::string> mErrorMatcher;
 };
 
 #endif  // TESTS_UNITTESTS_VALIDATIONTEST_H_

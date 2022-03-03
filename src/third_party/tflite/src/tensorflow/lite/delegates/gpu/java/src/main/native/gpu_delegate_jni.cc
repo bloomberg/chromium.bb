@@ -15,6 +15,8 @@ limitations under the License.
 
 #include <jni.h>
 
+#include <memory>
+
 #include "absl/status/status.h"
 #include "tensorflow/lite/delegates/gpu/common/gpu_info.h"
 #include "tensorflow/lite/delegates/gpu/delegate.h"
@@ -23,13 +25,12 @@ limitations under the License.
 #include "tensorflow/lite/experimental/acceleration/compatibility/android_info.h"
 #include "tensorflow/lite/experimental/acceleration/compatibility/gpu_compatibility.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif  // __cplusplus
 
 JNIEXPORT jlong JNICALL Java_org_tensorflow_lite_gpu_GpuDelegate_createDelegate(
     JNIEnv* env, jclass clazz, jboolean precision_loss_allowed,
-    jboolean quantized_models_allowed, jint inference_preference) {
+    jboolean quantized_models_allowed, jint inference_preference,
+    jstring serialization_dir, jstring model_token) {
   TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
   if (precision_loss_allowed == JNI_TRUE) {
     options.inference_priority1 = TFLITE_GPU_INFERENCE_PRIORITY_MIN_LATENCY;
@@ -42,6 +43,18 @@ JNIEXPORT jlong JNICALL Java_org_tensorflow_lite_gpu_GpuDelegate_createDelegate(
     options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_QUANT;
   }
   options.inference_preference = static_cast<int32_t>(inference_preference);
+  if (serialization_dir) {
+    options.serialization_dir =
+        env->GetStringUTFChars(serialization_dir, /*isCopy=*/nullptr);
+  }
+  if (model_token) {
+    options.model_token =
+        env->GetStringUTFChars(model_token, /*isCopy=*/nullptr);
+  }
+  if (options.serialization_dir && options.model_token) {
+    options.experimental_flags |=
+        TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
+  }
   return reinterpret_cast<jlong>(TfLiteGpuDelegateV2Create(&options));
 }
 
@@ -53,6 +66,9 @@ JNIEXPORT void JNICALL Java_org_tensorflow_lite_gpu_GpuDelegate_deleteDelegate(
 namespace {
 class CompatibilityListHelper {
  public:
+  CompatibilityListHelper()
+      : compatibility_list_(
+            tflite::acceleration::GPUCompatibilityList::Create()) {}
   absl::Status ReadInfo() {
     auto status = tflite::acceleration::RequestAndroidInfo(&android_info_);
     if (!status.ok()) return status;
@@ -74,13 +90,14 @@ class CompatibilityListHelper {
   }
 
   bool IsDelegateSupportedOnThisDevice() {
-    return compatibility_list_.Includes(android_info_, gpu_info_);
+    return compatibility_list_->Includes(android_info_, gpu_info_);
   }
 
  private:
   tflite::acceleration::AndroidInfo android_info_;
   tflite::gpu::GpuInfo gpu_info_;
-  tflite::acceleration::GPUCompatibilityList compatibility_list_;
+  std::unique_ptr<tflite::acceleration::GPUCompatibilityList>
+      compatibility_list_;
 };
 }  // namespace
 
@@ -113,6 +130,4 @@ Java_org_tensorflow_lite_gpu_CompatibilityList_deleteCompatibilityList(
   delete compatibility_list;
 }
 
-#ifdef __cplusplus
 }  // extern "C"
-#endif  // __cplusplus

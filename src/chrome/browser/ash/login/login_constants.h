@@ -7,8 +7,7 @@
 
 #include "base/time/time.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace constants {
 
 // This constant value comes from the policy definitions of the offline signin
@@ -27,8 +26,7 @@ constexpr int kLockScreenOfflineSigninTimeLimitDaysMatchLogin = -2;
 
 constexpr int kDefaultGaiaOfflineSigninTimeLimitDays =
     kOfflineSigninTimeLimitNotSet;
-constexpr int kDefaultSAMLOfflineSigninTimeLimit =
-    base::TimeDelta::FromDays(14).InSeconds();
+constexpr int kDefaultSAMLOfflineSigninTimeLimit = base::Days(14).InSeconds();
 
 constexpr int kDefaultGaiaLockScreenOfflineSigninTimeLimitDays =
     kLockScreenOfflineSigninTimeLimitDaysMatchLogin;
@@ -43,7 +41,6 @@ const int kDefaultSamlPasswordExpirationAdvanceWarningDays = 14;
 const bool kDefaultLockScreenReauthenticationEnabled = false;
 
 }  // namespace constants
-
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_LOGIN_CONSTANTS_H_

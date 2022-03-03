@@ -11,10 +11,8 @@
 #include <stddef.h>
 
 #include <memory>
-#include <string>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
@@ -44,6 +42,9 @@ class QuicSimpleClient : public quic::QuicSpdyClientBase {
                    const quic::QuicConfig& config,
                    std::unique_ptr<quic::ProofVerifier> proof_verifier);
 
+  QuicSimpleClient(const QuicSimpleClient&) = delete;
+  QuicSimpleClient& operator=(const QuicSimpleClient&) = delete;
+
   ~QuicSimpleClient() override;
 
   std::unique_ptr<quic::QuicSession> CreateQuicClientSession(
@@ -63,8 +64,6 @@ class QuicSimpleClient : public quic::QuicSpdyClientBase {
   bool initialized_;
 
   base::WeakPtrFactory<QuicSimpleClient> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSimpleClient);
 };
 
 }  // namespace net

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/task_environment.h"
 #include "components/viz/client/client_resource_provider.h"
@@ -255,7 +256,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   // VideoResourceUpdater registers as a MemoryDumpProvider, which requires
   // a TaskRunner.
   base::test::SingleThreadTaskEnvironment task_environment_;
-  UploadCounterGLES2Interface* gl_;
+  raw_ptr<UploadCounterGLES2Interface> gl_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
   FakeSharedBitmapReporter shared_bitmap_reporter_;
   std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
@@ -383,7 +384,7 @@ TEST_F(VideoResourceUpdaterTest, WonkySoftwareFrameSoftwareCompositor) {
 TEST_F(VideoResourceUpdaterTest, ReuseResource) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
   scoped_refptr<VideoFrame> video_frame = CreateTestYUVVideoFrame();
-  video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
+  video_frame->set_timestamp(base::Seconds(1234));
 
   // Allocate the resources for a YUV video frame.
   gl_->ResetUploadCount();
@@ -413,7 +414,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
 TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDelete) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
   scoped_refptr<VideoFrame> video_frame = CreateTestYUVVideoFrame();
-  video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
+  video_frame->set_timestamp(base::Seconds(1234));
 
   // Allocate the resources for a YUV video frame.
   gl_->ResetUploadCount();
@@ -458,7 +459,7 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrameRGBSoftwareCompositor) {
 TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForSoftware();
   scoped_refptr<VideoFrame> video_frame = CreateTestYUVVideoFrame();
-  video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
+  video_frame->set_timestamp(base::Seconds(1234));
 
   // Allocate the resources for a software video frame.
   VideoFrameExternalResources resources =
@@ -487,7 +488,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
 TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForSoftware();
   scoped_refptr<VideoFrame> video_frame = CreateTestYUVVideoFrame();
-  video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
+  video_frame->set_timestamp(base::Seconds(1234));
 
   // Allocate the resources for a software video frame.
   VideoFrameExternalResources resources =
@@ -796,7 +797,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleP016HDR) {
   constexpr auto kHDR10ColorSpace = gfx::ColorSpace::CreateHDR10();
   gfx::HDRMetadata hdr_metadata{};
-  hdr_metadata.mastering_metadata.luminance_max = 1000;
+  hdr_metadata.color_volume_metadata.luminance_max = 1000;
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
   EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<VideoFrame> video_frame = CreateTestHardwareVideoFrame(

@@ -50,8 +50,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/cxx17_backports.h"
 #include "base/files/important_file_writer.h"
-#include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
@@ -1081,6 +1081,10 @@ TEST_F(RlzLibTest, LockAcquistionSucceedsButStoreFileCannotBeCreated) {
 class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
  public:
   TestDebugDaemonClient() = default;
+
+  TestDebugDaemonClient(const TestDebugDaemonClient&) = delete;
+  TestDebugDaemonClient& operator=(const TestDebugDaemonClient&) = delete;
+
   ~TestDebugDaemonClient() override = default;
 
   int num_set_rlz_ping_sent() const { return num_set_rlz_ping_sent_; }
@@ -1099,7 +1103,6 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
  private:
   int num_set_rlz_ping_sent_ = 0;
   bool default_result_ = false;
-  DISALLOW_COPY_AND_ASSIGN(TestDebugDaemonClient);
 };
 
 TEST_F(RlzLibTest, SetRlzPingSent) {

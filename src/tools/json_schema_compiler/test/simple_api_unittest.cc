@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -60,50 +61,50 @@ void PopulateManifestKeys(base::StringPiece manifest_json,
 
 TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerResultCreate) {
   base::Value results(simple_api::IncrementInteger::Results::Create(5));
-  base::ListValue expected;
-  expected.AppendInteger(5);
+  base::Value expected(base::Value::Type::LIST);
+  expected.Append(5);
   EXPECT_EQ(expected, results);
 }
 
 TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerParamsCreate) {
-  auto params_value = std::make_unique<base::ListValue>();
-  params_value->AppendInteger(6);
+  std::vector<base::Value> params_value;
+  params_value.emplace_back(6);
   std::unique_ptr<simple_api::IncrementInteger::Params> params(
-      simple_api::IncrementInteger::Params::Create(*params_value));
+      simple_api::IncrementInteger::Params::Create(params_value));
   EXPECT_TRUE(params.get());
   EXPECT_EQ(6, params->num);
 }
 
 TEST(JsonSchemaCompilerSimpleTest, NumberOfParams) {
   {
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->AppendString("text");
-    params_value->AppendString("text");
+    std::vector<base::Value> params_value;
+    params_value.emplace_back("text");
+    params_value.emplace_back("text");
     std::unique_ptr<simple_api::OptionalString::Params> params(
-        simple_api::OptionalString::Params::Create(*params_value));
+        simple_api::OptionalString::Params::Create(params_value));
     EXPECT_FALSE(params.get());
   }
   {
-    auto params_value = std::make_unique<base::ListValue>();
+    std::vector<base::Value> params_value;
     std::unique_ptr<simple_api::IncrementInteger::Params> params(
-        simple_api::IncrementInteger::Params::Create(*params_value));
+        simple_api::IncrementInteger::Params::Create(params_value));
     EXPECT_FALSE(params.get());
   }
 }
 
 TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsCreate) {
   {
-    auto params_value = std::make_unique<base::ListValue>();
+    std::vector<base::Value> params_value;
     std::unique_ptr<simple_api::OptionalString::Params> params(
-        simple_api::OptionalString::Params::Create(*params_value));
+        simple_api::OptionalString::Params::Create(params_value));
     EXPECT_TRUE(params.get());
     EXPECT_FALSE(params->str.get());
   }
   {
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->AppendString("asdf");
+    std::vector<base::Value> params_value;
+    params_value.emplace_back("asdf");
     std::unique_ptr<simple_api::OptionalString::Params> params(
-        simple_api::OptionalString::Params::Create(*params_value));
+        simple_api::OptionalString::Params::Create(params_value));
     EXPECT_TRUE(params.get());
     EXPECT_TRUE(params->str.get());
     EXPECT_EQ("asdf", *params->str);
@@ -112,10 +113,10 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsCreate) {
 
 TEST(JsonSchemaCompilerSimpleTest, OptionalParamsTakingNull) {
   {
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->Append(std::make_unique<base::Value>());
+    std::vector<base::Value> params_value;
+    params_value.emplace_back();
     std::unique_ptr<simple_api::OptionalString::Params> params(
-        simple_api::OptionalString::Params::Create(*params_value));
+        simple_api::OptionalString::Params::Create(params_value));
     EXPECT_TRUE(params.get());
     EXPECT_FALSE(params->str.get());
   }
@@ -123,21 +124,21 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalParamsTakingNull) {
 
 TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsWrongType) {
   {
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->AppendInteger(5);
+    std::vector<base::Value> params_value;
+    params_value.emplace_back(5);
     std::unique_ptr<simple_api::OptionalString::Params> params(
-        simple_api::OptionalString::Params::Create(*params_value));
+        simple_api::OptionalString::Params::Create(params_value));
     EXPECT_FALSE(params.get());
   }
 }
 
 TEST(JsonSchemaCompilerSimpleTest, OptionalBeforeRequired) {
   {
-    auto params_value = std::make_unique<base::ListValue>();
-    params_value->Append(std::make_unique<base::Value>());
-    params_value->AppendString("asdf");
+    std::vector<base::Value> params_value;
+    params_value.emplace_back();
+    params_value.emplace_back("asdf");
     std::unique_ptr<simple_api::OptionalBeforeRequired::Params> params(
-        simple_api::OptionalBeforeRequired::Params::Create(*params_value));
+        simple_api::OptionalBeforeRequired::Params::Create(params_value));
     EXPECT_TRUE(params.get());
     EXPECT_FALSE(params->first.get());
     EXPECT_EQ("asdf", params->second);
@@ -146,7 +147,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalBeforeRequired) {
 
 TEST(JsonSchemaCompilerSimpleTest, NoParamsResultCreate) {
   base::Value results(simple_api::OptionalString::Results::Create());
-  base::ListValue expected;
+  base::Value expected(base::Value::Type::LIST);
   EXPECT_EQ(expected, results);
 }
 
@@ -164,7 +165,7 @@ TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
   {
     auto test_type = std::make_unique<simple_api::TestType>();
     std::unique_ptr<base::DictionaryValue> value = CreateTestTypeDictionary();
-    value->Remove("number", NULL);
+    value->RemoveKey("number");
     EXPECT_FALSE(simple_api::TestType::Populate(*value, test_type.get()));
   }
 }
@@ -184,8 +185,8 @@ TEST(JsonSchemaCompilerSimpleTest, GetTestType) {
 TEST(JsonSchemaCompilerSimpleTest, OnIntegerFiredCreate) {
   {
     base::Value results(simple_api::OnIntegerFired::Create(5));
-    base::ListValue expected;
-    expected.AppendInteger(5);
+    base::Value expected(base::Value::Type::LIST);
+    expected.Append(5);
     EXPECT_EQ(expected, results);
   }
 }
@@ -193,8 +194,8 @@ TEST(JsonSchemaCompilerSimpleTest, OnIntegerFiredCreate) {
 TEST(JsonSchemaCompilerSimpleTest, OnStringFiredCreate) {
   {
     base::Value results(simple_api::OnStringFired::Create("yo dawg"));
-    base::ListValue expected;
-    expected.AppendString("yo dawg");
+    base::Value expected(base::Value::Type::LIST);
+    expected.Append("yo dawg");
     EXPECT_EQ(expected, results);
   }
 }
@@ -204,10 +205,16 @@ TEST(JsonSchemaCompilerSimpleTest, OnTestTypeFiredCreate) {
     simple_api::TestType some_test_type;
     std::unique_ptr<base::DictionaryValue> expected =
         CreateTestTypeDictionary();
-    ASSERT_TRUE(expected->GetDouble("number", &some_test_type.number));
+
+    absl::optional<double> number_value = expected->FindDoubleKey("number");
+    ASSERT_TRUE(*number_value);
+    some_test_type.number = *number_value;
+
     ASSERT_TRUE(expected->GetString("string", &some_test_type.string));
     ASSERT_TRUE(expected->GetInteger("integer", &some_test_type.integer));
-    ASSERT_TRUE(expected->GetBoolean("boolean", &some_test_type.boolean));
+    absl::optional<bool> boolean_value = expected->FindBoolKey("boolean");
+    ASSERT_TRUE(boolean_value);
+    some_test_type.boolean = *boolean_value;
 
     base::Value results(simple_api::OnTestTypeFired::Create(some_test_type));
     ASSERT_TRUE(results.is_list());

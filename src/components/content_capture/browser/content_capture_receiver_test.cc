@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,6 +22,8 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content_capture {
 namespace {
@@ -110,6 +114,8 @@ class ContentCaptureConsumerHelper : public ContentCaptureConsumer {
     updated_title_ = main_frame.title;
   }
 
+  void DidUpdateFavicon(const ContentCaptureFrame& main_frame) override {}
+
   bool ShouldCapture(const GURL& url) override { return false; }
 
   const ContentCaptureSession& parent_session() const {
@@ -143,7 +149,7 @@ class ContentCaptureConsumerHelper : public ContentCaptureConsumer {
   ContentCaptureFrame updated_data_;
   std::vector<int64_t> removed_ids_;
   std::vector<ContentCaptureSession> removed_sessions_;
-  SessionRemovedTestHelper* session_removed_test_helper_;
+  raw_ptr<SessionRemovedTestHelper> session_removed_test_helper_;
   std::u16string updated_title_;
 };
 
@@ -258,8 +264,8 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
   ContentCaptureFrame GetExpectedTestData(bool main_frame) const {
     ContentCaptureFrame expected(test_data_);
     // Replaces the id with expected id.
-    expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
-                                                               : child_frame_);
+    expected.id = ContentCaptureReceiver::GetIdFrom(
+        main_frame ? main_frame_.get() : child_frame_.get());
     return expected;
   }
 
@@ -273,16 +279,16 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
   ContentCaptureFrame GetExpectedTestData2(bool main_frame) const {
     ContentCaptureFrame expected(test_data2_);
     // Replaces the id with expected id.
-    expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
-                                                               : child_frame_);
+    expected.id = ContentCaptureReceiver::GetIdFrom(
+        main_frame ? main_frame_.get() : child_frame_.get());
     return expected;
   }
 
   ContentCaptureFrame GetExpectedTestDataUpdate(bool main_frame) const {
     ContentCaptureFrame expected(test_data_update_);
     // Replaces the id with expected id.
-    expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
-                                                               : child_frame_);
+    expected.id = ContentCaptureReceiver::GetIdFrom(
+        main_frame ? main_frame_.get() : child_frame_.get());
     return expected;
   }
 
@@ -351,15 +357,15 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
  protected:
   std::unique_ptr<ContentCaptureConsumerHelper>
       content_capture_consumer_helper_;
-  OnscreenContentProvider* onscreen_content_provider_ = nullptr;
+  raw_ptr<OnscreenContentProvider> onscreen_content_provider_ = nullptr;
 
  private:
   // The sender for main frame.
   std::unique_ptr<FakeContentCaptureSender> content_capture_sender_;
   // The sender for child frame.
   std::unique_ptr<FakeContentCaptureSender> child_content_capture_sender_;
-  content::RenderFrameHost* main_frame_ = nullptr;
-  content::RenderFrameHost* child_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> main_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> child_frame_ = nullptr;
   ContentCaptureData test_data_;
   ContentCaptureData test_data_change_;
   ContentCaptureData test_data2_;
@@ -558,8 +564,7 @@ TEST_P(ContentCaptureReceiverTest, TitleUpdateTaskDelay) {
   EXPECT_TRUE(task_runner->HasPendingTask());
   EXPECT_EQ(2u, receiver->exponential_delay_);
   // Run the pending task.
-  task_runner->FastForwardBy(
-      base::TimeDelta::FromSeconds(receiver->exponential_delay_ / 2));
+  task_runner->FastForwardBy(base::Seconds(receiver->exponential_delay_ / 2));
   task_runner->RunUntilIdle();
   // Verify the title is updated and the task is reset.
   EXPECT_EQ(title2, content_capture_consumer_helper()->updated_title());
@@ -722,6 +727,47 @@ TEST_P(ContentCaptureReceiverTest, SameDocumentSameSession) {
   // Verifies the session wasn't removed for the same document navigation.
   EXPECT_TRUE(content_capture_consumer_helper()->removed_sessions().empty());
 }
+
+TEST_P(ContentCaptureReceiverTest, ConvertFaviconURLToJSON) {
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  EXPECT_TRUE(ContentCaptureReceiver::ToJSON(favicon_urls).empty());
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      GURL{"https://a.com"}, blink::mojom::FaviconIconType::kFavicon,
+      std::vector<gfx::Size>{gfx::Size(10, 10)}));
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      GURL{"https://b.com"}, blink::mojom::FaviconIconType::kTouchIcon,
+      std::vector<gfx::Size>{gfx::Size(100, 100), gfx::Size(20, 20)}));
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      GURL{"https://c.com"},
+      blink::mojom::FaviconIconType::kTouchPrecomposedIcon,
+      std::vector<gfx::Size>{}));
+  std::string actual_json = ContentCaptureReceiver::ToJSON(favicon_urls);
+  absl::optional<base::Value> actual = base::JSONReader::Read(actual_json);
+  std::string expected_json =
+      R"JSON(
+      [
+        {
+          "sizes":[{"height":10,"width":10}],
+          "type":"favicon",
+          "url":"https://a.com/"
+        },
+        {
+          "sizes":[{"height":100,"width":100},
+                     {"height":20,"width":20}],
+          "type":"touch icon",
+          "url":"https://b.com/"
+        },
+        {
+          "type":"touch precomposed icon",
+          "url":"https://c.com/"
+        }
+      ]
+      )JSON";
+  absl::optional<base::Value> expected = base::JSONReader::Read(expected_json);
+  EXPECT_TRUE(actual);
+  EXPECT_EQ(expected, actual);
+}
+
 class ContentCaptureReceiverMultipleFrameTest
     : public ContentCaptureReceiverTest {
  public:

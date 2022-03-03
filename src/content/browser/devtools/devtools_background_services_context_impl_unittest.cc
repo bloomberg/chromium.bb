@@ -10,7 +10,6 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/devtools/devtools_background_services.pb.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/browser/content_browser_client.h"
@@ -19,6 +18,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -95,6 +96,11 @@ class DevToolsBackgroundServicesContextTest
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         embedded_worker_test_helper_(base::FilePath() /* in memory */) {}
 
+  DevToolsBackgroundServicesContextTest(
+      const DevToolsBackgroundServicesContextTest&) = delete;
+  DevToolsBackgroundServicesContextTest& operator=(
+      const DevToolsBackgroundServicesContextTest&) = delete;
+
   ~DevToolsBackgroundServicesContextTest() override = default;
 
   void SetUp() override {
@@ -135,7 +141,7 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void SimulateOneWeekPassing() {
-    base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
+    base::Time one_week_ago = base::Time::Now() - base::Days(7);
     context_->expiration_times_
         [devtools::proto::BackgroundService::BACKGROUND_FETCH] = one_week_ago;
   }
@@ -165,7 +171,7 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void LogTestBackgroundServiceEvent(const std::string& log_message) {
-    context_->LogBackgroundServiceEventOnCoreThread(
+    context_->LogBackgroundServiceEvent(
         service_worker_registration_id_, origin_,
         DevToolsBackgroundService::kBackgroundFetch, kEventName, kInstanceId,
         {{"key", log_message}});
@@ -209,7 +215,7 @@ class DevToolsBackgroundServicesContextTest
     GURL script_url(origin_.GetURL().spec() + "sw.js");
     // TODO(crbug.com/1199077): Update this when
     // DevToolsBackgroundServicesContextImpl implements StorageKey.
-    storage::StorageKey key(origin_);
+    blink::StorageKey key(origin_);
     int64_t service_worker_registration_id =
         blink::mojom::kInvalidServiceWorkerRegistrationId;
 
@@ -222,7 +228,8 @@ class DevToolsBackgroundServicesContextTest
           blink::mojom::FetchClientSettingsObject::New(),
           base::BindOnce(&DidRegisterServiceWorker,
                          &service_worker_registration_id,
-                         run_loop.QuitClosure()));
+                         run_loop.QuitClosure()),
+          /*requesting_frame_id=*/GlobalRenderFrameHostId());
 
       run_loop.Run();
     }
@@ -259,8 +266,6 @@ class DevToolsBackgroundServicesContextTest
   scoped_refptr<DevToolsBackgroundServicesContextImpl> context_;
   scoped_refptr<ServiceWorkerRegistration> service_worker_registration_;
   std::unique_ptr<ContentBrowserClient> browser_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsBackgroundServicesContextTest);
 };
 
 TEST_F(DevToolsBackgroundServicesContextTest,

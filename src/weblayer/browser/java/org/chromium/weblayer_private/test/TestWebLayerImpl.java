@@ -323,11 +323,26 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
         }
     }
 
+    @Override
+    public void fireOnAccessTokenIdentifiedAsInvalid(IProfile profile,
+            IObjectWrapper /* Set<String> */ scopes, IObjectWrapper /* String */ token)
+            throws RemoteException {
+        ProfileImpl profileImpl = (ProfileImpl) profile;
+        profileImpl.fireOnAccessTokenIdentifiedAsInvalidForTesting(scopes, token);
+    }
+
+    @Override
+    public void grantLocationPermission(String url) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TestWebLayerImplJni.get().grantLocationPermission(url); });
+    }
+
     @NativeMethods
     interface Natives {
         void waitForBrowserControlsMetadataState(
                 long tabImpl, int top, int bottom, Runnable runnable);
         void setIgnoreMissingKeyForTranslateManager(boolean ignore);
         void expediteDownloadService();
+        void grantLocationPermission(String url);
     }
 }

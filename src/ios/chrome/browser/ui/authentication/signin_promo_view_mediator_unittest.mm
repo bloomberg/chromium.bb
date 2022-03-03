@@ -10,16 +10,18 @@
 #import "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
-#import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync/driver/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
-#include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#import "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
@@ -28,6 +30,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -62,7 +65,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     close_button_hidden_ = YES;
 
     TestChromeBrowserState::Builder builder;
-    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+    builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildMockSyncService));
     builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
@@ -79,10 +82,13 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     // correctly.
     EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
                     ->WaitForServiceCallbacksToComplete());
-    [mediator_ signinPromoViewIsRemoved];
-    EXPECT_EQ(ios::SigninPromoViewState::Invalid,
-              mediator_.signinPromoViewState);
-    mediator_ = nil;
+    if (mediator_) {
+      [mediator_ disconnect];
+      EXPECT_EQ(ios::SigninPromoViewState::Invalid,
+                mediator_.signinPromoViewState);
+      EXPECT_EQ(nil, mediator_.consumer);
+      mediator_ = nil;
+    }
     EXPECT_OCMOCK_VERIFY((id)consumer_);
     EXPECT_OCMOCK_VERIFY((id)signin_promo_view_);
     EXPECT_OCMOCK_VERIFY((id)primary_button_);
@@ -93,9 +99,13 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   void CreateMediator(signin_metrics::AccessPoint accessPoint) {
     consumer_ = OCMStrictProtocolMock(@protocol(SigninPromoViewConsumer));
     mediator_ = [[SigninPromoViewMediator alloc]
-        initWithBrowserState:chrome_browser_state_.get()
-                 accessPoint:accessPoint
-                   presenter:nil];
+        initWithAccountManagerService:ChromeAccountManagerServiceFactory::
+                                          GetForBrowserState(
+                                              chrome_browser_state_.get())
+                          authService:GetAuthenticationService()
+                          prefService:chrome_browser_state_.get()->GetPrefs()
+                          accessPoint:accessPoint
+                            presenter:nil];
     mediator_.consumer = consumer_;
 
     signin_promo_view_ = OCMStrictClassMock([SigninPromoView class]);
@@ -116,6 +126,11 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     return prefs;
   }
 
+  AuthenticationService* GetAuthenticationService() {
+    return AuthenticationServiceFactory::GetForBrowserState(
+        chrome_browser_state_.get());
+  }
+
   // Creates the default identity and adds it into the ChromeIdentityService.
   void AddDefaultIdentity() {
     expected_default_identity_ =
@@ -126,10 +141,12 @@ class SigninPromoViewMediatorTest : public PlatformTest {
         ->AddIdentity(expected_default_identity_);
   }
 
+  PrefService* GetLocalState() { return scoped_testing_local_state_.Get(); }
+
   // Tests the mediator with a new created configurator when no accounts are on
   // the device.
   void TestSigninPromoWithNoAccounts() {
-    EXPECT_EQ(nil, mediator_.defaultIdentity);
+    EXPECT_EQ(nil, mediator_.identity);
     CheckNoAccountsConfigurator([mediator_ createConfigurator]);
   }
 
@@ -164,7 +181,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // device.
   void ExpectNoAccountsConfiguration() {
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeNoAccounts]);
-    NSString* title = GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
+    NSString* title = GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC);
     OCMExpect([signin_promo_view_ setAccessibilityLabel:title]);
     OCMExpect([primary_button_ setTitle:title forState:UIControlStateNormal]);
     image_view_profile_image_ = nil;
@@ -182,7 +199,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Expects the signin promo view to be configured when accounts are on the
   // device.
   void ExpectSigninWithAccountConfiguration() {
-    EXPECT_EQ(expected_default_identity_, mediator_.defaultIdentity);
+    EXPECT_EQ(expected_default_identity_, mediator_.identity);
     OCMExpect(
         [signin_promo_view_ setMode:SigninPromoViewModeSigninWithAccount]);
     OCMExpect([signin_promo_view_
@@ -210,7 +227,39 @@ class SigninPromoViewMediatorTest : public PlatformTest {
       SigninPromoViewConfigurator* configurator) {
     EXPECT_NE(nil, configurator);
     ExpectSigninWithAccountConfiguration();
-    OCMExpect([close_button_ setHidden:YES]);
+    OCMExpect([close_button_ setHidden:close_button_hidden_]);
+    [configurator configureSigninPromoView:signin_promo_view_];
+    EXPECT_NE(nil, image_view_profile_image_);
+  }
+
+  // Expects the sync promo view to be configured
+  void ExpectSyncPromoConfiguration() {
+    OCMExpect(
+        [signin_promo_view_ setMode:SigninPromoViewModeSyncWithPrimaryAccount]);
+    OCMExpect([signin_promo_view_
+        setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
+          image_view_profile_image_ = value;
+          return YES;
+        }]]);
+    NSString* name = expected_default_identity_.userGivenName.length
+                         ? expected_default_identity_.userGivenName
+                         : expected_default_identity_.userEmail;
+    std::u16string name16 = SysNSStringToUTF16(name);
+    NSString* accessibilityLabel =
+        GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
+    OCMExpect([signin_promo_view_ setAccessibilityLabel:accessibilityLabel]);
+    OCMExpect([primary_button_
+        setTitle:GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC)
+        forState:UIControlStateNormal]);
+    image_view_profile_image_ = nil;
+  }
+
+  // Checks a configurator with accounts on the device.
+  void CheckSyncPromoWithAccountConfigurator(
+      SigninPromoViewConfigurator* configurator) {
+    EXPECT_NE(nil, configurator);
+    ExpectSyncPromoConfiguration();
+    OCMExpect([close_button_ setHidden:close_button_hidden_]);
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_NE(nil, image_view_profile_image_);
   }
@@ -228,6 +277,9 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   // Task environment.
   WebTaskEnvironment task_environment_;
+
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
+
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 
   // Mediator used for the tests.
@@ -401,12 +453,12 @@ TEST_F(SigninPromoViewMediatorTest,
                                     completion:completion_arg]);
   // Starts sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
-  EXPECT_TRUE(
-      [mediator_ conformsToProtocol:@protocol(ChromeIdentityServiceObserver)]);
-  id<ChromeIdentityServiceObserver> chromeIdentityServiceObserver =
-      (id<ChromeIdentityServiceObserver>)mediator_;
+  EXPECT_TRUE([mediator_
+      conformsToProtocol:@protocol(ChromeAccountManagerServiceObserver)]);
+  id<ChromeAccountManagerServiceObserver> accountManagerServiceObserver =
+      (id<ChromeAccountManagerServiceObserver>)mediator_;
   // Simulates an identity update.
-  [chromeIdentityServiceObserver profileUpdate:expected_default_identity_];
+  [accountManagerServiceObserver identityChanged:expected_default_identity_];
   // Spins the run loop to wait for the profile image update.
   EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
                   ->WaitForServiceCallbacksToComplete());
@@ -422,11 +474,100 @@ TEST_F(SigninPromoViewMediatorTest,
   TestChromeBrowserState::Builder builder;
   builder.SetPrefService(CreatePrefService());
   std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
-  browser_state->GetPrefs()->SetBoolean(prefs::kSigninAllowedByPolicy, false);
+  GetLocalState()->SetInteger(prefs::kBrowserSigninPolicy,
+                              static_cast<int>(BrowserSigninMode::kDisabled));
   EXPECT_FALSE([SigninPromoViewMediator
       shouldDisplaySigninPromoViewWithAccessPoint:signin_metrics::AccessPoint::
                                                       ACCESS_POINT_RECENT_TABS
-                                     browserState:browser_state.get()]);
+                                      prefService:browser_state->GetPrefs()]);
+}
+
+// Tests that the default identity is the primary account, when the user is
+// signed in.
+TEST_F(SigninPromoViewMediatorTest, SigninPromoWhileSignedIn) {
+  AddDefaultIdentity();
+  expected_default_identity_ =
+      [FakeChromeIdentity identityWithEmail:@"johndoe2@example.com"
+                                     gaiaID:@"2"
+                                       name:@"johndoe2"];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      expected_default_identity_);
+  GetAuthenticationService()->SignIn(expected_default_identity_);
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  ExpectConfiguratorNotification(NO /* identity changed */);
+  [mediator_ signinPromoViewIsVisible];
+  EXPECT_EQ(expected_default_identity_, mediator_.identity);
+  EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                  ->WaitForServiceCallbacksToComplete());
+  CheckSyncPromoWithAccountConfigurator(configurator_);
+}
+
+// Tests that the sign-in promo view being removed and the mediator being
+// deallocated while the sign-in is in progress, and tests the consumer is still
+// called at the end of the sign-in.
+TEST_F(SigninPromoViewMediatorTest,
+       RemoveSigninPromoAndDeallocMediatorWhileSignedIn) {
+  // Setup.
+  AddDefaultIdentity();
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  [mediator_ signinPromoViewIsVisible];
+  __block ShowSigninCommandCompletionCallback completion;
+  id completion_arg =
+      [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
+        completion = value;
+        return YES;
+      }];
+  __weak __typeof(mediator_) weak_mediator = mediator_;
+  id mediator_checker = [OCMArg checkWithBlock:^BOOL(id value) {
+    return value == weak_mediator;
+  }];
+  OCMExpect([consumer_ signinPromoViewMediator:mediator_checker
+                  shouldOpenSigninWithIdentity:expected_default_identity_
+                                   promoAction:signin_metrics::PromoAction::
+                                                   PROMO_ACTION_WITH_DEFAULT
+                                    completion:completion_arg]);
+  // Start sign-in with an identity.
+  [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
+  // Remove the sign-in promo.
+  [mediator_ disconnect];
+  EXPECT_EQ(ios::SigninPromoViewState::Invalid, mediator_.signinPromoViewState);
+  // Dealloc the mediator.
+  mediator_ = nil;
+  EXPECT_EQ(weak_mediator, nil);
+  // Finish the sign-in.
+  OCMExpect([consumer_ signinDidFinish]);
+  completion(YES);
+}
+
+// Tests that the sign-in promo view being removed, and tests the consumer is
+// still called at the end of the sign-in.
+TEST_F(SigninPromoViewMediatorTest, RemoveSigninPromoWhileSignedIn) {
+  // Setup.
+  AddDefaultIdentity();
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  [mediator_ signinPromoViewIsVisible];
+  __block ShowSigninCommandCompletionCallback completion;
+  id completion_arg =
+      [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
+        completion = value;
+        return YES;
+      }];
+  OCMExpect([consumer_ signinPromoViewMediator:mediator_
+                  shouldOpenSigninWithIdentity:expected_default_identity_
+                                   promoAction:signin_metrics::PromoAction::
+                                                   PROMO_ACTION_WITH_DEFAULT
+                                    completion:completion_arg]);
+  // Start sign-in with an identity.
+  [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
+  // Remove the sign-in promo.
+  [mediator_ disconnect];
+  EXPECT_EQ(ios::SigninPromoViewState::Invalid, mediator_.signinPromoViewState);
+  // Finish the sign-in.
+  OCMExpect([consumer_ signinDidFinish]);
+  completion(YES);
+  // Set mediator_ to nil to avoid the TearDown doesn't call
+  // -[mediator_ disconnect] again.
+  mediator_ = nil;
 }
 
 }  // namespace

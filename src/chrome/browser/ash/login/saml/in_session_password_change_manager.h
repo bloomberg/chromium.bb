@@ -14,6 +14,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_fetcher.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chromeos/login/auth/cryptohome_authenticator.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chromeos/login/auth/user_context.h"
 
 class Profile;
 
@@ -21,9 +25,7 @@ namespace user_manager {
 class User;
 }
 
-namespace chromeos {
-class CryptohomeAuthenticator;
-class UserContext;
+namespace ash {
 
 // There is at most one instance of this task, which is part of the
 // InSessionPasswordChangeManager singleton. Having a separate class means that
@@ -32,6 +34,11 @@ class UserContext;
 // rerunning the task or posting the task to be re-run, which means that there
 // is only ever one of task that is scheduled to be run.
 class RecheckPasswordExpiryTask {
+ public:
+  RecheckPasswordExpiryTask(const RecheckPasswordExpiryTask&) = delete;
+  RecheckPasswordExpiryTask& operator=(const RecheckPasswordExpiryTask&) =
+      delete;
+
  private:
   RecheckPasswordExpiryTask();
   ~RecheckPasswordExpiryTask();
@@ -49,8 +56,6 @@ class RecheckPasswordExpiryTask {
 
   // Only InSessionPasswordChangeManager can use this class.
   friend class InSessionPasswordChangeManager;
-
-  DISALLOW_COPY_AND_ASSIGN(RecheckPasswordExpiryTask);
 };
 
 // Manages the flow of changing a password in-session - handles user
@@ -61,7 +66,7 @@ class RecheckPasswordExpiryTask {
 // feature is enabled).
 class InSessionPasswordChangeManager
     : public AuthStatusConsumer,
-      public ash::SessionActivationObserver,
+      public SessionActivationObserver,
       public PasswordSyncTokenFetcher::Consumer {
  public:
   // Events in the in-session SAML password change flow.
@@ -103,6 +108,12 @@ class InSessionPasswordChangeManager
   static InSessionPasswordChangeManager* Get();
 
   explicit InSessionPasswordChangeManager(Profile* primary_profile);
+
+  InSessionPasswordChangeManager(const InSessionPasswordChangeManager&) =
+      delete;
+  InSessionPasswordChangeManager& operator=(
+      const InSessionPasswordChangeManager&) = delete;
+
   ~InSessionPasswordChangeManager() override;
 
   // Sets the given instance as the singleton for testing.
@@ -162,7 +173,7 @@ class InSessionPasswordChangeManager
   void OnPasswordChangeDetected(const UserContext& user_context) override;
   void OnAuthSuccess(const UserContext& user_context) override;
 
-  // ash::SessionActivationObserver
+  // SessionActivationObserver
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
@@ -189,10 +200,14 @@ class InSessionPasswordChangeManager
   std::unique_ptr<PasswordSyncTokenFetcher> password_sync_token_fetcher_;
 
   friend class InSessionPasswordChangeManagerTest;
-
-  DISALLOW_COPY_AND_ASSIGN(InSessionPasswordChangeManager);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::InSessionPasswordChangeManager;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SAML_IN_SESSION_PASSWORD_CHANGE_MANAGER_H_

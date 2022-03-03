@@ -5,14 +5,16 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_SERVER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_SERVER_H_
 
-#include "base/macros.h"
-
 namespace android_webview {
 
 // This class controls WebView-specific Developer Tools remote debugging server.
 class AwDevToolsServer {
  public:
   AwDevToolsServer();
+
+  AwDevToolsServer(const AwDevToolsServer&) = delete;
+  AwDevToolsServer& operator=(const AwDevToolsServer&) = delete;
+
   ~AwDevToolsServer();
 
   // Opens linux abstract socket to be ready for remote debugging.
@@ -25,7 +27,6 @@ class AwDevToolsServer {
 
  private:
   bool is_started_;
-  DISALLOW_COPY_AND_ASSIGN(AwDevToolsServer);
 };
 
 }  // namespace android_webview

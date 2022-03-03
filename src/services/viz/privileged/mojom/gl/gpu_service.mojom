@@ -5,13 +5,13 @@
 module viz.mojom;
 
 [EnableIf=is_chromeos_ash]
-import "components/arc/mojom/protected_buffer_manager.mojom";
+import "ash/components/arc/mojom/protected_buffer_manager.mojom";
 [EnableIf=is_chromeos_ash]
-import "components/arc/mojom/video_decode_accelerator.mojom";
+import "ash/components/arc/mojom/video_decode_accelerator.mojom";
 [EnableIf=is_chromeos_ash]
-import "components/arc/mojom/video_encode_accelerator.mojom";
+import "ash/components/arc/mojom/video_encode_accelerator.mojom";
 [EnableIf=is_chromeos_ash]
-import "components/arc/mojom/video_protected_buffer_allocator.mojom";
+import "ash/components/arc/mojom/video_protected_buffer_allocator.mojom";
 [EnableIf=is_chromeos_ash]
 import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
 [EnableIf=is_chromeos_ash]
@@ -26,11 +26,15 @@ import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/mojom/video_encode_accelerator.mojom";
 import "mojo/public/mojom/base/byte_string.mojom";
+import "mojo/public/mojom/base/process_id.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gl/mojom/gpu_preference.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+[EnableIf=is_win]
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 interface GpuService {
   // Tells the GPU service to create a new channel for communication with a
@@ -47,27 +51,32 @@ interface GpuService {
           gpu.mojom.GpuInfo gpu_info,
           gpu.mojom.GpuFeatureInfo gpu_feature_info);
 
+  // Tells the GPU service the PID of whatever client process is controlling the
+  // GpuChannel established by a prior EstablishGpuChannel() call with the given
+  // `client_id`.
+  SetChannelClientPid(int32 client_id, mojo_base.mojom.ProcessId client_pid);
+
   // Tells the GPU process to close the channel identified by |client_id|.
   // If no channel can be identified, do nothing.
   CloseChannel(int32 client_id);
 
   // Create a new ARC VideoDecodeAccelerator and binds it to |vda|.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=enable_arc_media]
   CreateArcVideoDecodeAccelerator(
       pending_receiver<arc.mojom.VideoDecodeAccelerator> vda);
 
   // Create a new ARC VideoEncodeAccelerator and binds it to |vea|.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=enable_arc_media]
   CreateArcVideoEncodeAccelerator(
       pending_receiver<arc.mojom.VideoEncodeAccelerator> vea);
 
   // Create a new ARC VideoProtectedBufferAllocator and binds it to |pba|.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=enable_arc_media ]
   CreateArcVideoProtectedBufferAllocator(
       pending_receiver<arc.mojom.VideoProtectedBufferAllocator> pba);
 
   // Create a new ARC ProtectedBufferManager and binds it to |pbm|.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=enable_arc_media ]
   CreateArcProtectedBufferManager(
       pending_receiver<arc.mojom.ProtectedBufferManager> pbm);
 
@@ -80,6 +89,21 @@ interface GpuService {
   [EnableIf=is_chromeos_ash]
   CreateJpegEncodeAccelerator(
       pending_receiver<chromeos_camera.mojom.JpegEncodeAccelerator> jea);
+
+  // Registers a DCOMP surface handle and returns a token. The token will then
+  // be used by MediaFoundationRendererClient to call DCOMPTexture to set the
+  // surface in GLImageDCOMPSurface. Null token will be returned upon failure.
+  // Also see media/mojo/mojom/dcomp_surface_registry.mojom.
+  [EnableIf=is_win]
+  RegisterDCOMPSurfaceHandle(handle<platform> surface_handle)
+      => (mojo_base.mojom.UnguessableToken? token);
+
+  // Unregisters the DCOMP surface handle associated with `token`. This is to
+  // avoid handle leak in case the handle is not taken during a playback, e.g.
+  // user closes tab immediately after playback start. No-op if the handle has
+  // already been taken. Also see media/mojo/mojom/dcomp_surface_registry.mojom.
+  [EnableIf=is_win]
+  UnregisterDCOMPSurfaceHandle(mojo_base.mojom.UnguessableToken token);
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(
@@ -175,6 +199,9 @@ interface GpuService {
   // The callback is invoked once the profile has been flushed to disk.
   [EnableIf=use_clang_profiling_inside_sandbox]
   WriteClangProfilingProfile() => ();
+
+  // Requests Dawn Info for about:gpu.
+  GetDawnInfo() => (array<string> dawn_info_list);
 
   Crash();
   Hang();

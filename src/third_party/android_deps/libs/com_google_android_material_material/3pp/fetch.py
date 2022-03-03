@@ -12,9 +12,9 @@ import argparse
 import json
 import os
 
-_FILE_URL = 'https://maven.google.com/com/google/android/material/material/1.2.0-alpha06/material-1.2.0-alpha06.aar'
-_FILE_NAME = 'material-1.2.0-alpha06.aar'
-_FILE_VERSION = '1.2.0-alpha06'
+_FILE_URL = 'https://dl.google.com/dl/android/maven2/com/google/android/material/material/1.5.0-alpha05/material-1.5.0-alpha05.aar'
+_FILE_NAME = 'material-1.5.0-alpha05.aar'
+_FILE_VERSION = '1.5.0-alpha05'
 
 
 def do_latest():

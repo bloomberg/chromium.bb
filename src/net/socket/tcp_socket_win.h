@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/object_watcher.h"
@@ -38,6 +38,10 @@ class NET_EXPORT TCPSocketWin : public base::win::ObjectWatcher::Delegate {
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLogSource& source);
+
+  TCPSocketWin(const TCPSocketWin&) = delete;
+  TCPSocketWin& operator=(const TCPSocketWin&) = delete;
+
   ~TCPSocketWin() override;
 
   int Open(AddressFamily family);
@@ -165,8 +169,8 @@ class NET_EXPORT TCPSocketWin : public base::win::ObjectWatcher::Delegate {
   HANDLE accept_event_;
   base::win::ObjectWatcher accept_watcher_;
 
-  std::unique_ptr<TCPSocketWin>* accept_socket_;
-  IPEndPoint* accept_address_;
+  raw_ptr<std::unique_ptr<TCPSocketWin>> accept_socket_;
+  raw_ptr<IPEndPoint> accept_address_;
   CompletionOnceCallback accept_callback_;
 
   // The various states that the socket could be in.
@@ -199,8 +203,6 @@ class NET_EXPORT TCPSocketWin : public base::win::ObjectWatcher::Delegate {
   NetLogWithSource net_log_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketWin);
 };
 
 }  // namespace net

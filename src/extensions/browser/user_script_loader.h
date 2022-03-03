@@ -12,7 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -62,6 +62,10 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
 
   UserScriptLoader(content::BrowserContext* browser_context,
                    const mojom::HostID& host_id);
+
+  UserScriptLoader(const UserScriptLoader&) = delete;
+  UserScriptLoader& operator=(const UserScriptLoader&) = delete;
+
   ~UserScriptLoader() override;
 
   // Add |scripts| to the set of scripts managed by this loader. If provided,
@@ -163,7 +167,7 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
 
   // The mutually-exclusive information about sets of scripts that were added or
   // removed since the last script load. These maps are keyed by script ids.
-  // Note that we only need HostID information for removal.
+  // Note that we only need a script's id for removal.
   std::map<std::string, std::unique_ptr<UserScript>> added_scripts_map_;
   std::set<std::string> removed_script_ids_;
 
@@ -176,7 +180,7 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
   bool queued_load_;
 
   // The browser_context for which the scripts managed here are installed.
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   // ID of the host that owns these scripts, if any. This is only set to a
   // non-empty value for declarative user script shared memory regions.
@@ -196,8 +200,6 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
   std::list<ScriptsLoadedCallback> loading_callbacks_;
 
   base::WeakPtrFactory<UserScriptLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UserScriptLoader);
 };
 
 }  // namespace extensions

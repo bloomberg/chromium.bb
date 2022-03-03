@@ -5,12 +5,12 @@
 #include "ash/login/ui/login_password_view.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/non_accessible_view.h"
-#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -33,9 +33,11 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -127,21 +129,18 @@ constexpr const int kPasswordTextfieldMarginDp = 2;
 constexpr const int kPasswordRowCornerRadiusDp = 4;
 
 // Delay after which the password gets cleared if nothing has been typed. It is
-// only effective if the display password button is shown, as there is no
+// only running if the display password button is shown, as there is no
 // potential security threat otherwise.
-constexpr base::TimeDelta kClearPasswordAfterDelay =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kClearPasswordAfterDelay = base::Seconds(30);
 
 // Delay after which the password gets back to hidden state, for security.
-constexpr base::TimeDelta kHidePasswordAfterDelay =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kHidePasswordAfterDelay = base::Seconds(5);
 
 constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
 
 struct FrameParams {
   FrameParams(int duration_in_ms, float opacity_param)
-      : duration(base::TimeDelta::FromMilliseconds(duration_in_ms)),
-        opacity(opacity_param) {}
+      : duration(base::Milliseconds(duration_in_ms)), opacity(opacity_param) {}
 
   base::TimeDelta duration;
   float opacity;
@@ -233,6 +232,11 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
     SetObscuredGlyphSpacing(kPasswordGlyphSpacing);
     SetBorder(nullptr);
     UpdatePalette(palette);
+
+    // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+    // able to submit accessibility checks, but this focusable View needs to
+    // add a name so that the screen reader knows what to announce.
+    SetProperty(views::kSkipAccessibilityPaintChecks, true);
   }
   LoginTextfield(const LoginTextfield&) = delete;
   LoginTextfield& operator=(const LoginTextfield&) = delete;
@@ -261,17 +265,6 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
     SetFontList(GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD
                     ? font_list_hidden_
                     : font_list_visible_);
-  }
-
-  // Switches between normal input and password input when the user hits the
-  // display password button.
-  void InvertTextInputType() {
-    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL)
-      SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-    else
-      SetTextInputType(ui::TEXT_INPUT_TYPE_NULL);
-
-    UpdateFontListAndCursor();
   }
 
   // This is useful when the display password button is not shown. In such a
@@ -315,6 +308,10 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
   EasyUnlockIcon() : views::ImageButton(PressedCallback()) {
     SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   }
+
+  EasyUnlockIcon(const EasyUnlockIcon&) = delete;
+  EasyUnlockIcon& operator=(const EasyUnlockIcon&) = delete;
+
   ~EasyUnlockIcon() override = default;
 
   void Init(const OnEasyUnlockIconHovered& on_hovered,
@@ -330,10 +327,10 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
                   base::Unretained(this)));
   }
 
-  void SetEasyUnlockIcon(EasyUnlockIconId icon_id,
+  void SetEasyUnlockIcon(EasyUnlockIconState icon_state,
                          const std::u16string& accessibility_label) {
-    icon_id_ = icon_id;
-    UpdateImage(icon_id);
+    icon_state_ = icon_state;
+    UpdateImage(icon_state);
     SetAccessibleName(accessibility_label);
   }
 
@@ -342,7 +339,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
   // views::View:
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    UpdateImage(icon_id_);
+    UpdateImage(icon_state_);
   }
 
   // views::Button:
@@ -356,10 +353,9 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
       if (immediately_hover_for_test_) {
         on_hovered_.Run();
       } else {
-        invoke_hover_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kDelayBeforeShowingTooltipMs),
-            on_hovered_);
+        invoke_hover_.Start(FROM_HERE,
+                            base::Milliseconds(kDelayBeforeShowingTooltipMs),
+                            on_hovered_);
       }
     }
   }
@@ -370,8 +366,8 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
                        : ButtonState::STATE_NORMAL);
   }
 
-  void UpdateImage(EasyUnlockIconId icon_id) {
-    // If the icon state changes from EasyUnlockIconId::SPINNER to something
+  void UpdateImage(EasyUnlockIconState icon_state) {
+    // If the icon state changes from EasyUnlockIconState::SPINNER to something
     // else, we need to abort the current opacity animation and set back the
     // opacity to 100%. This can be done by destroying the layer that we do not
     // use anymore.
@@ -383,32 +379,32 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
     SkColor color = color_provider->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kIconColorPrimary);
 
-    switch (icon_id) {
-      case EasyUnlockIconId::NONE:
+    switch (icon_state) {
+      case EasyUnlockIconState::NONE:
         // The easy unlock icon will be set to invisible. Do nothing.
         break;
-      case EasyUnlockIconId::HARDLOCKED:
+      case EasyUnlockIconState::HARDLOCKED:
         color = color_provider->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kIconColorProminent);
         break;
-      case EasyUnlockIconId::LOCKED:
+      case EasyUnlockIconState::LOCKED:
         // This is the default case in terms of icon and color.
         break;
-      case EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED:
+      case EasyUnlockIconState::LOCKED_TO_BE_ACTIVATED:
         color = AshColorProvider::GetDisabledColor(
             color_provider->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kIconColorPrimary));
         break;
-      case EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT:
+      case EasyUnlockIconState::LOCKED_WITH_PROXIMITY_HINT:
         color = color_provider->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kIconColorWarning);
         break;
-      case EasyUnlockIconId::UNLOCKED:
+      case EasyUnlockIconState::UNLOCKED:
         icon = &kLockScreenEasyUnlockOpenIcon;
         color = color_provider->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kIconColorPositive);
         break;
-      case EasyUnlockIconId::SPINNER: {
+      case EasyUnlockIconState::SPINNER: {
         SetPaintToLayer();
         layer()->SetFillsBoundsOpaquely(false);
         std::unique_ptr<ui::LayerAnimationSequence> opacity_sequence =
@@ -445,9 +441,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
   // run immediately.
   bool immediately_hover_for_test_ = false;
 
-  EasyUnlockIconId icon_id_ = EasyUnlockIconId::LOCKED;
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockIcon);
+  EasyUnlockIconState icon_state_ = EasyUnlockIconState::LOCKED;
 };
 
 class LoginPasswordView::DisplayPasswordButton
@@ -463,7 +457,8 @@ class LoginPasswordView::DisplayPasswordButton
         IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_HIDE));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+    views::FocusRing::Get(this)->SetColor(
+        ShelfConfig::Get()->shelf_focus_border_color());
 
     SetEnabled(false);
   }
@@ -471,12 +466,6 @@ class LoginPasswordView::DisplayPasswordButton
   DisplayPasswordButton(const DisplayPasswordButton&) = delete;
   DisplayPasswordButton& operator=(const DisplayPasswordButton&) = delete;
   ~DisplayPasswordButton() override = default;
-
-  // This should be done automatically per ToggleImageButton.
-  void InvertToggled() {
-    toggled_ = !toggled_;
-    SetToggled(toggled_);
-  }
 
   void UpdateIcons(const LoginPalette& palette) {
     auto color = palette.button_enabled_color;
@@ -491,9 +480,6 @@ class LoginPasswordView::DisplayPasswordButton
     SetImage(views::Button::STATE_DISABLED, visible_icon_disabled);
     SetToggledImage(views::Button::STATE_NORMAL, &invisible_icon);
   }
-
- private:
-  bool toggled_ = false;
 };
 
 // A container view that either shows the easy unlock icon or the caps lock
@@ -712,13 +698,18 @@ void LoginPasswordView::SetEnabledOnEmptyPassword(bool enabled) {
 }
 
 void LoginPasswordView::SetEasyUnlockIcon(
-    EasyUnlockIconId id,
+    EasyUnlockIconState icon_state,
     const std::u16string& accessibility_label) {
-  // Update icon.
-  easy_unlock_icon_->SetEasyUnlockIcon(id, accessibility_label);
+  // Do not update EasyUnlockIconState if the Smart Lock revamp is enabled since
+  // it will be removed post launch.
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+    return;
 
-  // Update icon visiblity.
-  bool has_icon = id != EasyUnlockIconId::NONE;
+  // Update icon.
+  easy_unlock_icon_->SetEasyUnlockIcon(icon_state, accessibility_label);
+
+  // Update icon visibility.
+  bool has_icon = icon_state != EasyUnlockIconState::NONE;
   // We do not want to schedule a new animation when the user switches from an
   // account to another.
   if (should_show_easy_unlock_ == has_icon)
@@ -742,22 +733,13 @@ void LoginPasswordView::SetDisplayPasswordButtonVisible(bool visible) {
   if (visible) {
     clear_password_timer_->Start(
         FROM_HERE, kClearPasswordAfterDelay,
-        base::BindRepeating(&LoginPasswordView::Clear, base::Unretained(this)));
+        base::BindRepeating(&LoginPasswordView::Reset, base::Unretained(this)));
   }
 }
 
 void LoginPasswordView::Reset() {
-  Clear();
-
-  // A user could hit the display button, then quickly switch account and
-  // type; we want the password to be hidden in such a case.
-  HidePassword(false /*chromevox_exception*/);
-}
-
-void LoginPasswordView::Clear() {
+  HidePassword(/*chromevox_exception=*/false);
   textfield_->SetText(std::u16string());
-  // For security reasons, we also want to clear the edit history if the Clear
-  // function is invoked by the clear password timer.
   textfield_->ClearEditHistory();
   // |ContentsChanged| won't be called by |Textfield| if the text is changed
   // by |Textfield::SetText()|.
@@ -823,13 +805,18 @@ bool LoginPasswordView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void LoginPasswordView::InvertPasswordDisplayingState() {
-  display_password_button_->InvertToggled();
-  textfield_->InvertTextInputType();
-  hide_password_timer_->Start(
-      FROM_HERE, kHidePasswordAfterDelay,
-      base::BindRepeating(&LoginPasswordView::HidePassword,
-                          base::Unretained(this),
-                          true /*chromevox_exception*/));
+  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD) {
+    textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_NULL);
+    display_password_button_->SetToggled(true);
+    textfield_->UpdateFontListAndCursor();
+    hide_password_timer_->Start(
+        FROM_HERE, kHidePasswordAfterDelay,
+        base::BindRepeating(&LoginPasswordView::HidePassword,
+                            base::Unretained(this),
+                            /*chromevox_exception=*/true));
+  } else {
+    HidePassword(/*chromevox_exception=*/false);
+  }
 }
 
 void LoginPasswordView::HidePassword(bool chromevox_exception) {
@@ -837,8 +824,9 @@ void LoginPasswordView::HidePassword(bool chromevox_exception) {
       Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
     return;
   }
-  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL)
-    InvertPasswordDisplayingState();
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  display_password_button_->SetToggled(false);
+  textfield_->UpdateFontListAndCursor();
 }
 
 void LoginPasswordView::ContentsChanged(views::Textfield* sender,

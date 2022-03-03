@@ -9,10 +9,12 @@
 #include <stdint.h>
 #include <winsock2.h>
 
+#include <atomic>
 #include <memory>
+#include <set>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -68,6 +70,9 @@ class NET_EXPORT QwaveApi {
  public:
   QwaveApi();
 
+  QwaveApi(const QwaveApi&) = delete;
+  QwaveApi& operator=(const QwaveApi&) = delete;
+
   static QwaveApi* GetDefault();
 
   virtual bool qwave_supported() const;
@@ -101,8 +106,6 @@ class NET_EXPORT QwaveApi {
   AddSocketToFlowFn add_socket_to_flow_func_;
   RemoveSocketFromFlowFn remove_socket_from_flow_func_;
   SetFlowFn set_flow_func_;
-
-  DISALLOW_COPY_AND_ASSIGN(QwaveApi);
 };
 
 //-----------------------------------------------------------------------------
@@ -117,6 +120,10 @@ class NET_EXPORT QwaveApi {
 class NET_EXPORT DscpManager {
  public:
   DscpManager(QwaveApi* api, SOCKET socket);
+
+  DscpManager(const DscpManager&) = delete;
+  DscpManager& operator=(const DscpManager&) = delete;
+
   ~DscpManager();
 
   // Remembers the latest |dscp| so PrepareToSend can add remote addresses to
@@ -135,7 +142,7 @@ class NET_EXPORT DscpManager {
                               base::WeakPtr<DscpManager> dscp_manager,
                               HANDLE handle);
 
-  QwaveApi* const api_;
+  const raw_ptr<QwaveApi> api_;
   const SOCKET socket_;
 
   DiffServCodePoint dscp_value_ = DSCP_NO_CHANGE;
@@ -147,8 +154,6 @@ class NET_EXPORT DscpManager {
   // 0 means no flow has been constructed.
   QOS_FLOWID flow_id_ = 0;
   base::WeakPtrFactory<DscpManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DscpManager);
 };
 
 //-----------------------------------------------------------------------------
@@ -160,6 +165,10 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   UDPSocketWin(DatagramSocket::BindType bind_type,
                net::NetLog* net_log,
                const net::NetLogSource& source);
+
+  UDPSocketWin(const UDPSocketWin&) = delete;
+  UDPSocketWin& operator=(const UDPSocketWin&) = delete;
+
   ~UDPSocketWin() override;
 
   // Opens the socket.
@@ -465,7 +474,7 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   int read_iobuffer_len_;
   int write_iobuffer_len_;
 
-  IPEndPoint* recv_from_address_;
+  raw_ptr<IPEndPoint> recv_from_address_;
 
   // Cached copy of the current address we're sending to, if any.  Used for
   // logging.
@@ -491,8 +500,6 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // Used to prevent null dereferences in OnObjectSignaled, when passing an
   // error to both read and write callbacks. Cleared in Close()
   base::WeakPtrFactory<UDPSocketWin> event_pending_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketWin);
 };
 
 //-----------------------------------------------------------------------------

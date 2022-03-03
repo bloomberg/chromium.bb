@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -74,12 +74,16 @@ class ExtensionAPI {
     ~OverrideSharedInstanceForTest();
 
    private:
-    ExtensionAPI* original_api_;
+    raw_ptr<ExtensionAPI> original_api_;
   };
 
   // Creates a completely clean instance. Configure using
   // RegisterDependencyProvider before use.
   ExtensionAPI();
+
+  ExtensionAPI(const ExtensionAPI&) = delete;
+  ExtensionAPI& operator=(const ExtensionAPI&) = delete;
+
   virtual ~ExtensionAPI();
 
   // Add a FeatureProvider for APIs. The features are used to specify
@@ -186,8 +190,6 @@ class ExtensionAPI {
   // FeatureProviders used for resolving dependencies.
   typedef std::map<std::string, const FeatureProvider*> FeatureProviderMap;
   FeatureProviderMap dependency_providers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);
 };
 
 }  // namespace extensions

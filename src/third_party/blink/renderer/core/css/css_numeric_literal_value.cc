@@ -46,7 +46,7 @@ CSSNumericLiteralValue* CSSNumericLiteralValue::Create(double value,
       value = 0;
   }
 
-  int int_value = clampTo<int>(value);
+  int int_value = ClampTo<int>(value);
   if (value != int_value)
     return MakeGarbageCollected<CSSNumericLiteralValue>(value, type);
 
@@ -101,11 +101,11 @@ double CSSNumericLiteralValue::ComputeDegrees() const {
     case UnitType::kDegrees:
       return num_;
     case UnitType::kRadians:
-      return rad2deg(num_);
+      return Rad2deg(num_);
     case UnitType::kGradians:
-      return grad2deg(num_);
+      return Grad2deg(num_);
     case UnitType::kTurns:
-      return turn2deg(num_);
+      return Turn2deg(num_);
     default:
       NOTREACHED();
       return 0;
@@ -220,7 +220,13 @@ String CSSNumericLiteralValue::CustomCSSText() const {
     case UnitType::kViewportWidth:
     case UnitType::kViewportHeight:
     case UnitType::kViewportMin:
-    case UnitType::kViewportMax: {
+    case UnitType::kViewportMax:
+    case UnitType::kContainerWidth:
+    case UnitType::kContainerHeight:
+    case UnitType::kContainerInlineSize:
+    case UnitType::kContainerBlockSize:
+    case UnitType::kContainerMin:
+    case UnitType::kContainerMax: {
       // The following integers are minimal and maximum integers which can
       // be represented in non-exponential format with 6 digit precision.
       constexpr int kMinInteger = -999999;
@@ -241,8 +247,8 @@ String CSSNumericLiteralValue::CustomCSSText() const {
         int int_value = value;
         const char* unit_type = UnitTypeToString(GetType());
         builder.AppendNumber(int_value);
-        builder.Append(unit_type, strlen(unit_type));
-        text = builder.ToString();
+        builder.Append(unit_type, static_cast<unsigned>(strlen(unit_type)));
+        text = builder.ReleaseString();
       }
     } break;
     default:

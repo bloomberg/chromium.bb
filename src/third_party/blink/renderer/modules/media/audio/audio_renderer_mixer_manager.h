@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/unguessable_token.h"
 #include "media/audio/audio_device_description.h"
@@ -43,6 +42,10 @@ namespace blink {
 class BLINK_MODULES_EXPORT AudioRendererMixerManager final
     : public media::AudioRendererMixerPool {
  public:
+  AudioRendererMixerManager(const AudioRendererMixerManager&) = delete;
+  AudioRendererMixerManager& operator=(const AudioRendererMixerManager&) =
+      delete;
+
   ~AudioRendererMixerManager() final;
 
   // AudioRendererMixerManager instance which manages renderer side mixer
@@ -172,8 +175,6 @@ class BLINK_MODULES_EXPORT AudioRendererMixerManager final
   // Active mixers.
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManager);
 };
 
 }  // namespace blink

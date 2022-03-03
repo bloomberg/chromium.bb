@@ -41,7 +41,7 @@ GLOutputSurface::GLOutputSurface(
   // Since one of the buffers is used by the surface for presentation, there can
   // be at most |num_surface_buffers - 1| pending buffers that the compositor
   // can use.
-  capabilities_.max_frames_pending =
+  capabilities_.pending_swap_params.max_pending_swaps =
       context_capabilities.num_surface_buffers - 1;
   capabilities_.supports_gpu_vsync = context_capabilities.gpu_vsync;
   capabilities_.supports_dc_layers = context_capabilities.dc_layers;
@@ -162,9 +162,9 @@ bool GLOutputSurface::HasExternalStencilTest() const {
 void GLOutputSurface::ApplyExternalStencil() {}
 
 void GLOutputSurface::DidReceiveSwapBuffersAck(
-    const gfx::SwapResponse& response) {
-  client_->DidReceiveSwapBuffersAck(response.timings,
-                                    /*release_fence=*/gfx::GpuFenceHandle());
+    const gfx::SwapResponse& response,
+    gfx::GpuFenceHandle release_fence) {
+  client_->DidReceiveSwapBuffersAck(response.timings, std::move(release_fence));
 }
 
 void GLOutputSurface::HandlePartialSwap(
@@ -181,12 +181,13 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
     std::vector<ui::LatencyInfo> latency_info,
     bool top_controls_visible_height_changed,
     const gfx::Size& pixel_size,
-    const gpu::SwapBuffersCompleteParams& params) {
+    const gpu::SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
-  DidReceiveSwapBuffersAck(params.swap_response);
+  DidReceiveSwapBuffersAck(params.swap_response, std::move(release_fence));
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(

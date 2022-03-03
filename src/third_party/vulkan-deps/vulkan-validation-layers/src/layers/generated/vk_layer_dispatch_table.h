@@ -245,6 +245,10 @@ typedef struct VkLayerInstanceDispatchTable_ {
     // ---- VK_EXT_headless_surface extension commands
     PFN_vkCreateHeadlessSurfaceEXT CreateHeadlessSurfaceEXT;
 
+    // ---- VK_EXT_acquire_drm_display extension commands
+    PFN_vkAcquireDrmDisplayEXT AcquireDrmDisplayEXT;
+    PFN_vkGetDrmDisplayEXT GetDrmDisplayEXT;
+
     // ---- VK_NV_acquire_winrt_display extension commands
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     PFN_vkAcquireWinrtDisplayNV AcquireWinrtDisplayNV;
@@ -479,6 +483,10 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkCmdDecodeVideoKHR CmdDecodeVideoKHR;
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
+    // ---- VK_KHR_dynamic_rendering extension commands
+    PFN_vkCmdBeginRenderingKHR CmdBeginRenderingKHR;
+    PFN_vkCmdEndRenderingKHR CmdEndRenderingKHR;
+
     // ---- VK_KHR_device_group extension commands
     PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR GetDeviceGroupPeerMemoryFeaturesKHR;
     PFN_vkCmdSetDeviceMaskKHR CmdSetDeviceMaskKHR;
@@ -573,6 +581,9 @@ typedef struct VkLayerDispatchTable_ {
     // ---- VK_KHR_fragment_shading_rate extension commands
     PFN_vkCmdSetFragmentShadingRateKHR CmdSetFragmentShadingRateKHR;
 
+    // ---- VK_KHR_present_wait extension commands
+    PFN_vkWaitForPresentKHR WaitForPresentKHR;
+
     // ---- VK_KHR_buffer_device_address extension commands
     PFN_vkGetBufferDeviceAddressKHR GetBufferDeviceAddressKHR;
     PFN_vkGetBufferOpaqueCaptureAddressKHR GetBufferOpaqueCaptureAddressKHR;
@@ -612,6 +623,11 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkCmdCopyImageToBuffer2KHR CmdCopyImageToBuffer2KHR;
     PFN_vkCmdBlitImage2KHR CmdBlitImage2KHR;
     PFN_vkCmdResolveImage2KHR CmdResolveImage2KHR;
+
+    // ---- VK_KHR_maintenance4 extension commands
+    PFN_vkGetDeviceBufferMemoryRequirementsKHR GetDeviceBufferMemoryRequirementsKHR;
+    PFN_vkGetDeviceImageMemoryRequirementsKHR GetDeviceImageMemoryRequirementsKHR;
+    PFN_vkGetDeviceImageSparseMemoryRequirementsKHR GetDeviceImageSparseMemoryRequirementsKHR;
 
     // ---- VK_EXT_debug_marker extension commands
     PFN_vkDebugMarkerSetObjectTagEXT DebugMarkerSetObjectTagEXT;
@@ -829,6 +845,33 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkGetSemaphoreZirconHandleFUCHSIA GetSemaphoreZirconHandleFUCHSIA;
 #endif // VK_USE_PLATFORM_FUCHSIA
 
+    // ---- VK_FUCHSIA_buffer_collection extension commands
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    PFN_vkCreateBufferCollectionFUCHSIA CreateBufferCollectionFUCHSIA;
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    PFN_vkSetBufferCollectionImageConstraintsFUCHSIA SetBufferCollectionImageConstraintsFUCHSIA;
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA SetBufferCollectionBufferConstraintsFUCHSIA;
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    PFN_vkDestroyBufferCollectionFUCHSIA DestroyBufferCollectionFUCHSIA;
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    PFN_vkGetBufferCollectionPropertiesFUCHSIA GetBufferCollectionPropertiesFUCHSIA;
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+    // ---- VK_HUAWEI_subpass_shading extension commands
+    PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI GetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI;
+    PFN_vkCmdSubpassShadingHUAWEI CmdSubpassShadingHUAWEI;
+
+    // ---- VK_HUAWEI_invocation_mask extension commands
+    PFN_vkCmdBindInvocationMaskHUAWEI CmdBindInvocationMaskHUAWEI;
+
+    // ---- VK_NV_external_memory_rdma extension commands
+    PFN_vkGetMemoryRemoteAddressNV GetMemoryRemoteAddressNV;
+
     // ---- VK_EXT_extended_dynamic_state2 extension commands
     PFN_vkCmdSetPatchControlPointsEXT CmdSetPatchControlPointsEXT;
     PFN_vkCmdSetRasterizerDiscardEnableEXT CmdSetRasterizerDiscardEnableEXT;
@@ -838,6 +881,13 @@ typedef struct VkLayerDispatchTable_ {
 
     // ---- VK_EXT_color_write_enable extension commands
     PFN_vkCmdSetColorWriteEnableEXT CmdSetColorWriteEnableEXT;
+
+    // ---- VK_EXT_multi_draw extension commands
+    PFN_vkCmdDrawMultiEXT CmdDrawMultiEXT;
+    PFN_vkCmdDrawMultiIndexedEXT CmdDrawMultiIndexedEXT;
+
+    // ---- VK_EXT_pageable_device_local_memory extension commands
+    PFN_vkSetDeviceMemoryPriorityEXT SetDeviceMemoryPriorityEXT;
 
     // ---- VK_KHR_acceleration_structure extension commands
     PFN_vkCreateAccelerationStructureKHR CreateAccelerationStructureKHR;

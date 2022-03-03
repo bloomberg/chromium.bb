@@ -5,30 +5,31 @@
 #ifndef CHROME_BROWSER_ASH_SCANNING_SCANNING_TYPE_CONVERTERS_H_
 #define CHROME_BROWSER_ASH_SCANNING_SCANNING_TYPE_CONVERTERS_H_
 
-#include "ash/content/scanning/mojom/scanning.mojom.h"
+#include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct TypeConverter<ash::scanning::mojom::ScanResult,
-                     lorgnette::ScanFailureMode> {
-  static ash::scanning::mojom::ScanResult Convert(
+struct EnumTraits<ash::scanning::mojom::ScanResult,
+                  lorgnette::ScanFailureMode> {
+  static ash::scanning::mojom::ScanResult ToMojom(
       const lorgnette::ScanFailureMode lorgnette_failure_mode);
 };
 
 template <>
-struct TypeConverter<ash::scanning::mojom::ScannerCapabilitiesPtr,
-                     lorgnette::ScannerCapabilities> {
-  static ash::scanning::mojom::ScannerCapabilitiesPtr Convert(
+struct StructTraits<ash::scanning::mojom::ScannerCapabilitiesPtr,
+                    lorgnette::ScannerCapabilities> {
+  static ash::scanning::mojom::ScannerCapabilitiesPtr ToMojom(
       const lorgnette::ScannerCapabilities& lorgnette_caps);
 };
 
 template <>
-struct TypeConverter<lorgnette::ScanSettings,
-                     ash::scanning::mojom::ScanSettingsPtr> {
-  static lorgnette::ScanSettings Convert(
+struct StructTraits<lorgnette::ScanSettings,
+                    ash::scanning::mojom::ScanSettingsPtr> {
+  static lorgnette::ScanSettings ToMojom(
       const ash::scanning::mojom::ScanSettingsPtr& mojo_settings);
 };
 

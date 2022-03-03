@@ -4,9 +4,8 @@
 
 #include "base/supports_user_data.h"
 
-#include <vector>
-
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -27,8 +26,8 @@ struct UsesItself : public SupportsUserData::Data {
     EXPECT_EQ(nullptr, supports_user_data_->GetUserData(key_));
   }
 
-  SupportsUserData* supports_user_data_;
-  const void* key_;
+  raw_ptr<SupportsUserData> supports_user_data_;
+  raw_ptr<const void> key_;
 };
 
 TEST(SupportsUserDataTest, ClearWorksRecursively) {

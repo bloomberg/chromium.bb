@@ -6,10 +6,11 @@
 #define CHROMECAST_BROWSER_WEBVIEW_WEBVIEW_CONTROLLER_H_
 
 #include <memory>
-#include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/supports_user_data.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "chromecast/browser/cast_web_contents_observer.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "chromecast/browser/webview/web_content_controller.h"
 #include "url/gurl.h"
@@ -32,8 +33,7 @@ class WebviewTest;
 
 // This owns a WebContents and CastWebContents and processes proto commands
 // to allow the web contents to be controlled and embedded.
-class WebviewController : public CastWebContents::Delegate,
-                          public CastWebContents::Observer,
+class WebviewController : public CastWebContentsObserver,
                           public WebContentController {
  public:
   WebviewController(content::BrowserContext* browser_context,
@@ -42,6 +42,10 @@ class WebviewController : public CastWebContents::Delegate,
   WebviewController(std::unique_ptr<content::BrowserContext> browser_context,
                     Client* client,
                     bool enabled_for_dev);
+
+  WebviewController(const WebviewController&) = delete;
+  WebviewController& operator=(const WebviewController&) = delete;
+
   ~WebviewController() override;
 
   // Returns a navigation throttle for the current navigation request, if one is
@@ -84,13 +88,10 @@ class WebviewController : public CastWebContents::Delegate,
 
   webview::AsyncPageEvent_State current_state();
 
-  // CastWebContents::Delegate
-  void OnPageStateChanged(CastWebContents* cast_web_contents) override;
-  void OnPageStopped(CastWebContents* cast_web_contents,
-                     int error_code) override;
-
-  // CastWebContents::Observer
-  void ResourceLoadFailed(CastWebContents* cast_web_contents) override;
+  // CastWebContentsObserver implementation:
+  void PageStateChanged(PageState page_state) override;
+  void PageStopped(PageState page_state, int error_code) override;
+  void ResourceLoadFailed() override;
 
   // content::WebContentsObserver
   void DidFirstVisuallyNonEmptyPaint() override;
@@ -102,6 +103,7 @@ class WebviewController : public CastWebContents::Delegate,
   const bool enabled_for_dev_;
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
+  PageState page_state_ = PageState::IDLE;
   bool stopped_ = false;
 
   // The navigation throttle for the current navigation event, if any.
@@ -113,8 +115,6 @@ class WebviewController : public CastWebContents::Delegate,
       nullptr;  // Not owned.
 
   base::WeakPtrFactory<WebviewController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebviewController);
 };
 
 }  // namespace chromecast

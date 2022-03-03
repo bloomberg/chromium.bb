@@ -22,11 +22,11 @@ module.exports = function (grunt) {
       },
       'generate-wpt-cts-html': {
         cmd: 'node',
-        args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.html', 'src/common/templates/cts.html'],
+        args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.https.html', 'src/common/templates/cts.https.html'],
       },
       unittest: {
         cmd: 'node',
-        args: ['tools/run', 'unittests:*'],
+        args: ['tools/run_node', 'unittests:*'],
       },
       'build-out': {
         cmd: 'node',
@@ -52,7 +52,7 @@ module.exports = function (grunt) {
           '--only=src/common/runtime/wpt.ts',
           '--only=src/webgpu/',
           // These files will be generated, instead of compiled from TypeScript.
-          '--ignore=src/common/framework/version.ts',
+          '--ignore=src/common/internal/version.ts',
           '--ignore=src/webgpu/listing.ts',
         ],
       },
@@ -62,8 +62,28 @@ module.exports = function (grunt) {
           'node_modules/typescript/lib/tsc.js',
           '--project', 'node.tsconfig.json',
           '--outDir', 'out-node/',
+          '--incremental', 'true',
+          '--tsBuildInfoFile', 'out-node/build.tsbuildinfo',
           '--noEmit', 'false',
           '--declaration', 'false'
+        ],
+      },
+      'copy-assets': {
+        cmd: 'node',
+        args: [
+          'node_modules/@babel/cli/bin/babel',
+          'src/resources/',
+          '--out-dir=out/resources/',
+          '--copy-files'
+        ],
+      },
+      'copy-assets-wpt': {
+        cmd: 'node',
+        args: [
+          'node_modules/@babel/cli/bin/babel',
+          'src/resources/',
+          '--out-dir=out-wpt/resources/',
+          '--copy-files'
         ],
       },
       lint: {
@@ -77,13 +97,22 @@ module.exports = function (grunt) {
       'autoformat-out-wpt': {
         cmd: 'node',
         args: ['node_modules/prettier/bin-prettier', '--loglevel=warn', '--write', 'out-wpt/**/*.js'],
+      },
+      tsdoc: {
+        cmd: 'node',
+        args: ['node_modules/typedoc/bin/typedoc'],
+      },
+
+      serve: {
+        cmd: 'node',
+        args: ['node_modules/http-server/bin/http-server', '-p8080', '-a127.0.0.1', '-c-1']
       }
     },
 
     copy: {
       'out-wpt-generated': {
         files: [
-          { expand: true, cwd: 'out', src: 'common/framework/version.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'common/internal/version.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'webgpu/listing.js', dest: 'out-wpt/' },
         ],
       },
@@ -91,15 +120,6 @@ module.exports = function (grunt) {
         files: [
           { expand: true, cwd: 'src', src: 'webgpu/**/*.html', dest: 'out-wpt/' },
         ],
-      },
-    },
-
-    'http-server': {
-      '.': {
-        root: '.',
-        port: 8080,
-        host: '127.0.0.1',
-        cache: -1,
       },
     },
 
@@ -115,7 +135,6 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-http-server');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-ts');
 
@@ -135,11 +154,13 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build-standalone', 'Build out/ (no checks, no WPT)', [
     'run:build-out',
+    'run:copy-assets',
     'run:generate-version',
     'run:generate-listings',
   ]);
   grunt.registerTask('build-wpt', 'Build out/ (no checks)', [
     'run:build-out-wpt',
+    'run:copy-assets-wpt',
     'run:autoformat-out-wpt',
     'run:generate-version',
     'run:generate-listings',
@@ -161,6 +182,7 @@ module.exports = function (grunt) {
     'ts:check',
     'run:unittest',
     'run:lint',
+    'run:tsdoc',
   ]);
   registerTaskAndAddToHelp('standalone', 'Build standalone and typecheck', [
     'set-quiet-mode',
@@ -183,7 +205,7 @@ module.exports = function (grunt) {
     'ts:check',
   ]);
 
-  registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
+  registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080 (does NOT compile source)', ['run:serve']);
   registerTaskAndAddToHelp('fix', 'Fix lint and formatting', ['run:fix']);
 
   addExistingTaskToHelp('clean', 'Clean out/ and out-wpt/');

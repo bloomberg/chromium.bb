@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/history/core/browser/download_row.h"
@@ -153,7 +153,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
   download::DownloadItem* notified_item_;
   base::WeakPtrFactory<download::DownloadItem*> notified_item_receiver_factory_;
 
-  HistoryAdapter* history_adapter_;
+  raw_ptr<HistoryAdapter> history_adapter_;
 };
 
 // static
@@ -302,6 +302,32 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic_Interrupted) {
 
   ASSERT_TRUE(manager_observer());
   manager_observer()->OnDownloadCreated(manager(), item.get());
+  EXPECT_EQ(static_cast<download::DownloadItem*>(item.get()), notified_item());
+}
+
+// A download that's blocked by local policies should also be displayed even
+// when the destination hasn't been determined yet, except for silently blocked
+// mixed content downloads.
+TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic_FileBlocked) {
+  std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
+  DownloadUIController controller(manager(), GetTestDelegate());
+  EXPECT_CALL(*item, GetTargetFilePath())
+      .WillRepeatedly(ReturnRefOfCopy(base::FilePath()));
+  EXPECT_CALL(*item, GetLastReason())
+      .WillRepeatedly(Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED));
+
+  // If the download is a silently blocked mixed content download, don't notify.
+  EXPECT_CALL(*item, GetMixedContentStatus())
+      .WillRepeatedly(
+          Return(download::DownloadItem::MixedContentStatus::SILENT_BLOCK));
+  ASSERT_TRUE(manager_observer());
+  manager_observer()->OnDownloadCreated(manager(), item.get());
+  EXPECT_FALSE(notified_item());
+
+  // Notify even though the destination hasn't been determined yet.
+  EXPECT_CALL(*item, GetMixedContentStatus())
+      .WillRepeatedly(Return(download::DownloadItem::MixedContentStatus::SAFE));
+  item->NotifyObserversDownloadUpdated();
   EXPECT_EQ(static_cast<download::DownloadItem*>(item.get()), notified_item());
 }
 

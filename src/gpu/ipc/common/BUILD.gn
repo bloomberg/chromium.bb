@@ -84,9 +84,6 @@ source_set("ipc_common_sources") {
     "gpu_memory_buffer_impl_shared_memory.h",
     "gpu_memory_buffer_support.cc",
     "gpu_memory_buffer_support.h",
-    "gpu_message_generator.cc",
-    "gpu_message_generator.h",
-    "gpu_messages.h",
     "gpu_param_traits.cc",
     "gpu_param_traits.h",
     "gpu_param_traits_macros.h",
@@ -103,7 +100,7 @@ source_set("ipc_common_sources") {
     ]
     libs = [ "d3d11.lib" ]
   }
-  if (is_linux || is_chromeos || use_ozone) {
+  if (use_ozone) {
     sources += [
       "gpu_memory_buffer_impl_native_pixmap.cc",
       "gpu_memory_buffer_impl_native_pixmap.h",
@@ -290,6 +287,15 @@ mojom("gpu_channel_mojom") {
       traits_headers = [ "scheduling_priority_mojom_traits.h" ]
       traits_public_deps = [ "//gpu/command_buffer/common:common_base_sources" ]
     },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.SwapBuffersCompleteParams"
+          cpp = "::gpu::SwapBuffersCompleteParams"
+        },
+      ]
+      traits_headers = [ "gpu_param_traits_macros.h" ]
+    },
   ]
 
   # Unlike some definitions in ":interfaces_mojom", these bindings are never
@@ -333,9 +339,6 @@ mojom("interfaces") {
   if (enable_vulkan) {
     public_deps += [ ":vulkan_interface" ]
     enabled_features += [ "supports_vulkan" ]
-  }
-  if (use_x11) {
-    enabled_features += [ "use_x11" ]
   }
   if (is_win || is_chromeos || is_chromeos_lacros) {
     enabled_features += [ "has_gpu_revision_info" ]
@@ -569,10 +572,11 @@ mojom("interfaces") {
         types = [
           {
             mojom = "gpu.mojom.Luid"
-            cpp = "::LUID"
+            cpp = "::CHROME_LUID"
           },
         ]
         traits_headers = [ "luid_mojom_traits.h" ]
+        traits_sources = [ "luid_mojom_traits.cc" ]
         traits_public_deps = [
           ":mojom_traits",
           "//gpu/config:config_sources",
@@ -584,7 +588,7 @@ mojom("interfaces") {
         types = [
           {
             mojom = "gpu.mojom.Luid"
-            cpp = "::LUID"
+            cpp = "::CHROME_LUID"
           },
         ]
         traits_headers = [ "luid_mojom_traits.h" ]
@@ -740,6 +744,8 @@ source_set("mojom_traits") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "mock_command_buffer.cc",
+    "mock_command_buffer.h",
     "mock_gpu_channel.cc",
     "mock_gpu_channel.h",
   ]

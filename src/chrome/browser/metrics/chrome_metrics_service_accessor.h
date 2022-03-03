@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
@@ -19,6 +18,7 @@
 
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
+class HttpsFirstModeService;
 class NavigationMetricsRecorder;
 class PrefService;
 class Profile;
@@ -31,6 +31,10 @@ class FlashDOMHandler;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class ChromeCameraAppUIDelegate;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+namespace autofill_assistant {
+class ClientAndroid;
+}  // namespace autofill_assistant
 
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
@@ -60,10 +64,10 @@ void JoinOnboardingGroup(Profile* profile);
 
 namespace safe_browsing {
 class ChromeCleanerControllerDelegate;
+class ChromeSafeBrowsingUIManagerDelegate;
 class DownloadUrlSBClient;
 class IncidentReportingService;
 class SafeBrowsingService;
-class SafeBrowsingUIManager;
 
 namespace internal {
 class ReporterRunner;
@@ -77,17 +81,29 @@ class MetricsReportingHandler;
 namespace feed {
 class FeedServiceBridge;
 class FeedServiceDelegateImpl;
+class WebFeedSubscriptionCoordinator;
 }  // namespace feed
 
 namespace browser_sync {
 class DeviceInfoSyncClientImpl;
 }  // namespace browser_sync
 
+namespace webauthn {
+namespace authenticator {
+class IsMetricsAndCrashReportingEnabled;
+}
+}  // namespace webauthn
+
 // This class limits and documents access to metrics service helper methods.
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
 class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  public:
+  ChromeMetricsServiceAccessor() = delete;
+  ChromeMetricsServiceAccessor(const ChromeMetricsServiceAccessor&) = delete;
+  ChromeMetricsServiceAccessor& operator=(const ChromeMetricsServiceAccessor&) =
+      delete;
+
   // This test method is public so tests don't need to befriend this class.
 
   // If arg is non-null, the value will be returned from future calls to
@@ -96,6 +112,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   static void SetMetricsAndCrashReportingForTesting(const bool* value);
 
  private:
+  friend class autofill_assistant::ClientAndroid;
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
   friend class ChromeBrowserFieldTrials;
@@ -118,11 +135,11 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class settings::MetricsReportingHandler;
   friend class UmaSessionStats;
   friend class safe_browsing::ChromeCleanerControllerDelegate;
+  friend class safe_browsing::ChromeSafeBrowsingUIManagerDelegate;
   friend class safe_browsing::DownloadUrlSBClient;
   friend class safe_browsing::IncidentReportingService;
   friend class safe_browsing::internal::ReporterRunner;
   friend class safe_browsing::SafeBrowsingService;
-  friend class safe_browsing::SafeBrowsingUIManager;
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend void welcome::JoinOnboardingGroup(Profile* profile);
@@ -134,10 +151,18 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class feed::FeedServiceDelegateImpl;
   friend class browser_sync::DeviceInfoSyncClientImpl;
   friend class feed::FeedServiceBridge;
+  friend class feed::WebFeedSubscriptionCoordinator;
+  friend class HttpsFirstModeService;
+  friend class webauthn::authenticator::IsMetricsAndCrashReportingEnabled;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class ChromeCameraAppUIDelegate;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // For RegisterSyntheticFieldTrial.
+  friend class FieldTrialObserver;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;
@@ -178,8 +203,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   static void BindMetricsServiceReceiver(
       mojo::PendingReceiver<chrome::mojom::MetricsService> receiver);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };
 
 #endif  // CHROME_BROWSER_METRICS_CHROME_METRICS_SERVICE_ACCESSOR_H_

@@ -40,6 +40,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
@@ -55,16 +56,16 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
+#include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/common/url_scheme_util.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -72,6 +73,7 @@
 #include "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -109,6 +111,11 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 
 // Duration for notify user auto-sign in dialog being displayed.
 constexpr int kNotifyAutoSigninDuration = 3;  // seconds
+// Helper to check if password manager rebranding finch flag is enabled.
+BOOL isPasswordManagerBrandingUpdateEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kIOSEnablePasswordManagerBrandingUpdate);
+}
 }  // namespace
 
 @interface PasswordController () <SharedPasswordControllerDelegate>
@@ -337,15 +344,16 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
   // Hides notification after 3 seconds.
   __weak PasswordController* weakSelf = self;
-  _notifyAutoSigninTimer.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kNotifyAutoSigninDuration),
-      base::BindRepeating(^{
-        [weakSelf hideAutosigninNotification];
-      }));
+  _notifyAutoSigninTimer.Start(FROM_HERE,
+                               base::Seconds(kNotifyAutoSigninDuration),
+                               base::BindRepeating(^{
+                                 [weakSelf hideAutosigninNotification];
+                               }));
 }
 
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
-                                  URL:(const GURL&)URL {
+                                  URL:(const GURL&)URL
+                             username:(const std::u16string&)username {
   [self.passwordBreachDispatcher showPasswordBreachForLeakType:leakType];
 }
 
@@ -357,6 +365,18 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 }
 
 #pragma mark - Private methods
+
+// Returns the user email.
+- (NSString*)userEmail {
+  DCHECK(self.browserState);
+
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  ChromeIdentity* authenticatedIdentity =
+      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+
+  return [authenticatedIdentity userEmail];
+}
 
 // The dispatcher used for ApplicationCommands.
 - (id<ApplicationCommands>)applicationCommandsHandler {
@@ -423,16 +443,22 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   bool isSyncUser = false;
   if (self.browserState) {
     syncer::SyncService* syncService =
-        ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+        SyncServiceFactory::GetForBrowserState(self.browserState);
     isSyncUser = password_bubble_experiment::IsSmartLockUser(syncService);
   }
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
 
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  ChromeIdentity* authenticatedIdentity =
+      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+
   switch (type) {
     case PasswordInfoBarType::SAVE: {
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-          isSyncUser, /*password_update*/ false, std::move(form));
+          [authenticatedIdentity userEmail], isSyncUser,
+          /*password_update*/ false, std::move(form));
       delegate->set_handler(self.applicationCommandsHandler);
 
         // Count only new infobar showings, not replacements.
@@ -442,22 +468,11 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
                                     true);
         }
 
-        std::unique_ptr<InfoBarIOS> infobar;
-
         // If manual save, skip showing banner.
         bool skipBanner = manual;
-        if (IsInfobarOverlayUIEnabled()) {
-          infobar = std::make_unique<InfoBarIOS>(
-              InfobarType::kInfobarTypePasswordSave, std::move(delegate),
-              skipBanner);
-        } else {
-          InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
-              alloc]
-              initWithInfoBarDelegate:delegate.get()
-                                 type:InfobarType::kInfobarTypePasswordSave];
-          infobar = std::make_unique<InfoBarIOS>(
-              coordinator, std::move(delegate), skipBanner);
-        }
+        std::unique_ptr<InfoBarIOS> infobar =
+            std::make_unique<InfoBarIOS>(InfobarType::kInfobarTypePasswordSave,
+                                         std::move(delegate), skipBanner);
         infoBarManager->AddInfoBar(std::move(infobar),
                                    /*replace_existing=*/true);
       break;
@@ -471,22 +486,13 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
         }
 
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-            isSyncUser, /*password_update*/ true, std::move(form));
+            [authenticatedIdentity userEmail], isSyncUser,
+            /*password_update*/ true, std::move(form));
         delegate->set_handler(self.applicationCommandsHandler);
-        std::unique_ptr<InfoBarIOS> infobar;
         // If manual save, skip showing banner.
-        if (IsInfobarOverlayUIEnabled()) {
-          infobar = std::make_unique<InfoBarIOS>(
-              InfobarType::kInfobarTypePasswordUpdate, std::move(delegate),
-              /*=skip_banner*/ manual);
-        } else {
-          InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
-              alloc]
-              initWithInfoBarDelegate:delegate.get()
-                                 type:InfobarType::kInfobarTypePasswordUpdate];
-          infobar = std::make_unique<InfoBarIOS>(
-              coordinator, std::move(delegate), /*skip_banner=*/manual);
-        }
+        std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
+            InfobarType::kInfobarTypePasswordUpdate, std::move(delegate),
+            /*=skip_banner*/ manual);
         infoBarManager->AddInfoBar(std::move(infobar),
                                    /*replace_existing=*/true);
       break;
@@ -509,9 +515,24 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 }
 
 - (void)updateGeneratePasswordStrings:(id)sender {
-  NSString* title = [NSString
-      stringWithFormat:@"%@\n%@\n ", GetNSString(IDS_IOS_SUGGESTED_PASSWORD),
-                       self.generatedPotentialPassword];
+  NSString* title;
+  NSString* message;
+
+  if (isPasswordManagerBrandingUpdateEnabled()) {
+    title = [NSString
+        stringWithFormat:@"%@\n%@\n ",
+                         GetNSString(IDS_IOS_SUGGESTED_STRONG_PASSWORD),
+                         self.generatedPotentialPassword];
+    message = l10n_util::GetNSStringF(
+        IDS_IOS_SUGGESTED_STRONG_PASSWORD_HINT_DISPLAYING_EMAIL,
+        base::SysNSStringToUTF16([self userEmail]));
+  } else {
+    title = [NSString stringWithFormat:@"%@\n%@\n ",
+                                       GetNSString(IDS_IOS_SUGGESTED_PASSWORD),
+                                       self.generatedPotentialPassword];
+    message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
+  }
+
   self.actionSheetCoordinator.attributedTitle =
       [[NSMutableAttributedString alloc]
           initWithString:title
@@ -520,7 +541,6 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
                     [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
               }];
 
-  NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
   self.actionSheetCoordinator.attributedMessage =
       [[NSMutableAttributedString alloc]
           initWithString:message
@@ -557,8 +577,9 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
                             view:self.baseViewController.view];
   self.actionSheetCoordinator.popoverArrowDirection = 0;
   self.actionSheetCoordinator.alertStyle =
-      IsIPadIdiom() ? UIAlertControllerStyleAlert
-                    : UIAlertControllerStyleActionSheet;
+      (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
+          ? UIAlertControllerStyleAlert
+          : UIAlertControllerStyleActionSheet;
 
   // Set attributed text.
   [self updateGeneratePasswordStrings:self];
@@ -581,14 +602,20 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     [handler closeKeyboardWithoutButtonPress];
   };
 
-  [self.actionSheetCoordinator
-      addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
-                action:^{
-                  decisionHandler(YES);
-                  popupDismissed();
-                  closeKeyboard();
-                }
-                 style:UIAlertActionStyleDefault];
+  NSString* primaryActionString;
+  if (isPasswordManagerBrandingUpdateEnabled()) {
+    primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_STRONG_PASSWORD);
+  } else {
+    primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD);
+  }
+
+  [self.actionSheetCoordinator addItemWithTitle:primaryActionString
+                                         action:^{
+                                           decisionHandler(YES);
+                                           popupDismissed();
+                                           closeKeyboard();
+                                         }
+                                          style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
                                          action:^{

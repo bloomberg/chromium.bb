@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/async_api_interface.h"
@@ -64,6 +64,10 @@ class GPU_EXPORT CommonDecoder {
   class GPU_EXPORT Bucket {
    public:
     Bucket();
+
+    Bucket(const Bucket&) = delete;
+    Bucket& operator=(const Bucket&) = delete;
+
     ~Bucket();
 
     size_t size() const {
@@ -112,12 +116,14 @@ class GPU_EXPORT CommonDecoder {
 
     size_t size_;
     ::std::unique_ptr<int8_t[]> data_;
-
-    DISALLOW_COPY_AND_ASSIGN(Bucket);
   };
 
   explicit CommonDecoder(DecoderClient* client,
                          CommandBufferServiceBase* command_buffer_service);
+
+  CommonDecoder(const CommonDecoder&) = delete;
+  CommonDecoder& operator=(const CommonDecoder&) = delete;
+
   ~CommonDecoder();
 
   CommandBufferServiceBase* command_buffer_service() const {
@@ -215,8 +221,8 @@ class GPU_EXPORT CommonDecoder {
 
   #undef COMMON_COMMAND_BUFFER_CMD_OP
 
-  CommandBufferServiceBase* command_buffer_service_;
-  DecoderClient* client_;
+  raw_ptr<CommandBufferServiceBase> command_buffer_service_;
+  raw_ptr<DecoderClient> client_;
   size_t max_bucket_size_;
 
   typedef std::map<uint32_t, std::unique_ptr<Bucket>> BucketMap;
@@ -235,8 +241,6 @@ class GPU_EXPORT CommonDecoder {
 
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[];
-
-  DISALLOW_COPY_AND_ASSIGN(CommonDecoder);
 };
 
 }  // namespace gpu

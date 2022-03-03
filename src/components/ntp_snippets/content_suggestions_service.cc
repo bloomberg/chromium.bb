@@ -11,9 +11,9 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -690,7 +690,7 @@ void ContentSuggestionsService::RestoreDismissedCategoriesFromPrefs() {
 void ContentSuggestionsService::StoreDismissedCategoriesToPrefs() {
   base::ListValue list;
   for (const auto& category_provider_pair : dismissed_providers_by_category_) {
-    list.AppendInteger(category_provider_pair.first.id());
+    list.Append(category_provider_pair.first.id());
   }
 
   pref_service_->Set(prefs::kDismissedCategories, list);

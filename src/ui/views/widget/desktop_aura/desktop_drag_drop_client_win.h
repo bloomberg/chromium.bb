@@ -9,8 +9,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -36,6 +35,10 @@ class VIEWS_EXPORT DesktopDragDropClientWin
   DesktopDragDropClientWin(aura::Window* root_window,
                            HWND window,
                            DesktopWindowTreeHostWin* desktop_host);
+
+  DesktopDragDropClientWin(const DesktopDragDropClientWin&) = delete;
+  DesktopDragDropClientWin& operator=(const DesktopDragDropClientWin&) = delete;
+
   ~DesktopDragDropClientWin() override;
 
   // Overridden from aura::client::DragDropClient:
@@ -63,11 +66,9 @@ class VIEWS_EXPORT DesktopDragDropClientWin
   // |this| will get deleted DesktopNativeWidgetAura is notified that the
   // DesktopWindowTreeHost is being destroyed. So desktop_host_ should outlive
   // |this|.
-  DesktopWindowTreeHostWin* desktop_host_ = nullptr;
+  raw_ptr<DesktopWindowTreeHostWin> desktop_host_ = nullptr;
 
   base::WeakPtrFactory<DesktopDragDropClientWin> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientWin);
 };
 
 }  // namespace views

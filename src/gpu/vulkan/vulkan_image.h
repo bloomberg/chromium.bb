@@ -5,13 +5,14 @@
 #ifndef GPU_VULKAN_VULKAN_IMAGE_H_
 #define GPU_VULKAN_VULKAN_IMAGE_H_
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #include <array>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/raw_ptr.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
@@ -68,8 +69,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       const gfx::Size& size,
       VkFormat format,
       VkImageUsageFlags usage,
-      VkImageCreateFlags flags = 0,
-      VkImageTiling image_tiling = VK_IMAGE_TILING_OPTIMAL);
+      VkImageCreateFlags flags,
+      VkImageTiling image_tiling,
+      uint32_t queue_family_index);
 
   static std::unique_ptr<VulkanImage> Create(
       VulkanDeviceQueue* device_queue,
@@ -164,7 +166,8 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       VkFormat format,
       VkImageUsageFlags usage,
       VkImageCreateFlags flags,
-      VkImageTiling image_tiling);
+      VkImageTiling image_tiling,
+      uint32_t queue_family_index);
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   bool InitializeWithExternalMemoryAndModifiers(VulkanDeviceQueue* device_queue,
@@ -175,7 +178,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
                                                 VkImageCreateFlags flags);
 #endif
 
-  VulkanDeviceQueue* device_queue_ = nullptr;
+  raw_ptr<VulkanDeviceQueue> device_queue_ = nullptr;
   gfx::Size size_;
   VkFormat format_ = VK_FORMAT_UNDEFINED;
   VkImageCreateFlags flags_ = 0;

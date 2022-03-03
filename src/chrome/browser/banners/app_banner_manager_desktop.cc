@@ -14,17 +14,20 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -79,11 +82,12 @@ AppBannerManagerDesktop::AsTestAppBannerManagerDesktopForTesting() {
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents) {
+    : AppBannerManager(web_contents),
+      content::WebContentsUserData<AppBannerManagerDesktop>(*web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extension_registry_ = extensions::ExtensionRegistry::Get(profile);
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
   // May be null in unit tests e.g. TabDesktopMediaListTest.*.
   if (provider)
     registrar_observation_.Observe(&provider->registrar());
@@ -144,12 +148,17 @@ bool AppBannerManagerDesktop::IsRelatedNonWebAppInstalled(
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() const {
   return web_app::FindInstalledAppWithUrlInScope(
              Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-             manifest_.start_url)
+             manifest().start_url)
       .has_value();
 }
 
-web_app::AppRegistrar& AppBannerManagerDesktop::registrar() {
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+std::string AppBannerManagerDesktop::GetAppIdentifier() {
+  DCHECK(!blink::IsEmptyManifest(manifest()));
+  return web_app::GenerateAppIdUnhashedFromManifest(manifest());
+}
+
+web_app::WebAppRegistrar& AppBannerManagerDesktop::registrar() {
+  auto* provider = web_app::WebAppProvider::GetForWebApps(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   DCHECK(provider);
   return provider->registrar();
@@ -157,10 +166,17 @@ web_app::AppRegistrar& AppBannerManagerDesktop::registrar() {
 
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
   // Only allow replacement install if this specific app is already installed.
-  web_app::AppId app_id = web_app::GenerateAppIdFromURL(manifest_.start_url);
+  web_app::AppId app_id = web_app::GenerateAppIdFromManifest(manifest());
   if (!registrar().IsLocallyInstalled(app_id))
     return false;
 
+  // We prompt the user to re-install if the site wants to be in a standalone
+  // window but the user has opted for opening in browser tab. This is to
+  // support the situation where a site is not a PWA, users have installed it
+  // via Create Shortcut action, the site becomes a standalone PWA later and we
+  // want to prompt them to "install" the new PWA experience.
+  // TODO(crbug.com/1205529): Showing an install button when it's already
+  // installed is confusing.
   auto display_mode = registrar().GetAppUserDisplayMode(app_id);
   return display_mode == blink::mojom::DisplayMode::kBrowser;
 }
@@ -204,6 +220,21 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   }
 }
 
+void AppBannerManagerDesktop::OnWebAppWillBeUninstalled(
+    const web_app::AppId& app_id) {
+  // WebAppTabHelper has a app_id but it is reset during
+  // OnWebAppWillBeUninstalled so using FindAppWithUrlInScope.
+  auto local_app_id = registrar().FindAppWithUrlInScope(validated_url());
+  if (app_id == local_app_id)
+    uninstalling_app_id_ = app_id;
+}
+
+void AppBannerManagerDesktop::OnWebAppUninstalled(
+    const web_app::AppId& app_id) {
+  if (uninstalling_app_id_ == app_id)
+    RecheckInstallabilityForLoadedPage(validated_url(), true);
+}
+
 void AppBannerManagerDesktop::OnAppRegistrarDestroyed() {
   registrar_observation_.Reset();
 }
@@ -241,6 +272,6 @@ void AppBannerManagerDesktop::DidFinishCreatingWebApp(
   }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerDesktop)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerDesktop);
 
 }  // namespace webapps

@@ -6,8 +6,8 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
+#include "base/ignore_result.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/av1_decoder.h"
@@ -26,12 +26,12 @@ class FakeAV1Accelerator : public media::AV1Decoder::AV1Accelerator {
   scoped_refptr<media::AV1Picture> CreateAV1Picture(bool apply_grain) override {
     return base::MakeRefCounted<media::AV1Picture>();
   }
-  bool SubmitDecode(const media::AV1Picture& pic,
-                    const libgav1::ObuSequenceHeader& sequence_header,
-                    const media::AV1ReferenceFrameVector& ref_frames,
-                    const libgav1::Vector<libgav1::TileBuffer>& tile_buffers,
-                    base::span<const uint8_t> data) override {
-    return true;
+  Status SubmitDecode(const media::AV1Picture& pic,
+                      const libgav1::ObuSequenceHeader& sequence_header,
+                      const media::AV1ReferenceFrameVector& ref_frames,
+                      const libgav1::Vector<libgav1::TileBuffer>& tile_buffers,
+                      base::span<const uint8_t> data) override {
+    return Status::kOk;
   }
   bool OutputPicture(const media::AV1Picture& pic) override { return true; }
 };

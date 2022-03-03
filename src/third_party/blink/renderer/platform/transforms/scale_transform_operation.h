@@ -54,7 +54,8 @@ class PLATFORM_EXPORT ScaleTransformOperation final
   double Y() const { return y_; }
   double Z() const { return z_; }
 
-  void Apply(TransformationMatrix& transform, const FloatSize&) const override {
+  void Apply(TransformationMatrix& transform,
+             const gfx::SizeF&) const override {
     transform.Scale3d(x_, y_, z_);
   }
   scoped_refptr<TransformOperation> Accumulate(
@@ -82,6 +83,10 @@ class PLATFORM_EXPORT ScaleTransformOperation final
   }
 
   bool HasNonTrivial3DComponent() const override { return z_ != 1.0; }
+
+  void CommonPrimitiveForInterpolation(
+      const TransformOperation* from,
+      TransformOperation::OperationType& common_type) const;
 
   scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 

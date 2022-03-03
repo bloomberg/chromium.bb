@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -24,7 +23,7 @@
 // BUILDFLAGs and nogncheck here.
 #if (BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)) && \
     !defined(OS_FUCHSIA)
-#include "components/safe_browsing/core/file_type_policies.h"  // nogncheck
+#include "components/safe_browsing/content/common/file_type_policies.h"  // nogncheck
 #endif
 
 namespace download {
@@ -70,12 +69,6 @@ enum ContentDispositionCountTypes {
   CONTENT_DISPOSITION_LAST_ENTRY
 };
 
-// The maximum size in KB for the file size metric, file size larger than this
-// will be kept in overflow bucket.
-const int64_t kMaxFileSizeKb = 4 * 1024 * 1024; /* 4GB. */
-
-const int64_t kHighBandwidthBytesPerSecond = 30 * 1024 * 1024;
-
 // Helper method to calculate the bandwidth given the data length and time.
 int64_t CalculateBandwidthBytesPerSecond(size_t length,
                                          base::TimeDelta elapsed_time) {
@@ -83,11 +76,6 @@ int64_t CalculateBandwidthBytesPerSecond(size_t length,
   if (0 == elapsed_time_ms)
     elapsed_time_ms = 1;
   return 1000 * static_cast<int64_t>(length) / elapsed_time_ms;
-}
-
-// Helper method to record the bandwidth for a given metric.
-void RecordBandwidthMetric(const std::string& metric, int bandwidth) {
-  base::UmaHistogramCustomCounts(metric, bandwidth, 1, 50 * 1000 * 1000, 50);
 }
 
 // Records a histogram with download source suffix.
@@ -583,8 +571,10 @@ void RecordOpensOutstanding(int size) {
 
 void RecordFileBandwidth(size_t length,
                          base::TimeDelta elapsed_time) {
-  RecordBandwidthMetric("Download.BandwidthOverallBytesPerSecond",
-                        CalculateBandwidthBytesPerSecond(length, elapsed_time));
+  base::UmaHistogramCustomCounts(
+      "Download.BandwidthOverallBytesPerSecond2",
+      CalculateBandwidthBytesPerSecond(length, elapsed_time), 1,
+      200 * 1000 * 1000, 50);
 }
 
 void RecordParallelizableDownloadCount(DownloadCountTypes type,
@@ -604,68 +594,6 @@ void RecordParallelDownloadRequestCount(int request_count) {
 void RecordParallelRequestCreationFailure(DownloadInterruptReason reason) {
   base::UmaHistogramSparse("Download.ParallelDownload.CreationFailureReason",
                            reason);
-}
-
-void RecordParallelizableDownloadStats(
-    size_t bytes_downloaded_with_parallel_streams,
-    base::TimeDelta time_with_parallel_streams,
-    size_t bytes_downloaded_without_parallel_streams,
-    base::TimeDelta time_without_parallel_streams,
-    bool uses_parallel_requests) {
-  RecordParallelizableDownloadAverageStats(
-      bytes_downloaded_with_parallel_streams +
-          bytes_downloaded_without_parallel_streams,
-      time_with_parallel_streams + time_without_parallel_streams);
-
-  int64_t bandwidth_without_parallel_streams = 0;
-  if (bytes_downloaded_without_parallel_streams > 0) {
-    bandwidth_without_parallel_streams = CalculateBandwidthBytesPerSecond(
-        bytes_downloaded_without_parallel_streams,
-        time_without_parallel_streams);
-    if (uses_parallel_requests) {
-      RecordBandwidthMetric(
-          "Download.ParallelizableDownloadBandwidth."
-          "WithParallelRequestsSingleStream",
-          bandwidth_without_parallel_streams);
-    } else {
-      RecordBandwidthMetric(
-          "Download.ParallelizableDownloadBandwidth."
-          "WithoutParallelRequests",
-          bandwidth_without_parallel_streams);
-    }
-  }
-
-  if (!uses_parallel_requests)
-    return;
-
-  if (bytes_downloaded_with_parallel_streams > 0) {
-    int64_t bandwidth_with_parallel_streams = CalculateBandwidthBytesPerSecond(
-        bytes_downloaded_with_parallel_streams, time_with_parallel_streams);
-    RecordBandwidthMetric(
-        "Download.ParallelizableDownloadBandwidth."
-        "WithParallelRequestsMultipleStreams",
-        bandwidth_with_parallel_streams);
-  }
-}
-
-void RecordParallelizableDownloadAverageStats(
-    int64_t bytes_downloaded,
-    const base::TimeDelta& time_span) {
-  if (time_span.is_zero() || bytes_downloaded <= 0)
-    return;
-
-  int64_t average_bandwidth =
-      CalculateBandwidthBytesPerSecond(bytes_downloaded, time_span);
-  int64_t file_size_kb = bytes_downloaded / 1024;
-  RecordBandwidthMetric("Download.ParallelizableDownloadBandwidth",
-                        average_bandwidth);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.Parallelizable.FileSize", file_size_kb,
-                              1, kMaxFileSizeKb, 50);
-  if (average_bandwidth > kHighBandwidthBytesPerSecond) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Download.Parallelizable.FileSize.HighDownloadBandwidth", file_size_kb,
-        1, kMaxFileSizeKb, 50);
-  }
 }
 
 void RecordSavePackageEvent(SavePackageEvent event) {

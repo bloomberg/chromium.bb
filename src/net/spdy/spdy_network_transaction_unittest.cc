@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -28,6 +30,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/schemeful_site.h"
 #include "net/base/test_proxy_delegate.h"
@@ -1624,7 +1627,7 @@ class KillerCallback : public TestCompletionCallbackBase {
     SetResult(result);
   }
 
-  HttpNetworkTransaction* transaction_;
+  raw_ptr<HttpNetworkTransaction> transaction_;
 };
 
 }  // namespace
@@ -3782,7 +3785,7 @@ TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
 
   // A new SPDY session should have been created.
   SpdySessionKey key1(HostPortPair("www.example.org", 443),
-                      ProxyServer::FromPacString(kPacString),
+                      PacResultElementToProxyServer(kPacString),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
                       NetworkIsolationKey(), SecureDnsPolicy::kAllow);
@@ -3843,10 +3846,11 @@ TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
   EXPECT_EQ("hello!", response_data);
 
   // Inspect the new session.
-  SpdySessionKey key2(
-      HostPortPair("example.test", 443), ProxyServer::FromPacString(kPacString),
-      PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
-      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  SpdySessionKey key2(HostPortPair("example.test", 443),
+                      PacResultElementToProxyServer(kPacString),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session2 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
@@ -4673,7 +4677,7 @@ TEST_F(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   spdy::SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, spdy::ERROR_CODE_COMPRESSION_ERROR,
-      "Framer error: 30 (HPACK_TRUNCATED_BLOCK)."));
+      "Framer error: 24 (HPACK_TRUNCATED_BLOCK)."));
   MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(goaway, 2)};
 
   // This is the length field that's too short.
@@ -4700,7 +4704,7 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   spdy::SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, spdy::ERROR_CODE_COMPRESSION_ERROR,
-      "Framer error: 30 (HPACK_TRUNCATED_BLOCK)."));
+      "Framer error: 24 (HPACK_TRUNCATED_BLOCK)."));
   MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(goaway, 2)};
 
   // Read HEADERS with corrupted payload.
@@ -4721,7 +4725,7 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   spdy::SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, spdy::ERROR_CODE_FRAME_SIZE_ERROR,
-      "Framer error: 15 (INVALID_CONTROL_FRAME_SIZE)."));
+      "Framer error: 9 (INVALID_CONTROL_FRAME_SIZE)."));
   MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(goaway, 2)};
 
   // Read WINDOW_UPDATE with incorrectly-sized payload.
@@ -4810,12 +4814,13 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  RecordingBoundTestNetLog log;
+  RecordingNetLogObserver net_log_observer;
 
   SequencedSocketData data(reads, writes);
   request_.extra_headers.SetHeader("User-Agent", "Chrome");
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log.bound(),
-                                     nullptr);
+  NormalSpdyTransactionHelper helper(
+      request_, DEFAULT_PRIORITY,
+      NetLogWithSource::Make(NetLogSourceType::NONE), nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsOk());
@@ -4826,7 +4831,7 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
   // This test is intentionally non-specific about the exact ordering of the
   // log; instead we just check to make sure that certain events exist, and that
   // they are in the right order.
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
 
   EXPECT_LT(0u, entries.size());
   int pos = 0;
@@ -5159,14 +5164,12 @@ TEST_F(SpdyNetworkTransactionTest, BufferedClosed) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TransactionHelperResult out = helper.output();
-  out.rv = callback.WaitForResult();
-  EXPECT_EQ(out.rv, OK);
+  rv = callback.WaitForResult();
+  EXPECT_EQ(rv, OK);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   EXPECT_TRUE(response->headers);
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  out.status_line = response->headers->GetStatusLine();
-  out.response_info = *response;  // Make a copy so we can verify.
 
   // Read Data
   TestCompletionCallback read_callback;
@@ -5174,18 +5177,18 @@ TEST_F(SpdyNetworkTransactionTest, BufferedClosed) {
   std::string content;
   int reads_completed = 0;
   do {
-    // Read small chunks at a time.
-    const int kSmallReadSize = 14;
+    // Allocate a large buffer to allow buffering. If a single read fills the
+    // buffer, no buffering happens.
+    const int kLargeReadSize = 1000;
     scoped_refptr<IOBuffer> buf =
-        base::MakeRefCounted<IOBuffer>(kSmallReadSize);
-    rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
+        base::MakeRefCounted<IOBuffer>(kLargeReadSize);
+    rv = trans->Read(buf.get(), kLargeReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
       data.Resume();
       rv = read_callback.WaitForResult();
     }
-    if (rv > 0) {
-      content.append(buf->data(), rv);
-    } else if (rv < 0) {
+
+    if (rv < 0) {
       // This test intentionally closes the connection, and will get an error.
       EXPECT_THAT(rv, IsError(ERR_CONNECTION_CLOSED));
       break;
@@ -5194,8 +5197,6 @@ TEST_F(SpdyNetworkTransactionTest, BufferedClosed) {
   } while (rv > 0);
 
   EXPECT_EQ(0, reads_completed);
-
-  out.response_data.swap(content);
 
   // Flush the MessageLoop while the SpdySessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
@@ -5990,7 +5991,7 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
   SpdySessionKey session_pool_key_proxy(
       host_port_pair_,
-      ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
+      ProxyUriToProxyServer("www.foo.com", ProxyServer::SCHEME_HTTP),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
       SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
@@ -6625,9 +6626,8 @@ class SpdyNetworkTransactionPushUrlTest
       ssl_provider->ssl_info.is_issued_by_known_root = true;
 
       session_deps->transport_security_state->AddExpectCT(
-          "mail.example.org",
-          base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */, true,
-          GURL(), request_.network_isolation_key);
+          "mail.example.org", base::Time::Now() + base::Days(1) /* expiry */,
+          true, GURL(), request_.network_isolation_key);
     }
 
     NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
@@ -9171,7 +9171,7 @@ TEST_F(SpdyNetworkTransactionTest,
 
   SpdySessionKey key(
       HostPortPair::FromURL(request_.url),
-      ProxyServer::FromURI("https://proxy:70", ProxyServer::SCHEME_HTTPS),
+      ProxyUriToProxyServer("https://proxy:70", ProxyServer::SCHEME_HTTPS),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
       SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
@@ -9865,7 +9865,7 @@ TEST_F(SpdyNetworkTransactionTest,
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTDoesntConfirm) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
@@ -10236,7 +10236,7 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTNoConfirmConfirmStreams) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -10311,7 +10311,7 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -10442,6 +10442,71 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
   EXPECT_THAT(out.rv, IsError(ERR_SSL_PROTOCOL_ERROR));
 }
 
+TEST_F(SpdyNetworkTransactionTest, GreaseSettings) {
+  RecordingNetLogObserver net_log_observer;
+
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_http2_settings_grease = true;
+  NormalSpdyTransactionHelper helper(
+      request_, DEFAULT_PRIORITY,
+      NetLogWithSource::Make(NetLogSourceType::NONE), std::move(session_deps));
+
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  SpdySessionPoolPeer pool_peer(spdy_session_pool);
+  pool_peer.SetEnableSendingInitialData(true);
+
+  // Greased setting parameter is random.  Hang writes instead of trying to
+  // construct matching mock data.  Extra write and read is needed because mock
+  // data cannot end on ERR_IO_PENDING.  Writes or reads will not actually be
+  // resumed.
+  MockWrite writes[] = {MockWrite(ASYNC, ERR_IO_PENDING, 0),
+                        MockWrite(ASYNC, OK, 1)};
+  MockRead reads[] = {MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, OK, 3)};
+  SequencedSocketData data(reads, writes);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  int rv = helper.trans()->Start(&request_, CompletionOnceCallback{}, log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  base::RunLoop().RunUntilIdle();
+
+  helper.ResetTrans();
+
+  EXPECT_FALSE(data.AllReadDataConsumed());
+  EXPECT_FALSE(data.AllWriteDataConsumed());
+
+  const auto entries = net_log_observer.GetEntries();
+
+  size_t pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::HTTP2_SESSION_SEND_SETTINGS,
+      NetLogEventPhase::NONE);
+  ASSERT_LT(pos, entries.size());
+
+  const base::Value& params = entries[pos].params;
+  const base::Value* const settings = params.FindKey("settings");
+  ASSERT_TRUE(settings);
+  ASSERT_TRUE(settings->is_list());
+
+  base::Value::ConstListView list = settings->GetList();
+  ASSERT_FALSE(list.empty());
+  // Get last setting parameter.
+  const base::Value& greased_setting = list[list.size() - 1];
+  ASSERT_TRUE(greased_setting.is_string());
+  base::StringPiece greased_setting_string(greased_setting.GetString());
+
+  const std::string kExpectedPrefix = "[id:";
+  EXPECT_EQ(kExpectedPrefix,
+            greased_setting_string.substr(0, kExpectedPrefix.size()));
+  int setting_identifier = 0;
+  base::StringToInt(greased_setting_string.substr(kExpectedPrefix.size()),
+                    &setting_identifier);
+  // The setting identifier must be of format 0x?a?a.
+  EXPECT_EQ(0xa, setting_identifier % 16);
+  EXPECT_EQ(0xa, (setting_identifier / 256) % 16);
+}
+
 // If |http2_end_stream_with_data_frame| is false, then the HEADERS frame of a
 // GET request will close the stream using the END_STREAM flag.  Test that
 // |greased_http2_frame| is ignored and no reserved frames are sent on a closed
@@ -10510,14 +10575,14 @@ TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), DEFAULT_PRIORITY,
                                       /* fin = */ false));
 
-  const char kRawFrameData[] = {
+  uint8_t kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x01,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
                                    base::size(kRawFrameData),
                                    /* owns_buffer = */ false);
   spdy::SpdySerializedFrame empty_body(
@@ -10569,14 +10634,14 @@ TEST_F(SpdyNetworkTransactionTest,
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
 
-  const char kRawFrameData[] = {
+  uint8_t kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x01,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
                                    base::size(kRawFrameData),
                                    /* owns_buffer = */ false);
   spdy::SpdySerializedFrame request_body(
@@ -10629,14 +10694,14 @@ TEST_F(SpdyNetworkTransactionTest,
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
 
-  const char kRawFrameData[] = {
+  uint8_t kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x01,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
                                    base::size(kRawFrameData),
                                    /* owns_buffer = */ false);
   spdy::SpdySerializedFrame request_body(
@@ -10775,14 +10840,14 @@ TEST_F(SpdyNetworkTransactionTest, OnDataSentDoesNotCrashWithGreasedFrameType) {
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), DEFAULT_PRIORITY,
                                       /* fin = */ false));
 
-  const char kRawFrameData[] = {
+  uint8_t kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x01,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
                                    base::size(kRawFrameData),
                                    /* owns_buffer = */ false);
   spdy::SpdySerializedFrame empty_body(

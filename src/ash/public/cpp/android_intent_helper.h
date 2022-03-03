@@ -8,8 +8,8 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/macros.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -17,6 +17,9 @@ namespace ash {
 class ASH_PUBLIC_EXPORT AndroidIntentHelper {
  public:
   static AndroidIntentHelper* GetInstance();
+
+  AndroidIntentHelper(const AndroidIntentHelper&) = delete;
+  AndroidIntentHelper& operator=(const AndroidIntentHelper&) = delete;
 
   // Launch the given Android |intent|.
   virtual void LaunchAndroidIntent(const std::string& intent) = 0;
@@ -29,9 +32,6 @@ class ASH_PUBLIC_EXPORT AndroidIntentHelper {
  protected:
   AndroidIntentHelper();
   virtual ~AndroidIntentHelper();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AndroidIntentHelper);
 };
 
 ASH_PUBLIC_EXPORT bool IsAndroidIntent(const GURL& url);

@@ -6,9 +6,9 @@
 
 #include "base/barrier_closure.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,10 +18,10 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/web_apps/web_app_uninstall_dialog_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
@@ -40,7 +40,7 @@ AppId InstallTestWebApp(Profile* profile) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = example_url;
   web_app_info->scope = example_url;
-  web_app_info->open_as_window = true;
+  web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
   return web_app::test::InstallWebApp(profile, std::move(web_app_info));
 }
 
@@ -82,11 +82,19 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   EXPECT_FALSE(was_uninstalled);
 }
 
+#if defined(OS_MAC)
+// https://crbug.com/1224161
+#define MAYBE_TrackParentWindowDestructionAfterViewCreation \
+  DISABLED_TrackParentWindowDestructionAfterViewCreation
+#else
+#define MAYBE_TrackParentWindowDestructionAfterViewCreation \
+  TrackParentWindowDestructionAfterViewCreation
+#endif
 // Test that WebAppUninstallDialog cancels the uninstall if the Window
 // which is passed to WebAppUninstallDialog::Create() is destroyed after
 // WebAppUninstallDialogDelegateView is created.
 IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
-                       TrackParentWindowDestructionAfterViewCreation) {
+                       MAYBE_TrackParentWindowDestructionAfterViewCreation) {
   AppId app_id = InstallTestWebApp(browser()->profile());
 
   std::unique_ptr<web_app::WebAppUninstallDialog> dialog(

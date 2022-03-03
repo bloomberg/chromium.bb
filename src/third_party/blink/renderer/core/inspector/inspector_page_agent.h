@@ -31,11 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_PAGE_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_PAGE_AGENT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Page.h"
+#include "third_party/blink/renderer/core/inspector/protocol/page.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -55,7 +54,7 @@ class DocumentLoader;
 class InspectedFrames;
 class InspectorResourceContentLoader;
 class LocalFrame;
-class ScriptSourceCode;
+class ClassicScript;
 enum class ResourceType : uint8_t;
 
 using blink::protocol::Maybe;
@@ -105,6 +104,8 @@ class CORE_EXPORT InspectorPageAgent final
                      Client*,
                      InspectorResourceContentLoader*,
                      v8_inspector::V8InspectorSession*);
+  InspectorPageAgent(const InspectorPageAgent&) = delete;
+  InspectorPageAgent& operator=(const InspectorPageAgent&) = delete;
 
   // Page API for frontend
   protocol::Response enable() override;
@@ -147,6 +148,9 @@ class CORE_EXPORT InspectorPageAgent final
       std::unique_ptr<
           protocol::Array<protocol::Page::PermissionsPolicyFeatureState>>*)
       override;
+  protocol::Response getOriginTrials(
+      const String& frame_id,
+      std::unique_ptr<protocol::Array<protocol::Page::OriginTrial>>*) override;
 
   protocol::Response startScreencast(Maybe<String> format,
                                      Maybe<int> quality,
@@ -172,7 +176,6 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response generateTestReport(const String& message,
                                         Maybe<String> group) override;
 
-  protocol::Response setProduceCompilationCache(bool enabled) override;
   protocol::Response produceCompilationCache(
       std::unique_ptr<protocol::Array<protocol::Page::CompilationCacheParams>>
           scripts) override;
@@ -220,10 +223,10 @@ class CORE_EXPORT InspectorPageAgent final
                   const AtomicString&,
                   const WebWindowFeatures&,
                   bool);
-  void ApplyCompilationModeOverride(const ScriptSourceCode& source,
+  void ApplyCompilationModeOverride(const ClassicScript&,
                                     v8::ScriptCompiler::CachedData**,
                                     v8::ScriptCompiler::CompileOptions*);
-  void DidProduceCompilationCache(const ScriptSourceCode& source,
+  void DidProduceCompilationCache(const ClassicScript&,
                                   v8::Local<v8::Script> script);
   void FileChooserOpened(LocalFrame* frame,
                          HTMLInputElement* element,
@@ -290,11 +293,8 @@ class CORE_EXPORT InspectorPageAgent final
   InspectorAgentState::String sans_serif_font_family_;
   InspectorAgentState::String cursive_font_family_;
   InspectorAgentState::String fantasy_font_family_;
-  InspectorAgentState::String pictograph_font_family_;
   InspectorAgentState::Integer standard_font_size_;
   InspectorAgentState::Integer fixed_font_size_;
-  InspectorAgentState::Boolean produce_compilation_cache_;
-  DISALLOW_COPY_AND_ASSIGN(InspectorPageAgent);
 };
 
 }  // namespace blink

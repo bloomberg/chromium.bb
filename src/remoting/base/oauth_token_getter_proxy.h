@@ -6,7 +6,6 @@
 #define REMOTING_BASE_OAUTH_TOKEN_GETTER_PROXY_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
@@ -31,6 +30,9 @@ class OAuthTokenGetterProxy : public OAuthTokenGetter {
   // sequence where this constructor is called.
   explicit OAuthTokenGetterProxy(base::WeakPtr<OAuthTokenGetter> token_getter);
 
+  OAuthTokenGetterProxy(const OAuthTokenGetterProxy&) = delete;
+  OAuthTokenGetterProxy& operator=(const OAuthTokenGetterProxy&) = delete;
+
   ~OAuthTokenGetterProxy() override;
 
   // OAuthTokenGetter overrides.
@@ -40,8 +42,6 @@ class OAuthTokenGetterProxy : public OAuthTokenGetter {
  private:
   base::WeakPtr<OAuthTokenGetter> token_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetterProxy);
 };
 
 }  // namespace remoting

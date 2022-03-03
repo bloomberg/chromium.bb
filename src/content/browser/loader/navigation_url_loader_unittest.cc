@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
@@ -15,7 +14,6 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
-#include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
@@ -32,8 +30,10 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "url/origin.h"
 
@@ -56,13 +56,12 @@ class NavigationURLLoaderTest : public testing::Test {
   std::unique_ptr<NavigationURLLoader> CreateTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
-    mojom::BeginNavigationParamsPtr begin_params =
-        mojom::BeginNavigationParams::New(
+    blink::mojom::BeginNavigationParamsPtr begin_params =
+        blink::mojom::BeginNavigationParams::New(
             absl::nullopt /* initiator_frame_token */,
             std::string() /* headers */, net::LOAD_NORMAL,
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
-            network::mojom::RequestDestination::kDocument,
             blink::mojom::MixedContentContextType::kBlockable,
             false /* is_form_submission */,
             false /* was_initiated_by_link_click */,
@@ -74,9 +73,11 @@ class NavigationURLLoaderTest : public testing::Test {
             base::TimeTicks() /* renderer_before_unload_start */,
             base::TimeTicks() /* renderer_before_unload_end */,
             absl::nullopt /* web_bundle_token */);
-    auto common_params = CreateCommonNavigationParams();
+    auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
+    common_params->request_destination =
+        network::mojom::RequestDestination::kDocument;
 
     StoragePartition* storage_partition =
         browser_context_->GetDefaultStoragePartition();
@@ -85,6 +86,7 @@ class NavigationURLLoaderTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         std::make_unique<NavigationRequestInfo>(
             std::move(common_params), std::move(begin_params),
+            network::mojom::WebSandboxFlags::kNone,
             net::IsolationInfo::Create(
                 net::IsolationInfo::RequestType::kMainFrame, origin, origin,
                 net::SiteForCookies::FromUrl(url)),
@@ -97,10 +99,11 @@ class NavigationURLLoaderTest : public testing::Test {
             false /* obey_origin_policy */,
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
-            absl::nullopt /* devtools_accepted_stream_types */));
+            absl::nullopt /* devtools_accepted_stream_types */,
+            false /* is_pdf */));
     return NavigationURLLoader::Create(
         browser_context_.get(), storage_partition, std::move(request_info),
-        nullptr, nullptr, nullptr, nullptr, delegate,
+        nullptr, nullptr, nullptr, delegate,
         NavigationURLLoader::LoaderType::kRegular, mojo::NullRemote(),
         storage_partition->CreateURLLoaderNetworkObserverForNavigationRequest(
             FrameTreeNode::kFrameTreeNodeInvalidId /* frame_tree_node_id */),
@@ -117,6 +120,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedNoCertError) {
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(GURL("bogus:bogus"), &delegate);
+  loader->Start();
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
@@ -136,6 +140,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(https_server.GetURL("/"), &delegate);
+  loader->Start();
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
@@ -159,7 +164,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   GURL url = https_server.GetURL("/");
 
   // Set HSTS for the test domain in order to make SSL errors fatal.
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  base::Time expiry = base::Time::Now() + base::Days(1000);
   bool include_subdomains = false;
   auto* storage_partition = browser_context_->GetDefaultStoragePartition();
   base::RunLoop run_loop;
@@ -169,6 +174,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
 
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(url, &delegate);
+  loader->Start();
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();

@@ -9,11 +9,12 @@
 #include "src/execution/frames.h"
 #include "src/execution/isolate-inl.h"
 #include "src/execution/vm-state-inl.h"
-#include "src/logging/counters.h"
+#include "src/logging/runtime-call-stats-scope.h"
 
 #if V8_ENABLE_WEBASSEMBLY
 #include "src/compiler/wasm-compiler.h"  // Only for static asserts.
-#endif                                   // V8_ENABLE_WEBASSEMBLY
+#include "src/wasm/wasm-engine.h"
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 namespace v8 {
 namespace internal {
@@ -50,6 +51,21 @@ struct InvokeParams {
                                             MicrotaskQueue* microtask_queue,
                                             MaybeHandle<Object>* exception_out);
 
+  bool IsScript() const {
+    if (!target->IsJSFunction()) return false;
+    Handle<JSFunction> function = Handle<JSFunction>::cast(target);
+    return function->shared().is_script();
+  }
+
+  Handle<FixedArray> GetAndResetHostDefinedOptions() {
+    DCHECK(IsScript());
+    DCHECK_EQ(argc, 1);
+    auto options = Handle<FixedArray>::cast(argv[0]);
+    argv = nullptr;
+    argc = 0;
+    return options;
+  }
+
   Handle<Object> target;
   Handle<Object> receiver;
   int argc;
@@ -74,6 +90,7 @@ InvokeParams InvokeParams::SetUpForNew(Isolate* isolate,
   InvokeParams params;
   params.target = constructor;
   params.receiver = isolate->factory()->undefined_value();
+  DCHECK(!params.IsScript());
   params.argc = argc;
   params.argv = argv;
   params.new_target = new_target;
@@ -94,6 +111,9 @@ InvokeParams InvokeParams::SetUpForCall(Isolate* isolate,
   InvokeParams params;
   params.target = callable;
   params.receiver = NormalizeReceiver(isolate, receiver);
+  // Check for host-defined options argument for scripts.
+  DCHECK_IMPLIES(params.IsScript(), argc == 1);
+  DCHECK_IMPLIES(params.IsScript(), argv[0]->IsFixedArray());
   params.argc = argc;
   params.argv = argv;
   params.new_target = isolate->factory()->undefined_value();
@@ -114,6 +134,9 @@ InvokeParams InvokeParams::SetUpForTryCall(
   InvokeParams params;
   params.target = callable;
   params.receiver = NormalizeReceiver(isolate, receiver);
+  // Check for host-defined options argument for scripts.
+  DCHECK_IMPLIES(params.IsScript(), argc == 1);
+  DCHECK_IMPLIES(params.IsScript(), argv[0]->IsFixedArray());
   params.argc = argc;
   params.argv = argv;
   params.new_target = isolate->factory()->undefined_value();
@@ -162,7 +185,9 @@ Handle<Code> JSEntry(Isolate* isolate, Execution::Target execution_target,
 }
 
 MaybeHandle<Context> NewScriptContext(Isolate* isolate,
-                                      Handle<JSFunction> function) {
+                                      Handle<JSFunction> function,
+                                      Handle<FixedArray> host_defined_options) {
+  // TODO(cbruni, 1244145): Use passed in host_defined_options.
   // Creating a script context is a side effect, so abort if that's not
   // allowed.
   if (isolate->debug_execution_mode() == DebugInfo::kSideEffects) {
@@ -185,7 +210,7 @@ MaybeHandle<Context> NewScriptContext(Isolate* isolate,
   for (int var = 0; var < scope_info->ContextLocalCount(); var++) {
     Handle<String> name(scope_info->ContextLocalName(var), isolate);
     VariableMode mode = scope_info->ContextLocalMode(var);
-    ScriptContextTable::LookupResult lookup;
+    VariableLookupResult lookup;
     if (ScriptContextTable::Lookup(isolate, *script_context, *name, &lookup)) {
       if (IsLexicalVariableMode(mode) || IsLexicalVariableMode(lookup.mode)) {
         Handle<Context> context = ScriptContextTable::GetContext(
@@ -252,6 +277,13 @@ V8_WARN_UNUSED_RESULT MaybeHandle<Object> Invoke(Isolate* isolate,
   DCHECK(!params.receiver->IsJSGlobalObject());
   DCHECK_LE(params.argc, FixedArray::kMaxLength);
 
+#if V8_ENABLE_WEBASSEMBLY
+  // If we have PKU support for Wasm, ensure that code is currently write
+  // protected for this thread.
+  DCHECK_IMPLIES(wasm::GetWasmCodeManager()->HasMemoryProtectionKeySupport(),
+                 !wasm::GetWasmCodeManager()->MemoryProtectionKeyWritable());
+#endif  // V8_ENABLE_WEBASSEMBLY
+
 #ifdef USE_SIMULATOR
   // Simulators use separate stacks for C++ and JS. JS stack overflow checks
   // are performed whenever a JS function is called. However, it can be the case
@@ -295,11 +327,23 @@ V8_WARN_UNUSED_RESULT MaybeHandle<Object> Invoke(Isolate* isolate,
       }
       return value;
     }
-
+#ifdef DEBUG
+    if (function->shared().is_script()) {
+      DCHECK(params.IsScript());
+      DCHECK(params.receiver->IsJSGlobalProxy());
+      DCHECK_EQ(params.argc, 1);
+      DCHECK(params.argv[0]->IsFixedArray());
+    } else {
+      DCHECK(!params.IsScript());
+    }
+#endif
     // Set up a ScriptContext when running scripts that need it.
     if (function->shared().needs_script_context()) {
       Handle<Context> context;
-      if (!NewScriptContext(isolate, function).ToHandle(&context)) {
+      Handle<FixedArray> host_defined_options =
+          const_cast<InvokeParams&>(params).GetAndResetHostDefinedOptions();
+      if (!NewScriptContext(isolate, function, host_defined_options)
+               .ToHandle(&context)) {
         if (params.message_handling == Execution::MessageHandling::kReport) {
           isolate->ReportPendingMessages();
         }
@@ -346,7 +390,6 @@ V8_WARN_UNUSED_RESULT MaybeHandle<Object> Invoke(Isolate* isolate,
 
   // Placeholder for return value.
   Object value;
-
   Handle<Code> code =
       JSEntry(isolate, params.execution_target, params.is_construct);
   {
@@ -374,7 +417,8 @@ V8_WARN_UNUSED_RESULT MaybeHandle<Object> Invoke(Isolate* isolate,
       Address** argv = reinterpret_cast<Address**>(params.argv);
       RCS_SCOPE(isolate, RuntimeCallCounterId::kJS_Execution);
       value = Object(stub_entry.Call(isolate->isolate_data()->isolate_root(),
-                                     orig_func, func, recv, params.argc, argv));
+                                     orig_func, func, recv,
+                                     JSParameterCount(params.argc), argv));
     } else {
       DCHECK_EQ(Execution::Target::kRunMicrotasks, params.execution_target);
 
@@ -467,8 +511,23 @@ MaybeHandle<Object> InvokeWithTryCatch(Isolate* isolate,
 MaybeHandle<Object> Execution::Call(Isolate* isolate, Handle<Object> callable,
                                     Handle<Object> receiver, int argc,
                                     Handle<Object> argv[]) {
+  // Use Execution::CallScript instead for scripts:
+  DCHECK_IMPLIES(callable->IsJSFunction(),
+                 !JSFunction::cast(*callable).shared().is_script());
   return Invoke(isolate, InvokeParams::SetUpForCall(isolate, callable, receiver,
                                                     argc, argv));
+}
+
+// static
+MaybeHandle<Object> Execution::CallScript(Isolate* isolate,
+                                          Handle<JSFunction> script_function,
+                                          Handle<Object> receiver,
+                                          Handle<Object> host_defined_options) {
+  DCHECK(script_function->shared().is_script());
+  DCHECK(receiver->IsJSGlobalProxy() || receiver->IsJSGlobalObject());
+  return Invoke(
+      isolate, InvokeParams::SetUpForCall(isolate, script_function, receiver, 1,
+                                          &host_defined_options));
 }
 
 MaybeHandle<Object> Execution::CallBuiltin(Isolate* isolate,
@@ -496,10 +555,28 @@ MaybeHandle<Object> Execution::New(Isolate* isolate, Handle<Object> constructor,
 }
 
 // static
+MaybeHandle<Object> Execution::TryCallScript(
+    Isolate* isolate, Handle<JSFunction> script_function,
+    Handle<Object> receiver, Handle<FixedArray> host_defined_options,
+    MessageHandling message_handling, MaybeHandle<Object>* exception_out,
+    bool reschedule_terminate) {
+  DCHECK(script_function->shared().is_script());
+  DCHECK(receiver->IsJSGlobalProxy() || receiver->IsJSGlobalObject());
+  Handle<Object> argument = host_defined_options;
+  return InvokeWithTryCatch(
+      isolate, InvokeParams::SetUpForTryCall(
+                   isolate, script_function, receiver, 1, &argument,
+                   message_handling, exception_out, reschedule_terminate));
+}
+
+// static
 MaybeHandle<Object> Execution::TryCall(
     Isolate* isolate, Handle<Object> callable, Handle<Object> receiver,
     int argc, Handle<Object> argv[], MessageHandling message_handling,
     MaybeHandle<Object>* exception_out, bool reschedule_terminate) {
+  // Use Execution::TryCallScript instead for scripts:
+  DCHECK_IMPLIES(callable->IsJSFunction(),
+                 !JSFunction::cast(*callable).shared().is_script());
   return InvokeWithTryCatch(
       isolate, InvokeParams::SetUpForTryCall(
                    isolate, callable, receiver, argc, argv, message_handling,
@@ -526,7 +603,7 @@ STATIC_ASSERT(offsetof(StackHandlerMarker, padding) ==
 STATIC_ASSERT(sizeof(StackHandlerMarker) == StackHandlerConstants::kSize);
 
 #if V8_ENABLE_WEBASSEMBLY
-void Execution::CallWasm(Isolate* isolate, Handle<Code> wrapper_code,
+void Execution::CallWasm(Isolate* isolate, Handle<CodeT> wrapper_code,
                          Address wasm_call_target, Handle<Object> object_ref,
                          Address packed_args) {
   using WasmEntryStub = GeneratedCode<Address(

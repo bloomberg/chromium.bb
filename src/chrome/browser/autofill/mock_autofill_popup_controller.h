@@ -9,13 +9,12 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/test/gfx_util.h"
+#include "ui/gfx/test/scoped_default_font_description.h"
 
 namespace autofill {
 
@@ -37,8 +36,8 @@ class MockAutofillPopupController
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   const gfx::RectF& element_bounds() const override {
-    static base::NoDestructor<gfx::RectF> bounds({100, 100, 250, 50});
-    return *bounds;
+    static const gfx::RectF bounds(100, 100, 250, 50);
+    return bounds;
   }
   MOCK_CONST_METHOD0(IsRTL, bool());
 
@@ -55,8 +54,12 @@ class MockAutofillPopupController
     return suggestions_[row];
   }
 
-  const std::u16string& GetSuggestionValueAt(int i) const override {
-    return suggestions_[i].value;
+  std::u16string GetSuggestionMainTextAt(int row) const override {
+    return suggestions_[row].value;
+  }
+
+  std::u16string GetSuggestionMinorTextAt(int row) const override {
+    return std::u16string();
   }
 
   const std::u16string& GetSuggestionLabelAt(int row) const override {
@@ -75,8 +78,12 @@ class MockAutofillPopupController
   MOCK_CONST_METHOD0(GetPopupType, PopupType());
 
   void set_suggestions(const std::vector<int>& ids) {
-    for (const auto& id : ids)
-      suggestions_.push_back(autofill::Suggestion("", "", "", id));
+    for (const auto& id : ids) {
+      // Accessibility requires all focusable AutofillPopupItemView to have
+      // ui::AXNodeData with non-empty names. We specify dummy values and labels
+      // to satisfy this.
+      suggestions_.emplace_back("dummy_value", "dummy_label", "", id);
+    }
   }
 
   void set_suggestions(const std::vector<Suggestion>& suggestions) {

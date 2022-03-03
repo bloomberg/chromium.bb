@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -125,36 +125,9 @@ def _GenerateBundleApks(info,
       optimize_for=optimize_for)
 
 
-def _InstallBundle(devices, apk_helper_instance, package_name,
-                   command_line_flags_file, modules, fake_modules):
-  # Path Chrome creates after validating fake modules. This needs to be cleared
-  # for pushed fake modules to be picked up.
-  SPLITCOMPAT_PATH = '/data/data/' + package_name + '/files/splitcompat'
-  # Chrome command line flag needed for fake modules to work.
-  FAKE_FEATURE_MODULE_INSTALL = '--fake-feature-module-install'
-
-  def ShouldWarnFakeFeatureModuleInstallFlag(device):
-    if command_line_flags_file:
-      changer = flag_changer.FlagChanger(device, command_line_flags_file)
-      return FAKE_FEATURE_MODULE_INSTALL not in changer.GetCurrentFlags()
-    return False
-
-  def ClearFakeModules(device):
-    if device.PathExists(SPLITCOMPAT_PATH, as_root=True):
-      device.RemovePath(
-          SPLITCOMPAT_PATH, force=True, recursive=True, as_root=True)
-      logging.info('Removed %s', SPLITCOMPAT_PATH)
-    else:
-      logging.info('Skipped removing nonexistent %s', SPLITCOMPAT_PATH)
+def _InstallBundle(devices, apk_helper_instance, modules, fake_modules):
 
   def Install(device):
-    ClearFakeModules(device)
-    if fake_modules and ShouldWarnFakeFeatureModuleInstallFlag(device):
-      # Print warning if command line is not set up for fake modules.
-      msg = ('Command line has no %s: Fake modules will be ignored.' %
-             FAKE_FEATURE_MODULE_INSTALL)
-      print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
-
     device.Install(
         apk_helper_instance,
         permissions=[],
@@ -472,8 +445,8 @@ def _RunDiskUsage(devices, package_name):
       code_path = re.search(r'codePath=(.*)', package_output).group(1)
       lib_path = re.search(r'(?:legacyN|n)ativeLibrary(?:Dir|Path)=(.*)',
                            package_output).group(1)
-    except AttributeError:
-      raise Exception('Error parsing dumpsys output: ' + package_output)
+    except AttributeError as e:
+      raise Exception('Error parsing dumpsys output: ' + package_output) from e
 
     if code_path.startswith('/system'):
       logging.warning('Measurement of system image apks can be innacurate')
@@ -535,8 +508,8 @@ def _RunDiskUsage(devices, package_name):
             compilation_filter)
 
   def print_sizes(desc, sizes):
-    print('%s: %d KiB' % (desc, sum(sizes.itervalues())))
-    for path, size in sorted(sizes.iteritems()):
+    print('%s: %d KiB' % (desc, sum(sizes.values())))
+    for path, size in sorted(sizes.items()):
       print('    %s: %s KiB' % (path, size))
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
@@ -548,7 +521,7 @@ def _RunDiskUsage(devices, package_name):
 
     (data_dir_sizes, code_cache_sizes, apk_sizes, lib_sizes, odex_sizes,
      compilation_filter) = result
-    total = sum(sum(sizes.itervalues()) for sizes in result[:-1])
+    total = sum(sum(sizes.values()) for sizes in result[:-1])
 
     print_sizes('Apk', apk_sizes)
     print_sizes('App Data (non-code cache)', data_dir_sizes)
@@ -563,12 +536,12 @@ def _RunDiskUsage(devices, package_name):
     print('Total: %s KiB (%.1f MiB)' % (total, total / 1024.0))
 
 
-class _LogcatProcessor(object):
+class _LogcatProcessor:
   ParsedLine = collections.namedtuple(
       'ParsedLine',
       ['date', 'invokation_time', 'pid', 'tid', 'priority', 'tag', 'message'])
 
-  class NativeStackSymbolizer(object):
+  class NativeStackSymbolizer:
     """Buffers lines from native stacks and symbolizes them when done."""
     # E.g.: #06 pc 0x0000d519 /apex/com.android.runtime/lib/libart.so
     # E.g.: #01 pc 00180c8d  /data/data/.../lib/libbase.cr.so
@@ -584,7 +557,7 @@ class _LogcatProcessor(object):
       """Prints queued lines after sending them through stack.py."""
       crash_lines = self._crash_lines_buffer
       self._crash_lines_buffer = None
-      with tempfile.NamedTemporaryFile() as f:
+      with tempfile.NamedTemporaryFile(mode='w') as f:
         f.writelines(x[0].message + '\n' for x in crash_lines)
         f.flush()
         proc = self._stack_script_context.Popen(
@@ -674,7 +647,7 @@ class _LogcatProcessor(object):
     # Give preference to PID reported by "ps" over those found from
     # _start_pattern. There can be multiple "Start proc" messages from prior
     # runs of the app.
-    self._found_initial_pid = self._primary_pid != None
+    self._found_initial_pid = self._primary_pid is not None
     # Retrieve any additional patterns that are relevant for the User.
     self._user_defined_highlight = None
     user_regex = os.environ.get('CHROMIUM_LOGCAT_HIGHLIGHT')
@@ -700,10 +673,10 @@ class _LogcatProcessor(object):
   def _GetPidStyle(self, pid, dim=False):
     if pid == self._primary_pid:
       return colorama.Fore.WHITE
-    elif pid in self._my_pids:
+    if pid in self._my_pids:
       # TODO(wnwen): Use one separate persistent color per process, pop LRU
       return colorama.Fore.YELLOW
-    elif dim:
+    if dim:
       return colorama.Style.DIM
     return ''
 
@@ -712,7 +685,7 @@ class _LogcatProcessor(object):
     if dim:
       return ''
     style = colorama.Fore.BLACK
-    if priority == 'E' or priority == 'F':
+    if priority in ('E', 'F'):
       style += colorama.Back.RED
     elif priority == 'W':
       style += colorama.Back.YELLOW
@@ -941,7 +914,7 @@ def _RunProfile(device, package_name, host_build_directory, pprof_out_path,
         """ % {'s': pprof_out_path}))
 
 
-class _StackScriptContext(object):
+class _StackScriptContext:
   """Maintains temporary files needed by stack.py."""
 
   def __init__(self,
@@ -1000,7 +973,7 @@ class _StackScriptContext(object):
     if input_file:
       cmd.append(input_file)
     logging.info('Running stack.py')
-    return subprocess.Popen(cmd, **kwargs)
+    return subprocess.Popen(cmd, universal_newlines=True, **kwargs)
 
 
 def _GenerateAvailableDevicesMessage(devices):
@@ -1063,7 +1036,7 @@ def _SaveDeviceCaches(devices, output_directory):
       logging.info('Wrote device cache: %s', cache_path)
 
 
-class _Command(object):
+class _Command:
   name = None
   description = None
   long_description = None
@@ -1095,7 +1068,7 @@ class _Command(object):
   def RegisterBundleGenerationInfo(self, bundle_generation_info):
     self.bundle_generation_info = bundle_generation_info
 
-  def _RegisterExtraArgs(self, subp):
+  def _RegisterExtraArgs(self, group):
     pass
 
   def RegisterArgs(self, parser):
@@ -1341,8 +1314,7 @@ class _InstallCommand(_Command):
       modules = list(
           set(self.args.module) - set(self.args.no_module) -
           set(self.args.fake))
-      _InstallBundle(self.devices, self.apk_helper, self.args.package_name,
-                     self.args.command_line_flags_file, modules, self.args.fake)
+      _InstallBundle(self.devices, self.apk_helper, modules, self.args.fake)
     else:
       _InstallApk(self.devices, self.apk_helper, self.install_dict)
 
@@ -1789,9 +1761,11 @@ class _ManifestCommand(_Command):
   need_device_args = False
 
   def Run(self):
-    bundletool.RunBundleTool([
-        'dump', 'manifest', '--bundle', self.bundle_generation_info.bundle_path
-    ])
+    sys.stdout.write(
+        bundletool.RunBundleTool([
+            'dump', 'manifest', '--bundle',
+            self.bundle_generation_info.bundle_path
+        ]))
 
 
 class _StackCommand(_Command):

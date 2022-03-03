@@ -10,8 +10,8 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/ignore_result.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -26,6 +26,7 @@
 #include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -473,6 +474,10 @@ void TrustTokenRequestSigningHelper::Begin(
     return;
   }
 
+  request->SetExtraRequestHeaderByName(kTrustTokensSecTrustTokenVersionHeader,
+                                       kTrustTokensMajorVersion,
+                                       /*overwrite=*/true);
+
   LogOutcome(net_log_, "Success");
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
@@ -486,6 +491,7 @@ void TrustTokenRequestSigningHelper::Finalize(
 namespace {
 
 // Given a redemption record and a signature bytestring, returns a {
+//   "alg": <signing alg>,
 //   "public-key": <public key>,
 //   "sig": <signature>
 // }
@@ -493,7 +499,8 @@ namespace {
 // top-level list.
 net::structured_headers::Parameters ConstructKeyAndSignaturePair(
     const TrustTokenRedemptionRecord& redemption_record,
-    base::span<const uint8_t> signature_bytes) {
+    base::span<const uint8_t> signature_bytes,
+    const TrustTokenRequestSigningHelper::Signer& signer) {
   net::structured_headers::Item public_key(
       redemption_record.public_key(),
       net::structured_headers::Item::ItemType::kByteSequenceType);
@@ -503,7 +510,8 @@ net::structured_headers::Parameters ConstructKeyAndSignaturePair(
       net::structured_headers::Item::ItemType::kByteSequenceType));
 
   return {{kSignatureHeaderPublicKeyKey, std::move(public_key)},
-          {kSignatureHeaderSignatureKey, std::move(signature)}};
+          {kSignatureHeaderSignatureKey, std::move(signature)},
+          {kSignatureHeaderAlgorithmKey, signer.GetAlgorithmIdentifier()}};
 }
 
 }  // namespace
@@ -519,13 +527,6 @@ absl::optional<std::string> TrustTokenRequestSigningHelper::
 
   net::structured_headers::Dictionary header_items;
 
-  header_items[kSignatureHeaderAlgorithmKey] =
-      net::structured_headers::ParameterizedMember(
-          net::structured_headers::Item(
-              signer_->GetAlgorithmIdentifier(),
-              net::structured_headers::Item::ItemType::kStringType),
-              {});
-
   std::vector<net::structured_headers::ParameterizedItem> keys_and_signatures;
   for (const auto& kv : signatures_per_issuer) {
     const SuitableTrustTokenOrigin& issuer = kv.first;
@@ -537,8 +538,8 @@ absl::optional<std::string> TrustTokenRequestSigningHelper::
             net::structured_headers::Item::ItemType::kStringType),
         // records_per_issuer is guaranteed to have all of the keys that
         // signatures_per_issuer does, so using |at| is safe:
-        ConstructKeyAndSignaturePair(records_per_issuer.at(issuer),
-                                     signature)));
+        ConstructKeyAndSignaturePair(records_per_issuer.at(issuer), signature,
+                                     *signer_)));
   }
 
   header_items[kSignatureHeaderSignaturesKey] =

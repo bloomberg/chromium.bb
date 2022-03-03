@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -32,6 +31,8 @@ class CORE_EXPORT AppHistoryEntry final : public EventTargetWithInlineData,
   bool sameDocument() const;
 
   ScriptValue getState() const;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dispose, kDispose)
 
   HistoryItem* GetItem() { return item_; }
 

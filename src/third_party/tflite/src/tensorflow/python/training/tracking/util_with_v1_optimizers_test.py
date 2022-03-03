@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for object-based saving which use tf.train.* optimizers."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 import six
@@ -77,7 +73,7 @@ class CheckpointingTests(test.TestCase):
     self.assertEqual(12., self.evaluate(new_root.var))
     new_root.optimizer = adam.AdamOptimizer(0.1)
     slot_status.assert_existing_objects_matched()
-    with self.assertRaisesRegexp(AssertionError, "beta1_power"):
+    with self.assertRaisesRegex(AssertionError, "beta1_power"):
       slot_status.assert_consumed()
     self.assertEqual(12., self.evaluate(new_root.var))
     if context.executing_eagerly():

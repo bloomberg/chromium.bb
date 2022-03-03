@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
@@ -14,6 +15,8 @@
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
+#include "third_party/blink/renderer/platform/peerconnection/webrtc_util.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_video_utils.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/webrtc/api/audio_codecs/audio_decoder_factory.h"
 #include "third_party/webrtc/api/audio_codecs/audio_format.h"
@@ -22,42 +25,6 @@
 #include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
 
 namespace blink {
-
-namespace {
-
-String ExtractCodecNameFromMimeType(const String& mime_type,
-                                    const char* prefix) {
-  if (mime_type.StartsWith(prefix)) {
-    size_t length = mime_type.length() - strlen(prefix) - 1;
-    const String codec_name = mime_type.Right(length);
-    return codec_name;
-  }
-  return "";
-}
-
-webrtc::SdpVideoFormat::Parameters ConvertToSdpVideoFormatParameters(
-    const ParsedContentHeaderFieldParameters& parameters) {
-  webrtc::SdpVideoFormat::Parameters sdp_parameters;
-  for (const auto& parameter : parameters) {
-    sdp_parameters[parameter.name.Utf8()] = parameter.value.Utf8();
-  }
-  return sdp_parameters;
-}
-
-// Composes elements of set<string> to a string with ", " delimiter.
-String StringHashSetToString(const HashSet<String>& string_set) {
-  String result;
-  String delim;
-  for (auto& s : string_set) {
-    result = result + delim + s;
-    if (delim.IsEmpty())
-      delim = ", ";
-  }
-  return result;
-}
-
-}  // namespace
-
 WebrtcDecodingInfoHandler* WebrtcDecodingInfoHandler::Instance() {
   DEFINE_STATIC_LOCAL(WebrtcDecodingInfoHandler, instance, ());
   return &instance;
@@ -83,9 +50,6 @@ WebrtcDecodingInfoHandler::WebrtcDecodingInfoHandler(
     supported_audio_codecs_.insert(
         String::FromUTF8(audio_spec.format.name).LowerASCII());
   }
-  DVLOG(2) << String::Format(
-      "supported_audio_codecs_:[%s]",
-      StringHashSetToString(supported_audio_codecs_).Utf8().c_str());
 }
 
 WebrtcDecodingInfoHandler::~WebrtcDecodingInfoHandler() = default;
@@ -104,7 +68,7 @@ void WebrtcDecodingInfoHandler::DecodingInfo(
     ParsedContentType audio_content_type(audio_mime_type->LowerASCII());
     DCHECK(audio_content_type.IsValid());
     const String codec_name =
-        ExtractCodecNameFromMimeType(audio_content_type.MimeType(), "audio");
+        WebrtcCodecNameFromMimeType(audio_content_type.MimeType(), "audio");
     supported = base::Contains(supported_audio_codecs_, codec_name);
     // Audio is always assumed to be power efficient whenever it is
     // supported.
@@ -120,21 +84,34 @@ void WebrtcDecodingInfoHandler::DecodingInfo(
     ParsedContentType video_content_type(video_mime_type->LowerASCII());
     DCHECK(video_content_type.IsValid());
     const String codec_name =
-        ExtractCodecNameFromMimeType(video_content_type.MimeType(), "video");
+        WebrtcCodecNameFromMimeType(video_content_type.MimeType(), "video");
     const webrtc::SdpVideoFormat::Parameters parameters =
         ConvertToSdpVideoFormatParameters(video_content_type.GetParameters());
     webrtc::SdpVideoFormat sdp_video_format(codec_name.Utf8(), parameters);
-    absl::optional<std::string> scalability_mode =
-        video_scalability_mode
-            ? absl::make_optional(video_scalability_mode->Utf8())
-            : absl::nullopt;
-    webrtc::VideoDecoderFactory::CodecSupport support =
-        video_decoder_factory_->QueryCodecSupport(sdp_video_format,
-                                                  scalability_mode);
+    bool reference_scaling = false;
+    if (video_scalability_mode) {
+      absl::optional<int> dependent_spatial_layers =
+          WebRtcScalabilityModeDependentSpatialLayers(
+              video_scalability_mode->Utf8());
+      if (dependent_spatial_layers) {
+        // Reference scaling must be supported to be able to decode a stream
+        // with more than one dependent spatial layers.
+        reference_scaling = *dependent_spatial_layers > 1;
+      } else {
+        // We were not able to decode the scalability mode string. Return
+        // unsupported.
+        supported = false;
+        power_efficient = false;
+      }
+    }
 
-    supported = support.is_supported;
-    power_efficient = support.is_power_efficient;
-
+    if (supported) {
+      webrtc::VideoDecoderFactory::CodecSupport support =
+          video_decoder_factory_->QueryCodecSupport(sdp_video_format,
+                                                    reference_scaling);
+      supported = support.is_supported;
+      power_efficient = support.is_power_efficient;
+    }
     DVLOG(1) << "Video MIME type:" << codec_name << " supported:" << supported
              << " power_efficient:" << power_efficient;
   }

@@ -83,12 +83,11 @@ static const char* const FIXED_ARRAY_BASE_TYPE_STRING = "FixedArrayBase";
 static const char* const WEAK_HEAP_OBJECT = "WeakHeapObject";
 static const char* const STATIC_ASSERT_MACRO_STRING = "StaticAssert";
 
-static const char* const ANNOTATION_GENERATE_PRINT = "@generatePrint";
-static const char* const ANNOTATION_NO_VERIFIER = "@noVerifier";
 static const char* const ANNOTATION_ABSTRACT = "@abstract";
 static const char* const ANNOTATION_HAS_SAME_INSTANCE_TYPE_AS_PARENT =
     "@hasSameInstanceTypeAsParent";
-static const char* const ANNOTATION_GENERATE_CPP_CLASS = "@generateCppClass";
+static const char* const ANNOTATION_DO_NOT_GENERATE_CPP_CLASS =
+    "@doNotGenerateCppClass";
 static const char* const ANNOTATION_CUSTOM_MAP = "@customMap";
 static const char* const ANNOTATION_CUSTOM_CPP_CLASS = "@customCppClass";
 static const char* const ANNOTATION_HIGHEST_INSTANCE_TYPE_WITHIN_PARENT =
@@ -103,6 +102,9 @@ static const char* const ANNOTATION_IF = "@if";
 static const char* const ANNOTATION_IFNOT = "@ifnot";
 static const char* const ANNOTATION_GENERATE_BODY_DESCRIPTOR =
     "@generateBodyDescriptor";
+static const char* const ANNOTATION_GENERATE_UNIQUE_MAP = "@generateUniqueMap";
+static const char* const ANNOTATION_GENERATE_FACTORY_FUNCTION =
+    "@generateFactoryFunction";
 static const char* const ANNOTATION_EXPORT = "@export";
 static const char* const ANNOTATION_DO_NOT_GENERATE_CAST = "@doNotGenerateCast";
 static const char* const ANNOTATION_USE_PARENT_TYPE_CHECKER =
@@ -116,6 +118,8 @@ static const char* const ANNOTATION_CPP_RELAXED_LOAD = "@cppRelaxedLoad";
 static const char* const ANNOTATION_CPP_RELEASE_STORE = "@cppReleaseStore";
 // Generate C++ accessors with acquire load semantics.
 static const char* const ANNOTATION_CPP_ACQUIRE_LOAD = "@cppAcquireLoad";
+// Generate BodyDescriptor using IterateCustomWeakPointers.
+static const char* const ANNOTATION_CUSTOM_WEAK_MARKING = "@customWeakMarking";
 
 inline bool IsConstexprName(const std::string& name) {
   return name.substr(0, std::strlen(CONSTEXPR_TYPE_PREFIX)) ==
@@ -143,21 +147,19 @@ using AbstractTypeFlags = base::Flags<AbstractTypeFlag>;
 enum class ClassFlag {
   kNone = 0,
   kExtern = 1 << 0,
-  kGeneratePrint = 1 << 1,
-  kGenerateVerify = 1 << 2,
-  kTransient = 1 << 3,
-  kAbstract = 1 << 4,
-  kIsShape = 1 << 5,
-  kHasSameInstanceTypeAsParent = 1 << 6,
-  kGenerateCppClassDefinitions = 1 << 7,
-  kCustomCppClass = 1 << 8,
-  kHighestInstanceTypeWithinParent = 1 << 9,
-  kLowestInstanceTypeWithinParent = 1 << 10,
-  kUndefinedLayout = 1 << 11,
-  kGenerateBodyDescriptor = 1 << 12,
-  kExport = 1 << 13,
-  kDoNotGenerateCast = 1 << 14,
-  kCustomMap = 1 << 15,
+  kTransient = 1 << 1,
+  kAbstract = 1 << 2,
+  kIsShape = 1 << 3,
+  kHasSameInstanceTypeAsParent = 1 << 4,
+  kGenerateCppClassDefinitions = 1 << 5,
+  kHighestInstanceTypeWithinParent = 1 << 6,
+  kLowestInstanceTypeWithinParent = 1 << 7,
+  kUndefinedLayout = 1 << 8,
+  kGenerateBodyDescriptor = 1 << 9,
+  kExport = 1 << 10,
+  kDoNotGenerateCast = 1 << 11,
+  kGenerateUniqueMap = 1 << 12,
+  kGenerateFactoryFunction = 1 << 13,
 };
 using ClassFlags = base::Flags<ClassFlag>;
 
