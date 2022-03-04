@@ -506,6 +506,10 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
 }
 
+void DesktopWindowTreeHostWin::CompositionChanged() {
+  desktop_native_widget_aura_->UpdateWindowTransparency();
+}
+
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   auto weak_ptr = GetWeakPtr();
   message_handler_->SetFullscreen(fullscreen);

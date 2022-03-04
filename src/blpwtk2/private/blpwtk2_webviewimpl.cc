@@ -331,6 +331,13 @@ void WebViewImpl::clearTooltip()
     rwhv->UpdateTooltip(u"");
 }
 
+void WebViewImpl::rootWindowCompositionChanged()
+{
+    if (d_widget) {
+        d_widget->compositionChanged();
+    }
+}
+
 v8::MaybeLocal<v8::Value> WebViewImpl::callFunction(v8::Local<v8::Function>  func,
                                                     v8::Local<v8::Value>     recv,
                                                     int                      argc,
