@@ -621,6 +621,11 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     owning_layer_->GetScrollableArea()->PositionOverflowControls();
 
   UpdateContentsRect();
+
+  UpdateLCDBackgroundColor(
+    compositing_container ?
+    compositing_container->GetCompositedLayerMapping() : nullptr);
+
   UpdateDrawsContentAndPaintsHitTest();
   UpdateElementId();
   UpdateCompositingReasons();
@@ -1200,6 +1205,127 @@ CompositedLayerMapping::PaintingPhaseForPrimaryLayer() const {
   }
 
   return static_cast<GraphicsLayerPaintingPhase>(phase);
+}
+
+void CompositedLayerMapping::UpdateLCDBackgroundColor(
+    CompositedLayerMapping *containerLayerMapping) {
+  // Update the cached inheritedBackgroundColor:
+  Color inheritedBackgroundColor = Color::kTransparent;
+
+  LayoutObject *object    = &GetLayoutObject(),
+               *objectEnd = containerLayerMapping?
+                 &containerLayerMapping->GetLayoutObject() :
+                 nullptr;
+
+  while (object != objectEnd) {
+    inheritedBackgroundColor =
+        object->ResolveColor(GetCSSPropertyBackgroundColor());
+
+    if (inheritedBackgroundColor.Alpha() == 0xFF ||
+        object->Style()->HasBackgroundImage()) {
+      break;
+    }
+
+    object = object->Parent();
+  }
+
+  if (inheritedBackgroundColor.Alpha() != 0xFF &&
+      object == objectEnd                      &&
+      containerLayerMapping) {
+    inheritedBackgroundColor =
+      containerLayerMapping->inherited_background_color_;
+  }
+
+  inherited_background_color_ = inheritedBackgroundColor;
+
+  // Determine the lcdBackgroundColor from the "-bb-lcd-background-color"
+  // CSS property:
+  Color lcdBackgroundColor = Color::kTransparent;
+
+  ELcdBackgroundColorSource source =
+      GetLayoutObject().Style()->LcdBackgroundColorSource();
+
+  if (source == ELcdBackgroundColorSource::kAuto) {
+    lcdBackgroundColor = inheritedBackgroundColor;
+  }
+  else if (source == ELcdBackgroundColorSource::kColor) {
+    lcdBackgroundColor = GetLayoutObject().Style()->BbLcdBackgroundColor();
+  }
+
+  // Apply lcdBackgroundColor to relevant GraphicsLayers:
+  graphics_layer_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+
+  if (scrolling_contents_layer_) {
+    scrolling_contents_layer_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (mask_layer_) {
+    mask_layer_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (foreground_layer_) {
+    foreground_layer_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (layer_for_horizontal_scrollbar_) {
+    layer_for_horizontal_scrollbar_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (layer_for_vertical_scrollbar_) {
+    layer_for_vertical_scrollbar_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (layer_for_scroll_corner_) {
+    layer_for_scroll_corner_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (decoration_outline_layer_) {
+    decoration_outline_layer_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (non_scrolling_squashing_layer_) {
+    // In some cases, a certain row in a list or table needs its own graphics
+    // layer. To make sure the remaining rows are on top of this row, the
+    // display list items that pertain to these remaining items are played back
+    // on a squashed compositor layer attached to the same
+    // CompositedLayerMapping.
+    //
+    // Note that the main graphics layer was created for this one-off row but
+    // the majority of the content sits on top of the attached squashed layer,
+    // which actually extends beyond the bounds of the main graphics layer.
+    // To make sure the squashed layer gets the correct text background, we
+    // need to search for the next parent LayoutObject and use its background
+    // instead.
+    if (object == &GetLayoutObject()) {
+      inheritedBackgroundColor = Color::kTransparent;
+      object = object->Parent();
+
+      while (object != objectEnd) {
+        inheritedBackgroundColor =
+            object->ResolveColor(GetCSSPropertyBackgroundColor());
+
+        if (inheritedBackgroundColor.Alpha() == 0xFF ||
+            object->Style()->HasBackgroundImage()) {
+          break;
+        }
+
+
+        object = object->Parent();
+      }
+
+      if (inheritedBackgroundColor.Alpha() != 0xFF &&
+          object == objectEnd                      &&
+          containerLayerMapping) {
+        inheritedBackgroundColor =
+          containerLayerMapping->inherited_background_color_;
+      }
+    }
+
+    if (source == ELcdBackgroundColorSource::kAuto) {
+      lcdBackgroundColor = inheritedBackgroundColor;
+    }
+    else if (source == ELcdBackgroundColorSource::kColor) {
+      lcdBackgroundColor = GetLayoutObject().Style()->BbLcdBackgroundColor();
+    }
+    else {
+      lcdBackgroundColor = Color::kTransparent;
+    }
+
+    non_scrolling_squashing_layer_->SetDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
 }
 
 bool CompositedLayerMapping::PaintsChildren() const {

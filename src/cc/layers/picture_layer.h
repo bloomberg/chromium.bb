@@ -39,6 +39,8 @@ class CC_EXPORT PictureLayer : public Layer {
     return picture_layer_inputs_.is_backdrop_filter_mask;
   }
 
+  void SetDefaultLCDBackgroundColor(SkColor default_lcd_background_color);
+
   // Layer interface.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
@@ -71,6 +73,7 @@ class CC_EXPORT PictureLayer : public Layer {
     bool is_backdrop_filter_mask = false;
     scoped_refptr<DisplayItemList> display_list;
     absl::optional<gfx::Size> directly_composited_image_size = absl::nullopt;
+    SkColor default_lcd_background_color = SK_ColorTRANSPARENT;
   };
 
   explicit PictureLayer(ContentLayerClient* client);

@@ -278,6 +278,7 @@ class ComputedStyle : public ComputedStyleBase,
   // at use-time.)
   friend class FilterOperationResolver;
   // Access to SetInitialData() and GetCurrentColor().
+  friend class StyleBuilderConverter;
   friend class StyleResolver;
 
  protected:

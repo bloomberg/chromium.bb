@@ -296,7 +296,7 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
                             _mm_set1_epi32(SK_A32_MASK << SK_A32_SHIFT));
     }
 
-    void blit_row_lcd16(SkPMColor dst[], const uint16_t mask[], SkColor src, int width, SkPMColor) {
+    void blit_row_lcd16(SkPMColor dst[], const uint16_t mask[], SkColor src, int width, SkPMColor, SkPMColor) {
         if (width <= 0) {
             return;
         }
@@ -367,8 +367,103 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
         }
     }
 
+    void blit_row_lcd16_over_bg(SkPMColor dst[], const uint16_t mask[], SkColor src, int width, SkPMColor, SkPMColor defaultDst) {
+        if (width <= 0) {
+            return;
+        }
+
+        int srcA = SkColorGetA(src);
+        int srcR = SkColorGetR(src);
+        int srcG = SkColorGetG(src);
+        int srcB = SkColorGetB(src);
+
+        srcA = SkAlpha255To256(srcA);
+        __m128i defaultDst_sse = _mm_set1_epi32(defaultDst);
+
+        if (width >= 4) {
+            SkASSERT(((size_t)dst & 0x03) == 0);
+            while (((size_t)dst & 0x0F) != 0) {
+                SkPMColor currentDst = *dst;
+                if (0x00 == SkColorGetA(currentDst)) {
+                    currentDst = defaultDst;
+                }
+                *dst = blend_lcd16(srcA, srcR, srcG, srcB, currentDst, *mask);
+
+                mask++;
+                dst++;
+                width--;
+            }
+
+            __m128i *d = reinterpret_cast<__m128i*>(dst);
+            // Set alpha to 0xFF and replicate source four times in SSE register.
+            __m128i src_sse = _mm_set1_epi32(SkPackARGB32(0xFF, srcR, srcG, srcB));
+            // Interleave with zeros to get two sets of four 16-bit values.
+            src_sse = _mm_unpacklo_epi8(src_sse, _mm_setzero_si128());
+            // Set srcA_sse to contain eight copies of srcA, padded with zero.
+            // src_sse=(0xFF, 0, sR, 0, sG, 0, sB, 0, 0xFF, 0, sR, 0, sG, 0, sB, 0)
+            __m128i srcA_sse = _mm_set1_epi16(srcA);
+            while (width >= 4) {
+                // Load four destination pixels into dst_sse.
+                __m128i dst_sse = _mm_load_si128(d);
+                // Load four 16-bit masks into lower half of mask_sse.
+                __m128i mask_sse = _mm_loadl_epi64(
+                                       reinterpret_cast<const __m128i*>(mask));
+
+                // Check whether masks are equal to 0 and get the highest bit
+                // of each byte of result, if masks are all zero, we will get
+                // pack_cmp to 0xFFFF
+                int pack_cmp = _mm_movemask_epi8(_mm_cmpeq_epi16(mask_sse,
+                                                 _mm_setzero_si128()));
+
+                // if mask pixels are not all zero, we will blend the dst pixels
+                if (pack_cmp != 0xFFFF) {
+                    // Each pixel that has a non-opaque alpha will use defaultDst_sse:
+                    //
+                    // First obtain destination alpha values:
+                    __m128i dst_alpha_sse = _mm_and_si128(dst_sse,
+                                                   _mm_set1_epi32(0xFF000000));
+
+                    // Which pixels are opaque?
+                    __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                                                   _mm_set1_epi32(0x00000000));
+
+                    // Opaque pixels from from dst, non-opaque pixels from defaultDst:
+                    dst_sse = _mm_or_si128(_mm_andnot_si128(dst_isOpaque_sse, dst_sse),
+                                           _mm_and_si128(dst_isOpaque_sse, defaultDst_sse));
+
+                    // Unpack 4 16bit mask pixels to
+                    // mask_sse = (m0RGBLo, m0RGBHi, 0, 0, m1RGBLo, m1RGBHi, 0, 0,
+                    //             m2RGBLo, m2RGBHi, 0, 0, m3RGBLo, m3RGBHi, 0, 0)
+                    mask_sse = _mm_unpacklo_epi16(mask_sse,
+                                                  _mm_setzero_si128());
+
+                    // Process 4 32bit dst pixels
+                    __m128i result = blend_lcd16_sse2(src_sse, dst_sse, mask_sse, srcA_sse);
+                    _mm_store_si128(d, result);
+                }
+
+                d++;
+                mask += 4;
+                width -= 4;
+            }
+
+            dst = reinterpret_cast<SkPMColor*>(d);
+        }
+
+        while (width > 0) {
+            SkPMColor currentDst = *dst;
+            if (0x00 == SkColorGetA(currentDst)) {
+                currentDst = defaultDst;
+            }
+            *dst = blend_lcd16(srcA, srcR, srcG, srcB, currentDst, *mask);
+            mask++;
+            dst++;
+            width--;
+        }
+    }
+
     void blit_row_lcd16_opaque(SkPMColor dst[], const uint16_t mask[],
-                                   SkColor src, int width, SkPMColor opaqueDst) {
+                                   SkColor src, int width, SkPMColor opaqueDst, SkPMColor) {
         if (width <= 0) {
             return;
         }
@@ -434,6 +529,99 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
         }
     }
 
+    void blit_row_lcd16_opaque_over_bg(SkPMColor dst[], const uint16_t mask[],
+                                           SkColor src, int width, SkPMColor opaqueDst, SkPMColor defaultDst) {
+        if (width <= 0) {
+            return;
+        }
+
+        int srcR = SkColorGetR(src);
+        int srcG = SkColorGetG(src);
+        int srcB = SkColorGetB(src);
+
+        __m128i defaultDst_sse = _mm_set1_epi32(defaultDst);
+
+        if (width >= 4) {
+            SkASSERT(((size_t)dst & 0x03) == 0);
+            while (((size_t)dst & 0x0F) != 0) {
+                SkPMColor currentDst = *dst;
+                if (0x00 == SkColorGetA(currentDst)) {
+                    currentDst = defaultDst;
+                }
+                *dst = blend_lcd16_opaque(srcR, srcG, srcB, currentDst, *mask, opaqueDst);
+                mask++;
+                dst++;
+                width--;
+            }
+
+            __m128i *d = reinterpret_cast<__m128i*>(dst);
+            // Set alpha to 0xFF and replicate source four times in SSE register.
+            __m128i src_sse = _mm_set1_epi32(SkPackARGB32(0xFF, srcR, srcG, srcB));
+            // Set srcA_sse to contain eight copies of srcA, padded with zero.
+            // src_sse=(0xFF, 0, sR, 0, sG, 0, sB, 0, 0xFF, 0, sR, 0, sG, 0, sB, 0)
+            src_sse = _mm_unpacklo_epi8(src_sse, _mm_setzero_si128());
+            while (width >= 4) {
+                // Load four destination pixels into dst_sse.
+                __m128i dst_sse = _mm_load_si128(d);
+                // Load four 16-bit masks into lower half of mask_sse.
+                __m128i mask_sse = _mm_loadl_epi64(
+                                       reinterpret_cast<const __m128i*>(mask));
+
+                // Check whether masks are equal to 0 and get the highest bit
+                // of each byte of result, if masks are all zero, we will get
+                // pack_cmp to 0xFFFF
+                int pack_cmp = _mm_movemask_epi8(_mm_cmpeq_epi16(mask_sse,
+                                                 _mm_setzero_si128()));
+
+                // if mask pixels are not all zero, we will blend the dst pixels
+                if (pack_cmp != 0xFFFF) {
+                    // Each pixel that has a non-opaque alpha will use defaultDst_sse:
+                    //
+                    // First obtain destination alpha values:
+                    __m128i dst_alpha_sse = _mm_and_si128(dst_sse,
+                                                   _mm_set1_epi32(0xFF000000));
+
+                    // Which pixels are opaque?
+                    __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                                                   _mm_set1_epi32(0x00000000));
+
+                    // Opaque pixels from from dst, non-opaque pixels from defaultDst:
+                    dst_sse = _mm_or_si128(_mm_andnot_si128(dst_isOpaque_sse, dst_sse),
+                                           _mm_and_si128(dst_isOpaque_sse, defaultDst_sse));
+
+                    // Unpack 4 16bit mask pixels to
+                    // mask_sse = (m0RGBLo, m0RGBHi, 0, 0, m1RGBLo, m1RGBHi, 0, 0,
+                    //             m2RGBLo, m2RGBHi, 0, 0, m3RGBLo, m3RGBHi, 0, 0)
+                    mask_sse = _mm_unpacklo_epi16(mask_sse,
+                                                  _mm_setzero_si128());
+
+                    // Process 4 32bit dst pixels
+                    __m128i result = blend_lcd16_opaque_sse2(src_sse, dst_sse, mask_sse);
+                    _mm_store_si128(d, result);
+                }
+
+                d++;
+                mask += 4;
+                width -= 4;
+            }
+
+            dst = reinterpret_cast<SkPMColor*>(d);
+        }
+
+        while (width > 0) {
+            SkPMColor currentDst = *dst;
+            if (0x00 == SkColorGetA(currentDst)) {
+                currentDst = defaultDst;
+            }
+            *dst = blend_lcd16_opaque(srcR, srcG, srcB, currentDst, *mask, opaqueDst);
+            mask++;
+            dst++;
+            width--;
+        }
+    }
+
+
+
 #elif defined(SK_ARM_HAS_NEON)
     #include <arm_neon.h>
 
@@ -457,7 +645,7 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
 
     void blit_row_lcd16_opaque(SkPMColor dst[], const uint16_t src[],
                                SkColor color, int width,
-                               SkPMColor opaqueDst) {
+                               SkPMColor opaqueDst, SkPMColor) {
         int colR = SkColorGetR(color);
         int colG = SkColorGetG(color);
         int colB = SkColorGetB(color);
@@ -518,8 +706,15 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
         }
     }
 
+    static inline void blit_row_lcd16_opaque_over_bg(SkPMColor dst[], const uint16_t src[],
+                                                     SkColor color, int width,
+                                                     SkPMColor opaqueDst, SkPMColor defaultDst) {
+        // TODO(bloomberg) - Blending with a default background is not yet supported for ARM Neon.
+        blit_row_lcd16_opaque(dst, src, color, width, opaqueDst, defaultDst);
+    }
+
     void blit_row_lcd16(SkPMColor dst[], const uint16_t src[],
-                        SkColor color, int width, SkPMColor) {
+                        SkColor color, int width, SkPMColor, SkPMColor) {
         int colA = SkColorGetA(color);
         int colR = SkColorGetR(color);
         int colG = SkColorGetG(color);
@@ -572,10 +767,16 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
         }
     }
 
+    static inline void blit_row_lcd16_over_bg(SkPMColor dst[], const uint16_t src[],
+                                              SkColor color, int width, SkPMColor, SkPMColor defaultDst) {
+        // TODO(bloomberg) - Blending with a default background is not yet supported for ARM Neon.
+        blit_row_lcd16(dst, src, color, width, 0, defaultDst);
+    }
+
 #else
 
     static inline void blit_row_lcd16(SkPMColor dst[], const uint16_t mask[],
-                                      SkColor src, int width, SkPMColor) {
+                                      SkColor src, int width, SkPMColor, SkPMColor) {
         int srcA = SkColorGetA(src);
         int srcR = SkColorGetR(src);
         int srcG = SkColorGetG(src);
@@ -588,9 +789,27 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
         }
     }
 
+    static inline void blit_row_lcd16_over_bg(SkPMColor dst[], const uint16_t mask[],
+                                              SkColor src, int width, SkPMColor, SkPMColor defaultDst) {
+        int srcA = SkColorGetA(src);
+        int srcR = SkColorGetR(src);
+        int srcG = SkColorGetG(src);
+        int srcB = SkColorGetB(src);
+
+        srcA = SkAlpha255To256(srcA);
+
+        for (int i = 0; i < width; i++) {
+            SkPMColor currentDst = dst[i];
+            if (0x00 == SkColorGetA(currentDst)) {
+                currentDst = defaultDst;
+            }
+            dst[i] = blend_lcd16(srcA, srcR, srcG, srcB, currentDst, mask[i]);
+        }
+    }
+
     static inline void blit_row_lcd16_opaque(SkPMColor dst[], const uint16_t mask[],
                                              SkColor src, int width,
-                                             SkPMColor opaqueDst) {
+                                             SkPMColor opaqueDst, SkPMColor) {
         int srcR = SkColorGetR(src);
         int srcG = SkColorGetG(src);
         int srcB = SkColorGetB(src);
@@ -600,12 +819,29 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
         }
     }
 
+    static inline void blit_row_lcd16_opaque_over_bg(SkPMColor dst[], const uint16_t mask[],
+                                                     SkColor src, int width,
+                                                     SkPMColor opaqueDst, SkPMColor defaultDst) {
+        int srcR = SkColorGetR(src);
+        int srcG = SkColorGetG(src);
+        int srcB = SkColorGetB(src);
+
+        for (int i = 0; i < width; i++) {
+            SkPMColor currentDst = dst[i];
+            if (0x00 == SkColorGetA(currentDst)) {
+                currentDst = defaultDst;
+            }
+            dst[i] = blend_lcd16_opaque(srcR, srcG, srcB, currentDst, mask[i], opaqueDst);
+        }
+    }
+
 #endif
 
 static bool blit_color(const SkPixmap& device,
                        const SkMask& mask,
                        const SkIRect& clip,
-                       SkColor color) {
+                       SkColor color,
+                       SkColor lcdBackgroundColor) {
     int x = clip.fLeft,
         y = clip.fTop;
 
@@ -622,14 +858,26 @@ static bool blit_color(const SkPixmap& device,
 
         auto blit_row = blit_row_lcd16;
         SkPMColor opaqueDst = 0;  // ignored unless opaque
+        SkPMColor opaqueBg = 0;  // ignored unless lcd-background is opaque
 
-        if (0xff == SkColorGetA(color)) {
+        if (0xff == SkColorGetA(lcdBackgroundColor)) {
+            if (0xff == SkColorGetA(color)) {
+                blit_row  = blit_row_lcd16_opaque_over_bg;
+                opaqueDst = SkPreMultiplyColor(color);
+                opaqueBg = SkPreMultiplyColor(lcdBackgroundColor);
+            }
+            else {
+                blit_row  = blit_row_lcd16_over_bg;
+                opaqueBg = SkPreMultiplyColor(lcdBackgroundColor);
+            }
+        }
+        else if (0xff == SkColorGetA(color)) {
             blit_row  = blit_row_lcd16_opaque;
             opaqueDst = SkPreMultiplyColor(color);
         }
 
         for (int height = clip.height(); height --> 0; ) {
-            blit_row(dstRow, maskRow, color, clip.width(), opaqueDst);
+            blit_row(dstRow, maskRow, color, clip.width(), opaqueDst, opaqueBg);
 
             dstRow  = (SkPMColor*)     ((      char*) dstRow + device.rowBytes());
             maskRow = (const uint16_t*)((const char*)maskRow +  mask.fRowBytes);
@@ -680,6 +928,8 @@ SkARGB32_Blitter::SkARGB32_Blitter(const SkPixmap& device, const SkPaint& paint)
     fSrcB = SkAlphaMul(SkColorGetB(color), scale);
 
     fPMColor = SkPackARGB32(fSrcA, fSrcR, fSrcG, fSrcB);
+
+    fLCDBackgroundColor = device.defaultLCDBackgroundColor();
 }
 
 const SkPixmap* SkARGB32_Blitter::justAnOpaqueColor(uint32_t* value) {
@@ -798,7 +1048,7 @@ void SkARGB32_Blitter::blitMask(const SkMask& mask, const SkIRect& clip) {
         return;
     }
 
-    if (blit_color(fDevice, mask, clip, fColor)) {
+    if (blit_color(fDevice, mask, clip, fColor, fLCDBackgroundColor)) {
         return;
     }
 
@@ -818,7 +1068,7 @@ void SkARGB32_Opaque_Blitter::blitMask(const SkMask& mask,
                                        const SkIRect& clip) {
     SkASSERT(mask.fBounds.contains(clip));
 
-    if (blit_color(fDevice, mask, clip, fColor)) {
+    if (blit_color(fDevice, mask, clip, fColor, fLCDBackgroundColor)) {
         return;
     }
 

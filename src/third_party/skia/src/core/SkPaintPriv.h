@@ -9,6 +9,7 @@
 #define SkPaintPriv_DEFINED
 
 #include "include/core/SkPaint.h"
+#include "include/core/SkImageInfo.h"
 
 class SkReadBuffer;
 class SkWriteBuffer;

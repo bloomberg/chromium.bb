@@ -9,6 +9,7 @@
 #define SkColor_DEFINED
 
 #include "include/core/SkImageInfo.h"
+
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypes.h"
 
@@ -22,32 +23,6 @@
 /** 8-bit type for an alpha value. 255 is 100% opaque, zero is 100% transparent.
 */
 typedef uint8_t SkAlpha;
-
-/** 32-bit ARGB color value, unpremultiplied. Color components are always in
-    a known order. This is different from SkPMColor, which has its bytes in a configuration
-    dependent order, to match the format of kBGRA_8888_SkColorType bitmaps. SkColor
-    is the type used to specify colors in SkPaint and in gradients.
-
-    Color that is premultiplied has the same component values as color
-    that is unpremultiplied if alpha is 255, fully opaque, although may have the
-    component values in a different order.
-*/
-typedef uint32_t SkColor;
-
-/** Returns color value from 8-bit component values. Asserts if SK_DEBUG is defined
-    if a, r, g, or b exceed 255. Since color is unpremultiplied, a may be smaller
-    than the largest of r, g, and b.
-
-    @param a  amount of alpha, from fully transparent (0) to fully opaque (255)
-    @param r  amount of red, from no red (0) to full red (255)
-    @param g  amount of green, from no green (0) to full green (255)
-    @param b  amount of blue, from no blue (0) to full blue (255)
-    @return   color and alpha, unpremultiplied
-*/
-static constexpr inline SkColor SkColorSetARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU b) {
-    return SkASSERT(a <= 255 && r <= 255 && g <= 255 && b <= 255),
-           (a << 24) | (r << 16) | (g << 8) | (b << 0);
-}
 
 /** Returns color value from 8-bit component values, with alpha set
     fully opaque to 255.
@@ -90,11 +65,6 @@ constexpr SkAlpha SK_AlphaTRANSPARENT = 0x00;
     fully transparent; to 255, fully opaque.
 */
 constexpr SkAlpha SK_AlphaOPAQUE      = 0xFF;
-
-/** Represents fully transparent SkColor. May be used to initialize a destination
-    containing a mask or a non-rectangular image.
-*/
-constexpr SkColor SK_ColorTRANSPARENT = SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 
 /** Represents fully opaque black.
 */

@@ -24,6 +24,7 @@ class  SkArenaAlloc;
 class  SkCanvas;
 class  SkMatrix;
 class  SkPaint;
+class  SkMatrix;
 struct SkRect;
 
 /** \class SkDrawLooper

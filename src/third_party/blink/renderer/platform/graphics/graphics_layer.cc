@@ -434,6 +434,11 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
+void GraphicsLayer::SetDefaultLCDBackgroundColor(const Color& color) {
+  CcLayer().SetDefaultLCDBackgroundColor(color.Rgb());
+  CcLayer().SetContentsOpaqueForLCDText(color.Alpha() == 255);
+}
+
 void GraphicsLayer::SetPaintsHitTest(bool paints_hit_test) {
   if (paints_hit_test_ == paints_hit_test)
     return;
