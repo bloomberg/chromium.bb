@@ -275,8 +275,13 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LayoutObject* layout_object,
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
   if (const WebKeyboardEvent* web_event = event.KeyEvent()) {
     *static_cast<WebKeyboardEvent*>(this) = *web_event;
+    if (::GetKeyState(VK_NUMLOCK) & 0x1)
+      is_num_lock = true;
     return;
   }
+
+ if (::GetKeyState(VK_NUMLOCK) & 0x1)
+    is_num_lock = true;
 
   if (event.type() == event_type_names::kKeydown)
     type_ = WebInputEvent::Type::kKeyDown;
