@@ -50,8 +50,10 @@
 #include <net/url_request/url_fetcher_response_writer.h>
 
 #include "base/base64.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace blpwtk2 {
 
@@ -110,6 +112,8 @@ class DevToolsFrontendHostDelegateImpl::NetworkResourceLoader
         &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
     loader_->DownloadAsStream(url_loader_factory, this);
   }
+  NetworkResourceLoader(const NetworkResourceLoader&) = delete;
+  NetworkResourceLoader& operator=(const NetworkResourceLoader&) = delete;
 
  private:
   void OnResponseStarted(const GURL& final_url,
@@ -152,8 +156,6 @@ class DevToolsFrontendHostDelegateImpl::NetworkResourceLoader
   DevToolsFrontendHostDelegateImpl* const bindings_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkResourceLoader);
 };
 
 
@@ -228,48 +230,52 @@ void DevToolsFrontendHostDelegateImpl::WebContentsDestroyed()
 void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
     base::Value message)
 {
-    // This implementation was copied from shell_devtools_bindings.cc
+  // This implementation was copied from shell_devtools_bindings.cc
 
-    std::string method;
-    base::ListValue* params = nullptr;
-    base::DictionaryValue* dict = nullptr;
-    if (!message.GetAsDictionary(&dict) || !dict->GetString("method", &method)) {
-        return;
+  if (!message.is_dict())
+    return;
+  const std::string* method = message.FindStringKey("method");
+  if (!method)
+    return;
+
+  int request_id = message.FindIntKey("id").value_or(0);
+  base::Value* params_value = message.FindListKey("params");
+
+  // Since we've received message by value, we can take the list.
+  base::Value::ListStorage params;
+  if (params_value) {
+    params = std::move(*params_value).TakeList();
+  }
+
+  if (*method == "dispatchProtocolMessage" && params.size() == 1) {
+    const std::string* protocol_message = params[0].GetIfString();
+    if (!agent_host_ || !protocol_message)
+      return;
+    agent_host_->DispatchProtocolMessage(
+        this, base::as_bytes(base::make_span(*protocol_message)));
+  } else if (*method == "loadCompleted") {
+    CallClientFunction("DevToolsAPI", "setUseSoftMenu", base::Value(true));
+  } else if (*method == "loadNetworkResource" && params.size() == 3) {
+    // TODO(pfeldman): handle some of the embedder messages in content.
+    const std::string* url = params[0].GetIfString();
+    const std::string* headers = params[1].GetIfString();
+    absl::optional<const int> stream_id = params[2].GetIfInt();
+    if (!url || !headers || !stream_id.has_value()) {
+      return;
     }
-    int request_id = 0;
-    dict->GetInteger("id", &request_id);
-    dict->GetList("params", &params);
 
-    if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
-        std::string protocol_message;
-        if (!agent_host_ || !params->GetString(0, &protocol_message))
-            return;
-        agent_host_->DispatchProtocolMessage(
-                this, base::as_bytes(base::make_span(protocol_message)));
-    } else if (method == "loadCompleted") {
-        CallClientFunction("DevToolsAPI", "setUseSoftMenu", base::Value(true));
-    } else if (method == "loadNetworkResource" && params->GetSize() == 3) {
-        // TODO(pfeldman): handle some of the embedder messages in content.
-        std::string url;
-        std::string headers;
-        int stream_id;
-        if (!params->GetString(0, &url) || !params->GetString(1, &headers) ||
-                !params->GetInteger(2, &stream_id)) {
-            return;
-        }
+    GURL gurl(*url);
+    if (!gurl.is_valid()) {
+      base::Value response(base::Value::Type::DICTIONARY);
+      response.SetIntKey("statusCode", 404);
+      response.SetBoolKey("urlValid", false);
+      SendMessageAck(request_id, std::move(response));
+      return;
+    }
 
-        GURL gurl(url);
-        if (!gurl.is_valid()) {
-            base::DictionaryValue response;
-            response.SetInteger("statusCode", 404);
-            response.SetBoolean("urlValid", false);
-            SendMessageAck(request_id, std::move(response));
-            return;
-        }
-
-        net::NetworkTrafficAnnotationTag traffic_annotation =
-            net::DefineNetworkTrafficAnnotation(
-                    "devtools_handle_front_end_messages", R"(
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation(
+            "devtools_handle_front_end_messages", R"(
             semantics {
               sender: "Developer Tools"
               description:
@@ -293,79 +299,85 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
               }
             })");
 
-            auto resource_request = std::make_unique<network::ResourceRequest>();
-        resource_request->url = gurl;
-        // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
-        // We really need to pass proper first party origin from the front-end.
-        resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
-        resource_request->headers.AddHeadersFromString(headers);
+    auto resource_request = std::make_unique<network::ResourceRequest>();
+    resource_request->url = gurl;
+    // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
+    // We really need to pass proper first party origin from the front-end.
+    resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
+    resource_request->headers.AddHeadersFromString(*headers);
 
-        auto* partition =
-            web_contents()->GetBrowserContext()->GetStoragePartitionForUrl(gurl);
-        auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
+    auto* partition =
+        d_inspectedContents->GetMainFrame()->GetStoragePartition();
+    auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
 
-        auto simple_url_loader = network::SimpleURLLoader::Create(
-                std::move(resource_request), traffic_annotation);
-        auto resource_loader = std::make_unique<NetworkResourceLoader>(
-                stream_id, request_id, this, std::move(simple_url_loader),
-                factory.get());
-        loaders_.insert(std::move(resource_loader));
-        return;
-    } else if (method == "getPreferences") {
-        SendMessageAck(request_id, std::move(preferences_));
-        return;
-    } else if (method == "setPreference") {
-        std::string name;
-        std::string value;
-        if (!params->GetString(0, &name) || !params->GetString(1, &value)) {
-            return;
-        }
-        preferences_.SetKey(name, base::Value(value));
-    } else if (method == "removePreference") {
-        std::string name;
-        if (!params->GetString(0, &name))
-            return;
-        preferences_.RemoveKey(name);
-    } else if (method == "requestFileSystems") {
-        CallClientFunction("DevToolsAPI", "fileSystemsLoaded",
-                base::Value(base::Value::Type::LIST));
-    } else if (method == "reattach") {
-        if (!agent_host_)
-            return;
-        agent_host_->DetachClient(this);
-        agent_host_->AttachClient(this);
-    } else if (method == "registerExtensionsAPI") {
-        std::string origin;
-        std::string script;
-        if (!params->GetString(0, &origin) || !params->GetString(1, &script))
-            return;
-        extensions_api_[origin + "/"] = script;
-    } else if (method == "save") {
-        std::string url;
-        std::string content;
-        bool save_as;
-        if (!params->GetString(0, &url) ||
-            !params->GetString(1, &content) ||
-            !params->GetBoolean(2, &save_as)) {
+    auto simple_url_loader = network::SimpleURLLoader::Create(
+        std::move(resource_request), traffic_annotation);
+    auto resource_loader = std::make_unique<NetworkResourceLoader>(
+        *stream_id, request_id, this, std::move(simple_url_loader),
+        factory.get());
+    loaders_.insert(std::move(resource_loader));
+    return;
+  } else if (*method == "getPreferences") {
+    SendMessageAck(request_id, std::move(preferences_));
+    return;
+  } else if (*method == "setPreference") {
+    if (params.size() < 2)
+      return;
+    const std::string* name = params[0].GetIfString();
 
-            return;
-        }
+    // We're just setting params[1] as a value anyways, so just make sure it's
+    // the type we want, but don't worry about getting it.
+    if (!name || !params[1].is_string())
+      return;
 
-        SaveToFile(url, content, save_as);
-    } else if (method == "append") {
-        std::string url;
-        std::string content;
-        if (!params->GetString(0, &url) || !params->GetString(1, &content)) {
-            return;
-        }
+    preferences_.SetKey(*name, std::move(params[1]));
+  } else if (*method == "removePreference") {
+    const std::string* name = params[0].GetIfString();
+    if (!name)
+      return;
+    preferences_.RemoveKey(*name);
+  } else if (*method == "requestFileSystems") {
+    CallClientFunction("DevToolsAPI", "fileSystemsLoaded",
+                       base::Value(base::Value::Type::LIST));
+  } else if (*method == "reattach") {
+    if (!agent_host_)
+      return;
+    agent_host_->DetachClient(this);
+    agent_host_->AttachClient(this);
+  } else if (*method == "registerExtensionsAPI") {
+    if (params.size() < 2)
+      return;
+    const std::string* origin = params[0].GetIfString();
+    const std::string* script = params[1].GetIfString();
+    if (!origin || !script)
+      return;
+    extensions_api_[*origin + "/"] = *script;
+  } else if (method == "save") {
+      std::string url;
+      std::string content;
+      bool save_as;
+      if (!params->GetString(0, &url) ||
+          !params->GetString(1, &content) ||
+          !params->GetBoolean(2, &save_as)) {
 
-        AppendToFile(url, content);
-    } else {
-        return;
-    }
+          return;
+      }
 
-    if (request_id)
-        SendMessageAck(request_id, {});
+      SaveToFile(url, content, save_as);
+  } else if (method == "append") {
+      std::string url;
+      std::string content;
+      if (!params->GetString(0, &url) || !params->GetString(1, &content)) {
+          return;
+      }
+
+      AppendToFile(url, content);
+  } else {
+    return;
+  }
+
+  if (request_id)
+    SendMessageAck(request_id, {});
 }
 
 void DevToolsFrontendHostDelegateImpl::DispatchProtocolMessage(

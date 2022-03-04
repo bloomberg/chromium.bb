@@ -45,13 +45,13 @@ namespace blpwtk2 {
 class URLRequestContextGetterImpl;
 
 // TODO: document this
-class DevToolsFrontendHostDelegateImpl
+class DevToolsFrontendHostDelegateImpl final
     : public content::WebContentsObserver,
       public content::DevToolsAgentHostClient {
   public:
     DevToolsFrontendHostDelegateImpl(content::WebContents* inspectorContents,
                                      content::WebContents* inspectedContents);
-    ~DevToolsFrontendHostDelegateImpl() final;
+    ~DevToolsFrontendHostDelegateImpl() override;
 
     void inspectElementAt(const POINT& point);
 

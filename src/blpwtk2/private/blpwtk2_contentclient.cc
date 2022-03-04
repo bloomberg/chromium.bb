@@ -22,22 +22,6 @@
 
 #include <blpwtk2_contentclient.h>
 
-#include <blpwtk2_contentbrowserclientimpl.h>
-#include <blpwtk2_contentrendererclientimpl.h>
-#include <blpwtk2_contentutilityclientimpl.h>
-#include <blpwtk2_products.h>
-#include <blpwtk2_statics.h>
-
-#include <base/command_line.h>
-#include <base/files/file_util.h>
-#include <base/logging.h>
-#include <base/path_service.h>
-#include <content/public/common/content_switches.h>
-#include <content/public/common/user_agent.h>
-#include <ui/base/resource/resource_bundle.h>
-#include <ui/base/resource/resource_bundle_win.h>
-#include <ui/base/ui_base_switches.h>
-
 namespace blpwtk2 {
 static ContentClient *g_contentClientInstance;
 
@@ -62,15 +46,6 @@ ContentClient::~ContentClient()
     g_contentClientInstance = nullptr;
 }
 
-base::StringPiece ContentClient::GetDataResource(
-    int             resource_id,
-    ui::ScaleFactor scale_factor)
-{
-    return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-        resource_id, scale_factor);
-}
-
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
