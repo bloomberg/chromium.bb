@@ -122,7 +122,7 @@ class WebViewImpl final : public WebView,
     aura::Window* GetDefaultActivationWindow() override;
 
     // content::WebContentsDelegate overrides
-    void DidNavigateMainFramePostCommit(content::WebContents *source) override;
+    void DidNavigatePrimaryMainFramePostCommit(content::WebContents *source) override;
         // Invoked when a main frame navigation occurs.
 
     bool TakeFocus(content::WebContents* source, bool reverse) override;
@@ -205,8 +205,6 @@ class WebViewImpl final : public WebView,
 
 
 
-    DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
-
   public:
     WebViewImpl(WebViewDelegate          *delegate,
                 blpwtk2::NativeView       parent,
@@ -214,7 +212,9 @@ class WebViewImpl final : public WebView,
                 int                       hostAffinity,
                 bool                      initiallyVisible,
                 const WebViewProperties&  properties);
-    ~WebViewImpl() final;
+    ~WebViewImpl() override;
+    WebViewImpl(const WebViewImpl&) = delete;
+    WebViewImpl& operator=(const WebViewImpl&) = delete;
 
     void setImplClient(WebViewImplClient *client);
     gfx::NativeView getNativeView() const;

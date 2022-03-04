@@ -113,17 +113,17 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     d_webContents->SetDelegate(this);
     Observe(d_webContents.get());
 
-    static const base::NoDestructor<gfx::FontRenderParams> fontRenderParams(
+    static const gfx::FontRenderParams fontRenderParams(
                     gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL));
 
     blink::RendererPreferences *prefs = d_webContents->GetMutableRendererPrefs();
 
-    prefs->should_antialias_text    = fontRenderParams->antialiasing;
-    prefs->use_subpixel_positioning = fontRenderParams->subpixel_positioning;
-    prefs->hinting                  = fontRenderParams->hinting;
-    prefs->use_autohinter           = fontRenderParams->autohinter;
-    prefs->use_bitmaps              = fontRenderParams->use_bitmaps;
-    prefs->subpixel_rendering       = fontRenderParams->subpixel_rendering;
+    prefs->should_antialias_text    = fontRenderParams.antialiasing;
+    prefs->use_subpixel_positioning = fontRenderParams.subpixel_positioning;
+    prefs->hinting                  = fontRenderParams.hinting;
+    prefs->use_autohinter           = fontRenderParams.autohinter;
+    prefs->use_bitmaps              = fontRenderParams.use_bitmaps;
+    prefs->subpixel_rendering       = fontRenderParams.subpixel_rendering;
 
     createWidget(parent);
 
@@ -299,7 +299,7 @@ int WebViewImpl::getRoutingId() const
 
 void WebViewImpl::setBackgroundColor(NativeColor color)
 {
-    d_webContents->GetRenderViewHost()->GetWidget()->GetView()->SetBackgroundColor(
+    d_webContents->SetPageBaseBackgroundColor(
         SkColorSetARGB(
             GetAValue(color),
             GetRValue(color),
@@ -603,7 +603,7 @@ void WebViewImpl::rootWindowPositionChanged()
         static_cast<content::RenderWidgetHostViewBase*>(
             d_webContents->GetRenderWidgetHostView());
     if (rwhv)
-        rwhv->UpdateScreenInfo(rwhv->GetNativeView());
+        rwhv->UpdateScreenInfo();
 }
 
 void WebViewImpl::rootWindowSettingsChanged()
@@ -614,7 +614,7 @@ void WebViewImpl::rootWindowSettingsChanged()
         static_cast<content::RenderWidgetHostViewBase*>(
             d_webContents->GetRenderWidgetHostView());
     if (rwhv)
-        rwhv->UpdateScreenInfo(rwhv->GetNativeView());
+        rwhv->UpdateScreenInfo();
 }
 
 void WebViewImpl::handleInputEvents(const InputEvent *events, size_t eventsCount)
@@ -655,7 +655,7 @@ void WebViewImpl::onDestroyed(NativeViewWidget *source)
     d_widget = 0;
 }
 
-void WebViewImpl::DidNavigateMainFramePostCommit(content::WebContents *source)
+void WebViewImpl::DidNavigatePrimaryMainFramePostCommit(content::WebContents *source)
 {
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(source == d_webContents.get());

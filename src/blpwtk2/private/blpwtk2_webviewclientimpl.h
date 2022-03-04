@@ -185,13 +185,12 @@ class WebViewClientImpl final : public WebViewClient
     void exitFullscreenMode() override;
         // Notify the client that it should un-fullscreen the webview window
 
-    DISALLOW_COPY_AND_ASSIGN(WebViewClientImpl);
-
   public:
     WebViewClientImpl(mojom::WebViewHostPtr  hostPtr,
                       WebViewClientDelegate *delegate);
-
-    ~WebViewClientImpl() final;
+    ~WebViewClientImpl() override;
+    WebViewClientImpl(const WebViewClientImpl&) = delete;
+    WebViewClientImpl& operator=(const WebViewClientImpl&) = delete;
 };
 
 }  // close namespace blpwtk2

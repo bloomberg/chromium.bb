@@ -46,7 +46,7 @@ std::string getSubProcessModuleName()
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int)
 {
-    sandbox::SandboxInterfaceInfo sandboxInfo = {0};
+    sandbox::SandboxInterfaceInfo sandboxInfo = {nullptr};
     content::InitializeSandboxInfo(&sandboxInfo);
     {
         HMODULE subProcessModule = LoadLibraryA(getSubProcessModuleName().c_str());
