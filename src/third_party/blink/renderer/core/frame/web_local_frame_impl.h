@@ -196,6 +196,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void GenerateInterventionReport(const WebString& message_id,
                                   const WebString& message) override;
   v8::Isolate* ScriptIsolate() const override;
+  void DrawInCanvas(const gfx::Rect&, const WebString&, cc::PaintCanvas*) override;
   void UnmarkText() override;
   bool HasMarkedText() const override;
   WebRange MarkedRange() const override;

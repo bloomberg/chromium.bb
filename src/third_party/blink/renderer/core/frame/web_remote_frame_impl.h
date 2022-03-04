@@ -101,6 +101,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
   v8::Isolate* ScriptIsolate() const override;
+  void DrawInCanvas(const gfx::Rect&, const WebString&, cc::PaintCanvas*) override;
   WebString UniqueName() const override;
   const FrameVisualProperties& GetPendingVisualPropertiesForTesting()
       const override;

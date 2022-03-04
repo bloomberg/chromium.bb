@@ -39,6 +39,8 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "v8/include/v8-forward.h"
+#include "ui/gfx/geometry/rect.h"
+
 
 namespace blink {
 
@@ -160,6 +162,12 @@ class BLINK_EXPORT WebFrame {
   virtual bool IsAdSubframe() const = 0;
 
   // Utility -------------------------------------------------------------
+
+  // Draws the contents of the web frame at the specified region onto the
+  // specified canvas
+  virtual void DrawInCanvas(const gfx::Rect&,
+                            const WebString&,
+                            cc::PaintCanvas*) = 0;
 
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given node is not a frame, iframe or if the frame is empty.

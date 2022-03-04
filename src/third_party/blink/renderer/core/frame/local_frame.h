@@ -318,7 +318,8 @@ class CORE_EXPORT LocalFrame final
   // used.
   void StartPrinting(const gfx::SizeF& page_size = gfx::SizeF(),
                      const gfx::SizeF& original_page_size = gfx::SizeF(),
-                     float maximum_shrink_ratio = 0);
+                     float maximum_shrink_ratio = 0,
+                     bool use_media_selector = true);
 
   void EndPrinting();
   bool ShouldUsePrintingLayout() const;
@@ -765,7 +766,8 @@ class CORE_EXPORT LocalFrame final
   void SetPrinting(bool printing,
                    const gfx::SizeF& page_size,
                    const gfx::SizeF& original_page_size,
-                   float maximum_shrink_ratio);
+                   float maximum_shrink_ratio,
+                   bool use_media_selector = true);
 
   // FrameScheduler::Delegate overrides:
   ukm::UkmRecorder* GetUkmRecorder() override;

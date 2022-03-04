@@ -48,6 +48,9 @@ struct RendererUtil
 
 
     // patch section: screen printing
+    static void drawContentsToBlob(content::RenderView        *rv,
+                                   Blob                       *blob,
+                                   const WebView::DrawParams&  params);
 
 
     // patch section: docprinter
