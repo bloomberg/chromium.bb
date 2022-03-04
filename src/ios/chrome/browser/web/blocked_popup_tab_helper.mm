@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/infobars/confirm_infobar_metrics_recorder.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "net/base/mac/url_conversions.h"
@@ -163,18 +162,14 @@ void BlockedPopupTabHelper::ShowInfoBar() {
       std::make_unique<BlockPopupInfoBarDelegate>(GetBrowserState(), web_state_,
                                                   popups_));
 
-    InfobarConfirmCoordinator* coordinator = [[InfobarConfirmCoordinator alloc]
-        initWithInfoBarDelegate:delegate.get()
-                   badgeSupport:NO
-                           type:InfobarType::kInfobarTypeConfirm];
-    std::unique_ptr<infobars::InfoBar> infobar =
-        std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  std::unique_ptr<infobars::InfoBar> infobar = std::make_unique<InfoBarIOS>(
+      InfobarType::kInfobarTypeConfirm, std::move(delegate));
 
-    if (infobar_) {
-      infobar_ = infobar_manager->ReplaceInfoBar(infobar_, std::move(infobar));
-    } else {
-      infobar_ = infobar_manager->AddInfoBar(std::move(infobar));
-    }
+  if (infobar_) {
+    infobar_ = infobar_manager->ReplaceInfoBar(infobar_, std::move(infobar));
+  } else {
+    infobar_ = infobar_manager->AddInfoBar(std::move(infobar));
+  }
   [ConfirmInfobarMetricsRecorder
       recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Presented
           forInfobarConfirmType:InfobarConfirmType::

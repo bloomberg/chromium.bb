@@ -92,7 +92,7 @@ bool CanSpecifyHostPermission(const Extension* extension,
 bool ParseHostsFromJSON(Extension* extension,
                         std::vector<std::string>* hosts,
                         std::u16string* error) {
-  if (!extension->manifest()->HasKey(keys::kHostPermissions))
+  if (!extension->manifest()->FindKey(keys::kHostPermissions))
     return true;
 
   const base::Value* permissions = nullptr;
@@ -178,8 +178,8 @@ void ParseHostPermissions(Extension* extension,
       }
 
       host_permissions->AddPattern(pattern);
-      // We need to make sure all_urls matches chrome://favicon and (maybe)
-      // chrome://thumbnail, so add them back in to host_permissions separately.
+      // We need to make sure all_urls matches any allowed Chrome-schemed hosts,
+      // so add them back in to host_permissions separately.
       if (pattern.match_all_urls()) {
         host_permissions->AddPatterns(
             ExtensionsClient::Get()->GetPermittedChromeSchemeHosts(
@@ -204,7 +204,7 @@ bool ParseHelper(Extension* extension,
                  APIPermissionSet* api_permissions,
                  URLPatternSet* host_permissions,
                  std::u16string* error) {
-  if (!extension->manifest()->HasKey(key))
+  if (!extension->manifest()->FindKey(key))
     return true;
 
   const base::Value* permissions = nullptr;

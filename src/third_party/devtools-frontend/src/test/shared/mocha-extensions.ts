@@ -72,6 +72,15 @@ describe.skip = function(title: string, fn: (this: Mocha.Suite) => void) {
   return wrapDescribe(Mocha.describe.skip, title, fn);
 };
 
+describe.skipOnPlatforms = function(platforms: Array<Platform>, name: string, fn: (this: Mocha.Suite) => void) {
+  const shouldSkip = platforms.includes(platform);
+  if (shouldSkip) {
+    wrapDescribe(Mocha.describe.skip, name, fn);
+  } else {
+    describe(name, fn);
+  }
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err?: any) {
   function* joinStacks() {
@@ -81,6 +90,7 @@ async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err
     }
     for (const scope of scopes.values()) {
       const stack = scope.stack;
+      scope.setCanceled();
       if (stack) {
         yield `${stack.join('\n')}\n`;
       }
@@ -91,7 +101,7 @@ async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err
   if (stacks.length > 0) {
     console.error(`Pending async operations during failure:\n${stacks.join('\n\n')}`);
   }
-  if (err && !getEnvVar('DEBUG')) {
+  if (err && !getEnvVar('DEBUG_TEST')) {
     await takeScreenshots();
   }
   if (done) {
@@ -102,6 +112,10 @@ async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err
   }
 }
 
+export const it = makeCustomWrappedIt();
+
+type MochaCallback = Mocha.Func|Mocha.AsyncFunc;
+
 const iterations = getEnvVar('ITERATIONS', 1);
 
 function iterationSuffix(iteration: number): string {
@@ -111,36 +125,42 @@ function iterationSuffix(iteration: number): string {
   return ` (#${iteration})`;
 }
 
-export function it(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  for (let i = 0; i < iterations; i++) {
-    wrapMochaCall(Mocha.it, name + iterationSuffix(i), callback);
-  }
-}
+export function makeCustomWrappedIt(namePrefix: string = '') {
+  const newMochaItFunc = function(name: string, callback: MochaCallback) {
+    for (let i = 0; i < iterations; i++) {
+      const testName = namePrefix ? `${namePrefix} ${name}` : name;
+      wrapMochaCall(Mocha.it, testName + iterationSuffix(i), callback);
+    }
+  };
 
-it.skip = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  wrapMochaCall(Mocha.it.skip, name, callback);
-};
-
-it.skipOnPlatforms = function(platforms: Array<Platform>, name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  const shouldSkip = platforms.includes(platform);
-  if (shouldSkip) {
+  newMochaItFunc.skip = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
     wrapMochaCall(Mocha.it.skip, name, callback);
-  } else {
-    it(name, callback);
-  }
-};
+  };
 
-it.only = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  for (let i = 0; i < iterations; i++) {
-    wrapMochaCall(Mocha.it.only, name + iterationSuffix(i), callback);
-  }
-};
+  newMochaItFunc.skipOnPlatforms = function(
+      platforms: Array<Platform>, name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
+    const shouldSkip = platforms.includes(platform);
+    if (shouldSkip) {
+      wrapMochaCall(Mocha.it.skip, name, callback);
+    } else {
+      it(name, callback);
+    }
+  };
 
-it.repeat = function(repeat: number, name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  for (let i = 0; i < repeat; i++) {
-    wrapMochaCall(Mocha.it.only, name, callback);
-  }
-};
+  newMochaItFunc.only = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
+    for (let i = 0; i < iterations; i++) {
+      wrapMochaCall(Mocha.it.only, name + iterationSuffix(i), callback);
+    }
+  };
+
+  newMochaItFunc.repeat = function(repeat: number, name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
+    for (let i = 0; i < repeat; i++) {
+      wrapMochaCall(Mocha.it.only, name, callback);
+    }
+  };
+
+  return newMochaItFunc;
+}
 
 function wrapMochaCall(
     call: Mocha.TestFunction|Mocha.PendingTestFunction|Mocha.ExclusiveTestFunction, name: string,
@@ -164,6 +184,15 @@ function wrapMochaCall(
 export class AsyncScope {
   static scopes: Set<AsyncScope> = new Set();
   private asyncStack: string[][] = [];
+  private canceled: boolean = false;
+
+  setCanceled(): void {
+    this.canceled = true;
+  }
+
+  isCanceled(): boolean {
+    return this.canceled;
+  }
 
   get stack() {
     if (this.asyncStack.length === 0) {

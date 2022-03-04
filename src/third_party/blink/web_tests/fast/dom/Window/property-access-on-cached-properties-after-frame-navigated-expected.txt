@@ -1,12 +1,15 @@
-CONSOLE WARNING: line 148: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests access of cached DOMWindow properties after the associated frame is navigated. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS window.cached_appHistory.canGoBack is false
+PASS window.cached_appHistory.canGoForward is false
 PASS window.cached_appHistory.current is null
+PASS window.cached_appHistory.oncurrentchange is null
 PASS window.cached_appHistory.onnavigate is null
 PASS window.cached_appHistory.onnavigateerror is null
 PASS window.cached_appHistory.onnavigatesuccess is null
+PASS window.cached_appHistory.transition is null
 PASS window.cached_cookieStore.onchange is null
 FAIL window.cached_location.hash should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.host should be  (of type string). Was undefined (of type undefined).
@@ -30,6 +33,7 @@ PASS window.cached_navigator.hardwareConcurrency is window.navigator.hardwareCon
 PASS window.cached_navigator.language is window.navigator.language
 PASS window.cached_navigator.maxTouchPoints is 0
 PASS window.cached_navigator.onLine is window.navigator.onLine
+PASS window.cached_navigator.pdfViewerEnabled is false
 PASS window.cached_navigator.platform is window.navigator.platform
 PASS window.cached_navigator.product is window.navigator.product
 PASS window.cached_navigator.productSub is window.navigator.productSub
@@ -41,6 +45,8 @@ PASS window.cached_navigator_bluetooth.onadvertisementreceived is null
 PASS window.cached_navigator_connection.onchange is null
 PASS window.cached_navigator_connection.ontypechange is null
 PASS window.cached_navigator_connection.saveData is false
+PASS window.cached_navigator_devicePosture.onchange is null
+PASS window.cached_navigator_devicePosture.type is 'continuous'
 PASS window.cached_navigator_hid.onconnect is null
 PASS window.cached_navigator_hid.ondisconnect is null
 PASS window.cached_navigator_managed.onmanagedconfigurationchange is null
@@ -63,6 +69,7 @@ PASS window.cached_navigator_userActivation.isActive is false
 PASS window.cached_navigator_userAgentData.brands[0].brand is ''
 PASS window.cached_navigator_userAgentData.brands[0].version is ''
 PASS window.cached_navigator_userAgentData.mobile is false
+PASS window.cached_navigator_userAgentData.platform is ''
 PASS window.cached_navigator_virtualKeyboard.boundingRect.bottom is 0
 PASS window.cached_navigator_virtualKeyboard.boundingRect.height is 0
 PASS window.cached_navigator_virtualKeyboard.boundingRect.left is 0
@@ -73,6 +80,8 @@ PASS window.cached_navigator_virtualKeyboard.boundingRect.x is 0
 PASS window.cached_navigator_virtualKeyboard.boundingRect.y is 0
 PASS window.cached_navigator_virtualKeyboard.ongeometrychange is null
 PASS window.cached_navigator_virtualKeyboard.overlaysContent is false
+PASS window.cached_navigator_windowControlsOverlay.ongeometrychange is null
+PASS window.cached_navigator_windowControlsOverlay.visible is false
 PASS window.cached_navigator_xr.ondevicechange is null
 PASS window.cached_performance.onresourcetimingbufferfull is null
 PASS window.cached_performance_navigation.redirectCount is 0
@@ -134,6 +143,7 @@ PASS window.cached_visualViewport.onscroll is null
 PASS window.cached_visualViewport.pageLeft is 0
 PASS window.cached_visualViewport.pageTop is 0
 PASS window.cached_visualViewport.scale is 0
+PASS window.cached_visualViewport.segments is null
 PASS window.cached_visualViewport.width is 0
 PASS successfullyParsed is true
 

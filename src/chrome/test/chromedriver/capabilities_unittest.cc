@@ -300,8 +300,8 @@ TEST(ParseCapabilities, ManualProxy) {
   proxy.SetString("socksProxy", "localhost:12345");
   proxy.SetInteger("socksVersion", 5);
   std::unique_ptr<base::ListValue> bypass = std::make_unique<base::ListValue>();
-  bypass->AppendString("google.com");
-  bypass->AppendString("youtube.com");
+  bypass->Append("google.com");
+  bypass->Append("youtube.com");
   proxy.SetList("noProxy", std::move(bypass));
   base::DictionaryValue caps;
   caps.SetKey("proxy", std::move(proxy));
@@ -568,7 +568,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetrics) {
   base::DictionaryValue mobile_emulation;
   mobile_emulation.SetInteger("deviceMetrics.width", 360);
   mobile_emulation.SetInteger("deviceMetrics.height", 640);
-  mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
+  mobile_emulation.SetDoublePath("deviceMetrics.pixelRatio", 3.0);
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
                std::move(mobile_emulation));
@@ -641,7 +641,7 @@ TEST(ParseCapabilities, MobileEmulationBadDict) {
   mobile_emulation.SetString("deviceName", "Google Nexus 5");
   mobile_emulation.SetInteger("deviceMetrics.width", 360);
   mobile_emulation.SetInteger("deviceMetrics.height", 640);
-  mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
+  mobile_emulation.SetDoublePath("deviceMetrics.pixelRatio", 3.0);
   base::DictionaryValue caps;
   caps.SetPath({"goog:chromeOptions", "mobileEmulation"},
                std::move(mobile_emulation));

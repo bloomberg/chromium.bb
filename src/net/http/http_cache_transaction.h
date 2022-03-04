@@ -14,7 +14,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -87,6 +87,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   Transaction(RequestPriority priority,
               HttpCache* cache);
+
+  Transaction(const Transaction&) = delete;
+  Transaction& operator=(const Transaction&) = delete;
+
   ~Transaction() override;
 
   // Virtual so it can be extended for testing.
@@ -172,9 +176,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // added to an entry and the entry.
   void ResetCachePendingState() { cache_pending_ = false; }
 
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
-
   RequestPriority priority() const { return priority_; }
   PartialData* partial() { return partial_.get(); }
   bool is_truncated() { return truncated_; }
@@ -211,6 +212,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   struct NetworkTransactionInfo {
     NetworkTransactionInfo();
+
+    NetworkTransactionInfo(const NetworkTransactionInfo&) = delete;
+    NetworkTransactionInfo& operator=(const NetworkTransactionInfo&) = delete;
+
     ~NetworkTransactionInfo();
 
     // Load timing information for the last network request, if any. Set in the
@@ -221,8 +226,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     int64_t total_sent_bytes = 0;
     ConnectionAttempts old_connection_attempts;
     IPEndPoint old_remote_endpoint;
-
-    DISALLOW_COPY_AND_ASSIGN(NetworkTransactionInfo);
   };
 
   enum State {
@@ -569,15 +572,16 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // Saves network transaction info using |transaction|.
   void SaveNetworkTransactionInfo(const HttpTransaction& transaction);
 
-  // Disables caching for large content when running on battery.
-  bool ShouldDisableCaching(const HttpResponseHeaders* headers) const;
+  // Determines whether caching should be disabled for a response, given its
+  // headers.
+  bool ShouldDisableCaching(const HttpResponseHeaders& headers) const;
 
   State next_state_;
 
   // Initial request with which Start() was invoked.
-  const HttpRequestInfo* initial_request_;
+  raw_ptr<const HttpRequestInfo> initial_request_;
 
-  const HttpRequestInfo* request_;
+  raw_ptr<const HttpRequestInfo> request_;
 
   std::string method_;
   RequestPriority priority_;
@@ -588,7 +592,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // |external_validation_| contains the value of those headers.
   ValidationHeaders external_validation_;
   base::WeakPtr<HttpCache> cache_;
-  HttpCache::ActiveEntry* entry_;
+  raw_ptr<HttpCache::ActiveEntry> entry_;
   HttpCache::ActiveEntry* new_entry_;
   std::unique_ptr<HttpTransaction> network_trans_;
   CompletionOnceCallback callback_;  // Consumer's callback.
@@ -604,7 +608,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // WriteResponseInfoToEntry() resets this to absl::nullopt.
   std::unique_ptr<HttpResponseInfo> updated_prefetch_response_;
 
-  const HttpResponseInfo* new_response_;
+  raw_ptr<const HttpResponseInfo> new_response_;
   std::string cache_key_;
   Mode mode_;
   bool reading_;  // We are already reading. Never reverts to false once set.
@@ -670,7 +674,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // objects. Only relevant when establishing a WebSocket connection.
   // This is passed to the underlying network transaction. It is stored here in
   // case the transaction does not exist yet.
-  WebSocketHandshakeStreamBase::CreateHelper*
+  raw_ptr<WebSocketHandshakeStreamBase::CreateHelper>
       websocket_handshake_stream_base_create_helper_;
 
   BeforeNetworkStartCallback before_network_start_callback_;
@@ -683,8 +687,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   bool in_do_loop_;
 
   base::WeakPtrFactory<Transaction> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Transaction);
 };
 
 }  // namespace net

@@ -8,7 +8,7 @@
 #include "chrome/browser/ash/file_system_provider/observer.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 // Utility observer, logging events from file_system_provider::Service.
@@ -37,6 +37,10 @@ class LoggingObserver : public Observer {
   };
 
   LoggingObserver();
+
+  LoggingObserver(const LoggingObserver&) = delete;
+  LoggingObserver& operator=(const LoggingObserver&) = delete;
+
   ~LoggingObserver() override;
 
   // file_system_provider::Observer overrides.
@@ -50,11 +54,9 @@ class LoggingObserver : public Observer {
 
   std::vector<Event> mounts;
   std::vector<Event> unmounts;
-
-  DISALLOW_COPY_AND_ASSIGN(LoggingObserver);
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_LOGGING_OBSERVER_H_

@@ -16,19 +16,19 @@
  *
  */
 
+#include "src/core/lib/json/json.h"
+
 #include <string.h>
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 #include <grpc/support/string_util.h>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include "src/core/lib/gpr/string.h"
 #include "src/core/lib/gpr/useful.h"
-#include "src/core/lib/json/json.h"
-
 #include "test/core/util/test_config.h"
 
 namespace grpc_core {
@@ -75,9 +75,9 @@ void ValidateValue(const Json& actual, const Json& expected) {
 void RunSuccessTest(const char* input, const Json& expected,
                     const char* expected_output) {
   gpr_log(GPR_INFO, "parsing string \"%s\" - should succeed", input);
-  grpc_error* error = GRPC_ERROR_NONE;
+  grpc_error_handle error = GRPC_ERROR_NONE;
   Json json = Json::Parse(input, &error);
-  ASSERT_EQ(error, GRPC_ERROR_NONE) << grpc_error_string(error);
+  ASSERT_EQ(error, GRPC_ERROR_NONE) << grpc_error_std_string(error);
   ValidateValue(json, expected);
   std::string output = json.Dump();
   EXPECT_EQ(output, expected_output);
@@ -131,8 +131,8 @@ TEST(Json, EscapesAndControlCharactersInKeyStrings) {
 }
 
 TEST(Json, WriterCutsOffInvalidUtf8) {
-  RunSuccessTest("\"abc\xf0\x9d\x24\"", "abc\xf0\x9d\x24", "\"abc\"");
-  RunSuccessTest("\"\xff\"", "\xff", "\"\"");
+  EXPECT_EQ(Json("abc\xf0\x9d\x24").Dump(), "\"abc\"");
+  EXPECT_EQ(Json("\xff").Dump(), "\"\"");
 }
 
 TEST(Json, ValidNumbers) {
@@ -165,9 +165,9 @@ TEST(Json, Keywords) {
 
 void RunParseFailureTest(const char* input) {
   gpr_log(GPR_INFO, "parsing string \"%s\" - should fail", input);
-  grpc_error* error = GRPC_ERROR_NONE;
+  grpc_error_handle error = GRPC_ERROR_NONE;
   Json json = Json::Parse(input, &error);
-  gpr_log(GPR_INFO, "error: %s", grpc_error_string(error));
+  gpr_log(GPR_INFO, "error: %s", grpc_error_std_string(error).c_str());
   EXPECT_NE(error, GRPC_ERROR_NONE);
   GRPC_ERROR_UNREF(error);
 }

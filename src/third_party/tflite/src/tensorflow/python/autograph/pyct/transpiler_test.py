@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for transpiler module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import threading
 
 import gast
@@ -35,7 +31,14 @@ class FlipSignTransformer(transformer.Base):
     return self.generic_visit(node)
 
 
-class TestTranspiler(transpiler.FunctionTranspiler):
+class TestTranspiler(transpiler.PyToPy):
+
+  def get_caching_key(self, ctx):
+    del ctx
+    return 0
+
+  def get_extra_locals(self):
+    return {}
 
   def transform_ast(self, node, ctx):
     return FlipSignTransformer(ctx).visit(node)
@@ -45,14 +48,14 @@ global_var_for_test_global = 1
 global_var_for_test_namespace_collisions = object()
 
 
-class FunctionTranspilerTest(test.TestCase):
+class PyToPyTest(test.TestCase):
 
   def test_basic(self):
     def f(a):
       return a + 1
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 0)
 
@@ -63,7 +66,7 @@ class FunctionTranspilerTest(test.TestCase):
       return a + b
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 0)
     b = 2
@@ -74,7 +77,7 @@ class FunctionTranspilerTest(test.TestCase):
       return a + global_var_for_test_global
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     global global_var_for_test_global
     global_var_for_test_global = 1
@@ -90,7 +93,7 @@ class FunctionTranspilerTest(test.TestCase):
       return a + b + d
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 1 - 2 - 2)
     c = 0
@@ -107,7 +110,7 @@ class FunctionTranspilerTest(test.TestCase):
       return g(a) + 1
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 1 - 1 + 1)  # Only f is converted.
 
@@ -116,7 +119,7 @@ class FunctionTranspilerTest(test.TestCase):
     f = lambda x: (b + (x if x > 0 else -x))
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 2 - 1)
     self.assertEqual(f(-1), 2 - 1)
@@ -132,28 +135,7 @@ class FunctionTranspilerTest(test.TestCase):
     f, _ = (lambda x: a + x, lambda y: b * y)
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
-
-    self.assertEqual(f(1), 1 - 1)
-
-  def test_multiple_lambdas_indistinguishable_definitions(self):
-    a, b = 1, 2
-    f, _ = (lambda x: a * x, lambda x: b * x)
-
-    tr = TestTranspiler()
-    with self.assertRaises(ValueError):
-      tr.transform_function(f, object(), None, {})
-
-  def test_lambda_code_with_removable_garbage(self):
-    # pylint:disable=g-long-lambda
-    f = (  # intentional wrap
-        lambda x: (
-            x  # intentional wrap
-            + 1),)[0]
-    # pylint:enable=g-long-lambda
-
-    tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 1 - 1)
 
@@ -168,7 +150,7 @@ class FunctionTranspilerTest(test.TestCase):
       return g(x)
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 2 - 1)
 
@@ -180,7 +162,7 @@ class FunctionTranspilerTest(test.TestCase):
       return g(x)
 
     tr = TestTranspiler()
-    f, _, _ = tr.transform_function(f, object(), None, {})
+    f, _, _ = tr.transform(f, None)
 
     self.assertEqual(f(1), 2 - 1)
 
@@ -192,9 +174,11 @@ class FunctionTranspilerTest(test.TestCase):
     outputs = []
 
     tr = TestTranspiler()
-    cache_key = object()
+    # Note: this is not a test, it's a required invariant.
+    assert tr.get_caching_key(None) == tr.get_caching_key(None)
+
     def conversion_thread():
-      _, mod, _ = tr.transform_function(f, cache_key, None, {})
+      _, mod, _ = tr.transform(f, None)
       outputs.append(mod.__name__)
 
     threads = tuple(
@@ -213,21 +197,28 @@ class FunctionTranspilerTest(test.TestCase):
     def test_fn():
       return 1 + 1
 
-    class ReentrantTranspiler(transpiler.FunctionTranspiler):
+    class ReentrantTranspiler(transpiler.PyToPy):
 
       def __init__(self):
         super(ReentrantTranspiler, self).__init__()
         self._recursion_depth = 0
 
+      def get_caching_key(self, ctx):
+        del ctx
+        return 0
+
+      def get_extra_locals(self):
+        return {}
+
       def transform_ast(self, node, ctx):
         self._recursion_depth += 1
         if self._recursion_depth < 2:
-          self.transform_function(test_fn, object(), None, {})
+          self.transform(test_fn, None)
         return FlipSignTransformer(ctx).visit(node)
 
     tr = ReentrantTranspiler()
 
-    f, _, _ = tr.transform_function(test_fn, object(), None, {})
+    f, _, _ = tr.transform(test_fn, None)
     self.assertEqual(f(), 0)
 
   def test_namespace_collisions_avoided(self):
@@ -240,8 +231,8 @@ class FunctionTranspilerTest(test.TestCase):
     tr = TestTranspiler()
     obj = TestClass()
 
-    f, _, _ = tr.transform_function(
-        obj.global_var_for_test_namespace_collisions, object(), None, {})
+    f, _, _ = tr.transform(
+        obj.global_var_for_test_namespace_collisions, None)
     self.assertIs(f(obj), global_var_for_test_namespace_collisions)
 
 

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stddef.h>
 
@@ -180,10 +171,10 @@ TEST(PassesTest, AllDownsampleFeasible) {
   PassesEncoderState enc_state;
   ASSERT_TRUE(EncodeFile(cparams, &io, &enc_state, &compressed, &aux, &pool));
 
-  EXPECT_LE(compressed.size(), 240000);
+  EXPECT_LE(compressed.size(), 240000u);
   float target_butteraugli[9] = {};
   target_butteraugli[1] = 2.5f;
-  target_butteraugli[2] = 14.5f;
+  target_butteraugli[2] = 16.0f;
   target_butteraugli[4] = 20.0f;
   target_butteraugli[8] = 80.0f;
 
@@ -225,7 +216,7 @@ TEST(PassesTest, AllDownsampleFeasibleQProgressive) {
   PassesEncoderState enc_state;
   ASSERT_TRUE(EncodeFile(cparams, &io, &enc_state, &compressed, &aux, &pool));
 
-  EXPECT_LE(compressed.size(), 220000);
+  EXPECT_LE(compressed.size(), 220000u);
 
   float target_butteraugli[9] = {};
   target_butteraugli[1] = 3.0f;
@@ -280,7 +271,7 @@ TEST(PassesTest, ProgressiveDownsample2DegradesCorrectlyGrayscale) {
   PassesEncoderState enc_state;
   ASSERT_TRUE(EncodeFile(cparams, &io, &enc_state, &compressed, &aux, &pool));
 
-  EXPECT_LE(compressed.size(), 10000);
+  EXPECT_LE(compressed.size(), 10000u);
 
   DecompressParams dparams;
   dparams.max_downsampling = 1;
@@ -296,7 +287,7 @@ TEST(PassesTest, ProgressiveDownsample2DegradesCorrectlyGrayscale) {
       ButteraugliDistance(output, output_d2, cparams.ba_params,
                           /*distmap=*/nullptr, nullptr);
 
-  EXPECT_LE(butteraugli_distance_down2_full, 3.0f);
+  EXPECT_LE(butteraugli_distance_down2_full, 3.2f);
   EXPECT_GE(butteraugli_distance_down2_full, 1.0f);
 }
 
@@ -326,7 +317,7 @@ TEST(PassesTest, ProgressiveDownsample2DegradesCorrectly) {
   PassesEncoderState enc_state;
   ASSERT_TRUE(EncodeFile(cparams, &io, &enc_state, &compressed, &aux, &pool));
 
-  EXPECT_LE(compressed.size(), 220000);
+  EXPECT_LE(compressed.size(), 220000u);
 
   DecompressParams dparams;
   dparams.max_downsampling = 1;

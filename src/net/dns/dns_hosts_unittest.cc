@@ -4,7 +4,8 @@
 
 #include "net/dns/dns_hosts.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
+#include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

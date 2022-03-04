@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_BLUETOOTH_BLUETOOTH_CHOOSER_CONTEXT_FACTORY_H_
 #define CHROME_BROWSER_BLUETOOTH_BLUETOOTH_CHOOSER_CONTEXT_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -19,6 +18,8 @@ class BluetoothChooserContextFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   static permissions::BluetoothChooserContext* GetForProfile(Profile* profile);
+  static permissions::BluetoothChooserContext* GetForProfileIfExists(
+      Profile* profile);
   static BluetoothChooserContextFactory* GetInstance();
 
   // Move-only class.
@@ -38,6 +39,7 @@ class BluetoothChooserContextFactory
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
 };
 
 #endif  // CHROME_BROWSER_BLUETOOTH_BLUETOOTH_CHOOSER_CONTEXT_FACTORY_H_

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
@@ -48,6 +47,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HttpCacheDataCounter {
       base::Time end_time,
       HttpCacheDataCounterCallback callback);
 
+  HttpCacheDataCounter(const HttpCacheDataCounter&) = delete;
+  HttpCacheDataCounter& operator=(const HttpCacheDataCounter&) = delete;
+
   ~HttpCacheDataCounter();
 
  private:
@@ -68,8 +70,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HttpCacheDataCounter {
   HttpCacheDataCounterCallback callback_;
 
   base::WeakPtrFactory<HttpCacheDataCounter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HttpCacheDataCounter);
 };
 
 }  // namespace network

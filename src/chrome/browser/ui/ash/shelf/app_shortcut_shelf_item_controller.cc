@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
-#include "chrome/browser/ui/ash/shelf/arc_playstore_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/shelf_context_menu.h"
@@ -30,9 +29,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -120,8 +119,8 @@ class AppMatcher {
              const URLPattern& refocus_pattern)
       : app_id_(app_id), refocus_pattern_(refocus_pattern) {
     DCHECK(profile);
-    if (web_app::WebAppProviderBase* provider =
-            web_app::WebAppProviderBase::GetProviderBase(profile)) {
+    if (web_app::WebAppProvider* provider =
+            web_app::WebAppProvider::GetDeprecated(profile)) {
       if (provider->registrar().IsLocallyInstalled(app_id)) {
         registrar_ = &provider->registrar();
       }
@@ -183,10 +182,10 @@ class AppMatcher {
                 web_contents, app_id_));
   }
 
-  // Returns true if this web app matches the given |web_contents|. If
-  // |deprecated_is_app| is true, the application gets first checked against its
-  // original URL since a windowed app might have navigated away from its app
-  // domain.
+  // Returns true if this web app matches the given |web_contents|. If the
+  // browser has an app controller, the application gets first checked against
+  // its original URL since a windowed app might have navigated away from its
+  // app domain.
   bool WebContentMatchesWebApp(content::WebContents* web_contents,
                                Browser* browser) const {
     DCHECK(registrar_);
@@ -194,8 +193,8 @@ class AppMatcher {
 
     // If the browser is a web app window, and the window app id matches,
     // then the contents match the app.
-    if (browser->app_controller() && browser->app_controller()->HasAppId())
-      return browser->app_controller()->GetAppId() == app_id_;
+    if (browser->app_controller())
+      return browser->app_controller()->app_id() == app_id_;
 
     // There are three ways to identify the association of a URL with this
     // web app:
@@ -220,22 +219,13 @@ class AppMatcher {
   // AppMatcher is stack allocated. Pointer members below are not owned.
 
   // registrar_ is set when app_id_ is a web app.
-  const web_app::AppRegistrar* registrar_ = nullptr;
+  const web_app::WebAppRegistrar* registrar_ = nullptr;
 
   // extension_ is set when app_id_ is a hosted app.
   const Extension* extension_ = nullptr;
 };
 
 }  // namespace
-
-// static
-std::unique_ptr<AppShortcutShelfItemController>
-AppShortcutShelfItemController::Create(const ash::ShelfID& shelf_id) {
-  if (shelf_id.app_id == arc::kPlayStoreAppId)
-    return std::make_unique<ArcPlaystoreShortcutShelfItemController>();
-  return base::WrapUnique<AppShortcutShelfItemController>(
-      new AppShortcutShelfItemController(shelf_id));
-}
 
 AppShortcutShelfItemController::AppShortcutShelfItemController(
     const ash::ShelfID& shelf_id)
@@ -327,7 +317,8 @@ AppShortcutShelfItemController::GetAppMenuItems(
   AppMenuItems items;
   auto add_menu_item = [&controller,
                         &items](content::WebContents* web_contents) {
-    items.push_back({items.size(), controller->GetAppMenuTitle(web_contents),
+    items.push_back({static_cast<int>(items.size()),
+                     controller->GetAppMenuTitle(web_contents),
                      controller->GetAppMenuIcon(web_contents).AsImageSkia()});
   };
 
@@ -361,8 +352,7 @@ void AppShortcutShelfItemController::ExecuteCommand(bool from_context_menu,
                                                     int64_t command_id,
                                                     int32_t event_flags,
                                                     int64_t display_id) {
-  if (from_context_menu && ExecuteContextMenuCommand(command_id, event_flags))
-    return;
+  DCHECK(!from_context_menu);
 
   if (static_cast<size_t>(command_id) >= AppMenuSize()) {
     ClearAppMenu();
@@ -552,8 +542,7 @@ bool AppShortcutShelfItemController::IsV2App() {
 
 bool AppShortcutShelfItemController::AllowNextLaunchAttempt() {
   if (last_launch_attempt_.is_null() ||
-      last_launch_attempt_ +
-              base::TimeDelta::FromMilliseconds(kClickSuppressionInMS) <
+      last_launch_attempt_ + base::Milliseconds(kClickSuppressionInMS) <
           base::Time::Now()) {
     last_launch_attempt_ = base::Time::Now();
     return true;
@@ -562,10 +551,10 @@ bool AppShortcutShelfItemController::AllowNextLaunchAttempt() {
 }
 
 bool AppShortcutShelfItemController::IsWindowedWebApp() {
-  if (web_app::WebAppProviderBase* provider =
-          web_app::WebAppProviderBase::GetProviderBase(
+  if (web_app::WebAppProvider* provider =
+          web_app::WebAppProvider::GetDeprecated(
               ChromeShelfController::instance()->profile())) {
-    web_app::AppRegistrar& registrar = provider->registrar();
+    web_app::WebAppRegistrar& registrar = provider->registrar();
     if (registrar.IsLocallyInstalled(app_id())) {
       return registrar.GetAppUserDisplayMode(app_id()) !=
              web_app::DisplayMode::kBrowser;

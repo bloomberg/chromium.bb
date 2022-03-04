@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -32,6 +31,10 @@ class AssociatedInterfaceRequest {
 
   explicit AssociatedInterfaceRequest(ScopedInterfaceEndpointHandle handle)
       : handle_(std::move(handle)) {}
+
+  AssociatedInterfaceRequest(const AssociatedInterfaceRequest&) = delete;
+  AssociatedInterfaceRequest& operator=(const AssociatedInterfaceRequest&) =
+      delete;
 
   // Takes the interface endpoint handle from another
   // AssociatedInterfaceRequest.
@@ -78,8 +81,6 @@ class AssociatedInterfaceRequest {
 
  private:
   ScopedInterfaceEndpointHandle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfaceRequest);
 };
 
 }  // namespace mojo

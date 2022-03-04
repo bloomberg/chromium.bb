@@ -93,7 +93,7 @@ public class OptimizationGuideBridge {
      */
     public void canApplyOptimizationAsync(NavigationHandle navigationHandle,
             OptimizationType optimizationType, OptimizationGuideCallback callback) {
-        assert navigationHandle.isInMainFrame();
+        assert navigationHandle.isInPrimaryMainFrame();
 
         if (mNativeOptimizationGuideBridge == 0) {
             callback.onOptimizationGuideDecision(OptimizationGuideDecision.UNKNOWN, null);
@@ -137,6 +137,19 @@ public class OptimizationGuideBridge {
                 mNativeOptimizationGuideBridge, notification.toByteArray());
     }
 
+    /**
+     * Signal native OptimizationGuide that deferred startup has occurred. This enables
+     * OptimizationGuide to fetch hints in the background while minimizing the risk of
+     * regressing key performance metrics such as jank. This method should only be
+     * called by ProcessInitializationHandler.
+     */
+    public void onDeferredStartup() {
+        if (mNativeOptimizationGuideBridge == 0) {
+            return;
+        }
+        OptimizationGuideBridgeJni.get().onDeferredStartup(mNativeOptimizationGuideBridge);
+    }
+
     @CalledByNative
     private static void onOptimizationGuideDecision(OptimizationGuideCallback callback,
             @OptimizationGuideDecision int optimizationGuideDecision,
@@ -157,16 +170,32 @@ public class OptimizationGuideBridge {
     }
 
     /**
-     * Returns whether or not the given optimization type's push notifications overflowed the
-     * maximum cache size.
+     * Returns an array of all the optimization types that have cached push notifications.
      */
     @CalledByNative
-    private static boolean didPushNotificationCacheOverflow(int optimizationTypeInt) {
-        OptimizationType optimizationType = OptimizationType.forNumber(optimizationTypeInt);
-        if (optimizationType == null) return false;
+    private static int[] getOptTypesWithPushNotifications() {
+        List<OptimizationType> cachedTypes =
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications();
+        int[] intCachedTypes = new int[cachedTypes.size()];
+        for (int i = 0; i < cachedTypes.size(); i++) {
+            intCachedTypes[i] = cachedTypes.get(i).getNumber();
+        }
+        return intCachedTypes;
+    }
 
-        return OptimizationGuidePushNotificationManager
-                .didNotificationCacheOverflowForOptimizationType(optimizationType);
+    /**
+     * Returns an array of all the optimization types that overflowed their cache for push
+     * notifications.
+     */
+    @CalledByNative
+    private static int[] getOptTypesThatOverflowedPushNotifications() {
+        List<OptimizationType> overflows = OptimizationGuidePushNotificationManager
+                                                   .getOptTypesThatOverflowedPushNotifications();
+        int[] intOverflows = new int[overflows.size()];
+        for (int i = 0; i < overflows.size(); i++) {
+            intOverflows[i] = overflows.get(i).getNumber();
+        }
+        return intOverflows;
     }
 
     /**
@@ -231,5 +260,6 @@ public class OptimizationGuideBridge {
         void canApplyOptimization(long nativeOptimizationGuideBridge, GURL url,
                 int optimizationType, OptimizationGuideCallback callback);
         void onNewPushNotification(long nativeOptimizationGuideBridge, byte[] encodedNotification);
+        void onDeferredStartup(long nativeOptimizationGuideBridge);
     }
 }

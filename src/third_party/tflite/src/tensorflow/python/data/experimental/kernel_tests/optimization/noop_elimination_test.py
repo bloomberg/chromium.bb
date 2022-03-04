@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for the `NoopElimination` optimization."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import functools
 
 from absl.testing import parameterized
@@ -24,6 +20,7 @@ from absl.testing import parameterized
 from tensorflow.python.data.experimental.ops import testing
 from tensorflow.python.data.kernel_tests import test_base
 from tensorflow.python.data.ops import dataset_ops
+from tensorflow.python.data.ops import options as options_lib
 from tensorflow.python.framework import combinations
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
@@ -50,7 +47,7 @@ def _test_combinations():
     ds = ds.map(lambda x: (x, x), num_parallel_calls=2)  # Not eliminated
     return ds.map(lambda x, y: (x, y))  # Eliminated
 
-  parallel_map_name = "ParallelMapV2"
+  parallel_map_name = "ParallelMap"
 
   cases = [
       ("Skip0", lambda ds: ds.skip(0), None),
@@ -73,6 +70,8 @@ def _test_combinations():
       ("PMapNonIdentity",
        lambda ds: ds.map(lambda x: x * 2, num_parallel_calls=2),
        parallel_map_name),
+      ("Shard1", lambda ds: ds.shard(1, 0), None),
+      ("ShardN", lambda ds: ds.shard(2, 0), "Shard"),
   ]
 
   def reduce_fn(result, case):
@@ -110,7 +109,7 @@ class NoopEliminationTest(test_base.DatasetTestBase, parameterized.TestCase):
 
     dataset = dataset.apply(transformation)
     dataset = dataset.take(1)
-    options = dataset_ops.Options()
+    options = options_lib.Options()
     options.experimental_optimization.apply_default_optimizations = False
     options.experimental_optimization.noop_elimination = True
     dataset = dataset.with_options(options)

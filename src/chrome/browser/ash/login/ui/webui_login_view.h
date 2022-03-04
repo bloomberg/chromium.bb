@@ -10,11 +10,15 @@
 
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/system_tray_observer.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,9 +39,7 @@ class WebView;
 class Widget;
 }  // namespace views
 
-namespace chromeos {
-
-class OobeUI;
+namespace ash {
 class LoginDisplayHostWebUI;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
@@ -46,9 +48,10 @@ class WebUILoginView : public views::View,
                        public ChromeKeyboardControllerClient::Observer,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver,
+                       public session_manager::SessionManagerObserver,
                        public ChromeWebModalDialogManagerDelegate,
                        public web_modal::WebContentsModalDialogHost,
-                       public ash::SystemTrayObserver {
+                       public SystemTrayObserver {
  public:
   METADATA_HEADER(WebUILoginView);
 
@@ -64,6 +67,10 @@ class WebUILoginView : public views::View,
 
   WebUILoginView(const WebViewSettings& settings,
                  base::WeakPtr<LoginDisplayHostWebUI> controller);
+
+  WebUILoginView(const WebUILoginView&) = delete;
+  WebUILoginView& operator=(const WebUILoginView&) = delete;
+
   ~WebUILoginView() override;
 
   // Initializes the webui login view.
@@ -133,15 +140,19 @@ class WebUILoginView : public views::View,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // session_manager::SessionManagerObserver:
+  void OnNetworkErrorScreenShown() override;
+  void OnLoginOrLockScreenVisible() override;
+
  private:
   // Map type for the accelerator-to-identifier map.
-  typedef std::map<ui::Accelerator, ash::LoginAcceleratorAction> AccelMap;
+  typedef std::map<ui::Accelerator, LoginAcceleratorAction> AccelMap;
 
   // ChromeKeyboardControllerClient::Observer:
   void OnKeyboardVisibilityChanged(bool visible) override;
 
   // Overridden from content::WebContentsDelegate.
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) override;
   bool HandleKeyboardEvent(
       content::WebContents* source,
@@ -157,7 +168,7 @@ class WebUILoginView : public views::View,
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
 
-  // Overridden from ash::SystemTrayObserver.
+  // Overridden from SystemTrayObserver.
   void OnFocusLeavingSystemTray(bool reverse) override;
   void OnSystemTrayBubbleShown() override;
 
@@ -169,6 +180,9 @@ class WebUILoginView : public views::View,
 
   content::NotificationRegistrar registrar_;
 
+  base::ScopedObservation<session_manager::SessionManager,
+                          session_manager::SessionManagerObserver>
+      session_observation_{this};
   // WebView configuration options.
   const WebViewSettings settings_;
 
@@ -202,10 +216,14 @@ class WebUILoginView : public views::View,
 
   base::ObserverList<web_modal::ModalDialogHostObserver>::Unchecked
       observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::WebUILoginView;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_WEBUI_LOGIN_VIEW_H_

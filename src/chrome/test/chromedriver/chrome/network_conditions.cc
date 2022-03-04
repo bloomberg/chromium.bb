@@ -30,11 +30,10 @@ Status FindPresetNetwork(std::string network_name,
     return Status(kUnknownError, "could not parse network list because " +
                                      parsed_json.error_message);
 
-  base::ListValue* networks;
-  if (!parsed_json.value->GetAsList(&networks))
+  if (!parsed_json.value->is_list())
     return Status(kUnknownError, "malformed networks list");
 
-  for (const auto& entry : networks->GetList()) {
+  for (const auto& entry : parsed_json.value->GetList()) {
     const base::DictionaryValue* network = nullptr;
     if (!entry.GetAsDictionary(&network)) {
       return Status(kUnknownError,
@@ -52,25 +51,27 @@ Status FindPresetNetwork(std::string network_name,
     if (title != network_name)
       continue;
 
-    if (!network->GetDouble("latency",  &network_conditions->latency)) {
+    absl::optional<double> maybe_latency = network->FindDoubleKey("latency");
+    absl::optional<double> maybe_throughput =
+        network->FindDoubleKey("throughput");
+
+    if (!maybe_latency.has_value()) {
       return Status(kUnknownError,
                     "malformed network latency: should be a double");
     }
     // Preset list maintains a single "throughput" attribute for each network,
     // so we use that value for both |download_throughput| and
     // |upload_throughput| in the NetworkConditions (as does Chrome).
-    if (!network->GetDouble("throughput",
-                            &network_conditions->download_throughput) ||
-        !network->GetDouble("throughput",
-                            &network_conditions->upload_throughput)) {
+    if (!maybe_throughput.has_value()) {
       return Status(kUnknownError,
                     "malformed network throughput: should be a double");
     }
 
-    // The throughputs of the network presets are listed in kbps, but must be
-    // supplied to the OverrideNetworkConditions command as bps.
-    network_conditions->download_throughput *= 1024;
-    network_conditions->upload_throughput *= 1024;
+    network_conditions->latency = maybe_latency.value();
+    // The throughputs of the network presets are listed in kbps, but
+    // must be supplied to the OverrideNetworkConditions command as bps.
+    network_conditions->download_throughput = maybe_throughput.value() * 1024;
+    network_conditions->upload_throughput = maybe_throughput.value() * 1024;
 
     // |offline| is always false for now.
     network_conditions->offline = false;

@@ -32,6 +32,8 @@ limitations under the License.
 
 namespace xla {
 
+class PhaseOrderPipeline;
+
 // Pipeline of HLO passes.
 class HloPassPipeline : public HloPassInterface {
  public:
@@ -83,6 +85,11 @@ class HloPassPipeline : public HloPassInterface {
 
   bool IsPassPipeline() override { return true; }
 
+  // Return size of passes_.
+  int PassesSize() { return passes_.size(); }
+  // Return reference to pass specified by index.
+  HloPassInterface& GetPass(int index) { return *passes_[index]; }
+
  private:
   // Returns the set of passes which are enabled. DebugOptions can selectively
   // disable passes via --xla_disable_hlo_passes flag.
@@ -90,12 +97,14 @@ class HloPassPipeline : public HloPassInterface {
       const DebugOptions& debug_options);
 
   // Maybe dumps the given module or module group depending on flag values
-  // contained in DebugOptions of module config.
-  void MaybeDumpHlo(const HloModuleGroup& module_group,
-                    absl::string_view after_pass_name,
-                    absl::string_view before_pass_name);
-  void MaybeDumpHlo(const HloModule& module, absl::string_view after_pass_name,
-                    absl::string_view before_pass_name);
+  // contained in DebugOptions of module config. If it is dumped, saves the
+  // filenames of the dumps into module metadata.
+  void MaybeDumpHloAndSaveFilenames(HloModuleGroup& module_group,
+                                    absl::string_view after_pass_name,
+                                    absl::string_view before_pass_name);
+  void MaybeDumpHloAndSaveFilenames(HloModule& module,
+                                    absl::string_view after_pass_name,
+                                    absl::string_view before_pass_name);
 
   // Runs the invariant checker on the given HLO. HloT can be either HloModule
   // or HloModuleGroup.
@@ -106,7 +115,7 @@ class HloPassPipeline : public HloPassInterface {
   // HloModule or HloModuleGroup.
   template <typename HloT>
   StatusOr<bool> RunPassesInternal(HloT* hlo,
-                                   absl::Span<HloPassInterface* const> passes);
+                                   const DebugOptions& debug_options);
 
   // Helpers which run the given passes on the given HLO construct. These
   // helpers enable templating of the core of the pipeline logic by providing
@@ -132,6 +141,10 @@ class HloPassPipeline : public HloPassInterface {
   // Default stats instance for when one is not passed in the constructor.
   // Use via compilation_stats_, not directly.
   std::unique_ptr<CompilationStats> empty_compilation_stats_;
+
+  // Allow PhaseOrderPipeline to modify private passes_ member in order to
+  // perform PhaseOrdering.
+  friend class ::xla::PhaseOrderPipeline;
 };
 
 }  // namespace xla

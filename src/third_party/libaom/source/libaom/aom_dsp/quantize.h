@@ -20,6 +20,9 @@
 extern "C" {
 #endif
 
+#define EOB_FACTOR 325
+#define SKIP_EOB_FACTOR_ADJUST 200
+
 void aom_quantize_b_adaptive_helper_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,
     const int16_t *round_ptr, const int16_t *quant_ptr,

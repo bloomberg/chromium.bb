@@ -23,7 +23,6 @@
 #ifndef INCLUDED_BLPWTK2_WEBVIEWPROXY_H
 #define INCLUDED_BLPWTK2_WEBVIEWPROXY_H
 
-#include <base/macros.h>
 #include <blpwtk2_config.h>
 #include <blpwtk2_webview.h>
 #include <blpwtk2_webviewclientdelegate.h>
@@ -106,11 +105,11 @@ class WebViewProxy final : public WebView
 
     bool validateClient();
 
-    DISALLOW_COPY_AND_ASSIGN(WebViewProxy);
-
   public:
     explicit WebViewProxy(WebViewDelegate *delegate, ProfileImpl *profile);
-    ~WebViewProxy() final;
+    ~WebViewProxy() override;
+    WebViewProxy(const WebViewProxy&) = delete;
+    WebViewProxy& operator=(const WebViewProxy&) = delete;
 
     void setProxyDelegate(WebViewProxyDelegate *proxyDelegate);
 

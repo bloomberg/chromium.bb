@@ -23,14 +23,15 @@ limitations under the License.
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Value.h"
-#include "mlir/Dialect/Linalg/EDSC/Intrinsics.h"  // from @llvm-project
-#include "mlir/Dialect/StandardOps/EDSC/Intrinsics.h"  // from @llvm-project
-#include "mlir/EDSC/Builders.h"  // from @llvm-project
+#include "mlir/Dialect/Linalg/Transforms/CodegenStrategy.h"  // from @llvm-project
+#include "mlir/Dialect/StandardOps/Utils/Utils.h"  // from @llvm-project
 #include "mlir/IR/Builders.h"  // from @llvm-project
-#include "mlir/IR/Function.h"  // from @llvm-project
+#include "mlir/IR/BuiltinOps.h"  // from @llvm-project
 #include "mlir/IR/MLIRContext.h"  // from @llvm-project
 #include "mlir/IR/OperationSupport.h"  // from @llvm-project
 #include "mlir/IR/Value.h"  // from @llvm-project
+#include "mlir/Pass/Pass.h"  // from @llvm-project
+#include "tensorflow/compiler/xla/primitive_util.h"
 #include "tensorflow/compiler/xla/service/cpu/cpu_options.h"
 #include "tensorflow/compiler/xla/service/cpu/cpu_runtime.h"
 #include "tensorflow/compiler/xla/service/cpu/ir_emission_utils.h"
@@ -143,14 +144,14 @@ class DotOpEmitter {
   // Represents the dimensions of a matrix-matrix multiply operation.
   struct MatMultDims {
     // The number of rows in the LHS.
-    int64 m;
+    int64_t m;
 
     // The number of columns in the LHS, which is also must be equal to the
     // number of rows in the RHS.
-    int64 k;
+    int64_t k;
 
     // The number of columns on the RHS.
-    int64 n;
+    int64_t n;
 
     // True if the LHS matrix is column major.
     bool lhs_column_major;
@@ -185,21 +186,35 @@ class DotOpEmitter {
 
   // When doing a tiled GEMV in LLVM IR, a "tile" consists of this many vector
   // registers.
-  int64 GetGemvTilingFactor() const {
-    const int64 kDefaultTilingFactor = 8;
+  int64_t GetGemvTilingFactor() const {
+    const int64_t kDefaultTilingFactor = 8;
     return options::LlvmIrGemvTilingFactor(hlo_module_config_)
         .value_or(kDefaultTilingFactor);
   }
 
-  std::tuple<int64, int64, int64> GetGemmTileSize() const {
+  std::tuple<int64_t, int64_t, int64_t> GetGemmTileSize() const {
     // Tuned for broadwell - Intel(R) Xeon(R) CPU E5-2690 v4 @ 2.60GHz
     //
     // TODO(b/80093688): Tune for other architectures and centralize this
     // information in one place.
-    const std::tuple<int64, int64, int64> kDefaultTileSize =
-        std::tuple<int64, int64, int64>(11, 9, 1);
+    const std::tuple<int64_t, int64_t, int64_t> kDefaultTileSize =
+        std::tuple<int64_t, int64_t, int64_t>(11, 9, 1);
     return options::LlvmIrGemmTileSize(hlo_module_config_)
         .value_or(kDefaultTileSize);
+  }
+
+  std::array<int64_t, 3> GetMlirGemmTileSize() const {
+    // Tile by 4 x registers x register size. This was picked by running
+    // small matmuls on Haswell and Skylake. There's a lot of room for
+    // improvement here.
+    constexpr int64_t kDefaultTileSizeForM = 4;
+    int64_t elements_per_register =
+        target_machine_features_.vector_register_num_elements(
+            *b_->GetInsertBlock()->getParent(),
+            dot_info_.result_shape.element_type());
+    int64_t num_registers = target_machine_features_.vector_register_count(
+        *b_->GetInsertBlock()->getParent());
+    return {{kDefaultTileSizeForM, num_registers, elements_per_register}};
   }
 
   DotInfo dot_info_;
@@ -242,7 +257,7 @@ Status DotOpEmitter::EmitLinalgMatmul() {
   llvm::Value* target_ptr = target_array_.GetBasePointer();
 
   // Zero out the output buffer.
-  int64 size_bytes = ShapeUtil::ByteSizeOf(dot_info_.result_shape);
+  int64_t size_bytes = ShapeUtil::ByteSizeOf(dot_info_.result_shape);
   b_->CreateMemSet(target_ptr, b_->getInt8(0), /*Size=*/size_bytes,
                    /*Align=*/llvm::MaybeAlign(1));
 
@@ -250,15 +265,97 @@ Status DotOpEmitter::EmitLinalgMatmul() {
       absl::StrCat("linalgMatMul_", dot_info_.result_shape.ToString(true), "_",
                    dot_info_.lhs_shape.ToString(true), "_",
                    dot_info_.rhs_shape.ToString(true));
+
   return EmitMlirFuncAndCall(
       mlir_context_, b_, dot_info_.result_shape, operand_shapes, target_ptr,
       operand_ptrs, name, [&](mlir::OpBuilder* builder, mlir::FuncOp function) {
-        mlir::edsc::ScopedContext scope(*builder, function.getLoc());
+        CHECK_EQ(dot_info_.dim_nums.lhs_contracting_dimensions_size(), 1);
+        CHECK_EQ(dot_info_.dim_nums.rhs_contracting_dimensions_size(), 1);
+        mlir::MLIRContext* context = builder->getContext();
         mlir::Value a = function.getArgument(0), b = function.getArgument(1),
                     c = function.getArgument(2);
-        mlir::edsc::intrinsics::linalg_matmul(mlir::TypeRange{},
-                                              mlir::ValueRange{b, c, a});
-        mlir::edsc::intrinsics::std_ret();
+
+        llvm::SmallVector<mlir::AffineExpr, 2> b_exprs(
+            dot_info_.lhs_shape.rank());
+        llvm::SmallVector<mlir::AffineExpr, 2> c_exprs(
+            dot_info_.rhs_shape.rank());
+
+        llvm::SmallVector<mlir::AffineExpr, 2> parallel_exprs;
+        mlir::AffineExpr reduce_expr;
+        for (int i = 0; i != dot_info_.result_shape.rank(); ++i) {
+          parallel_exprs.push_back(mlir::getAffineDimExpr(i, context));
+        }
+        reduce_expr =
+            mlir::getAffineDimExpr(dot_info_.result_shape.rank(), context);
+
+        // The reduction expr is shared for both inputs.
+        b_exprs[dot_info_.dim_nums.lhs_contracting_dimensions(0)] = reduce_expr;
+        c_exprs[dot_info_.dim_nums.rhs_contracting_dimensions(0)] = reduce_expr;
+
+        // Fill in the remaining parallel exprs.
+        int par_expr_num = 0;
+        for (auto* v : {&b_exprs, &c_exprs}) {
+          for (auto& e : *v) {
+            if (!e) {
+              e = parallel_exprs[par_expr_num++];
+            }
+          }
+        }
+
+        llvm::SmallVector<llvm::StringRef, 4> iteratorTypes(
+            parallel_exprs.size(), toString(mlir::IteratorType::Parallel));
+        iteratorTypes.push_back(toString(mlir::IteratorType::Reduction));
+        builder->create<mlir::linalg::GenericOp>(
+            function.getLoc(),
+            /*inputs=*/mlir::ValueRange{b, c},
+            /*outputs=*/mlir::ValueRange{a},
+            /*indexingMaps=*/
+            mlir::AffineMap::inferFromExprList(
+                {b_exprs, c_exprs, parallel_exprs}),
+            /*iteratorTypes=*/iteratorTypes,
+            [](mlir::OpBuilder& b, mlir::Location loc, mlir::ValueRange args) {
+              mlir::ArithBuilder ab(b, loc);
+              mlir::Value mul = ab.mul(args[0], args[1]);
+              mlir::Value add = ab.add(mul, args[2]);
+              b.create<mlir::linalg::YieldOp>(loc, add);
+            });
+        builder->create<mlir::ReturnOp>(function.getLoc());
+
+        mlir::linalg::LinalgTilingOptions tilingOptions;
+        tilingOptions = tilingOptions.setTileSizes(GetMlirGemmTileSize());
+        int64_t alignment =
+            target_machine_features_.minimum_alignment_for_allocation(
+                ShapeUtil::ByteSizeOf(dot_info_.result_shape));
+        mlir::linalg::CodegenStrategy strategy;
+        strategy
+            .tile(mlir::linalg::GenericOp::getOperationName(), tilingOptions)
+            .promote(mlir::linalg::GenericOp::getOperationName(),
+                     mlir::linalg::LinalgPromotionOptions()
+                         .setAlignment(alignment)
+                         .setUseFullTileBuffersByDefault(true)
+                         .setUseAlloca(true))
+            .vectorize(mlir::linalg::GenericOp::getOperationName())
+            .vectorLowering(
+                mlir::linalg::LinalgVectorLoweringOptions()
+                    .setVectorTransformsOptions(
+                        mlir::vector::VectorTransformsOptions()
+                            .setVectorTransformsOptions(
+                                mlir::vector::VectorContractLowering::
+                                    OuterProduct))
+                    .setVectorTransferToSCFOptions(
+                        mlir::VectorTransferToSCFOptions().enableFullUnroll()));
+        // TODO: this should be within a pass and we should be able to create a
+        // nested OpPassManager.
+        // Created a nested OpPassManager, populate the strategy and run.
+        // mlir::OpPassManager dynamicPM("builtin.func");
+        // strategy.configurePassPipeline(dynamicPM, function.getContext());
+        // Propagate pass failure?
+        // (void)mlir::runPipeline(dynamicPM, function);
+        mlir::PassManager pm(function.getContext(),
+                             function.getOperationName());
+        strategy.configurePassPipeline(pm, function.getContext());
+        // Propagate pass failure?
+        (void)pm.run(function);
       });
 }
 
@@ -269,24 +366,25 @@ void DotOpEmitter::EmitTiledLlvmIrGemm() {
   llvm::Value* lhs = lhs_array_.GetBasePointer();
   llvm::Value* rhs = rhs_array_.GetBasePointer();
   llvm::Value* target = target_array_.GetBasePointer();
-  int64 m = mat_mult_dims.m;
-  int64 k = mat_mult_dims.k;
-  int64 n = mat_mult_dims.n;
+  int64_t m = mat_mult_dims.m;
+  int64_t k = mat_mult_dims.k;
+  int64_t n = mat_mult_dims.n;
 
   if (mat_mult_dims.lhs_column_major) {
     std::swap(lhs, rhs);
     std::swap(m, n);
   }
 
-  int64 size_bytes = m * n * ShapeUtil::ByteSizeOfPrimitiveType(primitive_type);
+  int64_t size_bytes =
+      m * n * ShapeUtil::ByteSizeOfPrimitiveType(primitive_type);
   b_->CreateMemSet(target, b_->getInt8(0), /*Size=*/size_bytes,
                    /*Align=*/llvm::MaybeAlign(1));
 
-  int64 max_target_vector_width =
+  int64_t max_target_vector_width =
       target_machine_features_.vector_register_num_elements(
           *b_->GetInsertBlock()->getParent(), primitive_type);
 
-  int64 tile_size_m, tile_size_k, tile_size_n_in_vector_width;
+  int64_t tile_size_m, tile_size_k, tile_size_n_in_vector_width;
   std::tie(tile_size_m, tile_size_k, tile_size_n_in_vector_width) =
       GetGemmTileSize();
 
@@ -295,7 +393,7 @@ void DotOpEmitter::EmitTiledLlvmIrGemm() {
       /*m=*/m, /*k=*/k, /*n=*/n,
       /*max_vectorization_width=*/max_target_vector_width,
       /*max_vector_count=*/tile_size_n_in_vector_width,
-      /*min_vectorization_width=*/std::min<int64>(4, max_target_vector_width),
+      /*min_vectorization_width=*/std::min<int64_t>(4, max_target_vector_width),
       /*tile_size_m=*/tile_size_m, /*tile_size_k=*/tile_size_k, /*lhs=*/lhs,
       /*rhs=*/rhs, /*result=*/target, b_, hlo_module_config_);
 }
@@ -310,7 +408,7 @@ void DotOpEmitter::EmitTiledLlvmIrGemv() {
   bool is_column_major_matrix_vector_gemv = false;
   bool is_row_major_matrix_vector_gemv = false;
 
-  int64 m, k;
+  int64_t m, k;
   bool swap_operands;
 
   if (mat_mult_dims.m == 1) {
@@ -370,7 +468,7 @@ void DotOpEmitter::EmitTiledLlvmIrGemv() {
 
   CHECK(is_column_major_matrix_vector_gemv || is_row_major_matrix_vector_gemv);
 
-  int64 tiling_factor = GetGemvTilingFactor();
+  int64_t tiling_factor = GetGemvTilingFactor();
   CHECK_GT(tiling_factor, 0);
 
   llvm::Value* result_op = target_array_.GetBasePointer();
@@ -479,8 +577,8 @@ void DotOpEmitter::EmitNaiveLlvmIrGemm() {
   // Reduce along dimension 0 of the LHS and 1 of the RHS. Vectors are a special
   // case where the reduction dimension is 0 for both LHS and RHS. This results
   // in a vector dot product producing a scalar.
-  int64 lhs_reduction_dimension = dim_nums.lhs_contracting_dimensions(0);
-  int64 rhs_reduction_dimension = dim_nums.rhs_contracting_dimensions(0);
+  int64_t lhs_reduction_dimension = dim_nums.lhs_contracting_dimensions(0);
+  int64_t rhs_reduction_dimension = dim_nums.rhs_contracting_dimensions(0);
 
   // Verify the reduction dimension in the two operands are the same size.
   CHECK_EQ(lhs_shape.dimensions(lhs_reduction_dimension),
@@ -556,7 +654,7 @@ void DotOpEmitter::EmitNaiveLlvmIrGemm() {
   llvm::Value* lhs_element = lhs_array_.EmitReadArrayElement(lhs_index, b_);
   llvm::Value* rhs_element = rhs_array_.EmitReadArrayElement(rhs_index, b_);
 
-  llvm::Value* accum = b_->CreateLoad(accum_address);
+  llvm::Value* accum = b_->CreateLoad(accum_type, accum_address);
   llvm::Value* updated_accum;
   if (ShapeUtil::ElementIsComplex(lhs_shape)) {
     auto real = [&](llvm::Value* x) { return b_->CreateExtractValue(x, {0}); };
@@ -574,6 +672,9 @@ void DotOpEmitter::EmitNaiveLlvmIrGemm() {
   } else if (ShapeUtil::ElementIsIntegral(lhs_shape)) {
     llvm::Value* product = b_->CreateMul(lhs_element, rhs_element);
     updated_accum = b_->CreateAdd(accum, product);
+  } else if (lhs_shape.element_type() == PRED) {
+    llvm::Value* product = b_->CreateAnd(lhs_element, rhs_element);
+    updated_accum = b_->CreateOr(accum, product);
   } else {
     llvm::Value* product = b_->CreateFMul(lhs_element, rhs_element);
     updated_accum = b_->CreateFAdd(accum, product);
@@ -585,7 +686,7 @@ void DotOpEmitter::EmitNaiveLlvmIrGemm() {
   // - Store into output array.
   SetToFirstInsertPoint(reduction_loop->GetExitBasicBlock(), b_);
 
-  llvm::Value* result = b_->CreateLoad(accum_address);
+  llvm::Value* result = b_->CreateLoad(accum_type, accum_address);
 
   // Create index into target address. The target index is the concatenation of
   // the rhs and lhs indexes with the reduction dimensions removed. The terms
@@ -651,7 +752,7 @@ Status DotOpEmitter::EmitCallToRuntime() {
   // The signature of the Eigen runtime matmul function is:
   //
   //   (void)(void* run_options, float* out, float* lhs, float* rhs,
-  //          int64 m, int64 n, int64 k, int32 transpose_lhs,
+  //          int64_t m, int64_t n, int64_t k, int32 transpose_lhs,
   //          int32 transpose_rhs);
   // The two transpose_... parameters are actually booleans, but we use int32
   // to avoid target-dependent calling convention details.
@@ -799,7 +900,7 @@ DotOpEmitter::MatMultDims DotOpEmitter::GetMatMultDims() const {
 
 // For vector-matrix dot products, it is always profitable to make the Rhs
 // column major.
-absl::optional<int64> ProfitableToMakeDotOperandColumnMajor(
+absl::optional<int64_t> ProfitableToMakeDotOperandColumnMajor(
     const HloInstruction& hlo) {
   if (hlo.opcode() == HloOpcode::kDot && hlo.shape().dimensions_size() <= 1) {
     if (hlo.operand(0)->shape().rank() != 1 ||
@@ -810,7 +911,7 @@ absl::optional<int64> ProfitableToMakeDotOperandColumnMajor(
     // Don't bother if the other operand is tiny, switching to column major
     // wouldn't use tiling.
     constexpr int kColumnMajorThresholdInBytes = 32;
-    int64 lhs_size =
+    int64_t lhs_size =
         ShapeUtil::ByteSizeOfPrimitiveType(hlo.shape().element_type()) *
         ShapeUtil::ElementsIn(hlo.operand(0)->shape());
     if (lhs_size < kColumnMajorThresholdInBytes) {
@@ -946,11 +1047,23 @@ DotImplementationStrategy GetDotImplementationStrategy(
     return DotImplementationStrategy::kTiledLlvmIrGemv;
   }
 
+  // MatMul smaller than 3x3 should use naive nested loop.
+  if ((dot_info.lhs_shape.dimensions_size() <= 1 ||
+       (dot_info.lhs_shape.dimensions_size() == 2 &&
+        (dot_info.lhs_shape.dimensions(0) <= 3 ||
+         dot_info.lhs_shape.dimensions(1) <= 3))) &&
+      (dot_info.rhs_shape.dimensions_size() <= 1 ||
+       (dot_info.rhs_shape.dimensions_size() == 2 &&
+        (dot_info.rhs_shape.dimensions(0) <= 3 ||
+         dot_info.rhs_shape.dimensions(1) <= 3))) &&
+      (primitive_util::IsFloatingPointType(element_type) ||
+       primitive_util::IsIntegralType(element_type))) {
+    return DotImplementationStrategy::kNaiveLlvmIr;
+  }
+
   if (IsAlignedGemm(dot_info, target_machine_features)) {
     if (CanEmitTiledLlvmIrGemm(config, dot_info, target_machine_features)) {
-      return options::UseLinalgForDot(config)
-                 ? DotImplementationStrategy::kLinalgMatmul
-                 : DotImplementationStrategy::kTiledLlvmIrGemm;
+      return DotImplementationStrategy::kTiledLlvmIrGemm;
     }
     return DotImplementationStrategy::kEigen;
   }
@@ -966,7 +1079,9 @@ Status EmitNonBatchDotOperation(
     mlir::MLIRContext* mlir_context, const HloModuleConfig& hlo_module_config,
     const TargetMachineFeatures& target_machine_features) {
   PrimitiveType type = target_array.GetShape().element_type();
-  TF_RET_CHECK(S32 == type || F16 == type || F32 == type || F64 == type ||
+  TF_RET_CHECK(PRED == type || S8 == type || U8 == type || S16 == type ||
+               U16 == type || S32 == type || U32 == type || S64 == type ||
+               U64 == type || F16 == type || F32 == type || F64 == type ||
                C64 == type || C128 == type);
   DotOpEmitter dot_emitter(std::move(dot_info), std::move(hlo_name),
                            target_array, lhs_array, rhs_array, addend_array,
@@ -976,17 +1091,17 @@ Status EmitNonBatchDotOperation(
 }
 
 Shape DropFirstDim(const Shape& shape) {
-  absl::Span<int64 const> array_shape_dims(shape.dimensions());
+  absl::Span<int64_t const> array_shape_dims(shape.dimensions());
   array_shape_dims.remove_prefix(1);
   return ShapeUtil::MakeShapeWithDescendingLayout(shape.element_type(),
                                                   array_shape_dims);
 }
 
-Shape CollapseFirstNDims(const Shape& shape, int64 n) {
-  absl::Span<int64 const> input_shape_dims(shape.dimensions());
-  int64 prefix_dim =
+Shape CollapseFirstNDims(const Shape& shape, int64_t n) {
+  absl::Span<int64_t const> input_shape_dims(shape.dimensions());
+  int64_t prefix_dim =
       std::accumulate(input_shape_dims.begin(), input_shape_dims.begin() + n,
-                      1ll, std::multiplies<int64>());
+                      1ll, std::multiplies<int64_t>());
   DimensionVector result_dims;
   result_dims.push_back(prefix_dim);
   std::copy(input_shape_dims.begin() + n, input_shape_dims.end(),
@@ -996,7 +1111,7 @@ Shape CollapseFirstNDims(const Shape& shape, int64 n) {
 }
 
 llvm_ir::IrArray CollapseFirstNDims(llvm::IRBuilder<>* b,
-                                    const llvm_ir::IrArray& array, int64 n) {
+                                    const llvm_ir::IrArray& array, int64_t n) {
   llvm::Module* module = b->GetInsertBlock()->getParent()->getParent();
   const Shape& shape = array.GetShape();
   CHECK(shape.has_layout() &&
@@ -1013,7 +1128,8 @@ Status ValidateDotDimensionNumbers(const DotDimensionNumbers& dim_numbers) {
   // Checks some invariants that do not hold in general, but DotDecomposer
   // should have established for us.  This is just a debugging aid.
   TF_RET_CHECK(dim_numbers.lhs_contracting_dimensions_size() == 1);
-  std::vector<int64> batch_dim_numbers(dim_numbers.lhs_batch_dimensions_size());
+  std::vector<int64_t> batch_dim_numbers(
+      dim_numbers.lhs_batch_dimensions_size());
   absl::c_iota(batch_dim_numbers, 0);
   TF_RET_CHECK(
       absl::c_equal(batch_dim_numbers, dim_numbers.lhs_batch_dimensions()));
@@ -1051,7 +1167,7 @@ Status EmitBatchDotOperation(
 
   // Lower a batch dot into a sequence of non-batch dot operations.
 
-  int64 num_batch_dims =
+  int64_t num_batch_dims =
       dot.dot_dimension_numbers().lhs_batch_dimensions_size();
 
   // First reshape the inputs to make sure we only have one batch dimension.
@@ -1066,7 +1182,7 @@ Status EmitBatchDotOperation(
   llvm_ir::IrArray target_array_reshaped =
       CollapseFirstNDims(b, target_array, num_batch_dims);
 
-  int64 batch_count = lhs_array_reshaped.GetShape().dimensions(0);
+  int64_t batch_count = lhs_array_reshaped.GetShape().dimensions(0);
 
   KernelSupportLibrary ksl(b);
 

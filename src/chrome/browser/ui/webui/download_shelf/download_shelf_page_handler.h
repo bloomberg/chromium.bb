@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOAD_SHELF_DOWNLOAD_SHELF_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOAD_SHELF_DOWNLOAD_SHELF_PAGE_HANDLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/ui/webui/download_shelf/download_shelf.mojom.h"
 #include "chrome/browser/ui/webui/download_shelf/download_shelf_handler.h"
@@ -29,15 +30,20 @@ class DownloadShelfPageHandler : public download_shelf::mojom::PageHandler,
   ~DownloadShelfPageHandler() override;
 
   // download_shelf::mojom::PageHandler:
+  void DoShowAll() override;
   void DoClose() override;
+  void DiscardDownload(uint32_t download_id) override;
+  void KeepDownload(uint32_t download_id) override;
   void GetDownloads(GetDownloadsCallback callback) override;
   void ShowContextMenu(uint32_t download_id,
                        int32_t client_x,
                        int32_t client_y,
                        double timestamp) override;
+  void OpenDownload(uint32_t download_id) override;
 
   // DownloadShelfHandler:
   void DoShowDownload(DownloadUIModel* download_model) override;
+  void OnDownloadOpened(uint32_t download_id) override;
   void OnDownloadUpdated(DownloadUIModel* download_model) override;
   void OnDownloadErased(uint32_t download_id) override;
 
@@ -48,7 +54,7 @@ class DownloadShelfPageHandler : public download_shelf::mojom::PageHandler,
   mojo::Receiver<download_shelf::mojom::PageHandler> receiver_;
   mojo::Remote<download_shelf::mojom::Page> page_;
 
-  DownloadShelfUI* const download_shelf_ui_;
+  const raw_ptr<DownloadShelfUI> download_shelf_ui_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOAD_SHELF_DOWNLOAD_SHELF_PAGE_HANDLER_H_

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
@@ -37,6 +38,10 @@ namespace views {
 class TestResizeAreaDelegate : public ResizeAreaDelegate {
  public:
   TestResizeAreaDelegate();
+
+  TestResizeAreaDelegate(const TestResizeAreaDelegate&) = delete;
+  TestResizeAreaDelegate& operator=(const TestResizeAreaDelegate&) = delete;
+
   ~TestResizeAreaDelegate() override;
 
   // ResizeAreaDelegate:
@@ -50,8 +55,6 @@ class TestResizeAreaDelegate : public ResizeAreaDelegate {
   int resize_amount_ = 0;
   bool done_resizing_ = false;
   bool on_resize_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestResizeAreaDelegate);
 };
 
 TestResizeAreaDelegate::TestResizeAreaDelegate() = default;
@@ -68,6 +71,10 @@ void TestResizeAreaDelegate::OnResize(int resize_amount, bool done_resizing) {
 class ResizeAreaTest : public ViewsTestBase {
  public:
   ResizeAreaTest();
+
+  ResizeAreaTest(const ResizeAreaTest&) = delete;
+  ResizeAreaTest& operator=(const ResizeAreaTest&) = delete;
+
   ~ResizeAreaTest() override;
 
   // Callback used by the SuccessfulGestureDrag test.
@@ -87,14 +94,12 @@ class ResizeAreaTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<TestResizeAreaDelegate> delegate_;
-  views::Widget* widget_ = nullptr;
+  raw_ptr<views::Widget> widget_ = nullptr;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   // The number of ui::ET_GESTURE_SCROLL_UPDATE events seen by
   // ProcessGesture().
   int gesture_scroll_updates_seen_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ResizeAreaTest);
 };
 
 ResizeAreaTest::ResizeAreaTest() = default;
@@ -189,7 +194,7 @@ TEST_F(ResizeAreaTest, SuccessfulGestureDrag) {
   gfx::Point start = widget()->GetNativeView()->bounds().CenterPoint();
   event_generator()->GestureScrollSequenceWithCallback(
       start, gfx::Point(start.x() + kGestureScrollDistance, start.y()),
-      base::TimeDelta::FromMilliseconds(200), kGestureScrollSteps,
+      base::Milliseconds(200), kGestureScrollSteps,
       base::BindRepeating(&ResizeAreaTest::ProcessGesture,
                           base::Unretained(this)));
 }

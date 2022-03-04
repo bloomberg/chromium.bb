@@ -44,8 +44,8 @@ from testrunner.outproc import test262
 
 # TODO(littledan): move the flag mapping into the status file
 FEATURE_FLAGS = {
-  'Intl.DateTimeFormat-dayPeriod': '--harmony-intl-dateformat-day-period',
   'Intl.Locale-info': '--harmony_intl_locale_info',
+  'Intl-enumeration': '--harmony_intl_enumeration',
   'Symbol.prototype.description': '--harmony-symbol-description',
   'FinalizationRegistry': '--harmony-weak-refs-with-cleanup-some',
   'WeakRef': '--harmony-weak-refs-with-cleanup-some',
@@ -53,10 +53,13 @@ FEATURE_FLAGS = {
   'IsHTMLDDA': '--allow-natives-syntax',
   'top-level-await': '--harmony-top-level-await',
   'regexp-match-indices': '--harmony-regexp-match-indices',
-  # https://github.com/tc39/test262/pull/2395
   'regexp-named-groups': '--harmony-regexp-match-indices',
   'error-cause': '--harmony-error-cause',
   'import-assertions': '--harmony-import-assertions',
+  'Object.hasOwn': '--harmony-object-has-own',
+  'class-static-block': '--harmony-class-static-blocks',
+  'resizable-arraybuffer': '--harmony-rab-gsab',
+  'array-find-from-last': '--harmony_array_find_last',
 }
 
 SKIPPED_FEATURES = set([])

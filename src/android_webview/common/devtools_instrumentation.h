@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_COMMON_DEVTOOLS_INSTRUMENTATION_H_
 #define ANDROID_WEBVIEW_COMMON_DEVTOOLS_INSTRUMENTATION_H_
 
-#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 
 namespace android_webview {
@@ -27,12 +26,14 @@ class ScopedEmbedderCallbackTask {
     TRACE_EVENT_BEGIN1(internal::Category(), internal::kEmbedderCallback,
                        internal::kCallbackNameArgument, callback_name);
   }
+
+  ScopedEmbedderCallbackTask(const ScopedEmbedderCallbackTask&) = delete;
+  ScopedEmbedderCallbackTask& operator=(const ScopedEmbedderCallbackTask&) =
+      delete;
+
   ~ScopedEmbedderCallbackTask() {
     TRACE_EVENT_END0(internal::Category(), internal::kEmbedderCallback);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedEmbedderCallbackTask);
 };
 
 }  // namespace devtools_instrumentation

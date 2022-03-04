@@ -17,6 +17,12 @@ class MockCopyTexImageResourceManager final
     : public CopyTexImageResourceManager {
  public:
   MockCopyTexImageResourceManager(const gles2::FeatureInfo* feature_info);
+
+  MockCopyTexImageResourceManager(const MockCopyTexImageResourceManager&) =
+      delete;
+  MockCopyTexImageResourceManager& operator=(
+      const MockCopyTexImageResourceManager&) = delete;
+
   ~MockCopyTexImageResourceManager() final;
 
   MOCK_METHOD1(Initialize, void(const DecoderContext* decoder));
@@ -56,15 +62,18 @@ class MockCopyTexImageResourceManager final
       GLsizei height,
       GLuint source_framebuffer,
       GLenum source_framebuffer_internal_format) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCopyTexImageResourceManager);
 };
 
 class MockCopyTextureResourceManager final
     : public CopyTextureCHROMIUMResourceManager {
  public:
   MockCopyTextureResourceManager();
+
+  MockCopyTextureResourceManager(const MockCopyTextureResourceManager&) =
+      delete;
+  MockCopyTextureResourceManager& operator=(
+      const MockCopyTextureResourceManager&) = delete;
+
   ~MockCopyTextureResourceManager() final;
 
   MOCK_METHOD2(Initialize,
@@ -88,7 +97,6 @@ class MockCopyTextureResourceManager final
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
-      bool dither,
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) override {}
   void DoCopySubTexture(
@@ -114,12 +122,8 @@ class MockCopyTextureResourceManager final
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
-      bool dither,
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCopyTextureResourceManager);
 };
 
 }  // namespace gles2

@@ -19,7 +19,8 @@ namespace blink {
 namespace {
 
 class URLSearchParamsIterationSource final
-    : public PairIterable<String, String>::IterationSource {
+    : public PairIterable<String, IDLString, String, IDLString>::
+          IterationSource {
  public:
   explicit URLSearchParamsIterationSource(URLSearchParams* params)
       : params_(params), current_(0) {}
@@ -39,12 +40,13 @@ class URLSearchParamsIterationSource final
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(params_);
-    PairIterable<String, String>::IterationSource::Trace(visitor);
+    PairIterable<String, IDLString, String, IDLString>::IterationSource::Trace(
+        visitor);
   }
 
  private:
   Member<URLSearchParams> params_;
-  size_t current_;
+  wtf_size_t current_;
 };
 
 bool CompareParams(const std::pair<String, String>& a,
@@ -54,7 +56,6 @@ bool CompareParams(const std::pair<String, String>& a,
 
 }  // namespace
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit* init,
                                          ExceptionState& exception_state) {
   DCHECK(init);
@@ -75,28 +76,6 @@ URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit* init,
   NOTREACHED();
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit& init,
-                                         ExceptionState& exception_state) {
-  if (init.IsUSVString()) {
-    const String& query_string = init.GetAsUSVString();
-    if (query_string.StartsWith('?'))
-      return MakeGarbageCollected<URLSearchParams>(query_string.Substring(1));
-    return MakeGarbageCollected<URLSearchParams>(query_string);
-  }
-  if (init.IsUSVStringUSVStringRecord()) {
-    return URLSearchParams::Create(init.GetAsUSVStringUSVStringRecord(),
-                                   exception_state);
-  }
-  if (init.IsUSVStringSequenceSequence()) {
-    return URLSearchParams::Create(init.GetAsUSVStringSequenceSequence(),
-                                   exception_state);
-  }
-
-  DCHECK(init.IsNull());
-  return MakeGarbageCollected<URLSearchParams>(String());
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 URLSearchParams* URLSearchParams::Create(const Vector<Vector<String>>& init,
                                          ExceptionState& exception_state) {
@@ -166,15 +145,15 @@ static String DecodeString(String input) {
 void URLSearchParams::SetInputWithoutUpdate(const String& query_string) {
   params_.clear();
 
-  size_t start = 0;
-  size_t query_string_length = query_string.length();
+  wtf_size_t start = 0;
+  wtf_size_t query_string_length = query_string.length();
   while (start < query_string_length) {
-    size_t name_start = start;
-    size_t name_value_end = query_string.find('&', start);
+    wtf_size_t name_start = start;
+    wtf_size_t name_value_end = query_string.find('&', start);
     if (name_value_end == kNotFound)
       name_value_end = query_string_length;
     if (name_value_end > start) {
-      size_t end_of_name = query_string.find('=', start);
+      wtf_size_t end_of_name = query_string.find('=', start);
       if (end_of_name == kNotFound || end_of_name > name_value_end)
         end_of_name = name_value_end;
       String name = DecodeString(
@@ -208,7 +187,7 @@ void URLSearchParams::append(const String& name, const String& value) {
 }
 
 void URLSearchParams::deleteAllWithName(const String& name) {
-  for (size_t i = 0; i < params_.size();) {
+  for (wtf_size_t i = 0; i < params_.size();) {
     if (params_[i].first == name)
       params_.EraseAt(i);
     else
@@ -244,7 +223,7 @@ bool URLSearchParams::has(const String& name) const {
 
 void URLSearchParams::set(const String& name, const String& value) {
   bool found_match = false;
-  for (size_t i = 0; i < params_.size();) {
+  for (wtf_size_t i = 0; i < params_.size();) {
     // If there are any name-value whose name is 'name', set
     // the value of the first such name-value pair to 'value'
     // and remove the others.
@@ -284,9 +263,8 @@ scoped_refptr<EncodedFormData> URLSearchParams::ToEncodedFormData() const {
   return EncodedFormData::Create(encoded_data.data(), encoded_data.size());
 }
 
-PairIterable<String, String>::IterationSource* URLSearchParams::StartIteration(
-    ScriptState*,
-    ExceptionState&) {
+PairIterable<String, IDLString, String, IDLString>::IterationSource*
+URLSearchParams::StartIteration(ScriptState*, ExceptionState&) {
   return MakeGarbageCollected<URLSearchParamsIterationSource>(this);
 }
 

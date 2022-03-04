@@ -27,17 +27,8 @@ bool IsBinaryBlob(const std::string &code)
 ImmutableString GetSymbolTableMangledName(TIntermAggregate *node)
 {
     ASSERT(!node->isConstructor());
-    switch (node->getOp())
-    {
-        case EOpCallInternalRawFunction:
-        case EOpCallBuiltInFunction:
-        case EOpCallFunctionInAST:
-            return TFunctionLookup::GetMangledName(node->getFunction()->name().data(),
-                                                   *node->getSequence());
-        default:
-            const char *opString = GetOperatorString(node->getOp());
-            return TFunctionLookup::GetMangledName(opString, *node->getSequence());
-    }
+    return TFunctionLookup::GetMangledName(node->getFunction()->name().data(),
+                                           *node->getSequence());
 }
 
 class FunctionCallFinder : public TIntermTraverser
@@ -51,7 +42,7 @@ class FunctionCallFinder : public TIntermTraverser
 
     bool visitAggregate(Visit visit, TIntermAggregate *node) override
     {
-        if (node->isFunctionCall() && GetSymbolTableMangledName(node) == mFunctionMangledName)
+        if (!node->isConstructor() && GetSymbolTableMangledName(node) == mFunctionMangledName)
         {
             mNodeFound = node;
             return false;
@@ -112,6 +103,7 @@ bool compileTestShader(GLenum type,
 {
     ShBuiltInResources resources;
     sh::InitBuiltInResources(&resources);
+    resources.FragmentPrecisionHigh = 1;
     return compileTestShader(type, spec, output, shaderString, &resources, compileOptions,
                              translatedCode, infoLog);
 }
@@ -122,7 +114,8 @@ MatchOutputCodeTest::MatchOutputCodeTest(GLenum shaderType,
     : mShaderType(shaderType), mDefaultCompileOptions(defaultCompileOptions)
 {
     sh::InitBuiltInResources(&mResources);
-    mOutputCode[outputType] = std::string();
+    mResources.FragmentPrecisionHigh = 1;
+    mOutputCode[outputType]          = std::string();
 }
 
 void MatchOutputCodeTest::addOutputType(const ShShaderOutput outputType)

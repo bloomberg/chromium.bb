@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/models/image_model.h"
 
@@ -61,6 +61,11 @@ class GlobalErrorWithStandardBubble
       public base::SupportsWeakPtr<GlobalErrorWithStandardBubble> {
  public:
   GlobalErrorWithStandardBubble();
+
+  GlobalErrorWithStandardBubble(const GlobalErrorWithStandardBubble&) = delete;
+  GlobalErrorWithStandardBubble& operator=(
+      const GlobalErrorWithStandardBubble&) = delete;
+
   ~GlobalErrorWithStandardBubble() override;
 
   // Override these methods to customize the contents of the error bubble:
@@ -93,9 +98,7 @@ class GlobalErrorWithStandardBubble
 
  private:
   bool has_shown_bubble_view_ = false;
-  GlobalErrorBubbleViewBase* bubble_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalErrorWithStandardBubble);
+  raw_ptr<GlobalErrorBubbleViewBase> bubble_view_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_H_

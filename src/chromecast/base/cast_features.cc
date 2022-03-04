@@ -160,6 +160,11 @@ const base::Feature kEnableSideGesturePassThrough{
 const base::Feature kEnableChromeAudioManagerAndroid{
     "enable_chrome_audio_manager_android", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables CastAudioOutputDevice for audio output on Android. When disabled,
+// CastAudioManagerAndroid will be used.
+const base::Feature kEnableCastAudioOutputDevice{
+    "enable_cast_audio_output_device", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -170,6 +175,7 @@ const base::Feature* kFeatures[] = {
     &kEnableGeneralAudienceBrowsing,
     &kEnableSideGesturePassThrough,
     &kEnableChromeAudioManagerAndroid,
+    &kEnableCastAudioOutputDevice,
 };
 
 std::vector<const base::Feature*> GetInternalFeatures();
@@ -177,8 +183,8 @@ std::vector<const base::Feature*> GetInternalFeatures();
 const std::vector<const base::Feature*>& GetFeatures() {
   static const base::NoDestructor<std::vector<const base::Feature*>> features(
       [] {
-        auto features = std::vector<const base::Feature*>(
-            kFeatures, kFeatures + sizeof(kFeatures) / sizeof(base::Feature*));
+        std::vector<const base::Feature*> features(std::begin(kFeatures),
+                                                   std::end(kFeatures));
         auto internal_features = GetInternalFeatures();
         features.insert(features.end(), internal_features.begin(),
                         internal_features.end());
@@ -213,7 +219,7 @@ void InitializeFeatureList(const base::Value& dcs_features,
                                           all_disable_features);
 
   // Override defaults from the DCS config.
-  for (const auto& kv : dcs_features.DictItems()) {
+  for (const auto kv : dcs_features.DictItems()) {
     // Each feature must have its own FieldTrial object. Since experiments are
     // controlled server-side for Chromecast, and this class is designed with a
     // client-side experimentation framework in mind, these parameters are
@@ -225,8 +231,6 @@ void InitializeFeatureList(const base::Value& dcs_features,
     //   - The probability is hard-coded to 100% so that the FeatureList always
     //     respects the value from DCS.
     //   - The default group is unused; it will be the same for every feature.
-    //   - Expiration year, month, and day use a special value such that the
-    //     feature will never expire.
     //   - SESSION_RANDOMIZED is used to prevent the need for an
     //     entropy_provider. However, this value doesn't matter.
     //   - We don't care about the group_id.
@@ -259,7 +263,7 @@ void InitializeFeatureList(const base::Value& dcs_features,
         // Build a map of the FieldTrial parameters and associate it to the
         // FieldTrial.
         base::FieldTrialParams params;
-        for (const auto& params_kv : kv.second.DictItems()) {
+        for (const auto params_kv : kv.second.DictItems()) {
           if (params_kv.second.is_string()) {
             params[params_kv.first] = params_kv.second.GetString();
           } else {
@@ -293,7 +297,7 @@ base::Value GetOverriddenFeaturesForStorage(const base::Value& features) {
   base::Value persistent_dict(base::Value::Type::DICTIONARY);
 
   // |features| maps feature names to either a boolean or a dict of params.
-  for (const auto& feature : features.DictItems()) {
+  for (const auto feature : features.DictItems()) {
     if (feature.second.is_bool()) {
       persistent_dict.SetBoolKey(feature.first, feature.second.GetBool());
       continue;

@@ -10,18 +10,19 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 
@@ -43,7 +44,9 @@ const char kImportDefaultOrderAttr[] = "import_default_order";
 const char* const kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
     arc::kPlayStoreAppId,
+
     extension_misc::kFilesManagerAppId,
+    file_manager::kFileManagerSwaAppId,
 
     arc::kGmailAppId,
     extension_misc::kGmailAppId,
@@ -53,7 +56,7 @@ const char* const kDefaultAppOrder[] = {
 
     web_app::kGoogleChatAppId,
 
-    extension_misc::kGoogleDocAppId,
+    extension_misc::kGoogleDocsAppId,
     web_app::kGoogleDocsAppId,
 
     extension_misc::kGoogleSlidesAppId,
@@ -62,7 +65,7 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGoogleSheetsAppId,
     web_app::kGoogleSheetsAppId,
 
-    extension_misc::kDriveHostedAppId,
+    extension_misc::kGoogleDriveAppId,
     web_app::kGoogleDriveAppId,
 
     extension_misc::kGoogleKeepAppId,
@@ -86,13 +89,10 @@ const char* const kDefaultAppOrder[] = {
     arc::kPlayMusicAppId,
     extension_misc::kGooglePlayMusicAppId,
 
-    arc::kPlayGamesAppId,
-
     arc::kPlayBooksAppId,
     extension_misc::kGooglePlayBooksAppId,
     web_app::kPlayBooksAppId,
 
-    extension_misc::kCameraAppId,
     web_app::kCameraAppId,
 
     arc::kGooglePhotosAppId,
@@ -113,8 +113,11 @@ const char* const kDefaultAppOrder[] = {
     web_app::kOsSettingsAppId,
 
     web_app::kHelpAppId,
+
+    web_app::kCalculatorAppId,
     extension_misc::kCalculatorAppId,
-    web_app::kA4AppId,
+
+    web_app::kCursiveAppId,
     web_app::kCanvasAppId,
     extension_misc::kTextEditorAppId,
     web_app::kYoutubeTVAppId,
@@ -124,7 +127,6 @@ const char* const kDefaultAppOrder[] = {
     arc::kInfinitePainterAppId,
     web_app::kShowtimeAppId,
     extension_misc::kGooglePlusAppId,
-    extension_misc::kChromeRemoteDesktopAppId,
 };
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL
@@ -231,17 +233,17 @@ void ExternalLoader::Load() {
       ReadExternalOrdinalFile(ordinals_file);
   if (ordinals_value) {
     std::string locale = g_browser_process->GetApplicationLocale();
-    for (size_t i = 0; i < ordinals_value->GetSize(); ++i) {
-      std::string app_id;
-      base::DictionaryValue* dict = NULL;
-      if (ordinals_value->GetString(i, &app_id)) {
+    for (const base::Value& i : ordinals_value->GetList()) {
+      const base::DictionaryValue* dict = nullptr;
+      if (i.is_string()) {
+        std::string app_id = i.GetString();
         app_ids_.push_back(app_id);
-      } else if (ordinals_value->GetDictionary(i, &dict)) {
-        bool flag = false;
-        if (dict->GetBoolean(kOemAppsFolderAttr, &flag) && flag) {
+      } else if (i.GetAsDictionary(&dict)) {
+        if (dict->FindBoolPath(kOemAppsFolderAttr).value_or(false)) {
           oem_apps_folder_name_ = GetLocaleSpecificStringImpl(
               dict, locale, kLocalizedContentAttr, kNameAttr);
-        } else if (dict->GetBoolean(kImportDefaultOrderAttr, &flag) && flag) {
+        } else if (dict->FindBoolPath(kImportDefaultOrderAttr)
+                       .value_or(false)) {
           GetDefault(&app_ids_);
         } else {
           LOG(ERROR) << "Invalid syntax in default_app_order.json";

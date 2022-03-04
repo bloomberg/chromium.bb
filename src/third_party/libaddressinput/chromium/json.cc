@@ -9,7 +9,6 @@
 
 #include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 
@@ -49,6 +48,9 @@ class Json::JsonImpl {
       : owned_(Parse(json, &parser_error_)),
         dict_(*owned_) {}
 
+  JsonImpl(const JsonImpl&) = delete;
+  JsonImpl& operator=(const JsonImpl&) = delete;
+
   ~JsonImpl() {}
 
   bool parser_error() const { return parser_error_; }
@@ -70,7 +72,13 @@ class Json::JsonImpl {
   }
 
   bool GetStringValueForKey(const std::string& key, std::string* value) const {
-    return dict_.GetStringWithoutPathExpansion(key, value);
+    const std::string* value_str = dict_.FindStringKey(key);
+    if (!value_str)
+      return false;
+
+    DCHECK(value);
+    *value = *value_str;
+    return true;
   }
 
  private:
@@ -82,8 +90,6 @@ class Json::JsonImpl {
   const base::DictionaryValue& dict_;
   std::vector<const Json*> sub_dicts_;
   std::vector<std::unique_ptr<Json>> owned_sub_dicts_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsonImpl);
 };
 
 Json::Json() {}

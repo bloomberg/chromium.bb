@@ -26,18 +26,20 @@ namespace dawn_native { namespace metal {
     class CommandRecordingContext;
     class Device;
 
-    class Buffer : public BufferBase {
+    class Buffer final : public BufferBase {
       public:
         static ResultOrError<Ref<Buffer>> Create(Device* device,
                                                  const BufferDescriptor* descriptor);
         id<MTLBuffer> GetMTLBuffer() const;
 
-        void EnsureDataInitialized(CommandRecordingContext* commandContext);
-        void EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+        bool EnsureDataInitialized(CommandRecordingContext* commandContext);
+        bool EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
                                                 uint64_t offset,
                                                 uint64_t size);
-        void EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+        bool EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
                                                 const CopyTextureToBufferCmd* copy);
+
+        static uint64_t QueryMaxBufferLength(id<MTLDevice> mtlDevice);
 
       private:
         using BufferBase::BufferBase;
@@ -52,7 +54,10 @@ namespace dawn_native { namespace metal {
         MaybeError MapAtCreationImpl() override;
 
         void InitializeToZero(CommandRecordingContext* commandContext);
-        void ClearBuffer(CommandRecordingContext* commandContext, uint8_t clearValue);
+        void ClearBuffer(CommandRecordingContext* commandContext,
+                         uint8_t clearValue,
+                         uint64_t offset = 0,
+                         uint64_t size = 0);
 
         NSPRef<id<MTLBuffer>> mMtlBuffer;
     };

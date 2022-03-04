@@ -214,7 +214,7 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
     void onModalLoop() override {}
 };
 
-class Shell : public blpwtk2::WebViewDelegate {
+class Shell final : public blpwtk2::WebViewDelegate {
 public:
     static std::set<Shell*> s_shells;
 
@@ -305,7 +305,7 @@ public:
         }
     }
 
-    ~Shell() final
+    ~Shell() override
     {
         SetWindowLongPtr(d_mainWnd, GWLP_USERDATA, NULL);
         SetWindowLongPtr(d_urlEntryWnd, GWLP_USERDATA, NULL);
@@ -665,6 +665,7 @@ HANDLE spawnProcess()
                 BUF_SIZE);
 
         assert(buffer);
+        memset(buffer, 0, BUF_SIZE);
     }
 
     char fileName[MAX_PATH + 1];
@@ -737,7 +738,6 @@ HANDLE spawnProcess()
     blpwtk2::String channelId = g_toolkit->createHostChannel(procInfo.dwProcessId, false, "");
 
     // Write the host channel string into the shared memory
-    memset(buffer, 0, BUF_SIZE);
     std::string temp(channelId.data(), channelId.size());
     snprintf((char *) buffer, BUF_SIZE, "%s", temp.c_str());
 
@@ -873,27 +873,29 @@ int main(int, const char**)
     }
 
     if (!fileMapping.empty()) {
-        // Wait 500ms for the parent process to write to the shared memory.
-        // Obviously this is not ideal but this is only for testing.
-        Sleep(500);
+        do {
+            // Wait 500ms for the parent process to write to the shared memory.
+            // Obviously this is not ideal but this is only for testing.
+            Sleep(500);
 
-        // The parent process wants to send me the host channel via shared memory.
-        HANDLE handle = ::OpenFileMappingA(
-                FILE_MAP_ALL_ACCESS,   // read/write access
-                FALSE,                 // do not inherit the name
-                fileMapping.c_str());  // name of mapping object
+            // The parent process wants to send me the host channel via shared memory.
+            HANDLE handle = ::OpenFileMappingA(
+                    FILE_MAP_ALL_ACCESS,   // read/write access
+                    FALSE,                 // do not inherit the name
+                    fileMapping.c_str());  // name of mapping object
 
-        assert(handle);
+            assert(handle);
 
-        void *buffer = ::MapViewOfFile(
-                handle,              // handle to map object
-                FILE_MAP_ALL_ACCESS, // read/write permission
-                0,
-                0,
-                BUF_SIZE);
+            void *buffer = ::MapViewOfFile(
+                    handle,              // handle to map object
+                    FILE_MAP_ALL_ACCESS, // read/write permission
+                    0,
+                    0,
+                    BUF_SIZE);
 
-        assert(buffer);
-        hostChannel = (char *) buffer;
+            assert(buffer);
+            hostChannel = (char *) buffer;
+        } while (hostChannel.empty());
     }
 
     if (isProcessHost && host == blpwtk2::ThreadMode::ORIGINAL) {
@@ -1323,7 +1325,7 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
     AppendMenu(languagesMenu, MF_STRING, IDM_LANGUAGE_RU, L"&Russian");
     SetMenu(mainWnd, menu);
 
-    HWND hwnd;
+    [[maybe_unused]] HWND hwnd;
     int x = 0;
 
     hwnd = CreateWindow(L"BUTTON", L"Back",

@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SYNC_FILE_SYSTEM_INTERNALS_EXTENSION_STATUSES_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SYNC_FILE_SYSTEM_INTERNALS_EXTENSION_STATUSES_HANDLER_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -21,6 +20,10 @@ namespace syncfs_internals {
 class ExtensionStatusesHandler : public content::WebUIMessageHandler {
  public:
   explicit ExtensionStatusesHandler(Profile* profile);
+
+  ExtensionStatusesHandler(const ExtensionStatusesHandler&) = delete;
+  ExtensionStatusesHandler& operator=(const ExtensionStatusesHandler&) = delete;
+
   ~ExtensionStatusesHandler() override;
 
   // Shared by Extension Statuses Tab and also File Metadata Tab to generate the
@@ -37,10 +40,8 @@ class ExtensionStatusesHandler : public content::WebUIMessageHandler {
   void DidGetExtensionStatuses(std::string callback_id,
                                const base::ListValue& list);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   base::WeakPtrFactory<ExtensionStatusesHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionStatusesHandler);
 };
 
 }  // namespace syncfs_internals

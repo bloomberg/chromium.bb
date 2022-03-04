@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
@@ -119,11 +120,6 @@ class TabStripLayoutHelper {
   // bounds.
   int UpdateIdealBounds(int available_width);
 
-  // Generates and sets the ideal bounds for |tabs|. Updates
-  // the cached values in |first_non_pinned_tab_index_| and
-  // |first_non_pinned_tab_x_|.
-  void UpdateIdealBoundsForPinnedTabs();
-
  private:
   struct TabSlot;
 
@@ -179,7 +175,7 @@ class TabStripLayoutHelper {
   bool SlotIsCollapsedTab(int i) const;
 
   // The owning tabstrip's controller.
-  const TabStripController* const controller_;
+  const raw_ptr<const TabStripController> controller_;
 
   // Callback to get the necessary View objects from the owning tabstrip.
   GetTabsCallback get_tabs_callback_;

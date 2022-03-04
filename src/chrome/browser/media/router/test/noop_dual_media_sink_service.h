@@ -14,15 +14,17 @@ class LoggerImpl;
 class NoopDualMediaSinkService : public DualMediaSinkService {
  public:
   NoopDualMediaSinkService();
+
+  NoopDualMediaSinkService(const NoopDualMediaSinkService&) = delete;
+  NoopDualMediaSinkService& operator=(const NoopDualMediaSinkService&) = delete;
+
   ~NoopDualMediaSinkService() override;
 
   // DualMediaSinkService
   void OnUserGesture() override {}
   void StartMdnsDiscovery() override {}
   void BindLogger(LoggerImpl* logger_impl) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoopDualMediaSinkService);
+  void RemoveLogger() override {}
 };
 
 }  // namespace media_router

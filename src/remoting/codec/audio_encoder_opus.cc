@@ -5,8 +5,8 @@
 #include "remoting/codec/audio_encoder_opus.h"
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/multi_channel_resampler.h"
@@ -64,7 +64,7 @@ void AudioEncoderOpus::InitEncoder() {
     return;
   }
 
-  opus_encoder_ctl(encoder_, OPUS_SET_BITRATE(kOutputBitrateBps));
+  opus_encoder_ctl(encoder_.get(), OPUS_SET_BITRATE(kOutputBitrateBps));
 
   frame_size_ = sampling_rate_ * kFrameSizeMs /
       base::Time::kMillisecondsPerSecond;

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/buildflags.h"
@@ -34,6 +34,10 @@ class MojoRendererFactory final : public RendererFactory {
  public:
   explicit MojoRendererFactory(
       media::mojom::InterfaceFactory* interface_factory);
+
+  MojoRendererFactory(const MojoRendererFactory&) = delete;
+  MojoRendererFactory& operator=(const MojoRendererFactory&) = delete;
+
   ~MojoRendererFactory() final;
 
   std::unique_ptr<Renderer> CreateRenderer(
@@ -46,6 +50,7 @@ class MojoRendererFactory final : public RendererFactory {
 
 #if defined(OS_WIN)
   std::unique_ptr<MojoRenderer> CreateMediaFoundationRenderer(
+      mojo::PendingRemote<mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -78,9 +83,7 @@ class MojoRendererFactory final : public RendererFactory {
  private:
   // InterfaceFactory or InterfaceProvider used to create or connect to remote
   // renderer.
-  media::mojom::InterfaceFactory* interface_factory_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoRendererFactory);
+  raw_ptr<media::mojom::InterfaceFactory> interface_factory_ = nullptr;
 };
 
 }  // namespace media

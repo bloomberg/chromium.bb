@@ -34,4 +34,16 @@ SkPath PlatformWindowDelegate::GetWindowMaskForWindowShapeInPixels() {
 
 void PlatformWindowDelegate::OnSurfaceFrameLockingChanged(bool lock) {}
 
+absl::optional<MenuType> PlatformWindowDelegate::GetMenuType() {
+  return absl::nullopt;
+}
+
+void PlatformWindowDelegate::OnOcclusionStateChanged(
+    PlatformWindowOcclusionState occlusion_state) {}
+
+absl::optional<OwnedWindowAnchor>
+PlatformWindowDelegate::GetOwnedWindowAnchorAndRectInPx() {
+  return absl::nullopt;
+}
+
 }  // namespace ui

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -42,6 +41,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/security_interstitials/content/insecure_form_navigation_throttle.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
@@ -69,11 +69,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -125,16 +127,18 @@
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/media_router/browser/presentation/presentation_service_delegate_impl.h"  // nogncheck
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/safe_browsing/core/realtime/policy_engine.h"  // nogncheck
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"  // nogncheck
+#include "components/permissions/bluetooth_delegate_impl.h"
+#include "components/safe_browsing/core/browser/realtime/policy_engine.h"  // nogncheck
+#include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"  // nogncheck
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/resource/resource_bundle_android.h"
-#include "weblayer/browser/android/metrics/weblayer_metrics_navigation_throttle.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/android_descriptors.h"
+#include "weblayer/browser/bluetooth/weblayer_bluetooth_delegate_impl_client.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
 #include "weblayer/browser/http_auth_handler_impl.h"
@@ -161,6 +165,10 @@
 #include "weblayer/browser/captive_portal_service_factory.h"
 #endif
 
+#if BUILDFLAG(ENABLE_ARCORE)
+#include "weblayer/browser/xr/xr_integration_client_impl.h"
+#endif  // BUILDFLAG(ENABLE_ARCORE)
+
 namespace switches {
 // Specifies a list of hosts for whom we bypass proxy settings and use direct
 // connections. Ignored if --proxy-auto-detect or --no-proxy-server are also
@@ -179,8 +187,9 @@ bool IsSafebrowsingSupported() {
   // TODO(timvolodine): consider refactoring this out into safe_browsing/.
 #if defined(OS_ANDROID)
   return true;
-#endif
+#else
   return false;
+#endif
 }
 
 bool IsNetworkErrorAutoReloadEnabled() {
@@ -266,6 +275,7 @@ void RegisterPrefs(PrefRegistrySimple* pref_registry) {
   pref_registry->RegisterIntegerPref(kDownloadNextIDPref, 0);
 #if defined(OS_ANDROID)
   metrics::AndroidMetricsServiceClient::RegisterPrefs(pref_registry);
+  safe_browsing::RegisterLocalStatePrefs(pref_registry);
 #else
   // Call MetricsService::RegisterPrefs() as VariationsService::RegisterPrefs()
   // CHECKs that kVariationsCrashStreak has already been registered.
@@ -297,12 +307,12 @@ ContentBrowserClientImpl::~ContentBrowserClientImpl() = default;
 
 std::unique_ptr<content::BrowserMainParts>
 ContentBrowserClientImpl::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters) {
+    content::MainFunctionParams parameters) {
   // This should be called after CreateFeatureListAndFieldTrials(), which
   // creates |local_state_|.
   DCHECK(local_state_);
   std::unique_ptr<BrowserMainPartsImpl> browser_main_parts =
-      std::make_unique<BrowserMainPartsImpl>(params_, parameters,
+      std::make_unique<BrowserMainPartsImpl>(params_, std::move(parameters),
                                              std::move(local_state_));
 
   return browser_main_parts;
@@ -317,19 +327,9 @@ std::string ContentBrowserClientImpl::GetAcceptLangs(
   return i18n::GetAcceptLangs();
 }
 
-bool ContentBrowserClientImpl::AllowAppCache(
-    const GURL& manifest_url,
-    const GURL& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    content::BrowserContext* context) {
-  return embedder_support::AllowAppCache(
-      manifest_url, site_for_cookies, top_frame_origin,
-      CookieSettingsFactory::GetForBrowserContext(context).get());
-}
-
 content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
     const GURL& scope,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     content::BrowserContext* context) {
@@ -341,10 +341,10 @@ content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
 
 bool ContentBrowserClientImpl::AllowSharedWorker(
     const GURL& worker_url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const storage::StorageKey& storage_key,
+    const blink::StorageKey& storage_key,
     content::BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
@@ -357,7 +357,7 @@ bool ContentBrowserClientImpl::AllowSharedWorker(
 void ContentBrowserClientImpl::AllowWorkerFileSystem(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(embedder_support::AllowWorkerFileSystem(
       url, render_frames,
@@ -367,7 +367,7 @@ void ContentBrowserClientImpl::AllowWorkerFileSystem(
 bool ContentBrowserClientImpl::AllowWorkerIndexedDB(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames) {
   return embedder_support::AllowWorkerIndexedDB(
       url, render_frames,
       CookieSettingsFactory::GetForBrowserContext(browser_context).get());
@@ -376,7 +376,7 @@ bool ContentBrowserClientImpl::AllowWorkerIndexedDB(
 bool ContentBrowserClientImpl::AllowWorkerCacheStorage(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames) {
   return embedder_support::AllowWorkerCacheStorage(
       url, render_frames,
       CookieSettingsFactory::GetForBrowserContext(browser_context).get());
@@ -385,7 +385,7 @@ bool ContentBrowserClientImpl::AllowWorkerCacheStorage(
 bool ContentBrowserClientImpl::AllowWorkerWebLocks(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames) {
   return embedder_support::AllowWorkerWebLocks(
       url, CookieSettingsFactory::GetForBrowserContext(browser_context).get());
 }
@@ -426,6 +426,10 @@ std::string ContentBrowserClientImpl::GetUserAgent() {
   return embedder_support::GetUserAgent();
 }
 
+std::string ContentBrowserClientImpl::GetReducedUserAgent() {
+  return embedder_support::GetReducedUserAgent();
+}
+
 blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
   return embedder_support::GetUserAgentMetadata();
 }
@@ -454,9 +458,10 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
   context_params->allow_any_cors_exempt_header_for_browser = true;
   context_params->accept_language = GetAcceptLangs(context);
   if (!context->IsOffTheRecord()) {
-    base::FilePath cookie_path = context->GetPath();
-    cookie_path = cookie_path.Append(FILE_PATH_LITERAL("Cookies"));
-    context_params->cookie_path = cookie_path;
+    context_params->file_paths = network::mojom::NetworkContextFilePaths::New();
+    context_params->file_paths->data_path = context->GetPath();
+    context_params->file_paths->cookie_database_name =
+        base::FilePath(FILE_PATH_LITERAL("Cookies"));
     context_params->http_cache_path =
         ProfileImpl::GetCachePath(context).Append(FILE_PATH_LITERAL("Cache"));
   }
@@ -476,8 +481,7 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
         net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
   }
   if (command_line->HasSwitch(embedder_support::kShortReportingDelay)) {
-    context_params->reporting_delivery_interval =
-        base::TimeDelta::FromMilliseconds(100);
+    context_params->reporting_delivery_interval = base::Milliseconds(100);
   }
 }
 
@@ -584,13 +588,6 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url) {
       return true;
   }
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  if (scheme == url::kFtpScheme &&
-      base::FeatureList::IsEnabled(network::features::kFtpProtocol)) {
-    return true;
-  }
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
-
   return false;
 }
 
@@ -628,14 +625,15 @@ void ContentBrowserClientImpl::OverridePageVisibilityState(
       NoStatePrefetchManagerFactory::GetForBrowserContext(
           web_contents->GetBrowserContext());
   if (no_state_prefetch_manager &&
-      no_state_prefetch_manager->IsWebContentsPrerendering(web_contents)) {
+      no_state_prefetch_manager->IsWebContentsPrefetching(web_contents)) {
     *visibility_state = content::PageVisibilityState::kHiddenButPainting;
   }
 }
 
-bool ContentBrowserClientImpl::ShouldDisableSiteIsolation() {
+bool ContentBrowserClientImpl::ShouldDisableSiteIsolation(
+    content::SiteIsolationMode site_isolation_mode) {
   return site_isolation::SiteIsolationPolicy::
-      ShouldDisableSiteIsolationDueToMemoryThreshold();
+      ShouldDisableSiteIsolationDueToMemoryThreshold(site_isolation_mode);
 }
 
 std::vector<std::string>
@@ -714,7 +712,7 @@ bool ContentBrowserClientImpl::CanCreateWindow(
   }
 
   GURL popup_url(target_url);
-  web_contents->GetMainFrame()->GetProcess()->FilterURL(false, &popup_url);
+  opener->GetProcess()->FilterURL(false, &popup_url);
   // Use ui::PAGE_TRANSITION_LINK to match the similar logic in //chrome.
   content::OpenURLParams params(popup_url, referrer, disposition,
                                 ui::PAGE_TRANSITION_LINK,
@@ -773,15 +771,16 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
     navigation_controller =
         static_cast<NavigationControllerImpl*>(tab->GetNavigationController());
   }
+
+  NavigationImpl* navigation_impl = nullptr;
+  if (navigation_controller) {
+    navigation_impl =
+        navigation_controller->GetNavigationImplFromHandle(handle);
+  }
+
   if (handle->IsInMainFrame()) {
     NavigationUIDataImpl* navigation_ui_data =
         static_cast<NavigationUIDataImpl*>(handle->GetNavigationUIData());
-
-    NavigationImpl* navigation_impl = nullptr;
-    if (navigation_controller) {
-      navigation_impl =
-          navigation_controller->GetNavigationImplFromHandle(handle);
-    }
 
     if ((!navigation_ui_data ||
          !navigation_ui_data->disable_network_error_auto_reload()) &&
@@ -793,11 +792,6 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
       if (auto_reload_throttle)
         throttles.push_back(std::move(auto_reload_throttle));
     }
-
-#if defined(OS_ANDROID)
-    throttles.push_back(
-        std::make_unique<WebLayerMetricsNavigationThrottle>(handle));
-#endif
 
     // MetricsNavigationThrottle requires that it runs before
     // NavigationThrottles that may delay or cancel navigations, so only
@@ -837,22 +831,26 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
 
   if (auto* throttle_manager =
           subresource_filter::ContentSubresourceFilterThrottleManager::
-              FromWebContents(handle->GetWebContents())) {
+              FromNavigationHandle(*handle)) {
     throttle_manager->MaybeAppendNavigationThrottles(handle, &throttles);
   }
 
 #if defined(OS_ANDROID)
-  if (handle->IsInMainFrame()) {
-    if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
-        IsSafebrowsingSupported()) {
-      throttles.push_back(
-          GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(
-              handle));
-    }
+  if (IsSafebrowsingSupported()) {
+    std::unique_ptr<content::NavigationThrottle> safe_browsing_throttle =
+        GetSafeBrowsingService()->MaybeCreateSafeBrowsingNavigationThrottleFor(
+            handle);
+    if (safe_browsing_throttle)
+      throttles.push_back(std::move(safe_browsing_throttle));
+  }
 
-    throttles.push_back(
-        navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            handle, navigation_interception::SynchronyMode::kAsync));
+  if (!navigation_impl || !navigation_impl->disable_intent_processing()) {
+    std::unique_ptr<content::NavigationThrottle> intercept_navigation_throttle =
+        navigation_interception::InterceptNavigationDelegate::
+            MaybeCreateThrottleFor(
+                handle, navigation_interception::SynchronyMode::kAsync);
+    if (intercept_navigation_throttle)
+      throttles.push_back(std::move(intercept_navigation_throttle));
   }
 #endif
   return throttles;
@@ -891,6 +889,32 @@ bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
     content_capture::OnscreenContentProvider::BindContentCaptureReceiver(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == page_load_metrics::mojom::PageLoadMetrics::Name_) {
+    page_load_metrics::MetricsWebContentsObserver::BindPageLoadMetrics(
+        mojo::PendingAssociatedReceiver<
+            page_load_metrics::mojom::PageLoadMetrics>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name ==
+      security_interstitials::mojom::InterstitialCommands::Name_) {
+    security_interstitials::SecurityInterstitialTabHelper::
+        BindInterstitialCommands(
+            mojo::PendingAssociatedReceiver<
+                security_interstitials::mojom::InterstitialCommands>(
+                std::move(*handle)),
+            render_frame_host);
+    return true;
+  }
+  if (interface_name ==
+      subresource_filter::mojom::SubresourceFilterHost::Name_) {
+    subresource_filter::ContentSubresourceFilterThrottleManager::BindReceiver(
+        mojo::PendingAssociatedReceiver<
+            subresource_filter::mojom::SubresourceFilterHost>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }
@@ -947,7 +971,7 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
       !host->GetBrowserContext()->IsOffTheRecord(),
       /*force_to_support_secure_codecs*/ false));
 #endif
-  PageSpecificContentSettingsDelegate::UpdateRendererContentSettingRules(host);
+  PageSpecificContentSettingsDelegate::InitializeRenderer(host);
 }
 
 scoped_refptr<content::QuotaPermissionContext>
@@ -1114,7 +1138,7 @@ ContentBrowserClientImpl::CreateLoginDelegate(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
-    bool is_main_frame,
+    bool is_request_for_primary_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
@@ -1129,12 +1153,40 @@ ContentBrowserClientImpl::CreateTtsEnvironmentAndroid() {
   return std::make_unique<TtsEnvironmentAndroidImpl>();
 }
 
+bool ContentBrowserClientImpl::
+    ShouldObserveContainerViewLocationForDialogOverlays() {
+  // Observe location changes of the container view as WebLayer might be
+  // embedded in a scrollable container and we need to update the position of
+  // any DialogOverlays.
+  return true;
+}
+
+content::BluetoothDelegate* ContentBrowserClientImpl::GetBluetoothDelegate() {
+  if (!bluetooth_delegate_) {
+    bluetooth_delegate_ = std::make_unique<permissions::BluetoothDelegateImpl>(
+        std::make_unique<WebLayerBluetoothDelegateImplClient>());
+  }
+  return bluetooth_delegate_.get();
+}
+
 #endif  // OS_ANDROID
 
 content::SpeechRecognitionManagerDelegate*
 ContentBrowserClientImpl::CreateSpeechRecognitionManagerDelegate() {
   return new WebLayerSpeechRecognitionManagerDelegate();
 }
+
+#if BUILDFLAG(ENABLE_ARCORE)
+content::XrIntegrationClient*
+ContentBrowserClientImpl::GetXrIntegrationClient() {
+  if (!XrIntegrationClientImpl::IsEnabled())
+    return nullptr;
+
+  if (!xr_integration_client_)
+    xr_integration_client_ = std::make_unique<XrIntegrationClientImpl>();
+  return xr_integration_client_.get();
+}
+#endif  // BUILDFLAG(ENABLE_ARCORE)
 
 ukm::UkmService* ContentBrowserClientImpl::GetUkmService() {
 #if defined(OS_ANDROID)
@@ -1156,8 +1208,7 @@ bool ContentBrowserClientImpl::IsClipboardPasteAllowed(
 
   const GURL& url = render_frame_host->GetLastCommittedOrigin().GetURL();
   content::BrowserContext* browser_context =
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetBrowserContext();
+      render_frame_host->GetBrowserContext();
   DCHECK(browser_context);
 
   content::PermissionController* permission_controller =
@@ -1173,6 +1224,11 @@ bool ContentBrowserClientImpl::IsClipboardPasteAllowed(
     return false;
   }
 
+  return true;
+}
+
+bool ContentBrowserClientImpl::ShouldPreconnectNavigation(
+    content::BrowserContext* browser_context) {
   return true;
 }
 

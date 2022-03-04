@@ -4,7 +4,20 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "historyToolbarButton.css",
+    "invalidationsTree.css",
+    "timelineFlamechartPopover.css",
+    "timelineHistoryManager.css",
+    "timelinePaintProfiler.css",
+    "timelinePanel.css",
+    "timelineStatusDialog.css",
+  ]
+}
 
 devtools_module("timeline") {
   sources = [
@@ -53,11 +66,15 @@ devtools_module("timeline") {
 devtools_entrypoint("bundle") {
   entrypoint = "timeline.ts"
 
-  deps = [ ":timeline" ]
+  deps = [
+    ":css_files",
+    ":timeline",
+  ]
 
   visibility = [
     ":*",
     "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../../test/unittests/front_end/panels/timeline/*",
     "../../entrypoints/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents

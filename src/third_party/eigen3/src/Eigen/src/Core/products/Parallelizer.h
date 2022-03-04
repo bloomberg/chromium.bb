@@ -14,6 +14,8 @@
 #include <atomic>
 #endif
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

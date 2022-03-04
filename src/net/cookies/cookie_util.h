@@ -6,7 +6,6 @@
 #define NET_COOKIES_COOKIE_UTIL_H_
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -17,6 +16,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/site_for_cookies.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 class GURL;
@@ -235,26 +235,20 @@ ComputeSameSiteContextForSubresource(const GURL& url,
                                      const SiteForCookies& site_for_cookies,
                                      bool force_ignore_site_for_cookies);
 
-// Returns whether the respective SameSite feature is enabled.
-NET_EXPORT bool IsSameSiteByDefaultCookiesEnabled();
-NET_EXPORT bool IsCookiesWithoutSameSiteMustBeSecureEnabled();
+// Returns whether the respective feature is enabled.
 NET_EXPORT bool IsSchemefulSameSiteEnabled();
-
 NET_EXPORT bool IsFirstPartySetsEnabled();
 
-// Compute SameParty context, determines which of the cookies for `request_site`
-// can be accessed. Returns either kCrossParty or kSameParty. `isolation_info`
-// must be fully populated. In Chrome, all requests with credentials enabled
-// have a fully populated IsolationInfo.  But that might not be true for other
-// embedders yet (including cast, WebView, etc). Also not sure about iOS. If
+// Computes the SameParty context bundle, determining which of the cookies for
+// `request_site` can be accessed. `isolation_info` must be fully populated.  If
 // `force_ignore_top_frame_party` is true, the top frame from `isolation_info`
 // will be assumed to be same-party with `request_site`, regardless of what it
 // is.
-NET_EXPORT CookieOptions::SamePartyCookieContextType ComputeSamePartyContext(
-    const SchemefulSite& request_site,
-    const IsolationInfo& isolation_info,
-    const CookieAccessDelegate* cookie_access_delegate,
-    bool force_ignore_top_frame_party);
+NET_EXPORT SamePartyContext
+ComputeSamePartyContext(const SchemefulSite& request_site,
+                        const IsolationInfo& isolation_info,
+                        const CookieAccessDelegate* cookie_access_delegate,
+                        bool force_ignore_top_frame_party);
 
 NET_EXPORT FirstPartySetsContextType ComputeFirstPartySetsContextType(
     const SchemefulSite& request_site,
@@ -284,6 +278,15 @@ StripAccessResults(const CookieAccessResultList& cookie_access_result_list);
 
 // Records port related metrics from Omnibox navigations.
 NET_EXPORT void RecordCookiePortOmniboxHistograms(const GURL& url);
+
+// Checks invariants that should be upheld w.r.t. the included and excluded
+// cookies. Namely: the included cookies should be elements of
+// `included_cookies`; excluded cookies should be elements of
+// `excluded_cookies`; and included cookies should be in the correct sorted
+// order.
+NET_EXPORT void DCheckIncludedAndExcludedCookieLists(
+    const CookieAccessResultList& included_cookies,
+    const CookieAccessResultList& excluded_cookies);
 
 }  // namespace cookie_util
 

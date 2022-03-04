@@ -5,6 +5,7 @@
 #include "content/browser/locks/lock_manager.h"
 
 #include <algorithm>
+#include <list>
 #include <memory>
 #include <tuple>
 #include <unordered_set>
@@ -14,6 +15,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -51,6 +53,9 @@ class LockHandleImpl final : public blink::mojom::LockHandle {
                  int64_t lock_id)
       : context_(context), origin_(origin), lock_id_(lock_id) {}
 
+  LockHandleImpl(const LockHandleImpl&) = delete;
+  LockHandleImpl& operator=(const LockHandleImpl&) = delete;
+
   ~LockHandleImpl() override {
     if (context_)
       context_->ReleaseLock(origin_, lock_id_);
@@ -64,8 +69,6 @@ class LockHandleImpl final : public blink::mojom::LockHandle {
   base::WeakPtr<LockManager> context_;
   const url::Origin origin_;
   const int64_t lock_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(LockHandleImpl);
 };
 
 }  // namespace
@@ -301,7 +304,7 @@ class LockManager::OriginState {
 
   // Any OriginState is owned by a LockManager so a raw pointer back to an
   // OriginState's owning LockManager is safe.
-  LockManager* const lock_manager_;
+  const raw_ptr<LockManager> lock_manager_;
 };
 
 void LockManager::BindReceiver(

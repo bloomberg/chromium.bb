@@ -8,7 +8,6 @@
 #include <sys/resource.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
@@ -16,6 +15,10 @@ namespace sandbox {
 // This class provides a small wrapper around setrlimit().
 class SANDBOX_EXPORT ResourceLimits {
  public:
+  ResourceLimits() = delete;
+  ResourceLimits(const ResourceLimits&) = delete;
+  ResourceLimits& operator=(const ResourceLimits&) = delete;
+
   // Lower the soft and hard limit of |resource| to |limit|. If the current
   // limit is lower than |limit|, keep it. Returns 0 on success, or |errno|.
   static int Lower(int resource, rlim_t limit) WARN_UNUSED_RESULT;
@@ -33,9 +36,6 @@ class SANDBOX_EXPORT ResourceLimits {
   // call to setrlimit fails. Returns 0 on success, or |errno|.
   static int AdjustCurrent(int resource,
                            long long int change) WARN_UNUSED_RESULT;
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceLimits);
 };
 
 }  // namespace sandbox

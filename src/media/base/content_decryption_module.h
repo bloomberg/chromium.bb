@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/eme_constants.h"
@@ -68,7 +67,18 @@ enum class HdcpVersion {
   kHdcpVersion2_1,
   kHdcpVersion2_2,
   kHdcpVersion2_3,
-  kHdcpVersionMax = kHdcpVersion2_3
+  kMaxValue = kHdcpVersion2_3
+};
+
+// Reasons for CDM session closed.
+enum class CdmSessionClosedReason {
+  kInternalError,  // An unrecoverable error happened in the CDM., e.g. crash.
+  kClose,          // Reaction to MediaKeySession close().
+  kReleaseAcknowledged,   // The CDM received a "record-of-license-destruction"
+                          // acknowledgement.
+  kHardwareContextReset,  // As a result of hardware context reset.
+  kResourceEvicted,  // The CDM resource was evicted, e.g. by newer sessions.
+  kMaxValue = kResourceEvicted
 };
 
 // An interface that represents the Content Decryption Module (CDM) in the
@@ -98,6 +108,9 @@ class MEDIA_EXPORT ContentDecryptionModule
     : public base::RefCountedThreadSafe<ContentDecryptionModule,
                                         ContentDecryptionModuleTraits> {
  public:
+  ContentDecryptionModule(const ContentDecryptionModule&) = delete;
+  ContentDecryptionModule& operator=(const ContentDecryptionModule&) = delete;
+
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
   virtual void SetServerCertificate(
@@ -172,9 +185,6 @@ class MEDIA_EXPORT ContentDecryptionModule
 
   ContentDecryptionModule();
   virtual ~ContentDecryptionModule();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentDecryptionModule);
 };
 
 struct MEDIA_EXPORT ContentDecryptionModuleTraits {
@@ -191,12 +201,14 @@ using SessionMessageCB =
                                  CdmMessageType message_type,
                                  const std::vector<uint8_t>& message)>;
 
-// Called when the session specified by |session_id| is closed. Note that the
+// Called when the session specified by `session_id` is closed. Note that the
 // CDM may close a session at any point, such as in response to a CloseSession()
 // call, when the session is no longer needed, or when system resources are
-// lost. See http://w3c.github.io/encrypted-media/#session-close
+// lost, as specified by `reason`.
+// See http://w3c.github.io/encrypted-media/#session-close
 using SessionClosedCB =
-    base::RepeatingCallback<void(const std::string& session_id)>;
+    base::RepeatingCallback<void(const std::string& session_id,
+                                 CdmSessionClosedReason reason)>;
 
 // Called when there has been a change in the keys in the session or their
 // status. See http://w3c.github.io/encrypted-media/#dom-evt-keystatuseschange

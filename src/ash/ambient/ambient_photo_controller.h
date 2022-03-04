@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_photo_cache.h"
@@ -16,8 +15,8 @@
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
+#include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -32,22 +31,18 @@ class ImageSkia;
 
 namespace ash {
 
+class AmbientClient;
+class AmbientAccessTokenController;
+
 // Class to handle photos in ambient mode.
 class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
  public:
-  // Start fetching next |ScreenUpdate| from the backdrop server. The specified
-  // download callback will be run upon completion and returns a null image
-  // if: 1. the response did not have the desired fields or urls or, 2. the
-  // download attempt from that url failed. The |icon_callback| also returns
-  // the weather temperature in Fahrenheit together with the image.
-  using TopicsDownloadCallback =
-      base::OnceCallback<void(const std::vector<AmbientModeTopic>& topics)>;
-  using WeatherIconDownloadCallback =
-      base::OnceCallback<void(absl::optional<float>, const gfx::ImageSkia&)>;
+  AmbientPhotoController(AmbientClient& ambient_client,
+                         AmbientAccessTokenController& access_token_controller);
 
-  using PhotoDownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
+  AmbientPhotoController(const AmbientPhotoController&) = delete;
+  AmbientPhotoController& operator=(const AmbientPhotoController&) = delete;
 
-  AmbientPhotoController();
   ~AmbientPhotoController() override;
 
   // Start/stop updating the screen contents.
@@ -79,6 +74,9 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
  private:
   friend class AmbientAshTestBase;
   friend class AmbientPhotoControllerTest;
+
+  // Initialize variables.
+  void Init();
 
   void FetchTopics();
 
@@ -114,20 +112,18 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
 
   void OnPhotoRawDataDownloaded(bool is_related_image,
                                 base::RepeatingClosure on_done,
-                                std::unique_ptr<std::string> details,
-                                std::unique_ptr<std::string> data);
+                                std::string&& data);
 
   void OnAllPhotoRawDataDownloaded();
 
-  void OnAllPhotoRawDataAvailable(bool from_downloading,
-                                  PhotoCacheEntry cache_entry);
+  void OnAllPhotoRawDataAvailable(bool from_downloading);
 
-  void OnPhotoRawDataSaved(bool from_downloading, PhotoCacheEntry cache_entry);
+  void OnPhotoRawDataSaved(bool from_downloading);
 
   void DecodePhotoRawData(bool from_downloading,
                           bool is_related_image,
                           base::RepeatingClosure on_done,
-                          std::unique_ptr<std::string> data);
+                          const std::string& data);
 
   void OnPhotoDecoded(bool from_downloading,
                       bool is_related_image,
@@ -135,7 +131,6 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
                       const gfx::ImageSkia& image);
 
   void OnAllPhotoDecoded(bool from_downloading,
-                         const std::string& details,
                          const std::string& hash);
 
   void StartDownloadingWeatherConditionIcon(
@@ -224,13 +219,11 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Temporary data store when fetching images and details.
-  PhotoCacheEntry cache_entry_;
+  ambient::PhotoCacheEntry cache_entry_;
   gfx::ImageSkia image_;
   gfx::ImageSkia related_image_;
 
   base::WeakPtrFactory<AmbientPhotoController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AmbientPhotoController);
 };
 
 }  // namespace ash

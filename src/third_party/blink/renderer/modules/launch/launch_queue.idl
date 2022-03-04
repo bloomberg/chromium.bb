@@ -7,9 +7,9 @@
 
 [
     Exposed=Window,
-    RuntimeEnabled=FileHandling
+    RuntimeEnabled=WebAppLaunchQueue
 ] interface LaunchQueue {
   void setConsumer(LaunchConsumer consumer);
 };
 
-callback LaunchConsumer = any (LaunchParams params);
+callback LaunchConsumer = void(LaunchParams params);

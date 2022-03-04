@@ -37,7 +37,8 @@ enum class VideoCapability {
   kH264,
   kVp8,
   kVp9,
-  kHevc
+  kHevc,
+  kAv1
 };
 
 // This class is similar to the RemotingSinkMetadata in Chrome, however

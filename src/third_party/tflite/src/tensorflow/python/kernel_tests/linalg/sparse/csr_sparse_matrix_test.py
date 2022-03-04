@@ -14,10 +14,6 @@
 # ==============================================================================
 """CSR sparse matrix tests."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import itertools
 
 import numpy as np
@@ -162,7 +158,7 @@ class SparseMatrixMatmulTest(test.TestCase):
                          1.j * np.random.randn(*dense_shape_b))).astype(dtype)
       a_sm = sparse_csr_matrix_ops.CSRSparseMatrix(a_mats)
       b_sm = sparse_csr_matrix_ops.CSRSparseMatrix(b_mats)
-      c_dense = math_ops.matmul(
+      c_dense = test_util.matmul_without_tf32(
           a_mats,
           b_mats,
           transpose_a=transpose_a,
@@ -202,7 +198,7 @@ class SparseMatrixMatmulTest(test.TestCase):
       b_mats = (np.random.randn(*dense_shape_b) +
                 1.j * np.random.randn(*dense_shape_b)).astype(dtype)
       a_sm = sparse_csr_matrix_ops.CSRSparseMatrix(a_mats)
-      c_dense = math_ops.matmul(
+      c_dense = test_util.matmul_without_tf32(
           a_mats,
           b_mats,
           transpose_a=transpose_a,
@@ -240,7 +236,7 @@ class SparseMatrixMatmulTest(test.TestCase):
       b_mats = sparsify((np.random.randn(*dense_shape_b) +
                          1.j * np.random.randn(*dense_shape_b))).astype(dtype)
       b_sm = sparse_csr_matrix_ops.CSRSparseMatrix(b_mats)
-      c_dense = math_ops.matmul(
+      c_dense = test_util.matmul_without_tf32(
           a_mats,
           b_mats,
           transpose_a=transpose_a,

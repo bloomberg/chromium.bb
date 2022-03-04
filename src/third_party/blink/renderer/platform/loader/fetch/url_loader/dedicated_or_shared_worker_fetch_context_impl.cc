@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -75,6 +75,8 @@ class DedicatedOrSharedWorkerFetchContextImpl::Factory
       : WebURLLoaderFactory(std::move(loader_factory),
                             cors_exempt_header_list,
                             terminate_sync_load_event) {}
+  Factory(const Factory&) = delete;
+  Factory& operator=(const Factory&) = delete;
   ~Factory() override = default;
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
@@ -154,7 +156,6 @@ class DedicatedOrSharedWorkerFetchContextImpl::Factory
 
   scoped_refptr<network::SharedURLLoaderFactory> service_worker_loader_factory_;
   base::WeakPtrFactory<Factory> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
 DedicatedOrSharedWorkerFetchContextImpl::
@@ -392,8 +393,9 @@ DedicatedOrSharedWorkerFetchContextImpl::WrapURLLoaderFactory(
 }
 
 std::unique_ptr<WebCodeCacheLoader>
-DedicatedOrSharedWorkerFetchContextImpl::CreateCodeCacheLoader() {
-  return WebCodeCacheLoader::Create(terminate_sync_load_event_);
+DedicatedOrSharedWorkerFetchContextImpl::CreateCodeCacheLoader(
+    CodeCacheHost* code_cache_host) {
+  return WebCodeCacheLoader::Create(code_cache_host);
 }
 
 void DedicatedOrSharedWorkerFetchContextImpl::WillSendRequest(
@@ -639,7 +641,7 @@ void DedicatedOrSharedWorkerFetchContextImpl::UpdateSubresourceLoaderFactories(
   loader_factory_ = network::SharedURLLoaderFactory::Create(
       subresource_loader_factory_bundle->Clone());
   fallback_factory_ = network::SharedURLLoaderFactory::Create(
-      subresource_loader_factory_bundle->CloneWithoutAppCacheFactory());
+      subresource_loader_factory_bundle->Clone());
   web_loader_factory_ = std::make_unique<Factory>(
       loader_factory_, cors_exempt_header_list_, terminate_sync_load_event_);
   ResetServiceWorkerURLLoaderFactory();

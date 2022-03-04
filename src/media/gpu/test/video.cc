@@ -63,7 +63,6 @@ std::unique_ptr<Video> Video::Expand(const gfx::Size& resolution,
       << "An odd origin point is not supported";
   auto new_video = std::make_unique<Video>(file_path_, metadata_file_path_);
   new_video->frame_checksums_ = frame_checksums_;
-  new_video->thumbnail_checksums_ = thumbnail_checksums_;
   new_video->profile_ = profile_;
   new_video->codec_ = codec_;
   new_video->frame_rate_ = frame_rate_;
@@ -128,7 +127,6 @@ std::unique_ptr<Video> Video::ConvertToNV12() const {
       << "The pixel format of source video is not I420";
   auto new_video = std::make_unique<Video>(file_path_, metadata_file_path_);
   new_video->frame_checksums_ = frame_checksums_;
-  new_video->thumbnail_checksums_ = thumbnail_checksums_;
   new_video->profile_ = profile_;
   new_video->codec_ = codec_;
   new_video->bit_depth_ = bit_depth_;
@@ -236,7 +234,7 @@ bool Video::Load(const size_t max_frames) {
 }
 
 bool Video::Decode() {
-  if (codec_ != VideoCodec::kCodecVP9) {
+  if (codec_ != VideoCodec::kVP9) {
     LOG(ERROR) << "Decoding is currently only supported for VP9 videos";
     return false;
   }
@@ -270,7 +268,7 @@ bool Video::Decode() {
   // data will be replaced with the decompressed video stream.
   pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_I420;
   profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
-  codec_ = kUnknownVideoCodec;
+  codec_ = VideoCodec::kUnknown;
   data_ = std::move(decompressed_data);
   return true;
 }
@@ -328,16 +326,12 @@ gfx::Rect Video::VisibleRect() const {
 }
 
 base::TimeDelta Video::GetDuration() const {
-  return base::TimeDelta::FromSecondsD(static_cast<double>(num_frames_) /
-                                       static_cast<double>(frame_rate_));
+  return base::Seconds(static_cast<double>(num_frames_) /
+                       static_cast<double>(frame_rate_));
 }
 
 const std::vector<std::string>& Video::FrameChecksums() const {
   return frame_checksums_;
-}
-
-const std::vector<std::string>& Video::ThumbnailChecksums() const {
-  return thumbnail_checksums_;
 }
 
 // static
@@ -499,18 +493,6 @@ bool Video::LoadMetadata() {
     }
   }
 
-  // Find optional thumbnail checksums. These are only required when using the
-  // thumbnail test on older platforms that don't support the frame validator.
-  const base::Value* thumbnail_checksums =
-      metadata->FindKeyOfType("thumbnail_checksums", base::Value::Type::LIST);
-  if (thumbnail_checksums) {
-    for (const base::Value& checksum : thumbnail_checksums->GetList()) {
-      const std::string& checksum_str = checksum.GetString();
-      if (checksum_str.size() > 0 && checksum_str[0] != '#')
-        thumbnail_checksums_.push_back(checksum_str);
-    }
-  }
-
   return true;
 }
 
@@ -667,15 +649,15 @@ absl::optional<VideoCodecProfile> Video::ConvertStringtoProfile(
 absl::optional<VideoCodec> Video::ConvertProfileToCodec(
     VideoCodecProfile profile) {
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
-    return kCodecH264;
+    return VideoCodec::kH264;
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
-    return kCodecVP8;
+    return VideoCodec::kVP8;
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    return kCodecVP9;
+    return VideoCodec::kVP9;
   } else if (profile >= AV1PROFILE_MIN && profile <= AV1PROFILE_MAX) {
-    return kCodecAV1;
+    return VideoCodec::kAV1;
   } else if (profile >= HEVCPROFILE_MIN && profile <= HEVCPROFILE_MAX) {
-    return kCodecHEVC;
+    return VideoCodec::kHEVC;
   } else {
     VLOG(2) << GetProfileName(profile) << " is not supported";
     return absl::nullopt;

@@ -12,7 +12,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_input_helper.h"
@@ -34,6 +33,10 @@ class InputSuggester {
  public:
   // Does not take ownership of |supplier|, which should not be NULL.
   explicit InputSuggester(::i18n::addressinput::PreloadSupplier* supplier);
+
+  InputSuggester(const InputSuggester&) = delete;
+  InputSuggester& operator=(const InputSuggester&) = delete;
+
   ~InputSuggester();
 
   // Fills in |suggestions| for the partially typed in |user_input|, assuming
@@ -78,6 +81,10 @@ class InputSuggester {
     // Initializes the canonicalizer. This is slow, so avoid calling it more
     // often than necessary.
     StringCanonicalizer();
+
+    StringCanonicalizer(const StringCanonicalizer&) = delete;
+    StringCanonicalizer& operator=(const StringCanonicalizer&) = delete;
+
     ~StringCanonicalizer();
 
     // Returns a 0-terminated canonical version of the string that can be used
@@ -97,8 +104,6 @@ class InputSuggester {
 
     mutable std::vector<uint8_t> buffer_;
     std::unique_ptr<icu::Collator> collator_;
-
-    DISALLOW_COPY_AND_ASSIGN(StringCanonicalizer);
   };
 
   // The method to be invoked by |validated_| callback.
@@ -126,8 +131,6 @@ class InputSuggester {
   // Canonicalizes strings for case and diacritic insensitive search of
   // sub-region names.
   StringCanonicalizer canonicalizer_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputSuggester);
 };
 
 }  // namespace autofill

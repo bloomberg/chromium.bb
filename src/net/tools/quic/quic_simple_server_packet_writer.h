@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
@@ -31,6 +30,11 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
  public:
   QuicSimpleServerPacketWriter(UDPServerSocket* socket,
                                quic::QuicDispatcher* dispatcher);
+
+  QuicSimpleServerPacketWriter(const QuicSimpleServerPacketWriter&) = delete;
+  QuicSimpleServerPacketWriter& operator=(const QuicSimpleServerPacketWriter&) =
+      delete;
+
   ~QuicSimpleServerPacketWriter() override;
 
   quic::WriteResult WritePacket(const char* buffer,
@@ -63,8 +67,6 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
   bool write_blocked_;
 
   base::WeakPtrFactory<QuicSimpleServerPacketWriter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerPacketWriter);
 };
 
 }  // namespace net

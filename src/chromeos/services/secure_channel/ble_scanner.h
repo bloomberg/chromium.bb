@@ -8,7 +8,6 @@
 #include <ostream>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
@@ -37,8 +36,12 @@ class BleScanner {
         multidevice::RemoteDeviceRef remote_device,
         device::BluetoothDevice* bluetooth_device,
         ConnectionMedium connection_medium,
-        ConnectionRole connection_role) = 0;
+        ConnectionRole connection_role,
+        const std::vector<uint8_t>& eid) = 0;
   };
+
+  BleScanner(const BleScanner&) = delete;
+  BleScanner& operator=(const BleScanner&) = delete;
 
   virtual ~BleScanner();
 
@@ -72,14 +75,13 @@ class BleScanner {
       const multidevice::RemoteDeviceRef& remote_device,
       device::BluetoothDevice* bluetooth_device,
       ConnectionMedium connection_medium,
-      ConnectionRole connection_role);
+      ConnectionRole connection_role,
+      const std::vector<uint8_t>& eid);
 
  private:
   base::ObserverList<Observer> observer_list_;
 
   base::flat_set<ConnectionAttemptDetails> scan_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(BleScanner);
 };
 
 }  // namespace secure_channel

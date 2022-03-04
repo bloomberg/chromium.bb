@@ -26,14 +26,14 @@ TEST_F(MemberAccessorExpressionTest, Creation) {
   auto* mem = Expr("member");
 
   auto* stmt = create<MemberAccessorExpression>(str, mem);
-  EXPECT_EQ(stmt->structure(), str);
-  EXPECT_EQ(stmt->member(), mem);
+  EXPECT_EQ(stmt->structure, str);
+  EXPECT_EQ(stmt->member, mem);
 }
 
 TEST_F(MemberAccessorExpressionTest, Creation_WithSource) {
   auto* stmt = create<MemberAccessorExpression>(
       Source{Source::Location{20, 2}}, Expr("structure"), Expr("member"));
-  auto src = stmt->source();
+  auto src = stmt->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -82,16 +82,6 @@ TEST_F(MemberAccessorExpressionTest, Assert_DifferentProgramID_Member) {
                                             b2.Expr("member"));
       },
       "internal compiler error");
-}
-
-TEST_F(MemberAccessorExpressionTest, ToStr) {
-  auto* stmt =
-      create<MemberAccessorExpression>(Expr("structure"), Expr("member"));
-  EXPECT_EQ(str(stmt), R"(MemberAccessor[not set]{
-  Identifier[not set]{structure}
-  Identifier[not set]{member}
-}
-)");
 }
 
 }  // namespace

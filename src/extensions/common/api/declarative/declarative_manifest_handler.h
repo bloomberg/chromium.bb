@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/common/manifest_handler.h"
 
 namespace extensions {
@@ -21,6 +20,11 @@ namespace extensions {
 class DeclarativeManifestHandler : public ManifestHandler {
  public:
   DeclarativeManifestHandler();
+
+  DeclarativeManifestHandler(const DeclarativeManifestHandler&) = delete;
+  DeclarativeManifestHandler& operator=(const DeclarativeManifestHandler&) =
+      delete;
+
   ~DeclarativeManifestHandler() override;
 
   // ManifestHandler overrides.
@@ -29,8 +33,6 @@ class DeclarativeManifestHandler : public ManifestHandler {
  private:
   // ManifestHandler overrides.
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeManifestHandler);
 };
 
 }  // namespace extensions

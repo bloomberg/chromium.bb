@@ -9,7 +9,9 @@
 
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_metrics.h"
@@ -38,6 +40,10 @@ class TabHoverCardController : public views::ViewObserver,
   // Returns whether the hover card preview images feature is enabled.
   static bool AreHoverCardImagesEnabled();
 
+  // Returns whether hover card animations should be shown on the current
+  // device.
+  static bool UseAnimations();
+
   bool IsHoverCardVisible() const;
   bool IsHoverCardShowingForTab(Tab* tab) const;
   void UpdateHoverCard(Tab* tab,
@@ -54,7 +60,11 @@ class TabHoverCardController : public views::ViewObserver,
                            SetPreviewWithNoHoverCardDoesntCrash);
   class EventSniffer;
 
-  static bool UseAnimations();
+  enum ThumbnailWaitState {
+    kNotWaiting,
+    kWaitingWithPlaceholder,
+    kWaitingWithoutPlaceholder
+  };
 
   // views::ViewObserver:
   void OnViewIsDeleting(views::View* observed_view) override;
@@ -78,6 +88,10 @@ class TabHoverCardController : public views::ViewObserver,
 
   const views::View* GetTargetAnchorView() const;
 
+  // Determines if `target_tab_` is still valid. Call this when entering
+  // TabHoverCardController from an asynchronous callback.
+  bool TargetTabIsValid() const;
+
   // Helper for recording metrics when a card becomes fully visible to the user.
   void OnCardFullyVisible();
 
@@ -93,6 +107,10 @@ class TabHoverCardController : public views::ViewObserver,
 
   TabHoverCardMetrics* metrics_for_testing() const { return metrics_.get(); }
 
+  bool waiting_for_preview() const {
+    return thumbnail_wait_state_ != ThumbnailWaitState::kNotWaiting;
+  }
+
   // Timestamp of the last time the hover card is hidden by the mouse leaving
   // the tab strip. This is used for reshowing the hover card without delay if
   // the mouse reenters within a given amount of time.
@@ -100,9 +118,9 @@ class TabHoverCardController : public views::ViewObserver,
 
   base::OneShotTimer delayed_show_timer_;
 
-  Tab* target_tab_ = nullptr;
-  TabStrip* const tab_strip_;
-  TabHoverCardBubbleView* hover_card_ = nullptr;
+  raw_ptr<Tab> target_tab_ = nullptr;
+  const raw_ptr<TabStrip> tab_strip_;
+  raw_ptr<TabHoverCardBubbleView> hover_card_ = nullptr;
   base::ScopedObservation<views::View, views::ViewObserver>
       hover_card_observation_{this};
   base::ScopedObservation<views::View, views::ViewObserver>
@@ -121,7 +139,7 @@ class TabHoverCardController : public views::ViewObserver,
 
   std::unique_ptr<TabHoverCardThumbnailObserver> thumbnail_observer_;
   base::CallbackListSubscription thumbnail_subscription_;
-  bool waiting_for_preview_ = false;
+  ThumbnailWaitState thumbnail_wait_state_ = ThumbnailWaitState::kNotWaiting;
 
   base::CallbackListSubscription fade_complete_subscription_;
   base::CallbackListSubscription slide_progressed_subscription_;

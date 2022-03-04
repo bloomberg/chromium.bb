@@ -73,47 +73,13 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Scalar) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __bool
-    {
-      ScalarConstructor[not set]{false}
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_12
-    none
-    __u32
-    {
-      ScalarConstructor[not set]{0u}
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_13
-    none
-    __i32
-    {
-      ScalarConstructor[not set]{0}
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_14
-    none
-    __f32
-    {
-      ScalarConstructor[not set]{0.000000}
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr(R"(let x_11 : bool = false;
+let x_12 : u32 = 0u;
+let x_13 : i32 = 0;
+let x_14 : f32 = 0.0;
+)"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Vector) {
@@ -126,7 +92,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Vector) {
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
 
-     %14 = OpCopyObject %v2uint %4
+     %14 = OpCopyObject %v2bool %4
      %11 = OpCopyObject %v2uint %1
      %12 = OpCopyObject %v2int %2
      %13 = OpCopyObject %v2float %3
@@ -137,63 +103,13 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Vector) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_14
-    none
-    __vec_2__bool
-    {
-      TypeConstructor[not set]{
-        __vec_2__bool
-        ScalarConstructor[not set]{false}
-        ScalarConstructor[not set]{false}
-      }
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __vec_2__u32
-    {
-      TypeConstructor[not set]{
-        __vec_2__u32
-        ScalarConstructor[not set]{0u}
-        ScalarConstructor[not set]{0u}
-      }
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_12
-    none
-    __vec_2__i32
-    {
-      TypeConstructor[not set]{
-        __vec_2__i32
-        ScalarConstructor[not set]{0}
-        ScalarConstructor[not set]{0}
-      }
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_13
-    none
-    __vec_2__f32
-    {
-      TypeConstructor[not set]{
-        __vec_2__f32
-        ScalarConstructor[not set]{0.000000}
-        ScalarConstructor[not set]{0.000000}
-      }
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr(R"(let x_14 : vec2<bool> = vec2<bool>(false, false);
+let x_11 : vec2<u32> = vec2<u32>(0u, 0u);
+let x_12 : vec2<i32> = vec2<i32>(0, 0);
+let x_13 : vec2<f32> = vec2<f32>(0.0, 0.0);
+)"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Scalar) {
@@ -216,47 +132,13 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Scalar) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __bool
-    {
-      ScalarConstructor[not set]{false}
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_12
-    none
-    __u32
-    {
-      ScalarConstructor[not set]{0u}
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_13
-    none
-    __i32
-    {
-      ScalarConstructor[not set]{0}
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_14
-    none
-    __f32
-    {
-      ScalarConstructor[not set]{0.000000}
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr(R"(let x_11 : bool = false;
+let x_12 : u32 = 0u;
+let x_13 : i32 = 0;
+let x_14 : f32 = 0.0;
+)"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Vector) {
@@ -277,49 +159,12 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Vector) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __vec_2__u32
-    {
-      TypeConstructor[not set]{
-        __vec_2__u32
-        ScalarConstructor[not set]{0u}
-        ScalarConstructor[not set]{0u}
-      }
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_12
-    none
-    __vec_2__i32
-    {
-      TypeConstructor[not set]{
-        __vec_2__i32
-        ScalarConstructor[not set]{0}
-        ScalarConstructor[not set]{0}
-      }
-    }
-  }
-}
-VariableDeclStatement{
-  VariableConst{
-    x_13
-    none
-    __vec_2__f32
-    {
-      TypeConstructor[not set]{
-        __vec_2__f32
-        ScalarConstructor[not set]{0.000000}
-        ScalarConstructor[not set]{0.000000}
-      }
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr(R"(let x_11 : vec2<u32> = vec2<u32>(0u, 0u);
+let x_12 : vec2<i32> = vec2<i32>(0, 0);
+let x_13 : vec2<f32> = vec2<f32>(0.0, 0.0);
+)"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Matrix) {
@@ -338,29 +183,11 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Matrix) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __mat_2_2__f32
-    {
-      TypeConstructor[not set]{
-        __mat_2_2__f32
-        TypeConstructor[not set]{
-          __vec_2__f32
-          ScalarConstructor[not set]{0.000000}
-          ScalarConstructor[not set]{0.000000}
-        }
-        TypeConstructor[not set]{
-          __vec_2__f32
-          ScalarConstructor[not set]{0.000000}
-          ScalarConstructor[not set]{0.000000}
-        }
-      }
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_11 : mat2x2<f32> = mat2x2<f32>("
+                        "vec2<f32>(0.0, 0.0), "
+                        "vec2<f32>(0.0, 0.0));"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Array) {
@@ -380,21 +207,9 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Array) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __array__u32_2
-    {
-      TypeConstructor[not set]{
-        __array__u32_2
-        ScalarConstructor[not set]{0u}
-        ScalarConstructor[not set]{0u}
-      }
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_11 : array<u32, 2u> = array<u32, 2u>(0u, 0u);"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Struct) {
@@ -413,23 +228,9 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Struct) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-              HasSubstr(R"(VariableDeclStatement{
-  VariableConst{
-    x_11
-    none
-    __type_name_S
-    {
-      TypeConstructor[not set]{
-        __type_name_S
-        ScalarConstructor[not set]{false}
-        ScalarConstructor[not set]{0u}
-        ScalarConstructor[not set]{0}
-        ScalarConstructor[not set]{0.000000}
-      }
-    }
-  }
-})"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_11 : S = S(false, 0u, 0, 0.0);"));
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpNop) {
@@ -445,8 +246,8 @@ TEST_F(SpvParserTestMiscInstruction, OpNop) {
       << p->error() << assembly;
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), Eq(R"(Return{}
-)"));
+  auto ast_body = fe.ast_body();
+  EXPECT_EQ(test::ToString(p->program(), ast_body), "return;\n");
 }
 
 // Test swizzle generation.
@@ -476,7 +277,7 @@ TEST_P(SpvParserSwizzleTest, Sample) {
     Program program(p->program());
     EXPECT_TRUE(fe.success());
     ASSERT_NE(result, nullptr);
-    auto got = program.str(result);
+    auto got = test::ToString(program, result);
     EXPECT_EQ(got, GetParam().expected_expr);
   } else {
     EXPECT_EQ(result, nullptr);
@@ -489,12 +290,57 @@ INSTANTIATE_TEST_SUITE_P(
     ValidIndex,
     SpvParserSwizzleTest,
     ::testing::ValuesIn(std::vector<SwizzleCase>{
-        {0, "Identifier[not set]{x}\n", ""},
-        {1, "Identifier[not set]{y}\n", ""},
-        {2, "Identifier[not set]{z}\n", ""},
-        {3, "Identifier[not set]{w}\n", ""},
+        {0, "x", ""},
+        {1, "y", ""},
+        {2, "z", ""},
+        {3, "w", ""},
         {4, "", "vector component index is larger than 3: 4"},
         {99999, "", "vector component index is larger than 3: 99999"}}));
+
+TEST_F(SpvParserTest, ValueFromBlockNotInBlockOrder) {
+  // crbug.com/tint/804
+  const auto assembly = Preamble() + CommonTypes() + R"(
+     %float_42 = OpConstant %float 42.0
+     %cond = OpUndef %bool
+
+     %100 = OpFunction %void None %voidfn
+     %10 = OpLabel
+     OpBranch %30
+
+     ; unreachable
+     %20 = OpLabel
+     %499 = OpFAdd %float %float_42 %float_42
+     %500 = OpFAdd %float %499 %float_42
+     OpBranch %25
+
+     %25 = OpLabel
+     OpBranch %80
+
+
+     %30 = OpLabel
+     OpLoopMerge %90 %80 None
+     OpBranchConditional %cond %90 %40
+
+     %40 = OpLabel
+     OpBranch %90
+
+     %80 = OpLabel ; unreachable continue target
+                ; but "dominated" by %20 and %25
+     %81 = OpFMul %float %500 %float_42 ; %500 is defined in %20
+     OpBranch %30 ; backedge
+
+     %90 = OpLabel
+     OpReturn
+     OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  auto ast_body = fe.ast_body();
+  const auto got = test::ToString(p->program(), ast_body);
+  EXPECT_THAT(got, HasSubstr("let x_81 : f32 = (0.0 * 42.0);"));
+}
 
 // TODO(dneto): OpSizeof : requires Kernel (OpenCL)
 

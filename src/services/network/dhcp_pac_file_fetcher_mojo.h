@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -37,6 +36,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DhcpPacFileFetcherMojo
   DhcpPacFileFetcherMojo(net::URLRequestContext* url_request_context,
                          mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
                              dhcp_wpad_url_client);
+
+  DhcpPacFileFetcherMojo(const DhcpPacFileFetcherMojo&) = delete;
+  DhcpPacFileFetcherMojo& operator=(const DhcpPacFileFetcherMojo&) = delete;
 
   ~DhcpPacFileFetcherMojo() override;
 
@@ -68,8 +70,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DhcpPacFileFetcherMojo
   mojo::Remote<network::mojom::DhcpWpadUrlClient> dhcp_wpad_url_client_;
 
   base::WeakPtrFactory<DhcpPacFileFetcherMojo> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DhcpPacFileFetcherMojo);
 };
 
 }  // namespace network

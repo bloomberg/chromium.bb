@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
-
 #include "device/vr/vr_export.h"
 
 namespace device {
@@ -23,6 +21,10 @@ class DEVICE_VR_EXPORT GvrDelegateProviderFactory {
   static void SetDevice(GvrDevice* device) { device_ = device; }
   static GvrDevice* GetDevice() { return device_; }
 
+  GvrDelegateProviderFactory(const GvrDelegateProviderFactory&) = delete;
+  GvrDelegateProviderFactory& operator=(const GvrDelegateProviderFactory&) =
+      delete;
+
   virtual ~GvrDelegateProviderFactory() = default;
 
  protected:
@@ -31,9 +33,6 @@ class DEVICE_VR_EXPORT GvrDelegateProviderFactory {
   virtual GvrDelegateProvider* CreateGvrDelegateProvider() = 0;
 
   static GvrDevice* device_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GvrDelegateProviderFactory);
 };
 
 }  // namespace device

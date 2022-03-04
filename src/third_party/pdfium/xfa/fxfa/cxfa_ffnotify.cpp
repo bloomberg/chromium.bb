@@ -51,11 +51,11 @@ void CXFA_FFNotify::Trace(cppgc::Visitor* visitor) const {
   visitor->Trace(m_pDoc);
 }
 
-void CXFA_FFNotify::OnPageEvent(CXFA_ViewLayoutItem* pSender,
-                                uint32_t dwEvent) {
+void CXFA_FFNotify::OnPageViewEvent(CXFA_ViewLayoutItem* pSender,
+                                    CXFA_FFDoc::PageViewEvent eEvent) {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView(pSender->GetLayout());
   if (pDocView)
-    pDocView->OnPageEvent(pSender, dwEvent);
+    pDocView->OnPageViewEvent(pSender, eEvent);
 }
 
 void CXFA_FFNotify::OnWidgetListItemAdded(CXFA_Node* pSender,
@@ -249,7 +249,7 @@ void CXFA_FFNotify::AddCalcValidate(CXFA_Node* pNode) {
   pDocView->AddValidateNode(pNode);
 }
 
-IXFA_AppProvider* CXFA_FFNotify::GetAppProvider() {
+CXFA_FFApp::CallbackIface* CXFA_FFNotify::GetAppProvider() {
   return m_pDoc->GetApp()->GetAppProvider();
 }
 
@@ -281,11 +281,8 @@ void CXFA_FFNotify::OpenDropDownList(CXFA_Node* pNode) {
   if (!pComboBox)
     return;
 
-  CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
-  pDocView->LockUpdate();
+  CXFA_FFDocView::UpdateScope scope(m_pDoc->GetDocView());
   pComboBox->OpenDropDownList();
-  pDocView->UnlockUpdate();
-  pDocView->UpdateDocView();
 }
 
 void CXFA_FFNotify::ResetData(CXFA_Node* pNode) {
@@ -296,9 +293,10 @@ void CXFA_FFNotify::ResetData(CXFA_Node* pNode) {
   pDocView->ResetNode(pNode);
 }
 
-int32_t CXFA_FFNotify::GetLayoutStatus() {
+CXFA_FFDocView::LayoutStatus CXFA_FFNotify::GetLayoutStatus() {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
-  return pDocView ? pDocView->GetLayoutStatus() : 0;
+  return pDocView ? pDocView->GetLayoutStatus()
+                  : CXFA_FFDocView::LayoutStatus::kNone;
 }
 
 void CXFA_FFNotify::RunNodeInitialize(CXFA_Node* pNode) {
@@ -344,7 +342,7 @@ void CXFA_FFNotify::OnNodeReady(CXFA_Node* pNode) {
       pDocView->AddBindItem(static_cast<CXFA_BindItems*>(pNode));
       break;
     case XFA_Element::Validate:
-      pNode->SetFlag(XFA_NodeFlag_NeedsInitApp);
+      pNode->SetFlag(XFA_NodeFlag::kNeedsInitApp);
       break;
     default:
       break;
@@ -362,7 +360,7 @@ void CXFA_FFNotify::OnValueChanging(CXFA_Node* pSender, XFA_Attribute eAttr) {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
   if (!pDocView)
     return;
-  if (pDocView->GetLayoutStatus() < XFA_DOCVIEW_LAYOUTSTATUS_End)
+  if (pDocView->GetLayoutStatus() != CXFA_FFDocView::LayoutStatus::kEnd)
     return;
 
   CXFA_FFWidget* pWidget = m_pDoc->GetDocView()->GetWidgetForNode(pSender);
@@ -436,8 +434,8 @@ void CXFA_FFNotify::OnValueChanged(CXFA_Node* pSender,
   }
 }
 
-void CXFA_FFNotify::OnContainerChanged(CXFA_Node* pNode) {
-  m_pDoc->GetXFADoc()->GetLayoutProcessor()->AddChangedContainer(pNode);
+void CXFA_FFNotify::OnContainerChanged() {
+  m_pDoc->GetXFADoc()->GetLayoutProcessor()->SetHasChangedContainer();
 }
 
 void CXFA_FFNotify::OnChildAdded(CXFA_Node* pSender) {
@@ -448,9 +446,9 @@ void CXFA_FFNotify::OnChildAdded(CXFA_Node* pSender) {
   if (!pDocView)
     return;
 
-  bool bLayoutReady =
-      !(pDocView->m_bInLayoutStatus) &&
-      (pDocView->GetLayoutStatus() == XFA_DOCVIEW_LAYOUTSTATUS_End);
+  const bool bLayoutReady =
+      !pDocView->InLayoutStatus() &&
+      pDocView->GetLayoutStatus() == CXFA_FFDocView::LayoutStatus::kEnd;
   if (bLayoutReady)
     m_pDoc->SetChangeMark();
 }
@@ -460,9 +458,9 @@ void CXFA_FFNotify::OnChildRemoved() {
   if (!pDocView)
     return;
 
-  bool bLayoutReady =
-      !(pDocView->m_bInLayoutStatus) &&
-      (pDocView->GetLayoutStatus() == XFA_DOCVIEW_LAYOUTSTATUS_End);
+  const bool bLayoutReady =
+      !pDocView->InLayoutStatus() &&
+      pDocView->GetLayoutStatus() == CXFA_FFDocView::LayoutStatus::kEnd;
   if (bLayoutReady)
     m_pDoc->SetChangeMark();
 }
@@ -470,7 +468,7 @@ void CXFA_FFNotify::OnChildRemoved() {
 void CXFA_FFNotify::OnLayoutItemAdded(CXFA_LayoutProcessor* pLayout,
                                       CXFA_LayoutItem* pSender,
                                       int32_t iPageIdx,
-                                      uint32_t dwStatus) {
+                                      Mask<XFA_WidgetStatus> dwStatus) {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView(pLayout);
   if (!pDocView)
     return;
@@ -480,18 +478,19 @@ void CXFA_FFNotify::OnLayoutItemAdded(CXFA_LayoutProcessor* pLayout,
     return;
 
   CXFA_FFPageView* pNewPageView = pDocView->GetPageView(iPageIdx);
-  uint32_t dwFilter = XFA_WidgetStatus_Visible | XFA_WidgetStatus_Viewable |
-                      XFA_WidgetStatus_Printable;
-  pWidget->ModifyStatus(dwStatus, dwFilter);
+  constexpr Mask<XFA_WidgetStatus> kRemove{XFA_WidgetStatus::kVisible,
+                                           XFA_WidgetStatus::kViewable,
+                                           XFA_WidgetStatus::kPrintable};
+  pWidget->ModifyStatus(dwStatus, kRemove);
   CXFA_FFPageView* pPrePageView = pWidget->GetPageView();
   if (pPrePageView != pNewPageView ||
-      (dwStatus & (XFA_WidgetStatus_Visible | XFA_WidgetStatus_Viewable)) ==
-          (XFA_WidgetStatus_Visible | XFA_WidgetStatus_Viewable)) {
+      dwStatus.TestAll(
+          {XFA_WidgetStatus::kVisible, XFA_WidgetStatus::kViewable})) {
     pWidget->SetPageView(pNewPageView);
     m_pDoc->WidgetPostAdd(pWidget);
   }
-  if (pDocView->GetLayoutStatus() != XFA_DOCVIEW_LAYOUTSTATUS_End ||
-      !(dwStatus & XFA_WidgetStatus_Visible)) {
+  if (pDocView->GetLayoutStatus() != CXFA_FFDocView::LayoutStatus::kEnd ||
+      !(dwStatus & XFA_WidgetStatus::kVisible)) {
     return;
   }
   if (pWidget->IsLoaded()) {

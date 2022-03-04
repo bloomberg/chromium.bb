@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -40,6 +38,10 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
                              public NetworkStateHandlerObserver {
  public:
   NetworkStateNotifier();
+
+  NetworkStateNotifier(const NetworkStateNotifier&) = delete;
+  NetworkStateNotifier& operator=(const NetworkStateNotifier&) = delete;
+
   ~NetworkStateNotifier() override;
 
   // Show a connection error notification. If |error_name| matches an error
@@ -81,6 +83,12 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   void ActiveNetworksChanged(
       const std::vector<const NetworkState*>& active_networks) override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void NetworkConnectionStateChanged(
+      const chromeos::NetworkState* network) override;
+  void NetworkIdentifierTransitioned(const std::string& old_service_path,
+                                     const std::string& new_service_path,
+                                     const std::string& old_guid,
+                                     const std::string& new_guid) override;
 
   void OnConnectErrorGetProperties(
       const std::string& error_name,
@@ -124,12 +132,14 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   // Set to the GUID of the active non VPN network if any, otherwise empty.
   std::string active_non_vpn_network_guid_;
 
+  // Set to the GUID of the current network which spawned a connection error
+  // notification if any, otherwise empty.
+  std::string connect_error_notification_network_guid_;
+
   // Tracks GUIDs of activating cellular networks for activation notification.
   std::set<std::string> cellular_activating_guids_;
 
   base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
 }  // namespace chromeos

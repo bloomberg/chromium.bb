@@ -94,7 +94,7 @@ void CaptureDeleteQueries_idsPacked(const State &glState,
                                     const QueryID *ids,
                                     ParamCapture *paramCapture)
 {
-    CaptureMemory(ids, sizeof(QueryID) * n, paramCapture);
+    CaptureArray(ids, n, paramCapture);
 }
 
 void CaptureDeleteSamplers_samplersPacked(const State &glState,
@@ -103,7 +103,7 @@ void CaptureDeleteSamplers_samplersPacked(const State &glState,
                                           const SamplerID *samplers,
                                           ParamCapture *paramCapture)
 {
-    CaptureMemory(samplers, sizeof(SamplerID) * count, paramCapture);
+    CaptureArray(samplers, count, paramCapture);
 }
 
 void CaptureDeleteTransformFeedbacks_idsPacked(const State &glState,
@@ -112,7 +112,7 @@ void CaptureDeleteTransformFeedbacks_idsPacked(const State &glState,
                                                const TransformFeedbackID *ids,
                                                ParamCapture *paramCapture)
 {
-    CaptureMemory(ids, sizeof(TransformFeedbackID) * n, paramCapture);
+    CaptureArray(ids, n, paramCapture);
 }
 
 void CaptureDeleteVertexArrays_arraysPacked(const State &glState,
@@ -121,7 +121,7 @@ void CaptureDeleteVertexArrays_arraysPacked(const State &glState,
                                             const VertexArrayID *arrays,
                                             ParamCapture *paramCapture)
 {
-    CaptureMemory(arrays, sizeof(VertexArrayID) * n, paramCapture);
+    CaptureArray(arrays, n, paramCapture);
 }
 
 void CaptureDrawBuffers_bufs(const State &glState,
@@ -130,7 +130,7 @@ void CaptureDrawBuffers_bufs(const State &glState,
                              const GLenum *bufs,
                              ParamCapture *paramCapture)
 {
-    CaptureMemory(bufs, sizeof(GLenum) * n, paramCapture);
+    CaptureArray(bufs, n, paramCapture);
 }
 
 void CaptureDrawElementsInstanced_indices(const State &glState,
@@ -254,7 +254,7 @@ void CaptureGetActiveUniformsiv_uniformIndices(const State &glState,
     // For GetActiveUniformsiv, uniformCountindicates both the number of
     // elements in the array of indices uniformIndices and the number of
     // parameters written to params upon successful return.
-    CaptureMemory(uniformIndices, sizeof(GLuint) * uniformCount, paramCapture);
+    CaptureArray(uniformIndices, uniformCount, paramCapture);
 }
 
 void CaptureGetActiveUniformsiv_params(const State &glState,
@@ -299,7 +299,7 @@ void CaptureGetFragDataLocation_name(const State &glState,
                                      const GLchar *name,
                                      ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureString(name, paramCapture);
 }
 
 void CaptureGetInteger64i_v_data(const State &glState,
@@ -576,7 +576,10 @@ void CaptureGetUniformIndices_uniformNames(const State &glState,
                                            GLuint *uniformIndices,
                                            ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    for (GLsizei index = 0; index < uniformCount; ++index)
+    {
+        CaptureString(uniformNames[index], paramCapture);
+    }
 }
 
 void CaptureGetUniformIndices_uniformIndices(const State &glState,
@@ -587,7 +590,7 @@ void CaptureGetUniformIndices_uniformIndices(const State &glState,
                                              GLuint *uniformIndices,
                                              ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(uniformIndices, sizeof(GLuint) * uniformCount, paramCapture);
 }
 
 void CaptureGetUniformuiv_params(const State &glState,
@@ -597,7 +600,8 @@ void CaptureGetUniformuiv_params(const State &glState,
                                  GLuint *params,
                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    /* At most a mat4 can be returned, so use this upper bound as count */
+    CaptureArray(params, 16 * sizeof(GLuint), paramCapture);
 }
 
 void CaptureGetVertexAttribIiv_params(const State &glState,
@@ -642,7 +646,7 @@ void CaptureInvalidateSubFramebuffer_attachments(const State &glState,
                                                  GLsizei height,
                                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(attachments, sizeof(GLenum) * numAttachments, paramCapture);
 }
 
 void CaptureProgramBinary_binary(const State &glState,
@@ -653,7 +657,7 @@ void CaptureProgramBinary_binary(const State &glState,
                                  GLsizei length,
                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    // Do nothing. glProgramBinary will be overridden in GenerateLinkedProgram.
 }
 
 void CaptureSamplerParameterfv_param(const State &glState,

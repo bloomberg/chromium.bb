@@ -6,7 +6,10 @@
 #                      \___/_/\_\ .__/ \__,_|\__|
 #                               |_| XML parser
 #
-# Copyright (c) 2017 Expat development team
+# Copyright (c) 2017-2021 Sebastian Pipping <sebastian@pipping.org>
+# Copyright (c) 2017      Rolf Eike Beer <eike@sf-mail.de>
+# Copyright (c) 2019      Mohammed Khajapasha <mohammed.khajapasha@intel.com>
+# Copyright (c) 2019      Philippe Antoine <contact@catenacyber.fr>
 # Licensed under the MIT license:
 #
 # Permission is  hereby granted,  free of charge,  to any  person obtaining
@@ -34,8 +37,9 @@ if [[ ${TRAVIS_OS_NAME} = osx ]]; then
     latest_brew_python3_bin="$(ls -1d /usr/local/Cellar/python/3.*/bin | sort -n | tail -n1)"
     export PATH="${latest_brew_python3_bin}${PATH:+:}${PATH}"
     export PATH="/usr/local/opt/coreutils/libexec/gnubin${PATH:+:}${PATH}"
+    export PATH="/usr/local/opt/findutils/libexec/gnubin${PATH:+:}${PATH}"
 elif [[ ${TRAVIS_OS_NAME} = linux ]]; then
-    export PATH="/usr/lib/llvm-9/bin:${PATH}"
+    export PATH="/usr/lib/llvm-11/bin:${PATH}"
 fi
 
 echo "New \${PATH}:"
@@ -55,11 +59,9 @@ elif [[ ${MODE} = cmake-oos ]]; then
     mkdir build
     cd build
     cmake ${CMAKE_ARGS} ..
-    make VERBOSE=1 all test
+    make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all test
     make DESTDIR="${PWD}"/ROOT install
     find ROOT -printf "%P\n" | sort
-elif [[ ${MODE} = cppcheck ]]; then
-    cppcheck --quiet --error-exitcode=1 .
 elif [[ ${MODE} = clang-format ]]; then
     ./apply-clang-format.sh
     git diff --exit-code

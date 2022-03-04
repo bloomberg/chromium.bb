@@ -35,7 +35,7 @@ class ParallelTaskAssignmentTest : public HloTestBase {
   cpu::TargetMachineFeaturesWithFakeAlignmentLogic target_machine_features_;
 
   ParallelTaskAssignmentTest()
-      : HloTestBase(), target_machine_features_([](int64 shape_size) {
+      : HloTestBase(), target_machine_features_([](int64_t shape_size) {
           return cpu::TargetMachineFeatures::kEigenExpectedTensorAlignment;
         }) {}
 
@@ -182,6 +182,20 @@ TEST_F(ParallelTaskAssignmentTest, AllReduceNotParallelized) {
     ENTRY CRS {
       input = f32[1234567] parameter(0)
       ROOT crs = f32[1234567] all-reduce(input), replica_groups={}, to_apply=add
+    }
+  )";
+
+  TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<HloModule> m,
+                          ParseAndReturnVerifiedModule(hlo_string));
+  TF_ASSERT_OK_AND_ASSIGN(bool changed, RunParallelTaskAssigner(m.get()));
+  EXPECT_FALSE(changed);
+}
+
+TEST_F(ParallelTaskAssignmentTest, ConstantNotParallelized) {
+  constexpr char hlo_string[] = R"(
+  HloModule TestTaskParallel_constant
+    ENTRY const {
+      ROOT constant = f32[1234567] constant({...})
     }
   )";
 

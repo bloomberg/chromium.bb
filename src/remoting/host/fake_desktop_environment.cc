@@ -4,14 +4,18 @@
 
 #include "remoting/host/fake_desktop_environment.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/memory/weak_ptr.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/fake_keyboard_layout_monitor.h"
 #include "remoting/host/file_transfer/file_operations.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/keyboard_layout_monitor.h"
+#include "remoting/host/remote_open_url/fake_url_forwarder_configurator.h"
+#include "remoting/host/remote_open_url/url_forwarder_configurator.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 
@@ -90,7 +94,7 @@ FakeDesktopEnvironment::CreateVideoCapturer() {
     fake_capturer->set_frame_generator(frame_generator_);
 
   std::unique_ptr<DesktopCapturerProxy> result(
-      new DesktopCapturerProxy(capture_thread_, nullptr));
+      new DesktopCapturerProxy(capture_thread_, capture_thread_, nullptr));
   result->set_capturer(std::move(fake_capturer));
   return std::move(result);
 }
@@ -108,6 +112,11 @@ FakeDesktopEnvironment::CreateKeyboardLayoutMonitor(
 
 std::unique_ptr<FileOperations> FakeDesktopEnvironment::CreateFileOperations() {
   return nullptr;
+}
+
+std::unique_ptr<UrlForwarderConfigurator>
+FakeDesktopEnvironment::CreateUrlForwarderConfigurator() {
+  return std::make_unique<FakeUrlForwarderConfigurator>();
 }
 
 std::string FakeDesktopEnvironment::GetCapabilities() const {
@@ -138,6 +147,7 @@ FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() = default;
 // DesktopEnvironmentFactory implementation.
 std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<ClientSessionEvents> client_session_events,
     const DesktopEnvironmentOptions& options) {
   std::unique_ptr<FakeDesktopEnvironment> result(
       new FakeDesktopEnvironment(capture_thread_, options));

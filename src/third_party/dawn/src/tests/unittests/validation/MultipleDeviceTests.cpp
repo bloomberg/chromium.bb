@@ -33,7 +33,7 @@ TEST_F(MultipleDeviceTest, ValidatesSameDevice) {
 TEST_F(MultipleDeviceTest, ValidatesSameDeviceCreatePipelineAsync) {
     wgpu::ShaderModuleWGSLDescriptor wgslDesc = {};
     wgslDesc.source = R"(
-        [[stage(compute)]] fn main() {
+         [[stage(compute), workgroup_size(1, 1, 1)]] fn main() {
         }
     )";
 
@@ -45,8 +45,8 @@ TEST_F(MultipleDeviceTest, ValidatesSameDeviceCreatePipelineAsync) {
         wgpu::ShaderModule shaderModule = device.CreateShaderModule(&shaderModuleDesc);
 
         wgpu::ComputePipelineDescriptor pipelineDesc = {};
-        pipelineDesc.computeStage.module = shaderModule;
-        pipelineDesc.computeStage.entryPoint = "main";
+        pipelineDesc.compute.module = shaderModule;
+        pipelineDesc.compute.entryPoint = "main";
 
         StrictMock<MockCallback<WGPUCreateComputePipelineAsyncCallback>> creationCallback;
         EXPECT_CALL(creationCallback,
@@ -65,8 +65,8 @@ TEST_F(MultipleDeviceTest, ValidatesSameDeviceCreatePipelineAsync) {
         wgpu::ShaderModule shaderModule = device2.CreateShaderModule(&shaderModuleDesc);
 
         wgpu::ComputePipelineDescriptor pipelineDesc = {};
-        pipelineDesc.computeStage.module = shaderModule;
-        pipelineDesc.computeStage.entryPoint = "main";
+        pipelineDesc.compute.module = shaderModule;
+        pipelineDesc.compute.entryPoint = "main";
 
         StrictMock<MockCallback<WGPUCreateComputePipelineAsyncCallback>> creationCallback;
         EXPECT_CALL(creationCallback,

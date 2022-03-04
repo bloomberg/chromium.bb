@@ -5,10 +5,12 @@
 #include "ash/public/cpp/autotest_private_api_utils.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/scoped_observation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,6 +30,10 @@ class HomeLauncherStateWaiter {
             &HomeLauncherStateWaiter::OnHomeLauncherAnimationCompleted,
             base::Unretained(this)));
   }
+
+  HomeLauncherStateWaiter(const HomeLauncherStateWaiter&) = delete;
+  HomeLauncherStateWaiter& operator=(const HomeLauncherStateWaiter&) = delete;
+
   ~HomeLauncherStateWaiter() {
     Shell::Get()
         ->app_list_controller()
@@ -46,8 +52,6 @@ class HomeLauncherStateWaiter {
 
   bool target_shown_;
   base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(HomeLauncherStateWaiter);
 };
 
 // A waiter that waits until the animation ended with the target state, and
@@ -61,6 +65,10 @@ class LauncherStateWaiter {
         ->SetStateTransitionAnimationCallbackForTesting(base::BindRepeating(
             &LauncherStateWaiter::OnStateChanged, base::Unretained(this)));
   }
+
+  LauncherStateWaiter(const LauncherStateWaiter&) = delete;
+  LauncherStateWaiter& operator=(const LauncherStateWaiter&) = delete;
+
   ~LauncherStateWaiter() {
     Shell::Get()
         ->app_list_controller()
@@ -77,8 +85,6 @@ class LauncherStateWaiter {
  private:
   ash::AppListViewState target_state_;
   base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(LauncherStateWaiter);
 };
 
 class LauncherAnimationWaiter : public ui::LayerAnimationObserver {

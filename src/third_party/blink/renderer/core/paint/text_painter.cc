@@ -30,28 +30,34 @@ void TextPainter::Paint(unsigned start_offset,
                         unsigned end_offset,
                         unsigned length,
                         const TextPaintStyle& text_style,
-                        DOMNodeId node_id) {
+                        DOMNodeId node_id,
+                        const AutoDarkMode& auto_dark_mode) {
   GraphicsContextStateSaver state_saver(graphics_context_, false);
   UpdateGraphicsContext(text_style, state_saver);
   if (combined_text_) {
     graphics_context_.Save();
     combined_text_->TransformToInlineCoordinates(graphics_context_,
                                                  text_frame_rect_);
-    PaintInternal<kPaintText>(start_offset, end_offset, length, node_id);
+    PaintInternal<kPaintText>(start_offset, end_offset, length, node_id,
+                              auto_dark_mode);
     graphics_context_.Restore();
   } else {
-    PaintInternal<kPaintText>(start_offset, end_offset, length, node_id);
+    PaintInternal<kPaintText>(start_offset, end_offset, length, node_id,
+                              auto_dark_mode);
   }
 
   if (!emphasis_mark_.IsEmpty()) {
-    if (text_style.emphasis_mark_color != text_style.fill_color)
-      graphics_context_.SetFillColor(text_style.emphasis_mark_color);
-
     if (combined_text_) {
-      PaintEmphasisMarkForCombinedText();
+      graphics_context_.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
+      PaintEmphasisMarkForCombinedText(
+          text_style, combined_text_->OriginalFont(), auto_dark_mode);
+      graphics_context_.ConcatCTM(
+          Rotation(text_frame_rect_, kCounterclockwise));
     } else {
+      if (text_style.emphasis_mark_color != text_style.fill_color)
+        graphics_context_.SetFillColor(text_style.emphasis_mark_color);
       PaintInternal<kPaintEmphasisMark>(start_offset, end_offset, length,
-                                        node_id);
+                                        node_id, auto_dark_mode);
     }
   }
 }
@@ -65,9 +71,9 @@ void TextPainter::PaintDecorationsExceptLineThrough(
     bool* has_line_through_decoration) {
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
-  UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
+  UpdateGraphicsContext(context, text_style, state_saver);
 
-  if (has_combined_text_)
+  if (combined_text_)
     context.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
 
   // text-underline-position may flip underline and overline.
@@ -79,14 +85,18 @@ void TextPainter::PaintDecorationsExceptLineThrough(
     underline_position = ResolvedUnderlinePosition::kUnder;
   }
 
-  for (size_t applied_decoration_index = 0;
+  for (wtf_size_t applied_decoration_index = 0;
        applied_decoration_index < decorations.size();
        ++applied_decoration_index) {
     const AppliedTextDecoration& decoration =
         decorations[applied_decoration_index];
-    TextDecoration lines = decoration.Lines();
-    bool has_underline = EnumHasFlags(lines, TextDecoration::kUnderline);
-    bool has_overline = EnumHasFlags(lines, TextDecoration::kOverline);
+    TextDecorationLine lines = decoration.Lines();
+    bool has_underline = EnumHasFlags(lines, TextDecorationLine::kUnderline);
+    bool has_overline = EnumHasFlags(lines, TextDecorationLine::kOverline);
+    bool is_spelling_error =
+        EnumHasFlags(lines, TextDecorationLine::kSpellingError);
+    bool is_grammar_error =
+        EnumHasFlags(lines, TextDecorationLine::kGrammarError);
     if (flip_underline_and_overline)
       std::swap(has_underline, has_overline);
 
@@ -94,6 +104,25 @@ void TextPainter::PaintDecorationsExceptLineThrough(
 
     float resolved_thickness = decoration_info.ResolvedThickness();
     context.SetStrokeThickness(resolved_thickness);
+
+    if (is_spelling_error || is_grammar_error) {
+      DCHECK(!has_underline && !has_overline &&
+             !EnumHasFlags(lines, TextDecorationLine::kLineThrough));
+      const int paint_underline_offset =
+          decoration_offset.ComputeUnderlineOffset(
+              underline_position, decoration_info.Style().ComputedFontSize(),
+              decoration_info.FontData(), decoration.UnderlineOffset(),
+              resolved_thickness);
+      decoration_info.SetLineData(is_spelling_error
+                                      ? TextDecorationLine::kSpellingError
+                                      : TextDecorationLine::kGrammarError,
+                                  paint_underline_offset);
+      // We ignore "text-decoration-skip-ink: auto" for spelling and grammar
+      // error markers.
+      AppliedDecorationPainter decoration_painter(context, decoration_info);
+      decoration_painter.Paint();
+      continue;
+    }
 
     if (has_underline && decoration_info.FontData()) {
       // Don't apply text-underline-offset to overline.
@@ -103,13 +132,11 @@ void TextPainter::PaintDecorationsExceptLineThrough(
       const int paint_underline_offset =
           decoration_offset.ComputeUnderlineOffset(
               underline_position, decoration_info.Style().ComputedFontSize(),
-              decoration_info.FontData()->GetFontMetrics(), line_offset,
-              resolved_thickness);
-      decoration_info.SetPerLineData(
-          TextDecoration::kUnderline, paint_underline_offset,
-          TextDecorationInfo::DoubleOffsetFromThickness(resolved_thickness), 1);
+              decoration_info.FontData(), line_offset, resolved_thickness);
+      decoration_info.SetLineData(TextDecorationLine::kUnderline,
+                                  paint_underline_offset);
       PaintDecorationUnderOrOverLine(context, decoration_info,
-                                     TextDecoration::kUnderline);
+                                     TextDecorationLine::kUnderline);
     }
 
     if (has_overline && decoration_info.FontData()) {
@@ -123,23 +150,22 @@ void TextPainter::PaintDecorationsExceptLineThrough(
       const int paint_overline_offset =
           decoration_offset.ComputeUnderlineOffsetForUnder(
               line_offset, decoration_info.Style().ComputedFontSize(),
-              resolved_thickness, position);
-      decoration_info.SetPerLineData(
-          TextDecoration::kOverline, paint_overline_offset,
-          -TextDecorationInfo::DoubleOffsetFromThickness(resolved_thickness),
-          1);
+              decoration_info.FontData(), resolved_thickness, position);
+      decoration_info.SetLineData(TextDecorationLine::kOverline,
+                                  paint_overline_offset);
       PaintDecorationUnderOrOverLine(context, decoration_info,
-                                     TextDecoration::kOverline);
+                                     TextDecorationLine::kOverline);
     }
 
-    // We could instead build a vector of the TextDecoration instances needing
-    // line-through but this is a rare case so better to avoid vector overhead.
+    // We could instead build a vector of the TextDecorationLine instances
+    // needing line-through but this is a rare case so better to avoid vector
+    // overhead.
     *has_line_through_decoration |=
-        EnumHasFlags(lines, TextDecoration::kLineThrough);
+        EnumHasFlags(lines, TextDecorationLine::kLineThrough);
   }
 
   // Restore rotation as needed.
-  if (has_combined_text_)
+  if (combined_text_)
     context.ConcatCTM(Rotation(text_frame_rect_, kCounterclockwise));
 }
 
@@ -150,18 +176,18 @@ void TextPainter::PaintDecorationsOnlyLineThrough(
     const TextPaintStyle& text_style) {
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
-  UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
+  UpdateGraphicsContext(context, text_style, state_saver);
 
-  if (has_combined_text_)
+  if (combined_text_)
     context.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
 
-  for (size_t applied_decoration_index = 0;
+  for (wtf_size_t applied_decoration_index = 0;
        applied_decoration_index < decorations.size();
        ++applied_decoration_index) {
     const AppliedTextDecoration& decoration =
         decorations[applied_decoration_index];
-    TextDecoration lines = decoration.Lines();
-    if (EnumHasFlags(lines, TextDecoration::kLineThrough)) {
+    TextDecorationLine lines = decoration.Lines();
+    if (EnumHasFlags(lines, TextDecorationLine::kLineThrough)) {
       decoration_info.SetDecorationIndex(applied_decoration_index);
 
       float resolved_thickness = decoration_info.ResolvedThickness();
@@ -172,17 +198,9 @@ void TextPainter::PaintDecorationsOnlyLineThrough(
       // it centered at the same origin.
       const float line_through_offset =
           2 * decoration_info.Baseline() / 3 - resolved_thickness / 2;
-      // Floor double_offset in order to avoid double-line gap to appear
-      // of different size depending on position where the double line
-      // is drawn because of rounding downstream in
-      // GraphicsContext::DrawLineForText.
-      decoration_info.SetPerLineData(
-          TextDecoration::kLineThrough, line_through_offset,
-          floorf(TextDecorationInfo::DoubleOffsetFromThickness(
-              resolved_thickness)),
-          0);
-      AppliedDecorationPainter decoration_painter(context, decoration_info,
-                                                  TextDecoration::kLineThrough);
+      decoration_info.SetLineData(TextDecorationLine::kLineThrough,
+                                  line_through_offset);
+      AppliedDecorationPainter decoration_painter(context, decoration_info);
       // No skip: ink for line-through,
       // compare https://github.com/w3c/csswg-drafts/issues/711
       decoration_painter.Paint();
@@ -190,7 +208,7 @@ void TextPainter::PaintDecorationsOnlyLineThrough(
   }
 
   // Restore rotation as needed.
-  if (has_combined_text_)
+  if (combined_text_)
     context.ConcatCTM(Rotation(text_frame_rect_, kCounterclockwise));
 }
 
@@ -198,7 +216,8 @@ template <TextPainter::PaintInternalStep step>
 void TextPainter::PaintInternalRun(TextRunPaintInfo& text_run_paint_info,
                                    unsigned from,
                                    unsigned to,
-                                   DOMNodeId node_id) {
+                                   DOMNodeId node_id,
+                                   const AutoDarkMode& auto_dark_mode) {
   DCHECK(from <= text_run_paint_info.run.length());
   DCHECK(to <= text_run_paint_info.run.length());
 
@@ -208,11 +227,13 @@ void TextPainter::PaintInternalRun(TextRunPaintInfo& text_run_paint_info,
   if (step == kPaintEmphasisMark) {
     graphics_context_.DrawEmphasisMarks(
         font_, text_run_paint_info, emphasis_mark_,
-        FloatPoint(text_origin_) + IntSize(0, emphasis_mark_offset_));
+        gfx::PointF(text_origin_) + gfx::Vector2dF(0, emphasis_mark_offset_),
+        auto_dark_mode);
   } else {
     DCHECK(step == kPaintText);
     graphics_context_.DrawText(font_, text_run_paint_info,
-                               FloatPoint(text_origin_), node_id);
+                               gfx::PointF(text_origin_), node_id,
+                               auto_dark_mode);
   }
 }
 
@@ -220,19 +241,20 @@ template <TextPainter::PaintInternalStep Step>
 void TextPainter::PaintInternal(unsigned start_offset,
                                 unsigned end_offset,
                                 unsigned truncation_point,
-                                DOMNodeId node_id) {
+                                DOMNodeId node_id,
+                                const AutoDarkMode& auto_dark_mode) {
   TextRunPaintInfo text_run_paint_info(run_);
   if (start_offset <= end_offset) {
     PaintInternalRun<Step>(text_run_paint_info, start_offset, end_offset,
-                           node_id);
+                           node_id, auto_dark_mode);
   } else {
     if (end_offset > 0) {
       PaintInternalRun<Step>(text_run_paint_info, ellipsis_offset_, end_offset,
-                             node_id);
+                             node_id, auto_dark_mode);
     }
     if (start_offset < truncation_point) {
       PaintInternalRun<Step>(text_run_paint_info, start_offset,
-                             truncation_point, node_id);
+                             truncation_point, node_id, auto_dark_mode);
     }
   }
 }
@@ -251,26 +273,6 @@ void TextPainter::ClipDecorationsStripe(float upper,
       std::make_tuple(upper, upper + stripe_width), text_intercepts);
 
   DecorationsStripeIntercepts(upper, stripe_width, dilation, text_intercepts);
-}
-
-void TextPainter::PaintEmphasisMarkForCombinedText() {
-  const SimpleFontData* font_data = font_.PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return;
-
-  DCHECK(combined_text_);
-  TextRun placeholder_text_run(&kIdeographicFullStopCharacter, 1);
-  FloatPoint emphasis_mark_text_origin(
-      text_frame_rect_.X().ToFloat(), text_frame_rect_.Y().ToFloat() +
-                                          font_data->GetFontMetrics().Ascent() +
-                                          emphasis_mark_offset_);
-  TextRunPaintInfo text_run_paint_info(placeholder_text_run);
-  graphics_context_.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
-  graphics_context_.DrawEmphasisMarks(combined_text_->OriginalFont(),
-                                      text_run_paint_info, emphasis_mark_,
-                                      emphasis_mark_text_origin);
-  graphics_context_.ConcatCTM(Rotation(text_frame_rect_, kCounterclockwise));
 }
 
 }  // namespace blink

@@ -10,15 +10,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -53,6 +52,10 @@ class NativeMessagingReader::Core {
        scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        scoped_refptr<base::SequencedTaskRunner> read_task_runner,
        base::WeakPtr<NativeMessagingReader> reader_);
+
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
+
   ~Core();
 
   // Reads a message from the Native Messaging client and passes it to
@@ -72,8 +75,6 @@ class NativeMessagingReader::Core {
 
   // Used to DCHECK that the reader code executes on the correct thread.
   scoped_refptr<base::SequencedTaskRunner> read_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 NativeMessagingReader::Core::Core(

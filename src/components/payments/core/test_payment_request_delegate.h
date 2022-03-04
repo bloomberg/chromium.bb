@@ -8,8 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -26,6 +27,11 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   TestPaymentRequestDelegate(
       std::unique_ptr<base::SingleThreadTaskExecutor> task_executor,
       autofill::PersonalDataManager* personal_data_manager);
+
+  TestPaymentRequestDelegate(const TestPaymentRequestDelegate&) = delete;
+  TestPaymentRequestDelegate& operator=(const TestPaymentRequestDelegate&) =
+      delete;
+
   ~TestPaymentRequestDelegate() override;
 
   // PaymentRequestDelegate
@@ -55,7 +61,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
 
  private:
   std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
-  autofill::PersonalDataManager* personal_data_manager_;
+  raw_ptr<autofill::PersonalDataManager> personal_data_manager_;
   std::string locale_;
   const GURL last_committed_url_;
   autofill::TestAddressNormalizer address_normalizer_;
@@ -69,7 +75,6 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   autofill::CreditCard full_card_request_card_;
   base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
       full_card_result_delegate_;
-  DISALLOW_COPY_AND_ASSIGN(TestPaymentRequestDelegate);
 };
 
 }  // namespace payments

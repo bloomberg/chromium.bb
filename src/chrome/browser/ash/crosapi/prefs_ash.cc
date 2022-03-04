@@ -6,10 +6,11 @@
 
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -46,8 +47,11 @@ PrefsAsh::PrefsAsh(ProfileManager* profile_manager, PrefService* local_state)
 }
 
 PrefsAsh::~PrefsAsh() {
-  // Remove this observer, in case Primary logged in profile is not yet created.
-  profile_manager_->RemoveObserver(this);
+  // Remove this observer, if the Primary logged in profile is not yet created.
+  // On actual shutdown, the ProfileManager will destruct before CrosapiManager.
+  if (IsInObserverList() && profile_manager_) {
+    profile_manager_->RemoveObserver(this);
+  }
 }
 
 void PrefsAsh::BindReceiver(mojo::PendingReceiver<mojom::Prefs> receiver) {
@@ -120,10 +124,23 @@ absl::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
       }
       return State{profile_prefs_, &profile_prefs_registrar_,
                    ash::prefs::kAccessibilitySpokenFeedbackEnabled};
+    case mojom::PrefPath::kDeviceSystemWideTracingEnabled:
+      return State{local_state_, &local_state_registrar_,
+                   ash::prefs::kDeviceSystemWideTracingEnabled};
+    case mojom::PrefPath::kDnsOverHttpsMode:
+      return State{local_state_, &local_state_registrar_,
+                   prefs::kDnsOverHttpsMode};
+    case mojom::PrefPath::kDnsOverHttpsTemplates:
+      return State{local_state_, &local_state_registrar_,
+                   prefs::kDnsOverHttpsTemplates};
     default:
       LOG(WARNING) << "Unknown pref path: " << path;
       return absl::nullopt;
   }
+}
+
+void PrefsAsh::OnProfileManagerDestroying() {
+  profile_manager_ = nullptr;
 }
 
 void PrefsAsh::OnPrefChanged(mojom::PrefPath path) {

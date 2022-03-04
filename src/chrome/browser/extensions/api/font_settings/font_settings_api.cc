@@ -153,12 +153,11 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
       pref_name);
   CHECK(pref);
 
-  std::string font_name;
-  if (!pref->GetValue()->GetAsString(&font_name)) {
+  if (!pref->GetValue()->is_string()) {
     NOTREACHED();
     return;
   }
-
+  std::string font_name = pref->GetValue()->GetString();
   base::ListValue args;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString(kFontIdKey, font_name);
@@ -213,7 +212,7 @@ ExtensionFunction::ResponseAction FontSettingsClearFontFunction::Run() {
     return RespondNow(Error(kSetFromIncognitoError));
 
   std::unique_ptr<fonts::ClearFont::Params> params(
-      fonts::ClearFont::Params::Create(*args_));
+      fonts::ClearFont::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
@@ -229,7 +228,7 @@ ExtensionFunction::ResponseAction FontSettingsClearFontFunction::Run() {
 
 ExtensionFunction::ResponseAction FontSettingsGetFontFunction::Run() {
   std::unique_ptr<fonts::GetFont::Params> params(
-      fonts::GetFont::Params::Create(*args_));
+      fonts::GetFont::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
@@ -240,9 +239,8 @@ ExtensionFunction::ResponseAction FontSettingsGetFontFunction::Run() {
   const PrefService::Preference* pref =
       prefs->FindPreference(pref_path);
 
-  std::string font_name;
-  EXTENSION_FUNCTION_VALIDATE(
-      pref && pref->GetValue()->GetAsString(&font_name));
+  EXTENSION_FUNCTION_VALIDATE(pref && pref->GetValue()->is_string());
+  std::string font_name = pref->GetValue()->GetString();
 
   // Legacy code was using the localized font name for fontId. These values may
   // have been stored in prefs. For backward compatibility, we are converting
@@ -269,7 +267,7 @@ ExtensionFunction::ResponseAction FontSettingsSetFontFunction::Run() {
     return RespondNow(Error(kSetFromIncognitoError));
 
   std::unique_ptr<fonts::SetFont::Params> params(
-      fonts::SetFont::Params::Create(*args_));
+      fonts::SetFont::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
@@ -300,23 +298,23 @@ ExtensionFunction::ResponseValue
 FontSettingsGetFontListFunction::CopyFontsToResult(base::ListValue* fonts) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (const auto& entry : fonts->GetList()) {
-    const base::ListValue* font_list_value;
-    if (!entry.GetAsList(&font_list_value)) {
+    if (!entry.is_list()) {
       NOTREACHED();
       return Error("");
     }
+    const base::Value::ConstListView font_list_value = entry.GetList();
 
-    std::string name;
-    if (!font_list_value->GetString(0, &name)) {
+    if (font_list_value.size() < 2 || !font_list_value[0].is_string()) {
       NOTREACHED();
       return Error("");
     }
+    const std::string& name = font_list_value[0].GetString();
 
-    std::string localized_name;
-    if (!font_list_value->GetString(1, &localized_name)) {
+    if (!font_list_value[1].is_string()) {
       NOTREACHED();
       return Error("");
     }
+    const std::string& localized_name = font_list_value[1].GetString();
 
     std::unique_ptr<base::DictionaryValue> font_name(
         new base::DictionaryValue());
@@ -366,11 +364,11 @@ ExtensionFunction::ResponseAction SetFontPrefExtensionFunction::Run() {
   if (profile->IsOffTheRecord())
     return RespondNow(Error(kSetFromIncognitoError));
 
-  base::DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
-
-  base::Value* value;
-  EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  EXTENSION_FUNCTION_VALIDATE(args()[0].is_dict());
+  const base::Value& details = args()[0];
+  const base::Value* value = details.FindKey(GetKey());
+  EXTENSION_FUNCTION_VALIDATE(value);
 
   PreferenceAPI::Get(profile)->SetExtensionControlledPref(
       extension_id(), GetPrefName(), kExtensionPrefsScopeRegular,

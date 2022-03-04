@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "content/public/browser/navigation_handle.h"
 
 namespace internal {
 
@@ -32,7 +33,9 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 EarlyHintsPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
-  if (navigation_handle->WasEarlyHintsPreloadLinkHeaderReceived())
+  // Continue observing when 103 Early Hints are received during the navigation
+  // and these contain at least one resource hints (preload or preconnect).
+  if (navigation_handle->WasResourceHintsReceived())
     return CONTINUE_OBSERVING;
   return STOP_OBSERVING;
 }
@@ -81,7 +84,6 @@ void EarlyHintsPageLoadMetricsObserver::RecordHistograms(
     base::UmaHistogramCustomTimes(
         internal::kHistogramEarlyHintsPreloadFirstInputDelay,
         timing.interactive_timing->first_input_delay.value(),
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-        50);
+        base::Milliseconds(1), base::Seconds(60), 50);
   }
 }

@@ -15,7 +15,6 @@
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,11 +24,11 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -50,17 +49,30 @@ using structured_address::VerificationStatus;
 //  - \u2022 - Bullet.
 //  - \u2006 - SIX-PER-EM SPACE (small space between bullets).
 //  - \u2060 - WORD-JOINER (makes obfuscated string undivisible).
-constexpr char16_t kMidlineEllipsis[] =
+constexpr char16_t kMidlineEllipsis4Dots[] =
     u"\u2022\u2060\u2006\u2060"
     u"\u2022\u2060\u2006\u2060"
     u"\u2022\u2060\u2006\u2060"
     u"\u2022\u2060\u2006\u2060";
+constexpr char16_t kMidlineEllipsis2Dots[] =
+    u"\u2022\u2060\u2006\u2060"
+    u"\u2022\u2060\u2006\u2060";
+constexpr char16_t kMidlineEllipsisPlainDot = u'\u2022';
 
 namespace {
 
 const char16_t kCreditCardObfuscationSymbol = '*';
 
+const char16_t kWhiteSpaceSeparator = ' ';
+
 const int kMaxNicknameLength = 25;
+
+constexpr int k16DigitNumberSegmentations[] = {4, 4, 4, 4};
+constexpr int k16DigitNumberSegmentationsLength = 4;
+
+// Suffix for GUID of a virtual card to differentiate it from it's corresponding
+// masked server card..
+const char kVirtualCardIdentifierSuffix[] = "_vcn";
 
 std::u16string NetworkForFill(const std::string& network) {
   if (network == kAmericanExpressCard)
@@ -102,12 +114,38 @@ std::u16string GetLastFourDigits(const std::u16string& number) {
   return stripped.substr(stripped.size() - kNumLastDigits, kNumLastDigits);
 }
 
+// Returns a new string based on the input |number| by adding a white space
+// between |segments|. The provided |segments| denotes the length of each
+// segment, and we don't need to add whitespace to the last segmentation.
+// |segments_size| denotes the size of the |segments| array. For example, if you
+// would like to format 15-digit card number into "XXXX XXXXXX XXXXX", you need
+// to provide [4, 6, 5] as the |segments|, 3 as the |segments_size|.
+std::u16string AddWhiteSpaceSeparatorForNumber(const std::u16string& number,
+                                               const int segments[],
+                                               const int segments_size) {
+  std::u16string formatted;
+  int pos = 0;
+  // We don't need to add white space to the last segmentation.
+  for (int i = 0; i < segments_size - 1; i++) {
+    formatted += number.substr(pos, segments[i]) + kWhiteSpaceSeparator;
+    pos += segments[i];
+  }
+  // Add the remaining digits.
+  formatted += number.substr(pos);
+  return formatted;
+}
+
 }  // namespace
 
 namespace internal {
 
-std::u16string GetObfuscatedStringForCardDigits(const std::u16string& digits) {
-  std::u16string obfuscated_string = std::u16string(kMidlineEllipsis) + digits;
+std::u16string GetObfuscatedStringForCardDigits(const std::u16string& digits,
+                                                int obfuscation_length) {
+  DCHECK(obfuscation_length == 2 || obfuscation_length == 4);
+  std::u16string obfuscated_string =
+      std::u16string(obfuscation_length == 2 ? kMidlineEllipsis2Dots
+                                             : kMidlineEllipsis4Dots) +
+      digits;
   base::i18n::WrapStringWithLTRFormatting(&obfuscated_string);
   return obfuscated_string;
 }
@@ -120,7 +158,6 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       network_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
-      server_status_(OK),
       card_issuer_(ISSUER_UNKNOWN),
       instrument_id_(0) {}
 
@@ -332,16 +369,6 @@ bool CreditCard::IsNicknameValid(const std::u16string& nickname) {
 void CreditCard::SetNetworkForMaskedCard(base::StringPiece network) {
   DCHECK_EQ(MASKED_SERVER_CARD, record_type());
   network_ = std::string(network);
-}
-
-void CreditCard::SetServerStatus(ServerStatus status) {
-  DCHECK_NE(LOCAL_CARD, record_type());
-  server_status_ = status;
-}
-
-CreditCard::ServerStatus CreditCard::GetServerStatus() const {
-  DCHECK_NE(LOCAL_CARD, record_type());
-  return server_status_;
 }
 
 AutofillMetadata CreditCard::GetMetadata() const {
@@ -562,7 +589,6 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   expiration_month_ = credit_card.expiration_month_;
   expiration_year_ = credit_card.expiration_year_;
   server_id_ = credit_card.server_id_;
-  server_status_ = credit_card.server_status_;
   billing_address_id_ = credit_card.billing_address_id_;
   bank_name_ = credit_card.bank_name_;
   temp_card_first_name_ = credit_card.temp_card_first_name_;
@@ -647,15 +673,6 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   comparison = nickname_.compare(credit_card.nickname_);
   if (comparison != 0)
     return comparison;
-
-  if (static_cast<int>(server_status_) <
-      static_cast<int>(credit_card.server_status_)) {
-    return -1;
-  }
-  if (static_cast<int>(server_status_) >
-      static_cast<int>(credit_card.server_status_)) {
-    return 1;
-  }
 
   if (static_cast<int>(card_issuer_) <
       static_cast<int>(credit_card.card_issuer_)) {
@@ -778,7 +795,7 @@ void CreditCard::SetExpirationDateFromString(const std::u16string& text) {
   // Check that |text| fits the supported patterns: mmyy, mmyyyy, m-yy,
   // mm-yy, m-yyyy and mm-yyyy. Note that myy and myyyy matched by this pattern
   // but are not supported (ambiguous). Separators: -, / and |.
-  if (!MatchesPattern(text, u"^[0-9]{1,2}[-/|]?[0-9]{2,4}$"))
+  if (!MatchesPattern(text, uR"(^\s*[0-9]{1,2}\s*[-/|]?\s*[0-9]{2,4}\s*$)"))
     return;
 
   std::u16string month;
@@ -853,12 +870,31 @@ std::u16string CreditCard::LastFourDigits() const {
   return GetLastFourDigits(number_);
 }
 
+std::u16string CreditCard::FullDigitsForDisplay() const {
+  std::u16string stripped = CreditCard::StripSeparators(number_);
+  // Currently we only format 16-digit length card number.
+  // TODO(crbug.com/1222501): Extend this to other digit lengths.
+  if (stripped.size() != 16)
+    return number_;
+  return AddWhiteSpaceSeparatorForNumber(stripped, k16DigitNumberSegmentations,
+                                         k16DigitNumberSegmentationsLength);
+}
+
 std::u16string CreditCard::NetworkForDisplay() const {
   return CreditCard::NetworkForDisplay(network_);
 }
 
-std::u16string CreditCard::ObfuscatedLastFourDigits() const {
-  return internal::GetObfuscatedStringForCardDigits(LastFourDigits());
+std::u16string CreditCard::ObfuscatedLastFourDigits(
+    int obfuscation_length) const {
+  return internal::GetObfuscatedStringForCardDigits(LastFourDigits(),
+                                                    obfuscation_length);
+}
+
+std::u16string CreditCard::ObfuscatedLastFourDigitsForSplitFields() const {
+  // For split credit card number fields, use plain dots without spacing and no
+  // LTR formatting. Only obfuscate 12 dots and append the last four digits of
+  // the credit card number.
+  return std::u16string(12, kMidlineEllipsisPlainDot) + LastFourDigits();
 }
 
 std::string CreditCard::CardIconStringForAutofillSuggestion() const {
@@ -869,7 +905,8 @@ std::string CreditCard::CardIconStringForAutofillSuggestion() const {
   return network_;
 }
 
-std::u16string CreditCard::NetworkAndLastFourDigits() const {
+std::u16string CreditCard::NetworkAndLastFourDigits(
+    int obfuscation_length) const {
   const std::u16string network = NetworkForDisplay();
   // TODO(crbug.com/734197): truncate network.
 
@@ -879,17 +916,19 @@ std::u16string CreditCard::NetworkAndLastFourDigits() const {
 
   // TODO(estade): i18n?
   const std::u16string obfuscated_string =
-      internal::GetObfuscatedStringForCardDigits(digits);
+      internal::GetObfuscatedStringForCardDigits(digits, obfuscation_length);
   return network.empty() ? obfuscated_string
                          : network + u"  " + obfuscated_string;
 }
 
 std::u16string CreditCard::CardIdentifierStringForAutofillDisplay(
-    std::u16string customized_nickname) const {
+    std::u16string customized_nickname,
+    int obfuscation_length) const {
   if (HasNonEmptyValidNickname() || !customized_nickname.empty()) {
-    return NicknameAndLastFourDigits(customized_nickname);
+    return NicknameAndLastFourDigits(customized_nickname, obfuscation_length);
   }
-  std::u16string networkAndLastFourDigits = NetworkAndLastFourDigits();
+  std::u16string networkAndLastFourDigits =
+      NetworkAndLastFourDigits(obfuscation_length);
   // Add Plex before the network and last four digits to identify it as a Google
   // Plex card.
   if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
@@ -899,6 +938,18 @@ std::u16string CreditCard::CardIdentifierStringForAutofillDisplay(
   }
   return networkAndLastFourDigits;
 }
+
+#if defined(OS_ANDROID)
+std::u16string CreditCard::CardIdentifierStringForManualFilling() const {
+  std::u16string obfuscated_number = ObfuscatedLastFourDigits();
+  if (record_type_ == VIRTUAL_CARD) {
+    return l10n_util::GetStringUTF16(
+               IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE) +
+           u" " + obfuscated_number;
+  }
+  return obfuscated_number;
+}
+#endif  // OS_ANDROID
 
 std::u16string CreditCard::CardIdentifierStringAndDescriptiveExpiration(
     const std::string& app_locale,
@@ -940,6 +991,10 @@ std::u16string CreditCard::Expiration2DigitMonthAsString() const {
   return data_util::Expiration2DigitMonthAsString(expiration_month_);
 }
 
+std::u16string CreditCard::Expiration2DigitYearAsString() const {
+  return data_util::Expiration2DigitYearAsString(expiration_year_);
+}
+
 std::u16string CreditCard::Expiration4DigitYearAsString() const {
   return data_util::Expiration4DigitYearAsString(expiration_year_);
 }
@@ -965,8 +1020,17 @@ std::u16string CreditCard::NicknameAndLastFourDigitsForTesting() const {
   return NicknameAndLastFourDigits();
 }
 
-std::u16string CreditCard::Expiration2DigitYearAsString() const {
-  return data_util::Expiration2DigitYearAsString(expiration_year_);
+// static
+std::unique_ptr<CreditCard> CreditCard::CreateVirtualCard(
+    const CreditCard& card) {
+  // Virtual cards can be created only from masked server cards.
+  DCHECK_EQ(card.record_type(), MASKED_SERVER_CARD);
+  auto virtual_card = std::make_unique<CreditCard>(card);
+  virtual_card->set_record_type(VIRTUAL_CARD);
+  // Add a suffix to the guid to help differentiate the virtual card from the
+  // server card.
+  virtual_card->set_guid(card.guid() + kVirtualCardIdentifierSuffix);
+  return virtual_card;
 }
 
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
@@ -1020,7 +1084,8 @@ std::u16string CreditCard::NetworkForFill() const {
 }
 
 std::u16string CreditCard::NicknameAndLastFourDigits(
-    std::u16string customized_nickname) const {
+    std::u16string customized_nickname,
+    int obfuscation_length) const {
   // Should call HasNonEmptyValidNickname() to check valid nickname before
   // calling this.
   DCHECK(HasNonEmptyValidNickname() || !customized_nickname.empty());
@@ -1030,7 +1095,8 @@ std::u16string CreditCard::NicknameAndLastFourDigits(
     return customized_nickname.empty() ? nickname_ : customized_nickname;
 
   return (customized_nickname.empty() ? nickname_ : customized_nickname) +
-         u"  " + internal::GetObfuscatedStringForCardDigits(digits);
+         u"  " +
+         internal::GetObfuscatedStringForCardDigits(digits, obfuscation_length);
 }
 
 void CreditCard::SetNumber(const std::u16string& number) {
@@ -1053,10 +1119,8 @@ bool CreditCard::IsExpired(const base::Time& current_time) const {
                                           current_time);
 }
 
-bool CreditCard::ShouldUpdateExpiration(const base::Time& current_time) const {
-  // Local cards always have OK server status.
-  DCHECK(server_status_ == OK || record_type_ != LOCAL_CARD);
-  return server_status_ == EXPIRED || IsExpired(current_time);
+bool CreditCard::ShouldUpdateExpiration() const {
+  return IsExpired(AutofillClock::Now());
 }
 
 // So we can compare CreditCards with EXPECT_EQ().

@@ -110,7 +110,7 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize(float scale) {
     // Otherwise, the intrinsic width is that of the video.
     case kVideo:
       if (const auto* player = MediaElement()->GetWebMediaPlayer()) {
-        IntSize size(player->NaturalSize());
+        gfx::Size size = player->NaturalSize();
         if (!size.IsEmpty()) {
           LayoutSize layout_size = LayoutSize(size);
           layout_size.Scale(scale);
@@ -196,18 +196,6 @@ void LayoutVideo::UpdatePlayer(bool is_in_layout) {
     return;
 
   VideoElement()->SetNeedsCompositingUpdate();
-}
-
-LayoutUnit LayoutVideo::ComputeReplacedLogicalWidth(
-    ShouldComputePreferred should_compute_preferred) const {
-  NOT_DESTROYED();
-  return LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
-}
-
-LayoutUnit LayoutVideo::ComputeReplacedLogicalHeight(
-    LayoutUnit estimated_used_width) const {
-  NOT_DESTROYED();
-  return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
 }
 
 LayoutUnit LayoutVideo::MinimumReplacedHeight() const {

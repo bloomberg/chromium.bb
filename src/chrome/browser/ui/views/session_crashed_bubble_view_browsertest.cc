@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -21,8 +22,13 @@
 
 class SessionCrashedBubbleViewTest : public DialogBrowserTest {
  public:
-  SessionCrashedBubbleViewTest() {}
-  ~SessionCrashedBubbleViewTest() override {}
+  SessionCrashedBubbleViewTest() = default;
+
+  SessionCrashedBubbleViewTest(const SessionCrashedBubbleViewTest&) = delete;
+  SessionCrashedBubbleViewTest& operator=(const SessionCrashedBubbleViewTest&) =
+      delete;
+
+  ~SessionCrashedBubbleViewTest() override = default;
 
   void ShowUi(const std::string& name) override {
     // TODO(pbos): Set up UMA opt-in conditions instead of providing this bool.
@@ -31,10 +37,7 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
   }
 
  protected:
-  views::BubbleDialogDelegateView* crash_bubble_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SessionCrashedBubbleViewTest);
+  raw_ptr<views::BubbleDialogDelegate> crash_bubble_;
 };
 
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
@@ -53,7 +56,8 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
                        CanFocusBubbleWithFocusDialogHotkey) {
   ShowUi("SessionCrashedBubble");
 
-  views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
+  views::FocusManager* focus_manager =
+      crash_bubble_->GetWidget()->GetFocusManager();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();
 
@@ -69,7 +73,8 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
                        CanFocusBubbleWithRotatePaneFocusHotkey) {
   ShowUi("SessionCrashedBubble");
-  views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
+  views::FocusManager* focus_manager =
+      crash_bubble_->GetWidget()->GetFocusManager();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();
 

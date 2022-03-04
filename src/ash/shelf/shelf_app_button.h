@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_button_delegate.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -63,6 +62,10 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   ShelfAppButton(ShelfView* shelf_view,
                  ShelfButtonDelegate* shelf_button_delegate);
+
+  ShelfAppButton(const ShelfAppButton&) = delete;
+  ShelfAppButton& operator=(const ShelfAppButton&) = delete;
+
   ~ShelfAppButton() override;
 
   // Sets the image to display for this entry.
@@ -83,8 +86,10 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Returns the bounds of the icon.
   gfx::Rect GetIconBounds() const;
 
-  // Returns the bounds of the icon in screen coordinates.
-  gfx::Rect GetIconBoundsInScreen() const;
+  // Returns the ideal icon bounds within the button view of the provided size,
+  // and with the provided icon scale.
+  gfx::Rect GetIdealIconBounds(const gfx::Size& button_size,
+                               float icon_scale) const;
 
   views::InkDrop* GetInkDropForTesting();
 
@@ -159,7 +164,8 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   void ScaleAppIcon(bool scale_up);
 
   // Calculates the icon bounds for an icon scaled by |icon_scale|.
-  gfx::Rect GetIconViewBounds(float icon_scale);
+  gfx::Rect GetIconViewBounds(const gfx::Rect& button_bounds,
+                              float icon_scale) const;
 
   // Calculates the notification indicator bounds when scaled by |scale|.
   gfx::Rect GetNotificationIndicatorBounds(float scale);
@@ -170,6 +176,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Marks whether the ink drop animation has started or not.
   void SetInkDropAnimationStarted(bool started);
+
+  // Maybe hides the ink drop at the end of gesture handling.
+  void MaybeHideInkDropWhenGestureEnds();
 
   // The icon part of a button can be animated independently of the rest.
   views::ImageView* icon_view_;
@@ -189,9 +198,6 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   int state_;
 
   gfx::ShadowValues icon_shadows_;
-
-  // Whether the notification indicator is enabled.
-  const bool is_notification_indicator_enabled_;
 
   // The bitmap image for this app button.
   gfx::ImageSkia icon_image_;
@@ -216,8 +222,6 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Used to track whether the menu was deleted while running. Must be last.
   base::WeakPtrFactory<ShelfAppButton> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAppButton);
 };
 
 }  // namespace ash

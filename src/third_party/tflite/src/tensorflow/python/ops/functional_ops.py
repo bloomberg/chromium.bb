@@ -14,10 +14,6 @@
 # =============================================================================
 """Functional operations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.core.framework import attr_value_pb2
 from tensorflow.python.eager import context
 from tensorflow.python.framework import auto_control_deps_utils as acd
@@ -103,7 +99,8 @@ def foldl(fn,
     ```
   """
   if not callable(fn):
-    raise TypeError("fn must be callable.")
+    raise TypeError(
+        f"{fn.__name__} is not callable. Please provide a callable function.")
 
   def create_ta(elem):
     return tensor_array_ops.TensorArray(
@@ -298,7 +295,8 @@ def foldr(fn,
     ```
   """
   if not callable(fn):
-    raise TypeError("fn must be callable.")
+    raise TypeError(
+        f"{fn.__name__} is not callable. Please provide a callable function.")
 
   def create_ta(elem):
     return tensor_array_ops.TensorArray(
@@ -541,9 +539,10 @@ def scan(fn,
     ```
   """
   if not callable(fn):
-    raise TypeError("fn must be callable.")
+    raise TypeError(
+        f"{fn.__name__} is not callable. Please provide a callable function.")
 
-  input_is_sequence = nest.is_sequence(elems)
+  input_is_sequence = nest.is_nested(elems)
   input_flatten = lambda x: nest.flatten(x) if input_is_sequence else [x]
 
   def input_pack(x):
@@ -554,7 +553,7 @@ def scan(fn,
     output_flatten = input_flatten
     output_pack = input_pack
   else:
-    output_is_sequence = nest.is_sequence(initializer)
+    output_is_sequence = nest.is_nested(initializer)
     output_flatten = lambda x: nest.flatten(x) if output_is_sequence else [x]
 
     def output_pack(x):
@@ -675,7 +674,7 @@ def scan(fn,
         tensor_shape.dimension_value(
             elems_flat[0].get_shape().with_rank_at_least(1)[0]))
     for elem in elems_flat[1:]:
-      n_static.merge_with(
+      n_static.assert_is_compatible_with(
           tensor_shape.Dimension(
               tensor_shape.dimension_value(
                   elem.get_shape().with_rank_at_least(1)[0])))
@@ -838,13 +837,27 @@ def If(cond, inputs, then_branch, else_branch, name=None):
     or else_branch(inputs).
   """
   # pylint: disable=protected-access
+  # Handle the Defun case until users have transitioned to tf.function. Note
+  # that composites may need to be re-packed by the caller.
   if isinstance(then_branch, function._DefinedFunction):
     tlist = [_.type for _ in then_branch.definition.signature.output_arg]
-  else:
-    # We assume that `then_branch` is a ConcreteFunction here.
-    tlist = nest.flatten(then_branch.output_dtypes)
-  return gen_functional_ops._if(
+    return gen_functional_ops._if(
+        cond, inputs, tlist, then_branch, else_branch, name=name)
+
+  # We assume that `then_branch` is a ConcreteFunction here.
+  then_out = then_branch.structured_outputs
+  else_out = else_branch.structured_outputs
+
+  # Ensure then/else are the same type of composites to avoid an invalid call
+  # to pack_sequence_as later on.
+  nest.assert_same_structure(then_out, else_out, expand_composites=True)
+
+  tlist = nest.flatten(then_branch.output_dtypes)
+  ret = gen_functional_ops._if(
       cond, inputs, tlist, then_branch, else_branch, name=name)
+
+  # Re-pack the outputs to restore any CompositeTensors
+  return nest.pack_sequence_as(then_out, ret, expand_composites=True)
 
 
 def Gradient(inputs, f, name=None):
@@ -935,16 +948,18 @@ def While(input_, cond, body, name=None, hostmem=None):
     A list of output tensors whose types are T.
   """
   if cond.captured_inputs:
-    raise ValueError("While op 'cond' argument must be a function "
-                     "without implicitly captured inputs.")
+    raise ValueError(
+        "The 'cond' argument can not have implicitly captured inputs. Received "
+        f"captured_inputs: {cond.captured_inputs}")
 
   cond_input_types = _GetInputDtypes(cond)
   body_input_types = _GetInputDtypes(body)
 
   if cond_input_types != body_input_types:
     raise ValueError(
-        "While op 'cond' and 'body' signatures do not match. %r vs %r" %
-        (cond_input_types, body_input_types))
+        "The 'cond' and 'body' signatures do not match. Received: "
+        f"cond_input_types={cond_input_types}, body_input_types="
+        f"{body_input_types}")
 
   if body.captured_inputs:
     cond_dtypes = list(body_input_types) + [

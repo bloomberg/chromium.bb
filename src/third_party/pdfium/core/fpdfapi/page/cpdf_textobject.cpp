@@ -12,6 +12,7 @@
 #include "core/fpdfapi/font/cpdf_cidfont.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "third_party/base/check.h"
+#include "third_party/base/span.h"
 
 #define ISLATINWORD(u) (u != 0x20 && u <= 0x28FF)
 
@@ -155,15 +156,7 @@ CPDF_PageObject::Type CPDF_TextObject::GetType() const {
 }
 
 void CPDF_TextObject::Transform(const CFX_Matrix& matrix) {
-  CFX_Matrix text_matrix = GetTextMatrix() * matrix;
-
-  float* pTextMatrix = m_TextState.GetMutableMatrix();
-  pTextMatrix[0] = text_matrix.a;
-  pTextMatrix[1] = text_matrix.c;
-  pTextMatrix[2] = text_matrix.b;
-  pTextMatrix[3] = text_matrix.d;
-  m_Pos = CFX_PointF(text_matrix.e, text_matrix.f);
-  CalcPositionData(0);
+  SetTextMatrix(GetTextMatrix() * matrix);
   SetDirty(true);
 }
 
@@ -180,9 +173,19 @@ const CPDF_TextObject* CPDF_TextObject::AsText() const {
 }
 
 CFX_Matrix CPDF_TextObject::GetTextMatrix() const {
-  const float* pTextMatrix = m_TextState.GetMatrix();
+  pdfium::span<const float> pTextMatrix = m_TextState.GetMatrix();
   return CFX_Matrix(pTextMatrix[0], pTextMatrix[2], pTextMatrix[1],
                     pTextMatrix[3], m_Pos.x, m_Pos.y);
+}
+
+void CPDF_TextObject::SetTextMatrix(const CFX_Matrix& matrix) {
+  pdfium::span<float> pTextMatrix = m_TextState.GetMutableMatrix();
+  pTextMatrix[0] = matrix.a;
+  pTextMatrix[1] = matrix.c;
+  pTextMatrix[2] = matrix.b;
+  pTextMatrix[3] = matrix.d;
+  m_Pos = CFX_PointF(matrix.e, matrix.f);
+  CalcPositionData(0);
 }
 
 void CPDF_TextObject::SetSegments(const ByteString* pStrs,
@@ -214,7 +217,7 @@ void CPDF_TextObject::SetSegments(const ByteString* pStrs,
 
 void CPDF_TextObject::SetText(const ByteString& str) {
   SetSegments(&str, std::vector<float>(), 1);
-  RecalcPositionData();
+  CalcPositionData(/*horz_scale=*/1.0f);
   SetDirty(true);
 }
 
@@ -331,8 +334,4 @@ CFX_PointF CPDF_TextObject::CalcPositionData(float horz_scale) {
   m_Rect.bottom -= half_width;
 
   return ret;
-}
-
-void CPDF_TextObject::RecalcPositionData() {
-  CalcPositionData(1);
 }

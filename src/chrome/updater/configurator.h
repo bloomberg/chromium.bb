@@ -30,12 +30,14 @@ class ProtocolHandlerFactory;
 namespace updater {
 
 class ActivityDataService;
-class UpdaterPrefs;
 class ExternalConstants;
+class PolicyService;
+class UpdaterPrefs;
 
 class Configurator : public update_client::Configurator {
  public:
-  explicit Configurator(std::unique_ptr<UpdaterPrefs> prefs);
+  Configurator(scoped_refptr<UpdaterPrefs> prefs,
+               scoped_refptr<ExternalConstants> external_constants);
   Configurator(const Configurator&) = delete;
   Configurator& operator=(const Configurator&) = delete;
 
@@ -49,7 +51,6 @@ class Configurator : public update_client::Configurator {
   std::string GetProdId() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
-  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
@@ -61,7 +62,6 @@ class Configurator : public update_client::Configurator {
   scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
   scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
-  bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
@@ -70,13 +70,15 @@ class Configurator : public update_client::Configurator {
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
   int ServerKeepAliveSeconds() const;
+  scoped_refptr<PolicyService> GetPolicyService() const;
 
  private:
   friend class base::RefCountedThreadSafe<Configurator>;
   ~Configurator() override;
 
-  std::unique_ptr<UpdaterPrefs> prefs_;
-  std::unique_ptr<ExternalConstants> external_constants_;
+  scoped_refptr<UpdaterPrefs> prefs_;
+  scoped_refptr<PolicyService> policy_service_;
+  scoped_refptr<ExternalConstants> external_constants_;
   std::unique_ptr<ActivityDataService> activity_data_service_;
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
   scoped_refptr<update_client::CrxDownloaderFactory> crx_downloader_factory_;

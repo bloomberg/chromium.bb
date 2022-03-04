@@ -13,8 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
@@ -58,7 +57,7 @@ class SearchControllerImpl : public SearchController {
   void ViewClosing() override;
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
-                          int action_index) override;
+                          ash::SearchResultActionType action) override;
   size_t AddGroup(size_t max_results) override;
   void AddProvider(size_t group_id,
                    std::unique_ptr<SearchProvider> provider) override;
@@ -74,10 +73,14 @@ class SearchControllerImpl : public SearchController {
       const std::u16string& trimmed_query,
       const ash::SearchResultIdWithPositionIndices& results,
       int launched_index) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   std::u16string get_query() override;
   base::Time session_start() override;
   void set_results_changed_callback_for_test(
       ResultsChangedCallback callback) override;
+
+  void NotifyResultsAdded(const std::vector<ChromeSearchResult*>& results);
 
  private:
   // Invoked when the search results are changed. Providers should use the one
@@ -106,15 +109,12 @@ class SearchControllerImpl : public SearchController {
   // If set, called when OnResultsChanged is invoked.
   ResultsChangedCallback results_changed_callback_;
 
-  // Storage for all search results for the current query. Only used when
-  // categorical search is enabled.
-  ResultsMap results_;
-
   std::unique_ptr<Mixer> mixer_;
   std::unique_ptr<SearchMetricsObserver> metrics_observer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   AppListControllerDelegate* list_controller_;
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace app_list

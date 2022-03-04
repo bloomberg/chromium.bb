@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace syncer {
@@ -36,17 +37,14 @@ bool FakeSyncEncryptionHandler::NeedKeystoreKey() const {
 
 bool FakeSyncEncryptionHandler::SetKeystoreKeys(
     const std::vector<std::vector<uint8_t>>& keys) {
-  if (keys.empty())
+  if (keys.empty()) {
     return false;
+  }
   std::vector<uint8_t> new_key = keys.back();
-  if (new_key.empty())
+  if (new_key.empty()) {
     return false;
+  }
   keystore_key_ = new_key;
-
-  DVLOG(1) << "Keystore bootstrap token updated.";
-  for (auto& observer : observers_)
-    observer.OnBootstrapTokenUpdated(base::Base64Encode(keystore_key_),
-                                     KEYSTORE_BOOTSTRAP_TOKEN);
 
   return true;
 }
@@ -64,8 +62,8 @@ void FakeSyncEncryptionHandler::SetEncryptionPassphrase(
   // Do nothing.
 }
 
-void FakeSyncEncryptionHandler::SetDecryptionPassphrase(
-    const std::string& passphrase) {
+void FakeSyncEncryptionHandler::SetExplicitPassphraseDecryptionKey(
+    std::unique_ptr<Nigori> key) {
   // Do nothing.
 }
 

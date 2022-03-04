@@ -17,6 +17,10 @@
 
 struct SpellCheckResult;
 
+namespace base {
+class TimeTicks;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -121,6 +125,10 @@ class SpellingServiceClient {
         std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
         TextCheckCompleteCallback callback,
         std::u16string text);
+
+    TextCheckCallbackData(const TextCheckCallbackData&) = delete;
+    TextCheckCallbackData& operator=(const TextCheckCallbackData&) = delete;
+
     ~TextCheckCallbackData();
 
     // The URL loader used.
@@ -132,9 +140,6 @@ class SpellingServiceClient {
 
     // The text checked by the Spelling service.
     std::u16string text;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TextCheckCallbackData);
   };
 
   using SpellCheckLoaderList =

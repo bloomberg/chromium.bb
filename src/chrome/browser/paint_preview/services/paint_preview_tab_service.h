@@ -64,6 +64,9 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
   void CaptureTab(int tab_id,
                   content::WebContents* contents,
                   bool accessibility_enabled,
+                  float page_scale_factor,
+                  int scroll_offset_x,
+                  int scroll_offset_y,
                   FinishedCallback callback);
 
   // Destroys the Paint Preview associated with |tab_id|. This MUST be called
@@ -86,7 +89,10 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
       JNIEnv* env,
       jint j_tab_id,
       const base::android::JavaParamRef<jobject>& j_web_contents,
-      jboolean accessibility_enabled,
+      jboolean j_accessibility_enabled,
+      jfloat j_page_scale_factor,
+      jint j_x,
+      jint j_y,
       const base::android::JavaParamRef<jobject>& j_callback);
   void TabClosedAndroid(JNIEnv* env, jint j_tab_id);
   jboolean HasCaptureForTabAndroid(JNIEnv* env, jint j_tab_id);
@@ -107,7 +113,10 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
     TabServiceTask(int tab_id,
                    const DirectoryKey& key,
                    int frame_tree_node_id,
-                   content::GlobalFrameRoutingId frame_routing_id,
+                   content::GlobalRenderFrameHostId frame_routing_id,
+                   float page_scale_factor,
+                   int x,
+                   int y,
                    base::ScopedClosureRunner capture_handle);
     ~TabServiceTask();
 
@@ -117,9 +126,12 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
     int tab_id() const { return tab_id_; }
     const DirectoryKey& key() const { return key_; }
     int frame_tree_node_id() const { return frame_tree_node_id_; }
-    content::GlobalFrameRoutingId frame_routing_id() const {
+    content::GlobalRenderFrameHostId frame_routing_id() const {
       return frame_routing_id_;
     }
+    float page_scale_factor() const { return page_scale_factor_; }
+    int scroll_offset_x() const { return scroll_offset_x_; }
+    int scroll_offset_y() const { return scroll_offset_y_; }
 
     void SetWaitForAccessibility() { wait_for_accessibility_ = true; }
 
@@ -151,7 +163,10 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
     int tab_id_;
     DirectoryKey key_;
     int frame_tree_node_id_;
-    content::GlobalFrameRoutingId frame_routing_id_;
+    content::GlobalRenderFrameHostId frame_routing_id_;
+    float page_scale_factor_;
+    int scroll_offset_x_;
+    int scroll_offset_y_;
 
     bool wait_for_accessibility_{false};
     Status status_{kInvalid};

@@ -23,7 +23,6 @@
 #include <blpwtk2_contentrendererclientimpl.h>
 #include <blpwtk2_rendercompositor.h>
 #include <blpwtk2_rendermessagedelegate.h>
-#include <blpwtk2_renderviewobserverimpl.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
 
@@ -77,16 +76,6 @@ void ContentRendererClientImpl::RenderThreadStarted() {
 blink::ThreadSafeBrowserInterfaceBrokerProxy* ContentRendererClientImpl::GetInterfaceBroker() const
 {
     return d_browser_interface_broker.get();
-}
-
-void ContentRendererClientImpl::RenderViewCreated(
-    content::RenderView* render_view)
-{
-    // Create an instance of RenderViewObserverImpl.  This is an observer that
-    // is registered with the RenderView.  The RenderViewImpl's destructor
-    // will call OnDestruct() on all observers, which will delete this
-    // instance of RenderViewObserverImpl.
-    new RenderViewObserverImpl(render_view? render_view->GetWebView() : nullptr);
 }
 
 void ContentRendererClientImpl::RenderFrameCreated(

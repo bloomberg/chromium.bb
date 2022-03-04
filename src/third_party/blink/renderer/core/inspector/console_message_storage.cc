@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -26,8 +27,6 @@ const char* MessageSourceToString(mojom::ConsoleMessageSource source) {
       return "ConsoleAPI";
     case mojom::ConsoleMessageSource::kStorage:
       return "Storage";
-    case mojom::ConsoleMessageSource::kAppCache:
-      return "AppCache";
     case mojom::ConsoleMessageSource::kRendering:
       return "Rendering";
     case mojom::ConsoleMessageSource::kSecurity:

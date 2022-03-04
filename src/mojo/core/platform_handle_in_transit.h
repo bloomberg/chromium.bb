@@ -5,7 +5,6 @@
 #ifndef MOJO_CORE_PLATFORM_HANDLE_IN_TRANSIT_H_
 #define MOJO_CORE_PLATFORM_HANDLE_IN_TRANSIT_H_
 
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -28,6 +27,10 @@ class PlatformHandleInTransit {
   PlatformHandleInTransit();
   explicit PlatformHandleInTransit(PlatformHandle handle);
   PlatformHandleInTransit(PlatformHandleInTransit&&);
+
+  PlatformHandleInTransit(const PlatformHandleInTransit&) = delete;
+  PlatformHandleInTransit& operator=(const PlatformHandleInTransit&) = delete;
+
   ~PlatformHandleInTransit();
 
   PlatformHandleInTransit& operator=(PlatformHandleInTransit&&);
@@ -96,8 +99,6 @@ class PlatformHandleInTransit {
 
   PlatformHandle handle_;
   base::Process owning_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformHandleInTransit);
 };
 
 }  // namespace core

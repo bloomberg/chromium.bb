@@ -9,7 +9,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/geo/subkey_requester.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
@@ -22,6 +22,10 @@ namespace autofill {
 class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
  public:
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
+
+  PersonalDataManagerAndroid(const PersonalDataManagerAndroid&) = delete;
+  PersonalDataManagerAndroid& operator=(const PersonalDataManagerAndroid&) =
+      delete;
 
   static base::android::ScopedJavaLocalRef<jobject>
   CreateJavaCreditCardFromNative(JNIEnv* env, const CreditCard& card);
@@ -403,12 +407,10 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   JavaObjectWeakGlobalRef weak_java_obj_;
 
   // Pointer to the PersonalDataManager for the main profile.
-  PersonalDataManager* personal_data_manager_;
+  raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // Used for subkey request.
   SubKeyRequester subkey_requester_;
-
-  DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };
 
 }  // namespace autofill

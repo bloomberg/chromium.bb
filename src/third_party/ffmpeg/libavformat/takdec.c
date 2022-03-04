@@ -31,8 +31,7 @@
 #include "rawdec.h"
 
 typedef struct TAKDemuxContext {
-    AVClass *class;
-    int     raw_packet_size;
+    FFRawDemuxerContext rawctx;
     int     mlast_frame;
     int64_t data_end;
 } TAKDemuxContext;
@@ -65,7 +64,7 @@ static int tak_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_TAK;
-    st->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
+    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     tc->mlast_frame = 0;
     if (avio_rl32(pb) != MKTAG('t', 'B', 'a', 'K')) {
@@ -213,8 +212,7 @@ static int raw_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-FF_RAW_DEMUXER_CLASS(tak)
-AVInputFormat ff_tak_demuxer = {
+const AVInputFormat ff_tak_demuxer = {
     .name           = "tak",
     .long_name      = NULL_IF_CONFIG_SMALL("raw TAK"),
     .priv_data_size = sizeof(TAKDemuxContext),
@@ -224,5 +222,5 @@ AVInputFormat ff_tak_demuxer = {
     .flags          = AVFMT_GENERIC_INDEX,
     .extensions     = "tak",
     .raw_codec_id   = AV_CODEC_ID_TAK,
-    .priv_class     = &tak_demuxer_class,
+    .priv_class     = &ff_raw_demuxer_class,
 };

@@ -10,13 +10,13 @@
 // Handles sign-in screen UI updates.
 @protocol SigninScreenConsumer <NSObject>
 
-// Sets user image when there is a known account. Pass nil to reset to the
-// default image.
-- (void)setUserImage:(UIImage*)userImage;
-
-// Sets the |userName| and its |email| of the selected identity. Notifies the UI
-// that an identity is available.
-- (void)setSelectedIdentityUserName:(NSString*)userName email:(NSString*)email;
+// Sets the |userName|, |email|, |givenName| and |avatar| of the selected
+// identity. The |userName| and |givenName| can be nil. Notifies the UI that an
+// identity is available.
+- (void)setSelectedIdentityUserName:(NSString*)userName
+                              email:(NSString*)email
+                          givenName:(NSString*)givenName
+                             avatar:(UIImage*)avatar;
 
 // Notifies the consumer that no identity is available and that the UI should be
 // updated accordingly.

@@ -6,6 +6,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/common/capture_result.h"
@@ -38,7 +39,7 @@ sk_sp<const SkPicture> PaintGrayPictureWithSubframes(
     gfx::Size bounds,
     PictureSerializationContext* context,
     DeserializationContext* expected_deserialization_context,
-    base::flat_map<base::UnguessableToken, gfx::Rect> subframes) {
+    base::flat_map<base::UnguessableToken, gfx::RectF> subframes) {
   SkRect sk_bounds = SkRect::MakeWH(bounds.width(), bounds.height());
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(sk_bounds);
@@ -49,7 +50,7 @@ sk_sp<const SkPicture> PaintGrayPictureWithSubframes(
 
   for (const auto& subframe : subframes) {
     const base::UnguessableToken& subframe_id = subframe.first;
-    gfx::Rect clip_rect = subframe.second;
+    gfx::RectF clip_rect = subframe.second;
     SkRect rect = SkRect::MakeXYWH(clip_rect.x(), clip_rect.y(),
                                    clip_rect.width(), clip_rect.height());
     sk_sp<SkPicture> temp = SkPicture::MakePlaceholder(rect);
@@ -125,7 +126,16 @@ void ExpectPicturesEqual(sk_sp<const SkPicture> pic,
 
 }  // namespace
 
-TEST(PaintPreviewSerializedRecordingTest, RoundtripWithFileBacking) {
+class PaintPreviewSerializedRecordingTest : public testing::Test {
+ public:
+  PaintPreviewSerializedRecordingTest() = default;
+  ~PaintPreviewSerializedRecordingTest() override = default;
+
+ protected:
+  base::test::TaskEnvironment task_environment_;
+};
+
+TEST_F(PaintPreviewSerializedRecordingTest, RoundtripWithFileBacking) {
   base::ScopedAllowBlockingForTesting scoped_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -150,7 +160,7 @@ TEST(PaintPreviewSerializedRecordingTest, RoundtripWithFileBacking) {
   ExpectPicturesEqual(result->skp, pic);
 }
 
-TEST(PaintPreviewSerializedRecordingTest, RoundtripWithMemoryBufferBacking) {
+TEST_F(PaintPreviewSerializedRecordingTest, RoundtripWithMemoryBufferBacking) {
   sk_sp<const SkPicture> pic = PaintPictureSingleGrayPixel();
 
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), absl::nullopt,
@@ -171,7 +181,7 @@ TEST(PaintPreviewSerializedRecordingTest, RoundtripWithMemoryBufferBacking) {
   ExpectPicturesEqual(result->skp, pic);
 }
 
-TEST(PaintPreviewSerializedRecordingTest, ImageDiscardingTolerated) {
+TEST_F(PaintPreviewSerializedRecordingTest, ImageDiscardingTolerated) {
   sk_sp<const SkPicture> pic = PaintPictureLargeImage(gfx::Size(200, 200));
 
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), absl::nullopt,
@@ -191,7 +201,7 @@ TEST(PaintPreviewSerializedRecordingTest, ImageDiscardingTolerated) {
   ASSERT_TRUE(recording.IsValid());
 }
 
-TEST(PaintPreviewSerializedRecordingTest, ImageDiscardingNotTolerated) {
+TEST_F(PaintPreviewSerializedRecordingTest, ImageDiscardingNotTolerated) {
   sk_sp<const SkPicture> pic = PaintPictureLargeImage(gfx::Size(200, 200));
 
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), absl::nullopt,
@@ -206,12 +216,12 @@ TEST(PaintPreviewSerializedRecordingTest, ImageDiscardingNotTolerated) {
   ASSERT_TRUE(image_context->memory_budget_exceeded);
 }
 
-TEST(PaintPreviewSerializedRecordingTest, InvalidBacking) {
+TEST_F(PaintPreviewSerializedRecordingTest, InvalidBacking) {
   SerializedRecording recording;
   ASSERT_FALSE(recording.IsValid());
 }
 
-TEST(PaintPreviewSerializedRecordingTest, RoundtripHasEmbeddedContent) {
+TEST_F(PaintPreviewSerializedRecordingTest, RoundtripHasEmbeddedContent) {
   base::ScopedAllowBlockingForTesting scoped_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -221,9 +231,9 @@ TEST(PaintPreviewSerializedRecordingTest, RoundtripHasEmbeddedContent) {
                               /*is_main_frame=*/true);
 
   base::UnguessableToken subframe0 = base::UnguessableToken::Create();
-  gfx::Rect subframe0_rect = gfx::Rect(5, 10, 10, 15);
+  gfx::RectF subframe0_rect(5, 10, 10, 15);
   base::UnguessableToken subframe1 = base::UnguessableToken::Create();
-  gfx::Rect subframe1_rect = gfx::Rect(5, 10, 10, 15);
+  gfx::RectF subframe1_rect(5, 10, 10, 15);
 
   DeserializationContext expected;
   sk_sp<const SkPicture> pic = PaintGrayPictureWithSubframes(
@@ -248,8 +258,8 @@ TEST(PaintPreviewSerializedRecordingTest, RoundtripHasEmbeddedContent) {
   ExpectPicturesEqual(result->skp, pic);
 }
 
-TEST(PaintPreviewSerializedRecordingTest,
-     RecordingMapFromCaptureResultSingleFrame) {
+TEST_F(PaintPreviewSerializedRecordingTest,
+       RecordingMapFromCaptureResultSingleFrame) {
   sk_sp<const SkPicture> pic = PaintPictureSingleGrayPixel();
 
   const base::UnguessableToken root_frame_guid =
@@ -280,8 +290,8 @@ TEST(PaintPreviewSerializedRecordingTest,
   ExpectPicturesEqual(result->skp, pic);
 }
 
-TEST(PaintPreviewSerializedRecordingTest,
-     RecordingMapFromPaintPreviewProtoSingleFrame) {
+TEST_F(PaintPreviewSerializedRecordingTest,
+       RecordingMapFromPaintPreviewProtoSingleFrame) {
   base::ScopedAllowBlockingForTesting scoped_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

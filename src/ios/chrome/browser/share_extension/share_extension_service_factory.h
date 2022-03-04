@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -24,6 +23,10 @@ class ShareExtensionServiceFactory : public BrowserStateKeyedServiceFactory {
       ChromeBrowserState* browser_state);
   static ShareExtensionServiceFactory* GetInstance();
 
+  ShareExtensionServiceFactory(const ShareExtensionServiceFactory&) = delete;
+  ShareExtensionServiceFactory& operator=(const ShareExtensionServiceFactory&) =
+      delete;
+
  private:
   friend class base::NoDestructor<ShareExtensionServiceFactory>;
 
@@ -35,8 +38,6 @@ class ShareExtensionServiceFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(ShareExtensionServiceFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_FACTORY_H_

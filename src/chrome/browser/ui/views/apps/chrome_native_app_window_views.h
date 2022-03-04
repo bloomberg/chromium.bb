@@ -7,13 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
-
-namespace gfx {
-class ImageSkia;
-}
 
 class ExtensionKeybindingRegistryViews;
 
@@ -22,6 +17,11 @@ class ChromeNativeAppWindowViews
       public extensions::ChromeAppIconDelegate {
  public:
   ChromeNativeAppWindowViews();
+
+  ChromeNativeAppWindowViews(const ChromeNativeAppWindowViews&) = delete;
+  ChromeNativeAppWindowViews& operator=(const ChromeNativeAppWindowViews&) =
+      delete;
+
   ~ChromeNativeAppWindowViews() override;
 
   SkRegion* shape() { return shape_.get(); }
@@ -48,8 +48,8 @@ class ChromeNativeAppWindowViews
   ui::ZOrderLevel GetZOrderLevel() const override;
 
   // WidgetDelegate implementation.
-  gfx::ImageSkia GetWindowAppIcon() override;
-  gfx::ImageSkia GetWindowIcon() override;
+  ui::ImageModel GetWindowAppIcon() override;
+  ui::ImageModel GetWindowIcon() override;
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
@@ -98,8 +98,6 @@ class ChromeNativeAppWindowViews
   // Contains the default Chrome app icon. It is used in case the custom icon
   // for the extension app window is not set, or as a part of composite image.
   std::unique_ptr<extensions::ChromeAppIcon> app_icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_

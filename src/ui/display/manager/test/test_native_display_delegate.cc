@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/manager/test/action_logger.h"
 #include "ui/display/types/display_mode.h"
@@ -161,9 +161,12 @@ bool TestNativeDisplayDelegate::SetGammaCorrection(
   return true;
 }
 
-void TestNativeDisplayDelegate::SetPrivacyScreen(int64_t display_id,
-                                                 bool enabled) {
+void TestNativeDisplayDelegate::SetPrivacyScreen(
+    int64_t display_id,
+    bool enabled,
+    SetPrivacyScreenCallback callback) {
   log_->AppendAction(SetPrivacyScreenAction(display_id, enabled));
+  std::move(callback).Run(true);
 }
 
 void TestNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {

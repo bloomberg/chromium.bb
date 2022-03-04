@@ -10,9 +10,8 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
@@ -36,6 +35,9 @@ class ChildAccountService : public KeyedService,
                             public SupervisedUserService::Delegate {
  public:
   enum class AuthState { AUTHENTICATED, NOT_AUTHENTICATED, PENDING };
+
+  ChildAccountService(const ChildAccountService&) = delete;
+  ChildAccountService& operator=(const ChildAccountService&) = delete;
 
   ~ChildAccountService() override;
 
@@ -106,7 +108,7 @@ class ChildAccountService : public KeyedService,
   void ClearSecondCustodianPrefs();
 
   // Owns us via the KeyedService mechanism.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   bool active_;
 
@@ -115,7 +117,7 @@ class ChildAccountService : public KeyedService,
   base::OneShotTimer family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;
 
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
 
   base::RepeatingClosureList google_auth_state_observers_;
 
@@ -123,8 +125,6 @@ class ChildAccountService : public KeyedService,
   std::vector<base::OnceClosure> status_received_callback_list_;
 
   base::WeakPtrFactory<ChildAccountService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChildAccountService);
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_CHILD_ACCOUNT_SERVICE_H_

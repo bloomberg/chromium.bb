@@ -8,8 +8,9 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
@@ -19,7 +20,7 @@
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 #include "ui/gfx/geometry/box_f.h"
-#include "ui/gfx/transform_operations.h"
+#include "ui/gfx/geometry/transform_operations.h"
 
 namespace cc {
 
@@ -119,6 +120,12 @@ void ElementAnimations::ClearAffectedElementTypes(
   RemoveKeyframeEffectsFromTicking();
 }
 
+// TODO(crbug.com/1240712): the ReservedElementId should always be 'registered'.
+// Instead of calling this from AnimationHost::UpdateRegisteredElementIds, we
+// can ensure that the |has_element_in_active_list_| and the
+// |has_element_in_pending_list_| are true for ReservedElementId, and this
+// should result in animations ticking right away. With that, we do not need to
+// add anything to the |keyframe_effects_list_| for ReservedElementId.
 void ElementAnimations::ElementIdRegistered(ElementId element_id,
                                             ElementListType list_type) {
   DCHECK_EQ(element_id_, element_id);
@@ -224,7 +231,7 @@ void ElementAnimations::OnFloatAnimated(const float& value,
             target_property_id);
       break;
     case TargetProperty::OPACITY: {
-      float opacity = base::ClampToRange(value, 0.0f, 1.0f);
+      float opacity = base::clamp(value, 0.0f, 1.0f);
       if (KeyframeModelAffectsActiveElements(keyframe_model))
         OnOpacityAnimated(ElementListType::ACTIVE, opacity, keyframe_model);
       if (KeyframeModelAffectsPendingElements(keyframe_model))
@@ -281,7 +288,7 @@ void ElementAnimations::OnTransformAnimated(
 }
 
 void ElementAnimations::OnScrollOffsetAnimated(
-    const gfx::ScrollOffset& scroll_offset,
+    const gfx::PointF& scroll_offset,
     int target_property_id,
     gfx::KeyframeModel* keyframe_model) {
   if (KeyframeModelAffectsActiveElements(keyframe_model))
@@ -304,6 +311,11 @@ void ElementAnimations::InitClientAnimationState() {
 
 void ElementAnimations::UpdateClientAnimationState() {
   if (!element_id())
+    return;
+  // For a custom property animation, or an animation that uses paint worklet,
+  // it is not associated with any property node, and thus this function is not
+  // needed.
+  if (element_id().GetStableId() == ElementId::kReservedElementId)
     return;
   DCHECK(animation_host_);
   if (!animation_host_->mutator_host_client())
@@ -521,7 +533,7 @@ void ElementAnimations::OnTransformAnimated(
 
 void ElementAnimations::OnScrollOffsetAnimated(
     ElementListType list_type,
-    const gfx::ScrollOffset& scroll_offset,
+    const gfx::PointF& scroll_offset,
     gfx::KeyframeModel* keyframe_model) {
   ElementId target_element_id = CalculateTargetElementId(this, keyframe_model);
   DCHECK(target_element_id);
@@ -531,14 +543,10 @@ void ElementAnimations::OnScrollOffsetAnimated(
       target_element_id, list_type, scroll_offset);
 }
 
-gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
-  if (animation_host_) {
-    DCHECK(animation_host_->mutator_host_client());
-    return animation_host_->mutator_host_client()->GetScrollOffsetForAnimation(
-        element_id());
-  }
-
-  return gfx::ScrollOffset();
+gfx::PointF ElementAnimations::ScrollOffsetForAnimation() const {
+  if (animation_host_)
+    return animation_host_->GetScrollOffsetForAnimation(element_id());
+  return gfx::PointF();
 }
 
 PropertyToElementIdMap ElementAnimations::GetPropertyToElementIdMap() const {

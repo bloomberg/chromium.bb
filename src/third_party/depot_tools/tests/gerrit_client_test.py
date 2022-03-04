@@ -56,6 +56,16 @@ class TestGerritClient(unittest.TestCase):
         start=20,
         o_params=['op1', 'op2'])
 
+  @mock.patch('gerrit_util.GetRelatedChanges', return_value='')
+  def test_relatedchanges(self, util_mock):
+    gerrit_client.main([
+        'relatedchanges', '--host', 'https://example.org/foo', '--change',
+        'foo-change-id', '--revision', 'foo-revision-id'
+    ])
+    util_mock.assert_called_once_with('example.org',
+                                      change='foo-change-id',
+                                      revision='foo-revision-id')
+
   @mock.patch('gerrit_util.CreateChange', return_value={})
   def test_createchange(self, util_mock):
     gerrit_client.main([
@@ -94,6 +104,22 @@ class TestGerritClient(unittest.TestCase):
         'abandon', '--host', 'https://example.org/foo', '-c', '1', '-m', 'bar'
     ])
     util_mock.assert_called_once_with('example.org', 1, 'bar')
+
+  @mock.patch('gerrit_util.SetReview', return_value='')
+  def test_setlabel(self, util_mock):
+    gerrit_client.main([
+        'setlabel',
+        '--host',
+        'https://example.org/foo',
+        '-c',
+        '1',
+        '-l',
+        'some-label',
+        '-2',
+    ])
+    util_mock.assert_called_once_with('example.org',
+                                      1,
+                                      labels={'some-label': '-2'})
 
 
 if __name__ == '__main__':

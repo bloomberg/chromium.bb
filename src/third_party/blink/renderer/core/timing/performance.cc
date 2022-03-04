@@ -38,12 +38,12 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_mark_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_measure_options.h"
@@ -77,13 +77,12 @@
 #include "third_party/blink/renderer/core/timing/profiler.h"
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
 #include "third_party/blink/renderer/core/timing/time_clamper.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "v8/include/v8-metrics.h"
@@ -91,6 +90,10 @@
 namespace blink {
 
 namespace {
+
+// LongTask API can be a source of many events. Filter on Performance object
+// level before reporting to UKM to smooth out recorded events over all pages.
+constexpr size_t kLongTaskUkmSampleInterval = 100;
 
 const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   if (context)
@@ -129,31 +132,10 @@ void RecordLongTaskUkm(ExecutionContext* execution_context,
       .Record(execution_context->UkmRecorder());
 }
 
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-V8UnionPerformanceMeasureOptionsOrString*
-StringOrPerformanceMeasureOptionsToNewV8Union(
-    const StringOrPerformanceMeasureOptions& value) {
-  if (value.IsString()) {
-    return MakeGarbageCollected<V8UnionPerformanceMeasureOptionsOrString>(
-        value.GetAsString());
-  }
-  if (value.IsPerformanceMeasureOptions()) {
-    return MakeGarbageCollected<V8UnionPerformanceMeasureOptionsOrString>(
-        value.GetAsPerformanceMeasureOptions());
-  }
-  return nullptr;
-}
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-// TODO(crbug.com/1181288): Remove the old IDL union version.
-V8UnionDoubleOrString* StringOrDoubleToV8UnionDoubleOrString(
-    const StringOrDouble& value) {
-  if (value.IsString())
-    return MakeGarbageCollected<V8UnionDoubleOrString>(value.GetAsString());
-  if (value.IsDouble())
-    return MakeGarbageCollected<V8UnionDoubleOrString>(value.GetAsDouble());
-  return nullptr;
-}
+PerformanceEntry::EntryType kDroppableEntryTypes[] = {
+    PerformanceEntry::kResource,    PerformanceEntry::kLongTask,
+    PerformanceEntry::kElement,     PerformanceEntry::kEvent,
+    PerformanceEntry::kLayoutShift, PerformanceEntry::kLargestContentfulPaint};
 
 }  // namespace
 
@@ -193,6 +175,11 @@ Performance::Performance(
   if (context) {
     background_tracing_helper_ =
         MakeGarbageCollected<BackgroundTracingHelper>(context);
+  }
+  // Initialize the map of dropped entry types only with those which could be
+  // dropped (saves some unnecessary 0s).
+  for (const auto type : kDroppableEntryTypes) {
+    dropped_entries_count_map_.insert(type, 0);
   }
 }
 
@@ -628,6 +615,12 @@ void Performance::AddResourceTiming(
     resource_timing_buffer_.push_back(entry);
     return;
   }
+  // The Resource Timing entries have a special processing model in which there
+  // is a secondary buffer but getting those entries requires handling the
+  // buffer full event, and the PerformanceObserver with buffered flag only
+  // receives the entries from the primary buffer, so it's ok to increase
+  // the dropped entries count here.
+  ++(dropped_entries_count_map_.find(PerformanceEntry::kResource)->value);
   if (!resource_timing_buffer_full_event_pending_) {
     resource_timing_buffer_full_event_pending_ = true;
     resource_timing_buffer_full_timer_.StartOneShot(base::TimeDelta(),
@@ -700,20 +693,26 @@ void Performance::FireResourceTimingBufferFull(TimerBase*) {
 void Performance::AddElementTimingBuffer(PerformanceElementTiming& entry) {
   if (!IsElementTimingBufferFull()) {
     element_timing_buffer_.push_back(&entry);
+  } else {
+    ++(dropped_entries_count_map_.find(PerformanceEntry::kElement)->value);
   }
 }
 
 void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
-  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
   if (!IsEventTimingBufferFull()) {
     event_timing_buffer_.push_back(&entry);
+  } else {
+    ++(dropped_entries_count_map_.find(PerformanceEntry::kEvent)->value);
   }
 }
 
 void Performance::AddLayoutShiftBuffer(LayoutShift& entry) {
   probe::PerformanceEntryAdded(GetExecutionContext(), &entry);
-  if (layout_shift_buffer_.size() < kDefaultLayoutShiftBufferSize)
+  if (layout_shift_buffer_.size() < kDefaultLayoutShiftBufferSize) {
     layout_shift_buffer_.push_back(&entry);
+  } else {
+    ++(dropped_entries_count_map_.find(PerformanceEntry::kLayoutShift)->value);
+  }
 }
 
 void Performance::AddLargestContentfulPaint(LargestContentfulPaint* entry) {
@@ -721,6 +720,10 @@ void Performance::AddLargestContentfulPaint(LargestContentfulPaint* entry) {
   if (largest_contentful_paint_buffer_.size() <
       kDefaultLargestContenfulPaintSize) {
     largest_contentful_paint_buffer_.push_back(entry);
+  } else {
+    ++(dropped_entries_count_map_
+           .find(PerformanceEntry::kLargestContentfulPaint)
+           ->value);
   }
 }
 
@@ -770,11 +773,14 @@ void Performance::AddLongTaskTiming(base::TimeTicks start_time,
   if (longtask_buffer_.size() < kDefaultLongTaskBufferSize) {
     longtask_buffer_.push_back(entry);
   } else {
+    ++(dropped_entries_count_map_.find(PerformanceEntry::kLongTask)->value);
     UseCounter::Count(execution_context, WebFeature::kLongTaskBufferFull);
   }
-  RecordLongTaskUkm(execution_context,
-                    base::TimeDelta::FromMillisecondsD(dom_high_res_start_time),
-                    end_time - start_time);
+  if ((++long_task_counter_ % kLongTaskUkmSampleInterval) == 0) {
+    RecordLongTaskUkm(execution_context,
+                      base::Milliseconds(dom_high_res_start_time),
+                      end_time - start_time);
+  }
   NotifyObserversOfEntry(*entry);
 }
 
@@ -788,12 +794,12 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
                                    PerformanceMarkOptions* mark_options,
                                    ExceptionState& exception_state) {
-  DEFINE_STATIC_LOCAL(const AtomicString, mark_fully_loaded,
-                      ("mark_fully_loaded"));
-  DEFINE_STATIC_LOCAL(const AtomicString, mark_fully_visible,
-                      ("mark_fully_visible"));
-  DEFINE_STATIC_LOCAL(const AtomicString, mark_interactive,
-                      ("mark_interactive"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const AtomicString, mark_fully_loaded,
+                                  ("mark_fully_loaded"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const AtomicString, mark_fully_visible,
+                                  ("mark_fully_visible"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const AtomicString, mark_interactive,
+                                  ("mark_interactive"));
   if (mark_options &&
       (mark_options->hasStartTime() || mark_options->hasDetail())) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kUserTimingL3);
@@ -810,8 +816,8 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
             ->Loader()
             .GetDocumentLoader()
             ->GetTiming()
-            .SetUserTimingMarkFullyLoaded(base::TimeDelta::FromMillisecondsD(
-                performance_mark->startTime()));
+            .SetUserTimingMarkFullyLoaded(
+                base::Milliseconds(performance_mark->startTime()));
       }
     } else if (mark_name == mark_fully_visible) {
       if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
@@ -819,8 +825,8 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
             ->Loader()
             .GetDocumentLoader()
             ->GetTiming()
-            .SetUserTimingMarkFullyVisible(base::TimeDelta::FromMillisecondsD(
-                performance_mark->startTime()));
+            .SetUserTimingMarkFullyVisible(
+                base::Milliseconds(performance_mark->startTime()));
       }
     } else if (mark_name == mark_interactive) {
       if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
@@ -828,8 +834,8 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
             ->Loader()
             .GetDocumentLoader()
             ->GetTiming()
-            .SetUserTimingMarkInteractive(base::TimeDelta::FromMillisecondsD(
-                performance_mark->startTime()));
+            .SetUserTimingMarkInteractive(
+                base::Milliseconds(performance_mark->startTime()));
       }
     }
     NotifyObserversOfEntry(*performance_mark);
@@ -850,7 +856,6 @@ PerformanceMeasure* Performance::measure(ScriptState* script_state,
                          exception_state);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
     const AtomicString& measure_name,
@@ -859,20 +864,7 @@ PerformanceMeasure* Performance::measure(
   return MeasureInternal(script_state, measure_name, start_or_options,
                          absl::nullopt, exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-PerformanceMeasure* Performance::measure(
-    ScriptState* script_state,
-    const AtomicString& measure_name,
-    const StringOrPerformanceMeasureOptions& start_or_options,
-    ExceptionState& exception_state) {
-  return MeasureInternal(
-      script_state, measure_name,
-      StringOrPerformanceMeasureOptionsToNewV8Union(start_or_options),
-      absl::nullopt, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
     const AtomicString& measure_name,
@@ -882,19 +874,6 @@ PerformanceMeasure* Performance::measure(
   return MeasureInternal(script_state, measure_name, start_or_options,
                          absl::optional<String>(end), exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-PerformanceMeasure* Performance::measure(
-    ScriptState* script_state,
-    const AtomicString& measure_name,
-    const StringOrPerformanceMeasureOptions& start_or_options,
-    const String& end,
-    ExceptionState& exception_state) {
-  return MeasureInternal(
-      script_state, measure_name,
-      StringOrPerformanceMeasureOptionsToNewV8Union(start_or_options),
-      absl::optional<String>(end), exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 // |MeasureInternal| exists to unify the arguments from different
 // `performance.measure()` overloads into a consistent form, then delegate to
@@ -947,18 +926,12 @@ PerformanceMeasure* Performance::MeasureInternal(
       return nullptr;
     }
 
-    V8UnionDoubleOrString* start = nullptr;
-    if (options->hasStart()) {
-      start = StringOrDoubleToV8UnionDoubleOrString(options->start());
-    }
+    V8UnionDoubleOrString* start = options->getStartOr(nullptr);
     absl::optional<double> duration;
     if (options->hasDuration()) {
       duration = options->duration();
     }
-    V8UnionDoubleOrString* end = nullptr;
-    if (options->hasEnd()) {
-      end = StringOrDoubleToV8UnionDoubleOrString(options->end());
-    }
+    V8UnionDoubleOrString* end = options->getEndOr(nullptr);
 
     return MeasureWithDetail(
         script_state, measure_name, start, duration, end,
@@ -1004,34 +977,6 @@ void Performance::clearMeasures(const AtomicString& measure_name) {
   GetUserTiming().ClearMeasures(measure_name);
 }
 
-ScriptPromise Performance::profile(ScriptState* script_state,
-                                   const ProfilerInitOptions* options,
-                                   ExceptionState& exception_state) {
-  auto* execution_context = ExecutionContext::From(script_state);
-  DCHECK(execution_context);
-  DCHECK(
-      RuntimeEnabledFeatures::ExperimentalJSProfilerEnabled(execution_context));
-
-  bool can_profile = false;
-  if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
-    can_profile = ProfilerGroup::CanProfile(window, &exception_state,
-                                            ReportOptions::kReportOnFailure);
-  }
-
-  if (!can_profile)
-    return ScriptPromise();
-
-  auto* profiler_group = ProfilerGroup::From(script_state->GetIsolate());
-  DCHECK(profiler_group);
-
-  auto* profiler = profiler_group->CreateProfiler(
-      script_state, *options, time_origin_, exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-
-  return ScriptPromise::Cast(script_state, ToV8(profiler, script_state));
-}
-
 void Performance::RegisterPerformanceObserver(PerformanceObserver& observer) {
   observer_filter_options_ |= observer.FilterOptions();
   observers_.insert(&observer);
@@ -1051,8 +996,6 @@ void Performance::UpdatePerformanceObserverFilterOptions() {
 }
 
 void Performance::NotifyObserversOfEntry(PerformanceEntry& entry) const {
-  DCHECK(entry.EntryTypeEnum() != PerformanceEntry::kEvent ||
-         RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
   bool observer_found = false;
   for (auto& observer : observers_) {
     if (observer->FilterOptions() & entry.EntryTypeEnum() &&
@@ -1090,8 +1033,21 @@ void Performance::SuspendObserver(PerformanceObserver& observer) {
 void Performance::DeliverObservationsTimerFired(TimerBase*) {
   decltype(active_observers_) observers;
   active_observers_.Swap(observers);
-  for (const auto& observer : observers)
-    observer->Deliver();
+  for (const auto& observer : observers) {
+    observer->Deliver(observer->RequiresDroppedEntries()
+                          ? absl::optional<int>(GetDroppedEntriesForTypes(
+                                observer->FilterOptions()))
+                          : absl::nullopt);
+  }
+}
+
+int Performance::GetDroppedEntriesForTypes(PerformanceEntryTypeMask types) {
+  int dropped_count = 0;
+  for (const auto type : kDroppableEntryTypes) {
+    if (types & type)
+      dropped_count += dropped_entries_count_map_.at(type);
+  }
+  return dropped_count;
 }
 
 // static
@@ -1129,7 +1085,7 @@ base::TimeDelta Performance::MonotonicTimeToTimeDelta(
     base::TimeTicks monotonic_time,
     bool allow_negative_value,
     bool cross_origin_isolated_capability) {
-  return base::TimeDelta::FromMillisecondsD(MonotonicTimeToDOMHighResTimeStamp(
+  return base::Milliseconds(MonotonicTimeToDOMHighResTimeStamp(
       time_origin, monotonic_time, allow_negative_value,
       cross_origin_isolated_capability));
 }

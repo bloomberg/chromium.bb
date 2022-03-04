@@ -9,10 +9,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_mouse_enter_exit_handler.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -25,6 +26,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
+class OmniboxEditModel;
 class OmniboxMatchCellView;
 class OmniboxPopupContentsView;
 class OmniboxSuggestionButtonRowView;
@@ -38,7 +40,6 @@ class Image;
 
 namespace views {
 class Button;
-class FocusRing;
 class ImageButton;
 }  // namespace views
 
@@ -47,6 +48,7 @@ class OmniboxResultView : public views::View,
  public:
   METADATA_HEADER(OmniboxResultView);
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
+                    OmniboxEditModel* model,
                     size_t model_index);
   OmniboxResultView(const OmniboxResultView&) = delete;
   OmniboxResultView& operator=(const OmniboxResultView&) = delete;
@@ -90,7 +92,7 @@ class OmniboxResultView : public views::View,
   // Stores the image in a local data member and schedules a repaint.
   void SetRichSuggestionImage(const gfx::ImageSkia& image);
 
-  void ButtonPressed(OmniboxPopupModel::LineState state,
+  void ButtonPressed(OmniboxPopupSelection::LineState state,
                      const ui::Event& event);
 
   // Helper to emit accessibility events (may only emit if conditions are met).
@@ -126,7 +128,10 @@ class OmniboxResultView : public views::View,
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // The parent view.
-  OmniboxPopupContentsView* const popup_contents_view_;
+  const raw_ptr<OmniboxPopupContentsView> popup_contents_view_;
+
+  // The model containing results.
+  raw_ptr<OmniboxEditModel> model_;
 
   // This result's model index.
   size_t model_index_;
@@ -141,23 +146,22 @@ class OmniboxResultView : public views::View,
   std::unique_ptr<gfx::SlideAnimation> keyword_slide_animation_;
 
   // Container for the first row (for everything expect |button_row_|).
-  views::View* suggestion_container_;
+  raw_ptr<views::View> suggestion_container_;
 
   // Weak pointers for easy reference.
-  OmniboxMatchCellView* suggestion_view_;  // The leading (or left) view.
-  OmniboxMatchCellView* keyword_view_;     // The trailing (or right) view.
+  raw_ptr<OmniboxMatchCellView>
+      suggestion_view_;                         // The leading (or left) view.
+  raw_ptr<OmniboxMatchCellView> keyword_view_;  // The trailing (or right) view.
 
-  // The blue bar used to indicate selection. This is currently only used if
-  // omnibox-refined-focus-state flag is enabled.
-  OmniboxResultSelectionIndicator* selection_indicator_ = nullptr;
+  // The blue bar used to indicate selection.
+  raw_ptr<OmniboxResultSelectionIndicator> selection_indicator_ = nullptr;
 
   // The "X" button at the end of the match cell, used to remove suggestions.
-  views::ImageButton* remove_suggestion_button_;
-  views::FocusRing* remove_suggestion_focus_ring_ = nullptr;
+  raw_ptr<views::ImageButton> remove_suggestion_button_;
 
   // The row of buttons that appears when actions such as tab switch or Pedals
   // are on the suggestion. It is owned by the base view, not this raw pointer.
-  OmniboxSuggestionButtonRowView* button_row_ = nullptr;
+  raw_ptr<OmniboxSuggestionButtonRowView> button_row_ = nullptr;
 
   // Keeps track of mouse-enter and mouse-exit events of child Views.
   OmniboxMouseEnterExitHandler mouse_enter_exit_handler_;

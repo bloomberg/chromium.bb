@@ -33,9 +33,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
-import * as Common from '../../core/common/common.js';
+import type * as Common from '../../core/common/common.js';
 import * as DOMExtension from '../../core/dom_extension/dom_extension.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -48,48 +46,22 @@ import {Size} from './Geometry.js';
 import {GlassPane, PointerEventsBehavior, SizeBehavior} from './GlassPane.js';
 import {Icon} from './Icon.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import * as ThemeSupport from './theme_support/theme_support.js';  // eslint-disable-line rulesdir/es_modules_import
+import * as ThemeSupport from './theme_support/theme_support.js';
+import * as Utils from './utils/utils.js';
+
 import type {ToolbarButton} from './Toolbar.js';
-import {Toolbar} from './Toolbar.js';  // eslint-disable-line no-unused-vars
+import {Toolbar} from './Toolbar.js';
 import {Tooltip} from './Tooltip.js';
-import type {TreeOutline} from './Treeoutline.js'; // eslint-disable-line no-unused-vars
-import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
-import {focusChanged} from './utils/focus-changed.js';
-import {injectCoreStyles} from './utils/inject-core-styles.js';
-import {measuredScrollbarWidth} from './utils/measured-scrollbar-width.js';
-import {registerCustomElement} from './utils/register-custom-element.js';
+import type {TreeOutline} from './Treeoutline.js';
+import checkboxTextLabelStyles from './checkboxTextLabel.css.legacy.js';
+import closeButtonStyles from './closeButton.css.legacy.js';
+import confirmDialogStyles from './confirmDialog.css.legacy.js';
+import inlineButtonStyles from './inlineButton.css.legacy.js';
+import radioButtonStyles from './radioButton.css.legacy.js';
+import sliderStyles from './slider.css.legacy.js';
+import smallBubbleStyles from './smallBubble.css.legacy.js';
 
 const UIStrings = {
-  /**
-  *@description Micros format in UIUtils
-  *@example {2} PH1
-  */
-  fmms: '{PH1} μs',
-  /**
-  *@description Sub millis format in UIUtils
-  *@example {2.14} PH1
-  */
-  fms: '{PH1} ms',
-  /**
-  *@description Seconds format in UIUtils
-  *@example {2.14} PH1
-  */
-  fs: '{PH1} s',
-  /**
-  *@description Minutes format in UIUtils
-  *@example {2.2} PH1
-  */
-  fmin: '{PH1} min',
-  /**
-  *@description Hours format in UIUtils
-  *@example {2.2} PH1
-  */
-  fhrs: '{PH1} hrs',
-  /**
-  *@description Days format in UIUtils
-  *@example {2.2} PH1
-  */
-  fdays: '{PH1} days',
   /**
   *@description label to open link externally
   */
@@ -187,44 +159,44 @@ export function elementDragStart(
 }
 
 class DragHandler {
-  _glassPaneInUse?: boolean;
-  _elementDraggingEventListener?: ((arg0: MouseEvent) => void|boolean);
-  _elementEndDraggingEventListener?: ((arg0: MouseEvent) => void)|null;
-  _dragEventsTargetDocument?: Document;
-  _dragEventsTargetDocumentTop?: Document;
-  _restoreCursorAfterDrag?: (() => void);
+  private glassPaneInUse?: boolean;
+  private elementDraggingEventListener?: ((arg0: MouseEvent) => void|boolean);
+  private elementEndDraggingEventListener?: ((arg0: MouseEvent) => void)|null;
+  private dragEventsTargetDocument?: Document;
+  private dragEventsTargetDocumentTop?: Document;
+  private restoreCursorAfterDrag?: (() => void);
 
   constructor() {
-    this._elementDragMove = this._elementDragMove.bind(this);
-    this._elementDragEnd = this._elementDragEnd.bind(this);
-    this._mouseOutWhileDragging = this._mouseOutWhileDragging.bind(this);
+    this.elementDragMove = this.elementDragMove.bind(this);
+    this.elementDragEnd = this.elementDragEnd.bind(this);
+    this.mouseOutWhileDragging = this.mouseOutWhileDragging.bind(this);
   }
 
-  _createGlassPane(): void {
-    this._glassPaneInUse = true;
-    if (!DragHandler._glassPaneUsageCount++) {
-      DragHandler._glassPane = new GlassPane();
-      DragHandler._glassPane.setPointerEventsBehavior(PointerEventsBehavior.BlockedByGlassPane);
-      if (DragHandler._documentForMouseOut) {
-        DragHandler._glassPane.show(DragHandler._documentForMouseOut);
+  private createGlassPane(): void {
+    this.glassPaneInUse = true;
+    if (!DragHandler.glassPaneUsageCount++) {
+      DragHandler.glassPane = new GlassPane();
+      DragHandler.glassPane.setPointerEventsBehavior(PointerEventsBehavior.BlockedByGlassPane);
+      if (DragHandler.documentForMouseOut) {
+        DragHandler.glassPane.show(DragHandler.documentForMouseOut);
       }
     }
   }
 
-  _disposeGlassPane(): void {
-    if (!this._glassPaneInUse) {
+  private disposeGlassPane(): void {
+    if (!this.glassPaneInUse) {
       return;
     }
-    this._glassPaneInUse = false;
-    if (--DragHandler._glassPaneUsageCount) {
+    this.glassPaneInUse = false;
+    if (--DragHandler.glassPaneUsageCount) {
       return;
     }
-    if (DragHandler._glassPane) {
-      DragHandler._glassPane.hide();
-      DragHandler._glassPane = null;
+    if (DragHandler.glassPane) {
+      DragHandler.glassPane.hide();
+      DragHandler.glassPane = null;
     }
-    DragHandler._documentForMouseOut = null;
-    DragHandler._rootForMouseOut = null;
+    DragHandler.documentForMouseOut = null;
+    DragHandler.rootForMouseOut = null;
   }
 
   elementDragStart(
@@ -237,7 +209,7 @@ class DragHandler {
       return;
     }
 
-    if (this._elementDraggingEventListener) {
+    if (this.elementDraggingEventListener) {
       return;
     }
 
@@ -246,105 +218,105 @@ class DragHandler {
     }
 
     const targetDocument = (event.target instanceof Node && event.target.ownerDocument) as Document;
-    this._elementDraggingEventListener = elementDrag;
-    this._elementEndDraggingEventListener = elementDragEnd;
+    this.elementDraggingEventListener = elementDrag;
+    this.elementEndDraggingEventListener = elementDragEnd;
     console.assert(
-        (DragHandler._documentForMouseOut || targetDocument) === targetDocument, 'Dragging on multiple documents.');
-    DragHandler._documentForMouseOut = targetDocument;
-    DragHandler._rootForMouseOut = event.target instanceof Node && event.target.getRootNode() || null;
-    this._dragEventsTargetDocument = targetDocument;
+        (DragHandler.documentForMouseOut || targetDocument) === targetDocument, 'Dragging on multiple documents.');
+    DragHandler.documentForMouseOut = targetDocument;
+    DragHandler.rootForMouseOut = event.target instanceof Node && event.target.getRootNode() || null;
+    this.dragEventsTargetDocument = targetDocument;
     try {
-      if (targetDocument.defaultView) {
-        this._dragEventsTargetDocumentTop = targetDocument.defaultView.top.document;
+      if (targetDocument.defaultView && targetDocument.defaultView.top) {
+        this.dragEventsTargetDocumentTop = targetDocument.defaultView.top.document;
       }
     } catch (e) {
-      this._dragEventsTargetDocumentTop = this._dragEventsTargetDocument;
+      this.dragEventsTargetDocumentTop = this.dragEventsTargetDocument;
     }
 
-    targetDocument.addEventListener('mousemove', this._elementDragMove, true);
-    targetDocument.addEventListener('mouseup', this._elementDragEnd, true);
-    DragHandler._rootForMouseOut &&
-        DragHandler._rootForMouseOut.addEventListener('mouseout', this._mouseOutWhileDragging, {capture: true});
-    if (this._dragEventsTargetDocumentTop && targetDocument !== this._dragEventsTargetDocumentTop) {
-      this._dragEventsTargetDocumentTop.addEventListener('mouseup', this._elementDragEnd, true);
+    targetDocument.addEventListener('mousemove', this.elementDragMove, true);
+    targetDocument.addEventListener('mouseup', this.elementDragEnd, true);
+    DragHandler.rootForMouseOut &&
+        DragHandler.rootForMouseOut.addEventListener('mouseout', this.mouseOutWhileDragging, {capture: true});
+    if (this.dragEventsTargetDocumentTop && targetDocument !== this.dragEventsTargetDocumentTop) {
+      this.dragEventsTargetDocumentTop.addEventListener('mouseup', this.elementDragEnd, true);
     }
 
     const targetHtmlElement = (targetElement as HTMLElement);
     if (typeof cursor === 'string') {
-      this._restoreCursorAfterDrag = restoreCursor.bind(this, targetHtmlElement.style.cursor);
+      this.restoreCursorAfterDrag = restoreCursor.bind(this, targetHtmlElement.style.cursor);
       targetHtmlElement.style.cursor = cursor;
       targetDocument.body.style.cursor = cursor;
     }
     function restoreCursor(this: DragHandler, oldCursor: string): void {
       targetDocument.body.style.removeProperty('cursor');
       targetHtmlElement.style.cursor = oldCursor;
-      this._restoreCursorAfterDrag = undefined;
+      this.restoreCursorAfterDrag = undefined;
     }
     event.preventDefault();
   }
 
-  _mouseOutWhileDragging(): void {
-    this._unregisterMouseOutWhileDragging();
-    this._createGlassPane();
+  private mouseOutWhileDragging(): void {
+    this.unregisterMouseOutWhileDragging();
+    this.createGlassPane();
   }
 
-  _unregisterMouseOutWhileDragging(): void {
-    if (!DragHandler._rootForMouseOut) {
+  private unregisterMouseOutWhileDragging(): void {
+    if (!DragHandler.rootForMouseOut) {
       return;
     }
-    DragHandler._rootForMouseOut.removeEventListener('mouseout', this._mouseOutWhileDragging, {capture: true});
+    DragHandler.rootForMouseOut.removeEventListener('mouseout', this.mouseOutWhileDragging, {capture: true});
   }
 
-  _unregisterDragEvents(): void {
-    if (!this._dragEventsTargetDocument) {
+  private unregisterDragEvents(): void {
+    if (!this.dragEventsTargetDocument) {
       return;
     }
-    this._dragEventsTargetDocument.removeEventListener('mousemove', this._elementDragMove, true);
-    this._dragEventsTargetDocument.removeEventListener('mouseup', this._elementDragEnd, true);
-    if (this._dragEventsTargetDocumentTop && this._dragEventsTargetDocument !== this._dragEventsTargetDocumentTop) {
-      this._dragEventsTargetDocumentTop.removeEventListener('mouseup', this._elementDragEnd, true);
+    this.dragEventsTargetDocument.removeEventListener('mousemove', this.elementDragMove, true);
+    this.dragEventsTargetDocument.removeEventListener('mouseup', this.elementDragEnd, true);
+    if (this.dragEventsTargetDocumentTop && this.dragEventsTargetDocument !== this.dragEventsTargetDocumentTop) {
+      this.dragEventsTargetDocumentTop.removeEventListener('mouseup', this.elementDragEnd, true);
     }
-    delete this._dragEventsTargetDocument;
-    delete this._dragEventsTargetDocumentTop;
+    delete this.dragEventsTargetDocument;
+    delete this.dragEventsTargetDocumentTop;
   }
 
-  _elementDragMove(event: MouseEvent): void {
+  private elementDragMove(event: MouseEvent): void {
     if (event.buttons !== 1) {
-      this._elementDragEnd(event);
+      this.elementDragEnd(event);
       return;
     }
-    if (this._elementDraggingEventListener && this._elementDraggingEventListener(event)) {
-      this._cancelDragEvents(event);
+    if (this.elementDraggingEventListener && this.elementDraggingEventListener(event)) {
+      this.cancelDragEvents(event);
     }
   }
 
-  _cancelDragEvents(_event: Event): void {
-    this._unregisterDragEvents();
-    this._unregisterMouseOutWhileDragging();
+  private cancelDragEvents(_event: Event): void {
+    this.unregisterDragEvents();
+    this.unregisterMouseOutWhileDragging();
 
-    if (this._restoreCursorAfterDrag) {
-      this._restoreCursorAfterDrag();
+    if (this.restoreCursorAfterDrag) {
+      this.restoreCursorAfterDrag();
     }
 
-    this._disposeGlassPane();
+    this.disposeGlassPane();
 
-    delete this._elementDraggingEventListener;
-    delete this._elementEndDraggingEventListener;
+    delete this.elementDraggingEventListener;
+    delete this.elementEndDraggingEventListener;
   }
 
-  _elementDragEnd(event: Event): void {
-    const elementDragEnd = this._elementEndDraggingEventListener;
-    this._cancelDragEvents((event as MouseEvent));
+  private elementDragEnd(event: Event): void {
+    const elementDragEnd = this.elementEndDraggingEventListener;
+    this.cancelDragEvents((event as MouseEvent));
     event.preventDefault();
     if (elementDragEnd) {
       elementDragEnd((event as MouseEvent));
     }
   }
 
-  static _glassPaneUsageCount = 0;
-  static _glassPane: GlassPane|null = null;
-  static _documentForMouseOut: Document|null = null;
-  static _rootForMouseOut: Node|null = null;
+  private static glassPaneUsageCount = 0;
+  private static glassPane: GlassPane|null = null;
+  private static documentForMouseOut: Document|null = null;
+  private static rootForMouseOut: Node|null = null;
 }
 
 export function isBeingEdited(node?: Node|null): boolean {
@@ -379,7 +351,9 @@ export function isEditing(): boolean {
   if (!focused) {
     return false;
   }
-  return focused.classList.contains('text-prompt') || focused.nodeName === 'INPUT' || focused.nodeName === 'TEXTAREA';
+  return focused.classList.contains('text-prompt') || focused.nodeName === 'INPUT' || focused.nodeName === 'TEXTAREA' ||
+      ((focused as HTMLElement).contentEditable === 'true' ||
+       (focused as HTMLElement).contentEditable === 'plaintext-only');
 }
 
 export function markBeingEdited(element: Element, value: boolean): boolean {
@@ -402,9 +376,7 @@ export function markBeingEdited(element: Element, value: boolean): boolean {
 const elementsBeingEdited = new Set<Element>();
 
 // Avoids Infinity, NaN, and scientific notation (e.g. 1e20), see crbug.com/81165.
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _numberRegex = /^(-?(?:\d+(?:\.\d+)?|\.\d+))$/;
+const numberRegex = /^(-?(?:\d+(?:\.\d+)?|\.\d+))$/;
 
 export const StyleValueDelimiters = ' \xA0\t\n"\':;,/()';
 
@@ -430,9 +402,7 @@ export function getValueModificationDirection(event: Event): string|null {
   return direction;
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _modifiedHexValue(hexString: string, event: Event): string|null {
+function modifiedHexValue(hexString: string, event: Event): string|null {
   const direction = getValueModificationDirection(event);
   if (!direction) {
     return null;
@@ -459,7 +429,7 @@ function _modifiedHexValue(hexString: string, event: Event): string|null {
   // If no shortcut keys are pressed then increase hex value by 1.
   // Keys can be pressed together to increase RGB channels. e.g trying different shades.
   let delta = 0;
-  if (KeyboardShortcut.eventHasCtrlOrMeta(mouseEvent)) {
+  if (KeyboardShortcut.eventHasCtrlEquivalentKey(mouseEvent)) {
     delta += Math.pow(16, channelLen * 2);
   }
   if (mouseEvent.shiftKey) {
@@ -487,9 +457,7 @@ function _modifiedHexValue(hexString: string, event: Event): string|null {
   return resultString;
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _modifiedFloatNumber(number: number, event: Event, modifierMultiplier?: number): number|null {
+export function modifiedFloatNumber(number: number, event: Event, modifierMultiplier?: number): number|null {
   const direction = getValueModificationDirection(event);
   if (!direction) {
     return null;
@@ -503,7 +471,7 @@ function _modifiedFloatNumber(number: number, event: Event, modifierMultiplier?:
   // When alt is pressed, increase by 0.1.
   // Otherwise increase by 1.
   let delta = 1;
-  if (KeyboardShortcut.eventHasCtrlOrMeta(mouseEvent)) {
+  if (KeyboardShortcut.eventHasCtrlEquivalentKey(mouseEvent)) {
     delta = 100;
   } else if (mouseEvent.shiftKey) {
     delta = 10;
@@ -521,7 +489,7 @@ function _modifiedFloatNumber(number: number, event: Event, modifierMultiplier?:
   // Make the new number and constrain it to a precision of 6, this matches numbers the engine returns.
   // Use the Number constructor to forget the fixed precision, so 1.100000 will print as 1.1.
   const result = Number((number + delta).toFixed(6));
-  if (!String(result).match(_numberRegex)) {
+  if (!String(result).match(numberRegex)) {
     return null;
   }
   return result;
@@ -538,7 +506,7 @@ export function createReplacementString(
   if (matches && matches.length) {
     prefix = matches[1];
     suffix = matches[3];
-    number = _modifiedHexValue(matches[2], event);
+    number = modifiedHexValue(matches[2], event);
     if (number !== null) {
       replacementString = prefix + number + suffix;
     }
@@ -547,7 +515,7 @@ export function createReplacementString(
     if (matches && matches.length) {
       prefix = matches[1];
       suffix = matches[3];
-      number = _modifiedFloatNumber(parseFloat(matches[2]), event);
+      number = modifiedFloatNumber(parseFloat(matches[2]), event);
       if (number !== null) {
         replacementString =
             customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
@@ -615,65 +583,11 @@ export function handleElementValueModifications(
   return false;
 }
 
-Number.preciseMillisToString = function(ms: number, precision?: number): string {
-  precision = precision || 0;
-  return i18nString(UIStrings.fms, {PH1: ms.toFixed(precision)});
-};
-
-Number.millisToString = function(ms: number, higherResolution?: boolean): string {
-  if (!isFinite(ms)) {
-    return '-';
-  }
-
-  if (ms === 0) {
-    return '0';
-  }
-
-  if (higherResolution && ms < 0.1) {
-    return i18nString(UIStrings.fmms, {PH1: (ms * 1000).toFixed(0)});
-  }
-  if (higherResolution && ms < 1000) {
-    return i18nString(UIStrings.fms, {PH1: (ms).toFixed(2)});
-  }
-  if (ms < 1000) {
-    return i18nString(UIStrings.fms, {PH1: (ms).toFixed(0)});
-  }
-
-  const seconds = ms / 1000;
-  if (seconds < 60) {
-    return i18nString(UIStrings.fs, {PH1: (seconds).toFixed(2)});
-  }
-
-  const minutes = seconds / 60;
-  if (minutes < 60) {
-    return i18nString(UIStrings.fmin, {PH1: (minutes).toFixed(1)});
-  }
-
-  const hours = minutes / 60;
-  if (hours < 24) {
-    return i18nString(UIStrings.fhrs, {PH1: (hours).toFixed(1)});
-  }
-
-  const days = hours / 24;
-  return i18nString(UIStrings.fdays, {PH1: (days).toFixed(1)});
-};
-
-Number.secondsToString = function(seconds: number, higherResolution?: boolean): string {
-  if (!isFinite(seconds)) {
-    return '-';
-  }
-  return Number.millisToString(seconds * 1000, higherResolution);
-};
-
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function formatLocalized(format: string, substitutions: ArrayLike<any>|null): Element {
+export function formatLocalized<U>(format: string, substitutions: ArrayLike<U>|null): Element {
   const formatters = {
     s: (substitution: unknown): unknown => substitution,
   };
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function append(a: Element, b: any): Element {
+  function append(a: Element, b: string|Element): Element {
     a.appendChild(typeof b === 'string' ? document.createTextNode(b) : b as Element);
     return a;
   }
@@ -697,7 +611,8 @@ export function anotherProfilerActiveLabel(): string {
   return i18nString(UIStrings.anotherProfilerIsAlreadyActive);
 }
 
-export function asyncStackTraceLabel(description: string|undefined): string {
+export function asyncStackTraceLabel(
+    description: string|undefined, previousCallFrames: {functionName: string}[]): string {
   if (description) {
     if (description === 'Promise.resolve') {
       return i18nString(UIStrings.promiseResolvedAsync);
@@ -705,62 +620,63 @@ export function asyncStackTraceLabel(description: string|undefined): string {
     if (description === 'Promise.reject') {
       return i18nString(UIStrings.promiseRejectedAsync);
     }
+    // TODO(crbug.com/1254259): Remove the check for 'async function'
+    // once the relevant V8 inspector CL rolls into Node LTS.
+    if ((description === 'await' || description === 'async function') && previousCallFrames.length !== 0) {
+      const lastPreviousFrame = previousCallFrames[previousCallFrames.length - 1];
+      const lastPreviousFrameName = beautifyFunctionName(lastPreviousFrame.functionName);
+      description = `await in ${lastPreviousFrameName}`;
+    }
     return i18nString(UIStrings.sAsync, {PH1: description});
   }
   return i18nString(UIStrings.asyncCall);
 }
 
 export function installComponentRootStyles(element: Element): void {
-  injectCoreStyles(element);
+  Utils.injectCoreStyles(element);
   element.classList.add('platform-' + Host.Platform.platform());
 
   // Detect overlay scrollbar enable by checking for nonzero scrollbar width.
-  if (!Host.Platform.isMac() && measuredScrollbarWidth(element.ownerDocument) === 0) {
+  if (!Host.Platform.isMac() && Utils.measuredScrollbarWidth(element.ownerDocument) === 0) {
     element.classList.add('overlay-scrollbar-enabled');
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _windowFocused(document: Document, event: Event): void {
+function windowFocused(document: Document, event: Event): void {
   if (event.target instanceof Window && event.target.document.nodeType === Node.DOCUMENT_NODE) {
     document.body.classList.remove('inactive');
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _windowBlurred(document: Document, event: Event): void {
+function windowBlurred(document: Document, event: Event): void {
   if (event.target instanceof Window && event.target.document.nodeType === Node.DOCUMENT_NODE) {
     document.body.classList.add('inactive');
   }
 }
 
 export class ElementFocusRestorer {
-  _element: HTMLElement|null;
-  _previous: HTMLElement|null;
+  private element: HTMLElement|null;
+  private previous: HTMLElement|null;
   constructor(element: Element) {
-    this._element = (element as HTMLElement | null);
-    this._previous = (element.ownerDocument.deepActiveElement() as HTMLElement | null);
+    this.element = (element as HTMLElement | null);
+    this.previous = (element.ownerDocument.deepActiveElement() as HTMLElement | null);
     (element as HTMLElement).focus();
   }
 
   restore(): void {
-    if (!this._element) {
+    if (!this.element) {
       return;
     }
-    if (this._element.hasFocus() && this._previous) {
-      this._previous.focus();
+    if (this.element.hasFocus() && this.previous) {
+      this.previous.focus();
     }
-    this._previous = null;
-    this._element = null;
+    this.previous = null;
+    this.element = null;
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function highlightSearchResult(element: Element, offset: number, length: number, domChanges?: any[]): Element|
-    null {
+export function highlightSearchResult(
+    element: Element, offset: number, length: number, domChanges?: HighlightChange[]): Element|null {
   const result = highlightSearchResults(element, [new TextUtils.TextRange.SourceRange(offset, length)], domChanges);
   return result.length ? result[0] : null;
 }
@@ -859,9 +775,7 @@ export function highlightRangesWithStyleClass(
           ownerDocument.createTextNode(lastText.substring(0, startOffset - nodeRanges[startIndex].offset));
       lastTextNode.parentElement.insertBefore(prefixNode, highlightNode);
       changes.push({
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        node: (prefixNode as any),
+        node: prefixNode,
         type: 'added',
         nextSibling: highlightNode,
         parent: lastTextNode.parentElement,
@@ -917,25 +831,21 @@ export function highlightRangesWithStyleClass(
   return highlightNodes;
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function applyDomChanges(domChanges: any[]): void {
+export function applyDomChanges(domChanges: HighlightChange[]): void {
   for (let i = 0, size = domChanges.length; i < size; ++i) {
     const entry = domChanges[i];
     switch (entry.type) {
       case 'added':
-        entry.parent.insertBefore(entry.node, entry.nextSibling);
+        entry.parent?.insertBefore(entry.node, entry.nextSibling ?? null);
         break;
       case 'changed':
-        entry.node.textContent = entry.newText;
+        entry.node.textContent = entry.newText ?? null;
         break;
     }
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function revertDomChanges(domChanges: any[]): void {
+export function revertDomChanges(domChanges: HighlightChange[]): void {
   for (let i = domChanges.length - 1; i >= 0; --i) {
     const entry = domChanges[i];
     switch (entry.type) {
@@ -943,7 +853,7 @@ export function revertDomChanges(domChanges: any[]): void {
         entry.node.remove();
         break;
       case 'changed':
-        entry.node.textContent = entry.oldText;
+        entry.node.textContent = entry.oldText ?? null;
         break;
     }
   }
@@ -967,77 +877,71 @@ export function measurePreferredSize(element: Element, containerElement?: Elemen
 }
 
 class InvokeOnceHandlers {
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _handlers: Map<any, any>|null;
-  _autoInvoke: boolean;
+  private handlers: Map<Object, Set<Function>>|null;
+  private readonly autoInvoke: boolean;
   constructor(autoInvoke: boolean) {
-    this._handlers = null;
-    this._autoInvoke = autoInvoke;
+    this.handlers = null;
+    this.autoInvoke = autoInvoke;
   }
 
   add(object: Object, method: () => void): void {
-    if (!this._handlers) {
-      this._handlers = new Map();
-      if (this._autoInvoke) {
+    if (!this.handlers) {
+      this.handlers = new Map();
+      if (this.autoInvoke) {
         this.scheduleInvoke();
       }
     }
-    let methods = this._handlers.get(object);
+    let methods = this.handlers.get(object);
     if (!methods) {
       methods = new Set();
-      this._handlers.set(object, methods);
+      this.handlers.set(object, methods);
     }
     methods.add(method);
   }
   scheduleInvoke(): void {
-    if (this._handlers) {
-      requestAnimationFrame(this._invoke.bind(this));
+    if (this.handlers) {
+      requestAnimationFrame(this.invoke.bind(this));
     }
   }
 
-  _invoke(): void {
-    const handlers = this._handlers || new Map();  // Make closure happy. This should not be null.
-    this._handlers = null;
-    for (const [object, methods] of handlers) {
-      for (const method of methods) {
-        method.call(object);
+  private invoke(): void {
+    const handlers = this.handlers;
+    this.handlers = null;
+    if (handlers) {
+      for (const [object, methods] of handlers) {
+        for (const method of methods) {
+          method.call(object);
+        }
       }
     }
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _coalescingLevel = 0;
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _postUpdateHandlers: InvokeOnceHandlers|null = null;
+let coalescingLevel = 0;
+let postUpdateHandlers: InvokeOnceHandlers|null = null;
 
 export function startBatchUpdate(): void {
-  if (!_coalescingLevel++) {
-    _postUpdateHandlers = new InvokeOnceHandlers(false);
+  if (!coalescingLevel++) {
+    postUpdateHandlers = new InvokeOnceHandlers(false);
   }
 }
 
 export function endBatchUpdate(): void {
-  if (--_coalescingLevel) {
+  if (--coalescingLevel) {
     return;
   }
 
-  if (_postUpdateHandlers) {
-    _postUpdateHandlers.scheduleInvoke();
-    _postUpdateHandlers = null;
+  if (postUpdateHandlers) {
+    postUpdateHandlers.scheduleInvoke();
+    postUpdateHandlers = null;
   }
 }
 
 export function invokeOnceAfterBatchUpdate(object: Object, method: () => void): void {
-  if (!_postUpdateHandlers) {
-    _postUpdateHandlers = new InvokeOnceHandlers(true);
+  if (!postUpdateHandlers) {
+    postUpdateHandlers = new InvokeOnceHandlers(true);
   }
-  _postUpdateHandlers.add(object, method);
+  postUpdateHandlers.add(object, method);
 }
 
 export function animateFunction(
@@ -1045,9 +949,7 @@ export function animateFunction(
       from: number,
       to: number,
     }[],
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    duration: number, animationComplete?: (() => any)): () => void {
+    duration: number, animationComplete?: (() => void)): () => void {
   const start = window.performance.now();
   let raf = window.requestAnimationFrame(animationStep);
 
@@ -1064,36 +966,35 @@ export function animateFunction(
   return (): void => window.cancelAnimationFrame(raf);
 }
 
-export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
-  _element: Element;
-  _callback: (arg0: Event) => void;
-  _editKey: (arg0: Event) => boolean;
-  _longClickData!: {
+export class LongClickController {
+  private readonly element: Element;
+  private readonly callback: (arg0: Event) => void;
+  private readonly editKey: (arg0: Event) => boolean;
+  private longClickData!: {
     mouseUp: (arg0: Event) => void,
     mouseDown: (arg0: Event) => void,
     reset: () => void,
   }|undefined;
-  _longClickInterval!: number|undefined;
+  private longClickInterval!: number|undefined;
 
   constructor(
       element: Element, callback: (arg0: Event) => void,
       isEditKeyFunc: (arg0: Event) => boolean = (event): boolean => isEnterOrSpaceKey(event)) {
-    super();
-    this._element = element;
-    this._callback = callback;
-    this._editKey = isEditKeyFunc;
-    this._enable();
+    this.element = element;
+    this.callback = callback;
+    this.editKey = isEditKeyFunc;
+    this.enable();
   }
 
   reset(): void {
-    if (this._longClickInterval) {
-      clearInterval(this._longClickInterval);
-      delete this._longClickInterval;
+    if (this.longClickInterval) {
+      clearInterval(this.longClickInterval);
+      delete this.longClickInterval;
     }
   }
 
-  _enable(): void {
-    if (this._longClickData) {
+  private enable(): void {
+    if (this.longClickData) {
       return;
     }
     const boundKeyDown = keyDown.bind(this);
@@ -1102,24 +1003,24 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
     const boundMouseUp = mouseUp.bind(this);
     const boundReset = this.reset.bind(this);
 
-    this._element.addEventListener('keydown', boundKeyDown, false);
-    this._element.addEventListener('keyup', boundKeyUp, false);
-    this._element.addEventListener('mousedown', boundMouseDown, false);
-    this._element.addEventListener('mouseout', boundReset, false);
-    this._element.addEventListener('mouseup', boundMouseUp, false);
-    this._element.addEventListener('click', boundReset, true);
+    this.element.addEventListener('keydown', boundKeyDown, false);
+    this.element.addEventListener('keyup', boundKeyUp, false);
+    this.element.addEventListener('mousedown', boundMouseDown, false);
+    this.element.addEventListener('mouseout', boundReset, false);
+    this.element.addEventListener('mouseup', boundMouseUp, false);
+    this.element.addEventListener('click', boundReset, true);
 
-    this._longClickData = {mouseUp: boundMouseUp, mouseDown: boundMouseDown, reset: boundReset};
+    this.longClickData = {mouseUp: boundMouseUp, mouseDown: boundMouseDown, reset: boundReset};
 
     function keyDown(this: LongClickController, e: Event): void {
-      if (this._editKey(e)) {
-        const callback = this._callback;
-        this._longClickInterval = window.setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
+      if (this.editKey(e)) {
+        const callback = this.callback;
+        this.longClickInterval = window.setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
       }
     }
 
     function keyUp(this: LongClickController, e: Event): void {
-      if (this._editKey(e)) {
+      if (this.editKey(e)) {
         this.reset();
       }
     }
@@ -1128,8 +1029,8 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
       if ((e as MouseEvent).which !== 1) {
         return;
       }
-      const callback = this._callback;
-      this._longClickInterval = window.setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
+      const callback = this.callback;
+      this.longClickInterval = window.setTimeout(callback.bind(null, e), LongClickController.TIME_MS);
     }
 
     function mouseUp(this: LongClickController, e: Event): void {
@@ -1141,28 +1042,26 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   dispose(): void {
-    if (!this._longClickData) {
+    if (!this.longClickData) {
       return;
     }
-    this._element.removeEventListener('mousedown', this._longClickData.mouseDown, false);
-    this._element.removeEventListener('mouseout', this._longClickData.reset, false);
-    this._element.removeEventListener('mouseup', this._longClickData.mouseUp, false);
-    this._element.addEventListener('click', this._longClickData.reset, true);
-    delete this._longClickData;
+    this.element.removeEventListener('mousedown', this.longClickData.mouseDown, false);
+    this.element.removeEventListener('mouseout', this.longClickData.reset, false);
+    this.element.removeEventListener('mouseup', this.longClickData.mouseUp, false);
+    this.element.addEventListener('click', this.longClickData.reset, true);
+    delete this.longClickData;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static TIME_MS = 200;
+  static readonly TIME_MS = 200;
 }
 
 export function initializeUIUtils(document: Document, themeSetting: Common.Settings.Setting<string>): void {
   document.body.classList.toggle('inactive', !document.hasFocus());
   if (document.defaultView) {
-    document.defaultView.addEventListener('focus', _windowFocused.bind(undefined, document), false);
-    document.defaultView.addEventListener('blur', _windowBlurred.bind(undefined, document), false);
+    document.defaultView.addEventListener('focus', windowFocused.bind(undefined, document), false);
+    document.defaultView.addEventListener('blur', windowBlurred.bind(undefined, document), false);
   }
-  document.addEventListener('focus', focusChanged.bind(undefined), true);
+  document.addEventListener('focus', Utils.focusChanged.bind(undefined), true);
 
   if (!ThemeSupport.ThemeSupport.hasInstance()) {
     ThemeSupport.ThemeSupport.instance({forceNew: true, setting: themeSetting});
@@ -1190,11 +1089,9 @@ export const createTextChildren = (element: Element|DocumentFragment, ...childre
 };
 
 export function createTextButton(
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    text: string, eventHandler?: ((arg0: Event) => any), className?: string, primary?: boolean,
+    text: string, eventHandler?: ((arg0: Event) => void), className?: string, primary?: boolean,
     alternativeEvent?: string): HTMLButtonElement {
-  const element = (document.createElement('button') as HTMLButtonElement);
+  const element = document.createElement('button');
   if (className) {
     element.className = className;
   }
@@ -1224,7 +1121,8 @@ export function createInput(className?: string, type?: string): HTMLInputElement
 }
 
 export function createSelect(name: string, options: string[]|Map<string, string[]>[]|Set<string>): HTMLSelectElement {
-  const select = (document.createElementWithClass('select', 'chrome-select') as HTMLSelectElement);
+  const select = document.createElement('select');
+  select.classList.add('chrome-select');
   ARIAUtils.setAccessibleName(select, name);
   for (const option of options) {
     if (option instanceof Map) {
@@ -1281,37 +1179,35 @@ export function createSlider(min: number, max: number, tabIndex: number): Elemen
   return element;
 }
 
-export function setTitle(element: HTMLElement, title: string, actionId: string|undefined = undefined): void {
+export function setTitle(element: HTMLElement, title: string): void {
   ARIAUtils.setAccessibleName(element, title);
-  Tooltip.install(element, title, actionId, {
-    anchorTooltipAtElement: true,
-  });
+  Tooltip.install(element, title);
 }
 
 export class CheckboxLabel extends HTMLSpanElement {
-  _shadowRoot!: DocumentFragment;
+  private readonly shadowRootInternal!: DocumentFragment;
   checkboxElement!: HTMLInputElement;
-  textElement!: Element;
+  textElement!: HTMLElement;
 
   constructor() {
     super();
-    CheckboxLabel._lastId = CheckboxLabel._lastId + 1;
-    const id = 'ui-checkbox-label' + CheckboxLabel._lastId;
-    this._shadowRoot = createShadowRootWithCoreStyles(
-        this, {cssFile: 'ui/legacy/checkboxTextLabel.css', enableLegacyPatching: true, delegatesFocus: undefined});
-    this.checkboxElement = (this._shadowRoot.createChild('input') as HTMLInputElement);
+    CheckboxLabel.lastId = CheckboxLabel.lastId + 1;
+    const id = 'ui-checkbox-label' + CheckboxLabel.lastId;
+    this.shadowRootInternal =
+        Utils.createShadowRootWithCoreStyles(this, {cssFile: checkboxTextLabelStyles, delegatesFocus: undefined});
+    this.checkboxElement = (this.shadowRootInternal.createChild('input') as HTMLInputElement);
     this.checkboxElement.type = 'checkbox';
     this.checkboxElement.setAttribute('id', id);
-    this.textElement = this._shadowRoot.createChild('label', 'dt-checkbox-text');
+    this.textElement = this.shadowRootInternal.createChild('label', 'dt-checkbox-text') as HTMLElement;
     this.textElement.setAttribute('for', id);
-    this._shadowRoot.createChild('slot');
+    this.shadowRootInternal.createChild('slot');
   }
 
   static create(title?: string, checked?: boolean, subtitle?: string): CheckboxLabel {
-    if (!CheckboxLabel._constructor) {
-      CheckboxLabel._constructor = registerCustomElement('span', 'dt-checkbox', CheckboxLabel);
+    if (!CheckboxLabel.constructorInternal) {
+      CheckboxLabel.constructorInternal = Utils.registerCustomElement('span', 'dt-checkbox', CheckboxLabel);
     }
-    const element = (CheckboxLabel._constructor() as CheckboxLabel);
+    const element = (CheckboxLabel.constructorInternal() as CheckboxLabel);
     element.checkboxElement.checked = Boolean(checked);
     if (title !== undefined) {
       element.textElement.textContent = title;
@@ -1332,7 +1228,7 @@ export class CheckboxLabel extends HTMLSpanElement {
     this.checkboxElement.classList.add('dt-checkbox-themed');
     const stylesheet = document.createElement('style');
     stylesheet.textContent = 'input.dt-checkbox-themed:checked:after { background-color: ' + color + '}';
-    this._shadowRoot.appendChild(stylesheet);
+    this.shadowRootInternal.appendChild(stylesheet);
   }
 
   set borderColor(color: string) {
@@ -1340,28 +1236,27 @@ export class CheckboxLabel extends HTMLSpanElement {
     this.checkboxElement.style.borderColor = color;
   }
 
-  static _lastId = 0;
-  static _constructor: (() => Element)|null = null;
+  private static lastId = 0;
+  static constructorInternal: (() => Element)|null = null;
 }
 
 export class DevToolsIconLabel extends HTMLSpanElement {
-  _iconElement: Icon;
+  private readonly iconElement: Icon;
 
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(this, {
-      enableLegacyPatching: true,
+    const root = Utils.createShadowRootWithCoreStyles(this, {
       cssFile: undefined,
       delegatesFocus: undefined,
     });
-    this._iconElement = Icon.create();
-    this._iconElement.style.setProperty('margin-right', '4px');
-    root.appendChild(this._iconElement);
+    this.iconElement = Icon.create();
+    this.iconElement.style.setProperty('margin-right', '4px');
+    root.appendChild(this.iconElement);
     root.createChild('slot');
   }
 
   set type(type: string) {
-    this._iconElement.setIconType(type);
+    this.iconElement.setIconType(type);
   }
 }
 
@@ -1380,8 +1275,7 @@ export class DevToolsRadioButton extends HTMLSpanElement {
     this.radioElement.id = id;
     this.radioElement.type = 'radio';
     this.labelElement.htmlFor = id;
-    const root = createShadowRootWithCoreStyles(
-        this, {cssFile: 'ui/legacy/radioButton.css', enableLegacyPatching: false, delegatesFocus: undefined});
+    const root = Utils.createShadowRootWithCoreStyles(this, {cssFile: radioButtonStyles, delegatesFocus: undefined});
     root.createChild('slot');
     this.addEventListener('click', this.radioClickHandler.bind(this), false);
   }
@@ -1395,16 +1289,15 @@ export class DevToolsRadioButton extends HTMLSpanElement {
   }
 }
 
-registerCustomElement('span', 'dt-radio', DevToolsRadioButton);
-registerCustomElement('span', 'dt-icon-label', DevToolsIconLabel);
+Utils.registerCustomElement('span', 'dt-radio', DevToolsRadioButton);
+Utils.registerCustomElement('span', 'dt-icon-label', DevToolsIconLabel);
 
 export class DevToolsSlider extends HTMLSpanElement {
   sliderElement: HTMLInputElement;
 
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(
-        this, {cssFile: 'ui/legacy/slider.css', enableLegacyPatching: true, delegatesFocus: undefined});
+    const root = Utils.createShadowRootWithCoreStyles(this, {cssFile: sliderStyles, delegatesFocus: undefined});
     this.sliderElement = document.createElement('input');
     this.sliderElement.classList.add('dt-range-input');
     this.sliderElement.type = 'range';
@@ -1420,71 +1313,70 @@ export class DevToolsSlider extends HTMLSpanElement {
   }
 }
 
-registerCustomElement('span', 'dt-slider', DevToolsSlider);
+Utils.registerCustomElement('span', 'dt-slider', DevToolsSlider);
 
 export class DevToolsSmallBubble extends HTMLSpanElement {
-  _textElement: Element;
+  private textElement: Element;
 
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(
-        this, {cssFile: 'ui/legacy/smallBubble.css', enableLegacyPatching: false, delegatesFocus: undefined});
-    this._textElement = root.createChild('div');
-    this._textElement.className = 'info';
-    this._textElement.createChild('slot');
+    const root = Utils.createShadowRootWithCoreStyles(this, {cssFile: smallBubbleStyles, delegatesFocus: undefined});
+    this.textElement = root.createChild('div');
+    this.textElement.className = 'info';
+    this.textElement.createChild('slot');
   }
 
   set type(type: string) {
-    this._textElement.className = type;
+    this.textElement.className = type;
   }
 }
 
-registerCustomElement('span', 'dt-small-bubble', DevToolsSmallBubble);
+Utils.registerCustomElement('span', 'dt-small-bubble', DevToolsSmallBubble);
 
 export class DevToolsCloseButton extends HTMLDivElement {
-  _buttonElement: HTMLElement;
-  _hoverIcon: Icon;
-  _activeIcon: Icon;
+  private buttonElement: HTMLElement;
+  private readonly hoverIcon: Icon;
+  private readonly activeIcon: Icon;
 
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(
-        this, {cssFile: 'ui/legacy/closeButton.css', enableLegacyPatching: false, delegatesFocus: undefined});
-    this._buttonElement = (root.createChild('div', 'close-button') as HTMLElement);
-    ARIAUtils.setAccessibleName(this._buttonElement, i18nString(UIStrings.close));
-    ARIAUtils.markAsButton(this._buttonElement);
+    const root = Utils.createShadowRootWithCoreStyles(this, {cssFile: closeButtonStyles, delegatesFocus: undefined});
+    this.buttonElement = (root.createChild('div', 'close-button') as HTMLElement);
+    Tooltip.install(this.buttonElement, i18nString(UIStrings.close));
+    ARIAUtils.setAccessibleName(this.buttonElement, i18nString(UIStrings.close));
+    ARIAUtils.markAsButton(this.buttonElement);
     const regularIcon = Icon.create('smallicon-cross', 'default-icon');
-    this._hoverIcon = Icon.create('mediumicon-red-cross-hover', 'hover-icon');
-    this._activeIcon = Icon.create('mediumicon-red-cross-active', 'active-icon');
-    this._buttonElement.appendChild(regularIcon);
-    this._buttonElement.appendChild(this._hoverIcon);
-    this._buttonElement.appendChild(this._activeIcon);
+    this.hoverIcon = Icon.create('mediumicon-red-cross-hover', 'hover-icon');
+    this.activeIcon = Icon.create('mediumicon-red-cross-active', 'active-icon');
+    this.buttonElement.appendChild(regularIcon);
+    this.buttonElement.appendChild(this.hoverIcon);
+    this.buttonElement.appendChild(this.activeIcon);
   }
 
   set gray(gray: boolean) {
     if (gray) {
-      this._hoverIcon.setIconType('mediumicon-gray-cross-hover');
-      this._activeIcon.setIconType('mediumicon-gray-cross-active');
+      this.hoverIcon.setIconType('mediumicon-gray-cross-hover');
+      this.activeIcon.setIconType('mediumicon-gray-cross-active');
     } else {
-      this._hoverIcon.setIconType('mediumicon-red-cross-hover');
-      this._activeIcon.setIconType('mediumicon-red-cross-active');
+      this.hoverIcon.setIconType('mediumicon-red-cross-hover');
+      this.activeIcon.setIconType('mediumicon-red-cross-active');
     }
   }
 
   setAccessibleName(name: string): void {
-    ARIAUtils.setAccessibleName(this._buttonElement, name);
+    ARIAUtils.setAccessibleName(this.buttonElement, name);
   }
 
   setTabbable(tabbable: boolean): void {
     if (tabbable) {
-      this._buttonElement.tabIndex = 0;
+      this.buttonElement.tabIndex = 0;
     } else {
-      this._buttonElement.tabIndex = -1;
+      this.buttonElement.tabIndex = -1;
     }
   }
 }
 
-registerCustomElement('div', 'dt-close-button', DevToolsCloseButton);
+Utils.registerCustomElement('div', 'dt-close-button', DevToolsCloseButton);
 
 export function bindInput(
     input: HTMLInputElement, apply: (arg0: string) => void, validate: (arg0: string) => {
@@ -1523,7 +1415,7 @@ export function bindInput(
       return;
     }
 
-    const value = _modifiedFloatNumber(parseFloat(input.value), event, modifierMultiplier);
+    const value = modifiedFloatNumber(parseFloat(input.value), event, modifierMultiplier);
     const stringValue = value ? String(value) : '';
     const {valid} = validate(stringValue);
     if (!valid || !value) {
@@ -1636,7 +1528,7 @@ export function addReferrerToURL(url: string): string {
  * 'web.dev' or 'developers.google.com'.
  */
 export function addReferrerToURLIfNecessary(url: string): string {
-  if (/(\/\/developers.google.com\/|\/\/web.dev\/)/.test(url)) {
+  if (/(\/\/developers.google.com\/|\/\/web.dev\/|\/\/developer.chrome.com\/)/.test(url)) {
     return addReferrerToURL(url);
   }
   return url;
@@ -1655,10 +1547,8 @@ export function loadImageFromData(data: string|null): Promise<HTMLImageElement|n
   return data ? loadImage('data:image/jpg;base64,' + data) : Promise.resolve(null);
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createFileSelectorElement(callback: (arg0: File) => any): HTMLInputElement {
-  const fileSelectorElement = (document.createElement('input') as HTMLInputElement);
+export function createFileSelectorElement(callback: (arg0: File) => void): HTMLInputElement {
+  const fileSelectorElement = document.createElement('input');
   fileSelectorElement.type = 'file';
   fileSelectorElement.style.display = 'none';
   fileSelectorElement.tabIndex = -1;
@@ -1678,9 +1568,8 @@ export class MessageDialog {
     const dialog = new Dialog();
     dialog.setSizeBehavior(SizeBehavior.MeasureContent);
     dialog.setDimmed(true);
-    const shadowRoot = createShadowRootWithCoreStyles(
-        dialog.contentElement,
-        {cssFile: 'ui/legacy/confirmDialog.css', enableLegacyPatching: false, delegatesFocus: undefined});
+    const shadowRoot = Utils.createShadowRootWithCoreStyles(
+        dialog.contentElement, {cssFile: confirmDialogStyles, delegatesFocus: undefined});
     const content = shadowRoot.createChild('div', 'widget');
     await new Promise(resolve => {
       const okButton = createTextButton(i18nString(UIStrings.ok), resolve, '', true);
@@ -1703,9 +1592,8 @@ export class ConfirmDialog {
     dialog.setSizeBehavior(SizeBehavior.MeasureContent);
     dialog.setDimmed(true);
     ARIAUtils.setAccessibleName(dialog.contentElement, message);
-    const shadowRoot = createShadowRootWithCoreStyles(
-        dialog.contentElement,
-        {cssFile: 'ui/legacy/confirmDialog.css', enableLegacyPatching: false, delegatesFocus: undefined});
+    const shadowRoot = Utils.createShadowRootWithCoreStyles(
+        dialog.contentElement, {cssFile: confirmDialogStyles, delegatesFocus: undefined});
     const content = shadowRoot.createChild('div', 'widget');
     content.createChild('div', 'message').createChild('span').textContent = message;
     const buttonsBar = content.createChild('div', 'button');
@@ -1729,8 +1617,8 @@ export class ConfirmDialog {
 
 export function createInlineButton(toolbarButton: ToolbarButton): Element {
   const element = document.createElement('span');
-  const shadowRoot = createShadowRootWithCoreStyles(
-      element, {cssFile: 'ui/legacy/inlineButton.css', enableLegacyPatching: false, delegatesFocus: undefined});
+  const shadowRoot =
+      Utils.createShadowRootWithCoreStyles(element, {cssFile: inlineButtonStyles, delegatesFocus: undefined});
   element.classList.add('inline-button');
   const toolbar = new Toolbar('');
   toolbar.appendToolbarItem(toolbarButton);
@@ -1779,7 +1667,7 @@ export interface Options {
 }
 
 export interface HighlightChange {
-  node: Element;
+  node: Element|Text;
   type: string;
   oldText?: string;
   newText?: string;
@@ -1837,7 +1725,8 @@ export const deepElementFromPoint = (document: Document|ShadowRoot|null|undefine
 
 export const deepElementFromEvent = (ev: Event): Node|null => {
   const event = (ev as MouseEvent);
-  // Some synthetic events have zero coordinates which lead to a wrong element. Better return nothing in this case.
+  // Some synthetic events have zero coordinates which lead to a wrong element.
+  // Better return nothing in this case.
   if (!event.which && !event.pageX && !event.pageY && !event.clientX && !event.clientY && !event.movementX &&
       !event.movementY) {
     return null;
@@ -1859,8 +1748,6 @@ export function getApplicableRegisteredRenderers(object: Object): RendererRegist
       return true;
     }
     for (const contextType of rendererRegistration.contextTypes()) {
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // @ts-expect-error
       if (object instanceof contextType) {
         return true;
       }
@@ -1870,5 +1757,5 @@ export function getApplicableRegisteredRenderers(object: Object): RendererRegist
 }
 export interface RendererRegistration {
   loadRenderer: () => Promise<Renderer>;
-  contextTypes: () => Array<unknown>;
+  contextTypes: () => Array<Function>;
 }

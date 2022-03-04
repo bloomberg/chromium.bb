@@ -18,7 +18,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 CPDF_AllStates::CPDF_AllStates() = default;
 
@@ -47,13 +47,11 @@ void CPDF_AllStates::ProcessExtGS(CPDF_Dictionary* pGS,
                                   CPDF_StreamContentParser* pParser) {
   CPDF_DictionaryLocker locker(pGS);
   for (const auto& it : locker) {
-    const ByteString& key_str = it.first;
-    CPDF_Object* pElement = it.second.Get();
-    CPDF_Object* pObject = pElement ? pElement->GetDirect() : nullptr;
+    CPDF_Object* pObject = it.second->GetDirect();
     if (!pObject)
       continue;
 
-    uint32_t key = key_str.GetID();
+    uint32_t key = it.first.GetID();
     switch (key) {
       case FXBSTR_ID('L', 'W', 0, 0):
         m_GraphState.SetLineWidth(pObject->GetNumber());
@@ -99,7 +97,7 @@ void CPDF_AllStates::ProcessExtGS(CPDF_Dictionary* pGS,
         }
         FALLTHROUGH;
       case FXBSTR_ID('T', 'R', '2', 0):
-        m_GeneralState.SetTR(pObject && !pObject->IsName() ? pObject : nullptr);
+        m_GeneralState.SetTR(!pObject->IsName() ? pObject : nullptr);
         break;
       case FXBSTR_ID('B', 'M', 0, 0): {
         CPDF_Array* pArray = pObject->AsArray();

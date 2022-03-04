@@ -17,14 +17,15 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -156,7 +158,7 @@ bool CreateRemoteBoundLogFile(const base::FilePath& dir,
           .AddExtension(extension);
 
   constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
-                             base::File::FLAG_EXCLUSIVE_WRITE;
+                             base::File::FLAG_WIN_EXCLUSIVE_WRITE;
   file->Initialize(*file_path, file_flags);
   if (!file->IsValid() || !file->created()) {
     return false;
@@ -282,6 +284,10 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
 
     EXPECT_TRUE(profiles_dir_.CreateUniqueTempDir());
   }
+
+  WebRtcEventLogManagerTestBase(const WebRtcEventLogManagerTestBase&) = delete;
+  WebRtcEventLogManagerTestBase& operator=(
+      const WebRtcEventLogManagerTestBase&) = delete;
 
   ~WebRtcEventLogManagerTestBase() override {
     WaitForPendingTasks();
@@ -419,8 +425,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   bool OnPeerConnectionAdded(const PeerConnectionKey& key) {
     bool result;
     event_log_manager_->OnPeerConnectionAdded(
-        content::GlobalFrameRoutingId(key.render_process_id,
-                                      key.render_frame_id),
+        content::GlobalRenderFrameHostId(key.render_process_id,
+                                         key.render_frame_id),
         key.lid, ReplyClosure(&result));
     WaitForReply();
     return result;
@@ -429,8 +435,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   bool OnPeerConnectionRemoved(const PeerConnectionKey& key) {
     bool result;
     event_log_manager_->OnPeerConnectionRemoved(
-        content::GlobalFrameRoutingId(key.render_process_id,
-                                      key.render_frame_id),
+        content::GlobalRenderFrameHostId(key.render_process_id,
+                                         key.render_frame_id),
         key.lid, ReplyClosure(&result));
     WaitForReply();
     return result;
@@ -440,8 +446,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
                                     const std::string& session_id) {
     bool result;
     event_log_manager_->OnPeerConnectionSessionIdSet(
-        content::GlobalFrameRoutingId(key.render_process_id,
-                                      key.render_frame_id),
+        content::GlobalRenderFrameHostId(key.render_process_id,
+                                         key.render_frame_id),
         key.lid, session_id, ReplyClosure(&result));
     WaitForReply();
     return result;
@@ -454,8 +460,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   bool OnPeerConnectionStopped(const PeerConnectionKey& key) {
     bool result;
     event_log_manager_->OnPeerConnectionStopped(
-        content::GlobalFrameRoutingId(key.render_process_id,
-                                      key.render_frame_id),
+        content::GlobalRenderFrameHostId(key.render_process_id,
+                                         key.render_frame_id),
         key.lid, ReplyClosure(&result));
     WaitForReply();
     return result;
@@ -580,8 +586,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
                                               const std::string& message) {
     std::pair<bool, bool> result;
     event_log_manager_->OnWebRtcEventLogWrite(
-        content::GlobalFrameRoutingId(key.render_process_id,
-                                      key.render_frame_id),
+        content::GlobalRenderFrameHostId(key.render_process_id,
+                                         key.render_frame_id),
         key.lid, message, ReplyClosure(&result));
     WaitForReply();
     return result;
@@ -702,7 +708,9 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     profile_builder.OverridePolicyConnectorIsManagedForTesting(
         is_managed_profile);
     if (is_supervised) {
-      profile_builder.SetSupervisedUserId("id");
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+#endif
     }
     std::unique_ptr<TestingProfile> profile = profile_builder.Build();
 
@@ -891,8 +899,6 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   //    callback on the observer).
   NiceMock<MockWebRtcLocalEventLogsObserver> local_observer_;
   NiceMock<MockWebRtcRemoteEventLogsObserver> remote_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogManagerTestBase);
 };
 
 #if !defined(OS_ANDROID)
@@ -996,7 +1002,7 @@ class WebRtcEventLogManagerTestCacheClearing
 };
 
 const base::TimeDelta WebRtcEventLogManagerTestCacheClearing::kEpsion =
-    base::TimeDelta::FromHours(1);
+    base::Hours(1);
 
 class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
     : public WebRtcEventLogManagerTestBase,
@@ -1229,7 +1235,7 @@ class WebRtcEventLogManagerTestIncognito
         std::make_unique<MockRenderProcessHost>(incognito_profile_);
   }
 
-  Profile* incognito_profile_;
+  raw_ptr<Profile> incognito_profile_;
   std::unique_ptr<MockRenderProcessHost> incognito_rph_;
 };
 
@@ -1264,7 +1270,7 @@ class WebRtcEventLogManagerTestHistory : public WebRtcEventLogManagerTestBase {
     // Way more than is "small", to make sure tests don't become flaky.
     // If the timestamp is ever off, it's likely to be off by more than this,
     // though, or the problem would not truly be severe enough to worry about.
-    const base::TimeDelta small_delta = base::TimeDelta::FromMinutes(15);
+    const base::TimeDelta small_delta = base::Minutes(15);
 
     return (std::max(a, b) - std::min(a, b) <= small_delta);
   }
@@ -1290,7 +1296,7 @@ class PeerConnectionTrackerProxyForTesting
   }
 
  private:
-  WebRtcEventLogManagerTestBase* const test_;
+  const raw_ptr<WebRtcEventLogManagerTestBase> test_;
 };
 
 // The factory for the following fake uploader produces a sequence of
@@ -1341,7 +1347,7 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
    private:
     std::list<WebRtcLogFileInfo> expected_files_;
     const bool result_;
-    base::RunLoop* const run_loop_;
+    const raw_ptr<base::RunLoop> run_loop_;
   };
 
   // The logic is in the factory; the uploader just reports success so that the
@@ -2828,11 +2834,10 @@ TEST_F(WebRtcEventLogManagerTest,
   // This is OK in production, but can confuse the test, which expects a
   // specific order.
   base::Time time =
-      base::Time::Now() -
-      base::TimeDelta::FromSeconds(kMaxPendingRemoteBoundWebRtcEventLogs);
+      base::Time::Now() - base::Seconds(kMaxPendingRemoteBoundWebRtcEventLogs);
 
   for (size_t i = 0; i < kMaxPendingRemoteBoundWebRtcEventLogs; ++i) {
-    time += base::TimeDelta::FromSeconds(1);
+    time += base::Seconds(1);
 
     base::FilePath file_path;
     base::File file;
@@ -2881,11 +2886,10 @@ TEST_F(WebRtcEventLogManagerTest,
   // This is OK in production, but can confuse the test, which expects a
   // specific order.
   base::Time time =
-      base::Time::Now() -
-      base::TimeDelta::FromSeconds(kMaxPendingRemoteBoundWebRtcEventLogs);
+      base::Time::Now() - base::Seconds(kMaxPendingRemoteBoundWebRtcEventLogs);
 
   for (size_t i = 0, ext = 0; i < kMaxPendingRemoteBoundWebRtcEventLogs; ++i) {
-    time += base::TimeDelta::FromSeconds(1);
+    time += base::Seconds(1);
 
     const auto& extension = extensions[ext];
     ext = (ext + 1) % base::size(extensions);
@@ -3038,7 +3042,7 @@ TEST_F(WebRtcEventLogManagerTest, ExpiredFilesArePrunedRatherThanUploaded) {
   // Set the expired file's last modification time to past max retention.
   const base::Time expired_mod_time = base::Time::Now() -
                                       kRemoteBoundWebRtcEventLogsMaxRetention -
-                                      base::TimeDelta::FromSeconds(1);
+                                      base::Seconds(1);
   ASSERT_TRUE(base::TouchFile(file_paths[kExpired], file_info.last_accessed,
                               expired_mod_time));
 
@@ -3642,9 +3646,9 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Test
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(key)).Times(1);
-  ClearCacheForBrowserContext(
-      browser_context_.get(), base::Time::Now() - base::TimeDelta::FromHours(1),
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+  ClearCacheForBrowserContext(browser_context_.get(),
+                              base::Time::Now() - base::Hours(1),
+                              base::Time::Now() + base::Hours(1));
   EXPECT_FALSE(base::PathExists(*file_path));
 }
 
@@ -3680,10 +3684,8 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   auto& elements = *(pending_logs_[browser_context.get()]);
 
   // Get a range whose intersection with the files' range is empty.
-  const base::Time earliest_mod =
-      pending_earliest_mod_ - base::TimeDelta::FromHours(2);
-  const base::Time latest_mod =
-      pending_earliest_mod_ - base::TimeDelta::FromHours(1);
+  const base::Time earliest_mod = pending_earliest_mod_ - base::Hours(2);
+  const base::Time latest_mod = pending_earliest_mod_ - base::Hours(1);
   ASSERT_LT(latest_mod, pending_latest_mod_);
 
   // Test - ClearCacheForBrowserContext() does not remove files not in range.
@@ -3714,9 +3716,9 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Test
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(_)).Times(0);
-  ClearCacheForBrowserContext(
-      browser_context_.get(), base::Time::Now() - base::TimeDelta::FromHours(2),
-      base::Time::Now() - base::TimeDelta::FromHours(1));
+  ClearCacheForBrowserContext(browser_context_.get(),
+                              base::Time::Now() - base::Hours(2),
+                              base::Time::Now() - base::Hours(1));
   EXPECT_TRUE(base::PathExists(*file_path));
 }
 
@@ -4053,16 +4055,15 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 // TODO(crbug.com/1035829): Figure out whether this can be resolved by tweaking
 // the test setup or whether the Active Directory services need to be adapted
 // for easy testing.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(WebRtcEventLogManagerTestPolicy,
        ManagedProfileDoesNotAllowRemoteLoggingForSupervisedProfiles) {
   SetUp(true);  // Feature generally enabled (kill-switch not engaged).
 
   const bool allow_remote_logging = false;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager =
       GetScopedUserManager(user_manager::USER_TYPE_CHILD);
-#endif
 
   auto browser_context = CreateBrowserContextWithCustomSupervision(
       "name", true /* is_managed_profile */,
@@ -4076,6 +4077,7 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
   ASSERT_TRUE(OnPeerConnectionSessionIdSet(key));
   EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
 }
+#endif
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(WebRtcEventLogManagerTestPolicy,
@@ -4654,7 +4656,7 @@ TEST_F(WebRtcEventLogManagerTestUploadDelay, DoNotInitiateUploadBeforeDelay) {
   // constraints, we cannot wait forever.)
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  event.TimedWait(base::TimeDelta::FromMilliseconds(500));
+  event.TimedWait(base::Milliseconds(500));
 
   WaitForPendingTasks(&run_loop);
 }
@@ -4928,7 +4930,7 @@ TEST_F(WebRtcEventLogManagerTestHistory,
 
   // Pretend more time than kRemoteBoundWebRtcEventLogsMaxRetention has passed.
   const base::TimeDelta elapsed_time =
-      kRemoteBoundWebRtcEventLogsMaxRetention + base::TimeDelta::FromHours(1);
+      kRemoteBoundWebRtcEventLogsMaxRetention + base::Hours(1);
   base::File::Info file_info;
   ASSERT_TRUE(base::GetFileInfo(*log_path, &file_info));
 
@@ -4982,7 +4984,7 @@ TEST_F(WebRtcEventLogManagerTestHistory, ClearingCacheRemovesHistoryFiles) {
 
   // Pretend more time than kRemoteBoundWebRtcEventLogsMaxRetention has passed.
   const base::TimeDelta elapsed_time =
-      kRemoteBoundWebRtcEventLogsMaxRetention + base::TimeDelta::FromHours(1);
+      kRemoteBoundWebRtcEventLogsMaxRetention + base::Hours(1);
   base::File::Info file_info;
   ASSERT_TRUE(base::GetFileInfo(*log_path, &file_info));
 

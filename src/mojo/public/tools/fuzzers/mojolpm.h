@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/containers/flat_map.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -21,7 +20,6 @@
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/tools/fuzzers/mojolpm.pb.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #define MOJOLPM_DBG 0
 #if MOJOLPM_DBG

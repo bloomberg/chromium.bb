@@ -35,7 +35,10 @@ group("all") {
     deps += [ ":cast_shell_apk" ]
   }
   if (!is_android) {
-    data_deps += [ ":cast_shell" ]
+    data_deps += [
+      ":cast_browser",
+      ":cast_shell",
+    ]
   }
   if (is_linux || is_chromeos) {
     deps += [
@@ -85,6 +88,7 @@ cast_test_group("cast_tests") {
     "//cc:cc_unittests",
     "//chromecast/base:cast_base_unittests",
     "//chromecast/base/component:cast_component_unittests",
+    "//chromecast/cast_core:cast_cast_core_unittests",
     "//chromecast/common:cast_common_unittests",
     "//chromecast/crypto:cast_crypto_unittests",
     "//chromecast/device/bluetooth:cast_bluetooth_unittests",
@@ -92,6 +96,7 @@ cast_test_group("cast_tests") {
     "//chromecast/metrics:cast_metrics_unittest",
     "//chromecast/net:cast_net_unittests",
     "//chromecast/ui/display_settings:cast_display_settings_unittests",
+    "//chromecast/shared:cast_shared_unittests",
     "//chromecast/system/reboot:cast_reboot_unittests",
     "//content/test:content_unittests",
     "//crypto:crypto_unittests",
@@ -459,7 +464,9 @@ test("cast_shell_unittests") {
 
 test("cast_shell_browsertests") {
   deps = [
-    ":cast_shell_lib",
+    # These browser tests always use the simple implementation, since we only
+    # need to test web content primitives and not all of Cast receiver.
+    ":cast_shell_lib_simple",
     "//chromecast/app:test_support",
     "//chromecast/bindings:browsertests",
     "//chromecast/browser:browsertests",
@@ -469,20 +476,38 @@ test("cast_shell_browsertests") {
 }
 
 group("cast_shell_lib") {
+  if (chromecast_branding != "public") {
+    deps = [
+      ":cast_shell_lib_base",
+      "//chromecast/internal/shell",
+    ]
+  } else {
+    deps = [ ":cast_shell_lib_simple" ]
+  }
+}
+
+group("cast_shell_lib_base") {
   data_deps = [ ":cast_shell_pak" ]
 
   deps = [
     "//chromecast/app",
     "//chromecast/base:default_create_sys_info",
     "//chromecast/browser",
-    "//chromecast/cast_core",
     "//chromecast/common",
     "//chromecast/renderer",
+    "//chromecast/utility",
   ]
+}
 
-  if (chromecast_branding != "public") {
-    deps += [ "//chromecast/internal/shell" ]
-  }
+group("cast_shell_lib_simple") {
+  deps = [
+    ":cast_shell_lib_base",
+    "//chromecast/browser:prefs_simple",
+    "//chromecast/browser:simple_client",
+    "//chromecast/browser:simple_main_parts",
+    "//chromecast/renderer:simple_client",
+    "//chromecast/utility:simple_client",
+  ]
 }
 
 cast_executable("cast_shell") {
@@ -490,6 +515,18 @@ cast_executable("cast_shell") {
 
   deps = [
     ":cast_shell_lib",
+    ":chromecast_locales_pak",
+    "//chromecast/app",
+    "//content/public/app",
+    "//third_party/widevine/cdm",
+  ]
+}
+
+cast_executable("cast_browser") {
+  sources = [ "app/cast_main.cc" ]
+
+  deps = [
+    ":cast_shell_lib_simple",
     ":chromecast_locales_pak",
     "//chromecast/app",
     "//content/public/app",
@@ -513,6 +550,7 @@ repack("cast_shell_pak") {
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ax_strings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
 
@@ -598,18 +636,18 @@ buildflag_header("chromecast_buildflags") {
     "DEFAULT_COMMAND_LINE_FLAGS=\"$_command_line_flags\"",
     "DISABLE_SECURE_FLAC_OPUS_DECODING=$disable_secure_flac_and_opus_decoding",
     "ENABLE_ASSISTANT=$enable_assistant",
-    "ENABLE_CAST_FRAGMENT=$enable_cast_fragment",
     "ENABLE_CHROMECAST_EXTENSIONS=$enable_chromecast_extensions",
+    "ENABLE_CHROMECAST_WEBUI=$enable_chromecast_webui",
     "ENABLE_EXTERNAL_MOJO_SERVICES=$enable_external_mojo_services",
     "ENABLE_PLAYREADY=$enable_playready",
     "ENABLE_VIDEO_CAPTURE_SERVICE=$enable_video_capture_service",
-    "IS_ANDROID_APPLIANCE=$is_android_appliance",
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
     "IS_CAST_DESKTOP_BUILD=$is_cast_desktop_build",
     "IS_SINGLE_VOLUME=$is_single_volume",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
     "ENABLE_CHROMIUM_RUNTIME_CAST_RENDERER=$enable_chromium_runtime_cast_renderer",
+    "ENABLE_CAST_MEDIA_RUNTIME=$enable_cast_media_runtime",
   ]
 }
 
@@ -655,8 +693,8 @@ if (is_android) {
     android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
     android_manifest_dep = "//chromecast/browser/android:cast_shell_manifest"
 
-    min_sdk_version = 21
-    target_sdk_version = 30
+    min_sdk_version = 23
+    target_sdk_version = 31
 
     shared_libraries = [ "//chromecast/android:libcast_shell_android" ]
 

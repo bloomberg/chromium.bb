@@ -205,6 +205,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
 
+  // TODO(haoyuewang) Remove this debug utility.
+  // Returns the information of pending frames as a string.
+  std::string GetPendingFramesInfo() const;
+
   // Returns true if there are retransmittable frames pending to be serialized.
   bool HasPendingRetransmittableFrames() const;
 
@@ -417,7 +421,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Tries to add a message frame containing |message| and returns the status.
   MessageStatus AddMessageFrame(QuicMessageId message_id,
-                                QuicMemSliceSpan message);
+                                absl::Span<QuicMemSlice> message);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
   QuicPacketLength GetCurrentLargestMessagePayload() const;

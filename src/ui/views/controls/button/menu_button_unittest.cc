@@ -9,11 +9,13 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/controls/button/button.h"
@@ -117,17 +119,17 @@ class MenuButtonTest : public ViewsTestBase {
 
     auto ink_drop = std::make_unique<test::TestInkDrop>();
     ink_drop_ = ink_drop.get();
-    test::InkDropHostTestApi(button_->ink_drop())
+    test::InkDropHostTestApi(InkDrop::Get(button_))
         .SetInkDrop(std::move(ink_drop));
 
     widget_->Show();
   }
 
  private:
-  Widget* widget_ = nullptr;          // Owned by self.
-  TestMenuButton* button_ = nullptr;  // Owned by |widget_|.
+  raw_ptr<Widget> widget_ = nullptr;          // Owned by self.
+  raw_ptr<TestMenuButton> button_ = nullptr;  // Owned by |widget_|.
   std::unique_ptr<ui::test::EventGenerator> generator_;
-  test::TestInkDrop* ink_drop_ = nullptr;  // Owned by |button_|.
+  raw_ptr<test::TestInkDrop> ink_drop_ = nullptr;  // Owned by |button_|.
 };
 
 // A Button that will acquire a PressedLock in the pressed callback and
@@ -212,7 +214,7 @@ class TestDragDropClient : public aura::client::DragDropClient,
   bool drag_in_progress_ = false;
 
   // Target window where drag operations are occurring.
-  aura::Window* target_ = nullptr;
+  raw_ptr<aura::Window> target_ = nullptr;
 };
 
 TestDragDropClient::TestDragDropClient() = default;
@@ -297,7 +299,7 @@ TEST_F(MenuButtonTest, InkDropCenterSetFromClick) {
 
   EXPECT_TRUE(button()->clicked());
   gfx::Point inkdrop_center_point =
-      button()->ink_drop()->GetInkDropCenterBasedOnLastEvent();
+      InkDrop::Get(button())->GetInkDropCenterBasedOnLastEvent();
   View::ConvertPointToScreen(button(), &inkdrop_center_point);
   EXPECT_EQ(click_point, inkdrop_center_point);
 }
@@ -314,7 +316,7 @@ TEST_F(MenuButtonTest, InkDropCenterSetFromClickWithPressedLock) {
 
   EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
   EXPECT_EQ(click_point,
-            button()->ink_drop()->GetInkDropCenterBasedOnLastEvent());
+            InkDrop::Get(button())->GetInkDropCenterBasedOnLastEvent());
 }
 
 // Test that the MenuButton stays pressed while there are any PressedLocks.

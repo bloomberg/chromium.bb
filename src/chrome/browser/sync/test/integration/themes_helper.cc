@@ -55,8 +55,8 @@ bool UsingSystemTheme(Profile* profile) {
 }
 
 bool ThemeIsPendingInstall(Profile* profile, const std::string& id) {
-  return SyncExtensionHelper::GetInstance()->
-      IsExtensionPendingInstallForSync(profile, id);
+  return SyncExtensionHelper::GetInstance()->IsExtensionPendingInstallForSync(
+      profile, id);
 }
 
 void UseCustomTheme(Profile* profile, int index) {
@@ -90,11 +90,10 @@ ThemePendingInstallChecker::ThemePendingInstallChecker(Profile* profile,
   // We'll check to see if the condition is met whenever the extension system
   // tries to contact the web store.
   registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
-                 content::Source<Profile>(profile_));
+                 content::Source<Profile>(profile_.get()));
 }
 
-ThemePendingInstallChecker::~ThemePendingInstallChecker() {
-}
+ThemePendingInstallChecker::~ThemePendingInstallChecker() {}
 
 bool ThemePendingInstallChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for pending theme to be '" << theme_ << "'";

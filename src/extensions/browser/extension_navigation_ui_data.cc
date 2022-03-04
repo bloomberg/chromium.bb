@@ -14,13 +14,12 @@ namespace extensions {
 
 namespace {
 
-content::GlobalFrameRoutingId GetFrameRoutingId(
+content::GlobalRenderFrameHostId GetFrameRoutingId(
     content::RenderFrameHost* host) {
   if (!host)
-    return content::GlobalFrameRoutingId();
+    return content::GlobalRenderFrameHostId();
 
-  return content::GlobalFrameRoutingId(host->GetProcess()->GetID(),
-                                       host->GetRoutingID());
+  return host->GetGlobalId();
 }
 
 }  // namespace
@@ -37,7 +36,8 @@ ExtensionNavigationUIData::ExtensionNavigationUIData(
           window_id,
           ExtensionApiFrameIdMap::GetFrameId(navigation_handle),
           ExtensionApiFrameIdMap::GetParentFrameId(navigation_handle),
-          GetFrameRoutingId(navigation_handle->GetParentFrame())) {
+          GetFrameRoutingId(
+              navigation_handle->GetParentFrameOrOuterDocument())) {
   // TODO(clamy): See if it would be possible to have just one source for the
   // FrameData that works both for navigations and subresources loads.
 }
@@ -52,7 +52,7 @@ ExtensionNavigationUIData::ExtensionNavigationUIData(
           window_id,
           ExtensionApiFrameIdMap::GetFrameId(frame_host),
           ExtensionApiFrameIdMap::GetParentFrameId(frame_host),
-          GetFrameRoutingId(frame_host->GetParent())) {}
+          GetFrameRoutingId(frame_host->GetParentOrOuterDocument())) {}
 
 // static
 std::unique_ptr<ExtensionNavigationUIData>
@@ -63,7 +63,7 @@ ExtensionNavigationUIData::CreateForMainFrameNavigation(
   return base::WrapUnique(new ExtensionNavigationUIData(
       web_contents, tab_id, window_id, ExtensionApiFrameIdMap::kTopFrameId,
       ExtensionApiFrameIdMap::kInvalidFrameId,
-      content::GlobalFrameRoutingId()));
+      content::GlobalRenderFrameHostId()));
 }
 
 std::unique_ptr<ExtensionNavigationUIData> ExtensionNavigationUIData::DeepCopy()
@@ -83,7 +83,7 @@ ExtensionNavigationUIData::ExtensionNavigationUIData(
     int window_id,
     int frame_id,
     int parent_frame_id,
-    content::GlobalFrameRoutingId parent_routing_id)
+    content::GlobalRenderFrameHostId parent_routing_id)
     : frame_data_(frame_id, parent_frame_id, tab_id, window_id),
       parent_routing_id_(parent_routing_id) {
   WebViewGuest* web_view = WebViewGuest::FromWebContents(web_contents);

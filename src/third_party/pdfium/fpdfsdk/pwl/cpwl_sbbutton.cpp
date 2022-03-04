@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "core/fxge/cfx_renderdevice.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 CPWL_SBButton::CPWL_SBButton(
     const CreateParams& cp,
@@ -113,7 +113,8 @@ void CPWL_SBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
   }
 }
 
-bool CPWL_SBButton::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_SBButton::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                                  const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonDown(nFlag, point);
 
   if (CPWL_Wnd* pParent = GetParentWindow())
@@ -125,7 +126,8 @@ bool CPWL_SBButton::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
   return true;
 }
 
-bool CPWL_SBButton::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_SBButton::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                                const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (CPWL_Wnd* pParent = GetParentWindow())
@@ -137,7 +139,8 @@ bool CPWL_SBButton::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
   return true;
 }
 
-bool CPWL_SBButton::OnMouseMove(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_SBButton::OnMouseMove(Mask<FWL_EVENTFLAG> nFlag,
+                                const CFX_PointF& point) {
   CPWL_Wnd::OnMouseMove(nFlag, point);
 
   if (CPWL_Wnd* pParent = GetParentWindow())

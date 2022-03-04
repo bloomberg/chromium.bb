@@ -23,21 +23,70 @@ std::ostream& operator<<(std::ostream& os, const SendTimeState& s) {
   return os;
 }
 
-QuicByteCount MaxAckHeightTracker::Update(QuicBandwidth bandwidth_estimate,
-                                          QuicRoundTripCount round_trip_count,
-                                          QuicTime ack_time,
-                                          QuicByteCount bytes_acked) {
-  if (aggregation_epoch_start_time_ == QuicTime::Zero()) {
+QuicByteCount MaxAckHeightTracker::Update(
+    QuicBandwidth bandwidth_estimate, bool is_new_max_bandwidth,
+    QuicRoundTripCount round_trip_count,
+    QuicPacketNumber last_sent_packet_number,
+    QuicPacketNumber last_acked_packet_number, QuicTime ack_time,
+    QuicByteCount bytes_acked) {
+  bool force_new_epoch = false;
+
+  if (reduce_extra_acked_on_bandwidth_increase_ && is_new_max_bandwidth) {
+    // Save and clear existing entries.
+    ExtraAckedEvent best = max_ack_height_filter_.GetBest();
+    ExtraAckedEvent second_best = max_ack_height_filter_.GetSecondBest();
+    ExtraAckedEvent third_best = max_ack_height_filter_.GetThirdBest();
+    max_ack_height_filter_.Clear();
+
+    // Reinsert the heights into the filter after recalculating.
+    QuicByteCount expected_bytes_acked = bandwidth_estimate * best.time_delta;
+    if (expected_bytes_acked < best.bytes_acked) {
+      best.extra_acked = best.bytes_acked - expected_bytes_acked;
+      max_ack_height_filter_.Update(best, best.round);
+    }
+    expected_bytes_acked = bandwidth_estimate * second_best.time_delta;
+    if (expected_bytes_acked < second_best.bytes_acked) {
+      QUICHE_DCHECK_LE(best.round, second_best.round);
+      second_best.extra_acked = second_best.bytes_acked - expected_bytes_acked;
+      max_ack_height_filter_.Update(second_best, second_best.round);
+    }
+    expected_bytes_acked = bandwidth_estimate * third_best.time_delta;
+    if (expected_bytes_acked < third_best.bytes_acked) {
+      QUICHE_DCHECK_LE(second_best.round, third_best.round);
+      third_best.extra_acked = third_best.bytes_acked - expected_bytes_acked;
+      max_ack_height_filter_.Update(third_best, third_best.round);
+    }
+  }
+
+  // If any packet sent after the start of the epoch has been acked, start a new
+  // epoch.
+  if (start_new_aggregation_epoch_after_full_round_ &&
+      last_sent_packet_number_before_epoch_.IsInitialized() &&
+      last_acked_packet_number.IsInitialized() &&
+      last_acked_packet_number > last_sent_packet_number_before_epoch_) {
+    QUIC_DVLOG(3) << "Force starting a new aggregation epoch. "
+                     "last_sent_packet_number_before_epoch_:"
+                  << last_sent_packet_number_before_epoch_
+                  << ", last_acked_packet_number:" << last_acked_packet_number;
+    if (reduce_extra_acked_on_bandwidth_increase_) {
+      QUIC_BUG(quic_bwsampler_46)
+          << "A full round of aggregation should never "
+          << "pass with startup_include_extra_acked(B204) enabled.";
+    }
+    force_new_epoch = true;
+  }
+  if (aggregation_epoch_start_time_ == QuicTime::Zero() || force_new_epoch) {
     aggregation_epoch_bytes_ = bytes_acked;
     aggregation_epoch_start_time_ = ack_time;
+    last_sent_packet_number_before_epoch_ = last_sent_packet_number;
     ++num_ack_aggregation_epochs_;
     return 0;
   }
 
   // Compute how many bytes are expected to be delivered, assuming max bandwidth
   // is correct.
-  QuicByteCount expected_bytes_acked =
-      bandwidth_estimate * (ack_time - aggregation_epoch_start_time_);
+  QuicTime::Delta aggregation_delta = ack_time - aggregation_epoch_start_time_;
+  QuicByteCount expected_bytes_acked = bandwidth_estimate * aggregation_delta;
   // Reset the current aggregation epoch as soon as the ack arrival rate is less
   // than or equal to the max bandwidth.
   if (aggregation_epoch_bytes_ <=
@@ -50,13 +99,13 @@ QuicByteCount MaxAckHeightTracker::Update(QuicBandwidth bandwidth_estimate,
                   << ack_aggregation_bandwidth_threshold_
                   << ", expected_bytes_acked:" << expected_bytes_acked
                   << ", bandwidth_estimate:" << bandwidth_estimate
-                  << ", aggregation_duration:"
-                  << (ack_time - aggregation_epoch_start_time_)
+                  << ", aggregation_duration:" << aggregation_delta
                   << ", new_aggregation_epoch:" << ack_time
                   << ", new_aggregation_bytes_acked:" << bytes_acked;
     // Reset to start measuring a new aggregation epoch.
     aggregation_epoch_bytes_ = bytes_acked;
     aggregation_epoch_start_time_ = ack_time;
+    last_sent_packet_number_before_epoch_ = last_sent_packet_number;
     ++num_ack_aggregation_epochs_;
     return 0;
   }
@@ -67,13 +116,17 @@ QuicByteCount MaxAckHeightTracker::Update(QuicBandwidth bandwidth_estimate,
   QuicByteCount extra_bytes_acked =
       aggregation_epoch_bytes_ - expected_bytes_acked;
   QUIC_DVLOG(3) << "Updating MaxAckHeight. ack_time:" << ack_time
-                << ", round trip count:" << round_trip_count
+                << ", last sent packet:" << last_sent_packet_number
                 << ", bandwidth_estimate:" << bandwidth_estimate
                 << ", bytes_acked:" << bytes_acked
                 << ", expected_bytes_acked:" << expected_bytes_acked
                 << ", aggregation_epoch_bytes_:" << aggregation_epoch_bytes_
                 << ", extra_bytes_acked:" << extra_bytes_acked;
-  max_ack_height_filter_.Update(extra_bytes_acked, round_trip_count);
+  ExtraAckedEvent new_event;
+  new_event.extra_acked = extra_bytes_acked;
+  new_event.bytes_acked = aggregation_epoch_bytes_;
+  new_event.time_delta = aggregation_delta;
+  max_ack_height_filter_.Update(new_event, round_trip_count);
   return extra_bytes_acked;
 }
 
@@ -93,7 +146,8 @@ BandwidthSampler::BandwidthSampler(
       unacked_packet_map_(unacked_packet_map),
       max_ack_height_tracker_(max_height_tracker_window_length),
       total_bytes_acked_after_last_ack_event_(0),
-      overestimate_avoidance_(false) {}
+      overestimate_avoidance_(false),
+      limit_max_ack_height_tracker_by_send_rate_(false) {}
 
 BandwidthSampler::BandwidthSampler(const BandwidthSampler& other)
     : total_bytes_sent_(other.total_bytes_sent_),
@@ -105,6 +159,7 @@ BandwidthSampler::BandwidthSampler(const BandwidthSampler& other)
       last_acked_packet_sent_time_(other.last_acked_packet_sent_time_),
       last_acked_packet_ack_time_(other.last_acked_packet_ack_time_),
       last_sent_packet_(other.last_sent_packet_),
+      last_acked_packet_(other.last_acked_packet_),
       is_app_limited_(other.is_app_limited_),
       end_of_app_limited_phase_(other.end_of_app_limited_phase_),
       connection_state_map_(other.connection_state_map_),
@@ -115,7 +170,9 @@ BandwidthSampler::BandwidthSampler(const BandwidthSampler& other)
       max_ack_height_tracker_(other.max_ack_height_tracker_),
       total_bytes_acked_after_last_ack_event_(
           other.total_bytes_acked_after_last_ack_event_),
-      overestimate_avoidance_(other.overestimate_avoidance_) {}
+      overestimate_avoidance_(other.overestimate_avoidance_),
+      limit_max_ack_height_tracker_by_send_rate_(
+          other.limit_max_ack_height_tracker_by_send_rate_) {}
 
 void BandwidthSampler::EnableOverestimateAvoidance() {
   if (overestimate_avoidance_) {
@@ -244,6 +301,7 @@ BandwidthSampler::OnCongestionEvent(QuicTime ack_time,
   }
 
   SendTimeState last_acked_packet_send_state;
+  QuicBandwidth max_send_rate = QuicBandwidth::Zero();
   for (const auto& packet : acked_packets) {
     BandwidthSample sample =
         OnPacketAcknowledged(ack_time, packet.packet_number);
@@ -259,6 +317,9 @@ BandwidthSampler::OnCongestionEvent(QuicTime ack_time,
     if (sample.bandwidth > event_sample.sample_max_bandwidth) {
       event_sample.sample_max_bandwidth = sample.bandwidth;
       event_sample.sample_is_app_limited = sample.state_at_send.is_app_limited;
+    }
+    if (!sample.send_rate.IsInfinite()) {
+      max_send_rate = std::max(max_send_rate, sample.send_rate);
     }
     const QuicByteCount inflight_sample =
         total_bytes_acked() - last_acked_packet_send_state.total_bytes_acked;
@@ -282,15 +343,21 @@ BandwidthSampler::OnCongestionEvent(QuicTime ack_time,
             : last_acked_packet_send_state;
   }
 
+  bool is_new_max_bandwidth = event_sample.sample_max_bandwidth > max_bandwidth;
   max_bandwidth = std::max(max_bandwidth, event_sample.sample_max_bandwidth);
-  event_sample.extra_acked = OnAckEventEnd(
-      std::min(est_bandwidth_upper_bound, max_bandwidth), round_trip_count);
+  if (limit_max_ack_height_tracker_by_send_rate_) {
+    max_bandwidth = std::max(max_bandwidth, max_send_rate);
+  }
+  // TODO(ianswett): Why is the min being passed in here?
+  event_sample.extra_acked =
+      OnAckEventEnd(std::min(est_bandwidth_upper_bound, max_bandwidth),
+                    is_new_max_bandwidth, round_trip_count);
 
   return event_sample;
 }
 
 QuicByteCount BandwidthSampler::OnAckEventEnd(
-    QuicBandwidth bandwidth_estimate,
+    QuicBandwidth bandwidth_estimate, bool is_new_max_bandwidth,
     QuicRoundTripCount round_trip_count) {
   const QuicByteCount newly_acked_bytes =
       total_bytes_acked_ - total_bytes_acked_after_last_ack_event_;
@@ -299,9 +366,9 @@ QuicByteCount BandwidthSampler::OnAckEventEnd(
     return 0;
   }
   total_bytes_acked_after_last_ack_event_ = total_bytes_acked_;
-
   QuicByteCount extra_acked = max_ack_height_tracker_.Update(
-      bandwidth_estimate, round_trip_count, last_acked_packet_ack_time_,
+      bandwidth_estimate, is_new_max_bandwidth, round_trip_count,
+      last_sent_packet_, last_acked_packet_, last_acked_packet_ack_time_,
       newly_acked_bytes);
   // If |extra_acked| is zero, i.e. this ack event marks the start of a new ack
   // aggregation epoch, save LessRecentPoint, which is the last ack point of the
@@ -316,6 +383,7 @@ QuicByteCount BandwidthSampler::OnAckEventEnd(
 BandwidthSample BandwidthSampler::OnPacketAcknowledged(
     QuicTime ack_time,
     QuicPacketNumber packet_number) {
+  last_acked_packet_ = packet_number;
   ConnectionStateOnSentPacket* sent_packet_pointer =
       connection_state_map_.GetEntry(packet_number);
   if (sent_packet_pointer == nullptr) {
@@ -412,6 +480,7 @@ BandwidthSample BandwidthSampler::OnPacketAcknowledgedInner(
   // means that the RTT measurements here can be artificially high, especially
   // on low bandwidth connections.
   sample.rtt = ack_time - sent_packet.sent_time;
+  sample.send_rate = send_rate;
   SentPacketToSendTimeState(sent_packet, &sample.state_at_send);
 
   if (sample.bandwidth.IsZero()) {

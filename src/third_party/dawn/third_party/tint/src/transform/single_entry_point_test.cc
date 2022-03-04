@@ -27,7 +27,8 @@ using SingleEntryPointTest = TransformTest;
 TEST_F(SingleEntryPointTest, Error_MissingTransformData) {
   auto* src = "";
 
-  auto* expect = "error: missing transform data for SingleEntryPoint";
+  auto* expect =
+      "error: missing transform data for tint::transform::SingleEntryPoint";
 
   auto got = Run<SingleEntryPoint>(src);
 
@@ -86,7 +87,7 @@ fn main() {}
 
 TEST_F(SingleEntryPointTest, SingleEntryPoint) {
   auto* src = R"(
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn main() {
 }
 )";
@@ -103,24 +104,25 @@ fn main() {
 TEST_F(SingleEntryPointTest, MultipleEntryPoints) {
   auto* src = R"(
 [[stage(vertex)]]
-fn vert_main() {
+fn vert_main() -> [[builtin(position)]] vec4<f32> {
+  return vec4<f32>();
 }
 
 [[stage(fragment)]]
 fn frag_main() {
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main2() {
 }
 )";
 
   auto* expect = R"(
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
 }
 )";
@@ -145,8 +147,9 @@ var<private> c : f32;
 var<private> d : f32;
 
 [[stage(vertex)]]
-fn vert_main() {
+fn vert_main() -> [[builtin(position)]] vec4<f32> {
   a = 0.0;
+  return vec4<f32>();
 }
 
 [[stage(fragment)]]
@@ -154,12 +157,12 @@ fn frag_main() {
   b = 0.0;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   c = 0.0;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main2() {
   d = 0.0;
 }
@@ -168,7 +171,7 @@ fn comp_main2() {
   auto* expect = R"(
 var<private> c : f32;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   c = 0.0;
 }
@@ -194,8 +197,9 @@ let c : f32 = 1.0;
 let d : f32 = 1.0;
 
 [[stage(vertex)]]
-fn vert_main() {
+fn vert_main() -> [[builtin(position)]] vec4<f32> {
   let local_a : f32 = a;
+  return vec4<f32>();
 }
 
 [[stage(fragment)]]
@@ -203,27 +207,21 @@ fn frag_main() {
   let local_b : f32 = b;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   let local_c : f32 = c;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main2() {
   let local_d : f32 = d;
 }
 )";
 
   auto* expect = R"(
-let a : f32 = 1.0;
-
-let b : f32 = 1.0;
-
 let c : f32 = 1.0;
 
-let d : f32 = 1.0;
-
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   let local_c : f32 = c;
 }
@@ -236,6 +234,140 @@ fn comp_main1() {
   auto got = Run<SingleEntryPoint>(src, data);
 
   EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(SingleEntryPointTest, WorkgroupSizeLetPreserved) {
+  auto* src = R"(
+let size : i32 = 1;
+
+[[stage(compute), workgroup_size(size)]]
+fn main() {
+}
+)";
+
+  auto* expect = src;
+
+  SingleEntryPoint::Config cfg("main");
+
+  DataMap data;
+  data.Add<SingleEntryPoint::Config>(cfg);
+  auto got = Run<SingleEntryPoint>(src, data);
+
+  EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(SingleEntryPointTest, OverridableConstants) {
+  auto* src = R"(
+[[override(1001)]] let c1 : u32 = 1u;
+[[override]] let c2 : u32 = 1u;
+[[override(0)]] let c3 : u32 = 1u;
+[[override(9999)]] let c4 : u32 = 1u;
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main1() {
+    let local_d = c1;
+}
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main2() {
+    let local_d = c2;
+}
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main3() {
+    let local_d = c3;
+}
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main4() {
+    let local_d = c4;
+}
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main5() {
+    let local_d = 1u;
+}
+)";
+
+  {
+    SingleEntryPoint::Config cfg("comp_main1");
+    auto* expect = R"(
+[[override(1001)]] let c1 : u32 = 1u;
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main1() {
+  let local_d = c1;
+}
+)";
+    DataMap data;
+    data.Add<SingleEntryPoint::Config>(cfg);
+    auto got = Run<SingleEntryPoint>(src, data);
+    EXPECT_EQ(expect, str(got));
+  }
+
+  {
+    SingleEntryPoint::Config cfg("comp_main2");
+    // The decorator is replaced with the one with explicit id
+    // And should not be affected by other constants stripped away
+    auto* expect = R"(
+[[override(1)]] let c2 : u32 = 1u;
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main2() {
+  let local_d = c2;
+}
+)";
+    DataMap data;
+    data.Add<SingleEntryPoint::Config>(cfg);
+    auto got = Run<SingleEntryPoint>(src, data);
+    EXPECT_EQ(expect, str(got));
+  }
+
+  {
+    SingleEntryPoint::Config cfg("comp_main3");
+    auto* expect = R"(
+[[override(0)]] let c3 : u32 = 1u;
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main3() {
+  let local_d = c3;
+}
+)";
+    DataMap data;
+    data.Add<SingleEntryPoint::Config>(cfg);
+    auto got = Run<SingleEntryPoint>(src, data);
+    EXPECT_EQ(expect, str(got));
+  }
+
+  {
+    SingleEntryPoint::Config cfg("comp_main4");
+    auto* expect = R"(
+[[override(9999)]] let c4 : u32 = 1u;
+
+[[stage(compute), workgroup_size(1)]]
+fn comp_main4() {
+  let local_d = c4;
+}
+)";
+    DataMap data;
+    data.Add<SingleEntryPoint::Config>(cfg);
+    auto got = Run<SingleEntryPoint>(src, data);
+    EXPECT_EQ(expect, str(got));
+  }
+
+  {
+    SingleEntryPoint::Config cfg("comp_main5");
+    auto* expect = R"(
+[[stage(compute), workgroup_size(1)]]
+fn comp_main5() {
+  let local_d = 1u;
+}
+)";
+    DataMap data;
+    data.Add<SingleEntryPoint::Config>(cfg);
+    auto got = Run<SingleEntryPoint>(src, data);
+    EXPECT_EQ(expect, str(got));
+  }
 }
 
 TEST_F(SingleEntryPointTest, CalledFunctions) {
@@ -259,12 +391,12 @@ fn outer2() {
   inner_shared();
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   outer1();
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main2() {
   outer2();
 }
@@ -282,7 +414,7 @@ fn outer1() {
   inner_shared();
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   outer1();
 }
@@ -333,12 +465,12 @@ fn outer2() {
   outer2_var = 0.0;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   outer1();
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main2() {
   outer2();
 }
@@ -365,7 +497,7 @@ fn outer1() {
   outer1_var = 0.0;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main1() {
   outer1();
 }

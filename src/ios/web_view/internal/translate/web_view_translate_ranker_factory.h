@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -27,6 +26,10 @@ class WebViewTranslateRankerFactory : public BrowserStateKeyedServiceFactory {
       WebViewBrowserState* browser_state);
   static WebViewTranslateRankerFactory* GetInstance();
 
+  WebViewTranslateRankerFactory(const WebViewTranslateRankerFactory&) = delete;
+  WebViewTranslateRankerFactory& operator=(
+      const WebViewTranslateRankerFactory&) = delete;
+
  private:
   friend class base::NoDestructor<WebViewTranslateRankerFactory>;
 
@@ -38,8 +41,6 @@ class WebViewTranslateRankerFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewTranslateRankerFactory);
 };
 
 }  // namespace ios_web_view

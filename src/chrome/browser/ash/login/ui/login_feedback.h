@@ -9,13 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 class Profile;
 
-namespace chromeos {
-
+namespace ash {
 class FeedbackExtensionLoader;
 
 // Show the feedback UI to collect a feedback on the login screen. Note that
@@ -23,6 +21,10 @@ class FeedbackExtensionLoader;
 class LoginFeedback {
  public:
   explicit LoginFeedback(Profile* signin_profile);
+
+  LoginFeedback(const LoginFeedback&) = delete;
+  LoginFeedback& operator=(const LoginFeedback&) = delete;
+
   ~LoginFeedback();
 
   // Request to show the feedback UI with `description`. `finished_callback`
@@ -51,16 +53,14 @@ class LoginFeedback {
   std::unique_ptr<FeedbackExtensionLoader> feedback_extension_loader_;
 
   base::WeakPtrFactory<LoginFeedback> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginFeedback);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
-using ::chromeos::LoginFeedback;
+namespace chromeos {
+using ::ash::LoginFeedback;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_FEEDBACK_H_

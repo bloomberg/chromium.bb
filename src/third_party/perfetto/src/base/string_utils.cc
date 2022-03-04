@@ -16,25 +16,23 @@
 
 #include "perfetto/ext/base/string_utils.h"
 
-#include <inttypes.h>
 #include <locale.h>
+#include <stdarg.h>
 #include <string.h>
+
+#include <algorithm>
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #include <xlocale.h>
 #endif
 
-#include <algorithm>
+#include <cinttypes>
 
+#include "perfetto/base/compiler.h"
 #include "perfetto/base/logging.h"
 
 namespace perfetto {
 namespace base {
-namespace {
-constexpr char kBase64Table[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz0123456789+/";
-}
 
 // Locale-independant as possible version of strtod.
 double StrToD(const char* nptr, char** endptr) {
@@ -48,44 +46,15 @@ double StrToD(const char* nptr, char** endptr) {
 #endif
 }
 
-std::string QuoteAndEscapeControlCodes(const std::string& raw) {
-  std::string ret;
-  for (auto it = raw.cbegin(); it != raw.cend(); it++) {
-    switch (*it) {
-      case '\\':
-        ret += "\\\\";
-        break;
-      case '"':
-        ret += "\\\"";
-        break;
-      case '/':
-        ret += "\\/";
-        break;
-      case '\b':
-        ret += "\\b";
-        break;
-      case '\f':
-        ret += "\\f";
-        break;
-      case '\n':
-        ret += "\\n";
-        break;
-      case '\r':
-        ret += "\\r";
-        break;
-      case '\t':
-        ret += "\\t";
-        break;
-      default:
-        ret += *it;
-        break;
-    }
-  }
-  return '"' + ret + '"';
-}
-
 bool StartsWith(const std::string& str, const std::string& prefix) {
   return str.compare(0, prefix.length(), prefix) == 0;
+}
+
+bool StartsWithAny(const std::string& str,
+                   const std::vector<std::string>& prefixes) {
+  return std::any_of(
+      prefixes.begin(), prefixes.end(),
+      [&str](const std::string& prefix) { return StartsWith(str, prefix); });
 }
 
 bool EndsWith(const std::string& str, const std::string& suffix) {
@@ -195,9 +164,8 @@ std::string IntToHexString(uint32_t number) {
   size_t max_size = 11;  // Max uint32 is 0xFFFFFFFF + 1 for null byte.
   std::string buf;
   buf.resize(max_size);
-  auto final_size = snprintf(&buf[0], max_size, "0x%02x", number);
-  PERFETTO_DCHECK(final_size >= 0);
-  buf.resize(static_cast<size_t>(final_size));  // Cuts off the final null byte.
+  size_t final_len = SprintfTrunc(&buf[0], max_size, "0x%02x", number);
+  buf.resize(static_cast<size_t>(final_len));  // Cuts off the final null byte.
   return buf;
 }
 
@@ -209,9 +177,8 @@ std::string Uint64ToHexStringNoPrefix(uint64_t number) {
   size_t max_size = 17;  // Max uint64 is FFFFFFFFFFFFFFFF + 1 for null byte.
   std::string buf;
   buf.resize(max_size);
-  auto final_size = snprintf(&buf[0], max_size, "%" PRIx64 "", number);
-  PERFETTO_DCHECK(final_size >= 0);
-  buf.resize(static_cast<size_t>(final_size));  // Cuts off the final null byte.
+  size_t final_len = SprintfTrunc(&buf[0], max_size, "%" PRIx64 "", number);
+  buf.resize(static_cast<size_t>(final_len));  // Cuts off the final null byte.
   return buf;
 }
 
@@ -243,42 +210,32 @@ std::string TrimLeading(const std::string& str) {
   return idx == std::string::npos ? str : str.substr(idx);
 }
 
-std::string Base64Encode(const void* raw, size_t size) {
-  // The following three cases are based on the tables in the example
-  // section in https://en.wikipedia.org/wiki/Base64. We process three
-  // input bytes at a time, emitting 4 output bytes at a time.
-  const uint8_t* ptr = static_cast<const uint8_t*>(raw);
-  size_t ii = 0;
+size_t SprintfTrunc(char* dst, size_t dst_size, const char* fmt, ...) {
+  if (PERFETTO_UNLIKELY(dst_size) == 0)
+    return 0;
 
-  std::string out;
-  out.reserve((size + 2) * 4 / 3);
+  va_list args;
+  va_start(args, fmt);
+  int src_size = vsnprintf(dst, dst_size, fmt, args);
+  va_end(args);
 
-  // While possible, process three input bytes.
-  for (; ii + 3 <= size; ii += 3) {
-    uint32_t twentyfour_bits =
-        (uint32_t(ptr[ii]) << 16) | (uint32_t(ptr[ii + 1]) << 8) | ptr[ii + 2];
-    out.push_back(kBase64Table[(twentyfour_bits >> 18)]);
-    out.push_back(kBase64Table[(twentyfour_bits >> 12) & 0x3f]);
-    out.push_back(kBase64Table[(twentyfour_bits >> 6) & 0x3f]);
-    out.push_back(kBase64Table[twentyfour_bits & 0x3f]);
+  if (PERFETTO_UNLIKELY(src_size) <= 0) {
+    dst[0] = '\0';
+    return 0;
   }
-  if (ii + 2 <= size) {  // Process two input bytes.
-    uint32_t twentyfour_bits =
-        (uint32_t(ptr[ii]) << 16) | (uint32_t(ptr[ii + 1]) << 8);
-    out.push_back(kBase64Table[(twentyfour_bits >> 18)]);
-    out.push_back(kBase64Table[(twentyfour_bits >> 12) & 0x3f]);
-    out.push_back(kBase64Table[(twentyfour_bits >> 6) & 0x3f]);
-    out.push_back('=');  // Emit padding.
-    return out;
+
+  size_t res;
+  if (PERFETTO_LIKELY(src_size < static_cast<int>(dst_size))) {
+    // Most common case.
+    res = static_cast<size_t>(src_size);
+  } else {
+    // Truncation case.
+    res = dst_size - 1;
   }
-  if (ii + 1 <= size) {  // Process a single input byte.
-    uint32_t twentyfour_bits = (uint32_t(ptr[ii]) << 16);
-    out.push_back(kBase64Table[(twentyfour_bits >> 18)]);
-    out.push_back(kBase64Table[(twentyfour_bits >> 12) & 0x3f]);
-    out.push_back('=');  // Emit padding.
-    out.push_back('=');  // Emit padding.
-  }
-  return out;
+
+  PERFETTO_DCHECK(res < dst_size);
+  PERFETTO_DCHECK(dst[res] == '\0');
+  return res;
 }
 
 }  // namespace base

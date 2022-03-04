@@ -44,6 +44,13 @@ public class AccessibilityActionAndEventTracker {
     }
 
     /**
+     * Helper method to signal the beginning of a given unit test.
+     */
+    public void signalReadyForTest() {
+        mTestComplete = false;
+    }
+
+    /**
      * Helper method to signal the end of a given unit test.
      */
     public void signalEndOfTest() {
@@ -78,7 +85,12 @@ public class AccessibilityActionAndEventTracker {
             for (String key : arguments.keySet()) {
                 argsBuilder.append(" {");
                 argsBuilder.append(key);
-                argsBuilder.append(arguments.get(key).toString());
+                // In case of null values, check what the key returns.
+                if (arguments.get(key) != null) {
+                    argsBuilder.append(arguments.get(key).toString());
+                } else {
+                    argsBuilder.append("null");
+                }
                 argsBuilder.append("},");
             }
             argsBuilder.append(" ]");
@@ -125,9 +137,16 @@ public class AccessibilityActionAndEventTracker {
                 break;
             }
 
+            // For appearance of dialogs, track the content types.
+            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED: {
+                builder.append(" - [contentTypes=");
+                builder.append(event.getContentChangeTypes());
+                builder.append("]");
+                break;
+            }
+
             // Events that do not add extra information for unit tests
             case AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED:
-            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
             case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
             case AccessibilityEvent.TYPE_ASSIST_READING_CONTEXT:
             case AccessibilityEvent.TYPE_GESTURE_DETECTION_END:

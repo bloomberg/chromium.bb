@@ -22,8 +22,9 @@
 
 #include "fxbarcode/oned/BC_OnedEAN13Writer.h"
 
+#include <math.h>
+
 #include <algorithm>
-#include <cwctype>
 #include <memory>
 #include <vector>
 
@@ -85,12 +86,13 @@ int32_t CBC_OnedEAN13Writer::CalcChecksum(const ByteString& contents) {
 }
 
 uint8_t* CBC_OnedEAN13Writer::EncodeWithHint(const ByteString& contents,
-                                             BCFORMAT format,
+                                             BC_TYPE format,
                                              int32_t& outWidth,
                                              int32_t& outHeight,
                                              int32_t hints) {
-  if (format != BCFORMAT_EAN_13)
+  if (format != BC_TYPE::kEAN13)
     return nullptr;
+
   return CBC_OneDimWriter::EncodeWithHint(contents, format, outWidth, outHeight,
                                           hints);
 }

@@ -7,9 +7,19 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/common/buildflags.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#include "components/services/app_service/public/cpp/url_handler_info.h"
+#endif
 
 class GURL;
 class Profile;
@@ -32,9 +42,29 @@ AppId InstallDummyWebApp(Profile* profile,
                          const std::string& app_name,
                          const GURL& app_url);
 
-// Synchronous version of InstallManager::InstallWebAppFromInfo. May be used in
-// unit tests and browser tests.
-AppId InstallWebApp(Profile* profile, std::unique_ptr<WebApplicationInfo>);
+// Synchronous version of WebAppInstallManager::InstallWebAppFromInfo. May be
+// used in unit tests and browser tests.
+AppId InstallWebApp(Profile* profile,
+                    std::unique_ptr<WebApplicationInfo> web_app_info,
+                    bool overwrite_existing_manifest_fields = false,
+                    webapps::WebappInstallSource install_source =
+                        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON);
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+// Install a web app with url_handlers then register it with the
+// UrlHandlerManager. This is sufficient for testing URL matching and launch
+// at startup.
+AppId InstallWebAppWithUrlHandlers(
+    Profile* profile,
+    const GURL& start_url,
+    const std::u16string& app_name,
+    const std::vector<apps::UrlHandlerInfo>& url_handlers);
+#endif
+
+// Synchronously uninstall a web app. May be used in unit tests and browser
+// tests.
+void UninstallWebApp(Profile* profile, const AppId& app_id);
 
 }  // namespace test
 }  // namespace web_app

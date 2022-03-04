@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -14,7 +12,7 @@ import {MobileThrottlingSelector} from './MobileThrottlingSelector.js';
 import {NetworkThrottlingSelector} from './NetworkThrottlingSelector.js';
 
 import type {Conditions, ConditionsList, MobileThrottlingConditionsGroup, NetworkThrottlingConditionsGroup} from './ThrottlingPresets.js';
-import {CPUThrottlingRates, ThrottlingPresets} from './ThrottlingPresets.js';
+import {ThrottlingPresets} from './ThrottlingPresets.js';
 
 const UIStrings = {
   /**
@@ -66,31 +64,35 @@ const str_ = i18n.i18n.registerUIStrings('panels/mobile_throttling/ThrottlingMan
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let throttlingManagerInstance: ThrottlingManager;
 
-export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper implements
-    SDK.SDKModel.SDKModelObserver<SDK.EmulationModel.EmulationModel> {
-  _cpuThrottlingRate: number;
-  _cpuThrottlingControls: Set<UI.Toolbar.ToolbarComboBox>;
-  _cpuThrottlingRates: number[];
-  _customNetworkConditionsSetting: Common.Settings.Setting<SDK.NetworkManager.Conditions[]>;
-  _currentNetworkThrottlingConditions: SDK.NetworkManager.Conditions;
-  _lastNetworkThrottlingConditions!: SDK.NetworkManager.Conditions;
+export class ThrottlingManager {
+  private readonly cpuThrottlingControls: Set<UI.Toolbar.ToolbarComboBox>;
+  private readonly cpuThrottlingRates: number[];
+  private readonly customNetworkConditionsSetting: Common.Settings.Setting<SDK.NetworkManager.Conditions[]>;
+  private readonly currentNetworkThrottlingConditionsSetting: Common.Settings.Setting<SDK.NetworkManager.Conditions>;
+  private lastNetworkThrottlingConditions!: SDK.NetworkManager.Conditions;
+  private readonly cpuThrottlingManager: SDK.CPUThrottlingManager.CPUThrottlingManager;
 
   private constructor() {
-    super();
-    this._cpuThrottlingRate = CPUThrottlingRates.NoThrottling;
-    this._cpuThrottlingControls = new Set();
-    this._cpuThrottlingRates = ThrottlingPresets.cpuThrottlingPresets;
-    this._customNetworkConditionsSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
-    this._currentNetworkThrottlingConditions = SDK.NetworkManager.NoThrottlingConditions;
+    this.cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
+    this.cpuThrottlingControls = new Set();
+    this.cpuThrottlingRates = ThrottlingPresets.cpuThrottlingPresets;
+    this.customNetworkConditionsSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
+    this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting(
+        'preferredNetworkCondition', SDK.NetworkManager.NoThrottlingConditions);
+
+    this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK.NetworkManager.ConditionsSerializer());
 
     SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener(
         SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, () => {
-          this._lastNetworkThrottlingConditions = this._currentNetworkThrottlingConditions;
-          this._currentNetworkThrottlingConditions =
-              SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
+          this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
+          this.currentNetworkThrottlingConditionsSetting.set(
+              SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions());
         });
 
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.EmulationModel.EmulationModel, this);
+    if (this.isDirty()) {
+      SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(
+          this.currentNetworkThrottlingConditionsSetting.get());
+    }
   }
 
   static instance(opts: {forceNew: boolean|null} = {forceNew: null}): ThrottlingManager {
@@ -104,7 +106,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper implem
 
   decorateSelectWithNetworkThrottling(selectElement: HTMLSelectElement): NetworkThrottlingSelector {
     let options: (SDK.NetworkManager.Conditions|null)[] = [];
-    const selector = new NetworkThrottlingSelector(populate, select, this._customNetworkConditionsSetting);
+    const selector = new NetworkThrottlingSelector(populate, select, this.customNetworkConditionsSetting);
     selectElement.addEventListener('change', optionSelected, false);
     return selector;
 
@@ -166,7 +168,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper implem
             SDK.NetworkManager.OfflineConditions);
       } else {
         SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(
-            this._lastNetworkThrottlingConditions);
+            this.lastNetworkThrottlingConditions);
       }
     }
 
@@ -202,7 +204,7 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper implem
           continue;
         }
         contextMenu.defaultSection().appendCheckboxItem(
-            i18nString(conditions.title), selector.optionSelected.bind(selector, conditions as Conditions),
+            conditions.title, selector.optionSelected.bind(selector, conditions as Conditions),
             selectedIndex === index);
       }
     }
@@ -228,47 +230,30 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper implem
     }
   }
 
-  cpuThrottlingRate(): number {
-    return this._cpuThrottlingRate;
-  }
-
   setCPUThrottlingRate(rate: number): void {
-    this._cpuThrottlingRate = rate;
-    for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
-      emulationModel.setCPUThrottlingRate(this._cpuThrottlingRate);
-    }
+    this.cpuThrottlingManager.setCPUThrottlingRate(rate);
     let icon: UI.Icon.Icon|null = null;
-    if (this._cpuThrottlingRate !== CPUThrottlingRates.NoThrottling) {
+    if (rate !== SDK.CPUThrottlingManager.CPUThrottlingRates.NoThrottling) {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuThrottlingEnabled);
       icon = UI.Icon.Icon.create('smallicon-warning');
       UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.cpuThrottlingIsEnabled));
     }
-    const index = this._cpuThrottlingRates.indexOf(this._cpuThrottlingRate);
-    for (const control of this._cpuThrottlingControls) {
+    const index = this.cpuThrottlingRates.indexOf(rate);
+    for (const control of this.cpuThrottlingControls) {
       control.setSelectedIndex(index);
     }
     UI.InspectorView.InspectorView.instance().setPanelIcon('timeline', icon);
-    this.dispatchEventToListeners(Events.RateChanged, this._cpuThrottlingRate);
-  }
-
-  modelAdded(emulationModel: SDK.EmulationModel.EmulationModel): void {
-    if (this._cpuThrottlingRate !== CPUThrottlingRates.NoThrottling) {
-      emulationModel.setCPUThrottlingRate(this._cpuThrottlingRate);
-    }
-  }
-
-  modelRemoved(_emulationModel: SDK.EmulationModel.EmulationModel): void {
   }
 
   createCPUThrottlingSelector(): UI.Toolbar.ToolbarComboBox {
     const control = new UI.Toolbar.ToolbarComboBox(
-        event => this.setCPUThrottlingRate(this._cpuThrottlingRates[(event.target as HTMLSelectElement).selectedIndex]),
+        event => this.setCPUThrottlingRate(this.cpuThrottlingRates[(event.target as HTMLSelectElement).selectedIndex]),
         i18nString(UIStrings.cpuThrottling));
-    this._cpuThrottlingControls.add(control);
-    const currentRate = this._cpuThrottlingRate;
+    this.cpuThrottlingControls.add(control);
+    const currentRate = this.cpuThrottlingManager.cpuThrottlingRate();
 
-    for (let i = 0; i < this._cpuThrottlingRates.length; ++i) {
-      const rate = this._cpuThrottlingRates[i];
+    for (let i = 0; i < this.cpuThrottlingRates.length; ++i) {
+      const rate = this.cpuThrottlingRates[i];
       const title = rate === 1 ? i18nString(UIStrings.noThrottling) : i18nString(UIStrings.dSlowdown, {PH1: rate});
       const option = control.createOption(title);
       control.addOption(option);
@@ -278,13 +263,14 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper implem
     }
     return control;
   }
+
+  private isDirty(): boolean {
+    const networkConditions = SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
+    const knownCurrentConditions = this.currentNetworkThrottlingConditionsSetting.get();
+    return !SDK.NetworkManager.networkConditionsEqual(networkConditions, knownCurrentConditions);
+  }
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum Events {
-  RateChanged = 'RateChanged',
-}
 let actionDelegateInstance: ActionDelegate;
 export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
   static instance(opts: {forceNew: boolean|null} = {forceNew: null}): ActionDelegate {

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -58,6 +57,10 @@ class ExtensionAction {
   static const int kDefaultTabId;
 
   ExtensionAction(const Extension& extension, const ActionInfo& manifest_data);
+
+  ExtensionAction(const ExtensionAction&) = delete;
+  ExtensionAction& operator=(const ExtensionAction&) = delete;
+
   ~ExtensionAction();
 
   // extension id
@@ -325,8 +328,6 @@ class ExtensionAction {
   // The id for the ExtensionAction, for example: "RssPageAction". This is
   // needed for compat with an older version of the page actions API.
   std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionAction);
 };
 
 template <>

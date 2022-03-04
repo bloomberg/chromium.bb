@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -58,6 +57,12 @@ ACTION_P(QuitThreadOnCounter, counter) {
 class SslHmacChannelAuthenticatorTest : public testing::Test {
  public:
   SslHmacChannelAuthenticatorTest() = default;
+
+  SslHmacChannelAuthenticatorTest(const SslHmacChannelAuthenticatorTest&) =
+      delete;
+  SslHmacChannelAuthenticatorTest& operator=(
+      const SslHmacChannelAuthenticatorTest&) = delete;
+
   ~SslHmacChannelAuthenticatorTest() override = default;
 
  protected:
@@ -150,8 +155,6 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
   MockChannelDoneCallback host_callback_;
   std::unique_ptr<P2PStreamSocket> client_socket_;
   std::unique_ptr<P2PStreamSocket> host_socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(SslHmacChannelAuthenticatorTest);
 };
 
 // Verify that a channel can be connected using a valid shared secret.

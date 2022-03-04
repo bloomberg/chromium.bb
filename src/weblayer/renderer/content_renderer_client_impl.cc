@@ -27,7 +27,6 @@
 #include "components/webapps/renderer/web_page_metadata_agent.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -40,9 +39,9 @@
 #if defined(OS_ANDROID)
 #include "components/android_system_error_page/error_page_populator.h"
 #include "components/cdm/renderer/android_key_systems.h"
-#include "components/embedder_support/android/common/url_constants.h"
 #include "components/spellcheck/renderer/spellcheck.h"           // nogncheck
 #include "components/spellcheck/renderer/spellcheck_provider.h"  // nogncheck
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -59,6 +58,11 @@ class SpellcheckInterfaceProvider
     : public service_manager::LocalInterfaceProvider {
  public:
   SpellcheckInterfaceProvider() = default;
+
+  SpellcheckInterfaceProvider(const SpellcheckInterfaceProvider&) = delete;
+  SpellcheckInterfaceProvider& operator=(const SpellcheckInterfaceProvider&) =
+      delete;
+
   ~SpellcheckInterfaceProvider() override = default;
 
   // service_manager::LocalInterfaceProvider:
@@ -70,9 +74,6 @@ class SpellcheckInterfaceProvider
     content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(
         interface_name, std::move(interface_pipe)));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckInterfaceProvider);
 };
 #endif  // defined(OS_ANDROID)
 
@@ -88,7 +89,7 @@ void ContentRendererClientImpl::RenderThreadStarted() {
     spellcheck_ = std::make_unique<SpellCheck>(local_interface_provider_.get());
   }
   blink::WebSecurityPolicy::RegisterURLSchemeAsAllowedForReferrer(
-      blink::WebString::FromUTF8(embedder_support::kAndroidAppScheme));
+      blink::WebString::FromUTF8(content::kAndroidAppScheme));
 #endif
 
   content::RenderThread* thread = content::RenderThread::Get();
@@ -119,8 +120,16 @@ void ContentRendererClientImpl::RenderFrameCreated(
   auto* agent = new content_settings::ContentSettingsAgentImpl(
       render_frame, false /* should_whitelist */,
       std::make_unique<content_settings::ContentSettingsAgentImpl::Delegate>());
-  if (weblayer_observer_)
+  if (weblayer_observer_) {
     agent->SetContentSettingRules(weblayer_observer_->content_setting_rules());
+
+    if (weblayer_observer_->content_settings_manager()) {
+      mojo::Remote<content_settings::mojom::ContentSettingsManager> manager;
+      weblayer_observer_->content_settings_manager()->Clone(
+          manager.BindNewPipeAndPassReceiver());
+      agent->SetContentSettingsManager(std::move(manager));
+    }
+  }
 
   auto* metrics_render_frame_observer =
       new page_load_metrics::MetricsRenderFrameObserver(render_frame);
@@ -146,7 +155,7 @@ void ContentRendererClientImpl::RenderFrameCreated(
   if (render_frame->IsMainFrame())
     new webapps::WebPageMetadataAgent(render_frame);
 
-  if (content_capture::features::IsContentCaptureEnabled()) {
+  if (content_capture::features::IsContentCaptureEnabledInWebLayer()) {
     new content_capture::ContentCaptureSender(
         render_frame, render_frame_observer->associated_interfaces());
   }
@@ -154,7 +163,7 @@ void ContentRendererClientImpl::RenderFrameCreated(
   if (!render_frame->IsMainFrame()) {
     auto* main_frame_no_state_prefetch_helper =
         prerender::NoStatePrefetchHelper::Get(
-            render_frame->GetRenderView()->GetMainRenderFrame());
+            render_frame->GetMainRenderFrame());
     if (main_frame_no_state_prefetch_helper) {
       // Avoid any race conditions from having the browser tell subframes that
       // they're no-state prefetching.
@@ -165,9 +174,8 @@ void ContentRendererClientImpl::RenderFrameCreated(
   }
 }
 
-void ContentRendererClientImpl::RenderViewCreated(
-    content::RenderView* render_view) {
-  new prerender::NoStatePrefetchClient(render_view->GetWebView());
+void ContentRendererClientImpl::WebViewCreated(blink::WebView* web_view) {
+  new prerender::NoStatePrefetchClient(web_view);
 }
 
 SkBitmap* ContentRendererClientImpl::GetSadPluginBitmap() {

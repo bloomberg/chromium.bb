@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_PERMISSIONS_PERMISSION_DECISION_AUTO_BLOCKER_H_
 #define COMPONENTS_PERMISSIONS_PERMISSION_DECISION_AUTO_BLOCKER_H_
 
+#include <set>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/default_clock.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -39,7 +40,14 @@ namespace permissions {
 // threshold.
 class PermissionDecisionAutoBlocker : public KeyedService {
  public:
+  PermissionDecisionAutoBlocker() = delete;
+
   explicit PermissionDecisionAutoBlocker(HostContentSettingsMap* settings_map);
+
+  PermissionDecisionAutoBlocker(const PermissionDecisionAutoBlocker&) = delete;
+  PermissionDecisionAutoBlocker& operator=(
+      const PermissionDecisionAutoBlocker&) = delete;
+
   ~PermissionDecisionAutoBlocker() override;
 
   // Checks the status of the content setting to determine if |request_origin|
@@ -139,11 +147,9 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   static const char kPermissionDismissalEmbargoKey[];
   static const char kPermissionIgnoreEmbargoKey[];
 
-  HostContentSettingsMap* settings_map_;
+  raw_ptr<HostContentSettingsMap> settings_map_;
 
-  base::Clock* clock_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionDecisionAutoBlocker);
+  raw_ptr<base::Clock> clock_;
 };
 
 }  // namespace permissions

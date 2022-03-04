@@ -13,12 +13,13 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -28,17 +29,15 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
-#include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
-#include "url/third_party/mozilla/url_parse.h"
 
 namespace {
 
@@ -73,7 +72,7 @@ struct ShortcutMatch {
   // To satisfy |CompareWithDemoteByType<>::operator()|.
   size_t subrelevance = 0;
   GURL stripped_destination_url;
-  const ShortcutsDatabase::Shortcut* shortcut;
+  raw_ptr<const ShortcutsDatabase::Shortcut> shortcut;
   std::u16string contents;
   AutocompleteMatch::Type type;
 
@@ -363,20 +362,28 @@ int ShortcutsProvider::CalculateScore(
   DCHECK_LE(terms.length(), shortcut.text.length());
 
   // The initial score is based on how much of the shortcut the user has typed.
+  // If `kPreserveLongerShortcutsText` is enabled, `shortcut.text` may be up to
+  // 3 chars longer than previous inputs navigating to the shortcut.
+  size_t adjusted_text_length = shortcut.text.length();
+  if (base::FeatureList::IsEnabled(omnibox::kPreserveLongerShortcutsText)) {
+    adjusted_text_length =
+        std::max(adjusted_text_length, terms.length() + 3) - 3;
+  }
+  double typed_fraction =
+      static_cast<double>(terms.length()) / adjusted_text_length;
+
   // Using the square root of the typed fraction boosts the base score rapidly
   // as characters are typed, compared with simply using the typed fraction
   // directly. This makes sense since the first characters typed are much more
   // important for determining how likely it is a user wants a particular
   // shortcut than are the remaining continued characters.
-  double base_score = max_relevance * sqrt(static_cast<double>(terms.length()) /
-                                           shortcut.text.length());
+  double base_score = max_relevance * sqrt(typed_fraction);
 
   // Then we decay this by half each week.
   const double kLn2 = 0.6931471805599453;
   base::TimeDelta time_passed = base::Time::Now() - shortcut.last_access_time;
   // Clamp to 0 in case time jumps backwards (e.g. due to DST).
-  double decay_exponent =
-      std::max(0.0, kLn2 * time_passed / base::TimeDelta::FromDays(7));
+  double decay_exponent = std::max(0.0, kLn2 * time_passed / base::Days(7));
 
   // We modulate the decay factor based on how many times the shortcut has been
   // used. Newly created shortcuts decay at full speed; otherwise, decaying by

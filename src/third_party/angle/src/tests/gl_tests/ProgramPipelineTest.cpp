@@ -81,6 +81,7 @@ class ProgramPipelineTest31 : public ProgramPipelineTest
     void drawQuadWithPPO(const std::string &positionAttribName,
                          const GLfloat positionAttribZ,
                          const GLfloat positionAttribXYScale);
+    GLint getAvailableProgramBinaryFormatCount() const;
 
     GLuint mVertProg;
     GLuint mFragProg;
@@ -279,6 +280,13 @@ void ProgramPipelineTest31::drawQuadWithPPO(const std::string &positionAttribNam
     return drawQuadPPO(mVertProg, positionAttribName, positionAttribZ, positionAttribXYScale);
 }
 
+GLint ProgramPipelineTest31::getAvailableProgramBinaryFormatCount() const
+{
+    GLint formatCount = 0;
+    glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS_OES, &formatCount);
+    return formatCount;
+}
+
 // Test glUseProgramStages
 TEST_P(ProgramPipelineTest31, UseProgramStages)
 {
@@ -325,6 +333,50 @@ TEST_P(ProgramPipelineTest31, UseCreateShaderProgramv)
     drawQuadWithPPO("a_position", 0.5f, 1.0f);
     ASSERT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test pipeline without vertex shader
+TEST_P(ProgramPipelineTest31, PipelineWithoutVertexShader)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    // Create a separable program object with a fragment shader
+    const GLchar *fragString = essl31_shaders::fs::Red();
+    mFragProg                = glCreateShaderProgramv(GL_FRAGMENT_SHADER, 1, &fragString);
+    ASSERT_NE(mFragProg, 0u);
+
+    // Generate a program pipeline and attach the program to it's respective stage
+    glGenProgramPipelines(1, &mPipeline);
+    EXPECT_GL_NO_ERROR();
+    glUseProgramStages(mPipeline, GL_FRAGMENT_SHADER_BIT, mFragProg);
+    EXPECT_GL_NO_ERROR();
+    glBindProgramPipeline(mPipeline);
+    EXPECT_GL_NO_ERROR();
+
+    glDrawArrays(GL_POINTS, 0, 3);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Test pipeline without any shaders
+TEST_P(ProgramPipelineTest31, PipelineWithoutShaders)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    // Generate a program pipeline
+    glGenProgramPipelines(1, &mPipeline);
+    EXPECT_GL_NO_ERROR();
+
+    glBindProgramPipeline(mPipeline);
+    EXPECT_GL_NO_ERROR();
+
+    glDrawArrays(GL_POINTS, 0, 3);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    // Ensure validation fails
+    GLint value;
+    glValidateProgramPipeline(mPipeline);
+    glGetProgramPipelineiv(mPipeline, GL_VALIDATE_STATUS, &value);
+    EXPECT_FALSE(value);
 }
 
 // Test glUniform
@@ -645,9 +697,6 @@ TEST_P(ProgramPipelineTest31, VaryingLocationMismatch)
     // Only the Vulkan backend supports PPOs
     ANGLE_SKIP_TEST_IF(!IsVulkan());
 
-    // http://anglebug.com/5506
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     // Create a fragment shader using the varying location "5".
     const char *kFS = R"(#version 310 es
 precision mediump float;
@@ -884,6 +933,7 @@ TEST_P(ProgramPipelineTest31, ModifyAndRelinkShader)
 TEST_P(ProgramPipelineTest31, ProgramBinary)
 {
     ANGLE_SKIP_TEST_IF(!IsVulkan());
+    ANGLE_SKIP_TEST_IF(getAvailableProgramBinaryFormatCount() == 0);
 
     const GLchar *vertString = R"(#version 310 es
 precision highp float;
@@ -1049,6 +1099,256 @@ void main()
     EXPECT_PIXEL_RECT_EQ(0, 0, kWidth, kHeight, GLColor::yellow);
 }
 
+// Verify that image uniforms can be used with separable programs
+TEST_P(ProgramPipelineTest31, ImageUniforms)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    const GLchar *vertString = R"(#version 310 es
+precision highp float;
+precision highp image2D;
+layout(binding = 0, r32f) uniform image2D img;
+
+void main()
+{
+    gl_Position = imageLoad(img, ivec2(0, 0));
+})";
+
+    const GLchar *fragString = essl31_shaders::fs::Red();
+
+    bindProgramPipeline(vertString, fragString);
+
+    GLTexture texture;
+    GLfloat value = 1.0;
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexStorage2D(GL_TEXTURE_2D, 1 /*levels*/, GL_R32F, 1 /*width*/, 1 /*height*/);
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0 /*level*/, 0 /*xoffset*/, 0 /*yoffset*/, 1 /*width*/,
+                    1 /*height*/, GL_RED, GL_FLOAT, &value);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glBindImageTexture(0, texture, 0 /*level*/, GL_FALSE /*is layered?*/, 0 /*layer*/, GL_READ_ONLY,
+                       GL_R32F);
+
+    glDrawArrays(GL_POINTS, 0, 6);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Verify that we can have the max amount of uniform buffer objects as part of a program
+// pipeline.
+TEST_P(ProgramPipelineTest31, MaxFragmentUniformBufferObjects)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    GLint maxUniformBlocks;
+    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &maxUniformBlocks);
+
+    const GLchar *vertString = essl31_shaders::vs::Simple();
+    std::stringstream fragStringStream;
+    fragStringStream << R"(#version 310 es
+precision highp float;
+out vec4 my_FragColor;
+layout(binding = 0) uniform block {
+    float data;
+} ubo[)";
+    fragStringStream << maxUniformBlocks;
+    fragStringStream << R"(];
+void main()
+{
+    my_FragColor = vec4(1.0);
+)";
+    for (GLint index = 0; index < maxUniformBlocks; index++)
+    {
+        fragStringStream << "my_FragColor.x + ubo[" << index << "].data;" << std::endl;
+    }
+    fragStringStream << "}" << std::endl;
+
+    bindProgramPipeline(vertString, fragStringStream.str().c_str());
+
+    std::vector<GLBuffer> buffers(maxUniformBlocks);
+    for (GLint index = 0; index < maxUniformBlocks; ++index)
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, buffers[index]);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(GLfloat), NULL, GL_STATIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, index, buffers[index]);
+    }
+
+    glDrawArrays(GL_POINTS, 0, 6);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Verify that we can have the max amount of shader storage buffer objects as part of a program
+// pipeline.
+TEST_P(ProgramPipelineTest31, MaxFragmentShaderStorageBufferObjects)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    GLint maxShaderStorageBuffers;
+    glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &maxShaderStorageBuffers);
+    const GLchar *vertString = essl31_shaders::vs::Simple();
+    std::stringstream fragStringStream;
+    fragStringStream << R"(#version 310 es
+precision highp float;
+out vec4 my_FragColor;
+layout(binding = 0) buffer buf {
+    float data;
+} ssbo[)";
+    fragStringStream << maxShaderStorageBuffers;
+    fragStringStream << R"(];
+void main()
+{
+    my_FragColor = vec4(1.0);
+)";
+    for (GLint index = 0; index < maxShaderStorageBuffers; index++)
+    {
+        fragStringStream << "my_FragColor.x + ssbo[" << index << "].data;" << std::endl;
+    }
+    fragStringStream << "}" << std::endl;
+
+    bindProgramPipeline(vertString, fragStringStream.str().c_str());
+
+    std::vector<GLBuffer> buffers(maxShaderStorageBuffers);
+    for (GLint index = 0; index < maxShaderStorageBuffers; ++index)
+    {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffers[index]);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLfloat), NULL, GL_STATIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffers[index]);
+    }
+
+    glDrawArrays(GL_POINTS, 0, 6);
+    ASSERT_GL_NO_ERROR();
+}
+
+class ProgramPipelineTest32 : public ProgramPipelineTest
+{
+  protected:
+    void testTearDown() override
+    {
+        glDeleteProgram(mVertProg);
+        glDeleteProgram(mFragProg);
+        glDeleteProgramPipelines(1, &mPipeline);
+    }
+
+    void bindProgramPipeline(const GLchar *vertString,
+                             const GLchar *fragString,
+                             const GLchar *geomString);
+    void drawQuadWithPPO(const std::string &positionAttribName,
+                         const GLfloat positionAttribZ,
+                         const GLfloat positionAttribXYScale);
+
+    GLuint mVertProg = 0;
+    GLuint mFragProg = 0;
+    GLuint mGeomProg = 0;
+    GLuint mPipeline = 0;
+};
+
+void ProgramPipelineTest32::bindProgramPipeline(const GLchar *vertString,
+                                                const GLchar *fragString,
+                                                const GLchar *geomString)
+{
+    mVertProg = createShaderProgram(GL_VERTEX_SHADER, vertString);
+    ASSERT_NE(mVertProg, 0u);
+    mFragProg = createShaderProgram(GL_FRAGMENT_SHADER, fragString);
+    ASSERT_NE(mFragProg, 0u);
+    mGeomProg = createShaderProgram(GL_GEOMETRY_SHADER, geomString);
+    ASSERT_NE(mGeomProg, 0u);
+
+    // Generate a program pipeline and attach the programs to their respective stages
+    glGenProgramPipelines(1, &mPipeline);
+    EXPECT_GL_NO_ERROR();
+    glUseProgramStages(mPipeline, GL_VERTEX_SHADER_BIT, mVertProg);
+    EXPECT_GL_NO_ERROR();
+    glUseProgramStages(mPipeline, GL_FRAGMENT_SHADER_BIT, mFragProg);
+    EXPECT_GL_NO_ERROR();
+    glUseProgramStages(mPipeline, GL_GEOMETRY_SHADER_BIT, mGeomProg);
+    EXPECT_GL_NO_ERROR();
+    glBindProgramPipeline(mPipeline);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Verify that we can have the max amount of uniforms with a geometry shader as part of a program
+// pipeline.
+TEST_P(ProgramPipelineTest32, MaxGeometryImageUniforms)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan() || !IsGLExtensionEnabled("GL_EXT_geometry_shader"));
+
+    GLint maxGeometryImageUnits;
+    glGetIntegerv(GL_MAX_GEOMETRY_IMAGE_UNIFORMS_EXT, &maxGeometryImageUnits);
+
+    const GLchar *vertString = essl31_shaders::vs::Simple();
+    const GLchar *fragString = R"(#version 310 es
+precision highp float;
+out vec4 my_FragColor;
+void main()
+{
+    my_FragColor = vec4(1.0);
+})";
+
+    std::stringstream geomStringStream;
+
+    geomStringStream << R"(#version 310 es
+#extension GL_OES_geometry_shader : require
+layout (points)                   in;
+layout (points, max_vertices = 1) out;
+
+precision highp iimage2D;
+
+ivec4 counter = ivec4(0);
+)";
+
+    for (GLint index = 0; index < maxGeometryImageUnits; ++index)
+    {
+        geomStringStream << "layout(binding = " << index << ", r32i) uniform iimage2D img" << index
+                         << ";" << std::endl;
+    }
+
+    geomStringStream << R"(
+void main()
+{
+)";
+
+    for (GLint index = 0; index < maxGeometryImageUnits; ++index)
+    {
+        geomStringStream << "counter += imageLoad(img" << index << ", ivec2(0, 0));" << std::endl;
+    }
+
+    geomStringStream << R"(
+    gl_Position = vec4(float(counter.x), 0.0, 0.0, 1.0);
+    EmitVertex();
+}
+)";
+
+    bindProgramPipeline(vertString, fragString, geomStringStream.str().c_str());
+
+    std::vector<GLTexture> textures(maxGeometryImageUnits);
+    for (GLint index = 0; index < maxGeometryImageUnits; ++index)
+    {
+        GLint value = index + 1;
+
+        glBindTexture(GL_TEXTURE_2D, textures[index]);
+
+        glTexStorage2D(GL_TEXTURE_2D, 1 /*levels*/, GL_R32I, 1 /*width*/, 1 /*height*/);
+
+        glTexSubImage2D(GL_TEXTURE_2D, 0 /*level*/, 0 /*xoffset*/, 0 /*yoffset*/, 1 /*width*/,
+                        1 /*height*/, GL_RED_INTEGER, GL_INT, &value);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glBindImageTexture(index, textures[index], 0 /*level*/, GL_FALSE /*is layered?*/,
+                           0 /*layer*/, GL_READ_ONLY, GL_R32I);
+    }
+
+    glDrawArrays(GL_POINTS, 0, 6);
+    ASSERT_GL_NO_ERROR();
+}
+
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramPipelineTest);
 ANGLE_INSTANTIATE_TEST_ES3_AND_ES31(ProgramPipelineTest);
 
@@ -1057,5 +1357,8 @@ ANGLE_INSTANTIATE_TEST_ES31(ProgramPipelineTest31);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramPipelineXFBTest31);
 ANGLE_INSTANTIATE_TEST_ES31(ProgramPipelineXFBTest31);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramPipelineTest32);
+ANGLE_INSTANTIATE_TEST_ES32(ProgramPipelineTest32);
 
 }  // namespace

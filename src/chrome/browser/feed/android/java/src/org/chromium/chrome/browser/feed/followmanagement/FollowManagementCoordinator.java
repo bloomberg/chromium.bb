@@ -7,14 +7,15 @@ package org.chromium.chrome.browser.feed.followmanagement;
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.chrome.browser.feed.webfeed.R;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.feed.R;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedFaviconFetcher;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
@@ -23,18 +24,26 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
  * https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_simple_list_tutorial.md
  */
 public class FollowManagementCoordinator {
+    private static final String TAG = "FollowMMCoordinator";
     private FollowManagementMediator mMediator;
-    private Activity mActivity;
+    private AppCompatActivity mActivity;
     private final View mView;
 
     public FollowManagementCoordinator(Activity activity) {
-        mActivity = activity;
+        mActivity = (AppCompatActivity) activity;
         ModelList listItems = new ModelList();
 
         SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(listItems);
+        // Register types for both the full and empty states.
         adapter.registerType(FollowManagementItemProperties.DEFAULT_ITEM_TYPE,
                 new LayoutViewBuilder<FollowManagementItemView>(R.layout.follow_management_item),
                 FollowManagementItemViewBinder::bind);
+        adapter.registerType(FollowManagementItemProperties.EMPTY_ITEM_TYPE,
+                new LayoutViewBuilder<LinearLayout>(R.layout.follow_management_empty_state),
+                (unusedModel, unusedView, unusedKey) -> {});
+        adapter.registerType(FollowManagementItemProperties.LOADING_ITEM_TYPE,
+                new LayoutViewBuilder<LinearLayout>(R.layout.follow_management_loading_state),
+                (unusedModel, unusedView, unusedKey) -> {});
 
         // Inflate the XML for the activity.
         mView = LayoutInflater.from(activity).inflate(R.layout.follow_management_activity, null);
@@ -44,12 +53,14 @@ public class FollowManagementCoordinator {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
-        // Set up a handler for the header to act as a back button.
-        ImageView backArrowView = (ImageView) mView.findViewById(R.id.follow_management_back_arrow);
-        backArrowView.setOnClickListener(this::handleBackArrowClick);
+        // Set up the toolbar and back button.
+        Toolbar toolbar = (Toolbar) mView.findViewById(R.id.action_bar);
+        mActivity.setSupportActionBar(toolbar);
+        mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(this::handleBackArrowClick);
 
-        mMediator = new FollowManagementMediator(activity, listItems, adapter,
-                new LargeIconBridge(Profile.getLastUsedRegularProfile()));
+        mMediator = new FollowManagementMediator(
+                activity, listItems, WebFeedFaviconFetcher.createDefault());
     }
 
     public View getView() {

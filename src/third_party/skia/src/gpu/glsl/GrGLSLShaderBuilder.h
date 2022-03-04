@@ -12,8 +12,8 @@
 #include "include/private/SkSLStatement.h"
 #include "include/private/SkSLString.h"
 #include "include/private/SkTDArray.h"
+#include "src/core/SkTBlockList.h"
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/GrTBlockList.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 #include <stdarg.h>
@@ -21,9 +21,7 @@
 class GrGLSLColorSpaceXformHelper;
 
 namespace SkSL {
-    namespace dsl {
-        class DSLWriter;
-    }
+    class ThreadContext;
 }
 
 /**
@@ -48,8 +46,8 @@ public:
                              GrGLSLColorSpaceXformHelper* colorXformHelper = nullptr);
 
     /** Does the work of appendTextureLookup and blends the result by dst, treating the texture
-        lookup a the src input to the blend. The dst is assumed to be half4 and the result is always
-        a half4. If dst is nullptr we use half4(1) as the blend dst. */
+        lookup as the src input to the blend. The dst is assumed to be half4 and the result is
+        always a half4. If dst is nullptr we use half4(1) as the blend dst. */
     void appendTextureLookupAndBlend(const char* dst,
                                      SkBlendMode,
                                      SamplerHandle,
@@ -143,6 +141,8 @@ public:
                                const char* mangledName,
                                SkSpan<const GrShaderVar> args);
 
+    void emitFunctionPrototype(const char* declaration);
+
     /** Emits a helper function outside of main() in the fragment shader. */
     void emitFunction(GrSLType returnType,
                       const char* mangledName,
@@ -179,7 +179,7 @@ public:
     };
 
 protected:
-    typedef GrTBlockList<GrShaderVar> VarArray;
+    typedef SkTBlockList<GrShaderVar> VarArray;
     void appendDecls(const VarArray& vars, SkString* out) const;
 
     void appendFunctionDecl(GrSLType returnType,
@@ -280,7 +280,6 @@ protected:
     // Counter for generating unique scratch variable names in a shader.
     int fTmpVariableCounter;
 
-    friend class GrCCCoverageProcessor; // to access code().
     friend class GrGLSLProgramBuilder;
     friend class GrGLProgramBuilder;
     friend class GrD3DPipelineStateBuilder;
@@ -289,6 +288,6 @@ protected:
     friend class GrGLPathProgramBuilder; // to access fInputs.
     friend class GrVkPipelineStateBuilder;
     friend class GrMtlPipelineStateBuilder;
-    friend class SkSL::dsl::DSLWriter;
+    friend class SkSL::ThreadContext;
 };
 #endif

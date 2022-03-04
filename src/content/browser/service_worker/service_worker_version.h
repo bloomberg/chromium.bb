@@ -19,7 +19,7 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,6 +52,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -162,7 +163,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     // effective security of these responses is equivalent to that of the
     // service worker.
     scoped_refptr<net::HttpResponseHeaders> headers;
-    net::SSLInfo ssl_info;
+    absl::optional<net::SSLInfo> ssl_info;
   };
 
   class Observer {
@@ -201,10 +202,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
           remote_reference,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
+  ServiceWorkerVersion(const ServiceWorkerVersion&) = delete;
+  ServiceWorkerVersion& operator=(const ServiceWorkerVersion&) = delete;
+
   int64_t version_id() const { return version_id_; }
   int64_t registration_id() const { return registration_id_; }
   const GURL& script_url() const { return script_url_; }
-  const url::Origin& origin() const { return origin_; }
+  const blink::StorageKey& key() const { return key_; }
   const GURL& scope() const { return scope_; }
   blink::mojom::ScriptType script_type() const { return script_type_; }
   EmbeddedWorkerStatus running_status() const {
@@ -213,6 +217,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  const base::UnguessableToken& reporting_source() const {
+    return reporting_source_;
+  }
 
   // This status is set to EXISTS or DOES_NOT_EXIST when the install event has
   // been executed in a new version or when an installed version is loaded from
@@ -220,7 +227,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
   }
-  // This also updates |site_for_uma_| when it was Site::OTHER.
   void set_fetch_handler_existence(FetchHandlerExistence existence);
 
   base::TimeDelta TimeSinceNoControllees() const {
@@ -247,8 +253,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // ServiceWorkerRegistration::status() instead of this function.
   void SetRegistrationStatus(
       ServiceWorkerRegistration::Status registration_status);
-
-  ServiceWorkerMetrics::Site site_for_uma() const { return site_for_uma_; }
 
   // This sets the new status and also run status change callbacks
   // if there're any (see RegisterStatusChangeCallback).
@@ -304,10 +308,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // called. If FinishRequest is not called the request will eventually time
   // out and the worker will be forcibly terminated.
   //
-  // The |error_callback| is called if either ServiceWorkerVersion decides the
+  // `error_callback` is called if either ServiceWorkerVersion decides the
   // event is taking too long, or if for some reason the worker stops or is
   // killed before the request finishes. In this case, the caller should not
-  // call FinishRequest.
+  // call FinishRequest. EXCEPTION: If CreateSimpleEventCallback() is used,
+  // `error_callback` is always called, even in the case of success.
+  // TODO(http://crbug.com/1251834): Clean up this exception.
   int StartRequest(ServiceWorkerMetrics::EventType event_type,
                    StatusCallback error_callback);
 
@@ -385,8 +391,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Called when the navigation for a window client commits to a render frame
   // host.
   void OnControlleeNavigationCommitted(const std::string& client_uuid,
-                                       int process_id,
-                                       int frame_id);
+                                       const GlobalRenderFrameHostId& rfh_id);
 
   // Called when a controllee goes into back-forward cache.
   void MoveControlleeToBackForwardCacheMap(const std::string& client_uuid);
@@ -405,8 +410,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Note regarding BackForwardCache:
   // Clients in back-forward cache don't count as controllees.
   bool HasControllee() const { return !controllee_map_.empty(); }
-  const std::map<std::string, ServiceWorkerContainerHost*>& controllee_map()
-      const {
+  const std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>&
+  controllee_map() const {
     return controllee_map_;
   }
 
@@ -461,6 +466,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   void set_force_bypass_cache_for_scripts(bool force_bypass_cache_for_scripts) {
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
+  }
+
+  bool initialize_global_scope_after_main_script_loaded() const {
+    return initialize_global_scope_after_main_script_loaded_;
   }
 
   void set_initialize_global_scope_after_main_script_loaded() {
@@ -622,6 +631,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
     reporting_observer_receiver_ = std::move(reporting_observer_receiver);
   }
 
+  // Initializes the global scope of the ServiceWorker on the renderer side.
+  // This is dependant on a number of internal members and should only be called
+  // at a few select points where those members are valid.
+  void InitializeGlobalScope(
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          script_loader_factories,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          subresource_loader_factories);
+
+  // Returns true if |process_id| is a controllee process ID of this version.
+  bool IsControlleeProcessID(int process_id) const;
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;
@@ -732,14 +753,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   };
 
   // The timeout timer interval.
-  static constexpr base::TimeDelta kTimeoutTimerDelay =
-      base::TimeDelta::FromSeconds(30);
+  static constexpr base::TimeDelta kTimeoutTimerDelay = base::Seconds(30);
   // Timeout for a new worker to start.
-  static constexpr base::TimeDelta kStartNewWorkerTimeout =
-      base::TimeDelta::FromMinutes(5);
+  static constexpr base::TimeDelta kStartNewWorkerTimeout = base::Minutes(5);
   // Timeout for the worker to stop.
-  static constexpr base::TimeDelta kStopWorkerTimeout =
-      base::TimeDelta::FromSeconds(5);
+  static constexpr base::TimeDelta kStopWorkerTimeout = base::Seconds(5);
 
   ~ServiceWorkerVersion() override;
 
@@ -885,17 +903,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void NotifyControlleeRemoved(const std::string& uuid);
   void NotifyControlleeNavigationCommitted(
       const std::string& uuid,
-      GlobalFrameRoutingId render_frame_host_id);
+      GlobalRenderFrameHostId render_frame_host_id);
 
   void GetClientOnExecutionReady(const std::string& client_uuid,
                                  GetClientCallback callback,
                                  bool success);
-
-  void InitializeGlobalScope(
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          script_loader_factories,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories);
 
   // When ServiceWorkerTerminationOnNoControlle is enabled and there's no
   // controllee, update the idle delay if the worker is running and we don't
@@ -905,10 +917,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;
-  // |origin_| is computed from |scope_|. Warning: The |script_url_|'s origin
-  // and |origin_| may be different in some scenarios e.g.
+  // `key_` is computed from `scope_`. Warning: The `script_url_`'s origin
+  // and `key_` may be different in some scenarios e.g.
   // --disable-web-security.
-  const url::Origin origin_;
+  const blink::StorageKey key_;
   const GURL scope_;
   // A service worker has an associated type which is either
   // "classic" or "module". Unless stated otherwise, it is "classic".
@@ -920,7 +932,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // cached value because it must be looked up quickly and a live registration
   // doesn't necessarily exist whenever there is a live version.
   blink::mojom::NavigationPreloadState navigation_preload_state_;
-  ServiceWorkerMetrics::Site site_for_uma_;
 
   // A copy of ServiceWorkerRegistration::status(). Cached for the same reason
   // as `navigation_preload_state_`: A live registration doesn't necessarily
@@ -1011,9 +1022,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<content::ServiceWorkerHost> worker_host_;
 
   // |controllee_map_| and |bfcached_controllee_map_| should not share the same
-  // controllee.
-  std::map<std::string, ServiceWorkerContainerHost*> controllee_map_;
-  std::map<std::string, ServiceWorkerContainerHost*> bfcached_controllee_map_;
+  // controllee.  ServiceWorkerContainerHost in the controllee maps should be
+  // non-null.
+  // TODO(crbug.com/1253581): Fix cases where hosts can become nullptr while
+  //                          stored in the maps.
+  std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>
+      controllee_map_;
+  std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>
+      bfcached_controllee_map_;
 
   // Keeps track of the |client_uuid| of ContainerHost that is being evicted,
   // and the reason why it is evicted. Once eviction is complete, the entry will
@@ -1081,10 +1097,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
       blink::ServiceWorkerStatusCode::kOk;
 
   // The clock used to vend tick time.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // The clock used for actual (wall clock) time
-  base::Clock* const clock_;
+  const raw_ptr<base::Clock> clock_;
 
   ServiceWorkerPingController ping_controller_;
 
@@ -1094,7 +1110,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // version completed, or used during the lifetime of |this|.
   std::set<blink::mojom::WebFeature> used_features_;
 
-  std::unique_ptr<blink::TrialTokenValidator> const validator_;
+  blink::TrialTokenValidator const validator_;
 
   // Stores the result of byte-to-byte update check for each script.
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
@@ -1136,9 +1152,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // it can be associated with clients' source IDs.
   const ukm::SourceId ukm_source_id_;
 
-  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
+  base::UnguessableToken reporting_source_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
+  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 };
 
 }  // namespace content

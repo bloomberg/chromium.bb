@@ -63,7 +63,7 @@ namespace v8_memory {
 //           " reported " << data->shared_v8_bytes_used() <<
 //           " bytes of V8 memory that are shared between all frames";
 //       for (std::pair<
-//             content::GlobalFrameRoutingId,
+//             content::GlobalRenderFrameHostId,
 //             V8DetailedMemoryExecutionContextData
 //           > frame_and_data : frame_data) {
 //         const auto* frame = RenderFrameHost::FromID(frame_and_data.first);
@@ -90,7 +90,7 @@ namespace v8_memory {
 //       // Creating a V8DetailedMemoryRequest with the |graph| parameter
 //       // automatically starts measurements.
 //       request_ = std::make_unique<V8DetailedMemoryRequestAnySeq>(
-//           base::TimeDelta::FromMinutes(2));
+//           base::Minutes(2));
 //       observer_ = std::make_unique<Observer>();
 //       request_->AddObserver(observer_.get());
 //     }
@@ -125,7 +125,7 @@ class V8DetailedMemoryObserverAnySeq : public base::CheckedObserver {
   // potentially also split "main" content from "isolated world" content, and
   // have a detailed V8ContextToken map for those who care about all the
   // details.
-  using FrameDataMap = base::flat_map<content::GlobalFrameRoutingId,
+  using FrameDataMap = base::flat_map<content::GlobalRenderFrameHostId,
                                       V8DetailedMemoryExecutionContextData>;
 
   // Called on the observer's sequence when a measurement is available for the

@@ -98,7 +98,7 @@ absl::optional<std::vector<FilterStep>> ParseJSON(base::StringPiece json) {
     const base::Value* action = nullptr;
 
     // DictItems is used so that unknown keys in the dictionary can be rejected.
-    for (const auto& pair : filter.DictItems()) {
+    for (auto pair : filter.DictItems()) {
       if (pair.first == "operation") {
         operation = &pair.second;
       } else if (pair.first == "rp_id") {
@@ -173,18 +173,18 @@ absl::optional<std::vector<FilterStep>> ParseJSON(base::StringPiece json) {
       step.id = GetStringOrListOfStrings(id);
     }
     if (id_min_size) {
-      const int v = id_min_size->GetInt();
-      if (v < 0) {
+      const int min_size_int = id_min_size->GetInt();
+      if (min_size_int < 0) {
         return absl::nullopt;
       }
-      step.id_min_size = v;
+      step.id_min_size = min_size_int;
     }
     if (id_max_size) {
-      const int v = id_max_size->GetInt();
-      if (v < 0) {
+      const int max_size_int = id_max_size->GetInt();
+      if (max_size_int < 0) {
         return absl::nullopt;
       }
-      step.id_max_size = v;
+      step.id_max_size = max_size_int;
     }
 
     ret.emplace_back(std::move(step));

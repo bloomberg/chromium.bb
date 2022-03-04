@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/download/internal/background_service/controller.h"
@@ -22,6 +22,7 @@
 #include "components/download/internal/background_service/log_source.h"
 #include "components/download/internal/background_service/model.h"
 #include "components/download/internal/background_service/scheduler/device_status_listener.h"
+#include "components/download/internal/background_service/service_config_impl.h"
 #include "components/download/internal/background_service/startup_status.h"
 #include "components/download/internal/background_service/stats.h"
 #include "components/download/public/background_service/client.h"
@@ -45,7 +46,7 @@ struct DownloadMetaData;
 struct SchedulingParams;
 
 // The internal Controller implementation.  This class does all of the heavy
-// lifting for the DownloadService.
+// lifting for the BackgroundDownloadService.
 class ControllerImpl : public Controller,
                        public DownloadDriver::Client,
                        public Model::Client,
@@ -56,7 +57,8 @@ class ControllerImpl : public Controller,
  public:
   // |config| and |log_sink| are externally owned and must be guaranteed to
   // outlive this class.
-  ControllerImpl(Configuration* config,
+  ControllerImpl(std::unique_ptr<Configuration> config,
+                 std::unique_ptr<Logger> logger,
                  LogSink* log_sink,
                  std::unique_ptr<ClientSet> clients,
                  std::unique_ptr<DownloadDriver> driver,
@@ -67,10 +69,16 @@ class ControllerImpl : public Controller,
                  std::unique_ptr<TaskScheduler> task_scheduler,
                  std::unique_ptr<FileMonitor> file_monitor,
                  const base::FilePath& download_file_dir);
+
+  ControllerImpl(const ControllerImpl&) = delete;
+  ControllerImpl& operator=(const ControllerImpl&) = delete;
+
   ~ControllerImpl() override;
 
   // Controller implementation.
   void Initialize(base::OnceClosure callback) override;
+  const ServiceConfig& GetConfig() override;
+  BackgroundDownloadService::ServiceStatus GetStatus() override;
   State GetState() override;
   void StartDownload(DownloadParams params) override;
   void PauseDownload(const std::string& guid) override;
@@ -82,6 +90,7 @@ class ControllerImpl : public Controller,
   void OnStartScheduledTask(DownloadTaskType task_type,
                             TaskFinishedCallback callback) override;
   bool OnStopScheduledTask(DownloadTaskType task_type) override;
+  Logger* GetLogger() override;
 
  private:
   // DownloadDriver::Client implementation.
@@ -248,18 +257,19 @@ class ControllerImpl : public Controller,
   // received upload data from their respective clients.
   void KillTimedOutUploads();
 
-  Configuration* config_;
-  LogSink* log_sink_;
-
   // The directory in which the downloaded files are stored.
   const base::FilePath download_file_dir_;
 
   // Owned Dependencies.
+  std::unique_ptr<Configuration> config_;
+  ServiceConfigImpl service_config_;
+  std::unique_ptr<Logger> logger_;
+  raw_ptr<LogSink> log_sink_;
   std::unique_ptr<ClientSet> clients_;
   std::unique_ptr<DownloadDriver> driver_;
   std::unique_ptr<Model> model_;
   std::unique_ptr<DeviceStatusListener> device_status_listener_;
-  NavigationMonitor* navigation_monitor_;
+  raw_ptr<NavigationMonitor> navigation_monitor_;
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<TaskScheduler> task_scheduler_;
   std::unique_ptr<FileMonitor> file_monitor_;
@@ -277,8 +287,6 @@ class ControllerImpl : public Controller,
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<ControllerImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ControllerImpl);
 };
 
 }  // namespace download

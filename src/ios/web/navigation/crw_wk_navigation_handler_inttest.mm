@@ -27,12 +27,6 @@ class CRWKNavigationHandlerIntTest : public WebIntTest {
     net::test_server::RegisterDefaultHandlers(&server_);
   }
 
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kUseDefaultUserAgentInWebClient}, {});
-    WebIntTest::SetUp();
-  }
-
   FakeWebClient* GetWebClient() override {
     return static_cast<FakeWebClient*>(WebIntTest::GetWebClient());
   }
@@ -44,11 +38,6 @@ class CRWKNavigationHandlerIntTest : public WebIntTest {
 // Tests that reloading a page with a different default User Agent updates the
 // item.
 TEST_F(CRWKNavigationHandlerIntTest, ReloadWithDifferentUserAgent) {
-  if (@available(iOS 13, *)) {
-  } else {
-    return;
-  }
-
   FakeWebClient* web_client = GetWebClient();
   web_client->SetDefaultUserAgent(UserAgentType::MOBILE);
 

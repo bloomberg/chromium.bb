@@ -5,4 +5,4 @@ echo off
 setlocal
 
 :: Defer control.
-python "%~dp0fake_cipd.py" %*
+python3 "%~dp0fake_cipd.py" %*

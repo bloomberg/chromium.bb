@@ -21,6 +21,8 @@
 
 #include <dawn/dawn_wsi.h>
 
+#include <windows.ui.xaml.media.dxinterop.h>
+
 namespace dawn_native { namespace d3d12 {
     namespace {
 
@@ -56,10 +58,10 @@ namespace dawn_native { namespace d3d12 {
 
         DXGI_USAGE ToDXGIUsage(wgpu::TextureUsage usage) {
             DXGI_USAGE dxgiUsage = DXGI_CPU_ACCESS_NONE;
-            if (usage & wgpu::TextureUsage::Sampled) {
+            if (usage & wgpu::TextureUsage::TextureBinding) {
                 dxgiUsage |= DXGI_USAGE_SHADER_INPUT;
             }
-            if (usage & wgpu::TextureUsage::Storage) {
+            if (usage & wgpu::TextureUsage::StorageBinding) {
                 dxgiUsage |= DXGI_USAGE_UNORDERED_ACCESS;
             }
             if (usage & wgpu::TextureUsage::RenderAttachment) {
@@ -81,7 +83,7 @@ namespace dawn_native { namespace d3d12 {
         : OldSwapChainBase(device, descriptor) {
         const auto& im = GetImplementation();
         DawnWSIContextD3D12 wsiContext = {};
-        wsiContext.device = reinterpret_cast<WGPUDevice>(GetDevice());
+        wsiContext.device = ToAPI(GetDevice());
         im.Init(im.userData, &wsiContext);
 
         ASSERT(im.textureUsage != WGPUTextureUsage_None);
@@ -139,7 +141,10 @@ namespace dawn_native { namespace d3d12 {
         return swapchain;
     }
 
-    SwapChain::~SwapChain() {
+    SwapChain::~SwapChain() = default;
+
+    void SwapChain::DestroyImpl() {
+        SwapChainBase::DestroyImpl();
         DetachFromSurface();
     }
 
@@ -161,22 +166,21 @@ namespace dawn_native { namespace d3d12 {
             return InitializeSwapChainFromScratch();
         }
 
-        // TODO(cwallez@chromium.org): figure out what should happen when surfaces are used by
+        // TODO(crbug.com/dawn/269): figure out what should happen when surfaces are used by
         // multiple backends one after the other. It probably needs to block until the backend
         // and GPU are completely finished with the previous swapchain.
-        if (previousSwapChain->GetBackendType() != wgpu::BackendType::D3D12) {
-            return DAWN_VALIDATION_ERROR("d3d12::SwapChain cannot switch between APIs");
-        }
+        DAWN_INVALID_IF(previousSwapChain->GetBackendType() != wgpu::BackendType::D3D12,
+                        "D3D12 SwapChain cannot switch backend types from %s to %s.",
+                        previousSwapChain->GetBackendType(), wgpu::BackendType::D3D12);
 
-        // TODO(cwallez@chromium.org): use ToBackend once OldSwapChainBase is removed.
+        // TODO(crbug.com/dawn/269): use ToBackend once OldSwapChainBase is removed.
         SwapChain* previousD3D12SwapChain = static_cast<SwapChain*>(previousSwapChain);
 
-        // TODO(cwallez@chromium.org): Figure out switching an HWND between devices, it might
+        // TODO(crbug.com/dawn/269): Figure out switching an HWND between devices, it might
         // require just losing the reference to the swapchain, but might also need to wait for
         // all previous operations to complete.
-        if (GetDevice() != previousSwapChain->GetDevice()) {
-            return DAWN_VALIDATION_ERROR("d3d12::SwapChain cannot switch between devices");
-        }
+        DAWN_INVALID_IF(GetDevice() != previousSwapChain->GetDevice(),
+                        "D3D12 SwapChain cannot switch between D3D Devices");
 
         // The previous swapchain is on the same device so we want to reuse it but it is still not
         // always possible. Because DXGI requires that a new swapchain be created if the
@@ -261,6 +265,19 @@ namespace dawn_native { namespace d3d12 {
                     "Creating the IDXGISwapChain1"));
                 break;
             }
+            case Surface::Type::WindowsSwapChainPanel: {
+                DAWN_TRY(CheckHRESULT(
+                    factory2->CreateSwapChainForComposition(device->GetCommandQueue().Get(),
+                                                            &swapChainDesc, nullptr, &swapChain1),
+                    "Creating the IDXGISwapChain1"));
+                ComPtr<ISwapChainPanelNative> swapChainPanelNative;
+                DAWN_TRY(CheckHRESULT(GetSurface()->GetSwapChainPanel()->QueryInterface(
+                                          IID_PPV_ARGS(&swapChainPanelNative)),
+                                      "Getting ISwapChainPanelNative"));
+                DAWN_TRY(CheckHRESULT(swapChainPanelNative->SetSwapChain(swapChain1.Get()),
+                                      "Setting SwapChain"));
+                break;
+            }
             default:
                 UNREACHABLE();
         }
@@ -289,7 +306,7 @@ namespace dawn_native { namespace d3d12 {
         Device* device = ToBackend(GetDevice());
 
         // Transition the texture to the present state as required by IDXGISwapChain1::Present()
-        // TODO(cwallez@chromium.org): Remove the need for this by eagerly transitioning the
+        // TODO(crbug.com/dawn/269): Remove the need for this by eagerly transitioning the
         // presentable texture to present at the end of submits that use them.
         CommandRecordingContext* commandContext;
         DAWN_TRY_ASSIGN(commandContext, device->GetPendingCommandContext());
@@ -320,7 +337,7 @@ namespace dawn_native { namespace d3d12 {
 
         // Synchronously wait until previous operations on the next swapchain buffer are finished.
         // This is the logic that performs frame pacing.
-        // TODO(cwallez@chromium.org): Consider whether this should  be lifted for Mailbox so that
+        // TODO(crbug.com/dawn/269): Consider whether this should  be lifted for Mailbox so that
         // there is not frame pacing.
         mCurrentBuffer = mDXGISwapChain->GetCurrentBackBufferIndex();
         DAWN_TRY(device->WaitForSerial(mBufferLastUsedSerials[mCurrentBuffer]));

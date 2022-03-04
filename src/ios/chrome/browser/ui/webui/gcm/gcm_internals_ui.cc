@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -31,6 +30,11 @@ namespace {
 class GcmInternalsUIMessageHandler : public web::WebUIIOSMessageHandler {
  public:
   GcmInternalsUIMessageHandler();
+
+  GcmInternalsUIMessageHandler(const GcmInternalsUIMessageHandler&) = delete;
+  GcmInternalsUIMessageHandler& operator=(const GcmInternalsUIMessageHandler&) =
+      delete;
+
   ~GcmInternalsUIMessageHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -55,8 +59,6 @@ class GcmInternalsUIMessageHandler : public web::WebUIIOSMessageHandler {
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GcmInternalsUIMessageHandler> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GcmInternalsUIMessageHandler);
 };
 
 GcmInternalsUIMessageHandler::GcmInternalsUIMessageHandler()
@@ -77,15 +79,12 @@ void GcmInternalsUIMessageHandler::ReturnResults(
 }
 
 void GcmInternalsUIMessageHandler::RequestAllInfo(const base::ListValue* args) {
-  if (args->GetSize() != 1) {
+  auto args_list = args->GetList();
+  if (args_list.size() != 1 || !args_list[0].is_bool()) {
     NOTREACHED();
     return;
   }
-  bool clear_logs = false;
-  if (!args->GetBoolean(0, &clear_logs)) {
-    NOTREACHED();
-    return;
-  }
+  bool clear_logs = args_list[0].GetBool();
 
   gcm::GCMDriver::ClearActivityLogs clear_activity_logs =
       clear_logs ? gcm::GCMDriver::CLEAR_LOGS : gcm::GCMDriver::KEEP_LOGS;
@@ -107,15 +106,12 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(const base::ListValue* args) {
 }
 
 void GcmInternalsUIMessageHandler::SetRecording(const base::ListValue* args) {
-  if (args->GetSize() != 1) {
+  auto args_list = args->GetList();
+  if (args_list.size() != 1 || !args_list[0].is_bool()) {
     NOTREACHED();
     return;
   }
-  bool recording = false;
-  if (!args->GetBoolean(0, &recording)) {
-    NOTREACHED();
-    return;
-  }
+  bool recording = args_list[0].GetBool();
 
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromWebUIIOS(web_ui());
@@ -147,11 +143,11 @@ void GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished(
 }
 
 void GcmInternalsUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       gcm_driver::kGetGcmInternalsInfo,
       base::BindRepeating(&GcmInternalsUIMessageHandler::RequestAllInfo,
                           weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       gcm_driver::kSetGcmInternalsRecording,
       base::BindRepeating(&GcmInternalsUIMessageHandler::SetRecording,
                           weak_ptr_factory_.GetWeakPtr()));

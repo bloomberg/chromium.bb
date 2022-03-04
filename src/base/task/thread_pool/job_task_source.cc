@@ -15,6 +15,7 @@
 #include "base/task/common/checked_lock.h"
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/pooled_task_runner_delegate.h"
+#include "base/template_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -29,8 +30,8 @@ namespace {
 constexpr size_t kMaxWorkersPerJob = 32;
 static_assert(
     kMaxWorkersPerJob <=
-        std::numeric_limits<std::result_of<
-            decltype (&JobDelegate::GetTaskId)(JobDelegate)>::type>::max(),
+        std::numeric_limits<base::invoke_result<
+            decltype (&JobDelegate::GetTaskId), JobDelegate>::type>::max(),
     "AcquireTaskId return type isn't big enough to fit kMaxWorkersPerJob");
 
 }  // namespace
@@ -43,14 +44,14 @@ JobTaskSource::State::Value JobTaskSource::State::Cancel() {
 }
 
 JobTaskSource::State::Value JobTaskSource::State::DecrementWorkerCount() {
-  const size_t value_before_sub =
+  const uint32_t value_before_sub =
       value_.fetch_sub(kWorkerCountIncrement, std::memory_order_relaxed);
   DCHECK((value_before_sub >> kWorkerCountBitOffset) > 0);
   return {value_before_sub};
 }
 
 JobTaskSource::State::Value JobTaskSource::State::IncrementWorkerCount() {
-  size_t value_before_add =
+  uint32_t value_before_add =
       value_.fetch_add(kWorkerCountIncrement, std::memory_order_relaxed);
   return {value_before_add};
 }

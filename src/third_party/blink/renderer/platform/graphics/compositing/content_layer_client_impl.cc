@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 
 #include <memory>
+
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -37,10 +39,10 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
     LayerTreeFlags flags,
     const cc::Layer& layer,
     JSONObject& json) const {
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
   if (flags & kLayerTreeIncludesDebugInfo)
     json.SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
-#endif
+#endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
   if ((flags & (kLayerTreeIncludesInvalidations |
                 kLayerTreeIncludesDetailedInvalidations)) &&
@@ -60,43 +62,45 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
 
 scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     const PaintChunkSubset& paint_chunks,
-    const gfx::Rect& layer_bounds,
+    const gfx::Vector2dF& layer_offset,
+    const gfx::Size& layer_bounds,
     const PropertyTreeState& layer_state) {
   if (paint_chunks.begin()->is_cacheable)
     id_.emplace(paint_chunks.begin()->id);
   else
     id_ = absl::nullopt;
 
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
   paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {
     auto json = std::make_unique<JSONObject>();
-    json->SetString("data", it->ToString());
-    json->SetArray("displayItems", DisplayItemList::DisplayItemsAsJSON(
-                                       it->begin_index, it.DisplayItems(),
-                                       DisplayItemList::kCompact));
+    json->SetString("data", it->ToString(paint_chunks.GetPaintArtifact()));
+    json->SetArray("displayItems",
+                   DisplayItemList::DisplayItemsAsJSON(
+                       paint_chunks.GetPaintArtifact(), it->begin_index,
+                       it.DisplayItems(), DisplayItemList::kCompact));
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
-#endif
+#endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
   // The raster invalidator will only handle invalidations within a cc::Layer so
   // we need this invalidation if the layer's properties have changed.
   if (layer_state != layer_state_)
     cc_picture_layer_->SetSubtreePropertyChanged();
 
-  gfx::Size old_layer_size = raster_invalidator_.LayerBounds().size();
-  DCHECK_EQ(old_layer_size, cc_picture_layer_->bounds());
+  gfx::Size old_layer_bounds = raster_invalidator_.LayerBounds();
+  DCHECK_EQ(old_layer_bounds, cc_picture_layer_->bounds());
   raster_invalidator_.Generate(raster_invalidation_function_, paint_chunks,
-                               layer_bounds, layer_state);
+                               layer_offset, layer_bounds, layer_state);
   layer_state_ = layer_state;
 
   absl::optional<RasterUnderInvalidationCheckingParams>
       raster_under_invalidation_params;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     raster_under_invalidation_params.emplace(
-        *raster_invalidator_.GetTracking(),
-        IntRect(0, 0, layer_bounds.width(), layer_bounds.height()),
-        paint_chunks.begin()->id.client.DebugName());
+        *raster_invalidator_.GetTracking(), gfx::Rect(layer_bounds),
+        paint_chunks.GetPaintArtifact().ClientDebugName(
+            paint_chunks.begin()->id.client_id));
   }
 
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
@@ -104,24 +108,23 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   // could even be negative). Internally the generated layer translates the
   // paint chunk to align the bounding box to (0, 0) and we set the layer's
   // offset_to_transform_parent with the origin of the paint chunk here.
-  cc_picture_layer_->SetOffsetToTransformParent(
-      layer_bounds.OffsetFromOrigin());
+  cc_picture_layer_->SetOffsetToTransformParent(layer_offset);
 
   // If nothing changed in the layer, keep the original display item list.
   // Here check layer_bounds because RasterInvalidator doesn't issue raster
   // invalidation when only layer_bounds changes.
-  if (cc_display_item_list_ && layer_bounds.size() == old_layer_size &&
+  if (cc_display_item_list_ && layer_bounds == old_layer_bounds &&
       !raster_under_invalidation_params) {
-    DCHECK_EQ(cc_picture_layer_->bounds(), layer_bounds.size());
+    DCHECK_EQ(cc_picture_layer_->bounds(), layer_bounds);
     return cc_picture_layer_;
   }
 
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
-      paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
+      paint_chunks, layer_state, layer_offset,
       cc::DisplayItemList::kTopLevelDisplayItemList,
       base::OptionalOrNullptr(raster_under_invalidation_params));
 
-  cc_picture_layer_->SetBounds(layer_bounds.size());
+  cc_picture_layer_->SetBounds(layer_bounds);
   cc_picture_layer_->SetHitTestable(true);
   cc_picture_layer_->SetIsDrawable(
       (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
@@ -133,7 +136,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   return cc_picture_layer_;
 }
 
-void ContentLayerClientImpl::InvalidateRect(const IntRect& rect) {
+void ContentLayerClientImpl::InvalidateRect(const gfx::Rect& rect) {
   cc_display_item_list_ = nullptr;
   cc_picture_layer_->SetNeedsDisplayRect(rect);
 }

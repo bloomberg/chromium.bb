@@ -1041,7 +1041,7 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
         std::move(root_params),
         d_context.frame_sink_manager(), &d_context,
         viz::BeginFrameSource::kNotRestartableId, false, debug_settings,
-        d_context.frame_sink_manager()->gpu_pipeline_);
+        d_context.frame_sink_manager()->hint_session_factory_);
 
     d_root_compositor_frame_sink = std::move(root_compositor_frame_sink);
 

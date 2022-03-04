@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/media/capture/web_contents_frame_tracker.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
@@ -15,7 +16,7 @@
 #include "content/test/test_web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
+#include "ui/display/screen_info.h"
 
 namespace content {
 namespace {
@@ -24,6 +25,8 @@ using testing::_;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::StrictMock;
+
+constexpr viz::FrameSinkId kInitSinkId(123, 456);
 
 // Standardized screen resolutions to test common scenarios.
 constexpr gfx::Size kSizeZero{0, 0};
@@ -60,7 +63,7 @@ class SimpleContext : public WebContentsFrameTracker::Context {
 
  private:
   int capturer_count_ = 0;
-  viz::FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_ = kInitSinkId;
   gfx::Size last_capture_size_;
   absl::optional<gfx::Rect> screen_bounds_;
 };
@@ -71,7 +74,8 @@ class MockCaptureDevice : public WebContentsVideoCaptureDevice,
                           public base::SupportsWeakPtr<MockCaptureDevice> {
  public:
   using WebContentsVideoCaptureDevice::AsWeakPtr;
-  MOCK_METHOD1(OnTargetChanged, void(const viz::FrameSinkId&));
+  MOCK_METHOD1(OnTargetChanged,
+               void(const absl::optional<viz::VideoCaptureTarget>&));
   MOCK_METHOD0(OnTargetPermanentlyLost, void());
 };
 
@@ -109,7 +113,6 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
     SetScreenSize(kSize1080p);
     tracker_->SetWebContentsAndContextForTesting(web_contents_.get(),
                                                  std::move(context));
-    SetFrameSinkId(viz::FrameSinkId(123, 456));
   }
 
   void TearDown() override {
@@ -172,7 +175,7 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
   std::unique_ptr<WebContentsFrameTracker> tracker_;
 
   // Save because the pointed-to location should not change during testing.
-  SimpleContext* raw_context_;
+  raw_ptr<SimpleContext> raw_context_;
 };
 
 TEST_F(WebContentsFrameTrackerTest, CalculatesPreferredSizeClampsToView) {
@@ -313,12 +316,41 @@ TEST_F(WebContentsFrameTrackerTest, NotifiesOfLostTargets) {
 // test the observer callbacks here.
 TEST_F(WebContentsFrameTrackerTest, NotifiesOfTargetChanges) {
   const viz::FrameSinkId kNewId(42, 1337);
-  EXPECT_CALL(*device(), OnTargetChanged(kNewId)).Times(1);
   SetFrameSinkId(kNewId);
+  EXPECT_CALL(
+      *device(),
+      OnTargetChanged(absl::make_optional<viz::VideoCaptureTarget>(kNewId)))
+      .Times(1);
+
   // The tracker doesn't actually use the frame host information, just
   // posts a possible target change.
   tracker()->RenderFrameHostChanged(nullptr, nullptr);
   RunAllTasksUntilIdle();
+}
+
+TEST_F(WebContentsFrameTrackerTest,
+       CroppingChangesTargetParametersAndInvokesCallback) {
+  const base::Token kCropId(19831230, 19840730);
+
+  // Expect the callback handed to Crop() to be invoke with kSuccess.
+  bool success = false;
+  base::OnceCallback<void(media::mojom::CropRequestResult)> callback =
+      base::BindOnce(
+          [](bool* success, media::mojom::CropRequestResult result) {
+            *success = (result == media::mojom::CropRequestResult::kSuccess);
+          },
+          &success);
+
+  // Expect OnTargetChanged() to be invoked once with the crop-ID.
+  EXPECT_CALL(*device(),
+              OnTargetChanged(absl::make_optional<viz::VideoCaptureTarget>(
+                  kInitSinkId, kCropId)))
+      .Times(1);
+
+  tracker()->Crop(kCropId, std::move(callback));
+
+  RunAllTasksUntilIdle();
+  EXPECT_TRUE(success);
 }
 
 }  // namespace

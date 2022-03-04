@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -31,7 +33,9 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/view_class_properties.h"
 
 using content::WebContents;
 using security_state::SecurityLevel;
@@ -49,6 +53,7 @@ LocationIconView::LocationIconView(
 
   SetID(VIEW_ID_LOCATION_ICON);
   SetUpForAnimation();
+  SetProperty(views::kElementIdentifierKey, kLocationIconElementId);
 
   // Readability is guaranteed by the omnibox theme.
   label()->SetAutoColorReadabilityEnabled(false);
@@ -154,7 +159,7 @@ bool LocationIconView::GetShowText() const {
 }
 
 const views::InkDrop* LocationIconView::get_ink_drop_for_testing() {
-  return ink_drop()->GetInkDrop();
+  return views::InkDrop::Get(this)->GetInkDrop();
 }
 
 std::u16string LocationIconView::GetText() const {
@@ -246,19 +251,19 @@ void LocationIconView::Update(bool suppress_animations) {
                      : l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
 
   // We should only enable/disable the InkDrop if the editing state has changed,
-  // as the drop gets recreated when ink_drop()->SetMode() is called.
-  // This can result in strange behaviour, like the the InkDrop disappearing mid
-  // animation.
+  // as the drop gets recreated when views::InkDrop::Get(this)->SetMode() is
+  // called. This can result in strange behaviour, like the the InkDrop
+  // disappearing mid animation.
   if (is_editing_or_empty != was_editing_or_empty_) {
     // If the omnibox is empty or editing, the user should not be able to left
     // click on the icon. As such, the icon should not show a highlight or be
     // focusable. Note: using the middle mouse to copy-and-paste should still
     // work on the icon.
     if (is_editing_or_empty) {
-      ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+      views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
       SetFocusBehavior(FocusBehavior::NEVER);
     } else {
-      ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+      views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
 
 #if defined(OS_MAC)
       SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -275,8 +280,8 @@ void LocationIconView::Update(bool suppress_animations) {
 
     // Show in-product help for the updated connection security icon.
     if (last_update_security_level_ == security_state::SECURE &&
-        base::FeatureList::IsEnabled(
-            omnibox::kUpdatedConnectionSecurityIndicators)) {
+        delegate_->GetLocationBarModel()
+            ->ShouldUseUpdatedConnectionSecurityIndicators()) {
       feature_engagement_tracker_->NotifyEvent(
           feature_engagement::events::
               kUpdatedConnectionSecurityIndicatorDisplayed);

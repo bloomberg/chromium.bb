@@ -10,12 +10,16 @@ class Monster(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsMonster(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = Monster()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsMonster(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     @classmethod
     def MonsterBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
         return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x4D\x4F\x4E\x53", size_prefixed=size_prefixed)
@@ -25,8 +29,11 @@ class Monster(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
 def MonsterStart(builder): builder.StartObject(0)
+def Start(builder):
+    return MonsterStart(builder)
 def MonsterEnd(builder): return builder.EndObject()
-
+def End(builder):
+    return MonsterEnd(builder)
 
 class MonsterT(object):
 

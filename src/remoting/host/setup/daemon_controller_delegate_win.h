@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_WIN_H_
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_WIN_H_
 
-#include "base/macros.h"
 #include "remoting/host/setup/daemon_controller.h"
 
 namespace remoting {
@@ -13,6 +12,11 @@ namespace remoting {
 class DaemonControllerDelegateWin : public DaemonController::Delegate {
  public:
   DaemonControllerDelegateWin();
+
+  DaemonControllerDelegateWin(const DaemonControllerDelegateWin&) = delete;
+  DaemonControllerDelegateWin& operator=(const DaemonControllerDelegateWin&) =
+      delete;
+
   ~DaemonControllerDelegateWin() override;
 
   // DaemonController::Delegate interface.
@@ -26,8 +30,6 @@ class DaemonControllerDelegateWin : public DaemonController::Delegate {
                     DaemonController::CompletionCallback done) override;
   void Stop(DaemonController::CompletionCallback done) override;
   DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
-
-  DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateWin);
 };
 
 }  // namespace remoting

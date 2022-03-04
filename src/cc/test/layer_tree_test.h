@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -102,6 +103,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostReturnDeferMainFrameUpdateToMainThread(
       std::unique_ptr<ScopedDeferMainFrameUpdate>
           scoped_defer_main_frame_update);
+  void PostDeferringCommitsStatusToMainThread(bool is_deferring_commits);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
   void PostSetNeedsRedrawToMainThread();
@@ -250,6 +252,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchReturnDeferMainFrameUpdate(
       std::unique_ptr<ScopedDeferMainFrameUpdate>
           scoped_defer_main_frame_update);
+  void DispatchDeferringCommitsStatus(bool is_deferring_commits);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();
   void DispatchSetNeedsRedraw();
@@ -286,7 +289,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   int timeout_seconds_ = 0;
 
-  viz::BeginFrameSource* begin_frame_source_ = nullptr;  // NOT OWNED.
+  raw_ptr<viz::BeginFrameSource> begin_frame_source_ = nullptr;  // NOT OWNED.
 
   std::unique_ptr<LayerTreeTestLayerTreeFrameSinkClient>
       layer_tree_frame_sink_client_;

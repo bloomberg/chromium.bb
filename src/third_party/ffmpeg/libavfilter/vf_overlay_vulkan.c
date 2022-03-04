@@ -463,7 +463,6 @@ static const AVFilterPad overlay_vulkan_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = &ff_vk_filter_config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad overlay_vulkan_outputs[] = {
@@ -472,19 +471,18 @@ static const AVFilterPad overlay_vulkan_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props = &overlay_vulkan_config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_overlay_vulkan = {
+const AVFilter ff_vf_overlay_vulkan = {
     .name           = "overlay_vulkan",
     .description    = NULL_IF_CONFIG_SMALL("Overlay a source on top of another"),
     .priv_size      = sizeof(OverlayVulkanContext),
     .init           = &overlay_vulkan_init,
     .uninit         = &overlay_vulkan_uninit,
-    .query_formats  = &ff_vk_filter_query_formats,
     .activate       = &overlay_vulkan_activate,
-    .inputs         = overlay_vulkan_inputs,
-    .outputs        = overlay_vulkan_outputs,
+    FILTER_INPUTS(overlay_vulkan_inputs),
+    FILTER_OUTPUTS(overlay_vulkan_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_VULKAN),
     .priv_class     = &overlay_vulkan_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
