@@ -178,13 +178,12 @@ class WebViewClientImpl final : public WebViewClient
     void setParentStatusUpdate(int status, unsigned int parent);
         // Notify the client if setParent call succeed by value of status
 
-    DISALLOW_COPY_AND_ASSIGN(WebViewClientImpl);
-
   public:
     WebViewClientImpl(mojom::WebViewHostPtr  hostPtr,
                       WebViewClientDelegate *delegate);
-
-    ~WebViewClientImpl() final;
+    ~WebViewClientImpl() override;
+    WebViewClientImpl(const WebViewClientImpl&) = delete;
+    WebViewClientImpl& operator=(const WebViewClientImpl&) = delete;
 };
 
 }  // close namespace blpwtk2
