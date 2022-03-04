@@ -52,6 +52,7 @@
 // feature 7
 // feature 8
 // feature 9
+#define BLPWTK2_FEATURE_TIMEZONE
 // feature 10
 #define BLPWTK2_FEATURE_V8_PLATFORM
 // feature 11
