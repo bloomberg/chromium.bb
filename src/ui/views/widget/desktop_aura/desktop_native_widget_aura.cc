@@ -294,6 +294,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
     : desktop_window_tree_host_(nullptr),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      content_window_container_(NULL),
       content_window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
@@ -433,9 +434,28 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       View* view_for_activation = focus_manager->GetFocusedView()
                                       ? focus_manager->GetFocusedView()
                                       : focus_manager->GetStoredFocusView();
+
+      aura::Window* window_for_activation = nullptr;
+
       if (!view_for_activation || !view_for_activation->GetWidget()) {
         view_for_activation = GetWidget()->GetRootView();
-        activation_client->ActivateWindow(content_window_);
+
+        // blpwtk2: Try to activate the window provided by the delegate
+        // (if any).  Otherwise, fallback to the upstream behavior and activate
+        // the window associated with the webview.
+        if (window_for_activation) {
+          activation_client->ActivateWindow(window_for_activation);
+        } else {
+          activation_client->ActivateWindow(content_window_);
+        }
+
+        // blpwtk2: If a delegate is installed, ask it for the window that
+        // should be activated.
+        if (GetWidget()->widget_delegate()) {
+          window_for_activation =
+              GetWidget()->widget_delegate()->GetDefaultActivationWindow();
+        }
+
       } else if (view_for_activation == focus_manager->GetStoredFocusView()) {
         // Update activation before restoring focus to prevent race condition.
         // RestoreFocusedView() will activate the widget if Widget::IsActive()
@@ -445,8 +465,16 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
         // In practice, infinite loop does not happen because the window tree
         // host avoids re-entrance to Activate() when the OS's window is active.
         // But this is still a risk when two DNWAs both try to activate itself.
-        activation_client->ActivateWindow(
-            view_for_activation->GetWidget()->GetNativeView());
+        
+        // blpwtk2: Try to activate the window provided by the delegate
+        // (if any).  Otherwise, fallback to the upstream behavior and activate
+        // the window associated with the webview.
+        if (window_for_activation) {
+          activation_client->ActivateWindow(window_for_activation);
+        } else {
+          activation_client->ActivateWindow(
+              view_for_activation->GetWidget()->GetNativeView());
+        }
         // When desktop native widget has modal transient child, we don't
         // restore focused view here, as the modal transient child window will
         // get activated and focused. Thus, we are not left with multiple
@@ -460,7 +488,6 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
           restore_focus_on_activate_ = false;
         }
       }
-
       // Refreshes the focus info to IMF in case that IMF cached the old info
       // about focused text input client when it was "inactive".
       GetInputMethod()->OnFocus();
@@ -533,6 +560,12 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   content_window_->Init(params.layer_type);
   wm::SetShadowElevation(content_window_, wm::kShadowElevationNone);
 
+
+  content_window_container_ = new aura::Window(NULL);
+  content_window_container_->Init(ui::LAYER_NOT_DRAWN);
+  content_window_container_->Show();
+  content_window_container_->AddChild(content_window_);
+
   if (!desktop_window_tree_host_) {
     if (params.desktop_window_tree_host) {
       desktop_window_tree_host_ = params.desktop_window_tree_host;
@@ -544,7 +577,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   }
   desktop_window_tree_host_->Init(params);
 
-  host_->window()->AddChild(content_window_);
+  host_->window()->AddChild(content_window_container_);
   host_->window()->SetProperty(kDesktopNativeWidgetAuraKey, this);
 
   host_->window()->AddObserver(new RootWindowDestructionObserver(this));
@@ -636,6 +669,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
     aura::client::SetVisibilityClient(host_->window(),
                                       visibility_controller_.get());
     wm::SetChildWindowVisibilityChangesAnimated(host_->window());
+    wm::SetChildWindowVisibilityChangesAnimated(
+      content_window_container_);
   }
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
@@ -1356,6 +1391,8 @@ void DesktopNativeWidgetAura::OnHostResized(aura::WindowTreeHost* host) {
 
   gfx::Rect new_bounds = gfx::Rect(host->window()->bounds().size());
   content_window_->SetBounds(new_bounds);
+  if (content_window_container_)
+    content_window_container_->SetBounds(new_bounds);
   native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 

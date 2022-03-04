@@ -128,6 +128,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns true if the |event| was handled.
   virtual bool PreHandleGestureEvent(const blink::WebGestureEvent& event);
 
+  // Returns true if RWHV should take focus on mouse-down.
+  virtual bool ShouldSetKeyboardFocusOnMouseDown();
+  virtual bool ShouldSetLogicalFocusOnMouseDown();
+
   // Get the root BrowserAccessibilityManager for this frame tree.
   virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager();
 

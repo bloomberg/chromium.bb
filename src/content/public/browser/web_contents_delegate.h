@@ -580,6 +580,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void SetOverlayMode(bool use_overlay_mode) {}
 #endif
 
+  // Return true if the RWHV should take focus on mouse-down.
+  virtual bool ShouldSetKeyboardFocusOnMouseDown();
+  virtual bool ShouldSetLogicalFocusOnMouseDown();
+
   // Returns the size for the new render view created for the pending entry in
   // |web_contents|; if there's no size, returns an empty size.
   // This is optional for implementations of WebContentsDelegate; if the

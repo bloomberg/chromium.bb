@@ -42,6 +42,7 @@ class NativeViewWidget final : private views::WidgetDelegateView {
   public:
     NativeViewWidget(gfx::NativeView contents,
                      NativeViewWidgetDelegate* delegate,
+                     bool activatable,
                      bool rerouteMouseWheelToAnyRelatedWindow);
     ~NativeViewWidget() override;
     NativeViewWidget(const NativeViewWidget&) = delete;
@@ -53,7 +54,10 @@ class NativeViewWidget final : private views::WidgetDelegateView {
     void show();
     void hide();
     void move(int x, int y, int width, int height);
-    void focus();
+
+    // Return false when focus failed
+    bool focus();
+
     blpwtk2::NativeView getNativeWidgetView() const;
     void setRegion(blpwtk2::NativeRegion);
     void compositionChanged();
@@ -61,6 +65,7 @@ class NativeViewWidget final : private views::WidgetDelegateView {
   private:
     // views::WidgetDelegate overrides
     void WindowClosing() override;
+    aura::Window* GetDefaultActivationWindow() override;
     views::View* GetContentsView() override;
 
   private:
