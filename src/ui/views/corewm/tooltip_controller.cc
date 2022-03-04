@@ -292,8 +292,10 @@ void TooltipController::OnCursorVisibilityChanged(bool is_visible) {
 
 void TooltipController::OnWindowVisibilityChanged(aura::Window* window,
                                                   bool visible) {
-  if (!visible)
+  if (!visible && observed_window_ == window) {
     HideAndReset();
+    RemoveHideTooltipTimeoutFromMap(observed_window_);
+  }
 }
 
 void TooltipController::OnWindowDestroyed(aura::Window* window) {
@@ -338,6 +340,17 @@ void TooltipController::UpdateIfRequired(TooltipTrigger trigger) {
       (trigger == TooltipTrigger::kCursor && !IsCursorVisible())) {
     state_manager_->HideAndReset();
     return;
+  } else if (observed_window_) {
+    POINT point;
+    ::GetCursorPos(&point);
+    HWND cur_hwnd = WindowFromPoint(point);
+    HWND parent_hwnd = state_manager_->GetTooltipParentHwnd();
+
+    if (cur_hwnd != parent_hwnd) {
+      state_manager_->HideAndReset();
+      SetObservedWindow(NULL);
+      return;
+    }
   }
 
   // When a user press a mouse button, we want to hide the tooltip and prevent

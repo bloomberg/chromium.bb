@@ -90,6 +90,10 @@ void TooltipStateManager::StopWillShowTooltipTimer() {
   will_show_tooltip_timer_.Stop();
 }
 
+HWND TooltipStateManager::GetTooltipParentHwnd() {
+  return tooltip_->GetParentHwnd();
+}
+
 void TooltipStateManager::UpdatePositionIfNeeded(const gfx::Point& position,
                                                  TooltipTrigger trigger) {
   // The position should only be updated when the tooltip has been triggered but

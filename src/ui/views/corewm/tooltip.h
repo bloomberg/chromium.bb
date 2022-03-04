@@ -9,6 +9,7 @@
 
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/views_export.h"
+#include <Windows.h>
 
 namespace aura {
 class Window;
@@ -56,6 +57,9 @@ class VIEWS_EXPORT Tooltip {
 
   // Is the tooltip visible?
   virtual bool IsVisible() = 0;
+
+  virtual HWND GetParentHwnd() =0;
+
 };
 
 }  // namespace corewm

@@ -75,6 +75,8 @@ class VIEWS_EXPORT TooltipStateManager {
 
   TooltipTrigger tooltip_trigger() const { return tooltip_trigger_; }
 
+  HWND GetTooltipParentHwnd();
+
   // Update the |position_| if we're about to show the tooltip. This is to
   // ensure that the tooltip's position is aligned with either the latest cursor
   // location for a cursor triggered tooltip or the most recent position
