@@ -142,6 +142,19 @@ bool InsertCommands::ExecuteInsertHTML(LocalFrame& frame,
   return ExecuteInsertFragment(frame, fragment);
 }
 
+bool InsertCommands::ExecuteInsertHTMLNested(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource,
+                                    const String& value) {
+  DCHECK(frame.GetDocument());
+  MakeGarbageCollected<ReplaceSelectionCommand>(
+                *frame.GetDocument(),
+                CreateFragmentFromMarkup(*frame.GetDocument(), value, ""),
+                ReplaceSelectionCommand::kInsertNested,
+                InputEvent::InputType::kNone)->Apply();
+  return true;
+}
+
 bool InsertCommands::ExecuteInsertImage(LocalFrame& frame,
                                         Event*,
                                         EditorCommandSource,

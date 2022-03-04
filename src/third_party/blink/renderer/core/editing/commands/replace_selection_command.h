@@ -43,7 +43,8 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
     kMatchStyle = 1 << 2,
     kPreventNesting = 1 << 3,
     kMovingParagraph = 1 << 4,
-    kSanitizeFragment = 1 << 5
+    kSanitizeFragment = 1 << 5,
+    kInsertNested = 1 << 6
   };
 
   typedef unsigned CommandOptions;
@@ -146,7 +147,7 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
   InputEvent::InputType input_type_;
   const bool sanitize_fragment_;
   bool should_merge_end_;
-
+  bool insert_nested;
   Position start_of_inserted_range_;
   Position end_of_inserted_range_;
 };
