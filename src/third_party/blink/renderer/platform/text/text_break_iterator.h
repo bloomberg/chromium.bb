@@ -88,6 +88,7 @@ enum class LineBreakType {
   // word-break:keep-all doesn't allow breaks between all kind of
   // letters/numbers except some south east asians'.
   kKeepAll,
+  kKeepAllIfKorean,  // word-break: -bb-keep-all-if-korean Bloomberg extension
 };
 
 // Determines break opportunities around collapsible space characters (space,
