@@ -118,6 +118,7 @@ class CORE_EXPORT WebPluginContainerImpl final
                              uint64_t total,
                              const WebString& url) override;
   void EnqueueMessageEvent(const WebDOMMessageEvent&) override;
+  void EnqueueEvent(const WebDOMEvent& event) override;
   void Invalidate() override;
   void ScheduleAnimation() override;
   void ReportGeometry() override;
