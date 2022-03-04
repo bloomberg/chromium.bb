@@ -77,9 +77,9 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     bool d_isOffTheRecord;
 
     friend class base::RefCounted<BrowserContextImpl>;
-    ~BrowserContextImpl() final;
-
-    DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
+    ~BrowserContextImpl() override;
+    BrowserContextImpl(const BrowserContextImpl&) = delete;
+    BrowserContextImpl& operator=(const BrowserContextImpl&) = delete;
 
   public:
     BrowserContextImpl(const std::string& dataDir);
@@ -159,6 +159,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;
     content::BrowserPluginGuestManager *GetGuestManager() override;
     storage::SpecialStoragePolicy *GetSpecialStoragePolicy() override;
+    content::PlatformNotificationService* GetPlatformNotificationService() override;
     content::PushMessagingService *GetPushMessagingService() override;
     content::StorageNotificationService* GetStorageNotificationService() override;
     content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;

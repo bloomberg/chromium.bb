@@ -27,25 +27,17 @@
 
 #include <content/public/browser/resource_context.h>
 
-namespace net {
-class URLRequestContextGetter;
-class URLRequestContext;
-}
-
 namespace blpwtk2 {
 
-// An instance of this class is owned by each BrowserContext.  Per
-// content::ResourceContext, it is constructed in the UI thread, but is used
-// and must be destructed in the IO thread.
-class ResourceContextImpl : public content::ResourceContext {
+// An instance of this class is owned by each BrowserContext.  It doesn't
+// actually do anything and `content::ResourceContext` will likely be removed
+// in a future chromium update.
+class ResourceContextImpl final : public content::ResourceContext {
   public:
-    explicit ResourceContextImpl(net::URLRequestContextGetter* getter);
-    ~ResourceContextImpl() final;
-
-  private:
-    scoped_refptr<net::URLRequestContextGetter> d_requestContextGetter;
-
-    DISALLOW_COPY_AND_ASSIGN(ResourceContextImpl);
+    ResourceContextImpl();
+    ~ResourceContextImpl() override;
+    ResourceContextImpl(const ResourceContextImpl&) = delete;
+    ResourceContextImpl& operator=(const ResourceContextImpl&) = delete;
 };
 
 }  // close namespace blpwtk2

@@ -32,14 +32,15 @@ namespace blpwtk2 {
 
 // This interface allows us to add hooks to the "utility" portion of the
 // content module.  This is created during the startup process.
-class ContentUtilityClientImpl : public content::ContentUtilityClient {
+class ContentUtilityClientImpl final : public content::ContentUtilityClient {
   public:
     ContentUtilityClientImpl();
-    ~ContentUtilityClientImpl() final;
+    ~ContentUtilityClientImpl() override;
+    ContentUtilityClientImpl(const ContentUtilityClientImpl&) = delete;
+    ContentUtilityClientImpl& operator=(const ContentUtilityClientImpl&) = delete;
 
     // content::ContentUtilityClient:
     void UtilityThreadStarted() override;
-    bool OnMessageReceived(const IPC::Message& message) override;
     void RegisterNetworkBinders(
         service_manager::BinderRegistry* registry) override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
@@ -50,8 +51,6 @@ class ContentUtilityClientImpl : public content::ContentUtilityClient {
 
   private:
     std::unique_ptr<ChromeContentUtilityClient> chrome_utility_client_;
-
-    DISALLOW_COPY_AND_ASSIGN(ContentUtilityClientImpl);
 };
 
 }  // close namespace blpwtk2
