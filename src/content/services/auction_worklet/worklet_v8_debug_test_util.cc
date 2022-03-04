@@ -176,9 +176,11 @@ ScopedInspectorSupport::ScopedInspectorSupport(AuctionV8Helper* v8_helper)
       base::BindOnce(
           [](scoped_refptr<AuctionV8Helper> v8_helper,
              TestInspectorClient* client) {
-            v8_helper->SetV8InspectorForTesting(
+            std::unique_ptr<v8_inspector::V8Inspector> inspector_up;
+            inspector_up.reset(
                 v8_inspector::V8Inspector::create(v8_helper->isolate(),
                                                   client));
+            v8_helper->SetV8InspectorForTesting(std::move(inspector_up));
           },
           v8_state_->v8_helper_, v8_state_->inspector_client_.get()));
 }

@@ -54,7 +54,7 @@ class BrowserMainRunner;
 // in that thread.  All browser-ui tasks (creation of WebContents, manipulation
 // of the WebContentsView (i.e. the HWND of the WebContents) should be posted
 // to this thread.
-class BrowserThread : private base::PlatformThread::Delegate
+class BrowserThread final : private base::PlatformThread::Delegate
 {
     // DATA
     sandbox::SandboxInterfaceInfo d_sandboxInfo;
@@ -67,7 +67,7 @@ class BrowserThread : private base::PlatformThread::Delegate
   public:
     explicit BrowserThread(const sandbox::SandboxInterfaceInfo& sandboxInfo,
       content::ContentMainDelegate* delegate);
-    ~BrowserThread() final;
+    ~BrowserThread() override;
 
     void sync();
 

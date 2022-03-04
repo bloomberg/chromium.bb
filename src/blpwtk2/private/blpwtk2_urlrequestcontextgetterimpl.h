@@ -58,7 +58,7 @@ namespace blpwtk2 {
 // This object is created on the browser-main thread, but also lives on the IO
 // thread.  Thread-safe destruction is maintained because the base interface
 // derives from RefCountedThreadSafe.
-class URLRequestContextGetterImpl : public net::URLRequestContextGetter {
+class URLRequestContextGetterImpl final : public net::URLRequestContextGetter {
 public:
     URLRequestContextGetterImpl(const base::FilePath& path,
                                 bool diskCacheEnabled,
@@ -76,7 +76,10 @@ public:
     scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const override;
 
 private:
-    ~URLRequestContextGetterImpl() final;
+    ~URLRequestContextGetterImpl() override;
+    URLRequestContextGetterImpl(const URLRequestContextGetterImpl&) = delete;
+    URLRequestContextGetterImpl& operator=(const URLRequestContextGetterImpl&) = delete;
+
     // Called on the IO thread.
     void initialize();
     void updateProxyConfig(
@@ -99,8 +102,6 @@ private:
     bool d_wasProxyInitialized;
 
     scoped_refptr<base::SequencedTaskRunner> d_background_task_runner;
-
-    DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetterImpl);
 };
 
 }  // close namespace blpwtk2

@@ -35,7 +35,7 @@ namespace blpwtk2 {
                         // class PrefStore
                         // ===============
 
-class PrefStore : public PersistentPrefStore {
+class PrefStore final : public PersistentPrefStore {
     void OnInitializationCompleted();
 
     base::ObserverList<PrefStore::Observer,
@@ -78,7 +78,7 @@ class PrefStore : public PersistentPrefStore {
     void RemoveValuesByPrefixSilently(const std::string& prefix) override;
 
 private:
-    ~PrefStore() final;
+    ~PrefStore() override;
 };
 
 }  // close namespace blpwtk2
