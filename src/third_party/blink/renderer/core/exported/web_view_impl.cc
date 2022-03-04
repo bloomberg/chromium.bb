@@ -88,7 +88,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/events/custom_event.h"
-#include "third_party/blink/renderer/core/dom/events/custom_event_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_event_init.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -1907,12 +1907,13 @@ void WebViewImpl::DidChangeWindowRect()
     return;
   }
 
-  CustomEventInit eventInit;
+  ScriptState* script_state = ToScriptStateForMainWorld(MainFrameImpl()->GetFrame());
+  CustomEventInit eventInit(script_state->GetIsolate());
   eventInit.setBubbles(false);
   eventInit.setCancelable(false);
 
   CustomEvent* event = CustomEvent::Create(
-      ToScriptStateForMainWorld(MainFrameImpl()->GetFrame()),
+      script_state,
       "bbWindowRectChanged",
       &eventInit);
   MainFrameImpl()->GetFrame()->DomWindow()->DispatchEvent(*event);
