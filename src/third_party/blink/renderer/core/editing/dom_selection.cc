@@ -830,4 +830,13 @@ void DOMSelection::Trace(Visitor* visitor) const {
   ExecutionContextClient::Trace(visitor);
 }
 
+String DOMSelection::getClipboardCopyString() const
+{
+  auto *domWindow = DomWindow();
+  if (domWindow && domWindow->GetFrame())
+    return DomWindow()->GetFrame()->Selection().SelectedHTMLForClipboard();
+
+  return String();
+}
+
 }  // namespace blink
