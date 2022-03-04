@@ -29,7 +29,7 @@
 #include <base/bind.h>
 #include <base/logging.h>  // for DCHECK
 #include <base/no_destructor.h>
-#include <base/single_thread_task_runner.h>
+#include <base/task/single_thread_task_runner.h>
 #include <base/synchronization/waitable_event.h>
 
 #include <mutex>
