@@ -11,6 +11,7 @@
 
 #if V8_OS_WIN
 #include <locale.h>
+#include <windows.h>
 #include "src/base/win32-headers.h"
 
 extern "C" {

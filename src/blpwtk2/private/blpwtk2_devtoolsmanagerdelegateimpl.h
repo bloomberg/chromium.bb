@@ -36,8 +36,6 @@ class DevToolsManagerDelegateImpl final :
     public content::DevToolsManagerDelegate,
     public content::DevToolsAgentHostObserver
 {
-  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegateImpl);
-
  public:
   static void StartHttpHandler(content::BrowserContext *browser_context);
   static void StopHttpHandler();
@@ -46,6 +44,8 @@ class DevToolsManagerDelegateImpl final :
   // CREATORS
   DevToolsManagerDelegateImpl();
   ~DevToolsManagerDelegateImpl() override;
+  DevToolsManagerDelegateImpl(const DevToolsManagerDelegateImpl&) = delete;
+  DevToolsManagerDelegateImpl& operator=(const DevToolsManagerDelegateImpl&) = delete;
 
   // DevToolsManagerDelegate overrides
   bool HasBundledFrontendResources() override;

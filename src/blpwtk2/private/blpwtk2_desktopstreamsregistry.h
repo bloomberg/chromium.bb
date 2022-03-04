@@ -55,6 +55,8 @@ class DesktopStreamsRegistry {
   friend struct base::DefaultSingletonTraits<DesktopStreamsRegistry>;
   DesktopStreamsRegistry();
   ~DesktopStreamsRegistry();
+  DesktopStreamsRegistry(const DesktopStreamsRegistry&) = delete;
+  DesktopStreamsRegistry& operator=(const DesktopStreamsRegistry&) = delete;
 
   // Type used to store list of accepted desktop media streams.
   struct ApprovedDesktopMediaStream {
@@ -67,8 +69,6 @@ class DesktopStreamsRegistry {
   void CleanupStream(const std::string& id);
 
   StreamsMap approved_streams_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopStreamsRegistry);
 };
 
 }

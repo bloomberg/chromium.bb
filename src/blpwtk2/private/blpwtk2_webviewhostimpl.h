@@ -159,8 +159,6 @@ class WebViewHostImpl final : private WebViewImplClient
     void clearTooltip() override;
     void setParent(unsigned int window, setParentCallback callback) override;
 
-    DISALLOW_COPY_AND_ASSIGN(WebViewHostImpl);
-
   public:
     WebViewHostImpl(
             mojom::WebViewClientPtr&&                    clientPtr,
@@ -168,7 +166,9 @@ class WebViewHostImpl final : private WebViewImplClient
             BrowserContextImpl                          *browserContext,
             unsigned int                                 hostAffinity,
             const scoped_refptr<ProcessHostImpl::Impl>&  processHost);
-    ~WebViewHostImpl() final;
+    ~WebViewHostImpl() override;
+    WebViewHostImpl(const WebViewHostImpl&) = delete;
+    WebViewHostImpl& operator=(const WebViewHostImpl&) = delete;
 };
 
 }  // close namespace blpwtk2

@@ -98,8 +98,6 @@ class MainMessagePump final : public base::MessagePumpForUI {
     void resetWorkState();
     bool shouldTrace(unsigned int elapsedTime);
 
-    DISALLOW_COPY_AND_ASSIGN(MainMessagePump);
-
   public:
     // STATIC CREATORS
     static MainMessagePump* current();
@@ -116,6 +114,8 @@ class MainMessagePump final : public base::MessagePumpForUI {
     // CREATORS
     MainMessagePump();
     ~MainMessagePump() override;
+    MainMessagePump(const MainMessagePump&) = delete;
+    MainMessagePump& operator=(const MainMessagePump&) = delete;
 
     void init();
         // This must be called after a MessageLoop is installed on the current
