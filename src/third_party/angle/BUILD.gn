@@ -666,7 +666,7 @@ angle_source_set("translator_fuzzer") {
 
 config("angle_commit_id_config") {
   include_dirs = [ "$root_gen_dir/angle" ]
-  visibility = [ ":angle_commit_id" ]
+  visibility = [ ":angle_commit_id", "//blpwtk2:blpwtk2" ]
 }
 
 action("angle_commit_id") {

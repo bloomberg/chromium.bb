@@ -113,10 +113,12 @@ namespace blpwtk2 {
 //  is the renderer) does not own a window.  For blpwtk2, the embedder can
 //  create windows from thread T2 and this is how this problem arises.
 
-class RendererIOThread : private base::PlatformThread::Delegate {
+class RendererIOThread final : private base::PlatformThread::Delegate {
   public:
     explicit RendererIOThread();
-    ~RendererIOThread() final;
+    ~RendererIOThread() override;
+    RendererIOThread(const RendererIOThread&) = delete;
+    RendererIOThread& operator=(const RendererIOThread&) = delete;
 
     static LRESULT CALLBACK windowProcedure(NativeView window_handle,
                                             UINT message,
@@ -145,8 +147,6 @@ class RendererIOThread : private base::PlatformThread::Delegate {
     mojo::Handle* ready_handles_ = 0;
     MojoResult* ready_results_ = 0;
     MojoHandleSignalsState* signals_states_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(RendererIOThread);
 };
 
 }  // close namespace blpwtk2
