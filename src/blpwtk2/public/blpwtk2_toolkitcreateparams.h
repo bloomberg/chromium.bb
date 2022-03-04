@@ -251,6 +251,11 @@ class ToolkitCreateParams
 
 
     // patch section: memory diagnostics
+    BLPWTK2_EXPORT void setTotalTileMemoryLimit(size_t limit);
+        // Set the tile rasterization memory limit used by all webviews
+
+    size_t getTotalTileMemoryLimit() const;
+        // Get the tile rasterization memory limit used by all webviews
 
 
 

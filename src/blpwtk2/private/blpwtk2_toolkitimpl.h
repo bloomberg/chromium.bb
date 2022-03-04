@@ -207,6 +207,7 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: memory diagnostics
+    std::size_t getDiscardableSharedMemoryBytes() const override;
 
 
     // patch section: gpu

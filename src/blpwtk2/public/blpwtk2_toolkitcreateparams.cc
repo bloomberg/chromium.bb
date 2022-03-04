@@ -75,6 +75,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: memory diagnostics
+    size_t d_totalTileMemoryLimit;
 
 
     // patch section: embedder ipc
@@ -118,6 +119,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: memory diagnostics
+    , d_totalTileMemoryLimit(0)
 
 
     // patch section: embedder ipc
@@ -483,6 +485,17 @@ StringRef ToolkitCreateParams::getTempFolderPath() const
 {
     return d_impl->d_tempFolderPath;
 }
+
+
+// patch section: memory diagnostics
+void ToolkitCreateParams::setTotalTileMemoryLimit(size_t limit) {
+    d_impl->d_totalTileMemoryLimit = limit;
+}
+
+std::size_t ToolkitCreateParams::getTotalTileMemoryLimit() const {
+    return d_impl->d_totalTileMemoryLimit;
+}
+
 
 
 // patch section: memory diagnostics

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
@@ -107,6 +108,11 @@ class CC_EXPORT Proxy {
   // Returns a percentage representing average throughput of last X seconds.
   // Only implemenented for single threaded proxy.
   virtual uint32_t GetAverageThroughput() const = 0;
+
+  virtual std::size_t getTileMemoryBytes() const;
+  virtual std::size_t getDefaultTileMemoryLimit() const;
+  virtual void overrideTileMemoryLimit(std::size_t limit);
+  virtual void setTag(std::string tag);
 };
 
 }  // namespace cc

@@ -778,6 +778,42 @@ bool WebViewProxy::validateClient()
 
 
 // patch section: memory diagnostics
+blink::WebFrameWidget* WebViewProxy::getWebFrameWidget() const {
+    content::RenderView *rv =
+        content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
+    blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+    blink::WebLocalFrame* localWebFrame = webFrame->ToWebLocalFrame();
+    content::RenderFrameImpl* render_frame =
+        content::RenderFrameImpl::FromWebFrame(localWebFrame);
+    return render_frame->GetLocalRootWebFrameWidget();
+}
+
+std::size_t WebViewProxy::getDefaultTileMemoryLimit() const {
+    if(blink::WebFrameWidget* web_frame_widget = getWebFrameWidget()) {
+        return web_frame_widget->getDefaultTileMemoryLimit();
+    }
+    return 0;
+}
+
+std::size_t WebViewProxy::getTileMemoryBytes() const
+{
+    if(blink::WebFrameWidget* web_frame_widget = getWebFrameWidget()) {
+        return web_frame_widget->getTileMemoryBytes();
+    }
+    return 0;
+}
+
+void WebViewProxy::overrideTileMemoryLimit(std::size_t limit) {
+    if(blink::WebFrameWidget* web_frame_widget = getWebFrameWidget()) {
+        return web_frame_widget->overrideTileMemoryLimit(limit);
+    }
+}
+
+void WebViewProxy::setTag(const char* pTag) {
+    if(blink::WebFrameWidget* web_frame_widget = getWebFrameWidget()) {
+        return web_frame_widget->setTag(std::string(pTag));
+    }
+}
 
 
 

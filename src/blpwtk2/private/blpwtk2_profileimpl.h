@@ -208,6 +208,7 @@ class ProfileImpl final : public Profile, public mojom::ProcessClient {
 
 
     // patch section: memory diagnostics
+    std::size_t getDiscardableSharedMemoryBytes() override;
 
 
     // patch section: gpu
