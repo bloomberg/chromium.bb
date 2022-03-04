@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -1573,6 +1574,10 @@ void Element::setScrollLeft(double new_left) {
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
+
+    // blpwtk2: round x
+    end_offset.set_x(std::roundf(end_offset.x()));
+
     scrollable_area->SetScrollOffset(end_offset,
                                      mojom::blink::ScrollType::kProgrammatic,
                                      mojom::blink::ScrollBehavior::kAuto);
@@ -1624,6 +1629,9 @@ void Element::setScrollTop(double new_top) {
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
+
+    // blpwtk2: round y
+    end_offset.set_y(std::roundf(end_offset.y()));
 
     scrollable_area->SetScrollOffset(end_offset,
                                      mojom::blink::ScrollType::kProgrammatic,
