@@ -213,6 +213,10 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   }
 #endif
 
+  const std::u16string& header_footer_html() const {
+    return s_header_footer_html;
+  }
+
   void set_is_modifiable(bool is_modifiable) { is_modifiable_ = is_modifiable; }
   bool is_modifiable() const { return is_modifiable_; }
 
@@ -245,6 +249,12 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // associated `PrintSettings`, to be sure that each generated `PrintedPage`
   // is correctly associated with its corresponding `PrintedDocument`.
   static int NewCookie();
+
+  // Sets the default value for header_footer_html and
+  // print_background_graphics configuration.
+  static void SetDefaultPrinterSettings(
+      const std::u16string& header_footer_html,
+      bool print_background_graphics);
 
  private:
   // Multi-page printing. Each `PageRange` describes a from-to page combination.
@@ -337,6 +347,12 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // PIN code entered by the user.
   std::string pin_value_;
 #endif
+
+  // The HTML content used to format header and footer of printed pages.
+  static std::u16string s_header_footer_html;
+
+  // Stores the default value of printing background graphics configuration.
+  static bool s_print_background_graphics;
 };
 
 }  // namespace printing

@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_CONTENTUTILITYCLIENTIMPL_H
 
 #include <content/public/utility/content_utility_client.h>
+#include <services/service_manager/public/mojom/service.mojom.h>
 #include <memory>
 
 class ChromeContentUtilityClient;
@@ -41,6 +42,9 @@ class ContentUtilityClientImpl final : public content::ContentUtilityClient {
 
     // content::ContentUtilityClient:
     void UtilityThreadStarted() override;
+    bool HandleServiceRequestDeprecated(
+        const std::string& service_name,
+        mojo::ScopedMessagePipeHandle service_pipe) override;
     void RegisterNetworkBinders(
         service_manager::BinderRegistry* registry) override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;

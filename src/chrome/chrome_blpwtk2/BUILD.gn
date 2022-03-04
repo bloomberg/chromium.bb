@@ -24,8 +24,11 @@
 group("chrome_blpwtk2") {
   deps = [
      "//base:base",
+     "//chrome/browser:browser",
      "//chrome/utility:utility",
      "//components/crash/core/app:crash_export_thunks",
+     "//components/printing/browser",
+     "//components/printing/renderer",
      "//components/mirroring/mojom:service",
      "//chrome/credential_provider/gaiacp:common",
   ]

@@ -34,6 +34,7 @@
 
 #include <base/json/json_reader.h>
 #include <base/task/single_thread_task_executor.h>
+#include <base/strings/utf_string_conversions.h>
 #include <base/threading/thread.h>
 #include <base/threading/platform_thread.h>
 #include "content/browser/loader/file_url_loader_factory.h"
@@ -80,12 +81,6 @@ ContentBrowserClientImpl::CreateBrowserMainParts(
 bool ContentBrowserClientImpl::ShouldEnableStrictSiteIsolation()
 {
     return false;
-}
-
-void ContentBrowserClientImpl::RenderProcessWillLaunch(
-    content::RenderProcessHost *host)
-{
-
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
@@ -146,7 +141,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id)

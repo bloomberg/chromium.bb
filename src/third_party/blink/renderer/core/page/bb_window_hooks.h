@@ -61,6 +61,8 @@ namespace blink {
         void activatePumpScheduler(long index);
         void setPumpSchedulerTunable(long index, long value);
 
+        void allowPrint(long value);
+
         void Trace(Visitor*) const override;
 
         explicit BBWindowHooks(LocalDOMWindow *window);

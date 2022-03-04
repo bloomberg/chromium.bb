@@ -38,7 +38,9 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -116,8 +118,6 @@ void ShowWarningMessageBox(const std::u16string& message) {
     return;
   // Block opening dialog from nested task.
   base::AutoReset<bool> auto_reset(&is_dialog_shown, true);
-
-  chrome::ShowWarningMessageBox(nullptr, std::u16string(), message);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -317,14 +317,15 @@ void ScriptedPrintOnIO(mojom::ScriptedPrintParamsPtr params,
 
 }  // namespace
 
+PrintJobManager* g_print_job_manager = NULL;
+
 PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : PrintManager(web_contents),
-      queue_(g_browser_process->print_job_manager()->queue()) {
+      queue_(g_print_job_manager->queue()) {
   DCHECK(queue_);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
-      prefs::kPrintingEnabled, profile->GetPrefs(),
+      prefs::kPrintingEnabled,
+      user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
       base::BindRepeating(&PrintViewManagerBase::UpdatePrintingEnabled,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -528,8 +529,9 @@ void PrintViewManagerBase::NavigationStopped() {
 
 std::u16string PrintViewManagerBase::RenderSourceName() {
   std::u16string name(web_contents()->GetTitle());
-  if (name.empty())
-    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
+  if (name.empty()) {
+    name = std::u16string(u"Default Print Document Title");
+  }
   return name;
 }
 
@@ -1073,11 +1075,6 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
     return;
 
   set_cookie(0);
-
-  PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
-  // May be NULL in tests.
-  if (!print_job_manager)
-    return;
 
   std::unique_ptr<PrinterQuery> printer_query =
       queue_->PopPrinterQuery(current_cookie);

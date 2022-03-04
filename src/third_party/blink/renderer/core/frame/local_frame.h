@@ -587,6 +587,14 @@ class CORE_EXPORT LocalFrame final
   // navigations go through.
   void MaybeLogAdClickNavigation();
 
+  void AllowPrint(bool value) {
+    bb_allow_print_ = value;
+  }
+
+  bool IsPrintAllowed() {
+    return bb_allow_print_;
+  }
+
   // Triggers a use counter if a feature, which is currently available in all
   // frames, would be blocked by the introduction of permissions policy. This
   // takes two counters (which may be the same). It triggers
@@ -890,6 +898,8 @@ class CORE_EXPORT LocalFrame final
   absl::optional<base::UnguessableToken> embedding_token_;
 
   mojom::FrameLifecycleState lifecycle_state_;
+
+  bool bb_allow_print_ = false;
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 

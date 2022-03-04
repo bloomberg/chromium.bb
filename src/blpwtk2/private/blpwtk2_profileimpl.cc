@@ -36,6 +36,7 @@
 #include <ipc/ipc_sender.h>
 #include <ipc/ipc_sync_channel.h>
 #include <content/public/renderer/render_thread.h>
+#include <components/printing/renderer/print_render_frame_helper.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service_filter.h>
 
@@ -368,6 +369,11 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: printing
+void ProfileImpl::setDefaultPrinter(const StringRef& name)
+{
+    printing::PrintRenderFrameHelper::UseDefaultPrintSettings();
+    d_hostPtr->setDefaultPrinter(std::string(name.data(), name.size()));
+}
 
 
 // patch section: diagnostics

@@ -62,8 +62,6 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
     ContentBrowserClientImpl(const ContentBrowserClientImpl&) = delete;
     ContentBrowserClientImpl& operator=(const ContentBrowserClientImpl&) = delete;
 
-    void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
-
     // Notifies that a render process will be created. This is called
     // before the content layer adds its own BrowserMessageFilters, so
     // that the embedder's IPC filters have priority.

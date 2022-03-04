@@ -170,6 +170,7 @@ class ProcessHostImpl final : public mojom::ProcessHost
 
 
     // patch section: printing
+    void setDefaultPrinter(const std::string& name) override;
 
 
     // patch section: diagnostics

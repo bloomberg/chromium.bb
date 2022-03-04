@@ -2900,4 +2900,9 @@ bool WebLocalFrameImpl::ServiceWorkerSubresourceFilterEnabled() {
   return false;
 }
 
+bool WebLocalFrameImpl::IsPrintAllowed() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsPrintAllowed();
+}
+
 }  // namespace blink
