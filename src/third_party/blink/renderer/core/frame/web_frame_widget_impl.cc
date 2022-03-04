@@ -3931,6 +3931,7 @@ void WebFrameWidgetImpl::UpdateViewportDescription(
 bool WebFrameWidgetImpl::UpdateScreenRects(
     const gfx::Rect& widget_screen_rect,
     const gfx::Rect& window_screen_rect) {
+  View()->DidChangeWindowRect();
   if (!device_emulator_)
     return false;
   device_emulator_->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
