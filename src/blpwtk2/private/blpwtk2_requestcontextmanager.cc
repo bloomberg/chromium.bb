@@ -106,6 +106,9 @@ class ProxyConfigMonitor
     proxy_config_service_->RemoveObserver(this);
   }
 
+  ProxyConfigMonitor(const ProxyConfigMonitor&) = delete;
+  ProxyConfigMonitor& operator=(const ProxyConfigMonitor&) = delete;
+
   void SetCustomProxyConfig(const net::ProxyConfig& custom_proxy_config)
   {
     if (!proxy_config_client_)
@@ -175,8 +178,6 @@ class ProxyConfigMonitor
   mojo::Remote<::network::mojom::ProxyConfigClient> proxy_config_client_;
 
   bool use_custom_proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyConfigMonitor);
 };
 
 // static

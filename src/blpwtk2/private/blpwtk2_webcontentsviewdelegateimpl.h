@@ -25,7 +25,6 @@
 
 #include <blpwtk2_config.h>
 
-#include <base/macros.h>
 #include <content/public/browser/web_contents_view_delegate.h>
 
 namespace content {
@@ -44,14 +43,16 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate
 {
   public:
     WebContentsViewDelegateImpl(content::WebContents *webContents);
+    WebContentsViewDelegateImpl(const WebContentsViewDelegateImpl&) = delete;
+    WebContentsViewDelegateImpl& operator=(const WebContentsViewDelegateImpl&) = delete;
 
     // WebContentsViewDelegate overrides
     content::WebDragDestDelegate* GetDragDestDelegate() override;
         // Returns a delegate to process drags not handled by content.
 
     void ShowContextMenu(
-        content::RenderFrameHost          *renderFrameHost,
-        const content::ContextMenuParams&  params) override;
+        content::RenderFrameHost&         renderFrameHost,
+        const content::ContextMenuParams& params) override;
         // Shows a context menu.
 
     // These methods allow the embedder to intercept WebContentsViewWin's
@@ -62,8 +63,6 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate
 
   private:
     content::WebContents* d_webContents;
-
-    DISALLOW_COPY_AND_ASSIGN(WebContentsViewDelegateImpl);
 };
 
 }  // close namespace blpwtk2

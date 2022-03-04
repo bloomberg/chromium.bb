@@ -3858,7 +3858,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   CreateParams create_params(GetBrowserContext(), site_instance.get());
-  create_params.render_process_affinity = frame_tree_.RenderProcessAffinity();
+  create_params.render_process_affinity = primary_frame_tree_.RenderProcessAffinity();
   create_params.main_frame_name = params.frame_name;
   create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = opener->GetRoutingID();

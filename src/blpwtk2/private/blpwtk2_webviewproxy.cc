@@ -33,6 +33,7 @@
 #include <blpwtk2_rendererutil.h>
 
 #include <base/task/single_thread_task_executor.h>
+#include <content/renderer/render_frame_impl.h>
 #include <content/renderer/render_view_impl.h>
 #include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_view.h>
@@ -57,8 +58,6 @@
 
 #define VALIDATE_RENDER_VIEW_VOID(rv) VALIDATE_RENDER_VIEW_IMPL(rv, RET_VOID)
 #define VALIDATE_RENDER_VIEW(rv) VALIDATE_RENDER_VIEW_IMPL(rv, {})
-
-#define GetAValue(argb)      (LOBYTE((argb)>>24))
 
 namespace blpwtk2 {
 
@@ -445,7 +444,6 @@ void WebViewProxy::setBackgroundColor(NativeColor color)
     int red = GetRValue(color);
     int green = GetGValue(color);
     int blue = GetBValue(color);
-    int alpha = GetAValue(color);
 
     DCHECK(Statics::isRendererMainThreadMode());
     DCHECK(Statics::isInApplicationMainThread());
@@ -456,12 +454,6 @@ void WebViewProxy::setBackgroundColor(NativeColor color)
         return;
     }
     d_client->proxy()->setBackgroundColor(red, green, blue);
-
-    content::RenderView* rv = content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
-    VALIDATE_RENDER_VIEW_VOID(rv);
-    blink::WebView* web_view = rv->GetWebView();
-    web_view->SetBaseBackgroundColor(
-        SkColorSetARGB(alpha, red, green, blue));
 }
 
 void WebViewProxy::setRegion(NativeRegion region)

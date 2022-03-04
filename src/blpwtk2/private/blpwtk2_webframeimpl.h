@@ -41,8 +41,8 @@ namespace blpwtk2 {
                         // ==================
 
 // This is the implementation of the blpwtk2::WebFrame interface.
-class WebFrameImpl : public WebFrame,
-                     public blink::WebContentSettingsClient
+class WebFrameImpl final : public WebFrame,
+                           public blink::WebContentSettingsClient
 {
     // DATA
     blink::WebFrame* d_impl;
@@ -54,7 +54,7 @@ class WebFrameImpl : public WebFrame,
 
   public:
     WebFrameImpl(blink::WebFrame *impl);
-    ~WebFrameImpl() final;
+    ~WebFrameImpl() override;
 
     v8::Local<v8::Context> mainWorldScriptContext() const override;
     v8::Local<v8::Context> mainWorldScriptContextForFrame(
