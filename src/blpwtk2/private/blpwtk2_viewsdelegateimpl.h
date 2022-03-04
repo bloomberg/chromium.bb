@@ -33,10 +33,12 @@ namespace blpwtk2 {
 // BrowserMainRunner.  Right now, all the overrides are implemented based on
 // content_shell's ShellViewsDelegateAura.  We may add custom stuff in here in
 // the future.
-class ViewsDelegateImpl : public views::ViewsDelegate {
+class ViewsDelegateImpl final : public views::ViewsDelegate {
 public:
     ViewsDelegateImpl();
-    ~ViewsDelegateImpl() final;
+    ~ViewsDelegateImpl() override;
+    ViewsDelegateImpl(const ViewsDelegateImpl&) = delete;
+    ViewsDelegateImpl& operator=(const ViewsDelegateImpl&) = delete;
 
 private:
     void SaveWindowPlacement(
@@ -67,8 +69,6 @@ private:
     void OnBeforeWidgetInit(
         views::Widget::InitParams* params,
         views::internal::NativeWidgetDelegate* delegate) override;
-
-    DISALLOW_COPY_AND_ASSIGN(ViewsDelegateImpl);
 };
 
 }  // close namespace blpwtk2
