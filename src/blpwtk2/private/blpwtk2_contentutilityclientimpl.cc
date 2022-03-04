@@ -35,9 +35,7 @@ ContentUtilityClientImpl::~ContentUtilityClientImpl() {}
 void ContentUtilityClientImpl::UtilityThreadStarted() {
   chrome_utility_client_->UtilityThreadStarted();
 }
-bool ContentUtilityClientImpl::OnMessageReceived(const IPC::Message& message) {
-  return chrome_utility_client_->OnMessageReceived(message);
-}
+
 bool ContentUtilityClientImpl::HandleServiceRequestDeprecated(
     const std::string& service_name,
     mojo::ScopedMessagePipeHandle service_pipe) {

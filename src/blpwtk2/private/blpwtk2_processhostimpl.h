@@ -68,6 +68,10 @@ class ProcessHostImpl final : public mojom::ProcessHost
     ~ProcessHostImpl() final;
         // Private destructor.
 
+    ProcessHostImpl(const ProcessHostImpl&) = delete;
+    ProcessHostImpl& operator=(const ProcessHostImpl&) = delete;
+        // Non copyable/assignable.
+
     int createPipeHandleForChild(base::ProcessId    processId,
                                  bool               isolated,
                                  const std::string& profileDir);
@@ -75,8 +79,6 @@ class ProcessHostImpl final : public mojom::ProcessHost
         // process.  Returns the file descriptor of the client side of
         // the pipe pair.  Note that the returned value is with respect
         // to the file descriptor table of process 'processId'.
-
-    DISALLOW_COPY_AND_ASSIGN(ProcessHostImpl);
 
   public:
     static std::string createHostChannel(

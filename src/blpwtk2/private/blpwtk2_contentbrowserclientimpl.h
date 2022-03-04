@@ -49,9 +49,7 @@ namespace blpwtk2 {
 // This interface allows us to add hooks to the "browser" portion of the
 // content module.  This is created as part of the startup process of
 // BrowserMainRunner.
-class ContentBrowserClientImpl : public content::ContentBrowserClient {
-    DISALLOW_COPY_AND_ASSIGN(ContentBrowserClientImpl);
-    
+class ContentBrowserClientImpl final : public content::ContentBrowserClient {
     // The following are the in-process render thread's info
     std::atomic<mojo::OutgoingInvitation*> d_broker_client_invitation{nullptr};
 
@@ -60,13 +58,15 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   public:
     // CREATORS
     explicit ContentBrowserClientImpl();
-    ~ContentBrowserClientImpl() final;
+    ~ContentBrowserClientImpl() override;
+    ContentBrowserClientImpl(const ContentBrowserClientImpl&) = delete;
+    ContentBrowserClientImpl& operator=(const ContentBrowserClientImpl&) = delete;
 
     // Notifies that a render process will be created. This is called
     // before the content layer adds its own BrowserMessageFilters, so
     // that the embedder's IPC filters have priority.
     std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-        const content::MainFunctionParams& parameters) override;
+        content::MainFunctionParams parameters) override;
         // A non-nullptr return value is needed because
         // BrowserMainLoop::PreShutdown() assumes a non-nullptr
 

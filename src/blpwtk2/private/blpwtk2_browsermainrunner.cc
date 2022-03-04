@@ -27,6 +27,7 @@
 #include <blpwtk2_viewsdelegateimpl.h>
 #include <blpwtk2_devtoolsmanagerdelegateimpl.h>
 
+#include <base/ignore_result.h>
 #include <base/logging.h>  // for DCHECK
 #include <base/task/single_thread_task_executor.h>
 #include <base/task/current_thread.h>
@@ -35,9 +36,11 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include <chrome/browser/printing/print_job_manager.h>
 #include <components/discardable_memory/service/discardable_shared_memory_manager.h>
+#include "components/variations/variations_ids_provider.h"
 #include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
 #include <content/public/common/content_switches.h>
+#include <content/public/common/main_function_params.h>
 #include <net/base/net_errors.h>
 #include <net/socket/tcp_server_socket.h>
 #include <ui/views/widget/desktop_aura/desktop_screen.h>
@@ -58,8 +61,7 @@ namespace blpwtk2 {
 BrowserMainRunner::BrowserMainRunner(
         const sandbox::SandboxInterfaceInfo& sandboxInfo,
         content::ContentMainDelegate* delegate)
-    : d_mainParams(*base::CommandLine::ForCurrentProcess())
-    , d_sandboxInfo(sandboxInfo)
+    : d_sandboxInfo(sandboxInfo)
     , d_delegate(delegate)
 {
     Statics::initBrowserMainThread();
@@ -73,23 +75,27 @@ BrowserMainRunner::BrowserMainRunner(
       d_delegate->PostFieldTrialInitialization();
     }
 
-    d_mainParams.sandbox_info = &d_sandboxInfo;
+    content::MainFunctionParams mainParams(
+        base::CommandLine::ForCurrentProcess());
+    mainParams.sandbox_info = &d_sandboxInfo;
     content::BrowserTaskExecutor::Create();
+    variations::VariationsIdsProvider::Create(
+          variations::VariationsIdsProvider::Mode::kUseSignedInState);
     base::ThreadPoolInstance::Create("Browser");
     d_impl = content::BrowserMainRunner::Create();
 
     // https://chromium.googlesource.com/chromium/src/+/71c9d0a0174a4ec37db019b87ab86aaee3a81509%5E%21/#F0
     content::BrowserTaskExecutor::PostFeatureListSetup();
-    tracing::InitTracingPostThreadPoolStartAndFeatureList();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList(true);
     d_mojo_ipc_support = std::make_unique<content::MojoIpcSupport>(
         content::BrowserTaskExecutor::CreateIOThread());
-    d_startup_data = d_mojo_ipc_support->CreateBrowserStartupData();
-    d_mainParams.startup_data = d_startup_data.get();
+    mainParams.startup_data = d_mojo_ipc_support->CreateBrowserStartupData();
 
-    int rc = d_impl->Initialize(d_mainParams);
-    DCHECK(-1 == rc);  // it returns -1 for success!!
     d_discardable_shared_memory_manager =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+
+    int rc = d_impl->Initialize(std::move(mainParams));
+    DCHECK(-1 == rc);  // it returns -1 for success!!
 
     Statics::browserMainTaskRunner = base::ThreadTaskRunnerHandle::Get();
 
