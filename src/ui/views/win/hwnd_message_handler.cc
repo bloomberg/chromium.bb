@@ -407,6 +407,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       use_system_default_icon_(false),
       is_cursor_overridden_(false),
       restored_enabled_(false),
+      handled_wm_destroy_(false),
       current_cursor_(base::MakeRefCounted<ui::WinCursor>()),
       dpi_(0),
       called_enable_non_client_dpi_scaling_(false),
@@ -1038,6 +1039,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_) {
     delegate_->PostHandleMSG(message, w_param, l_param);
     if (message == WM_NCDESTROY) {
+      if (!handled_wm_destroy_) {
+        OnDestroy();
+      }
       RestoreEnabledIfNecessary();
       delegate_->HandleDestroyed();
     }
@@ -1674,6 +1678,8 @@ void HWNDMessageHandler::OnDestroy() {
   // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider#remarks
   if (did_return_uia_object_)
     UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
+
+  handled_wm_destroy_ = true;
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
