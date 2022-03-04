@@ -77,6 +77,7 @@
 // feature 31
 #define BLPWTK2_FEATURE_WEBSCRIPTCONTEXT
 // feature 32
+#define BLPWTK2_FEATURE_BROWSER_V8
 // feature 33
 // feature 34
 // feature 35
@@ -84,7 +85,7 @@
 // feature 37
 // feature 38
 // feature 39
-
+#define BLPWTK2_FEATURE_EMBEDDER_IPC
 
 namespace blpwtk2 {
 
