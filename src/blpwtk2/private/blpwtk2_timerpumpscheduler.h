@@ -33,7 +33,7 @@ namespace blpwtk2 {
                         // class TimerPumpScheduler
                         // ========================
 
-class TimerPumpScheduler : public MainMessagePump::Scheduler {
+class TimerPumpScheduler final : public MainMessagePump::Scheduler {
     std::vector<std::pair<std::string,int>> d_tunables;
     NativeView d_window = 0;
     unsigned int d_lastTick = 0;
@@ -47,7 +47,7 @@ class TimerPumpScheduler : public MainMessagePump::Scheduler {
                                             LPARAM lparam);
 
     TimerPumpScheduler();
-    ~TimerPumpScheduler() final;
+    ~TimerPumpScheduler() override;
 
     // MainMessagePump::Scheduler
     void isReadyToWork(bool *allowNormalWork, bool *allowIdleWork) final;
