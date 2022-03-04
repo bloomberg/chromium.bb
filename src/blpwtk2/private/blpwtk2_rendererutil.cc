@@ -30,6 +30,7 @@
 #include <ui/events/event.h>
 
 #include <content/public/renderer/render_view.h>
+#include <third_party/blink/public/common/input/web_coalesced_input_event.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <third_party/blink/public/web/web_frame.h>
 #include <skia/ext/platform_canvas.h>
@@ -49,12 +50,12 @@ void RendererUtil::handleInputEvents(blink::WebWidget *widget, const WebView::In
         ui::LatencyInfo latency_info;
 
         const WebView::InputEvent *event = events + i;
-        MSG msg = {
+        CHROME_MSG msg = {
             event->hwnd,
             event->message,
             event->wparam,
             event->lparam,
-            GetMessageTime()
+            static_cast<DWORD>(GetMessageTime())
         };
 
         switch (event->message) {
