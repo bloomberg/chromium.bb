@@ -48,20 +48,20 @@ class ForwardingService;
 
 // This interface allows us to add hooks to the "renderer" portion of the
 // content module.  This is created during the startup process.
-class ContentRendererClientImpl : public content::ContentRendererClient,
-                                  public service_manager::Service,
-                                  public service_manager::LocalInterfaceProvider
+class ContentRendererClientImpl final : public content::ContentRendererClient,
+                                        public service_manager::Service,
+                                        public service_manager::LocalInterfaceProvider
 {
     std::unique_ptr<SpellCheck> d_spellcheck;
 
   public:
     ContentRendererClientImpl();
-    ~ContentRendererClientImpl() final;
+    ~ContentRendererClientImpl() override;
+    ContentRendererClientImpl(const ContentRendererClientImpl&) = delete;
+    ContentRendererClientImpl& operator=(const ContentRendererClientImpl&) = delete;
 
     void RenderThreadStarted() override;
 
-    void RenderViewCreated(content::RenderView *render_view) override;
-        // Notifies that a new RenderView has been created.
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
 
     void PrepareErrorPage(content::RenderFrame* render_frame,
@@ -109,8 +109,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     mojo::PendingReceiver<service_manager::mojom::Connector> d_connector_request;
     std::unique_ptr<blpwtk2::ForwardingService> d_forward_service;
     scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy> d_browser_interface_broker;
-
-    DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
 };
 
 class ForwardingService : public service_manager::Service {
@@ -118,6 +116,8 @@ class ForwardingService : public service_manager::Service {
   // |target| must outlive this object.
   explicit ForwardingService(service_manager::Service* target);
   ~ForwardingService() override;
+  ForwardingService(const ForwardingService&) = delete;
+  ForwardingService& operator=(const ForwardingService&) = delete;
 
   // Service:
   void OnStart() override;
@@ -128,8 +128,6 @@ class ForwardingService : public service_manager::Service {
 
  private:
   service_manager::Service* const target_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ForwardingService);
 };
 
 }  // close namespace blpwtk2

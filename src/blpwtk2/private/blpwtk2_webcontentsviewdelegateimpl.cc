@@ -123,12 +123,12 @@ WebContentsViewDelegateImpl::GetDragDestDelegate()
 }
 
 void WebContentsViewDelegateImpl::ShowContextMenu(
-    content::RenderFrameHost          *renderFrameHost,
-    const content::ContextMenuParams&  params)
+    content::RenderFrameHost&         renderFrameHost,
+    const content::ContextMenuParams& params)
 {
     WebViewImpl *webViewImpl =
         static_cast<WebViewImpl*>(d_webContents->GetDelegate());
-    webViewImpl->saveCustomContextMenuContext(renderFrameHost,
+    webViewImpl->saveCustomContextMenuContext(&renderFrameHost,
                                               params.link_followed);
 
     gfx::Point point(params.x, params.y);

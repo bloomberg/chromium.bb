@@ -558,8 +558,7 @@ content::ResourceContext* BrowserContextImpl::GetResourceContext()
     DCHECK(!d_isDestroyed);
 
     if (!d_resourceContext.get()) {
-        d_resourceContext.reset(
-            new ResourceContextImpl(d_requestContextGetter.get()));
+        d_resourceContext = std::make_unique<ResourceContextImpl>();
     }
     return d_resourceContext.get();
 }
@@ -576,6 +575,11 @@ content::BrowserPluginGuestManager *BrowserContextImpl::GetGuestManager()
 }
 
 storage::SpecialStoragePolicy *BrowserContextImpl::GetSpecialStoragePolicy()
+{
+    return nullptr;
+}
+
+content::PlatformNotificationService* BrowserContextImpl::GetPlatformNotificationService()
 {
     return nullptr;
 }

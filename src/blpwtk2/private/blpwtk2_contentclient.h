@@ -25,9 +25,7 @@
 
 #include <blpwtk2_config.h>
 
-#include <content/public/app/content_main_delegate.h>
 #include <chrome/common/chrome_content_client.h>
-#include <memory>
 
 namespace blpwtk2 {
 
@@ -35,18 +33,13 @@ namespace blpwtk2 {
                         // class ContentClient
                         // ===================
 
-class ContentClient : public ChromeContentClient {
-    DISALLOW_COPY_AND_ASSIGN(ContentClient);
-
+class ContentClient final : public ChromeContentClient {
   public:
     static ContentClient *Instance();
     ContentClient();
-    ~ContentClient() final;
-
-    base::StringPiece GetDataResource(
-        int             resource_id,
-        ui::ScaleFactor scale_factor) override;
-        // Return the contents of a resource in a StringPiece given the resource id.
+    ~ContentClient() override;
+    ContentClient(const ContentClient&) = delete;
+    ContentClient& operator=(const ContentClient&) = delete;
 };
 
 }  // close namespace blpwtk2
@@ -54,4 +47,3 @@ class ContentClient : public ChromeContentClient {
 #endif  // INCLUDED_BLPWTK2_CONTENTMAINDELEGATEIMPL_H
 
 // vim: ts=4 et
-

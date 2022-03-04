@@ -216,7 +216,7 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
     }
 };
 
-class Shell : public blpwtk2::WebViewDelegate {
+class Shell final : public blpwtk2::WebViewDelegate {
 public:
     static std::set<Shell*> s_shells;
 
@@ -311,7 +311,7 @@ public:
         }
     }
 
-    ~Shell() final
+    ~Shell() override
     {
         SetWindowLongPtr(d_mainWnd, GWLP_USERDATA, NULL);
         SetWindowLongPtr(d_urlEntryWnd, GWLP_USERDATA, NULL);
@@ -1358,7 +1358,7 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
     AppendMenu(menu, MF_POPUP, (UINT_PTR)spellCheckMenu, L"&Spelling");
     SetMenu(mainWnd, menu);
 
-    HWND hwnd;
+    [[maybe_unused]] HWND hwnd;
     int x = 0;
 
     hwnd = CreateWindow(L"BUTTON", L"Back",
