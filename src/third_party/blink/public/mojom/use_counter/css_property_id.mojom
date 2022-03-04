@@ -769,7 +769,7 @@ enum CSSSampleId {
 
 
     // patch section: suppress-needs-compositing-input-update (feature 709)
-
+    kBbSuppressNeedsCompositingInputUpdate = 709,
 
 
     // 1. Add new features above this line (don't change the assigned numbers of
