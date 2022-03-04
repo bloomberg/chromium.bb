@@ -27,7 +27,6 @@
 
 #include <content/app/mojo_ipc_support.h>
 #include <content/browser/startup_data_impl.h>
-#include <content/public/common/main_function_params.h>
 #include <sandbox/win/src/sandbox.h>
 #include <memory>
 #include <mojo/core/embedder/scoped_ipc_support.h>
@@ -38,7 +37,6 @@ class BrowserMainRunner;
 class BrowserContext;
 class ContentMainDelegate;
 class ServiceManagerEnvironment;
-struct StartupDataImpl;
 }  // close namespace content
 
 namespace discardable_memory {
@@ -65,12 +63,10 @@ class ViewsDelegateImpl;
 class BrowserMainRunner
 {
     // DATA
-    content::MainFunctionParams d_mainParams;
     std::unique_ptr<content::BrowserMainRunner> d_impl;
     std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       d_discardable_shared_memory_manager;
     std::unique_ptr<content::MojoIpcSupport> d_mojo_ipc_support;
-    std::unique_ptr<content::StartupDataImpl> d_startup_data;
     std::unique_ptr<ViewsDelegateImpl> d_viewsDelegate;
     sandbox::SandboxInterfaceInfo d_sandboxInfo;
     std::unique_ptr<display::Screen> d_screen;
@@ -78,13 +74,13 @@ class BrowserMainRunner
     // The delegate will outlive this object.
     content::ContentMainDelegate* d_delegate = nullptr;
 
-    DISALLOW_COPY_AND_ASSIGN(BrowserMainRunner);
-
   public:
     explicit BrowserMainRunner(
             const sandbox::SandboxInterfaceInfo& sandboxInfo,
             content::ContentMainDelegate* delegate);
     ~BrowserMainRunner();
+    BrowserMainRunner(const BrowserMainRunner&) = delete;
+    BrowserMainRunner& operator=(const BrowserMainRunner&) = delete;
 
     int run();
 };

@@ -138,7 +138,7 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     'ffmpeg_branding': 'Chrome',
 
     # Disable field-trial testing feature.
-    'fieldtrial_testing_like_official_build': True,
+    'disable_fieldtrial_testing_config': True,
 
     # Disable multicast DNS support.
     'enable_mdns': False,
