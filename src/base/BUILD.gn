@@ -38,6 +38,7 @@ import("//build_overrides/build.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 if (is_mac) {
   # Used to generate fuzzer corpus :base_mach_port_rendezvous_convert_corpus.
@@ -2682,6 +2683,7 @@ component("i18n") {
   public_deps = [
     "//third_party/ced",
     "//third_party/icu",
+    "//blpwtk2:blpwtk2_generate_sources",
   ]
   deps = [
     ":base",
@@ -2695,9 +2697,17 @@ component("i18n") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
+  if (is_blpwtk2) {
+    defines += [ "IS_BLPWTK2" ]
+  }
+
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
   }
+
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
+  ]
 }
 
 test("base_perftests") {

@@ -399,6 +399,27 @@ class V8_EXPORT ScriptCompiler {
     // Prevent copying.
     CachedData(const CachedData&) = delete;
     CachedData& operator=(const CachedData&) = delete;
+
+    //- - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+    //
+    // 'CachedData' pointers are passed across the API in both
+    // 'CreateCodeCache()' and 'Source'.  In order to do this safely in
+    // 'bplus', we need to ensure that the data is created and destroyed in a
+    // single C++ heap.  To do so, we expose 'create' and 'dispose' methods.
+    // When multiple C++ heaps is a concern, these methods should be used over
+    // the public constructor.
+
+    static
+    CachedData *create(const uint8_t *data,
+                       int            length,
+                       BufferPolicy   buffer_policy = BufferNotOwned);
+        // Create a 'CachedData' in V8's C++ heap.
+
+    static
+    void dispose(CachedData *data);
+        // Dispose of the specified 'data' in V8's C++ heap.
+
+    //- - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
   };
 
   /**
@@ -414,7 +435,7 @@ class V8_EXPORT ScriptCompiler {
     V8_INLINE explicit Source(
         Local<String> source_string, CachedData* cached_data = nullptr,
         ConsumeCodeCacheTask* consume_cache_task = nullptr);
-    V8_INLINE ~Source() = default;
+    V8_INLINE ~Source();
 
     // Ownership of the CachedData or its buffers is *not* transferred to the
     // caller. The CachedData object is alive as long as the Source object is
@@ -439,7 +460,7 @@ class V8_EXPORT ScriptCompiler {
     // Cached data from previous compilation (if a kConsume*Cache flag is
     // set), or hold newly generated cache data (kProduce*Cache flags) are
     // set when calling a compile method.
-    std::unique_ptr<CachedData> cached_data;
+    CachedData* cached_data;
     std::unique_ptr<ConsumeCodeCacheTask> consume_cache_task;
   };
 
@@ -762,9 +783,13 @@ ScriptCompiler::Source::Source(Local<String> string, CachedData* data,
       cached_data(data),
       consume_cache_task(consume_cache_task) {}
 
+ScriptCompiler::Source::~Source() {
+  CachedData::dispose(cached_data);
+}
+
 const ScriptCompiler::CachedData* ScriptCompiler::Source::GetCachedData()
     const {
-  return cached_data.get();
+  return cached_data;
 }
 
 const ScriptOriginOptions& ScriptCompiler::Source::GetResourceOptions() const {

@@ -15,6 +15,7 @@
 #include "include/v8-callbacks.h"
 #include "include/v8-cppgc.h"
 #include "include/v8-date.h"
+#include "include/v8-default-platform.h"
 #include "include/v8-embedder-state-scope.h"
 #include "include/v8-extension.h"
 #include "include/v8-fast-api-calls.h"
@@ -72,6 +73,7 @@
 #include "src/init/v8.h"
 #include "src/json/json-parser.h"
 #include "src/json/json-stringifier.h"
+#include "src/libplatform/default-platform.h"
 #include "src/logging/counters-scopes.h"
 #include "src/logging/metrics.h"
 #include "src/logging/runtime-call-stats-scope.h"
@@ -172,6 +174,14 @@
   } while (false)
 
 namespace v8 {
+
+// blpwtk2: Prevent the linker from stripping out these symbols from the
+// shared library export table in Release builds.
+#ifdef _WIN64
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPEAV1234@_KPEAVTraceWriter@234@@Z")
+#else
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPAV1234@IPAVTraceWriter@234@@Z")
+#endif
 
 static ScriptOrigin GetScriptOriginForScript(i::Isolate* isolate,
                                              i::Handle<i::Script> script) {
@@ -382,6 +392,25 @@ void Utils::ReportOOMFailure(i::Isolate* isolate, const char* location,
   }
   isolate->SignalFatalError();
 }
+
+namespace platform {
+
+v8::Platform* NewDefaultPlatform(
+    int thread_pool_size, IdleTaskSupport idle_task_support,
+    InProcessStackDumping in_process_stack_dumping,
+    v8::TracingController* tracing_controller) {
+    std::unique_ptr<v8::TracingController> controller(tracing_controller);
+  return NewDefaultPlatformImpl(thread_pool_size, idle_task_support,
+                                in_process_stack_dumping,
+                                std::move(controller)).release();
+}
+
+bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
+                     MessageLoopBehavior behavior) {
+  return PumpMessageLoopImpl(platform, isolate, behavior);
+}
+
+}  // namespace platform
 
 void V8::SetSnapshotDataBlob(StartupData* snapshot_blob) {
   i::V8::SetSnapshotBlob(snapshot_blob);
@@ -1994,6 +2023,23 @@ ScriptCompiler::CachedData::~CachedData() {
     delete[] data;
   }
 }
+
+//- - - - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+
+ScriptCompiler::CachedData *
+ScriptCompiler::CachedData::create(const uint8_t *data,
+                                   int            length,
+                                   BufferPolicy   buffer_policy)
+{
+  return new ScriptCompiler::CachedData(data, length, buffer_policy);
+}
+
+void ScriptCompiler::CachedData::dispose(CachedData *data)
+{
+  delete data;
+}
+
+//- - - - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
 
 ScriptCompiler::StreamedSource::StreamedSource(
     std::unique_ptr<ExternalSourceStream> stream, Encoding encoding)
@@ -6228,6 +6274,10 @@ bool v8::V8::InitializeICUDefaultLocation(const char* exec_path,
   return i::InitializeICUDefaultLocation(exec_path, icu_data_file);
 }
 
+bool v8::V8::InitializeICUWithData(const void* icu_data) {
+  return i::InitializeICUWithData(icu_data);
+}
+
 void v8::V8::InitializeExternalStartupData(const char* directory_path) {
   i::InitializeExternalStartupData(directory_path);
 }
@@ -9841,10 +9891,15 @@ const CpuProfileNode* CpuProfileNode::GetParent() const {
   return reinterpret_cast<const CpuProfileNode*>(parent);
 }
 
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 const std::vector<CpuProfileDeoptInfo>& CpuProfileNode::GetDeoptInfos() const {
   const i::ProfileNode* node = reinterpret_cast<const i::ProfileNode*>(this);
   return node->deopt_infos();
 }
+#endif
 
 void CpuProfile::Delete() {
   i::CpuProfile* profile = reinterpret_cast<i::CpuProfile*>(this);
@@ -10118,6 +10173,17 @@ size_t HeapGraphNode::GetShallowSize() const {
 
 int HeapGraphNode::GetChildrenCount() const {
   return ToInternal(this)->children_count();
+}
+
+OutputStream::WriteResult OutputStream::WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
+    return kAbort;
+}
+
+OutputStream::OutputStream() = default;
+OutputStream::~OutputStream() = default;
+
+int OutputStream::GetChunkSize() {
+  return 1024;
 }
 
 const HeapGraphEdge* HeapGraphNode::GetChild(int index) const {
@@ -10453,6 +10519,21 @@ std::shared_ptr<WasmStreaming> WasmStreaming::Unpack(Isolate* isolate,
   FATAL("WebAssembly is disabled");
 }
 #endif  // !V8_ENABLE_WEBASSEMBLY
+
+size_t ConvertableToTraceFormatShim::AppendAsTraceFormat(char* out, size_t maxSize) const {
+  const char* trace = GetToBeAppendedTraceFormat();
+  size_t len = strlen(trace);
+  if (out) {
+    if (len && maxSize > 1) {
+      len = len > maxSize-1 ? maxSize-1 : len;
+      strncpy(out, trace, len);
+      out[len] = 0;
+    } else {
+      len = -1;
+    }
+  }
+  return len+1;
+}
 
 namespace internal {
 

@@ -64,7 +64,8 @@ int main(int argc, const char* argv[]) {
   settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   logging::InitLogging(settings);
 
-  base::i18n::InitializeICU();
+  const void *icu_data;
+  base::i18n::InitializeICU(&icu_data);
 
   base::FilePath input_file;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &input_file);

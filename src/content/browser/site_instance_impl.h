@@ -134,7 +134,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   SiteInstanceId GetId() override;
   BrowsingInstanceId GetBrowsingInstanceId() override;
   bool HasProcess() override;
-  RenderProcessHost* GetProcess() override;
+  RenderProcessHost* GetProcess(
+      int affinity = SiteInstance::kNoProcessAffinity) override;
   BrowserContext* GetBrowserContext() override;
   const GURL& GetSiteURL() override;
   const StoragePartitionConfig& GetStoragePartitionConfig() override;

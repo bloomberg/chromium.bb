@@ -176,6 +176,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // |site_instance|. The default storage partition is selected if
   // |site_instance| is null.
   static RenderProcessHost* CreateRenderProcessHost(
+      int host_id,
+      std::shared_ptr<base::Process> externally_managed_process,
       BrowserContext* browser_context,
       SiteInstanceImpl* site_instance);
 
@@ -192,6 +194,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RemoveRoute(int32_t routing_id) override;
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
+  size_t NumListeners() const override;
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void UpdateClientPriority(PriorityClient* client) override;
   int VisibleClientCount() override;
@@ -241,6 +244,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       bool outgoing,
       WebRtcRtpPacketCallback packet_callback) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
+  bool IsProcessManagedExternally() const override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetLastInitTime() override;
@@ -299,6 +303,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DumpProfilingData(base::OnceClosure callback) override;
 #endif
 
+  void AdjustCommandLineForRenderer(base::CommandLine* command_line,
+                                    base::ProcessHandle child_process) override;
+
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
 
@@ -332,6 +339,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   void AddInternalObserver(RenderProcessHostInternalObserver* observer);
   void RemoveInternalObserver(RenderProcessHostInternalObserver* observer);
+
+  mojo::OutgoingInvitation TakeOutgoingInvitation();
+
+  // This value is guaranteed to never be returned by GenerateUniqueId() below.
+  static int kInvalidId;
+
+  // Generate a new unique host id.
+  static int GenerateUniqueId();
 
   // Register/unregister the host identified by the host id in the global host
   // list.
@@ -751,7 +766,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Use CreateRenderProcessHost() instead of calling this constructor
   // directly.
-  RenderProcessHostImpl(BrowserContext* browser_context,
+  RenderProcessHostImpl(int host_id,
+                        std::shared_ptr<base::Process> externally_managed_process,
+                        BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
                         int flags);
 
@@ -821,7 +838,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // copied over.
   void PropagateBrowserCommandLineToRenderer(
       const base::CommandLine& browser_cmd,
-      base::CommandLine* renderer_cmd);
+      base::CommandLine* renderer_cmd,
+      base::ProcessHandle child_process);
 
   // Recompute |visible_clients_| and |effective_importance_| from
   // |priority_clients_|.
@@ -1018,6 +1036,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Used to launch and terminate the process without blocking the UI thread.
   std::unique_ptr<ChildProcessLauncher> child_process_launcher_;
+
+  // Handle for the renderer process if it is managed externally, otherwise
+  // this will be set to base::kNullProcessHandle (which means the
+  // RenderProcessHostImpl is the one that launches the process).
+  std::shared_ptr<base::Process> externally_managed_process_;
 
   // The globally-unique identifier for this RenderProcessHost.
   const int id_;

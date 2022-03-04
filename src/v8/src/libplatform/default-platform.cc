@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <queue>
 
-#include "include/libplatform/libplatform.h"
 #include "src/base/bounded-page-allocator.h"
 #include "src/base/debug/stack_trace.h"
 #include "src/base/logging.h"
@@ -43,7 +42,7 @@ int GetActualThreadPoolSize(int thread_pool_size) {
 
 }  // namespace
 
-std::unique_ptr<v8::Platform> NewDefaultPlatform(
+std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
     int thread_pool_size, IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
     std::unique_ptr<v8::TracingController> tracing_controller) {
@@ -75,8 +74,16 @@ V8_PLATFORM_EXPORT std::unique_ptr<JobHandle> NewDefaultJobHandle(
       platform, std::move(job_task), priority, num_worker_threads));
 }
 
-bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
-                     MessageLoopBehavior behavior) {
+BLPV8_PLATFORM_EXPORT JobHandle* NewDefaultJobHandleRaw(
+    Platform* platform, TaskPriority priority,
+    JobTask* job_task_p, size_t num_worker_threads) {
+  std::unique_ptr<JobTask> job_task(job_task_p);
+  return NewDefaultJobHandle(
+          platform, priority, std::move(job_task), num_worker_threads).release();
+}
+
+bool PumpMessageLoopImpl(v8::Platform* platform, v8::Isolate* isolate,
+                         MessageLoopBehavior behavior) {
   return static_cast<DefaultPlatform*>(platform)->PumpMessageLoop(isolate,
                                                                   behavior);
 }

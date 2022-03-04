@@ -34,22 +34,27 @@ struct OwnedBuffer {
   OwnedBuffer(std::unique_ptr<const uint8_t[]> buffer, size_t size)
       : buffer(std::move(buffer)), size(size) {}
   OwnedBuffer() = default;
+#if !defined(MSVC_2015_PLUS)
+  OwnedBuffer(OwnedBuffer&& src)
+      : buffer(std::move(src.buffer)), size(src.size) {}
+  OwnedBuffer(const OwnedBuffer& src) = delete;
+#endif
 };
 
 // Wrapper around a compiled WebAssembly module, which is potentially shared by
 // different WasmModuleObjects.
-class V8_EXPORT CompiledWasmModule {
+class CompiledWasmModule {
  public:
   /**
    * Serialize the compiled module. The serialized data does not include the
    * wire bytes.
    */
-  OwnedBuffer Serialize();
+  V8_EXPORT OwnedBuffer Serialize();
 
   /**
    * Get the (wasm-encoded) wire bytes that were used to compile this module.
    */
-  MemorySpan<const uint8_t> GetWireBytesRef();
+  V8_EXPORT MemorySpan<const uint8_t> GetWireBytesRef();
 
   const std::string& source_url() const { return source_url_; }
 
@@ -208,7 +213,7 @@ class V8_EXPORT WasmStreaming final {
 
 // TODO(mtrofin): when streaming compilation is done, we can rename this
 // to simply WasmModuleObjectBuilder
-class V8_EXPORT WasmModuleObjectBuilderStreaming final {
+class WasmModuleObjectBuilderStreaming final {
  public:
   explicit WasmModuleObjectBuilderStreaming(Isolate* isolate);
   /**
@@ -229,12 +234,21 @@ class V8_EXPORT WasmModuleObjectBuilderStreaming final {
  private:
   WasmModuleObjectBuilderStreaming(const WasmModuleObjectBuilderStreaming&) =
       delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&) =
       default;
+#else
+  WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&);
+#endif
   WasmModuleObjectBuilderStreaming& operator=(
       const WasmModuleObjectBuilderStreaming&) = delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming& operator=(
       WasmModuleObjectBuilderStreaming&&) = default;
+#else
+  WasmModuleObjectBuilderStreaming& operator=(
+      WasmModuleObjectBuilderStreaming&&);
+#endif
   Isolate* isolate_ = nullptr;
 
 #if V8_CC_MSVC

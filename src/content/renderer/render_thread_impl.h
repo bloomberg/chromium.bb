@@ -625,6 +625,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Tracks the time the run loop started for this thread.
   base::TimeTicks run_loop_start_time_;
 
+  bool exit_process_gracefully_;
+
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 };
 

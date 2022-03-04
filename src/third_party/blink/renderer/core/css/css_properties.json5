@@ -745,6 +745,15 @@
       is_animation_property: true,
     },
 
+
+
+    // patch section: lcd-text background
+
+
+    // patch section: rubberband
+
+
+
     // High Priority and all other font properties.
     // Other properties can depend upon high priority properties
     // (e.g. font-size / ems)

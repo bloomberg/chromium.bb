@@ -100,6 +100,7 @@ typedef FILE* FileHandle;
 #include <string>
 #include <utility>
 
+#include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -204,6 +205,10 @@ base::stack<LogAssertHandlerFunction>& GetLogAssertHandlerStack() {
 
 // A log message handler that gets notified of every log message we process.
 LogMessageHandlerFunction g_log_message_handler = nullptr;
+
+// Another log message handler that gets notified of every log message we
+// process.  This takes precedence over 'log_message_handler'.
+LogMessageHandlerFunction wtk2_log_message_handler = nullptr;
 
 uint64_t TickCount() {
 #if defined(OS_WIN)
@@ -473,7 +478,7 @@ bool ShouldCreateLogMessage(int severity) {
     return false;
 
   // Return true here unless we know ~LogMessage won't do anything.
-  return g_logging_destination != LOG_NONE || g_log_message_handler ||
+  return g_logging_destination != LOG_NONE || g_log_message_handler || wtk2_log_message_handler ||
          severity >= kAlwaysPrintErrorLevel;
 }
 
@@ -481,7 +486,10 @@ bool ShouldCreateLogMessage(int severity) {
 // If |severity| is high then true will be returned when no log destinations are
 // set, or only LOG_TO_FILE is set, since that is useful for local development
 // and debugging.
-bool ShouldLogToStderr(int severity) {
+bool ShouldLogToStderr(int severity, bool wtk2_handled) {
+  if (wtk2_handled) {
+    return false;
+  }
   if (g_logging_destination & LOG_TO_STDERR)
     return true;
 #if !BUILDFLAG(IS_FUCHSIA)
@@ -539,6 +547,14 @@ void SetLogMessageHandler(LogMessageHandlerFunction handler) {
 
 LogMessageHandlerFunction GetLogMessageHandler() {
   return g_log_message_handler;
+}
+
+void SetWtk2LogMessageHandler(LogMessageHandlerFunction handler) {
+  wtk2_log_message_handler = handler;
+}
+
+LogMessageHandlerFunction GetWtk2LogMessageHandler() {
+  return wtk2_log_message_handler;
 }
 
 #if !defined(NDEBUG)
@@ -603,20 +619,33 @@ LogMessage::~LogMessage() {
     base::debug::OutputCrashKeysToStream(stream_);
   }
 #endif
+
+  // Give the wtk2 log message handler first dibs on the message.
+  bool wtk2_handled = false;
+  if (wtk2_log_message_handler &&
+      wtk2_log_message_handler(severity_, file_, line_,
+                               message_start_, stream_.str())) {
+    // The handler took care of it, no further processing.
+    // Unless the severity is fatal!  Then we want to crash (further below).
+    wtk2_handled = true;
+    if (severity_ != LOG_FATAL)
+        return;
+  }
+
   stream_ << std::endl;
   std::string str_newline(stream_.str());
   TRACE_LOG_MESSAGE(
       file_, base::StringPiece(str_newline).substr(message_start_), line_);
 
   // Give any log message handler first dibs on the message.
-  if (g_log_message_handler &&
+  if (!wtk2_handled && g_log_message_handler &&
       g_log_message_handler(severity_, file_, line_, message_start_,
                             str_newline)) {
     // The handler took care of it, no further processing.
     return;
   }
 
-  if ((g_logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0) {
+  if (!wtk2_handled && (g_logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0) {
 #if defined(OS_WIN)
     OutputDebugStringA(str_newline.c_str());
 #elif defined(OS_APPLE)
@@ -800,6 +829,7 @@ LogMessage::~LogMessage() {
       __android_log_write(priority, kAndroidLogTag, line.c_str());
 #else
     // The Android system may truncate the string if it's too long.
+    
     __android_log_write(priority, kAndroidLogTag, str_newline.c_str());
 #endif
 #elif defined(OS_FUCHSIA)
@@ -810,12 +840,12 @@ LogMessage::~LogMessage() {
 #endif  // OS_FUCHSIA
   }
 
-  if (ShouldLogToStderr(severity_)) {
+  if (ShouldLogToStderr(severity_, wtk2_handled)) {
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
   }
 
-  if ((g_logging_destination & LOG_TO_FILE) != 0) {
+  if (!wtk2_handled && (g_logging_destination & LOG_TO_FILE) != 0) {
     // We can have multiple threads and/or processes, so try to prevent them
     // from clobbering each other's writes.
     // If the client app did not call InitLogging, and the lock has not
@@ -1162,4 +1192,27 @@ std::ostream& std::operator<<(std::ostream& out, const char16_t* str16) {
 
 std::ostream& std::operator<<(std::ostream& out, const std::u16string& str16) {
   return out << base::StringPiece16(str16);
+}
+
+static bool g_debugWithTimeEnabled = false;
+void EnableDebugWithTime(bool enabled)
+{
+    g_debugWithTimeEnabled = enabled;
+}
+
+void DebugWithTime(const char *format, ...)
+{
+    if (!g_debugWithTimeEnabled) return;
+
+    va_list arglist;
+    va_start(arglist, format);
+
+    static base::TimeTicks START_TIME = base::TimeTicks::Now();
+    int milliseconds = (base::TimeTicks::Now() - START_TIME).InMilliseconds();
+    int threadId = base::PlatformThread::CurrentId();
+
+    char buf[1024];
+    int timeLen = sprintf_s(buf, sizeof(buf), "DWT: %d - %d: ", threadId, milliseconds);
+    _vsprintf_s_l(buf+timeLen, sizeof(buf)-timeLen, format, NULL, arglist);
+    OutputDebugStringA(buf);
 }

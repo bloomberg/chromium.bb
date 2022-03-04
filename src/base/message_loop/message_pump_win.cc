@@ -67,15 +67,27 @@ static const int kMsgHaveWork = WM_USER + 1;
 MessagePumpWin::MessagePumpWin() = default;
 MessagePumpWin::~MessagePumpWin() = default;
 
+void MessagePumpWin::PushRunState(RunState* run_state, Delegate* delegate) {
+  run_state->delegate = delegate;
+  run_state->previous_state = run_state_;
+
+  if (run_state_)
+    run_state->is_nested = true;
+
+  run_state_ = run_state;
+}
+
 void MessagePumpWin::Run(Delegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_);
 
-  RunState run_state(delegate);
-  if (run_state_)
-    run_state.is_nested = true;
-
-  AutoReset<RunState*> auto_reset_run_state(&run_state_, &run_state);
+  RunState run_state(nullptr);
+  PushRunState(&run_state, delegate);
   DoRunLoop();
+  PopRunState();
+}
+
+void MessagePumpWin::PopRunState() {
+  run_state_ = run_state_->previous_state;
 }
 
 void MessagePumpWin::Quit() {
@@ -183,6 +195,10 @@ bool MessagePumpForUI::MessageCallback(
       break;
   }
   return false;
+}
+
+bool MessagePumpForUI::DoIdleWork() {
+  return run_state_->delegate->DoIdleWork();
 }
 
 void MessagePumpForUI::DoRunLoop() {
@@ -323,10 +339,12 @@ void MessagePumpForUI::HandleWorkMessage() {
     return;
   }
 
+  if (should_process_pump_replacement_) {
   // Let whatever would have run had we not been putting messages in the queue
   // run now.  This is an attempt to make our dummy message not starve other
   // messages that may be in the Windows message queue.
   ProcessPumpReplacementMessage();
+  }
 
   Delegate::NextWorkInfo next_work_info = run_state_->delegate->DoWork();
   if (next_work_info.is_immediate()) {
@@ -546,6 +564,12 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   return true;
 }
 
+void MessagePumpForUI::ResetWorkState() {
+  // Since we discarded a kMsgHaveWork message, we must update the flag.
+  DCHECK(work_scheduled_);
+  work_scheduled_ = false;
+}
+
 bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_);
 
@@ -576,9 +600,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   DCHECK(!have_message || kMsgHaveWork != msg.message ||
          msg.hwnd != message_window_.hwnd());
 
-  // Since we discarded a kMsgHaveWork message, we must update the flag.
-  DCHECK(work_scheduled_);
-  work_scheduled_ = false;
+  ResetWorkState();
 
   // We don't need a special time slice if we didn't |have_message| to process.
   if (!have_message)

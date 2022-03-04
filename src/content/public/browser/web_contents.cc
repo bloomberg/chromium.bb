@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "content/public/common/child_process_host.h"
+#include "content/public/browser/site_instance.h"
+
 #include "ipc/ipc_message.h"
 
 namespace content {
@@ -20,6 +22,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
                                         base::Location creator_location)
     : browser_context(context),
       site_instance(std::move(site)),
+      render_process_affinity(SiteInstance::kNoProcessAffinity),
       creator_location(creator_location) {}
 
 WebContents::CreateParams::CreateParams(const CreateParams& other) = default;

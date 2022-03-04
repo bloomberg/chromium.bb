@@ -97,6 +97,9 @@ using SiteInstanceId = base::IdType32<class SiteInstanceIdTag>;
 ///////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
  public:
+  // Constant value indicating no affinity to a renderer process.
+  static int kNoProcessAffinity;
+
   // Returns a unique ID for this SiteInstance.
   virtual SiteInstanceId GetId() = 0;
 
@@ -120,7 +123,8 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // For sites that require process-per-site mode (e.g., NTP), this will
   // ensure only one RenderProcessHost for the site exists within the
   // BrowserContext.
-  virtual RenderProcessHost* GetProcess() = 0;
+  virtual RenderProcessHost* GetProcess(
+      int affinity = SiteInstance::kNoProcessAffinity) = 0;
 
   // Browser context to which this SiteInstance (and all related
   // SiteInstances) belongs.

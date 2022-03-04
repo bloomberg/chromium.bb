@@ -62,6 +62,7 @@ class BLINK_PLATFORM_EXPORT ResourceLoadInfoNotifierWrapper {
   void NotifyResourceLoadCompleted(
       const network::URLLoaderCompletionStatus& status);
   void NotifyResourceLoadCanceled(int net_error);
+  std::string GetHttpMethod();
 
  private:
   THREAD_CHECKER(thread_checker_);

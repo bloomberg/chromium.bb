@@ -24,6 +24,11 @@ ThreadLocalPointer<RunLoop::Delegate>& GetTlsDelegate() {
   return *instance;
 }
 
+ThreadLocalPointer<MessagePump::Delegate>& GetTlsPumpDelegate() {
+  static base::NoDestructor<ThreadLocalPointer<MessagePump::Delegate>> instance;
+  return *instance;
+}
+
 // Runs |closure| immediately if this is called on |task_runner|, otherwise
 // forwards |closure| to it.
 void ProxyToTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner,
@@ -90,6 +95,14 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
          "MessageLoop/TaskEnvironment on a thread that already had one?";
   GetTlsDelegate().Set(delegate);
   delegate->bound_ = true;
+}
+
+
+// static
+void RunLoop::RegisterMessagePumpDelegateForCurrentThread(MessagePump::Delegate* delegate) {
+  DCHECK(!GetTlsPumpDelegate().Get())
+      << "Error: Multiple MessagePump::Delegates registered on the same thread.\n\n";
+  GetTlsPumpDelegate().Set(delegate);
 }
 
 RunLoop::RunLoop(Type type)
@@ -230,6 +243,11 @@ bool RunLoop::AnyQuitCalled() {
   return quit_called_ || quit_when_idle_called_;
 }
 
+MessagePump::Delegate* RunLoop::GetPumpDelegate()
+{
+  return GetTlsPumpDelegate().Get();
+}
+
 // static
 bool RunLoop::IsRunningOnCurrentThread() {
   Delegate* delegate = GetTlsDelegate().Get();
@@ -252,6 +270,9 @@ void RunLoop::AddNestingObserverOnCurrentThread(NestingObserver* observer) {
 // static
 void RunLoop::RemoveNestingObserverOnCurrentThread(NestingObserver* observer) {
   Delegate* delegate = GetTlsDelegate().Get();
+  if(!delegate) {
+    return;
+  }
   DCHECK(delegate);
   delegate->nesting_observers_.RemoveObserver(observer);
 }

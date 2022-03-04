@@ -351,6 +351,12 @@ typedef bool (*LogMessageHandlerFunction)(int severity,
 BASE_EXPORT void SetLogMessageHandler(LogMessageHandlerFunction handler);
 BASE_EXPORT LogMessageHandlerFunction GetLogMessageHandler();
 
+
+// As above, but for wtk2.  This takes precedence over the log handler
+// installed via 'SetLogMessageHandler'.
+BASE_EXPORT void SetWtk2LogMessageHandler(LogMessageHandlerFunction handler);
+BASE_EXPORT LogMessageHandlerFunction GetWtk2LogMessageHandler();
+
 using LogSeverity = int;
 constexpr LogSeverity LOGGING_VERBOSE = -1;  // This is level 1 verbosity
 // Note: the log severities are used to index into the array of names,
@@ -732,5 +738,10 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& out, const char16_t* str16);
 BASE_EXPORT std::ostream& operator<<(std::ostream& out,
                                      const std::u16string& str16);
 }  // namespace std
+
+// Calls OutputDebugString with the formatted string, pre-pended with the time
+// in milliseconds.
+BASE_EXPORT void EnableDebugWithTime(bool enabled);
+BASE_EXPORT void DebugWithTime(const char *format, ...);
 
 #endif  // BASE_LOGGING_H_

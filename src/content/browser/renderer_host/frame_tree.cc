@@ -260,7 +260,8 @@ FrameTree::FrameTree(
     RenderWidgetHostDelegate* render_widget_delegate,
     RenderFrameHostManager::Delegate* manager_delegate,
     PageDelegate* page_delegate,
-    Type type)
+    Type type,
+    int render_process_affinity)
     : delegate_(delegate),
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
@@ -271,11 +272,13 @@ FrameTree::FrameTree(
                  *this,
                  navigator_delegate,
                  navigation_controller_delegate),
+      render_process_affinity_(render_process_affinity),
       root_(new FrameTreeNode(this,
                               nullptr,
                               // The top-level frame must always be in a
                               // document scope.
                               blink::mojom::TreeScopeType::kDocument,
+                              render_process_affinity,
                               std::string(),
                               std::string(),
                               false,
@@ -408,7 +411,7 @@ FrameTreeNode* FrameTree::AddFrame(
   CHECK_EQ(parent->GetProcess()->GetID(), process_id);
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent, scope, frame_name, frame_unique_name, is_created_by_script,
+      this, parent, scope, render_process_affinity_, frame_name, frame_unique_name, is_created_by_script,
       devtools_frame_token, frame_owner_properties, owner_type, frame_policy));
 
   // Set sandbox flags and container policy and make them effective immediately,

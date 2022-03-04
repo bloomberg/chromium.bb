@@ -195,6 +195,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                    const WebString& default_value) override;
   void GenerateInterventionReport(const WebString& message_id,
                                   const WebString& message) override;
+  v8::Isolate* ScriptIsolate() const override;
   void UnmarkText() override;
   bool HasMarkedText() const override;
   WebRange MarkedRange() const override;

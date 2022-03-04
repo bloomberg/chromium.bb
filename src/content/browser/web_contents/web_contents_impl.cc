@@ -555,7 +555,7 @@ std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
     const SessionStorageNamespaceMap& session_storage_namespace_map) {
   OPTIONAL_TRACE_EVENT0("content", "WebContents::CreateWithSessionStorage");
   std::unique_ptr<WebContentsImpl> new_contents(
-      new WebContentsImpl(params.browser_context));
+      new WebContentsImpl(params.browser_context, params.render_process_affinity));
   RenderFrameHostImpl* opener_rfh = FindOpenerRFH(params);
   FrameTreeNode* opener = nullptr;
   if (opener_rfh)
@@ -881,7 +881,8 @@ void WebContentsImpl::WebContentsObserverList::RemoveObserver(
 
 // WebContentsImpl -------------------------------------------------------------
 
-WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
+WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
+                                 int render_process_affinity)
     : delegate_(nullptr),
       render_view_host_delegate_view_(nullptr),
       opened_by_another_window_(false),
@@ -894,7 +895,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
                           this,
                           this,
                           this,
-                          FrameTree::Type::kPrimary),
+                          FrameTree::Type::kPrimary,
+                          render_process_affinity),
       node_(this),
       primary_main_frame_process_status_(
           base::TERMINATION_STATUS_STILL_RUNNING),
@@ -1079,7 +1081,7 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
   if (opener_rfh)
     opener = opener_rfh->frame_tree_node();
   std::unique_ptr<WebContentsImpl> new_contents(
-      new WebContentsImpl(params.browser_context));
+      new WebContentsImpl(params.browser_context, params.render_process_affinity));
   new_contents->SetOpenerForNewContents(opener, params.opener_suppressed);
 
   // If the opener is sandboxed, a new popup must inherit the opener's sandbox
@@ -2971,6 +2973,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
         ->PreventAssociationWithSpareProcess();
   }
 
+  // If we have affinity to a particular render process, then get the process
+  // now, or forever hold your peace.
+  if (params.render_process_affinity != SiteInstance::kNoProcessAffinity)
+    site_instance->GetProcess(params.render_process_affinity);
+
   primary_frame_tree_.Init(site_instance.get(),
                            params.renderer_initiated_creation,
                            params.main_frame_name, GetOriginalOpener());
@@ -3843,6 +3850,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   CreateParams create_params(GetBrowserContext(), site_instance.get());
+  create_params.render_process_affinity = primary_frame_tree_.RenderProcessAffinity();
   create_params.main_frame_name = params.frame_name;
   create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = opener->GetRoutingID();

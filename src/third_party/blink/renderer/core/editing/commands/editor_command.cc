@@ -1811,6 +1811,16 @@ static const EditorInternalCommand* InternalCommand(
       {EditingCommandType::kAlignCenter, ExecuteJustifyCenter,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+
+
+
+      // patch section: insert HTML nested
+
+
+      // patch section: indent-block/outdent-block
+
+
+
   };
   // Handles all commands except EditingCommandType::Invalid.
   static_assert(

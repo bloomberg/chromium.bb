@@ -103,6 +103,7 @@ CONTENT_EXPORT extern const char kDomAutomationController[];
 extern const char kDisable2dCanvasClipAntialiasing[];
 CONTENT_EXPORT extern const char kEnableAggressiveDOMStorageFlushing[];
 CONTENT_EXPORT extern const char kEnableAutomation[];
+CONTENT_EXPORT extern const char kEnableCSS3Text[];
 CONTENT_EXPORT extern const char kEnableBlinkFeatures[];
 CONTENT_EXPORT extern const char kEnableCaretBrowsing[];
 CONTENT_EXPORT extern const char kEnableDisplayList2dCanvas[];
@@ -299,6 +300,9 @@ CONTENT_EXPORT extern const char kPpapiSubpixelRenderingSetting[];
 CONTENT_EXPORT extern const char kRaiseTimerFrequency[];
 CONTENT_EXPORT extern const char kGpu2StartupDialog[];
 CONTENT_EXPORT extern const char kAudioProcessHighPriority[];
+
+// Enable DPI awareness for the process
+CONTENT_EXPORT extern const char kDpiAwarenessMode[];
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

@@ -112,6 +112,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/page/bb_window_hooks.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1051,6 +1052,17 @@ Navigator* LocalDOMWindow::navigator() {
   if (!navigator_)
     navigator_ = MakeGarbageCollected<Navigator>(this);
   return navigator_.Get();
+}
+
+BBWindowHooks* LocalDOMWindow::bbWindowHooks()
+{
+    if (!IsCurrentlyDisplayedInFrame())
+        return nullptr;
+    if (!bb_window_hooks_)
+        bb_window_hooks_ = BBWindowHooks::Create(this);
+    if (bb_window_hooks_)
+      return bb_window_hooks_.Get();
+    return nullptr;
 }
 
 void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
@@ -2169,6 +2181,7 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   visitor->Trace(isolated_world_csp_map_);
   visitor->Trace(network_state_observer_);
   visitor->Trace(dedicated_workers_);
+  visitor->Trace(bb_window_hooks_);
   DOMWindow::Trace(visitor);
   ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);

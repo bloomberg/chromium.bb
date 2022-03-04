@@ -107,6 +107,7 @@ FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
     RenderFrameHostImpl* parent,
     blink::mojom::TreeScopeType tree_scope_type,
+    int render_process_affinity,
     const std::string& name,
     const std::string& unique_name,
     bool is_created_by_script,
@@ -139,7 +140,7 @@ FrameTreeNode::FrameTreeNode(
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
       blame_context_(frame_tree_node_id_, FrameTreeNode::From(parent)),
-      render_manager_(this, frame_tree->manager_delegate()) {
+      render_manager_(this, frame_tree->manager_delegate(), render_process_affinity) {
   std::pair<FrameTreeNodeIdMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(
           std::make_pair(frame_tree_node_id_, this));

@@ -153,6 +153,11 @@ class V8_EXPORT V8 {
                                            const char* icu_data_file = nullptr);
 
   /**
+   * Initialize the ICU library bundled with V8 using the specified icu data.
+  */
+  static bool InitializeICUWithData(const void* icu_data);
+
+  /**
    * Initialize the external startup data. The embedder only needs to
    * invoke this method when external startup data was enabled in a build.
    *

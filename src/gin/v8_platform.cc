@@ -59,7 +59,12 @@ class ConvertableToTraceFormatWrapper final
       const ConvertableToTraceFormatWrapper&) = delete;
   ~ConvertableToTraceFormatWrapper() override = default;
   void AppendAsTraceFormat(std::string* out) const final {
-    inner_->AppendAsTraceFormat(out);
+    size_t size = inner_->AppendAsTraceFormat(nullptr, 0);
+    if (size) {
+      std::unique_ptr<char[]> tmp(new char[size]);
+      inner_->AppendAsTraceFormat(tmp.get(), size);
+      out->append(tmp.get(), size-1);
+    }
   }
 
  private:

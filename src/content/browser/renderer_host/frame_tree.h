@@ -194,7 +194,8 @@ class CONTENT_EXPORT FrameTree {
             RenderWidgetHostDelegate* render_widget_delegate,
             RenderFrameHostManager::Delegate* manager_delegate,
             PageDelegate* page_delegate,
-            Type type);
+            Type type,
+            int render_process_affinity);
 
   FrameTree(const FrameTree&) = delete;
   FrameTree& operator=(const FrameTree&) = delete;
@@ -344,6 +345,10 @@ class CONTENT_EXPORT FrameTree {
   // SiteInstance (e.g., this happens for cross-process window.focus() calls).
   void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source);
 
+  // Returns the render process affinity, or SiteInstance::kNoProcessAffinity
+  // if there is no affinity.
+  int RenderProcessAffinity() const { return render_process_affinity_; }
+
   // Creates a RenderViewHostImpl for a given |site_instance| in the tree.
   //
   // The RenderFrameHostImpls and the RenderFrameProxyHosts will share ownership
@@ -486,6 +491,10 @@ class CONTENT_EXPORT FrameTree {
   // Each RenderViewHost maintains a refcount and is deleted when there are no
   // more RenderFrameHosts or RenderFrameProxyHosts using it.
   RenderViewHostMap render_view_host_map_;
+
+  // Render process affinity, or SiteInstance::kNoProcessAffinity if there is
+  // no affinity.
+  int render_process_affinity_;
 
   // This is an owned ptr to the root FrameTreeNode, which never changes over
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the

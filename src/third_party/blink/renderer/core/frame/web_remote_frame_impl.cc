@@ -414,6 +414,12 @@ bool WebRemoteFrameImpl::IsAdSubframe() const {
   return GetFrame()->IsAdSubframe();
 }
 
+v8::Isolate* WebRemoteFrameImpl::ScriptIsolate() const
+{
+  NOTREACHED();
+  return nullptr;
+}
+
 WebRemoteFrameImpl::WebRemoteFrameImpl(
     mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,

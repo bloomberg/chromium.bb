@@ -4,6 +4,7 @@
 
 #include "src/init/startup-data-util.h"
 
+#include <blpwtk2_products.h>
 #include <stdlib.h>
 #include <string.h>
 

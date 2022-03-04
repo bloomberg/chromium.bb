@@ -158,6 +158,8 @@ class WebContents : public PageNavigator,
     // (e.g., for blocked popups), or when the window is opened with "noopener".
     bool opened_by_another_window = false;
 
+    int32_t render_process_affinity;
+    
     // The name of the top-level frame of the new window. It is non-empty
     // when creating a named window (e.g. <a target="foo"> or
     // window.open('', 'bar')).

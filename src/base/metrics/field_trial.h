@@ -76,6 +76,7 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/pickle.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -570,7 +571,8 @@ class BASE_EXPORT FieldTrialList {
   // object containing the FieldTrial configuration.
   static void PopulateLaunchOptionsWithFieldTrialState(
       CommandLine* command_line,
-      LaunchOptions* launch_options);
+      LaunchOptions* launch_options,
+      base::ProcessHandle child_process = 0);
 #endif  // !defined(OS_IOS)
 
 #if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_NACL)
@@ -677,7 +679,8 @@ class BASE_EXPORT FieldTrialList {
   // GetFieldTrialDescriptor() API.
   static std::string SerializeSharedMemoryRegionMetadata(
       const ReadOnlySharedMemoryRegion& shm,
-      LaunchOptions* launch_options);
+      LaunchOptions* launch_options,
+      base::ProcessHandle child_process = 0);
 
   // Deserialization instantiates the shared memory region for FieldTrials from
   // the serialized information contained in |switch_value|. Returns an invalid

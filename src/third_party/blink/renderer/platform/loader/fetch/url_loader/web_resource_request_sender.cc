@@ -270,6 +270,7 @@ int WebResourceRequestSender::SendAsync(
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
+
   request_info_ = std::make_unique<PendingRequestInfo>(
       std::move(peer), request->destination, request->url,
       std::move(resource_load_info_notifier_wrapper));
@@ -312,6 +313,7 @@ int WebResourceRequestSender::SendAsync(
 
 void WebResourceRequestSender::Cancel(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+
   // Cancel the request if it didn't complete, and clean it up so the bridge
   // will receive no more messages.
   DeletePendingRequest(std::move(task_runner));
@@ -341,7 +343,13 @@ void WebResourceRequestSender::DidChangePriority(
     return;
   }
 
-  request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
+  // blpwtk2: Null-check before we attempt to use the throttling loader. This
+  // check is needed because we bail out very early in the StartAsync function
+  // if the embedder's URL loader is used, and we never give the chance for
+  // the throttling loader to be installed later in the function.
+  if (request_info_->url_loader) {
+    request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
+  }
 }
 
 void WebResourceRequestSender::DeletePendingRequest(

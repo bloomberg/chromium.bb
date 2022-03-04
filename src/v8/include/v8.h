@@ -21,6 +21,18 @@
 #include <memory>
 #include <vector>
 
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+// MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+  #define MSVC_2015_PLUS
+  #define constexpr_func constexpr
+#else
+  #pragma warning( disable : 4251)
+  #define constexpr const
+  #define constexpr_func V8_INLINE static
+#endif
+
 #include "cppgc/common.h"
 #include "v8-array-buffer.h"       // NOLINT(build/include_directory)
 #include "v8-container.h"          // NOLINT(build/include_directory)

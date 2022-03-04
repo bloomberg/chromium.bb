@@ -276,6 +276,7 @@ target(link_target_type, "renderer") {
     "//media",
     "//media:media_buildflags",
     "//media/capture",
+    "//media/cast:sender",
     "//media/gpu",
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",

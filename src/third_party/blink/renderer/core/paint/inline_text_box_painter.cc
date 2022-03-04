@@ -36,6 +36,15 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
+
+
+// patch section: highlight marker
+
+
+// patch section: color document marker
+
+
+
 namespace blink {
 
 class HTMLAnchorElement;

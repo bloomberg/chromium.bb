@@ -300,6 +300,7 @@ source_set("browser_sources") {
     "render_frame_host.h",
     "render_frame_host_receiver_set.h",
     "render_frame_metadata_provider.h",
+    "render_process_host.cc",
     "render_process_host.h",
     "render_process_host_creation_observer.h",
     "render_process_host_factory.h",
