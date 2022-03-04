@@ -24,7 +24,6 @@
 #define INCLUDED_BLPWTK2_REQUESTCONTEXTMANAGER_H
 
 #include <base/files/file_path.h>
-#include <base/macros.h>
 #include <base/memory/ref_counted.h>
 #include <content/public/browser/browser_context.h>
 #include <mojo/public/cpp/bindings/pending_remote.h>
@@ -49,6 +48,8 @@ class RequestContextManager {
 
   RequestContextManager();
   ~RequestContextManager();
+  RequestContextManager(const RequestContextManager&) = delete;
+  RequestContextManager& operator=(const RequestContextManager&) = delete;
 
   void ConfigureNetworkContextParams(
     std::string user_agent,
@@ -69,8 +70,6 @@ class RequestContextManager {
 
   mojo::PendingRemote<::network::mojom::NetworkContext> system_context_;
   std::unique_ptr<content::ResourceContext> resource_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestContextManager);
 };
 
 }  // namespace blpwtk2

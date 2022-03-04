@@ -104,7 +104,7 @@ std::string DesktopStreamsRegistry::RegisterStream(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindRepeating(&DesktopStreamsRegistry::CleanupStream,
                           base::Unretained(this), id),
-      base::TimeDelta::FromSeconds(kApprovedStreamTimeToLiveSeconds));
+      base::Seconds(kApprovedStreamTimeToLiveSeconds));
 
   return id;
 }

@@ -29,7 +29,6 @@
 #include <blpwtk2/private/blpwtk2_webview.mojom.h>
 
 #include <base/memory/ref_counted.h>
-#include <base/macros.h>
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
 #include <mojo/public/cpp/bindings/remote.h>
@@ -62,16 +61,16 @@ class MainMessagePump;
 // thread.
 //
 // See blpwtk2_toolkit.h for an explanation about the threads.
-class ProfileImpl : public Profile {
+class ProfileImpl final : public Profile {
     // DATA
     mojo::Remote<mojom::ProcessHost> d_hostPtr;
     int d_numWebViews;
     unsigned int d_processId;
     MainMessagePump *d_pump;
 
-    ~ProfileImpl() final;
-
-    DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
+    ~ProfileImpl() override;
+    ProfileImpl(const ProfileImpl&) = delete;
+    ProfileImpl& operator=(const ProfileImpl&) = delete;
 
   public:
     static Profile *anyInstance();
