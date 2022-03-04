@@ -29,7 +29,6 @@
 #include <blpwtk2/private/blpwtk2_webview.mojom.h>
 
 #include <base/memory/ref_counted.h>
-#include <base/macros.h>
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
 #include <mojo/public/cpp/bindings/remote.h>
@@ -62,16 +61,17 @@ class ProcessClientDelegate;
 // thread.
 //
 // See blpwtk2_toolkit.h for an explanation about the threads.
-class ProfileImpl : public Profile, public mojom::ProcessClient {
+class ProfileImpl final : public Profile, public mojom::ProcessClient {
     // DATA
     mojo::Remote<mojom::ProcessHost> d_hostPtr;
     int d_numWebViews;
     unsigned int d_processId;
     MainMessagePump *d_pump;
 
-    ~ProfileImpl() final;
+    ~ProfileImpl() override;
+    ProfileImpl(const ProfileImpl&) = delete;
+    ProfileImpl& operator=(const ProfileImpl&) = delete;
 
-    DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
     mojo::Receiver<mojom::ProcessClient> d_receiver;
     ProcessClientDelegate *d_ipcDelegate;
     void onBindProcessDone(mojom::ProcessClientRequest processClientRequest);
