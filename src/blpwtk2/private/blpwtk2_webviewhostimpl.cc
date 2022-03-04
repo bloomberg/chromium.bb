@@ -183,6 +183,21 @@ void WebViewHostImpl::showContextMenu(
     d_clientPtr->showContextMenu(getContextMenuParamsImpl(params)->Clone());
 }
 
+void WebViewHostImpl::enterFullscreenMode(WebView *source)
+{
+    DCHECK(source == d_impl);
+    d_clientPtr->enterFullscreenMode(
+        base::BindOnce(&WebViewImpl::onEnterFullscreenModeResult,
+                    base::Unretained(d_impl))
+    );
+}
+
+void WebViewHostImpl::exitFullscreenMode(WebView *source)
+{
+    DCHECK(source == d_impl);
+    d_clientPtr->exitFullscreenMode();
+}
+
 void WebViewHostImpl::requestNCHitTest(WebView *source)
 {
     DCHECK(source == d_impl);

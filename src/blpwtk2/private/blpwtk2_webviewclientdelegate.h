@@ -78,6 +78,14 @@ class WebViewClientDelegate
         // This method is called when the browser observes a blur (or
         // focus-out) event on this webview's window.
 
+    virtual void enterFullscreenMode() = 0;
+        // This method is called when Element::requestFullscreen
+        // is executed.
+
+    virtual void exitFullscreenMode() = 0;
+        // This method is called when Document::exitFullscreen
+        // is executed.
+
     virtual void showContextMenu(const ContextMenuParams& params) = 0;
         // This method is called when the user right-clicks (or through some
         // other means) to bring up the context menu.  The browser itself

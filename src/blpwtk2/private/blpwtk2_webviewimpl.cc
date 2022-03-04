@@ -100,7 +100,8 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     , d_ncHitTestPendingAck(false)
     , d_lastNCHitTestResult(HTCLIENT)
     , d_hostId(hostAffinity)
-{
+    ,  d_isFullscreen(false)
+    {
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(browserContext);
 
@@ -571,6 +572,11 @@ void WebViewImpl::onNCHitTestResult(int x, int y, int result)
     }
 }
 
+void WebViewImpl::onEnterFullscreenModeResult(bool isFullscreen)
+{
+    setFullscreenMode(isFullscreen);
+}
+
 void WebViewImpl::setNCHitTestRegion(NativeRegion region)
 {
     DCHECK(Statics::isInBrowserMainThread());
@@ -714,6 +720,33 @@ bool WebViewImpl::TakeFocus(content::WebContents *source, bool reverse)
         return false;
     }
     return false;
+}
+
+void WebViewImpl::setFullscreenMode(bool isFullscreen) {
+    if (d_isFullscreen == isFullscreen) {
+        return;
+    }
+    d_isFullscreen = isFullscreen;
+    d_webContents->GetRenderViewHost()
+        ->GetWidget()
+        ->SynchronizeVisualProperties();
+}
+void WebViewImpl::EnterFullscreenModeForTab(
+    content::RenderFrameHost* requesting_frame,
+    const blink::mojom::FullscreenOptions& options)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    d_delegate->enterFullscreenMode(this);
+}
+
+void WebViewImpl::ExitFullscreenModeForTab(
+    content::WebContents* web_contents) {
+    d_delegate->exitFullscreenMode(this);
+    setFullscreenMode(false);
+}
+
+bool WebViewImpl::IsFullscreenForTabOrPending(const::content::WebContents* web_contents) {
+  return d_isFullscreen;
 }
 
 void WebViewImpl::RequestMediaAccessPermission(

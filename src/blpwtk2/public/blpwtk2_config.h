@@ -90,6 +90,7 @@
 // feature 35
 // feature 36
 // feature 37
+#define BLPWTK2_FEATURE_FULLSCREEN_MODE
 // feature 38
 // feature 39
 #define BLPWTK2_FEATURE_EMBEDDER_IPC
