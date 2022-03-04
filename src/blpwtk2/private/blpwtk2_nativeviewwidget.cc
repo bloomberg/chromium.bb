@@ -160,6 +160,11 @@ void NativeViewWidget::compositionChanged()
 
 
 // patch section: gpu
+gfx::NativeWindow NativeViewWidget::GetNativeWindow()
+{
+    DCHECK(d_impl);
+    return d_impl->GetNativeWindow();
+}
 
 
 

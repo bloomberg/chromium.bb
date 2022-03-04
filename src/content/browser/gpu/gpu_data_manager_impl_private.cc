@@ -979,6 +979,9 @@ void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate(
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
   observer_list_->AddObserver(observer);
+  if (gpu_mode_ != gpu::GpuMode::UNKNOWN) {
+    observer->OnGpuModeUpdated(gpu_mode_);
+  }
 }
 
 void GpuDataManagerImplPrivate::RemoveObserver(
@@ -1453,6 +1456,8 @@ void GpuDataManagerImplPrivate::AddLogMessage(int level,
   log_messages_.push_back(LogMessage(level, header, message));
   if (log_messages_.size() > kLogMessageLimit)
     log_messages_.erase(log_messages_.begin());
+
+  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnAddLogMessage, level, header, message);
 }
 
 void GpuDataManagerImplPrivate::ProcessCrashed(
@@ -1701,6 +1706,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
   DCHECK_NE(gpu_mode_, gpu::GpuMode::UNKNOWN);
   if (gpu_mode_ == gpu::GpuMode::DISPLAY_COMPOSITOR)
     OnGpuBlocked();
+  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnGpuModeUpdated, gpu_mode_);
 }
 
 void GpuDataManagerImplPrivate::RecordCompositingMode() {

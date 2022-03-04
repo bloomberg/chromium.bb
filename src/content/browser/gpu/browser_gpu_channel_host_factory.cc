@@ -157,7 +157,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout() {
 void BrowserGpuChannelHostFactory::EstablishRequest::Establish(bool sync) {
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
-    LOG(ERROR) << "Failed to launch GPU process.";
+    LOG(WARNING) << "Failed to launch GPU process.";
     Finish();
     return;
   }

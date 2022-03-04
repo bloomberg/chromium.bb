@@ -151,6 +151,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: gpu
+    void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const override;
 
 
 

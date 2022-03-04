@@ -427,6 +427,18 @@ void ProfileImpl::setIPCDelegate(ProcessClientDelegate *delegate)
 
 
 // patch section: gpu
+void ProfileImpl::getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const
+{
+    mojom::GpuMode hostMode;
+    mojom::GpuMode hostStartupMode;
+    if (!d_hostPtr->getGpuMode(&hostMode, &hostStartupMode, &crashCount)) {
+        hostMode = mojom::GpuMode::kUnknown;
+        hostStartupMode = mojom::GpuMode::kUnknown;
+        crashCount = 0;
+    }
+    currentMode = (GpuMode)hostMode;
+    startupMode = (GpuMode)hostStartupMode;
+}
 
 
 

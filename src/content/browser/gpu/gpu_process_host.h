@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/host/gpu_host_impl.h"
+#include "content/browser/gpu/gpu_error_message_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -54,9 +55,11 @@ class CATransactionGPUCoordinator;
 #endif
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
+                       public GpuErrorMessageObserver::Delegate,
                        public viz::GpuHostImpl::Delegate {
  public:
-  static int GetGpuCrashCount();
+  CONTENT_EXPORT static int GetGpuCrashCount();
+  CONTENT_EXPORT static base::Optional<gpu::GpuMode> GetStartupGpuMode();
 
   // Creates a new GpuProcessHost (if |force_create| is turned on) or gets an
   // existing one, resulting in the launching of a GPU process if required.
@@ -133,6 +136,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   CONTENT_EXPORT int GetIDForTesting() const;
 
   viz::GpuHostImpl* gpu_host() { return gpu_host_.get(); }
+
+  // GpuErrorMessageObserver::Delegate overrides
+  void OnFatalErrorDetected(const std::string& header,
+                            const std::string& message) final;
 
  private:
   enum class GpuTerminationOrigin {
@@ -253,6 +260,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // it could crash as it fails to find a message pipe to the host.
   std::unique_ptr<BrowserChildProcessHostImpl> process_;
   std::unique_ptr<base::Thread> in_process_gpu_thread_;
+
+  std::unique_ptr<GpuErrorMessageObserver> error_message_observer_;
 
 #if defined(OS_MAC)
   scoped_refptr<CATransactionGPUCoordinator> ca_transaction_gpu_coordinator_;
