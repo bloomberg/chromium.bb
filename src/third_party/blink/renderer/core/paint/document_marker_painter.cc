@@ -168,8 +168,9 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
       line_thickness = thick_line_thickness;
   }
 
+  const bool removeImeUnderlineColor = true;
   Color marker_color =
-      (marker.UseTextColor() || in_dark_mode)
+      (removeImeUnderlineColor || marker.UseTextColor() || in_dark_mode)
           ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
           : marker.UnderlineColor();
   if (marker.UnderlineStyle() !=
