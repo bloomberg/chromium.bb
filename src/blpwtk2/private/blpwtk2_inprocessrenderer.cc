@@ -51,7 +51,7 @@ static void InitDirectWrite()
                         // class InProcessRendererThread
                         // =============================
 
-class InProcessRendererThread : public base::Thread {
+class InProcessRendererThread final : public base::Thread {
     // DATA
     scoped_refptr<base::SingleThreadTaskRunner> d_browserIOTaskRunner;
     mojo::OutgoingInvitation* d_broker_client_invitation;
@@ -64,15 +64,15 @@ class InProcessRendererThread : public base::Thread {
     // Called just after the message loop ends
     void CleanUp() override;
 
-    DISALLOW_COPY_AND_ASSIGN(InProcessRendererThread);
-
 public:
     InProcessRendererThread(
             const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
             mojo::OutgoingInvitation*                          broker_client_invitation,
             int                                                mojoHandle,
             const int32_t                                      renderer_client_id);
-    ~InProcessRendererThread() final;
+    ~InProcessRendererThread() override;
+    InProcessRendererThread(const InProcessRendererThread&) = delete;
+    InProcessRendererThread& operator=(const InProcessRendererThread&) = delete;
 };
 
                         // -----------------------------
@@ -116,7 +116,7 @@ InProcessRendererThread::InProcessRendererThread(
 {
     base::Thread::Options options;
     options.message_pump_type = base::MessagePumpType::UI;
-    StartWithOptions(options);
+    StartWithOptions(std::move(options));
 }
 
 InProcessRendererThread::~InProcessRendererThread()

@@ -50,7 +50,7 @@ int SubProcessMain(HINSTANCE hInstance,
     content::ContentMainParams params(&delegate);
     params.instance = hInstance;
     params.sandbox_info = sandboxInfo;
-    return content::ContentMain(params);
+    return content::ContentMain(std::move(params));
 }
 
 // vim: ts=4 et
