@@ -720,6 +720,9 @@ class CORE_EXPORT LocalFrame final
   void RebindTextInputHostForTesting();
 #endif
 
+  // blpwtk2: for RenderWebView
+  void SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride);
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -891,6 +894,9 @@ class CORE_EXPORT LocalFrame final
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
   Member<LocalFrameMojoHandler> mojo_handler_;
+
+  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverride>
+      local_frame_host_partial_override_remote_{nullptr};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;

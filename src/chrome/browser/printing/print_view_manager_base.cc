@@ -178,7 +178,8 @@ void GetDefaultPrintSettingsOnIO(
     mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback,
     scoped_refptr<PrintQueriesQueue> queue,
     int process_id,
-    int routing_id) {
+    int routing_id,
+    HWND owner_wnd) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   std::unique_ptr<PrinterQuery> printer_query = queue->PopPrinterQuery(0);
@@ -190,7 +191,7 @@ void GetDefaultPrintSettingsOnIO(
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettings(
       PrinterQuery::GetSettingsAskParam::DEFAULTS, 0, false,
-      printing::mojom::MarginType::kDefaultMargins, false, false,
+      printing::mojom::MarginType::kDefaultMargins, owner_wnd, false, false,
       base::BindOnce(&GetDefaultPrintSettingsReplyOnIO, queue,
                      std::move(printer_query), std::move(callback)));
 }
@@ -307,7 +308,8 @@ void ScriptedPrintOnIO(mojom::ScriptedPrintParamsPtr params,
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettings(
       PrinterQuery::GetSettingsAskParam::ASK_USER, params->expected_pages_count,
-      params->has_selection, params->margin_type, params->is_scripted,
+      params->has_selection, params->margin_type,
+      reinterpret_cast<HWND>(params->owner_wnd), params->is_scripted,
       params->is_modifiable,
       base::BindOnce(&ScriptedPrintReplyOnIO, queue, std::move(printer_query),
                      std::move(callback)));
@@ -628,6 +630,7 @@ void PrintViewManagerBase::DidPrintDocument(
 }
 
 void PrintViewManagerBase::GetDefaultPrintSettings(
+    uint32_t owner_wnd,
     GetDefaultPrintSettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!printing_enabled_.GetValue()) {
@@ -644,7 +647,7 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
       FROM_HERE,
       base::BindOnce(&GetDefaultPrintSettingsOnIO, std::move(callback_wrapper),
                      queue_, render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID()));
+                     render_frame_host->GetRoutingID(), reinterpret_cast<HWND>(owner_wnd)));
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

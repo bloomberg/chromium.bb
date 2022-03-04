@@ -15,6 +15,7 @@
 #include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
@@ -878,6 +880,9 @@ class WebLocalFrame : public WebFrame {
   virtual void SetSessionStorageArea(
       CrossVariantMojoRemote<mojom::StorageAreaInterfaceBase>
           session_storage_area) = 0;
+
+  // blpwtk2: for RenderWebView
+  virtual void SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride) {}
 
  protected:
   explicit WebLocalFrame(mojom::TreeScopeType scope,

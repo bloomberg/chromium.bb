@@ -51,6 +51,11 @@
 #include "third_party/blink/public/web/web_lifecycle_update.h"
 #include "third_party/blink/public/web/web_range.h"
 
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include <third_party/blink/public/mojom/page/widget.mojom.h>
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
+
 namespace cc {
 class LayerTreeHost;
 class LayerTreeSettings;
@@ -217,6 +222,13 @@ class WebWidget {
   virtual float GetEmulatorScale() { return 1.0f; }
 
   virtual bool IsHidden() const = 0;
+
+  virtual void ResetWidgetInterfaces(
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) {}
 
  protected:
   ~WebWidget() = default;
