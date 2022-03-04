@@ -39,6 +39,7 @@
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service_filter.h>
+#include <third_party/blink/public/platform/web_cache.h>
 
 #include <mojo/public/cpp/bindings/self_owned_receiver.h>
 
@@ -421,6 +422,10 @@ void ProfileImpl::setIPCDelegate(ProcessClientDelegate *delegate)
 
 
 // patch section: web cache
+void ProfileImpl::clearWebCache()
+{
+    blink::WebCache::Clear();
+}
 
 
 // patch section: memory diagnostics
