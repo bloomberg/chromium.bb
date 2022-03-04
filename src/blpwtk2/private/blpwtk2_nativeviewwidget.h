@@ -38,12 +38,14 @@ class NativeViewWidgetDelegate;
 
 // This class wraps a views::Widget that contains a gfx::NativeView (in our
 // case, this is an aura::Window).  The widget can be parented into an HWND.
-class NativeViewWidget : private views::WidgetDelegateView {
+class NativeViewWidget final : private views::WidgetDelegateView {
   public:
     NativeViewWidget(gfx::NativeView contents,
                      NativeViewWidgetDelegate* delegate,
                      bool rerouteMouseWheelToAnyRelatedWindow);
-    ~NativeViewWidget() final;
+    ~NativeViewWidget() override;
+    NativeViewWidget(const NativeViewWidget&) = delete;
+    NativeViewWidget& operator=(const NativeViewWidget&) = delete;
 
     void destroy();
     void setDelegate(NativeViewWidgetDelegate* delegate);
@@ -65,8 +67,6 @@ class NativeViewWidget : private views::WidgetDelegateView {
     NativeViewWidgetDelegate* d_delegate;  // held, not owned
     views::NativeViewHost* d_nativeViewHost;  // owned (by views::View)
     views::Widget* d_impl;  // owned by native widget
-
-    DISALLOW_COPY_AND_ASSIGN(NativeViewWidget);
 };
 
 }  // close namespace blpwtk2

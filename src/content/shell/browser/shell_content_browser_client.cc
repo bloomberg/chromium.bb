@@ -359,7 +359,7 @@ void ShellContentBrowserClient::StartInProcessRendererThread(
   options.message_pump_type = base::MessagePumpType::DEFAULT;
 #endif
 
-  g_in_process_renderer_thread->StartWithOptions(options);
+  g_in_process_renderer_thread->StartWithOptions(std::move(options));
 }
 
 void ShellContentBrowserClient::StopInProcessRendererThread() {
