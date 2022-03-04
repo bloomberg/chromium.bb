@@ -39,7 +39,6 @@
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_frame_widget.h>
 #include <third_party/blink/public/web/web_view.h>
-#include <third_party/blink/renderer/core/exported/web_view_impl.h>
 
 #include <dwmapi.h>
 #include <windows.h>
@@ -245,7 +244,7 @@ void WebViewProxy::setLogicalFocus(bool focused)
             content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
         VALIDATE_RENDER_VIEW_VOID(rv);
         blink::WebView* webView = rv->GetWebView();
-        static_cast<blink::WebViewImpl*>(webView)->SetPageFocus(focused);
+        webView->SetPageFocus(focused);
     }
 
     // Send the message, which will update the browser-side aura::Window focus

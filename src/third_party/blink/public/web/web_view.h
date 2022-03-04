@@ -210,6 +210,9 @@ class WebView {
   // previous element in the tab sequence (if reverse is true).
   virtual void AdvanceFocus(bool reverse) {}
 
+  // blpwtk2/ext/focus: Bring WebViewImpl function to the public interface
+  virtual void SetPageFocus(bool enable) {}
+
   // Zoom ----------------------------------------------------------------
 
   // Returns the current zoom level.  0 is "original size", and each increment
