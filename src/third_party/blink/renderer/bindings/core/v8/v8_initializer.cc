@@ -472,6 +472,11 @@ bool V8Initializer::WasmCodeGenerationCheckCallbackInMainThread(v8::Local<v8::Co
           ReportingDisposition::kReport,
           ContentSecurityPolicy::kWillThrowException, snippet);
     }
+
+    // blpwtk2: Fake web-script contexts do not have a bound CSP policy.
+    // As a workaround, we are unconditionally allowing wasm code generation
+    // when the CSP is missing.
+    return true;
   }
   return false;
 }

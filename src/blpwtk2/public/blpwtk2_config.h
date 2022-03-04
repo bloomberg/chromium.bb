@@ -73,6 +73,7 @@
 // feature 29
 // feature 30
 // feature 31
+#define BLPWTK2_FEATURE_WEBSCRIPTCONTEXT
 // feature 32
 // feature 33
 // feature 34

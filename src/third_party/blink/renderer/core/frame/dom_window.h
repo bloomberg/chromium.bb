@@ -154,6 +154,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
 
  protected:
   explicit DOMWindow(Frame&);
+  explicit DOMWindow();
 
   struct PostedMessage final : GarbageCollected<PostedMessage> {
     void Trace(Visitor* visitor) const;
