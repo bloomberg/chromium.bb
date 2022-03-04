@@ -480,7 +480,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
-  const auto surface_layer_mode = GetSurfaceLayerMode(MediaPlayerType::kNormal);
+  const auto surface_layer_mode = GetSurfaceLayerMode(MediaPlayerType::kMediaStream);
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       main_thread_compositor_task_runner, &video_frame_compositor_task_runner,
       settings, media_log.get(), render_frame_, surface_layer_mode);

@@ -450,7 +450,7 @@ const base::Feature kSpecCompliantCanPlayThrough{
 
 // Controls usage of SurfaceLayer for MediaStreams.
 const base::Feature kSurfaceLayerForMediaStreams{
-    "SurfaceLayerForMediaStreams", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SurfaceLayerForMediaStreams", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disables the real audio output stream after silent audio has been delivered
 // for too long. Should save quite a bit of power in the muted video case.
