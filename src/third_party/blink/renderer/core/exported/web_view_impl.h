@@ -108,6 +108,21 @@ class TextAutosizerPageInfo;
 
 using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
 
+class RubberbandContext;
+class RubberbandStateImpl;
+class RubberbandState {
+
+    // Not implemented.
+    RubberbandState(const RubberbandState&);
+    RubberbandState& operator=(const RubberbandState&);
+
+  public:
+    RubberbandState();
+    ~RubberbandState();
+
+    std::unique_ptr<RubberbandStateImpl> impl_;
+};
+
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       public RefCounted<WebViewImpl>,
                                       public mojom::blink::PageBroadcast {
@@ -319,6 +334,18 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   SkColor BackgroundColor() const;
   Color BaseBackgroundColor() const;
+
+  // Rubberbanding
+  bool IsAltDragRubberbandingEnabled() const override;
+  void EnableAltDragRubberbanding(bool) override;
+  bool IsRubberbanding() const override;
+  bool PreStartRubberbanding() override;
+  void StartRubberbanding() override;
+  gfx::Rect ExpandRubberbandRect(const gfx::Rect&) override;
+  WebString FinishRubberbanding(const gfx::Rect&) override;
+  void AbortRubberbanding() override;
+  WebString GetTextInRubberband(const gfx::Rect&) override;
+  bool ForceStartRubberbanding(int x, int y) override;
 
   Frame* FocusedCoreFrame() const;
 
@@ -578,6 +605,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Indication that the root layer for the main frame widget has changed.
   void DidChangeRootLayer(bool root_layer_exists);
 
+  void MouseCaptureLost();
+
   // Sets the page focus.
   void SetPageFocus(bool enable) override;
 
@@ -588,6 +617,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // is used to shrink the visible viewport to allow things like the ChromeOS
   // virtual keyboard to overlay over content but allow scrolling it into view.
   void ResizeVisualViewport(const gfx::Size&);
+  bool HandleAltDragRubberbandEvent(const WebInputEvent&);
+
+  // Whether Alt+Mousedrag rubberbanding is enabled or not.
+  bool isAltDragRubberbandingEnabled_ = false;
+  // Whether rubberbanding has been forced on
+  bool rubberbandingForcedOn_ = false;
 
   // Called once a paint happens after the first non empty layout. In other
   // words, after the frame has painted something.
@@ -611,6 +646,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   friend class SimCompositor;
   friend class WebView;  // So WebView::Create can call our constructor
   friend class WTF::RefCounted<WebViewImpl>;
+  friend class WebFrameWidgetBase;
 
   void AcceptLanguagesChanged();
   void ThemeChanged();
@@ -724,8 +760,17 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // the screen at some point or not.
   const bool widgets_never_composited_;
 
+  // Rubberbanding
+  void RubberbandWalkFrame(const RubberbandContext&, const LocalFrame*, const LayoutPoint&);
+  void RubberbandWalkLayoutObject(const RubberbandContext&, const LayoutObject*);
+  WTF::String GetTextInRubberbandImpl(const LayoutRect&);
+
+  LayoutRect ExpandRubberbandRectImpl(const gfx::Rect& rcOrig);
+  WebString FinishRubberbandingImpl(const LayoutRect&);
+
   // Can be null (e.g. unittests, shared workers, etc).
   WebViewClient* web_view_client_;
+
   Persistent<ChromeClient> chrome_client_;
   Persistent<Page> page_;
 
@@ -825,6 +870,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   scoped_refptr<WebPagePopupImpl> page_popup_;
 
   Persistent<DevToolsEmulator> dev_tools_emulator_;
+
+  std::unique_ptr<RubberbandState> rubberbandState_;
 
   // Whether the user can press tab to focus links.
   bool tabs_to_links_ = false;

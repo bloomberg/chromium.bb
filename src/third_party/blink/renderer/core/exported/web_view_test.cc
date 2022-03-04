@@ -4174,6 +4174,10 @@ class TouchEventConsumersWebFrameWidgetHost
     has_touch_event_handler_ = state;
   }
 
+  // mojom::blink::WidgetHost overrides
+  void SetRubberbandRect(const gfx::Rect& rect) override {}
+  void HideRubberbandRect() override {}
+
  private:
   int has_touch_event_handler_count_[2]{};
   bool has_touch_event_handler_ = false;

@@ -211,6 +211,9 @@ class WebViewPlugin : public blink::WebPlugin, public blink::WebViewObserver {
     // parameter on the container's element, if possible.
     void UpdateTooltip(const std::u16string& tooltip_text);
 
+    void SetRubberbandRect(const ::gfx::Rect& rect) override {}
+    void HideRubberbandRect() override {}
+
    private:
     WebViewPlugin* plugin_;
     blink::WebNavigationControl* frame_ = nullptr;

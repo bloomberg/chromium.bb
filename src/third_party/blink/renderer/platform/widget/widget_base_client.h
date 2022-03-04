@@ -228,6 +228,8 @@ class WidgetBaseClient {
   // touchstart. But we still want to count those touchstart, pointerdown and
   // touchend.
   virtual void CountDroppedPointerDownForEventTiming(unsigned count) {}
+
+  virtual void EnableAltDragRubberbanding(bool is_enabled) {}
 };
 
 }  // namespace blink

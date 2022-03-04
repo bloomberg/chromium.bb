@@ -329,6 +329,7 @@ void LocalFrameUkmAggregator::RecordForcedLayoutSample(
     case DocumentUpdateReason::kInput:
     case DocumentUpdateReason::kInspector:
     case DocumentUpdateReason::kPrinting:
+    case DocumentUpdateReason::kRubberband:
     case DocumentUpdateReason::kSelection:
     case DocumentUpdateReason::kSpatialNavigation:
     case DocumentUpdateReason::kTapHighlight:

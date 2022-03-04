@@ -43,6 +43,7 @@
 #include <chrome/browser/printing/print_view_manager.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <content/browser/renderer_host/render_widget_host_view_base.h>
+#include <content/browser/renderer_host/render_widget_host_impl.h>
 #include <content/public/browser/host_zoom_map.h>
 #include <content/public/browser/media_capture_devices.h>
 #include <content/public/browser/media_stream_request.h>
@@ -100,6 +101,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     , d_isTakingKeyboardFocus(false)
     , d_ncHitTestEnabled(false)
     , d_ncHitTestPendingAck(false)
+    , d_altDragRubberbandingEnabled(false)
     , d_lastNCHitTestResult(HTCLIENT)
     , d_hostId(hostAffinity)
     ,  d_isFullscreen(false)
@@ -231,6 +233,10 @@ void WebViewImpl::onRenderViewHostMadeCurrent(content::RenderViewHost *renderVie
 
 
     // patch section: rubberband
+    auto *rwh = static_cast<content::RenderWidgetHostImpl*>(renderViewHost->GetWidget());
+    if (rwh) {
+        rwh->EnableAltDragRubberbanding(d_altDragRubberbandingEnabled);
+    }
 
 
     d_renderViewHost->GetWidget()->GetView()->SetBackgroundColor(SK_ColorBLACK);
@@ -598,6 +604,45 @@ void WebViewImpl::performCustomContextMenuAction(int actionId)
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
     d_webContents->ExecuteCustomContextMenuCommand(actionId, d_linkFollowed);
+}
+
+void WebViewImpl::enableAltDragRubberbanding(bool enabled)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    DCHECK(!d_wasDestroyed);
+    d_altDragRubberbandingEnabled = enabled;
+    if (!d_renderViewHost) {
+        return;
+    }
+
+    auto *rwh = static_cast<content::RenderWidgetHostImpl*>(
+            d_renderViewHost->GetWidget());
+    if (rwh) {
+        rwh->EnableAltDragRubberbanding(enabled);
+    }
+}
+
+bool WebViewImpl::forceStartRubberbanding(int x, int y)
+{
+    NOTREACHED() << "forceStartRubberbanding() not supported in WebViewImpl";
+    return false;
+}
+
+bool WebViewImpl::isRubberbanding() const
+{
+    NOTREACHED() << "isRubberbanding() not supported in WebViewImpl";
+    return false;
+}
+
+void WebViewImpl::abortRubberbanding()
+{
+    NOTREACHED() << "abortRubberbanding() not supported in WebViewImpl";
+}
+
+String WebViewImpl::getTextInRubberband(const NativeRect& rect)
+{
+    NOTREACHED() << "getTextInRubberband() not supported in WebViewImpl";
+    return String();
 }
 
 void WebViewImpl::find(const StringRef& text, bool matchCase, bool forward)

@@ -337,6 +337,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
           render_frame_metadata_observer) override;
 
+  void SetRubberbandRect(const gfx::Rect& rect) override;
+  void HideRubberbandRect() override;
+
   // blink::mojom::PopupWidgetHost implementation.
   void RequestClosePopup() override;
   void ShowPopup(const gfx::Rect& initial_rect,
@@ -425,6 +428,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RequestPresentationTimeForNextFrame(
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request);
   void CancelPresentationTimeRequest();
+
+  void EnableAltDragRubberbanding(bool enabled);
 
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto

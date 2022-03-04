@@ -2437,6 +2437,12 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
     GetPage()->GetVisualViewport().StartTrackingPinchStats();
   }
 
+  auto *view = local_root_->ViewImpl();
+
+  if ((view->rubberbandingForcedOn_ || view->isAltDragRubberbandingEnabled_) &&
+      view->HandleAltDragRubberbandEvent(input_event))
+    return WebInputEventResult::kHandledSystem;
+
   // If a drag-and-drop operation is in progress, ignore input events except
   // PointerCancel.
   if (doing_drag_and_drop_ &&
@@ -2616,6 +2622,7 @@ void WebFrameWidgetImpl::MouseCaptureLost() {
   TRACE_EVENT_NESTABLE_ASYNC_END0("input", "capturing mouse",
                                   TRACE_ID_LOCAL(this));
   mouse_capture_element_ = nullptr;
+  View()->MouseCaptureLost();
 }
 
 void WebFrameWidgetImpl::ApplyVisualProperties(
@@ -3318,6 +3325,14 @@ void WebFrameWidgetImpl::FocusChangeComplete() {
 
   if (focused && focused->AutofillClient())
     focused->AutofillClient()->DidCompleteFocusChangeInFrame();
+}
+
+void WebFrameWidgetImpl::SetRubberbandRect(const gfx::Rect& rect) {
+  widget_base_->SetRubberbandRect(rect);
+}
+
+void WebFrameWidgetImpl::HideRubberbandRect() {
+  widget_base_->HideRubberbandRect();
 }
 
 void WebFrameWidgetImpl::ShowVirtualKeyboardOnElementFocus() {
@@ -4092,6 +4107,10 @@ KURL WebFrameWidgetImpl::GetURLForDebugTrace() {
   if (main_frame->IsWebLocalFrame())
     return main_frame->ToWebLocalFrame()->GetDocument().Url();
   return {};
+}
+
+void WebFrameWidgetImpl::EnableAltDragRubberbanding(bool is_enabled) {
+  View()->EnableAltDragRubberbanding(is_enabled);
 }
 
 float WebFrameWidgetImpl::GetTestingDeviceScaleFactorOverride() {

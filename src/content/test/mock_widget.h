@@ -62,6 +62,7 @@ class MockWidget : public blink::mojom::Widget {
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
       override;
   void CancelPresentationTimeRequest() override;
+  void EnableAltDragRubberbanding(bool is_enabled) override {}
 
  private:
   absl::optional<bool> is_hidden_;

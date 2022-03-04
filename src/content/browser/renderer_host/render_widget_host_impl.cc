@@ -934,6 +934,12 @@ void RenderWidgetHostImpl::CancelPresentationTimeRequest() {
   blink_widget_->CancelPresentationTimeRequest();
 }
 
+void RenderWidgetHostImpl::EnableAltDragRubberbanding(bool enabled) {
+  if (blink_widget_) {
+    blink_widget_->EnableAltDragRubberbanding(enabled);
+  }
+}
+
 #if defined(OS_ANDROID)
 void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
@@ -2196,6 +2202,14 @@ void RenderWidgetHostImpl::SelectionBoundsChanged(
   if (view_)
     view_->SelectionBoundsChanged(anchor_rect, anchor_dir, focus_rect,
                                   focus_dir, bounding_box, is_anchor_first);
+}
+
+void RenderWidgetHostImpl::SetRubberbandRect(const gfx::Rect& rect) {
+  view_->SetRubberbandRect(rect);
+}
+
+void RenderWidgetHostImpl::HideRubberbandRect() {
+  view_->HideRubberbandRect();
 }
 
 void RenderWidgetHostImpl::OnUpdateDragCursor(

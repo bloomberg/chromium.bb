@@ -522,6 +522,9 @@ class CORE_EXPORT WebFrameWidgetImpl
                                  const gfx::Rect& bounds);
   void ClearKeyboardTriggeredTooltip();
 
+  void SetRubberbandRect(const gfx::Rect& rect);
+  void HideRubberbandRect();
+
   void ShowVirtualKeyboardOnElementFocus();
   void ProcessTouchAction(WebTouchAction touch_action);
 
@@ -704,6 +707,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void RunPaintBenchmark(int repeat_count,
                          cc::PaintBenchmarkResult& result) override;
   KURL GetURLForDebugTrace() override;
+  void EnableAltDragRubberbanding(bool is_enabled) override;
   float GetTestingDeviceScaleFactorOverride() override;
   void CountDroppedPointerDownForEventTiming(unsigned count) override;
   // mojom::blink::FrameWidget overrides.
