@@ -99,7 +99,7 @@ public:
     {
         BITMAPFILEHEADER fileHeader = {
             0x4d42,
-            sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + size(),
+            static_cast<DWORD>(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + size()),
             0,
             0,
             sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)

@@ -75,7 +75,7 @@ ContentBrowserClientImpl::~ContentBrowserClientImpl()
 
 std::unique_ptr<content::BrowserMainParts>
 ContentBrowserClientImpl::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters)
+    content::MainFunctionParams parameters)
 {
     auto main_parts = std::make_unique<BrowserMainParts>();
     return main_parts;

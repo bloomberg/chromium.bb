@@ -136,7 +136,7 @@ void ContentMainDelegateImpl::PreSandboxStartup()
             Statics::hasDevTools = true;
             ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
                 pak_file,
-                ui::SCALE_FACTOR_NONE);
+                ui::kScaleFactorNone);
         }
     }
 }

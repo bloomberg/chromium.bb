@@ -470,7 +470,7 @@ void ToolkitImpl::initializeContent(const sandbox::SandboxInterfaceInfo& sandbox
 
     // Initialize Content
 	base::EnableTerminationOnOutOfMemory();
-	int rc = d_mainRunner->Initialize(mainParams);
+	int rc = d_mainRunner->Initialize(std::move(mainParams));
     CHECK(-1 == rc);  // it returns -1 for success!!
 }
 
