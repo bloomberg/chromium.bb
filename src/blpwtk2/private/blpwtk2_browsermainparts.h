@@ -25,7 +25,6 @@
 
 #include <content/public/browser/browser_main_parts.h>
 #include <chrome/browser/chrome_browser_main_extra_parts.h>
-#include <base/macros.h>
 #include <vector>
 
 namespace blpwtk2 {
@@ -38,13 +37,14 @@ class BrowserMainParts final : public content::BrowserMainParts {
  public:
   BrowserMainParts();
   ~BrowserMainParts() override;
+  BrowserMainParts(const BrowserMainParts&) = delete;
+  BrowserMainParts& operator=(const BrowserMainParts&) = delete;
+
   void AddParts(ChromeBrowserMainExtraParts* parts);
   void WillRunMainMessageLoop(std::unique_ptr<base::RunLoop>& run_loop) final;
 
  private:
   std::vector<ChromeBrowserMainExtraParts*> chrome_extra_parts_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };
 
 
