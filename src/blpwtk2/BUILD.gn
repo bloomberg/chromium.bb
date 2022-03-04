@@ -344,6 +344,7 @@ shared_library("blpwtk2") {
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gl",
+    "//ui/native_theme:native_theme_browser",
     "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/views",
