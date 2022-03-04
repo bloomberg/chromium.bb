@@ -97,6 +97,10 @@ class StoragePartition;
 class StoragePartitionConfig;
 class SSLHostStateDelegate;
 
+#if defined(OS_WIN)
+class FontCollection;
+#endif
+
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
 // thread.
@@ -373,6 +377,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the BrowsingDataRemoverDelegate for this context. This will be
   // called once per context. It's valid to return nullptr.
   virtual BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() = 0;
+
+  virtual FontCollection* GetFontCollection();
 
   // Returns a random salt string that is used for creating media device IDs.
   // Default implementation uses the BrowserContext's UniqueId.

@@ -342,6 +342,10 @@ void BrowserContext::WriteIntoTrace(
 // section into a separate BrowserContextDelegate class and a separate
 // browser_context_delegate.cc source file.
 
+FontCollection* BrowserContext::GetFontCollection() {
+    return nullptr;
+}
+
 std::string BrowserContext::GetMediaDeviceIDSalt() {
   return UniqueId();
 }

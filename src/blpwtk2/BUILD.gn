@@ -160,6 +160,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_jswidget.h",
     "private/blpwtk2_mainmessagepump.cc",
     "private/blpwtk2_mainmessagepump.h",
+    "private/blpwtk2_fontcollectionimpl.cc",
+    "private/blpwtk2_fontcollectionimpl.h",
     "private/blpwtk2_nativeviewwidget.cc",
     "private/blpwtk2_nativeviewwidget.h",
     "private/blpwtk2_nativeviewwidgetdelegate.cc",

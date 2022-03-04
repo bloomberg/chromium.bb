@@ -102,6 +102,7 @@
 #include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
@@ -1983,6 +1984,13 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   // TODO(https://crbug.com/1178670): Move this initialization out of
   // CreateMessageFilters().
+
+#if defined(OS_WIN)
+  {
+    DWriteFontProxyImpl::SetFontCollection(browser_context_->GetFontCollection());
+  }
+#endif
+
   p2p_socket_dispatcher_host_ =
       std::make_unique<P2PSocketDispatcherHost>(GetID());
 }
