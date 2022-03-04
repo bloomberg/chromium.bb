@@ -36,6 +36,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include <chrome/browser/printing/print_job_manager.h>
 #include <components/discardable_memory/service/discardable_shared_memory_manager.h>
+#include "components/variations/variations_ids_provider.h"
 #include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
 #include <content/public/common/content_switches.h>
@@ -74,6 +75,8 @@ BrowserMainRunner::BrowserMainRunner(
         base::CommandLine::ForCurrentProcess());
     mainParams.sandbox_info = &d_sandboxInfo;
     content::BrowserTaskExecutor::Create();
+    variations::VariationsIdsProvider::Create(
+          variations::VariationsIdsProvider::Mode::kUseSignedInState);
     base::ThreadPoolInstance::Create("Browser");
     d_impl = content::BrowserMainRunner::Create();
 
@@ -84,10 +87,11 @@ BrowserMainRunner::BrowserMainRunner(
         content::BrowserTaskExecutor::CreateIOThread());
     mainParams.startup_data = d_mojo_ipc_support->CreateBrowserStartupData();
 
-    int rc = d_impl->Initialize(std::move(mainParams));
-    DCHECK(-1 == rc);  // it returns -1 for success!!
     d_discardable_shared_memory_manager =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+
+    int rc = d_impl->Initialize(std::move(mainParams));
+    DCHECK(-1 == rc);  // it returns -1 for success!!
 
     Statics::browserMainTaskRunner = base::ThreadTaskRunnerHandle::Get();
 
