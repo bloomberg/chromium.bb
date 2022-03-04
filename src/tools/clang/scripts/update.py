@@ -34,7 +34,7 @@ import zipfile
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-14-init-11564-g37fbf238'
+CLANG_REVISION = 'llvmorg-14-init-11565-gec807275'
 CLANG_SUB_REVISION = 3
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
@@ -97,7 +97,7 @@ def DownloadUrl(url, output_file):
       sys.stdout.write('Downloading %s ' % url)
       sys.stdout.flush()
       response = urllib.request.urlopen(url)
-      total_size = int(response.info().get('Content-Length').strip())
+      total_size = int(response.info().get('Content-Length', '0').strip())
       bytes_done = 0
       dots_printed = 0
       while True:
@@ -106,11 +106,12 @@ def DownloadUrl(url, output_file):
           break
         output_file.write(chunk)
         bytes_done += len(chunk)
-        num_dots = TOTAL_DOTS * bytes_done // total_size
-        sys.stdout.write('.' * (num_dots - dots_printed))
-        sys.stdout.flush()
-        dots_printed = num_dots
-      if bytes_done != total_size:
+        if total_size:
+          num_dots = TOTAL_DOTS * bytes_done // total_size
+          sys.stdout.write('.' * (num_dots - dots_printed))
+          sys.stdout.flush()
+          dots_printed = num_dots
+      if total_size and bytes_done != total_size:
         raise urllib.error.URLError("only got %d of %d bytes" %
                                     (bytes_done, total_size))
       print(' Done.')
