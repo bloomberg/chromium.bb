@@ -259,7 +259,7 @@ bool ShouldLoadV8Snapshot(const base::CommandLine& command_line,
   // process mode.
   if (process_type == switches::kGpuProcess ||
       (process_type.empty() &&
-       !command_line.HasSwitch(switches::kSingleProcess))) {
+       !GetContentClient()->browser()->SupportsInProcessRenderer())) {
     return false;
   }
   return true;
