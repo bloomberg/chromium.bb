@@ -405,6 +405,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       fullscreen_handler_(new FullscreenHandler),
       waiting_for_close_now_(false),
       use_system_default_icon_(false),
+      is_cursor_overridden_(false),
       restored_enabled_(false),
       current_cursor_(base::MakeRefCounted<ui::WinCursor>()),
       dpi_(0),
@@ -870,6 +871,11 @@ void HWNDMessageHandler::SetCursor(scoped_refptr<ui::WinCursor> cursor) {
 
   TRACE_EVENT1("ui,input", "HWNDMessageHandler::SetCursor", "cursor",
                static_cast<const void*>(cursor->hcursor()));
+  if (is_cursor_overridden_) {
+    current_cursor_ = cursor;
+    return;
+  }
+
   ::SetCursor(cursor->hcursor());
   current_cursor_ = cursor;
 }
@@ -2525,6 +2531,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       cursor = IDC_SIZENESW;
       break;
     case HTCLIENT:
+      is_cursor_overridden_ = false;
       SetCursor(current_cursor_);
       return 1;
     case LOWORD(HTERROR):  // Use HTERROR's LOWORD value for valid comparison.
@@ -2534,6 +2541,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       // Use the default value, IDC_ARROW.
       break;
   }
+  is_cursor_overridden_ = true;
   ::SetCursor(LoadCursor(nullptr, cursor));
   return 1;
 }
