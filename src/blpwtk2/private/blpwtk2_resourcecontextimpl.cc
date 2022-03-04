@@ -27,8 +27,7 @@
 
 namespace blpwtk2 {
 
-ResourceContextImpl::ResourceContextImpl(net::URLRequestContextGetter* getter)
-    : d_requestContextGetter(getter)
+ResourceContextImpl::ResourceContextImpl()
 {
 }
 

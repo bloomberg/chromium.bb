@@ -42,7 +42,7 @@ class RendererInfoMap;
 // This is our implementation of the content::ContentMainDelegate interface.
 // This allows us to hook into the "main" of the content module (the
 // content::ContentMainRunner class).
-class ContentMainDelegateImpl : public content::ContentMainDelegate {
+class ContentMainDelegateImpl final : public content::ContentMainDelegate {
     // DATA
     std::vector<std::string> d_commandLineSwitches;
     ContentClient d_contentClient;
@@ -51,12 +51,12 @@ class ContentMainDelegateImpl : public content::ContentMainDelegate {
     std::unique_ptr<content::ContentUtilityClient> d_contentUtilityClient;
     bool d_isSubProcess;
 
-    DISALLOW_COPY_AND_ASSIGN(ContentMainDelegateImpl);
-
   public:
     // CREATORS
     explicit ContentMainDelegateImpl(bool isSubProcess);
-    ~ContentMainDelegateImpl() final;
+    ~ContentMainDelegateImpl() override;
+    ContentMainDelegateImpl(const ContentMainDelegateImpl&) = delete;
+    ContentMainDelegateImpl& operator=(const ContentMainDelegateImpl&) = delete;
 
     // MANIPULATORS
     void appendCommandLineSwitch(const char *switchString);
