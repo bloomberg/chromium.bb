@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/selection_bounds_recorder.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_info.h"
+#include "third_party/blink/renderer/core/paint/text_paint_style.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -39,6 +40,7 @@
 
 
 // patch section: highlight marker
+#include "third_party/blink/renderer/core/editing/markers/highlight_marker.h"
 
 
 // patch section: color document marker
@@ -687,6 +689,15 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
                                         styleable_marker, style, font);
         }
       } break;
+      case DocumentMarker::kHighlight:
+        if (To<HighlightMarker>(marker).IncludeNonSelectableText() ||
+          LineLayoutAPIShim::ConstLayoutObjectFrom(inline_text_box_.GetLineLayoutItem())->IsSelectable()) {
+          if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
+            PaintHighlightMarkerBackground(paint_info, box_origin, To<HighlightMarker>(marker), style, font);
+          else
+            PaintHighlightMarkerForeground(paint_info, box_origin, To<HighlightMarker>(marker), style, font);
+        }
+        break;
       default:
         // Marker is not painted, or painting code has not been added yet
         break;
@@ -1017,6 +1028,66 @@ void InlineTextBoxPainter::PaintTextMarkerBackground(
       font, run, gfx::PointF(box_origin), box_rect.Height().ToInt(), color,
       PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kForeground),
       paint_offsets.first, paint_offsets.second);
+}
+
+void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paintInfo,
+                                                          const PhysicalOffset& boxOrigin,
+                                                          const HighlightMarker& marker,
+                                                          const ComputedStyle& style,
+                                                          const Font& font)
+{
+  // This function is ported from InlineTextBoxPainter::paintTextMatchMarkerForeground
+    // Only difference is that this function get the textColor from the DocumentMarker
+
+    // TODO(ramya.v): Extract this into a helper function and share many copies of this code.
+    int sPos = std::max(marker.StartOffset() - inline_text_box_.Start(), (unsigned)0);
+    int ePos = std::min(marker.EndOffset() - inline_text_box_.Start(), inline_text_box_.Len());
+    TextRun run = inline_text_box_.ConstructTextRun(style);
+
+    Color textColor = marker.ForegroundColor();
+    if (style.VisitedDependentColor(GetCSSPropertyColor()) == textColor)
+        return;
+    TextPaintStyle textStyle;
+    textStyle.current_color = textStyle.fill_color = textStyle.stroke_color = textStyle.emphasis_mark_color = textColor;
+    textStyle.stroke_width = style.TextStrokeWidth();
+    textStyle.shadow = nullptr;
+
+    const SimpleFontData* font_data = font.PrimaryFont();
+    DCHECK(font_data);
+
+    int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
+
+    PhysicalRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
+    PhysicalOffset textOrigin(boxOrigin.left, boxOrigin.top + ascent);
+    TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect, inline_text_box_.IsHorizontal());
+
+    DOMNodeId node_holder = GetNodeHolder(
+        LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())
+            ->GetNode());
+
+    textPainter.Paint(sPos, ePos, inline_text_box_.Len(), textStyle, node_holder);
+}
+
+void InlineTextBoxPainter::PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
+                                                          const PhysicalOffset& boxOrigin,
+                                                          const HighlightMarker& marker,
+                                                          const ComputedStyle& style,
+                                                          const Font& font)
+{
+    // This function is ported from InlineTextBoxPainter::paintTextMatchMarkerBackground
+    // Only difference is that this function get the backgroundColor from the DocumentMarker
+
+    int sPos = std::max(marker.StartOffset() - inline_text_box_.Start(), (unsigned)0);
+    int ePos = std::min(marker.EndOffset() - inline_text_box_.Start(), inline_text_box_.Len());
+    TextRun run = inline_text_box_.ConstructTextRun(style);
+
+    Color color = marker.BackgroundColor();
+    GraphicsContext& context = paintInfo.context;
+    GraphicsContextStateSaver stateSaver(context);
+
+    PhysicalRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
+    context.Clip(FloatRect(boxRect));
+    context.DrawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.Height().ToInt(), color, sPos, ePos);
 }
 
 }  // namespace blink
