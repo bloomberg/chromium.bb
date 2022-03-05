@@ -154,8 +154,23 @@ shared_library("blpwtk2") {
     "private/blpwtk2_findonpage.h",
     "private/blpwtk2_inprocessrenderer.cc",
     "private/blpwtk2_inprocessrenderer.h",
+
+
+
+    # patch section: url loader
+
+
+
+    # patch section: jswidget plugin
+
+
+
+    # patch section: log message handler
     "private/blpwtk2_logmessagethrottler.cc",
     "private/blpwtk2_logmessagethrottler.h",
+
+
+
     "private/blpwtk2_mainmessagepump.cc",
     "private/blpwtk2_mainmessagepump.h",
     "private/blpwtk2_nativeviewwidget.cc",
@@ -174,6 +189,17 @@ shared_library("blpwtk2") {
     "private/blpwtk2_rendereriothread.h",
     "private/blpwtk2_rendererutil.cc",
     "private/blpwtk2_rendererutil.h",
+
+
+
+    # patch section: url loader
+
+
+
+    # patch section: renderer ui
+
+
+
     "private/blpwtk2_requestcontextmanager.cc",
     "private/blpwtk2_requestcontextmanager.h",
     "private/blpwtk2_resourcecontextimpl.cc",
