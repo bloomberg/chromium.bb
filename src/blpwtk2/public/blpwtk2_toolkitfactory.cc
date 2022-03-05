@@ -102,6 +102,16 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
     Statics::rendererUIEnabled = params.rendererUIEnabled();
 
+
+
+    // patch section: discardable sharedmem
+
+
+
+    // patch section: memory diagnostic
+
+
+
     std::string tempFolderPath = params.getTempFolderPath().toStdString();
 
     if (tempFolderPath.empty()) {
