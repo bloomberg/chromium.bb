@@ -1429,10 +1429,6 @@ int main(int, const char**)
         toolkitParams.setBrowserV8Enabled(true);
     }
 
-    for (size_t i = 0; i < g_sideLoadedFonts.size(); ++i) {
-        toolkitParams.appendSideLoadedFontInProcess(g_sideLoadedFonts[i]);
-    }
-
 
 
     // patch section: spellcheck
@@ -1440,6 +1436,9 @@ int main(int, const char**)
 
 
     // patch section: custom fonts
+    for (size_t i = 0; i < g_sideLoadedFonts.size(); ++i) {
+        toolkitParams.appendSideLoadedFontInProcess(g_sideLoadedFonts[i]);
+    }
 
 
 
