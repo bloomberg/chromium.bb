@@ -30,6 +30,7 @@
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_processhostimpl.h>
 #include <blpwtk2_browsermainparts.h>
+#include <blpwtk2_requestinterceptorimpl.h>
 #include <blpwtk2_resourceloader.h>
 
 #include <base/json/json_reader.h>
@@ -62,12 +63,15 @@ namespace blpwtk2 {
                         // class ContentBrowserClientImpl
                         // ------------------------------
 
-ContentBrowserClientImpl::ContentBrowserClientImpl()
+ContentBrowserClientImpl::ContentBrowserClientImpl() :
+    d_interceptor(std::make_unique<RequestInterceptorImpl>())
 {
+    net::URLRequestJobFactory::SetInterceptorForTesting(d_interceptor.get());
 }
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl()
 {
+    net::URLRequestJobFactory::SetInterceptorForTesting(nullptr);
 }
 
 std::unique_ptr<content::BrowserMainParts>

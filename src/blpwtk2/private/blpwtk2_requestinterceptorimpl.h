@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Bloomberg Finance L.P.
+ * Copyright (C) 2018 Bloomberg Finance L.P.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,31 +20,26 @@
  * IN THE SOFTWARE.
  */
 
-#include <blpwtk2_resourcecontext.h>
+#ifndef INCLUDED_BLPWTK2_REQUESTINTERCEPTORIMPL_H
+#define INCLUDED_BLPWTK2_REQUESTINTERCEPTORIMPL_H
+
+#include <net/url_request/url_request_interceptor.h>
 
 namespace blpwtk2 {
 
-HTTPHeaderVisitor::HTTPHeaderVisitor() = default;
-HTTPHeaderVisitor::~HTTPHeaderVisitor()
-{
-}
+class RequestInterceptorImpl final : public net::URLRequestInterceptor {
+ public:
+  RequestInterceptorImpl();
+  ~RequestInterceptorImpl() final;
 
-HTTPBodyVisitor::HTTPBodyVisitor() = default;
-HTTPBodyVisitor::~HTTPBodyVisitor()
-{
-}
+  // net::URLRequestInterceptor methods.
+  std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
+          net::URLRequest* request) const override;
 
-URLRequest::~URLRequest()
-{
-}
-
-ResourceContext::ResourceContext() = default;
-
-ResourceContext::~ResourceContext()
-{
-}
+  DISALLOW_COPY_AND_ASSIGN(RequestInterceptorImpl);
+};
 
 }  // close namespace blpwtk2
 
-// vim: ts=4 et
+#endif  // INCLUDED_BLPWTK2_REQUESTINTERCEPTORIMPL_H
 

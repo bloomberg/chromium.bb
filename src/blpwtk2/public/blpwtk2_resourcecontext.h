@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_RESOURCECONTEXT_H
 
 #include <blpwtk2_config.h>
+#include <blpwtk2_blob.h>
 #include <blpwtk2_string.h>
 
 namespace blpwtk2 {
@@ -85,7 +86,6 @@ class BLPWTK2_EXPORT URLRequest {
     virtual bool reportUploadProgress() const = 0;
     virtual bool reportRawHeaders() const = 0;
     virtual bool hasUserGesture() const = 0;
-    virtual int requesterID() const = 0;
     virtual Priority priority() const = 0;
 
   protected:

@@ -49,6 +49,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_resource_request_sender_delegate.h"
 #include "third_party/blink/renderer/core/app_history/app_history.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -1573,7 +1574,25 @@ void DocumentLoader::StartLoadingInternal() {
     return;
   }
 
-  body_loader_ = std::move(params_->body_loader);
+  blink::WebResourceRequestSenderDelegate *sender_delegate =
+      Platform::Current()->GetResourceRequestSenderDelegate();
+
+  GURL url = (GURL) url_;
+
+  if (sender_delegate && sender_delegate->CanHandleURL(url.spec())) {
+    network::ResourceRequest request;
+
+    request.url = url;
+    request.site_for_cookies = net::SiteForCookies::FromUrl(url);
+    request.method = http_method_.Ascii();
+    //request.has_user_gesture = common_params->has_user_gesture;
+
+    body_loader_ = sender_delegate->CreateBodyLoader(&request);
+  }
+  else {
+    body_loader_ = std::move(params_->body_loader);
+  }
+
   DCHECK(body_loader_);
   DCHECK(!GetTiming().NavigationStart().is_null());
   // The fetch has already started in the browser,

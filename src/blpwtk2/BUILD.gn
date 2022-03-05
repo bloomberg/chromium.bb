@@ -160,6 +160,8 @@ shared_library("blpwtk2") {
 
 
     # patch section: url loader
+    "private/blpwtk2_inprocessresourceloaderbridge.cc",
+    "private/blpwtk2_inprocessresourceloaderbridge.h",
 
 
 
@@ -199,6 +201,8 @@ shared_library("blpwtk2") {
 
 
     # patch section: url loader
+    "private/blpwtk2_requestinterceptorimpl.cc",
+    "private/blpwtk2_requestinterceptorimpl.h",
 
 
 
@@ -214,6 +218,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_requestcontextmanager.h",
     "private/blpwtk2_resourcecontextimpl.cc",
     "private/blpwtk2_resourcecontextimpl.h",
+    "private/blpwtk2_resourcerequestjob.cc",
+    "private/blpwtk2_resourcerequestjob.h",
     "private/blpwtk2_statics.cc",
     "private/blpwtk2_statics.h",
     "private/blpwtk2_timerpumpscheduler.cc",

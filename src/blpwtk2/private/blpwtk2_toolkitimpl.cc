@@ -76,7 +76,6 @@
 #include <sandbox/policy/switches.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
 #include <third_party/blink/public/platform/web_security_origin.h>
-//#include <third_party/blink/public/web/blink.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_bindings.h>
 #include <third_party/blink/public/web/web_script_controller.h>
@@ -718,6 +717,11 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         DCHECK(!currentHostChannel.empty());
         ContentBrowserClientImpl* pBrowserClientImpl = d_mainDelegate.GetContentBrowserClientImpl();
         startRenderer(isHost, channelInfo, pBrowserClientImpl ? pBrowserClientImpl->GetClientInvitation() : nullptr);
+
+        // Install renderer-side URL loader
+        content::RenderThread *renderThread = content::RenderThread::Get();
+        d_rendererResourceDelegate = std::make_unique<InProcessResourceLoaderBridge>();
+        renderThread->SetResourceRequestSenderDelegate(d_rendererResourceDelegate.get());
 
         if (Statics::isRendererIOThreadEnabled) {
             renderer_io_thread_ = std::make_unique<RendererIOThread>();

@@ -211,6 +211,8 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSender {
     // Used to notify the loading stats.
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper;
+
+    int request_id = 0;
   };
 
   // Follows redirect, if any, for the given request.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Bloomberg Finance L.P.
+ * Copyright (C) 2018 Bloomberg Finance L.P.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,31 +20,31 @@
  * IN THE SOFTWARE.
  */
 
-#include <blpwtk2_resourcecontext.h>
+#ifndef INCLUDED_BLPWTK2_RESOURCEREQUESTJOB_H
+#define INCLUDED_BLPWTK2_RESOURCEREQUESTJOB_H
+
+#include <net/url_request/url_request_job.h>
+#include <url/gurl.h>
 
 namespace blpwtk2 {
 
-HTTPHeaderVisitor::HTTPHeaderVisitor() = default;
-HTTPHeaderVisitor::~HTTPHeaderVisitor()
-{
-}
+class ResourceRequestJob : public net::URLRequestJob {
+ public:
+  ResourceRequestJob(net::URLRequest* request);
 
-HTTPBodyVisitor::HTTPBodyVisitor() = default;
-HTTPBodyVisitor::~HTTPBodyVisitor()
-{
-}
+ private:
+  // net::URLRequestJob methods.
+  void Start() override;
+  bool GetMimeType(std::string* mime_type) const override;
 
-URLRequest::~URLRequest()
-{
-}
+  void NotifyHeadersCompleteHelper();
 
-ResourceContext::ResourceContext() = default;
+  GURL url_;
 
-ResourceContext::~ResourceContext()
-{
-}
+  DISALLOW_COPY_AND_ASSIGN(ResourceRequestJob);
+};
 
 }  // close namespace blpwtk2
 
-// vim: ts=4 et
+#endif  // INCLUDED_BLPWTK2_RESOURCEREQUESTJOB_H
 
