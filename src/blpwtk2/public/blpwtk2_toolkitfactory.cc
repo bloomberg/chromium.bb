@@ -102,9 +102,18 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::toolkitDelegate = params.delegate();
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
 
+
+
+    // patch section: discardable sharedmem
+
+
+
+    // patch section: memory diagnostic
     if (size_t limit = params.getTotalTileMemoryLimit()) {
         cc::TileManager::setTotalTileMemoryLimit(limit);
     }
+
+
 
     std::string tempFolderPath = params.getTempFolderPath().toStdString();
 
