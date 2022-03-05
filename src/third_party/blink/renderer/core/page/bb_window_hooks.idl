@@ -28,5 +28,17 @@
     DOMString listPumpSchedulerTunables();
     void activatePumpScheduler(long index);
     void setPumpSchedulerTunable(long index, long value);
-};
 
+
+    // patch section: document marker hightlightmarker
+
+
+
+    // patch section: docprinter
+
+
+
+    // patch section: dump diagnostics
+
+
+};

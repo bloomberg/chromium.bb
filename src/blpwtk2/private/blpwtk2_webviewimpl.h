@@ -40,7 +40,16 @@
 namespace content {
 class WebContents;
 struct WebPreferences;
+
+
+// patch section: support inspector save and load
+
+
+
+// patch section: focus
 class RenderWidgetHost;
+
+
 }  // close namespace content
 
 namespace views {
