@@ -2629,6 +2629,8 @@ v8_header_set("v8_internal_headers") {
     "include/v8-metrics.h",
     "include/v8-unwinder-state.h",
     "include/v8-wasm-trap-handler-posix.h",
+    "include/bb-v8-util.h",
+    "include/bb-v8-util.cc",
     "src/api/api-arguments-inl.h",
     "src/api/api-arguments.h",
     "src/api/api-inl.h",
