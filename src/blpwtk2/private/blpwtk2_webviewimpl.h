@@ -41,6 +41,15 @@
 namespace content {
 class WebContents;
 struct WebPreferences;
+
+
+// patch section: support inspector save and load
+
+
+
+// patch section: focus
+
+
 }  // close namespace content
 
 namespace views {
