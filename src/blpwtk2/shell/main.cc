@@ -214,6 +214,25 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
     ToolkitDelegate()
     {
     }
+
+
+
+    // patch section: devtools integration
+
+
+
+    // patch section: renderer ui
+
+
+
+    // patch section: nc hittest dragging
+
+
+
+    // patch section: performance monitor
+
+
+
 };
 
 class Shell final : public blpwtk2::WebViewDelegate {
@@ -223,7 +242,18 @@ public:
     HWND d_mainWnd;
     HWND d_urlEntryWnd;
     HWND d_findEntryHwnd;
+
+
+
+    // patch section: spellcheck
     HMENU d_spellCheckMenu;
+
+
+
+    // patch section: custom timezone
+
+
+
     blpwtk2::WebView* d_webView;
     blpwtk2::Profile* d_profile;
     Shell* d_inspectorShell;
@@ -245,14 +275,36 @@ public:
     Shell(HWND mainWnd,
           HWND urlEntryWnd,
           HWND findEntryHwnd,
+
+
+
+          // patch section: spellcheck
           HMENU spellCheckMenu,
+
+
+
+          // patch section: custom timezone
+
+
+
           blpwtk2::Profile* profile,
           blpwtk2::WebView* webView = 0,
           bool useExternalRenderer = false)
         : d_mainWnd(mainWnd)
         , d_urlEntryWnd(urlEntryWnd)
         , d_findEntryHwnd(findEntryHwnd)
+
+
+
+        // patch section: spellcheck
         , d_spellCheckMenu(spellCheckMenu)
+
+
+
+        // patch section: custom timezone
+
+
+
         , d_webView(webView)
         , d_profile(profile)
         , d_inspectorShell(0)
@@ -264,6 +316,13 @@ public:
             blpwtk2::WebViewCreateParams params;
             params.setJavascriptCanAccessClipboard(true);
             params.setDOMPasteEnabled(true);
+
+
+
+            // patch section: nc hittest dragging
+
+
+
             if (g_in_process_renderer && d_profile == g_profile && !useExternalRenderer) {
                 params.setRendererAffinity(::GetCurrentProcessId());
             }
@@ -866,6 +925,17 @@ int main(int, const char**)
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]+14);
                 proxyPort = atoi(buf);
             }
+
+
+
+            // patch section: nc hittest dragging
+
+
+
+            // patch section: web script context
+
+
+
             else if (argv[i][0] != '-') {
                 char buf[1024];
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]);
@@ -950,6 +1020,14 @@ int main(int, const char**)
     }
 
     toolkitParams.appendCommandLineSwitch("disable-features=WinUseBrowserSpellChecker");
+
+
+
+    // patch section: spellcheck
+
+
+
+    // patch section: custom fonts
 
 
 
@@ -1428,7 +1506,24 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
         g_defaultEditWndProc = reinterpret_cast<WNDPROC>(GetWindowLongPtr(urlEntryWnd, GWLP_WNDPROC));
     SetWindowLongPtr(urlEntryWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(urlEntryWndProc));
 
-    return new Shell(mainWnd, urlEntryWnd, findEntryHwnd, spellCheckMenu, profile, webView, forDevTools);
+    return new Shell(mainWnd,
+                     urlEntryWnd,
+                     findEntryHwnd,
+
+
+
+                     // patch section: spellcheck
+                     spellCheckMenu,
+
+
+
+                     // patch section: custom timezone
+
+
+
+                     profile,
+                     webView,
+                     forDevTools);
 }
 
 void populateMenuItem(HMENU menu, int menuIdStart, const blpwtk2::ContextMenuItem& item)
