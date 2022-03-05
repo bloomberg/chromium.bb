@@ -29,6 +29,17 @@
     void activatePumpScheduler(long index);
     void setPumpSchedulerTunable(long index, long value);
 
-    void allowPrint(long value);
-};
 
+    // patch section: document marker hightlightmarker
+
+
+
+    // patch section: docprinter
+    void allowPrint(long value);
+
+
+
+    // patch section: dump diagnostics
+
+
+};
