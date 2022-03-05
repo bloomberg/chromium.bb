@@ -66,6 +66,7 @@
 #define BLPWTK2_FEATURE_CUSTOMFONTS
 // feature 13
 // feature 14
+#define BLPWTK2_FEATURE_DISCARDABLE_SHAREDMEM
 // feature 15
 #define BLPWTK2_FEATURE_UPDATETOOLTIP
 // feature 16

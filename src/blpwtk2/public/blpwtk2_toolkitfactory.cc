@@ -108,6 +108,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
 
 
     // patch section: discardable sharedmem
+    Statics::discardableSharedMemorySizeLimit = params.getDiscardableSharedMemorySizeLimit();
 
 
 

@@ -45,6 +45,7 @@ ToolkitDelegate *Statics::toolkitDelegate = nullptr;
 
 
 // patch section: discardable sharedmem
+size_t Statics::discardableSharedMemorySizeLimit = 0;
 
 
 
