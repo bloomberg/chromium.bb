@@ -38,6 +38,15 @@
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service_filter.h>
 
+
+// patch section: dump diagnostics
+
+
+
+// patch section: web cache flush
+
+
+
 #include <mojo/public/cpp/bindings/self_owned_receiver.h>
 
 namespace blpwtk2 {
@@ -74,6 +83,12 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
         pid,
         launchDevToolsServer,
         base::BindOnce(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
+
+
+    // patch section: dump diagnostics
+
+
+
 }
 
 ProfileImpl::~ProfileImpl()
