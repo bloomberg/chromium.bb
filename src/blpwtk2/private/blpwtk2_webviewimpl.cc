@@ -43,7 +43,16 @@
 #include <chrome/browser/printing/print_view_manager.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <content/browser/renderer_host/render_widget_host_view_base.h>
+
+
+// patch section: support inspector save and load
 #include <content/public/browser/file_select_listener.h>
+
+
+
+// patch section: rubberband
+
+
 #include <content/public/browser/host_zoom_map.h>
 #include <content/public/browser/media_capture_devices.h>
 #include <content/public/browser/media_stream_request.h>
@@ -59,7 +68,20 @@
 #include <third_party/blink/public/mojom/frame/find_in_page.mojom.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/win/hidden_window.h>
+
+
+// patch section: keyboard layout
+
+
+
+// patch section: gpu
+
+
+
+// patch section: support inspector save and load
 #include <weblayer/browser/file_select_helper.h>
+
+
 #include <errno.h>
 namespace blpwtk2 {
 
