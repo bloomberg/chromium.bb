@@ -42,7 +42,16 @@ bool Statics::isNativeViewManipulationAsync = false;
 bool Statics::isRendererIOThreadEnabled = false;
 WebViewHostObserver* Statics::webViewHostObserver = 0;
 ToolkitDelegate *Statics::toolkitDelegate = nullptr;
+
+
+// patch section: discardable sharedmem
 size_t Statics::discardableSharedMemorySizeLimit = 0;
+
+
+
+// patch section: renderer ui
+
+
 
 static int lastRoutingId = 0;
 base::FilePath Statics::tempFolderPath = base::FilePath();
