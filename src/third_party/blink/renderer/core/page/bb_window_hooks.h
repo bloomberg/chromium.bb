@@ -61,6 +61,8 @@ namespace blink {
         void activatePumpScheduler(long index);
         void setPumpSchedulerTunable(long index, long value);
 
+
+        // patch section: document marker highlightmarker
         bool isBlock(Node* node);
         String getPlainText(Node* node, const String& excluder = "", const String& mask = "");
         void setTextMatchMarkerVisibility(Document* document, bool highlight);
@@ -71,6 +73,16 @@ namespace blink {
         Range* findPlainText(Range* range, const String& target, long options);
         bool checkSpellingForNode(Node* node);
         DOMRectReadOnly* getAbsoluteCaretRectAtOffset(Node* node, long offset);
+
+
+
+        // patch section: docprinter
+
+
+
+        // patch section: dump diagnostics
+
+
 
         void Trace(Visitor*) const override;
 

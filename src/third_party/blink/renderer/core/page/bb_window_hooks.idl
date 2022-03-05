@@ -29,6 +29,8 @@
     void activatePumpScheduler(long index);
     void setPumpSchedulerTunable(long index, long value);
 
+
+    // patch section: document marker hightlightmarker
     boolean isBlock(Node node);
     DOMString getPlainText(Node node, optional DOMString excluder, optional DOMString mask);
     void setTextMatchMarkerVisibility(Document document, boolean highlight);
@@ -39,4 +41,14 @@
     Range findPlainText(Range range, DOMString target, long options);
     boolean checkSpellingForNode(Node node);
     DOMRect getAbsoluteCaretRectAtOffset(Node node, long offset);
+
+
+
+    // patch section: docprinter
+
+
+
+    // patch section: dump diagnostics
+
+
 };
