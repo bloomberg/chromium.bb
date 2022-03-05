@@ -31,6 +31,7 @@
 #include <blpwtk2_webviewproperties.h>
 
 #include <base/memory/weak_ptr.h>
+#include <base/memory/scoped_refptr.h>
 #include <content/public/browser/web_contents_delegate.h>
 #include <content/public/browser/web_contents_observer.h>
 #include <content/public/browser/context_menu_params.h>
@@ -44,6 +45,7 @@ struct WebPreferences;
 
 
 // patch section: support inspector save and load
+class FileSelectListener;
 
 
 
@@ -139,6 +141,10 @@ class WebViewImpl final : public WebView,
     // content::WebContentsDelegate overrides
     void DidNavigatePrimaryMainFramePostCommit(content::WebContents *source) override;
         // Invoked when a main frame navigation occurs.
+
+    void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                        scoped_refptr<content::FileSelectListener> listener,
+                        const blink::mojom::FileChooserParams& params) override;
 
     bool TakeFocus(content::WebContents* source, bool reverse) override;
         // This is called when WebKit tells us that it is done tabbing through

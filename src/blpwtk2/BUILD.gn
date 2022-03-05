@@ -394,6 +394,7 @@ shared_library("blpwtk2") {
     "//ui/views",
     "//ui/wm/public",
     "//url",
+    "//weblayer:weblayer_lib_base"
   ]
 
   if(!is_component_build) {

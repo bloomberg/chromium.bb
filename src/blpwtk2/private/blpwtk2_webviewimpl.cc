@@ -46,6 +46,7 @@
 
 
 // patch section: support inspector save and load
+#include <content/public/browser/file_select_listener.h>
 
 
 
@@ -56,8 +57,8 @@
 #include <content/public/browser/host_zoom_map.h>
 #include <content/public/browser/media_capture_devices.h>
 #include <content/public/browser/media_stream_request.h>
-#include <content/public/browser/render_frame_host.h>
 
+#include <content/public/browser/render_frame_host.h>
 #include <content/public/browser/render_process_host.h>
 #include <content/public/browser/render_view_host.h>
 #include <content/public/browser/render_widget_host.h>
@@ -82,6 +83,7 @@
 
 
 // patch section: support inspector save and load
+#include <weblayer/browser/file_select_helper.h>
 
 
 #include <errno.h>
@@ -847,6 +849,13 @@ void WebViewImpl::DidNavigatePrimaryMainFramePostCommit(content::WebContents *so
             base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
         }
     }
+}
+
+void WebViewImpl::RunFileChooser(content::RenderFrameHost* render_frame_host,
+                                 scoped_refptr<content::FileSelectListener> listener,
+                                 const blink::mojom::FileChooserParams& params)
+{
+    weblayer::FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener), params);
 }
 
 bool WebViewImpl::TakeFocus(content::WebContents *source, bool reverse)

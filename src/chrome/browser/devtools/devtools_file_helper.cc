@@ -17,6 +17,8 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -112,7 +114,14 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener {
     selected_callback_ = std::move(selected_callback);
     canceled_callback_ = std::move(canceled_callback);
     select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
+        this,
+#if 0 // no-op in blpwtk2
+        std::make_unique<ChromeSelectFilePolicy>(web_contents)
+#else
+        nullptr
+#endif
+    );
+
     base::FilePath::StringType ext;
     ui::SelectFileDialog::FileTypeInfo file_type_info;
     if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE &&
@@ -231,7 +240,9 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
       delegate_(delegate),
       file_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {
+#if 0 // no-op in blpwtk2
   pref_change_registrar_.Init(profile_->GetPrefs());
+#endif
 }
 
 DevToolsFileHelper::~DevToolsFileHelper() = default;
@@ -247,16 +258,21 @@ void DevToolsFileHelper::Save(const std::string& url,
     return;
   }
 
+#if 0 // no-op in blpwtk2
   const base::DictionaryValue* file_map =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsEditedFiles);
+
+#endif
   base::FilePath initial_path;
 
+#if 0 // no-op in blpwtk2
   const base::Value* path_value;
   if (file_map->Get(base::MD5String(url), &path_value)) {
     absl::optional<base::FilePath> path = base::ValueToFilePath(*path_value);
     if (path)
       initial_path = std::move(*path);
   }
+#endif
 
   if (initial_path.empty()) {
     GURL gurl(url);
@@ -270,9 +286,14 @@ void DevToolsFileHelper::Save(const std::string& url,
       initial_path = g_last_save_path.Pointer()->DirName().AppendASCII(
           suggested_file_name);
     } else {
+#if 0 // no-op in blpwtk2
       base::FilePath download_path =
           DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager())
               ->DownloadPath();
+#else
+      base::FilePath download_path;
+      base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &download_path);
+#endif
       initial_path = download_path.AppendASCII(suggested_file_name);
     }
   }
@@ -303,10 +324,12 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
   *g_last_save_path.Pointer() = path;
   saved_files_[url] = path;
 
+#if 0 // no-op in blpwtk2
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsEditedFiles);
   base::DictionaryValue* files_map = update.Get();
   files_map->SetKey(base::MD5String(url), base::FilePathToValue(path));
+#endif
   std::string file_system_path = path.AsUTF8Unsafe();
   std::move(callback).Run(file_system_path);
   file_task_runner_->PostTask(FROM_HERE, BindOnce(&WriteToFile, path, content));

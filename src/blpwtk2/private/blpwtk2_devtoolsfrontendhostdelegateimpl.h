@@ -27,10 +27,12 @@
 
 #include <base/memory/weak_ptr.h>
 #include <base/values.h>
+
 #include <content/public/browser/web_contents_observer.h>
 #include <content/public/browser/devtools_agent_host_client.h>
 #include <content/public/browser/devtools_frontend_host.h>
 #include <net/url_request/url_fetcher_delegate.h>
+#include <chrome/browser/devtools/devtools_file_helper.h>
 
 #include "base/containers/unique_ptr_adapters.h"
 
@@ -81,6 +83,11 @@ class DevToolsFrontendHostDelegateImpl final
 
   private:
     class NetworkResourceLoader;
+    void SaveToFile(const std::string& url, const std::string& content, bool save_as);
+    void AppendToFile(const std::string& url, const std::string& content);
+    void FileSavedAs(const std::string& url, const std::string& file_system_path);
+    void CanceledFileSaveAs(const std::string& url);
+    void AppendedTo(const std::string& url);
 
     std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator>
       loaders_;
@@ -100,6 +107,7 @@ class DevToolsFrontendHostDelegateImpl final
 
     POINT d_inspectElementPoint;
     bool d_inspectElementPointPending;
+    std::unique_ptr<DevToolsFileHelper> d_fileHelper;
     base::WeakPtrFactory<DevToolsFrontendHostDelegateImpl> d_weakFactory;
 };
 
