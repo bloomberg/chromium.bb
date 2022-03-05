@@ -36,7 +36,16 @@
 #include <content/public/renderer/render_thread.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service_filter.h>
+
+
+// patch section: dump diagnostics
 #include <third_party/blink/renderer/core/page/bb_window_hooks.h>
+
+
+
+// patch section: web cache flush
+
+
 
 #include <mojo/public/cpp/bindings/self_owned_receiver.h>
 
@@ -69,10 +78,15 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     DCHECK(0 != pid);
     d_hostPtr->bindProcess(pid, launchDevToolsServer);
 
+
+    // patch section: dump diagnostics
     blink::BBWindowHooks::ProfileHooks hooks;
     hooks.getGpuInfo = base::BindRepeating(&ProfileImpl::getGpuInfo, base::Unretained(this));
 
     blink::BBWindowHooks::InstallProfileHooks(hooks);
+
+
+
 }
 
 ProfileImpl::~ProfileImpl()
