@@ -61,7 +61,19 @@ namespace blink {
         void activatePumpScheduler(long index);
         void setPumpSchedulerTunable(long index, long value);
 
+
+        // patch section: document marker highlightmarker
+
+
+
+        // patch section: docprinter
         void allowPrint(long value);
+
+
+
+        // patch section: dump diagnostics
+
+
 
         void Trace(Visitor*) const override;
 

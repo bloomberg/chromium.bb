@@ -39,7 +39,16 @@
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service_filter.h>
+
+
+// patch section: dump diagnostics
+
+
+
+// patch section: web cache flush
 #include <third_party/blink/public/platform/web_cache.h>
+
+
 
 #include <mojo/public/cpp/bindings/self_owned_receiver.h>
 
@@ -77,6 +86,12 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
         pid,
         launchDevToolsServer,
         base::BindOnce(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
+
+
+    // patch section: dump diagnostics
+
+
+
 }
 
 ProfileImpl::~ProfileImpl()
