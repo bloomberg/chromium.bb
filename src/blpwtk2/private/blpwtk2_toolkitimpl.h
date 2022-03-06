@@ -63,8 +63,12 @@ class BrowserMainRunner;
 class ProcessHostImpl;
 class Profile;
 class StringRef;
-
 class ToolkitDelegate;
+
+// patch section: log message handler
+
+
+// patch section: gpu
 
                         // =================
                         // class ToolkitImpl
@@ -168,6 +172,11 @@ class ToolkitImpl : public Toolkit {
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
+
+                         // patch section: embedder ipc
+
+
+                         // patch section: log message handler
                          const std::string&              profileDir);
 
     // blpwtk2::Toolkit overrides

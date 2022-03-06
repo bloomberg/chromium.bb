@@ -60,9 +60,16 @@ void WebViewDelegate::didParentStatus(WebView *source, int status, NativeView pa
 
 void WebViewDelegate::validateClientFailed(WebView* source) {}
 
+// patch section: nc hittest dragging
+
+
+// patch section: performance monitor
 void WebViewDelegate::startPerformanceTiming() {}
 
 void WebViewDelegate::stopPerformanceTiming() {}
+
+
+// patch section: devtools integration
 
 }  // close namespace blpwtk2
 

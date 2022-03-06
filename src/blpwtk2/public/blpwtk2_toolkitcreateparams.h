@@ -62,6 +62,10 @@ class BLPWTK2_EXPORT ToolkitDelegate {
                             unsigned int    reportFrequency) = 0;
 
     virtual void unregisterMetrics() = 0;
+
+
+    // patch section: renderer ui
+
 };
 
                         // =========================

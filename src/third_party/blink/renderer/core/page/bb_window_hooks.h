@@ -61,6 +61,19 @@ namespace blink {
         void activatePumpScheduler(long index);
         void setPumpSchedulerTunable(long index, long value);
 
+
+        // patch section: document marker highlightmarker
+
+
+
+        // patch section: docprinter
+
+
+
+        // patch section: dump diagnostics
+
+
+
         void Trace(Visitor*) const override;
 
         explicit BBWindowHooks(LocalDOMWindow *window);
