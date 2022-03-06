@@ -508,10 +508,6 @@ std::size_t ToolkitCreateParams::getTotalTileMemoryLimit() const {
 }
 
 
-
-// patch section: memory diagnostics
-
-
 // patch section: embedder ipc
 bool ToolkitCreateParams::browserV8Enabled() const
 {
