@@ -59,6 +59,10 @@ class BLPWTK2_EXPORT ToolkitDelegate {
                                     LONG_PTR *result) = 0;
 
 
+    // patch section: performance monitor
+
+
+    // patch section: renderer ui
 
 };
 
