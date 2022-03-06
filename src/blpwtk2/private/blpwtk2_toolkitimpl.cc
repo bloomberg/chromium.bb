@@ -610,6 +610,11 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
+
+                         // patch section: embedder ipc
+
+
+                         // patch section: log message handler
                          const std::string&              profileDir)
     : d_mainDelegate(false)
 {
@@ -743,7 +748,11 @@ ToolkitImpl::~ToolkitImpl()
 
     ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
 
+    // patch section: gpu
     detachGPUDataLogObserver();
+
+
+    // patch section: performance monitor
 
     if (Statics::isRendererMainThreadMode()) {
         mojo::WaitSet::SetProxy(nullptr);
