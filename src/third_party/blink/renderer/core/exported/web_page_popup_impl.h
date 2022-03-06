@@ -169,6 +169,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       const display::ScreenInfos& screen_infos,
+      int view_id,
       const cc::LayerTreeSettings* settings) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;

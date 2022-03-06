@@ -88,6 +88,7 @@ class WebWidget {
   virtual void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       const display::ScreenInfos& screen_info,
+      int view_id,
       const cc::LayerTreeSettings* settings) = 0;
 
   // Set the compositor as visible. If |visible| is true, then the compositor

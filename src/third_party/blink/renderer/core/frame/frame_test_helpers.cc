@@ -564,7 +564,7 @@ TestWebFrameWidget* WebViewHelper::CreateFrameWidgetAndInitializeCompositing(
   display::ScreenInfos initial_screen_infos(
       frame_widget->GetInitialScreenInfo());
   frame_widget->InitializeCompositing(frame_widget->GetAgentGroupScheduler(),
-                                      initial_screen_infos,
+                                      initial_screen_infos, 0,
                                       &layer_tree_settings);
   frame_widget->SetCompositorVisible(true);
   return frame_widget;

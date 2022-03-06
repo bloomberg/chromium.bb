@@ -502,6 +502,14 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
 
 
     // patch section: performance monitor
+    int registerMetric(
+                    const char     *name,
+                    const char     *comment,
+                    unsigned int    reportFrequency) override {
+      return 0;
+    }
+
+    void unregisterMetrics() override {}
 
 
 

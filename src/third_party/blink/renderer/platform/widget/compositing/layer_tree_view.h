@@ -56,7 +56,8 @@ class PLATFORM_EXPORT LayerTreeView
   void Initialize(const cc::LayerTreeSettings& settings,
                   scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
-                  cc::TaskGraphRunner* task_graph_runner);
+                  cc::TaskGraphRunner* task_graph_runner,
+                  int routing_id);
 
   // Drops any references back to the delegate in preparation for being
   // destroyed.

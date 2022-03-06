@@ -222,6 +222,12 @@ class Toolkit {
         // Get the current Gpu mode, the startup Gpu mode, GPU process crash count
 
 
+    // patch section: performance monitor
+    virtual void getMetrics(unsigned int*   values,
+                            const int*      metrics,
+                            unsigned int    count) const = 0;
+        // Request current 'values' of 'count' 'metrics' previously set up
+        // via calls to blpwtk2::ToolkitDelegate::registerMetric().
 
   protected:
     virtual ~Toolkit();

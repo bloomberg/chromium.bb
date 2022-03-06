@@ -90,7 +90,8 @@ void LayerTreeView::Initialize(
     const cc::LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
-    cc::TaskGraphRunner* task_graph_runner) {
+    cc::TaskGraphRunner* task_graph_runner,
+    int routing_id) {
   DCHECK(delegate_);
   const bool is_threaded = !!compositor_thread;
 

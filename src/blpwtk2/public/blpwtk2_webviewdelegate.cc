@@ -68,6 +68,9 @@ void WebViewDelegate::validateClientFailed(WebView* source) {}
 
 
 // patch section: performance monitor
+void WebViewDelegate::startPerformanceTiming() {}
+
+void WebViewDelegate::stopPerformanceTiming() {}
 
 
 // patch section: devtools integration

@@ -449,12 +449,13 @@ void WebPagePopupImpl::DidSetBounds() {
 void WebPagePopupImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     const display::ScreenInfos& screen_infos,
+    int view_id,
     const cc::LayerTreeSettings* settings) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
   widget_base_->InitializeCompositing(agent_group_scheduler,
                                       /*for_child_local_root_frame=*/false,
-                                      screen_infos, settings,
+                                      screen_infos, view_id, settings,
                                       /*frame_widget_input_handler=*/nullptr);
   cc::LayerTreeDebugState debug_state =
       widget_base_->LayerTreeHost()->GetDebugState();

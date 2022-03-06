@@ -177,6 +177,7 @@ void WidgetBase::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     bool for_child_local_root_frame,
     const display::ScreenInfos& screen_infos,
+    int view_id,
     const cc::LayerTreeSettings* settings,
     base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
         frame_widget_input_handler) {
@@ -206,7 +207,8 @@ void WidgetBase::InitializeCompositing(
       compositing_thread_scheduler
           ? compositing_thread_scheduler->DefaultTaskRunner()
           : nullptr,
-      platform->GetTaskGraphRunner());
+            platform->GetTaskGraphRunner(),
+            view_id);
 
   FrameWidget* frame_widget = client_->FrameWidget();
 

@@ -202,8 +202,17 @@ class WebkitTextStrokeColor;
 //
 // Since this class is huge, do not mark all of it CORE_EXPORT.  Instead,
 // export only the methods you need below.
+
+// Specific deleter needed to replace DefaultRefCountedTraits
+template <typename T>
+struct CSRefCountedTraits {
+  static void Destruct(const T* x) {
+    T::Destruct(x);
+  }
+};
+
 class ComputedStyle : public ComputedStyleBase,
-                      public RefCounted<ComputedStyle> {
+                      public RefCounted<ComputedStyle, CSRefCountedTraits<ComputedStyle>> {
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
@@ -308,6 +317,9 @@ class ComputedStyle : public ComputedStyleBase,
   // Create the per-document/context singleton that is used for shallow-copying
   // into new instances.
   CORE_EXPORT static scoped_refptr<ComputedStyle> CreateInitialStyleSingleton();
+
+  CORE_EXPORT static void Destruct(const ComputedStyle* x);
+  CORE_EXPORT static unsigned int GetObjectCount();
 
   // Shallow copy into a new instance sharing DataPtrs.
   CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
