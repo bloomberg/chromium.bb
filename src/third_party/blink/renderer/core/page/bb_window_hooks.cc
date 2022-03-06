@@ -106,10 +106,14 @@ void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
     GetPumpConfigHooks().setSchedulerTunable.Run(index, value);
 }
 
+// patch section: dump diagnostics
 String BBWindowHooks::getGpuInfo() {
     std::string diagnostics = GetProfileHooks().getGpuInfo.Run();
     return String::FromUTF8(diagnostics.data(), diagnostics.size());
 }
+
+
+// patch section: document marker highlightmarker
 
 void BBWindowHooks::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
