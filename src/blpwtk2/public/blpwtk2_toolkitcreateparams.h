@@ -57,6 +57,10 @@ class BLPWTK2_EXPORT ToolkitDelegate {
     // patch section: msg interception
 
 
+    // patch section: performance monitor
+
+
+    // patch section: renderer ui
 
 };
 
