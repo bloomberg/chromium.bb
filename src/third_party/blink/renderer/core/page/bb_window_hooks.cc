@@ -95,6 +95,10 @@ void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
     GetPumpConfigHooks().setSchedulerTunable.Run(index, value);
 }
 
+// patch section: dump diagnostics
+
+
+// patch section: document marker highlightmarker
 bool BBWindowHooks::matchSelector(Node *node, const String& selector)
 {
     if (node->IsElementNode() && !selector.IsEmpty()) {

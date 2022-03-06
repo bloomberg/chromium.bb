@@ -64,6 +64,13 @@ void WebViewDelegate::didParentStatus(WebView *source, int status, NativeView pa
 
 void WebViewDelegate::validateClientFailed(WebView* source) {}
 
+// patch section: nc hittest dragging
+
+
+// patch section: performance monitor
+
+
+// patch section: devtools integration
 void WebViewDelegate::devToolsAgentHostAttached(WebView* source) {}
 
 void WebViewDelegate::devToolsAgentHostDetached(WebView* source) {}
