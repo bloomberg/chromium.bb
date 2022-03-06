@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -398,6 +399,10 @@ void GpuDataManagerImpl::OnDisplayMetricsChanged(
 }
 
 // static
+int GpuDataManagerImpl::GetGpuCrashCount() {
+  return GpuProcessHost::GetGpuCrashCount();
+}
+
 void GpuDataManagerImpl::BindReceiver(
     mojo::PendingReceiver<blink::mojom::GpuDataManager> receiver) {
   // This is intentionally always bound on the IO thread to ensure a low-latency

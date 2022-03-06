@@ -42,6 +42,7 @@
 
 
 // patch section: dump diagnostics
+#include <third_party/blink/renderer/core/page/bb_window_hooks.h>
 
 
 
@@ -89,6 +90,10 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
 
 
     // patch section: dump diagnostics
+    blink::BBWindowHooks::ProfileHooks hooks;
+    hooks.getGpuInfo = base::BindRepeating(&ProfileImpl::getGpuInfo, base::Unretained(this));
+
+    blink::BBWindowHooks::InstallProfileHooks(hooks);
 
 
 
@@ -393,7 +398,24 @@ void ProfileImpl::setDefaultPrinter(const StringRef& name)
 
 
 // patch section: diagnostics
+void ProfileImpl::dumpDiagnostics(DiagnosticInfoType type,
+                                  const StringRef&   path)
+{
+    d_hostPtr->dumpDiagnostics(static_cast<int>(type),
+                               std::string(path.data(), path.size()));
+}
 
+std::string ProfileImpl::getGpuInfo()
+{
+    std::string diagnostics;
+
+    if (d_hostPtr->getGpuInfo(&diagnostics)) {
+        return diagnostics;
+    }
+    else {
+        return "";
+    }
+}
 
 // patch section: embedder ipc
 void ProfileImpl::onBindProcessDone(

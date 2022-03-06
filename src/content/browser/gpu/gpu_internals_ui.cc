@@ -904,4 +904,11 @@ GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
   WebUIDataSource::Add(browser_context, CreateGpuHTMLSource());
 }
 
+base::Value GpuInternalsUI::GetGpuMemoryBufferInfo()
+{
+  const gfx::GpuExtraInfo gpu_extra_info =
+      GpuDataManagerImpl::GetInstance()->GetGpuExtraInfo();
+  return GpuMemoryBufferInfo(gpu_extra_info);
+}
+
 }  // namespace content

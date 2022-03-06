@@ -214,6 +214,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  static int GetGpuCrashCount();
+
   // Binds a new Mojo receiver to handle requests from a renderer.
   static void BindReceiver(
       mojo::PendingReceiver<blink::mojom::GpuDataManager> receiver);

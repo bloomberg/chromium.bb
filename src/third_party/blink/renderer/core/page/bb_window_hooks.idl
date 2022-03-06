@@ -50,6 +50,7 @@
 
 
     // patch section: dump diagnostics
+    DOMString getGpuInfo();
 
 
 };

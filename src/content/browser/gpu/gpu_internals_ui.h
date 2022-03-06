@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_GPU_GPU_INTERNALS_UI_H_
 
 #include "content/public/browser/web_ui_controller.h"
+#include "base/values.h"
 
 namespace content {
 
@@ -15,6 +16,8 @@ class GpuInternalsUI : public WebUIController {
 
   GpuInternalsUI(const GpuInternalsUI&) = delete;
   GpuInternalsUI& operator=(const GpuInternalsUI&) = delete;
+  CONTENT_EXPORT static base::Value GetGpuMemoryBufferInfo();
+
 };
 
 }  // namespace content

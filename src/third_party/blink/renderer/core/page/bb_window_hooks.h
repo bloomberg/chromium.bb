@@ -53,8 +53,13 @@ namespace blink {
             base::RepeatingCallback<int(unsigned,int)> setSchedulerTunable;
         };
 
+        struct ProfileHooks {
+            base::RepeatingCallback<std::string(void)> getGpuInfo;
+        };
+
         static BBWindowHooks* Create(LocalDOMWindow* window) { return MakeGarbageCollected<BBWindowHooks>(window); }
         BLINK_EXPORT static void InstallPumpConfigHooks(PumpConfigHooks hooks);
+        BLINK_EXPORT static void InstallProfileHooks(ProfileHooks hooks);
 
         String listPumpSchedulers();
         String listPumpSchedulerTunables();
@@ -82,6 +87,7 @@ namespace blink {
 
 
         // patch section: dump diagnostics
+        String getGpuInfo();
 
 
 
