@@ -128,6 +128,16 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::toolkitDelegate = params.delegate();
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
 
+
+
+    // patch section: discardable sharedmem
+
+
+
+    // patch section: memory diagnostic
+
+
+
     std::string tempFolderPath = params.getTempFolderPath().toStdString();
 
     if (tempFolderPath.empty()) {
@@ -202,6 +212,11 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
                                            hostChannel,
                                            commandLineSwitches,
                                            params.isIsolatedProfile(),
+
+                                           // patch section: embedder ipc
+
+
+                                           // patch section: log message handler
                                            profileDirectory,
                                            std::move(logger));
 
