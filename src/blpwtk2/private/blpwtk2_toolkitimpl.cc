@@ -625,8 +625,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
 
                          // patch section: log message handler
-                         const std::string&              profileDir)
-    : d_mainDelegate(false)
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler)
+    : d_mainDelegate(false),
+    d_logMessageThrottler(std::move(logMessageThrottler))
 {
     ChannelInfo channelInfo;
     std::string currentHostChannel = hostChannel;

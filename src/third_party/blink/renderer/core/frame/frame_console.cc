@@ -78,7 +78,8 @@ void FrameConsole::ReportMessageToClient(
   if (source == mojom::blink::ConsoleMessageSource::kConsoleApi) {
     if (!frame_->GetPage())
       return;
-    if (frame_->GetChromeClient()
+    if (level >= mojom::ConsoleMessageLevel::kError ||
+        frame_->GetChromeClient()
             .ShouldReportDetailedMessageForSourceAndSeverity(*frame_, level,
                                                              url)) {
       std::unique_ptr<SourceLocation> full_location =
@@ -88,14 +89,15 @@ void FrameConsole::ReportMessageToClient(
     }
   } else {
     if (!location->IsUnknown() &&
+        (level >= mojom::ConsoleMessageLevel::kError ||
         frame_->GetChromeClient()
             .ShouldReportDetailedMessageForSourceAndSeverity(*frame_, level,
-                                                             url))
+                                                             url)))
       stack_trace = location->ToString();
   }
 
   frame_->GetChromeClient().AddMessageToConsole(
-      frame_, source, level, message, location->LineNumber(), url, stack_trace);
+      frame_, source, level, message, location->LineNumber(), location->ColumnNumber(), url, stack_trace);
 }
 
 void FrameConsole::ReportResourceResponseReceived(

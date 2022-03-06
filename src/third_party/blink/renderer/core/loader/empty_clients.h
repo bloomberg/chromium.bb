@@ -132,6 +132,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                            mojom::ConsoleMessageLevel,
                            const String&,
                            unsigned,
+                           unsigned,
                            const String&,
                            const String&) override {}
   bool CanOpenBeforeUnloadConfirmPanel() override { return false; }

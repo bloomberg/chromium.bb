@@ -172,6 +172,8 @@ shared_library("blpwtk2") {
 
 
     # patch section: log message handler
+    "private/blpwtk2_logmessagethrottler.cc",
+    "private/blpwtk2_logmessagethrottler.h",
 
 
 

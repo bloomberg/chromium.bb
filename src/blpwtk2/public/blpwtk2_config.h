@@ -80,6 +80,7 @@
 // feature 20
 // feature 21
 // feature 22
+#define BLPWTK2_FEATURE_LOGMESSAGEHANDLER
 // feature 23
 #define BLPWTK2_FEATURE_GPU
 // feature 24

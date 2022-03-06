@@ -323,6 +323,8 @@ typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap>::DestructorAtExit g_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
+ConsoleLogMessageHandlerFunction g_console_log_message_handler = nullptr;
+
 int64_t ExtractPostId(const WebHistoryItem& item) {
   if (item.IsNull() || item.HttpBody().IsNull())
     return -1;
@@ -1868,6 +1870,11 @@ void RenderFrameImpl::InstallCreateHook(
     CreateRenderFrameImplFunction create_frame) {
   DCHECK(!g_create_render_frame_impl);
   g_create_render_frame_impl = create_frame;
+}
+
+// static
+void RenderFrameImpl::SetConsoleLogMessageHandler(ConsoleLogMessageHandlerFunction handler) {
+  g_console_log_message_handler = handler;
 }
 
 // static
@@ -3767,10 +3774,11 @@ bool RenderFrameImpl::ShouldReportDetailedMessageForSourceAndSeverity(
       source.Utf16());
 }
 
-void RenderFrameImpl::DidAddMessageToConsole(
+void RenderFrameImpl::DidAddMessageToConsoleWithCol(
     const blink::WebConsoleMessage& message,
     const blink::WebString& source_name,
     unsigned source_line,
+    unsigned source_column_number,
     const blink::WebString& stack_trace) {
   if (ShouldReportDetailedMessageForSourceAndSeverity(message.level,
                                                       source_name)) {
@@ -3779,6 +3787,15 @@ void RenderFrameImpl::DidAddMessageToConsole(
           message.text.Utf16(), source_name.Utf16(), stack_trace.Utf16(),
           source_line, blink::ConsoleMessageLevelToLogSeverity(message.level));
     }
+  }
+
+  if (g_console_log_message_handler) {
+    g_console_log_message_handler(blink::ConsoleMessageLevelToLogSeverity(message.level),
+                                  source_name.Utf8(),
+                                  static_cast<int32_t>(source_line),
+                                  static_cast<int32_t>(source_column_number),
+                                  message.text.Utf8(),
+                                  stack_trace.Utf8());
   }
 }
 

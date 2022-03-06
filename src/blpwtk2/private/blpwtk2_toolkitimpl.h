@@ -77,6 +77,7 @@ class ToolkitDelegate;
 
 
 // patch section: log message handler
+class LogMessageThrottler;
 
 
 // patch section: gpu
@@ -149,7 +150,7 @@ class ToolkitImpl : public Toolkit {
 
     // patch section: multi-heap tracer
 
-
+    std::shared_ptr<LogMessageThrottler> d_logMessageThrottler;
 
     ~ToolkitImpl() override;
         // Shutdown all threads and delete the toolkit.  To ensure the same
@@ -209,7 +210,8 @@ class ToolkitImpl : public Toolkit {
 
 
                          // patch section: log message handler
-                         const std::string&              profileDir);
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler);
 
     // blpwtk2::Toolkit overrides
     bool hasDevTools() override;

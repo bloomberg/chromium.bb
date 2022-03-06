@@ -160,6 +160,13 @@ class RenderAccessibilityManager;
 class RenderFrameObserver;
 class RenderViewImpl;
 
+typedef void(*ConsoleLogMessageHandlerFunction)(int severity,
+                                                const std::string& file,
+                                                int line,
+                                                int column,
+                                                const std::string& message,
+                                                const std::string& stack_trace);
+
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       public blink::mojom::ResourceLoadInfoNotifier,
@@ -255,6 +262,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Web tests override the creation of RenderFrames in order to inject a
   // partial testing fake.
   static void InstallCreateHook(CreateRenderFrameImplFunction create_frame);
+
+  static void SetConsoleLogMessageHandler(
+      ConsoleLogMessageHandlerFunction handler);
 
   // Looks up and returns the WebFrame corresponding to a given frame routing
   // ID.
@@ -534,10 +544,14 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ShouldReportDetailedMessageForSourceAndSeverity(
       blink::mojom::ConsoleMessageLevel log_level,
       const blink::WebString& source) override;
-  void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
-                              const blink::WebString& source_name,
-                              unsigned source_line,
-                              const blink::WebString& stack_trace) override;
+
+  void DidAddMessageToConsoleWithCol(
+      const blink::WebConsoleMessage& message,
+      const blink::WebString& source_name,
+      unsigned source_line,
+      unsigned source_column_number,
+      const blink::WebString& stack_trace) override;
+
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(

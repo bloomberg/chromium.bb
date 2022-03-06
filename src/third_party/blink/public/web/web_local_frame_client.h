@@ -290,6 +290,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}
 
+  virtual void DidAddMessageToConsoleWithCol(const WebConsoleMessage& message,
+                                             const WebString& source_name,
+                                             unsigned source_line,
+                                             unsigned source_column,
+                                             const WebString& stack_trace);
+
   // Called when a watched CSS selector matches or stops matching.
   virtual void DidMatchCSS(
       const WebVector<WebString>& newly_matching_selectors,
@@ -782,6 +788,16 @@ class BLINK_EXPORT WebLocalFrameClient {
   // a window.print() call.
   virtual void ScriptedPrint() {}
 };
+
+inline
+void WebLocalFrameClient::DidAddMessageToConsoleWithCol(
+    const WebConsoleMessage& message,
+    const WebString& source_name,
+    unsigned source_line,
+    unsigned source_column,
+    const WebString& stack_trace) {
+  DidAddMessageToConsole(message, source_name, source_line, stack_trace);
+}
 
 }  // namespace blink
 
