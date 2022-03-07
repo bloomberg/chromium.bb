@@ -81,6 +81,11 @@ void WebViewCreateParams::setRerouteMouseWheelToAnyRelatedWindow(bool rerouteMou
     d_impl->rerouteMouseWheelToAnyRelatedWindow = rerouteMouseWheelToAnyRelatedWindow;
 }
 
+// patch section: nc hittest dragging
+
+
+// patch section: focus
+
 bool WebViewCreateParams::domPasteEnabled() const
 {
     return d_impl->domPasteEnabled;
