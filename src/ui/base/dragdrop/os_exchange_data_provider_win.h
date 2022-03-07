@@ -184,7 +184,7 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
                       base::Pickle* data) const override;
   void EnumerateCustomData(std::vector<FORMATETC>* formats) const override;
   bool GetCustomData(const FORMATETC& format,
-                     std::u16string* data) const override;  
+                     std::u16string* data) const override;
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const override;
   bool GetHtml(std::u16string* html, GURL* base_url) const override;
