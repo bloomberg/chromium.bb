@@ -25,6 +25,13 @@
 
 
 # patch section: docprinter
+group("chrome_blpwtk2_docprinter") {
+  deps = [
+     "//chrome/browser:browser",
+     "//components/printing/browser",
+     "//components/printing/renderer",
+  ]
+}
 
 group("chrome_blpwtk2") {
   deps = [
@@ -33,13 +40,11 @@ group("chrome_blpwtk2") {
 
 
      # patch section: docprinter
+     ":chrome_blpwtk2_docprinter",
 
      "//base:base",
-     "//chrome/browser:browser",
      "//chrome/utility:utility",
      "//components/crash/core/app:crash_export_thunks",
-     "//components/printing/browser",
-     "//components/printing/renderer",
      "//components/mirroring/mojom:service",
      "//chrome/credential_provider/gaiacp:common",
   ]
