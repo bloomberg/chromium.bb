@@ -47,6 +47,8 @@ class FontCollectionImpl final : public content::FontCollection {
   private:
     FontCollectionImpl();
     ~FontCollectionImpl();
+    FontCollectionImpl(const FontCollectionImpl&) = delete;
+    FontCollectionImpl& operator=(const FontCollectionImpl&) = delete;
 
     HRESULT GetPrivateFontLoader(
             const Microsoft::WRL::ComPtr<IDWriteFactory>&        factory,
@@ -61,7 +63,6 @@ class FontCollectionImpl final : public content::FontCollection {
     Microsoft::WRL::ComPtr<IDWriteFontCollection> d_font_collection;
     std::vector<std::wstring> d_font_files;
 
-    DISALLOW_COPY_AND_ASSIGN(FontCollectionImpl);
 };
 } // namespace blpwtk2
 
