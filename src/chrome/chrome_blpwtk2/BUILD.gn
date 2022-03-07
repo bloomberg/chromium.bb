@@ -22,6 +22,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # patch section: spellcheck
+group("chrome_blpwtk2_spellcheck") {
+  deps = [
+     "//chrome/browser:browser",
+  ]
+}
 
 
 # patch section: docprinter
@@ -30,6 +35,7 @@ group("chrome_blpwtk2") {
   deps = [
 
      # patch section: spellcheck
+     ":chrome_blpwtk2_spellcheck",
 
 
      # patch section: docprinter
@@ -37,7 +43,6 @@ group("chrome_blpwtk2") {
      "//base:base",
      "//chrome/utility:utility",
      "//components/crash/core/app:crash_export_thunks",
-     "//chrome/browser:browser",
      "//components/mirroring/mojom:service",
      "//chrome/credential_provider/gaiacp:common",
   ]
