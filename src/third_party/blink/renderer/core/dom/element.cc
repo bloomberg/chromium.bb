@@ -1895,6 +1895,10 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
                             scroll_behavior);
 }
 
+// patch section: spellcheck
+
+
+// patch section: bb element extensions
 int Element::bbScrollLeftNoZoomAdjust() const {
   // blpwtk2: This function should be identical to Element::scrollLeft except
   //          that it shouldn't call AdjustForAbsoluteZoom::AdjustScroll
