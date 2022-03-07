@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_CONTENTRENDERERCLIENTIMPL_H
 
 #include <blpwtk2_config.h>
+
 #include <components/spellcheck/renderer/spellcheck_provider.h>
 #include <content/public/renderer/content_renderer_client.h>
 #include <content/public/renderer/render_thread_observer.h>
