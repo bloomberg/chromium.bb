@@ -225,6 +225,10 @@ interface WebViewClient {
     didFailLoadForFrame(int32 routingId, string url);
         // Notify the client that loading a URL into an IFRAME failed.
 
+    // patch section: nc hittest dragging
+
+
+    // patch section: devtools integration
     devToolsAgentHostAttached();
         // Notify the client that the devtools frontend is connected to the
         // devtools agent associated with this webview.
@@ -232,6 +236,7 @@ interface WebViewClient {
     devToolsAgentHostDetached();
         // Notify the client that the devtools frontend is disconnected from
         // the devtools agent associated with this webview.
+
 };
 
 // vim: ts=4 et

@@ -166,8 +166,14 @@ class WebViewProxy final : public WebView
     void didFailLoadForFrame(int              routingId,
                              const StringRef& url) override;
     void didParentStatus(int status, NativeView parent) override;
+
+    // patch section: nc hittest dragging
+
+
+    // patch section: devtools integration
     void devToolsAgentHostAttached() override;
     void devToolsAgentHostDetached() override;
+
 };
 
 }  // close namespace blpwtk2
