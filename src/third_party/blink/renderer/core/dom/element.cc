@@ -1899,6 +1899,7 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
                             scroll_behavior);
 }
 
+// patch section: spellcheck
 void Element::bbRequestSpellCheck() {
   if (!GetDocument().GetFrame() ||
     !GetDocument().GetFrame()->GetSpellChecker().IsSpellCheckingEnabled()) {
@@ -1944,7 +1945,7 @@ void Element::bbRequestSpellCheck() {
 }
 
 
-
+// patch section: bb element extensions
 
 gfx::Rect Element::BoundsInViewport() const {
   GetDocument().EnsurePaintLocationDataValidForNode(
