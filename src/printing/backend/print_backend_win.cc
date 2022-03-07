@@ -260,7 +260,8 @@ mojom::ResultCode PrintBackendWin::GetDefaultPrinterName(
       PrintBackend::GetUserDefaultPrinterName();
 
   if (!defaultPrinterName.empty()) {
-    return defaultPrinterName;
+    default_printer = defaultPrinterName;
+    return mojom::ResultCode::kSuccess;
   }
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
