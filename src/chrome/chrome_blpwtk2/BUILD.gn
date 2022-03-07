@@ -21,8 +21,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# patch section: spellcheck
+
+
+# patch section: docprinter
+
 group("chrome_blpwtk2") {
   deps = [
+
+     # patch section: spellcheck
+
+
+     # patch section: docprinter
+
      "//base:base",
      "//chrome/utility:utility",
      "//components/crash/core/app:crash_export_thunks",
