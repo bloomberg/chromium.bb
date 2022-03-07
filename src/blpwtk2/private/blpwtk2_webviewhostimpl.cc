@@ -265,6 +265,10 @@ void WebViewHostImpl::findState(WebView *source,
     NOTREACHED() << "findState should come in via findStateWithReqId";
 }
 
+// patch section: nc hittest dragging
+
+
+// patch section: devtools integration
 void WebViewHostImpl::devToolsAgentHostAttached(WebView *source)
 {
     DCHECK(source == d_impl);

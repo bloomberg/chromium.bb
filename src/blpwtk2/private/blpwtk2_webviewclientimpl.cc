@@ -352,6 +352,10 @@ void WebViewClientImpl::didFailLoadForFrame(int   routingId,
     }
 }
 
+// patch section: nc hittest dragging
+
+
+// patch section: devtools integration
 void WebViewClientImpl::devToolsAgentHostAttached()
 {
     DCHECK(d_delegate);
