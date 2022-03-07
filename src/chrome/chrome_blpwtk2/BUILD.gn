@@ -22,6 +22,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # patch section: spellcheck
+group("chrome_blpwtk2_spellcheck") {
+  deps = [
+     "//chrome/browser:browser",
+  ]
+}
 
 
 # patch section: docprinter
@@ -37,6 +42,7 @@ group("chrome_blpwtk2") {
   deps = [
 
      # patch section: spellcheck
+     ":chrome_blpwtk2_spellcheck",
 
 
      # patch section: docprinter

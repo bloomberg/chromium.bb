@@ -361,6 +361,7 @@ shared_library("blpwtk2") {
     "//components/services/print_compositor/public/mojom",
     "//components/spellcheck/browser",
     "//components/spellcheck/common:common",
+    "//components/spellcheck/renderer",
     "//components/user_prefs",
     "//components/viz/common",
     "//components/viz/host",

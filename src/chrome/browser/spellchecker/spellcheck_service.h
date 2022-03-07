@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -26,6 +27,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/spellcheck_data.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class SpellCheckHostMetrics;
@@ -52,6 +54,7 @@ class LanguageSettingsPrivateApiTestDelayInit;
 // SpellcheckService maintains any per-profile information about spellcheck.
 class SpellcheckService : public KeyedService,
                           public content::NotificationObserver,
+                          public content::SpellcheckData::Observer,
                           public SpellcheckCustomDictionary::Observer,
                           public SpellcheckHunspellDictionary::Observer {
  public:
@@ -142,6 +145,11 @@ class SpellcheckService : public KeyedService,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // content::SpellcheckData::Observer implementation.
+  void OnCustomWordsChanged(
+      const std::vector<base::StringPiece>& words_added,
+      const std::vector<base::StringPiece>& words_removed) override;
 
   // SpellcheckCustomDictionary::Observer implementation.
   void OnCustomDictionaryLoaded() override;

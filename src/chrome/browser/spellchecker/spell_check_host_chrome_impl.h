@@ -64,12 +64,15 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       const std::u16string& text,
       const std::vector<SpellCheckResult>& service_results) const;
 
+  // blpwtk2: Remove dependency on CustomDictionary
+#if 0
   // Filter out spelling corrections of custom dictionary words from the
   // Spelling service results.
   static std::vector<SpellCheckResult> FilterCustomWordResults(
       const std::string& text,
       const SpellcheckCustomDictionary& custom_dictionary,
       const std::vector<SpellCheckResult>& service_results);
+#endif
 #endif
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)

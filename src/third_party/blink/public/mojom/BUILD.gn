@@ -1487,3 +1487,4 @@ mojom("mobile_metrics") {
     },
   ]
 }
+

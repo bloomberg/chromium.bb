@@ -322,7 +322,6 @@ mojom("interfaces") {
     "drop_data.mojom",
     "resource_usage_reporter.mojom",
     "webplugininfo.mojom",
-    "window_container_type.mojom",
   ]
 
   if (is_win) {
@@ -330,6 +329,7 @@ mojom("interfaces") {
   }
 
   deps = [
+    ":window_container_mojom",
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
@@ -408,3 +408,8 @@ if (is_android) {
     srcjar_deps = [ ":java_features_srcjar" ]
   }
 }
+
+mojom("window_container_mojom") {
+   sources = ["window_container_type.mojom"]
+}
+

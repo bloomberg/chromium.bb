@@ -53,6 +53,9 @@ class SpellcheckCharAttribute {
   // encoded in UTF-16 since ICU needs UTF-16 strings.
   std::u16string GetRuleSet(bool allow_contraction) const;
 
+  // Returns the script code the language is based on
+  UScriptCode GetScriptCode() const;
+
   // Outputs a character only if it is a word character. (Please read the
   // comments in CreateRuleSets() why we need this function.)
   bool OutputChar(UChar c, std::u16string* output) const;
