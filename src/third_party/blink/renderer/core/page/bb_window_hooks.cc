@@ -94,6 +94,11 @@ void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
     GetPumpConfigHooks().setSchedulerTunable.Run(index, value);
 }
 
+// patch section: dump diagnostics
+
+
+// patch section: document marker highlightmarker
+
 void BBWindowHooks::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
