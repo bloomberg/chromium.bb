@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_FONTCOLLECTION_H
 
 #include <content/public/browser/browser_message_filter.h>
+#include <third_party/breakpad/breakpad/src/common/basictypes.h>
 #include <dwrite.h>
 #include <wrl.h>
 
