@@ -41,6 +41,8 @@ class FontFileStream
   public:
     FontFileStream();
     ~FontFileStream() override;
+    FontFileStream(const FontFileStream&) = delete;
+    FontFileStream& operator=(const FontFileStream&) = delete;
 
     // IDWriteFontFileStream methods.
     HRESULT STDMETHODCALLTYPE ReadFileFragment(
@@ -58,8 +60,6 @@ class FontFileStream
   private:
     mswr::ComPtr<IDWriteFontCollectionLoader> d_font_loader;
     std::unique_ptr<base::MemoryMappedFile> d_memory;
-
-    DISALLOW_COPY_AND_ASSIGN(FontFileStream);
 };
 
 
@@ -73,6 +73,8 @@ class FontFileLoader final
   public:
     explicit FontFileLoader(
             const std::vector<std::wstring>& font_files);
+    FontFileLoader(const FontFileLoader&) = delete;
+    FontFileLoader& operator=(const FontFileLoader&) = delete;
 
     // IDWriteFontFileLoader methods.
     HRESULT STDMETHODCALLTYPE CreateStreamFromKey(
@@ -102,7 +104,6 @@ class FontFileLoader final
                                UINT32      ref_key_size);
 
     std::vector<std::wstring> d_font_files;
-    DISALLOW_COPY_AND_ASSIGN(FontFileLoader);
 };
 
                     // ========================
@@ -117,6 +118,8 @@ class FontFileEnumerator final
             const mswr::ComPtr<IDWriteFactory>&        factory,
             const mswr::ComPtr<IDWriteFontFileLoader>& file_loader,
             std::vector<std::wstring>&&                font_files);
+    FontFileEnumerator(const FontFileEnumerator&) = delete;
+    FontFileEnumerator& operator=(const FontFileEnumerator&) = delete;
 
     // IDWriteFontFileEnumerator methods.
     HRESULT STDMETHODCALLTYPE MoveNext(BOOL *has_current_file) override;
@@ -128,8 +131,6 @@ class FontFileEnumerator final
     mswr::ComPtr<IDWriteFontFile> d_current_file;
     unsigned int d_font_idx;
     std::vector<std::wstring> d_font_files;
-
-    DISALLOW_COPY_AND_ASSIGN(FontFileEnumerator);
 };
 
 
@@ -145,6 +146,9 @@ class FontCollectionLoader final
         const mswr::ComPtr<IDWriteFontFileLoader>& file_loader,
         const std::vector<std::wstring>&&          font_files);
 
+    FontCollectionLoader(const FontCollectionLoader&) = delete;
+    FontCollectionLoader& operator=(const FontCollectionLoader&) = delete;
+
     // IDWriteFontCollectionLoader methods.
     HRESULT STDMETHODCALLTYPE
     CreateEnumeratorFromKey(IDWriteFactory             *factory,
@@ -155,8 +159,6 @@ class FontCollectionLoader final
   private:
     mswr::ComPtr<IDWriteFontFileLoader> d_file_loader;
     std::vector<std::wstring> d_font_files;
-
-    DISALLOW_COPY_AND_ASSIGN(FontCollectionLoader);
 };
 
                     // =============================
@@ -169,6 +171,9 @@ class CompositeFontCollection final
   public:
     CompositeFontCollection(
             const std::vector<mswr::ComPtr<IDWriteFontCollection>>&& collections);
+
+    CompositeFontCollection(const CompositeFontCollection&) = delete;
+    CompositeFontCollection& operator=(const CompositeFontCollection&) = delete;
 
     // IDWriteFontCollection
     HRESULT STDMETHODCALLTYPE FindFamilyName(const wchar_t *family_name,
@@ -185,8 +190,6 @@ class CompositeFontCollection final
 
   private:
     std::vector<mswr::ComPtr<IDWriteFontCollection>> d_collections;
-
-    DISALLOW_COPY_AND_ASSIGN(CompositeFontCollection);
 };
 
                     // --------------------
