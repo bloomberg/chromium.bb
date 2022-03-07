@@ -133,6 +133,9 @@ class WebViewClientDelegate
         // will be returned as status 
 
     // patch section: nc hittest dragging
+    virtual void didInterceptMessage() = 0;
+        // This method is called when the embedder intercepts a window message
+        // that would've been processed for this webview.
 
 
     // patch section: devtools integration

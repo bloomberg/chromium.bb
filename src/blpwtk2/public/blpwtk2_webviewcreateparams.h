@@ -111,6 +111,8 @@ class BLPWTK2_EXPORT WebViewCreateParams {
         // window to be delivered to that window if it shares a 'root' window
         // with the webview.
 
+    void setMessageInterceptionEnabled(bool enable);
+
     // ACCESSORS
     bool takeKeyboardFocusOnMouseDown() const;
     bool takeLogicalFocusOnMouseDown() const;
@@ -119,6 +121,7 @@ class BLPWTK2_EXPORT WebViewCreateParams {
     bool javascriptCanAccessClipboard() const;
     int rendererAffinity() const;
     bool rerouteMouseWheelToAnyRelatedWindow() const;
+    bool messageInterceptionEnabled() const;
 };
 
 
