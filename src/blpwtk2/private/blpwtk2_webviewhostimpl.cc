@@ -274,6 +274,7 @@ void WebViewHostImpl::findState(WebView *source,
     NOTREACHED() << "findState should come in via findStateWithReqId";
 }
 
+// patch section: nc hittest dragging
 void WebViewHostImpl::didInterceptMessage(WebView *source)
 {
     DCHECK(source == d_impl);
@@ -288,6 +289,9 @@ void WebViewHostImpl::didInterceptMessage(WebView *source)
         d_messageInterceptState.pendingUpdate = true;
     }
 }
+
+
+// patch section: devtools integration
 
 // Mojo callbacks
 void WebViewHostImpl::onNCDragAck()

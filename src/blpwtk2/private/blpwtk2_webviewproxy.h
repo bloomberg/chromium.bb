@@ -130,7 +130,13 @@ class WebViewProxy final : public WebView
     void didFailLoadForFrame(int              routingId,
                              const StringRef& url) override;
     void didParentStatus(int status, NativeView parent) override;
+
+    // patch section: nc hittest dragging
     void didInterceptMessage() override;
+
+
+    // patch section: devtools integration
+
 };
 
 }  // close namespace blpwtk2

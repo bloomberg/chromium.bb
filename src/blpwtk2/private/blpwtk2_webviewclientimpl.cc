@@ -352,6 +352,7 @@ void WebViewClientImpl::didFailLoadForFrame(int   routingId,
     }
 }
 
+// patch section: nc hittest dragging
 void WebViewClientImpl::didInterceptMessage(didInterceptMessageCallback callback)
 {
     DCHECK(d_delegate);
@@ -362,6 +363,9 @@ void WebViewClientImpl::didInterceptMessage(didInterceptMessageCallback callback
 
     std::move(callback).Run();
 }
+
+
+// patch section: devtools integration
 
 // Mojo callbacks
 void WebViewClientImpl::loadStatus(int status)
