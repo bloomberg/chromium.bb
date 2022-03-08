@@ -247,7 +247,7 @@ bool BBWindowHooks::checkSpellingForNode(Node* node)
 DOMRectReadOnly* BBWindowHooks::getAbsoluteCaretRectAtOffset(Node* node, long offset)
 {
     VisiblePosition visiblePos = CreateVisiblePosition(Position(node, offset));
-    IntRect rc = AbsoluteCaretBoundsOf(visiblePos.ToPositionWithAffinity());
+    gfx::Rect rc = AbsoluteCaretBoundsOf(visiblePos.ToPositionWithAffinity());
     return DOMRectReadOnly::FromIntRect(rc);
 }
 

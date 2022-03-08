@@ -1065,7 +1065,10 @@ void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paint
         LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())
             ->GetNode());
 
-    textPainter.Paint(sPos, ePos, inline_text_box_.Len(), textStyle, node_holder);
+    AutoDarkMode auto_dark_mode(
+      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kForeground));
+    
+    textPainter.Paint(sPos, ePos, inline_text_box_.Len(), textStyle, node_holder, auto_dark_mode);
 }
 
 void InlineTextBoxPainter::PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
@@ -1086,8 +1089,11 @@ void InlineTextBoxPainter::PaintHighlightMarkerBackground(const PaintInfo& paint
     GraphicsContextStateSaver stateSaver(context);
 
     PhysicalRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
-    context.Clip(FloatRect(boxRect));
-    context.DrawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.Height().ToInt(), color, sPos, ePos);
+    context.Clip(gfx::RectF(boxRect));
+    AutoDarkMode auto_dark_mode(
+      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kForeground));
+    context.DrawHighlightForText(font, run, gfx::PointF(boxOrigin),
+      boxRect.Height().ToInt(), color, auto_dark_mode, sPos, ePos);
 }
 
 }  // namespace blink
