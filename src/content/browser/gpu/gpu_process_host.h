@@ -36,6 +36,7 @@
 #include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/gpu_extra_info.h"
 #include "url/gurl.h"
 
@@ -59,7 +60,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public viz::GpuHostImpl::Delegate {
  public:
   CONTENT_EXPORT static int GetGpuCrashCount();
-  CONTENT_EXPORT static base::Optional<gpu::GpuMode> GetStartupGpuMode();
+  CONTENT_EXPORT static absl::optional<gpu::GpuMode> GetStartupGpuMode();
 
   // Creates a new GpuProcessHost (if |force_create| is turned on) or gets an
   // existing one, resulting in the launching of a GPU process if required.

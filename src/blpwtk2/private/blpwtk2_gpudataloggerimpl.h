@@ -26,11 +26,10 @@
 #include <blpwtk2_config.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/Optional.h"
 #include "blpwtk2/public/blpwtk2_gpudatalogger.h"
 #include "blpwtk2/public/blpwtk2_profile.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include <string>
 
@@ -39,6 +38,8 @@ namespace blpwtk2 {
 class GpuDataLoggerImpl : public GpuDataLogger {
  public:
   GpuDataLoggerImpl();
+  GpuDataLoggerImpl(const GpuDataLoggerImpl&) = delete;
+  GpuDataLoggerImpl& operator=(const GpuDataLoggerImpl&) = delete;
 
   // Called for any observers whenever there is a log message added to the GPU data.
   void OnAddLogMessage(int level, const std::string& header, const std::string& message) override;
@@ -48,9 +49,7 @@ class GpuDataLoggerImpl : public GpuDataLogger {
  private:
   ~GpuDataLoggerImpl() override;
 
-  base::Optional<GpuMode> gpuMode_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuDataLoggerImpl);
+  absl::optional<GpuMode> gpuMode_;
 };
 
 }  // namespace blpwtk2

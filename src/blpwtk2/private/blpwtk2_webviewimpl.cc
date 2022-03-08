@@ -43,7 +43,7 @@
 #include <chrome/browser/printing/print_view_manager.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <content/browser/renderer_host/render_widget_host_view_base.h>
-
+#include <ui/compositor/compositor.h>
 
 // patch section: support inspector save and load
 #include <content/public/browser/file_select_listener.h>
@@ -1247,7 +1247,7 @@ void WebViewImpl::OnWebContentsLostFocus(content::RenderWidgetHost*)
 
 // patch section: gpu
 void WebViewImpl::OnCompositorGpuErrorMessage(const std::string& message) {
-  d_renderViewHost->GetMainFrame()->AddMessageToConsole(
+    d_webContents->GetMainFrame()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kError, 
       "Gpu compositing error: " + message);
 }
