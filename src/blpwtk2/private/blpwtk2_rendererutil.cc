@@ -31,6 +31,7 @@
 #include <content/public/browser/native_web_keyboard_event.h>
 #include <ui/events/event.h>
 
+#include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_view.h>
 #include <third_party/blink/public/common/input/web_coalesced_input_event.h>
 #include <third_party/blink/public/web/web_view.h>
@@ -208,13 +209,13 @@ String RendererUtil::printToPDF(content::RenderView* renderView)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
 
-    for (auto* frame = renderView->GetWebView()->MainFrame(); frame;
-         frame = frame->TraverseNext()) {
+    auto* main_frame = renderView->GetWebView()->MainFrame();
+    for (auto* frame = main_frame; frame; frame = frame->TraverseNext()) {
       if (auto* local_frame = frame->ToWebLocalFrame()) {
         if (local_frame->IsPrintAllowed()) {
-          std::vector<char> buffer = printing::PrintRenderFrameHelper::Get(
-                                         renderView->GetMainRenderFrame())
-                                         ->PrintToPDF(local_frame);
+          std::vector<char> buffer = 
+            printing::PrintRenderFrameHelper::Get(content::RenderFrame::FromWebFrame(main_frame->ToWebLocalFrame()))
+                                              ->PrintToPDF(local_frame);
           returnVal.assign(buffer.data(), buffer.size());
           break;
         }

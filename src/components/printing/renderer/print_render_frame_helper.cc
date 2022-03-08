@@ -110,6 +110,9 @@ bool g_use_default_print_settings_ = false;
 class EmptyPrintWebViewHelperDelegate : public PrintRenderFrameHelper::Delegate {
  public:
   EmptyPrintWebViewHelperDelegate() {}
+  EmptyPrintWebViewHelperDelegate(const EmptyPrintWebViewHelperDelegate&) = delete;
+  EmptyPrintWebViewHelperDelegate& operator=(const EmptyPrintWebViewHelperDelegate&) = delete;
+
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override {
     return blink::WebElement();
   }
@@ -119,9 +122,6 @@ class EmptyPrintWebViewHelperDelegate : public PrintRenderFrameHelper::Delegate 
   bool OverridePrint(blink::WebLocalFrame* frame) override {
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EmptyPrintWebViewHelperDelegate);
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
