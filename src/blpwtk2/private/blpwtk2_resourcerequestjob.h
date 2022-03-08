@@ -31,6 +31,8 @@ namespace blpwtk2 {
 class ResourceRequestJob : public net::URLRequestJob {
  public:
   ResourceRequestJob(net::URLRequest* request);
+  ResourceRequestJob(const ResourceRequestJob&) = delete;
+  ResourceRequestJob& operator=(const ResourceRequestJob&) = delete;
 
  private:
   // net::URLRequestJob methods.
@@ -40,8 +42,6 @@ class ResourceRequestJob : public net::URLRequestJob {
   void NotifyHeadersCompleteHelper();
 
   GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceRequestJob);
 };
 
 }  // close namespace blpwtk2

@@ -31,12 +31,12 @@ class RequestInterceptorImpl final : public net::URLRequestInterceptor {
  public:
   RequestInterceptorImpl();
   ~RequestInterceptorImpl() final;
+  RequestInterceptorImpl(const RequestInterceptorImpl&) = delete;
+  RequestInterceptorImpl& operator=(const RequestInterceptorImpl&) = delete;
 
   // net::URLRequestInterceptor methods.
   std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
           net::URLRequest* request) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestInterceptorImpl);
 };
 
 }  // close namespace blpwtk2
