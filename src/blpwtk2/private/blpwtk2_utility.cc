@@ -34,7 +34,7 @@
 #include <content/browser/gpu/compositor_util.h>
 #include <content/browser/gpu/gpu_data_manager_impl.h>
 #include <content/browser/gpu/gpu_internals_ui.h>
-#include <third_party/angle/src/common/version.h>
+#include <angle/angle_commit.h>
 
 #include <fstream>
 
@@ -67,7 +67,7 @@ std::string getGpuInfo(const Profile* profile) {
 
     base::ListValue* workarounds = new base::ListValue();
     for (const auto& workaround : content::GetDriverBugWorkarounds()) {
-        workarounds->AppendString(workaround);
+        workarounds->Append(std::make_unique<base::Value>(workaround));
     }
     std::unique_ptr<base::Value> workarounds_v(workarounds);
     gpuInfo.Set("workarounds", std::move(workarounds_v));
