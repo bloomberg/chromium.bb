@@ -33,6 +33,8 @@ namespace blink {
 class CORE_EXPORT HighlightMarkerListImpl final : public DocumentMarkerList {
  public:
   HighlightMarkerListImpl() = default;
+  HighlightMarkerListImpl(const HighlightMarkerListImpl&) = delete;
+  HighlightMarkerListImpl& operator=(const HighlightMarkerListImpl&) = delete;
 
   // DocumentMarkerList implementations
   DocumentMarker::MarkerType MarkerType() const final;
@@ -60,8 +62,6 @@ class CORE_EXPORT HighlightMarkerListImpl final : public DocumentMarkerList {
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;
-
-  DISALLOW_COPY_AND_ASSIGN(HighlightMarkerListImpl);
 };
 
 

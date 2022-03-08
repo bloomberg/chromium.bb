@@ -59,7 +59,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     kActiveSuggestion = 1 << kActiveSuggestionMarkerIndex,
     kSuggestion = 1 << kSuggestionMarkerIndex,
     kTextFragment = 1 << kTextFragmentMarkerIndex,
-    kCustomHighlight = 1 << kCustomHighlightMarkerIndex
+    kCustomHighlight = 1 << kCustomHighlightMarkerIndex,
     kHighlight = 1 << kHighlightMarkerIndex
   };
 

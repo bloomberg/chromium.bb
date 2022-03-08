@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 
@@ -40,6 +41,8 @@ class CORE_EXPORT HighlightMarker final : public DocumentMarker {
                   Color foreground_color,
                   Color background_color,
 									bool include_nonselectable_text);
+  HighlightMarker(const HighlightMarker&) = delete;
+  HighlightMarker& operator=(const HighlightMarker&) = delete;
 
   // DocumentMarker implementations
   MarkerType GetType() const final;
@@ -53,7 +56,6 @@ class CORE_EXPORT HighlightMarker final : public DocumentMarker {
 	Color foreground_color;
 	Color background_color;
 	bool include_nonselectable_text = false;
-  DISALLOW_COPY_AND_ASSIGN(HighlightMarker);
 };
 
 template <>
