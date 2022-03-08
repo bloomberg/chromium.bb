@@ -32,7 +32,7 @@ namespace content {
 // GpuErrorMessageObserver listens to the log message sent from GPU process to
 // the browser process. More specifically, it observes warning, error & fatal
 // messages and decides if terminating the GPU process is needed.
-class GpuErrorMessageObserver : public GpuDataManagerObserver {
+class GpuErrorMessageObserver final : public GpuDataManagerObserver {
  public:
   class Delegate {
    public:

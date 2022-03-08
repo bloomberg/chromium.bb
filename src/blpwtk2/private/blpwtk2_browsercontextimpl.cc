@@ -62,6 +62,7 @@
 #include <printing/backend/print_backend.h>
 #include <content/browser/gpu/gpu_data_manager_impl.h>
 #include <content/browser/gpu/gpu_process_host.h>
+#include <third_party/abseil-cpp/absl/types/optional.h>
 
 namespace blpwtk2 {
 namespace {
@@ -470,7 +471,7 @@ void BrowserContextImpl::getGpuMode(GpuMode& currentMode, GpuMode& startupMode, 
 {
     content::GpuDataManagerImpl* man = content::GpuDataManagerImpl::GetInstance();
     currentMode = GpuDataLogger::toWtk2GpuMode(man->GetGpuMode());
-    base::Optional<gpu::GpuMode> optStartupMode = content::GpuProcessHost::GetStartupGpuMode();
+    absl::optional<gpu::GpuMode> optStartupMode = content::GpuProcessHost::GetStartupGpuMode();
     startupMode =
         optStartupMode ? GpuDataLogger::toWtk2GpuMode(*optStartupMode) : GpuMode::kUnknown;
     crashCount = content::GpuProcessHost::GetGpuCrashCount();
