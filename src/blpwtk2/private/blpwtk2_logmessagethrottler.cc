@@ -26,7 +26,7 @@
 #include "blpwtk2/public/blpwtk2_stringref.h"
 
 #include <base/logging.h>
-#include <base/optional.h>
+#include <third_party/abseil-cpp/absl/types/optional.h>
 #include <base/time/time.h>
 
 #include <deque>
@@ -81,7 +81,7 @@ class LogMessageThrottlerImpl {
 };
 
 // NoThrottleLogMessageThrottler does not throttle any messages
-class NoThrottleLogMessageThrottler : public LogMessageThrottlerImpl {
+class NoThrottleLogMessageThrottler final: public LogMessageThrottlerImpl {
  public:
   using LogMessageThrottlerImpl::LogMessageThrottlerImpl;
 
@@ -107,7 +107,7 @@ class NoThrottleLogMessageThrottler : public LogMessageThrottlerImpl {
 // simple does NOT write it out without caching. It does not cache the messages
 // to avoid complications of timer-based update and flushing issues during
 // process crash.
-class WarningLogMessageThrottler : public LogMessageThrottlerImpl {
+class WarningLogMessageThrottler final : public LogMessageThrottlerImpl {
  public:
   WarningLogMessageThrottler(
       ToolkitCreateParams::LogMessageHandler logHandler,
@@ -279,7 +279,7 @@ bool WarningLogMessageThrottler::leakyBucket(
   bool elapse_long_enough = false;
   bool is_serious =
       (severity >= logging::LOG_WARNING && severity <= logging::LOG_FATAL);
-  base::Optional<base::Time> opt_time;
+  absl::optional<base::Time> opt_time;
 
   if (is_serious || num_msg_throttled) {
     opt_time = base::Time::Now();
