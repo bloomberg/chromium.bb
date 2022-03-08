@@ -41,10 +41,12 @@ namespace blpwtk2 {
 // object element with "application/x-bloomberg-jswidget" mime type.  All it
 // does is raise custom events on the DOM element whenever certain plugin
 // callbacks are invoked.
-class JsWidget : public blink::WebPlugin {
+class JsWidget final: public blink::WebPlugin {
   public:
     explicit JsWidget(blink::WebLocalFrame* frame);
     ~JsWidget() final;
+    JsWidget(const JsWidget&) = delete;
+    JsWidget& operator=(const JsWidget&) = delete;
 
     void DispatchEvent(const blink::WebDOMEvent& event);
 
@@ -75,8 +77,6 @@ class JsWidget : public blink::WebPlugin {
     blink::WebLocalFrame* d_frame;
     bool d_hasParent;
     bool d_pendingVisible; // Whether to make visible when added to a parent
-
-    DISALLOW_COPY_AND_ASSIGN(JsWidget);
 };
 
 }  // close namespace blpwtk2
