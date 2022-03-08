@@ -130,7 +130,7 @@ gpu::GpuMode GpuProcessHost::last_crash_mode_ = gpu::GpuMode::UNKNOWN;
 // content/public/common/result_codes.h and gpu/ipc/common/result_codes.h
 static_assert(RESULT_CODE_HUNG == static_cast<int>(gpu::RESULT_CODE_HUNG),
               "Please use the same enum value in both header files.");
-base::Optional<gpu::GpuMode> startupGpuMode_;
+absl::optional<gpu::GpuMode> startupGpuMode_;
 
 namespace {
 
@@ -703,7 +703,7 @@ int GpuProcessHost::GetGpuCrashCount() {
 }
 
 //static
-base::Optional<gpu::GpuMode> GpuProcessHost::GetStartupGpuMode() {
+absl::optional<gpu::GpuMode> GpuProcessHost::GetStartupGpuMode() {
   return startupGpuMode_;
 }
 
