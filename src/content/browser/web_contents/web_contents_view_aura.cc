@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <objidl.h>
 
 #include <memory>
 #include <string>
@@ -268,8 +269,37 @@ void PrepareDragData(const DropData& drop_data,
     provider->SetPickledData(GetFileSystemFileFormatType(), pickle);
   }
   if (!drop_data.custom_data.empty()) {
+    std::unordered_map<std::u16string, std::u16string> custom_data;
+
+    for (auto it = drop_data.custom_data.begin();
+         it != drop_data.custom_data.end(); ++it) {
+      // Look for a special format topic.  In addition to adding them as chromium
+      // WebCustomDataFormat, also add these formats separately to clipboard.
+      int format = 0;
+      std::u16string sft;
+      if (it->first.compare(0, 4, u"blp_") == 0) {
+        sft = it->first.substr(4);
+        format = std::stoi(std::wstring((wchar_t *) sft.data(), sft.size()));
+      }
+
+      if (format) {
+        FORMATETC formatetc;
+        formatetc.cfFormat = format;
+        formatetc.ptd = NULL;
+        formatetc.dwAspect = DVASPECT_CONTENT;
+        formatetc.lindex = -1;
+        formatetc.tymed = TYMED_HGLOBAL;
+
+        provider->SetCustomData(formatetc, it->second);
+        custom_data.insert(std::make_pair(sft, it->second));
+      }
+      else {
+        custom_data.insert(std::make_pair(it->first, it->second));
+      }
+    }
+
     base::Pickle pickle;
-    ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
+    ui::WriteCustomDataToPickle(custom_data, &pickle);
     provider->SetPickledData(ui::ClipboardFormatType::WebCustomDataType(),
                              pickle);
   }
@@ -1568,6 +1598,18 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
     CompleteDragExit();
 
     return;
+  }
+
+  // blpwtk2: Fill custom DropData object from ui::OSExchangeData.target
+  current_drop_data_->did_originate_from_renderer = context.data->DidOriginateFromRenderer();
+  std::vector<FORMATETC> custom_data_formats;
+  context.data->provider().EnumerateCustomData(&custom_data_formats);
+  for (const auto& format_etc : custom_data_formats) {
+    std::wstring temp = std::to_wstring(format_etc.cfFormat);
+    std::u16string key = u"blp_" + std::u16string((char16_t *) temp.data(), temp.size());
+    std::u16string value;
+    context.data->provider().GetCustomData(format_etc, &value);
+    current_drop_data_->custom_data.insert(std::make_pair(key, value));
   }
 
 #if defined(OS_WIN)

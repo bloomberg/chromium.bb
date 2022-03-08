@@ -31,6 +31,7 @@
 ] interface File : Blob {
     [CallWith=ExecutionContext] constructor(sequence<BlobPart> fileBits, USVString fileName, optional FilePropertyBag options = {});
     readonly attribute DOMString name;
+    readonly attribute DOMString blpPath;
     readonly attribute long long lastModified;
 
     // Non-standard APIs
