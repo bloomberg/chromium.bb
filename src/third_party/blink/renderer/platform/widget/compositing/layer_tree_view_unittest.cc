@@ -379,7 +379,7 @@ TEST(LayerTreeViewTest, RunPresentationCallbackOnSuccess) {
   layer_tree_view.Initialize(
       cc::LayerTreeSettings(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      /*compositor_thread=*/nullptr, &test_task_graph_runner);
+      /*compositor_thread=*/nullptr, &test_task_graph_runner, 0);
 
   // Register a callback for frame 1.
   base::TimeTicks callback_timestamp;
