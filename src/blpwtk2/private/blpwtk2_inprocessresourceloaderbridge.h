@@ -32,10 +32,12 @@ namespace blpwtk2 {
 
 class InProcessResourceContext;
 
-class InProcessResourceLoaderBridge : public blink::WebResourceRequestSenderDelegate {
+class InProcessResourceLoaderBridge final : public blink::WebResourceRequestSenderDelegate {
  public:
   InProcessResourceLoaderBridge();
-  ~InProcessResourceLoaderBridge() final;
+  ~InProcessResourceLoaderBridge() override;
+  InProcessResourceLoaderBridge(const InProcessResourceLoaderBridge&) = delete;
+  InProcessResourceLoaderBridge& operator=(const InProcessResourceLoaderBridge&) = delete;
 
   void OnRequestComplete() override;
 
@@ -59,9 +61,6 @@ class InProcessResourceLoaderBridge : public blink::WebResourceRequestSenderDele
 
  private:
   std::unordered_map<int,scoped_refptr<InProcessResourceContext>> d_contexts;
-
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessResourceLoaderBridge);
 };
 
 }  // namespace blpwtk2

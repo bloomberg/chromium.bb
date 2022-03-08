@@ -9,8 +9,13 @@
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include <memory>
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace blink {
 class WebRequestPeer;
+class WebResourceRequestSender;
 class WebString;
 class WebURL;
 

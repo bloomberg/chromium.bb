@@ -29,10 +29,17 @@
 #include <net/base/load_flags.h>
 #include <net/base/mime_sniffer.h>
 
+#include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_request_peer.h"
 #include "third_party/blink/public/platform/web_resource_request_sender.h"
+
 
 
 namespace {
@@ -143,7 +150,7 @@ class BodyLoaderReceiver : public ResourceReceiver {
             const blink::WebURL&                      url) override
     {
 
-        base::Optional<blink::WebURLError> web_errorCode;
+        absl::optional<blink::WebURLError> web_errorCode;
         if (completeStatus.error_code) {
             web_errorCode = blink::WebURLError(completeStatus.error_code, url);
         }
@@ -161,13 +168,12 @@ class BodyLoaderReceiver : public ResourceReceiver {
                     // class InProcessURLRequest
                     // =========================
 
-class InProcessURLRequest : public URLRequest {
+class InProcessURLRequest final : public URLRequest {
     GURL d_url;
     GURL d_firstPartyForCookies;
     int d_loadFlags;
     String d_httpMethod;
     bool d_enableUploadProgress;
-    bool d_reportRawHeaders;
     bool d_hasUserGesture;
     net::RequestPriority d_priority;
     scoped_refptr<network::ResourceRequestBody> d_requestBody;
@@ -180,7 +186,6 @@ class InProcessURLRequest : public URLRequest {
         d_loadFlags(request->load_flags),
         d_httpMethod(request->method),
         d_enableUploadProgress(request->enable_upload_progress),
-        d_reportRawHeaders(request->report_raw_headers),
         d_hasUserGesture(request->has_user_gesture),
         d_priority(request->priority),
         d_requestBody(request->request_body)
@@ -188,7 +193,9 @@ class InProcessURLRequest : public URLRequest {
         d_requestHeaders.MergeFrom(request->headers);
     }
 
-    ~InProcessURLRequest() final {}
+    ~InProcessURLRequest() override {}
+    InProcessURLRequest(const InProcessURLRequest&) = delete;
+    InProcessURLRequest& operator=(const InProcessURLRequest&) = delete;
 
     String url() const override
     {
@@ -265,11 +272,6 @@ class InProcessURLRequest : public URLRequest {
         return d_enableUploadProgress;
     }
 
-    bool reportRawHeaders() const override
-    {
-        return d_reportRawHeaders;
-    }
-
     bool hasUserGesture() const override
     {
         return d_hasUserGesture;
@@ -299,7 +301,7 @@ class InProcessURLRequest : public URLRequest {
                     // class InProcessResourceContext
                     // ==============================
 
-class InProcessResourceContext
+class InProcessResourceContext final
     : public base::RefCounted<InProcessResourceContext>,
       public ResourceContext {
 
@@ -316,7 +318,9 @@ class InProcessResourceContext
     bool d_finished;
 
     friend class base::RefCounted<InProcessResourceContext>;
-    ~InProcessResourceContext() final;
+    ~InProcessResourceContext() override;
+    InProcessResourceContext(const InProcessResourceContext&) = delete;
+    InProcessResourceContext& operator=(const InProcessResourceContext&) = delete;
 
     void startLoad();
     void cancelLoad();
@@ -646,13 +650,18 @@ class NavigationBodyLoader : public blink::WebNavigationBodyLoader {
         d_context->OnPeerInvalid();
     }
 
-    void SetDefersLoading(blink::WebURLLoader::DeferType defers) override {}
+    void SetDefersLoading(blink::WebLoaderFreezeMode) override {}
 
     void StartLoadingBody(blink::WebNavigationBodyLoader::Client* client,
-                          bool) override
+                          blink::CodeCacheHost*) override
     {
         DCHECK(Statics::isInApplicationMainThread());
         d_context->start(std::make_unique<BodyLoaderReceiver>(client), &d_request);
+    }
+
+    void StartLoadingCodeCache(blink::CodeCacheHost*) override
+    {
+        CHECK(false && "Not implemented!");
     }
 };
 
