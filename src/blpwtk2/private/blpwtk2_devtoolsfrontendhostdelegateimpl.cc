@@ -352,26 +352,23 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
     if (!origin || !script)
       return;
     extensions_api_[*origin + "/"] = *script;
-  } else if (method == "save") {
-      std::string url;
-      std::string content;
-      bool save_as;
-      if (!params->GetString(0, &url) ||
-          !params->GetString(1, &content) ||
-          !params->GetBoolean(2, &save_as)) {
-
+  } else if (*method == "save") {
+      const std::string* url = params[0].GetIfString();
+      const std::string* content = params[1].GetIfString();
+      absl::optional<bool> save_as = params[2].GetIfBool();
+      if (!url || !content || !save_as) {
           return;
       }
 
-      SaveToFile(url, content, save_as);
-  } else if (method == "append") {
-      std::string url;
-      std::string content;
-      if (!params->GetString(0, &url) || !params->GetString(1, &content)) {
+      SaveToFile(*url, *content, *save_as);
+  } else if (*method == "append") {
+      const std::string* url = params[0].GetIfString();
+      const std::string* content = params[1].GetIfString();
+      if (!url || !content) {
           return;
       }
 
-      AppendToFile(url, content);
+      AppendToFile(*url, *content);
   } else {
     return;
   }
