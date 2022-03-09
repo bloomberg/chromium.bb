@@ -369,9 +369,9 @@ class CORE_EXPORT InlineBox : public GarbageCollected<InlineBox>,
     bitfields_.SetDirOverride(dir_override);
   }
 
-  Node* node() const { return line_layout_item_.GetLayoutObject()->GetNode(); }
-  const ComputedStyle& styleRef(bool firstLine) const { return line_layout_item_.GetLayoutObject()->StyleRef(firstLine); }
-  LayoutBlock* containingBlock() const { return line_layout_item_.GetLayoutObject()->ContainingBlock(); }
+  Node* node() const;
+  const ComputedStyle& styleRef(bool firstLine) const;
+  LayoutBlock* containingBlock() const;
 
   // Set all LineLayoutItems in the inline box subtree should do full paint
   // invalidation and clear the first line style cache.

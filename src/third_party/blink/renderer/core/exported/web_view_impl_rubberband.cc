@@ -106,7 +106,7 @@ struct RubberbandCandidate_YSorter {
 class RubberbandStateImpl {
   public:
     std::vector<RubberbandCandidate> m_candidates;
-    IntPoint m_startPoint;
+    gfx::Point m_startPoint;
 };
 
 RubberbandState::RubberbandState()
@@ -118,25 +118,30 @@ RubberbandState::~RubberbandState()
 {
 }
 
-class RubberbandLayerContext {
+class RubberbandLayerContext : public GarbageCollected<RubberbandLayerContext> {
   public:
     LayoutRect m_clipRect;
     // frame scroll offset is not needed because LocalFrameView is not a ScrollableArea,
     // https://chromium.googlesource.com/chromium/src/+/88d8498ab4cf6c6be67e3d1dd1e4611c14fbace2
-    FloatSize m_layerScrollOffset;
+    gfx::SizeF m_layerScrollOffset;
     double m_translateX;
     double m_translateY;
     double m_scaleX;
     double m_scaleY;
-    LayoutBlock* m_colBlock;
+    Member<LayoutBlock> m_colBlock;
     LayoutPoint m_colBlockAbsTopLeft;
+
+    void Trace(Visitor* visitor) const
+    {
+        visitor->Trace(m_colBlock);
+    }
 
     RubberbandLayerContext()
     : m_translateX(0.0)
     , m_translateY(0.0)
     , m_scaleX(1.0)
     , m_scaleY(1.0)
-    , m_colBlock(0)
+    , m_colBlock(nullptr)
     {
     }
 
@@ -158,21 +163,29 @@ class RubberbandLayerContext {
     }
 };
 
-class RubberbandContext {
+class RubberbandContext : public GarbageCollected<RubberbandContext> {
   public:
-    const RubberbandContext* m_parent;
-    RubberbandLayerContext* m_layerContext;
-    const LayoutObject* m_layoutObject;
-    const LayoutBlock* m_containingBlock;
+    Member<const RubberbandContext> m_parent;
+    Member<RubberbandLayerContext> m_layerContext;
+    Member<const LayoutObject> m_layoutObject;
+    Member<const LayoutBlock> m_containingBlock;
     LayoutPoint m_layoutTopLeft;  // relative to the layer's top-left
     int m_groupId;
     WTF::String m_groupDelimiter;
 
+    void Trace(Visitor* visitor) const
+    {
+        visitor->Trace(m_parent);
+        visitor->Trace(m_layerContext);
+        visitor->Trace(m_layoutObject);
+        visitor->Trace(m_containingBlock);
+    }
+
     RubberbandContext()
-    : m_parent(0)
-    , m_layerContext(0)
-    , m_layoutObject(0)
-    , m_containingBlock(0)
+    : m_parent(nullptr)
+    , m_layerContext(nullptr)
+    , m_layoutObject(nullptr)
+    , m_containingBlock(nullptr)
     , m_groupId(-1)
     {
     }
@@ -180,12 +193,12 @@ class RubberbandContext {
     explicit RubberbandContext(const RubberbandContext* parent, const LayoutObject* layoutObject)
     : m_parent(parent)
     , m_layoutObject(layoutObject)
-    , m_containingBlock(layoutObject ? layoutObject->ContainingBlock() : 0)
+    , m_containingBlock(layoutObject ? layoutObject->ContainingBlock() : nullptr)
     , m_groupId(parent->m_groupId)
     , m_groupDelimiter(parent->m_groupDelimiter)
     {
         if (m_layoutObject && m_layoutObject->HasLayer()) {
-            m_layerContext = new RubberbandLayerContext(parent->m_layerContext);
+            m_layerContext = MakeGarbageCollected<RubberbandLayerContext>(parent->m_layerContext);
         }
         else {
             m_layerContext = parent->m_layerContext;
@@ -193,11 +206,7 @@ class RubberbandContext {
         }
     }
 
-    ~RubberbandContext()
-    {
-        if (m_layoutObject && m_layoutObject->HasLayer())
-            delete m_layerContext;
-    }
+    ~RubberbandContext() = default;
 
     LayoutPoint calcAbsPoint(const LayoutPoint& pt) const
     {
@@ -288,13 +297,13 @@ static void appendWithoutNewlines(WTF::StringBuilder *builder, const CHAR_TYPE* 
     }
 }
 
-static IntRect getRubberbandRect(const IntPoint& start, const IntPoint& extent)
+static gfx::Rect getRubberbandRect(const gfx::Point& start, const gfx::Point& extent)
 {
-    IntRect rc;
-    rc.ShiftXEdgeTo(std::min(start.X(), extent.X()));
-    rc.ShiftMaxXEdgeTo(std::max(start.X(), extent.X()));
-    rc.ShiftYEdgeTo(std::min(start.Y(), extent.Y()));
-    rc.ShiftMaxYEdgeTo(std::max(start.Y(), extent.Y()));
+    gfx::Rect rc;
+    rc.SetHorizontalBounds(std::min(start.x(), extent.x()),
+                           std::max(start.x(), extent.x()));
+    rc.SetVerticalBounds(std::min(start.y(), extent.y()),
+                         std::max(start.y(), extent.y()));
     return rc;
 }
 
@@ -308,9 +317,9 @@ void WebViewImpl::RubberbandWalkFrame(const RubberbandContext& context, const Lo
     if (!layoutObject || !layoutObject->HasLayer())
         return;
 
-    RubberbandContext localContext(&context, 0);
-    localContext.m_containingBlock = 0;
-    localContext.m_parent = 0;
+    RubberbandContext localContext(&context, nullptr);
+    localContext.m_containingBlock = nullptr;
+    localContext.m_parent = nullptr;
     localContext.m_layoutTopLeft = LayoutPoint::Zero();
 
     RubberbandLayerContext layerContext;
@@ -396,8 +405,9 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         }
 
         if (layer->GetScrollableArea()) {
-            layerContext.m_layerScrollOffset.SetWidth(layer->GetScrollableArea()->GetScrollOffset().Width() * layerContext.m_scaleX);
-            layerContext.m_layerScrollOffset.SetHeight(layer->GetScrollableArea()->GetScrollOffset().Height() * layerContext.m_scaleY);
+            gfx::Vector2dF scrollOffset = layer->GetScrollableArea()->GetScrollOffset();
+            layerContext.m_layerScrollOffset.set_width(scrollOffset.x() * layerContext.m_scaleX);
+            layerContext.m_layerScrollOffset.set_height(scrollOffset.y() * layerContext.m_scaleY);
         }
     }
     else if (localContext.m_containingBlock != context.m_containingBlock) {
@@ -807,7 +817,7 @@ bool WebViewImpl::ForceStartRubberbanding(int x, int y)
     }
 
     StartRubberbanding();
-    rubberbandState_->impl_->m_startPoint = IntPoint(x, y);
+    rubberbandState_->impl_->m_startPoint = gfx::Point(x, y);
     return true;
 }
 
@@ -832,15 +842,15 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
             // when 'alt' is lifted before the mouse button.
             rubberbandingForcedOn_ = true;
             StartRubberbanding();
-            rubberbandState_->impl_->m_startPoint = IntPoint(positionInWidget.x(), positionInWidget.y());
+            rubberbandState_->impl_->m_startPoint = gfx::Point(positionInWidget.x(), positionInWidget.y());
             return true;
         }
 
         return false;
     }
     else if (inputEvent.GetType() == WebInputEvent::Type::kMouseUp) {
-        IntPoint start = rubberbandState_->impl_->m_startPoint;
-        IntPoint extent = IntPoint(positionInWidget.x(), positionInWidget.y());
+        gfx::Point start = rubberbandState_->impl_->m_startPoint;
+        gfx::Point extent = gfx::Point(positionInWidget.x(), positionInWidget.y());
         LayoutRect rc = ExpandRubberbandRectImpl(getRubberbandRect(start, extent));
         if (rc.IsEmpty()) {
             AbortRubberbanding();
@@ -860,8 +870,8 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
 
         if (main_frame) {
             WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
-            IntPoint start = rubberbandState_->impl_->m_startPoint;
-            IntPoint extent = IntPoint(positionInWidget.x(), positionInWidget.y());
+            gfx::Point start = rubberbandState_->impl_->m_startPoint;
+            gfx::Point extent = gfx::Point(positionInWidget.x(), positionInWidget.y());
             gfx::Rect rc = ExpandRubberbandRect(getRubberbandRect(start, extent));
             widget->SetRubberbandRect(gfx::Rect(rc));
         }
@@ -915,7 +925,7 @@ void WebViewImpl::StartRubberbanding()
 gfx::Rect WebViewImpl::ExpandRubberbandRect(const gfx::Rect& rcOrig)
 {
     LayoutRect rc = ExpandRubberbandRectImpl(rcOrig);
-    return PixelSnappedIntRect(rc);
+    return ToPixelSnappedRect(rc);
 }
 
 LayoutRect WebViewImpl::ExpandRubberbandRectImpl(const gfx::Rect& rcOrig)
@@ -1074,8 +1084,8 @@ void appendCandidatesByLayoutNGText(
         PhysicalRect rect = item.RectInContainerFragment();
         LayoutRect localRect{rect.offset.ToLayoutPoint(), rect.size.ToLayoutSize()};
         // NG needs to take m_layerScrollOffset into account
-        localRect.Move(-localContext.m_layerContext->m_layerScrollOffset.Width(),
-                       -localContext.m_layerContext->m_layerScrollOffset.Height());
+        localRect.Move(-localContext.m_layerContext->m_layerScrollOffset.width(),
+                       -localContext.m_layerContext->m_layerScrollOffset.height());
         LayoutRect absRect = localContext.calcAbsRect(localRect);
         if (!absRect.Intersects(localContext.m_layerContext->m_clipRect)) {
             continue;
