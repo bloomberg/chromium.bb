@@ -121,6 +121,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   ~ChromeContentBrowserClient() override;
 
+  virtual void CleanupOnUIThread();
+
   // TODO(https://crbug.com/787567): This file is about calls from content/ out
   // to chrome/ to get values or notify about events, but both of these
   // functions are from chrome/ to chrome/ and don't involve content/ at all.
@@ -909,7 +911,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
 #if !BUILDFLAG(IS_ANDROID)
   uint64_t num_keepalive_requests_ = 0;
-  base::OneShotTimer keepalive_timer_;
+  std::unique_ptr<base::OneShotTimer> keepalive_timer_;
   base::TimeTicks keepalive_deadline_;
 #endif
 

@@ -1208,6 +1208,7 @@ void ContentMainRunnerImpl::Shutdown() {
 
 void ContentMainRunnerImpl::ShutdownOnUIThread() {
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
+  unregister_thread_closure_.RunAndReset();
   discardable_shared_memory_manager_.reset();
 }
 
