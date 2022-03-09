@@ -12,6 +12,8 @@ class RubberbandWindow {
  public:
   RubberbandWindow();
   ~RubberbandWindow();
+  RubberbandWindow(const RubberbandWindow&) = delete;
+  RubberbandWindow& operator=(const RubberbandWindow&) = delete;
 
   void Init(HWND parent, const gfx::Rect& bounds);
   HWND hwnd() const;
@@ -20,14 +22,14 @@ class RubberbandWindow {
  private:
   class Impl;
   std::unique_ptr<Impl> impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(RubberbandWindow);
 };
 
 class RubberbandWindow::Impl : public gfx::WindowImpl {
  public:
   Impl();
   ~Impl() override;
+  Impl(const Impl&) = delete;
+  Impl& operator=(const Impl&) = delete;
 
   CR_BEGIN_MSG_MAP_EX(Impl)
     CR_MSG_WM_PAINT(OnPaint)
@@ -39,7 +41,6 @@ class RubberbandWindow::Impl : public gfx::WindowImpl {
   LRESULT OnEraseBkgnd(HDC);
 
   CR_MSG_MAP_CLASS_DECLARATIONS(Impl)
-  DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
 static HPEN s_pen = NULL;

@@ -5,7 +5,6 @@
 #ifndef UI_BASE_WIN_RUBBERBAND_WINDOWS_H_
 #define UI_BASE_WIN_RUBBERBAND_WINDOWS_H_
 
-#include "base/macros.h"
 #include "base/component_export.h"
 
 #include <windows.h>
@@ -22,13 +21,13 @@ class COMPONENT_EXPORT(UI_BASE) RubberbandOutline {
  public:
   RubberbandOutline();
   ~RubberbandOutline();
+  RubberbandOutline(const RubberbandOutline&) = delete;
+  RubberbandOutline& operator=(const RubberbandOutline&) = delete;
 
   void SetRect(HWND parent, RECT rect);
 
 private:
   std::unique_ptr<RubberbandWindow> windows_[4];
-
-  DISALLOW_COPY_AND_ASSIGN(RubberbandOutline);
 };
 
 }  // namespace ui
