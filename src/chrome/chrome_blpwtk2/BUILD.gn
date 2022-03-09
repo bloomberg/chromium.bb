@@ -24,12 +24,18 @@
 # patch section: spellcheck
 
 
+# patch section: support inspector save and load
+
+
 # patch section: docprinter
 
 group("chrome_blpwtk2") {
   deps = [
 
      # patch section: spellcheck
+
+
+     # patch section: support inspector save and load
 
 
      # patch section: docprinter
