@@ -480,10 +480,10 @@ void BrowserContextImpl::setLanguages(const StringRef *languages,
     DCHECK(!d_isDestroyed);
 
     PrefService* prefs = user_prefs::UserPrefs::Get(this);
-    base::ListValue languageList;
+    base::Value languageList(base::Value::Type::LIST);
 
     for (size_t i = 0; i < numLanguages; ++i) {
-        languageList.AppendString(languages[i].toStdString());
+        languageList.Append(languages[i].toStdString());
     }
     prefs->Set(spellcheck::prefs::kSpellCheckDictionaries, languageList);
 }

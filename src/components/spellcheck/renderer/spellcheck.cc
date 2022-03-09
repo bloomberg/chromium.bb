@@ -79,9 +79,9 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
 class RequestSpellCheckForFrame : public content::RenderFrameVisitor {
  public:
   RequestSpellCheckForFrame() {}
+  RequestSpellCheckForFrame(const RequestSpellCheckForFrame&) = delete;
+  RequestSpellCheckForFrame& operator=(const RequestSpellCheckForFrame&) = delete;
   bool Visit(content::RenderFrame* render_frame) override;
- private:
-  DISALLOW_COPY_AND_ASSIGN(RequestSpellCheckForFrame);
 };
 
 bool RequestSpellCheckForFrame::Visit(content::RenderFrame* render_frame) {
