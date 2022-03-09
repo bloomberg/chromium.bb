@@ -30,6 +30,11 @@ group("chrome_blpwtk2_spellcheck") {
 
 
 # patch section: support inspector save and load
+group("chrome_blpwtk2_support_inspector_save_and_load") {
+  deps = [
+    "//chrome/browser",
+  ]
+}
 
 
 # patch section: docprinter
@@ -49,6 +54,7 @@ group("chrome_blpwtk2") {
 
 
      # patch section: support inspector save and load
+     ":chrome_blpwtk2_support_inspector_save_and_load",
 
 
      # patch section: docprinter
