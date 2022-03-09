@@ -350,17 +350,17 @@ void testGetPicture(blpwtk2::NativeView hwnd,
         blpwtk2::NativeDeviceContext bitmapDeviceContext = CreateCompatibleDC(deviceContext);
 
         // Create a new bitmap object
-        void *buffer = (void*)NULL;
-        BITMAPINFO bmi = { *reinterpret_cast<BITMAPINFOHEADER*>(bmp_data.data() + sizeof(BITMAPFILEHEADER)) };
-        HBITMAP inputBitmap = CreateDIBSection(bitmapDeviceContext, &bmi, DIB_RGB_COLORS, &buffer, 0, 0);
+        void *buffer2 = (void*)NULL;
+        BITMAPINFO bmi2 = { *reinterpret_cast<BITMAPINFOHEADER*>(bmp_data.data() + sizeof(BITMAPFILEHEADER)) };
+        HBITMAP inputBitmap = CreateDIBSection(bitmapDeviceContext, &bmi2, DIB_RGB_COLORS, &buffer2, 0, 0);
 
         // Copy bitmap data from blob into bitmap object
-        memcpy(buffer,
+        memcpy(buffer2,
                bmp_data.data() + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER),
                bmp_data.size() - sizeof(BITMAPFILEHEADER) - sizeof(BITMAPINFOHEADER));
 
         // Block transfer image from bitmap object to 'deviceContext'
-        HGDIOBJ originalSurface = SelectObject(bitmapDeviceContext, inputBitmap);
+        HGDIOBJ originalSurface2 = SelectObject(bitmapDeviceContext, inputBitmap);
         BitBlt(deviceContext,
                0,
                0,
@@ -371,7 +371,7 @@ void testGetPicture(blpwtk2::NativeView hwnd,
                0,
                SRCCOPY);
 
-        SelectObject(bitmapDeviceContext, originalSurface);
+        SelectObject(bitmapDeviceContext, originalSurface2);
         DeleteObject(inputBitmap);
         DeleteDC(bitmapDeviceContext);
     }
