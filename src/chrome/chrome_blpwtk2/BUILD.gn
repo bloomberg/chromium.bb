@@ -29,6 +29,9 @@ group("chrome_blpwtk2_spellcheck") {
 }
 
 
+# patch section: support inspector save and load
+
+
 # patch section: docprinter
 
 group("chrome_blpwtk2") {
@@ -36,6 +39,9 @@ group("chrome_blpwtk2") {
 
      # patch section: spellcheck
      ":chrome_blpwtk2_spellcheck",
+
+
+     # patch section: support inspector save and load
 
 
      # patch section: docprinter
