@@ -914,10 +914,6 @@ void ToolkitImpl::initializeMetrics(blpwtk2::ToolkitDelegate* delegate) {
             "blpwtk2.WTFPartitionsBufferKB",
             "Total size of buffer memory in the WTF::Partitions subsystem (KB)",
             period);
-    d_metrics.d_wtfPartitionsLayoutKB = delegate->registerMetric(
-            "blpwtk2.WTFPartitionsLayoutKB",
-            "Total size of layout memory in the WTF::Partitions subsystem (KB)",
-            period);
   }
 }
 
@@ -955,8 +951,7 @@ void ToolkitImpl::getMetrics(
         if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
           values[i] = (WTF::Partitions::TotalSizeOfCommittedPages()
               - WTF::Partitions::ArrayBufferPartition()->total_size_of_committed_pages
-              - WTF::Partitions::BufferPartition()->total_size_of_committed_pages
-              - WTF::Partitions::LayoutPartition()->total_size_of_committed_pages)
+              - WTF::Partitions::BufferPartition()->total_size_of_committed_pages)
                   / 1024;
         }
         continue;
@@ -970,13 +965,6 @@ void ToolkitImpl::getMetrics(
       }
       if (metrics[i] == d_metrics.d_wtfPartitionsBufferKB) {
         base::ThreadSafePartitionRoot* p = WTF::Partitions::BufferPartition();
-        if (p) {
-          values[i] = p->total_size_of_committed_pages / 1024;
-        }
-        continue;
-      }
-      if (metrics[i] == d_metrics.d_wtfPartitionsLayoutKB) {
-        base::ThreadUnsafePartitionRoot* p = WTF::Partitions::LayoutPartition();
         if (p) {
           values[i] = p->total_size_of_committed_pages / 1024;
         }

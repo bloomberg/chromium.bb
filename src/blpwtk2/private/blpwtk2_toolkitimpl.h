@@ -115,7 +115,6 @@ class ToolkitImpl : public Toolkit {
         int d_wtfPartitionsFastMallocKB                 = 0;
         int d_wtfPartitionsArrayBufferKB                = 0;
         int d_wtfPartitionsBufferKB                     = 0;
-        int d_wtfPartitionsLayoutKB                     = 0;
     };
 
     Metrics d_metrics;
