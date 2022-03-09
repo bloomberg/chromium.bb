@@ -1104,7 +1104,7 @@ void LocalFrame::SetPrinting(bool printing,
        child = child->Tree().NextSibling()) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
       if (printing)
-        child_local_frame->StartPrinting(FloatSize(), FloatSize(), 0,
+        child_local_frame->StartPrinting(gfx::SizeF(), gfx::SizeF(), 0,
                 use_media_selector);
       else
         child_local_frame->EndPrinting();
