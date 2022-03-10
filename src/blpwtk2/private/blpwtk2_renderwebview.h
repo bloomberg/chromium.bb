@@ -35,24 +35,26 @@
 #include <blpwtk2_webviewproxydelegate.h>
 
 #include <base/i18n/rtl.h>
-#include <base/optional.h>
 #include <content/browser/renderer_host/input/fling_controller.h>
 #include <content/browser/renderer_host/input/input_disposition_handler.h>
 #include <content/browser/renderer_host/input/input_router_impl.h>
 #include <content/browser/renderer_host/input/input_router_client.h>
-
 #include <content/common/cursors/webcursor.h>
 #include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
 
+#include <third_party/abseil-cpp/absl/types/optional.h>
+#include <third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h>
 #include <third_party/blink/public/mojom/page/widget.mojom.h>
-//#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include <third_party/blink/public/mojom/input/pointer_lock_context.mojom.h>
+#include <third_party/blink/public/mojom/widget/platform_widget.mojom.h>
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-#include <ui/base/cursor/cursor_loader.h>
+#include <ui/aura/cursor/cursor_loader.h>
 #include <ui/base/ime/input_method_delegate.h>
 #include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
@@ -75,8 +77,11 @@ class Tooltip;
 }  // close namespace corewm
 }  // close namespace views
 
-namespace ui {
+namespace aura {
 class CursorLoader;
+}
+
+namespace ui {
 class InputMethod;
 class SessionChangeObserver;
 
@@ -136,7 +141,7 @@ class RenderWebView final : public WebView
 
     // Track the 'content::RenderWidget':
     bool d_gotRenderViewInfo = false;
-    base::Optional<int> d_renderViewRoutingId, d_mainFrameRoutingId;
+    absl::optional<int> d_renderViewRoutingId, d_mainFrameRoutingId;
     RenderViewObserver *d_renderViewObserver = nullptr;
 
     // The compositor:
@@ -159,7 +164,7 @@ class RenderWebView final : public WebView
 
     // State related to cursor management:
     content::WebCursor d_currentCursor;
-    std::unique_ptr<ui::CursorLoader> d_cursorLoader;
+    std::unique_ptr<aura::CursorLoader> d_cursorLoader;
     bool d_isCursorOverridden = false;
     HCURSOR d_currentPlatformCursor = NULL, d_previousPlatformCursor = NULL;
 
@@ -444,8 +449,8 @@ class RenderWebView final : public WebView
         const gfx::Range& range,
         const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
     void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) override {}
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override {}
     void SetActiveCompositionForAccessibility(
         const gfx::Range& range,
         const std::u16string& active_composition_text,
@@ -478,7 +483,12 @@ class RenderWebView final : public WebView
 
     // blink::mojom::WidgetHost override:
     void SetCursor(const ui::Cursor& cursor) override;
-    void UpdateTooltipUnderCursor(const std::u16string& tooltip_text, base::i18n::TextDirection text_direction_hint) override;
+    void UpdateTooltipUnderCursor(const std::u16string& tooltip_text,
+                                  base::i18n::TextDirection text_direction_hint) override;
+    void UpdateTooltipFromKeyboard(const ::std::u16string& tooltip_text,
+                                   ::base::i18n::TextDirection text_direction_hint,
+                                   const ::gfx::Rect& bounds) override;
+    void ClearKeyboardTriggeredTooltip() override;
     void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
     void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                                 base::i18n::TextDirection anchor_dir,
@@ -577,13 +587,14 @@ class RenderWebView final : public WebView
 #endif
 
     base::WeakPtrFactory<RenderWebView> weak_factory_{this};
-    DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
   public:
     explicit RenderWebView(WebViewDelegate          *delegate,
                            ProfileImpl              *profile,
                            const WebViewProperties&  properties);
     ~RenderWebView() final;
+    RenderWebView(const RenderWebView&) = delete;
+    RenderWebView& operator=(const RenderWebView&) = delete;
 
     RenderMessageDelegate& GetMessageDelegate();
 };

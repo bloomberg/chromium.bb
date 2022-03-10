@@ -36,7 +36,7 @@ class MultiplexRouter;
 
 namespace blpwtk2 {
 
-class RenderMessageDelegate : public IPC::MessageRouter {
+class RenderMessageDelegate final : public IPC::MessageRouter {
   public:
 
     static RenderMessageDelegate* GetInstance();

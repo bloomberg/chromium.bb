@@ -126,7 +126,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
     std::u16string plain_text;
     data.GetString(&plain_text);
     if (!plain_text.empty())
-        drop_data->text = base::make_optional(plain_text);
+        drop_data->text = absl::make_optional(plain_text);
 
     GURL url;
     std::u16string url_title;
@@ -141,7 +141,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
     GURL html_base_url;
     data.GetHtml(&html, &html_base_url);
     if (!html.empty())
-        drop_data->html = base::make_optional(html);
+        drop_data->html = absl::make_optional(html);
     if (html_base_url.is_valid())
         drop_data->html_base_url = html_base_url;
 
@@ -153,7 +153,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
         ReadFileSystemFilesFromPickle(pickle, &file_system_files))
     drop_data->file_system_files = file_system_files;
 
-    if (data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(), &pickle))
+    if (data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType(), &pickle))
         ui::ReadCustomDataIntoMap(
             pickle.data(), pickle.size(), &drop_data->custom_data);
 
@@ -302,7 +302,7 @@ std::unique_ptr<ui::OSExchangeData> MakeOSExchangeData(const content::DropData& 
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(custom_data, &pickle);
         provider->SetPickledData(
-            ui::ClipboardFormatType::GetWebCustomDataType(),
+            ui::ClipboardFormatType::WebCustomDataType(),
             pickle);
     }
 
