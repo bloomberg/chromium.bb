@@ -236,7 +236,8 @@ private:
     void OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
                                     bool top_controls_visible_height_changed,
                                     const gfx::Size& pixel_size,
-                                    const gpu::SwapBuffersCompleteParams& params);
+                                    const gpu::SwapBuffersCompleteParams& params,
+                                    gfx::GpuFenceHandle release_fence);
     void OnPresentation(const gfx::PresentationFeedback& feedback);
     void OnUpdateVSyncParameters(base::TimeTicks timebase, base::TimeDelta interval);
     gfx::Rect ApplyDisplayInverse(const gfx::Rect& input);
@@ -923,7 +924,8 @@ void GpuOutputSurface::OnGpuSwapBuffersCompleted(
     std::vector<ui::LatencyInfo> latency_info,
     bool top_controls_visible_height_changed,
     const gfx::Size& pixel_size,
-    const gpu::SwapBuffersCompleteParams& params)
+    const gpu::SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence)
 {
     if (!params.texture_in_use_responses.empty()) {
         client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
@@ -933,7 +935,6 @@ void GpuOutputSurface::OnGpuSwapBuffersCompleted(
         client_->DidReceiveCALayerParams(params.ca_layer_params);
     }
 
-    gfx::GpuFenceHandle release_fence = gfx::GpuFenceHandle();
     DidReceiveSwapBuffersAck(params.swap_response, std::move(release_fence));
 
     UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
