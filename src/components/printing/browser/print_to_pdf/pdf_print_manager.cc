@@ -118,8 +118,8 @@ void PdfPrintManager::PrintToPdf(
   GetPrintRenderFrame(rfh)->PrintRequestedPages();
 }
 
-void PdfPrintManager::GetDefaultPrintSettings(
-    GetDefaultPrintSettingsCallback callback) {
+void PdfPrintManager::GetDefaultPrintSettings( uint32_t owner_wnd,
+                          GetDefaultPrintSettingsCallback callback) {
   if (!printing_rfh_) {
     DLOG(ERROR) << "Unexpected message received before PrintToPdf is "
                    "called: GetDefaultPrintSettings";
