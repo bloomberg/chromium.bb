@@ -28,6 +28,7 @@
 #include <third_party/blink/public/mojom/page/widget.mojom.h>
 #include <gpu/ipc/common/surface_handle.h>
 #include <ui/gfx/geometry/size.h>
+#include <services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h>
 
 #include <map>
 #include <memory>

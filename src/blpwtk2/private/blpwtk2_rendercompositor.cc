@@ -58,6 +58,7 @@
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h>
 #include <services/viz/public/cpp/gpu/context_provider_command_buffer.h>
+#include <third_party/blink/public/mojom/widget/platform_widget.mojom.h>
 #include <ui/gfx/buffer_format_util.h>
 #include <ui/gfx/overlay_transform_utils.h>
 
@@ -297,12 +298,12 @@ public:
     void SubmitCompositorFrame(
         const viz::LocalSurfaceId& local_surface_id,
         viz::CompositorFrame frame,
-        base::Optional<viz::HitTestRegionList> hit_test_region_list,
+        absl::optional<viz::HitTestRegionList> hit_test_region_list,
         uint64_t submit_time) override;
     void SubmitCompositorFrameSync(
         const viz::LocalSurfaceId& local_surface_id,
         viz::CompositorFrame frame,
-        base::Optional<viz::HitTestRegionList> hit_test_region_list,
+        absl::optional<viz::HitTestRegionList> hit_test_region_list,
         uint64_t submit_time,
         SubmitCompositorFrameSyncCallback callback) override;
     void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
@@ -503,7 +504,9 @@ void RenderFrameSinkProviderImpl::Init(
 
     d_shared_bitmap_manager = std::make_unique<viz::ServerSharedBitmapManager>();
 
-    d_frame_sink_manager = std::make_unique<viz::FrameSinkManagerImpl>(d_shared_bitmap_manager.get(), this);
+    d_frame_sink_manager = std::make_unique<viz::FrameSinkManagerImpl>(
+        viz::FrameSinkManagerImpl::InitParams(d_shared_bitmap_manager.get(),
+            static_cast<viz::OutputSurfaceProvider*>(this)));
     d_host_frame_sink_manager = std::make_unique<viz::HostFrameSinkManager>();
 
     d_host_frame_sink_manager->SetLocalManager(d_frame_sink_manager.get());
@@ -764,8 +767,8 @@ GpuOutputSurface::GpuOutputSurface(scoped_refptr<viz::ContextProvider> context_p
     // Since one of the buffers is used by the surface for presentation, there can
     // be at most |num_surface_buffers - 1| pending buffers that the compositor
     // can use.
-    capabilities_.max_frames_pending =
-        context_capabilities.num_surface_buffers - 1;
+    capabilities_.pending_swap_params = viz::PendingSwapParams(
+        context_capabilities.num_surface_buffers - 1);
     capabilities_.supports_gpu_vsync = context_capabilities.gpu_vsync;
     capabilities_.supports_dc_layers = context_capabilities.dc_layers;
     capabilities_.supports_surfaceless = context_capabilities.surfaceless;
@@ -1079,7 +1082,7 @@ void RenderCompositorFrameSinkImpl::SetWantsAnimateOnlyBeginFrames()
 void RenderCompositorFrameSinkImpl::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list,
+    absl::optional<viz::HitTestRegionList> hit_test_region_list,
     uint64_t submit_time)
 {
     d_root_compositor_frame_sink->SubmitCompositorFrame(
@@ -1089,7 +1092,7 @@ void RenderCompositorFrameSinkImpl::SubmitCompositorFrame(
 void RenderCompositorFrameSinkImpl::SubmitCompositorFrameSync(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list,
+    absl::optional<viz::HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     SubmitCompositorFrameSyncCallback callback)
 {
