@@ -183,6 +183,18 @@ const char kNtpChromeCartModuleDiscountConsentNtpVariationParam[] =
 const base::FeatureParam<int> kNtpChromeCartModuleDiscountConsentNtpVariation{
     &commerce::kDiscountConsentV2,
     kNtpChromeCartModuleDiscountConsentNtpVariationParam, 0};
+const char kNtpChromeCartModuleDiscountConsentReshowTimeParam[] =
+    "discount-consent-ntp-reshow-time";
+const base::FeatureParam<base::TimeDelta>
+    kNtpChromeCartModuleDiscountConsentReshowTime{
+        &commerce::kDiscountConsentV2,
+        kNtpChromeCartModuleDiscountConsentReshowTimeParam, base::Days(28)};
+const char kNtpChromeCartModuleDiscountConsentMaxDismissalCountParam[] =
+    "discount-consent-ntp-max-dismiss-count";
+const base::FeatureParam<int>
+    kNtpChromeCartModuleDiscountConsentMaxDismissalCount{
+        &commerce::kDiscountConsentV2,
+        kNtpChromeCartModuleDiscountConsentMaxDismissalCountParam, 1};
 
 // String change variation params.
 const char kNtpChromeCartModuleDiscountConsentStringChangeContentParam[] =
@@ -192,6 +204,13 @@ const base::FeatureParam<std::string>
         &commerce::kDiscountConsentV2,
         kNtpChromeCartModuleDiscountConsentStringChangeContentParam, ""};
 
+const char kNtpChromeCartModuleDiscountConsentInlineShowCloseButtonParam[] =
+    "inline-card-show-button";
+const base::FeatureParam<bool>
+    kNtpChromeCartModuleDiscountConsentInlineShowCloseButton{
+        &commerce::kDiscountConsentV2,
+        kNtpChromeCartModuleDiscountConsentStringChangeContentParam, true};
+
 // Discount consent v2 step 1 params.
 const char
     kNtpChromeCartModuleDiscountConsentNtpStepOneUseStaticContentParam[] =
@@ -200,7 +219,7 @@ const base::FeatureParam<bool>
     kNtpChromeCartModuleDiscountConsentNtpStepOneUseStaticContent{
         &commerce::kDiscountConsentV2,
         kNtpChromeCartModuleDiscountConsentNtpStepOneUseStaticContentParam,
-        true};
+        false};
 const char kNtpChromeCartModuleDiscountConsentNtpStepOneStaticContentParam[] =
     "step-one-static-content";
 const base::FeatureParam<std::string>

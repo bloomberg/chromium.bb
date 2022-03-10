@@ -2513,6 +2513,7 @@
 <translation id="346298925039590474">Мобилнава мрежа ќе им биде достапна на сите корисници на уредов</translation>
 <translation id="3464145797867108663">Додајте работен профил</translation>
 <translation id="346431825526753">Ова е сметка за деца управувана од <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="346546413339447252">Добијте попусти за <ph name="MERCHANT_NAME_1" />, <ph name="MERCHANT_NAME_2" /> и други</translation>
 <translation id="3468298837301810372">Ознака</translation>
 <translation id="3468999815377931311">Телефон со Android</translation>
 <translation id="3469583217479686109">Алатка за избирање</translation>
@@ -2957,6 +2958,7 @@
 <translation id="3879748587602334249">Управник со преземања</translation>
 <translation id="3882165008614329320">Постојно видео од камера или датотека</translation>
 <translation id="3883306461188700142">Пишувајте со гласот. Притиснете „Пребарување“ и D, а потоа почнете да зборувате.</translation>
+<translation id="3883482240657453056">Добијте попусти за <ph name="MERCHANT_NAME_1" /> и <ph name="MERCHANT_NAME_2" /></translation>
 <translation id="3884152383786131369">Содржините од интернет што се достапни на повеќе јазици ќе го користат првиот поддржан јазик од списоков. Поставкиве се синхронизираат со поставките за прелистувачот. <ph name="BEGIN_LINK_LEARN_MORE" />Дознајте повеќе<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="3885112598747515383">Вашиот администратор управува со ажурирањата</translation>
 <translation id="3886446263141354045">Вашето барање за пристап на сајтов е испратено на <ph name="NAME" />.</translation>
@@ -3265,7 +3267,6 @@
 <translation id="4194570336751258953">Овозможи допри и кликни</translation>
 <translation id="4195643157523330669">Отвори во нова картичка</translation>
 <translation id="4195814663415092787">Продолжете каде што сте застанале</translation>
-<translation id="4197917636330710075">Добијте попусти за <ph name="MERCHANT_NAME" /> и <ph name="MERCHANT_NAME" /></translation>
 <translation id="4198268995694216131">Дополнителни сајтови</translation>
 <translation id="4200689466366162458">Приспособени зборови</translation>
 <translation id="4200983522494130825">Нова &amp;картичка</translation>
@@ -6349,7 +6350,7 @@
 <translation id="7393073300870882456">{COUNT,plural, =1{1 ставка е копирана}one{{COUNT} ставка е копирана}other{{COUNT} ставки се копирани}}</translation>
 <translation id="7395774987022469191">Цел екран</translation>
 <translation id="7396017167185131589">Споделените папки ќе се појават тука</translation>
-<translation id="7396845648024431313"><ph name="APP_NAME" /> ќе стартува при подигнувањето на системот и ќе продолжи да се извршува во заднина дури и откако сте ги затвориле останатите прозорци на <ph name="PRODUCT_NAME" />.</translation>
+<translation id="7396845648024431313"><ph name="APP_NAME" /> ќе стартува при подигнувањето на системот и ќе продолжи да работи во заднина дури и откако сте ги затвориле останатите прозорци на <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7397270852490618635">Исклучи ја светлата тема</translation>
 <translation id="7399045143794278225">Приспособете ја синхронизацијата</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -6937,7 +6938,6 @@
 <translation id="7956373551960864128">Вашите зачувани печатачи</translation>
 <translation id="7957074856830851026">Прегледување податоци за уредот, како што е неговиот сериски број и ID на средство</translation>
 <translation id="7957615753207896812">Отворете ги поставките на уредот за тастатурата</translation>
-<translation id="7958437133377816580">Добијте попусти за <ph name="MERCHANT_NAME" />, <ph name="MERCHANT_NAME" /> и друго</translation>
 <translation id="7959074893852789871">Датотеката содржеше повеќе сертификати, од кои некои не беа увезени:</translation>
 <translation id="7959665254555683862">Нова кар&amp;тичка „Инкогнито“</translation>
 <translation id="7961015016161918242">Никогаш</translation>

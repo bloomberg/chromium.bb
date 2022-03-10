@@ -3079,6 +3079,12 @@ const char kTabStatsWindowCountMax[] = "tab_stats.window_count_max";
 //  Timestamp of the last time the tab stats daily metrics have been reported.
 const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
 
+// Discards/Reloads since last daily report.
+const char kTabStatsDiscardsExternal[] = "tab_stats.discards_external";
+const char kTabStatsDiscardsUrgent[] = "tab_stats.discards_urgent";
+const char kTabStatsReloadsExternal[] = "tab_stats.reloads_external";
+const char kTabStatsReloadsUrgent[] = "tab_stats.reloads_urgent";
+
 // A list of origins (URLs) to treat as "secure origins" for debugging purposes.
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely_treat_insecure_origin_as_secure";
@@ -3323,6 +3329,14 @@ const char kCartDiscountLastFetchedTime[] = "cart_discount_last_fetched_time";
 // Boolean pref indicating whether the consent for discount has ever shown or
 // not.
 const char kCartDiscountConsentShown[] = "cart_discount_consent_shown";
+// A time pref indicating the timestamp of when user last explicitly dismissed
+// the discount consent.
+const char kDiscountConsentLastDimissedTime[] =
+    "discount_consent_last_dimissed_time";
+// An integer pref that keeps track of how many times user has explicitly
+// dismissed the disount consent.
+const char kDiscountConsentPastDismissedCount[] =
+    "discount_consent_dismissed_count";
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

@@ -2512,6 +2512,7 @@ và Ctrl+Alt+Giảm độ sáng để thu nhỏ.</translation>
 <translation id="346298925039590474">Tất cả người dùng trên thiết bị này đều có thể sử dụng mạng di động này</translation>
 <translation id="3464145797867108663">Thêm hồ sơ công việc</translation>
 <translation id="346431825526753">Đây là tài khoản cho trẻ em do <ph name="CUSTODIAN_EMAIL" /> quản lý.</translation>
+<translation id="346546413339447252">Nhận chiết khấu của <ph name="MERCHANT_NAME_1" />, <ph name="MERCHANT_NAME_2" />, v.v.</translation>
 <translation id="3468298837301810372">Nhãn</translation>
 <translation id="3468999815377931311">Điện thoại Android</translation>
 <translation id="3469583217479686109">Công cụ lựa chọn</translation>
@@ -2956,6 +2957,7 @@ và Ctrl+Alt+Giảm độ sáng để thu nhỏ.</translation>
 <translation id="3879748587602334249">Trình quản lý tải xuống</translation>
 <translation id="3882165008614329320">Video hiện có từ camera hoặc tệp</translation>
 <translation id="3883306461188700142">Nhập dữ liệu bằng giọng nói. Nhấn tổ hợp phím Tìm kiếm + D, sau đó bắt đầu nói.</translation>
+<translation id="3883482240657453056">Nhận chiết khấu của <ph name="MERCHANT_NAME_1" /> và <ph name="MERCHANT_NAME_2" /></translation>
 <translation id="3884152383786131369">Nội dung web có nhiều phiên bản ngôn ngữ sẽ dùng ngôn ngữ đầu tiên được hỗ trợ trong danh sách này. Những tùy chọn này được đồng bộ hóa với tùy chọn cài đặt của trình duyệt. <ph name="BEGIN_LINK_LEARN_MORE" />Tìm hiểu thêm<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="3885112598747515383">Quản trị viên của bạn quản lý các bản cập nhật</translation>
 <translation id="3886446263141354045">Yêu cầu truy cập trang web này của bạn đã được gửi tới <ph name="NAME" /></translation>
@@ -3264,7 +3266,6 @@ và Ctrl+Alt+Giảm độ sáng để thu nhỏ.</translation>
 <translation id="4194570336751258953">Cho phép gõ để nhấp</translation>
 <translation id="4195643157523330669">Mở trong thẻ mới</translation>
 <translation id="4195814663415092787">Tiếp tục từ nơi bạn đã dừng lại</translation>
-<translation id="4197917636330710075">Nhận chiết khấu của <ph name="MERCHANT_NAME" /> và <ph name="MERCHANT_NAME" /></translation>
 <translation id="4198268995694216131">Các trang web khác</translation>
 <translation id="4200689466366162458">Từ tùy chỉnh</translation>
 <translation id="4200983522494130825">&amp;Tab mới</translation>
@@ -6936,7 +6937,6 @@ Nhấn một công tắc hoặc phím đã gán để xóa.</translation>
 <translation id="7956373551960864128">Các máy in bạn đã lưu</translation>
 <translation id="7957074856830851026">Xem thông tin thiết bị, chẳng hạn như số sê-ri hoặc mã tài sản</translation>
 <translation id="7957615753207896812">Mở cài đặt thiết bị bàn phím</translation>
-<translation id="7958437133377816580">Nhận chiết khấu của <ph name="MERCHANT_NAME" />, <ph name="MERCHANT_NAME" />, v.v.</translation>
 <translation id="7959074893852789871">Tệp có chứa nhiều chứng chỉ, một vài chứng chỉ trong đó chưa được nhập:</translation>
 <translation id="7959665254555683862">&amp;Thẻ ẩn danh mới</translation>
 <translation id="7961015016161918242">Không bao giờ</translation>

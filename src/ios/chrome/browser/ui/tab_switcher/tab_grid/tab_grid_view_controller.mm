@@ -166,6 +166,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Whether the scroll view is animating its content offset to the current page.
 @property(nonatomic, assign, getter=isScrollViewAnimatingContentOffset)
     BOOL scrollViewAnimatingContentOffset;
+// The height of the bottom of the tab grid which is currently covered by the
+// software keyboard.
+@property(nonatomic, assign) CGFloat keyboardOverlap;
 
 @property(nonatomic, assign) PageChangeInteraction pageChangeInteraction;
 // UIView whose background color changes to create a fade-in / fade-out effect
@@ -275,6 +278,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       pageViewController.view.accessibilityElementsHidden = YES;
     }
   }
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleKeyboardWillShow:)
+             name:UIKeyboardWillShowNotification
+           object:nil];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleKeyboardWillHide:)
+             name:UIKeyboardWillHideNotification
+           object:nil];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -634,6 +649,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // new mode they will have the correct items (tabs).
   if (IsTabsSearchEnabled() && previousMode == TabGridModeSearch) {
     self.remoteTabsViewController.searchTerms = nil;
+    self.regularTabsViewController.searchText = nil;
+    self.incognitoTabsViewController.searchText = nil;
     [self.regularTabsDelegate resetToAllItems];
     [self.incognitoTabsDelegate resetToAllItems];
     [self hideScrim];
@@ -940,9 +957,27 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   inset.left = self.scrollView.safeAreaInsets.left;
   inset.right = self.scrollView.safeAreaInsets.right;
   inset.top += self.scrollView.safeAreaInsets.top;
-  inset.bottom += self.scrollView.safeAreaInsets.bottom;
+  if (self.keyboardOverlap > 0) {
+    // Override normal bottom insets which will be behind keyboard.
+    inset.bottom = self.keyboardOverlap;
+  } else {
+    inset.bottom += self.scrollView.safeAreaInsets.bottom;
+  }
   self.incognitoTabsViewController.gridView.contentInset = inset;
   self.regularTabsViewController.gridView.contentInset = inset;
+}
+
+- (void)handleKeyboardWillShow:(NSNotification*)notification {
+  CGRect keyboardFrame =
+      [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  CGRect viewFrameInWindow = [self.scrollView convertRect:self.scrollView.bounds
+                                                   toView:nil];
+  self.keyboardOverlap =
+      CGRectIntersection(keyboardFrame, viewFrameInWindow).size.height;
+}
+
+- (void)handleKeyboardWillHide:(NSNotification*)notification {
+  self.keyboardOverlap = 0.0;
 }
 
 // Returns the corresponding GridViewController for |page|. Returns |nil| if
@@ -1859,6 +1894,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self updateScrimVisibilityForText:searchText];
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
+      self.incognitoTabsViewController.searchText = searchText;
       if (searchText.length) {
         [self.incognitoTabsDelegate searchItemsWithText:searchText];
       } else {
@@ -1868,10 +1904,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         // display all the tabs from all the available windows.
         [self.incognitoTabsDelegate resetToAllItems];
       }
-      self.incognitoTabsViewController.searchText = searchText;
       break;
     case TabGridPageRegularTabs:
     case TabGridPageRemoteTabs:
+      self.regularTabsViewController.searchText = searchText;
+      self.remoteTabsViewController.searchTerms = searchText;
       if (searchText.length) {
         [self.regularTabsDelegate searchItemsWithText:searchText];
       } else {
@@ -1881,8 +1918,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         // display all the tabs from all the available windows.
         [self.regularTabsDelegate resetToAllItems];
       }
-      self.regularTabsViewController.searchText = searchText;
-      self.remoteTabsViewController.searchTerms = searchText;
       break;
   }
 }

@@ -1263,6 +1263,7 @@ web và Ứng dụng web tiến bộ. Hiện chỉ được hỗ trợ trên
 <translation id="2355876547176311490">Cho phép máy chủ truy cập từ xa dùng máy chủ chuyển tiếp</translation>
 <translation id="2358176879566587521">Chính sách này đã bị xóa vì không tương thích với phiên bản <ph name="PRODUCT_NAME" /> này. Hãy đọc thêm tại https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="2362469626417133796">Khoảng thời gian chạy lại</translation>
+<translation id="2362539163677485510">Mã thông báo đăng ký của chính sách đám mây</translation>
 <translation id="2363928351203698966">Nếu bạn đặt chính sách này thành một giá trị hợp lệ, thì <ph name="PRODUCT_NAME" /> sẽ không dùng phiên bản SSL/TLS thấp hơn phiên bản được chỉ định. Hệ thống sẽ bỏ qua những giá trị không nhận dạng được.
 
       Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ hiện lỗi đối với TLS 1.0 và TLS 1.1, nhưng người dùng có thể bỏ qua lỗi này.
@@ -1756,6 +1757,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2905984450136807296">Thời gian tồn tại của bộ nhớ đệm lưu trữ dữ liệu xác thực</translation>
 <translation id="2906874737073861391">Danh sách tiện ích trong AppPack</translation>
 <translation id="2908277604670530363">Số lượng tối đa kết nối đồng thời tới máy chủ proxy</translation>
+<translation id="2909068176249499360">Nếu bạn đặt chính sách này thì hệ thống sẽ buộc bật hoặc tắt tính năng Ghép nối nhanh.
+      Tính năng Ghép nối nhanh là một luồng ghép nối Bluetooth mới liên kết các thiết bị ngoại vi đã ghép nối với tài khoản GAIA.
+      Điều này cho phép các thiết bị Chrome OS (và Android) khác đã đăng nhập bằng cùng một tài khoản GAIA tự động ghép nối.
+      Nếu bạn không đặt thì hệ thống sẽ vô hiệu hoá giá trị mặc định cho người dùng doanh nghiệp và kích hoạt giá trị mặc định cho tài khoản không được quản lý.</translation>
 <translation id="2912366658685903301">Định cấu hình màu cho giao diện của trình duyệt</translation>
 <translation id="291853569864365550">Không hiển thị nội dung đề xuất trên trang Thẻ mới</translation>
 <translation id="2920795918401557243">Chế độ cài đặt này cho phép thu thập dữ liệu theo dõi hoạt động trên toàn hệ thống bằng dịch vụ theo dõi hệ thống.

@@ -2510,6 +2510,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="346298925039590474">Ez a mobilhálózat az ezt az eszközt használó összes felhasználó számára hozzáférhető lesz</translation>
 <translation id="3464145797867108663">Munkaprofil hozzáadása</translation>
 <translation id="346431825526753">Ez a fiók gyerekeknek készült; <ph name="CUSTODIAN_EMAIL" /> felügyelete mellett.</translation>
+<translation id="346546413339447252">Kedvezményeket kaphat a következőknél: <ph name="MERCHANT_NAME_1" />, <ph name="MERCHANT_NAME_2" /> stb.</translation>
 <translation id="3468298837301810372">Címke</translation>
 <translation id="3468999815377931311">Androidos telefon</translation>
 <translation id="3469583217479686109">Kijelölés eszköz</translation>
@@ -2954,6 +2955,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3879748587602334249">Letöltéskezelő</translation>
 <translation id="3882165008614329320">Meglévő videó a fényképezőgépről vagy fájlból</translation>
 <translation id="3883306461188700142">Hangvezérléssel írhat be szavakat. Nyomja le a Keresés + D billentyűkombinációt, majd kezdjen el beszélni.</translation>
+<translation id="3883482240657453056">Kedvezményeket kaphat a következőknél: <ph name="MERCHANT_NAME_1" /> és <ph name="MERCHANT_NAME_2" /></translation>
 <translation id="3884152383786131369">A több nyelven hozzáférhető webes tartalmak az ezen a listán szereplő első támogatott nyelvet használják majd. Ezeket a preferenciákat a rendszer szinkronizálja a böngésző beállításaival. <ph name="BEGIN_LINK_LEARN_MORE" />További információ<ph name="END_LINK_LEARN_MORE" />.</translation>
 <translation id="3885112598747515383">A frissítéseket a rendszergazdája kezeli</translation>
 <translation id="3886446263141354045">Webhely-hozzáférési kérelme elküldve a következő személynek: <ph name="NAME" /></translation>
@@ -3261,7 +3263,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4194570336751258953">A kattintás érintéssel engedélyezése</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="4195814663415092787">Folytatás ott, ahol abbahagyta</translation>
-<translation id="4197917636330710075">Kedvezményeket kaphat a következőknél: <ph name="MERCHANT_NAME" /> és <ph name="MERCHANT_NAME" /></translation>
 <translation id="4198268995694216131">További webhelyek</translation>
 <translation id="4200689466366162458">Egyéni szavak</translation>
 <translation id="4200983522494130825">Új &amp;lap</translation>
@@ -6934,7 +6935,6 @@ Nyomja meg valamelyik hozzárendelt kapcsolót vagy billentyűt a hozzárendelé
 <translation id="7956373551960864128">Mentett nyomtatók</translation>
 <translation id="7957074856830851026">Eszközadatok megtekintése, például az eszköz sorozatszáma vagy tartalomazonosítója</translation>
 <translation id="7957615753207896812">A billentyűzet eszközbeállításainak megnyitása</translation>
-<translation id="7958437133377816580">Kedvezményeket kaphat a következőknél: <ph name="MERCHANT_NAME" />, <ph name="MERCHANT_NAME" /> stb.</translation>
 <translation id="7959074893852789871">A fájl több tanúsítványt tartalmazott, amelyek közül néhány nincs importálva:</translation>
 <translation id="7959665254555683862">Új inkognitó lap</translation>
 <translation id="7961015016161918242">Soha</translation>

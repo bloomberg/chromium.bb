@@ -9,7 +9,6 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {MerchantCart} from '../../chrome_cart.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
-
 import {getTemplate} from './discount_consent_card.html.js';
 
 /**
@@ -43,6 +42,18 @@ interface Step {
   cancelButton?: ButtonInfo;
 }
 
+/**
+ * Indicate the variation of the consent card.
+ *   * Default, StringChange, and Dialog has one step.
+ *   * Inline has two steps.
+ */
+export enum DiscountConsentVariation {
+  Default = 0,
+  StringChange = 1,
+  Inline = 2,
+  Dialog = 3
+}
+
 // This is a configurable multi-step card. Each step is represented by the Step
 // interface.
 export class DiscountConsentCard extends I18nMixin
@@ -57,14 +68,25 @@ export class DiscountConsentCard extends I18nMixin
 
   static get properties() {
     return {
-      merchants: {type: Array, observer: 'onMerchantsChanged_'},
+      merchants: Array,
       currentStep: {type: Number, value: 0},
-      steps_: Array,
+      steps_: {
+        type: Array,
+        computed: 'computeSteps_(showCloseButton_, stepOneContent_)'
+      },
       colorConsentContainer_: {
         type: Boolean,
         computed: 'computeColorConsentContainer_(currentStep)',
         reflectToAttribute: true
-      }
+      },
+      showCloseButton_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean(
+            'modulesCartDiscountInlineCardShowCloseButton')
+      },
+      stepOneContent_:
+          {type: String, computed: 'computeStepOneContent_(merchants)'},
+      showDiscountConsentDialog_: {type: Boolean, value: false}
     };
   }
 
@@ -73,68 +95,27 @@ export class DiscountConsentCard extends I18nMixin
   // the Cart module.
   merchants: MerchantCart[];
   currentStep: number;
-  private steps_: Array<Step> = [];
+  // Whether the 'x' button is shown.
+  private showCloseButton_: boolean;
+  private steps_: Array<Step>;
   // This is a Finch parameter that decides whether we should change container
   // background color.
   private colorConsentContainer_: boolean;
+  private stepOneContent_: string;
+  private showDiscountConsentDialog_: boolean;
 
-  constructor() {
-    super();
-
-    this.steps_.push({
-      id: 'step1',
-      content: this.getStepOneContent_(),
-      hasOneButton: true,
-      actionButton: {
-        // TODO(crbug.com/1298116): Load string from resource.
-        text: 'continue',
-        onClickHandler: () => {
-          if (this.currentStep < this.getTotalStep_()) {
-            this.currentStep++;
-          } else {
-            // TODO(crbug.com/1298116): Show DiscountConsentDialog.
-          }
-          // TODO(crbug.com/1298116): Record user click on this button.
-        },
-      }
-    });
-
-    // TODO(crbug.com/1298116): Gate second step with a finch flag.
-    this.steps_.push({
-      id: 'step2',
-      content: this.getStepTwoContent_(),
-      hasTwoButtons: true,
-      actionButton: {
-        text: loadTimeData.getString('modulesCartDiscountConsentAccept'),
-        onClickHandler: () => {
-          this.dispatchEvent(
-              new CustomEvent('discount-consent-accepted', {composed: true}));
-        },
-      },
-      cancelButton: {
-        text: loadTimeData.getString('modulesCartDiscountConsentReject'),
-        onClickHandler: () => {
-          this.dispatchEvent(
-              new CustomEvent('discount-consent-rejected', {composed: true}));
-        }
-      }
-    });
-  }
 
   private getTotalStep_(): number {
-    // TODO(crbug.com/1298116): Return number based on finch flags. If
-    // inline-variation return 2, otherwise return 1.
-    return 2;
-  }
-
-  private getStepOneContent_(): string {
-    // TODO(crbug.com/1298116): Return strings based on finch flags.
-    return loadTimeData.getString('modulesCartDiscountConsentContent');
+    // Inline-variation is 2, see ntp_feature::DiscountConsentNtpVariation.
+    if (loadTimeData.getInteger('modulesCartDiscountConsentVariation') ===
+        DiscountConsentVariation.Inline) {
+      return 2;
+    }
+    return 1;
   }
 
   private getStepTwoContent_(): string {
-    // TODO(crbug.com/1298116): Return strings based on finch flags.
-    return loadTimeData.getString('modulesCartDiscountConsentContent');
+    return loadTimeData.getString('modulesCartConsentStepTwoContent');
   }
 
   private computeColorConsentContainer_(currentStep: number) {
@@ -142,14 +123,78 @@ export class DiscountConsentCard extends I18nMixin
         currentStep === 1;
   }
 
-  private onMerchantsChanged_() {
-    if (this.currentStep === 0) {
-      // TODO(crbug.com/1298116): Build strings with merchant names and string
-      // template from resource. We should also handle the case where the string
-      // gets too long here.
-      this.steps_[0].content = this.merchants[0].merchant + ', ' +
-          this.merchants[1].merchant + ' and more';
+  private computeSteps_(
+      showCloseButton: boolean, stepOneContent: string): Array<Step> {
+    const steps = [];
+    steps.push({
+      id: 'step1',
+      content: stepOneContent,
+      hasOneButton: true,
+      actionButton: {
+        text: loadTimeData.getString('modulesCartConsentStepOneButton'),
+        onClickHandler: () => {
+          if (this.currentStep + 1 < this.getTotalStep_()) {
+            this.currentStep++;
+          } else {
+            this.showDiscountConsentDialog_ = true;
+          }
+          // TODO(crbug.com/1298116): Record user click on this button.
+        },
+      }
+    });
+
+    if (this.getTotalStep_() === 1) {
+      return steps;
     }
+
+    const step2: Step = {
+      id: 'step2',
+      content: this.getStepTwoContent_(),
+      actionButton: {
+        text: loadTimeData.getString('modulesCartDiscountConsentAccept'),
+        onClickHandler: () => {
+          this.dispatchEvent(
+              new CustomEvent('discount-consent-accepted', {composed: true}));
+        },
+      }
+    };
+    if (showCloseButton) {
+      step2.hasOneButton = true;
+    } else {
+      step2.hasTwoButtons = true;
+      step2.cancelButton = {
+        text: loadTimeData.getString('modulesCartDiscountConsentReject'),
+        onClickHandler: () => {
+          this.dispatchEvent(
+              new CustomEvent('discount-consent-rejected', {composed: true}));
+        }
+      };
+    }
+    steps.push(step2);
+    return steps;
+  }
+
+  private computeStepOneContent_(merchants: MerchantCart[]): string {
+    const stepOneUseStaticContent =
+        loadTimeData.getBoolean('modulesCartStepOneUseStaticContent');
+    if (!stepOneUseStaticContent) {
+      // TODO(crbug.com/1298116): We should also handle the case where the
+      // string gets too long here.
+      if (merchants.length === 1) {
+        return loadTimeData.getStringF(
+            'modulesCartConsentStepOneOneMerchantContent',
+            merchants[0].merchant);
+      } else if (merchants.length === 2) {
+        return loadTimeData.getStringF(
+            'modulesCartConsentStepOneTwoMerchantsContent',
+            merchants[0].merchant, merchants[1].merchant);
+      } else if (merchants.length >= 3) {
+        return loadTimeData.getStringF(
+            'modulesCartConsentStepOneThreeMerchantsContent',
+            merchants[0].merchant, merchants[1].merchant);
+      }
+    }
+    return loadTimeData.getString('modulesCartStepOneStaticContent');
   }
 
   private getFaviconUrl_(url: string): string {
@@ -159,6 +204,20 @@ export class DiscountConsentCard extends I18nMixin
     faviconUrl.searchParams.set('show_fallback_monogram', '');
     faviconUrl.searchParams.set('page_url', url);
     return faviconUrl.href;
+  }
+
+  private onCloseClick_() {
+    if (this.currentStep === 0) {
+      this.dispatchEvent(
+          new CustomEvent('discount-consent-dismissed', {composed: true}));
+    } else {
+      this.dispatchEvent(
+          new CustomEvent('discount-consent-rejected', {composed: true}));
+    }
+  }
+
+  private onDiscountConsentDialogClose_() {
+    this.showDiscountConsentDialog_ = false;
   }
 }
 

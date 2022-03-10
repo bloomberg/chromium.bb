@@ -2496,6 +2496,7 @@
 <translation id="346298925039590474">ഈ ഉപകരണത്തിലുള്ള എല്ലാ ഉപയോക്താക്കൾക്കും ഈ മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമാകും</translation>
 <translation id="3464145797867108663">ഔദ്യോഗിക പ്രൊഫൈൽ ചേർക്കുക</translation>
 <translation id="346431825526753">ഇത് <ph name="CUSTODIAN_EMAIL" /> എന്നയാൾ നിയന്ത്രിക്കുന്ന കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണ്.</translation>
+<translation id="346546413339447252"><ph name="MERCHANT_NAME_1" />, <ph name="MERCHANT_NAME_2" /> എന്നിവയ്ക്കും മറ്റും കിഴിവുകൾ നേടുക</translation>
 <translation id="3468298837301810372">ലേബല്‍‌</translation>
 <translation id="3468999815377931311">Android ഫോൺ</translation>
 <translation id="3469583217479686109">സെലക്ഷൻ ടൂൾ</translation>
@@ -2940,6 +2941,7 @@
 <translation id="3879748587602334249">ഡൗൺലോഡ് മാനേജർ</translation>
 <translation id="3882165008614329320">ക്യാമറയിൽ നിന്നോ ഫയലിൽ നിന്നോ ഉള്ള നിലവിലെ വീഡിയോ</translation>
 <translation id="3883306461188700142">നിങ്ങളുടെ ശബ്ദം ഉപയോഗിച്ച് ടൈപ്പ് ചെയ്യുക. Search + D അമർത്തിയ ശേഷം സംസാരിച്ച് തുടങ്ങുക.</translation>
+<translation id="3883482240657453056"><ph name="MERCHANT_NAME_1" />, <ph name="MERCHANT_NAME_2" /> എന്നിവയ്ക്ക് കിഴിവുകൾ നേടുക</translation>
 <translation id="3884152383786131369">ഒന്നിലധികം ഭാഷകളിൽ ലഭ്യമായ വെബ് ഉള്ളടക്കം, ഈ ലിസ്‌റ്റിലുള്ള പിന്തുണയ്‌ക്കുന്ന ആദ്യത്തെ ഭാഷ ഉപയോഗിക്കും. ഈ മുൻഗണനകൾ നിങ്ങളുടെ ബ്രൗസർ ക്രമീകരണവുമായി സമന്വയിപ്പിക്കുന്നു. <ph name="BEGIN_LINK_LEARN_MORE" />കൂടുതലറിയുക<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="3885112598747515383">അപ്‌ഡേറ്റുകൾ മാനേജ് ചെയ്യുന്നത് നിങ്ങളുടെ അഡ്‌മിനാണ്</translation>
 <translation id="3886446263141354045"><ph name="NAME" /> എന്നയാൾക്ക് ഈ സൈറ്റ് ആക്‌സസ് ചെയ്യാനുള്ള നിങ്ങളുടെ അഭ്യർത്ഥന അയച്ചു</translation>
@@ -3247,7 +3249,6 @@
 <translation id="4194570336751258953">'ക്ലിക്കിനായി ടാപ്പ് ചെയ്യുക' പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="4195643157523330669">പുതിയ ടാബില്‍ തുറക്കുക</translation>
 <translation id="4195814663415092787">നിങ്ങൾ അവസാനിപ്പിച്ചയിടത്ത് നിന്ന് തുടരുക</translation>
-<translation id="4197917636330710075"><ph name="MERCHANT_NAME" />, <ph name="MERCHANT_NAME" /> എന്നിവയ്ക്ക് കിഴിവുകൾ നേടുക</translation>
 <translation id="4198268995694216131">കൂടുതൽ സൈറ്റുകൾ</translation>
 <translation id="4200689466366162458">ഇഷ്‌ടാനുസൃത പദങ്ങൾ</translation>
 <translation id="4200983522494130825">പുതിയ &amp;ടാബ്</translation>
@@ -6919,7 +6920,6 @@
 <translation id="7956373551960864128">നിങ്ങളുടെ സംരക്ഷിച്ച പ്രിന്ററുകൾ</translation>
 <translation id="7957074856830851026">സീരിയൽ നമ്പറോ അസറ്റ് ഐഡിയോ പോലുള്ള ഉപകരണ വിവരങ്ങൾ കാണുക</translation>
 <translation id="7957615753207896812">കീബോർഡ് ഉപകരണ ക്രമീകരണം തുറക്കുക</translation>
-<translation id="7958437133377816580"><ph name="MERCHANT_NAME" />, <ph name="MERCHANT_NAME" /> എന്നിവയ്ക്കും മറ്റും കിഴിവുകൾ നേടുക</translation>
 <translation id="7959074893852789871">ഫയലില്‍ ഒന്നിലധികം സാക്‍ഷ്യപ്ത്രങ്ങള്‍ അടങ്ങിയിരിക്കുന്നു, അവയില്‍ ചിലത് ഇറക്കുമതി ചെയ്തിട്ടില്ല:</translation>
 <translation id="7959665254555683862">പുതിയ അദൃശ്യ ടാബ്</translation>
 <translation id="7961015016161918242">ഒരിക്കലും</translation>

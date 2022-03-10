@@ -12,8 +12,15 @@ import {assertStyle} from '../../test_support.js';
 
 suite('NewTabPageDiscountConsentCartTest', () => {
   suiteSetup(() => {
-    loadTimeData.overrideValues(
-        {modulesCartConsentStepTwoDifferentColor: false});
+    loadTimeData.overrideValues({
+      modulesCartConsentStepTwoDifferentColor: false,
+      modulesCartDiscountInlineCardShowCloseButton: false,
+      modulesCartDiscountConsentVariation: 2,
+      modulesCartStepOneUseStaticContent: true,
+      modulesCartConsentStepOneButton: 'Continue',
+      modulesCartStepOneStaticContent: 'Step one content',
+      modulesCartConsentStepTwoContent: 'Step two content',
+    });
   });
 
   let discountConsentCard: DiscountConsentCard;
@@ -25,7 +32,20 @@ suite('NewTabPageDiscountConsentCartTest', () => {
     return flushTasks();
   });
 
-  test('Verify DOM has two steps', () => {
+  test('Verify DOM has two steps', async () => {
+    const cart = [{
+      merchant: 'Amazon',
+      cartUrl: {url: 'https://amazon.com'},
+      productImageUrls: [
+        {url: 'https://image1.com'}, {url: 'https://image2.com'},
+        {url: 'https://image3.com'}
+      ],
+      discountText: ''
+    }];
+
+    discountConsentCard.merchants = cart;
+    await flushTasks();
+
     var contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
         '#contentSteps .step-container');
     assertEquals(contentSteps.length, 2);
@@ -33,8 +53,14 @@ suite('NewTabPageDiscountConsentCartTest', () => {
         'step1', contentSteps[0]!.getAttribute('id'),
         'First content step should have id as step1');
     assertEquals(
+        'Step one content',
+        contentSteps[0]!.querySelector('.content')!.textContent!.trim());
+    assertEquals(
         'step2', contentSteps[1]!.getAttribute('id'),
         'Second content step should have id as step2');
+    assertEquals(
+        'Step two content',
+        contentSteps[1]!.querySelector('.content')!.textContent!.trim());
   });
 
   test('Verify clicking continue button shows step 2 inline', () => {
@@ -79,8 +105,10 @@ suite('NewTabPageDiscountConsentCartTest', () => {
       });
 
   test(
-      'Verify "No thanks" button emits discount-consent-rejected event', () => {
+      'Verify "No thanks" button emits discount-consent-rejected event',
+      async () => {
         discountConsentCard.currentStep = 1;
+        await flushTasks();
 
         var capturedEvent = false;
         discountConsentCard.addEventListener(
@@ -149,13 +177,97 @@ suite('NewTabPageDiscountConsentCartTest', () => {
         favicons[2]!.querySelector('.favicon-image')!.getAttribute('src'));
   });
 
-  suite('Step two background has different color', () => {
+  test('Verify close button is hidden', async () => {
+    discountConsentCard.currentStep = 1;
+    await flushTasks();
+
+    const closeButton = discountConsentCard.shadowRoot!.querySelector('#close');
+    assertTrue(closeButton === null, 'closeButton should not exist in the dom');
+  });
+
+  test(
+      'Verify step 2 has two buttons when close button is hidden', async () => {
+        discountConsentCard.currentStep = 1;
+        await flushTasks();
+
+        const contentSelectedPage =
+            discountConsentCard.shadowRoot!.querySelectorAll(
+                '#contentSteps .iron-selected');
+        const buttons = contentSelectedPage[0]!.querySelectorAll(
+            '.button-container cr-button');
+        assertEquals(2, buttons.length, 'This step should have two buttons');
+      });
+
+  suite('Show Close button', () => {
     suiteSetup(() => {
       loadTimeData.overrideValues(
-          {modulesCartConsentStepTwoDifferentColor: true});
+          {modulesCartDiscountInlineCardShowCloseButton: true});
     });
 
-    test('Verfiy step 2 has background color', () => {
+    test('Verify close button is shown', async () => {
+      await flushTasks();
+
+      const closeButton =
+          discountConsentCard.shadowRoot!.querySelector('#close');
+      assertTrue(closeButton !== null, 'closeButton should exist in the DOM');
+    });
+
+    test('Verify step 2 has one button', async () => {
+      discountConsentCard.currentStep = 1;
+      await flushTasks();
+
+      const contentSelectedPage =
+          discountConsentCard.shadowRoot!.querySelectorAll(
+              '#contentSteps .iron-selected');
+      const buttons = contentSelectedPage[0]!.querySelectorAll(
+          '.button-container cr-button');
+      assertEquals(1, buttons.length, 'This step should have one button');
+      assertTrue(true);
+    });
+
+    test(
+        'Verify clicking close button in step 1 emits dismissed event',
+        async () => {
+          discountConsentCard.currentStep = 0;
+          await flushTasks();
+
+          var capturedEvent = false;
+          discountConsentCard.addEventListener(
+              'discount-consent-dismissed', () => capturedEvent = true);
+
+          discountConsentCard.shadowRoot!.querySelector<HTMLElement>(
+                                             '#close')!.click();
+          assertTrue(
+              capturedEvent,
+              '\'discount-consent-dismissed\' should be emitted');
+        });
+
+    test(
+        'Verify clicking close button in step 2 emits rejected event',
+        async () => {
+          discountConsentCard.currentStep = 1;
+          await flushTasks();
+
+          var capturedEvent = false;
+          discountConsentCard.addEventListener(
+              'discount-consent-rejected', () => capturedEvent = true);
+
+          discountConsentCard.shadowRoot!.querySelector<HTMLElement>(
+                                             '#close')!.click();
+          assertTrue(
+              capturedEvent, '\'discount-consent-rejected\' should be emitted');
+        });
+  });
+
+  suite('Step two background has different color', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesCartConsentStepTwoDifferentColor: true,
+        modulesCartDiscountInlineCardShowCloseButton: false
+      });
+    });
+
+    test('Verify step 2 has background color', () => {
       discountConsentCard.currentStep = 1;
       const consentCardContainer =
           discountConsentCard.shadowRoot!.querySelector(
@@ -163,5 +275,236 @@ suite('NewTabPageDiscountConsentCartTest', () => {
       const goolgeBlue100 = 'rgb(210, 227, 252)';
       assertStyle(consentCardContainer!, 'background-color', goolgeBlue100);
     });
+  });
+
+  suite('Static content disabled for step one of cart module', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesCartStepOneUseStaticContent: false,
+        modulesCartConsentStepOneOneMerchantContent: 'One merchant: $1',
+        modulesCartConsentStepOneTwoMerchantsContent:
+            'Two merchants: $1 and $2',
+        modulesCartConsentStepOneThreeMerchantsContent:
+            'Three merchants: $1, $2, and more'
+      });
+    });
+
+    test('Verify step one content when one merchant cart shown', async () => {
+      const cart = [{
+        merchant: 'Amazon',
+        cartUrl: {url: 'https://amazon.com'},
+        productImageUrls: [
+          {url: 'https://image1.com'}, {url: 'https://image2.com'},
+          {url: 'https://image3.com'}
+        ],
+        discountText: ''
+      }];
+
+      discountConsentCard.merchants = cart;
+      await flushTasks();
+
+      var contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
+          '#contentSteps .step-container');
+
+      assertEquals(
+          'step1', contentSteps[0]!.getAttribute('id'),
+          'First content step should have id as step1');
+      assertEquals(
+          'One merchant: Amazon',
+          contentSteps[0]!.querySelector('.content')!.textContent!.trim());
+    });
+
+    test('Verify step one content when two merchant carts shown', async () => {
+      const carts = [
+        {
+          merchant: 'Amazon',
+          cartUrl: {url: 'https://amazon.com'},
+          productImageUrls: [
+            {url: 'https://image1.com'}, {url: 'https://image2.com'},
+            {url: 'https://image3.com'}
+          ],
+          discountText: ''
+        },
+        {
+          merchant: 'eBay',
+          cartUrl: {url: 'https://ebay.com'},
+          productImageUrls:
+              [{url: 'https://image4.com'}, {url: 'https://image5.com'}],
+          discountText: ''
+        }
+      ];
+
+      discountConsentCard.merchants = carts;
+      await flushTasks();
+
+      var contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
+          '#contentSteps .step-container');
+
+      assertEquals(
+          'step1', contentSteps[0]!.getAttribute('id'),
+          'First content step should have id as step1');
+      assertEquals(
+          'Two merchants: Amazon and eBay',
+          contentSteps[0]!.querySelector('.content')!.textContent!.trim());
+    });
+
+    test(
+        'Verify step one content when three or more merchant carts shown',
+        async () => {
+          const carts = [
+            {
+              merchant: 'Amazon',
+              cartUrl: {url: 'https://amazon.com'},
+              productImageUrls: [
+                {url: 'https://image1.com'}, {url: 'https://image2.com'},
+                {url: 'https://image3.com'}
+              ],
+              discountText: ''
+            },
+            {
+              merchant: 'eBay',
+              cartUrl: {url: 'https://ebay.com'},
+              productImageUrls:
+                  [{url: 'https://image4.com'}, {url: 'https://image5.com'}],
+              discountText: ''
+            },
+            {
+              merchant: 'BestBuy',
+              cartUrl: {url: 'https://bestbuy.com'},
+              productImageUrls: [],
+              discountText: ''
+            }
+          ];
+
+          discountConsentCard.merchants = carts;
+          await flushTasks();
+
+          var contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
+              '#contentSteps .step-container');
+
+          assertEquals(
+              'step1', contentSteps[0]!.getAttribute('id'),
+              'First content step should have id as step1');
+          assertEquals(
+              'Three merchants: Amazon, eBay, and more',
+              contentSteps[0]!.querySelector('.content')!.textContent!.trim());
+        });
+
+    test(
+        'Verify step one content updated when merchant cart changed',
+        async () => {
+          var carts = [{
+            merchant: 'Amazon',
+            cartUrl: {url: 'https://amazon.com'},
+            productImageUrls: [
+              {url: 'https://image1.com'}, {url: 'https://image2.com'},
+              {url: 'https://image3.com'}
+            ],
+            discountText: ''
+          }];
+
+          discountConsentCard.merchants = carts;
+          await flushTasks();
+
+          var contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
+              '#contentSteps .step-container');
+
+          assertEquals(
+              'step1', contentSteps[0]!.getAttribute('id'),
+              'First content step should have id as step1');
+          assertEquals(
+              'One merchant: Amazon',
+              contentSteps[0]!.querySelector('.content')!.textContent!.trim());
+
+          discountConsentCard.merchants = [
+            {
+              merchant: 'Amazon',
+              cartUrl: {url: 'https://amazon.com'},
+              productImageUrls: [
+                {url: 'https://image1.com'}, {url: 'https://image2.com'},
+                {url: 'https://image3.com'}
+              ],
+              discountText: ''
+            },
+            {
+              merchant: 'eBay',
+              cartUrl: {url: 'https://ebay.com'},
+              productImageUrls:
+                  [{url: 'https://image4.com'}, {url: 'https://image5.com'}],
+              discountText: ''
+            }
+          ];
+
+          await flushTasks();
+
+          contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
+              '#contentSteps .step-container');
+
+          assertEquals(
+              'step1', contentSteps[0]!.getAttribute('id'),
+              'First content step should have id as step1');
+          assertEquals(
+              'Two merchants: Amazon and eBay',
+              contentSteps[0]!.querySelector('.content')!.textContent!.trim());
+        });
+  });
+
+  suite('Enable the Dialog Variation', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesCartDiscountConsentVariation: 3,
+        modulesCartSentence: 'Dialog title'
+      });
+    });
+
+    test('Verify DOM has one step', async () => {
+      const cart = [{
+        merchant: 'Amazon',
+        cartUrl: {url: 'https://amazon.com'},
+        productImageUrls: [
+          {url: 'https://image1.com'}, {url: 'https://image2.com'},
+          {url: 'https://image3.com'}
+        ],
+        discountText: ''
+      }];
+
+      discountConsentCard.merchants = cart;
+      await flushTasks();
+
+      var contentSteps = discountConsentCard.shadowRoot!.querySelectorAll(
+          '#contentSteps .step-container');
+      assertEquals(contentSteps.length, 1);
+
+      assertEquals(
+          'step1', contentSteps[0]!.getAttribute('id'),
+          'First content step should have id as step1');
+    });
+
+    test(
+        'Verify clicking continue in one step shows DiscountConsentDialog',
+        async () => {
+          assertEquals(
+              0,
+              discountConsentCard.shadowRoot!
+                  .querySelectorAll('#discountConsentDialog')
+                  .length);
+
+          var contentSelectedPage =
+              discountConsentCard.shadowRoot!.querySelectorAll(
+                  '#contentSteps .iron-selected');
+          assertEquals(contentSelectedPage.length, 1);
+          assertEquals(
+              'step1', contentSelectedPage[0]!.getAttribute('id'),
+              'Selected content step should have id as step1');
+
+          contentSelectedPage[0]!.querySelector<HTMLElement>(
+                                     '.action-button')!.click();
+          await flushTasks();
+          assertEquals(
+              1,
+              discountConsentCard.shadowRoot!
+                  .querySelectorAll('#discountConsentDialog')
+                  .length);
+        });
   });
 });

@@ -2512,6 +2512,7 @@
 <translation id="346298925039590474">Αυτό το δίκτυο κινητής τηλεφωνίας θα είναι διαθέσιμο σε όλους τους χρήστες αυτής της συσκευής</translation>
 <translation id="3464145797867108663">Προσθήκη προφίλ εργασίας</translation>
 <translation id="346431825526753">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζεται ο χρήστης <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="346546413339447252">Λήψη εκπτώσεων για <ph name="MERCHANT_NAME_1" />, <ph name="MERCHANT_NAME_2" /> κ.ά.</translation>
 <translation id="3468298837301810372">Ετικέτα</translation>
 <translation id="3468999815377931311">Τηλέφωνο Android</translation>
 <translation id="3469583217479686109">Εργαλείο επιλογής</translation>
@@ -2956,6 +2957,7 @@
 <translation id="3879748587602334249">Διαχείριση λήψεων</translation>
 <translation id="3882165008614329320">Υπάρχον βίντεο από την κάμερα ή από αρχείο</translation>
 <translation id="3883306461188700142">Πληκτρολογήστε χρησιμοποιώντας τη φωνή σας. Πατήστε Αναζήτηση + D και ξεκινήστε να μιλάτε.</translation>
+<translation id="3883482240657453056">Λήψη εκπτώσεων για <ph name="MERCHANT_NAME_1" /> και <ph name="MERCHANT_NAME_2" /></translation>
 <translation id="3884152383786131369">Το περιεχόμενο ιστού που είναι διαθέσιμο σε πολλές γλώσσες θα χρησιμοποιεί την πρώτη υποστηριζόμενη γλώσσα από αυτήν τη λίστα. Αυτές οι προτιμήσεις συγχρονίζονται με τις ρυθμίσεις του προγράμματος περιήγησης. <ph name="BEGIN_LINK_LEARN_MORE" />Μάθετε περισσότερα<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="3885112598747515383">Η διαχείριση των ενημερώσεων πραγματοποιείται από τον διαχειριστή σας.</translation>
 <translation id="3886446263141354045">Το αίτημά σας για να αποκτήσετε πρόσβαση σε αυτόν τον ιστότοπο έχει σταλεί στον/η(ν) <ph name="NAME" /></translation>
@@ -3264,7 +3266,6 @@
 <translation id="4194570336751258953">Ενεργοποίηση λειτουργίας χειρισμού με αφή</translation>
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
 <translation id="4195814663415092787">Συνέχεια από εκεί που σταματήσατε</translation>
-<translation id="4197917636330710075">Λήψη εκπτώσεων για <ph name="MERCHANT_NAME" /> και <ph name="MERCHANT_NAME" /></translation>
 <translation id="4198268995694216131">Επιπλέον ιστότοποι</translation>
 <translation id="4200689466366162458">Προσαρμοσμένες λέξεις</translation>
 <translation id="4200983522494130825">Νέα &amp;καρτέλα</translation>
@@ -6937,7 +6938,6 @@
 <translation id="7956373551960864128">Οι αποθηκευμένοι εκτυπωτές σας</translation>
 <translation id="7957074856830851026">Προβολή πληροφοριών συσκευής, όπως του σειριακού αριθμού ή του αναγνωριστικού στοιχείου</translation>
 <translation id="7957615753207896812">Άνοιγμα των ρυθμίσεων πληκτρολογίου της συσκευής</translation>
-<translation id="7958437133377816580">Λήψη εκπτώσεων για <ph name="MERCHANT_NAME" />, <ph name="MERCHANT_NAME" /> κ.ά.</translation>
 <translation id="7959074893852789871">Το αρχείο περιείχε πολλαπλά πιστοποιητικά, κάποια από τα οποία δεν εισάχθηκαν:</translation>
 <translation id="7959665254555683862">Νέα &amp;καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="7961015016161918242">Ποτέ</translation>

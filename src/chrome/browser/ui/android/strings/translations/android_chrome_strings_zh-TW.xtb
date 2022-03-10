@@ -358,6 +358,7 @@
 <translation id="3029276696788198026">不使用預先載入模式</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3031225630520268969">Google 助理語音搜尋的同意使用者介面</translation>
+<translation id="3034163383943672781">下載作業會在 <ph name="DATE" />開始。</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">追蹤價格</translation>
 <translation id="3037517125981011456">顯示登入 Chrome 的提示</translation>
@@ -1395,7 +1396,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="8955719471735800169">返回頁首</translation>
 <translation id="8964479563882643397">如要開啟新的無痕分頁，請按一下「選單」圖示</translation>
 <translation id="8965591936373831584">正在等待下載</translation>
-<translation id="8967427617812342790">加到閱讀清單</translation>
+<translation id="8967427617812342790">加入閱讀清單</translation>
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{即將關閉 <ph name="INCOGNITO_TAB_COUNT" /> 個無痕分頁和另外 <ph name="TAB_COUNT_ONE" /> 個分頁}other{即將關閉 <ph name="INCOGNITO_TAB_COUNT" /> 個無痕分頁和另外 <ph name="TAB_COUNT_MANY" /> 個分頁}}</translation>
 <translation id="8970887620466824814">發生錯誤。</translation>
 <translation id="8972098258593396643">要下載至預設資料夾嗎？</translation>
@@ -1412,6 +1413,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9065383040763568503">Chrome 認定為不重要的已儲存資料 (例如未儲存任何設定的網站，或是你不常造訪的網站)</translation>
 <translation id="906781307897697745">在 <ph name="PRODUCT_NAME" /> 中</translation>
+<translation id="9069543557624799859">下載作業會在<ph name="TIME" />開始。</translation>
 <translation id="9069999660519089861">沒有任何未讀取的網頁</translation>
 <translation id="9070377983101773829">開始語音搜尋</translation>
 <translation id="9074336505530349563">如要取得個人化的 Google 推薦內容，請登入並開啟同步處理功能</translation>

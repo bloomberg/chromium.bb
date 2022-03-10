@@ -1262,6 +1262,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="2355876547176311490">Nonaktifkan penggunaan server relai oleh host akses jarak jauh</translation>
 <translation id="2358176879566587521">Kebijakan ini dihapus. Kebijakan ini tidak kompatibel dengan versi <ph name="PRODUCT_NAME" /> ini. Baca selengkapnya di https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="2362469626417133796">Interval waktu peluncuran kembali</translation>
+<translation id="2362539163677485510">Token pendaftaran kebijakan cloud</translation>
 <translation id="2363928351203698966">Jika kebijakan disetel ke nilai yang valid, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS lebih rendah dari versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.
 
       Jika kebijakan tidak disetel, <ph name="PRODUCT_NAME" /> akan menampilkan error untuk TLS 1.0 dan TLS 1.1, tetapi pengguna dapat mengabaikannya.
@@ -1756,6 +1757,11 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2905984450136807296">Masa berlaku cache data autentikasi</translation>
 <translation id="2906874737073861391">Daftar ekstensi AppPack</translation>
 <translation id="2908277604670530363">Jumlah maksimal sambungan serentak ke server proxy</translation>
+<translation id="2909068176249499360">Menyetel kebijakan ini akan memaksa pengaktifan atau penonaktifan Sambungan Cepat.
+      Sambungan Cepat adalah alur penyambungan Bluetooth baru yang menautkan periferal yang disambungkan dengan akun GAIA.
+      Penyambungan ini memungkinkan perangkat Chrome OS (dan Android) lain yang login dengan akun GAIA yang sama untuk disambungkan secara otomatis.
+      Jika kebijakan ini tidak disetel, nilai default akan disetel ke nonaktif untuk pengguna versi bisnis dan disetel ke aktif untuk
+      akun yang tidak terkelola.</translation>
 <translation id="2912366658685903301">Mengonfigurasi warna tema browser</translation>
 <translation id="291853569864365550">Jangan tampilkan saran konten di halaman Tab Baru</translation>
 <translation id="2920795918401557243">Setelan ini memungkinkan pengumpulan jejak performa di seluruh sistem menggunakan layanan pelacakan sistem.

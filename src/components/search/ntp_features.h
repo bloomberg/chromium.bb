@@ -124,12 +124,27 @@ enum class DiscountConsentNtpVariation {
 extern const char kNtpChromeCartModuleDiscountConsentNtpVariationParam[];
 extern const base::FeatureParam<int>
     kNtpChromeCartModuleDiscountConsentNtpVariation;
+// The time interval, after the last dismissal, before reshowing the consent.
+extern const char kNtpChromeCartModuleDiscountConsentReshowTimeParam[];
+extern const base::FeatureParam<base::TimeDelta>
+    kNtpChromeCartModuleDiscountConsentReshowTime;
+// The max number of dismisses allowed.
+extern const char kNtpChromeCartModuleDiscountConsentMaxDismissalCountParam[];
+extern const base::FeatureParam<int>
+    kNtpChromeCartModuleDiscountConsentMaxDismissalCount;
 
 // String change variation params. This string is replacing the content string
 // of the v1 consent.
 extern const char kNtpChromeCartModuleDiscountConsentStringChangeContentParam[];
 extern const base::FeatureParam<std::string>
     kNtpChromeCartModuleDiscountConsentStringChangeContent;
+
+// DiscountConsentNtpVariation::kInline and DiscountConsentNtpVariation::kDialog
+// params. This indicate whether the 'x' button should show.
+extern const char
+    kNtpChromeCartModuleDiscountConsentInlineShowCloseButtonParam[];
+extern const base::FeatureParam<bool>
+    kNtpChromeCartModuleDiscountConsentInlineShowCloseButton;
 
 // The following are discount consent step 1 params.
 // This indicates whether the content in step 1 is a static string that does not
