@@ -1913,6 +1913,10 @@ void WebViewImpl::DidChangeWindowRect()
   }
 
   ScriptState* script_state = ToScriptStateForMainWorld(MainFrameImpl()->GetFrame());
+
+  v8::HandleScope handleScope(script_state->GetIsolate());
+  v8::Context::Scope contextScope(MainFrameImpl()->MainWorldScriptContext());
+
   CustomEventInit eventInit(script_state->GetIsolate());
   eventInit.setBubbles(false);
   eventInit.setCancelable(false);
