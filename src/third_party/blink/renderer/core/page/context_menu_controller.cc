@@ -817,7 +817,7 @@ static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj
 {
   obj->Set(obj->CreationContext(),
            v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
-           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, value.length()).ToLocalChecked()).Check();
+           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, static_cast<int>(value.length())).ToLocalChecked()).Check();
 }
 
 static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::vector<std::u16string>& value)
@@ -827,7 +827,7 @@ static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object
 
   for (unsigned i = 0; i < value.size(); ++i) {
     std::string item = blink::WebString::FromUTF16(value[i]).Utf8();
-    array->Set(context, i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, item.length()).ToLocalChecked()).Check();
+    array->Set(context, i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, static_cast<int>(item.length())).ToLocalChecked()).Check();
   }
   obj->Set(context, v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array).Check();
 }
