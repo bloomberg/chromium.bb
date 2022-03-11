@@ -95,11 +95,6 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
         window_wrapper->GetPrototype().As<v8::Object>();
     CHECK(!window_prototype.IsEmpty());
 
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
-    V8DOMWrapper::SetNativeInfo(
-        isolate, window_prototype, wrapper_type_info, window);
-#endif
-
     // The named properties object of Window interface.
     v8::Local<v8::Object> window_properties =
     window_prototype->GetPrototype().As<v8::Object>();
@@ -107,14 +102,12 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     V8DOMWrapper::SetNativeInfo(
         isolate, window_properties, wrapper_type_info, window);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
     v8::Context::Scope context_scope(context);
 
     // [CachedAccessor=kWindowProxy]
     V8PrivateProperty::GetCachedAccessor(
         isolate, V8PrivateProperty::CachedAccessor::kWindowProxy)
         .Set(window_wrapper, global);
-#endif
 
     return hs.Escape(context);
 }
