@@ -46,7 +46,7 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
       public DisplayClient {
  public:
   // Creates a new RootCompositorFrameSinkImpl.
-  static VIZ_SERVICE_EXPORT std::unique_ptr<RootCompositorFrameSinkImpl> Create(
+  static std::unique_ptr<RootCompositorFrameSinkImpl> Create(
       mojom::RootCompositorFrameSinkParamsPtr params,
       FrameSinkManagerImpl* frame_sink_manager,
       OutputSurfaceProvider* output_surface_provider,
