@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/values.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -36,9 +37,9 @@ int NumberOfRendererRasterThreads();
 // Returns true if main thread can be pipelined with activation.
 bool IsMainFrameBeforeActivationEnabled();
 
-base::Value GetFeatureStatus();
-base::Value GetProblems();
-std::vector<std::string> GetDriverBugWorkarounds();
+CONTENT_EXPORT base::Value GetFeatureStatus();
+CONTENT_EXPORT base::Value GetProblems();
+CONTENT_EXPORT std::vector<std::string> GetDriverBugWorkarounds();
 
 base::Value GetFeatureStatusForHardwareGpu();
 base::Value GetProblemsForHardwareGpu();
