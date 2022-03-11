@@ -156,6 +156,7 @@ void testV8AppendElement(blpwtk2::WebView* webView)
 {
     blpwtk2::WebFrame* mainFrame = webView->mainFrame();
     v8::Isolate* isolate = mainFrame->scriptIsolate();
+    v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> ctxt = mainFrame->mainWorldScriptContext();
     static const char SCRIPT[] =
