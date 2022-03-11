@@ -209,6 +209,7 @@ void testAccessDOMFromWebScriptContext(const v8::Global<v8::Context>& webScriptC
 {
     blpwtk2::WebFrame* mainFrame = webView->mainFrame();
     v8::Isolate* isolate = mainFrame->scriptIsolate();
+    v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Value> domWindow, domDocument;
 
