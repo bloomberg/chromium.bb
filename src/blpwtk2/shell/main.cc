@@ -353,7 +353,7 @@ void testGetPicture(blpwtk2::NativeView hwnd,
 
     BITMAPFILEHEADER fileHeader = {
         0x4d42,
-        sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + imageDataSize,
+        static_cast<DWORD>(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + imageDataSize),
         0,
         0,
         sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER),
