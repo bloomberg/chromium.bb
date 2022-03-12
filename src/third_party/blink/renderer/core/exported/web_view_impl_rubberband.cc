@@ -435,7 +435,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
     bool isVisible = !layoutObject->Style() || layoutObject->Style()->Visibility() == EVisibility::kVisible;
 
     // Keep the current candidate count
-    const unsigned int candidateCnt = rubberbandState_->impl_->m_candidates.size();
+    const unsigned int candidateCnt = static_cast<unsigned int>(rubberbandState_->impl_->m_candidates.size());
 
     if (layoutObject->IsBox()) {
         const LayoutBox* layoutBox = To<LayoutBox>(layoutObject);
@@ -757,10 +757,10 @@ WTF::String WebViewImpl::GetTextInRubberbandImpl(const LayoutRect& rcOrig)
                     LayoutUnit minX = hit.m_charPositions[j];
                     LayoutUnit maxX = hit.m_charPositions[j+1];
                     if (hit.m_clipRect.X() >= minX && hit.m_clipRect.X() < maxX) {
-                        startOffset = j;
+                        startOffset = static_cast<int>(j);
                     }
                     if (hit.m_clipRect.MaxX() > minX && hit.m_clipRect.MaxX() <= maxX) {
-                        endOffset = j + 1;
+                        endOffset = static_cast<int>(j + 1);
                         break;
                     }
                 }
@@ -770,10 +770,10 @@ WTF::String WebViewImpl::GetTextInRubberbandImpl(const LayoutRect& rcOrig)
                     LayoutUnit maxX = hit.m_charPositions[j];
                     LayoutUnit minX = hit.m_charPositions[j+1];
                     if (hit.m_clipRect.MaxX() > minX && hit.m_clipRect.MaxX() <= maxX) {
-                        startOffset = j + 1;
+                        startOffset = static_cast<int>(j + 1);
                     }
                     if (hit.m_clipRect.X() >= minX && hit.m_clipRect.X() < maxX) {
-                        endOffset = j;
+                        endOffset = static_cast<int>(j);
                         break;
                     }
                 }
