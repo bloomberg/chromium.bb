@@ -946,7 +946,7 @@ void RenderWebView::initializeRenderer()
     if (blink_widget_) {
      blink_widget_->GetWidgetInputHandler(
             d_widgetInputHandler.BindNewPipeAndPassReceiver(),
-            d_inputRouterImpl->BindNewHost(content::GetUIThreadTaskRunner({content::BrowserTaskType::kUserInput})));
+            d_inputRouterImpl->BindNewHost(base::ThreadTaskRunnerHandle::Get()));
     }
 
     // Create a RenderCompositor that is associated with this
