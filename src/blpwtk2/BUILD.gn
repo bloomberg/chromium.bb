@@ -114,10 +114,6 @@ repack("pak") {
 }
 
 shared_library("blpwtk2") {
-  if (bb_version != "") {
-    output_name = "blpwtk2.$bb_version"
-  }
-
   sources = [
     "$target_gen_dir/$blpwtk2_products_h",
     "$target_gen_dir/$version_cc",
@@ -422,10 +418,6 @@ shared_library("blpwtk2") {
 }
 
 executable("blpwtk2_subprocess") {
-  if (bb_version != "") {
-    output_name = "blpwtk2_subprocess.$bb_version"
-  }
-
   sources = [
     "subprocess/main.cc",
     "subprocess/resources.rc",
