@@ -72,15 +72,12 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
                                                                  chromiumVersionNumbers[2],
                                                                  chromiumVersionNumbers[3],
                                                                  bbPatchNumber))
-  f.write('#define BLPWTK2_DLL_NAME "blpwtk2{}.dll"\n'.format(productAppend))
-  f.write('#define BLPWTK2_SUBPROCESS_EXE_NAME "blpwtk2_subprocess{}.exe"\n'.format(productAppend))
+  f.write('#define BLPWTK2_DLL_NAME "blpwtk2.dll"\n')
+  f.write('#define BLPWTK2_SUBPROCESS_EXE_NAME "blpwtk2_subprocess.exe"\n')
   f.write('#define BLPWTK2_PAK_NAME "blpwtk2{}.pak"\n'.format(productAppend))
   f.write('#define BLPWTK2_ICUDTL_DAT_NAME "icudtl{}.dat"\n'.format(productAppend))
   f.write('#define BLPWTK2_ICUDTL_EXT_DAT_NAME "icudtl_extra{}.dat"\n'.format(productAppend))
   f.write('#define BLPWTK2_CONTEXT_SNAPSHOT_NAME "v8_context_snapshot{}.bin"\n'.format(productAppend))
-  f.write('#define BLPCR_EGL_DLL_NAME "blpcr_egl{}.dll"\n'.format(productAppend))
-  f.write('#define BLPCR_GLESV2_DLL_NAME "blpcr_glesv2{}.dll"\n'.format(productAppend))
-  f.write('#define FFMPEGSUMO_DLL_NAME "ffmpegsumo{}.dll"\n'.format(productAppend))
   f.write('\n')
   f.write('#endif  // INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
 

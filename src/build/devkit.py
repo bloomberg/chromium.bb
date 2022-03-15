@@ -56,12 +56,12 @@ def _get_bin_files(version):
   ]
 
   modules = [
-    f'blpcr_egl.{version}.dll',
-    f'blpcr_glesv2.{version}.dll',
-    f'blpwtk2.{version}.dll',
-    f'blpwtk2_subprocess.{version}.exe',
-    f'swiftshader/blpcr_egl.{version}.dll',
-    f'swiftshader/blpcr_glesv2.{version}.dll',
+    f'libEGL.dll',
+    f'libGLESv2.dll',
+    f'blpwtk2.dll',
+    f'blpwtk2_subprocess.exe',
+    f'swiftshader/libEGL.dll',
+    f'swiftshader/libGLESv2.dll',
   ]
 
   for m in modules:
@@ -105,14 +105,14 @@ def get_file_copies(chromium_dir, x86, x64, version):
     copies += _get_bin_file_copies(out_dir, 'release', version)
     copies += _get_include_file_copies(
             os.path.join(out_dir, 'gen/blpwtk2/blpwtk2/public'), 'blpwtk2')
-    copies.append((os.path.join(out_dir, f'blpwtk2.{version}.dll.lib'),
-                   f'lib/release/blpwtk2.{version}.dll.lib'))
+    copies.append((os.path.join(out_dir, f'blpwtk2.dll.lib'),
+                   f'lib/release/blpwtk2.dll.lib'))
 
   if x64:
     out_dir = os.path.join(chromium_dir, 'src/out/static_release64')
     copies += _get_bin_file_copies(out_dir, 'release64', version)
-    copies.append((os.path.join(out_dir, f'blpwtk2.{version}.dll.lib'),
-                   f'lib/release64/blpwtk2.{version}.dll.lib'))
+    copies.append((os.path.join(out_dir, f'blpwtk2.dll.lib'),
+                   f'lib/release64/blpwtk2.dll.lib'))
 
     if not x86:
       copies += _get_include_file_copies(
