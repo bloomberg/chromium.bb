@@ -45,23 +45,26 @@ def _get_bin_files(version):
   """Return a list of files to copy to the bin/<config> directory."""
 
   files = [
+    'blpwtk2.pak',
     'blpwtk2_shell.exe',
     'content_shell.exe',
     'content_shell.pak',
     'd3dcompiler_47.dll',
     'd8.exe',
-    'v8_context_snapshot.bin',
-    'blpwtk2.pak',
     'icudtl.dat',
+    'v8_context_snapshot.bin',
+    'vk_swiftshader_icd.json',
   ]
 
   modules = [
-    f'libEGL.dll',
-    f'libGLESv2.dll',
-    f'blpwtk2.dll',
-    f'blpwtk2_subprocess.exe',
-    f'swiftshader/libEGL.dll',
-    f'swiftshader/libGLESv2.dll',
+    'blpwtk2.dll',
+    'blpwtk2_subprocess.exe',
+    'libEGL.dll',
+    'libGLESv2.dll',
+    'swiftshader/libEGL.dll',
+    'swiftshader/libGLESv2.dll',
+    'vk_swiftshader.dll',
+    'vulkan-1.dll',
   ]
 
   for m in modules:
