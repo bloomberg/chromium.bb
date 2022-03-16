@@ -50,9 +50,9 @@ def _get_bin_files(version):
     'content_shell.pak',
     'd3dcompiler_47.dll',
     'd8.exe',
-    f'v8_context_snapshot.{version}.bin',
-    f'blpwtk2.{version}.pak',
-    f'icudtl.{version}.dat',
+    'v8_context_snapshot.bin',
+    'blpwtk2.pak',
+    'icudtl.dat',
   ]
 
   modules = [
