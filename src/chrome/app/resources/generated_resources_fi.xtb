@@ -1655,7 +1655,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2602501489742255173">Aloita pyyhkäisemällä ylös</translation>
 <translation id="2603115962224169880">Puhdista tietokone</translation>
 <translation id="2603355571917519942">Voice Match on valmiina</translation>
-<translation id="2604138917550693049">Hae kuvaa Google Lensillä</translation>
+<translation id="2604138917550693049">Hae kuvaa Google Lensilla</translation>
 <translation id="2604255671529671813">Verkkoyhteysvirhe</translation>
 <translation id="2605668923777146443">Katso Better Together ‑vaihtoehdot <ph name="LINK_BEGIN" />asetuksista<ph name="LINK_END" />.</translation>
 <translation id="2606246518223360146">Yhdistä tiedot</translation>
@@ -2423,7 +2423,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3391512812407811893">Privacy Sandbox ‑kokeilut</translation>
 <translation id="3393554941209044235">Chromen dokumenttianalyysi</translation>
 <translation id="3394850431319394743">Tunnisteiden käyttö on sallittua suojatun sisällön toistamisessa</translation>
-<translation id="3396744558790608201">Hae miltä tahansa sivuston alueelta klikkaamalla kakkospainikkeella ja valitsemalla "Hae kuvia Google Lensillä". Näin saat lisätietoja kuvasisällöstä, jota näet selatessasi ja shoppaillessasi internetissä.</translation>
+<translation id="3396744558790608201">Hae miltä tahansa sivuston alueelta klikkaamalla kakkospainikkeella ja valitsemalla "Hae kuvia Google Lensilla". Näin saat lisätietoja kuvasisällöstä, jota näet selatessasi ja shoppaillessasi internetissä.</translation>
 <translation id="3396800784455899911">Kun valitset Hyväksy ja jatka, hyväksyt käsittelyn näissä Google-palveluissa edellä kuvatuilla tavoilla.</translation>
 <translation id="339722927132407568">Jumiutuu</translation>
 <translation id="3399432415385675819">Ilmoitukset poistetaan käytöstä.</translation>
@@ -2511,6 +2511,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="346298925039590474">Mobiiliverkko on kaikkien laitteen käyttäjien saatavilla</translation>
 <translation id="3464145797867108663">Lisää työprofiili</translation>
 <translation id="346431825526753">Tämä on lapsen tili, jota hallinnoi <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="346546413339447252">Haluan alennuksia esimerkiksi näissä: <ph name="MERCHANT_NAME_1" /> ja <ph name="MERCHANT_NAME_2" /></translation>
 <translation id="3468298837301810372">Tunniste</translation>
 <translation id="3468999815377931311">Android-puhelin</translation>
 <translation id="3469583217479686109">Valintatyökalu</translation>
@@ -2955,6 +2956,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3879748587602334249">Latausten hallinta</translation>
 <translation id="3882165008614329320">Olemassa oleva video kamerasta tai tiedostosta</translation>
 <translation id="3883306461188700142">Kirjoita puhumalla. Paina Haku + D ja aloita puhuminen.</translation>
+<translation id="3883482240657453056">Haluan alennuksia näissä: <ph name="MERCHANT_NAME_1" /> ja <ph name="MERCHANT_NAME_2" /></translation>
 <translation id="3884152383786131369">Verkkosisältö, joka on saatavilla useilla kielillä, käyttää ensimmäistä tuettua kieltä tältä listalta. Nämä asetukset synkronoidaan selainasetustesi kanssa. <ph name="BEGIN_LINK_LEARN_MORE" />Lue lisää<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="3885112598747515383">Järjestelmänvalvoja päättää päivityksistä</translation>
 <translation id="3886446263141354045">Pyyntösi päästä tälle sivustolle on lähetetty henkilölle <ph name="NAME" />.</translation>
@@ -4069,7 +4071,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="5051836348807686060">Oikeinkirjoituksen tarkistusta ei tueta valitsemillasi kielillä</translation>
 <translation id="5052499409147950210">Muokkaa sivustoa</translation>
 <translation id="505347685865235222">Nimetön ryhmä – <ph name="GROUP_CONTENT_STRING" /></translation>
-<translation id="5053962746715621840">Hae kuvaa Google Lensillä</translation>
+<translation id="5053962746715621840">Hae kuvaa Google Lensilla</translation>
 <translation id="5056950756634735043">Muodostetaan yhteyttä säilöön</translation>
 <translation id="5057110919553308744">Kun klikkaat laajennusta</translation>
 <translation id="505776528429481161">Yhdistä helposti ja ota käyttöön lähellä olevia laitteita</translation>
@@ -7532,7 +7534,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8597845839771543242">Ominaisuuden muoto:</translation>
 <translation id="8599681327221583254">Ainakin yksi käytäntö on määritetty väärin. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="8601206103050338563">TLS WWW -palvelimen todennus</translation>
-<translation id="8601611099293226919">Hae näytöltä Google Lensillä</translation>
+<translation id="8601611099293226919">Hae näytöltä Google Lensilla</translation>
 <translation id="8602851771975208551">Toinen tietokoneellasi oleva ohjelma lisäsi sovelluksen, joka voi muuttaa Chromen toimintaa.</translation>
 <translation id="8605428685123651449">SQLiten käyttämä muisti</translation>
 <translation id="8608618451198398104">Lisää Kerberos-tukipyyntö</translation>

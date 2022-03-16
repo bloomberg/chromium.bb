@@ -5,7 +5,7 @@
 #                      \___/_/\_\ .__/ \__,_|\__|
 #                               |_| XML parser
 #
-# Copyright (c) 2021 Sebastian Pipping <sebastian@pipping.org>
+# Copyright (c) 2021-2022 Sebastian Pipping <sebastian@pipping.org>
 # Licensed under the MIT license:
 #
 # Permission is  hereby granted,  free of charge,  to any  person obtaining
@@ -69,6 +69,10 @@ jobs:
           - MODE: qa-sh
             FLAT_ENV: CC=gcc CXX=g++ LD=ld QA_PROCESSOR=gcov
           - MODE: qa-sh
+            FLAT_ENV: CC=gcc CXX=g++ LD=ld QA_PROCESSOR=gcov CMAKE_ARGS=-D_EXPAT_M32=ON
+          - MODE: qa-sh
+            FLAT_ENV: CC=gcc CXX=g++ LD=ld QA_PROCESSOR=gcov CMAKE_ARGS="-D_EXPAT_M32=ON -DEXPAT_ATTR_INFO=ON"
+          - MODE: qa-sh
             FLAT_ENV: CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld QA_PROCESSOR=gcov CMAKE_ARGS="-DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON"
           - MODE: qa-sh
             FLAT_ENV: CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld QA_PROCESSOR=gcov CMAKE_ARGS="-DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON -DEXPAT_CHAR_TYPE=wchar_t"
@@ -76,23 +80,25 @@ jobs:
     env:
       CFLAGS: -g3 -pipe
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2.4.0
     - name: Add Clang/LLVM repositories
       run: |-
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
+        sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-13 main'
     - name: Install build dependencies
       # NOTE: Please note the version-specific ${PATH} extension for Clang in .travis.sh
       run: |-
         sudo dpkg --add-architecture i386  # for wine32
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends -V \
-            clang-11 \
-            clang-format-11 \
-            llvm-11 \
+            clang-13 \
+            clang-format-13 \
+            llvm-13 \
             cmake \
             docbook2x \
             dos2unix \
+            gcc-multilib \
+            g++-multilib \
             lcov \
             libbsd-dev \
             lzip \

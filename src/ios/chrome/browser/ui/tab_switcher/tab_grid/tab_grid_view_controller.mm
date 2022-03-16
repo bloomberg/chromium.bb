@@ -644,6 +644,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   TabGridMode previousMode = _tabGridMode;
   _tabGridMode = mode;
 
+  // Updating toolbars first before the controllers so when they set their
+  // content they will account for the updated insets of the toolbars.
+  self.topToolbar.mode = self.tabGridMode;
+  self.bottomToolbar.mode = self.tabGridMode;
+
   // Resetting search state when leaving the search mode should happen before
   // changing the mode in the controllers so when they do the cleanup for the
   // new mode they will have the correct items (tabs).
@@ -655,11 +660,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self.incognitoTabsDelegate resetToAllItems];
     [self hideScrim];
   }
-
-  self.bottomToolbar.mode = self.tabGridMode;
+  [self setInsetForGridViews];
   self.regularTabsViewController.mode = self.tabGridMode;
   self.incognitoTabsViewController.mode = self.tabGridMode;
-  self.topToolbar.mode = self.tabGridMode;
 
   self.scrollView.scrollEnabled = (self.tabGridMode == TabGridModeNormal);
   if (mode == TabGridModeSelection)
@@ -1000,8 +1003,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _currentPage = currentPage;
   self.currentPageViewController.view.accessibilityElementsHidden = NO;
   // Force VoiceOver to update its accessibility element tree immediately.
-  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                  nil);
+  if (self.tabGridMode == TabGridModeSearch) {
+    // |UIAccessibilityLayoutChangedNotification| doesn't change the current
+    // item focused by the voiceOver if the notification argument provided with
+    // it is |nil|. In search mode, the item focused by the voiceOver needs to
+    // be reset and to do that |UIAccessibilityScreenChangedNotification| should
+    // be posted instead.
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                    nil);
+  } else {
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                    nil);
+  }
 }
 
 // Sets the value of |currentPage|, adjusting the position of the scroll view

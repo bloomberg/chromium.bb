@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2014-2022 The Khronos Group Inc.
- * Copyright (c) 2014-2022 Valve Corporation
- * Copyright (c) 2014-2022 LunarG, Inc.
+ * Copyright (c) 2014-2021 The Khronos Group Inc.
+ * Copyright (c) 2014-2021 Valve Corporation
+ * Copyright (c) 2014-2021 LunarG, Inc.
  * Copyright (C) 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -695,9 +695,11 @@ VkResult windows_read_data_files_in_registry(const struct loader_instance *inst,
     char *search_path = NULL;
 
     if (data_file_type == LOADER_DATA_FILE_MANIFEST_ICD) {
-        loader_log(inst, VULKAN_LOADER_DRIVER_BIT, 0, "Checking for Driver Manifest files in Registry at %s", registry_location);
+        loader_log(inst, VULKAN_LOADER_DRIVER_BIT, 0, "Checking for Driver Manifest files in Registry at %s",
+                   registry_location);
     } else {
-        loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "Checking for Driver Manifest files in Registry at %s", registry_location);
+        loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "Checking for Driver Manifest files in Registry at %s",
+                   registry_location);
     }
 
     // These calls look at the PNP/Device section of the registry.
@@ -771,7 +773,7 @@ out:
 }
 
 // This function allocates an array in sorted_devices which must be freed by the caller if not null
-VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, struct loader_phys_dev_per_icd **sorted_devices,
+VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, struct LoaderSortedPhysicalDevice **sorted_devices,
                                               uint32_t *sorted_count) {
     VkResult res = VK_SUCCESS;
 
@@ -783,14 +785,14 @@ VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, stru
         loader_log(inst, VULKAN_LOADER_INFO_BIT, 0, "Failed to create DXGI factory 6. Physical devices will not be sorted");
     } else {
         sorted_alloc = 16;
-        *sorted_devices = loader_instance_heap_alloc(inst, sorted_alloc * sizeof(struct loader_phys_dev_per_icd),
+        *sorted_devices = loader_instance_heap_alloc(inst, sorted_alloc * sizeof(struct LoaderSortedPhysicalDevice),
                                                      VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
         if (*sorted_devices == NULL) {
             res = VK_ERROR_OUT_OF_HOST_MEMORY;
             goto out;
         }
 
-        memset(*sorted_devices, 0, sorted_alloc * sizeof(struct loader_phys_dev_per_icd));
+        memset(*sorted_devices, 0, sorted_alloc * sizeof(struct LoaderSortedPhysicalDevice));
 
         *sorted_count = 0;
         for (uint32_t i = 0;; ++i) {
@@ -814,7 +816,7 @@ VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, stru
             }
 
             if (sorted_alloc <= i) {
-                uint32_t old_size = sorted_alloc * sizeof(struct loader_phys_dev_per_icd);
+                uint32_t old_size = sorted_alloc * sizeof(struct LoaderSortedPhysicalDevice);
                 *sorted_devices =
                     loader_instance_heap_realloc(inst, *sorted_devices, old_size, 2 * old_size, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
                 if (*sorted_devices == NULL) {
@@ -824,7 +826,7 @@ VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, stru
                 }
                 sorted_alloc *= 2;
             }
-            struct loader_phys_dev_per_icd *sorted_array = *sorted_devices;
+            struct LoaderSortedPhysicalDevice *sorted_array = *sorted_devices;
             sorted_array[*sorted_count].device_count = 0;
             sorted_array[*sorted_count].physical_devices = NULL;
             //*sorted_count = i;
@@ -908,76 +910,6 @@ VkLoaderFeatureFlags windows_initialize_dxgi(void) {
         dxgi_factory->lpVtbl->Release(dxgi_factory);
     }
     return feature_flags;
-}
-
-// Sort the VkPhysicalDevices that are part of the current group with the list passed in from the sorted list.
-// Multiple groups could have devices out of the same sorted list, however, a single group's devices must all come
-// from the same sorted list.
-void windows_sort_devices_in_group(struct loader_instance *inst, struct VkPhysicalDeviceGroupProperties *group_props,
-                                   struct loader_phys_dev_per_icd *icd_sorted_list) {
-    uint32_t cur_index = 0;
-    for (uint32_t dev = 0; dev < icd_sorted_list->device_count; ++dev) {
-        for (uint32_t grp_dev = cur_index; grp_dev < group_props->physicalDeviceCount; ++grp_dev) {
-            if (icd_sorted_list->physical_devices[dev] == group_props->physicalDevices[grp_dev]) {
-                if (cur_index != grp_dev) {
-                    VkPhysicalDevice swap_dev = group_props->physicalDevices[cur_index];
-                    group_props->physicalDevices[cur_index] = group_props->physicalDevices[grp_dev];
-                    group_props->physicalDevices[grp_dev] = swap_dev;
-                }
-                cur_index++;
-                break;
-            }
-        }
-    }
-    if (cur_index == 0) {
-        loader_log(inst, VULKAN_LOADER_WARN_BIT, 0,
-                   "windows_sort_devices_in_group:  Never encountered a device in the sorted list group");
-    }
-}
-
-// This function sorts an array in physical device groups based on the sorted physical device information
-VkResult windows_sort_physical_device_groups(struct loader_instance *inst, const uint32_t group_count,
-                                             struct loader_physical_device_group_term *sorted_group_term,
-                                             const uint32_t sorted_device_count,
-                                             struct loader_phys_dev_per_icd *sorted_phys_dev_array) {
-    if (0 == group_count || NULL == sorted_group_term) {
-        loader_log(inst, VULKAN_LOADER_WARN_BIT, 0,
-                   "windows_sort_physical_device_groups: Called with invalid information (Group count %d, Sorted Info %p)",
-                   group_count, sorted_group_term);
-        return VK_ERROR_INITIALIZATION_FAILED;
-    }
-
-    uint32_t new_index = 0;
-    for (uint32_t icd = 0; icd < sorted_device_count; ++icd) {
-        for (uint32_t dev = 0; dev < sorted_phys_dev_array[icd].device_count; ++dev) {
-            // Find a group associated with a given device
-            for (uint32_t group = new_index; group < group_count; ++group) {
-                bool device_found = false;
-                // Look for the current sorted device in a group and put it in the correct location if it isn't already
-                for (uint32_t grp_dev = 0; grp_dev < sorted_group_term[group].group_props.physicalDeviceCount; ++grp_dev) {
-                    if (sorted_group_term[group].group_props.physicalDevices[grp_dev] ==
-                        sorted_phys_dev_array[icd].physical_devices[dev]) {
-                        // First, sort devices inside of group to be in priority order
-                        windows_sort_devices_in_group(inst, &sorted_group_term[group].group_props, &sorted_phys_dev_array[icd]);
-
-                        // Second, move the group up in priority if it needs to be
-                        if (new_index != group) {
-                            struct loader_physical_device_group_term tmp = sorted_group_term[new_index];
-                            sorted_group_term[new_index] = sorted_group_term[group];
-                            sorted_group_term[group] = tmp;
-                        }
-                        device_found = true;
-                        new_index++;
-                        break;
-                    }
-                }
-                if (device_found) {
-                    break;
-                }
-            }
-        }
-    }
-    return VK_SUCCESS;
 }
 
 #endif  // _WIN32
