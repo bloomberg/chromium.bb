@@ -12,8 +12,8 @@ class BLPWTK2Conan(ConanFile):
 
     name = "blpwtk2"
     description = "blpwtk2 libraries and headers"
-    url = "bbgithub/buildbot/sotr-conan-index"
-    settings = ("os", "arch")
+    url = "bbgithub:uiinf/chromium.bb"
+    settings = "os", "arch"
 
     build_requires = ("p7zip/19.00@devkit/stable",)
 
@@ -23,7 +23,7 @@ class BLPWTK2Conan(ConanFile):
 
     def source(self):
         tools.download(
-            self.conan_data["sources"][self.version]["url"],
+            f"{self.conan_data['sources'][self.version]['url']}/{self.version}.7z",
             "archive.7z",
             sha256=self.conan_data["sources"][self.version]["sha256"],
         )
@@ -47,7 +47,7 @@ class BLPWTK2Conan(ConanFile):
         bindir = f"bin/release{bitness_path_suffix}"
         libdir = f"lib/release{bitness_path_suffix}"
 
-        self.cpp_info.components["blpwtk2-discarded"].requires = [
+        self.cpp_info.components["blpwtk2-all"].requires = [
             f"{x.split('/')[0]}::{x.split('/')[0]}" for x in self.requires
         ]
 
