@@ -701,7 +701,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
     else if (isHost && browserV8Enabled && Statics::isOriginalThreadMode()) {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-        gin::V8Initializer::LoadV8Snapshot();
+        gin::V8Initializer::LoadV8Snapshot(gin::V8SnapshotFileType::kWithAdditionalContext);
 #endif
         gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                        gin::ArrayBufferAllocator::SharedInstance());

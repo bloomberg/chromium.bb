@@ -294,6 +294,10 @@ shared_library("blpwtk2") {
 
   ]
 
+  configs += [
+    "//v8:external_startup_data",
+  ]
+
   defines = [
     "BUILDING_BLPWTK2_SHARED",
     "BLPWTK2_IMPLEMENTATION",
