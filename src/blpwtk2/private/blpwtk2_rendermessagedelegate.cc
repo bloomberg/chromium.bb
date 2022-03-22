@@ -33,12 +33,12 @@ RenderMessageDelegate::RenderMessageDelegate()
     mojo::MessagePipe pipe;
 
     d_router0 =
-        mojo::internal::MultiplexRouter::Create(
+        mojo::internal::MultiplexRouter::CreateAndStartReceiving(
             std::move(pipe.handle0), mojo::internal::MultiplexRouter::MULTI_INTERFACE,
             false, base::SequencedTaskRunnerHandle::Get());
 
     d_router1 =
-        mojo::internal::MultiplexRouter::Create(
+        mojo::internal::MultiplexRouter::CreateAndStartReceiving(
             std::move(pipe.handle1), mojo::internal::MultiplexRouter::MULTI_INTERFACE,
             true, base::SequencedTaskRunnerHandle::Get());
 }
