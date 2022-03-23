@@ -31,6 +31,7 @@
 #include <fstream>
 #include <string>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include <blpwtk2.h>
@@ -1533,18 +1534,33 @@ class DummyResourceLoader : public blpwtk2::ResourceLoader {
     // will return the contents of:
     //
     //     C:\stuff\test.html
+    //
+    // By default, "http://cdrive/" is mapped to "C:\".  More mappings can be
+    // added in the constructor, for example to do local bundle testing.
+
+    std::unordered_map<std::string, std::string> d_mappings;
 
 public:
-    static const char PREFIX[];
+    DummyResourceLoader()
+    {
+        d_mappings["http://cdrive/"] = "C:\\";
+
+        // Add more mappings here for local testing, e.g. bundle loading from
+        // local disk:
+        // d_mappings["http://bundles.bloomberg.com/sys-blp-ui-1.212.7/"] = "c:\\dev\\bundles\\sys-blp-ui\\";
+        // d_mappings["http://bundles.bloomberg.com/sys-ui-1.578.6/"] = "c:\\dev\\bundles\\sys-ui\\";
+    }
 
     bool canHandleURL(const blpwtk2::StringRef& url) override
     {
-        if (url.length() <= strlen(PREFIX))
-            return false;
-        blpwtk2::StringRef prefix(url.data(), strlen(PREFIX));
-        if (!prefix.equals(PREFIX))
-            return false;
-        return true;
+        for (const auto& it : d_mappings) {
+            if (url.length() <= it.first.length())
+                continue;
+            blpwtk2::StringRef prefix(url.data(), it.first.length());
+            if (prefix.equals(it.first))
+                return true;
+        }
+        return false;
     }
 
     void start(const blpwtk2::StringRef& url,
@@ -1553,9 +1569,18 @@ public:
     {
         assert(canHandleURL(url));
 
-        std::string filePath = "C:\\";
-        filePath.append(url.data() + strlen(PREFIX),
-                        url.length() - strlen(PREFIX));
+        std::string filePath;
+        for (const auto& it : d_mappings) {
+            if (url.length() <= it.first.length())
+                continue;
+            blpwtk2::StringRef prefix(url.data(), it.first.length());
+            if (prefix.equals(it.first)) {
+                filePath = it.second;
+                filePath.append(url.data() + it.first.length(),
+                                url.length() - it.first.length());
+                break;
+            }
+        }
         std::replace(filePath.begin(), filePath.end(), '/', '\\');
 
         std::ifstream fstream(filePath.c_str());
@@ -1588,7 +1613,6 @@ public:
                         // get canceled
     }
 };
-const char DummyResourceLoader::PREFIX[] = "http://cdrive/";
 
 blpwtk2::ResourceLoader* createInProcessResourceLoader()
 {
